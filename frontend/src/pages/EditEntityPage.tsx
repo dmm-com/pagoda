@@ -82,6 +82,7 @@ export const EditEntityPage: FC = () => {
         isSummarized: attr.isSummarized,
         referral: attr.referral.map((r) => r.id),
         isDeleted: false,
+        note: attr.note,
       }));
 
     const deletedAttrs =

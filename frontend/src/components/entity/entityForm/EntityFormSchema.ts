@@ -45,6 +45,7 @@ export const schema = z.object({
             })
           )
           .default([]),
+        note: z.string().default(""),
       })
     )
     .default([]),

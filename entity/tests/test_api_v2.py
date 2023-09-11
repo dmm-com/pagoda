@@ -85,6 +85,7 @@ class ViewTest(AironeViewTest):
                     "name": "val",
                     "referral": [],
                     "type": AttrTypeValue["string"],
+                    "note": "",
                 },
                 {
                     "id": self.entity.attrs.get(name="vals").id,
@@ -95,6 +96,7 @@ class ViewTest(AironeViewTest):
                     "name": "vals",
                     "referral": [],
                     "type": AttrTypeValue["array_string"],
+                    "note": "",
                 },
                 {
                     "id": self.entity.attrs.get(name="ref").id,
@@ -105,6 +107,7 @@ class ViewTest(AironeViewTest):
                     "name": "ref",
                     "referral": [],
                     "type": AttrTypeValue["object"],
+                    "note": "",
                 },
                 {
                     "id": self.entity.attrs.get(name="refs").id,
@@ -115,6 +118,7 @@ class ViewTest(AironeViewTest):
                     "name": "refs",
                     "referral": [],
                     "type": AttrTypeValue["array_object"],
+                    "note": "",
                 },
                 {
                     "id": self.entity.attrs.get(name="name").id,
@@ -125,6 +129,7 @@ class ViewTest(AironeViewTest):
                     "name": "name",
                     "referral": [],
                     "type": AttrTypeValue["named_object"],
+                    "note": "",
                 },
                 {
                     "id": self.entity.attrs.get(name="names").id,
@@ -135,6 +140,7 @@ class ViewTest(AironeViewTest):
                     "name": "names",
                     "referral": [],
                     "type": AttrTypeValue["array_named_object"],
+                    "note": "",
                 },
                 {
                     "id": self.entity.attrs.get(name="group").id,
@@ -145,6 +151,7 @@ class ViewTest(AironeViewTest):
                     "name": "group",
                     "referral": [],
                     "type": AttrTypeValue["group"],
+                    "note": "",
                 },
                 {
                     "id": self.entity.attrs.get(name="groups").id,
@@ -155,6 +162,7 @@ class ViewTest(AironeViewTest):
                     "name": "groups",
                     "referral": [],
                     "type": AttrTypeValue["array_group"],
+                    "note": "",
                 },
                 {
                     "id": self.entity.attrs.get(name="bool").id,
@@ -165,6 +173,7 @@ class ViewTest(AironeViewTest):
                     "name": "bool",
                     "referral": [],
                     "type": AttrTypeValue["boolean"],
+                    "note": "",
                 },
                 {
                     "id": self.entity.attrs.get(name="text").id,
@@ -175,6 +184,7 @@ class ViewTest(AironeViewTest):
                     "name": "text",
                     "referral": [],
                     "type": AttrTypeValue["text"],
+                    "note": "",
                 },
                 {
                     "id": self.entity.attrs.get(name="date").id,
@@ -185,6 +195,7 @@ class ViewTest(AironeViewTest):
                     "name": "date",
                     "referral": [],
                     "type": AttrTypeValue["date"],
+                    "note": "",
                 },
                 {
                     "id": self.entity.attrs.get(name="role").id,
@@ -195,6 +206,7 @@ class ViewTest(AironeViewTest):
                     "name": "role",
                     "referral": [],
                     "type": AttrTypeValue["role"],
+                    "note": "",
                 },
                 {
                     "id": self.entity.attrs.get(name="roles").id,
@@ -205,6 +217,7 @@ class ViewTest(AironeViewTest):
                     "name": "roles",
                     "referral": [],
                     "type": AttrTypeValue["array_role"],
+                    "note": "",
                 },
             ],
         )
@@ -233,6 +246,7 @@ class ViewTest(AironeViewTest):
                     }
                 ],
                 "type": AttrTypeValue["array_object"],
+                "note": "",
             },
         )
 
@@ -462,6 +476,7 @@ class ViewTest(AironeViewTest):
                     "is_mandatory": True,
                     "is_delete_in_chain": True,
                     "is_summarized": True,
+                    "note": "attr1 note",
                 }
             ],
             "webhooks": [
@@ -501,6 +516,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(entity_attr.is_delete_in_chain, True)
         self.assertEqual(entity_attr.is_summarized, True)
         self.assertEqual(entity_attr.created_user, self.user)
+        self.assertEqual(entity_attr.note, "attr1 note")
 
         self.assertEqual(entity.webhooks.count(), 1)
         webhook: Webhook = entity.webhooks.first()
@@ -1334,6 +1350,7 @@ class ViewTest(AironeViewTest):
                     "is_mandatory": True,
                     "is_delete_in_chain": True,
                     "is_summarized": True,
+                    "note": "change-attr1 note",
                 }
             ],
             "webhooks": [
@@ -1376,6 +1393,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(entity_attr.is_delete_in_chain, True)
         self.assertEqual(entity_attr.is_summarized, True)
         self.assertEqual(entity_attr.created_user, self.user)
+        self.assertEqual(entity_attr.note, "change-attr1 note")
 
         self.assertEqual(entity.webhooks.count(), 1)
         webhook.refresh_from_db()

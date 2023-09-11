@@ -77,7 +77,7 @@
     "zod": "^3.20.6"
   },
   "dependencies": {
-    "@dmm-com/airone-apiclient-typescript-fetch": "^0.0.4",
+    "@dmm-com/airone-apiclient-typescript-fetch": "^0.0.5",
     "@emotion/react": "^11.10.5",
     "@emotion/styled": "^11.10.5",
     "@jest/globals": "^27.0.6",

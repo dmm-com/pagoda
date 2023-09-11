@@ -421,6 +421,13 @@ exports[`should match snapshot 1`] = `
                 <th
                   class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-skm94m-MuiTableCell-root"
                   scope="col"
+                  width="100px"
+                >
+                  属性説明
+                </th>
+                <th
+                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-skm94m-MuiTableCell-root"
+                  scope="col"
                   width="300px"
                 >
                   型
@@ -472,6 +479,9 @@ exports[`should match snapshot 1`] = `
             <tbody
               class="MuiTableBody-root css-kcs60j-MuiTableBody-root"
             >
+              <td
+                class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
+              />
               <td
                 class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
               />
@@ -937,6 +947,13 @@ exports[`should match snapshot 1`] = `
               <th
                 class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-skm94m-MuiTableCell-root"
                 scope="col"
+                width="100px"
+              >
+                属性説明
+              </th>
+              <th
+                class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-skm94m-MuiTableCell-root"
+                scope="col"
                 width="300px"
               >
                 型
@@ -988,6 +1005,9 @@ exports[`should match snapshot 1`] = `
           <tbody
             class="MuiTableBody-root css-kcs60j-MuiTableBody-root"
           >
+            <td
+              class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
+            />
             <td
               class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
             />

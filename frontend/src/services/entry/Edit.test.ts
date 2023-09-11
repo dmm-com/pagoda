@@ -37,6 +37,7 @@ test("formalizeEntryInfo should return expect value", () => {
         isDeleteInChain: true,
         isWritable: true,
         referral: [],
+        note: "",
       },
       {
         id: 3,
@@ -47,6 +48,7 @@ test("formalizeEntryInfo should return expect value", () => {
         isDeleteInChain: true,
         isWritable: true,
         referral: [],
+        note: "",
       },
       {
         id: 4,
@@ -57,6 +59,7 @@ test("formalizeEntryInfo should return expect value", () => {
         isDeleteInChain: true,
         isWritable: true,
         referral: [],
+        note: "",
       },
     ],
     webhooks: [],
