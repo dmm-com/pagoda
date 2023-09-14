@@ -5681,3 +5681,8 @@ class ModelTest(AironeTestCase):
 
         self.assertEqual(array_attrv3.get_preview_value(), array_attrv2)
         self.assertIsNone(array_attrv3.get_next_value())
+
+    def test_search_entries_with_limit(self):
+        self._entry.register_es()
+        ret = Entry.search_entries(self._user, [self._entity.id], [], 99999999)
+        self.assertEqual(ret["ret_count"], 1)

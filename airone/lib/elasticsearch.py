@@ -895,7 +895,7 @@ def execute_query(
 
     """
     kwargs = {
-        "size": size if size else settings.ES_CONFIG["MAXIMUM_RESULTS_NUM"],
+        "size": min(size, 500000) if size else settings.ES_CONFIG["MAXIMUM_RESULTS_NUM"],
         "from_": offset,
         "body": query,
         "ignore": [404],
