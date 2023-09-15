@@ -1,8 +1,9 @@
 import importlib
 import sys
 from datetime import datetime
+from typing import List
 
-from django.contrib.auth.models import Permission
+from django.contrib.auth.models import Group, Permission
 from django.db import models
 from django.db.models import Q
 from simple_history.models import HistoricalRecords
@@ -22,7 +23,7 @@ class Role(models.Model):
     admin_groups = models.ManyToManyField("group.Group", related_name="admin_role", blank=True)
 
     @classmethod
-    def editable(kls, user, admin_users, admin_groups):
+    def editable(kls, user, admin_users, admin_groups: List[Group]):
         # This checks whether spcified user is belonged to the specified
         # admin_users and admin_groups.
         if user.is_superuser:

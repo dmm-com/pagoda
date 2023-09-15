@@ -32,6 +32,7 @@ class RoleSerializer(serializers.ModelSerializer):
     groups = RoleGroupSerializer(many=True)
     admin_users = RoleUserSerializer(many=True)
     admin_groups = RoleGroupSerializer(many=True)
+    is_editable = serializers.SerializerMethodField(method_name="get_is_editable", read_only=True)
 
     class Meta:
         model = Role
@@ -44,7 +45,12 @@ class RoleSerializer(serializers.ModelSerializer):
             "groups",
             "admin_users",
             "admin_groups",
+            "is_editable",
         ]
+
+    def get_is_editable(self, obj: Role) -> bool:
+        current_user: User = self.context["request"].user
+        return Role.editable(current_user, obj.admin_users.all(), obj.admin_groups.all())
 
 
 class RoleCreateUpdateSerializer(serializers.ModelSerializer):
