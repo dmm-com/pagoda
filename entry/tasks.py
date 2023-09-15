@@ -2,7 +2,7 @@ import csv
 import io
 import json
 from datetime import datetime
-from typing import Optional
+from typing import List, Optional
 
 import yaml
 from django.conf import settings
@@ -281,7 +281,7 @@ def _yaml_export_v2(job: Job, values, recv_data: dict, has_referral: bool) -> Op
         else:
             return value
 
-    resp_data: list[dict] = []
+    resp_data: List[dict] = []
     for index, entry_info in enumerate(values):
         data: dict = {
             "name": entry_info["entry"]["name"],
