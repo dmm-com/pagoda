@@ -3849,30 +3849,31 @@ class ViewTest(AironeViewTest):
             {"name": "arr_role", "value": ["new_role"]},
             {"name": "date", "value": "1999-01-01"},
         ]
-        resp_data.append(
+        resp_data = [
+            next(filter(lambda x: x["entity"] == "Entity-0", resp_data), {}),
             {
                 "entity": "Entity-1",
                 "entries": [
                     {
                         "attrs": new_attr_values,
-                    }
+                        "name": "e-100",
+                    },
                 ],
-            }
-        )
+            },
+        ]
 
-        # FIXME remained broken points
-        mockio = mock.mock_open(read_data=yaml.dump(resp_data))
-        with mock.patch("builtins.open", mockio):
-            with open("hogefuga.yaml") as fp:
-                resp = self.client.post("/entry/api/v2/import/", fp.read(), "application/yaml")
-                self.assertEqual(resp.status_code, 303)
+        resp = self.client.post("/entry/api/v2/import/", yaml.dump(resp_data), "application/yaml")
+        self.assertEqual(resp.status_code, 200)
 
         self.assertEqual(entry_another_ref.get_referred_objects().count(), 1)
 
         updated_entry = entry_another_ref.get_referred_objects().first()
-        self.assertEqual(updated_entry.name, resp_data["Entity-1"][0]["name"])
+        entity1 = next(filter(lambda x: x["entity"] == "Entity-1", resp_data), None)
+        self.assertIsNotNone(entity1)
+        self.assertEqual(updated_entry.name, entity1["entries"][0]["name"])
 
-        for attr_name, value_info in new_attr_values.items():
+        for attr in new_attr_values:
+            attr_name, value_info = attr["name"], attr["value"]
             attrv = updated_entry.attrs.get(name=attr_name).get_latest_value()
 
             if attr_name == "str":
@@ -3901,7 +3902,7 @@ class ViewTest(AironeViewTest):
                 )
                 self.assertEqual(
                     sorted([x.referral.name for x in attrv.data_array.all()]),
-                    sorted([list(x.values())[0] for x in value_info]),
+                    sorted([list([xx["name"] for xx in x.values()])[0] for x in value_info]),
                 )
             elif attr_name == "group":
                 self.assertEqual(int(attrv.value), new_group.id)
@@ -3989,8 +3990,8 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 200)
 
         resp_data = yaml.load(Job.objects.last().get_cache(), Loader=yaml.FullLoader)
-        self.assertEqual(len(resp_data["Entity"]), 2)
-        self.assertEqual([x["name"] for x in resp_data["Entity"]], ["bar", "baz"])
+        self.assertEqual(len(resp_data[0]["entries"]), 2)
+        self.assertEqual([x["name"] for x in resp_data[0]["entries"]], ["bar", "baz"])
 
     @patch(
         "entry.tasks.export_search_result_v2.delay", Mock(side_effect=tasks.export_search_result_v2)
@@ -4034,8 +4035,9 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 200)
 
         resp_data = yaml.load(Job.objects.last().get_cache(), Loader=yaml.FullLoader)
-        self.assertEqual(len(resp_data["ReferredEntity"]), 1)
-        referrals = resp_data["ReferredEntity"][0]["referrals"]
+        referred_entity = next(filter(lambda x: x["entity"] == "ReferredEntity", resp_data), None)
+        self.assertIsNotNone(referred_entity)
+        referrals = referred_entity["entries"][0]["referrals"]
         self.assertEqual(len(referrals), 1)
         self.assertEqual(referrals[0]["entity"], "entity")
         self.assertEqual(referrals[0]["entry"], "entry")
@@ -4060,9 +4062,9 @@ class ViewTest(AironeViewTest):
         results = [
             {"column": "val", "csv": "", "yaml": ""},
             {"column": "vals", "csv": "", "yaml": []},
-            {"column": "ref", "csv": "", "yaml": ""},
+            {"column": "ref", "csv": "", "yaml": {"entity": None, "name": ""}},
             {"column": "refs", "csv": "", "yaml": []},
-            {"column": "name", "csv": ": ", "yaml": {"": ""}},
+            {"column": "name", "csv": ": ", "yaml": {"": {"entity": None, "name": ""}}},
             {"column": "names", "csv": "", "yaml": []},
             {"column": "group", "csv": "", "yaml": ""},
             {"column": "groups", "csv": "", "yaml": []},
@@ -4117,7 +4119,8 @@ class ViewTest(AironeViewTest):
         # verifying result
         yaml_contents = yaml.load(Job.objects.last().get_cache(), Loader=yaml.FullLoader)
         self.assertEqual(
-            yaml_contents["test-entity"][0]["attrs"], {x["column"]: x["yaml"] for x in results}
+            yaml_contents[0]["entries"][0]["attrs"],
+            [{"name": x["column"], "value": x["yaml"]} for x in results],
         )
 
     @patch(
@@ -4166,7 +4169,15 @@ class ViewTest(AironeViewTest):
 
         self.assertEqual(resp.status_code, 200)
         resp_data = yaml.load(Job.objects.last().get_cache(), Loader=yaml.FullLoader)
-        self.assertEqual(resp_data, {"test-entity": [{"attrs": {"val": "hoge"}, "name": "Entry"}]})
+        self.assertEqual(
+            resp_data,
+            [
+                {
+                    "entity": "test-entity",
+                    "entries": [{"attrs": [{"name": "val", "value": "hoge"}], "name": "Entry"}],
+                }
+            ],
+        )
 
     def test_entry_history(self):
         values = {
