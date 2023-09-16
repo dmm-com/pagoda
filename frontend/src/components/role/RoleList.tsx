@@ -57,6 +57,7 @@ export const RoleList: FC = ({}) => {
     }
   };
 
+  console.log(roles.value);
   return (
     <Box>
       {roles.loading ? (
@@ -132,7 +133,10 @@ export const RoleList: FC = ({}) => {
                 <TableCell>
                   <Confirmable
                     componentGenerator={(handleOpen) => (
-                      <StyledIconButton onClick={handleOpen}>
+                      <StyledIconButton
+                        disabled={!role.isEditable}
+                        onClick={handleOpen}
+                      >
                         <DeleteOutlineIcon />
                       </StyledIconButton>
                     )}
@@ -141,7 +145,11 @@ export const RoleList: FC = ({}) => {
                   />
                 </TableCell>
                 <TableCell>
-                  <StyledIconButton component={Link} to={rolePath(role.id)}>
+                  <StyledIconButton
+                    disabled={!role.isEditable}
+                    component={Link}
+                    to={rolePath(role.id)}
+                  >
                     <EditOutlinedIcon />
                   </StyledIconButton>
                 </TableCell>

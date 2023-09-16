@@ -24,6 +24,7 @@ test("should render a component with essential props", function () {
       groups: [],
       adminUsers: [],
       adminGroups: [],
+      isEditable: true,
     },
   ];
 
