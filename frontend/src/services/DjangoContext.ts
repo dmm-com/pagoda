@@ -1,9 +1,11 @@
 class User {
   id: number;
+  username: string;
   isSuperuser: boolean;
 
   constructor(user: any) {
     this.id = user.id;
+    this.username = user.username;
     this.isSuperuser = user.isSuperuser;
   }
 }
