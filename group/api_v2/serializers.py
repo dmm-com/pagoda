@@ -1,4 +1,4 @@
-from typing import Dict, List, TypedDict
+from typing import Dict, TypedDict
 
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
@@ -26,7 +26,7 @@ class GroupSerializer(serializers.ModelSerializer):
         fields = ["id", "name", "parent_group", "members"]
 
     @extend_schema_field(GroupMemberSerializer(many=True))
-    def get_members(self, obj: Group) -> List[GroupMemberType]:
+    def get_members(self, obj: Group) -> list[GroupMemberType]:
         users = User.objects.filter(groups__name=obj.name, is_active=True).order_by("username")
         return [
             {
@@ -107,8 +107,8 @@ class GroupTreeSerializer(serializers.ModelSerializer):
         model = Group
         fields = ["id", "name", "children"]
 
-    def get_children(self, obj: Group) -> List[Dict]:
-        def _make_hierarchical_group(groups: List[Group]) -> List[Dict]:
+    def get_children(self, obj: Group) -> list[Dict]:
+        def _make_hierarchical_group(groups: list[Group]) -> list[Dict]:
             return [
                 {
                     "id": g.id,
