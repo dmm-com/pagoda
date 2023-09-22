@@ -698,8 +698,9 @@ class EntryImportEntitySerializer(serializers.Serializer):
                     if isinstance(val, str):
                         if len(refs) >= 2:
                             Logger.warn(
-                                "ambiguous object given: entry name(%s), entity ids(%s)",
-                                (val, refs),
+                                "ambiguous object given: entry name(%s), entity names(%s)",
+                                val,
+                                [x.name for x in refs],
                             )
                         ref_entry = Entry.objects.filter(name=val, schema__in=refs).first()
                         return ref_entry.id if ref_entry else "0"

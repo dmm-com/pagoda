@@ -1,6 +1,7 @@
 import datetime
 import errno
 import json
+import logging
 from datetime import date
 from unittest import mock
 from unittest.mock import Mock, patch
@@ -9,6 +10,7 @@ import yaml
 from django.urls import reverse
 from rest_framework.exceptions import ValidationError
 
+from airone.lib.log import Logger
 from airone.lib.test import AironeViewTest
 from airone.lib.types import (
     AttrTypeArrNamedObj,
@@ -2567,6 +2569,10 @@ class ViewTest(AironeViewTest):
     @patch("entry.tasks.notify_create_entry.delay", Mock(side_effect=tasks.notify_create_entry))
     @patch("entry.tasks.import_entries_v2.delay", Mock(side_effect=tasks.import_entries_v2))
     def test_import_entry_has_referrals_with_entities(self):
+        ref_entity2: Entity = self.create_entity(self.user, "ref_entity2")
+        attr: EntityAttr = self.entity.attrs.get(name="ref")
+        attr.referral.add(ref_entity2)
+
         fp = self.open_fixture_file("import_data_v2_with_entities.yaml")
         resp = self.client.post("/entry/api/v2/import/", fp.read(), "application/yaml")
         fp.close()
@@ -2610,6 +2616,19 @@ class ViewTest(AironeViewTest):
         entry = Entry.objects.get(name="test-entry")
         job_notify = Job.objects.get(target=entry, operation=JobOperation.NOTIFY_CREATE_ENTRY.value)
         self.assertEqual(job_notify.status, Job.STATUS["DONE"])
+
+        with self.assertLogs(logger=Logger, level=logging.WARNING) as warning_log:
+            fp = self.open_fixture_file("import_data_v2.yaml")
+            resp = self.client.post("/entry/api/v2/import/", fp.read(), "application/yaml")
+            fp.close()
+            print(warning_log.output)
+            self.assertEqual(
+                warning_log.output,
+                [
+                    "WARNING:airone:ambiguous object given: entry name(r-0), "
+                    "entity names(['ref_entity', 'ref_entity2'])"
+                ],
+            )
 
     def test_import_invalid_data(self):
         # nothing data
