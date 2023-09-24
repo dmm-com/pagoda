@@ -3812,7 +3812,7 @@ class ViewTest(AironeViewTest):
                     "name": "arr_name",
                     "value": [
                         {"hoge": {"entity": "RefEntity", "name": "ref"}},
-                        {"fuga": {"entity": None, "name": ""}},
+                        {"fuga": None},
                     ],
                 },
                 {"name": "group", "value": "group"},
@@ -4062,16 +4062,16 @@ class ViewTest(AironeViewTest):
         results = [
             {"column": "val", "csv": "", "yaml": ""},
             {"column": "vals", "csv": "", "yaml": []},
-            {"column": "ref", "csv": "", "yaml": {"entity": None, "name": ""}},
+            {"column": "ref", "csv": "", "yaml": None},
             {"column": "refs", "csv": "", "yaml": []},
-            {"column": "name", "csv": ": ", "yaml": {"": {"entity": None, "name": ""}}},
+            {"column": "name", "csv": ": ", "yaml": {}},
             {"column": "names", "csv": "", "yaml": []},
-            {"column": "group", "csv": "", "yaml": ""},
+            {"column": "group", "csv": "", "yaml": None},
             {"column": "groups", "csv": "", "yaml": []},
             {"column": "bool", "csv": "False", "yaml": False},
             {"column": "text", "csv": "", "yaml": ""},
             {"column": "date", "csv": "", "yaml": None},
-            {"column": "role", "csv": "", "yaml": ""},
+            {"column": "role", "csv": "", "yaml": None},
             {"column": "roles", "csv": "", "yaml": []},
         ]
 

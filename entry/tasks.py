@@ -29,7 +29,9 @@ from entry.api_v2.serializers import (
     EntryUpdateSerializer,
 )
 from entry.models import Attribute, Entry
+from group.models import Group
 from job.models import Job
+from role.models import Role
 from user.models import User
 
 
@@ -257,12 +259,19 @@ def _yaml_export_v2(job: Job, values, recv_data: dict, has_referral: bool) -> Op
                 if isinstance(val.get("id"), int)
                 else None
             )
-            return {
-                key: {
-                    "entity": entry.schema.name if entry else None,
-                    "name": val["name"],
+            if entry:
+                return {
+                    key: {
+                        "entity": entry.schema.name,
+                        "name": val["name"],
+                    }
                 }
-            }
+            elif len(key) > 0:
+                return {
+                    key: None,
+                }
+            else:
+                return {}
 
         if atype == AttrTypeValue["object"]:
             entry = (
@@ -270,13 +279,25 @@ def _yaml_export_v2(job: Job, values, recv_data: dict, has_referral: bool) -> Op
                 if isinstance(value.get("id"), int)
                 else None
             )
-            return {
-                "entity": entry.schema.name if entry else None,
-                "name": value["name"],
-            }
+            if entry:
+                return {
+                    "entity": entry.schema.name,
+                    "name": value["name"],
+                }
+            else:
+                return None
 
-        elif atype == AttrTypeValue["group"] or atype == AttrTypeValue["role"]:
-            return value["name"]
+        elif atype == AttrTypeValue["group"]:
+            if isinstance(value.get("id"), int) and Group.objects.filter(id=value["id"]).exists():
+                return value["name"]
+            else:
+                return None
+
+        elif atype == AttrTypeValue["role"]:
+            if isinstance(value.get("id"), int) and Role.objects.filter(id=value["id"]).exists():
+                return value["name"]
+            else:
+                return None
 
         else:
             return value
