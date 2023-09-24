@@ -301,7 +301,7 @@ exports[`should match snapshot 1`] = `
               class="MuiBox-root css-1b33znm"
             >
               <div
-                class="MuiStack-root css-1p5q5e5-MuiStack-root"
+                class="MuiStack-root css-1sazv7p-MuiStack-root"
               >
                 <nav
                   aria-label="pagination navigation"
@@ -669,7 +669,7 @@ exports[`should match snapshot 1`] = `
             class="MuiBox-root css-1b33znm"
           >
             <div
-              class="MuiStack-root css-1p5q5e5-MuiStack-root"
+              class="MuiStack-root css-1sazv7p-MuiStack-root"
             >
               <nav
                 aria-label="pagination navigation"

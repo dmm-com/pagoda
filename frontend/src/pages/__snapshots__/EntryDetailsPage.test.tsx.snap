@@ -145,10 +145,10 @@ exports[`should match snapshot 1`] = `
                   class="MuiBox-root css-nvayut"
                 >
                   <div
-                    class="MuiStack-root css-w4z10b-MuiStack-root"
+                    class="MuiStack-root css-niqf4j-MuiStack-root"
                   >
                     <a
-                      class="MuiButtonBase-root MuiChip-root MuiChip-outlined MuiChip-sizeMedium MuiChip-colorDefault MuiChip-clickable MuiChip-clickableColorDefault MuiChip-outlinedDefault css-1qfr5sv-MuiButtonBase-root-MuiChip-root"
+                      class="MuiButtonBase-root MuiChip-root MuiChip-outlined MuiChip-sizeMedium MuiChip-colorDefault MuiChip-clickable MuiChip-clickableColorDefault MuiChip-outlinedDefault css-1r3mz6a-MuiButtonBase-root-MuiChip-root"
                       href="#attr_list"
                       id="chip_attr_list"
                       tabindex="0"
@@ -280,7 +280,7 @@ exports[`should match snapshot 1`] = `
                 class="MuiBox-root css-j3ycse"
               >
                 <div
-                  class="MuiStack-root css-1p5q5e5-MuiStack-root"
+                  class="MuiStack-root css-1sazv7p-MuiStack-root"
                 >
                   <nav
                     aria-label="pagination navigation"
@@ -574,10 +574,10 @@ exports[`should match snapshot 1`] = `
                 class="MuiBox-root css-nvayut"
               >
                 <div
-                  class="MuiStack-root css-w4z10b-MuiStack-root"
+                  class="MuiStack-root css-niqf4j-MuiStack-root"
                 >
                   <a
-                    class="MuiButtonBase-root MuiChip-root MuiChip-outlined MuiChip-sizeMedium MuiChip-colorDefault MuiChip-clickable MuiChip-clickableColorDefault MuiChip-outlinedDefault css-1qfr5sv-MuiButtonBase-root-MuiChip-root"
+                    class="MuiButtonBase-root MuiChip-root MuiChip-outlined MuiChip-sizeMedium MuiChip-colorDefault MuiChip-clickable MuiChip-clickableColorDefault MuiChip-outlinedDefault css-1r3mz6a-MuiButtonBase-root-MuiChip-root"
                     href="#attr_list"
                     id="chip_attr_list"
                     tabindex="0"
@@ -709,7 +709,7 @@ exports[`should match snapshot 1`] = `
               class="MuiBox-root css-j3ycse"
             >
               <div
-                class="MuiStack-root css-1p5q5e5-MuiStack-root"
+                class="MuiStack-root css-1sazv7p-MuiStack-root"
               >
                 <nav
                   aria-label="pagination navigation"
