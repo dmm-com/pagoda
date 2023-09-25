@@ -6,7 +6,6 @@ from unittest import mock
 from unittest.mock import Mock, patch
 
 import yaml
-from django.urls import reverse
 from rest_framework.exceptions import ValidationError
 
 from airone.lib.test import AironeViewTest
@@ -21,10 +20,8 @@ from airone.lib.types import (
     AttrTypeText,
     AttrTypeValue,
 )
-from dashboard import tasks as dashboard_tasks
 from entity.models import Entity, EntityAttr
 from entry import tasks
-from entry import tasks as entry_tasks
 from entry.models import Attribute, AttributeValue, Entry
 from entry.settings import CONFIG
 from group.models import Group
@@ -3104,8 +3101,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(attrv.value, prev_attrv.value)
 
     @patch(
-        "dashboard.tasks.export_search_result.delay",
-        Mock(side_effect=dashboard_tasks.export_search_result),
+        "entry.tasks.export_search_result_v2.delay", Mock(side_effect=tasks.export_search_result_v2)
     )
     def test_export_advanced_search_result(self):
         user = self._create_user("admin", is_superuser=True)
@@ -3485,8 +3481,7 @@ class ViewTest(AironeViewTest):
         )
 
     @patch(
-        "dashboard.tasks.export_search_result.delay",
-        Mock(side_effect=dashboard_tasks.export_search_result),
+        "entry.tasks.export_search_result_v2.delay", Mock(side_effect=tasks.export_search_result_v2)
     )
     def test_export_advanced_search_result_with_referral(self):
         user = self._create_user("admin", is_superuser=True)
@@ -3553,8 +3548,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(len(csv_contents), 1)
 
     @patch(
-        "dashboard.tasks.export_search_result.delay",
-        Mock(side_effect=dashboard_tasks.export_search_result),
+        "entry.tasks.export_search_result_v2.delay", Mock(side_effect=tasks.export_search_result_v2)
     )
     def test_export_advanced_search_result_with_no_permission(self):
         admin = self._create_user("admin", is_superuser=True)
@@ -3577,12 +3571,12 @@ class ViewTest(AironeViewTest):
         )
 
         csv_contents = [x for x in Job.objects.last().get_cache().splitlines() if x]
+        self.assertEqual(len(csv_contents), 2)
         self.assertEqual(csv_contents[0], "Name,Entity,text")
         self.assertEqual(csv_contents[1], "private,test-entity,")
 
     @patch(
-        "dashboard.tasks.export_search_result.delay",
-        Mock(side_effect=dashboard_tasks.export_search_result),
+        "entry.tasks.export_search_result_v2.delay", Mock(side_effect=tasks.export_search_result_v2)
     )
     def test_show_advanced_search_results_csv_escape(self):
         user = self._create_user("admin", is_superuser=True)
@@ -3692,10 +3686,9 @@ class ViewTest(AironeViewTest):
             data = content.replace(header, "", 1).strip()
             self.assertEqual(data, '"%s,""ENTRY""",%s,%s' % (type_name, test_entity.name, case[2]))
 
-    @patch("entry.tasks.import_entries.delay", Mock(side_effect=entry_tasks.import_entries))
+    @patch("entry.tasks.import_entries_v2.delay", Mock(side_effect=tasks.import_entries_v2))
     @patch(
-        "dashboard.tasks.export_search_result.delay",
-        Mock(side_effect=dashboard_tasks.export_search_result),
+        "entry.tasks.export_search_result_v2.delay", Mock(side_effect=tasks.export_search_result_v2)
     )
     def test_yaml_export(self):
         user = self.admin_login()
@@ -3798,34 +3791,36 @@ class ViewTest(AironeViewTest):
         resp_data = yaml.load(Job.objects.last().get_cache(), Loader=yaml.FullLoader)
         for index in range(2):
             entity = Entity.objects.get(name="Entity-%d" % index)
-            e_data = resp_data[entity.name]
-
-            self.assertEqual(
-                len(resp_data[entity.name]), Entry.objects.filter(schema=entity).count()
-            )
-            for e_data in resp_data[entity.name]:
+            found = next(filter(lambda x: x["entity"] == entity.name, resp_data), None)
+            self.assertEqual(len(found["entries"]), Entry.objects.filter(schema=entity).count())
+            for e_data in found["entries"]:
                 self.assertTrue(e_data["name"] in ["e-0", "e-1"])
-                self.assertTrue(all([x in attr_info.keys() for x in e_data["attrs"]]))
+                self.assertTrue(all([a["name"] in attr_info.keys() for a in e_data["attrs"]]))
 
         self.assertEqual(
-            resp_data["Entity-0"][0]["attrs"],
-            {
-                "str": "foo",
-                "obj": "ref",
-                "name": {"bar": "ref"},
-                "bool": False,
-                "arr_str": ["foo", "bar", "baz"],
-                "arr_obj": ["ref"],
-                "arr_name": [
-                    {"hoge": "ref"},
-                    {"fuga": ""},
-                ],
-                "group": "group",
-                "arr_group": ["group"],
-                "role": "role",
-                "arr_role": ["role"],
-                "date": "2020-01-01",
-            },
+            next(filter(lambda x: x["entity"] == "Entity-0", resp_data), None)["entries"][0][
+                "attrs"
+            ],
+            [
+                {"name": "str", "value": "foo"},
+                {"name": "obj", "value": {"entity": "RefEntity", "name": "ref"}},
+                {"name": "name", "value": {"bar": {"entity": "RefEntity", "name": "ref"}}},
+                {"name": "bool", "value": False},
+                {"name": "arr_str", "value": ["foo", "bar", "baz"]},
+                {"name": "arr_obj", "value": [{"entity": "RefEntity", "name": "ref"}]},
+                {
+                    "name": "arr_name",
+                    "value": [
+                        {"hoge": {"entity": "RefEntity", "name": "ref"}},
+                        {"fuga": None},
+                    ],
+                },
+                {"name": "group", "value": "group"},
+                {"name": "arr_group", "value": ["group"]},
+                {"name": "role", "value": "role"},
+                {"name": "arr_role", "value": ["role"]},
+                {"name": "date", "value": "2020-01-01"},
+            ],
         )
 
         # Checked to be able to import exported data
@@ -3834,36 +3829,51 @@ class ViewTest(AironeViewTest):
         )
         new_group = Group.objects.create(name="new_group")
         new_role = Role.objects.create(name="new_role")
-        new_attr_values = {
-            "str": "bar",
-            "obj": "another_ref",
-            "name": {"hoge": "another_ref"},
-            "bool": True,
-            "arr_str": ["hoge", "fuga"],
-            "arr_obj": ["another_ref"],
-            "arr_name": [{"foo": "another_ref"}, {"bar": "ref"}],
-            "group": "new_group",
-            "arr_group": ["new_group"],
-            "role": "new_role",
-            "arr_role": ["new_role"],
-            "date": "1999-01-01",
-        }
-        resp_data["Entity-1"][0]["attrs"] = new_attr_values
+        new_attr_values = [
+            {"name": "str", "value": "bar"},
+            {"name": "obj", "value": {"entity": "RefEntity", "name": "another_ref"}},
+            {"name": "name", "value": {"hoge": {"entity": "RefEntity", "name": "another_ref"}}},
+            {"name": "bool", "value": True},
+            {"name": "arr_str", "value": ["hoge", "fuga"]},
+            {"name": "arr_obj", "value": [{"entity": "RefEntity", "name": "another_ref"}]},
+            {
+                "name": "arr_name",
+                "value": [
+                    {"foo": {"entity": "RefEntity", "name": "another_ref"}},
+                    {"bar": {"entity": "RefEntity", "name": "ref"}},
+                ],
+            },
+            {"name": "group", "value": "new_group"},
+            {"name": "arr_group", "value": ["new_group"]},
+            {"name": "role", "value": "new_role"},
+            {"name": "arr_role", "value": ["new_role"]},
+            {"name": "date", "value": "1999-01-01"},
+        ]
+        resp_data = [
+            next(filter(lambda x: x["entity"] == "Entity-0", resp_data), {}),
+            {
+                "entity": "Entity-1",
+                "entries": [
+                    {
+                        "attrs": new_attr_values,
+                        "name": "e-100",
+                    },
+                ],
+            },
+        ]
 
-        mockio = mock.mock_open(read_data=yaml.dump(resp_data))
-        with mock.patch("builtins.open", mockio):
-            with open("hogefuga.yaml") as fp:
-                resp = self.client.post(
-                    reverse("entry:do_import", args=[entities[1].id]), {"file": fp}
-                )
-                self.assertEqual(resp.status_code, 303)
+        resp = self.client.post("/entry/api/v2/import/", yaml.dump(resp_data), "application/yaml")
+        self.assertEqual(resp.status_code, 200)
 
         self.assertEqual(entry_another_ref.get_referred_objects().count(), 1)
 
         updated_entry = entry_another_ref.get_referred_objects().first()
-        self.assertEqual(updated_entry.name, resp_data["Entity-1"][0]["name"])
+        entity1 = next(filter(lambda x: x["entity"] == "Entity-1", resp_data), None)
+        self.assertIsNotNone(entity1)
+        self.assertEqual(updated_entry.name, entity1["entries"][0]["name"])
 
-        for attr_name, value_info in new_attr_values.items():
+        for attr in new_attr_values:
+            attr_name, value_info = attr["name"], attr["value"]
             attrv = updated_entry.attrs.get(name=attr_name).get_latest_value()
 
             if attr_name == "str":
@@ -3892,7 +3902,7 @@ class ViewTest(AironeViewTest):
                 )
                 self.assertEqual(
                     sorted([x.referral.name for x in attrv.data_array.all()]),
-                    sorted([list(x.values())[0] for x in value_info]),
+                    sorted([list([xx["name"] for xx in x.values()])[0] for x in value_info]),
                 )
             elif attr_name == "group":
                 self.assertEqual(int(attrv.value), new_group.id)
@@ -3912,8 +3922,7 @@ class ViewTest(AironeViewTest):
                 self.assertEqual(attrv.date, date(1999, 1, 1))
 
     @patch(
-        "dashboard.tasks.export_search_result.delay",
-        Mock(side_effect=dashboard_tasks.export_search_result),
+        "entry.tasks.export_search_result_v2.delay", Mock(side_effect=tasks.export_search_result_v2)
     )
     def test_duplicate_export(self):
         user = self.admin_login()
@@ -3957,8 +3966,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 200)
 
     @patch(
-        "dashboard.tasks.export_search_result.delay",
-        Mock(side_effect=dashboard_tasks.export_search_result),
+        "entry.tasks.export_search_result_v2.delay", Mock(side_effect=tasks.export_search_result_v2)
     )
     def test_export_with_hint_entry_name(self):
         admin = self._create_user("admin", is_superuser=True)
@@ -3982,12 +3990,11 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 200)
 
         resp_data = yaml.load(Job.objects.last().get_cache(), Loader=yaml.FullLoader)
-        self.assertEqual(len(resp_data["Entity"]), 2)
-        self.assertEqual([x["name"] for x in resp_data["Entity"]], ["bar", "baz"])
+        self.assertEqual(len(resp_data[0]["entries"]), 2)
+        self.assertEqual([x["name"] for x in resp_data[0]["entries"]], ["bar", "baz"])
 
     @patch(
-        "dashboard.tasks.export_search_result.delay",
-        Mock(side_effect=dashboard_tasks.export_search_result),
+        "entry.tasks.export_search_result_v2.delay", Mock(side_effect=tasks.export_search_result_v2)
     )
     def test_yaml_export_with_referral(self):
         user = self._create_user("admin", is_superuser=True)
@@ -4028,15 +4035,15 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 200)
 
         resp_data = yaml.load(Job.objects.last().get_cache(), Loader=yaml.FullLoader)
-        self.assertEqual(len(resp_data["ReferredEntity"]), 1)
-        referrals = resp_data["ReferredEntity"][0]["referrals"]
+        referred_entity = next(filter(lambda x: x["entity"] == "ReferredEntity", resp_data), None)
+        self.assertIsNotNone(referred_entity)
+        referrals = referred_entity["entries"][0]["referrals"]
         self.assertEqual(len(referrals), 1)
         self.assertEqual(referrals[0]["entity"], "entity")
         self.assertEqual(referrals[0]["entry"], "entry")
 
     @patch(
-        "dashboard.tasks.export_search_result.delay",
-        Mock(side_effect=dashboard_tasks.export_search_result),
+        "entry.tasks.export_search_result_v2.delay", Mock(side_effect=tasks.export_search_result_v2)
     )
     def test_export_advanced_search_result_with_no_value(self):
         admin = self._create_user("admin", is_superuser=True)
@@ -4055,16 +4062,16 @@ class ViewTest(AironeViewTest):
         results = [
             {"column": "val", "csv": "", "yaml": ""},
             {"column": "vals", "csv": "", "yaml": []},
-            {"column": "ref", "csv": "", "yaml": ""},
+            {"column": "ref", "csv": "", "yaml": None},
             {"column": "refs", "csv": "", "yaml": []},
-            {"column": "name", "csv": ": ", "yaml": {"": ""}},
+            {"column": "name", "csv": ": ", "yaml": {}},
             {"column": "names", "csv": "", "yaml": []},
-            {"column": "group", "csv": "", "yaml": ""},
+            {"column": "group", "csv": "", "yaml": None},
             {"column": "groups", "csv": "", "yaml": []},
             {"column": "bool", "csv": "False", "yaml": False},
             {"column": "text", "csv": "", "yaml": ""},
             {"column": "date", "csv": "", "yaml": None},
-            {"column": "role", "csv": "", "yaml": ""},
+            {"column": "role", "csv": "", "yaml": None},
             {"column": "roles", "csv": "", "yaml": []},
         ]
 
@@ -4112,12 +4119,12 @@ class ViewTest(AironeViewTest):
         # verifying result
         yaml_contents = yaml.load(Job.objects.last().get_cache(), Loader=yaml.FullLoader)
         self.assertEqual(
-            yaml_contents["test-entity"][0]["attrs"], {x["column"]: x["yaml"] for x in results}
+            yaml_contents[0]["entries"][0]["attrs"],
+            [{"name": x["column"], "value": x["yaml"]} for x in results],
         )
 
     @patch(
-        "dashboard.tasks.export_search_result.delay",
-        Mock(side_effect=dashboard_tasks.export_search_result),
+        "entry.tasks.export_search_result_v2.delay", Mock(side_effect=tasks.export_search_result_v2)
     )
     def test_export_with_all_entities(self):
         self.add_entry(self.user, "Entry", self.entity, values={"val": "hoge"})
@@ -4162,7 +4169,15 @@ class ViewTest(AironeViewTest):
 
         self.assertEqual(resp.status_code, 200)
         resp_data = yaml.load(Job.objects.last().get_cache(), Loader=yaml.FullLoader)
-        self.assertEqual(resp_data, {"test-entity": [{"attrs": {"val": "hoge"}, "name": "Entry"}]})
+        self.assertEqual(
+            resp_data,
+            [
+                {
+                    "entity": "test-entity",
+                    "entries": [{"attrs": [{"name": "val", "value": "hoge"}], "name": "Entry"}],
+                }
+            ],
+        )
 
     def test_entry_history(self):
         values = {

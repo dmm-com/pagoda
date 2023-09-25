@@ -1126,11 +1126,9 @@ class AdvancedSearchResultExportSerializer(serializers.Serializer):
             raise ValidationError("Same export processing is under execution")
 
         # create a job to export search result and run it
-        job = Job.new_export_search_result(
-            user,
-            **{
-                "text": "search_results.%s" % self.validated_data["export_style"],
-                "params": self.validated_data,
-            },
+        job = Job.new_export_search_result_v2(
+            user=user,
+            text="search_results.%s" % self.validated_data["export_style"],
+            params=self.validated_data,
         )
         job.run()

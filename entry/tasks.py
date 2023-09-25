@@ -2,9 +2,10 @@ import csv
 import io
 import json
 from datetime import datetime
-from typing import Optional
+from typing import List, Optional
 
 import yaml
+from django.conf import settings
 from rest_framework.exceptions import ValidationError
 
 import custom_view
@@ -19,14 +20,18 @@ from airone.lib.http import DRFRequest
 from airone.lib.job import may_schedule_until_job_is_ready
 from airone.lib.log import Logger
 from airone.lib.types import AttrTypeValue
+from dashboard.tasks import _csv_export
 from entity.models import Entity, EntityAttr
 from entry.api_v2.serializers import (
+    AdvancedSearchResultExportSerializer,
     EntryCreateSerializer,
     EntryImportEntitySerializer,
     EntryUpdateSerializer,
 )
 from entry.models import Attribute, Entry
+from group.models import Group
 from job.models import Job
+from role.models import Role
 from user.models import User
 
 
@@ -238,6 +243,112 @@ def _do_import_entries_v2(job: Job):
     else:
         text = "Imported Entry count: %d" % total_count
         job.update(status=Job.STATUS["DONE"], text=text)
+
+
+def _yaml_export_v2(job: Job, values, recv_data: dict, has_referral: bool) -> Optional[io.StringIO]:
+    output = io.StringIO()
+
+    def _get_attr_value(atype: int, value: dict):
+        if atype & AttrTypeValue["array"]:
+            return [_get_attr_value(atype ^ AttrTypeValue["array"], x) for x in value]
+
+        if atype == AttrTypeValue["named_object"]:
+            [(key, val)] = value.items()
+            entry = (
+                Entry.objects.filter(id=val["id"]).first()
+                if isinstance(val.get("id"), int)
+                else None
+            )
+            if entry:
+                return {
+                    key: {
+                        "entity": entry.schema.name,
+                        "name": val["name"],
+                    }
+                }
+            elif len(key) > 0:
+                return {
+                    key: None,
+                }
+            else:
+                return {}
+
+        if atype == AttrTypeValue["object"]:
+            entry = (
+                Entry.objects.filter(id=value["id"]).first()
+                if isinstance(value.get("id"), int)
+                else None
+            )
+            if entry:
+                return {
+                    "entity": entry.schema.name,
+                    "name": value["name"],
+                }
+            else:
+                return None
+
+        elif atype == AttrTypeValue["group"]:
+            if isinstance(value.get("id"), int) and Group.objects.filter(id=value["id"]).exists():
+                return value["name"]
+            else:
+                return None
+
+        elif atype == AttrTypeValue["role"]:
+            if isinstance(value.get("id"), int) and Role.objects.filter(id=value["id"]).exists():
+                return value["name"]
+            else:
+                return None
+
+        else:
+            return value
+
+    resp_data: List[dict] = []
+    for index, entry_info in enumerate(values):
+        data: dict = {
+            "name": entry_info["entry"]["name"],
+            "attrs": [],
+        }
+
+        # Abort processing when job is canceled
+        if index % Job.STATUS_CHECK_FREQUENCY == 0 and job.is_canceled():
+            return None
+
+        for attrinfo in recv_data["attrinfo"]:
+            if attrinfo["name"] in entry_info["attrs"]:
+                _adata = entry_info["attrs"][attrinfo["name"]]
+                if "value" not in _adata:
+                    continue
+
+                data["attrs"].append(
+                    {
+                        "name": attrinfo["name"],
+                        "value": _get_attr_value(_adata["type"], _adata["value"]),
+                    }
+                )
+
+        if has_referral is not False:
+            data["referrals"] = [
+                {
+                    "entity": x["schema"]["name"],
+                    "entry": x["name"],
+                }
+                for x in entry_info["referrals"]
+            ]
+
+        found = next(filter(lambda x: x["entity"] == entry_info["entity"]["name"], resp_data), None)
+        if found:
+            found["entries"].append(data)
+        else:
+            resp_data.append(
+                {
+                    "entity": entry_info["entity"]["name"],
+                    "entries": [data],
+                }
+            )
+
+    output.write(yaml.dump(resp_data, default_flow_style=False, allow_unicode=True))
+
+    return output
 
 
 @app.task(bind=True)
@@ -663,6 +774,49 @@ def export_entries_v2(self, job_id):
                 allow_unicode=True,
             )
         )
+
+    if output:
+        job.set_cache(output.getvalue())
+
+    # update job status and save it except for the case that target job is canceled.
+    if not job.is_canceled():
+        job.update(Job.STATUS["DONE"])
+
+
+@app.task(bind=True)
+def export_search_result_v2(self, job_id: int):
+    job: Job = Job.objects.get(id=job_id)
+
+    if not job.proceed_if_ready():
+        return
+    job.update(Job.STATUS["PROCESSING"])
+
+    user = job.user
+    serializer = AdvancedSearchResultExportSerializer(data=json.loads(job.params))
+    serializer.is_valid(raise_exception=True)
+    params: dict = serializer.validated_data
+
+    has_referral: bool = params.get("has_referral", False)
+    referral_name: Optional[str] = params.get("referral_name")
+    entry_name: Optional[str] = params.get("entry_name")
+    if has_referral and referral_name is None:
+        referral_name = ""
+
+    resp = Entry.search_entries(
+        user,
+        params["entities"],
+        params["attrinfo"],
+        settings.ES_CONFIG["MAXIMUM_RESULTS_NUM"],
+        entry_name,
+        referral_name,
+    )
+
+    output: Optional[io.StringIO] = None
+    if params["export_style"] == "yaml":
+        output = _yaml_export_v2(job, resp["ret_values"], params, has_referral)
+    elif params["export_style"] == "csv":
+        # NOTE reuse v1 internal export logic, but better to have a duplicated logic for v2
+        output = _csv_export(job, resp["ret_values"], params, has_referral)
 
     if output:
         job.set_cache(output.getvalue())

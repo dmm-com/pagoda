@@ -48,6 +48,7 @@ class JobOperation(Enum):
     ROLE_REGISTER_REFERRAL = 19
     EXPORT_ENTRY_V2 = 20
     UPDATE_DOCUMENT = 21
+    EXPORT_SEARCH_RESULT_V2 = 22
 
 
 class Job(models.Model):
@@ -107,6 +108,7 @@ class Job(models.Model):
         JobOperation.EXPORT_ENTRY_V2.value,
         JobOperation.REGISTER_REFERRALS.value,
         JobOperation.EXPORT_SEARCH_RESULT.value,
+        JobOperation.EXPORT_SEARCH_RESULT_V2.value,
     ]
 
     PARALLELIZABLE_OPERATIONS = [
@@ -321,6 +323,7 @@ class Job(models.Model):
                 JobOperation.GROUP_REGISTER_REFERRAL.value: group_task.edit_group_referrals,
                 JobOperation.ROLE_REGISTER_REFERRAL.value: role_task.edit_role_referrals,
                 JobOperation.UPDATE_DOCUMENT.value: entry_task.update_es_documents,
+                JobOperation.EXPORT_SEARCH_RESULT_V2.value: entry_task.export_search_result_v2,
             }
 
         return kls._METHOD_TABLE
@@ -431,6 +434,16 @@ class Job(models.Model):
             user,
             target,
             JobOperation.EXPORT_SEARCH_RESULT.value,
+            text,
+            json.dumps(params, default=_support_time_default, sort_keys=True),
+        )
+
+    @classmethod
+    def new_export_search_result_v2(kls, user, target=None, text="", params={}):
+        return kls._create_new_job(
+            user,
+            target,
+            JobOperation.EXPORT_SEARCH_RESULT_V2.value,
             text,
             json.dumps(params, default=_support_time_default, sort_keys=True),
         )

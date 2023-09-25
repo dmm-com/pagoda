@@ -1739,7 +1739,7 @@ class Entry(ACLBase):
 
         return {"name": self.name, "attrs": attrinfo}
 
-    def export_v2(self, user, with_entity: bool = False):
+    def export_v2(self, user, with_entity: bool = False) -> dict:
         attrinfo = []
 
         # This calling of complement_attrs is needed to take into account the case of the Attributes
