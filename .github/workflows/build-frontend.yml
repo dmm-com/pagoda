@@ -9,6 +9,8 @@ on:
       - 'frontend/**/*.ts'
       - 'frontend/**/*.tsx'
       - '.github/workflows/build-frontend.yml'
+      - 'package-lock.json'
+      - '*.config.js'
 
 jobs:
   lint:
