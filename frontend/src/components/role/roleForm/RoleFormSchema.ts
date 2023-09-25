@@ -3,7 +3,9 @@ import { z } from "zod";
 
 import { schemaForType } from "../../../services/ZodSchemaUtil";
 
-export const schema = schemaForType<Role>()(
+type RoleForSchema = Omit<Role, "isEditable">;
+
+export const schema = schemaForType<RoleForSchema>()(
   z
     .object({
       id: z.number().default(0),

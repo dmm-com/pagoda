@@ -12,13 +12,18 @@ type AironeApiFieldsError<T> = {
 };
 
 type AironeApiError<T> = AironeApiFieldsError<T> & {
+  // root-level
+  code?: string;
+  message?: string;
+
   non_field_errors?: Array<ErrorDetail>;
 };
 
 // https://github.com/dmm-com/airone/wiki/(Blueprint)-AirOne-API-Error-code-mapping
 const aironeAPIErrors: Record<string, string> = {
-  "AE-220000": "入力データが既存のデータと重複しています",
   "AE-122000": "入力データが大きすぎます",
+  "AE-210000": "操作に必要な権限が不足しています",
+  "AE-220000": "入力データが既存のデータと重複しています",
 };
 
 const extractErrorDetail = (errorDetail: ErrorDetail): string =>
@@ -37,6 +42,12 @@ export const extractAPIException = async <T>(
 
   const json = await errpr.response.json();
   const typed = json as AironeApiError<T>;
+
+  // root-level error will drop field-level errors
+  if (typed.code != null && typed.message != null) {
+    nonFieldReporter(extractErrorDetail(typed as ErrorDetail));
+    return;
+  }
 
   if (typed.non_field_errors != null) {
     const fullMessage = typed.non_field_errors
