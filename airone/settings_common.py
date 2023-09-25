@@ -2,7 +2,7 @@ import errno
 import logging
 import os
 import subprocess
-from typing import Any, Dict
+from typing import Any
 
 import environ
 from configurations import Configuration
@@ -207,7 +207,7 @@ class Common(Configuration):
     LOGIN_REDIRECT_URL = "/dashboard/"
 
     # global settins for AirOne
-    AIRONE: Dict[str, Any] = {
+    AIRONE: dict[str, Any] = {
         "CONCURRENCY": 1,
         "VERSION": "unknown",
         "AUTO_COMPLEMENT_USER": "auto_complementer",
@@ -258,7 +258,7 @@ class Common(Configuration):
     )
 
     AUTHENTICATION_BACKENDS = ["django.contrib.auth.backends.ModelBackend"]
-    AUTH_CONFIG: Dict[str, Dict] = {"LDAP": {}}
+    AUTH_CONFIG: dict[str, dict] = {"LDAP": {}}
 
     # Note: Disable LDAP authentication by default in the mean time.
     if env.bool("AIRONE_LDAP_ENABLE", False):
@@ -330,7 +330,7 @@ class Common(Configuration):
         SERVER_EMAIL = env.str("AIRONE_EMAIL_FROM", "localhost@localdomain")
         ADMINS = [x.split(":") for x in env.list("AIRONE_EMAIL_ADMINS")]
 
-    LOGGING: Dict[str, Any] = {
+    LOGGING: dict[str, Any] = {
         "version": 1,
         "disable_existing_loggers": True,
         "formatters": {
