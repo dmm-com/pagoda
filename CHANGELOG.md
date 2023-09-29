@@ -3,12 +3,26 @@
 ## In development
 
 ### Added
-* Add DataUtil.formatDate() that only returns date (without time) string value from Date instance.
-  Contributed by @userlocalhost
 
 ### Changed
 
 ### Fixed
+
+## v3.63.0
+
+### Added
+* Add DataUtil.formatDate() that only returns date (without time) string value from Date instance.
+  Contributed by @userlocalhost
+
+### Changed
+* Reimplement advanced search result export v2.
+  Contributed by @syucream
+
+### Fixed
+* Fixed required for mandatory attributes when renaming using entry update API.
+  Contributed by @hinashi
+* Fixed exception error in entry import.
+  Contributed by @hinashi
 
 ## v3.62.0
 
