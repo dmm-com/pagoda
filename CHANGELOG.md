@@ -10,6 +10,30 @@
 
 ### Fixed
 
+## v3.62.0
+
+### Added
+* Show login user name on the header.
+  Contributed by @syucream
+
+### Changed
+* Support Python 3.11
+  Contributed by @syucream
+
+## v3.61.0
+
+### Added
+* Add note field to EntityAttr.
+  Contributed by @syucream
+
+### Changed
+* Changed to use poetry.
+  Contributed by @syucream
+
+### Fixed
+* Fixed do not crash if refreshing jobs failed.
+  Contributed by @syucream
+
 ## v3.60.0
 
 ### Changed

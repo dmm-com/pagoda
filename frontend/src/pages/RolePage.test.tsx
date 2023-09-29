@@ -28,6 +28,7 @@ test("should match snapshot", async () => {
       groups: [],
       adminUsers: [],
       adminGroups: [],
+      isEditable: true,
     },
   ];
 

@@ -1,6 +1,6 @@
 import collections
 import json
-from typing import Any, Dict, List, Optional, TypedDict, Union
+from typing import Any, Optional, TypedDict
 
 import requests
 from django.core.validators import URLValidator
@@ -164,7 +164,7 @@ class EntityCreateData(TypedDict, total=False):
     name: str
     note: str
     is_toplevel: bool
-    attrs: List[EntityAttrCreateSerializer]
+    attrs: list[EntityAttrCreateSerializer]
     webhooks: WebhookCreateUpdateSerializer
     created_user: User
 
@@ -174,7 +174,7 @@ class EntityUpdateData(TypedDict, total=False):
     name: str
     note: str
     is_toplevel: bool
-    attrs: List[EntityAttrUpdateSerializer]
+    attrs: list[EntityAttrUpdateSerializer]
     webhooks: WebhookCreateUpdateSerializer
 
 
@@ -187,7 +187,7 @@ class EntitySerializer(serializers.ModelSerializer):
         self,
         user: User,
         entity_id: Optional[int],
-        validated_data: Union[EntityCreateData, EntityUpdateData],
+        validated_data: EntityCreateData | EntityUpdateData,
     ):
         is_toplevel_data = validated_data.pop("is_toplevel", None)
         attrs_data = validated_data.pop("attrs")
@@ -314,7 +314,7 @@ class EntityCreateSerializer(EntitySerializer):
 
         return name
 
-    def validate_attrs(self, attrs: List[EntityAttrCreateSerializer]):
+    def validate_attrs(self, attrs: list[EntityAttrCreateSerializer]):
         # duplication checks
         counter = collections.Counter([attr["name"] for attr in attrs])
         if len([v for v, count in counter.items() if count > 1]):
@@ -351,7 +351,7 @@ class EntityUpdateSerializer(EntitySerializer):
 
         return name
 
-    def validate_attrs(self, attrs: List[EntityAttrUpdateSerializer]):
+    def validate_attrs(self, attrs: list[EntityAttrUpdateSerializer]):
         entity: Entity = self.instance
 
         # duplication checks
@@ -415,7 +415,7 @@ class EntityDetailAttributeSerializer(serializers.Serializer):
         is_mandatory: bool
         is_delete_in_chain: bool
         is_writable: bool
-        referral: List[Dict[str, Any]]
+        referral: list[dict[str, Any]]
         note: str
 
 
@@ -428,10 +428,10 @@ class EntityDetailSerializer(EntityListSerializer):
         fields = ["id", "name", "note", "status", "is_toplevel", "attrs", "webhooks", "is_public"]
 
     @extend_schema_field(serializers.ListField(child=EntityDetailAttributeSerializer()))
-    def get_attrs(self, obj: Entity) -> List[EntityDetailAttributeSerializer.EntityDetailAttribute]:
+    def get_attrs(self, obj: Entity) -> list[EntityDetailAttributeSerializer.EntityDetailAttribute]:
         user = User.objects.get(id=self.context["request"].user.id)
 
-        attrinfo: List[EntityDetailAttributeSerializer.EntityDetailAttribute] = [
+        attrinfo: list[EntityDetailAttributeSerializer.EntityDetailAttribute] = [
             {
                 "id": x.id,
                 "index": x.index,

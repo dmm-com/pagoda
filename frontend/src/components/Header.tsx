@@ -197,6 +197,11 @@ export const Header: FC = () => {
                 keepMounted
                 disableScrollLock
               >
+                <MenuItem>
+                  {djangoContext?.user?.username ?? "不明なユーザ"}{" "}
+                  としてログイン中
+                </MenuItem>
+                <Divider light />
                 <MenuItem
                   component={Link}
                   to={userPath(djangoContext?.user?.id ?? 0)}

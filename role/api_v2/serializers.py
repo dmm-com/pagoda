@@ -1,5 +1,4 @@
 from collections import OrderedDict
-from typing import List
 
 from rest_framework import serializers
 
@@ -32,6 +31,7 @@ class RoleSerializer(serializers.ModelSerializer):
     groups = RoleGroupSerializer(many=True)
     admin_users = RoleUserSerializer(many=True)
     admin_groups = RoleGroupSerializer(many=True)
+    is_editable = serializers.SerializerMethodField(method_name="get_is_editable", read_only=True)
 
     class Meta:
         model = Role
@@ -44,7 +44,12 @@ class RoleSerializer(serializers.ModelSerializer):
             "groups",
             "admin_users",
             "admin_groups",
+            "is_editable",
         ]
+
+    def get_is_editable(self, obj: Role) -> bool:
+        current_user: User = self.context["request"].user
+        return Role.editable(current_user, obj.admin_users.all(), obj.admin_groups.all())
 
 
 class RoleCreateUpdateSerializer(serializers.ModelSerializer):
@@ -64,10 +69,10 @@ class RoleCreateUpdateSerializer(serializers.ModelSerializer):
         if not role.get("admin_users") and not role.get("admin_groups"):
             raise RequiredParameterError("admin_users or admin_groups field is required")
 
-        users: List[User] = role.get("users", [])
-        groups: List[Group] = role.get("groups", [])
-        admin_users: List[User] = role.get("admin_users", [])
-        admin_groups: List[Group] = role.get("admin_groups", [])
+        users: list[User] = role.get("users", [])
+        groups: list[Group] = role.get("groups", [])
+        admin_users: list[User] = role.get("admin_users", [])
+        admin_groups: list[Group] = role.get("admin_groups", [])
 
         user: User = self.context["request"].user
         if not Role.editable(user, admin_users, admin_groups):

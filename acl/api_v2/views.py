@@ -1,5 +1,4 @@
 import itertools
-from typing import Union
 
 from django.db.models import Q
 from django.http import Http404
@@ -50,7 +49,7 @@ class ACLHistoryAPI(generics.ListAPIView):
         if not acl:
             raise Http404
 
-        instance: Union[Entity, EntityAttr, Entry, Attribute] = acl.get_subclass_object()
+        instance: Entity | EntityAttr | Entry | Attribute = acl.get_subclass_object()
 
         acl_history = list(instance.history.all())
         codename_query = Q(codename__startswith=instance.id)

@@ -124,6 +124,7 @@ export const JobStatuses = {
   CANCELED: 6,
 };
 
+// TODO manage it in the API side
 export const JobOperations = {
   CREATE_ENTRY: 1,
   EDIT_ENTRY: 2,
@@ -145,6 +146,8 @@ export const JobOperations = {
   GROUP_REGISTER_REFERRAL: 18,
   ROLE_REGISTER_REFERRAL: 19,
   EXPORT_ENTRY_V2: 20,
+  UPDATE_DOCUMENT: 21,
+  EXPORT_SEARCH_RESULT_V2: 22,
 };
 
 export const JobRefreshIntervalMilliSec = 60 * 1000;

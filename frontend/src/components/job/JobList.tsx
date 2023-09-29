@@ -229,7 +229,8 @@ export const JobList: FC<Props> = ({ jobs }) => {
             <TableCell>
               {(job.operation == JobOperations.EXPORT_ENTRY ||
                 job.operation == JobOperations.EXPORT_SEARCH_RESULT ||
-                job.operation == JobOperations.EXPORT_ENTRY_V2) &&
+                job.operation == JobOperations.EXPORT_ENTRY_V2 ||
+                job.operation == JobOperations.EXPORT_SEARCH_RESULT_V2) &&
               job.status == JobStatuses.DONE ? (
                 <MuiLink href={`/job/download/${job.id}`}>Download</MuiLink>
               ) : (

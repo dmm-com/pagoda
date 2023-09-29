@@ -44,7 +44,9 @@ class JobListAPI(viewsets.ModelViewSet):
 
         export_operations = [
             JobOperation.EXPORT_ENTRY.value,
+            JobOperation.EXPORT_ENTRY_V2.value,
             JobOperation.EXPORT_SEARCH_RESULT.value,
+            JobOperation.EXPORT_SEARCH_RESULT_V2.value,
         ]
         query = Q(
             Q(user=user),

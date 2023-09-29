@@ -1,8 +1,8 @@
 version: 2
 jobs:
-  python38:
+  python311:
     docker:
-      - image: cimg/python:3.8.10
+      - image: cimg/python:3.11
       - image: rabbitmq:3.8.19-management
       - image: docker.elastic.co/elasticsearch/elasticsearch:7.17.6
         environment:
@@ -21,14 +21,14 @@ jobs:
             --default-storage-engine=innodb,
           ]
     environment:
-      TOXENV: "py38"
+      TOXENV: "py311"
     steps:
       - checkout
       - run:
           name: Wait for ElasticSearch
           command: dockerize -wait tcp://127.0.0.1:9200 -timeout 120s
       - restore_cache:
-          key: py38-{{ checksum "poetry.lock" }}-{{ checksum "tox.ini" }}-20220708
+          key: py311-{{ checksum "poetry.lock" }}-{{ checksum "tox.ini" }}-20220708
       - run:
           name: Install tox tox-pyenv
           command: |
@@ -55,10 +55,10 @@ jobs:
             . virtualenv/bin/activate
             tox
       - save_cache:
-          key: py38-{{ checksum "poetry.lock" }}-{{ checksum "tox.ini" }}-20220708
+          key: py311-{{ checksum "poetry.lock" }}-{{ checksum "tox.ini" }}-20220708
           paths:
             - virtualenv
-            - .tox/py38
+            - .tox/py311
       - run:
           name: Coverage
           command: |
@@ -70,4 +70,4 @@ workflows:
   version: 2
   build_and_test:
     jobs:
-      - python38
+      - python311

@@ -13,7 +13,7 @@ These are the features of this software.
 Here is the documentation to setup the development environment of AirOne.
 
 ## Installation of AirOne
-You have to install Python3.8+ to run AirOne like below (for the case of `ubuntu`).
+You have to install Python3.11+ to run AirOne like below (for the case of `ubuntu`).
 ```
 user@hostname:~$ sudo apt-get update
 user@hostname:~$ sudo apt-get install python3 python3-pip python3-venv

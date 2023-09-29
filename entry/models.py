@@ -1,7 +1,7 @@
 import re
 from collections.abc import Iterable
 from datetime import date, datetime
-from typing import Any, List, Optional, Tuple
+from typing import Any, Optional
 
 from django.conf import settings
 from django.db import models
@@ -346,7 +346,7 @@ class AttributeValue(models.Model):
     @classmethod
     def validate_attr_value(
         kls, type: int, input_value: Any, is_mandatory: bool
-    ) -> Tuple[bool, Optional[str]]:
+    ) -> tuple[bool, Optional[str]]:
         """
         Validate if to add_value is a possible value.
         Returns: (is_valid, msg)
@@ -1739,7 +1739,7 @@ class Entry(ACLBase):
 
         return {"name": self.name, "attrs": attrinfo}
 
-    def export_v2(self, user, with_entity: bool = False):
+    def export_v2(self, user, with_entity: bool = False) -> dict:
         attrinfo = []
 
         # This calling of complement_attrs is needed to take into account the case of the Attributes
@@ -2033,8 +2033,8 @@ class Entry(ACLBase):
     def search_entries(
         kls,
         user: User,
-        hint_entity_ids: List[str],
-        hint_attrs: Optional[List[AttrHint]] = None,
+        hint_entity_ids: list[str],
+        hint_attrs: Optional[list[AttrHint]] = None,
         limit: int = CONFIG.MAX_LIST_ENTRIES,
         entry_name: Optional[str] = None,
         hint_referral: Optional[str] = None,

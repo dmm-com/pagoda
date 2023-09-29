@@ -111,7 +111,12 @@ export const EditRolePage: FC = () => {
       >
         <SubmitButton
           name="保存"
-          disabled={!isValid || isSubmitting || isSubmitSuccessful}
+          disabled={
+            !isValid ||
+            isSubmitting ||
+            isSubmitSuccessful ||
+            role.value?.isEditable === false
+          }
           handleSubmit={handleSubmit(handleSubmitOnValid)}
           handleCancel={handleCancel}
         />

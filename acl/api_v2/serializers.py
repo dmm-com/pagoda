@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional, TypedDict
+from typing import Any, Optional, TypedDict
 
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
@@ -100,7 +100,7 @@ class ACLSerializer(serializers.ModelSerializer):
             return None
 
     @extend_schema_field(ACLRoleListSerializer)
-    def get_roles(self, obj: ACLBase) -> List[ACLRoleSerializer.ACLRoleType]:
+    def get_roles(self, obj: ACLBase) -> list[ACLRoleSerializer.ACLRoleType]:
         user = self.context["request"].user
 
         return [
@@ -119,7 +119,7 @@ class ACLSerializer(serializers.ModelSerializer):
             raise IncorrectTypeError("invalid default_permission parameter")
         return default_permission
 
-    def validate(self, attrs: Dict[str, Any]):
+    def validate(self, attrs: dict[str, Any]):
         # validate acl_settings parameter
         member_ids = [s["member_id"] for s in attrs.get("acl_settings", [])]
         if Role.objects.filter(id__in=member_ids).count() != len(member_ids):
@@ -197,7 +197,7 @@ class ACLSerializer(serializers.ModelSerializer):
 
     @staticmethod
     def _set_permission(
-        role: Role, acl_obj: ACLBase, permissions: Dict[str, HistoricalPermission], acl_type
+        role: Role, acl_obj: ACLBase, permissions: dict[str, HistoricalPermission], acl_type
     ):
         # clear unset permissions of target ACLbased object
         permission: HistoricalPermission
