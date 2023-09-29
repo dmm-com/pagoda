@@ -12,7 +12,7 @@ import {
 } from "@mui/material";
 import React, { FC } from "react";
 
-import { formatDate } from "../../services/DateUtil";
+import { formatDateTime } from "../../services/DateUtil";
 
 const Operations = {
   ADD: 1 << 0,
@@ -123,7 +123,7 @@ export const EntityHistoryList: FC<Props> = ({
                   }
                 })()}
               </TableCell>
-              <TableCell>{formatDate(history.time)}</TableCell>
+              <TableCell>{formatDateTime(history.time)}</TableCell>
               <TableCell>{history.username}</TableCell>
             </TableRow>
           ))}

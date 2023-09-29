@@ -17,7 +17,7 @@ import { Link, useHistory } from "react-router-dom";
 import { entityEntriesPath } from "../../Routes";
 import { aironeApiClientV2 } from "../../repository/AironeApiClientV2";
 import { JobOperations, JobStatuses } from "../../services/Constants";
-import { formatDate } from "../../services/DateUtil";
+import { formatDateTime } from "../../services/DateUtil";
 import { jobOperationLabel, jobStatusLabel } from "../../services/JobUtil";
 import { AironeTableHeadCell } from "../common/AironeTableHeadCell";
 import { AironeTableHeadRow } from "../common/AironeTableHeadRow";
@@ -224,7 +224,7 @@ export const JobList: FC<Props> = ({ jobs }) => {
               <Typography>{job.passedTime} s</Typography>
             </TableCell>
             <TableCell>
-              <Typography>{formatDate(job.createdAt)}</Typography>
+              <Typography>{formatDateTime(job.createdAt)}</Typography>
             </TableCell>
             <TableCell>
               {(job.operation == JobOperations.EXPORT_ENTRY ||

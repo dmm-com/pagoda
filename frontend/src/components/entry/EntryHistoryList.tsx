@@ -22,7 +22,7 @@ import { AttributeValue } from "./AttributeValue";
 import { showEntryHistoryPath, topPath } from "Routes";
 import { Confirmable } from "components/common/Confirmable";
 import { aironeApiClientV2 } from "repository/AironeApiClientV2";
-import { formatDate } from "services/DateUtil";
+import { formatDateTime } from "services/DateUtil";
 
 const HeaderTableRow = styled(TableRow)(({}) => ({
   backgroundColor: "#455A64",
@@ -114,7 +114,7 @@ export const EntryHistoryList: FC<Props> = ({
                   }}
                 />
               </TableCell>
-              <TableCell>{formatDate(history.createdTime)}</TableCell>
+              <TableCell>{formatDateTime(history.createdTime)}</TableCell>
               <TableCell>{history.createdUser}</TableCell>
               <TableCell>
                 <Confirmable
