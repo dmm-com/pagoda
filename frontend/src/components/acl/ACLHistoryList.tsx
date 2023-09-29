@@ -14,7 +14,7 @@ import React, { FC } from "react";
 import { AironeTableHeadCell } from "components/common/AironeTableHeadCell";
 import { AironeTableHeadRow } from "components/common/AironeTableHeadRow";
 import { ACLType, ACLTypeLabels } from "services/Constants";
-import { formatDate } from "services/DateUtil";
+import { formatDateTime } from "services/DateUtil";
 
 const StyledTableCell = styled(TableCell)(({}) => ({
   width: "200px",
@@ -105,7 +105,7 @@ export const ACLHistoryList: FC<Props> = ({ histories }) => {
                   </TableBody>
                 </Table>
               </TableCell>
-              <TableCell>{formatDate(history.time)}</TableCell>
+              <TableCell>{formatDateTime(history.time)}</TableCell>
               <TableCell>{history.user?.username ?? "-"}</TableCell>
             </TableRow>
           ))}

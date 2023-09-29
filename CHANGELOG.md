@@ -3,6 +3,8 @@
 ## In development
 
 ### Added
+* Add DataUtil.formatDate() that only returns date (without time) string value from Date instance.
+  Contributed by @userlocalhost
 
 ### Changed
 
