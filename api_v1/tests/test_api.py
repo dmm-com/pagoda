@@ -405,6 +405,15 @@ class APITest(AironeViewTest):
             Entry.objects.get(name="r-1", schema=ref_entity).id,
         )
 
+        params = {
+            "id": entry.id,
+            "name": "valid-entry-change",
+            "entity": entity.name,
+            "attrs": {"ref": "r-1"},
+        }
+        resp = self.client.post("/api/v1/entry", json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, 200)
+
         # send request with invalid attr param
         params = {
             "name": "invalid-entry",
