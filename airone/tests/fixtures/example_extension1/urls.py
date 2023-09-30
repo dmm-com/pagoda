@@ -1,5 +1,5 @@
-from django.conf.urls import url
 from django.http import HttpResponse
+from django.urls import re_path
 
 
 def test_view_handler(request):
@@ -7,5 +7,5 @@ def test_view_handler(request):
 
 
 urlpatterns = [
-    url(r"^$", test_view_handler, name="test"),
+    re_path(r"^$", test_view_handler, name="test"),
 ]
