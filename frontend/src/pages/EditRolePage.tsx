@@ -117,6 +117,7 @@ export const EditRolePage: FC = () => {
             isSubmitSuccessful ||
             role.value?.isEditable === false
           }
+          isSubmitting={isSubmitting}
           handleSubmit={handleSubmit(handleSubmitOnValid)}
           handleCancel={handleCancel}
         />

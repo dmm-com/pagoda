@@ -1,4 +1,4 @@
-import { Box, Button } from "@mui/material";
+import { Box, Button, CircularProgress } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import React, { FC } from "react";
 
@@ -14,6 +14,7 @@ const StyledButton = styled(Button)({
 interface Props {
   name: string;
   disabled: boolean;
+  isSubmitting: boolean;
   handleSubmit: React.MouseEventHandler<HTMLButtonElement>;
   handleCancel: React.MouseEventHandler<HTMLButtonElement>;
 }
@@ -21,6 +22,7 @@ interface Props {
 export const SubmitButton: FC<Props> = ({
   name,
   disabled,
+  isSubmitting,
   handleSubmit,
   handleCancel,
 }) => {
@@ -33,6 +35,7 @@ export const SubmitButton: FC<Props> = ({
         onClick={handleSubmit}
       >
         {name}
+        {isSubmitting && <CircularProgress size="20px" />}
       </StyledButton>
       <StyledButton variant="contained" color="info" onClick={handleCancel}>
         キャンセル
