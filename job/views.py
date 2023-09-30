@@ -67,6 +67,7 @@ def download(request, job_id):
         JobOperation.EXPORT_ENTRY.value,
         JobOperation.EXPORT_ENTRY_V2.value,
         JobOperation.EXPORT_SEARCH_RESULT.value,
+        JobOperation.EXPORT_SEARCH_RESULT_V2.value,
     ]
     if job.operation not in export_operations:
         return HttpResponse("Target Job has no value to return", status=400)

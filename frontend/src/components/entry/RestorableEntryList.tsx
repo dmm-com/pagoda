@@ -34,7 +34,7 @@ import { useAsyncWithThrow } from "hooks/useAsyncWithThrow";
 import { usePage } from "hooks/usePage";
 import { aironeApiClientV2 } from "repository/AironeApiClientV2";
 import { EntryList as ConstEntryList } from "services/Constants";
-import { formatDate } from "services/DateUtil";
+import { formatDateTime } from "services/DateUtil";
 import { normalizeToMatch } from "services/StringUtil";
 
 const StyledCard = styled(Card)(({}) => ({
@@ -264,7 +264,7 @@ export const RestorableEntryList: FC<Props> = ({ entityId }) => {
                       <ItemNameTableCell>Deleted at</ItemNameTableCell>
                       <ItemValueTableCell>
                         {entryDetail.value?.deletedTime != null
-                          ? formatDate(entryDetail.value.deletedTime)
+                          ? formatDateTime(entryDetail.value.deletedTime)
                           : null}
                       </ItemValueTableCell>
                     </StyledTableRow>

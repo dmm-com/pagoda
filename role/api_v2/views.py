@@ -1,5 +1,5 @@
 from rest_framework import generics, serializers, status, viewsets
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import BasePermission, IsAuthenticated
 from rest_framework.response import Response
 
 from acl.models import ACLBase
@@ -15,9 +15,22 @@ from role.models import Role
 from user.models import User
 
 
+class RolePermission(BasePermission):
+    def has_object_permission(self, request, view, obj: Role):
+        current_user: User = request.user
+        is_editable = Role.editable(current_user, obj.admin_users.all(), obj.admin_groups.all())
+        permission = {
+            "retrieve": True,
+            "create": True,
+            "destroy": is_editable,
+            "update": is_editable,
+        }
+        return permission.get(view.action)
+
+
 class RoleAPI(viewsets.ModelViewSet):
-    queryset = Role.objects.filter(is_active=True)
-    permission_classes = [IsAuthenticated]
+    queryset = Role.objects.filter(is_active=True).prefetch_related("admin_users", "admin_groups")
+    permission_classes = [IsAuthenticated & RolePermission]
 
     def get_serializer_class(self):
         serializer = {

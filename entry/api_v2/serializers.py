@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional, TypedDict, Union
+from typing import Any, Optional, TypedDict
 
 from django.db.models import Prefetch
 from drf_spectacular.utils import extend_schema_field, extend_schema_serializer
@@ -68,16 +68,16 @@ class EntryAttributeValue(TypedDict, total=False):
     as_object: Optional[EntryAttributeValueObject]
     as_string: str
     as_named_object: EntryAttributeValueNamedObject
-    as_array_object: List[Optional[EntryAttributeValueObject]]
-    as_array_string: List[str]
-    as_array_named_object: List[EntryAttributeValueNamedObject]
-    as_array_group: List[EntryAttributeValueGroup]
+    as_array_object: list[Optional[EntryAttributeValueObject]]
+    as_array_string: list[str]
+    as_array_named_object: list[EntryAttributeValueNamedObject]
+    as_array_group: list[EntryAttributeValueGroup]
     # text; use string instead
     as_boolean: bool
     as_group: Optional[EntryAttributeValueGroup]
     # date; use string instead
     as_role: Optional[EntryAttributeValueRole]
-    as_array_role: List[EntryAttributeValueRole]
+    as_array_role: list[EntryAttributeValueRole]
 
 
 class EntryAttributeType(TypedDict):
@@ -197,7 +197,7 @@ class EntryBaseSerializer(serializers.ModelSerializer):
             raise InvalidValueError("Names containing tab characters cannot be specified.")
         return name
 
-    def _validate(self, schema: Entity, attrs: List[Dict[str, Any]]):
+    def _validate(self, schema: Entity, attrs: list[dict[str, Any]]):
         # In create case, check attrs mandatory attribute
         if not self.instance:
             user: User = self.context["request"].user
@@ -241,7 +241,7 @@ class AttributeDataSerializer(serializers.Serializer):
 class EntryCreateData(TypedDict, total=False):
     name: str
     schema: Entity
-    attrs: List[AttributeDataSerializer]
+    attrs: list[AttributeDataSerializer]
     created_user: User
 
 
@@ -309,7 +309,7 @@ class EntryCreateSerializer(EntryBaseSerializer):
 
 class EntryUpdateData(TypedDict, total=False):
     name: str
-    attrs: List[AttributeDataSerializer]
+    attrs: list[AttributeDataSerializer]
 
 
 class EntryUpdateSerializer(EntryBaseSerializer):
@@ -413,7 +413,7 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
         read_only_fields = ["is_active"]
 
     @extend_schema_field(serializers.ListField(child=EntryAttributeTypeSerializer()))
-    def get_attrs(self, obj: Entry) -> List[EntryAttributeType]:
+    def get_attrs(self, obj: Entry) -> list[EntryAttributeType]:
         def get_attr_value(attr: Attribute) -> EntryAttributeValue:
             attrv = attr.get_latest_value(is_readonly=True)
 
@@ -427,7 +427,7 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
                     }
 
                 elif attr.schema.type & AttrTypeValue["named"]:
-                    array_named_object: List[EntryAttributeValueNamedObject] = [
+                    array_named_object: list[EntryAttributeValueNamedObject] = [
                         {
                             "name": x.value,
                             "object": {
@@ -602,7 +602,7 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
 
         user: User = self.context["request"].user
 
-        attrinfo: List[EntryAttributeType] = []
+        attrinfo: list[EntryAttributeType] = []
         for entity_attr in entity_attrs:
             attr = entity_attr.attr_list[0] if entity_attr.attr_list else None
             if attr:
@@ -689,7 +689,7 @@ class EntryImportEntitySerializer(serializers.Serializer):
 
         def _convert_value_name_to_id(attr_data, entity_attrs):
             def _object(
-                val: Optional[Union[str, dict]],
+                val: Optional[str | dict],
                 refs,
             ):
                 if val:
@@ -698,8 +698,9 @@ class EntryImportEntitySerializer(serializers.Serializer):
                     if isinstance(val, str):
                         if len(refs) >= 2:
                             Logger.warn(
-                                "ambiguous object given: entry name(%s), entity ids(%s)",
-                                (val, refs),
+                                "ambiguous object given: entry name(%s), entity names(%s)",
+                                val,
+                                [x.name for x in refs],
                             )
                         ref_entry = Entry.objects.filter(name=val, schema__in=refs).first()
                         return ref_entry.id if ref_entry else "0"
@@ -878,7 +879,7 @@ class EntryHistoryAttributeValueSerializer(serializers.ModelSerializer):
             return {"as_named_object": named}
 
         elif obj.data_type == AttrTypeValue["array_named_object"]:
-            array_named_object: List[EntryAttributeValueNamedObject] = [
+            array_named_object: list[EntryAttributeValueNamedObject] = [
                 {
                     "name": x.value,
                     "object": {
@@ -1036,7 +1037,7 @@ class AdvancedSearchSerializer(serializers.Serializer):
             raise ValidationError("entry_name is too long")
         return entry_name
 
-    def validate_attrs(self, attrs: List[Dict[str, str]]):
+    def validate_attrs(self, attrs: list[dict[str, str]]):
         if any([len(attr.get("keyword", "")) > CONFIG_ENTRY.MAX_QUERY_SIZE for attr in attrs]):
             raise ValidationError("keyword(s) in attrs are too large")
         return attrs
@@ -1088,7 +1089,7 @@ class AdvancedSearchResultExportSerializer(serializers.Serializer):
     is_all_entities = serializers.BooleanField(default=False)
     export_style = serializers.CharField()
 
-    def validate_entities(self, entities: List[int]):
+    def validate_entities(self, entities: list[int]):
         if Entity.objects.filter(id__in=entities).count() != len(entities):
             raise ValidationError("any entity_id(s) refers to an invalid entity")
         return entities
@@ -1126,11 +1127,9 @@ class AdvancedSearchResultExportSerializer(serializers.Serializer):
             raise ValidationError("Same export processing is under execution")
 
         # create a job to export search result and run it
-        job = Job.new_export_search_result(
-            user,
-            **{
-                "text": "search_results.%s" % self.validated_data["export_style"],
-                "params": self.validated_data,
-            },
+        job = Job.new_export_search_result_v2(
+            user=user,
+            text="search_results.%s" % self.validated_data["export_style"],
+            params=self.validated_data,
         )
         job.run()
