@@ -1,9 +1,9 @@
-from django.conf.urls import include, url
+from django.urls import include, re_path
 
 from . import views
 
 urlpatterns = [
-    url(r"^$", views.index, name="index"),
-    url(r"^api/v2/", include(("job.api_v2.urls", "job.api_v2"))),
-    url(r"^download/(\d+)$", views.download, name="download"),
+    re_path(r"^$", views.index, name="index"),
+    re_path(r"^api/v2/", include(("job.api_v2.urls", "job.api_v2"))),
+    re_path(r"^download/(\d+)$", views.download, name="download"),
 ]

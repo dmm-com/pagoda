@@ -1,25 +1,25 @@
 from django.conf import settings
-from django.conf.urls import include, url
 from django.contrib.auth import views as auth_views
+from django.urls import include, re_path
 from django.views.generic import RedirectView
 
 from airone.auth import view as auth_view
 from api_v1.urls import urlpatterns as api_v1_urlpatterns
 
 urlpatterns = [
-    url(r"^$", RedirectView.as_view(url="dashboard/")),
-    url(r"^acl/", include(("acl.urls", "acl"))),
-    url(r"^user/", include(("user.urls", "user"))),
-    url(r"^group/", include(("group.urls", "group"))),
-    url(r"^entity/", include(("entity.urls", "entity"))),
-    url(r"^dashboard/", include(("dashboard.urls", "dashboard"))),
-    url(r"^ui/", include(("dashboard.urls_for_ui", "dashboard_for_ui"))),
-    url(r"^entry/", include(("entry.urls", "entry"))),
-    url(r"^api/v1/", include(api_v1_urlpatterns)),
-    url(r"^api/v2/", include(("api_v2.urls", "api_v2"))),
-    url(r"^job/", include(("job.urls", "job"))),
-    url(r"^auth/sso/", include("social_django.urls", namespace="social")),
-    url(
+    re_path(r"^$", RedirectView.as_view(url="dashboard/")),
+    re_path(r"^acl/", include(("acl.urls", "acl"))),
+    re_path(r"^user/", include(("user.urls", "user"))),
+    re_path(r"^group/", include(("group.urls", "group"))),
+    re_path(r"^entity/", include(("entity.urls", "entity"))),
+    re_path(r"^dashboard/", include(("dashboard.urls", "dashboard"))),
+    re_path(r"^ui/", include(("dashboard.urls_for_ui", "dashboard_for_ui"))),
+    re_path(r"^entry/", include(("entry.urls", "entry"))),
+    re_path(r"^api/v1/", include(api_v1_urlpatterns)),
+    re_path(r"^api/v2/", include(("api_v2.urls", "api_v2"))),
+    re_path(r"^job/", include(("job.urls", "job"))),
+    re_path(r"^auth/sso/", include("social_django.urls", namespace="social")),
+    re_path(
         r"^auth/login/",
         auth_views.LoginView.as_view(
             redirect_authenticated_user=True,
@@ -36,15 +36,15 @@ urlpatterns = [
         ),
         name="login",
     ),
-    url(r"^auth/logout/", auth_view.logout, name="logout"),
-    url(r"^webhook/", include(("webhook.urls", "webhook"))),
-    url(r"^role/", include(("role.urls", "role"))),
+    re_path(r"^auth/logout/", auth_view.logout, name="logout"),
+    re_path(r"^webhook/", include(("webhook.urls", "webhook"))),
+    re_path(r"^role/", include(("role.urls", "role"))),
 ]
 
 if settings.DEBUG:
-    urlpatterns.append(url(r"^__debug__/", include("debug_toolbar.urls")))
+    urlpatterns.append(re_path(r"^__debug__/", include("debug_toolbar.urls")))
 
 for extension in settings.AIRONE["EXTENSIONS"]:
     urlpatterns.append(
-        url(r"^extension/%s" % extension, include(("%s.urls" % extension, extension)))
+        re_path(r"^extension/%s" % extension, include(("%s.urls" % extension, extension)))
     )
