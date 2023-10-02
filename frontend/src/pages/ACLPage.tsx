@@ -152,6 +152,7 @@ export const ACLPage: FC = () => {
         <SubmitButton
           name="保存"
           disabled={isSubmitting || isSubmitSuccessful}
+          isSubmitting={isSubmitting}
           handleSubmit={handleSubmit(
             handleSubmitOnValid,
             handleSubmitOnInvalid

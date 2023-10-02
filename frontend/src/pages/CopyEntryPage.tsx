@@ -81,6 +81,7 @@ export const CopyEntryPage: FC<Props> = ({ CopyForm = DefaultCopyForm }) => {
         <SubmitButton
           name="コピーを作成"
           disabled={!entries || submitting || submitted}
+          isSubmitting={submitting}
           handleSubmit={handleCopy}
           handleCancel={handleCancel}
         />
