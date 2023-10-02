@@ -217,8 +217,11 @@ class PostEntrySerializer(serializers.Serializer):
             entry = Entry.objects.get(schema=entity, name=data["name"])
 
         # checks specified entry-id is valid
-        if "id" in data and not Entry.objects.filter(id=data["id"]).exists():
-            raise ValidationError("Invalid Entry-ID is specified (%d)" % data["id"])
+        if "id" in data:
+            if Entry.objects.filter(schema=entity, id=data["id"]).exists():
+                entry = Entry.objects.get(schema=entity, id=data["id"])
+            else:
+                raise ValidationError("Invalid Entry-ID is specified (%d)" % data["id"])
 
         # checks mandatory keys are specified when a new Entry will be created
         if not entry and not all(
