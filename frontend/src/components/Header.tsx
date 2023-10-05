@@ -16,7 +16,7 @@ import {
 } from "@mui/material";
 import { OverridableComponent } from "@mui/material/OverridableComponent";
 import { styled } from "@mui/material/styles";
-import React, { FC, useMemo, useState } from "react";
+import React, { FC, MouseEvent, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useInterval } from "react-use";
 
@@ -143,7 +143,14 @@ export const Header: FC = () => {
     });
   };
 
-  const handleOpenMenu = () => {
+  const handleOpenMenu = async (e: MouseEvent<HTMLButtonElement>) => {
+    setJobAnchorEl(e.currentTarget);
+
+    try {
+      setRecentJobs(await aironeApiClientV2.getRecentJobs());
+    } catch (e) {
+      console.warn("failed to get recent jobs. will auto retried ...");
+    }
     updateLatestCheckDate(new Date());
     setLatestCheckDate(getLatestCheckDate());
   };
@@ -213,17 +220,15 @@ export const Header: FC = () => {
               <IconButton
                 aria-controls="job-menu"
                 aria-haspopup="true"
-                onClick={(e) => setJobAnchorEl(e.currentTarget)}
+                onClick={handleOpenMenu}
               >
                 <Badge badgeContent={uncheckedJobsCount} color="secondary">
                   <TaskIcon />
                 </Badge>
               </IconButton>
               <Menu
-                id="job-menu"
                 anchorEl={jobAnchorEl}
                 open={Boolean(jobAnchorEl)}
-                onClick={handleOpenMenu}
                 onClose={() => setJobAnchorEl(null)}
                 keepMounted
                 disableScrollLock
