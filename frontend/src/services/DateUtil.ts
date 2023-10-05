@@ -16,3 +16,7 @@ export function getJPNdate(date: Date): Date {
   date.setHours(date.getHours() + 9);
   return date;
 }
+
+export const DAY_OF_WEEK = {
+  jp: ["日", "月", "火", "水", "木", "金", "土"],
+};
