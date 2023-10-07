@@ -2490,7 +2490,7 @@ class ViewTest(AironeViewTest):
 
         # Update only some attributes
         fp = self.open_fixture_file("import_data_v2_update_some.yaml")
-        resp = self.client.post("/entry/api/v2/import/", fp.read(), "application/yaml")
+        resp = self.client.post("/entry/api/v2/import/?force=true", fp.read(), "application/yaml")
         fp.close()
 
         self.assertEqual(resp.status_code, 200)
@@ -2504,7 +2504,7 @@ class ViewTest(AironeViewTest):
 
         # Update remove attribute value
         fp = self.open_fixture_file("import_data_v2_update_remove.yaml")
-        resp = self.client.post("/entry/api/v2/import/", fp.read(), "application/yaml")
+        resp = self.client.post("/entry/api/v2/import/?force=true", fp.read(), "application/yaml")
         fp.close()
 
         self.assertEqual(resp.status_code, 200)
@@ -2616,9 +2616,10 @@ class ViewTest(AironeViewTest):
 
         with self.assertLogs(logger=Logger, level=logging.WARNING) as warning_log:
             fp = self.open_fixture_file("import_data_v2.yaml")
-            resp = self.client.post("/entry/api/v2/import/", fp.read(), "application/yaml")
+            resp = self.client.post(
+                "/entry/api/v2/import/?force=true", fp.read(), "application/yaml"
+            )
             fp.close()
-            print(warning_log.output)
             self.assertEqual(
                 warning_log.output,
                 [
@@ -2843,6 +2844,25 @@ class ViewTest(AironeViewTest):
         self.assertEqual(job.status, Job.STATUS["CANCELED"])
         self.assertEqual(job.text, "Now importing... (progress: [    1/    1])")
         self.assertFalse(Entry.objects.filter(name="test-entry").exists())
+
+    @patch("entry.tasks.import_entries_v2.delay", Mock(side_effect=tasks.import_entries_v2))
+    def test_import_frequent_jobs(self):
+        fp = self.open_fixture_file("import_data_v2.yaml")
+        resp = self.client.post("/entry/api/v2/import/", fp.read(), "application/yaml")
+        fp.close()
+        self.assertEqual(resp.status_code, 200)
+
+        # without force param, it should exceed the limit
+        fp = self.open_fixture_file("import_data_v2.yaml")
+        resp = self.client.post("/entry/api/v2/import/?force=false", fp.read(), "application/yaml")
+        fp.close()
+        self.assertEqual(resp.status_code, 400)
+
+        # with force param, it should ignore the limit
+        fp = self.open_fixture_file("import_data_v2.yaml")
+        resp = self.client.post("/entry/api/v2/import/?force=true", fp.read(), "application/yaml")
+        fp.close()
+        self.assertEqual(resp.status_code, 200)
 
     def test_advanced_search(self):
         entry1: Entry = self.add_entry(

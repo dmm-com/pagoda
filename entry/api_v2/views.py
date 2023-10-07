@@ -1,4 +1,6 @@
 import re
+from datetime import datetime, timedelta
+from typing import Optional
 
 from django.db.models import Q
 from drf_spectacular.types import OpenApiTypes
@@ -13,6 +15,7 @@ import custom_view
 from airone.lib.acl import ACLType
 from airone.lib.drf import (
     DuplicatedObjectExistsError,
+    FrequentImportError,
     IncorrectTypeError,
     ObjectNotExistsError,
     RequiredParameterError,
@@ -39,7 +42,7 @@ from entry.models import Attribute, AttributeValue, Entry
 from entry.settings import CONFIG
 from entry.settings import CONFIG as ENTRY_CONFIG
 from group.models import Group
-from job.models import Job
+from job.models import Job, JobOperation
 from role.models import Role
 from user.models import User
 
@@ -477,20 +480,45 @@ class EntryAttrReferralsAPI(viewsets.ReadOnlyModelViewSet):
             raise IncorrectTypeError(f"unsupported attr type: {entity_attr.type}")
 
 
+@extend_schema(
+    parameters=[
+        OpenApiParameter("force", OpenApiTypes.BOOL, OpenApiParameter.QUERY, default=False),
+    ],
+)
 class EntryImportAPI(generics.GenericAPIView):
     parser_classes = [YAMLParser]
     serializer_class = serializers.Serializer
+
+    def get_queryset(self):
+        import_data = self.request.data
+        entity_names = [d["entity"] for d in import_data]
+        return Entity.objects.filter(name__in=entity_names, is_active=True)
 
     def post(self, request):
         import_datas = request.data
         user: User = request.user
         serializer = EntryImportSerializer(data=import_datas)
         serializer.is_valid(raise_exception=True)
+        entities = self.get_queryset()
 
-        job_ids = []
-        error_list = []
+        # limit import job to deny accidental frequent import for same entity
+        if request.query_params.get("force", "") not in ["true", "True"]:
+            valid_statuses = [Job.STATUS["PREPARING"], Job.STATUS["PROCESSING"], Job.STATUS["DONE"]]
+            yesterday = datetime.now() - timedelta(days=1)
+            if Job.objects.filter(
+                status__in=valid_statuses,
+                operation=JobOperation.IMPORT_ENTRY_V2.value,
+                target__in=entities,
+                created_at__gte=yesterday,
+            ).exists():
+                raise FrequentImportError("Import job for each entity can apply once a day.")
+
+        job_ids: list[int] = []
+        error_list: list[str] = []
         for import_data in import_datas:
-            entity = Entity.objects.filter(name=import_data["entity"], is_active=True).first()
+            entity: Optional[Entity] = next(
+                (e for e in entities if e.name == import_data["entity"]), None
+            )
             if not entity:
                 error_list.append("%s: Entity does not exists." % import_data["entity"])
                 continue
