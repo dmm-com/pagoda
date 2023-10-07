@@ -32,6 +32,7 @@ import { entryDetailsPath } from "Routes";
 import { AttributeValue } from "components/entry/AttributeValue";
 import { SearchResultControlMenu } from "components/entry/SearchResultControlMenu";
 import {
+  AttrFilter,
   AttrsFilter,
   formatAdvancedSearchParams,
 } from "services/entry/AdvancedSearch";
@@ -144,25 +145,40 @@ export const SearchResults: FC<Props> = ({
   const [referralMenuEls, setReferralMenuEls] =
     useState<HTMLButtonElement | null>(null);
 
-  const handleSelectFilterConditions = (
-    overwriteAttrsFilter?: AttrsFilter,
-    overwriteEntryName?: string,
-    overwriteReferral?: string
-  ) => {
-    const newParams = formatAdvancedSearchParams({
-      attrFilter: overwriteAttrsFilter ?? attrsFilter,
-      entryName: overwriteEntryName ?? entryFilter,
-      referralName: overwriteReferral ?? referralFilter,
-      baseParams: new URLSearchParams(location.search),
-    });
+  const handleSelectFilterConditions =
+    (attrName?: string) =>
+    (
+      attrFilter?: AttrFilter,
+      overwriteEntryName?: string,
+      overwriteReferral?: string
+    ) => {
+      const _attrsFilter =
+        attrName != null && attrFilter != null
+          ? { ...attrsFilter, [attrName]: attrFilter }
+          : attrsFilter;
 
-    // simply reload with the new params
-    history.push({
-      pathname: location.pathname,
-      search: "?" + newParams.toString(),
-    });
-    history.go(0);
-  };
+      const newParams = formatAdvancedSearchParams({
+        attrsFilter: _attrsFilter,
+        entryName: overwriteEntryName ?? entryFilter,
+        referralName: overwriteReferral ?? referralFilter,
+        baseParams: new URLSearchParams(location.search),
+      });
+
+      // simply reload with the new params
+      history.push({
+        pathname: location.pathname,
+        search: "?" + newParams.toString(),
+      });
+      history.go(0);
+    };
+
+  const handleUpdateAttrFilter =
+    (attrName: string) => (attrFilter: AttrFilter) => {
+      setAttrsFilter((attrsFilter) => ({
+        ...attrsFilter,
+        [attrName]: attrFilter,
+      }));
+    };
 
   return (
     <Box display="flex" flexDirection="column">
@@ -191,11 +207,9 @@ export const SearchResults: FC<Props> = ({
                       anchorElem={entryMenuEls}
                       handleClose={() => setEntryMenuEls(null)}
                       entryFilterDispatcher={entryFilterDispatcher}
-                      handleSelectFilterConditions={
-                        handleSelectFilterConditions
-                      }
+                      handleSelectFilterConditions={handleSelectFilterConditions()}
                       handleClear={() =>
-                        handleSelectFilterConditions(undefined, "")
+                        handleSelectFilterConditions()(undefined, "")
                       }
                     />
                   </HeaderBox>
@@ -219,19 +233,20 @@ export const SearchResults: FC<Props> = ({
                         )}
                       </StyledIconButton>
                       <SearchResultControlMenu
-                        attrName={attrName}
-                        attrsFilter={attrsFilter}
+                        attrFilter={attrsFilter[attrName]}
                         anchorElem={attributeMenuEls[attrName]}
-                        handleClose={(name: string) =>
+                        handleClose={() =>
                           setAttributeMenuEls({
                             ...attributeMenuEls,
-                            [name]: null,
+                            [attrName]: null,
                           })
                         }
-                        setAttrsFilter={setAttrsFilter}
-                        handleSelectFilterConditions={
-                          handleSelectFilterConditions
-                        }
+                        handleSelectFilterConditions={handleSelectFilterConditions(
+                          attrName
+                        )}
+                        handleUpdateAttrFilter={handleUpdateAttrFilter(
+                          attrName
+                        )}
                       />
                     </HeaderBox>
                   </StyledTableCell>
@@ -256,11 +271,13 @@ export const SearchResults: FC<Props> = ({
                         anchorElem={referralMenuEls}
                         handleClose={() => setReferralMenuEls(null)}
                         referralFilterDispatcher={referralFilterDispatcher}
-                        handleSelectFilterConditions={
-                          handleSelectFilterConditions
-                        }
+                        handleSelectFilterConditions={handleSelectFilterConditions()}
                         handleClear={() =>
-                          handleSelectFilterConditions(undefined, undefined, "")
+                          handleSelectFilterConditions()(
+                            undefined,
+                            undefined,
+                            ""
+                          )
                         }
                       />
                     </HeaderBox>

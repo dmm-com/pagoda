@@ -68,7 +68,7 @@ export const AdvancedSearchPage: FC = () => {
 
   const searchParams = useMemo(() => {
     return formatAdvancedSearchParams({
-      attrFilter: Object.fromEntries(
+      attrsFilter: Object.fromEntries(
         selectedAttrs.map((attr) => [
           attr,
           {
