@@ -1,3 +1,4 @@
+import ExitToApp from "@mui/icons-material/ExitToApp";
 import InfoIcon from "@mui/icons-material/Info";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
@@ -164,6 +165,23 @@ export const LoginPage: FC = () => {
             value={djangoContext?.loginNext}
           />
           <Box display="flex" flexDirection="column" width="100%" my="8px">
+            {djangoContext?.singleSignOnLoginUrl != null && (
+              <Link
+                color="secondary"
+                href={djangoContext.singleSignOnLoginUrl}
+                sx={{ cursor: "pointer" }}
+              >
+                <ExitToApp
+                  sx={{
+                    fontSize: "14px",
+                    verticalAlign: "middle",
+                  }}
+                />
+                <Typography fontSize="16px" ml={1} display="inline">
+                  SSO ログイン
+                </Typography>
+              </Link>
+            )}
             <Link
               color="secondary"
               sx={{ cursor: "pointer" }}
