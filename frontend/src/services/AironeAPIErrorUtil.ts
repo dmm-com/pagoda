@@ -24,6 +24,7 @@ const aironeAPIErrors: Record<string, string> = {
   "AE-122000": "入力データが大きすぎます",
   "AE-210000": "操作に必要な権限が不足しています",
   "AE-220000": "入力データが既存のデータと重複しています",
+  "AE-260000": "短期間に同じターゲットに対してインポートが発生しました",
 };
 
 const extractErrorDetail = (errorDetail: ErrorDetail): string =>

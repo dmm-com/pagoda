@@ -84,6 +84,10 @@ class InvalidValueError(ValidationError):
     default_code = "AE-250000"
 
 
+class FrequentImportError(ValidationError):
+    default_code = "AE-260000"
+
+
 def custom_exception_handler(exc, context):
     def _convert_error_code(detail):
         if isinstance(detail, list):
