@@ -7,17 +7,41 @@ type ErrorDetail = {
   message: string;
 };
 
+type AironeApiNonFieldsError = {
+  non_field_errors: Array<ErrorDetail>;
+};
+
+type AironeApiIndexedFieldsError = Array<ErrorDetail>;
+
 type AironeApiFieldsError<T> = {
   [K in keyof T]?: Array<ErrorDetail>;
 };
 
-type AironeApiError<T> = AironeApiFieldsError<T> & {
-  // root-level
-  code?: string;
-  message?: string;
+// root-level error has the same structure with ErrorDetail
+export function isAironeApiRootError(jsonError: any): jsonError is ErrorDetail {
+  return jsonError?.code != null && jsonError?.message != null;
+}
 
-  non_field_errors?: Array<ErrorDetail>;
-};
+export function isAironeApiNonFieldsError(
+  jsonError: any
+): jsonError is AironeApiNonFieldsError {
+  return (
+    jsonError?.non_field_errors != null &&
+    Array.isArray(jsonError.non_field_errors) &&
+    jsonError.non_field_errors[0]?.code != null &&
+    jsonError.non_field_errors[0]?.message != null
+  );
+}
+
+export function isAironeApiIndexedError(
+  jsonError: any
+): jsonError is AironeApiIndexedFieldsError {
+  return (
+    Array.isArray(jsonError) &&
+    jsonError[0]?.code != null &&
+    jsonError[0]?.message != null
+  );
+}
 
 // https://github.com/dmm-com/airone/wiki/(Blueprint)-AirOne-API-Error-code-mapping
 const aironeAPIErrors: Record<string, string> = {
@@ -30,34 +54,67 @@ const aironeAPIErrors: Record<string, string> = {
 const extractErrorDetail = (errorDetail: ErrorDetail): string =>
   aironeAPIErrors[errorDetail.code] ?? errorDetail.message;
 
+export const toReportableNonFieldErrors = async (
+  error: ResponseError
+): Promise<string | null> => {
+  if (error.response.ok) {
+    return null;
+  }
+
+  const jsonError = await error.response.json();
+
+  if (isAironeApiRootError(jsonError)) {
+    return extractErrorDetail(jsonError);
+  }
+
+  if (isAironeApiNonFieldsError(jsonError)) {
+    return jsonError.non_field_errors
+      .map((e) => extractErrorDetail(e))
+      .join(", ");
+  }
+
+  if (isAironeApiIndexedError(jsonError)) {
+    return jsonError.map((e) => extractErrorDetail(e)).join(", ");
+  }
+
+  return null;
+};
+
 // Extract error response with predefined data type, then report them appropriately
-// TODO check type-seafety more in runtime! currently unsafe
+// TODO check type-safety more in runtime! currently unsafe
 export const extractAPIException = async <T>(
-  errpr: ResponseError,
+  error: ResponseError,
   nonFieldReporter: (message: string) => void,
   fieldReporter: (name: keyof T, message: string) => void
 ) => {
-  if (errpr.response.ok) {
+  if (error.response.ok) {
     return;
   }
 
-  const json = await errpr.response.json();
-  const typed = json as AironeApiError<T>;
+  const jsonError = await error.response.json();
 
   // root-level error will drop field-level errors
-  if (typed.code != null && typed.message != null) {
-    nonFieldReporter(extractErrorDetail(typed as ErrorDetail));
+  if (isAironeApiRootError(jsonError)) {
+    nonFieldReporter(extractErrorDetail(jsonError));
     return;
   }
 
-  if (typed.non_field_errors != null) {
-    const fullMessage = typed.non_field_errors
+  if (isAironeApiNonFieldsError(jsonError)) {
+    const fullMessage = jsonError.non_field_errors
       .map((e) => extractErrorDetail(e))
       .join(", ");
     nonFieldReporter(fullMessage);
+    return;
   }
 
-  Object.keys(typed as AironeApiFieldsError<T>).forEach((fieldName: string) => {
+  if (isAironeApiIndexedError(jsonError)) {
+    const fullMessage = jsonError.map((e) => extractErrorDetail(e)).join(", ");
+    nonFieldReporter(fullMessage);
+    return;
+  }
+
+  const typed = jsonError as AironeApiFieldsError<T>;
+  Object.keys(typed).forEach((fieldName: string) => {
     const details = (typed as Record<string, Array<ErrorDetail>>)[fieldName];
     const message = details.map((e) => extractErrorDetail(e)).join(", ");
 
