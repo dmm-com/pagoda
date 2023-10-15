@@ -395,7 +395,7 @@ class Job(models.Model):
         )
 
     @classmethod
-    def new_import_v2(kls, user, entity, text="", params={}):
+    def new_import_v2(kls, user, entity, text="", params={}) -> "Job":
         return kls._create_new_job(
             user,
             entity,
