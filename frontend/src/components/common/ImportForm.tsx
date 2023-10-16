@@ -3,6 +3,11 @@ import { useSnackbar } from "notistack";
 import React, { ChangeEvent, FC, useState } from "react";
 import { useHistory } from "react-router-dom";
 
+import {
+  isResponseError,
+  toReportableNonFieldErrors,
+} from "../../services/AironeAPIErrorUtil";
+
 interface Props {
   handleImport: (data: string | ArrayBuffer) => Promise<void>;
   handleCancel?: () => void;
@@ -32,11 +37,23 @@ export const ImportForm: FC<Props> = ({ handleImport, handleCancel }) => {
           await handleImport(fileReader.result);
           history.go(0);
         } catch (e) {
-          // TODO check the error code returned from the backend to get error details
-          setErrorMessage("ファイルのアップロードに失敗しました。");
-          enqueueSnackbar("ファイルのアップロードに失敗しました", {
-            variant: "error",
-          });
+          if (e instanceof Error && isResponseError(e)) {
+            const reportableError = await toReportableNonFieldErrors(e);
+            setErrorMessage(
+              `ファイルのアップロードに失敗しました: ${reportableError ?? ""}`
+            );
+            enqueueSnackbar(
+              `ファイルのアップロードに失敗しました: ${reportableError ?? ""}`,
+              {
+                variant: "error",
+              }
+            );
+          } else {
+            setErrorMessage("ファイルのアップロードに失敗しました。");
+            enqueueSnackbar("ファイルのアップロードに失敗しました", {
+              variant: "error",
+            });
+          }
         }
       };
     }
