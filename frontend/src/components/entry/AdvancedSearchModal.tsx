@@ -58,7 +58,7 @@ export const AdvancedSearchModal: FC<Props> = ({
 
   const handleUpdatePageURL = () => {
     const params = formatAdvancedSearchParams({
-      attrFilter: Object.fromEntries(
+      attrsFilter: Object.fromEntries(
         selectedAttrNames.map((attrName) => {
           const attrInfo = attrInfos.find((info) => info.name === attrName);
           return [

@@ -13,7 +13,7 @@ import {
 import { styled } from "@mui/material/styles";
 import React, { ChangeEvent, FC } from "react";
 
-import { AttrsFilter } from "../../services/entry/AdvancedSearch";
+import { AttrFilter } from "../../services/entry/AdvancedSearch";
 
 const StyledTextField = styled(TextField)({
   margin: "8px",
@@ -24,42 +24,33 @@ const StyledBox = styled(Box)({
 });
 
 interface Props {
-  attrName: string;
-  attrsFilter: AttrsFilter;
+  attrFilter: AttrFilter;
   anchorElem: HTMLButtonElement | null;
-  handleClose: (name: string) => void;
-  setAttrsFilter: (filter: AttrsFilter) => void;
-  handleSelectFilterConditions: (
-    attrfilter?: AttrsFilter,
-    overwriteEntryName?: string | undefined,
-    overwriteReferral?: string | undefined
-  ) => void;
+  handleUpdateAttrFilter: (filter: AttrFilter) => void;
+  handleSelectFilterConditions: (attrFilter: AttrFilter) => void;
+  handleClose: () => void;
 }
 
 export const SearchResultControlMenu: FC<Props> = ({
-  attrName,
-  attrsFilter,
+  attrFilter,
   anchorElem,
-  handleClose,
-  setAttrsFilter,
+  handleUpdateAttrFilter,
   handleSelectFilterConditions,
+  handleClose,
 }) => {
   const handleClick = (key: AdvancedSearchResultAttrInfoFilterKeyEnum) => {
     // If the selected filter is the same, remove the filter.
-    if (attrsFilter[attrName].filterKey === key) {
+    if (attrFilter.filterKey === key) {
       handleSelectFilterConditions({
-        ...attrsFilter,
-        [attrName]: {
-          ...attrsFilter[attrName],
-          filterKey: AdvancedSearchResultAttrInfoFilterKeyEnum.CLEARED,
-        },
+        ...attrFilter,
+        filterKey: AdvancedSearchResultAttrInfoFilterKeyEnum.CLEARED,
       });
       return;
     }
 
-    setAttrsFilter({
-      ...attrsFilter,
-      [attrName]: { ...attrsFilter[attrName], filterKey: key },
+    handleUpdateAttrFilter({
+      ...attrFilter,
+      filterKey: key,
     });
 
     switch (key) {
@@ -67,32 +58,27 @@ export const SearchResultControlMenu: FC<Props> = ({
       case AdvancedSearchResultAttrInfoFilterKeyEnum.EMPTY:
       case AdvancedSearchResultAttrInfoFilterKeyEnum.NON_EMPTY:
         handleSelectFilterConditions({
-          ...attrsFilter,
-          [attrName]: { ...attrsFilter[attrName], filterKey: key },
+          ...attrFilter,
+          filterKey: key,
         });
-
+        break;
       case AdvancedSearchResultAttrInfoFilterKeyEnum.CLEARED:
         handleSelectFilterConditions({
-          ...attrsFilter,
-          [attrName]: {
-            ...attrsFilter[attrName],
-            filterKey: key,
-            keyword: "",
-          },
+          ...attrFilter,
+          filterKey: key,
+          keyword: "",
         });
+        break;
     }
   };
 
   const handleChangeKeyword =
     (filterKey: AdvancedSearchResultAttrInfoFilterKeyEnum) =>
     (e: ChangeEvent<HTMLInputElement>) => {
-      setAttrsFilter({
-        ...attrsFilter,
-        [attrName]: {
-          ...attrsFilter[attrName],
-          keyword: e.target.value,
-          filterKey,
-        },
+      handleUpdateAttrFilter({
+        ...attrFilter,
+        keyword: e.target.value,
+        filterKey,
       });
     };
 
@@ -101,25 +87,20 @@ export const SearchResultControlMenu: FC<Props> = ({
     (e: React.KeyboardEvent<HTMLDivElement>) => {
       if (e.key === "Enter") {
         handleSelectFilterConditions({
-          ...attrsFilter,
-          [attrName]: {
-            ...attrsFilter[attrName],
-            filterKey,
-          },
+          ...attrFilter,
+          filterKey,
         });
       }
     };
 
   const filterKey =
-    attrsFilter[attrName].filterKey ??
-    AdvancedSearchResultAttrInfoFilterKeyEnum.CLEARED;
-  const keyword = attrsFilter[attrName].keyword ?? "";
+    attrFilter.filterKey ?? AdvancedSearchResultAttrInfoFilterKeyEnum.CLEARED;
+  const keyword = attrFilter.keyword ?? "";
 
   return (
     <Menu
-      id={attrName}
       open={Boolean(anchorElem)}
-      onClose={() => handleClose(attrName)}
+      onClose={handleClose}
       anchorEl={anchorElem}
     >
       <Box pl="16px" py="8px">
