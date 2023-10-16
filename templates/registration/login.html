@@ -44,6 +44,9 @@
           subtitle: "{{subtitle}}",
           note_desc: "{{note_desc}}",
           note_link: "{{note_link}}",
+          {% if idp %}
+          singleSignOnLoginUrl: "{% url 'social:begin' 'saml' %}?idp={{ idp }}",
+          {% endif %}
       };
     </script>
     <script src="/static/js/ui.js"></script>

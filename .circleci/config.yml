@@ -2,7 +2,7 @@ version: 2
 jobs:
   python311:
     docker:
-      - image: cimg/python:3.11
+      - image: cimg/python:3.11.5
       - image: rabbitmq:3.8.19-management
       - image: docker.elastic.co/elasticsearch/elasticsearch:7.17.6
         environment:

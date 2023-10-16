@@ -862,14 +862,22 @@ class AironeApiClientV2 {
     );
   }
 
-  async importEntries(data: string | ArrayBuffer): Promise<void> {
-    return await this.entry.entryApiV2ImportCreate({
-      headers: {
-        "Content-Type": "application/yaml",
-        "X-CSRFToken": getCsrfToken(),
+  async importEntries(
+    data: string | ArrayBuffer,
+    force: boolean
+  ): Promise<void> {
+    return await this.entry.entryApiV2ImportCreate(
+      {
+        force,
       },
-      body: new Blob([data]),
-    });
+      {
+        headers: {
+          "Content-Type": "application/yaml",
+          "X-CSRFToken": getCsrfToken(),
+        },
+        body: new Blob([data]),
+      }
+    );
   }
 
   async resetPassword(username: string): Promise<void> {

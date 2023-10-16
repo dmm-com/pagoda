@@ -109,6 +109,7 @@ export const EditGroupPage: FC = () => {
         <SubmitButton
           name="保存"
           disabled={!isValid || isSubmitting || isSubmitSuccessful}
+          isSubmitting={isSubmitting}
           handleSubmit={handleSubmit(handleSubmitOnValid)}
           handleCancel={handleCancel}
         />
