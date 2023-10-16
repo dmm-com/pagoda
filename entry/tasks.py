@@ -204,13 +204,13 @@ def _do_import_entries(job: Job):
 
 def _do_import_entries_v2(job: Job):
     user: User = job.user
-    entity: Entity = Entity.objects.get(id=job.target.id)
+    entity = Entity.objects.get(id=job.target.id)
     import_serializer = EntryImportEntitySerializer(data=json.loads(job.params))
     import_serializer.is_valid()
     context = {"request": DRFRequest(user)}
 
     total_count = len(import_serializer.validated_data["entries"])
-    err_msg = []
+    err_msg: list[str] = []
     for index, entry_data in enumerate(import_serializer.validated_data["entries"]):
         job.text = "Now importing... (progress: [%5d/%5d])" % (index + 1, total_count)
         job.save(update_fields=["text"])
@@ -222,7 +222,9 @@ def _do_import_entries_v2(job: Job):
             return
 
         entry_data["schema"] = entity
-        entry = Entry.objects.filter(name=entry_data["name"], schema=entity, is_active=True).first()
+        entry: Optional[Entry] = Entry.objects.filter(
+            name=entry_data["name"], schema=entity, is_active=True
+        ).first()
         if entry:
             serializer = EntryUpdateSerializer(instance=entry, data=entry_data, context=context)
         else:
