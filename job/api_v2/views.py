@@ -24,7 +24,7 @@ class JobAPI(viewsets.ModelViewSet):
         job: Job = self.get_object()
 
         if job.status == Job.STATUS["DONE"]:
-            raise InvalidValueError("Target has already been done")
+            return Response("Target job has already been done", status=status.HTTP_400_BAD_REQUEST)
 
         if job.operation not in Job.CANCELABLE_OPERATIONS:
             return Response("Target job cannot be canceled", status=status.HTTP_400_BAD_REQUEST)
