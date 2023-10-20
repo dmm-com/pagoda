@@ -8,6 +8,14 @@
 
 ### Fixed
 
+## v3.65.0
+
+### Fixed
+* Avoid unnecessary re-loading on entity selector.
+  Contributed by @syucream
+* Fixed unnecessary re-rendering in advanced search params.
+  Contributed by @syucream
+
 ## v3.64.0
 
 ### Added
