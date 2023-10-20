@@ -32,4 +32,16 @@ export const theme = createTheme({
   typography: {
     fontFamily: "Noto Sans JP",
   },
+  components: {
+    MuiMenu: {
+      defaultProps: {
+        disableScrollLock: true,
+      },
+    },
+    MuiModal: {
+      defaultProps: {
+        disableScrollLock: true,
+      },
+    },
+  },
 });
