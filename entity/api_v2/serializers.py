@@ -200,11 +200,11 @@ class EntitySerializer(serializers.ModelSerializer):
         if not is_created_entity:
             # record history for specific fields on update
             updated_fields: list[str] = []
-            if entity.name != validated_data["name"]:
-                entity.name = validated_data["name"]
+            if "name" in validated_data and entity.name != validated_data.get("name"):
+                entity.name = validated_data.get("name")
                 updated_fields.append("name")
-            if entity.note != validated_data["note"]:
-                entity.note = validated_data["note"]
+            if "note" in validated_data and entity.note != validated_data.get("note"):
+                entity.note = validated_data.get("note")
                 updated_fields.append("note")
             if len(updated_fields) > 0:
                 entity.save(update_fields=updated_fields)
