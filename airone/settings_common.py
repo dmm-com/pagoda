@@ -2,7 +2,7 @@ import errno
 import logging
 import os
 import subprocess
-from typing import Any
+from typing import Any, Optional
 
 import environ
 from configurations import Configuration
@@ -432,3 +432,11 @@ class Common(Configuration):
                 "dd.span_id:%(dd.span_id)s",
             ]
         )
+
+    # Dynamic record number limitations on model level validation (None means unlimited)
+    MAX_ENTITIES: Optional[int] = env.int("AIRONE_MAX_ENTITIES", None)
+    MAX_ATTRIBUTES_PER_ENTITY: Optional[int] = env.int("AIRONE_MAX_ATTRIBUTES_PER_ENTITY", None)
+    MAX_ENTRIES: Optional[int] = env.int("AIRONE_MAX_ENTRIES", None)
+    MAX_USERS: Optional[int] = env.int("AIRONE_MAX_USERS", None)
+    MAX_GROUPS: Optional[int] = env.int("AIRONE_MAX_GROUPS", None)
+    MAX_ROLES: Optional[int] = env.int("AIRONE_MAX_ROLES", None)

@@ -5686,3 +5686,21 @@ class ModelTest(AironeTestCase):
         self._entry.register_es()
         ret = Entry.search_entries(self._user, [self._entity.id], [], 99999999)
         self.assertEqual(ret["ret_count"], 1)
+
+    def test_max_entries(self):
+        max_entries = 10
+        for i in range(max_entries):
+            Entry.objects.create(name=f"entry-{i}", created_user=self._user, schema=self._entity)
+
+        # if the limit exceeded, RuntimeError should be raised
+        settings.MAX_ENTRIES = max_entries
+        with self.assertRaises(RuntimeError):
+            Entry.objects.create(
+                name=f"entry-{max_entries}", created_user=self._user, schema=self._entity
+            )
+
+        # if the limit is not set, RuntimeError should not be raised
+        settings.MAX_ENTRIES = None
+        Entry.objects.create(
+            name=f"entry-{max_entries}", created_user=self._user, schema=self._entity
+        )
