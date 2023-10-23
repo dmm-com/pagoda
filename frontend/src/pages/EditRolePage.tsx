@@ -112,6 +112,7 @@ export const EditRolePage: FC = () => {
         <SubmitButton
           name="保存"
           disabled={
+            !isDirty ||
             !isValid ||
             isSubmitting ||
             isSubmitSuccessful ||
