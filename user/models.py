@@ -1,10 +1,12 @@
 from datetime import datetime
 from importlib import import_module
+from typing import Optional
 
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
 from rest_framework.authtoken.models import Token
 
+from airone import settings
 from airone.lib.acl import ACLType, ACLTypeBase
 from group.models import Group
 from role.models import Role
@@ -187,6 +189,15 @@ class User(AbstractUser):
             return False
 
         return True
+
+    def save(self, *args, **kwargs):
+        """
+        Override Model.save method of Django
+        """
+        max_users: Optional[int] = settings.MAX_USERS
+        if max_users and User.objects.count() >= max_users:
+            raise RuntimeError("The number of users is over the limit")
+        return super(User, self).save(*args, **kwargs)
 
     def delete(self):
         """

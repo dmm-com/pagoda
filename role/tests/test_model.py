@@ -1,3 +1,4 @@
+from airone import settings
 from airone.lib.acl import ACLType
 from airone.lib.types import AttrTypeValue
 from entity.models import Entity
@@ -187,3 +188,18 @@ class ModelTest(RoleTestBase):
         self.add_entry(user, "e-1", entity, values={"roles": roles})
         for role in roles:
             self.assertEqual([e.name for e in role.get_referred_entries()], ["e-1"])
+
+    def test_max_roles(self):
+        Role.objects.all().delete()
+
+        max_roles = 10
+        Role.objects.bulk_create([Role(name=f"role-{i}") for i in range(max_roles)])
+
+        # if the limit exceeded, RuntimeError should be raised
+        settings.MAX_ROLES = max_roles
+        with self.assertRaises(RuntimeError):
+            Role.objects.create(name=f"role-{max_roles}")
+
+        # if the limit is not set, RuntimeError should not be raised
+        settings.MAX_ROLES = None
+        Role.objects.create(name=f"role-{max_roles}")
