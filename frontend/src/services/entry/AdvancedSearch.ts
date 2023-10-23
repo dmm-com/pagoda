@@ -3,10 +3,12 @@ import {
   AdvancedSearchResultAttrInfoFilterKeyEnum,
 } from "@dmm-com/airone-apiclient-typescript-fetch";
 
-export type AttrsFilter = Record<
-  string,
-  { filterKey: AdvancedSearchResultAttrInfoFilterKeyEnum; keyword: string }
->;
+export type AttrFilter = {
+  filterKey: AdvancedSearchResultAttrInfoFilterKeyEnum;
+  keyword: string;
+};
+
+export type AttrsFilter = Record<string, AttrFilter>;
 
 interface AdvancedSearchParams {
   entityIds: number[];
@@ -65,7 +67,7 @@ class AdvancedSearchParamsInner {
 }
 
 export function formatAdvancedSearchParams({
-  attrFilter,
+  attrsFilter,
   entityIds,
   searchAllEntities,
   entryName,
@@ -73,7 +75,7 @@ export function formatAdvancedSearchParams({
   referralName,
   baseParams,
 }: {
-  attrFilter?: AttrsFilter;
+  attrsFilter?: AttrsFilter;
   entityIds?: string[];
   searchAllEntities?: boolean;
   entryName?: string;
@@ -106,15 +108,15 @@ export function formatAdvancedSearchParams({
     params.set("referral_name", referralName);
   }
 
-  if (attrFilter != null) {
+  if (attrsFilter != null) {
     params.set(
       "attrinfo",
       JSON.stringify(
-        Object.keys(attrFilter).map(
+        Object.keys(attrsFilter).map(
           (key): AdvancedSearchResultAttrInfo => ({
             name: key,
-            filterKey: attrFilter[key].filterKey,
-            keyword: attrFilter[key].keyword,
+            filterKey: attrsFilter[key].filterKey,
+            keyword: attrsFilter[key].keyword,
           })
         )
       )

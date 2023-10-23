@@ -12,8 +12,8 @@ export function formatDate(date: Date): string {
   });
 }
 
-export function getJPNdate(date: Date): Date {
-  date.setHours(date.getHours() + 9);
+export function setJSTdate(date: Date): Date {
+  date.setHours(9, 0, 0, 0);
   return date;
 }
 

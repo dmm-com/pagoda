@@ -73,7 +73,7 @@ class User(AbstractUser):
 
             return set(list(self.airone_groups) + parent_groups)
 
-    def has_permission(self, target_obj, permission_level):
+    def has_permission(self, target_obj, permission_level) -> bool:
         # A bypass processing to rapidly return.
         # This condition is effective when the public objects are majority.
         if self.is_superuser:

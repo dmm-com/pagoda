@@ -36,7 +36,7 @@ describe("formatAdvancedSearchParams", () => {
       searchAllEntities: true,
       hasReferral: true,
       referralName: "referral_name",
-      attrFilter: {
+      attrsFilter: {
         attr1: {
           filterKey: AdvancedSearchResultAttrInfoFilterKeyEnum.CLEARED,
           keyword: "",

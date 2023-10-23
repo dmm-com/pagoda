@@ -1,3 +1,5 @@
+from typing import Optional
+
 from django.contrib.auth.forms import UserModel
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sites.shortcuts import get_current_site
@@ -106,7 +108,7 @@ class UserImportAPI(generics.GenericAPIView):
             user = None
             if "id" in user_data:
                 # update user by id when id is specified
-                user = User.objects.filter(id=user_data["id"]).first()
+                user: Optional[User] = User.objects.filter(id=user_data["id"]).first()
                 if not user:
                     return Response(
                         "Specified id user does not exist(id:%s, user:%s)"
@@ -132,11 +134,11 @@ class UserImportAPI(generics.GenericAPIView):
             user.username = user_data["username"]
             user.email = user_data["email"]
 
-            new_groups = []
+            new_groups: list[Group] = []
             for group_name in user_data["groups"].split(","):
                 if group_name == "":
                     continue
-                new_group = Group.objects.filter(name=group_name).first()
+                new_group: Optional[Group] = Group.objects.filter(name=group_name).first()
                 if not new_group:
                     return Response(
                         "Specified group does not exist(user:%s, group:%s)"

@@ -8,6 +8,26 @@
 
 ### Fixed
 
+## v3.65.0
+
+### Fixed
+* Avoid unnecessary re-loading on entity selector.
+  Contributed by @syucream
+* Fixed unnecessary re-rendering in advanced search params.
+  Contributed by @syucream
+
+## v3.64.0
+
+### Added
+* Added limit for frequent import jobs on the same entity.
+  Contributed by @syucream
+* Add sso login link on the new login page.
+  Contributed by @syucream
+* Show loading icon in submit button during submitting to the backend.
+  Contributed by @syucream
+* Refresh recent jobs on click job menu.
+  Contributed by @syucream
+
 ## v3.63.0
 
 ### Added
