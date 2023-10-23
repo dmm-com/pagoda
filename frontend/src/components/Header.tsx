@@ -202,7 +202,6 @@ export const Header: FC = () => {
                 open={Boolean(userAnchorEl)}
                 onClose={() => setUserAnchorEl(null)}
                 keepMounted
-                disableScrollLock
               >
                 <MenuItem>
                   {djangoContext?.user?.username ?? "不明なユーザ"}{" "}
@@ -231,7 +230,6 @@ export const Header: FC = () => {
                 open={Boolean(jobAnchorEl)}
                 onClose={() => setJobAnchorEl(null)}
                 keepMounted
-                disableScrollLock
               >
                 {recentJobs.length > 0 ? (
                   recentJobs.map((job) => (
