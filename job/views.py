@@ -63,13 +63,7 @@ def download(request, job_id):
     if job.user.id != request.user.id:
         return HttpResponse("Target Job is executed by other people", status=400)
 
-    export_operations = [
-        JobOperation.EXPORT_ENTRY.value,
-        JobOperation.EXPORT_ENTRY_V2.value,
-        JobOperation.EXPORT_SEARCH_RESULT.value,
-        JobOperation.EXPORT_SEARCH_RESULT_V2.value,
-    ]
-    if job.operation not in export_operations:
+    if job.operation not in Job.DOWNLOADABLE_OPERATIONS:
         return HttpResponse("Target Job has no value to return", status=400)
 
     # get value associated this Job from cache

@@ -203,8 +203,10 @@ def render(request, template, context={}):
     return django_render(request, template, context)
 
 
-def get_download_response(io_stream, fname):
-    response = HttpResponse(io_stream.getvalue(), content_type="application/force-download")
+def get_download_response(io_stream, fname, encode="utf-8"):
+    response = HttpResponse(
+        io_stream.getvalue().encode(encode), content_type="application/force-download"
+    )
     response["Content-Disposition"] = 'attachment; filename="{fn}"'.format(
         fn=urllib.parse.quote(smart_str(fname))
     )
