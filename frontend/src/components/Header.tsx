@@ -1,4 +1,5 @@
 import { JobSerializers } from "@dmm-com/airone-apiclient-typescript-fetch";
+import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import PersonIcon from "@mui/icons-material/Person";
 import TaskIcon from "@mui/icons-material/Task";
 import {
@@ -114,6 +115,8 @@ const SearchBoxWrapper = styled(Box)(({}) => ({
 export const Header: FC = () => {
   const [query, submitQuery] = useSimpleSearch();
 
+  const [settingAnchorEl, setSettingAnchorEl] =
+    useState<HTMLButtonElement | null>();
   const [userAnchorEl, setUserAnchorEl] = useState<HTMLButtonElement | null>();
   const [jobAnchorEl, setJobAnchorEl] = useState<HTMLButtonElement | null>();
   const [latestCheckDate, setLatestCheckDate] = useState<Date | null>(
@@ -176,15 +179,31 @@ export const Header: FC = () => {
               <Button component={Link} to={advancedSearchPath()}>
                 高度な検索
               </Button>
-              <Button component={Link} to={usersPath()}>
-                ユーザ管理
+              <Button
+                //onClick={(e) => setSettingAnchorEl(e.currentTarget)}
+                onMouseOver={(e) => setSettingAnchorEl(e.currentTarget)}
+              >
+                管理機能
+                <KeyboardArrowDownIcon fontSize="small" />
               </Button>
-              <Button component={Link} to={groupsPath()}>
-                グループ管理
-              </Button>
-              <Button component={Link} to={rolesPath()}>
-                ロール管理
-              </Button>
+              <Menu
+                id="setting-menu"
+                anchorEl={settingAnchorEl}
+                open={Boolean(settingAnchorEl)}
+                onClose={() => setSettingAnchorEl(null)}
+                MenuListProps={{ onMouseLeave: () => setSettingAnchorEl(null) }}
+                keepMounted
+              >
+                <MenuItem component={Link} to={usersPath()}>
+                  ユーザ管理
+                </MenuItem>
+                <MenuItem component={Link} to={groupsPath()}>
+                  グループ管理
+                </MenuItem>
+                <MenuItem component={Link} to={rolesPath()}>
+                  ロール管理
+                </MenuItem>
+              </Menu>
             </MenuBox>
 
             <MenuBox justifyContent="flex-end">
