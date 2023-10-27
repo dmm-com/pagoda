@@ -1,3 +1,4 @@
+import json
 import errno
 import logging
 import os
@@ -217,19 +218,22 @@ class Common(Configuration):
         "NOTE_DESC": env.str("AIRONE_NOTE_DESC", "Description, Please change it"),
         "NOTE_LINK": env.str("AIRONE_NOTE_LINK", ""),
         "SSO_DESC": env.str("AIRONE_SSO_DESC", "SSO"),
-        "EXTENDED_HEADER_MENUS": env.list(
+        "EXTENDED_HEADER_MENUS": json.loads(env.str(
             "EXTENDED_HEADER_MENUS",
-            None,
-            [
-                {
-                    "name": "Links",
-                    "children": [
-                        {"name": "linkA", "url": "https://example.com"},
-                        {"name": "linkB", "url": "https://example.com"},
-                    ],
-                }
-            ],
-        ),
+            json.dumps([]),
+        )),
+        # This is an example to set EXTENDED_HEADER_MENUS
+        # "EXTENDED_HEADER_MENUS": json.loads(env.str(
+        #    "EXTENDED_HEADER_MENUS",
+        #    json.dumps([
+        #        {
+        #            "name": "Links",
+        #            "children": [
+        #                {"name": "linkA", "url": "https://example.com"},
+        #            ],
+        #        }
+        #    ]),
+        # )),
     }
 
     try:
