@@ -197,8 +197,8 @@ def render(request, template, context={}):
     context["STATUS_ENTRY"]["CREATING"] = entry_models.Entry.STATUS_CREATING
     context["STATUS_ENTRY"]["EDITING"] = entry_models.Entry.STATUS_EDITING
 
-    # set Version
-    context["version"] = settings.AIRONE["VERSION"]
+    # set AirOne context to templates
+    context["airone"] = settings.AIRONE
 
     return django_render(request, template, context)
 
