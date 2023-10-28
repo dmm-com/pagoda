@@ -20,6 +20,7 @@ export class DjangoContext {
   noteLink: string;
   user?: User;
   singleSignOnLoginUrl?: string;
+  legacyUiDisabled?: boolean;
 
   private static _instance: DjangoContext | undefined;
 
@@ -32,6 +33,7 @@ export class DjangoContext {
     this.version = context.version;
     this.user = context.user ? new User(context.user) : undefined;
     this.singleSignOnLoginUrl = context.singleSignOnLoginUrl;
+    this.legacyUiDisabled = context.legacyUiDisabled;
   }
 
   static getInstance() {

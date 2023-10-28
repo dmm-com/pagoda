@@ -200,6 +200,9 @@ def render(request, template, context={}):
     # set Version
     context["version"] = settings.AIRONE["VERSION"]
 
+    # set AirOne context to templates
+    context["airone"] = settings.AIRONE
+
     return django_render(request, template, context)
 
 

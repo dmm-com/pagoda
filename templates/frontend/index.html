@@ -30,6 +30,7 @@
               username: "{{user.username}}",
               isSuperuser: {{user.is_superuser|yesno:"true,false"}},
           },
+          legacyUiDisabled: {{airone.LEGACY_UI_DISABLED|yesno:"true,false"}},
       };
     </script>
     <script src="/static/js/ui.js"></script>
