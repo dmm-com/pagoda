@@ -35,11 +35,15 @@ export const schema = schemaForType<EditableEntry>()(
             }),
             value: z.object({
               asBoolean: z.boolean().default(false).optional(),
-              asString: z.string().default("").optional(),
+              asString: z
+                .string()
+                .max(1 << 16, "属性の値が大きすぎます")
+                .default("")
+                .optional(),
               asArrayString: z
                 .array(
                   z.object({
-                    value: z.string(),
+                    value: z.string().max(1 << 16, "属性の値が大きすぎます"),
                   })
                 )
                 .optional(),
