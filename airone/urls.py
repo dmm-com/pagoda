@@ -1,13 +1,13 @@
 from django.conf import settings
 from django.conf.urls import include, url
 from django.contrib.auth import views as auth_views
-from django.views.generic import RedirectView
 
+from airone import views
 from airone.auth import view as auth_view
 from api_v1.urls import urlpatterns as api_v1_urlpatterns
 
 urlpatterns = [
-    url(r"^$", RedirectView.as_view(url="dashboard/")),
+    url(r"^$", views.index, name="index"),
     url(r"^acl/", include(("acl.urls", "acl"))),
     url(r"^user/", include(("user.urls", "user"))),
     url(r"^group/", include(("group.urls", "group"))),
