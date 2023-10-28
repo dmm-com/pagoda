@@ -190,6 +190,15 @@ describe("schema", () => {
     expect(() => schema.parse(value)).toThrow();
   });
 
+  test("validation fails if name is too large", () => {
+    const value = {
+      ...baseValue,
+      name: "x".repeat(201),
+    };
+
+    expect(() => schema.parse(value)).toThrow();
+  });
+
   test("validation fails if name has only whitespaces", () => {
     const value = {
       ...baseValue,
