@@ -169,7 +169,7 @@ export const EntryEditPage: FC<Props> = ({
       >
         <SubmitButton
           name="保存"
-          disabled={!isValid || isSubmitting || isSubmitSuccessful}
+          disabled={!isDirty || !isValid || isSubmitting || isSubmitSuccessful}
           isSubmitting={isSubmitting}
           handleSubmit={handleSubmit(handleSubmitOnValid, (errors) => {
             console.log(errors);

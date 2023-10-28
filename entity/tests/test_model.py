@@ -2,6 +2,7 @@ from copy import copy
 
 from django.test import TestCase
 
+from airone import settings
 from airone.lib.types import AttrTypeValue
 from entity.admin import EntityAttrResource, EntityResource
 from entity.models import Entity, EntityAttr
@@ -354,3 +355,51 @@ class ModelTest(TestCase):
             ]
         )
         self.assertEqual([x.name for x in attr.referral.all()], [x.name for x in ref_entities])
+
+    def test_max_entities(self):
+        max_entities = 10
+        for i in range(max_entities):
+            Entity.objects.create(name=f"entity-{i}", created_user=self._test_user)
+
+        # if the limit exceeded, RuntimeError should be raised
+        settings.MAX_ENTITIES = max_entities
+        with self.assertRaises(RuntimeError):
+            Entity.objects.create(name=f"entity-{max_entities}", created_user=self._test_user)
+
+        # if the limit is not set, RuntimeError should not be raised
+        settings.MAX_ENTITIES = None
+        Entity.objects.create(name=f"entity-{max_entities}", created_user=self._test_user)
+
+    def test_max_attributes_per_entity(self):
+        max_attributes_per_entity = 10
+
+        entity = Entity.objects.create(
+            name="test_max_attributes_per_entity", created_user=self._test_user
+        )
+
+        for i in range(max_attributes_per_entity):
+            EntityAttr.objects.create(
+                name="entity_attr-%d" % i,
+                type=AttrTypeValue["string"],
+                created_user=self._test_user,
+                parent_entity=entity,
+            )
+
+        # if the limit exceeded, RuntimeError should be raised
+        settings.MAX_ATTRIBUTES_PER_ENTITY = max_attributes_per_entity
+        with self.assertRaises(RuntimeError):
+            EntityAttr.objects.create(
+                name="entity_attr-%d" % max_attributes_per_entity,
+                type=AttrTypeValue["string"],
+                created_user=self._test_user,
+                parent_entity=entity,
+            )
+
+        # if the limit is not set, RuntimeError should not be raised
+        settings.MAX_ATTRIBUTES_PER_ENTITY = None
+        EntityAttr.objects.create(
+            name="entity_attr-%d" % max_attributes_per_entity,
+            type=AttrTypeValue["string"],
+            created_user=self._test_user,
+            parent_entity=entity,
+        )

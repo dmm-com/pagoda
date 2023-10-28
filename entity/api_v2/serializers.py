@@ -192,10 +192,24 @@ class EntitySerializer(serializers.ModelSerializer):
         is_toplevel_data = validated_data.pop("is_toplevel", None)
         attrs_data = validated_data.pop("attrs")
         webhooks_data = validated_data.pop("webhooks")
+
         entity: Entity
-        entity, is_created_entity = Entity.objects.update_or_create(
+        entity, is_created_entity = Entity.objects.get_or_create(
             id=entity_id, defaults={**validated_data}
         )
+        if not is_created_entity:
+            # record history for specific fields on update
+            updated_fields: list[str] = []
+            if "name" in validated_data and entity.name != validated_data.get("name"):
+                entity.name = validated_data.get("name")
+                updated_fields.append("name")
+            if "note" in validated_data and entity.note != validated_data.get("note"):
+                entity.note = validated_data.get("note")
+                updated_fields.append("note")
+            if len(updated_fields) > 0:
+                entity.save(update_fields=updated_fields)
+            else:
+                entity.save_without_historical_record()
 
         if is_toplevel_data is None:
             is_toplevel_data = (entity.status & Entity.STATUS_TOP_LEVEL) != 0

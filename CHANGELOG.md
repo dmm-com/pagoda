@@ -8,6 +8,26 @@
 
 ### Fixed
 
+## v3.66.0
+
+### Added
+* Enable to limit the number of records.
+  Contributed by @syucream
+* Added job download APIv2 that allows you to specify the format.
+  Contributed by @hinashi
+
+### Changed
+* Allow to submit if any fields are dirty in edit pages.
+  Contributed by @syucream
+
+## v3.65.0
+
+### Fixed
+* Avoid unnecessary re-loading on entity selector.
+  Contributed by @syucream
+* Fixed unnecessary re-rendering in advanced search params.
+  Contributed by @syucream
+
 ## v3.64.0
 
 ### Added

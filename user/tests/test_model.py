@@ -2,6 +2,7 @@ from django.test import TestCase
 from rest_framework.authtoken.models import Token
 from social_django.models import UserSocialAuth
 
+from airone import settings
 from airone.lib.acl import ACLType
 from airone.lib.types import AttrTypeValue
 from entity.models import Entity, EntityAttr
@@ -189,3 +190,18 @@ class ModelTest(TestCase):
         self.assertEqual(
             sorted([g.name for g in user.belonging_groups()]), sorted(["group0", "group1"])
         )
+
+    def test_max_users(self):
+        User.objects.all().delete()
+
+        max_users = 10
+        User.objects.bulk_create([User(username=f"user-{i}") for i in range(max_users)])
+
+        # if the limit exceeded, RuntimeError should be raised
+        settings.MAX_USERS = max_users
+        with self.assertRaises(RuntimeError):
+            User.objects.create(username=f"user-{max_users}")
+
+        # if the limit is not set, RuntimeError should not be raised
+        settings.MAX_USERS = None
+        User.objects.create(username=f"user-{max_users}")
