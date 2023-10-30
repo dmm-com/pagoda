@@ -20,6 +20,10 @@ export class DjangoContext {
   noteLink: string;
   user?: User;
   singleSignOnLoginUrl?: string;
+  extendedHeaderMenus: {
+    name: string;
+    children: { name: string; url: string }[];
+  }[];
 
   private static _instance: DjangoContext | undefined;
 
@@ -32,6 +36,7 @@ export class DjangoContext {
     this.version = context.version;
     this.user = context.user ? new User(context.user) : undefined;
     this.singleSignOnLoginUrl = context.singleSignOnLoginUrl;
+    this.extendedHeaderMenus = context.extendedHeaderMenus;
   }
 
   static getInstance() {

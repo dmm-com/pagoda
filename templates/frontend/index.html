@@ -24,12 +24,13 @@
 
     <script type="text/javascript">
       window.django_context = {
-          version: "{{version}}",
+          version: "{{airone.VERSION}}",
           user: {
               id: {{user.id}},
               username: "{{user.username}}",
               isSuperuser: {{user.is_superuser|yesno:"true,false"}},
           },
+          extendedHeaderMenus: {{ airone.EXTENDED_HEADER_MENUS|safe }},
       };
     </script>
     <script src="/static/js/ui.js"></script>

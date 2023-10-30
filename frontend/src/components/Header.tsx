@@ -1,4 +1,5 @@
 import { JobSerializers } from "@dmm-com/airone-apiclient-typescript-fetch";
+import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import PersonIcon from "@mui/icons-material/Person";
 import TaskIcon from "@mui/icons-material/Task";
 import {
@@ -112,16 +113,22 @@ const SearchBoxWrapper = styled(Box)(({}) => ({
 }));
 
 export const Header: FC = () => {
+  const djangoContext = DjangoContext.getInstance();
+
   const [query, submitQuery] = useSimpleSearch();
 
+  const timerDict: any = {};
+  const [anchorDict, setAnchorDict] = useState<
+    Record<string, HTMLButtonElement | null>
+  >({});
+  const [settingAnchorEl, setSettingAnchorEl] =
+    useState<HTMLButtonElement | null>();
   const [userAnchorEl, setUserAnchorEl] = useState<HTMLButtonElement | null>();
   const [jobAnchorEl, setJobAnchorEl] = useState<HTMLButtonElement | null>();
   const [latestCheckDate, setLatestCheckDate] = useState<Date | null>(
     getLatestCheckDate()
   );
   const [recentJobs, setRecentJobs] = useState<Array<JobSerializers>>([]);
-
-  const djangoContext = DjangoContext.getInstance();
 
   useInterval(async () => {
     try {
@@ -155,6 +162,29 @@ export const Header: FC = () => {
     setLatestCheckDate(getLatestCheckDate());
   };
 
+  // These processings are compromised ones to close Header menus when mouse leave from Menu-button.
+  // There would be more good solution. please fix it.
+  const handleCloseMenu = (anchorKey: string) => {
+    if (timerDict[anchorKey]) {
+      setAnchorDict({ ...anchorDict, [anchorKey]: null });
+      timerDict[anchorKey] = null;
+    }
+  };
+  const setCloseTimer = (anchorKey: string) => {
+    if (!timerDict[anchorKey]) {
+      const timerId = setTimeout(() => {
+        handleCloseMenu(anchorKey);
+      }, 1500);
+      timerDict[anchorKey] = timerId;
+    }
+  };
+  const clearCloseTimer = (anchorKey: string) => {
+    if (timerDict[anchorKey]) {
+      clearTimeout(timerDict[anchorKey]);
+      timerDict[anchorKey] = null;
+    }
+  };
+
   return (
     <Frame>
       <Fixed>
@@ -176,15 +206,72 @@ export const Header: FC = () => {
               <Button component={Link} to={advancedSearchPath()}>
                 高度な検索
               </Button>
-              <Button component={Link} to={usersPath()}>
-                ユーザ管理
+              <Button
+                onMouseOver={(e) => setAnchorDict({ basic: e.currentTarget })}
+                onMouseLeave={() => setCloseTimer("basic")}
+              >
+                管理機能
+                <KeyboardArrowDownIcon fontSize="small" />
               </Button>
-              <Button component={Link} to={groupsPath()}>
-                グループ管理
-              </Button>
-              <Button component={Link} to={rolesPath()}>
-                ロール管理
-              </Button>
+              <Menu
+                id="setting-menu"
+                anchorEl={anchorDict.basic}
+                open={Boolean(anchorDict.basic)}
+                onClose={() => setAnchorDict({ ...anchorDict, basic: null })}
+                MenuListProps={{
+                  onMouseLeave: () =>
+                    setAnchorDict({ ...anchorDict, basic: null }),
+                  onMouseOver: () => clearCloseTimer("basic"),
+                }}
+                autoFocus={false}
+                keepMounted
+              >
+                <MenuItem component={Link} to={usersPath()}>
+                  ユーザ管理
+                </MenuItem>
+                <MenuItem component={Link} to={groupsPath()}>
+                  グループ管理
+                </MenuItem>
+                <MenuItem component={Link} to={rolesPath()}>
+                  ロール管理
+                </MenuItem>
+              </Menu>
+
+              {/* If there is another menu settings are passed from Server,
+                  this represent another menu*/}
+              {djangoContext?.extendedHeaderMenus.map((menu, index) => (
+                <Box key={index}>
+                  <Button
+                    onMouseOver={(e) =>
+                      setAnchorDict({ [menu.name]: e.currentTarget })
+                    }
+                    onMouseLeave={() => setCloseTimer(menu.name)}
+                  >
+                    {menu.name}
+                    <KeyboardArrowDownIcon fontSize="small" />
+                  </Button>
+                  <Menu
+                    anchorEl={anchorDict[menu.name]}
+                    open={Boolean(anchorDict[menu.name])}
+                    onClose={() =>
+                      setAnchorDict({ ...anchorDict, [menu.name]: null })
+                    }
+                    MenuListProps={{
+                      onMouseLeave: () =>
+                        setAnchorDict({ ...anchorDict, [menu.name]: null }),
+                      onMouseOver: () => clearCloseTimer(menu.name),
+                    }}
+                    autoFocus={false}
+                    keepMounted
+                  >
+                    {menu.children.map((child, index) => (
+                      <MenuItem key={index} component="a" href={child.url}>
+                        {child.name}
+                      </MenuItem>
+                    ))}
+                  </Menu>
+                </Box>
+              ))}
             </MenuBox>
 
             <MenuBox justifyContent="flex-end">
