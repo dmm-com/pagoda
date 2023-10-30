@@ -207,7 +207,7 @@ class Common(Configuration):
 
     LOGIN_REDIRECT_URL = "/dashboard/"
 
-    # global settins for AirOne
+    # global settings for AirOne
     AIRONE: dict[str, Any] = {
         "CONCURRENCY": 1,
         "VERSION": "unknown",
@@ -218,6 +218,7 @@ class Common(Configuration):
         "NOTE_DESC": env.str("AIRONE_NOTE_DESC", "Description, Please change it"),
         "NOTE_LINK": env.str("AIRONE_NOTE_LINK", ""),
         "SSO_DESC": env.str("AIRONE_SSO_DESC", "SSO"),
+        "LEGACY_UI_DISABLED": env.bool("AIRONE_LEGACY_UI_DISABLED", False),
         "EXTENDED_HEADER_MENUS": json.loads(
             env.str(
                 "EXTENDED_HEADER_MENUS",

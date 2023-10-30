@@ -20,6 +20,7 @@ export class DjangoContext {
   noteLink: string;
   user?: User;
   singleSignOnLoginUrl?: string;
+  legacyUiDisabled?: boolean;
   extendedHeaderMenus: {
     name: string;
     children: { name: string; url: string }[];
@@ -36,6 +37,7 @@ export class DjangoContext {
     this.version = context.version;
     this.user = context.user ? new User(context.user) : undefined;
     this.singleSignOnLoginUrl = context.singleSignOnLoginUrl;
+    this.legacyUiDisabled = context.legacyUiDisabled;
     this.extendedHeaderMenus = context.extendedHeaderMenus;
   }
 

@@ -275,7 +275,9 @@ export const Header: FC = () => {
             </MenuBox>
 
             <MenuBox justifyContent="flex-end">
-              <Button href="/dashboard/">旧デザイン</Button>
+              {djangoContext?.legacyUiDisabled === false && (
+                <Button href="/dashboard/">旧デザイン</Button>
+              )}
               <IconButton
                 aria-controls="user-menu"
                 aria-haspopup="true"
