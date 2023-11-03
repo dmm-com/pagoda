@@ -2,7 +2,7 @@ import csv
 import io
 import json
 from datetime import datetime
-from typing import List, Optional
+from typing import Any, List, NotRequired, Optional, TypedDict
 
 import yaml
 from django.conf import settings
@@ -33,6 +33,22 @@ from group.models import Group
 from job.models import Job
 from role.models import Role
 from user.models import User
+
+
+class ExportedEntryAttribute(TypedDict):
+    name: str
+    value: Any
+
+
+class ExportedEntry(TypedDict):
+    name: str
+    attrs: list[ExportedEntryAttribute]
+    referrals: NotRequired[list[dict]]  # same as ExportedEntityEntries, avoiding cycle definition
+
+
+class ExportedEntityEntries(TypedDict):
+    entity: str
+    entries: list[ExportedEntry]
 
 
 def _merge_referrals_by_index(ref_list, name_list):
@@ -248,8 +264,6 @@ def _do_import_entries_v2(job: Job):
 
 
 def _yaml_export_v2(job: Job, values, recv_data: dict, has_referral: bool) -> Optional[io.StringIO]:
-    output = io.StringIO()
-
     def _get_attr_value(atype: int, value: dict):
         if atype & AttrTypeValue["array"]:
             return [_get_attr_value(atype ^ AttrTypeValue["array"], x) for x in value]
@@ -304,9 +318,9 @@ def _yaml_export_v2(job: Job, values, recv_data: dict, has_referral: bool) -> Op
         else:
             return value
 
-    resp_data: List[dict] = []
+    resp_data: List[ExportedEntityEntries] = []
     for index, entry_info in enumerate(values):
-        data: dict = {
+        data: ExportedEntry = {
             "name": entry_info["entry"]["name"],
             "attrs": [],
         }
@@ -348,6 +362,7 @@ def _yaml_export_v2(job: Job, values, recv_data: dict, has_referral: bool) -> Op
                 }
             )
 
+    output = io.StringIO()
     output.write(yaml.dump(resp_data, default_flow_style=False, allow_unicode=True))
 
     return output
@@ -718,8 +733,8 @@ def export_entries_v2(self, job_id):
     params = json.loads(job.params)
     with_entity = params["export_format"] != "csv"
 
-    exported_entity = []
-    exported_entries = []
+    exported_entity: list[ExportedEntityEntries] = []
+    exported_entries: list[ExportedEntry] = []
 
     # This variable is used for job status check. When it's checked at every loop, this might send
     # tons of query to the database. To prevent the sort of tragedy situation, checking status of
