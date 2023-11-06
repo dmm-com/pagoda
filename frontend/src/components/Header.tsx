@@ -17,24 +17,11 @@ import {
 } from "@mui/material";
 import { OverridableComponent } from "@mui/material/OverridableComponent";
 import { styled } from "@mui/material/styles";
+import PopupState, { bindHover, bindMenu } from "material-ui-popup-state";
+import HoverMenu from "material-ui-popup-state/HoverMenu";
 import React, { FC, MouseEvent, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useInterval } from "react-use";
-
-import { useSimpleSearch } from "../hooks/useSimpleSearch";
-import { aironeApiClientV2 } from "../repository/AironeApiClientV2";
-import {
-  JobOperations,
-  JobRefreshIntervalMilliSec,
-  JobStatuses,
-} from "../services/Constants";
-import {
-  getLatestCheckDate,
-  jobTargetLabel,
-  updateLatestCheckDate,
-} from "../services/JobUtil";
-
-import { SearchBox } from "./common/SearchBox";
 
 import {
   jobsPath,
@@ -47,8 +34,21 @@ import {
   rolesPath,
   topPath,
 } from "Routes";
+import { SearchBox } from "components/common/SearchBox";
+import { useSimpleSearch } from "hooks/useSimpleSearch";
 import { postLogout } from "repository/AironeAPIClient";
+import { aironeApiClientV2 } from "repository/AironeApiClientV2";
+import {
+  JobOperations,
+  JobRefreshIntervalMilliSec,
+  JobStatuses,
+} from "services/Constants";
 import { DjangoContext } from "services/DjangoContext";
+import {
+  getLatestCheckDate,
+  jobTargetLabel,
+  updateLatestCheckDate,
+} from "services/JobUtil";
 
 const Frame = styled(Box)(({}) => ({
   width: "100%",
@@ -117,12 +117,6 @@ export const Header: FC = () => {
 
   const [query, submitQuery] = useSimpleSearch();
 
-  const timerDict: any = {};
-  const [anchorDict, setAnchorDict] = useState<
-    Record<string, HTMLButtonElement | null>
-  >({});
-  const [settingAnchorEl, setSettingAnchorEl] =
-    useState<HTMLButtonElement | null>();
   const [userAnchorEl, setUserAnchorEl] = useState<HTMLButtonElement | null>();
   const [jobAnchorEl, setJobAnchorEl] = useState<HTMLButtonElement | null>();
   const [latestCheckDate, setLatestCheckDate] = useState<Date | null>(
@@ -162,29 +156,6 @@ export const Header: FC = () => {
     setLatestCheckDate(getLatestCheckDate());
   };
 
-  // These processings are compromised ones to close Header menus when mouse leave from Menu-button.
-  // There would be more good solution. please fix it.
-  const handleCloseMenu = (anchorKey: string) => {
-    if (timerDict[anchorKey]) {
-      setAnchorDict({ ...anchorDict, [anchorKey]: null });
-      timerDict[anchorKey] = null;
-    }
-  };
-  const setCloseTimer = (anchorKey: string) => {
-    if (!timerDict[anchorKey]) {
-      const timerId = setTimeout(() => {
-        handleCloseMenu(anchorKey);
-      }, 1500);
-      timerDict[anchorKey] = timerId;
-    }
-  };
-  const clearCloseTimer = (anchorKey: string) => {
-    if (timerDict[anchorKey]) {
-      clearTimeout(timerDict[anchorKey]);
-      timerDict[anchorKey] = null;
-    }
-  };
-
   return (
     <Frame>
       <Fixed>
@@ -206,71 +177,48 @@ export const Header: FC = () => {
               <Button component={Link} to={advancedSearchPath()}>
                 高度な検索
               </Button>
-              <Button
-                onMouseOver={(e) => setAnchorDict({ basic: e.currentTarget })}
-                onMouseLeave={() => setCloseTimer("basic")}
-              >
-                管理機能
-                <KeyboardArrowDownIcon fontSize="small" />
-              </Button>
-              <Menu
-                id="setting-menu"
-                anchorEl={anchorDict.basic}
-                open={Boolean(anchorDict.basic)}
-                onClose={() => setAnchorDict({ ...anchorDict, basic: null })}
-                MenuListProps={{
-                  onMouseLeave: () =>
-                    setAnchorDict({ ...anchorDict, basic: null }),
-                  onMouseOver: () => clearCloseTimer("basic"),
-                }}
-                autoFocus={false}
-                keepMounted
-              >
-                <MenuItem component={Link} to={usersPath()}>
-                  ユーザ管理
-                </MenuItem>
-                <MenuItem component={Link} to={groupsPath()}>
-                  グループ管理
-                </MenuItem>
-                <MenuItem component={Link} to={rolesPath()}>
-                  ロール管理
-                </MenuItem>
-              </Menu>
+              <PopupState variant="popover" popupId="basic">
+                {(popupState) => (
+                  <React.Fragment>
+                    <Button {...bindHover(popupState)}>
+                      管理機能
+                      <KeyboardArrowDownIcon fontSize="small" />
+                    </Button>
+                    <HoverMenu {...bindMenu(popupState)}>
+                      <MenuItem component={Link} to={usersPath()}>
+                        ユーザ管理
+                      </MenuItem>
+                      <MenuItem component={Link} to={groupsPath()}>
+                        グループ管理
+                      </MenuItem>
+                      <MenuItem component={Link} to={rolesPath()}>
+                        ロール管理
+                      </MenuItem>
+                    </HoverMenu>
+                  </React.Fragment>
+                )}
+              </PopupState>
 
               {/* If there is another menu settings are passed from Server,
                   this represent another menu*/}
               {djangoContext?.extendedHeaderMenus.map((menu, index) => (
-                <Box key={index}>
-                  <Button
-                    onMouseOver={(e) =>
-                      setAnchorDict({ [menu.name]: e.currentTarget })
-                    }
-                    onMouseLeave={() => setCloseTimer(menu.name)}
-                  >
-                    {menu.name}
-                    <KeyboardArrowDownIcon fontSize="small" />
-                  </Button>
-                  <Menu
-                    anchorEl={anchorDict[menu.name]}
-                    open={Boolean(anchorDict[menu.name])}
-                    onClose={() =>
-                      setAnchorDict({ ...anchorDict, [menu.name]: null })
-                    }
-                    MenuListProps={{
-                      onMouseLeave: () =>
-                        setAnchorDict({ ...anchorDict, [menu.name]: null }),
-                      onMouseOver: () => clearCloseTimer(menu.name),
-                    }}
-                    autoFocus={false}
-                    keepMounted
-                  >
-                    {menu.children.map((child, index) => (
-                      <MenuItem key={index} component="a" href={child.url}>
-                        {child.name}
-                      </MenuItem>
-                    ))}
-                  </Menu>
-                </Box>
+                <PopupState variant="popover" popupId={menu.name} key={index}>
+                  {(popupState) => (
+                    <React.Fragment>
+                      <Button {...bindHover(popupState)}>
+                        {menu.name}
+                        <KeyboardArrowDownIcon fontSize="small" />
+                      </Button>
+                      <HoverMenu {...bindMenu(popupState)}>
+                        {menu.children.map((child, index) => (
+                          <MenuItem key={index} component="a" href={child.url}>
+                            {child.name}
+                          </MenuItem>
+                        ))}
+                      </HoverMenu>
+                    </React.Fragment>
+                  )}
+                </PopupState>
               ))}
             </MenuBox>
 
