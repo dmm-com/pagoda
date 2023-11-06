@@ -40,6 +40,7 @@ const StyledTableCell = styled(TableCell)(({ theme }) => ({
 
 interface Props {
   hasReferral: boolean;
+  attrTypes: Record<string, number>;
   defaultEntryFilter?: string;
   defaultReferralFilter?: string;
   defaultAttrsFilter?: AttrsFilter;
@@ -47,6 +48,7 @@ interface Props {
 
 export const SearchResultsTableHead: FC<Props> = ({
   hasReferral,
+  attrTypes,
   defaultEntryFilter,
   defaultReferralFilter,
   defaultAttrsFilter = {},
@@ -196,6 +198,7 @@ export const SearchResultsTableHead: FC<Props> = ({
                   attrName
                 )}
                 handleUpdateAttrFilter={handleUpdateAttrFilter(attrName)}
+                attrType={attrTypes[attrName]}
               />
             </HeaderBox>
           </StyledTableCell>
