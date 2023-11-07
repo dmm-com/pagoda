@@ -1,8 +1,9 @@
 import errno
+import json
 import logging
 import os
 import subprocess
-from typing import Any
+from typing import Any, Optional
 
 import environ
 from configurations import Configuration
@@ -216,7 +217,7 @@ class Common(Configuration):
 
     LOGIN_REDIRECT_URL = "/dashboard/"
 
-    # global settins for AirOne
+    # global settings for AirOne
     AIRONE: dict[str, Any] = {
         "CONCURRENCY": 1,
         "VERSION": "unknown",
@@ -227,6 +228,25 @@ class Common(Configuration):
         "NOTE_DESC": env.str("AIRONE_NOTE_DESC", "Description, Please change it"),
         "NOTE_LINK": env.str("AIRONE_NOTE_LINK", ""),
         "SSO_DESC": env.str("AIRONE_SSO_DESC", "SSO"),
+        "LEGACY_UI_DISABLED": env.bool("AIRONE_LEGACY_UI_DISABLED", False),
+        "EXTENDED_HEADER_MENUS": json.loads(
+            env.str(
+                "EXTENDED_HEADER_MENUS",
+                json.dumps([]),
+            )
+        ),
+        # This is an example to set EXTENDED_HEADER_MENUS
+        # "EXTENDED_HEADER_MENUS": json.loads(env.str(
+        #    "EXTENDED_HEADER_MENUS",
+        #    json.dumps([
+        #        {
+        #            "name": "Links",
+        #            "children": [
+        #                {"name": "linkA", "url": "https://example.com"},
+        #            ],
+        #        }
+        #    ]),
+        # )),
     }
 
     try:
@@ -442,3 +462,11 @@ class Common(Configuration):
                 "dd.span_id:%(dd.span_id)s",
             ]
         )
+
+    # Dynamic record number limitations on model level validation (None means unlimited)
+    MAX_ENTITIES: Optional[int] = env.int("AIRONE_MAX_ENTITIES", None)
+    MAX_ATTRIBUTES_PER_ENTITY: Optional[int] = env.int("AIRONE_MAX_ATTRIBUTES_PER_ENTITY", None)
+    MAX_ENTRIES: Optional[int] = env.int("AIRONE_MAX_ENTRIES", None)
+    MAX_USERS: Optional[int] = env.int("AIRONE_MAX_USERS", None)
+    MAX_GROUPS: Optional[int] = env.int("AIRONE_MAX_GROUPS", None)
+    MAX_ROLES: Optional[int] = env.int("AIRONE_MAX_ROLES", None)

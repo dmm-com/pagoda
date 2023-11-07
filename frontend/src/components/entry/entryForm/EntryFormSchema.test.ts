@@ -190,6 +190,15 @@ describe("schema", () => {
     expect(() => schema.parse(value)).toThrow();
   });
 
+  test("validation fails if name is too large", () => {
+    const value = {
+      ...baseValue,
+      name: "x".repeat(201),
+    };
+
+    expect(() => schema.parse(value)).toThrow();
+  });
+
   test("validation fails if name has only whitespaces", () => {
     const value = {
       ...baseValue,
@@ -216,6 +225,22 @@ describe("schema", () => {
     expect(() => schema.parse(value)).toThrow();
   });
 
+  test("validation fails if string attr value is too large", () => {
+    const value = {
+      ...baseValue,
+      attrs: {
+        string: {
+          ...baseValue.attrs.string,
+          value: {
+            asString: "a".repeat((1 << 16) + 1),
+          },
+        },
+      },
+    };
+
+    expect(() => schema.parse(value)).toThrow();
+  });
+
   test("validation fails if array-string attr value is mandatory and empty", () => {
     const value = {
       ...baseValue,
@@ -225,6 +250,22 @@ describe("schema", () => {
           isMandatory: true,
           value: {
             asArrayString: [],
+          },
+        },
+      },
+    };
+
+    expect(() => schema.parse(value)).toThrow();
+  });
+
+  test("validation fails if array-string attr value has an element is too large", () => {
+    const value = {
+      ...baseValue,
+      attrs: {
+        arrayString: {
+          ...baseValue.attrs.arrayString,
+          value: {
+            asArrayString: ["a".repeat((1 << 16) + 1)],
           },
         },
       },

@@ -2,7 +2,8 @@ import { JobSerializers } from "@dmm-com/airone-apiclient-typescript-fetch";
 import {
   Box,
   Button,
-  Link as MuiLink,
+  MenuItem,
+  Select,
   Table,
   TableBody,
   TableCell,
@@ -11,7 +12,7 @@ import {
   Typography,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import React, { FC } from "react";
+import React, { FC, useState } from "react";
 import { Link, useHistory } from "react-router-dom";
 
 import { entityEntriesPath } from "../../Routes";
@@ -108,6 +109,10 @@ interface Props {
 export const JobList: FC<Props> = ({ jobs }) => {
   const history = useHistory();
 
+  const [encodes, setEncodes] = useState<{
+    [key: number]: string;
+  }>({});
+
   const handleRerun = async (jobId: number) => {
     await aironeApiClientV2.rerunJob(jobId);
     history.go(0);
@@ -122,11 +127,21 @@ export const JobList: FC<Props> = ({ jobs }) => {
     <Table>
       <TableHead>
         <AironeTableHeadRow>
-          <AironeTableHeadCell>対象エンティティ</AironeTableHeadCell>
-          <AironeTableHeadCell>状況</AironeTableHeadCell>
-          <AironeTableHeadCell>操作</AironeTableHeadCell>
-          <AironeTableHeadCell>実行時間</AironeTableHeadCell>
-          <AironeTableHeadCell>実行日時</AironeTableHeadCell>
+          <AironeTableHeadCell sx={{ width: "160px" }}>
+            対象エンティティ
+          </AironeTableHeadCell>
+          <AironeTableHeadCell sx={{ width: "120px" }}>
+            状況
+          </AironeTableHeadCell>
+          <AironeTableHeadCell sx={{ width: "100px" }}>
+            操作
+          </AironeTableHeadCell>
+          <AironeTableHeadCell sx={{ width: "80px" }}>
+            実行時間
+          </AironeTableHeadCell>
+          <AironeTableHeadCell sx={{ width: "160px" }}>
+            実行日時
+          </AironeTableHeadCell>
           <AironeTableHeadCell>備考</AironeTableHeadCell>
         </AironeTableHeadRow>
       </TableHead>
@@ -174,12 +189,12 @@ export const JobList: FC<Props> = ({ jobs }) => {
               })()}
             </TableCell>
             <TableCell>
-              <Box display="flex" alignItems="center">
-                <Box display="flex" alignItems="center">
+              <Box display="flex" flexDirection="column">
+                <Box display="flex" alignItems="center" flexDirection="row">
                   {jobStatusIcons(job.status)}
                   <Typography>{jobStatusLabel(job.status)}</Typography>
                 </Box>
-                <Box flexGrow="1" mx="16px">
+                <Box>
                   {![
                     JobStatuses.DONE,
                     JobStatuses.PROCESSING,
@@ -232,7 +247,28 @@ export const JobList: FC<Props> = ({ jobs }) => {
                 job.operation == JobOperations.EXPORT_ENTRY_V2 ||
                 job.operation == JobOperations.EXPORT_SEARCH_RESULT_V2) &&
               job.status == JobStatuses.DONE ? (
-                <MuiLink href={`/job/download/${job.id}`}>Download</MuiLink>
+                <Box display="flex" gap="8px">
+                  <Select
+                    defaultValue="utf-8"
+                    size="small"
+                    sx={{ width: "120px" }}
+                    onChange={(e) =>
+                      setEncodes({ ...encodes, [job.id]: e.target.value })
+                    }
+                  >
+                    <MenuItem value="utf-8">UTF-8</MenuItem>
+                    <MenuItem value="shift_jis">Shift_JIS</MenuItem>
+                  </Select>
+                  <Button
+                    href={`/job/api/v2/${job.id}/download?encode=${
+                      encodes[job.id] ? encodes[job.id] : "utf-8"
+                    }`}
+                    variant="contained"
+                    size="small"
+                  >
+                    Download
+                  </Button>
+                </Box>
               ) : (
                 <Typography>{job.text}</Typography>
               )}

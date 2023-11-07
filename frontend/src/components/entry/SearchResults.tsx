@@ -70,9 +70,18 @@ export const SearchResults: FC<Props> = ({
   bulkOperationEntryIds,
   handleChangeBulkOperationEntryId,
 }) => {
-  const attrNames = useMemo(() => {
-    return Object.keys(defaultAttrsFilter);
-  }, [defaultAttrsFilter]);
+  // NOTE attrTypes are guessed by the first element on the results. So if it has no appropriate attr,
+  // the type guess doesn't work well. We should improve attr type API if more accurate type is needed.
+  const [attrNames, attrTypes] = useMemo(() => {
+    const _attrNames = Object.keys(defaultAttrsFilter);
+    const _attrTypes = Object.fromEntries(
+      _attrNames.map((attrName) => [
+        attrName,
+        results[0]?.attrs[attrName]?.type,
+      ])
+    );
+    return [_attrNames, _attrTypes];
+  }, [defaultAttrsFilter, results]);
 
   return (
     <Box display="flex" flexDirection="column">
@@ -81,6 +90,7 @@ export const SearchResults: FC<Props> = ({
           <Table id="table_result_list">
             <SearchResultsTableHead
               hasReferral={hasReferral}
+              attrTypes={attrTypes}
               defaultEntryFilter={defaultEntryFilter}
               defaultReferralFilter={defaultReferralFilter}
               defaultAttrsFilter={defaultAttrsFilter}

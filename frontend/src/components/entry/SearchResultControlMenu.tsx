@@ -1,4 +1,7 @@
-import { AdvancedSearchResultAttrInfoFilterKeyEnum } from "@dmm-com/airone-apiclient-typescript-fetch";
+import {
+  AdvancedSearchResultAttrInfoFilterKeyEnum,
+  EntryAttributeTypeTypeEnum,
+} from "@dmm-com/airone-apiclient-typescript-fetch";
 import Check from "@mui/icons-material/Check";
 import {
   Box,
@@ -11,6 +14,9 @@ import {
   Typography,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
+import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
+import { DesktopDatePicker } from "@mui/x-date-pickers/DesktopDatePicker";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import React, { ChangeEvent, FC } from "react";
 
 import { AttrFilter } from "../../services/entry/AdvancedSearch";
@@ -23,12 +29,17 @@ const StyledBox = styled(Box)({
   margin: "8px",
 });
 
+const StyledTypography = styled(Typography)(({}) => ({
+  color: "rgba(0, 0, 0, 0.6)",
+}));
+
 interface Props {
   attrFilter: AttrFilter;
   anchorElem: HTMLButtonElement | null;
   handleUpdateAttrFilter: (filter: AttrFilter) => void;
   handleSelectFilterConditions: (attrFilter: AttrFilter) => void;
   handleClose: () => void;
+  attrType?: number;
 }
 
 export const SearchResultControlMenu: FC<Props> = ({
@@ -37,6 +48,7 @@ export const SearchResultControlMenu: FC<Props> = ({
   handleUpdateAttrFilter,
   handleSelectFilterConditions,
   handleClose,
+  attrType,
 }) => {
   const handleClick = (key: AdvancedSearchResultAttrInfoFilterKeyEnum) => {
     // If the selected filter is the same, remove the filter.
@@ -154,42 +166,161 @@ export const SearchResultControlMenu: FC<Props> = ({
         )}
         <Typography>重複</Typography>
       </MenuItem>
-      <Box>
-        <StyledTextField
-          size="small"
-          placeholder="次を含むテキスト"
-          value={
-            filterKey ===
-            AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_CONTAINED
-              ? keyword
-              : ""
-          }
-          onChange={handleChangeKeyword(
-            AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_CONTAINED
-          )}
-          onKeyPress={handleKeyPressKeyword(
-            AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_CONTAINED
-          )}
-        />
-      </Box>
-      <Box>
-        <StyledTextField
-          size="small"
-          placeholder="次を含まないテキスト"
-          value={
-            filterKey ===
-            AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_NOT_CONTAINED
-              ? keyword
-              : ""
-          }
-          onChange={handleChangeKeyword(
-            AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_NOT_CONTAINED
-          )}
-          onKeyPress={handleKeyPressKeyword(
-            AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_NOT_CONTAINED
-          )}
-        />
-      </Box>
+
+      {/* date-type specific text selector */}
+      {attrType === EntryAttributeTypeTypeEnum.DATE && (
+        <>
+          <StyledBox display="flex" flexDirection="column">
+            <StyledTypography variant="caption">次を含む日付</StyledTypography>
+            <LocalizationProvider dateAdapter={AdapterDateFns}>
+              <DesktopDatePicker
+                inputFormat="yyyy/MM/dd"
+                value={
+                  filterKey ===
+                  AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_CONTAINED
+                    ? keyword
+                    : null
+                }
+                onChange={(date: Date | null) => {
+                  let settingDateValue = "";
+                  if (date !== null) {
+                    settingDateValue = `${date.getFullYear()}-${
+                      date.getMonth() + 1
+                    }-${date.getDate()}`;
+                  }
+                  handleSelectFilterConditions({
+                    ...attrFilter,
+                    filterKey:
+                      AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_CONTAINED,
+                    keyword: settingDateValue,
+                  });
+                }}
+                renderInput={(params) => (
+                  <StyledTextField size="small" {...params} />
+                )}
+              />
+            </LocalizationProvider>
+          </StyledBox>
+          <StyledBox display="flex" flexDirection="column">
+            <StyledTypography variant="caption">
+              次を含まない日付
+            </StyledTypography>
+            <LocalizationProvider dateAdapter={AdapterDateFns}>
+              <DesktopDatePicker
+                inputFormat="yyyy/MM/dd"
+                value={
+                  filterKey ===
+                  AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_NOT_CONTAINED
+                    ? keyword
+                    : null
+                }
+                onChange={(date: Date | null) => {
+                  let settingDateValue = "";
+                  if (date !== null) {
+                    settingDateValue = `${date.getFullYear()}-${
+                      date.getMonth() + 1
+                    }-${date.getDate()}`;
+                  }
+                  handleSelectFilterConditions({
+                    ...attrFilter,
+                    filterKey:
+                      AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_NOT_CONTAINED,
+                    keyword: settingDateValue,
+                  });
+                }}
+                renderInput={(params) => (
+                  <StyledTextField size="small" {...params} />
+                )}
+              />
+            </LocalizationProvider>
+          </StyledBox>
+        </>
+      )}
+
+      {/* date-type specific text selector */}
+      {attrType === EntryAttributeTypeTypeEnum.BOOLEAN && (
+        <>
+          <MenuItem
+            onClick={() =>
+              handleSelectFilterConditions({
+                ...attrFilter,
+                filterKey:
+                  AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_CONTAINED,
+                keyword: "true",
+              })
+            }
+          >
+            {filterKey ===
+              AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_CONTAINED && (
+              <ListItemIcon>
+                <Check />
+              </ListItemIcon>
+            )}
+            <Typography>true のみ</Typography>
+          </MenuItem>
+          <MenuItem
+            onClick={() =>
+              handleSelectFilterConditions({
+                ...attrFilter,
+                filterKey:
+                  AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_NOT_CONTAINED,
+                keyword: "true",
+              })
+            }
+          >
+            {filterKey ===
+              AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_NOT_CONTAINED && (
+              <ListItemIcon>
+                <Check />
+              </ListItemIcon>
+            )}
+            <Typography>false のみ</Typography>
+          </MenuItem>
+        </>
+      )}
+
+      {/* default text selector */}
+      {attrType !== EntryAttributeTypeTypeEnum.DATE &&
+        attrType !== EntryAttributeTypeTypeEnum.BOOLEAN && (
+          <>
+            <Box>
+              <StyledTextField
+                size="small"
+                placeholder="次を含むテキスト"
+                value={
+                  filterKey ===
+                  AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_CONTAINED
+                    ? keyword
+                    : ""
+                }
+                onChange={handleChangeKeyword(
+                  AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_CONTAINED
+                )}
+                onKeyPress={handleKeyPressKeyword(
+                  AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_CONTAINED
+                )}
+              />
+            </Box>
+            <Box>
+              <StyledTextField
+                size="small"
+                placeholder="次を含まないテキスト"
+                value={
+                  filterKey ===
+                  AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_NOT_CONTAINED
+                    ? keyword
+                    : ""
+                }
+                onChange={handleChangeKeyword(
+                  AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_NOT_CONTAINED
+                )}
+                onKeyPress={handleKeyPressKeyword(
+                  AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_NOT_CONTAINED
+                )}
+              />
+            </Box>
+          </>
+        )}
     </Menu>
   );
 };

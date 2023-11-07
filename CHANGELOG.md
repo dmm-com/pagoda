@@ -8,6 +8,18 @@
 
 ### Fixed
 
+## v3.66.0
+
+### Added
+* Enable to limit the number of records.
+  Contributed by @syucream
+* Added job download APIv2 that allows you to specify the format.
+  Contributed by @hinashi
+
+### Changed
+* Allow to submit if any fields are dirty in edit pages.
+  Contributed by @syucream
+
 ## v3.65.0
 
 ### Fixed

@@ -1636,6 +1636,12 @@ class Entry(ACLBase):
             "attrs": returning_attrs,
         }
 
+    def save(self, *args, **kwargs):
+        max_entries: Optional[int] = settings.MAX_ENTRIES
+        if max_entries and Entry.objects.count() >= max_entries:
+            raise RuntimeError("The number of entries is over the limit")
+        return super(Entry, self).save(*args, **kwargs)
+
     def delete(self, *args, **kwargs):
         super(Entry, self).delete(*args, **kwargs)
 

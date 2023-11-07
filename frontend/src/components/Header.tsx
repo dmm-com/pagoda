@@ -1,4 +1,5 @@
 import { JobSerializers } from "@dmm-com/airone-apiclient-typescript-fetch";
+import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import PersonIcon from "@mui/icons-material/Person";
 import TaskIcon from "@mui/icons-material/Task";
 import {
@@ -16,24 +17,11 @@ import {
 } from "@mui/material";
 import { OverridableComponent } from "@mui/material/OverridableComponent";
 import { styled } from "@mui/material/styles";
+import PopupState, { bindHover, bindMenu } from "material-ui-popup-state";
+import HoverMenu from "material-ui-popup-state/HoverMenu";
 import React, { FC, MouseEvent, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useInterval } from "react-use";
-
-import { useSimpleSearch } from "../hooks/useSimpleSearch";
-import { aironeApiClientV2 } from "../repository/AironeApiClientV2";
-import {
-  JobOperations,
-  JobRefreshIntervalMilliSec,
-  JobStatuses,
-} from "../services/Constants";
-import {
-  getLatestCheckDate,
-  jobTargetLabel,
-  updateLatestCheckDate,
-} from "../services/JobUtil";
-
-import { SearchBox } from "./common/SearchBox";
 
 import {
   jobsPath,
@@ -46,8 +34,21 @@ import {
   rolesPath,
   topPath,
 } from "Routes";
+import { SearchBox } from "components/common/SearchBox";
+import { useSimpleSearch } from "hooks/useSimpleSearch";
 import { postLogout } from "repository/AironeAPIClient";
+import { aironeApiClientV2 } from "repository/AironeApiClientV2";
+import {
+  JobOperations,
+  JobRefreshIntervalMilliSec,
+  JobStatuses,
+} from "services/Constants";
 import { DjangoContext } from "services/DjangoContext";
+import {
+  getLatestCheckDate,
+  jobTargetLabel,
+  updateLatestCheckDate,
+} from "services/JobUtil";
 
 const Frame = styled(Box)(({}) => ({
   width: "100%",
@@ -112,6 +113,8 @@ const SearchBoxWrapper = styled(Box)(({}) => ({
 }));
 
 export const Header: FC = () => {
+  const djangoContext = DjangoContext.getInstance();
+
   const [query, submitQuery] = useSimpleSearch();
 
   const [userAnchorEl, setUserAnchorEl] = useState<HTMLButtonElement | null>();
@@ -120,8 +123,6 @@ export const Header: FC = () => {
     getLatestCheckDate()
   );
   const [recentJobs, setRecentJobs] = useState<Array<JobSerializers>>([]);
-
-  const djangoContext = DjangoContext.getInstance();
 
   useInterval(async () => {
     try {
@@ -176,19 +177,55 @@ export const Header: FC = () => {
               <Button component={Link} to={advancedSearchPath()}>
                 高度な検索
               </Button>
-              <Button component={Link} to={usersPath()}>
-                ユーザ管理
-              </Button>
-              <Button component={Link} to={groupsPath()}>
-                グループ管理
-              </Button>
-              <Button component={Link} to={rolesPath()}>
-                ロール管理
-              </Button>
+              <PopupState variant="popover" popupId="basic">
+                {(popupState) => (
+                  <React.Fragment>
+                    <Button {...bindHover(popupState)}>
+                      管理機能
+                      <KeyboardArrowDownIcon fontSize="small" />
+                    </Button>
+                    <HoverMenu {...bindMenu(popupState)}>
+                      <MenuItem component={Link} to={usersPath()}>
+                        ユーザ管理
+                      </MenuItem>
+                      <MenuItem component={Link} to={groupsPath()}>
+                        グループ管理
+                      </MenuItem>
+                      <MenuItem component={Link} to={rolesPath()}>
+                        ロール管理
+                      </MenuItem>
+                    </HoverMenu>
+                  </React.Fragment>
+                )}
+              </PopupState>
+
+              {/* If there is another menu settings are passed from Server,
+                  this represent another menu*/}
+              {djangoContext?.extendedHeaderMenus.map((menu, index) => (
+                <PopupState variant="popover" popupId={menu.name} key={index}>
+                  {(popupState) => (
+                    <React.Fragment>
+                      <Button {...bindHover(popupState)}>
+                        {menu.name}
+                        <KeyboardArrowDownIcon fontSize="small" />
+                      </Button>
+                      <HoverMenu {...bindMenu(popupState)}>
+                        {menu.children.map((child, index) => (
+                          <MenuItem key={index} component="a" href={child.url}>
+                            {child.name}
+                          </MenuItem>
+                        ))}
+                      </HoverMenu>
+                    </React.Fragment>
+                  )}
+                </PopupState>
+              ))}
             </MenuBox>
 
             <MenuBox justifyContent="flex-end">
-              <Button href="/dashboard/">旧デザイン</Button>
+              {djangoContext?.legacyUiDisabled === false && (
+                <Button href="/dashboard/">旧デザイン</Button>
+              )}
               <IconButton
                 aria-controls="user-menu"
                 aria-haspopup="true"
@@ -202,7 +239,6 @@ export const Header: FC = () => {
                 open={Boolean(userAnchorEl)}
                 onClose={() => setUserAnchorEl(null)}
                 keepMounted
-                disableScrollLock
               >
                 <MenuItem>
                   {djangoContext?.user?.username ?? "不明なユーザ"}{" "}
@@ -231,15 +267,17 @@ export const Header: FC = () => {
                 open={Boolean(jobAnchorEl)}
                 onClose={() => setJobAnchorEl(null)}
                 keepMounted
-                disableScrollLock
               >
                 {recentJobs.length > 0 ? (
                   recentJobs.map((job) => (
                     <MenuItem key={job.id}>
                       {(job.operation == JobOperations.EXPORT_ENTRY ||
-                        job.operation == JobOperations.EXPORT_SEARCH_RESULT) &&
+                        job.operation == JobOperations.EXPORT_SEARCH_RESULT ||
+                        job.operation == JobOperations.EXPORT_ENTRY_V2 ||
+                        job.operation ==
+                          JobOperations.EXPORT_SEARCH_RESULT_V2) &&
                       job.status == JobStatuses.DONE ? (
-                        <a href={`/job/download/${job.id}`}>
+                        <a href={`/job/api/v2/download/${job.id}`}>
                           {jobTargetLabel(job)}
                         </a>
                       ) : (

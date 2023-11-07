@@ -1,29 +1,39 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <!-- custom script head -->
-  {% include 'custom_view/custom_script_head.html' %}
-  <meta charset="utf-8">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;700&display=swap" />
-  <link rel="shortcut icon" href="/static/favicon.ico" />
-  <title>AirOne(NewUI)</title>
-</head>
-<body style="margin: 0px">
-  <!-- custom script body -->
-  {% include 'custom_view/custom_script_body.html' %}
-  <div id="app" class="columns" style="min-height: 100vh; display: flex; flex-direction: column"><!-- React --></div>
+  <head>
+    <!-- custom script head -->
+    {% include 'custom_view/custom_script_head.html' %}
+    <meta charset="utf-8" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;700&display=swap"
+    />
+    <link rel="shortcut icon" href="/static/favicon.ico" />
+    <title>AirOne(NewUI)</title>
+  </head>
+  <body style="margin: 0px; overflow-y: scroll">
+    <!-- custom script body -->
+    {% include 'custom_view/custom_script_body.html' %}
+    <div
+      id="app"
+      class="columns"
+      style="min-height: 100vh; display: flex; flex-direction: column"
+    >
+      <!-- React -->
+    </div>
 
-  <script type="text/javascript">
+    <script type="text/javascript">
       window.django_context = {
-          version: "{{version}}",
+          version: "{{airone.VERSION}}",
           user: {
               id: {{user.id}},
               username: "{{user.username}}",
               isSuperuser: {{user.is_superuser|yesno:"true,false"}},
           },
+          legacyUiDisabled: {{airone.LEGACY_UI_DISABLED|yesno:"true,false"}},
+          extendedHeaderMenus: {{ airone.EXTENDED_HEADER_MENUS|safe }},
       };
-  </script>
-  <script src="/static/js/ui.js"></script>
-
-</body>
+    </script>
+    <script src="/static/js/ui.js"></script>
+  </body>
 </html>
