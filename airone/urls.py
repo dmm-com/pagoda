@@ -1,10 +1,6 @@
 from django.conf import settings
 from django.contrib.auth import views as auth_views
-<<<<<<< HEAD
 from django.urls import include, re_path
-from django.views.generic import RedirectView
-=======
->>>>>>> master
 
 from airone import views
 from airone.auth import view as auth_view
