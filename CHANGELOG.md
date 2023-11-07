@@ -8,6 +8,18 @@
 
 ### Fixed
 
+## v3.67.0
+
+### Added
+* Add date/boolean type specific attr filter selector.
+  Contributed by @syucream
+* Enable to optout the path to legacy UI on the new UI.
+  Contributed by @syucream
+
+### Changed
+* Changed environmental variable type of EXTENDED_HEADER_MENUS that accpet from user.
+  Contributed by @userlocalhost, @hinashi
+
 ## v3.66.0
 
 ### Added
