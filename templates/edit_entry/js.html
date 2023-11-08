@@ -47,6 +47,12 @@ $('#edit-form').submit(function(event){
     return false;
   }
 
+  if($('input[name="entry_name"]').val().length > 200) {
+    MessageBox.error('Entry name is too long');
+    $("#submit-button").trigger('enableButton');
+    return false;
+  }
+  
   HttpPost($(this), {'attrs': get_register_attrs(this)}).done(function(data) {
     {% if entry %}
       // success to edit entry
