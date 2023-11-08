@@ -609,6 +609,9 @@ def _make_attr_query_for_simple(hint_string: str) -> dict[str, str]:
 
         attr_and_query: dict = {"bool": {"filter": []}}
         for keyword_divided_and in keyword_divided_or.split(CONFIG.AND_SEARCH_CHARACTER):
+            if not keyword_divided_and:
+                continue
+
             attr_and_query["bool"]["filter"].append(
                 {"regexp": {"attr.value": _get_regex_pattern(keyword_divided_and)}}
             )
