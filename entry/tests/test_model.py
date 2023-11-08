@@ -4367,6 +4367,10 @@ class ModelTest(AironeTestCase):
             },
         )
 
+    def test_search_entries_for_simple_with_special_characters(self):
+        ret = Entry.search_entries_for_simple("&")
+        self.assertEqual(ret["ret_count"], 0)
+
     def test_search_entries_for_simple_with_hint_entity_name(self):
         self._entry.register_es()
         entity = Entity.objects.create(name="entity2", created_user=self._user)
