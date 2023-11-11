@@ -15,11 +15,11 @@ import React from "react";
 import { useForm } from "react-hook-form";
 
 import { schema, Schema } from "./EntryFormSchema";
+import { StringAttributeValueField } from "./StringAttributeValueField";
 
 import { TestWrapper } from "TestWrapper";
 
 import "@testing-library/jest-dom";
-import { StringAttributeValueField } from "./StringAttributeValueField";
 
 describe("StringAttributeValueField", () => {
   const defaultValues: Schema = {
