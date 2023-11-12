@@ -20,6 +20,7 @@ import { styled } from "@mui/material/styles";
 import PopupState, { bindHover, bindMenu } from "material-ui-popup-state";
 import HoverMenu from "material-ui-popup-state/HoverMenu";
 import React, { FC, MouseEvent, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { useInterval } from "react-use";
 
@@ -115,6 +116,7 @@ const SearchBoxWrapper = styled(Box)(({}) => ({
 export const Header: FC = () => {
   const djangoContext = DjangoContext.getInstance();
 
+  const { t } = useTranslation();
   const [query, submitQuery] = useSimpleSearch();
 
   const [userAnchorEl, setUserAnchorEl] = useState<HTMLButtonElement | null>();
@@ -172,27 +174,27 @@ export const Header: FC = () => {
 
             <MenuBox>
               <Button component={Link} to={entitiesPath()}>
-                エンティティ一覧
+                {t("entities")}
               </Button>
               <Button component={Link} to={advancedSearchPath()}>
-                高度な検索
+                {t("advancedSearch")}
               </Button>
               <PopupState variant="popover" popupId="basic">
                 {(popupState) => (
                   <React.Fragment>
                     <Button {...bindHover(popupState)}>
-                      管理機能
+                      {t("management")}
                       <KeyboardArrowDownIcon fontSize="small" />
                     </Button>
                     <HoverMenu {...bindMenu(popupState)}>
                       <MenuItem component={Link} to={usersPath()}>
-                        ユーザ管理
+                        {t("manageUsers")}
                       </MenuItem>
                       <MenuItem component={Link} to={groupsPath()}>
-                        グループ管理
+                        {t("manageGroups")}
                       </MenuItem>
                       <MenuItem component={Link} to={rolesPath()}>
-                        ロール管理
+                        {t("manageRoles")}
                       </MenuItem>
                     </HoverMenu>
                   </React.Fragment>
@@ -224,7 +226,7 @@ export const Header: FC = () => {
 
             <MenuBox justifyContent="flex-end">
               {djangoContext?.legacyUiDisabled === false && (
-                <Button href="/dashboard/">旧デザイン</Button>
+                <Button href="/dashboard/">{t("previousVersion")}</Button>
               )}
               <IconButton
                 aria-controls="user-menu"
@@ -242,16 +244,18 @@ export const Header: FC = () => {
               >
                 <MenuItem>
                   {djangoContext?.user?.username ?? "不明なユーザ"}{" "}
-                  としてログイン中
+                  {t("currentUser")}
                 </MenuItem>
                 <Divider light />
                 <MenuItem
                   component={Link}
                   to={userPath(djangoContext?.user?.id ?? 0)}
                 >
-                  ユーザ設定
+                  {t("userSetting")}
                 </MenuItem>
-                <MenuItem onClick={() => handleLogout()}>ログアウト</MenuItem>
+                <MenuItem onClick={() => handleLogout()}>
+                  {t("logout")}
+                </MenuItem>
               </Menu>
               <IconButton
                 aria-controls="job-menu"
@@ -287,12 +291,12 @@ export const Header: FC = () => {
                   ))
                 ) : (
                   <MenuItem>
-                    <Typography>実行タスクなし</Typography>
+                    <Typography>{t("noRunningJobs")}</Typography>
                   </MenuItem>
                 )}
                 <Divider light />
                 <MenuItem component={Link} to={jobsPath()}>
-                  ジョブ一覧
+                  {t("jobs")}
                 </MenuItem>
               </Menu>
               <SearchBoxWrapper>

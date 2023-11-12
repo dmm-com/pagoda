@@ -7,6 +7,7 @@ import { AironeSnackbarProvider } from "AironeSnackbarProvider";
 import { AppRouter } from "AppRouter";
 import { ErrorHandler } from "ErrorHandler";
 import { theme } from "Theme";
+import "i18n/config";
 
 const App: FC = () => {
   return (
