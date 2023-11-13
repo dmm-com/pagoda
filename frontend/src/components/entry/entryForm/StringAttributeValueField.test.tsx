@@ -4,18 +4,24 @@
 
 import { EntryAttributeTypeTypeEnum } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { act, screen, render, renderHook } from "@testing-library/react";
+import {
+  act,
+  fireEvent,
+  screen,
+  render,
+  renderHook,
+} from "@testing-library/react";
 import React from "react";
 import { useForm } from "react-hook-form";
 
-import { BooleanAttributeValueField } from "./BooleanAttributeValueField";
 import { schema, Schema } from "./EntryFormSchema";
+import { StringAttributeValueField } from "./StringAttributeValueField";
 
 import { TestWrapper } from "TestWrapper";
 
 import "@testing-library/jest-dom";
 
-describe("BooleanAttributeValueField", () => {
+describe("StringAttributeValueField", () => {
   const defaultValues: Schema = {
     name: "entry",
     schema: {
@@ -23,22 +29,22 @@ describe("BooleanAttributeValueField", () => {
       name: "entity",
     },
     attrs: {
-      boolean: {
-        type: EntryAttributeTypeTypeEnum.BOOLEAN,
+      string: {
+        type: EntryAttributeTypeTypeEnum.STRING,
         index: 0,
         isMandatory: false,
         schema: {
           id: 1,
-          name: "boolean",
+          name: "string",
         },
         value: {
-          asBoolean: false,
+          asString: "initial value",
         },
       },
     },
   };
 
-  test("should provide boolean value editor", () => {
+  test("should provide string value editor", async () => {
     const {
       result: {
         current: { control },
@@ -51,16 +57,18 @@ describe("BooleanAttributeValueField", () => {
       })
     );
 
-    render(<BooleanAttributeValueField attrId={0} control={control} />, {
+    render(<StringAttributeValueField attrId={0} control={control} />, {
       wrapper: TestWrapper,
     });
 
-    expect(screen.getByRole("checkbox")).not.toBeChecked();
+    // TODO check if the initial value is rendered
 
     act(() => {
-      screen.getByRole("checkbox").click();
+      fireEvent.change(screen.getByRole("textbox"), {
+        target: { value: "new value" },
+      });
     });
 
-    expect(screen.getByRole("checkbox")).toBeChecked();
+    expect(screen.getByRole("textbox")).toHaveValue("new value");
   });
 });
