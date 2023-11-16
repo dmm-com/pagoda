@@ -28,15 +28,9 @@ class InputTriggerCondition(object):
 
 
 class InputTriggerActionValue(object):
-    def __init__(self, **input):
+   def __init__(self, **input):
         self.str_cond = input.get("str_cond", "")
-        ref_id = input.get("ref_cond", 0)
-        self.ref_cond = None
-        if ref_id:
-            self.ref_cond = Entry.objects.filter(id=ref_id, is_active=True).first()
-            if not self.ref_cond:
-                raise InvalidInputException("Specified referral Entry(%s) is invalid" % ref_id)
-
+        self.ref_cond = input.get("ref_cond", None)
         self.bool_cond = input.get("bool_cond", False)
 
 
@@ -48,28 +42,32 @@ class InputTriggerAction(object):
         if not self.attr:
             raise InvalidInputException("Specified attr(%s) is invalid" % attr_id)
 
+        self.values = []
+
         value = self.get_value(input.get("value"))
-        if value is None:
-            self.values = []
-        elif isinstance(value, list):
+        if isinstance(value, list):
             self.values = value
-        else:
-            self.values = [value]
+        elif isinstance(value, InputTriggerActionValue):
+            self.values.append(value)
 
     def get_value(self, input_value):
         if isinstance(input_value, str):
             return InputTriggerActionValue(str_cond=input_value)
         elif isinstance(input_value, Entry):
             return InputTriggerActionValue(ref_cond=input_value)
+        elif isinstance(input_value, int):
+            return InputTriggerActionValue(
+                ref_cond=Entry.objects.filter(id=input_value, is_active=True).first()
+            )
         elif isinstance(input_value, dict):
-            return InputTriggerActionValue(str_cond=input_value["name"], ref_cond=input_value["id"])
+            return InputTriggerActionValue(
+                str_cond=input_value["name"],
+                ref_cond=Entry.objects.filter(id=input_value["id"], is_active=True).first()
+            )
         elif isinstance(input_value, bool):
             return InputTriggerActionValue(bool_cond=input_value)
         elif isinstance(input_value, list):
             return [self.get_value(x) for x in input_value if x]
-
-    def save_actions(self):
-        pass
 
 
 class TriggerParentCondition(models.Model):
@@ -135,8 +133,6 @@ class TriggerCondition(models.Model):
         # register specified condition as AirOne TriggerCondition
         parent_condition = TriggerParentCondition.objects.create(entity=entity)
         parent_condition.save_conditions(input_trigger_conditions)
-
-        # todo: implement processing to register Trigger action instances associated with Trigger condition
 
         # convert input to InputTriggerCondition
         for action in actions:
