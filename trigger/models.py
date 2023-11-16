@@ -1,12 +1,13 @@
 from django.db import models
-from airone.lib.types import AttrTypeValue
+
 from airone.exceptions.trigger import InvalidInputException
+from airone.lib.types import AttrTypeValue
 from entity.models import Entity, EntityAttr
 from entry.models import Entry
 
 
 ## These are internal classes for AirOne trigger and action
-class InputAironeTriggerCondition(object):
+class InputTriggerCondition(object):
     def __init__(self, **input):
         # set EntityAttr from "attr" parameter of input
         attr_id = input.get("attr_id", 0)
@@ -26,10 +27,11 @@ class InputAironeTriggerCondition(object):
         self.bool_cond = input.get("bool_cond", False)
 
 
-class InputAironeTriggerActionValue(object):
+class InputTriggerActionValue(object):
     def __init__(self, **input):
         self.str_cond = input.get("str_cond", "")
         ref_id = input.get("ref_cond", 0)
+        self.ref_cond = None
         if ref_id:
             self.ref_cond = Entry.objects.filter(id=ref_id, is_active=True).first()
             if not self.ref_cond:
@@ -38,17 +40,17 @@ class InputAironeTriggerActionValue(object):
         self.bool_cond = input.get("bool_cond", False)
 
 
-class InputAironeTriggerAction(object):
+class InputTriggerAction(object):
     def __init__(self, **input):
         # set EntityAttr from "attr" parameter of input
-        attr_id = input.get("attr", 0)
+        attr_id = input.get("attr_id", 0)
         self.attr = EntityAttr.objects.filter(id=attr_id, is_active=True).first()
         if not self.attr:
             raise InvalidInputException("Specified attr(%s) is invalid" % attr_id)
 
-        value = self.get_value(input.get("values"))
-        if not value:
-            raise InvalidInputException("There is no action value")
+        value = self.get_value(input.get("value"))
+        if value is None:
+            self.values = []
         elif isinstance(value, list):
             self.values = value
         else:
@@ -56,16 +58,15 @@ class InputAironeTriggerAction(object):
 
     def get_value(self, input_value):
         if isinstance(input_value, str):
-            return InputAironeTriggerActionValue(str_cond=input_value)
+            return InputTriggerActionValue(str_cond=input_value)
         elif isinstance(input_value, Entry):
-            return InputAironeTriggerActionValue(ref_cond=input_value)
+            return InputTriggerActionValue(ref_cond=input_value)
         elif isinstance(input_value, dict):
-            return InputAironeTriggerActionValue(str_cond=input_value["name"], ref_cond=input_value["id"])
+            return InputTriggerActionValue(str_cond=input_value["name"], ref_cond=input_value["id"])
         elif isinstance(input_value, bool):
-            return InputAironeTriggerActionValue(bool_cond=input_value)
+            return InputTriggerActionValue(bool_cond=input_value)
         elif isinstance(input_value, list):
             return [self.get_value(x) for x in input_value if x]
-
 
     def save_actions(self):
         pass
@@ -74,12 +75,12 @@ class InputAironeTriggerAction(object):
 class TriggerParentCondition(models.Model):
     entity = models.ForeignKey("entity.Entity", on_delete=models.CASCADE)
 
-    def is_match_condition(self, inputs: list[InputAironeTriggerCondition]):
+    def is_match_condition(self, inputs: list[InputTriggerCondition]):
         if all([c.is_same_condition(inputs) for c in self.co_condition.all()]):
             return True
         return False
 
-    def save_conditions(self, inputs: list[InputAironeTriggerCondition]):
+    def save_conditions(self, inputs: list[InputTriggerCondition]):
         for input_cond in inputs:
             params = {
                 "parent": self,
@@ -94,16 +95,16 @@ class TriggerParentCondition(models.Model):
 
 class TriggerCondition(models.Model):
     parent = models.ForeignKey(
-        TriggerParentCondition, on_delete=models.CASCADE, related_name="co_condition"
+        TriggerParentCondition, on_delete=models.CASCADE, related_name="co_conditions"
     )
     attr = models.ForeignKey("entity.EntityAttr", on_delete=models.CASCADE)
     str_cond = models.TextField()
     ref_cond = models.ForeignKey("entry.Entry", on_delete=models.SET_NULL, null=True, blank=True)
     bool_cond = models.BooleanField(default=False)
 
-    def is_same_condition(self, input_list: list[InputAironeTriggerCondition]) -> bool:
-        # This checks one of the InputAirOneCondition which is in input_list matches with this condition
-        def _do_check_condition(input: InputAironeTriggerCondition):
+    def is_same_condition(self, input_list: list[InputTriggerCondition]) -> bool:
+        # This checks one of the InputCondition which is in input_list matches with this condition
+        def _do_check_condition(input: InputTriggerCondition):
             if self.attr.id == input.attr.id:
                 if self.attr.type & AttrTypeValue["boolean"]:
                     return self.bool_cond == input.bool_cond
@@ -120,40 +121,53 @@ class TriggerCondition(models.Model):
 
     @classmethod
     def register(cls, entity: Entity, conditions: list, actions: list):
-        # convert input to InputAironeTriggerCondition
-        input_trigger_conditions = [InputAironeTriggerCondition(**condition) for condition in conditions]
+        # convert input to InputTriggerCondition
+        input_trigger_conditions = [InputTriggerCondition(**condition) for condition in conditions]
 
         # check if condition is already registered
         for parent_condition in TriggerParentCondition.objects.filter(entity=entity):
             # This prevents to registering exactly same condition that have already been registered
             if parent_condition.is_match_condition(input_trigger_conditions):
-                raise InvalidInputException("There is condition that have same condition with specified one")
+                raise InvalidInputException(
+                    "There is condition that have same condition with specified one"
+                )
 
         # register specified condition as AirOne TriggerCondition
         parent_condition = TriggerParentCondition.objects.create(entity=entity)
         parent_condition.save_conditions(input_trigger_conditions)
 
         # todo: implement processing to register Trigger action instances associated with Trigger condition
-        pass
 
-
-class TriggerParentAction(models.Model):
-    condition = models.ForeignKey(
-        TriggerParentCondition, on_delete=models.CASCADE, related_name="action"
-    )
+        # convert input to InputTriggerCondition
+        for action in actions:
+            input_trigger_action = InputTriggerAction(**action)
+            trigger_action = TriggerAction.objects.create(
+                condition=parent_condition, attr=input_trigger_action.attr
+            )
+            trigger_action.save_actions(input_trigger_action)
 
 
 class TriggerAction(models.Model):
-    parent = models.ForeignKey(
-        TriggerParentAction, on_delete=models.CASCADE, related_name="co_action"
+    condition = models.ForeignKey(
+        TriggerParentCondition, on_delete=models.CASCADE, related_name="actions"
     )
     attr = models.ForeignKey("entity.EntityAttr", on_delete=models.CASCADE)
+
+    def save_actions(self, input: InputTriggerAction):
+        for input_action_value in input.values:
+            params = {
+                "action": self,
+                "str_cond": input_action_value.str_cond,
+                "ref_cond": input_action_value.ref_cond,
+                "bool_cond": input_action_value.bool_cond,
+            }
+            TriggerActionValue.objects.create(**params)
 
 
 class TriggerActionValue(models.Model):
     action = models.ForeignKey(TriggerAction, on_delete=models.CASCADE, related_name="values")
     str_cond = models.TextField()
-    ref_cond = models.ManyToManyField("entry.Entry", blank=True)
+    ref_cond = models.ForeignKey("entry.Entry", on_delete=models.SET_NULL, null=True, blank=True)
     bool_cond = models.BooleanField(default=False)
 
     # TODO: Add method to register value to Attribute when action is invoked
