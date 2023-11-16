@@ -9,13 +9,15 @@ from entry.models import Entry
 class InputAironeTriggerCondition(object):
     def __init__(self, **input):
         # set EntityAttr from "attr" parameter of input
-        attr_id = input.get("attr", 0)
+        attr_id = input.get("attr_id", 0)
         self.attr = EntityAttr.objects.filter(id=attr_id, is_active=True).first()
         if not self.attr:
             raise InvalidInputException("Specified attr(%s) is invalid" % attr_id)
 
         self.str_cond = input.get("str_cond", "")
+
         ref_id = input.get("ref_cond", None)
+        self.ref_cond = None
         if ref_id:
             self.ref_cond = Entry.objects.filter(id=ref_id, is_active=True).first()
             if not self.ref_cond:
@@ -117,7 +119,7 @@ class TriggerCondition(models.Model):
         return any([_do_check_condition(input) for input in input_list])
 
     @classmethod
-    def create(cls, entity: Entity, conditions: list, actions: list):
+    def register(cls, entity: Entity, conditions: list, actions: list):
         # convert input to InputAironeTriggerCondition
         input_trigger_conditions = [InputAironeTriggerCondition(**condition) for condition in conditions]
 
@@ -130,6 +132,9 @@ class TriggerCondition(models.Model):
         # register specified condition as AirOne TriggerCondition
         parent_condition = TriggerParentCondition.objects.create(entity=entity)
         parent_condition.save_conditions(input_trigger_conditions)
+
+        # todo: implement processing to register Trigger action instances associated with Trigger condition
+        pass
 
 
 class TriggerParentAction(models.Model):
@@ -150,3 +155,5 @@ class TriggerActionValue(models.Model):
     str_cond = models.TextField()
     ref_cond = models.ManyToManyField("entry.Entry", blank=True)
     bool_cond = models.BooleanField(default=False)
+
+    # TODO: Add method to register value to Attribute when action is invoked
