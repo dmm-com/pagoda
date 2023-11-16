@@ -28,7 +28,7 @@ class InputTriggerCondition(object):
 
 
 class InputTriggerActionValue(object):
-   def __init__(self, **input):
+    def __init__(self, **input):
         self.str_cond = input.get("str_cond", "")
         self.ref_cond = input.get("ref_cond", None)
         self.bool_cond = input.get("bool_cond", False)
@@ -62,7 +62,7 @@ class InputTriggerAction(object):
         elif isinstance(input_value, dict):
             return InputTriggerActionValue(
                 str_cond=input_value["name"],
-                ref_cond=Entry.objects.filter(id=input_value["id"], is_active=True).first()
+                ref_cond=Entry.objects.filter(id=input_value["id"], is_active=True).first(),
             )
         elif isinstance(input_value, bool):
             return InputTriggerActionValue(bool_cond=input_value)
