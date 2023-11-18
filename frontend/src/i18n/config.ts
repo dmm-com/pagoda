@@ -1,7 +1,45 @@
 import i18n, { Resource } from "i18next";
 import { initReactI18next } from "react-i18next";
 
-const resources: Resource = {
+export type TranslationKey =
+  | "entities"
+  | "advancedSearch"
+  | "management"
+  | "manageUsers"
+  | "manageGroups"
+  | "manageRoles"
+  | "previousVersion"
+  | "currentUser"
+  | "userSetting"
+  | "logout"
+  | "noRunningJobs"
+  | "jobs";
+
+interface AironeResource {
+  en: {
+    translation: Record<TranslationKey, string>;
+  };
+  ja: {
+    translation: Record<TranslationKey, string>;
+  };
+}
+
+function toResource(resource: AironeResource): Resource {
+  return {
+    en: {
+      translation: {
+        ...resource.en.translation,
+      },
+    },
+    ja: {
+      translation: {
+        ...resource.ja.translation,
+      },
+    },
+  };
+}
+
+const resources = toResource({
   en: {
     translation: {
       entities: "Entities",
@@ -34,11 +72,16 @@ const resources: Resource = {
       jobs: "ジョブ一覧",
     },
   },
-};
+});
+
+const primaryLanguage = window.navigator.languages
+  .map((l) => l.slice(0, 2))
+  .filter((l) => l === "ja" || l === "en")[0];
 
 i18n.use(initReactI18next).init({
   resources,
-  lng: "ja",
+  lng: primaryLanguage,
+  fallbackLng: "ja",
   interpolation: {
     escapeValue: false,
   },

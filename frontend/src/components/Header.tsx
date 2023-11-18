@@ -20,9 +20,10 @@ import { styled } from "@mui/material/styles";
 import PopupState, { bindHover, bindMenu } from "material-ui-popup-state";
 import HoverMenu from "material-ui-popup-state/HoverMenu";
 import React, { FC, MouseEvent, useMemo, useState } from "react";
-import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { useInterval } from "react-use";
+
+import { useTranslation } from "../hooks/useTranslation";
 
 import {
   jobsPath,
