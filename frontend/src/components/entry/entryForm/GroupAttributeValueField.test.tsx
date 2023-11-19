@@ -18,11 +18,11 @@ import React from "react";
 import { useForm } from "react-hook-form";
 
 import { schema, Schema } from "./EntryFormSchema";
+import { GroupAttributeValueField } from "./GroupAttributeValueField";
 
 import { TestWrapper } from "TestWrapper";
 
 import "@testing-library/jest-dom";
-import { GroupAttributeValueField } from "./GroupAttributeValueField";
 
 describe("GroupAttributeValueField", () => {
   const defaultValues: Schema = {
