@@ -41,13 +41,25 @@ describe("StringAttributeValueField", () => {
           asString: "initial value",
         },
       },
+      arrayString: {
+        type: EntryAttributeTypeTypeEnum.ARRAY_STRING,
+        index: 1,
+        isMandatory: false,
+        schema: {
+          id: 2,
+          name: "array-string",
+        },
+        value: {
+          asArrayString: [],
+        },
+      },
     },
   };
 
   test("should provide string value editor", async () => {
     const {
       result: {
-        current: { control },
+        current: { control, getValues },
       },
     } = renderHook(() =>
       useForm<Schema>({
@@ -70,5 +82,9 @@ describe("StringAttributeValueField", () => {
     });
 
     expect(screen.getByRole("textbox")).toHaveValue("new value");
+
+    expect(getValues("attrs.0.value.asString")).toEqual("new value");
   });
+
+  // TODO test array-string
 });

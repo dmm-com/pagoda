@@ -41,7 +41,7 @@ describe("BooleanAttributeValueField", () => {
   test("should provide boolean value editor", () => {
     const {
       result: {
-        current: { control },
+        current: { control, getValues },
       },
     } = renderHook(() =>
       useForm<Schema>({
@@ -62,5 +62,7 @@ describe("BooleanAttributeValueField", () => {
     });
 
     expect(screen.getByRole("checkbox")).toBeChecked();
+
+    expect(getValues("attrs.0.value.asBoolean")).toEqual(true);
   });
 });

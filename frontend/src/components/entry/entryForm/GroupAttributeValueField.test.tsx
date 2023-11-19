@@ -4,7 +4,7 @@
 
 import {
   EntryAttributeTypeTypeEnum,
-  Role,
+  PaginatedGroupList,
 } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -18,13 +18,13 @@ import React from "react";
 import { useForm } from "react-hook-form";
 
 import { schema, Schema } from "./EntryFormSchema";
-import { RoleAttributeValueField } from "./RoleAttributeValueField";
 
 import { TestWrapper } from "TestWrapper";
 
 import "@testing-library/jest-dom";
+import { GroupAttributeValueField } from "./GroupAttributeValueField";
 
-describe("RoleAttributeValueField", () => {
+describe("GroupAttributeValueField", () => {
   const defaultValues: Schema = {
     name: "entry",
     schema: {
@@ -32,57 +32,49 @@ describe("RoleAttributeValueField", () => {
       name: "entity",
     },
     attrs: {
-      role: {
-        type: EntryAttributeTypeTypeEnum.ROLE,
+      group: {
+        type: EntryAttributeTypeTypeEnum.GROUP,
         index: 0,
         isMandatory: false,
         schema: {
           id: 1,
-          name: "role",
+          name: "group",
         },
         value: {
-          asRole: { id: 1, name: "role1" },
+          asGroup: { id: 1, name: "group1" },
         },
       },
-      arrayRole: {
-        type: EntryAttributeTypeTypeEnum.ARRAY_ROLE,
+      arrayGroup: {
+        type: EntryAttributeTypeTypeEnum.ARRAY_GROUP,
         index: 1,
         isMandatory: false,
         schema: {
           id: 2,
-          name: "array-role",
+          name: "array-group",
         },
         value: {
-          asArrayRole: [],
+          asArrayGroup: [],
         },
       },
     },
   };
 
-  const roles: Role[] = [
-    {
-      id: 1,
-      name: "role1",
-      description: "role1",
-      users: [],
-      groups: [],
-      adminUsers: [],
-      adminGroups: [],
-      isEditable: true,
-    },
-    {
-      id: 2,
-      name: "role2",
-      description: "role2",
-      users: [],
-      groups: [],
-      adminUsers: [],
-      adminGroups: [],
-      isEditable: true,
-    },
-  ];
+  const groups: PaginatedGroupList = {
+    results: [
+      {
+        id: 1,
+        name: "group1",
+        members: [],
+      },
+      {
+        id: 2,
+        name: "group2",
+        members: [],
+      },
+    ],
+  };
 
-  test("should provide role value editor", async () => {
+  test("should provide group value editor", async () => {
     const {
       result: {
         current: { control, setValue, getValues },
@@ -99,14 +91,14 @@ describe("RoleAttributeValueField", () => {
     jest
       .spyOn(
         require("../../../repository/AironeApiClientV2").aironeApiClientV2,
-        "getRoles"
+        "getGroups"
       )
-      .mockResolvedValue(Promise.resolve(roles));
+      .mockResolvedValue(Promise.resolve(groups));
     /* eslint-enable */
 
     await act(async () => {
       render(
-        <RoleAttributeValueField
+        <GroupAttributeValueField
           attrId={0}
           control={control}
           setValue={setValue}
@@ -121,17 +113,20 @@ describe("RoleAttributeValueField", () => {
     act(() => {
       screen.getByRole("button", { name: "Open" }).click();
     });
-    // Select "role2" element
+    // Select "group2" element
     act(() => {
-      within(screen.getByRole("presentation")).getByText("role2").click();
+      within(screen.getByRole("presentation")).getByText("group2").click();
     });
 
-    expect(screen.getByRole("combobox")).toHaveValue("role2");
+    expect(screen.getByRole("combobox")).toHaveValue("group2");
 
-    expect(getValues("attrs.0.value.asRole")).toEqual({ id: 2, name: "role2" });
+    expect(getValues("attrs.0.value.asGroup")).toEqual({
+      id: 2,
+      name: "group2",
+    });
   });
 
-  test("should provide array-role value editor", async () => {
+  test("should provide array-group value editor", async () => {
     const {
       result: {
         current: { control, setValue, getValues },
@@ -148,14 +143,14 @@ describe("RoleAttributeValueField", () => {
     jest
       .spyOn(
         require("../../../repository/AironeApiClientV2").aironeApiClientV2,
-        "getRoles"
+        "getGroups"
       )
-      .mockResolvedValue(Promise.resolve(roles));
+      .mockResolvedValue(Promise.resolve(groups));
     /* eslint-enable */
 
     await act(async () => {
       render(
-        <RoleAttributeValueField
+        <GroupAttributeValueField
           attrId={1}
           control={control}
           setValue={setValue}
@@ -169,25 +164,25 @@ describe("RoleAttributeValueField", () => {
     act(() => {
       screen.getByRole("button", { name: "Open" }).click();
     });
-    // Select "role1" element
+    // Select "group1" element
     act(() => {
-      within(screen.getByRole("presentation")).getByText("role1").click();
+      within(screen.getByRole("presentation")).getByText("group1").click();
     });
     // Open the select options
     act(() => {
       screen.getByRole("button", { name: "Open" }).click();
     });
-    // Select "role2" element
+    // Select "group2" element
     act(() => {
-      within(screen.getByRole("presentation")).getByText("role2").click();
+      within(screen.getByRole("presentation")).getByText("group2").click();
     });
 
-    expect(screen.getByRole("button", { name: "role1" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "role2" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "group1" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "group2" })).toBeInTheDocument();
 
-    expect(getValues("attrs.1.value.asArrayRole")).toEqual([
-      { id: 1, name: "role1" },
-      { id: 2, name: "role2" },
+    expect(getValues("attrs.1.value.asArrayGroup")).toEqual([
+      { id: 1, name: "group1" },
+      { id: 2, name: "group2" },
     ]);
   });
 });
