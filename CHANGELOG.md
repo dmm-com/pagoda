@@ -8,6 +8,14 @@
 
 ### Fixed
 
+## v3.68.0
+
+### Fixed
+* Fixed an exception error when updating to too long entry name.
+  Contributed by @tsuneyama-tomo, @cui-songhe
+* Fixed bug that raise exception when '&' was specified.
+  Contributed by @tsuneyama-tomo, @cui-songhe
+
 ## v3.67.0
 
 ### Added
