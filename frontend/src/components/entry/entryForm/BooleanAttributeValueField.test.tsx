@@ -4,7 +4,7 @@
 
 import { EntryAttributeTypeTypeEnum } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { act, render, renderHook } from "@testing-library/react";
+import { act, screen, render, renderHook } from "@testing-library/react";
 import React from "react";
 import { useForm } from "react-hook-form";
 
@@ -41,7 +41,7 @@ describe("BooleanAttributeValueField", () => {
   test("should provide boolean value editor", () => {
     const {
       result: {
-        current: { control },
+        current: { control, getValues },
       },
     } = renderHook(() =>
       useForm<Schema>({
@@ -51,17 +51,18 @@ describe("BooleanAttributeValueField", () => {
       })
     );
 
-    const rendered = render(
-      <BooleanAttributeValueField attrId={0} control={control} />,
-      { wrapper: TestWrapper }
-    );
-
-    expect(rendered.getByRole("checkbox")).not.toBeChecked();
-
-    act(() => {
-      rendered.getByRole("checkbox").click();
+    render(<BooleanAttributeValueField attrId={0} control={control} />, {
+      wrapper: TestWrapper,
     });
 
-    expect(rendered.getByRole("checkbox")).toBeChecked();
+    expect(screen.getByRole("checkbox")).not.toBeChecked();
+
+    act(() => {
+      screen.getByRole("checkbox").click();
+    });
+
+    expect(screen.getByRole("checkbox")).toBeChecked();
+
+    expect(getValues("attrs.0.value.asBoolean")).toEqual(true);
   });
 });

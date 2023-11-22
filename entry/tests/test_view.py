@@ -5303,3 +5303,18 @@ class ViewTest(AironeViewTest):
         )
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(entry.get_attrv("Attr").value, "hogefuga")
+
+    def test_create_entry_over_201_characters(self):
+        user = self.guest_login()
+
+        # initialize data for test
+        entity = self.create_entity(user, "Entity", [{"name": "hoge"}])
+
+        # sending a request to create Entry
+        params = {"entry_name": "a" * 201, "attrs": []}
+        resp = self.client.post(
+            reverse("entry:do_create", args=[entity.id]),
+            json.dumps(params),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 400)
