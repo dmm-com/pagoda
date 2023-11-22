@@ -2,8 +2,9 @@ from django.db import models
 
 from airone.exceptions.trigger import InvalidInputException
 from airone.lib.types import AttrTypeValue
+from acl.models import ACLBase
 from entity.models import Entity, EntityAttr
-from entry.models import Entry
+from entry.models import Entry, Attribute
 
 
 ## These are internal classes for AirOne trigger and action
@@ -117,6 +118,34 @@ class TriggerCondition(models.Model):
 
         return any([_do_check_condition(input) for input in input_list])
 
+    def is_match_condition(self, recv_value) -> bool:
+        """
+        This checks specified value, which is compatible with APIv2 standard, matches with this condition.
+        """
+        # This is a helper method when AttrType is "object" or "named_object"
+        def _is_match_object(val):
+            if isinstance(val, int) or isinstance(val, str):
+                return self.ref_cond.id == int(val)
+
+            elif isinstance(val, Entry) or isinstance(val, ACLBase):
+                return self.ref_cond.id == val.id
+
+        if self.attr.type & AttrTypeValue["array"]:
+            return any([self.is_match_condition(x) for x in recv_value]])
+
+        elif self.attr.type & AttrTypeValue["named_object"]:
+            return _is_match_object(recv_value["id"]) and self.str_cond == recv_value["name"]
+
+        elif self.attr.type & AttrTypeValue["object"]:
+            return _is_match_object(recv_value)
+
+        elif self.attr.type & AttrTypeValue["string"]:
+            return self.str_cond == input.str_cond
+
+        elif self.attr.type & AttrTypeValue["boolean"]:
+            return self.bool_cond == input.bool_cond
+
+
     @classmethod
     def register(cls, entity: Entity, conditions: list, actions: list):
         # convert input to InputTriggerCondition
@@ -141,6 +170,31 @@ class TriggerCondition(models.Model):
                 condition=parent_condition, attr=input_trigger_action.attr
             )
             trigger_action.save_actions(input_trigger_action)
+
+    @classmethod
+    def is_invoked(cls, entity: Entity, recv_attrs: list) -> list[TriggerAction]:
+        """
+        This method checks if specified entity's Trigger is invoked by recv_data context.
+        The recv_data format should be compatible with APIv2 standard.
+        """
+        will_invoke_actions: list[TriggerAction] = []
+        # check each TriggerCondition that matches with specified entity
+        for attr_info in recv_attrs:
+            attr_entry = Attribute.objects.filter(id=attr_info["attr_id"], is_active=True, schema__is_active=True).first()
+            if not attr_entry:
+                # skip checking when specified Attribute is no longer available
+                continue
+
+            condition = TriggerCondition.objects.filter(parent__entity=entity, attr=attr_entry.schema).first()
+            if not condition:
+                continue
+
+            # When condition is matched with specified attr_info, then get corresponding TriggerAction
+            if condition.is_match_condition(attr_info["value"]):
+                # get TriggerAction that matches with specified entity
+                will_invoke_actions += list(TriggerAction.objects.filter(condition=condition))
+
+        return will_invoke_actions
 
 
 class TriggerAction(models.Model):
