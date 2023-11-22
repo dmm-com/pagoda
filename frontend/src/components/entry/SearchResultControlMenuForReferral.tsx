@@ -11,9 +11,9 @@ import {
   Typography,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import React, { FC, useState } from "react";
+import React, { ChangeEvent, Dispatch, FC, useState } from "react";
 
-import { AttrsFilter } from "../../services/entry/AdvancedSearch";
+import { AttrFilter } from "../../services/entry/AdvancedSearch";
 
 const StyledTextField = styled(TextField)({
   margin: "8px",
@@ -27,9 +27,11 @@ interface Props {
   referralFilter: string;
   anchorElem: HTMLButtonElement | null;
   handleClose: () => void;
-  referralFilterDispatcher: any;
+  referralFilterDispatcher: Dispatch<
+    ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  >;
   handleSelectFilterConditions: (
-    attrfilter?: AttrsFilter,
+    attrFilter?: AttrFilter,
     overwriteEntryName?: string | undefined,
     overwriteReferral?: string | undefined
   ) => void;

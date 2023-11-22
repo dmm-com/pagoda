@@ -64,7 +64,6 @@ export const GroupControlMenu: FC<Props> = ({
         vertical: "top",
         horizontal: "right",
       }}
-      disableScrollLock
     >
       <Box sx={{ width: 150 }}>
         <MenuItem onClick={handleEdit}>

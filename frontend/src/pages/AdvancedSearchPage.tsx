@@ -68,7 +68,7 @@ export const AdvancedSearchPage: FC = () => {
 
   const searchParams = useMemo(() => {
     return formatAdvancedSearchParams({
-      attrFilter: Object.fromEntries(
+      attrsFilter: Object.fromEntries(
         selectedAttrs.map((attr) => [
           attr,
           {
@@ -136,28 +136,27 @@ export const AdvancedSearchPage: FC = () => {
             検索対象のエンティティ
           </StyledTypography>
 
-          {!entities.loading && (
-            <Autocomplete
-              options={entities.value ?? []}
-              getOptionLabel={(option: EntityList) => option.name}
-              value={selectedEntities}
-              inputValue={entityName}
-              onChange={(_, value: Array<EntityList>) =>
-                setSelectedEntities(value)
-              }
-              onInputChange={handleChangeInputEntityName}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  variant="outlined"
-                  placeholder="エンティティを選択"
-                />
-              )}
-              multiple
-              disableCloseOnSelect
-              fullWidth
-            />
-          )}
+          <Autocomplete
+            options={entities.value ?? []}
+            getOptionLabel={(option: EntityList) => option.name}
+            value={selectedEntities}
+            inputValue={entityName}
+            disabled={entities.loading}
+            onChange={(_, value: Array<EntityList>) =>
+              setSelectedEntities(value)
+            }
+            onInputChange={handleChangeInputEntityName}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                variant="outlined"
+                placeholder="エンティティを選択"
+              />
+            )}
+            multiple
+            disableCloseOnSelect
+            fullWidth
+          />
           <Box>
             検索対象を絞り込まない
             <Checkbox

@@ -7,9 +7,7 @@ import {
   Typography,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import React, { FC } from "react";
-
-import { AttrsFilter } from "../../services/entry/AdvancedSearch";
+import React, { ChangeEvent, Dispatch, FC, KeyboardEvent } from "react";
 
 const StyledTextField = styled(TextField)({
   margin: "8px",
@@ -23,12 +21,10 @@ interface Props {
   entryFilter: string;
   anchorElem: HTMLButtonElement | null;
   handleClose: () => void;
-  entryFilterDispatcher: any;
-  handleSelectFilterConditions: (
-    attrfilter?: AttrsFilter,
-    overwriteEntryName?: string | undefined,
-    overwriteReferral?: string | undefined
-  ) => void;
+  entryFilterDispatcher: Dispatch<
+    ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  >;
+  handleSelectFilterConditions: () => void;
   handleClear: () => void;
 }
 
@@ -40,7 +36,7 @@ export const SearchResultControlMenuForEntry: FC<Props> = ({
   handleSelectFilterConditions,
   handleClear,
 }) => {
-  const handleKeyPressKeyword = (e: any) => {
+  const handleKeyPressKeyword = (e: KeyboardEvent<HTMLDivElement>) => {
     if (e.key === "Enter") {
       handleSelectFilterConditions();
     }

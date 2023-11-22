@@ -1,4 +1,7 @@
-import { AdvancedSearchResultAttrInfoFilterKeyEnum } from "@dmm-com/airone-apiclient-typescript-fetch";
+import {
+  AdvancedSearchResultAttrInfoFilterKeyEnum,
+  EntryAttributeTypeTypeEnum,
+} from "@dmm-com/airone-apiclient-typescript-fetch";
 import Check from "@mui/icons-material/Check";
 import {
   Box,
@@ -11,9 +14,12 @@ import {
   Typography,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
+import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
+import { DesktopDatePicker } from "@mui/x-date-pickers/DesktopDatePicker";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import React, { ChangeEvent, FC } from "react";
 
-import { AttrsFilter } from "../../services/entry/AdvancedSearch";
+import { AttrFilter } from "../../services/entry/AdvancedSearch";
 
 const StyledTextField = styled(TextField)({
   margin: "8px",
@@ -23,43 +29,40 @@ const StyledBox = styled(Box)({
   margin: "8px",
 });
 
+const StyledTypography = styled(Typography)(({}) => ({
+  color: "rgba(0, 0, 0, 0.6)",
+}));
+
 interface Props {
-  attrName: string;
-  attrsFilter: AttrsFilter;
+  attrFilter: AttrFilter;
   anchorElem: HTMLButtonElement | null;
-  handleClose: (name: string) => void;
-  setAttrsFilter: (filter: AttrsFilter) => void;
-  handleSelectFilterConditions: (
-    attrfilter?: AttrsFilter,
-    overwriteEntryName?: string | undefined,
-    overwriteReferral?: string | undefined
-  ) => void;
+  handleUpdateAttrFilter: (filter: AttrFilter) => void;
+  handleSelectFilterConditions: (attrFilter: AttrFilter) => void;
+  handleClose: () => void;
+  attrType?: number;
 }
 
 export const SearchResultControlMenu: FC<Props> = ({
-  attrName,
-  attrsFilter,
+  attrFilter,
   anchorElem,
-  handleClose,
-  setAttrsFilter,
+  handleUpdateAttrFilter,
   handleSelectFilterConditions,
+  handleClose,
+  attrType,
 }) => {
   const handleClick = (key: AdvancedSearchResultAttrInfoFilterKeyEnum) => {
     // If the selected filter is the same, remove the filter.
-    if (attrsFilter[attrName].filterKey === key) {
+    if (attrFilter.filterKey === key) {
       handleSelectFilterConditions({
-        ...attrsFilter,
-        [attrName]: {
-          ...attrsFilter[attrName],
-          filterKey: AdvancedSearchResultAttrInfoFilterKeyEnum.CLEARED,
-        },
+        ...attrFilter,
+        filterKey: AdvancedSearchResultAttrInfoFilterKeyEnum.CLEARED,
       });
       return;
     }
 
-    setAttrsFilter({
-      ...attrsFilter,
-      [attrName]: { ...attrsFilter[attrName], filterKey: key },
+    handleUpdateAttrFilter({
+      ...attrFilter,
+      filterKey: key,
     });
 
     switch (key) {
@@ -67,32 +70,27 @@ export const SearchResultControlMenu: FC<Props> = ({
       case AdvancedSearchResultAttrInfoFilterKeyEnum.EMPTY:
       case AdvancedSearchResultAttrInfoFilterKeyEnum.NON_EMPTY:
         handleSelectFilterConditions({
-          ...attrsFilter,
-          [attrName]: { ...attrsFilter[attrName], filterKey: key },
+          ...attrFilter,
+          filterKey: key,
         });
-
+        break;
       case AdvancedSearchResultAttrInfoFilterKeyEnum.CLEARED:
         handleSelectFilterConditions({
-          ...attrsFilter,
-          [attrName]: {
-            ...attrsFilter[attrName],
-            filterKey: key,
-            keyword: "",
-          },
+          ...attrFilter,
+          filterKey: key,
+          keyword: "",
         });
+        break;
     }
   };
 
   const handleChangeKeyword =
     (filterKey: AdvancedSearchResultAttrInfoFilterKeyEnum) =>
     (e: ChangeEvent<HTMLInputElement>) => {
-      setAttrsFilter({
-        ...attrsFilter,
-        [attrName]: {
-          ...attrsFilter[attrName],
-          keyword: e.target.value,
-          filterKey,
-        },
+      handleUpdateAttrFilter({
+        ...attrFilter,
+        keyword: e.target.value,
+        filterKey,
       });
     };
 
@@ -101,25 +99,20 @@ export const SearchResultControlMenu: FC<Props> = ({
     (e: React.KeyboardEvent<HTMLDivElement>) => {
       if (e.key === "Enter") {
         handleSelectFilterConditions({
-          ...attrsFilter,
-          [attrName]: {
-            ...attrsFilter[attrName],
-            filterKey,
-          },
+          ...attrFilter,
+          filterKey,
         });
       }
     };
 
   const filterKey =
-    attrsFilter[attrName].filterKey ??
-    AdvancedSearchResultAttrInfoFilterKeyEnum.CLEARED;
-  const keyword = attrsFilter[attrName].keyword ?? "";
+    attrFilter.filterKey ?? AdvancedSearchResultAttrInfoFilterKeyEnum.CLEARED;
+  const keyword = attrFilter.keyword ?? "";
 
   return (
     <Menu
-      id={attrName}
       open={Boolean(anchorElem)}
-      onClose={() => handleClose(attrName)}
+      onClose={handleClose}
       anchorEl={anchorElem}
     >
       <Box pl="16px" py="8px">
@@ -173,42 +166,161 @@ export const SearchResultControlMenu: FC<Props> = ({
         )}
         <Typography>重複</Typography>
       </MenuItem>
-      <Box>
-        <StyledTextField
-          size="small"
-          placeholder="次を含むテキスト"
-          value={
-            filterKey ===
-            AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_CONTAINED
-              ? keyword
-              : ""
-          }
-          onChange={handleChangeKeyword(
-            AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_CONTAINED
-          )}
-          onKeyPress={handleKeyPressKeyword(
-            AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_CONTAINED
-          )}
-        />
-      </Box>
-      <Box>
-        <StyledTextField
-          size="small"
-          placeholder="次を含まないテキスト"
-          value={
-            filterKey ===
-            AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_NOT_CONTAINED
-              ? keyword
-              : ""
-          }
-          onChange={handleChangeKeyword(
-            AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_NOT_CONTAINED
-          )}
-          onKeyPress={handleKeyPressKeyword(
-            AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_NOT_CONTAINED
-          )}
-        />
-      </Box>
+
+      {/* date-type specific text selector */}
+      {attrType === EntryAttributeTypeTypeEnum.DATE && (
+        <>
+          <StyledBox display="flex" flexDirection="column">
+            <StyledTypography variant="caption">次を含む日付</StyledTypography>
+            <LocalizationProvider dateAdapter={AdapterDateFns}>
+              <DesktopDatePicker
+                inputFormat="yyyy/MM/dd"
+                value={
+                  filterKey ===
+                  AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_CONTAINED
+                    ? keyword
+                    : null
+                }
+                onChange={(date: Date | null) => {
+                  let settingDateValue = "";
+                  if (date !== null) {
+                    settingDateValue = `${date.getFullYear()}-${
+                      date.getMonth() + 1
+                    }-${date.getDate()}`;
+                  }
+                  handleSelectFilterConditions({
+                    ...attrFilter,
+                    filterKey:
+                      AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_CONTAINED,
+                    keyword: settingDateValue,
+                  });
+                }}
+                renderInput={(params) => (
+                  <StyledTextField size="small" {...params} />
+                )}
+              />
+            </LocalizationProvider>
+          </StyledBox>
+          <StyledBox display="flex" flexDirection="column">
+            <StyledTypography variant="caption">
+              次を含まない日付
+            </StyledTypography>
+            <LocalizationProvider dateAdapter={AdapterDateFns}>
+              <DesktopDatePicker
+                inputFormat="yyyy/MM/dd"
+                value={
+                  filterKey ===
+                  AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_NOT_CONTAINED
+                    ? keyword
+                    : null
+                }
+                onChange={(date: Date | null) => {
+                  let settingDateValue = "";
+                  if (date !== null) {
+                    settingDateValue = `${date.getFullYear()}-${
+                      date.getMonth() + 1
+                    }-${date.getDate()}`;
+                  }
+                  handleSelectFilterConditions({
+                    ...attrFilter,
+                    filterKey:
+                      AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_NOT_CONTAINED,
+                    keyword: settingDateValue,
+                  });
+                }}
+                renderInput={(params) => (
+                  <StyledTextField size="small" {...params} />
+                )}
+              />
+            </LocalizationProvider>
+          </StyledBox>
+        </>
+      )}
+
+      {/* date-type specific text selector */}
+      {attrType === EntryAttributeTypeTypeEnum.BOOLEAN && (
+        <>
+          <MenuItem
+            onClick={() =>
+              handleSelectFilterConditions({
+                ...attrFilter,
+                filterKey:
+                  AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_CONTAINED,
+                keyword: "true",
+              })
+            }
+          >
+            {filterKey ===
+              AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_CONTAINED && (
+              <ListItemIcon>
+                <Check />
+              </ListItemIcon>
+            )}
+            <Typography>true のみ</Typography>
+          </MenuItem>
+          <MenuItem
+            onClick={() =>
+              handleSelectFilterConditions({
+                ...attrFilter,
+                filterKey:
+                  AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_NOT_CONTAINED,
+                keyword: "true",
+              })
+            }
+          >
+            {filterKey ===
+              AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_NOT_CONTAINED && (
+              <ListItemIcon>
+                <Check />
+              </ListItemIcon>
+            )}
+            <Typography>false のみ</Typography>
+          </MenuItem>
+        </>
+      )}
+
+      {/* default text selector */}
+      {attrType !== EntryAttributeTypeTypeEnum.DATE &&
+        attrType !== EntryAttributeTypeTypeEnum.BOOLEAN && (
+          <>
+            <Box>
+              <StyledTextField
+                size="small"
+                placeholder="次を含むテキスト"
+                value={
+                  filterKey ===
+                  AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_CONTAINED
+                    ? keyword
+                    : ""
+                }
+                onChange={handleChangeKeyword(
+                  AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_CONTAINED
+                )}
+                onKeyPress={handleKeyPressKeyword(
+                  AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_CONTAINED
+                )}
+              />
+            </Box>
+            <Box>
+              <StyledTextField
+                size="small"
+                placeholder="次を含まないテキスト"
+                value={
+                  filterKey ===
+                  AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_NOT_CONTAINED
+                    ? keyword
+                    : ""
+                }
+                onChange={handleChangeKeyword(
+                  AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_NOT_CONTAINED
+                )}
+                onKeyPress={handleKeyPressKeyword(
+                  AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_NOT_CONTAINED
+                )}
+              />
+            </Box>
+          </>
+        )}
     </Menu>
   );
 };

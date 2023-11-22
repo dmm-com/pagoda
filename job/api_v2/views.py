@@ -1,3 +1,6 @@
+import errno
+import io
+
 from django.db.models import Q
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, extend_schema
@@ -5,6 +8,8 @@ from rest_framework import generics, serializers, status, viewsets
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
 
+from airone.lib.drf import FileIsNotExistsError, InvalidValueError, JobIsNotDoneError
+from airone.lib.http import get_download_response
 from job.api_v2.serializers import JobSerializers
 from job.models import Job, JobOperation
 
@@ -20,6 +25,7 @@ class JobAPI(viewsets.ModelViewSet):
 
         if job.status == Job.STATUS["DONE"]:
             return Response("Target job has already been done", status=status.HTTP_400_BAD_REQUEST)
+
         if job.operation not in Job.CANCELABLE_OPERATIONS:
             return Response("Target job cannot be canceled", status=status.HTTP_400_BAD_REQUEST)
 
@@ -27,6 +33,41 @@ class JobAPI(viewsets.ModelViewSet):
         job.update(Job.STATUS["CANCELED"])
 
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                "encode",
+                OpenApiTypes.STR,
+                OpenApiParameter.QUERY,
+                enum=["utf-8", "shift_jis"],
+                default="utf-8",
+            ),
+        ],
+    )
+    def download(self, request, *args, **kwargs):
+        job: Job = self.get_object()
+        encode_param = request.query_params.get("encode", "utf-8")
+
+        if encode_param not in ["utf-8", "shift_jis"]:
+            raise InvalidValueError("Invalid encode parameter")
+
+        if job.operation not in Job.DOWNLOADABLE_OPERATIONS:
+            raise InvalidValueError("Target job cannot be downloaded")
+
+        if job.status != Job.STATUS["DONE"]:
+            raise JobIsNotDoneError("Target job has not yet done")
+
+        # get value associated this Job from cache
+        io_stream = io.StringIO()
+        try:
+            io_stream.write(job.get_cache())
+        except OSError as e:
+            # errno.ENOENT is the errno of FileNotFoundError
+            if e.errno == errno.ENOENT:
+                raise FileIsNotExistsError("Target file is not exists")
+
+        return get_download_response(io_stream, job.text, encode_param)
 
 
 @extend_schema(

@@ -1,3 +1,4 @@
+from airone import settings
 from airone.lib.test import AironeTestCase
 from airone.lib.types import AttrTypeValue
 from entry.models import Entry
@@ -114,3 +115,17 @@ class ModelTest(AironeTestCase):
             self.assertEqual(
                 [e.name for e in group.get_referred_entries(entity_name="Entity1")], ["e-1"]
             )
+
+    def test_max_groups(self):
+        max_groups = 10 - Group.objects.count()
+        for i in range(max_groups):
+            Group.objects.create(name=f"group-{i}")
+
+        # if the limit exceeded, RuntimeError should be raised
+        settings.MAX_GROUPS = max_groups
+        with self.assertRaises(RuntimeError):
+            Group.objects.create(name=f"group-{max_groups}")
+
+        # if the limit is not set, RuntimeError should not be raised
+        settings.MAX_GROUPS = None
+        Group.objects.create(name=f"group-{max_groups}")

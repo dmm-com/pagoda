@@ -1,3 +1,5 @@
+from typing import Optional
+
 from rest_framework import generics, serializers, status, viewsets
 from rest_framework.permissions import BasePermission, IsAuthenticated
 from rest_framework.response import Response
@@ -57,7 +59,7 @@ class RoleImportAPI(generics.GenericAPIView):
 
             if "id" in role_data:
                 # update group by id
-                role = Role.objects.filter(id=role_data["id"]).first()
+                role: Optional[Role] = Role.objects.filter(id=role_data["id"]).first()
                 if not role:
                     return Response(
                         "Specified id role does not exist(id:%s, group:%s)"
@@ -92,7 +94,9 @@ class RoleImportAPI(generics.GenericAPIView):
             # set registered members (users, groups and administrative ones) to that role
             for key in ["users", "admin_users"]:
                 for name in role_data[key]:
-                    instance = User.objects.filter(username=name, is_active=True).first()
+                    instance: Optional[User] = User.objects.filter(
+                        username=name, is_active=True
+                    ).first()
                     if not instance:
                         return Response(
                             "specified user is not found (username: %s)" % name,
@@ -101,7 +105,9 @@ class RoleImportAPI(generics.GenericAPIView):
                     getattr(role, key).add(instance)
             for key in ["groups", "admin_groups"]:
                 for name in role_data[key]:
-                    instance = Group.objects.filter(name=name, is_active=True).first()
+                    instance: Optional[Group] = Group.objects.filter(
+                        name=name, is_active=True
+                    ).first()
                     if not instance:
                         return Response(
                             "specified group is not found (name: %s)" % name,
@@ -110,7 +116,7 @@ class RoleImportAPI(generics.GenericAPIView):
                     getattr(role, key).add(instance)
 
             for permission in role_data.get("permissions", []):
-                acl = ACLBase.objects.filter(id=permission["obj_id"]).first()
+                acl: Optional[ACLBase] = ACLBase.objects.filter(id=permission["obj_id"]).first()
                 if not acl:
                     return Response(
                         "Invalid obj_id given: %s" % str(permission["obj_id"]),

@@ -1,3 +1,5 @@
+from typing import Optional
+
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, generics, serializers, status, viewsets
 from rest_framework.pagination import PageNumberPagination
@@ -65,7 +67,7 @@ class GroupImportAPI(generics.GenericAPIView):
         for group_data in import_datas:
             if "id" in group_data:
                 # update group by id
-                group = Group.objects.filter(id=group_data["id"]).first()
+                group: Optional[Group] = Group.objects.filter(id=group_data["id"]).first()
                 if not group:
                     return Response(
                         "Specified id group does not exist(id:%s, group:%s)"

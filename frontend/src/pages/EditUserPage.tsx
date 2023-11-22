@@ -198,7 +198,9 @@ export const EditUserPage: FC = () => {
             isCreateMode={isCreateMode}
             isSuperuser={isSuperuser}
             isMyself={isMyself}
-            isSubmittable={isValid && !isSubmitting && !isSubmitSuccessful}
+            isSubmittable={
+              isDirty && isValid && !isSubmitting && !isSubmitSuccessful
+            }
             handleSubmit={handleSubmit(handleSubmitOnValid)}
             handleCancel={handleCancel}
           />
