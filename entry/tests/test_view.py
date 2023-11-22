@@ -5260,7 +5260,6 @@ class ViewTest(AironeViewTest):
         Mock(side_effect=tasks.create_entry_attrs),
     )
     @patch("entry.tasks.edit_entry_attrs.delay", Mock(side_effect=tasks.edit_entry_attrs))
-
     def test_update_entry_has_prohibited_attribute(self):
         admin = User.objects.create(username="Admin", is_superuser=True)
         user = self.guest_login()
@@ -5312,7 +5311,7 @@ class ViewTest(AironeViewTest):
         entity = self.create_entity(user, "Entity", [{"name": "hoge"}])
 
         # sending a request to create Entry
-        params = {"entry_name": "a"*201, "attrs": []}
+        params = {"entry_name": "a" * 201, "attrs": []}
         resp = self.client.post(
             reverse("entry:do_create", args=[entity.id]),
             json.dumps(params),

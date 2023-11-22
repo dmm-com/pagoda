@@ -198,7 +198,10 @@ def create(request, entity_id):
             "name": "entry_name",
             "type": str,
             "checker": lambda x: (
-                x["entry_name"] and len(x["entry_name"].strip()) > 0 and len(x["entry_name"].strip()) <= 200 and "\t" not in x["entry_name"]
+                x["entry_name"]
+                and len(x["entry_name"].strip()) > 0
+                and len(x["entry_name"].strip()) <= 200
+                and "\t" not in x["entry_name"]
             ),
         },
         {
@@ -218,7 +221,9 @@ def do_create(request, entity_id, recv_data):
         return error
 
     # checks that a same name entry corresponding to the entity is existed, or not.
-    if Entry.objects.filter(schema=entity_id, name=recv_data["entry_name"], is_active=True).exists():
+    if Entry.objects.filter(
+        schema=entity_id, name=recv_data["entry_name"], is_active=True
+    ).exists():
         return HttpResponse("Duplicate name entry is existed", status=400)
 
     # validate contexts of each attributes
@@ -291,7 +296,10 @@ def edit(request, entry_id):
             "name": "entry_name",
             "type": str,
             "checker": lambda x: (
-                x["entry_name"] and len(x["entry_name"].strip()) > 0 and len(x["entry_name"].strip()) <= 200 and "\t" not in x["entry_name"]
+                x["entry_name"]
+                and len(x["entry_name"].strip()) > 0
+                and len(x["entry_name"].strip()) <= 200
+                and "\t" not in x["entry_name"]
             ),
         },
         {
