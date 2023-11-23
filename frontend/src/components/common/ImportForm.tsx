@@ -61,7 +61,7 @@ export const ImportForm: FC<Props> = ({ handleImport, handleCancel }) => {
 
   return (
     <Box display="flex" flexDirection="column">
-      <Input type="file" onChange={onChange} />
+      <Input type="file" onChange={onChange} data-testid="upload-import-file" />
 
       <Typography color="error" variant="caption" my="4px">
         {errorMessage}
