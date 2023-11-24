@@ -196,15 +196,15 @@ class ModelTest(AironeTestCase):
 
         # TriggerCondition.is_invoked() returns empty array when unrelevant attribute is updated
         trigger_actions = parent_condition.get_actions([
-            {"attr_schema_id": entry.attrs.get(schema__name="ref_trigger").schema.id, "value": entry_refs[0].id},
+            {"attr_id": entry.attrs.get(schema__name="ref_trigger").schema.id, "value": entry_refs[0].id},
         ])
         self.assertEqual(trigger_actions, [])
 
         # This checks TriggerParentCondition.get_actions() returns expected TriggerActions
         # and they have expected context (TriggerActionValue).
         trigger_actions = parent_condition.get_actions([
-            {"attr_schema_id": entry.attrs.get(schema__name="str_trigger").schema.id, "value": "test"},
-            {"attr_schema_id": entry.attrs.get(schema__name="ref_trigger").schema.id, "value": entry_refs[0].id},
+            {"attr_id": entry.attrs.get(schema__name="str_trigger").schema.id, "value": "test"},
+            {"attr_id": entry.attrs.get(schema__name="ref_trigger").schema.id, "value": entry_refs[0].id},
         ])
         self.assertEqual(len(trigger_actions), 7)
         self.assertTrue(all([isinstance(a, TriggerAction) for a in trigger_actions]))
@@ -234,3 +234,6 @@ class ModelTest(AironeTestCase):
         self.assertEqual(trigger_actions[6].values.count(), 3)
         self.assertEqual([(x.str_cond, x.ref_cond) for x in trigger_actions[6].values.all()],
                          [("foo", entry_refs[0]), ("bar", entry_refs[1]), ("baz", entry_refs[2])])
+
+    def test_run_trigger_action(self):
+        # This test to run TriggerAction and check Entry is updated as expected

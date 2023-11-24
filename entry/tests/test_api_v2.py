@@ -24,6 +24,8 @@ from airone.lib.types import (
 )
 from entity.models import Entity, EntityAttr
 from entry import tasks
+from trigger import tasks as trigger_tasks
+from trigger.models import TriggerCondition
 from entry.models import Attribute, AttributeValue, Entry
 from entry.settings import CONFIG
 from group.models import Group
@@ -4543,3 +4545,34 @@ class ViewTest(AironeViewTest):
         self.client.delete("/entry/api/v2/bulk_delete/?ids=%s" % entry.id, None, "application/json")
 
         self.assertTrue(mock_task.called)
+
+
+    @mock.patch(
+        "trigger.tasks.may_invoke_trigger.delay", mock.Mock(side_effect=trigger_tasks.may_invoke_trigger)
+    )
+    def test_update_entry_when_trigger_is_set(self):
+        # create Entry to be updated in this test
+        entry: Entry = self.add_entry(self.user, "entry", self.entity)
+
+        attr = {}
+        for attr_name in [x["name"] for x in self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY]:
+            attr[attr_name] = self.entity.attrs.get(name=attr_name)
+
+        # register Trigger and Action that specify "fuga" at text attribute
+        # when value "hoge" is set to the Attribute "val".
+        parent_condition = TriggerCondition.register(self.entity, [
+            {"attr_id": self.entity.attrs.get(name="val").id, "str_cond": "hoge"},
+        ], [
+            {"attr_id": self.entity.attrs.get(name="text").id, "value": "fuga"},
+        ])
+
+        params = {
+            "name": "entry-change",
+            "attrs": [
+                {"id": attr["val"].id, "value": "hoge"},
+            ],
+        }
+        resp = self.client.put(
+            "/entry/api/v2/%s/" % entry.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 200)

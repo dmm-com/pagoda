@@ -95,6 +95,36 @@ class TriggerAction(models.Model):
             }
             TriggerActionValue.objects.create(**params)
 
+    def get_setting_value(self, value=None):
+        """
+        This returns value that will be passed to Attribute.add_value() in response to
+        the AttributeType of this TriggerAction.
+        """
+        value = value or self.values.first()
+        if self.attr.type & AttrTypeValue["array"]:
+            return [self.get_setting_value(x) for x in self.values.all()]
+        elif self.attr.type & AttrTypeValue["boolean"]:
+            return value.bool_cond
+        elif self.attr.type & AttrTypeValue["named_object"]:
+            return {
+                "name": value.str_cond,
+                "id": value.ref_cond,
+            }
+        elif self.attr.type & AttrTypeValue["string"]:
+            return value.str_cond
+        elif self.attr.type & AttrTypeValue["text"]:
+            return value.str_cond
+        elif self.attr.type & AttrTypeValue["object"]:
+            return value.ref_cond
+
+    def run(self, entry):
+        # update specified Entry by configured attribute value
+        setting_value = self.get_setting_value()
+        target_attr = entry.attrs.filter(schema=self.attr, schema__is_active=True, is_active=True).first()
+        if target_attr and target_attr.is_updated(setting_value):
+            target_attr.add_value(setting_value)
+            target_attr.save()
+            
 
 class TriggerActionValue(models.Model):
     action = models.ForeignKey(TriggerAction, on_delete=models.CASCADE, related_name="values")
@@ -135,7 +165,7 @@ class TriggerParentCondition(models.Model):
         context to reduce DB query to get it from Attribute instance.
         """
         def _is_match(condition):
-            for attr_info in [x for x in recv_attrs if x["attr_schema_id"] == condition.attr.id]:
+            for attr_info in [x for x in recv_attrs if x["attr_id"] == condition.attr.id]:
                 if condition.is_match_condition(attr_info["value"]):
                     return True
 
