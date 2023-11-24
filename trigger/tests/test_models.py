@@ -167,3 +167,70 @@ class ModelTest(AironeTestCase):
                 self.assertEqual(trigger_action.values.count(), 3)
             else:
                 self.assertEqual(trigger_action.values.count(), 1)
+
+    def test_condition_is_invoked(self):
+        entry_refs = [self.add_entry(self.user, "ref-%s" % i, self.entity_ref) for i in range(3)]
+        entry = self.add_entry(self.user, "test_entry", self.entity)
+
+        # register TriggerCondition and its Actions
+        settingTriggerConditions = [
+            {"attr_id": self.entity.attrs.get(name="str_trigger").id, "str_cond": "test"},
+        ]
+        settingTriggerActions = [
+            {"attr_id": self.entity.attrs.get(name="str_action").id, "value": "changed_value"},
+            {"attr_id": self.entity.attrs.get(name="ref_action").id, "value": entry_refs[0]},
+            {"attr_id": self.entity.attrs.get(name="bool_action").id, "value": True},
+            {"attr_id": self.entity.attrs.get(name="named_action").id, "value": {
+                "name": "changed_value",
+                "id": entry_refs[0],
+            }},
+            {"attr_id": self.entity.attrs.get(name="arr_str_action").id, "value": ["foo", "bar", "baz"]},
+            {"attr_id": self.entity.attrs.get(name="arr_ref_action").id, "value": entry_refs},
+            {"attr_id": self.entity.attrs.get(name="arr_named_action").id, "value": [
+                {"name": "foo", "id": entry_refs[0]},
+                {"name": "bar", "id": entry_refs[1]},
+                {"name": "baz", "id": entry_refs[2]},
+            ]},
+        ]
+        parent_condition = TriggerCondition.register(self.entity, settingTriggerConditions, settingTriggerActions)
+
+        # TriggerCondition.is_invoked() returns empty array when unrelevant attribute is updated
+        trigger_actions = parent_condition.get_actions([
+            {"attr_schema_id": entry.attrs.get(schema__name="ref_trigger").schema.id, "value": entry_refs[0].id},
+        ])
+        self.assertEqual(trigger_actions, [])
+
+        # This checks TriggerParentCondition.get_actions() returns expected TriggerActions
+        # and they have expected context (TriggerActionValue).
+        trigger_actions = parent_condition.get_actions([
+            {"attr_schema_id": entry.attrs.get(schema__name="str_trigger").schema.id, "value": "test"},
+            {"attr_schema_id": entry.attrs.get(schema__name="ref_trigger").schema.id, "value": entry_refs[0].id},
+        ])
+        self.assertEqual(len(trigger_actions), 7)
+        self.assertTrue(all([isinstance(a, TriggerAction) for a in trigger_actions]))
+        for (index, trigger_action) in enumerate(trigger_actions):
+            self.assertEqual(trigger_action.attr.id, settingTriggerActions[index]["attr_id"])
+
+        # This checks each TriggerActionValue has expected context
+        self.assertEqual(trigger_actions[0].values.count(), 1)
+        self.assertEqual(trigger_actions[0].values.first().str_cond, "changed_value")
+
+        self.assertEqual(trigger_actions[1].values.count(), 1)
+        self.assertEqual(trigger_actions[1].values.first().ref_cond, entry_refs[0])
+
+        self.assertEqual(trigger_actions[2].values.count(), 1)
+        self.assertEqual(trigger_actions[2].values.first().bool_cond, True)
+
+        self.assertEqual(trigger_actions[3].values.count(), 1)
+        self.assertEqual(trigger_actions[3].values.first().str_cond, "changed_value")
+        self.assertEqual(trigger_actions[3].values.first().ref_cond, entry_refs[0])
+
+        self.assertEqual(trigger_actions[4].values.count(), 3)
+        self.assertEqual([x.str_cond for x in trigger_actions[4].values.all()], ["foo", "bar", "baz"])
+
+        self.assertEqual(trigger_actions[5].values.count(), 3)
+        self.assertEqual([x.ref_cond for x in trigger_actions[5].values.all()], entry_refs)
+
+        self.assertEqual(trigger_actions[6].values.count(), 3)
+        self.assertEqual([(x.str_cond, x.ref_cond) for x in trigger_actions[6].values.all()],
+                         [("foo", entry_refs[0]), ("bar", entry_refs[1]), ("baz", entry_refs[2])])
