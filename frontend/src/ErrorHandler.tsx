@@ -8,7 +8,8 @@ import {
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import React, { FC, useCallback, useEffect, useState } from "react";
-import { ErrorBoundary } from "react-error-boundary";
+import { ErrorBoundary, FallbackProps } from "react-error-boundary";
+import { useHistory } from "react-router-dom";
 import { useError } from "react-use";
 
 import { ForbiddenErrorPage } from "./pages/ForbiddenErrorPage";
@@ -37,10 +38,6 @@ const Buttons = styled(Box)(({ theme }) => ({
 
 interface GenericErrorProps {
   children: string;
-}
-
-interface Props {
-  error: Error;
 }
 
 const GenericError: FC<GenericErrorProps> = ({ children }) => {
@@ -79,7 +76,13 @@ const GenericError: FC<GenericErrorProps> = ({ children }) => {
   );
 };
 
-const ErrorFallback: FC<Props> = ({ error }) => {
+const ErrorFallback: FC<FallbackProps> = ({ error, resetErrorBoundary }) => {
+  const history = useHistory();
+
+  history.listen(() => {
+    resetErrorBoundary();
+  });
+
   switch (error.name) {
     case ForbiddenError.errorName:
       return <ForbiddenErrorPage />;
