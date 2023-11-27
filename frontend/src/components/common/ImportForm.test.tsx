@@ -2,16 +2,34 @@
  * @jest-environment jsdom
  */
 
-import { render } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import React from "react";
 
 import { TestWrapper } from "TestWrapper";
 import { ImportForm } from "components/common/ImportForm";
 
-test("should render a component with essential props", function () {
-  expect(() =>
-    render(<ImportForm handleImport={() => Promise.resolve()} />, {
+describe("ImportForm", () => {
+  const file = new File(["key: value"], "test.yml", {
+    type: "application/yaml",
+  });
+
+  test("should import a file successfully", async () => {
+    const handleImport = () => Promise.resolve();
+
+    render(<ImportForm handleImport={handleImport} />, {
       wrapper: TestWrapper,
-    })
-  ).not.toThrow();
+    });
+
+    // upload a file
+    await waitFor(() => {
+      fireEvent.change(screen.getByTestId("upload-import-file"), {
+        target: { files: [file] },
+      });
+      screen.getByRole("button", { name: "インポート" }).click();
+    });
+
+    expect(
+      screen.queryByText("ファイルのアップロードに失敗しました")
+    ).not.toBeInTheDocument();
+  });
 });

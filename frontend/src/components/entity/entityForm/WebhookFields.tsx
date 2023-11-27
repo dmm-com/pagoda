@@ -46,7 +46,6 @@ export const WebhookFields: FC<Props> = ({ control }) => {
   const { fields, insert, remove } = useFieldArray({
     control,
     name: "webhooks",
-    keyName: "key", // NOTE: webhook has 'id' field conflicts default key name
   });
 
   const handleAppendWebhook = (nextTo: number) => {
