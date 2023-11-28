@@ -2,9 +2,11 @@ from django.db import models
 
 from airone.exceptions.trigger import InvalidInputException
 from airone.lib.types import AttrTypeValue
+from airone.lib.http import DRFRequest
 from acl.models import ACLBase
 from entity.models import Entity, EntityAttr
 from entry.models import Entry, Attribute
+from entry.api_v2.serializers import EntryUpdateSerializer
 
 
 ## These are internal classes for AirOne trigger and action
@@ -20,10 +22,10 @@ class InputTriggerCondition(object):
 
         ref_id = input.get("ref_cond", None)
         self.ref_cond = None
-        if ref_id:
-            self.ref_cond = Entry.objects.filter(id=ref_id, is_active=True).first()
-            if not self.ref_cond:
-                raise InvalidInputException("Specified referral Entry(%s) is invalid" % ref_id)
+        if isinstance(ref_id, Entry):
+            self.ref_cond = ref_id
+        elif isinstance(ref_id, int) or isinstance(ref_id, str):
+            self.ref_cond = Entry.objects.filter(id=int(ref_id), is_active=True).first()
 
         self.bool_cond = input.get("bool_cond", False)
 
@@ -95,35 +97,50 @@ class TriggerAction(models.Model):
             }
             TriggerActionValue.objects.create(**params)
 
-    def get_setting_value(self, value=None):
+    def get_serializer_acceptable_value(self, value=None, attr_type=None):
         """
-        This returns value that will be passed to Attribute.add_value() in response to
-        the AttributeType of this TriggerAction.
+        This converts TriggerActionValue to the value that EntryUpdateSerializer can accept.
         """
+        if not attr_type:
+            attr_type = self.attr.type
+
         value = value or self.values.first()
-        if self.attr.type & AttrTypeValue["array"]:
-            return [self.get_setting_value(x) for x in self.values.all()]
-        elif self.attr.type & AttrTypeValue["boolean"]:
+        if attr_type & AttrTypeValue["array"]:
+            return [self.get_serializer_acceptable_value(x, attr_type ^ AttrTypeValue["array"]) for x in self.values.all()]
+        elif attr_type == AttrTypeValue["boolean"]:
             return value.bool_cond
-        elif self.attr.type & AttrTypeValue["named_object"]:
+        elif attr_type == AttrTypeValue["named_object"]:
             return {
                 "name": value.str_cond,
-                "id": value.ref_cond,
+                "id": value.ref_cond.id,
             }
-        elif self.attr.type & AttrTypeValue["string"]:
+        elif attr_type == AttrTypeValue["string"]:
             return value.str_cond
-        elif self.attr.type & AttrTypeValue["text"]:
+        elif attr_type == AttrTypeValue["text"]:
             return value.str_cond
-        elif self.attr.type & AttrTypeValue["object"]:
-            return value.ref_cond
+        elif attr_type == AttrTypeValue["object"]:
+            return value.ref_cond.id
 
-    def run(self, entry):
+    def run(self, user, entry, call_stacks=[]):
+        # When self.id contains in call_stacks, it means that this action is already invoked.
+        # This prevents infinite loop.
+        if self.id in call_stacks:
+            return
+
         # update specified Entry by configured attribute value
-        setting_value = self.get_setting_value()
-        target_attr = entry.attrs.filter(schema=self.attr, schema__is_active=True, is_active=True).first()
-        if target_attr and target_attr.is_updated(setting_value):
-            target_attr.add_value(setting_value)
-            target_attr.save()
+        setting_data = {
+            "id": entry.id,
+            "name": entry.name,
+            "attrs": [{"id": self.attr.id, "value": self.get_serializer_acceptable_value()}],
+            "delay_trigger": False,
+            "call_stacks": [*call_stacks, self.id],
+        }
+        serializer = EntryUpdateSerializer(instance=entry,
+                                           data=setting_data,
+                                           context={"request": DRFRequest(user)})
+        if serializer:
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
             
 
 class TriggerActionValue(models.Model):
@@ -139,7 +156,7 @@ class TriggerParentCondition(models.Model):
     entity = models.ForeignKey("entity.Entity", on_delete=models.CASCADE)
 
     def is_match_condition(self, inputs: list[InputTriggerCondition]):
-        if all([c.is_same_condition(inputs) for c in self.co_condition.all()]):
+        if all([c.is_same_condition(inputs) for c in self.co_conditions.all()]):
             return True
         return False
 
@@ -206,7 +223,7 @@ class TriggerCondition(models.Model):
 
         return any([_do_check_condition(input) for input in input_list])
 
-    def is_match_condition(self, recv_value) -> bool:
+    def is_match_condition(self, recv_value, attr_type=None) -> bool:
         """
         This checks specified value, which is compatible with APIv2 standard, matches with this condition.
         """
@@ -218,19 +235,22 @@ class TriggerCondition(models.Model):
             elif isinstance(val, Entry) or isinstance(val, ACLBase):
                 return self.ref_cond.id == val.id
 
-        if self.attr.type & AttrTypeValue["array"]:
-            return any([self.is_match_condition(x) for x in recv_value])
+        if not attr_type:
+            attr_type = self.attr.type
 
-        elif self.attr.type & AttrTypeValue["named_object"]:
+        if attr_type & AttrTypeValue["array"]:
+            return any([self.is_match_condition(x, self.attr.type ^ AttrTypeValue["array"]) for x in recv_value])
+
+        elif attr_type == AttrTypeValue["named_object"]:
             return _is_match_object(recv_value["id"]) and self.str_cond == recv_value["name"]
 
-        elif self.attr.type & AttrTypeValue["object"]:
+        elif attr_type == AttrTypeValue["object"]:
             return _is_match_object(recv_value)
 
-        elif self.attr.type & AttrTypeValue["string"]:
+        elif attr_type == AttrTypeValue["string"]:
             return self.str_cond == recv_value
 
-        elif self.attr.type & AttrTypeValue["boolean"]:
+        elif attr_type == AttrTypeValue["boolean"]:
             return self.bool_cond == recv_value
 
 
@@ -260,3 +280,13 @@ class TriggerCondition(models.Model):
             trigger_action.save_actions(input_trigger_action)
 
         return parent_condition
+
+    @classmethod
+    def get_invoked_actions(cls, entity: Entity, recv_data: list):
+        actions = []
+        for parent_condition in TriggerParentCondition.objects.filter(entity=entity):
+            actions += parent_condition.get_actions([
+                {"attr_id": int(x["id"]), "value": x["value"]} for x in recv_data
+            ])
+
+        return actions
