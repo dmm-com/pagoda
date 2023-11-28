@@ -297,6 +297,9 @@ class EntryCreateSerializer(EntryBaseSerializer):
         # register entry information to Elasticsearch
         entry.register_es()
 
+        # run task that may run TriggerAction in response to TriggerCondition configuration
+        Job.new_invoke_trigger(user, entry, attrs_data).run()
+
         # clear flag to specify this entry has been completed to create
         entry.del_status(Entry.STATUS_CREATING)
 

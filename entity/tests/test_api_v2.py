@@ -17,6 +17,8 @@ from entity.models import Entity, EntityAttr
 from entry.models import Entry
 from group.models import Group
 from role.models import Role
+from trigger import tasks as trigger_tasks
+from trigger.models import TriggerCondition
 from user.models import History, User
 from webhook.models import Webhook
 
@@ -3401,3 +3403,42 @@ class ViewTest(AironeViewTest):
         # invalid entity_id(s)
         resp = self.client.get("/entity/api/v2/attrs?entity_ids=9999")
         self.assertEqual(resp.status_code, 400)
+
+    @mock.patch(
+        "trigger.tasks.may_invoke_trigger.delay",
+        mock.Mock(side_effect=trigger_tasks.may_invoke_trigger),
+    )
+    def test_create_entry_when_trigger_is_set(self):
+        attr = {}
+        for attr_name in [x["name"] for x in self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY]:
+            attr[attr_name] = self.entity.attrs.get(name=attr_name)
+
+        # register Trigger and Action that specify "fuga" at text attribute
+        # when value "hoge" is set to the Attribute "val".
+        TriggerCondition.register(
+            self.entity,
+            [{"attr_id": attr["val"].id, "str_cond": "hoge"}],
+            [{"attr_id": attr["vals"].id, "value": ["fuga", "piyo"]}],
+        )
+        TriggerCondition.register(
+            self.entity,
+            [{"attr_id": attr["vals"].id, "str_cond": "fuga"}],
+            [{"attr_id": attr["text"].id, "value": "hogefuga"}],
+        )
+
+        # send request to create an Entry that have "hoge" at the Attribute "val".
+        params = {
+            "name": "entry1",
+            "attrs": [{"id": attr["val"].id, "value": "hoge"}],
+        }
+        resp = self.client.post(
+            "/entity/api/v2/%s/entries/" % self.entity.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 201)
+
+        # check Attribute "vals", which is specified by TriggerCondition, was changed as expected
+        entry: Entry = Entry.objects.get(id=resp.json()["id"], is_active=True)
+        self.assertEqual(entry.get_attrv("text").value, "hogefuga")
+        self.assertEqual(
+            [x.value for x in entry.get_attrv("vals").data_array.all()], ["fuga", "piyo"]
+        )
