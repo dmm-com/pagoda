@@ -157,8 +157,6 @@ class ModelTest(AironeTestCase):
     def test_create_trigger_action_initialization(self):
         entries = [self.add_entry(self.user, "test_entry_%s" % i, self.entity) for i in range(3)]
 
-        # NOTE: This only assume partial match. When the specification is change to expand to support
-        #       full match, this test should be updated.
         settingTriggerConditions = [
             {"attr_id": self.entity.attrs.get(name="str_trigger").id, "str_cond": "test"},
             {"attr_id": self.entity.attrs.get(name="ref_trigger").id, "ref_cond": entries[0].id},

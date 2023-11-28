@@ -319,7 +319,8 @@ class EntryUpdateSerializer(EntryBaseSerializer):
 
     # These parameters are only used to run TriggerActions
     delay_trigger = serializers.BooleanField(required=False, default=True)
-    # This will contain EntityAttr IDs that have already been updated in this TriggerAction running chain.
+    # This will contain EntityAttr IDs that have already been updated in this TriggerAction
+    # running chain.
     call_stacks = serializers.ListField(child=serializers.IntegerField(), required=False)
 
     class Meta:

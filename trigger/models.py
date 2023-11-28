@@ -229,7 +229,8 @@ class TriggerCondition(models.Model):
 
     def is_match_condition(self, recv_value, attr_type=None) -> bool:
         """
-        This checks specified value, which is compatible with APIv2 standard, matches with this condition.
+        This checks specified value, which is compatible with APIv2 standard, matches
+        with this condition.
         """
 
         # This is a helper method when AttrType is "object" or "named_object"
