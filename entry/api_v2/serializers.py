@@ -310,6 +310,8 @@ class EntryCreateSerializer(EntryBaseSerializer):
 class EntryUpdateData(TypedDict, total=False):
     name: str
     attrs: list[AttributeDataSerializer]
+    delay_trigger: bool
+    call_stacks: list[int]
 
 
 class EntryUpdateSerializer(EntryBaseSerializer):
