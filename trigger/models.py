@@ -106,7 +106,10 @@ class TriggerAction(models.Model):
 
         value = value or self.values.first()
         if attr_type & AttrTypeValue["array"]:
-            return [self.get_serializer_acceptable_value(x, attr_type ^ AttrTypeValue["array"]) for x in self.values.all()]
+            return [
+                self.get_serializer_acceptable_value(x, attr_type ^ AttrTypeValue["array"])
+                for x in self.values.all()
+            ]
         elif attr_type == AttrTypeValue["boolean"]:
             return value.bool_cond
         elif attr_type == AttrTypeValue["named_object"]:
@@ -135,13 +138,13 @@ class TriggerAction(models.Model):
             "delay_trigger": False,
             "call_stacks": [*call_stacks, self.id],
         }
-        serializer = EntryUpdateSerializer(instance=entry,
-                                           data=setting_data,
-                                           context={"request": DRFRequest(user)})
+        serializer = EntryUpdateSerializer(
+            instance=entry, data=setting_data, context={"request": DRFRequest(user)}
+        )
         if serializer:
             serializer.is_valid(raise_exception=True)
             serializer.save()
-            
+
 
 class TriggerActionValue(models.Model):
     action = models.ForeignKey(TriggerAction, on_delete=models.CASCADE, related_name="values")
@@ -181,6 +184,7 @@ class TriggerParentCondition(models.Model):
         It's necessary to expand APIv2 implementation to pass EntityAttr ID in the recv_attrs
         context to reduce DB query to get it from Attribute instance.
         """
+
         def _is_match(condition):
             for attr_info in [x for x in recv_attrs if x["attr_id"] == condition.attr.id]:
                 if condition.is_match_condition(attr_info["value"]):
@@ -227,6 +231,7 @@ class TriggerCondition(models.Model):
         """
         This checks specified value, which is compatible with APIv2 standard, matches with this condition.
         """
+
         # This is a helper method when AttrType is "object" or "named_object"
         def _is_match_object(val):
             if isinstance(val, int) or isinstance(val, str):
@@ -239,7 +244,12 @@ class TriggerCondition(models.Model):
             attr_type = self.attr.type
 
         if attr_type & AttrTypeValue["array"]:
-            return any([self.is_match_condition(x, self.attr.type ^ AttrTypeValue["array"]) for x in recv_value])
+            return any(
+                [
+                    self.is_match_condition(x, self.attr.type ^ AttrTypeValue["array"])
+                    for x in recv_value
+                ]
+            )
 
         elif attr_type == AttrTypeValue["named_object"]:
             return _is_match_object(recv_value["id"]) and self.str_cond == recv_value["name"]
@@ -252,7 +262,6 @@ class TriggerCondition(models.Model):
 
         elif attr_type == AttrTypeValue["boolean"]:
             return self.bool_cond == recv_value
-
 
     @classmethod
     def register(cls, entity: Entity, conditions: list, actions: list) -> TriggerParentCondition:
@@ -285,8 +294,8 @@ class TriggerCondition(models.Model):
     def get_invoked_actions(cls, entity: Entity, recv_data: list):
         actions = []
         for parent_condition in TriggerParentCondition.objects.filter(entity=entity):
-            actions += parent_condition.get_actions([
-                {"attr_id": int(x["id"]), "value": x["value"]} for x in recv_data
-            ])
+            actions += parent_condition.get_actions(
+                [{"attr_id": int(x["id"]), "value": x["value"]} for x in recv_data]
+            )
 
         return actions

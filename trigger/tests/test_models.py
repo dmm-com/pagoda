@@ -70,31 +70,59 @@ class ModelTest(AironeTestCase):
             ],
         )
 
-        self.entry_refs = [self.add_entry(self.user, "ref-%s" % i, self.entity_ref) for i in range(3)]
+        self.entry_refs = [
+            self.add_entry(self.user, "ref-%s" % i, self.entity_ref) for i in range(3)
+        ]
         self.FULL_CONDITION_CONFIGURATION_PARAMETERS = [
             {"attr_id": self.entity.attrs.get(name="str_trigger").id, "str_cond": FAT_LADY_PASSWD},
-            {"attr_id": self.entity.attrs.get(name="ref_trigger").id, "ref_cond": self.entry_refs[2]},
+            {
+                "attr_id": self.entity.attrs.get(name="ref_trigger").id,
+                "ref_cond": self.entry_refs[2],
+            },
             {"attr_id": self.entity.attrs.get(name="bool_trigger").id, "bool_cond": True},
-            {"attr_id": self.entity.attrs.get(name="named_trigger").id, "str_cond": FAT_LADY_PASSWD, "ref_cond": self.entry_refs[2]},
-            {"attr_id": self.entity.attrs.get(name="arr_str_trigger").id, "str_cond": FAT_LADY_PASSWD},
-            {"attr_id": self.entity.attrs.get(name="arr_ref_trigger").id, "ref_cond": self.entry_refs[2]},
-            {"attr_id": self.entity.attrs.get(name="arr_named_trigger").id, "str_cond": FAT_LADY_PASSWD, "ref_cond": self.entry_refs[2]},
+            {
+                "attr_id": self.entity.attrs.get(name="named_trigger").id,
+                "str_cond": FAT_LADY_PASSWD,
+                "ref_cond": self.entry_refs[2],
+            },
+            {
+                "attr_id": self.entity.attrs.get(name="arr_str_trigger").id,
+                "str_cond": FAT_LADY_PASSWD,
+            },
+            {
+                "attr_id": self.entity.attrs.get(name="arr_ref_trigger").id,
+                "ref_cond": self.entry_refs[2],
+            },
+            {
+                "attr_id": self.entity.attrs.get(name="arr_named_trigger").id,
+                "str_cond": FAT_LADY_PASSWD,
+                "ref_cond": self.entry_refs[2],
+            },
         ]
         self.FULL_ACTION_CONFIGURATION_PARAMETERS = [
             {"attr_id": self.entity.attrs.get(name="str_action").id, "value": "changed_value"},
             {"attr_id": self.entity.attrs.get(name="ref_action").id, "value": self.entry_refs[0]},
             {"attr_id": self.entity.attrs.get(name="bool_action").id, "value": True},
-            {"attr_id": self.entity.attrs.get(name="named_action").id, "value": {
-                "name": "changed_value",
-                "id": self.entry_refs[0],
-            }},
-            {"attr_id": self.entity.attrs.get(name="arr_str_action").id, "value": ["foo", "bar", "baz"]},
+            {
+                "attr_id": self.entity.attrs.get(name="named_action").id,
+                "value": {
+                    "name": "changed_value",
+                    "id": self.entry_refs[0],
+                },
+            },
+            {
+                "attr_id": self.entity.attrs.get(name="arr_str_action").id,
+                "value": ["foo", "bar", "baz"],
+            },
             {"attr_id": self.entity.attrs.get(name="arr_ref_action").id, "value": self.entry_refs},
-            {"attr_id": self.entity.attrs.get(name="arr_named_action").id, "value": [
-                {"name": "foo", "id": self.entry_refs[0]},
-                {"name": "bar", "id": self.entry_refs[1]},
-                {"name": "baz", "id": self.entry_refs[2]},
-            ]},
+            {
+                "attr_id": self.entity.attrs.get(name="arr_named_action").id,
+                "value": [
+                    {"name": "foo", "id": self.entry_refs[0]},
+                    {"name": "bar", "id": self.entry_refs[1]},
+                    {"name": "baz", "id": self.entry_refs[2]},
+                ],
+            },
         ]
 
     def test_input_airone_trigger_action(self):
@@ -182,20 +210,30 @@ class ModelTest(AironeTestCase):
         # register TriggerCondition and its Actions
         settingTriggerConditions = [
             {"attr_id": self.entity.attrs.get(name="str_trigger").id, "str_cond": "test"},
-            {"attr_id": self.entity.attrs.get(name="ref_trigger").id, "ref_cond": self.entry_refs[0]},
+            {
+                "attr_id": self.entity.attrs.get(name="ref_trigger").id,
+                "ref_cond": self.entry_refs[0],
+            },
         ]
         settingTriggerActions = self.FULL_ACTION_CONFIGURATION_PARAMETERS.copy()
-        parent_condition = TriggerCondition.register(self.entity, settingTriggerConditions, settingTriggerActions)
+        parent_condition = TriggerCondition.register(
+            self.entity, settingTriggerConditions, settingTriggerActions
+        )
 
         # This checks TriggerParentCondition.get_actions() returns expected TriggerActions
         # and they have expected context (TriggerActionValue).
-        trigger_actions = parent_condition.get_actions([
-            {"attr_id": entry.attrs.get(schema__name="str_trigger").schema.id, "value": "test"},
-            {"attr_id": entry.attrs.get(schema__name="ref_trigger").schema.id, "value": self.entry_refs[0].id},
-        ])
+        trigger_actions = parent_condition.get_actions(
+            [
+                {"attr_id": entry.attrs.get(schema__name="str_trigger").schema.id, "value": "test"},
+                {
+                    "attr_id": entry.attrs.get(schema__name="ref_trigger").schema.id,
+                    "value": self.entry_refs[0].id,
+                },
+            ]
+        )
         self.assertEqual(len(trigger_actions), 7)
         self.assertTrue(all([isinstance(a, TriggerAction) for a in trigger_actions]))
-        for (index, trigger_action) in enumerate(trigger_actions):
+        for index, trigger_action in enumerate(trigger_actions):
             self.assertEqual(trigger_action.attr.id, settingTriggerActions[index]["attr_id"])
 
         # This checks each TriggerActionValue has expected context
@@ -213,14 +251,18 @@ class ModelTest(AironeTestCase):
         self.assertEqual(trigger_actions[3].values.first().ref_cond, self.entry_refs[0])
 
         self.assertEqual(trigger_actions[4].values.count(), 3)
-        self.assertEqual([x.str_cond for x in trigger_actions[4].values.all()], ["foo", "bar", "baz"])
+        self.assertEqual(
+            [x.str_cond for x in trigger_actions[4].values.all()], ["foo", "bar", "baz"]
+        )
 
         self.assertEqual(trigger_actions[5].values.count(), 3)
         self.assertEqual([x.ref_cond for x in trigger_actions[5].values.all()], self.entry_refs)
 
         self.assertEqual(trigger_actions[6].values.count(), 3)
-        self.assertEqual([(x.str_cond, x.ref_cond) for x in trigger_actions[6].values.all()],
-                         [("foo", self.entry_refs[0]), ("bar", self.entry_refs[1]), ("baz", self.entry_refs[2])])
+        self.assertEqual(
+            [(x.str_cond, x.ref_cond) for x in trigger_actions[6].values.all()],
+            [("foo", self.entry_refs[0]), ("bar", self.entry_refs[1]), ("baz", self.entry_refs[2])],
+        )
 
     def test_condition_can_be_invoked_for_each_attribute_types(self):
         entry = self.add_entry(self.user, "test_entry", self.entity)
@@ -240,24 +282,59 @@ class ModelTest(AironeTestCase):
             {"attrname": "ref_trigger", "value": None, "will_invoke": False},
             {"attrname": "ref_trigger", "value": self.entry_refs[0], "will_invoke": False},
             {"attrname": "ref_trigger", "value": self.entry_refs[2], "will_invoke": True},
-            {"attrname": "named_trigger", "value": {"name": "Open Sesame", "id": self.entry_refs[0].id}, "will_invoke": False},
-            {"attrname": "named_trigger", "value": {"name": FAT_LADY_PASSWD, "id": None}, "will_invoke": False},
-            {"attrname": "named_trigger", "value": {"name": "", "id": self.entry_refs[2].id}, "will_invoke": False},
-            {"attrname": "named_trigger", "value": {"name": FAT_LADY_PASSWD, "id": self.entry_refs[2].id}, "will_invoke": True},
+            {
+                "attrname": "named_trigger",
+                "value": {"name": "Open Sesame", "id": self.entry_refs[0].id},
+                "will_invoke": False,
+            },
+            {
+                "attrname": "named_trigger",
+                "value": {"name": FAT_LADY_PASSWD, "id": None},
+                "will_invoke": False,
+            },
+            {
+                "attrname": "named_trigger",
+                "value": {"name": "", "id": self.entry_refs[2].id},
+                "will_invoke": False,
+            },
+            {
+                "attrname": "named_trigger",
+                "value": {"name": FAT_LADY_PASSWD, "id": self.entry_refs[2].id},
+                "will_invoke": True,
+            },
             {"attrname": "arr_str_trigger", "value": [""], "will_invoke": False},
             {"attrname": "arr_str_trigger", "value": ["Open Sesame"], "will_invoke": False},
-            {"attrname": "arr_str_trigger", "value": ["Open Sesame", FAT_LADY_PASSWD], "will_invoke": True},
+            {
+                "attrname": "arr_str_trigger",
+                "value": ["Open Sesame", FAT_LADY_PASSWD],
+                "will_invoke": True,
+            },
             {"attrname": "arr_ref_trigger", "value": [], "will_invoke": False},
-            {"attrname": "arr_ref_trigger", "value": [self.entry_refs[0], self.entry_refs[1]], "will_invoke": False},
+            {
+                "attrname": "arr_ref_trigger",
+                "value": [self.entry_refs[0], self.entry_refs[1]],
+                "will_invoke": False,
+            },
             {"attrname": "arr_ref_trigger", "value": self.entry_refs, "will_invoke": True},
-            {"attrname": "arr_named_trigger", "value": [{"name": "Open Sesame", "id": self.entry_refs[0].id}], "will_invoke": False},
-            {"attrname": "arr_named_trigger", "value": [{"name": "Open Sesame", "id": self.entry_refs[0].id}, {"name": FAT_LADY_PASSWD, "id": self.entry_refs[2].id}], "will_invoke": True},
+            {
+                "attrname": "arr_named_trigger",
+                "value": [{"name": "Open Sesame", "id": self.entry_refs[0].id}],
+                "will_invoke": False,
+            },
+            {
+                "attrname": "arr_named_trigger",
+                "value": [
+                    {"name": "Open Sesame", "id": self.entry_refs[0].id},
+                    {"name": FAT_LADY_PASSWD, "id": self.entry_refs[2].id},
+                ],
+                "will_invoke": True,
+            },
         ]
         for test_input_param in test_input_params:
             attr = self.entity.attrs.get(name=test_input_param["attrname"])
-            actions = TriggerCondition.get_invoked_actions(self.entity, [
-                {"id": attr.id, "value": test_input_param["value"]}
-            ]) 
+            actions = TriggerCondition.get_invoked_actions(
+                self.entity, [{"id": attr.id, "value": test_input_param["value"]}]
+            )
             if test_input_param["will_invoke"]:
                 self.assertEqual(len(actions), 1)
             else:
@@ -272,7 +349,9 @@ class ModelTest(AironeTestCase):
             {"attr_id": self.entity.attrs.get(name="str_trigger").id, "str_cond": "test"},
         ]
         settingTriggerActions = self.FULL_ACTION_CONFIGURATION_PARAMETERS.copy()
-        parent_condition = TriggerCondition.register(self.entity, settingTriggerConditions, settingTriggerActions)
+        parent_condition = TriggerCondition.register(
+            self.entity, settingTriggerConditions, settingTriggerActions
+        )
 
         # Run each actions of parent_condition
         input_params = [
@@ -287,15 +366,29 @@ class ModelTest(AironeTestCase):
         self.assertTrue(entry.get_attrv("bool_action"))
         self.assertEqual(entry.get_attrv("named_action").value, "changed_value")
         self.assertEqual(entry.get_attrv("named_action").referral.id, self.entry_refs[0].id)
-        self.assertEqual([x.value for x in entry.get_attrv("arr_str_action").data_array.all()],
-                         ["foo", "bar", "baz"])
-        self.assertEqual([x.referral.id for x in entry.get_attrv("arr_ref_action").data_array.all()],
-                         [x.id for x in self.entry_refs])
-        self.assertEqual([(x.value, x.referral.id) for x in entry.get_attrv("arr_named_action").data_array.all()],
-                         [("foo", self.entry_refs[0].id), ("bar", self.entry_refs[1].id), ("baz", self.entry_refs[2].id)])
+        self.assertEqual(
+            [x.value for x in entry.get_attrv("arr_str_action").data_array.all()],
+            ["foo", "bar", "baz"],
+        )
+        self.assertEqual(
+            [x.referral.id for x in entry.get_attrv("arr_ref_action").data_array.all()],
+            [x.id for x in self.entry_refs],
+        )
+        self.assertEqual(
+            [
+                (x.value, x.referral.id)
+                for x in entry.get_attrv("arr_named_action").data_array.all()
+            ],
+            [
+                ("foo", self.entry_refs[0].id),
+                ("bar", self.entry_refs[1].id),
+                ("baz", self.entry_refs[2].id),
+            ],
+        )
 
     @mock.patch(
-        "trigger.tasks.may_invoke_trigger.delay", mock.Mock(side_effect=trigger_tasks.may_invoke_trigger)
+        "trigger.tasks.may_invoke_trigger.delay",
+        mock.Mock(side_effect=trigger_tasks.may_invoke_trigger),
     )
     def test_prevent_infinite_loop_updating(self):
         """
@@ -303,16 +396,20 @@ class ModelTest(AironeTestCase):
         """
         # register the simplest TriggerConditoin that could loop update
         target_attr = self.entity.attrs.get(name="str_trigger")
-        TriggerCondition.register(self.entity,
-                                  [{"attr_id": target_attr.id, "str_cond": "hoge"}],
-                                  [{"attr_id": target_attr.id, "value": "fuga"}])  
-        TriggerCondition.register(self.entity,
-                                  [{"attr_id": target_attr.id, "str_cond": "fuga"}],
-                                  [{"attr_id": target_attr.id, "value": "hoge"}])  
+        TriggerCondition.register(
+            self.entity,
+            [{"attr_id": target_attr.id, "str_cond": "hoge"}],
+            [{"attr_id": target_attr.id, "value": "fuga"}],
+        )
+        TriggerCondition.register(
+            self.entity,
+            [{"attr_id": target_attr.id, "str_cond": "fuga"}],
+            [{"attr_id": target_attr.id, "value": "hoge"}],
+        )
 
-        actions = TriggerCondition.get_invoked_actions(self.entity, [
-            {"id": target_attr.id, "value": "hoge"}
-        ]) 
+        actions = TriggerCondition.get_invoked_actions(
+            self.entity, [{"id": target_attr.id, "value": "hoge"}]
+        )
         self.assertEqual(len(actions), 1)
 
         # This tests TriggerAction running chain won't be executed infinitely
@@ -321,5 +418,12 @@ class ModelTest(AironeTestCase):
 
         # Then, check entry is updated as expected
         self.assertEqual(target_entry.get_attrv("str_trigger").value, "hoge")
-        self.assertEqual([x.value for x in AttributeValue.objects.filter(parent_attr__schema=target_attr).order_by("created_time")],
-                         ["", "fuga", "hoge"])
+        self.assertEqual(
+            [
+                x.value
+                for x in AttributeValue.objects.filter(parent_attr__schema=target_attr).order_by(
+                    "created_time"
+                )
+            ],
+            ["", "fuga", "hoge"],
+        )

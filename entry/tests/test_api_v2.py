@@ -4546,9 +4546,9 @@ class ViewTest(AironeViewTest):
 
         self.assertTrue(mock_task.called)
 
-
     @mock.patch(
-        "trigger.tasks.may_invoke_trigger.delay", mock.Mock(side_effect=trigger_tasks.may_invoke_trigger)
+        "trigger.tasks.may_invoke_trigger.delay",
+        mock.Mock(side_effect=trigger_tasks.may_invoke_trigger),
     )
     def test_update_entry_when_trigger_is_set(self):
         # create Entry to be updated in this test
@@ -4560,12 +4560,17 @@ class ViewTest(AironeViewTest):
 
         # register Trigger and Action that specify "fuga" at text attribute
         # when value "hoge" is set to the Attribute "val".
-        parent_condition = TriggerCondition.register(self.entity, [
-            {"attr_id": self.entity.attrs.get(name="val").id, "str_cond": "hoge"},
-        ], [
-            {"attr_id": self.entity.attrs.get(name="text").id, "value": "fuga"},
-        ])
+        parent_condition = TriggerCondition.register(
+            self.entity,
+            [
+                {"attr_id": self.entity.attrs.get(name="val").id, "str_cond": "hoge"},
+            ],
+            [
+                {"attr_id": self.entity.attrs.get(name="text").id, "value": "fuga"},
+            ],
+        )
 
+        # send request to update Entry
         params = {
             "name": "entry-change",
             "attrs": [
@@ -4576,3 +4581,6 @@ class ViewTest(AironeViewTest):
             "/entry/api/v2/%s/" % entry.id, json.dumps(params), "application/json"
         )
         self.assertEqual(resp.status_code, 200)
+
+        # check Attribute "text", which is specified by TriggerCondition, was changed to "fuga"
+        self.assertEqual(entry.get_attrv("text").value, "fuga")

@@ -4,7 +4,12 @@ from airone.celery import app
 from job.models import Job
 from user.models import User
 from entry.models import Entry
-from trigger.models import TriggerParentCondition, TriggerCondition, TriggerAction, TriggerActionValue
+from trigger.models import (
+    TriggerParentCondition,
+    TriggerCondition,
+    TriggerAction,
+    TriggerActionValue,
+)
 
 
 @app.task(bind=True)
