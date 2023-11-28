@@ -24,13 +24,13 @@ from airone.lib.types import (
 )
 from entity.models import Entity, EntityAttr
 from entry import tasks
-from trigger import tasks as trigger_tasks
-from trigger.models import TriggerCondition
 from entry.models import Attribute, AttributeValue, Entry
 from entry.settings import CONFIG
 from group.models import Group
 from job.models import Job, JobOperation
 from role.models import Role
+from trigger import tasks as trigger_tasks
+from trigger.models import TriggerCondition
 from user.models import User
 
 
@@ -4562,7 +4562,7 @@ class ViewTest(AironeViewTest):
 
         # register Trigger and Action that specify "fuga" at text attribute
         # when value "hoge" is set to the Attribute "val".
-        parent_condition = TriggerCondition.register(
+        TriggerCondition.register(
             self.entity,
             [
                 {"attr_id": self.entity.attrs.get(name="val").id, "str_cond": "hoge"},

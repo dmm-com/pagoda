@@ -1,15 +1,12 @@
 import json
 
 from airone.celery import app
-from job.models import Job
-from user.models import User
 from entry.models import Entry
+from job.models import Job
 from trigger.models import (
-    TriggerParentCondition,
     TriggerCondition,
-    TriggerAction,
-    TriggerActionValue,
 )
+from user.models import User
 
 
 @app.task(bind=True)

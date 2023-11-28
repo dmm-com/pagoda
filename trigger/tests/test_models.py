@@ -1,18 +1,16 @@
 import mock
+
 from airone.lib.test import AironeTestCase
 from airone.lib.types import AttrTypeValue
 from entry.models import AttributeValue
+from trigger import tasks as trigger_tasks
 from trigger.models import (
-    InputTriggerAction,
-    InputTriggerActionValue,
     InputTriggerCondition,
     TriggerAction,
-    TriggerActionValue,
     TriggerCondition,
     TriggerParentCondition,
 )
 from user.models import User
-from trigger import tasks as trigger_tasks
 
 FAT_LADY_PASSWD = "Caputo Draconis"
 
@@ -265,7 +263,7 @@ class ModelTest(AironeTestCase):
         )
 
     def test_condition_can_be_invoked_for_each_attribute_types(self):
-        entry = self.add_entry(self.user, "test_entry", self.entity)
+        self.add_entry(self.user, "test_entry", self.entity)
 
         # register TriggerCondition and its Actions
         settingTriggerAction = self.FULL_ACTION_CONFIGURATION_PARAMETERS.copy()[0]

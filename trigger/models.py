@@ -1,12 +1,12 @@
 from django.db import models
 
-from airone.exceptions.trigger import InvalidInputException
-from airone.lib.types import AttrTypeValue
-from airone.lib.http import DRFRequest
 from acl.models import ACLBase
+from airone.exceptions.trigger import InvalidInputException
+from airone.lib.http import DRFRequest
+from airone.lib.types import AttrTypeValue
 from entity.models import Entity, EntityAttr
-from entry.models import Entry, Attribute
 from entry.api_v2.serializers import EntryUpdateSerializer
+from entry.models import Entry
 
 
 ## These are internal classes for AirOne trigger and action
