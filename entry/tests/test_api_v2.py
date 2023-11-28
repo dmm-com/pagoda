@@ -716,6 +716,7 @@ class ViewTest(AironeViewTest):
             {
                 "id": entry.id,
                 "name": "entry-change",
+                "delay_trigger": True,
             },
         )
         self.assertEqual(entry.status, 0)
@@ -1056,6 +1057,7 @@ class ViewTest(AironeViewTest):
             "attrs": [
                 {"id": attr["val"].id, "value": "fuga"},
             ],
+            "delay_trigger": True,
         }
 
         def side_effect(handler_name, entity_name, user, *args):
