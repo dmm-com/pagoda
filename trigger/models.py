@@ -263,6 +263,8 @@ class TriggerCondition(models.Model):
         elif attr_type == AttrTypeValue["boolean"]:
             return self.bool_cond == recv_value
 
+        return False
+
     @classmethod
     def register(cls, entity: Entity, conditions: list, actions: list) -> TriggerParentCondition:
         # convert input to InputTriggerCondition
