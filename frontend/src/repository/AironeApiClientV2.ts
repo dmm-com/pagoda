@@ -673,9 +673,9 @@ class AironeApiClientV2 {
     hasReferral = false,
     referralName = "",
     searchAllEntities = false,
-    page: number
+    page: number,
+    limit: number = 100,
   ): Promise<AdvancedSearchResult> {
-    const limit = 100;
     const offset = (page - 1) * limit;
     return await this.entry.entryApiV2AdvancedSearchCreate(
       {
