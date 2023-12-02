@@ -42,11 +42,11 @@ export function formalizeEntryInfo(
               asGroup: undefined,
               asRole: undefined,
               asNamedObject: { name: "", object: null },
-              asArrayString: [{ value: "" }],
+              asArrayString: [],
               asArrayObject: [],
               asArrayGroup: [],
               asArrayRole: [],
-              asArrayNamedObject: [{ name: "", object: null, _boolean: false }],
+              asArrayNamedObject: [],
             };
           }
 
