@@ -3,25 +3,24 @@
  */
 
 import { Group } from "@dmm-com/airone-apiclient-typescript-fetch";
-import { render } from "@testing-library/react";
-import React, { FC } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  act,
+  fireEvent,
+  render,
+  renderHook,
+  screen,
+} from "@testing-library/react";
+import React from "react";
 import { useForm } from "react-hook-form";
 
 import { TestWrapper } from "../../TestWrapper";
+import { schema } from "../entry/entryForm/EntryFormSchema";
 
 import { GroupForm } from "./GroupForm";
 import { Schema } from "./groupForm/GroupFormSchema";
 
-test("should render a component with essential props", function () {
-  Object.defineProperty(window, "django_context", {
-    value: {
-      user: {
-        isSuperuser: true,
-      },
-    },
-    writable: false,
-  });
-
+describe("GroupForm", () => {
   const groups = [
     {
       id: 1,
@@ -46,37 +45,50 @@ test("should render a component with essential props", function () {
     },
   ];
 
-  const group: Group = {
+  const defaultValues: Group = {
     id: 1,
     name: "test",
     members: [],
   };
 
-  /* eslint-disable */
-  jest
-    .spyOn(
-      require("repository/AironeApiClientV2").aironeApiClientV2,
-      "getUsers"
-    )
-    .mockResolvedValue(Promise.resolve([]));
-  jest
-    .spyOn(
-      require("repository/AironeApiClientV2").aironeApiClientV2,
-      "getGroupTrees"
-    )
-    .mockResolvedValue(Promise.resolve(groups));
-  /* eslint-enable */
+  test("should render a component with essential props", function () {
+    const {
+      result: {
+        current: { control, getValues, setValue },
+      },
+    } = renderHook(() =>
+      useForm<Schema>({
+        resolver: zodResolver(schema),
+        mode: "onBlur",
+        defaultValues,
+      })
+    );
 
-  const Wrapper: FC = () => {
-    const { setValue, control } = useForm<Schema>({
-      defaultValues: group,
-    });
-    return <GroupForm control={control} setValue={setValue} groupId={1} />;
-  };
+    /* eslint-disable */
+    jest
+      .spyOn(
+        require("repository/AironeApiClientV2").aironeApiClientV2,
+        "getUsers"
+      )
+      .mockResolvedValue(Promise.resolve([]));
+    jest
+      .spyOn(
+        require("repository/AironeApiClientV2").aironeApiClientV2,
+        "getGroupTrees"
+      )
+      .mockResolvedValue(Promise.resolve(groups));
+    /* eslint-enable */
 
-  expect(() =>
-    render(<Wrapper />, {
+    render(<GroupForm control={control} setValue={setValue} groupId={1} />, {
       wrapper: TestWrapper,
-    })
-  ).not.toThrow();
+    });
+
+    act(() => {
+      fireEvent.change(screen.getByPlaceholderText("グループ名"), {
+        target: { value: "group name" },
+      });
+    });
+
+    expect(screen.getByPlaceholderText("グループ名")).toHaveValue("group name");
+  });
 });
