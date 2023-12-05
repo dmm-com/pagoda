@@ -15,7 +15,10 @@ import React from "react";
 import { useForm } from "react-hook-form";
 
 import { schema, Schema } from "./EntryFormSchema";
-import { StringAttributeValueField } from "./StringAttributeValueField";
+import {
+  ArrayStringAttributeValueField,
+  StringAttributeValueField,
+} from "./StringAttributeValueField";
 
 import { TestWrapper } from "TestWrapper";
 
@@ -86,5 +89,61 @@ describe("StringAttributeValueField", () => {
     expect(getValues("attrs.0.value.asString")).toEqual("new value");
   });
 
-  // TODO test array-string
+  test("should provide array-string value editor", async () => {
+    const {
+      result: {
+        current: { control, getValues },
+      },
+    } = renderHook(() =>
+      useForm<Schema>({
+        resolver: zodResolver(schema),
+        mode: "onBlur",
+        defaultValues,
+      })
+    );
+
+    render(<ArrayStringAttributeValueField attrId={0} control={control} />, {
+      wrapper: TestWrapper,
+    });
+
+    // At least 1 element appears even if the initial value is empty
+    expect(getValues("attrs.0.value.asArrayString")).toHaveLength(1);
+    expect(screen.getAllByRole("textbox")).toHaveLength(1);
+    expect(screen.getAllByRole("textbox")[0]).toHaveValue("");
+
+    // Edit the first element
+    act(() => {
+      fireEvent.change(screen.getAllByRole("textbox")[0], {
+        target: { value: "new value" },
+      });
+    });
+    expect(screen.getAllByRole("textbox")[0]).toHaveValue("new value");
+    expect(getValues("attrs.0.value.asArrayString")).toEqual([
+      { value: "new value" },
+    ]);
+
+    // add second element
+    act(() => {
+      // now there is 1 element, and each element has 2 buttons (delete, add)
+      // click the add button of the first element
+      screen.getAllByRole("button")[1].click();
+    });
+    expect(screen.getAllByRole("textbox")).toHaveLength(2);
+    expect(screen.getAllByRole("textbox")[0]).toHaveValue("new value");
+    expect(screen.getAllByRole("textbox")[1]).toHaveValue("");
+    expect(getValues("attrs.0.value.asArrayString")).toEqual([
+      { value: "new value" },
+      { value: "" },
+    ]);
+
+    // delete first element
+    act(() => {
+      // now there is 1 element, and each element has 2 buttons (delete, add)
+      // click the delete button of the first element
+      screen.getAllByRole("button")[0].click();
+    });
+    expect(screen.getAllByRole("textbox")).toHaveLength(1);
+    expect(screen.getAllByRole("textbox")[0]).toHaveValue("");
+    expect(getValues("attrs.0.value.asArrayString")).toEqual([{ value: "" }]);
+  });
 });
