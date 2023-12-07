@@ -1093,8 +1093,10 @@ class ViewTest(AironeViewTest):
         ref_entries[3].delete()
         resp = self.client.get(reverse("entry:edit", args=[entry.id]))
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual([x["last_value"] for x in resp.context["attributes"] if x["id"] == attr.id][0],
-                         [{"value": "hoge", "id": ref_entries[0].id, "name": ref_entries[0].name}])
+        self.assertEqual(
+            [x["last_value"] for x in resp.context["attributes"] if x["id"] == attr.id][0],
+            [{"value": "hoge", "id": ref_entries[0].id, "name": ref_entries[0].name}],
+        )
 
         parent_values_count = AttributeValue.objects.extra(
             **{"where": ["status & %s = 1" % AttributeValue.STATUS_DATA_ARRAY_PARENT]}
