@@ -1059,7 +1059,7 @@ class ViewTest(AironeViewTest):
         )
 
     @patch("entry.tasks.edit_entry_attrs.delay", Mock(side_effect=tasks.edit_entry_attrs))
-    def test_post_edit_with_array_object_value(self):
+    def test_show_and_post_edit_with_array_object_value(self):
         user = self.admin_login()
 
         # This create referral Entries (e0, e1 and e2).
@@ -1067,7 +1067,7 @@ class ViewTest(AironeViewTest):
         # Then, this test send a request to edit the "entry" to change referral Entries
         # at the "attr" to e1 and e2.
         ref_entity = self.create_entity(user, "RefEntity")
-        ref_entries = [self.add_entry(user, "e%s" % i, ref_entity) for i in range(3)]
+        ref_entries = [self.add_entry(user, "e%s" % i, ref_entity) for i in range(4)]
 
         entity = self.create_entity(
             user,
@@ -1082,12 +1082,19 @@ class ViewTest(AironeViewTest):
             entity,
             values={
                 "attr": [
-                    {"name": "", "id": ref_entries[0]},
-                    {"name": "", "id": ref_entries[1]},
+                    {"name": "hoge", "id": ref_entries[0]},
+                    {"name": "fuga", "id": ref_entries[3]},
                 ]
             },
         )
         attr = entry.attrs.last()
+
+        # This represents to prevent showing AttributeValue that refers deleted Entry
+        ref_entries[3].delete()
+        resp = self.client.get(reverse("entry:edit", args=[entry.id]))
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual([x["last_value"] for x in resp.context["attributes"] if x["id"] == attr.id][0],
+                         [{"value": "hoge", "id": ref_entries[0].id, "name": ref_entries[0].name}])
 
         parent_values_count = AttributeValue.objects.extra(
             **{"where": ["status & %s = 1" % AttributeValue.STATUS_DATA_ARRAY_PARENT]}

@@ -1460,7 +1460,7 @@ class ModelTest(AironeTestCase):
             elif attr["name"] == "arr_obj":
                 self.assertEqual(attr["last_value"], [])
             elif attr["name"] == "arr_name":
-                self.assertEqual([x["value"] for x in attr["last_value"]], ["hoge"])
+                self.assertEqual([x for x in attr["last_value"]], [])
                 self.assertFalse(any([x in attr["last_value"] for x in ["id", "name"]]))
 
     def test_get_available_attrs_with_empty_referral(self):

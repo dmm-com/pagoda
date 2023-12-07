@@ -1531,7 +1531,11 @@ class Entry(ACLBase):
                 values = []
                 for attrv in last_value.data_array.all():
                     value = {"value": attrv.value}
-                    if attrv.referral and attrv.referral.is_active:
+                    if attrv.referral and not attrv.referral.is_active:
+                        # not to show value when target referral Entry is deleted
+                        continue
+
+                    elif attrv.referral and attrv.referral.is_active:
                         value["id"] = attrv.referral.id
                         value["name"] = attrv.referral.name
                     values.append(value)

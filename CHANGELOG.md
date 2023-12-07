@@ -5,6 +5,8 @@
 ### Added
 
 ### Changed
+* Change specification of Entry.get_available_attrs() for deleted referral for UX.
+  Contributed by @userlocalhost
 
 ### Fixed
 
