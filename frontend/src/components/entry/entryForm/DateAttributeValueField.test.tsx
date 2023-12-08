@@ -8,14 +8,14 @@ import { act, screen, render, renderHook } from "@testing-library/react";
 import React from "react";
 import { useForm } from "react-hook-form";
 
-import { BooleanAttributeValueField } from "./BooleanAttributeValueField";
 import { schema, Schema } from "./EntryFormSchema";
 
 import { TestWrapper } from "TestWrapper";
 
 import "@testing-library/jest-dom";
+import { DateAttributeValueField } from "./DateAttributeValueField";
 
-describe("BooleanAttributeValueField", () => {
+describe("DateAttributeValueField", () => {
   const defaultValues: Schema = {
     name: "entry",
     schema: {
@@ -24,24 +24,24 @@ describe("BooleanAttributeValueField", () => {
     },
     attrs: {
       "0": {
-        type: EntryAttributeTypeTypeEnum.BOOLEAN,
+        type: EntryAttributeTypeTypeEnum.DATE,
         index: 0,
         isMandatory: false,
         schema: {
           id: 1,
-          name: "boolean",
+          name: "date",
         },
         value: {
-          asBoolean: false,
+          asString: "2020-01-01",
         },
       },
     },
   };
 
-  test("should provide boolean value editor", () => {
+  test("should provide date value editor", () => {
     const {
       result: {
-        current: { control, getValues },
+        current: { control, getValues, setValue },
       },
     } = renderHook(() =>
       useForm<Schema>({
@@ -51,18 +51,30 @@ describe("BooleanAttributeValueField", () => {
       })
     );
 
-    render(<BooleanAttributeValueField attrId={0} control={control} />, {
-      wrapper: TestWrapper,
-    });
+    render(
+      <DateAttributeValueField
+        attrId={0}
+        control={control}
+        setValue={setValue}
+      />,
+      {
+        wrapper: TestWrapper,
+      }
+    );
 
-    expect(screen.getByRole("checkbox")).not.toBeChecked();
+    expect(screen.getByRole("textbox")).toHaveValue("2020/01/01");
+    expect(getValues("attrs.0.value.asString")).toEqual("2020-01-01");
 
+    // Open the date picker
     act(() => {
-      screen.getByRole("checkbox").click();
+      screen.getByRole("button").click();
+    });
+    // Select 2020-01-02
+    act(() => {
+      screen.getByRole("gridcell", { name: "2" }).click();
     });
 
-    expect(screen.getByRole("checkbox")).toBeChecked();
-
-    expect(getValues("attrs.0.value.asBoolean")).toEqual(true);
+    expect(screen.getByRole("textbox")).toHaveValue("2020/01/02");
+    expect(getValues("attrs.0.value.asString")).toEqual("2020-1-2");
   });
 });
