@@ -325,7 +325,7 @@ class APITest(AironeViewTest):
                 "application/json",
                 **{
                     "HTTP_AUTHORIZATION": "Token %s" % str(admin.token),
-                }
+                },
             )
 
         self.assertEqual(Entry.objects.filter(schema=entity).count(), 1)
@@ -1009,7 +1009,7 @@ class APITest(AironeViewTest):
             {"entity": "E1", "entry": "e1"},
             **{
                 "HTTP_AUTHORIZATION": "Token %s" % str(user.token),
-            }
+            },
         )
         self.assertEqual(resp.status_code, 200)
 
@@ -1021,7 +1021,7 @@ class APITest(AironeViewTest):
             {"entity": "E1", "entry": "e1"},
             **{
                 "HTTP_AUTHORIZATION": "Token %s" % str(user.token),
-            }
+            },
         )
         self.assertEqual(resp.status_code, 401)
 
@@ -1033,7 +1033,7 @@ class APITest(AironeViewTest):
             {"entity": "E1", "entry": "e1"},
             **{
                 "HTTP_AUTHORIZATION": "Token %s" % str(user.token),
-            }
+            },
         )
         self.assertEqual(resp.status_code, 200)
 
@@ -1125,7 +1125,7 @@ class APITest(AironeViewTest):
             "application/json",
             **{
                 "HTTP_AUTHORIZATION": "Token %s" % users["_u1"].token,
-            }
+            },
         )
         self.assertEqual(resp.status_code, 200)
 

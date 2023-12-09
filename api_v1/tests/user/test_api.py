@@ -42,7 +42,7 @@ class APITest(AironeViewTest):
             "/api/v1/user/access_token",
             **{
                 "HTTP_AUTHORIZATION": "Token %s" % str(token),
-            }
+            },
         )
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         self.assertEqual(resp.json()["results"], str(token))
@@ -52,7 +52,7 @@ class APITest(AironeViewTest):
             "/api/v1/user/access_token",
             **{
                 "HTTP_AUTHORIZATION": "Token %s" % "invlaid-token",
-            }
+            },
         )
         self.assertEqual(resp.status_code, status.HTTP_401_UNAUTHORIZED)
 
@@ -68,7 +68,7 @@ class APITest(AironeViewTest):
             "/api/v1/user/access_token",
             **{
                 "HTTP_AUTHORIZATION": "Basic %s" % auth_info,
-            }
+            },
         )
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
 
@@ -84,6 +84,6 @@ class APITest(AironeViewTest):
             "/api/v1/user/access_token",
             **{
                 "HTTP_AUTHORIZATION": "Basic %s" % auth_info,
-            }
+            },
         )
         self.assertEqual(resp.status_code, status.HTTP_401_UNAUTHORIZED)
