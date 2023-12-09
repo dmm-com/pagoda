@@ -7,6 +7,7 @@ import {
   act,
   render,
   screen,
+  waitFor,
   waitForElementToBeRemoved,
   within,
 } from "@testing-library/react";
@@ -78,6 +79,8 @@ describe("RoleList", () => {
       screen.getByRole("button", { name: "Yes" }).click();
     });
 
-    // TODO check if the deletion is successful
+    await waitFor(() => {
+      screen.getByText("ロールの削除が完了しました");
+    });
   });
 });
