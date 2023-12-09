@@ -8,12 +8,12 @@ import { act, screen, render, renderHook } from "@testing-library/react";
 import React from "react";
 import { useForm } from "react-hook-form";
 
+import { DateAttributeValueField } from "./DateAttributeValueField";
 import { schema, Schema } from "./EntryFormSchema";
 
 import { TestWrapper } from "TestWrapper";
 
 import "@testing-library/jest-dom";
-import { DateAttributeValueField } from "./DateAttributeValueField";
 
 describe("DateAttributeValueField", () => {
   const defaultValues: Schema = {
