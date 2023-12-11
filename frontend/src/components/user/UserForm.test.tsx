@@ -3,16 +3,18 @@
  */
 
 import { UserRetrieveAuthenticateTypeEnum } from "@dmm-com/airone-apiclient-typescript-fetch";
-import { render } from "@testing-library/react";
-import React, { FC } from "react";
+import { zodResolver } from "@hookform/resolvers/zod/dist/zod";
+import { render, renderHook, screen } from "@testing-library/react";
+import React from "react";
 import { useForm } from "react-hook-form";
 
 import { TestWrapper } from "../../TestWrapper";
+import { schema } from "../entry/entryForm/EntryFormSchema";
 
 import { UserForm } from "./UserForm";
 import { Schema } from "./userForm/UserFormSchema";
 
-test("should render a component with essential props", function () {
+describe("UserForm", () => {
   Object.defineProperty(window, "django_context", {
     value: {
       user: {
@@ -23,10 +25,10 @@ test("should render a component with essential props", function () {
   });
 
   const userInfo = {
-    id: 0,
-    username: "",
-    password: "",
-    email: "",
+    id: 1,
+    username: "user1",
+    password: "user1",
+    email: "user1@example.com",
     isSuperuser: false,
     dateJoined: "",
     token: {
@@ -38,11 +40,20 @@ test("should render a component with essential props", function () {
     authenticateType: UserRetrieveAuthenticateTypeEnum.AUTH_TYPE_LOCAL,
   };
 
-  const Wrapper: FC = () => {
-    const { control } = useForm<Schema>({
-      defaultValues: userInfo,
-    });
-    return (
+  test("should provide user editor", function () {
+    const {
+      result: {
+        current: { control, getValues, setValue },
+      },
+    } = renderHook(() =>
+      useForm<Schema>({
+        resolver: zodResolver(schema),
+        mode: "onBlur",
+        defaultValues: userInfo,
+      })
+    );
+
+    render(
       <UserForm
         user={userInfo}
         control={control}
@@ -54,13 +65,18 @@ test("should render a component with essential props", function () {
         handleCancel={() => {
           /* do nothing */
         }}
-      />
+      />,
+      { wrapper: TestWrapper }
     );
-  };
 
-  expect(() =>
-    render(<Wrapper />, {
-      wrapper: TestWrapper,
-    })
-  ).not.toThrow();
+    expect(
+      screen.getByPlaceholderText("ユーザ名を入力してください")
+    ).toHaveValue("user1");
+    expect(
+      screen.getByPlaceholderText("メールアドレスを入力してください")
+    ).toHaveValue("user1@example.com");
+    expect(
+      screen.getByPlaceholderText("パスワードを入力してください")
+    ).toHaveValue("user1");
+  });
 });

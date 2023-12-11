@@ -32,7 +32,7 @@ describe("GroupAttributeValueField", () => {
       name: "entity",
     },
     attrs: {
-      group: {
+      "0": {
         type: EntryAttributeTypeTypeEnum.GROUP,
         index: 0,
         isMandatory: false,
@@ -44,7 +44,7 @@ describe("GroupAttributeValueField", () => {
           asGroup: { id: 1, name: "group1" },
         },
       },
-      arrayGroup: {
+      "1": {
         type: EntryAttributeTypeTypeEnum.ARRAY_GROUP,
         index: 1,
         isMandatory: false,
@@ -53,7 +53,12 @@ describe("GroupAttributeValueField", () => {
           name: "array-group",
         },
         value: {
-          asArrayGroup: [],
+          asArrayGroup: [
+            {
+              id: 1,
+              name: "group1",
+            },
+          ],
         },
       },
     },
@@ -107,7 +112,11 @@ describe("GroupAttributeValueField", () => {
       );
     });
 
-    // TODO check the initial value, then trigger the change event and check the new value
+    expect(screen.getByRole("combobox")).toHaveValue("group1");
+    expect(getValues("attrs.0.value.asGroup")).toEqual({
+      id: 1,
+      name: "group1",
+    });
 
     // Open the select options
     act(() => {
@@ -119,7 +128,6 @@ describe("GroupAttributeValueField", () => {
     });
 
     expect(screen.getByRole("combobox")).toHaveValue("group2");
-
     expect(getValues("attrs.0.value.asGroup")).toEqual({
       id: 2,
       name: "group2",
@@ -160,14 +168,11 @@ describe("GroupAttributeValueField", () => {
       );
     });
 
-    // Open the select options
-    act(() => {
-      screen.getByRole("button", { name: "Open" }).click();
-    });
-    // Select "group1" element
-    act(() => {
-      within(screen.getByRole("presentation")).getByText("group1").click();
-    });
+    expect(screen.getByRole("button", { name: "group1" })).toBeInTheDocument();
+    expect(getValues("attrs.1.value.asArrayGroup")).toEqual([
+      { id: 1, name: "group1" },
+    ]);
+
     // Open the select options
     act(() => {
       screen.getByRole("button", { name: "Open" }).click();
@@ -179,7 +184,6 @@ describe("GroupAttributeValueField", () => {
 
     expect(screen.getByRole("button", { name: "group1" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "group2" })).toBeInTheDocument();
-
     expect(getValues("attrs.1.value.asArrayGroup")).toEqual([
       { id: 1, name: "group1" },
       { id: 2, name: "group2" },

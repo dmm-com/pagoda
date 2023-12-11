@@ -32,7 +32,7 @@ describe("RoleAttributeValueField", () => {
       name: "entity",
     },
     attrs: {
-      role: {
+      "0": {
         type: EntryAttributeTypeTypeEnum.ROLE,
         index: 0,
         isMandatory: false,
@@ -44,7 +44,7 @@ describe("RoleAttributeValueField", () => {
           asRole: { id: 1, name: "role1" },
         },
       },
-      arrayRole: {
+      "1": {
         type: EntryAttributeTypeTypeEnum.ARRAY_ROLE,
         index: 1,
         isMandatory: false,
@@ -53,7 +53,12 @@ describe("RoleAttributeValueField", () => {
           name: "array-role",
         },
         value: {
-          asArrayRole: [],
+          asArrayRole: [
+            {
+              id: 1,
+              name: "role1",
+            },
+          ],
         },
       },
     },
@@ -115,7 +120,8 @@ describe("RoleAttributeValueField", () => {
       );
     });
 
-    // TODO check the initial value, then trigger the change event and check the new value
+    expect(screen.getByRole("combobox")).toHaveValue("role1");
+    expect(getValues("attrs.0.value.asRole")).toEqual({ id: 1, name: "role1" });
 
     // Open the select options
     act(() => {
@@ -127,7 +133,6 @@ describe("RoleAttributeValueField", () => {
     });
 
     expect(screen.getByRole("combobox")).toHaveValue("role2");
-
     expect(getValues("attrs.0.value.asRole")).toEqual({ id: 2, name: "role2" });
   });
 
@@ -165,14 +170,11 @@ describe("RoleAttributeValueField", () => {
       );
     });
 
-    // Open the select options
-    act(() => {
-      screen.getByRole("button", { name: "Open" }).click();
-    });
-    // Select "role1" element
-    act(() => {
-      within(screen.getByRole("presentation")).getByText("role1").click();
-    });
+    expect(screen.getByRole("button", { name: "role1" })).toBeInTheDocument();
+    expect(getValues("attrs.1.value.asArrayRole")).toEqual([
+      { id: 1, name: "role1" },
+    ]);
+
     // Open the select options
     act(() => {
       screen.getByRole("button", { name: "Open" }).click();

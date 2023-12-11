@@ -35,7 +35,7 @@ describe("GroupTreeRoot", () => {
     },
   ];
 
-  test("should show groups", function () {
+  test("should show groups", async function () {
     render(
       <GroupTreeRoot
         groupTrees={groups}
@@ -52,5 +52,6 @@ describe("GroupTreeRoot", () => {
 
     expect(screen.getAllByRole("checkbox")).toHaveLength(4);
     expect(screen.getAllByRole("checkbox")[0]).toBeChecked();
+    expect(screen.getAllByRole("button")).toHaveLength(4);
   });
 });

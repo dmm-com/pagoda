@@ -32,7 +32,7 @@ describe("StringAttributeValueField", () => {
       name: "entity",
     },
     attrs: {
-      string: {
+      "0": {
         type: EntryAttributeTypeTypeEnum.STRING,
         index: 0,
         isMandatory: false,
@@ -44,7 +44,7 @@ describe("StringAttributeValueField", () => {
           asString: "initial value",
         },
       },
-      arrayString: {
+      "1": {
         type: EntryAttributeTypeTypeEnum.ARRAY_STRING,
         index: 1,
         isMandatory: false,
@@ -53,7 +53,11 @@ describe("StringAttributeValueField", () => {
           name: "array-string",
         },
         value: {
-          asArrayString: [],
+          asArrayString: [
+            {
+              value: "initial value",
+            },
+          ],
         },
       },
     },
@@ -76,7 +80,7 @@ describe("StringAttributeValueField", () => {
       wrapper: TestWrapper,
     });
 
-    // TODO check if the initial value is rendered
+    expect(screen.getByRole("textbox")).toHaveValue("initial value");
 
     act(() => {
       fireEvent.change(screen.getByRole("textbox"), {
@@ -102,14 +106,14 @@ describe("StringAttributeValueField", () => {
       })
     );
 
-    render(<ArrayStringAttributeValueField attrId={0} control={control} />, {
+    render(<ArrayStringAttributeValueField attrId={1} control={control} />, {
       wrapper: TestWrapper,
     });
 
     // At least 1 element appears even if the initial value is empty
-    expect(getValues("attrs.0.value.asArrayString")).toHaveLength(1);
+    expect(getValues("attrs.1.value.asArrayString")).toHaveLength(1);
     expect(screen.getAllByRole("textbox")).toHaveLength(1);
-    expect(screen.getAllByRole("textbox")[0]).toHaveValue("");
+    expect(screen.getAllByRole("textbox")[0]).toHaveValue("initial value");
 
     // Edit the first element
     act(() => {
@@ -118,7 +122,7 @@ describe("StringAttributeValueField", () => {
       });
     });
     expect(screen.getAllByRole("textbox")[0]).toHaveValue("new value");
-    expect(getValues("attrs.0.value.asArrayString")).toEqual([
+    expect(getValues("attrs.1.value.asArrayString")).toEqual([
       { value: "new value" },
     ]);
 
@@ -131,7 +135,7 @@ describe("StringAttributeValueField", () => {
     expect(screen.getAllByRole("textbox")).toHaveLength(2);
     expect(screen.getAllByRole("textbox")[0]).toHaveValue("new value");
     expect(screen.getAllByRole("textbox")[1]).toHaveValue("");
-    expect(getValues("attrs.0.value.asArrayString")).toEqual([
+    expect(getValues("attrs.1.value.asArrayString")).toEqual([
       { value: "new value" },
       { value: "" },
     ]);
@@ -144,6 +148,6 @@ describe("StringAttributeValueField", () => {
     });
     expect(screen.getAllByRole("textbox")).toHaveLength(1);
     expect(screen.getAllByRole("textbox")[0]).toHaveValue("");
-    expect(getValues("attrs.0.value.asArrayString")).toEqual([{ value: "" }]);
+    expect(getValues("attrs.1.value.asArrayString")).toEqual([{ value: "" }]);
   });
 });
