@@ -146,7 +146,7 @@ class ACLSerializer(serializers.ModelSerializer):
                         id__in=[x["member_id"] for x in attrs.get("acl_settings", [])]
                     )
                 ],
-            }
+            },
         ):
             raise PermissionDenied(
                 "Inadmissible setting. By this change you will never change this ACL"

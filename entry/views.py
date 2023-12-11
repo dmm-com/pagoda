@@ -472,7 +472,7 @@ def export(request, entity_id, recv_data):
             "text": "entry_%s.%s" % (entity.name, job_params["export_format"]),
             "target": entity,
             "params": job_params,
-        }
+        },
     )
     job.run()
 

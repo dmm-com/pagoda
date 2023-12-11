@@ -75,7 +75,7 @@ def index(request):
                 **{
                     u.username: {"is_admin": True}
                     for u in x.admin_users.filter(is_active=True).order_by("username")
-                }
+                },
             ),
             "groups": dict(
                 {
@@ -85,7 +85,7 @@ def index(request):
                 **{
                     g.name: {"is_admin": True}
                     for g in x.admin_groups.filter(is_active=True).order_by("name")
-                }
+                },
             ),
         }
         for x in Role.objects.filter(is_active=True)

@@ -48,9 +48,7 @@ raised exception:
 
 full traceback:
 {traceback_msg}
-""".format(
-            request=request, exception=exception, traceback_msg=traceback_msg
-        )
+""".format(request=request, exception=exception, traceback_msg=traceback_msg)
 
         # Print for DEBUG because email is not sent in dev environment
         print(message)
