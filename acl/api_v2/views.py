@@ -53,9 +53,9 @@ class ACLHistoryAPI(generics.ListAPIView):
 
         acl_history = list(instance.history.all())
         codename_query = (
-            Q(codename="%s.%s" % (instance.id, ACLType.Full.id))
-            | Q(codename="%s.%s" % (instance.id, ACLType.Writable.id))
-            | Q(codename="%s.%s" % (instance.id, ACLType.Readable.id))
+            Q(codename="%s.%s" % (instance.id, ACLType.Full.id))  # type: ignore
+            | Q(codename="%s.%s" % (instance.id, ACLType.Writable.id))  # type: ignore
+            | Q(codename="%s.%s" % (instance.id, ACLType.Readable.id))  # type: ignore
         )
         if instance.objtype == ACLObjType.Entity.value:
             attrs = instance.attrs.filter(is_active=True)
@@ -64,9 +64,9 @@ class ACLHistoryAPI(generics.ListAPIView):
             )
             for attr in attrs:
                 codename_query |= (
-                    Q(codename="%s.%s" % (attr.id, ACLType.Full.id))
-                    | Q(codename="%s.%s" % (attr.id, ACLType.Writable.id))
-                    | Q(codename="%s.%s" % (attr.id, ACLType.Readable.id))
+                    Q(codename="%s.%s" % (attr.id, ACLType.Full.id))  # type: ignore
+                    | Q(codename="%s.%s" % (attr.id, ACLType.Writable.id))  # type: ignore
+                    | Q(codename="%s.%s" % (attr.id, ACLType.Readable.id))  # type: ignore
                 )
 
         permissions = HistoricalPermission.objects.filter(codename_query)
