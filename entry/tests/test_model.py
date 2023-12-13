@@ -4668,6 +4668,78 @@ class ModelTest(AironeTestCase):
             ],
         )
 
+        # array_named_entry case
+        self._entry.restore()
+        ref_entity2 = Entity.objects.create(name="", created_user=self._user)
+        ref_attr2 = EntityAttr.objects.create(
+            **{
+                "name": "ref_array_named_object",
+                "type": AttrTypeValue["array_named_object"],
+                "created_user": self._user,
+                "parent_entity": ref_entity2,
+            }
+        )
+        ref_attr2.referral.add(self._entity)
+        ref_entity2.attrs.add(ref_attr2)
+
+        ref_entry2 = Entry.objects.create(name="ref2", schema=ref_entity2, created_user=self._user)
+        ref_entry2.complement_attrs(self._user)
+        ref_entry_attr2: Attribute = ref_entry2.attrs.get(schema__name="ref_array_named_object")
+        ref_entry_attr2.add_value(
+            self._user, [{"name": "hoge", "id": self._entry.id}, {"name": "fuga", "id": ""}]
+        )
+
+        result = ref_entry2.get_es_document()
+        self.assertEqual(
+            result["attr"],
+            [
+                {
+                    "name": ref_attr2.name,
+                    "type": ref_attr2.type,
+                    "key": "hoge",
+                    "value": self._entry.name,
+                    "date_value": None,
+                    "referral_id": self._entry.id,
+                    "is_readable": True,
+                },
+                {
+                    "name": ref_attr2.name,
+                    "type": ref_attr2.type,
+                    "key": "fuga",
+                    "value": "",
+                    "date_value": None,
+                    "referral_id": "",
+                    "is_readable": True,
+                },
+            ],
+        )
+
+        self._entry.delete()
+        result = ref_entry2.get_es_document()
+        self.assertEqual(
+            result["attr"],
+            [
+                {
+                    "name": ref_attr2.name,
+                    "type": ref_attr2.type,
+                    "key": "",
+                    "value": "",
+                    "date_value": None,
+                    "referral_id": "",
+                    "is_readable": True,
+                },
+                {
+                    "name": ref_attr2.name,
+                    "type": ref_attr2.type,
+                    "key": "fuga",
+                    "value": "",
+                    "date_value": None,
+                    "referral_id": "",
+                    "is_readable": True,
+                },
+            ],
+        )
+
     def test_get_attrv_method_of_entry(self):
         # prepare Entry and Attribute for testing Entry.get_attrv method
         user = User.objects.create(username="hoge")
