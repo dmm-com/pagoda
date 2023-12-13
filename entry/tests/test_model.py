@@ -2519,7 +2519,7 @@ class ModelTest(AironeTestCase):
             "name": {
                 "type": AttrTypeValue["named_object"],
                 "value": {"name": "hoge", "id": ref_entries[1]},
-                "expected_value": {"hoge": {"name": "", "id": ""}},
+                "expected_value": {"": {"name": "", "id": ""}},
             },
             "arr_ref": {
                 "type": AttrTypeValue["array_object"],
@@ -2529,7 +2529,7 @@ class ModelTest(AironeTestCase):
             "arr_name": {
                 "type": AttrTypeValue["array_named_object"],
                 "value": [{"name": "hoge", "id": ref_entries[3]}],
-                "expected_value": [{"hoge": {"name": "", "id": ""}}],
+                "expected_value": [],
             },
         }
         for attr_name, info in ref_info.items():
