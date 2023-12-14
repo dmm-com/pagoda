@@ -139,12 +139,6 @@ class ACLSerializer(serializers.ModelSerializer):
                         "value": int(x["value"]),
                     }
                     for x in attrs.get("acl_settings", [])
-                ]
-                + [
-                    {"role": role, "value": ACLType.Full}
-                    for role in acl.full.roles.exclude(
-                        id__in=[x["member_id"] for x in attrs.get("acl_settings", [])]
-                    )
                 ],
             },
         ):
