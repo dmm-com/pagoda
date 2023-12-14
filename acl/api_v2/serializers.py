@@ -161,11 +161,17 @@ class ACLSerializer(serializers.ModelSerializer):
 
         obj.save()
 
-        permissions = {}
-        for permission in HistoricalPermission.objects.filter(
-            codename__startswith="%s." % instance.id
-        ):
-            permissions[permission.name] = permission
+        permissions = {
+            "full": HistoricalPermission.objects.get(
+                codename="%s.%d" % (instance.id, ACLType.Full.id)  # type: ignore
+            ),
+            "writable": HistoricalPermission.objects.get(
+                codename="%s.%d" % (instance.id, ACLType.Writable.id)  # type: ignore
+            ),
+            "readable": HistoricalPermission.objects.get(
+                codename="%s.%d" % (instance.id, ACLType.Readable.id)  # type: ignore
+            ),
+        }
 
         for item in [x for x in validated_data.get("acl_settings", []) if x["value"]]:
             role = Role.objects.get(id=item["member_id"])

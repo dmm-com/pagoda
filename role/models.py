@@ -152,5 +152,23 @@ class Role(models.Model):
 
 
 class HistoricalPermission(Permission):
+    """
+    3 HistoricalPermission objects are generated for each object of ACLBase model.
+    A large number of ACLBase objects has a significant impact on performance.
+    In that case, please set the index below.
+
+    mysql> CREATE INDEX permission_codename_idx ON auth_permission (codename);`
+
+    This is because the permission model is an external library and cannot be changed.
+
+    Exact match filtering by code name is faster.
+    NG: HistoricalPermission.objects.filter(codename__startswith="%s." % aclbase.id)
+    OK: HistoricalPermission.objects.filter(
+        Q(codename="%s.%s" % (aclbase.id, ACLType.Full.id))|
+        Q(codename="%s.%s" % (aclbase.id, ACLType.Writable.id))|
+        Q(codename="%s.%s" % (aclbase.id, ACLType.Readable.id))
+    )
+    """
+
     roles = models.ManyToManyField(Role, related_name="permissions", blank=True)
     history = HistoricalRecords(m2m_fields=[roles])
