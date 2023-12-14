@@ -1,64 +1,14 @@
 import { EntityList as EntityListInterface } from "@dmm-com/airone-apiclient-typescript-fetch";
 import AddIcon from "@mui/icons-material/Add";
-import MoreVertIcon from "@mui/icons-material/MoreVert";
-import {
-  Box,
-  Button,
-  Card,
-  CardActionArea,
-  CardContent,
-  CardHeader,
-  Grid,
-  IconButton,
-  Pagination,
-  Stack,
-  Typography,
-} from "@mui/material";
-import { styled } from "@mui/material/styles";
+import { Box, Button, Grid, Pagination, Stack } from "@mui/material";
 import React, { FC, useState } from "react";
 import { Link } from "react-router-dom";
 
-import { entityEntriesPath, newEntityPath } from "Routes";
+import { EntityListCard } from "./EntityListCard";
+
+import { newEntityPath } from "Routes";
 import { SearchBox } from "components/common/SearchBox";
-import { EntityControlMenu } from "components/entity/EntityControlMenu";
-import { EntryImportModal } from "components/entry/EntryImportModal";
 import { normalizeToMatch } from "services/StringUtil";
-
-const EntityNote = styled(Typography)(({ theme }) => ({
-  color: theme.palette.text.secondary,
-  display: "-webkit-box",
-  overflow: "hidden",
-  webkitBoxOrient: "vertical",
-  webkitLineClamp: 2,
-}));
-
-const EntityName = styled(Typography)(({}) => ({
-  textOverflow: "ellipsis",
-  overflow: "hidden",
-  whiteSpace: "nowrap",
-}));
-
-const StyledCard = styled(Card)(({}) => ({
-  height: "100%",
-}));
-
-const StyledCardHeader = styled(CardHeader)(({}) => ({
-  p: "0px",
-  mt: "24px",
-  mx: "16px",
-  mb: "16px",
-  ".MuiCardHeader-content": {
-    width: "80%",
-  },
-}));
-
-const StyledCardContent = styled(CardContent)(({}) => ({
-  p: "0px",
-  mt: "0px",
-  mx: "16px",
-  mb: "0px",
-  lineHeight: 2,
-}));
 
 interface Props {
   entities: EntityListInterface[];
@@ -80,10 +30,6 @@ export const EntityList: FC<Props> = ({
   setToggle,
 }) => {
   const [keyword, setKeyword] = useState(query ?? "");
-  const [entityAnchorEls, setEntityAnchorEls] = useState<{
-    [key: number]: HTMLButtonElement | null;
-  }>({});
-  const [openImportModal, setOpenImportModal] = React.useState(false);
 
   return (
     <Box>
@@ -117,47 +63,7 @@ export const EntityList: FC<Props> = ({
       <Grid container spacing={2} id="entity_list">
         {entities.map((entity) => (
           <Grid item xs={4} key={entity.id}>
-            <StyledCard>
-              <StyledCardHeader
-                title={
-                  <CardActionArea
-                    component={Link}
-                    to={entityEntriesPath(entity.id)}
-                  >
-                    <EntityName variant="h6">{entity.name}</EntityName>
-                  </CardActionArea>
-                }
-                action={
-                  <>
-                    <IconButton
-                      onClick={(e) => {
-                        setEntityAnchorEls({
-                          ...entityAnchorEls,
-                          [entity.id]: e.currentTarget,
-                        });
-                      }}
-                    >
-                      <MoreVertIcon />
-                    </IconButton>
-                    <EntityControlMenu
-                      entityId={entity.id}
-                      anchorElem={entityAnchorEls[entity.id]}
-                      handleClose={(entityId: number) =>
-                        setEntityAnchorEls({
-                          ...entityAnchorEls,
-                          [entityId]: null,
-                        })
-                      }
-                      setOpenImportModal={setOpenImportModal}
-                      setToggle={setToggle}
-                    />
-                  </>
-                }
-              />
-              <StyledCardContent>
-                <EntityNote>{entity.note}</EntityNote>
-              </StyledCardContent>
-            </StyledCard>
+            <EntityListCard entity={entity} setToggle={setToggle} />
           </Grid>
         ))}
       </Grid>
@@ -174,11 +80,6 @@ export const EntityList: FC<Props> = ({
           />
         </Stack>
       </Box>
-
-      <EntryImportModal
-        openImportModal={openImportModal}
-        closeImportModal={() => setOpenImportModal(false)}
-      />
     </Box>
   );
 };
