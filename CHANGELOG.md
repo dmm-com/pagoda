@@ -5,10 +5,14 @@
 ### Added
 
 ### Changed
-* Change specification of Entry.get_available_attrs() for deleted referral for UX.
-  Contributed by @userlocalhost
 
 ### Fixed
+
+## v3.70.0
+
+### Changed
+* Change specification of Entry.get_available_attrs() for deleted referral for UX.
+  Contributed by @userlocalhost
 
 ## v3.69.0
 
