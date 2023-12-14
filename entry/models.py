@@ -1849,6 +1849,12 @@ class Entry(ACLBase):
                 if attrv.referral and attrv.referral.is_active:
                     attrinfo["value"] = truncate(attrv.referral.name)
                     attrinfo["referral_id"] = attrv.referral.id
+                elif (
+                    entity_attr.type & AttrTypeValue["array"]
+                    and attrv.referral
+                    and not attrv.referral.is_active
+                ):
+                    attrinfo["key"] = ""
 
             elif entity_attr.type & AttrTypeValue["object"]:
                 if attrv.referral and attrv.referral.is_active:
