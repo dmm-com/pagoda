@@ -80,7 +80,7 @@ class ModelTest(RoleTestBase):
             self._BASE_UPDATE_PARAMS,
             **{
                 "name": "test_role_update",
-            }
+            },
         )
         self.client.post(
             reverse("role:do_edit", args=[self.role.id]),

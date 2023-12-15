@@ -2,18 +2,27 @@
  * @jest-environment jsdom
  */
 
-import { render } from "@testing-library/react";
+import { PaginatedUserListList } from "@dmm-com/airone-apiclient-typescript-fetch";
+import {
+  act,
+  render,
+  screen,
+  waitFor,
+  waitForElementToBeRemoved,
+} from "@testing-library/react";
+import { createMemoryHistory } from "history";
 import React from "react";
+import { Router } from "react-router-dom";
 
-import { TestWrapper } from "TestWrapper";
+import { TestWrapper, TestWrapperWithoutRoutes } from "TestWrapper";
 import { UserList } from "components/user/UserList";
 
 afterEach(() => {
   jest.clearAllMocks();
 });
 
-test("should render a component with essential props", function () {
-  const users = {
+describe("UserList", () => {
+  const users: PaginatedUserListList = {
     count: 1,
     next: null,
     previous: null,
@@ -22,7 +31,15 @@ test("should render a component with essential props", function () {
         id: 1,
         username: "user1",
         email: "user1@example.com",
-        is_superuser: false,
+        isSuperuser: false,
+        dateJoined: "2020-01-01T00:00:00Z",
+      },
+      {
+        id: 2,
+        username: "user2",
+        email: "user2@example.com",
+        isSuperuser: false,
+        dateJoined: "2020-02-01T00:00:00Z",
       },
     ],
   };
@@ -34,7 +51,79 @@ test("should render a component with essential props", function () {
       "getUsers"
     )
     .mockResolvedValue(Promise.resolve(users));
+  jest
+    .spyOn(
+      require("repository/AironeApiClientV2").aironeApiClientV2,
+      "destroyUser"
+    )
+    .mockResolvedValue(Promise.resolve());
   /* eslint-enable */
 
-  expect(() => render(<UserList />, { wrapper: TestWrapper })).not.toThrow();
+  test("should show users", async function () {
+    render(<UserList />, { wrapper: TestWrapper });
+
+    await waitForElementToBeRemoved(screen.getByTestId("loading"));
+
+    expect(screen.getAllByRole("link", { name: /user*/i })).toHaveLength(2);
+  });
+
+  test("should navigate to user create page", async function () {
+    const history = createMemoryHistory();
+
+    render(
+      <Router history={history}>
+        <UserList />
+      </Router>,
+      { wrapper: TestWrapperWithoutRoutes }
+    );
+
+    await waitForElementToBeRemoved(screen.getByTestId("loading"));
+
+    act(() => {
+      screen.getByRole("link", { name: "新規ユーザを登録" }).click();
+    });
+
+    expect(history.location.pathname).toBe("/ui/users/new");
+  });
+
+  test("should navigate to user details page", async function () {
+    const history = createMemoryHistory();
+
+    render(
+      <Router history={history}>
+        <UserList />
+      </Router>,
+      { wrapper: TestWrapperWithoutRoutes }
+    );
+
+    await waitForElementToBeRemoved(screen.getByTestId("loading"));
+
+    act(() => {
+      screen.getByRole("link", { name: "user1" }).click();
+    });
+
+    expect(history.location.pathname).toBe("/ui/users/1");
+  });
+
+  test("should delete a user", async function () {
+    render(<UserList />, { wrapper: TestWrapper });
+
+    await waitForElementToBeRemoved(screen.getByTestId("loading"));
+
+    act(() => {
+      // open a menu for user1
+      // NOTE there are 2 buttons (user1 menu, user2 menu)
+      screen.getAllByRole("button")[0].click();
+    });
+    act(() => {
+      screen.getByRole("menuitem", { name: "削除" }).click();
+    });
+    act(() => {
+      screen.getByRole("button", { name: "Yes" }).click();
+    });
+
+    await waitFor(() => {
+      screen.getByText("ユーザ(user1)の削除が完了しました");
+    });
+  });
 });

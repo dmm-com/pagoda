@@ -55,7 +55,7 @@ class ViewTest(RoleTestBase):
                 "groups": [{"id": self.groups["groupA"].id}],
                 "admin_users": [{"id": self.users["userB"].id}],
                 "admin_groups": [{"id": self.groups["groupB"].id}],
-            }
+            },
         )
         resp = self.client.post("/role/do_create/", json.dumps(params), "application/json")
         self.assertEqual(resp.status_code, 400)
@@ -67,7 +67,7 @@ class ViewTest(RoleTestBase):
             self._BASE_CREATE_PARAMS,
             **{
                 "name": "",
-            }
+            },
         )
         resp = self.client.post(
             "/role/do_edit/%d/" % self.role.id, json.dumps(params), "application/json"
@@ -121,7 +121,7 @@ class ViewTest(RoleTestBase):
                 "groups": [{"id": self.groups["groupB"].id}],
                 "admin_users": [{"id": self.users["userB"].id}],
                 "admin_groups": [{"id": self.groups["groupB"].id}],
-            }
+            },
         )
         resp = self.client.post(
             "/role/do_edit/%d/" % role.id, json.dumps(params), "application/json"
@@ -144,7 +144,7 @@ class ViewTest(RoleTestBase):
             self._BASE_CREATE_PARAMS,
             **{
                 "name": "Creating Role to be fail",
-            }
+            },
         )
         resp = self.client.post("/role/do_create/", json.dumps(params), "application/json")
         self.assertEqual(resp.status_code, 400)
