@@ -161,6 +161,7 @@ export const EditEntityPage: FC = () => {
               default:
                 setError(name, { type: "custom", message: message });
             }
+            enqueueSubmitResult(false);
           }
         );
       } else {
