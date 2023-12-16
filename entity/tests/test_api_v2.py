@@ -5,7 +5,6 @@ from unittest import mock
 
 import yaml
 from django.urls import reverse
-from django.test import override_settings
 from rest_framework.exceptions import ValidationError
 
 from acl.models import ACLBase

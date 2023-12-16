@@ -3,6 +3,7 @@ import json
 from typing import Any, Optional, TypedDict
 
 import requests
+from django.conf import settings
 from django.core.validators import URLValidator
 from drf_spectacular.utils import extend_schema_field
 from requests.exceptions import ConnectionError
@@ -10,7 +11,6 @@ from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied, ValidationError
 
 import custom_view
-from airone import settings
 from airone.lib.acl import ACLType
 from airone.lib.drf import DuplicatedObjectExistsError, ObjectNotExistsError, RequiredParameterError
 from airone.lib.log import Logger

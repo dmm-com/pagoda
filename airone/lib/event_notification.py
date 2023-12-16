@@ -13,7 +13,7 @@ urllib3.disable_warnings(InsecureRequestWarning)
 def _send_request_to_webhook_endpoint(entry, user, event_type):
     if not settings.AIRONE_FLAGS["WEBHOOK"]:
         Logger.warning(
-            "skipped to send requests to endpoints because webhook is disabled. skipped webhook urls are %s",
+            "skipped to send requests because webhook is disabled. skipped urls are %s",
             [w.url for w in entry.schema.webhooks.filter(is_enabled=True, is_verified=True)],
         )
         return
