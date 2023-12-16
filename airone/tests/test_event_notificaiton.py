@@ -2,6 +2,7 @@ import json
 
 import mock
 
+from airone import settings
 from airone.lib.event_notification import (
     notify_entry_create,
     notify_entry_delete,
@@ -113,3 +114,20 @@ class EventNotificationTest(AironeViewTest):
 
         # check side effect is not called
         self.assertFalse("is_post_called" in self._test_data)
+
+    @mock.patch("airone.lib.event_notification.requests")
+    def test_notify_event_when_webhook_flag_is_disabled(self, mock_requests):
+        def side_effect(url, data, headers, verify):
+            self._test_data["is_post_called"] = True
+
+        # call notification method and check response
+        mock_requests.post.side_effect = side_effect
+
+        try:
+            settings.AIRONE_FLAGS = {"WEBHOOK": False}
+            notify_entry_create(self.entry, self.user)
+        finally:
+            settings.AIRONE_FLAGS = {"WEBHOOK": True}
+
+        # check side effect is not called
+        self.assertFalse(self._test_data.get("is_post_called", None))

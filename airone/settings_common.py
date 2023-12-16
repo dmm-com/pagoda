@@ -239,6 +239,11 @@ class Common(Configuration):
         # )),
     }
 
+    # flags to enable/disable AirOne core features
+    AIRONE_FLAGS: dict[str, bool] = {
+        "WEBHOOK": env.bool("AIRONE_FLAGS_WEBHOOK", True),
+    }
+
     try:
         proc = subprocess.Popen(
             "cd %s && git describe --tags" % BASE_DIR,
