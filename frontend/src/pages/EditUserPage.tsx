@@ -106,8 +106,10 @@ export const EditUserPage: FC = () => {
         await extractAPIException<Schema>(
           e,
           (message) => enqueueSubmitResult(false, `詳細: "${message}"`),
-          (name, message) =>
-            setError(name, { type: "custom", message: message })
+          (name, message) => {
+            setError(name, { type: "custom", message: message });
+            enqueueSubmitResult(false);
+          }
         );
       } else {
         enqueueSubmitResult(false);
