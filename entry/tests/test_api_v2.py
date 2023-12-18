@@ -4202,7 +4202,13 @@ class ViewTest(AironeViewTest):
             [
                 {
                     "entity": "test-entity",
-                    "entries": [{"attrs": [{"name": "val", "value": "hoge"}], "name": "Entry", "id": test_entry.id}],
+                    "entries": [
+                        {
+                            "attrs": [{"name": "val", "value": "hoge"}],
+                            "name": "Entry",
+                            "id": test_entry.id,
+                        }
+                    ],
                 }
             ],
         )
