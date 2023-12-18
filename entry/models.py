@@ -1747,7 +1747,7 @@ class Entry(ACLBase):
             else:
                 attrinfo[attr.schema.name] = None
 
-        return {"name": self.name, "attrs": attrinfo}
+        return {"id": self.id, "name": self.name, "attrs": attrinfo}
 
     def export_v2(self, user, with_entity: bool = False) -> dict:
         attrinfo = []
@@ -1790,7 +1790,7 @@ class Entry(ACLBase):
                 }
             )
 
-        return {"name": self.name, "attrs": attrinfo}
+        return {"id": self.id, "name": self.name, "attrs": attrinfo}
 
     # NOTE: Type-Write
     def get_es_document(self, es=None, entity_attrs=None):

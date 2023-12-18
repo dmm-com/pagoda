@@ -1256,6 +1256,7 @@ class ViewTest(AironeViewTest):
             "date": {"type": AttrTypeValue["date"], "value": date(2020, 1, 1)},
         }
         entities = []
+        test_entries = []
         for index in range(2):
             entity = Entity.objects.create(name="Entity-%d" % index, created_user=user)
             for attr_name, info in attr_info.items():
@@ -1283,6 +1284,7 @@ class ViewTest(AironeViewTest):
                     attrv = attr.add_value(user, info["value"])
 
                 entry.register_es()
+                test_entries.append(entry)
 
             entities.append(entity)
 
@@ -1308,6 +1310,7 @@ class ViewTest(AironeViewTest):
                 len(resp_data[entity.name]), Entry.objects.filter(schema=entity).count()
             )
             for e_data in resp_data[entity.name]:
+                self.assertTrue(e_data["id"] in [x.id for x in test_entries])
                 self.assertTrue(e_data["name"] in ["e-0", "e-1"])
                 self.assertTrue(all([x in attr_info.keys() for x in e_data["attrs"]]))
 

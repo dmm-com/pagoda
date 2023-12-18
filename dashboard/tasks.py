@@ -127,6 +127,7 @@ def _yaml_export(job: Job, values, recv_data: dict, has_referral: bool) -> Optio
     resp_data: dict = {}
     for index, entry_info in enumerate(values):
         data: dict = {
+            "id": entry_info["entry"]["id"],
             "name": entry_info["entry"]["name"],
             "attrs": {},
         }

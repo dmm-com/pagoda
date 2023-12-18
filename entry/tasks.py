@@ -321,6 +321,7 @@ def _yaml_export_v2(job: Job, values, recv_data: dict, has_referral: bool) -> Op
     resp_data: List[ExportedEntityEntries] = []
     for index, entry_info in enumerate(values):
         data: ExportedEntry = {
+            "id": entry_info["entry"]["id"],
             "name": entry_info["entry"]["name"],
             "attrs": [],
         }

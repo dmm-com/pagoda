@@ -4155,7 +4155,7 @@ class ViewTest(AironeViewTest):
         "entry.tasks.export_search_result_v2.delay", Mock(side_effect=tasks.export_search_result_v2)
     )
     def test_export_with_all_entities(self):
-        self.add_entry(self.user, "Entry", self.entity, values={"val": "hoge"})
+        test_entry = self.add_entry(self.user, "Entry", self.entity, values={"val": "hoge"})
 
         resp = self.client.post(
             "/entry/api/v2/advanced_search_result_export/",
@@ -4202,7 +4202,7 @@ class ViewTest(AironeViewTest):
             [
                 {
                     "entity": "test-entity",
-                    "entries": [{"attrs": [{"name": "val", "value": "hoge"}], "name": "Entry"}],
+                    "entries": [{"attrs": [{"name": "val", "value": "hoge"}], "name": "Entry", "id": test_entry.id}],
                 }
             ],
         )

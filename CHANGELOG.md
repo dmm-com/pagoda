@@ -5,6 +5,8 @@
 ### Added
 
 ### Changed
+* Added an ID attribute to Entry exported yaml data for importing its data.
+  Contributed by @userlocalhost
 
 ### Fixed
 
