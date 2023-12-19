@@ -41,6 +41,7 @@ class ExportedEntryAttribute(TypedDict):
 
 
 class ExportedEntry(TypedDict):
+    id: int
     name: str
     attrs: list[ExportedEntryAttribute]
     referrals: NotRequired[list[dict]]  # same as ExportedEntityEntries, avoiding cycle definition
