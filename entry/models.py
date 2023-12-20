@@ -1808,6 +1808,7 @@ class Entry(ACLBase):
                 "type": entity_attr.type,
                 "key": "",
                 "value": "",
+                "bool_value": False,
                 "date_value": None,
                 "referral_id": "",
                 "is_readable": True
@@ -1845,6 +1846,7 @@ class Entry(ACLBase):
 
             elif entity_attr.type & AttrTypeValue["named"]:
                 attrinfo["key"] = attrv.value
+                attrinfo["bool_value"] = attrv.boolean
 
                 if attrv.referral and attrv.referral.is_active:
                     attrinfo["value"] = truncate(attrv.referral.name)
