@@ -45,6 +45,9 @@ export const editEntityPath = (entityId: number | string) =>
   basePath + `entities/${entityId}`;
 export const entitiesPath = () => basePath + "entities";
 
+// triggers
+export const triggersPath = () => basePath + "triggers";
+
 // groups
 export const newGroupPath = () => basePath + "groups/new";
 export const groupPath = (groupId: number | string) =>

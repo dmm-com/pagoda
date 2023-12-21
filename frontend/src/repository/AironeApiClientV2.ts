@@ -1,56 +1,58 @@
-import {
-  ACL,
-  AclApi,
-  Configuration,
-  EntityDetail,
-  EntityApi,
-  EntryApi,
-  EntryCreate,
-  EntryRetrieve,
-  EntryUpdate,
-  EntryBase,
-  EntryCopy,
-  Group,
-  GroupApi,
-  PaginatedEntryBaseList,
-  PaginatedEntityListList,
-  EntityAttrCreate,
-  EntityCreate,
-  EntityUpdate,
-  EntityApiV2ListRequest,
-  Role,
-  RoleApi,
-  UserApi,
-  UserRetrieve,
-  EntityAttrUpdate,
-  GetEntryAttrReferral,
-  PaginatedJobSerializersList,
-  JobApi,
-  JobSerializers,
-  PaginatedUserListList,
-  UserCreate,
-  UserUpdate,
-  UserToken,
-  RoleCreateUpdate,
-  GroupTree as _GroupTree,
-  GroupCreateUpdate,
-  PaginatedEntityHistoryList,
-  AdvancedSearchResultAttrInfo,
-  PaginatedEntryHistoryAttributeValueList,
-  AttributeData,
-  WebhookCreateUpdate,
-  AdvancedSearchResult,
-  ACLHistory,
-  ACLObjtypeEnum,
-  ACLSetting,
-  PaginatedGroupList,
-} from "@dmm-com/airone-apiclient-typescript-fetch";
 import Cookies from "js-cookie";
 import fileDownload from "js-file-download";
 
 import {
-  EntityHistoryList,
+  ACL,
+  ACLHistory,
+  ACLObjtypeEnum,
+  ACLSetting,
+  AclApi,
+  AdvancedSearchResult,
+  AdvancedSearchResultAttrInfo,
+  AttributeData,
+  Configuration,
+  EntityApi,
+  EntityApiV2ListRequest,
+  EntityAttrCreate,
+  EntityAttrUpdate,
+  EntityCreate,
+  EntityDetail,
+  EntityUpdate,
+  EntryApi,
+  EntryBase,
+  EntryCopy,
+  EntryCreate,
+  EntryRetrieve,
+  EntryUpdate,
+  GetEntryAttrReferral,
+  Group,
+  GroupApi,
+  GroupCreateUpdate,
+  JobApi,
+  JobSerializers,
+  PaginatedEntityHistoryList,
+  PaginatedEntityListList,
+  PaginatedEntryBaseList,
+  PaginatedEntryHistoryAttributeValueList,
+  PaginatedGroupList,
+  PaginatedJobSerializersList,
+  PaginatedTriggerBaseList,
+  PaginatedUserListList,
+  Role,
+  RoleApi,
+  RoleCreateUpdate,
+  TriggerApi,
+  UserApi,
+  UserCreate,
+  UserRetrieve,
+  UserToken,
+  UserUpdate,
+  WebhookCreateUpdate,
+  GroupTree as _GroupTree,
+} from "@dmm-com/airone-apiclient-typescript-fetch";
+import {
   EntityList as ConstEntityList,
+  EntityHistoryList,
   EntryHistoryList,
   EntryReferralList,
   JobList,
@@ -73,6 +75,7 @@ class AironeApiClientV2 {
   private acl: AclApi;
   private entity: EntityApi;
   private entry: EntryApi;
+  private trigger: TriggerApi;
   private group: GroupApi;
   private user: UserApi;
   private role: RoleApi;
@@ -83,6 +86,7 @@ class AironeApiClientV2 {
     this.acl = new AclApi(config);
     this.entity = new EntityApi(config);
     this.entry = new EntryApi(config);
+    this.trigger = new TriggerApi(config);
     // "GroupApi" is associated with "GroupAPI" (~/airone/group/api_v2/views.py)
     this.group = new GroupApi(config);
     this.user = new UserApi(config);
@@ -726,6 +730,12 @@ class AironeApiClientV2 {
         },
       }
     );
+  }
+
+  async getTriggers(page = 1): Promise<PaginatedTriggerBaseList> {
+    return await this.trigger.triggerApiV2List({
+      page: page,
+    });
   }
 
   async getUser(userId: number): Promise<UserRetrieve> {

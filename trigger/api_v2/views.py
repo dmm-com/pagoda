@@ -1,21 +1,21 @@
-from rest_framework import generics, serializers, status, viewsets
-from rest_framework.permissions import BasePermission, IsAuthenticated
-from rest_framework.response import Response
+from rest_framework import viewsets
+from rest_framework.pagination import PageNumberPagination
+from rest_framework.permissions import IsAuthenticated
 
-from trigger.models import TriggerCondition
 from trigger.api_v2.serializers import (
     TriggerBaseSerializer,
 )
+from trigger.models import TriggerCondition
 
 
 class TriggerAPI(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
+    pagination_class = PageNumberPagination
 
     def get_serializer_class(self):
-        serializer = {
-        }
+        serializer = {}
         return serializer.get(self.action, TriggerBaseSerializer)
-    
+
     def get_queryset(self):
         query = {
             "parent__entity__is_active": True,

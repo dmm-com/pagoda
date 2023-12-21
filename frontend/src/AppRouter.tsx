@@ -1,6 +1,6 @@
 import React, { FC } from "react";
 import { RouteComponentProps } from "react-router";
-import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
+import { Route, BrowserRouter as Router, Switch } from "react-router-dom";
 
 import { ErrorHandler } from "./ErrorHandler";
 import { ACLHistoryPage } from "./pages/ACLHistoryPage";
@@ -12,33 +12,34 @@ import { RestoreEntryPage } from "./pages/RestoreEntryPage";
 import { RolePage } from "./pages/RolePage";
 
 import {
+  aclHistoryPath,
   aclPath,
   advancedSearchPath,
   advancedSearchResultPath,
+  copyEntryPath,
+  editEntityPath,
   entitiesPath,
   entityEntriesPath,
   entityHistoryPath,
-  editEntityPath,
+  entryDetailsPath,
+  entryEditPath,
   groupPath,
   groupsPath,
   jobsPath,
+  loginPath,
   newEntityPath,
   newEntryPath,
   newGroupPath,
+  newRolePath,
   newUserPath,
+  restoreEntryPath,
+  rolePath,
+  rolesPath,
+  showEntryHistoryPath,
+  topPath,
+  triggersPath,
   userPath,
   usersPath,
-  loginPath,
-  showEntryHistoryPath,
-  entryEditPath,
-  entryDetailsPath,
-  copyEntryPath,
-  restoreEntryPath,
-  rolesPath,
-  rolePath,
-  newRolePath,
-  topPath,
-  aclHistoryPath,
 } from "Routes";
 import { Header } from "components/Header";
 import { ACLPage } from "pages/ACLPage";
@@ -56,6 +57,7 @@ import { EntryListPage } from "pages/EntryListPage";
 import { GroupPage } from "pages/GroupPage";
 import { JobPage } from "pages/JobPage";
 import { LoginPage } from "pages/LoginPage";
+import { TriggerPage } from "pages/TriggerPage";
 import { UserPage } from "pages/UserPage";
 
 interface Props {
@@ -137,6 +139,7 @@ export const AppRouter: FC<Props> = ({ customRoutes }) => {
                 component={EditEntityPage}
               />
               <Route path={entitiesPath()} component={EntityListPage} />
+              <Route path={triggersPath()} component={TriggerPage} />
               <Route path={newGroupPath()} component={EditGroupPage} />
               <Route path={groupPath(":groupId")} component={EditGroupPage} />
               <Route path={groupsPath()} component={GroupPage} />
