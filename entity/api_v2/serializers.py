@@ -178,6 +178,12 @@ class EntityUpdateData(TypedDict, total=False):
     webhooks: WebhookCreateUpdateSerializer
 
 
+class EntityAttrSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EntityAttr
+        fields = ("id", "name")
+
+
 class EntitySerializer(serializers.ModelSerializer):
     class Meta:
         model = Entity

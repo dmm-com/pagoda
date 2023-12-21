@@ -365,6 +365,10 @@ class AttributeValue(models.Model):
 
         def _is_validate_attr_object(value) -> bool:
             try:
+                if isinstance(value, Entry) and value.is_active:
+                    return True
+                if isinstance(value, ACLBase) and Entry.objects.filter(id=value.id, is_active=True).exists():
+                    raise Exception("value(%s) is not valid entry" % value.name)
                 if value and not Entry.objects.filter(id=value, is_active=True).exists():
                     raise Exception("value(%s) is not entry id" % value)
                 if is_mandatory and not value:

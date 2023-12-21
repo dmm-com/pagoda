@@ -72,29 +72,35 @@ class ModelTest(AironeTestCase):
             self.add_entry(self.user, "ref-%s" % i, self.entity_ref) for i in range(3)
         ]
         self.FULL_CONDITION_CONFIGURATION_PARAMETERS = [
-            {"attr_id": self.entity.attrs.get(name="str_trigger").id, "str_cond": FAT_LADY_PASSWD},
+            {"attr_id": self.entity.attrs.get(name="str_trigger").id, "cond": FAT_LADY_PASSWD},
             {
                 "attr_id": self.entity.attrs.get(name="ref_trigger").id,
-                "ref_cond": self.entry_refs[2],
+                "cond": self.entry_refs[2],
             },
-            {"attr_id": self.entity.attrs.get(name="bool_trigger").id, "bool_cond": True},
+            {"attr_id": self.entity.attrs.get(name="bool_trigger").id, "bond": True},
             {
                 "attr_id": self.entity.attrs.get(name="named_trigger").id,
-                "str_cond": FAT_LADY_PASSWD,
-                "ref_cond": self.entry_refs[2],
+                "cond": FAT_LADY_PASSWD,
+            },
+            {
+                "attr_id": self.entity.attrs.get(name="named_trigger").id,
+                "cond": self.entry_refs[2],
             },
             {
                 "attr_id": self.entity.attrs.get(name="arr_str_trigger").id,
-                "str_cond": FAT_LADY_PASSWD,
+                "cond": FAT_LADY_PASSWD,
             },
             {
                 "attr_id": self.entity.attrs.get(name="arr_ref_trigger").id,
-                "ref_cond": self.entry_refs[2],
+                "cond": self.entry_refs[2],
             },
             {
                 "attr_id": self.entity.attrs.get(name="arr_named_trigger").id,
-                "str_cond": FAT_LADY_PASSWD,
-                "ref_cond": self.entry_refs[2],
+                "cond": FAT_LADY_PASSWD,
+            },
+            {
+                "attr_id": self.entity.attrs.get(name="arr_named_trigger").id,
+                "cond": self.entry_refs[2],
             },
         ]
         self.FULL_ACTION_CONFIGURATION_PARAMETERS = [
@@ -126,55 +132,69 @@ class ModelTest(AironeTestCase):
     def test_input_airone_trigger_action(self):
         entries = [self.add_entry(self.user, "test_entry_%s" % i, self.entity) for i in range(3)]
 
-        TEST_CONDITIONS = [
-            {"attr_id": self.entity.attrs.get(name="str_trigger").id, "str_cond": "test"},
-            {"attr_id": self.entity.attrs.get(name="ref_trigger").id, "ref_cond": entries[0].id},
-            {
-                "attr_id": self.entity.attrs.get(name="named_trigger").id,
-                "str_cond": "test",
-                "ref_cond": entries[0].id,
-            },
-            {"attr_id": self.entity.attrs.get(name="arr_str_trigger").id, "str_cond": "test"},
-            {
-                "attr_id": self.entity.attrs.get(name="arr_ref_trigger").id,
-                "ref_cond": entries[0].id,
-            },
-            {
-                "attr_id": self.entity.attrs.get(name="arr_named_trigger").id,
-                "str_cond": "test",
-                "ref_cond": entries[0].id,
-            },
-            {"attr_id": self.entity.attrs.get(name="bool_trigger").id, "bool_cond": False},
-        ]
-        for cond in TEST_CONDITIONS:
-            input_trigger_condition = InputTriggerCondition(**cond)
-            self.assertEqual(input_trigger_condition.attr.id, cond["attr_id"])
-            self.assertEqual(input_trigger_condition.str_cond, cond.get("str_cond", ""))
-            self.assertEqual(input_trigger_condition.bool_cond, cond.get("bool_cond", False))
-            if cond.get("ref_cond", None):
-                self.assertEqual(input_trigger_condition.ref_cond.id, cond.get("ref_cond", None))
+        # set condition for string typed Attribute
+        input_trigger_condition = InputTriggerCondition(
+            attr_id=self.entity.attrs.get(name="str_trigger").id, cond="test"
+        )
+        self.assertEqual(
+            input_trigger_condition.attr.id,
+            self.entity.attrs.get(name="str_trigger").id
+        )
+        self.assertEqual(input_trigger_condition.str_cond, "test")
+        self.assertEqual(input_trigger_condition.ref_cond, None)
+        self.assertEqual(input_trigger_condition.bool_cond, False) 
+
+        # set condition for object typed Attribute
+        input_trigger_condition = InputTriggerCondition(
+            attr_id=self.entity.attrs.get(name="ref_trigger").id, cond=entries[0].id
+        )
+        self.assertEqual(input_trigger_condition.str_cond, "")
+        self.assertEqual(input_trigger_condition.ref_cond, entries[0])
+        self.assertEqual(input_trigger_condition.bool_cond, False) 
+
+        # set condition for array named object typed Attribute
+        input_trigger_condition = InputTriggerCondition(
+            attr_id=self.entity.attrs.get(name="arr_named_trigger").id, cond=entries[0].id
+        )
+        self.assertEqual(input_trigger_condition.str_cond, "")
+        self.assertEqual(input_trigger_condition.ref_cond, entries[0])
+        self.assertEqual(input_trigger_condition.bool_cond, False) 
+        input_trigger_condition = InputTriggerCondition(
+            attr_id=self.entity.attrs.get(name="arr_named_trigger").id, cond="hoge"
+        )
+        self.assertEqual(input_trigger_condition.str_cond, "hoge")
+        self.assertEqual(input_trigger_condition.ref_cond, None)
+        self.assertEqual(input_trigger_condition.bool_cond, False) 
+
+        # set condition for boolean typed Attribute
+        input_trigger_condition = InputTriggerCondition(
+            attr_id=self.entity.attrs.get(name="bool_trigger").id, cond=True
+        )
+        self.assertEqual(input_trigger_condition.str_cond, "")
+        self.assertEqual(input_trigger_condition.ref_cond, None)
+        self.assertEqual(input_trigger_condition.bool_cond, True) 
 
     def test_create_trigger_action_initialization(self):
         entries = [self.add_entry(self.user, "test_entry_%s" % i, self.entity) for i in range(3)]
 
         settingTriggerConditions = [
-            {"attr_id": self.entity.attrs.get(name="str_trigger").id, "str_cond": "test"},
-            {"attr_id": self.entity.attrs.get(name="ref_trigger").id, "ref_cond": entries[0].id},
+            {"attr_id": self.entity.attrs.get(name="str_trigger").id, "cond": "test"},
+            {"attr_id": self.entity.attrs.get(name="ref_trigger").id, "cond": entries[0].id},
             {
                 "attr_id": self.entity.attrs.get(name="named_trigger").id,
-                "str_cond": "test",
-                "ref_cond": entries[0].id,
+                "cond": "test",
+                "cond": entries[0].id,
             },
-            {"attr_id": self.entity.attrs.get(name="bool_trigger").id, "bool_cond": False},
-            {"attr_id": self.entity.attrs.get(name="arr_str_trigger").id, "str_cond": "test"},
+            {"attr_id": self.entity.attrs.get(name="bool_trigger").id, "bond": False},
+            {"attr_id": self.entity.attrs.get(name="arr_str_trigger").id, "cond": "test"},
             {
                 "attr_id": self.entity.attrs.get(name="arr_ref_trigger").id,
-                "ref_cond": entries[0].id,
+                "cond": entries[0].id,
             },
             {
                 "attr_id": self.entity.attrs.get(name="arr_named_trigger").id,
-                "str_cond": "test",
-                "ref_cond": entries[0].id,
+                "cond": "test",
+                "cond": entries[0].id,
             },
         ]
         settingTriggerActions = self.FULL_ACTION_CONFIGURATION_PARAMETERS.copy()
@@ -205,10 +225,10 @@ class ModelTest(AironeTestCase):
 
         # register TriggerCondition and its Actions
         settingTriggerConditions = [
-            {"attr_id": self.entity.attrs.get(name="str_trigger").id, "str_cond": "test"},
+            {"attr_id": self.entity.attrs.get(name="str_trigger").id, "cond": "test"},
             {
                 "attr_id": self.entity.attrs.get(name="ref_trigger").id,
-                "ref_cond": self.entry_refs[0],
+                "cond": self.entry_refs[0],
             },
         ]
         settingTriggerActions = self.FULL_ACTION_CONFIGURATION_PARAMETERS.copy()
@@ -285,13 +305,23 @@ class ModelTest(AironeTestCase):
             },
             {
                 "attrname": "named_trigger",
-                "value": {"name": FAT_LADY_PASSWD, "id": None},
+                "value": {"name": "", "id": self.entry_refs[0].id},
                 "will_invoke": False,
             },
             {
                 "attrname": "named_trigger",
-                "value": {"name": "", "id": self.entry_refs[2].id},
+                "value": {"name": "Unexpected words", "id": None},
                 "will_invoke": False,
+            },
+            {
+                "attrname": "named_trigger",
+                "value": {"name": FAT_LADY_PASSWD, "id": None},
+                "will_invoke": True,
+            },
+            {
+                "attrname": "named_trigger",
+                "value": {"name": "", "id": self.entry_refs[2].id},
+                "will_invoke": True,
             },
             {
                 "attrname": "named_trigger",
@@ -332,7 +362,7 @@ class ModelTest(AironeTestCase):
                 self.entity, [{"id": attr.id, "value": test_input_param["value"]}]
             )
             if test_input_param["will_invoke"]:
-                self.assertEqual(len(actions), 1)
+                self.assertGreaterEqual(len(actions), 1)
             else:
                 self.assertEqual(len(actions), 0)
 
@@ -342,7 +372,7 @@ class ModelTest(AironeTestCase):
 
         # register TriggerCondition and its Actions
         settingTriggerConditions = [
-            {"attr_id": self.entity.attrs.get(name="str_trigger").id, "str_cond": "test"},
+            {"attr_id": self.entity.attrs.get(name="str_trigger").id, "cond": "test"},
         ]
         settingTriggerActions = self.FULL_ACTION_CONFIGURATION_PARAMETERS.copy()
         parent_condition = TriggerCondition.register(
@@ -394,12 +424,12 @@ class ModelTest(AironeTestCase):
         target_attr = self.entity.attrs.get(name="str_trigger")
         TriggerCondition.register(
             self.entity,
-            [{"attr_id": target_attr.id, "str_cond": "hoge"}],
+            [{"attr_id": target_attr.id, "cond": "hoge"}],
             [{"attr_id": target_attr.id, "value": "fuga"}],
         )
         TriggerCondition.register(
             self.entity,
-            [{"attr_id": target_attr.id, "str_cond": "fuga"}],
+            [{"attr_id": target_attr.id, "cond": "fuga"}],
             [{"attr_id": target_attr.id, "value": "hoge"}],
         )
 

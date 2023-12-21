@@ -6,7 +6,7 @@ from airone.lib.http import DRFRequest
 from airone.lib.types import AttrTypeValue
 from entity.models import Entity, EntityAttr
 from entry.api_v2.serializers import EntryUpdateSerializer
-from entry.models import Entry
+from entry.models import Entry, AttributeValue
 
 
 ## These are internal classes for AirOne trigger and action
@@ -18,16 +18,45 @@ class InputTriggerCondition(object):
         if not self.attr:
             raise InvalidInputException("Specified attr(%s) is invalid" % attr_id)
 
-        self.str_cond = input.get("str_cond", "")
+        # initialize each condition parameters
+        self.initialize_condition()
 
-        ref_id = input.get("ref_cond", None)
+        # set each condition parameters by specified condition value
+        self.parse_input_condition(input.get("cond"))
+
+    def initialize_condition(self):
+        self.str_cond = ""
         self.ref_cond = None
-        if isinstance(ref_id, Entry):
-            self.ref_cond = ref_id
-        elif isinstance(ref_id, int) or isinstance(ref_id, str):
-            self.ref_cond = Entry.objects.filter(id=int(ref_id), is_active=True).first()
+        self.bool_cond = False
 
-        self.bool_cond = input.get("bool_cond", False)
+
+    def parse_input_condition(self, input_condition):
+        def _convert_value_to_entry():
+            if isinstance(input_condition, Entry):
+                return input_condition
+            elif isinstance(input_condition, int) or (isinstance(input_condition, str) and input_condition.isdigit()):
+                # convert ID to Entry instance
+                entry = Entry.objects.filter(id=int(input_condition), is_active=True).first()
+                if entry:
+                    return entry
+            return None
+
+        if self.attr.type & AttrTypeValue["named_object"]:
+            ref = _convert_value_to_entry()
+            if ref:
+                self.ref_cond = ref
+            else:
+                self.str_cond = input_condition
+
+        elif self.attr.type & AttrTypeValue["object"]:
+            self.ref_cond = _convert_value_to_entry()
+
+        elif self.attr.type & AttrTypeValue["string"]:
+            self.str_cond = input_condition
+
+        elif self.attr.type & AttrTypeValue["boolean"]:
+            if isinstance(input_condition, bool):
+                self.bool_cond = input_condition
 
 
 class InputTriggerActionValue(object):
@@ -236,7 +265,8 @@ class TriggerCondition(models.Model):
         # This is a helper method when AttrType is "object" or "named_object"
         def _is_match_object(val):
             if isinstance(val, int) or isinstance(val, str):
-                return self.ref_cond.id == int(val)
+                if self.ref_cond and self.ref_cond.is_active:
+                    return self.ref_cond.id == int(val)
 
             elif isinstance(val, Entry) or isinstance(val, ACLBase):
                 return self.ref_cond.id == val.id
@@ -253,13 +283,13 @@ class TriggerCondition(models.Model):
             )
 
         elif attr_type == AttrTypeValue["named_object"]:
-            return _is_match_object(recv_value["id"]) and self.str_cond == recv_value["name"]
+            return _is_match_object(recv_value["id"]) or (self.str_cond != "" and self.str_cond == recv_value["name"])
 
         elif attr_type == AttrTypeValue["object"]:
             return _is_match_object(recv_value)
 
         elif attr_type == AttrTypeValue["string"]:
-            return self.str_cond == recv_value
+            return self.str_cond != "" and self.str_cond == recv_value
 
         elif attr_type == AttrTypeValue["boolean"]:
             return self.bool_cond == recv_value

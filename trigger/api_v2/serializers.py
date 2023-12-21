@@ -1,22 +1,39 @@
 from rest_framework import serializers
 
-from entity.api_v2.serializers import EntitySerializer
-from trigger.models import TriggerCondition
+from entity.api_v2.serializers import (
+  EntityAttrSerializer,
+  EntitySerializer,
+)
+from trigger.models import (
+  TriggerParentCondition,
+  TriggerCondition,
+  TriggerAction,
+  TriggerActionValue,
+)
 
-
-class TriggerParentConditionSerializer(serializers.ModelSerializer):
-    entity = EntitySerializer(read_only=True)
-
+class TriggerActionValueSerializer(serializers.ModelSerializer):
     class Meta:
-        model = TriggerCondition
+        model = TriggerActionValue
         fields = [
             "id",
-            "entity",
+            "str_cond",
+            "ref_cond",
+            "bool_cond",
+        ]
+
+class TriggerActionSerializer(serializers.ModelSerializer):
+    values = TriggerActionValueSerializer(many=True)
+
+    class Meta:
+        model = TriggerAction
+        fields = [
+            "id",
+            "values",
         ]
 
 
-class TriggerBaseSerializer(serializers.ModelSerializer):
-    parent = TriggerParentConditionSerializer(read_only=True)
+class TriggerConditionSerializer(serializers.ModelSerializer):
+    attr = EntityAttrSerializer(read_only=True)
 
     class Meta:
         model = TriggerCondition
@@ -26,12 +43,19 @@ class TriggerBaseSerializer(serializers.ModelSerializer):
             "str_cond",
             "ref_cond",
             "bool_cond",
-            "parent",
         ]
 
-    def get_entity(self, obj):
-        return {
-            "id": obj.parent.entity.id,
-            "name": obj.parent.entity.name,
-            "is_active": obj.parent.entity.is_active,
-        }
+
+class TriggerParentConditionSerializer(serializers.ModelSerializer):
+    entity = EntitySerializer(read_only=True)
+    actions = TriggerActionSerializer(many=True)
+    co_conditions = TriggerConditionSerializer(many=True)
+
+    class Meta:
+        model = TriggerParentCondition
+        fields = [
+            "id",
+            "entity",
+            "actions",
+            "co_conditions",
+        ]

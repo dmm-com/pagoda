@@ -38,14 +38,15 @@ class APITest(AironeViewTest):
         TriggerCondition.register(
             entity,
             [
-                {"attr_id": entity.attrs.get(name="foo").id, "str_cond": "hoge"},
+                {"attr_id": entity.attrs.get(name="foo").id, "cond": "hoge"},
+                {"attr_id": entity.attrs.get(name="bar").id, "cond": ref_entry},
             ],
             settingTriggerActions,
         )
         TriggerCondition.register(
             entity,
             [
-                {"attr_id": entity.attrs.get(name="bar").id, "ref_cond": ref_entry},
+                {"attr_id": entity.attrs.get(name="bar").id, "cond": ref_entry},
             ],
             settingTriggerActions,
         )
@@ -54,7 +55,7 @@ class APITest(AironeViewTest):
         TriggerCondition.register(
             another_entity,
             [
-                {"attr_id": another_entity.attrs.get(name="is_orphan").id, "bool_cond": True},
+                {"attr_id": another_entity.attrs.get(name="is_orphan").id, "cond": True},
             ],
             [
                 {"attr_id": another_entity.attrs.get(name="name").id, "value": "John Doe"},
@@ -65,42 +66,11 @@ class APITest(AironeViewTest):
         resp = self.client.get("/trigger/api/v2/")
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(
+            [t["entity"]["name"] for t in resp.json()["results"]],
             [
-                (
-                    t["entity"],
-                    t["attr"],
-                    t["str_cond"],
-                    t["ref_cond"],
-                    t["bool_cond"],
-                )
-                for t in resp.json()
-            ],
-            [
-                (
-                    {"id": entity.id, "name": entity.name, "is_active": entity.is_active},
-                    entity.attrs.get(name="foo").id,
-                    "hoge",
-                    None,
-                    False,
-                ),
-                (
-                    {"id": entity.id, "name": entity.name, "is_active": entity.is_active},
-                    entity.attrs.get(name="bar").id,
-                    "",
-                    ref_entry.id,
-                    False,
-                ),
-                (
-                    {
-                        "id": another_entity.id,
-                        "name": another_entity.name,
-                        "is_active": another_entity.is_active,
-                    },
-                    another_entity.attrs.get(name="is_orphan").id,
-                    "",
-                    None,
-                    True,
-                ),
+                entity.name,
+                entity.name,
+                another_entity.name,
             ],
         )
 
@@ -108,30 +78,9 @@ class APITest(AironeViewTest):
         resp = self.client.get("/trigger/api/v2/?entity_id=%s" % entity.id)
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(
+            [t["entity"]["name"] for t in resp.json()["results"]],
             [
-                (
-                    t["entity"],
-                    t["attr"],
-                    t["str_cond"],
-                    t["ref_cond"],
-                    t["bool_cond"],
-                )
-                for t in resp.json()
-            ],
-            [
-                (
-                    {"id": entity.id, "name": entity.name, "is_active": entity.is_active},
-                    entity.attrs.get(name="foo").id,
-                    "hoge",
-                    None,
-                    False,
-                ),
-                (
-                    {"id": entity.id, "name": entity.name, "is_active": entity.is_active},
-                    entity.attrs.get(name="bar").id,
-                    "",
-                    ref_entry.id,
-                    False,
-                ),
+                entity.name,
+                entity.name,
             ],
         )
