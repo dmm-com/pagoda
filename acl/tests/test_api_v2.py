@@ -357,6 +357,30 @@ class ViewTest(AironeViewTest):
         )
         self.assertEqual(resp.status_code, 403)
 
+        role2 = Role.objects.create(name="role2")
+
+        acl.is_public = True
+        acl.save()
+        acl.full.roles.remove(role)
+        acl.full.roles.add(role2)
+
+        resp = self.client.put(
+            "/acl/api/v2/acls/%s" % acl.id,
+            json.dumps(
+                {
+                    "is_public": False,
+                    "acl_settings": [
+                        {
+                            "member_id": str(role.id),
+                            "value": str(ACLType.Full.id),
+                        }
+                    ],
+                }
+            ),
+            "application/json;charset=utf-8",
+        )
+        self.assertEqual(resp.status_code, 200)
+
     def test_remove_acl_when_administrative_role_is_left(self):
         user = self.guest_login()
         acl = ACLBase.objects.create(name="test", created_user=user)

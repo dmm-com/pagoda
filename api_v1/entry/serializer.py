@@ -255,8 +255,7 @@ class EntrySearchChainSerializer(serializers.Serializer):
                 search_results = []
                 while (dividing_index * SEARCH_ENTRY_LIMIT) < len(sub_query_result):
                     chunk_result = sub_query_result[
-                        dividing_index
-                        * SEARCH_ENTRY_LIMIT : (dividing_index + 1)
+                        dividing_index * SEARCH_ENTRY_LIMIT : (dividing_index + 1)
                         * SEARCH_ENTRY_LIMIT
                     ]
                     dividing_index += 1
@@ -330,8 +329,7 @@ class EntrySearchChainSerializer(serializers.Serializer):
                 search_results = []
                 while (dividing_index * SEARCH_ENTRY_LIMIT) < len(sub_query_result):
                     chunk_result = sub_query_result[
-                        dividing_index
-                        * SEARCH_ENTRY_LIMIT : (dividing_index + 1)
+                        dividing_index * SEARCH_ENTRY_LIMIT : (dividing_index + 1)
                         * SEARCH_ENTRY_LIMIT
                     ]
                     dividing_index += 1

@@ -70,6 +70,7 @@ export const GroupForm: FC<Props> = ({ control, setValue, groupId }) => {
                     {...field}
                     variant="standard"
                     required
+                    placeholder="グループ名"
                     error={error != null}
                     helperText={error?.message}
                     sx={{ width: "100%" }}

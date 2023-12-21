@@ -1,18 +1,12 @@
 import AddIcon from "@mui/icons-material/Add";
-import MoreVertIcon from "@mui/icons-material/MoreVert";
 import {
   Box,
   Button,
-  Card,
-  CardActionArea,
-  CardHeader,
   Grid,
-  IconButton,
   Pagination,
   Stack,
   Typography,
 } from "@mui/material";
-import { styled } from "@mui/material/styles";
 import React, { FC, useState } from "react";
 import { Link, useHistory, useLocation } from "react-router-dom";
 
@@ -20,32 +14,13 @@ import { useAsyncWithThrow } from "../../hooks/useAsyncWithThrow";
 import { usePage } from "../../hooks/usePage";
 import { normalizeToMatch } from "../../services/StringUtil";
 
-import { newEntryPath, entryDetailsPath } from "Routes";
+import { EntryListCard } from "./EntryListCard";
+
+import { newEntryPath } from "Routes";
 import { Loading } from "components/common/Loading";
 import { SearchBox } from "components/common/SearchBox";
-import { EntryControlMenu } from "components/entry/EntryControlMenu";
 import { aironeApiClientV2 } from "repository/AironeApiClientV2";
 import { EntryList as ConstEntryList } from "services/Constants";
-
-const StyledCard = styled(Card)(({}) => ({
-  height: "100%",
-}));
-
-const StyledCardHeader = styled(CardHeader)(({}) => ({
-  p: "0px",
-  mt: "24px",
-  mx: "16px",
-  mb: "16px",
-  ".MuiCardHeader-content": {
-    width: "80%",
-  },
-}));
-
-const EntryName = styled(Typography)(({}) => ({
-  textOverflow: "ellipsis",
-  overflow: "hidden",
-  whiteSpace: "nowrap",
-}));
 
 interface Props {
   entityId: number;
@@ -81,10 +56,6 @@ export const EntryList: FC<Props> = ({ entityId, canCreateEntry = true }) => {
   const totalPageCount = entries.loading
     ? 0
     : Math.ceil((entries.value?.count ?? 0) / ConstEntryList.MAX_ROW_COUNT);
-
-  const [entryAnchorEls, setEntryAnchorEls] = useState<{
-    [key: number]: HTMLButtonElement | null;
-  }>({});
 
   return (
     <Box>
@@ -124,44 +95,11 @@ export const EntryList: FC<Props> = ({ entityId, canCreateEntry = true }) => {
           {entries.value?.results?.map((entry) => {
             return (
               <Grid item xs={4} key={entry.id}>
-                <StyledCard>
-                  <StyledCardHeader
-                    title={
-                      <CardActionArea
-                        component={Link}
-                        to={entryDetailsPath(entityId, entry.id)}
-                      >
-                        <EntryName variant="h6">{entry.name}</EntryName>
-                      </CardActionArea>
-                    }
-                    action={
-                      <>
-                        <IconButton
-                          onClick={(e) => {
-                            setEntryAnchorEls({
-                              ...entryAnchorEls,
-                              [entry.id]: e.currentTarget,
-                            });
-                          }}
-                        >
-                          <MoreVertIcon />
-                        </IconButton>
-                        <EntryControlMenu
-                          entityId={entityId}
-                          entryId={entry.id}
-                          anchorElem={entryAnchorEls[entry.id]}
-                          handleClose={(entryId: number) =>
-                            setEntryAnchorEls({
-                              ...entryAnchorEls,
-                              [entryId]: null,
-                            })
-                          }
-                          setToggle={() => setToggle(!toggle)}
-                        />
-                      </>
-                    }
-                  />
-                </StyledCard>
+                <EntryListCard
+                  entityId={entityId}
+                  entry={entry}
+                  setToggle={() => setToggle(!toggle)}
+                />
               </Grid>
             );
           })}

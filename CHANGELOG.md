@@ -10,6 +10,38 @@
 
 ### Fixed
 
+## v3.71.0
+
+### Fixed
+* Fixed advanced search when referral is deleted in array_named_entry type.
+  Contributed by @hinashi
+* Fixed slow ACL search and update.
+  Contributed by @hinashi
+
+## v3.70.0
+
+### Changed
+* Change specification of Entry.get_available_attrs() for deleted referral for UX.
+  Contributed by @userlocalhost
+
+## v3.69.0
+
+### Added
+* Support basic i18n support.
+  Contributed by @syucream
+
+### Fixed
+* Reset ErrorBoundary on relocations.
+  Contributed by @syucream
+
+## v3.68.0
+
+### Fixed
+* Fixed an exception error when updating to too long entry name.
+  Contributed by @tsuneyama-tomo, @cui-songhe
+* Fixed bug that raise exception when '&' was specified.
+  Contributed by @tsuneyama-tomo, @cui-songhe
+
 ## v3.67.0
 
 ### Added

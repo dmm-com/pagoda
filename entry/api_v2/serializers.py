@@ -466,6 +466,7 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
                             else None,
                         }
                         for x in attrv.data_array.all()
+                        if not (x.referral and not x.referral.is_active)
                     ]
                     return {"as_array_named_object": array_named_object}
 
