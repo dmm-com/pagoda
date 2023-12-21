@@ -46,7 +46,6 @@ class APITest(AironeViewTest):
         # list all trigger has expected values
         resp = self.client.get("/trigger/api/v2/")
         self.assertEqual(resp.status_code, 200)
-        print("[onix-test(30)] %s" % str(resp.json()))
         self.assertEqual([(
             t["entity"],
             t["attr"],
@@ -64,21 +63,21 @@ class APITest(AironeViewTest):
             (
                 {"id": entity.id, "name": entity.name, "is_active": entity.is_active},
                 entity.attrs.get(name="bar").id,
-                "fuga",
-                None,
+                "",
+                ref_entry.id,
                 False,
             ),
             (
                 {"id": another_entity.id, "name": another_entity.name, "is_active": another_entity.is_active},
-                another_entity.attrs.get(name="age").id,
-                "0",
+                another_entity.attrs.get(name="is_orphan").id,
+                "",
                 None,
-                False,
+                True,
             ),
         ])
 
         # list specified Entity's triggers
-        resp = self.client.get("/trigger/api/v2/")
+        resp = self.client.get("/trigger/api/v2/?entity_id=%s" % entity.id)
         self.assertEqual(resp.status_code, 200)
         self.assertEqual([(
             t["entity"],
@@ -97,15 +96,8 @@ class APITest(AironeViewTest):
             (
                 {"id": entity.id, "name": entity.name, "is_active": entity.is_active},
                 entity.attrs.get(name="bar").id,
-                "fuga",
-                None,
-                False,
-            ),
-            (
-                {"id": another_entity.id, "name": another_entity.name, "is_active": another_entity.is_active},
-                another_entity.attrs.get(name="age").id,
-                "0",
-                None,
+                "",
+                ref_entry.id,
                 False,
             ),
         ])

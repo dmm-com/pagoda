@@ -18,7 +18,6 @@ class TriggerBaseSerializer(serializers.ModelSerializer):
     ]
 
   def get_entity(self, obj):
-    print("[onix/get_entity] obj: %s" % str(obj.__class__.__name__))
     return {
       "id": obj.parent.entity.id,
       "name": obj.parent.entity.name,
