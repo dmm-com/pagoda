@@ -73,7 +73,7 @@ def set_webhook(request, entity_id, recv_data):
                 },
                 "data": json.dumps({}),
                 "verify": False,
-            }
+            },
         )
 
         # The is_verified parameter will be set True,

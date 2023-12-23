@@ -442,6 +442,7 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
                             else None,
                         }
                         for x in attrv.data_array.all()
+                        if not (x.referral and not x.referral.is_active)
                     ]
                     return {"as_array_named_object": array_named_object}
 
@@ -690,8 +691,8 @@ class EntryImportEntitySerializer(serializers.Serializer):
         def _convert_value_name_to_id(attr_data, entity_attrs):
             def _object(
                 val: Optional[str | dict],
-                refs,
-            ):
+                refs: list[Entity],
+            ) -> Optional[int]:
                 if val:
                     # for compatibility;
                     # it will pick wrong entry if there are multiple entries with same name
@@ -702,20 +703,22 @@ class EntryImportEntitySerializer(serializers.Serializer):
                                 val,
                                 [x.name for x in refs],
                             )
-                        ref_entry = Entry.objects.filter(name=val, schema__in=refs).first()
-                        return ref_entry.id if ref_entry else "0"
+                        ref_entry: Optional[Entry] = Entry.objects.filter(
+                            name=val, schema__in=refs
+                        ).first()
+                        return ref_entry.id if ref_entry else 0
                     # fully qualified entry, safer than above
                     if isinstance(val, dict):
                         ref_entry = Entry.objects.filter(
                             name=val["name"], schema__name=val["entity"]
                         ).first()
-                        return ref_entry.id if ref_entry else "0"
+                        return ref_entry.id if ref_entry else 0
                 return None
 
-            def _group(val):
+            def _group(val) -> Optional[int]:
                 if val:
-                    ref_group = Group.objects.filter(name=val).first()
-                    return ref_group.id if ref_group else "0"
+                    ref_group: Optional[Group] = Group.objects.filter(name=val).first()
+                    return ref_group.id if ref_group else 0
                 return None
 
             if entity_attrs[attr_data["name"]]["type"] & AttrTypeValue["array"]:
@@ -762,7 +765,9 @@ class EntryImportEntitySerializer(serializers.Serializer):
                 if entity_attrs[attr_data["name"]]["type"] & AttrTypeValue["group"]:
                     attr_data["value"] = _group(attr_data["value"])
 
-        entity: Entity = Entity.objects.filter(name=params["entity"], is_active=True).first()
+        entity: Optional[Entity] = Entity.objects.filter(
+            name=params["entity"], is_active=True
+        ).first()
         if not entity:
             return params
         entity_attrs = {

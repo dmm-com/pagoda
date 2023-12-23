@@ -325,7 +325,7 @@ class APITest(AironeViewTest):
                 "application/json",
                 **{
                     "HTTP_AUTHORIZATION": "Token %s" % str(admin.token),
-                }
+                },
             )
 
         self.assertEqual(Entry.objects.filter(schema=entity).count(), 1)
@@ -404,6 +404,15 @@ class APITest(AironeViewTest):
             entry.attrs.get(name="ref").get_latest_value().referral.id,
             Entry.objects.get(name="r-1", schema=ref_entity).id,
         )
+
+        params = {
+            "id": entry.id,
+            "name": "valid-entry-change",
+            "entity": entity.name,
+            "attrs": {"ref": "r-1"},
+        }
+        resp = self.client.post("/api/v1/entry", json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, 200)
 
         # send request with invalid attr param
         params = {
@@ -1000,7 +1009,7 @@ class APITest(AironeViewTest):
             {"entity": "E1", "entry": "e1"},
             **{
                 "HTTP_AUTHORIZATION": "Token %s" % str(user.token),
-            }
+            },
         )
         self.assertEqual(resp.status_code, 200)
 
@@ -1012,7 +1021,7 @@ class APITest(AironeViewTest):
             {"entity": "E1", "entry": "e1"},
             **{
                 "HTTP_AUTHORIZATION": "Token %s" % str(user.token),
-            }
+            },
         )
         self.assertEqual(resp.status_code, 401)
 
@@ -1024,7 +1033,7 @@ class APITest(AironeViewTest):
             {"entity": "E1", "entry": "e1"},
             **{
                 "HTTP_AUTHORIZATION": "Token %s" % str(user.token),
-            }
+            },
         )
         self.assertEqual(resp.status_code, 200)
 
@@ -1116,7 +1125,7 @@ class APITest(AironeViewTest):
             "application/json",
             **{
                 "HTTP_AUTHORIZATION": "Token %s" % users["_u1"].token,
-            }
+            },
         )
         self.assertEqual(resp.status_code, 200)
 

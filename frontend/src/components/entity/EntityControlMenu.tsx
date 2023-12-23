@@ -90,7 +90,6 @@ export const EntityControlMenu: FC<Props> = ({
         vertical: "top",
         horizontal: "right",
       }}
-      disableScrollLock
     >
       <MenuItem component={Link} to={entityEntriesPath(entityId)}>
         <Typography>エントリ一覧</Typography>

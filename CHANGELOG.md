@@ -3,12 +3,102 @@
 ## In development
 
 ### Added
-* Add DataUtil.formatDate() that only returns date (without time) string value from Date instance.
-  Contributed by @userlocalhost
 
 ### Changed
 
 ### Fixed
+
+## v3.71.0
+
+### Fixed
+* Fixed advanced search when referral is deleted in array_named_entry type.
+  Contributed by @hinashi
+* Fixed slow ACL search and update.
+  Contributed by @hinashi
+
+## v3.70.0
+
+### Changed
+* Change specification of Entry.get_available_attrs() for deleted referral for UX.
+  Contributed by @userlocalhost
+
+## v3.69.0
+
+### Added
+* Support basic i18n support.
+  Contributed by @syucream
+
+### Fixed
+* Reset ErrorBoundary on relocations.
+  Contributed by @syucream
+
+## v3.68.0
+
+### Fixed
+* Fixed an exception error when updating to too long entry name.
+  Contributed by @tsuneyama-tomo, @cui-songhe
+* Fixed bug that raise exception when '&' was specified.
+  Contributed by @tsuneyama-tomo, @cui-songhe
+
+## v3.67.0
+
+### Added
+* Add date/boolean type specific attr filter selector.
+  Contributed by @syucream
+* Enable to optout the path to legacy UI on the new UI.
+  Contributed by @syucream
+
+### Changed
+* Changed environmental variable type of EXTENDED_HEADER_MENUS that accpet from user.
+  Contributed by @userlocalhost, @hinashi
+
+## v3.66.0
+
+### Added
+* Enable to limit the number of records.
+  Contributed by @syucream
+* Added job download APIv2 that allows you to specify the format.
+  Contributed by @hinashi
+
+### Changed
+* Allow to submit if any fields are dirty in edit pages.
+  Contributed by @syucream
+
+## v3.65.0
+
+### Fixed
+* Avoid unnecessary re-loading on entity selector.
+  Contributed by @syucream
+* Fixed unnecessary re-rendering in advanced search params.
+  Contributed by @syucream
+
+## v3.64.0
+
+### Added
+* Added limit for frequent import jobs on the same entity.
+  Contributed by @syucream
+* Add sso login link on the new login page.
+  Contributed by @syucream
+* Show loading icon in submit button during submitting to the backend.
+  Contributed by @syucream
+* Refresh recent jobs on click job menu.
+  Contributed by @syucream
+
+## v3.63.0
+
+### Added
+* Add DataUtil.formatDate() that only returns date (without time) string value from Date instance.
+  Contributed by @userlocalhost
+
+### Changed
+* Reimplement advanced search result export v2.
+  Contributed by @syucream
+
+### Fixed
+* Fixed required for mandatory attributes when renaming using entry update API.
+  Contributed by @hinashi
+* Fixed exception error in entry import.
+  Contributed by @hinashi
 
 ## v3.62.0
 

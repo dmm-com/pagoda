@@ -74,8 +74,10 @@ export const EditRolePage: FC = () => {
           await extractAPIException<Schema>(
             e,
             (message) => enqueueSubmitResult(false, `詳細: "${message}"`),
-            (name, message) =>
-              setError(name, { type: "custom", message: message })
+            (name, message) => {
+              setError(name, { type: "custom", message: message });
+              enqueueSubmitResult(false);
+            }
           );
         } else {
           enqueueSubmitResult(false);
@@ -112,11 +114,13 @@ export const EditRolePage: FC = () => {
         <SubmitButton
           name="保存"
           disabled={
+            !isDirty ||
             !isValid ||
             isSubmitting ||
             isSubmitSuccessful ||
             role.value?.isEditable === false
           }
+          isSubmitting={isSubmitting}
           handleSubmit={handleSubmit(handleSubmitOnValid)}
           handleCancel={handleCancel}
         />

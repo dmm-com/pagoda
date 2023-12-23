@@ -88,6 +88,7 @@ export const RoleForm: FC<Props> = ({ control, setValue }) => {
                       {...field}
                       variant="standard"
                       required
+                      placeholder="ロール名"
                       error={error != null}
                       helperText={error?.message}
                       sx={{ width: "100%" }}
@@ -106,6 +107,7 @@ export const RoleForm: FC<Props> = ({ control, setValue }) => {
                   render={({ field }) => (
                     <TextField
                       variant="standard"
+                      placeholder="備考"
                       {...field}
                       sx={{ width: "100%" }}
                     />

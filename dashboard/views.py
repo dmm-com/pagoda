@@ -319,7 +319,7 @@ def export_search_result(request, recv_data):
         **{
             "text": "search_results.%s" % recv_data["export_style"],
             "params": recv_data,
-        }
+        },
     )
     job.run()
 

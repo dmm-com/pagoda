@@ -109,7 +109,7 @@ class ViewTest(AironeViewTest):
 
         resp = self.client.get(reverse("dashboard:index"))
         self.assertEqual(resp.status_code, 200)
-        self.assertIsInstance(resp.context["version"], str)
+        self.assertIsInstance(resp.context["airone"]["VERSION"], str)
         self.assertEqual(
             [x["attr_value"].id for x in resp.context["last_entries"]],
             [

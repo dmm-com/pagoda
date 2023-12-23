@@ -83,7 +83,6 @@ export const ACLForm: FC<Props> = ({ control, watch }) => {
                     fullWidth
                     value={field.value ? 1 : 0}
                     onChange={(e) => field.onChange(e.target.value === 1)}
-                    MenuProps={{ disableScrollLock: true }}
                   >
                     <MenuItem value={1}>公開</MenuItem>
                     <MenuItem value={0}>限定公開</MenuItem>
@@ -125,7 +124,6 @@ export const ACLForm: FC<Props> = ({ control, watch }) => {
                       size="small"
                       fullWidth
                       disabled={watch("isPublic")}
-                      MenuProps={{ disableScrollLock: true }}
                     >
                       {Object.values(ACLType).map((value) => (
                         <MenuItem key={value} value={value}>
@@ -153,7 +151,6 @@ export const ACLForm: FC<Props> = ({ control, watch }) => {
                           size="small"
                           fullWidth
                           disabled={watch("isPublic")}
-                          MenuProps={{ disableScrollLock: true }}
                         >
                           {Object.values(ACLType).map((value) => (
                             <MenuItem key={value} value={value}>

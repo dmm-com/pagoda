@@ -49,9 +49,7 @@ raised exception:
 
 full traceback:
 {einfo}
-""".format(
-        **kwargs
-    )
+""".format(**kwargs)
 
     # Logger for DEBUG because email is not sent in dev environment
     Logger.error(message)

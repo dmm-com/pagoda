@@ -76,8 +76,8 @@ class ViewTest(AironeViewTest):
         user = self.guest_login()
 
         # create jobs which are related with export
-        Job.new_export(user),
-        Job.new_export_search_result(user),
+        (Job.new_export(user),)
+        (Job.new_export_search_result(user),)
 
         resp = self.client.get(f"/job/api/v2/jobs?limit={_TEST_MAX_LIST_VIEW + 100}&offset=0")
         self.assertEqual(resp.status_code, 200)
@@ -259,3 +259,70 @@ class ViewTest(AironeViewTest):
 
         resp = self.client.patch("/job/api/v2/%d/rerun" % job.id)
         self.assertEqual(resp.status_code, 400)
+
+    def test_download_job_with_invalid_param(self):
+        user = self.guest_login()
+
+        # send request to download job with invalid job-id
+        resp = self.client.get("/job/api/v2/%d/download" % 9999)
+        self.assertEqual(resp.status_code, 404)
+        self.assertEqual(resp.json(), {"message": "Not found.", "code": "AE-230000"})
+
+        # Send a request to a job that cannot be downloaded
+        job = Job.new_create(user, None)
+
+        resp = self.client.get("/job/api/v2/%d/download" % job.id)
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.json(), [{"message": "Target job cannot be downloaded", "code": "AE-250000"}]
+        )
+
+        # send request to download job when job is not done
+        job = Job.new_export(user, text="hoge")
+
+        resp = self.client.get("/job/api/v2/%d/download" % job.id)
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.json(), [{"message": "Target job has not yet done", "code": "AE-270000"}]
+        )
+
+        # send request to download job when not exists file
+        job.status = Job.STATUS["DONE"]
+        job.save()
+
+        resp = self.client.get("/job/api/v2/%d/download" % job.id)
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.json(), [{"message": "Target file is not exists", "code": "AE-280000"}]
+        )
+
+        # send request to download job
+        job.set_cache("日本語")
+
+        resp = self.client.get("/job/api/v2/%d/download" % job.id)
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp["Content-Disposition"], 'attachment; filename="hoge"')
+        self.assertEqual(resp.content.decode("utf-8"), "日本語")
+
+        # send request to download job with utf-8 param
+        resp = self.client.get("/job/api/v2/%d/download?encode=utf-8" % job.id)
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.content.decode("utf-8"), "日本語")
+
+        # send request to download job with shift_jis param
+        resp = self.client.get("/job/api/v2/%d/download?encode=shift_jis" % job.id)
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.content.decode("shift_jis"), "日本語")
+
+        # send request to download job with invalid encoding param
+        resp = self.client.get("/job/api/v2/%d/download?encode=hoge" % job.id)
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.json(), [{"message": "Invalid encode parameter", "code": "AE-250000"}]
+        )
+
+        # send request to download job with different user
+        self.admin_login()
+        resp = self.client.get("/job/api/v2/%d/download" % job.id)
+        self.assertEqual(resp.status_code, 404)
+        self.assertEqual(resp.json(), {"message": "Not found.", "code": "AE-230000"})

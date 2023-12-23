@@ -1531,7 +1531,11 @@ class Entry(ACLBase):
                 values = []
                 for attrv in last_value.data_array.all():
                     value = {"value": attrv.value}
-                    if attrv.referral and attrv.referral.is_active:
+                    if attrv.referral and not attrv.referral.is_active:
+                        # not to show value when target referral Entry is deleted
+                        continue
+
+                    elif attrv.referral and attrv.referral.is_active:
                         value["id"] = attrv.referral.id
                         value["name"] = attrv.referral.name
                     values.append(value)
@@ -1635,6 +1639,12 @@ class Entry(ACLBase):
             },
             "attrs": returning_attrs,
         }
+
+    def save(self, *args, **kwargs):
+        max_entries: Optional[int] = settings.MAX_ENTRIES
+        if max_entries and Entry.objects.count() >= max_entries:
+            raise RuntimeError("The number of entries is over the limit")
+        return super(Entry, self).save(*args, **kwargs)
 
     def delete(self, *args, **kwargs):
         super(Entry, self).delete(*args, **kwargs)
@@ -1839,6 +1849,12 @@ class Entry(ACLBase):
                 if attrv.referral and attrv.referral.is_active:
                     attrinfo["value"] = truncate(attrv.referral.name)
                     attrinfo["referral_id"] = attrv.referral.id
+                elif (
+                    entity_attr.type & AttrTypeValue["array"]
+                    and attrv.referral
+                    and not attrv.referral.is_active
+                ):
+                    attrinfo["key"] = ""
 
             elif entity_attr.type & AttrTypeValue["object"]:
                 if attrv.referral and attrv.referral.is_active:

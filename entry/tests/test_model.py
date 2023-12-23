@@ -1460,7 +1460,7 @@ class ModelTest(AironeTestCase):
             elif attr["name"] == "arr_obj":
                 self.assertEqual(attr["last_value"], [])
             elif attr["name"] == "arr_name":
-                self.assertEqual([x["value"] for x in attr["last_value"]], ["hoge"])
+                self.assertEqual([x for x in attr["last_value"]], [])
                 self.assertFalse(any([x in attr["last_value"] for x in ["id", "name"]]))
 
     def test_get_available_attrs_with_empty_referral(self):
@@ -2529,7 +2529,7 @@ class ModelTest(AironeTestCase):
             "arr_name": {
                 "type": AttrTypeValue["array_named_object"],
                 "value": [{"name": "hoge", "id": ref_entries[3]}],
-                "expected_value": [{"hoge": {"name": "", "id": ""}}],
+                "expected_value": [],
             },
         }
         for attr_name, info in ref_info.items():
@@ -4367,6 +4367,10 @@ class ModelTest(AironeTestCase):
             },
         )
 
+    def test_search_entries_for_simple_with_special_characters(self):
+        ret = Entry.search_entries_for_simple("&")
+        self.assertEqual(ret["ret_count"], 0)
+
     def test_search_entries_for_simple_with_hint_entity_name(self):
         self._entry.register_es()
         entity = Entity.objects.create(name="entity2", created_user=self._user)
@@ -4661,6 +4665,78 @@ class ModelTest(AironeTestCase):
                     "referral_id": "",  # expected not to have information about deleted entry
                     "is_readable": True,
                 }
+            ],
+        )
+
+        # array_named_entry case
+        self._entry.restore()
+        ref_entity2 = Entity.objects.create(name="", created_user=self._user)
+        ref_attr2 = EntityAttr.objects.create(
+            **{
+                "name": "ref_array_named_object",
+                "type": AttrTypeValue["array_named_object"],
+                "created_user": self._user,
+                "parent_entity": ref_entity2,
+            }
+        )
+        ref_attr2.referral.add(self._entity)
+        ref_entity2.attrs.add(ref_attr2)
+
+        ref_entry2 = Entry.objects.create(name="ref2", schema=ref_entity2, created_user=self._user)
+        ref_entry2.complement_attrs(self._user)
+        ref_entry_attr2: Attribute = ref_entry2.attrs.get(schema__name="ref_array_named_object")
+        ref_entry_attr2.add_value(
+            self._user, [{"name": "hoge", "id": self._entry.id}, {"name": "fuga", "id": ""}]
+        )
+
+        result = ref_entry2.get_es_document()
+        self.assertEqual(
+            result["attr"],
+            [
+                {
+                    "name": ref_attr2.name,
+                    "type": ref_attr2.type,
+                    "key": "hoge",
+                    "value": self._entry.name,
+                    "date_value": None,
+                    "referral_id": self._entry.id,
+                    "is_readable": True,
+                },
+                {
+                    "name": ref_attr2.name,
+                    "type": ref_attr2.type,
+                    "key": "fuga",
+                    "value": "",
+                    "date_value": None,
+                    "referral_id": "",
+                    "is_readable": True,
+                },
+            ],
+        )
+
+        self._entry.delete()
+        result = ref_entry2.get_es_document()
+        self.assertEqual(
+            result["attr"],
+            [
+                {
+                    "name": ref_attr2.name,
+                    "type": ref_attr2.type,
+                    "key": "",
+                    "value": "",
+                    "date_value": None,
+                    "referral_id": "",
+                    "is_readable": True,
+                },
+                {
+                    "name": ref_attr2.name,
+                    "type": ref_attr2.type,
+                    "key": "fuga",
+                    "value": "",
+                    "date_value": None,
+                    "referral_id": "",
+                    "is_readable": True,
+                },
             ],
         )
 
@@ -5686,3 +5762,21 @@ class ModelTest(AironeTestCase):
         self._entry.register_es()
         ret = Entry.search_entries(self._user, [self._entity.id], [], 99999999)
         self.assertEqual(ret["ret_count"], 1)
+
+    def test_max_entries(self):
+        max_entries = 10
+        for i in range(max_entries):
+            Entry.objects.create(name=f"entry-{i}", created_user=self._user, schema=self._entity)
+
+        # if the limit exceeded, RuntimeError should be raised
+        settings.MAX_ENTRIES = max_entries
+        with self.assertRaises(RuntimeError):
+            Entry.objects.create(
+                name=f"entry-{max_entries}", created_user=self._user, schema=self._entity
+            )
+
+        # if the limit is not set, RuntimeError should not be raised
+        settings.MAX_ENTRIES = None
+        Entry.objects.create(
+            name=f"entry-{max_entries}", created_user=self._user, schema=self._entity
+        )

@@ -122,8 +122,8 @@ class ViewTest(AironeViewTest):
         user = self.guest_login()
 
         # create jobs which are related with export
-        Job.new_export(user),
-        Job.new_export_search_result(user),
+        (Job.new_export(user),)
+        (Job.new_export_search_result(user),)
 
         resp = self.client.get("/job/")
         self.assertEqual(resp.status_code, 200)

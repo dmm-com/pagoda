@@ -161,6 +161,7 @@ export const EditEntityPage: FC = () => {
               default:
                 setError(name, { type: "custom", message: message });
             }
+            enqueueSubmitResult(false);
           }
         );
       } else {
@@ -203,7 +204,8 @@ export const EditEntityPage: FC = () => {
       >
         <SubmitButton
           name="保存"
-          disabled={!isValid || isSubmitting || isSubmitSuccessful}
+          disabled={!isDirty || !isValid || isSubmitting || isSubmitSuccessful}
+          isSubmitting={isSubmitting}
           handleSubmit={handleSubmit(handleSubmitOnValid)}
           handleCancel={handleCancel}
         />

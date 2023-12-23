@@ -218,6 +218,11 @@ user@hostname:~/airone$ source virtualenv/bin/activate
 (virtualenv) user@hostname:~/airone$ tools/clear_and_initdb.sh
 ```
 
+(Optional) Please set the index as necessary.
+```
+mysql> CREATE INDEX permission_codename_idx ON auth_permission (codename);
+```
+
 Finally, you should create an initial user to login the system using `tools/register_user.sh`.
 ```
 (virtualenv) user@hostname:~/airone$ tools/register_user.sh demo
@@ -331,7 +336,7 @@ If you modify something in API client code, you need to publish it with the pack
 ```
 user@hostname:~$ cd airone
 user@hostname:~/airone$ source virtualenv/bin/activate
-(virtualenv) user@hostname:~/airone$ black .
+(virtualenv) user@hostname:~/airone$ ruff format .
 (virtualenv) user@hostname:~/airone$ ruff check --fix .
 
 user@hostname:~/airone$ npm run fix

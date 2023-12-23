@@ -1,11 +1,13 @@
 import importlib
 import sys
 from datetime import datetime
+from typing import Optional
 
 from django.contrib.auth.models import Group as DjangoGroup
 from django.db import models
 from django.db.models import Q
 
+from airone import settings
 from airone.lib.types import AttrTypeValue
 
 
@@ -14,6 +16,15 @@ class Group(DjangoGroup):
     parent_group = models.ForeignKey(
         "Group", on_delete=models.DO_NOTHING, related_name="subordinates", null=True
     )
+
+    def save(self, *args, **kwargs):
+        """
+        Override Model.save method of Django
+        """
+        max_groups: Optional[int] = settings.MAX_GROUPS
+        if max_groups and Group.objects.count() >= max_groups:
+            raise RuntimeError("The number of groups is over the limit")
+        return super(Group, self).save(*args, **kwargs)
 
     def delete(self):
         """

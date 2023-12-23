@@ -52,14 +52,22 @@ class ACLHistoryAPI(generics.ListAPIView):
         instance: Entity | EntityAttr | Entry | Attribute = acl.get_subclass_object()
 
         acl_history = list(instance.history.all())
-        codename_query = Q(codename__startswith=instance.id)
+        codename_query = (
+            Q(codename="%s.%s" % (instance.id, ACLType.Full.id))  # type: ignore
+            | Q(codename="%s.%s" % (instance.id, ACLType.Writable.id))  # type: ignore
+            | Q(codename="%s.%s" % (instance.id, ACLType.Readable.id))  # type: ignore
+        )
         if instance.objtype == ACLObjType.Entity.value:
             attrs = instance.attrs.filter(is_active=True)
             acl_history = acl_history + list(
                 itertools.chain.from_iterable([attr.history.all() for attr in attrs])
             )
             for attr in attrs:
-                codename_query |= Q(codename__startswith=attr.id)
+                codename_query |= (
+                    Q(codename="%s.%s" % (attr.id, ACLType.Full.id))  # type: ignore
+                    | Q(codename="%s.%s" % (attr.id, ACLType.Writable.id))  # type: ignore
+                    | Q(codename="%s.%s" % (attr.id, ACLType.Readable.id))  # type: ignore
+                )
 
         permissions = HistoricalPermission.objects.filter(codename_query)
         permission_history = list(

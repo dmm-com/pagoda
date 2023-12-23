@@ -10,7 +10,7 @@ module.exports = {
     "^.+\\.(ts|tsx)$": "ts-jest"
   },
   setupFilesAfterEnv: [
-    "<rootDir>/frontend/src/setupTests.ts"
+    "@testing-library/jest-dom/extend-expect",
   ],
   moduleDirectories: [
     "frontend/src",

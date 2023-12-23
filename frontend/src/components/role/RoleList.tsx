@@ -57,7 +57,6 @@ export const RoleList: FC = ({}) => {
     }
   };
 
-  console.log(roles.value);
   return (
     <Box>
       {roles.loading ? (

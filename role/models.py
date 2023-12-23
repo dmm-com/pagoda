@@ -1,13 +1,14 @@
 import importlib
 import sys
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 
 from django.contrib.auth.models import Group, Permission
 from django.db import models
 from django.db.models import Q
 from simple_history.models import HistoricalRecords
 
+from airone import settings
 from airone.lib.acl import ACLType
 from airone.lib.types import AttrTypeValue
 
@@ -88,6 +89,15 @@ class Role(models.Model):
             ]
         )
 
+    def save(self, *args, **kwargs):
+        """
+        Override Model.save method of Django
+        """
+        max_roles: Optional[int] = settings.MAX_ROLES
+        if max_roles and Role.objects.count() >= max_roles:
+            raise RuntimeError("The number of roles is over the limit")
+        return super(Role, self).save(*args, **kwargs)
+
     def delete(self):
         """
         Override Model.delete method of Django
@@ -142,5 +152,23 @@ class Role(models.Model):
 
 
 class HistoricalPermission(Permission):
+    """
+    3 HistoricalPermission objects are generated for each object of ACLBase model.
+    A large number of ACLBase objects has a significant impact on performance.
+    In that case, please set the index below.
+
+    mysql> CREATE INDEX permission_codename_idx ON auth_permission (codename);`
+
+    This is because the permission model is an external library and cannot be changed.
+
+    Exact match filtering by code name is faster.
+    NG: HistoricalPermission.objects.filter(codename__startswith="%s." % aclbase.id)
+    OK: HistoricalPermission.objects.filter(
+        Q(codename="%s.%s" % (aclbase.id, ACLType.Full.id))|
+        Q(codename="%s.%s" % (aclbase.id, ACLType.Writable.id))|
+        Q(codename="%s.%s" % (aclbase.id, ACLType.Readable.id))
+    )
+    """
+
     roles = models.ManyToManyField(Role, related_name="permissions", blank=True)
     history = HistoricalRecords(m2m_fields=[roles])
