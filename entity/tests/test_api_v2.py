@@ -4,11 +4,11 @@ import logging
 from unittest import mock
 
 import yaml
+from django.conf import settings
 from django.urls import reverse
 from rest_framework.exceptions import ValidationError
 
 from acl.models import ACLBase
-from airone import settings
 from airone.lib import types as atype
 from airone.lib.log import Logger
 from airone.lib.test import AironeViewTest
