@@ -54,6 +54,20 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 10
+      mysql:
+        image: mysql:5.7
+        ports:
+          - 3306:3306
+        env:
+          MYSQL_USER: airone
+          MYSQL_PASSWORD: password
+          MYSQL_ROOT_PASSWORD: password
+          MYSQL_DATABASE: airone
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v4
@@ -65,35 +79,23 @@ jobs:
           . virtualenv/bin/activate
           pip install --upgrade pip
           pip install tox
-      - uses: shogo82148/actions-setup-mysql@v1
-        with:
-          mysql-version: '5.7'
-          user: airone
-          password: password
-          root-password: password
-          my-cnf: |
-            [mysqld]
-            character-set-server=utf8
-            collation-server=utf8_general_ci
-            default-storage-engine=innodb
-        env:
-          MYSQL_DATABASE: airone
       - name: Install additional dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y libldap2-dev libsasl2-dev libxmlsec1-dev default-mysql-client default-libmysqlclient-dev
-      - name: Grant permission for airone user to be able to manipulate multiple databases (airone and test_airone)
+      - name: Prepare MySQL
         run: |
-          mysql -uroot -h127.0.0.1 -ppassword -e "GRANT ALL ON *.* to airone@'%' IDENTIFIED BY 'password'"
+          mysql -protocol=tcp -uroot -h127.0.0.1 -ppassword -e "SET GLOBAL character_set_server=utf8; SET GLOBAL collation_server=utf8_general_ci; SET GLOBAL default_storage_engine=InnoDB;"
+          mysql -protocol=tcp -uroot -h127.0.0.1 -ppassword -e "GRANT ALL ON *.* to airone@'%' IDENTIFIED BY 'password'"
       - name: test
         env:
           TOXENV: "py311"
         run: |
           . virtualenv/bin/activate
           tox
-      # TODO set CODECOV_TOKEN
-      # - name: Coverage
-      #   run: |
-      #     curl -Os https://uploader.codecov.io/latest/linux/codecov
-      #     chmod +x codecov
-      #     ./codecov -t ${CODECOV_TOKEN}
+      - name: Coverage
+        run: |
+          curl -Os https://uploader.codecov.io/latest/linux/codecov
+          chmod +x codecov
+          ./codecov -t ${CODECOV_TOKEN}
+        continue-on-error: true
