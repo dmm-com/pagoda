@@ -26,7 +26,7 @@ const Targets = {
   ENTRY: 1 << 5,
 };
 
-const TargetOperation = {
+export const TargetOperation = {
   ADD_ENTITY: Operations.ADD + Targets.ENTITY,
   ADD_ATTR: Operations.ADD + Targets.ATTR,
   MOD_ENTITY: Operations.MOD + Targets.ENTITY,
