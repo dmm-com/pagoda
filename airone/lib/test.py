@@ -39,6 +39,7 @@ class AironeTestCase(TestCase):
         OVERRIDE_ES_CONFIG = settings.ES_CONFIG.copy()
         OVERRIDE_ES_CONFIG["INDEX_NAME"] = "test-" + settings.ES_CONFIG["INDEX_NAME"]
         OVERRIDE_AIRONE = settings.AIRONE.copy()
+        OVERRIDE_AIRONE_FLAGS = settings.AIRONE_FLAGS.copy()
         MEDIA_ROOT = "/tmp/airone_app_test"
 
         if not os.path.exists("/tmp/airone_app_test"):
@@ -46,7 +47,10 @@ class AironeTestCase(TestCase):
 
         # update django settings
         self._settings: override_settings = self.settings(
-            ES_CONFIG=OVERRIDE_ES_CONFIG, AIRONE=OVERRIDE_AIRONE, MEDIA_ROOT=MEDIA_ROOT
+            ES_CONFIG=OVERRIDE_ES_CONFIG,
+            AIRONE=OVERRIDE_AIRONE,
+            AIRONE_FLAGS=OVERRIDE_AIRONE_FLAGS,
+            MEDIA_ROOT=MEDIA_ROOT,
         )
         self._settings.enable()
         self.modify_settings(
