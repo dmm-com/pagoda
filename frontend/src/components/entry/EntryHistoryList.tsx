@@ -1,10 +1,7 @@
 import { EntryHistoryAttributeValue } from "@dmm-com/airone-apiclient-typescript-fetch";
 import RestoreIcon from "@mui/icons-material/Restore";
 import {
-  Box,
   IconButton,
-  Pagination,
-  Stack,
   Table,
   TableBody,
   TableCell,
@@ -21,6 +18,7 @@ import { AttributeValue } from "./AttributeValue";
 
 import { showEntryHistoryPath, topPath } from "Routes";
 import { Confirmable } from "components/common/Confirmable";
+import { PaginationFooter } from "components/common/PaginationFooter";
 import { aironeApiClientV2 } from "repository/AironeApiClientV2";
 import { formatDateTime } from "services/DateUtil";
 
@@ -42,21 +40,23 @@ const StyledTableRow = styled(TableRow)(() => ({
 }));
 
 interface Props {
-  histories: Array<EntryHistoryAttributeValue>;
   entityId: number;
   entryId: number;
+  histories: Array<EntryHistoryAttributeValue>;
+  totalPageCount: number;
+  maxRowCount: number;
   page: number;
-  maxPage: number;
-  handleChangePage: (page: number) => void;
+  changePage: (page: number) => void;
 }
 
 export const EntryHistoryList: FC<Props> = ({
-  histories,
   entityId,
   entryId,
+  histories,
+  totalPageCount,
+  maxRowCount,
   page,
-  maxPage,
-  handleChangePage,
+  changePage,
 }) => {
   const { enqueueSnackbar } = useSnackbar();
   const history = useHistory();
@@ -134,19 +134,13 @@ export const EntryHistoryList: FC<Props> = ({
         </TableBody>
       </Table>
 
-      <Box display="flex" justifyContent="center" my="30px">
-        <Stack spacing={2}>
-          <Pagination
-            id="history_page"
-            siblingCount={0}
-            boundaryCount={1}
-            count={maxPage}
-            page={page}
-            onChange={(e, page) => handleChangePage(page)}
-            color="primary"
-          />
-        </Stack>
-      </Box>
+      <PaginationFooter
+        count={histories.length}
+        totalPageCount={totalPageCount}
+        maxRowCount={maxRowCount}
+        page={page}
+        changePage={changePage}
+      />
     </>
   );
 };

@@ -1,18 +1,17 @@
-import { Box, Typography, Container, Button } from "@mui/material";
+import { Box, Button, Container, Typography } from "@mui/material";
 import React, { FC, useCallback, useMemo, useState } from "react";
-import { useHistory, useLocation, Link } from "react-router-dom";
+import { Link, useHistory, useLocation } from "react-router-dom";
 import { useAsync } from "react-use";
-
-import { EntityImportModal } from "../components/entity/EntityImportModal";
-import { usePage } from "../hooks/usePage";
-import { aironeApiClientV2 } from "../repository/AironeApiClientV2";
-import { EntityList as ConstEntityList } from "../services/Constants";
 
 import { topPath } from "Routes";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { Loading } from "components/common/Loading";
 import { PageHeader } from "components/common/PageHeader";
+import { EntityImportModal } from "components/entity/EntityImportModal";
 import { EntityList } from "components/entity/EntityList";
+import { usePage } from "hooks/usePage";
+import { aironeApiClientV2 } from "repository/AironeApiClientV2";
+import { EntityList as ConstEntityList } from "services/Constants";
 
 export const EntityListPage: FC = () => {
   const location = useLocation();
@@ -30,14 +29,11 @@ export const EntityListPage: FC = () => {
     return await aironeApiClientV2.getEntities(page, query);
   }, [page, query, toggle]);
 
-  const maxPage = useMemo(() => {
-    if (entities.loading) {
-      return 0;
-    }
-    return Math.ceil(
-      (entities.value?.count ?? 0) / ConstEntityList.MAX_ROW_COUNT
-    );
-  }, [entities.loading, entities.value?.count]);
+  const totalPageCount = useMemo(() => {
+    return entities.loading
+      ? 0
+      : Math.ceil((entities.value?.count ?? 0) / ConstEntityList.MAX_ROW_COUNT);
+  }, [entities.loading, entities.value]);
 
   const handleChangeQuery = (newQuery?: string) => {
     changePage(1);
@@ -93,10 +89,11 @@ export const EntityListPage: FC = () => {
         <Container>
           <EntityList
             entities={entities.value?.results ?? []}
+            totalPageCount={totalPageCount}
+            maxRowCount={ConstEntityList.MAX_ROW_COUNT}
             page={page}
+            changePage={changePage}
             query={query}
-            maxPage={maxPage}
-            handleChangePage={changePage}
             handleChangeQuery={handleChangeQuery}
             setToggle={() => setToggle(!toggle)}
           />

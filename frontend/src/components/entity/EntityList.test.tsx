@@ -32,16 +32,17 @@ describe("EntityList", () => {
   ];
 
   test("should render entities", () => {
-    const handleChangePage = jest.fn();
+    const changePage = jest.fn();
     const handleChangeQuery = jest.fn();
 
     render(
       <EntityList
         entities={entities}
+        totalPageCount={3}
+        maxRowCount={1}
         page={1}
         query=""
-        maxPage={3}
-        handleChangePage={handleChangePage}
+        changePage={changePage}
         handleChangeQuery={handleChangeQuery}
       />,
       { wrapper: TestWrapper }
@@ -82,6 +83,6 @@ describe("EntityList", () => {
     act(() => {
       screen.getByRole("button", { name: "Go to page 2" }).click();
     });
-    expect(handleChangePage).toBeCalled();
+    expect(changePage).toBeCalled();
   });
 });

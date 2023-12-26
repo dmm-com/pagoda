@@ -4,9 +4,7 @@ import {
   Checkbox,
   List,
   ListItem,
-  Pagination,
   Paper,
-  Stack,
   Table,
   TableBody,
   TableCell,
@@ -21,6 +19,7 @@ import { Link } from "react-router-dom";
 import { SearchResultsTableHead } from "./SearchResultsTableHead";
 
 import { entryDetailsPath } from "Routes";
+import { PaginationFooter } from "components/common/PaginationFooter";
 import { AttributeValue } from "components/entry/AttributeValue";
 import { AttrsFilter } from "services/entry/AdvancedSearch";
 
@@ -47,10 +46,11 @@ const StyledTableRow = styled(TableRow)({
 
 interface Props {
   results: Array<AdvancedSearchResultValue>;
+  totalPageCount: number;
+  maxRowCount: number;
   page: number;
-  maxPage: number;
+  changePage: (page: number) => void;
   hasReferral: boolean;
-  handleChangePage: (page: number) => void;
   defaultEntryFilter?: string;
   defaultReferralFilter?: string;
   defaultAttrsFilter?: AttrsFilter;
@@ -60,9 +60,10 @@ interface Props {
 
 export const SearchResults: FC<Props> = ({
   results,
+  totalPageCount,
+  maxRowCount,
   page,
-  maxPage,
-  handleChangePage,
+  changePage,
   hasReferral,
   defaultEntryFilter,
   defaultReferralFilter,
@@ -159,19 +160,13 @@ export const SearchResults: FC<Props> = ({
           </Table>
         </TableContainer>
 
-        <Box display="flex" justifyContent="center" my="30px">
-          <Stack spacing={2}>
-            <Pagination
-              id="result_page"
-              siblingCount={0}
-              boundaryCount={1}
-              count={maxPage}
-              page={page}
-              onChange={(e, page) => handleChangePage(page)}
-              color="primary"
-            />
-          </Stack>
-        </Box>
+        <PaginationFooter
+          count={results.length}
+          totalPageCount={totalPageCount}
+          maxRowCount={maxRowCount}
+          page={page}
+          changePage={changePage}
+        />
       </StyledBox>
     </Box>
   );

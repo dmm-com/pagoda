@@ -62,14 +62,13 @@ export const AdvancedSearchResultsPage: FC = () => {
     );
   }, [page, toggle]);
 
-  const maxPage = useMemo(() => {
-    if (results.loading) {
-      return 0;
-    }
-    return Math.ceil(
-      (results.value?.count ?? 0) / AdvancedSerarchResultList.MAX_ROW_COUNT
-    );
-  }, [results.loading, results.value?.count]);
+  const totalPageCount = useMemo(() => {
+    return results.loading
+      ? 0
+      : Math.ceil(
+          (results.value?.count ?? 0) / AdvancedSerarchResultList.MAX_ROW_COUNT
+        );
+  }, [results.loading, results.value]);
 
   const handleExport = async (exportStyle: "yaml" | "csv") => {
     try {
@@ -188,9 +187,10 @@ export const AdvancedSearchResultsPage: FC = () => {
       {!results.loading ? (
         <SearchResults
           results={results.value?.values ?? []}
+          totalPageCount={totalPageCount}
+          maxRowCount={AdvancedSerarchResultList.MAX_ROW_COUNT}
           page={page}
-          maxPage={maxPage}
-          handleChangePage={changePage}
+          changePage={changePage}
           hasReferral={hasReferral}
           defaultEntryFilter={entryName}
           defaultReferralFilter={referralName}

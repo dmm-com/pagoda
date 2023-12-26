@@ -1,8 +1,6 @@
 import { EntityHistory } from "@dmm-com/airone-apiclient-typescript-fetch";
 import {
   Box,
-  Pagination,
-  Stack,
   Table,
   TableBody,
   TableCell,
@@ -12,7 +10,8 @@ import {
 } from "@mui/material";
 import React, { FC } from "react";
 
-import { formatDateTime } from "../../services/DateUtil";
+import { PaginationFooter } from "components/common/PaginationFooter";
+import { formatDateTime } from "services/DateUtil";
 
 const Operations = {
   ADD: 1 << 0,
@@ -38,16 +37,18 @@ export const TargetOperation = {
 
 interface Props {
   histories: Array<EntityHistory>;
+  totalPageCount: number;
+  maxRowCount: number;
   page: number;
-  maxPage: number;
-  handleChangePage: (page: number) => void;
+  changePage: (page: number) => void;
 }
 
 export const EntityHistoryList: FC<Props> = ({
   histories,
+  totalPageCount,
+  maxRowCount,
   page,
-  maxPage,
-  handleChangePage,
+  changePage,
 }) => {
   return (
     <Box>
@@ -130,16 +131,13 @@ export const EntityHistoryList: FC<Props> = ({
         </TableBody>
       </Table>
 
-      <Box display="flex" justifyContent="center" my="30px">
-        <Stack spacing={2}>
-          <Pagination
-            count={maxPage}
-            page={page}
-            onChange={(e, page) => handleChangePage(page)}
-            color="primary"
-          />
-        </Stack>
-      </Box>
+      <PaginationFooter
+        count={histories.length}
+        totalPageCount={totalPageCount}
+        maxRowCount={maxRowCount}
+        page={page}
+        changePage={changePage}
+      />
     </Box>
   );
 };

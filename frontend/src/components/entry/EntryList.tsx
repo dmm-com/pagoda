@@ -1,26 +1,19 @@
 import AddIcon from "@mui/icons-material/Add";
-import {
-  Box,
-  Button,
-  Grid,
-  Pagination,
-  Stack,
-  Typography,
-} from "@mui/material";
-import React, { FC, useState } from "react";
+import { Box, Button, Grid } from "@mui/material";
+import React, { FC, useMemo, useState } from "react";
 import { Link, useHistory, useLocation } from "react-router-dom";
-
-import { useAsyncWithThrow } from "../../hooks/useAsyncWithThrow";
-import { usePage } from "../../hooks/usePage";
-import { normalizeToMatch } from "../../services/StringUtil";
 
 import { EntryListCard } from "./EntryListCard";
 
 import { newEntryPath } from "Routes";
 import { Loading } from "components/common/Loading";
+import { PaginationFooter } from "components/common/PaginationFooter";
 import { SearchBox } from "components/common/SearchBox";
+import { useAsyncWithThrow } from "hooks/useAsyncWithThrow";
+import { usePage } from "hooks/usePage";
 import { aironeApiClientV2 } from "repository/AironeApiClientV2";
 import { EntryList as ConstEntryList } from "services/Constants";
+import { normalizeToMatch } from "services/StringUtil";
 
 interface Props {
   entityId: number;
@@ -53,9 +46,11 @@ export const EntryList: FC<Props> = ({ entityId, canCreateEntry = true }) => {
     });
   };
 
-  const totalPageCount = entries.loading
-    ? 0
-    : Math.ceil((entries.value?.count ?? 0) / ConstEntryList.MAX_ROW_COUNT);
+  const totalPageCount = useMemo(() => {
+    return entries.loading
+      ? 0
+      : Math.ceil((entries.value?.count ?? 0) / ConstEntryList.MAX_ROW_COUNT);
+  }, [entries.loading, entries.value]);
 
   return (
     <Box>
@@ -105,27 +100,13 @@ export const EntryList: FC<Props> = ({ entityId, canCreateEntry = true }) => {
           })}
         </Grid>
       )}
-      <Box display="flex" justifyContent="center" alignItems="center" my="30px">
-        <Typography>
-          {ConstEntryList.MAX_ROW_COUNT * (page - 1) + 1}-{" "}
-          {Math.min(
-            ConstEntryList.MAX_ROW_COUNT * page,
-            entries.value?.count ?? 0
-          )}{" "}
-          / {entries.value?.count ?? 0} 件
-        </Typography>
-        <Stack spacing={2}>
-          <Pagination
-            id="entry_page"
-            siblingCount={0}
-            boundaryCount={1}
-            count={totalPageCount}
-            page={page}
-            onChange={(_, newPage) => changePage(newPage)}
-            color="primary"
-          />
-        </Stack>
-      </Box>
+      <PaginationFooter
+        count={entries.value?.count ?? 0}
+        totalPageCount={totalPageCount}
+        maxRowCount={ConstEntryList.MAX_ROW_COUNT}
+        page={page}
+        changePage={changePage}
+      />
     </Box>
   );
 };

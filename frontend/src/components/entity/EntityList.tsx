@@ -1,31 +1,34 @@
 import { EntityList as EntityListInterface } from "@dmm-com/airone-apiclient-typescript-fetch";
 import AddIcon from "@mui/icons-material/Add";
-import { Box, Button, Grid, Pagination, Stack } from "@mui/material";
+import { Box, Button, Grid } from "@mui/material";
 import React, { FC, useState } from "react";
 import { Link } from "react-router-dom";
 
 import { EntityListCard } from "./EntityListCard";
 
 import { newEntityPath } from "Routes";
+import { PaginationFooter } from "components/common/PaginationFooter";
 import { SearchBox } from "components/common/SearchBox";
 import { normalizeToMatch } from "services/StringUtil";
 
 interface Props {
   entities: EntityListInterface[];
+  totalPageCount: number;
+  maxRowCount: number;
   page: number;
+  changePage: (page: number) => void;
   query?: string;
-  maxPage: number;
-  handleChangePage: (page: number) => void;
   handleChangeQuery: (query: string) => void;
   setToggle?: () => void;
 }
 
 export const EntityList: FC<Props> = ({
   entities,
+  totalPageCount,
+  maxRowCount,
   page,
   query,
-  maxPage,
-  handleChangePage,
+  changePage,
   handleChangeQuery,
   setToggle,
 }) => {
@@ -67,19 +70,13 @@ export const EntityList: FC<Props> = ({
           </Grid>
         ))}
       </Grid>
-      <Box display="flex" justifyContent="center" my="30px">
-        <Stack spacing={2}>
-          <Pagination
-            id="entity_page"
-            siblingCount={0}
-            boundaryCount={1}
-            count={maxPage}
-            page={page}
-            onChange={(e, page) => handleChangePage(page)}
-            color="primary"
-          />
-        </Stack>
-      </Box>
+      <PaginationFooter
+        count={entities.length}
+        totalPageCount={totalPageCount}
+        maxRowCount={maxRowCount}
+        page={page}
+        changePage={changePage}
+      />
     </Box>
   );
 };

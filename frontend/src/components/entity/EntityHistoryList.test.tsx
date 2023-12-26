@@ -63,14 +63,15 @@ describe("EntityHistoryList", () => {
   ];
 
   test("should render entity histories", () => {
-    const handleChangePage = jest.fn();
+    const changePage = jest.fn();
 
     render(
       <EntityHistoryList
         histories={histories}
+        totalPageCount={3}
+        maxRowCount={2}
         page={1}
-        maxPage={3}
-        handleChangePage={handleChangePage}
+        changePage={changePage}
       />,
       { wrapper: TestWrapper }
     );
@@ -100,6 +101,6 @@ describe("EntityHistoryList", () => {
     act(() => {
       screen.getByRole("button", { name: "Go to page 2" }).click();
     });
-    expect(handleChangePage).toBeCalled();
+    expect(changePage).toBeCalled();
   });
 });

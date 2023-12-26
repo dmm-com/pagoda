@@ -32,14 +32,13 @@ export const EntryHistoryListPage: FC = () => {
     return await aironeApiClientV2.getEntryHistories(entryId, page);
   }, [entryId, page]);
 
-  const maxPage = useMemo(() => {
-    if (histories.loading) {
-      return 0;
-    }
-    return Math.ceil(
-      (histories.value?.count ?? 0) / ConstEntryHistoryList.MAX_ROW_COUNT
-    );
-  }, [histories.loading, histories.value?.count]);
+  const totalPageCount = useMemo(() => {
+    return histories.loading
+      ? 0
+      : Math.ceil(
+          (histories.value?.count ?? 0) / ConstEntryHistoryList.MAX_ROW_COUNT
+        );
+  }, [histories.loading, histories.value]);
 
   return (
     <Box className="container">
@@ -68,12 +67,13 @@ export const EntryHistoryListPage: FC = () => {
       ) : (
         <Container>
           <EntryHistoryList
-            histories={histories.value?.results ?? []}
             entityId={entry.value?.schema?.id ?? 0}
             entryId={entryId}
+            histories={histories.value?.results ?? []}
+            totalPageCount={totalPageCount}
+            maxRowCount={ConstEntryHistoryList.MAX_ROW_COUNT}
             page={page}
-            maxPage={maxPage}
-            handleChangePage={changePage}
+            changePage={changePage}
           />
         </Container>
       )}

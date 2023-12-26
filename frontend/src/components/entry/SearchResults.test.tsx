@@ -13,9 +13,10 @@ test("should render a component with essential props", function () {
     render(
       <SearchResults
         results={[]}
+        totalPageCount={1}
+        maxRowCount={1}
         page={1}
-        maxPage={1}
-        handleChangePage={() => {
+        changePage={() => {
           /* do nothing */
         }}
         bulkOperationEntryIds={[]}
