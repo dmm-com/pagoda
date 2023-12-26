@@ -192,6 +192,7 @@ exports[`should match snapshot 1`] = `
             </div>
             <div
               class="MuiGrid-root MuiGrid-container MuiGrid-spacing-xs-2 css-mhc70k-MuiGrid-root"
+              id="user_list"
             >
               <div
                 class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-4 css-gj1fbr-MuiGrid-root"
@@ -250,8 +251,19 @@ exports[`should match snapshot 1`] = `
               </div>
             </div>
             <div
-              class="MuiBox-root css-1b33znm"
+              class="MuiBox-root css-d3lzg9"
             >
+              <p
+                class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+              >
+                1
+                 -
+                 
+                1
+                 / 
+                1
+                 件
+              </p>
               <div
                 class="MuiStack-root css-1sazv7p-MuiStack-root"
               >
@@ -515,6 +527,7 @@ exports[`should match snapshot 1`] = `
           </div>
           <div
             class="MuiGrid-root MuiGrid-container MuiGrid-spacing-xs-2 css-mhc70k-MuiGrid-root"
+            id="user_list"
           >
             <div
               class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-4 css-gj1fbr-MuiGrid-root"
@@ -573,8 +586,19 @@ exports[`should match snapshot 1`] = `
             </div>
           </div>
           <div
-            class="MuiBox-root css-1b33znm"
+            class="MuiBox-root css-d3lzg9"
           >
+            <p
+              class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+            >
+              1
+               -
+               
+              1
+               / 
+              1
+               件
+            </p>
             <div
               class="MuiStack-root css-1sazv7p-MuiStack-root"
             >

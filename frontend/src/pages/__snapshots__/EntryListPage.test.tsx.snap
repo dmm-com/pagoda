@@ -398,17 +398,16 @@ exports[`should match snapshot 1`] = `
               </div>
             </div>
             <div
-              class="MuiBox-root css-1uem5yy"
+              class="MuiBox-root css-d3lzg9"
             >
               <p
                 class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
               >
-                1
-                -
+                0
+                 -
                  
                 0
-                 
-                / 
+                 / 
                 0
                  件
               </p>
@@ -418,7 +417,6 @@ exports[`should match snapshot 1`] = `
                 <nav
                   aria-label="pagination navigation"
                   class="MuiPagination-root MuiPagination-text css-1oj2twp-MuiPagination-root"
-                  id="entry_page"
                 >
                   <ul
                     class="MuiPagination-ul css-wjh20t-MuiPagination-ul"
@@ -868,17 +866,16 @@ exports[`should match snapshot 1`] = `
             </div>
           </div>
           <div
-            class="MuiBox-root css-1uem5yy"
+            class="MuiBox-root css-d3lzg9"
           >
             <p
               class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
             >
-              1
-              -
+              0
+               -
                
               0
-               
-              / 
+               / 
               0
                件
             </p>
@@ -888,7 +885,6 @@ exports[`should match snapshot 1`] = `
               <nav
                 aria-label="pagination navigation"
                 class="MuiPagination-root MuiPagination-text css-1oj2twp-MuiPagination-root"
-                id="entry_page"
               >
                 <ul
                   class="MuiPagination-ul css-wjh20t-MuiPagination-ul"
