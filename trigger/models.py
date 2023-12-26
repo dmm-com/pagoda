@@ -57,6 +57,10 @@ class InputTriggerCondition(object):
         elif self.attr.type & AttrTypeValue["boolean"]:
             if isinstance(input_condition, bool):
                 self.bool_cond = input_condition
+            if isinstance(input_condition, str):
+                self.bool_cond = input_condition.lower() == "true"
+            else:
+                self.bool_cond = input_condition is not None
 
 
 class InputTriggerActionValue(object):

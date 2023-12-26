@@ -4,6 +4,8 @@ from rest_framework.permissions import IsAuthenticated
 
 from trigger.api_v2.serializers import (
     TriggerParentConditionSerializer,
+    TriggerParentUpdateSerializer,
+    TriggerParentCreateSerializer,
 )
 from trigger.models import TriggerParentCondition
 
@@ -14,7 +16,10 @@ class TriggerAPI(viewsets.ModelViewSet):
     filterset_fields = ["entity__is_active"]
 
     def get_serializer_class(self):
-        serializer = {}
+        serializer = {
+            "update": TriggerParentUpdateSerializer,
+            "create": TriggerParentCreateSerializer,
+        }
         return serializer.get(self.action, TriggerParentConditionSerializer)
 
     def get_queryset(self):

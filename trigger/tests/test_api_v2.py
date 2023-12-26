@@ -1,6 +1,8 @@
+import json
+
 from airone.lib.test import AironeViewTest
 from airone.lib.types import AttrTypeValue
-from trigger.models import TriggerCondition
+from trigger.models import TriggerCondition, TriggerParentCondition
 from user.models import User
 
 
@@ -10,77 +12,196 @@ class APITest(AironeViewTest):
 
         self.user: User = self.guest_login()
 
+        # create Entities that are used for each tests
+        self.entity_people = self.create_entity(
+            self.user,
+            "people",
+            attrs=[
+                {"name": "address", "type": AttrTypeValue["string"]},
+                {"name": "is_orphan", "type": AttrTypeValue["boolean"]},
+            ],
+        )
+        self.entity_book = self.create_entity(
+            self.user,
+            "book",
+            attrs=[
+                {"name": "title", "type": AttrTypeValue["string"]},
+                {"name": "borrowed_by", "type": AttrTypeValue["object"]},
+                {"name": "isbn", "type": AttrTypeValue["string"]},
+                {"name": "is_overdue", "type": AttrTypeValue["boolean"]},
+                {"name": "memo", "type": AttrTypeValue["string"]},
+            ],
+        )
+
     def test_list_trigger_condition(self):
         # create Entity and TriggerConditions to be retrieved
-        entity = self.create_entity(
-            self.user,
-            "test_entity",
-            attrs=[
-                {"name": "foo", "type": AttrTypeValue["string"]},
-                {"name": "bar", "type": AttrTypeValue["object"]},
-                {"name": "hoge", "type": AttrTypeValue["string"]},
-            ],
-        )
-        another_entity = self.create_entity(
-            self.user,
-            "another_entity",
-            attrs=[
-                {"name": "is_orphan", "type": AttrTypeValue["boolean"]},
-                {"name": "name", "type": AttrTypeValue["string"]},
-            ],
-        )
-        ref_entry = self.add_entry(self.user, "e0", another_entity)
+        entry_tom = self.add_entry(self.user, "Tom", self.entity_people)
 
         # create TriggerCondition for test_entity
         settingTriggerActions = [
-            {"attr_id": entity.attrs.get(name="hoge").id, "value": "changed_value"},
+            {"attr_id": self.entity_book.attrs.get(name="isbn").id, "value": "978-4915512377"},
         ]
         TriggerCondition.register(
-            entity,
+            self.entity_book,
             [
-                {"attr_id": entity.attrs.get(name="foo").id, "cond": "hoge"},
-                {"attr_id": entity.attrs.get(name="bar").id, "cond": ref_entry},
+                {"attr_id": self.entity_book.attrs.get(name="title").id, "cond": "book"},
+                {"attr_id": self.entity_book.attrs.get(name="borrowed_by").id, "cond": entry_tom},
             ],
             settingTriggerActions,
         )
         TriggerCondition.register(
-            entity,
-            [
-                {"attr_id": entity.attrs.get(name="bar").id, "cond": ref_entry},
-            ],
+            self.entity_book,
+            [{"attr_id": self.entity_book.attrs.get(name="borrowed_by").id, "cond": entry_tom}],
             settingTriggerActions,
         )
 
-        # create TriggerCondition for another_entity
+        # create TriggerCondition for another entity
         TriggerCondition.register(
-            another_entity,
-            [
-                {"attr_id": another_entity.attrs.get(name="is_orphan").id, "cond": True},
-            ],
-            [
-                {"attr_id": another_entity.attrs.get(name="name").id, "value": "John Doe"},
-            ],
+            self.entity_people,
+            [{"attr_id": self.entity_people.attrs.get(name="is_orphan").id, "cond": True}],
+            [{"attr_id": self.entity_people.attrs.get(name="address").id, "value": ""}],
         )
 
         # list all trigger has expected values
         resp = self.client.get("/trigger/api/v2/")
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(
-            [t["entity"]["name"] for t in resp.json()["results"]],
-            [
-                entity.name,
-                entity.name,
-                another_entity.name,
-            ],
+            sorted([t["entity"]["name"] for t in resp.json()["results"]]),
+            sorted([
+                self.entity_book.name,
+                self.entity_book.name,
+                self.entity_people.name,
+            ]),
         )
 
         # list specified Entity's triggers
-        resp = self.client.get("/trigger/api/v2/?entity_id=%s" % entity.id)
+        resp = self.client.get("/trigger/api/v2/?entity_id=%s" % self.entity_book.id)
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(
             [t["entity"]["name"] for t in resp.json()["results"]],
             [
-                entity.name,
-                entity.name,
+                self.entity_book.name,
+                self.entity_book.name,
             ],
         )
+
+    def test_create_trigger_condition_with_wrong_params_in_conditions(self):
+        # send request with parameter that EnttiyAttr in conditions is incompatible with Entity
+        params = {
+            "entity_id": self.entity_book.id,
+            "conditions": [
+                {
+                    "attr_id": self.entity_people.attrs.get(name="address").id,
+                    "cond": "1600 Pennsylvania Avenue",
+                },
+            ],
+            "actions": [],
+        }
+        resp = self.client.post("/trigger/api/v2/", json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, 400)
+
+    def test_create_trigger_condition_with_wrong_params_in_actions(self):
+        # send request with parameter that EnttiyAttr in conditions is incompatible with Entity
+        params = {
+            "entity_id": self.entity_book.id,
+            "conditions": [
+                {
+                    "attr_id": self.entity_book.attrs.get(name="title").id,
+                    "cond": "The Little Prince",
+                },
+            ],
+            "actions": [
+                {
+                    "attr_id": self.entity_people.attrs.get(name="is_orphan").id,
+                    "value": "True",
+                }
+            ],
+        }
+        resp = self.client.post("/trigger/api/v2/", json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, 400)
+
+    def test_create_trigger_condition_without_element_in_conditions(self):
+        # send request any conditions
+        params = {
+            "entity_id": self.entity_book.id,
+            "conditions": [],
+            "actions": [
+                {
+                    "attr_id": self.entity_book.attrs.get(name="memo").id,
+                    "value": "non-value",
+                }
+            ],
+        }
+        resp = self.client.post("/trigger/api/v2/", json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, 400)
+
+    def test_create_trigger_condition_without_element_in_actions(self):
+        # send request any conditions
+        params = {
+            "entity_id": self.entity_book.id,
+            "conditions": [
+                {
+                    "attr_id": self.entity_book.attrs.get(name="title").id,
+                    "cond": "Harry Potter and the Philosopher's Stone",
+                },
+            ],
+            "actions": [],
+        }
+        resp = self.client.post("/trigger/api/v2/", json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, 400)
+
+    def test_create_trigger_condition(self):
+        entry_tom = self.add_entry(self.user, "Tom", self.entity_people)
+        params = {
+            "entity_id": self.entity_book.id,
+            "conditions": [
+                {
+                    "attr_id": self.entity_book.attrs.get(name="title").id,
+                    "cond": "Harry Potter and the Philosopher's Stone",
+                },
+                {
+                    "attr_id": self.entity_book.attrs.get(name="borrowed_by").id,
+                    "cond": str(entry_tom.id),
+                },
+                {
+                    "attr_id": self.entity_book.attrs.get(name="is_overdue").id,
+                    "cond": str(True),
+                },
+            ],
+            "actions": [
+                {
+                    "attr_id": self.entity_book.attrs.get(name="memo").id,
+                    "value": "deploy a staff to the Tom's house!",
+                }
+            ],
+        }
+        resp = self.client.post("/trigger/api/v2/", json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, 201)
+
+        # This checks expected Conditions are created properly
+        created_trigger = TriggerParentCondition.objects.get(id=resp.json()["id"])
+        self.assertEqual(created_trigger.entity, self.entity_book)
+        self.assertEqual([(
+            x.attr.name,
+            x.str_cond,
+            x.ref_cond,
+            x.bool_cond
+        ) for x in created_trigger.co_conditions.all()], [
+            ("title", "Harry Potter and the Philosopher's Stone", None, False),
+            ("borrowed_by", "", entry_tom, False),
+            ("is_overdue", "", None, True),
+        ])
+
+        # This checks expected Actions are created properly
+        self.assertEqual([(
+            a.attr.name,
+            [(v.str_cond, v.ref_cond, v.bool_cond) for v in a.values.all()],
+        ) for a in created_trigger.actions.all()], [
+            ("memo", [("deploy a staff to the Tom's house!", None, False)])
+        ])
+
+    def test_update_trigger_condition(self):
+        pass
+
+    def test_delete_trigger_condition(self):
+        pass

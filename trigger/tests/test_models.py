@@ -77,7 +77,7 @@ class ModelTest(AironeTestCase):
                 "attr_id": self.entity.attrs.get(name="ref_trigger").id,
                 "cond": self.entry_refs[2],
             },
-            {"attr_id": self.entity.attrs.get(name="bool_trigger").id, "bond": True},
+            {"attr_id": self.entity.attrs.get(name="bool_trigger").id, "cond": True},
             {
                 "attr_id": self.entity.attrs.get(name="named_trigger").id,
                 "cond": FAT_LADY_PASSWD,
@@ -185,7 +185,7 @@ class ModelTest(AironeTestCase):
                 "cond": "test",
                 "cond": entries[0].id,
             },
-            {"attr_id": self.entity.attrs.get(name="bool_trigger").id, "bond": False},
+            {"attr_id": self.entity.attrs.get(name="bool_trigger").id, "cond": False},
             {"attr_id": self.entity.attrs.get(name="arr_str_trigger").id, "cond": "test"},
             {
                 "attr_id": self.entity.attrs.get(name="arr_ref_trigger").id,
