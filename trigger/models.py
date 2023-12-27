@@ -6,7 +6,7 @@ from airone.lib.http import DRFRequest
 from airone.lib.types import AttrTypeValue
 from entity.models import Entity, EntityAttr
 from entry.api_v2.serializers import EntryUpdateSerializer
-from entry.models import Entry, AttributeValue
+from entry.models import Entry
 
 
 ## These are internal classes for AirOne trigger and action
@@ -29,14 +29,17 @@ class InputTriggerCondition(object):
         self.ref_cond = None
         self.bool_cond = False
 
-
     def parse_input_condition(self, input_condition):
         def _convert_value_to_entry():
             if isinstance(input_condition, Entry):
                 return input_condition
-            elif isinstance(input_condition, int) or (isinstance(input_condition, str) and input_condition.isdigit()):
+            elif isinstance(input_condition, int) or (
+                isinstance(input_condition, str) and input_condition.isdigit()
+            ):
                 # convert ID to Entry instance
-                entry = Entry.objects.filter(id=int(input_condition), is_active=True).first()
+                entry = Entry.objects.filter(
+                    id=int(input_condition), is_active=True
+                ).first()
                 if entry:
                     return entry
             return None
@@ -100,9 +103,13 @@ class InputTriggerAction(object):
         elif isinstance(input_value, dict):
             ref_entry = None
             if isinstance(input_value.get("id"), int):
-                ref_entry = Entry.objects.filter(id=input_value["id"], is_active=True).first()
+                ref_entry = Entry.objects.filter(
+                    id=input_value["id"], is_active=True
+                ).first()
             if isinstance(input_value.get("id"), str):
-                ref_entry = Entry.objects.filter(id=int(input_value["id"]), is_active=True).first()
+                ref_entry = Entry.objects.filter(
+                    id=int(input_value["id"]), is_active=True
+                ).first()
             elif isinstance(input_value.get("id"), Entry):
                 ref_entry = input_value["id"]
 
@@ -140,7 +147,9 @@ class TriggerAction(models.Model):
         value = value or self.values.first()
         if attr_type & AttrTypeValue["array"]:
             return [
-                self.get_serializer_acceptable_value(x, attr_type ^ AttrTypeValue["array"])
+                self.get_serializer_acceptable_value(
+                    x, attr_type ^ AttrTypeValue["array"]
+                )
                 for x in self.values.all()
             ]
         elif attr_type == AttrTypeValue["boolean"]:
@@ -167,7 +176,9 @@ class TriggerAction(models.Model):
         setting_data = {
             "id": entry.id,
             "name": entry.name,
-            "attrs": [{"id": self.attr.id, "value": self.get_serializer_acceptable_value()}],
+            "attrs": [
+                {"id": self.attr.id, "value": self.get_serializer_acceptable_value()}
+            ],
             "delay_trigger": False,
             "call_stacks": [*call_stacks, self.id],
         }
@@ -180,9 +191,13 @@ class TriggerAction(models.Model):
 
 
 class TriggerActionValue(models.Model):
-    action = models.ForeignKey(TriggerAction, on_delete=models.CASCADE, related_name="values")
+    action = models.ForeignKey(
+        TriggerAction, on_delete=models.CASCADE, related_name="values"
+    )
     str_cond = models.TextField()
-    ref_cond = models.ForeignKey("entry.Entry", on_delete=models.SET_NULL, null=True, blank=True)
+    ref_cond = models.ForeignKey(
+        "entry.Entry", on_delete=models.SET_NULL, null=True, blank=True
+    )
     bool_cond = models.BooleanField(default=False)
 
     # TODO: Add method to register value to Attribute when action is invoked
@@ -219,7 +234,9 @@ class TriggerParentCondition(models.Model):
         """
 
         def _is_match(condition):
-            for attr_info in [x for x in recv_attrs if x["attr_id"] == condition.attr.id]:
+            for attr_info in [
+                x for x in recv_attrs if x["attr_id"] == condition.attr.id
+            ]:
                 if condition.is_match_condition(attr_info["value"]):
                     return True
 
@@ -243,7 +260,9 @@ class TriggerParentCondition(models.Model):
 
     def update(self, conditions: list, actions: list):
         # convert input to InputTriggerCondition
-        input_trigger_conditions = [InputTriggerCondition(**condition) for condition in conditions]
+        input_trigger_conditions = [
+            InputTriggerCondition(**condition) for condition in conditions
+        ]
 
         # save conditions
         self.save_conditions(input_trigger_conditions)
@@ -256,13 +275,16 @@ class TriggerParentCondition(models.Model):
             )
             trigger_action.save_actions(input_trigger_action)
 
+
 class TriggerCondition(models.Model):
     parent = models.ForeignKey(
         TriggerParentCondition, on_delete=models.CASCADE, related_name="co_conditions"
     )
     attr = models.ForeignKey("entity.EntityAttr", on_delete=models.CASCADE)
     str_cond = models.TextField()
-    ref_cond = models.ForeignKey("entry.Entry", on_delete=models.SET_NULL, null=True, blank=True)
+    ref_cond = models.ForeignKey(
+        "entry.Entry", on_delete=models.SET_NULL, null=True, blank=True
+    )
     bool_cond = models.BooleanField(default=False)
 
     def is_same_condition(self, input_list: list[InputTriggerCondition]) -> bool:
@@ -309,7 +331,9 @@ class TriggerCondition(models.Model):
             )
 
         elif attr_type == AttrTypeValue["named_object"]:
-            return _is_match_object(recv_value["id"]) or (self.str_cond != "" and self.str_cond == recv_value["name"])
+            return _is_match_object(recv_value["id"]) or (
+                self.str_cond != "" and self.str_cond == recv_value["name"]
+            )
 
         elif attr_type == AttrTypeValue["object"]:
             return _is_match_object(recv_value)
@@ -323,9 +347,13 @@ class TriggerCondition(models.Model):
         return False
 
     @classmethod
-    def register(cls, entity: Entity, conditions: list, actions: list) -> TriggerParentCondition:
+    def register(
+        cls, entity: Entity, conditions: list, actions: list
+    ) -> TriggerParentCondition:
         # convert input to InputTriggerCondition
-        input_trigger_conditions = [InputTriggerCondition(**condition) for condition in conditions]
+        input_trigger_conditions = [
+            InputTriggerCondition(**condition) for condition in conditions
+        ]
 
         # check if condition is already registered
         for parent_condition in TriggerParentCondition.objects.filter(entity=entity):
