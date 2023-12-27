@@ -1,20 +1,18 @@
 import AppsIcon from "@mui/icons-material/Apps";
 import { Box, Container, IconButton } from "@mui/material";
-import React, { FC, useMemo, useState } from "react";
+import React, { FC, useState } from "react";
 import { useAsync } from "react-use";
-
-import { EntityControlMenu } from "../components/entity/EntityControlMenu";
-import { EntityHistoryList } from "../components/entity/EntityHistoryList";
-import { EntryImportModal } from "../components/entry/EntryImportModal";
-import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
-import { usePage } from "../hooks/usePage";
-import { useTypedParams } from "../hooks/useTypedParams";
-import { aironeApiClientV2 } from "../repository/AironeApiClientV2";
-import { EntityHistoryList as ConstEntityHistoryList } from "../services/Constants";
 
 import { Loading } from "components/common/Loading";
 import { PageHeader } from "components/common/PageHeader";
 import { EntityBreadcrumbs } from "components/entity/EntityBreadcrumbs";
+import { EntityControlMenu } from "components/entity/EntityControlMenu";
+import { EntityHistoryList } from "components/entity/EntityHistoryList";
+import { EntryImportModal } from "components/entry/EntryImportModal";
+import { useAsyncWithThrow } from "hooks/useAsyncWithThrow";
+import { usePage } from "hooks/usePage";
+import { useTypedParams } from "hooks/useTypedParams";
+import { aironeApiClientV2 } from "repository/AironeApiClientV2";
 
 export const EntityHistoryPage: FC = () => {
   const { entityId } = useTypedParams<{ entityId: number }>();
@@ -31,14 +29,6 @@ export const EntityHistoryPage: FC = () => {
   const histories = useAsync(async () => {
     return await aironeApiClientV2.getEntityHistories(entityId, page);
   }, [entityId, page]);
-
-  const totalPageCount = useMemo(() => {
-    return histories.loading
-      ? 0
-      : Math.ceil(
-          (histories.value?.count ?? 0) / ConstEntityHistoryList.MAX_ROW_COUNT
-        );
-  }, [histories.loading, histories.value]);
 
   return (
     <Box className="container">
@@ -63,14 +53,12 @@ export const EntityHistoryPage: FC = () => {
         </Box>
       </PageHeader>
 
-      {histories.loading ? (
+      {histories.loading || !histories.value ? (
         <Loading />
       ) : (
         <Container>
           <EntityHistoryList
-            histories={histories.value?.results ?? []}
-            totalPageCount={totalPageCount}
-            maxRowCount={ConstEntityHistoryList.MAX_ROW_COUNT}
+            histories={histories.value}
             page={page}
             changePage={changePage}
           />

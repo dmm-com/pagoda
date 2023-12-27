@@ -1,4 +1,4 @@
-import { AdvancedSearchResultValue } from "@dmm-com/airone-apiclient-typescript-fetch";
+import { AdvancedSearchResult } from "@dmm-com/airone-apiclient-typescript-fetch";
 import {
   Box,
   Checkbox,
@@ -21,6 +21,7 @@ import { SearchResultsTableHead } from "./SearchResultsTableHead";
 import { entryDetailsPath } from "Routes";
 import { PaginationFooter } from "components/common/PaginationFooter";
 import { AttributeValue } from "components/entry/AttributeValue";
+import { AdvancedSerarchResultList } from "services/Constants";
 import { AttrsFilter } from "services/entry/AdvancedSearch";
 
 const StyledBox = styled(Box)({
@@ -45,9 +46,7 @@ const StyledTableRow = styled(TableRow)({
 });
 
 interface Props {
-  results: Array<AdvancedSearchResultValue>;
-  totalPageCount: number;
-  maxRowCount: number;
+  results: AdvancedSearchResult;
   page: number;
   changePage: (page: number) => void;
   hasReferral: boolean;
@@ -60,8 +59,6 @@ interface Props {
 
 export const SearchResults: FC<Props> = ({
   results,
-  totalPageCount,
-  maxRowCount,
   page,
   changePage,
   hasReferral,
@@ -78,11 +75,11 @@ export const SearchResults: FC<Props> = ({
     const _attrTypes = Object.fromEntries(
       _attrNames.map((attrName) => [
         attrName,
-        results[0]?.attrs[attrName]?.type,
+        results.values[0]?.attrs[attrName]?.type,
       ])
     );
     return [_attrNames, _attrTypes];
-  }, [defaultAttrsFilter, results]);
+  }, [defaultAttrsFilter, results.values]);
 
   return (
     <Box display="flex" flexDirection="column">
@@ -97,7 +94,7 @@ export const SearchResults: FC<Props> = ({
               defaultAttrsFilter={defaultAttrsFilter}
             />
             <TableBody>
-              {results.map((result) => (
+              {results.values?.map((result) => (
                 <StyledTableRow key={result.entry.id}>
                   <TableCell sx={{ padding: 0 }}>
                     <Checkbox
@@ -161,9 +158,8 @@ export const SearchResults: FC<Props> = ({
         </TableContainer>
 
         <PaginationFooter
-          count={results.length}
-          totalPageCount={totalPageCount}
-          maxRowCount={maxRowCount}
+          count={results.count}
+          maxRowCount={AdvancedSerarchResultList.MAX_ROW_COUNT}
           page={page}
           changePage={changePage}
         />

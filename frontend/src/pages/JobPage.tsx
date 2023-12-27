@@ -1,6 +1,6 @@
 import ReplayIcon from "@mui/icons-material/Replay";
 import { Box, Button, Container, Typography } from "@mui/material";
-import React, { FC, useMemo } from "react";
+import React, { FC } from "react";
 import { Link } from "react-router-dom";
 import { useAsync, useToggle } from "react-use";
 
@@ -22,12 +22,6 @@ export const JobPage: FC = () => {
   const jobs = useAsync(async () => {
     return await aironeApiClientV2.getJobs(page);
   }, [page, refresh]);
-
-  const totalPageCount = useMemo(() => {
-    return jobs.loading
-      ? 0
-      : Math.ceil((jobs.value?.count ?? 0) / ConstJobList.MAX_ROW_COUNT);
-  }, [jobs.loading, jobs.value?.count]);
 
   return (
     <Box className="container-fluid">
@@ -55,7 +49,6 @@ export const JobPage: FC = () => {
           <JobList jobs={jobs.value?.results ?? []} />
           <PaginationFooter
             count={jobs.value?.count ?? 0}
-            totalPageCount={totalPageCount}
             maxRowCount={ConstJobList.MAX_ROW_COUNT}
             page={page}
             changePage={changePage}

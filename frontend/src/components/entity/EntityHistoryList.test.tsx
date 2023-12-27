@@ -2,8 +2,8 @@
  * @jest-environment jsdom
  */
 
-import { EntityHistory } from "@dmm-com/airone-apiclient-typescript-fetch";
-import { act, render, screen, within } from "@testing-library/react";
+import { PaginatedEntityHistoryList } from "@dmm-com/airone-apiclient-typescript-fetch";
+import { render, screen, within } from "@testing-library/react";
 import React from "react";
 
 import { EntityHistoryList, TargetOperation } from "./EntityHistoryList";
@@ -11,56 +11,59 @@ import { EntityHistoryList, TargetOperation } from "./EntityHistoryList";
 import { TestWrapper } from "TestWrapper";
 
 describe("EntityHistoryList", () => {
-  const histories: Array<EntityHistory> = [
-    {
-      operation: TargetOperation.ADD_ENTITY,
-      time: new Date("2020/01/01 00:00:00"),
-      username: "user1",
-      text: "entity1",
-      targetObj: "entity1",
-      isDetail: false,
-    },
-    {
-      operation: TargetOperation.MOD_ENTITY,
-      time: new Date("2020/01/02 00:00:00"),
-      username: "user2",
-      text: "entity1",
-      targetObj: "entity1",
-      isDetail: false,
-    },
-    {
-      operation: TargetOperation.ADD_ATTR,
-      time: new Date("2020/01/03 00:00:00"),
-      username: "user3",
-      text: "entity1",
-      targetObj: "attr1",
-      isDetail: false,
-    },
-    {
-      operation: TargetOperation.MOD_ATTR,
-      time: new Date("2020/01/04 00:00:00"),
-      username: "user4",
-      text: "entity1",
-      targetObj: "attr1",
-      isDetail: false,
-    },
-    {
-      operation: TargetOperation.DEL_ATTR,
-      time: new Date("2020/01/05 00:00:00"),
-      username: "user5",
-      text: "entity1",
-      targetObj: "attr1_deleted_20200105000000",
-      isDetail: false,
-    },
-    {
-      operation: TargetOperation.DEL_ENTITY,
-      time: new Date("2020/01/06 00:00:00"),
-      username: "user6",
-      text: "entity1",
-      targetObj: "entity1",
-      isDetail: false,
-    },
-  ];
+  const histories: PaginatedEntityHistoryList = {
+    count: 6,
+    results: [
+      {
+        operation: TargetOperation.ADD_ENTITY,
+        time: new Date("2020/01/01 00:00:00"),
+        username: "user1",
+        text: "entity1",
+        targetObj: "entity1",
+        isDetail: false,
+      },
+      {
+        operation: TargetOperation.MOD_ENTITY,
+        time: new Date("2020/01/02 00:00:00"),
+        username: "user2",
+        text: "entity1",
+        targetObj: "entity1",
+        isDetail: false,
+      },
+      {
+        operation: TargetOperation.ADD_ATTR,
+        time: new Date("2020/01/03 00:00:00"),
+        username: "user3",
+        text: "entity1",
+        targetObj: "attr1",
+        isDetail: false,
+      },
+      {
+        operation: TargetOperation.MOD_ATTR,
+        time: new Date("2020/01/04 00:00:00"),
+        username: "user4",
+        text: "entity1",
+        targetObj: "attr1",
+        isDetail: false,
+      },
+      {
+        operation: TargetOperation.DEL_ATTR,
+        time: new Date("2020/01/05 00:00:00"),
+        username: "user5",
+        text: "entity1",
+        targetObj: "attr1_deleted_20200105000000",
+        isDetail: false,
+      },
+      {
+        operation: TargetOperation.DEL_ENTITY,
+        time: new Date("2020/01/06 00:00:00"),
+        username: "user6",
+        text: "entity1",
+        targetObj: "entity1",
+        isDetail: false,
+      },
+    ],
+  };
 
   test("should render entity histories", () => {
     const changePage = jest.fn();
@@ -68,8 +71,6 @@ describe("EntityHistoryList", () => {
     render(
       <EntityHistoryList
         histories={histories}
-        totalPageCount={3}
-        maxRowCount={2}
         page={1}
         changePage={changePage}
       />,
@@ -89,18 +90,5 @@ describe("EntityHistoryList", () => {
     expect(within(historyRows[4]).queryAllByText("attr1")).toHaveLength(2);
     expect(within(historyRows[5]).queryByText("削除")).toBeInTheDocument();
 
-    expect(screen.getByRole("button", { name: "page 1" })).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: "Go to page 2" })
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: "Go to page 3" })
-    ).toBeInTheDocument();
-
-    // change page
-    act(() => {
-      screen.getByRole("button", { name: "Go to page 2" }).click();
-    });
-    expect(changePage).toBeCalled();
   });
 });

@@ -1,4 +1,4 @@
-import { EntityList as EntityListInterface } from "@dmm-com/airone-apiclient-typescript-fetch";
+import { PaginatedEntityListList } from "@dmm-com/airone-apiclient-typescript-fetch";
 import AddIcon from "@mui/icons-material/Add";
 import { Box, Button, Grid } from "@mui/material";
 import React, { FC, useState } from "react";
@@ -9,12 +9,11 @@ import { EntityListCard } from "./EntityListCard";
 import { newEntityPath } from "Routes";
 import { PaginationFooter } from "components/common/PaginationFooter";
 import { SearchBox } from "components/common/SearchBox";
+import { EntityList as ConstEntityList } from "services/Constants";
 import { normalizeToMatch } from "services/StringUtil";
 
 interface Props {
-  entities: EntityListInterface[];
-  totalPageCount: number;
-  maxRowCount: number;
+  entities: PaginatedEntityListList;
   page: number;
   changePage: (page: number) => void;
   query?: string;
@@ -24,8 +23,6 @@ interface Props {
 
 export const EntityList: FC<Props> = ({
   entities,
-  totalPageCount,
-  maxRowCount,
   page,
   query,
   changePage,
@@ -64,16 +61,15 @@ export const EntityList: FC<Props> = ({
 
       {/* This box shows each entity Cards */}
       <Grid container spacing={2} id="entity_list">
-        {entities.map((entity) => (
+        {entities.results?.map((entity) => (
           <Grid item xs={4} key={entity.id}>
             <EntityListCard entity={entity} setToggle={setToggle} />
           </Grid>
         ))}
       </Grid>
       <PaginationFooter
-        count={entities.length}
-        totalPageCount={totalPageCount}
-        maxRowCount={maxRowCount}
+        count={entities.count ?? 0}
+        maxRowCount={ConstEntityList.MAX_ROW_COUNT}
         page={page}
         changePage={changePage}
       />

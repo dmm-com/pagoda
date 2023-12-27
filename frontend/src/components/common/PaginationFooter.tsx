@@ -11,7 +11,6 @@ const StyledBox = styled(Box)(({}) => ({
 
 interface Props {
   count: number;
-  totalPageCount: number;
   maxRowCount: number;
   page: number;
   changePage: (page: number) => void;
@@ -19,20 +18,21 @@ interface Props {
 
 export const PaginationFooter: FC<Props> = ({
   count,
-  totalPageCount,
   maxRowCount,
   page,
   changePage,
 }) => {
   return (
-    <StyledBox>
+    <StyledBox id="pagination_footer">
       <Typography>
-        {Math.min(maxRowCount * (page - 1) + 1, count)} -{" "}
-        {Math.min(maxRowCount * page, count)} / {count} 件
+        {`${Math.min(maxRowCount * (page - 1) + 1, count)} - ${Math.min(
+          maxRowCount * page,
+          count
+        )} / ${count} 件`}
       </Typography>
       <Stack spacing={2}>
         <Pagination
-          count={totalPageCount}
+          count={count / maxRowCount}
           page={page}
           onChange={(_, newPage) => changePage(newPage)}
           color="primary"

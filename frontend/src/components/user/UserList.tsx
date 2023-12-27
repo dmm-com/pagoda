@@ -52,12 +52,6 @@ export const UserList: FC = ({}) => {
     );
   }, []);
 
-  const totalPageCount = useMemo(() => {
-    return users.loading
-      ? 0
-      : Math.ceil((users.value?.count ?? 0) / ConstUserList.MAX_ROW_COUNT);
-  }, [users.loading, users.value]);
-
   const handleChangeQuery = (newQuery?: string) => {
     changePage(1);
     setQuery(newQuery ?? "");
@@ -164,7 +158,6 @@ export const UserList: FC = ({}) => {
 
       <PaginationFooter
         count={users.value?.count ?? 0}
-        totalPageCount={totalPageCount}
         maxRowCount={ConstUserList.MAX_ROW_COUNT}
         page={page}
         changePage={changePage}

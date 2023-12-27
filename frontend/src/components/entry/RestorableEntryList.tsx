@@ -152,10 +152,6 @@ export const RestorableEntryList: FC<Props> = ({ entityId }) => {
       });
   };
 
-  const totalPageCount = entries.loading
-    ? 0
-    : Math.ceil((entries.value?.count ?? 0) / ConstEntryList.MAX_ROW_COUNT);
-
   return (
     <Box>
       {/* This box shows search box and create button */}
@@ -219,7 +215,6 @@ export const RestorableEntryList: FC<Props> = ({ entityId }) => {
       )}
       <PaginationFooter
         count={entries.value?.count ?? 0}
-        totalPageCount={totalPageCount}
         maxRowCount={ConstEntryList.MAX_ROW_COUNT}
         page={page}
         changePage={changePage}

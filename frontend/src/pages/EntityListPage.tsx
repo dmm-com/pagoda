@@ -1,5 +1,5 @@
 import { Box, Button, Container, Typography } from "@mui/material";
-import React, { FC, useCallback, useMemo, useState } from "react";
+import React, { FC, useCallback, useState } from "react";
 import { Link, useHistory, useLocation } from "react-router-dom";
 import { useAsync } from "react-use";
 
@@ -11,7 +11,6 @@ import { EntityImportModal } from "components/entity/EntityImportModal";
 import { EntityList } from "components/entity/EntityList";
 import { usePage } from "hooks/usePage";
 import { aironeApiClientV2 } from "repository/AironeApiClientV2";
-import { EntityList as ConstEntityList } from "services/Constants";
 
 export const EntityListPage: FC = () => {
   const location = useLocation();
@@ -28,12 +27,6 @@ export const EntityListPage: FC = () => {
   const entities = useAsync(async () => {
     return await aironeApiClientV2.getEntities(page, query);
   }, [page, query, toggle]);
-
-  const totalPageCount = useMemo(() => {
-    return entities.loading
-      ? 0
-      : Math.ceil((entities.value?.count ?? 0) / ConstEntityList.MAX_ROW_COUNT);
-  }, [entities.loading, entities.value]);
 
   const handleChangeQuery = (newQuery?: string) => {
     changePage(1);
@@ -83,14 +76,12 @@ export const EntityListPage: FC = () => {
         </Box>
       </PageHeader>
 
-      {entities.loading ? (
+      {entities.loading || !entities.value ? (
         <Loading />
       ) : (
         <Container>
           <EntityList
-            entities={entities.value?.results ?? []}
-            totalPageCount={totalPageCount}
-            maxRowCount={ConstEntityList.MAX_ROW_COUNT}
+            entities={entities.value}
             page={page}
             changePage={changePage}
             query={query}

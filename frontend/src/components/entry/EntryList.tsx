@@ -1,6 +1,6 @@
 import AddIcon from "@mui/icons-material/Add";
 import { Box, Button, Grid } from "@mui/material";
-import React, { FC, useMemo, useState } from "react";
+import React, { FC, useState } from "react";
 import { Link, useHistory, useLocation } from "react-router-dom";
 
 import { EntryListCard } from "./EntryListCard";
@@ -45,12 +45,6 @@ export const EntryList: FC<Props> = ({ entityId, canCreateEntry = true }) => {
       search: newQuery ? `?query=${newQuery}` : "",
     });
   };
-
-  const totalPageCount = useMemo(() => {
-    return entries.loading
-      ? 0
-      : Math.ceil((entries.value?.count ?? 0) / ConstEntryList.MAX_ROW_COUNT);
-  }, [entries.loading, entries.value]);
 
   return (
     <Box>
@@ -102,7 +96,6 @@ export const EntryList: FC<Props> = ({ entityId, canCreateEntry = true }) => {
       )}
       <PaginationFooter
         count={entries.value?.count ?? 0}
-        totalPageCount={totalPageCount}
         maxRowCount={ConstEntryList.MAX_ROW_COUNT}
         page={page}
         changePage={changePage}

@@ -14,9 +14,10 @@ test("should render a component with essential props", function () {
       <EntryHistoryList
         entityId={2}
         entryId={1}
-        histories={[]}
-        totalPageCount={1}
-        maxRowCount={1}
+        histories={{
+          count: 0,
+          results: [],
+        }}
         page={1}
         changePage={() => {
           /* do nothing */

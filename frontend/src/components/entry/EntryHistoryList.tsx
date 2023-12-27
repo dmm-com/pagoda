@@ -1,4 +1,4 @@
-import { EntryHistoryAttributeValue } from "@dmm-com/airone-apiclient-typescript-fetch";
+import { PaginatedEntryHistoryAttributeValueList } from "@dmm-com/airone-apiclient-typescript-fetch";
 import RestoreIcon from "@mui/icons-material/Restore";
 import {
   IconButton,
@@ -20,6 +20,7 @@ import { showEntryHistoryPath, topPath } from "Routes";
 import { Confirmable } from "components/common/Confirmable";
 import { PaginationFooter } from "components/common/PaginationFooter";
 import { aironeApiClientV2 } from "repository/AironeApiClientV2";
+import { EntryHistoryList as ConstEntryHistoryList } from "services/Constants";
 import { formatDateTime } from "services/DateUtil";
 
 const HeaderTableRow = styled(TableRow)(({}) => ({
@@ -42,9 +43,7 @@ const StyledTableRow = styled(TableRow)(() => ({
 interface Props {
   entityId: number;
   entryId: number;
-  histories: Array<EntryHistoryAttributeValue>;
-  totalPageCount: number;
-  maxRowCount: number;
+  histories: PaginatedEntryHistoryAttributeValueList;
   page: number;
   changePage: (page: number) => void;
 }
@@ -53,8 +52,6 @@ export const EntryHistoryList: FC<Props> = ({
   entityId,
   entryId,
   histories,
-  totalPageCount,
-  maxRowCount,
   page,
   changePage,
 }) => {
@@ -91,7 +88,7 @@ export const EntryHistoryList: FC<Props> = ({
         </TableHead>
 
         <TableBody>
-          {histories.map((history) => (
+          {histories.results?.map((history) => (
             <StyledTableRow key={history.id}>
               <TableCell>{history.parentAttr.name}</TableCell>
               <TableCell>
@@ -135,9 +132,8 @@ export const EntryHistoryList: FC<Props> = ({
       </Table>
 
       <PaginationFooter
-        count={histories.length}
-        totalPageCount={totalPageCount}
-        maxRowCount={maxRowCount}
+        count={histories.count ?? 0}
+        maxRowCount={ConstEntryHistoryList.MAX_ROW_COUNT}
         page={page}
         changePage={changePage}
       />

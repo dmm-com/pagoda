@@ -12,9 +12,10 @@ test("should render a component with essential props", function () {
   expect(() =>
     render(
       <SearchResults
-        results={[]}
-        totalPageCount={1}
-        maxRowCount={1}
+        results={{
+          count: 0,
+          values: [],
+        }}
         page={1}
         changePage={() => {
           /* do nothing */

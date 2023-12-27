@@ -184,11 +184,11 @@ export const AdvancedSearchResultsPage: FC = () => {
         </Box>
       </PageHeader>
 
-      {!results.loading ? (
+      {results.loading || !results.value ? (
+        <Loading />
+      ) : (
         <SearchResults
-          results={results.value?.values ?? []}
-          totalPageCount={totalPageCount}
-          maxRowCount={AdvancedSerarchResultList.MAX_ROW_COUNT}
+          results={results.value}
           page={page}
           changePage={changePage}
           hasReferral={hasReferral}
@@ -208,8 +208,6 @@ export const AdvancedSearchResultsPage: FC = () => {
           bulkOperationEntryIds={bulkOperationEntryIds}
           handleChangeBulkOperationEntryId={handleChangeBulkOperationEntryId}
         />
-      ) : (
-        <Loading />
       )}
       <AdvancedSearchModal
         openModal={openModal}
