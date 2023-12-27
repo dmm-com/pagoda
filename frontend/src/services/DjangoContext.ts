@@ -10,6 +10,11 @@ class User {
   }
 }
 
+const FlagKey = {
+  0: "webhook",
+} as const;
+type FlagKey = typeof FlagKey[keyof typeof FlagKey];
+
 // A JavaScript representation for Django context
 export class DjangoContext {
   loginNext: string;
@@ -25,6 +30,7 @@ export class DjangoContext {
     name: string;
     children: { name: string; url: string }[];
   }[];
+  flags: Record<FlagKey, boolean>;
 
   private static _instance: DjangoContext | undefined;
 
@@ -39,6 +45,7 @@ export class DjangoContext {
     this.singleSignOnLoginUrl = context.singleSignOnLoginUrl;
     this.legacyUiDisabled = context.legacyUiDisabled;
     this.extendedHeaderMenus = context.extendedHeaderMenus;
+    this.flags = context.flags ?? { webhook: true };
   }
 
   static getInstance() {

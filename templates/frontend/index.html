@@ -32,6 +32,9 @@
           },
           legacyUiDisabled: {{airone.LEGACY_UI_DISABLED|yesno:"true,false"}},
           extendedHeaderMenus: {{ airone.EXTENDED_HEADER_MENUS|safe }},
+          flags: {
+              webhook: {{ airone_flags.WEBHOOK|yesno:"true,false" }},
+          },
       };
     </script>
     <script src="/static/js/ui.js"></script>

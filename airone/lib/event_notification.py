@@ -4,10 +4,20 @@ import requests
 import urllib3
 from urllib3.exceptions import InsecureRequestWarning
 
+from airone import settings
+from airone.lib.log import Logger
+
 urllib3.disable_warnings(InsecureRequestWarning)
 
 
 def _send_request_to_webhook_endpoint(entry, user, event_type):
+    if not settings.AIRONE_FLAGS["WEBHOOK"]:
+        Logger.warning(
+            "skipped to send requests because webhook is disabled. skipped urls are %s",
+            [w.url for w in entry.schema.webhooks.filter(is_enabled=True, is_verified=True)],
+        )
+        return
+
     # send requests for each webhook endpoints
     for webhook in entry.schema.webhooks.filter(is_enabled=True, is_verified=True):
         requests.post(

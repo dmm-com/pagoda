@@ -3,6 +3,7 @@ import json
 from typing import Any, Optional, TypedDict
 
 import requests
+from django.conf import settings
 from django.core.validators import URLValidator
 from drf_spectacular.utils import extend_schema_field
 from requests.exceptions import ConnectionError
@@ -342,6 +343,13 @@ class EntityCreateSerializer(EntitySerializer):
 
         return attrs
 
+    def validate_webhooks(self, webhooks: list[WebhookCreateUpdateSerializer]):
+        # deny webhooks if its disabled
+        if not settings.AIRONE_FLAGS["WEBHOOK"] and len(webhooks) > 0:
+            raise ValidationError("webhook is disabled")
+
+        return webhooks
+
     def create(self, validated_data: EntityCreateData):
         user: User = self.context["request"].user
 
@@ -393,6 +401,16 @@ class EntityUpdateSerializer(EntitySerializer):
             raise DuplicatedObjectExistsError("Duplicated attribute names are not allowed")
 
         return attrs
+
+    def validate_webhooks(self, webhooks: list[WebhookCreateUpdateSerializer]):
+        entity: Entity = self.instance
+
+        # deny changing webhooks if its disabled
+        if not settings.AIRONE_FLAGS["WEBHOOK"]:
+            if len(webhooks) != entity.webhooks.count():
+                raise ValidationError("webhook is disabled")
+
+        return webhooks
 
     def update(self, entity: Entity, validated_data: EntityUpdateData):
         user: User = self.context["request"].user

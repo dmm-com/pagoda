@@ -4,6 +4,7 @@ import logging
 from unittest import mock
 
 import yaml
+from django.conf import settings
 from django.urls import reverse
 from rest_framework.exceptions import ValidationError
 
@@ -1317,6 +1318,31 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 201)
         self.assertTrue(mock_call_custom.called)
 
+    def test_create_entity_with_webhook_is_disabled(self):
+        params = {
+            "name": "entity1",
+            "note": "hoge",
+            "is_toplevel": True,
+            "attrs": [],
+            "webhooks": [
+                {
+                    "url": "http://airone.com",
+                    "label": "hoge",
+                    "is_enabled": True,
+                    "headers": [{"header_key": "Content-Type", "header_value": "application/json"}],
+                }
+            ],
+        }
+        try:
+            settings.AIRONE_FLAGS = {"WEBHOOK": False}
+            resp = self.client.post("/entity/api/v2/", json.dumps(params), "application/json")
+            self.assertEqual(resp.status_code, 400)
+            self.assertEqual(
+                resp.json(), {"webhooks": [{"code": "AE-121000", "message": "webhook is disabled"}]}
+            )
+        finally:
+            settings.AIRONE_FLAGS = {"WEBHOOK": True}
+
     def test_update_entity(self):
         entity: Entity = self.create_entity(
             **{
@@ -2593,6 +2619,41 @@ class ViewTest(AironeViewTest):
             "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
         )
         self.assertEqual(resp.status_code, 200)
+
+    def test_update_entity_with_webhook_is_disabled(self):
+        entity: Entity = self.create_entity(
+            **{
+                "user": self.user,
+                "name": "entity1",
+                "attrs": [],
+                "webhooks": [],
+            }
+        )
+        params = {
+            "name": "entity1",
+            "note": "hoge",
+            "is_toplevel": True,
+            "attrs": [],
+            "webhooks": [
+                {
+                    "url": "http://airone.com",
+                    "label": "hoge",
+                    "is_enabled": True,
+                    "headers": [{"header_key": "Content-Type", "header_value": "application/json"}],
+                }
+            ],
+        }
+        try:
+            settings.AIRONE_FLAGS = {"WEBHOOK": False}
+            resp = self.client.put(
+                "/entity/api/v2/%d/" % entity.id, json.dumps(params), "application/json"
+            )
+            self.assertEqual(resp.status_code, 400)
+            self.assertEqual(
+                resp.json(), {"webhooks": [{"code": "AE-121000", "message": "webhook is disabled"}]}
+            )
+        finally:
+            settings.AIRONE_FLAGS = {"WEBHOOK": True}
 
     def test_delete_entity(self):
         resp = self.client.delete("/entity/api/v2/%d/" % self.entity.id, None, "application/json")
