@@ -21,7 +21,7 @@ export const useSimpleSearch = (): [Query, (query: Query) => void] => {
         search: query != null ? `simple_search_query=${query}` : undefined,
       });
     },
-    [history]
+    [history],
   );
 
   return [query, submitQuery];

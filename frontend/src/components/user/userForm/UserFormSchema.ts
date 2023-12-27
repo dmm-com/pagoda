@@ -17,7 +17,7 @@ export const schema = schemaForType<User>()(
       .optional(),
     isSuperuser: z.boolean().default(false),
     password: z.string().min(1, { message: "パスワードは必須です" }).optional(),
-  })
+  }),
 );
 
 export type Schema = z.infer<typeof schema>;

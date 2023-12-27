@@ -124,7 +124,7 @@ export const Header: FC = () => {
   const [userAnchorEl, setUserAnchorEl] = useState<HTMLButtonElement | null>();
   const [jobAnchorEl, setJobAnchorEl] = useState<HTMLButtonElement | null>();
   const [latestCheckDate, setLatestCheckDate] = useState<Date | null>(
-    getLatestCheckDate()
+    getLatestCheckDate(),
   );
   const [recentJobs, setRecentJobs] = useState<Array<JobSerializers>>([]);
 

@@ -294,10 +294,10 @@ export const SearchResultControlMenu: FC<Props> = ({
                     : ""
                 }
                 onChange={handleChangeKeyword(
-                  AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_CONTAINED
+                  AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_CONTAINED,
                 )}
                 onKeyPress={handleKeyPressKeyword(
-                  AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_CONTAINED
+                  AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_CONTAINED,
                 )}
               />
             </Box>
@@ -312,10 +312,10 @@ export const SearchResultControlMenu: FC<Props> = ({
                     : ""
                 }
                 onChange={handleChangeKeyword(
-                  AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_NOT_CONTAINED
+                  AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_NOT_CONTAINED,
                 )}
                 onKeyPress={handleKeyPressKeyword(
-                  AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_NOT_CONTAINED
+                  AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_NOT_CONTAINED,
                 )}
               />
             </Box>

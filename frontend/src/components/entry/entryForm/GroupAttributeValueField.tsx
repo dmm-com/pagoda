@@ -37,7 +37,7 @@ export const GroupAttributeValueField: FC<Props> = ({
   }, []);
 
   const handleChange = (
-    value: { id: number; name: string } | { id: number; name: string }[] | null
+    value: { id: number; name: string } | { id: number; name: string }[] | null,
   ) => {
     if (multiple === true) {
       if (value != null && !Array.isArray(value)) {

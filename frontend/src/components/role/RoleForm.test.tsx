@@ -45,20 +45,20 @@ describe("RoleForm", () => {
         resolver: zodResolver(schema),
         mode: "onBlur",
         defaultValues,
-      })
+      }),
     );
 
     /* eslint-disable */
     jest
       .spyOn(
         require("repository/AironeApiClientV2").aironeApiClientV2,
-        "getUsers"
+        "getUsers",
       )
       .mockResolvedValue(Promise.resolve([]));
     jest
       .spyOn(
         require("repository/AironeApiClientV2").aironeApiClientV2,
-        "getGroups"
+        "getGroups",
       )
       .mockResolvedValue(Promise.resolve([]));
     /* eslint-enable */

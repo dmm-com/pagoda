@@ -20,7 +20,7 @@ export const EntryHistoryListPage: FC = () => {
   const [page, changePage] = usePage();
 
   const [entryAnchorEl, setEntryAnchorEl] = useState<HTMLButtonElement | null>(
-    null
+    null,
   );
 
   const entry = useAsync(async () => {
@@ -37,7 +37,7 @@ export const EntryHistoryListPage: FC = () => {
       return 0;
     }
     return Math.ceil(
-      (histories.value?.count ?? 0) / ConstEntryHistoryList.MAX_ROW_COUNT
+      (histories.value?.count ?? 0) / ConstEntryHistoryList.MAX_ROW_COUNT,
     );
   }, [histories.loading, histories.value?.count]);
 

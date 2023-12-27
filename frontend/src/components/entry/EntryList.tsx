@@ -69,7 +69,7 @@ export const EntryList: FC<Props> = ({ entityId, canCreateEntry = true }) => {
             onKeyPress={(e) => {
               e.key === "Enter" &&
                 handleChangeQuery(
-                  keyword.length > 0 ? normalizeToMatch(keyword) : ""
+                  keyword.length > 0 ? normalizeToMatch(keyword) : "",
                 );
             }}
           />
@@ -110,7 +110,7 @@ export const EntryList: FC<Props> = ({ entityId, canCreateEntry = true }) => {
           {ConstEntryList.MAX_ROW_COUNT * (page - 1) + 1}-{" "}
           {Math.min(
             ConstEntryList.MAX_ROW_COUNT * page,
-            entries.value?.count ?? 0
+            entries.value?.count ?? 0,
           )}{" "}
           / {entries.value?.count ?? 0} 件
         </Typography>

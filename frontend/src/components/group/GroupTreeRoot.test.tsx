@@ -47,7 +47,7 @@ describe("GroupTreeRoot", () => {
           /* noop */
         }}
       />,
-      { wrapper: TestWrapper }
+      { wrapper: TestWrapper },
     );
 
     expect(screen.getAllByRole("checkbox")).toHaveLength(4);

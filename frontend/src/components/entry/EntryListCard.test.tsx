@@ -29,6 +29,6 @@ test("should render a component with essential props", function () {
   expect(() =>
     render(<EntryListCard entityId={1} entry={entry} />, {
       wrapper: TestWrapper,
-    })
+    }),
   ).not.toThrow();
 });

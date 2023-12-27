@@ -43,7 +43,7 @@ export const EntityList: FC<Props> = ({
             onKeyPress={(e) => {
               e.key === "Enter" &&
                 handleChangeQuery(
-                  keyword.length > 0 ? normalizeToMatch(keyword) : ""
+                  keyword.length > 0 ? normalizeToMatch(keyword) : "",
                 );
             }}
           />

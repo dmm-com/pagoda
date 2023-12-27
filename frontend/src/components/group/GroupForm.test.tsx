@@ -61,20 +61,20 @@ describe("GroupForm", () => {
         resolver: zodResolver(schema),
         mode: "onBlur",
         defaultValues,
-      })
+      }),
     );
 
     /* eslint-disable */
     jest
       .spyOn(
         require("repository/AironeApiClientV2").aironeApiClientV2,
-        "getUsers"
+        "getUsers",
       )
       .mockResolvedValue(Promise.resolve([]));
     jest
       .spyOn(
         require("repository/AironeApiClientV2").aironeApiClientV2,
-        "getGroupTrees"
+        "getGroupTrees",
       )
       .mockResolvedValue(Promise.resolve(groups));
     /* eslint-enable */

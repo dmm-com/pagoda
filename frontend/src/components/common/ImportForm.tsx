@@ -40,13 +40,13 @@ export const ImportForm: FC<Props> = ({ handleImport, handleCancel }) => {
           if (e instanceof Error && isResponseError(e)) {
             const reportableError = await toReportableNonFieldErrors(e);
             setErrorMessage(
-              `ファイルのアップロードに失敗しました: ${reportableError ?? ""}`
+              `ファイルのアップロードに失敗しました: ${reportableError ?? ""}`,
             );
             enqueueSnackbar(
               `ファイルのアップロードに失敗しました: ${reportableError ?? ""}`,
               {
                 variant: "error",
-              }
+              },
             );
           } else {
             setErrorMessage("ファイルのアップロードに失敗しました。");

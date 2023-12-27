@@ -23,7 +23,7 @@ export const usePage = (): [number, (page: number) => void] => {
         search: params.toString(),
       });
     },
-    [location.pathname, location.search]
+    [location.pathname, location.search],
   );
 
   useEffect(() => {

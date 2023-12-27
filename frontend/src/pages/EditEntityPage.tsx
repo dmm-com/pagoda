@@ -32,7 +32,7 @@ export const EditEntityPage: FC = () => {
   const history = useHistory();
   const { enqueueSubmitResult } = useFormNotification(
     "エンティティ",
-    willCreate
+    willCreate,
   );
 
   const {
@@ -89,7 +89,7 @@ export const EditEntityPage: FC = () => {
       entity.value?.attrs
         .filter(
           (attr) =>
-            !entityForm.attrs.some((attrForm) => attrForm.id === attr.id)
+            !entityForm.attrs.some((attrForm) => attrForm.id === attr.id),
         )
         .map((attr) => ({
           id: attr.id,
@@ -106,7 +106,7 @@ export const EditEntityPage: FC = () => {
           isVerified: false,
           headers: webhook.headers,
           isDeleted: false,
-        })
+        }),
       ) ?? [];
 
     const deletedWebhooks =
@@ -114,8 +114,8 @@ export const EditEntityPage: FC = () => {
         .filter(
           (webhook) =>
             !entityForm.webhooks.some(
-              (webhookForm) => webhookForm.id === webhook.id
-            )
+              (webhookForm) => webhookForm.id === webhook.id,
+            ),
         )
         .map((webhook) => ({
           id: webhook.id,
@@ -130,7 +130,7 @@ export const EditEntityPage: FC = () => {
           entityForm.note,
           entityForm.isToplevel,
           attrs,
-          webhooks
+          webhooks,
         );
       } else {
         await aironeApiClientV2.updateEntity(
@@ -139,7 +139,7 @@ export const EditEntityPage: FC = () => {
           entityForm.note,
           entityForm.isToplevel,
           [...attrs, ...deletedAttrs],
-          [...webhooks, ...deletedWebhooks]
+          [...webhooks, ...deletedWebhooks],
         );
       }
       enqueueSubmitResult(true);
@@ -162,7 +162,7 @@ export const EditEntityPage: FC = () => {
                 setError(name, { type: "custom", message: message });
             }
             enqueueSubmitResult(false);
-          }
+          },
         );
       } else {
         enqueueSubmitResult(false);

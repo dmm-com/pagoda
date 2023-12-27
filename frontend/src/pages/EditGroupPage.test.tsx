@@ -85,19 +85,19 @@ test("should match snapshot", async () => {
   jest
     .spyOn(
       require("../repository/AironeApiClientV2").aironeApiClientV2,
-      "getUsers"
+      "getUsers",
     )
     .mockResolvedValue(Promise.resolve(users));
   jest
     .spyOn(
       require("../repository/AironeApiClientV2").aironeApiClientV2,
-      "getGroup"
+      "getGroup",
     )
     .mockResolvedValue(Promise.resolve(group));
   jest
     .spyOn(
       require("../repository/AironeApiClientV2").aironeApiClientV2,
-      "getGroupTrees"
+      "getGroupTrees",
     )
     .mockResolvedValue(Promise.resolve(groups));
   /* eslint-enable */

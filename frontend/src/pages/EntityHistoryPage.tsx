@@ -37,7 +37,7 @@ export const EntityHistoryPage: FC = () => {
       return 0;
     }
     return Math.ceil(
-      (histories.value?.count ?? 0) / ConstEntityHistoryList.MAX_ROW_COUNT
+      (histories.value?.count ?? 0) / ConstEntityHistoryList.MAX_ROW_COUNT,
     );
   }, [histories.loading, histories.value?.count]);
 

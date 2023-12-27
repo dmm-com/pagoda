@@ -65,7 +65,7 @@ export const ObjectAttributeValueField: FC<
   }
 > = ({ multiple, attrId, control, setValue }) => {
   const handleChange = (
-    value: GetEntryAttrReferral | GetEntryAttrReferral[] | null
+    value: GetEntryAttrReferral | GetEntryAttrReferral[] | null,
   ) => {
     const newValue = (() => {
       if (value == null) {
@@ -94,7 +94,7 @@ export const ObjectAttributeValueField: FC<
       {
         shouldDirty: true,
         shouldValidate: true,
-      }
+      },
     );
   };
 
@@ -141,7 +141,7 @@ export const NamedObjectAttributeValueField: FC<
   withBoolean,
 }) => {
   const handleChange = (
-    value: GetEntryAttrReferral | GetEntryAttrReferral[] | null
+    value: GetEntryAttrReferral | GetEntryAttrReferral[] | null,
   ) => {
     const newValue = (() => {
       if (Array.isArray(value)) {
@@ -167,7 +167,7 @@ export const NamedObjectAttributeValueField: FC<
       {
         shouldDirty: true,
         shouldValidate: true,
-      }
+      },
     );
   };
 

@@ -32,7 +32,7 @@ test("should render a component with essential props", function () {
         }}
         templateEntry={entry}
       />,
-      { wrapper: TestWrapper }
-    )
+      { wrapper: TestWrapper },
+    ),
   ).not.toThrow();
 });

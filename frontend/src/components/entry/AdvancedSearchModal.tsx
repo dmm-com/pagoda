@@ -53,7 +53,7 @@ export const AdvancedSearchModal: FC<Props> = ({
 
   const [selectedAttrNames, setSelectedAttrNames] = useState(initialAttrNames);
   const [hasReferral, setHasReferral] = useState(
-    params.get("has_referral") === "true"
+    params.get("has_referral") === "true",
   );
 
   const handleUpdatePageURL = () => {
@@ -70,7 +70,7 @@ export const AdvancedSearchModal: FC<Props> = ({
               keyword: attrInfo?.keyword ?? "",
             },
           ];
-        })
+        }),
       ),
       hasReferral,
       baseParams: new URLSearchParams(location.search),

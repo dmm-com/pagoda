@@ -48,13 +48,13 @@ describe("UserList", () => {
   jest
     .spyOn(
       require("repository/AironeApiClientV2").aironeApiClientV2,
-      "getUsers"
+      "getUsers",
     )
     .mockResolvedValue(Promise.resolve(users));
   jest
     .spyOn(
       require("repository/AironeApiClientV2").aironeApiClientV2,
-      "destroyUser"
+      "destroyUser",
     )
     .mockResolvedValue(Promise.resolve());
   /* eslint-enable */
@@ -74,7 +74,7 @@ describe("UserList", () => {
       <Router history={history}>
         <UserList />
       </Router>,
-      { wrapper: TestWrapperWithoutRoutes }
+      { wrapper: TestWrapperWithoutRoutes },
     );
 
     await waitForElementToBeRemoved(screen.getByTestId("loading"));
@@ -93,7 +93,7 @@ describe("UserList", () => {
       <Router history={history}>
         <UserList />
       </Router>,
-      { wrapper: TestWrapperWithoutRoutes }
+      { wrapper: TestWrapperWithoutRoutes },
     );
 
     await waitForElementToBeRemoved(screen.getByTestId("loading"));

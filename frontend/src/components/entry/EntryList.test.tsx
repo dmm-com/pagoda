@@ -17,19 +17,19 @@ test("should render a component with essential props", function () {
   jest
     .spyOn(
       require("repository/AironeApiClientV2").aironeApiClientV2,
-      "getEntries"
+      "getEntries",
     )
     .mockResolvedValue(
       Promise.resolve({
         count: 0,
         results: [],
-      })
+      }),
     );
   /* eslint-enable */
 
   expect(() =>
     render(<EntryList entityId={0} />, {
       wrapper: TestWrapper,
-    })
+    }),
   ).not.toThrow();
 });

@@ -17,15 +17,15 @@ export const newEntryPath = (entityId: number | string) =>
   basePath + `entities/${entityId}/entries/new`;
 export const copyEntryPath = (
   entityId: number | string,
-  entryId: number | string
+  entryId: number | string,
 ) => basePath + `entities/${entityId}/entries/${entryId}/copy`;
 export const entryDetailsPath = (
   entityId: number | string,
-  entryId: number | string
+  entryId: number | string,
 ) => basePath + `entities/${entityId}/entries/${entryId}/details`;
 export const entryEditPath = (
   entityId: number | string,
-  entryId: number | string
+  entryId: number | string,
 ) => basePath + `entities/${entityId}/entries/${entryId}/edit`;
 export const entityEntriesPath = (entityId: number | string) =>
   basePath + `entities/${entityId}/entries`;
@@ -34,7 +34,7 @@ export const restoreEntryPath = (entityId: number | string, keyword?: string) =>
   `entities/${entityId}/restore${keyword != null ? "?query=" + keyword : ""}`;
 export const showEntryHistoryPath = (
   entityId: number | string,
-  entryId: number | string
+  entryId: number | string,
 ) => basePath + `entities/${entityId}/entries/${entryId}/history`;
 
 // entities

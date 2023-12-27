@@ -72,7 +72,7 @@ export const EditGroupPage: FC = () => {
           (name, message) => {
             setError(name, { type: "custom", message: message });
             enqueueSubmitResult(false);
-          }
+          },
         );
       } else {
         enqueueSubmitResult(false);

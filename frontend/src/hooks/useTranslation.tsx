@@ -8,7 +8,7 @@ import { TranslationKey } from "../i18n/config";
 export type UseTranslationResponse<Ns extends Namespace, KPrefix> = [
   t: (key: TranslationKey) => string,
   i18n: i18n,
-  ready: boolean
+  ready: boolean,
 ] & {
   t: (key: TranslationKey) => string;
   i18n: i18n;
@@ -16,10 +16,10 @@ export type UseTranslationResponse<Ns extends Namespace, KPrefix> = [
 };
 export function useTranslation<
   Ns extends FlatNamespace | $Tuple<FlatNamespace> | undefined = undefined,
-  KPrefix extends KeyPrefix<FallbackNs<Ns>> = undefined
+  KPrefix extends KeyPrefix<FallbackNs<Ns>> = undefined,
 >(
   ns?: Ns,
-  options?: UseTranslationOptions<KPrefix>
+  options?: UseTranslationOptions<KPrefix>,
 ): UseTranslationResponse<FallbackNs<Ns>, KPrefix> {
   const response = _useTranslation(ns, options);
 

@@ -50,13 +50,13 @@ describe("RoleList", () => {
     jest
       .spyOn(
         require("repository/AironeApiClientV2").aironeApiClientV2,
-        "getRoles"
+        "getRoles",
       )
       .mockResolvedValue(Promise.resolve(roles));
     jest
       .spyOn(
         require("repository/AironeApiClientV2").aironeApiClientV2,
-        "deleteRole"
+        "deleteRole",
       )
       .mockResolvedValue(Promise.resolve());
     /* eslint-enable */
@@ -66,7 +66,7 @@ describe("RoleList", () => {
 
     // tr's in the tbody
     expect(
-      within(screen.getAllByRole("rowgroup")[1]).getAllByRole("row")
+      within(screen.getAllByRole("rowgroup")[1]).getAllByRole("row"),
     ).toHaveLength(2);
 
     // delete first element

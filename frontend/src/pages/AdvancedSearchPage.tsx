@@ -43,7 +43,7 @@ const StyledTypography = styled(Typography)({
 
 export const AdvancedSearchPage: FC = () => {
   const [selectedEntities, setSelectedEntities] = useState<Array<EntityList>>(
-    []
+    [],
   );
   const [selectedAttrs, setSelectedAttrs] = useState<Array<string>>([]);
   const [searchAllEntities, setSearchAllEntities] = useState(false);
@@ -60,7 +60,7 @@ export const AdvancedSearchPage: FC = () => {
     if (selectedEntities.length > 0 || searchAllEntities) {
       return await aironeApiClientV2.getEntityAttrs(
         selectedEntities.map((e) => e.id),
-        searchAllEntities
+        searchAllEntities,
       );
     }
     return [];
@@ -75,7 +75,7 @@ export const AdvancedSearchPage: FC = () => {
             filterKey: AdvancedSearchResultAttrInfoFilterKeyEnum.CLEARED,
             keyword: "",
           },
-        ])
+        ]),
       ),
       entityIds: selectedEntities.map((e) => e.id.toString()),
       searchAllEntities,
@@ -86,7 +86,7 @@ export const AdvancedSearchPage: FC = () => {
   const handleChangeInputEntityName = (
     event: SyntheticEvent,
     value: string,
-    reason: AutocompleteInputChangeReason
+    reason: AutocompleteInputChangeReason,
   ) => {
     // Not to clear input value on selecting an item
     if (reason === "reset") {
@@ -98,7 +98,7 @@ export const AdvancedSearchPage: FC = () => {
   const handleChangeInputAttrName = (
     event: SyntheticEvent,
     value: string,
-    reason: AutocompleteInputChangeReason
+    reason: AutocompleteInputChangeReason,
   ) => {
     // Not to clear input value on selecting an item
     if (reason === "reset") {

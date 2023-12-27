@@ -13,7 +13,7 @@ class User {
 const FlagKey = {
   0: "webhook",
 } as const;
-type FlagKey = typeof FlagKey[keyof typeof FlagKey];
+type FlagKey = (typeof FlagKey)[keyof typeof FlagKey];
 
 // A JavaScript representation for Django context
 export class DjangoContext {

@@ -90,14 +90,14 @@ export const EditUserPage: FC = () => {
           user.username,
           user.password ?? "",
           user.email,
-          user.isSuperuser
+          user.isSuperuser,
         );
       } else {
         await aironeApiClientV2.updateUser(
           userId ?? 0,
           user.username,
           user.email,
-          user.isSuperuser
+          user.isSuperuser,
         );
       }
       enqueueSubmitResult(true);
@@ -109,7 +109,7 @@ export const EditUserPage: FC = () => {
           (name, message) => {
             setError(name, { type: "custom", message: message });
             enqueueSubmitResult(false);
-          }
+          },
         );
       } else {
         enqueueSubmitResult(false);

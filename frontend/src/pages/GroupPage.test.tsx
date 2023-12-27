@@ -54,7 +54,7 @@ test("should match snapshot", async () => {
   jest
     .spyOn(
       require("../repository/AironeApiClientV2").aironeApiClientV2,
-      "getGroupTrees"
+      "getGroupTrees",
     )
     .mockResolvedValue(Promise.resolve(groups));
   /* eslint-enable */
