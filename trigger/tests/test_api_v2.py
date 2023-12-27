@@ -201,7 +201,70 @@ class APITest(AironeViewTest):
         ])
 
     def test_update_trigger_condition(self):
-        pass
+        trigger_parent = TriggerCondition.register(
+            entity=self.entity_book,
+            conditions=[
+                {
+                    "attr_id": self.entity_book.attrs.get(name="title").id,
+                    "cond": "The Little Prince",
+                }
+            ],
+            actions=[
+                {
+                    "attr_id": self.entity_book.attrs.get(name="memo").id,
+                    "value": "memo is updated by TriggerAction",
+                }
+            ])
+
+        entry_tom = self.add_entry(self.user, "Tom", self.entity_people)
+        params = {
+            "entity_id": self.entity_book.id,
+            "conditions": [
+                {
+                    "attr_id": self.entity_book.attrs.get(name="title").id,
+                    "cond": "Harry Potter and the Philosopher's Stone",
+                },
+                {
+                    "attr_id": self.entity_book.attrs.get(name="borrowed_by").id,
+                    "cond": str(entry_tom.id),
+                },
+                {
+                    "attr_id": self.entity_book.attrs.get(name="is_overdue").id,
+                    "cond": str(True),
+                },
+            ],
+            "actions": [
+                {
+                    "attr_id": self.entity_book.attrs.get(name="memo").id,
+                    "value": "deploy a staff to the Tom's house!",
+                }
+            ],
+
+        }
+        resp = self.client.put("/trigger/api/v2/%s" % trigger_parent.id, json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, 200)
+
+        # This checks expected Conditions are created properly
+        created_trigger = TriggerParentCondition.objects.get(id=resp.json()["id"])
+        self.assertEqual(created_trigger.entity, self.entity_book)
+        self.assertEqual([(
+            x.attr.name,
+            x.str_cond,
+            x.ref_cond,
+            x.bool_cond
+        ) for x in created_trigger.co_conditions.all()], [
+            ("title", "Harry Potter and the Philosopher's Stone", None, False),
+            ("borrowed_by", "", entry_tom, False),
+            ("is_overdue", "", None, True),
+        ])
+
+        # This checks expected Actions are created properly
+        self.assertEqual([(
+            a.attr.name,
+            [(v.str_cond, v.ref_cond, v.bool_cond) for v in a.values.all()],
+        ) for a in created_trigger.actions.all()], [
+            ("memo", [("deploy a staff to the Tom's house!", None, False)])
+        ])
 
     def test_delete_trigger_condition(self):
         pass

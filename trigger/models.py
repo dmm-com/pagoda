@@ -233,6 +233,28 @@ class TriggerParentCondition(models.Model):
         else:
             return []
 
+    def clear(self, *args, **kwargs):
+        # delete TriggerActionValues, which are associated with TriggerAction instance
+        TriggerActionValue.objects.filter(action__condition=self).delete()
+
+        # delete all conditions and actions that are related with this instance
+        self.co_conditions.all().delete()
+        self.actions.all().delete()
+
+    def update(self, conditions: list, actions: list):
+        # convert input to InputTriggerCondition
+        input_trigger_conditions = [InputTriggerCondition(**condition) for condition in conditions]
+
+        # save conditions
+        self.save_conditions(input_trigger_conditions)
+
+        # save actions
+        for action in actions:
+            input_trigger_action = InputTriggerAction(**action)
+            trigger_action = TriggerAction.objects.create(
+                condition=self, attr=input_trigger_action.attr
+            )
+            trigger_action.save_actions(input_trigger_action)
 
 class TriggerCondition(models.Model):
     parent = models.ForeignKey(

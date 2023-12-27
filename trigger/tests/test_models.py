@@ -7,6 +7,7 @@ from trigger import tasks as trigger_tasks
 from trigger.models import (
     InputTriggerCondition,
     TriggerAction,
+    TriggerActionValue,
     TriggerCondition,
     TriggerParentCondition,
 )
@@ -453,3 +454,40 @@ class ModelTest(AironeTestCase):
             ],
             ["", "fuga", "hoge"],
         )
+
+    def test_clear_and_update_parent_condition(self):
+        parent_cond = TriggerCondition.register(
+            self.entity,
+            self.FULL_CONDITION_CONFIGURATION_PARAMETERS,
+            self.FULL_ACTION_CONFIGURATION_PARAMETERS
+        )
+
+        # This checks expected TriggerActionValue and TriggerCondition instances are created
+        COUNT_CONDS = len(self.FULL_CONDITION_CONFIGURATION_PARAMETERS)
+        COUNT_ACTIONS = len(self.FULL_ACTION_CONFIGURATION_PARAMETERS)
+
+        self.assertEqual(parent_cond.co_conditions.count(), COUNT_CONDS)
+        self.assertEqual(parent_cond.actions.count(), COUNT_ACTIONS)
+        self.assertEqual(TriggerCondition.objects.filter(parent=parent_cond).count(), COUNT_CONDS)
+        self.assertEqual(TriggerAction.objects.filter(condition=parent_cond).count(), COUNT_ACTIONS)
+
+        # This clears all conditions and actions that are associated with TriggerParnetCondition
+        parent_cond.clear()
+        self.assertEqual(parent_cond.co_conditions.count(), 0)
+        self.assertEqual(parent_cond.actions.count(), 0)
+        self.assertEqual(TriggerCondition.objects.filter(parent=parent_cond).count(), 0)
+        self.assertEqual(TriggerAction.objects.filter(condition=parent_cond).count(), 0)
+        self.assertEqual(TriggerActionValue.objects.filter(action__condition=parent_cond).count(), 0)
+
+        # This update conditions and actions
+        parent_cond.update(
+            self.FULL_CONDITION_CONFIGURATION_PARAMETERS,
+            self.FULL_ACTION_CONFIGURATION_PARAMETERS
+        )
+        COUNT_CONDS = len(self.FULL_CONDITION_CONFIGURATION_PARAMETERS)
+        COUNT_ACTIONS = len(self.FULL_ACTION_CONFIGURATION_PARAMETERS)
+
+        self.assertEqual(parent_cond.co_conditions.count(), COUNT_CONDS)
+        self.assertEqual(parent_cond.actions.count(), COUNT_ACTIONS)
+        self.assertEqual(TriggerCondition.objects.filter(parent=parent_cond).count(), COUNT_CONDS)
+        self.assertEqual(TriggerAction.objects.filter(condition=parent_cond).count(), COUNT_ACTIONS)

@@ -104,7 +104,7 @@ class TriggerActionUpdateSerializer(serializers.Serializer):
     value = serializers.CharField(required=False)
 
 
-class TriggerParentCreateSerializer(serializers.ModelSerializer):
+class TriggerParentBaseSerializer(serializers.ModelSerializer):
     entity_id = serializers.IntegerField(write_only=True, required=True)
     conditions = serializers.ListField(child=TriggerConditionUpdateSerializer(), write_only=True, required=True)
     actions = serializers.ListField(child=TriggerActionUpdateSerializer(), write_only=True, required=True)
@@ -130,9 +130,24 @@ class TriggerParentCreateSerializer(serializers.ModelSerializer):
 
         return data
 
+
+class TriggerParentCreateSerializer(TriggerParentBaseSerializer):
     def create(self, validated_data: TriggerParentUpdateData):
         return TriggerCondition.register(
             entity=Entity.objects.get(id=validated_data["entity_id"]),
             conditions=validated_data["conditions"],
             actions=validated_data["actions"]
         )
+
+class TriggerParentUpdateSerializer(TriggerParentBaseSerializer):
+    def update(self, parent_condition, validated_data):
+        # clear configurations that have already been registered in this TriggerParentCondition
+        parent_condition.clear()
+
+        # update parent_condition's configuration
+        parent_condition.update(
+            conditions=validated_data["conditions"],
+            actions=validated_data["actions"]
+        )
+
+        return parent_condition
