@@ -2,7 +2,12 @@ import json
 
 from airone.lib.test import AironeViewTest
 from airone.lib.types import AttrTypeValue
-from trigger.models import TriggerCondition, TriggerParentCondition
+from trigger.models import (
+    TriggerAction,
+    TriggerActionValue,
+    TriggerCondition,
+    TriggerParentCondition
+)
 from user.models import User
 
 
@@ -267,4 +272,25 @@ class APITest(AironeViewTest):
         ])
 
     def test_delete_trigger_condition(self):
-        pass
+        trigger_parent = TriggerCondition.register(
+            entity=self.entity_book,
+            conditions=[
+                {
+                    "attr_id": self.entity_book.attrs.get(name="title").id,
+                    "cond": "The Little Prince",
+                }
+            ],
+            actions=[
+                {
+                    "attr_id": self.entity_book.attrs.get(name="memo").id,
+                    "value": "memo is updated by TriggerAction",
+                }
+            ])
+        resp = self.client.delete("/trigger/api/v2/%s" % trigger_parent.id, None, "application/json")
+        self.assertEqual(resp.status_code, 204)
+
+        # This checks associated instances are also removed by this request.
+        self.assertFalse(TriggerParentCondition.objects.filter(entity=self.entity_book).exists())
+        self.assertEqual(TriggerCondition.objects.count(), 0)
+        self.assertEqual(TriggerAction.objects.count(), 0)
+        self.assertEqual(TriggerActionValue.objects.count(), 0)
