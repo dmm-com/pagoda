@@ -3417,12 +3417,12 @@ class ViewTest(AironeViewTest):
         # when value "hoge" is set to the Attribute "val".
         TriggerCondition.register(
             self.entity,
-            [{"attr_id": attr["val"].id, "str_cond": "hoge"}],
+            [{"attr_id": attr["val"].id, "cond": "hoge"}],
             [{"attr_id": attr["vals"].id, "value": ["fuga", "piyo"]}],
         )
         TriggerCondition.register(
             self.entity,
-            [{"attr_id": attr["vals"].id, "str_cond": "fuga"}],
+            [{"attr_id": attr["vals"].id, "cond": "fuga"}],
             [{"attr_id": attr["text"].id, "value": "hogefuga"}],
         )
 
