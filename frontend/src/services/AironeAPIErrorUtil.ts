@@ -23,7 +23,7 @@ export function isAironeApiRootError(jsonError: any): jsonError is ErrorDetail {
 }
 
 export function isAironeApiNonFieldsError(
-  jsonError: any,
+  jsonError: any
 ): jsonError is AironeApiNonFieldsError {
   return (
     jsonError?.non_field_errors != null &&
@@ -34,7 +34,7 @@ export function isAironeApiNonFieldsError(
 }
 
 export function isAironeApiIndexedError(
-  jsonError: any,
+  jsonError: any
 ): jsonError is AironeApiIndexedFieldsError {
   return (
     Array.isArray(jsonError) &&
@@ -55,7 +55,7 @@ const extractErrorDetail = (errorDetail: ErrorDetail): string =>
   aironeAPIErrors[errorDetail.code] ?? errorDetail.message;
 
 export const toReportableNonFieldErrors = async (
-  error: ResponseError,
+  error: ResponseError
 ): Promise<string | null> => {
   if (error.response.ok) {
     return null;
@@ -85,7 +85,7 @@ export const toReportableNonFieldErrors = async (
 export const extractAPIException = async <T>(
   error: ResponseError,
   nonFieldReporter: (message: string) => void,
-  fieldReporter: (name: keyof T, message: string) => void,
+  fieldReporter: (name: keyof T, message: string) => void
 ) => {
   if (error.response.ok) {
     return;

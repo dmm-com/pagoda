@@ -89,14 +89,14 @@ describe("GroupAttributeValueField", () => {
         resolver: zodResolver(schema),
         mode: "onBlur",
         defaultValues,
-      }),
+      })
     );
 
     /* eslint-disable */
     jest
       .spyOn(
         require("../../../repository/AironeApiClientV2").aironeApiClientV2,
-        "getGroups",
+        "getGroups"
       )
       .mockResolvedValue(Promise.resolve(groups));
     /* eslint-enable */
@@ -108,7 +108,7 @@ describe("GroupAttributeValueField", () => {
           control={control}
           setValue={setValue}
         />,
-        { wrapper: TestWrapper },
+        { wrapper: TestWrapper }
       );
     });
 
@@ -144,14 +144,14 @@ describe("GroupAttributeValueField", () => {
         resolver: zodResolver(schema),
         mode: "onBlur",
         defaultValues,
-      }),
+      })
     );
 
     /* eslint-disable */
     jest
       .spyOn(
         require("../../../repository/AironeApiClientV2").aironeApiClientV2,
-        "getGroups",
+        "getGroups"
       )
       .mockResolvedValue(Promise.resolve(groups));
     /* eslint-enable */
@@ -164,7 +164,7 @@ describe("GroupAttributeValueField", () => {
           setValue={setValue}
           multiple
         />,
-        { wrapper: TestWrapper },
+        { wrapper: TestWrapper }
       );
     });
 

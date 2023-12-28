@@ -35,7 +35,7 @@ export const EntityListPage: FC = () => {
       return 0;
     }
     return Math.ceil(
-      (entities.value?.count ?? 0) / ConstEntityList.MAX_ROW_COUNT,
+      (entities.value?.count ?? 0) / ConstEntityList.MAX_ROW_COUNT
     );
   }, [entities.loading, entities.value?.count]);
 

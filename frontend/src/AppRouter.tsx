@@ -66,7 +66,7 @@ interface Props {
     routePath: string;
     component?: FC;
     render?: (
-      props: RouteComponentProps<{ [K: string]: string | undefined }>,
+      props: RouteComponentProps<{ [K: string]: string | undefined }>
     ) => React.ReactNode;
   }[];
 }

@@ -305,7 +305,7 @@ describe("AttributeValue", () => {
           resolver: zodResolver(schema),
           mode: "onBlur",
           defaultValues,
-        }),
+        })
       );
 
       await act(async () => {
@@ -316,7 +316,7 @@ describe("AttributeValue", () => {
             type={c.type}
             schemaId={c.schemaId}
           />,
-          { wrapper: TestWrapper },
+          { wrapper: TestWrapper }
         );
       });
 

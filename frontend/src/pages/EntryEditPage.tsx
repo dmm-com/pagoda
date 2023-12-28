@@ -78,7 +78,7 @@ export const EntryEditPage: FC<Props> = ({
         const entryInfo = formalizeEntryInfo(
           undefined,
           entity.value,
-          excludeAttrs,
+          excludeAttrs
         );
         reset(entryInfo);
         setInitialized(true);
@@ -93,7 +93,7 @@ export const EntryEditPage: FC<Props> = ({
         const entryInfo = formalizeEntryInfo(
           entry.value,
           entity.value,
-          excludeAttrs,
+          excludeAttrs
         );
         reset(entryInfo);
         setInitialized(true);
@@ -130,7 +130,7 @@ export const EntryEditPage: FC<Props> = ({
           (name, message) => {
             setError(name, { type: "custom", message: message });
             enqueueSubmitResult(false);
-          },
+          }
         );
       } else {
         enqueueSubmitResult(false);
@@ -187,7 +187,7 @@ export const EntryEditPage: FC<Props> = ({
           entity={{
             ...entity.value,
             attrs: entity.value.attrs.filter(
-              (attr) => !excludeAttrs.includes(attr.name),
+              (attr) => !excludeAttrs.includes(attr.name)
             ),
           }}
           control={control}

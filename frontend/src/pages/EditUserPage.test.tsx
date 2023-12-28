@@ -37,7 +37,7 @@ test("should match snapshot", async () => {
   jest
     .spyOn(
       require("../repository/AironeApiClientV2").aironeApiClientV2,
-      "getUser",
+      "getUser"
     )
     .mockResolvedValue(Promise.resolve(user));
   /* eslint-enable */

@@ -29,7 +29,7 @@ const AdvancedSearchParamKey = {
   PAGE: "page",
 } as const;
 type AdvancedSearchParamKey =
-  (typeof AdvancedSearchParamKey)[keyof typeof AdvancedSearchParamKey];
+  typeof AdvancedSearchParamKey[keyof typeof AdvancedSearchParamKey];
 
 /**
  * A wrapper around URLSearchParams that provides a keyname-safe interface for advanced search
@@ -117,9 +117,9 @@ export function formatAdvancedSearchParams({
             name: key,
             filterKey: attrsFilter[key].filterKey,
             keyword: attrsFilter[key].keyword,
-          }),
-        ),
-      ),
+          })
+        )
+      )
     );
   }
 
@@ -129,7 +129,7 @@ export function formatAdvancedSearchParams({
 }
 
 export function extractAdvancedSearchParams(
-  baseParams: URLSearchParams,
+  baseParams: URLSearchParams
 ): AdvancedSearchParams {
   const params = new AdvancedSearchParamsInner(baseParams);
 
@@ -139,7 +139,7 @@ export function extractAdvancedSearchParams(
   const hasReferral = params.get("has_referral") === "true";
   const referralName = params.get("referral_name") ?? "";
   const attrInfo: AdvancedSearchResultAttrInfo[] = JSON.parse(
-    params.get("attrinfo") ?? "[]",
+    params.get("attrinfo") ?? "[]"
   );
 
   return {

@@ -62,13 +62,13 @@ test("should match snapshot", async () => {
   jest
     .spyOn(
       require("../repository/AironeApiClientV2").aironeApiClientV2,
-      "getEntity",
+      "getEntity"
     )
     .mockResolvedValue(Promise.resolve(entity));
   jest
     .spyOn(
       require("../repository/AironeApiClientV2").aironeApiClientV2,
-      "getEntities",
+      "getEntities"
     )
     .mockResolvedValue(Promise.resolve({ results: entities }));
   /* eslint-enable */

@@ -143,7 +143,7 @@ export const AttributeField: FC<Props> = ({
                   }
                   isOptionEqualToValue={(
                     option: { id: number; name: string },
-                    value: { id: number; name: string },
+                    value: { id: number; name: string }
                   ) => option.id === value.id}
                   renderInput={(params) => (
                     <TextField

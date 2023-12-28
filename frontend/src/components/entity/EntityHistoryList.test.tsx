@@ -72,7 +72,7 @@ describe("EntityHistoryList", () => {
         maxPage={3}
         handleChangePage={handleChangePage}
       />,
-      { wrapper: TestWrapper },
+      { wrapper: TestWrapper }
     );
 
     const tableBody = screen.getAllByRole("rowgroup")[1];
@@ -90,10 +90,10 @@ describe("EntityHistoryList", () => {
 
     expect(screen.getByRole("button", { name: "page 1" })).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: "Go to page 2" }),
+      screen.getByRole("button", { name: "Go to page 2" })
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: "Go to page 3" }),
+      screen.getByRole("button", { name: "Go to page 3" })
     ).toBeInTheDocument();
 
     // change page

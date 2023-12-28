@@ -27,7 +27,7 @@ describe("JobList", () => {
         },
         createdAt: new Date(),
         passedTime: 0,
-      }),
+      })
     );
 
     render(<JobList jobs={jobs} />, {
@@ -39,14 +39,14 @@ describe("JobList", () => {
     expect(
       screen.queryAllByRole("link", {
         name: (content) => !content.includes("Download"),
-      }),
+      })
     ).toHaveLength(16);
 
     // 4 export operations should have a download link
     expect(
       screen.queryAllByRole("link", {
         name: (content) => content.includes("Download"),
-      }),
+      })
     ).toHaveLength(4);
   });
 
@@ -65,7 +65,7 @@ describe("JobList", () => {
         },
         createdAt: new Date(),
         passedTime: 0,
-      }),
+      })
     );
 
     render(<JobList jobs={jobs} />, {
@@ -77,7 +77,7 @@ describe("JobList", () => {
 
     // jobs with "PREPARING", "PROCESSING", "TIMEOUT" should have a cancel button
     expect(
-      screen.queryAllByRole("button", { name: "キャンセル" }),
+      screen.queryAllByRole("button", { name: "キャンセル" })
     ).toHaveLength(3);
   });
 });

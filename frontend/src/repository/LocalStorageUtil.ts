@@ -2,7 +2,7 @@ export const LocalStorageKey = {
   JobLatestCheckDate: "job__latest_check_date",
 } as const;
 
-type LocalStorageKey = (typeof LocalStorageKey)[keyof typeof LocalStorageKey];
+type LocalStorageKey = typeof LocalStorageKey[keyof typeof LocalStorageKey];
 
 // A local storage wrapper to enforce callers specifying predefined key
 class LocalStorageUtil {

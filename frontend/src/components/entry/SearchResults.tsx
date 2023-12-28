@@ -78,7 +78,7 @@ export const SearchResults: FC<Props> = ({
       _attrNames.map((attrName) => [
         attrName,
         results[0]?.attrs[attrName]?.type,
-      ]),
+      ])
     );
     return [_attrNames, _attrTypes];
   }, [defaultAttrsFilter, results]);
@@ -104,7 +104,7 @@ export const SearchResults: FC<Props> = ({
                       onChange={(e) =>
                         handleChangeBulkOperationEntryId(
                           result.entry.id,
-                          e.target.checked,
+                          e.target.checked
                         )
                       }
                     />

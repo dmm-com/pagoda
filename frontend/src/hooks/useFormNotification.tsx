@@ -3,7 +3,7 @@ import { SnackbarKey, useSnackbar } from "notistack";
 interface formNotification {
   enqueueSubmitResult: (
     finished: boolean,
-    additionalMessage?: string,
+    additionalMessage?: string
   ) => SnackbarKey;
 }
 
@@ -13,7 +13,7 @@ interface formNotification {
  */
 export const useFormNotification = (
   targetName: string,
-  willCreate: boolean,
+  willCreate: boolean
 ): formNotification => {
   const { enqueueSnackbar } = useSnackbar();
 
@@ -27,7 +27,7 @@ export const useFormNotification = (
         }しました。${additionalMessage ?? ""}`,
         {
           variant: finished ? "success" : "error",
-        },
+        }
       );
     },
   };

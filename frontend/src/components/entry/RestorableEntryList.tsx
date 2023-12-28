@@ -169,7 +169,7 @@ export const RestorableEntryList: FC<Props> = ({ entityId }) => {
             onKeyPress={(e) => {
               e.key === "Enter" &&
                 handleChangeQuery(
-                  keyword.length > 0 ? normalizeToMatch(keyword) : "",
+                  keyword.length > 0 ? normalizeToMatch(keyword) : ""
                 );
             }}
           />

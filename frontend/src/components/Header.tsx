@@ -1,3 +1,4 @@
+import { JobSerializers } from "@dmm-com/airone-apiclient-typescript-fetch";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import PersonIcon from "@mui/icons-material/Person";
 import TaskIcon from "@mui/icons-material/Task";
@@ -24,7 +25,6 @@ import { useInterval } from "react-use";
 
 import { useTranslation } from "../hooks/useTranslation";
 
-import { JobSerializers } from "@dmm-com/airone-apiclient-typescript-fetch";
 import {
   advancedSearchPath,
   entitiesPath,
@@ -124,7 +124,7 @@ export const Header: FC = () => {
   const [userAnchorEl, setUserAnchorEl] = useState<HTMLButtonElement | null>();
   const [jobAnchorEl, setJobAnchorEl] = useState<HTMLButtonElement | null>();
   const [latestCheckDate, setLatestCheckDate] = useState<Date | null>(
-    getLatestCheckDate(),
+    getLatestCheckDate()
   );
   const [recentJobs, setRecentJobs] = useState<Array<JobSerializers>>([]);
 

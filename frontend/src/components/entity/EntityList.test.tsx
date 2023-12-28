@@ -44,7 +44,7 @@ describe("EntityList", () => {
         handleChangePage={handleChangePage}
         handleChangeQuery={handleChangeQuery}
       />,
-      { wrapper: TestWrapper },
+      { wrapper: TestWrapper }
     );
 
     expect(screen.getByRole("link", { name: "entity1" })).toBeInTheDocument();
@@ -53,10 +53,10 @@ describe("EntityList", () => {
 
     expect(screen.getByRole("button", { name: "page 1" })).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: "Go to page 2" }),
+      screen.getByRole("button", { name: "Go to page 2" })
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: "Go to page 3" }),
+      screen.getByRole("button", { name: "Go to page 3" })
     ).toBeInTheDocument();
 
     // specify keyword
@@ -70,11 +70,11 @@ describe("EntityList", () => {
           key: "Enter",
           code: 13,
           charCode: 13,
-        },
+        }
       );
     });
     expect(screen.getByPlaceholderText("エンティティを絞り込む")).toHaveValue(
-      "entity",
+      "entity"
     );
     expect(handleChangeQuery).toBeCalled();
 

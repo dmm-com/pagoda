@@ -48,7 +48,7 @@ export const EntryReferral: FC<Props> = ({ entryId }) => {
     return await aironeApiClientV2.getEntryReferral(
       entryId,
       page,
-      keywordQuery !== "" ? keywordQuery : undefined,
+      keywordQuery !== "" ? keywordQuery : undefined
     );
   }, [entryId, page, keywordQuery]);
 
@@ -58,7 +58,7 @@ export const EntryReferral: FC<Props> = ({ entryId }) => {
         referredEntries.value.results,
         referredEntries.value.count,
         Math.ceil(
-          (referredEntries.value.count ?? 0) / EntryReferralList.MAX_ROW_COUNT,
+          (referredEntries.value.count ?? 0) / EntryReferralList.MAX_ROW_COUNT
         ),
       ];
     }
@@ -81,7 +81,7 @@ export const EntryReferral: FC<Props> = ({ entryId }) => {
             if (e.key === "Enter") {
               changePage(1);
               setKeywordQuery(
-                keyword.length > 0 ? normalizeToMatch(keyword) : "",
+                keyword.length > 0 ? normalizeToMatch(keyword) : ""
               );
             }
           }}

@@ -55,7 +55,7 @@ export const DashboardPage: FC = () => {
   // If there is only one search result, move to entry details page.
   if (!entries.loading && entries.value?.length === 1) {
     history.push(
-      entryDetailsPath(entries.value[0].schema?.id ?? 0, entries.value[0].id),
+      entryDetailsPath(entries.value[0].schema?.id ?? 0, entries.value[0].id)
     );
   }
 

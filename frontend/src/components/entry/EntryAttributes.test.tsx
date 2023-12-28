@@ -10,6 +10,6 @@ import { EntryAttributes } from "components/entry/EntryAttributes";
 
 test("should render a component with essential props", function () {
   expect(() =>
-    render(<EntryAttributes attributes={[]} />, { wrapper: TestWrapper }),
+    render(<EntryAttributes attributes={[]} />, { wrapper: TestWrapper })
   ).not.toThrow();
 });

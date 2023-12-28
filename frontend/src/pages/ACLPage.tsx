@@ -70,7 +70,7 @@ export const ACLPage: FC = () => {
       err.generalError &&
         enqueueSnackbar(err.generalError.message, { variant: "error" });
     },
-    [objectId],
+    [objectId]
   );
 
   const handleSubmitOnValid = useCallback(
@@ -86,12 +86,12 @@ export const ACLPage: FC = () => {
         aclForm.isPublic,
         aclSettings,
         aclForm.objtype,
-        aclForm.defaultPermission,
+        aclForm.defaultPermission
       );
 
       enqueueSnackbar("ACL設定の更新が成功しました", { variant: "success" });
     },
-    [objectId],
+    [objectId]
   );
 
   const handleCancel = async () => {
@@ -123,7 +123,7 @@ export const ACLPage: FC = () => {
                 entity={resp}
                 attr={acl.value?.name}
                 title="ACL設定"
-              />,
+              />
             );
           });
         }
@@ -155,7 +155,7 @@ export const ACLPage: FC = () => {
           isSubmitting={isSubmitting}
           handleSubmit={handleSubmit(
             handleSubmitOnValid,
-            handleSubmitOnInvalid,
+            handleSubmitOnInvalid
           )}
           handleCancel={handleCancel}
         />

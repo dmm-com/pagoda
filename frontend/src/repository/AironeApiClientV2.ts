@@ -1,6 +1,3 @@
-import Cookies from "js-cookie";
-import fileDownload from "js-file-download";
-
 import {
   ACL,
   ACLHistory,
@@ -50,6 +47,9 @@ import {
   WebhookCreateUpdate,
   GroupTree as _GroupTree,
 } from "@dmm-com/airone-apiclient-typescript-fetch";
+import Cookies from "js-cookie";
+import fileDownload from "js-file-download";
+
 import {
   EntityList as ConstEntityList,
   EntityHistoryList,
@@ -102,7 +102,7 @@ class AironeApiClientV2 {
     username: string,
     password: string,
     email?: string,
-    isSuperuser?: boolean,
+    isSuperuser?: boolean
   ): Promise<UserCreate> {
     return await this.user.userApiV2Create(
       {
@@ -118,7 +118,7 @@ class AironeApiClientV2 {
           "Content-Type": "application/json;charset=utf-8",
           "X-CSRFToken": getCsrfToken(),
         },
-      },
+      }
     );
   }
 
@@ -139,7 +139,7 @@ class AironeApiClientV2 {
           "Content-Type": "application/json;charset=utf-8",
           "X-CSRFToken": getCsrfToken(),
         },
-      },
+      }
     );
   }
 
@@ -147,7 +147,7 @@ class AironeApiClientV2 {
     userId: number,
     username: string,
     email?: string,
-    isSuperuser?: boolean,
+    isSuperuser?: boolean
   ): Promise<UserUpdate> {
     return await this.user.userApiV2Update(
       {
@@ -163,7 +163,7 @@ class AironeApiClientV2 {
           "Content-Type": "application/json;charset=utf-8",
           "X-CSRFToken": getCsrfToken(),
         },
-      },
+      }
     );
   }
 
@@ -172,7 +172,7 @@ class AironeApiClientV2 {
     isPublic: boolean,
     aclSettings: Array<ACLSetting>,
     objectType: ACLObjtypeEnum,
-    defaultPermission?: number,
+    defaultPermission?: number
   ): Promise<void> {
     await this.acl.aclApiV2AclsUpdate(
       {
@@ -194,7 +194,7 @@ class AironeApiClientV2 {
           "Content-Type": "application/json;charset=utf-8",
           "X-CSRFToken": getCsrfToken(),
         },
-      },
+      }
     );
   }
 
@@ -207,7 +207,7 @@ class AironeApiClientV2 {
   async getEntities(
     page?: number,
     search?: string,
-    isToplevel?: boolean,
+    isToplevel?: boolean
   ): Promise<PaginatedEntityListList> {
     const params: EntityApiV2ListRequest = page
       ? {
@@ -235,7 +235,7 @@ class AironeApiClientV2 {
     note: string,
     isToplevel: boolean,
     attrs: Array<EntityAttrCreate>,
-    webhooks: Array<WebhookCreateUpdate>,
+    webhooks: Array<WebhookCreateUpdate>
   ): Promise<EntityCreate> {
     return await this.entity.entityApiV2Create(
       {
@@ -253,7 +253,7 @@ class AironeApiClientV2 {
           "Content-Type": "application/json;charset=utf-8",
           "X-CSRFToken": getCsrfToken(),
         },
-      },
+      }
     );
   }
 
@@ -263,7 +263,7 @@ class AironeApiClientV2 {
     note: string,
     isToplevel: boolean,
     attrs: Array<EntityAttrUpdate>,
-    webhooks: Array<WebhookCreateUpdate>,
+    webhooks: Array<WebhookCreateUpdate>
   ): Promise<EntityUpdate> {
     return await this.entity.entityApiV2Update(
       {
@@ -282,7 +282,7 @@ class AironeApiClientV2 {
           "Content-Type": "application/json;charset=utf-8",
           "X-CSRFToken": getCsrfToken(),
         },
-      },
+      }
     );
   }
 
@@ -294,13 +294,13 @@ class AironeApiClientV2 {
           "Content-Type": "application/json;charset=utf-8",
           "X-CSRFToken": getCsrfToken(),
         },
-      },
+      }
     );
   }
 
   async getEntityHistories(
     id: number,
-    page: number,
+    page: number
   ): Promise<PaginatedEntityHistoryList> {
     return await this.entity.entityApiV2HistoriesList({
       entityId: id,
@@ -327,7 +327,7 @@ class AironeApiClientV2 {
 
   async getEntityAttrs(
     entityIds: number[],
-    searchAllEntities = false,
+    searchAllEntities = false
   ): Promise<Array<string>> {
     return await this.entity.entityApiV2AttrsList({
       entityIds: searchAllEntities
@@ -343,7 +343,7 @@ class AironeApiClientV2 {
   async getEntryReferral(
     id: number,
     page: number,
-    keyword?: string,
+    keyword?: string
   ): Promise<PaginatedEntryBaseList> {
     return await this.entry.entryApiV2ReferralList({
       id: id,
@@ -356,7 +356,7 @@ class AironeApiClientV2 {
   async createEntry(
     entityId: number,
     name: string,
-    attrs: AttributeData[],
+    attrs: AttributeData[]
   ): Promise<EntryCreate> {
     return await this.entity.entityApiV2EntriesCreate(
       { entityId, entryCreate: { id: -1, name, attrs } },
@@ -365,14 +365,14 @@ class AironeApiClientV2 {
           "Content-Type": "application/json;charset=utf-8",
           "X-CSRFToken": getCsrfToken(),
         },
-      },
+      }
     );
   }
 
   async updateEntry(
     id: number,
     name: string,
-    attrs: AttributeData[],
+    attrs: AttributeData[]
   ): Promise<EntryUpdate> {
     return await this.entry.entryApiV2Update(
       { id, entryUpdate: { id: id, name, attrs } },
@@ -381,7 +381,7 @@ class AironeApiClientV2 {
           "Content-Type": "application/json;charset=utf-8",
           "X-CSRFToken": getCsrfToken(),
         },
-      },
+      }
     );
   }
 
@@ -393,7 +393,7 @@ class AironeApiClientV2 {
           "Content-Type": "application/json;charset=utf-8",
           "X-CSRFToken": getCsrfToken(),
         },
-      },
+      }
     );
   }
 
@@ -405,7 +405,7 @@ class AironeApiClientV2 {
           "Content-Type": "application/json;charset=utf-8",
           "X-CSRFToken": getCsrfToken(),
         },
-      },
+      }
     );
   }
 
@@ -417,13 +417,13 @@ class AironeApiClientV2 {
           "Content-Type": "application/json;charset=utf-8",
           "X-CSRFToken": getCsrfToken(),
         },
-      },
+      }
     );
   }
 
   async copyEntry(
     id: number,
-    copyEntryNames: Array<string>,
+    copyEntryNames: Array<string>
   ): Promise<EntryCopy> {
     return await this.entry.entryApiV2CopyCreate(
       {
@@ -437,13 +437,13 @@ class AironeApiClientV2 {
           "Content-Type": "application/json;charset=utf-8",
           "X-CSRFToken": getCsrfToken(),
         },
-      },
+      }
     );
   }
 
   async getEntryHistories(
     id: number,
-    page: number,
+    page: number
   ): Promise<PaginatedEntryHistoryAttributeValueList> {
     return await this.entry.entryApiV2HistoriesList({
       id: id,
@@ -461,7 +461,7 @@ class AironeApiClientV2 {
         headers: {
           "X-CSRFToken": getCsrfToken(),
         },
-      },
+      }
     );
   }
 
@@ -486,7 +486,7 @@ class AironeApiClientV2 {
           "Content-Type": "application/json;charset=utf-8",
           "X-CSRFToken": getCsrfToken(),
         },
-      },
+      }
     );
   }
 
@@ -498,7 +498,7 @@ class AironeApiClientV2 {
           "Content-Type": "application/json;charset=utf-8",
           "X-CSRFToken": getCsrfToken(),
         },
-      },
+      }
     );
   }
 
@@ -512,7 +512,7 @@ class AironeApiClientV2 {
           "Content-Type": "application/json;charset=utf-8",
           "X-CSRFToken": getCsrfToken(),
         },
-      },
+      }
     );
   }
 
@@ -524,7 +524,7 @@ class AironeApiClientV2 {
       id: groupTree["id"],
       name: groupTree["name"],
       children: groupTree["children"].map((child: { [key: string]: any }) =>
-        toTyped(child),
+        toTyped(child)
       ),
     });
 
@@ -532,7 +532,7 @@ class AironeApiClientV2 {
       id: groupTree.id,
       name: groupTree.name,
       children: groupTree.children.map((child: { [key: string]: any }) =>
-        toTyped(child),
+        toTyped(child)
       ),
     }));
   }
@@ -571,7 +571,7 @@ class AironeApiClientV2 {
           "Content-Type": "application/json;charset=utf-8",
           "X-CSRFToken": getCsrfToken(),
         },
-      },
+      }
     );
   }
 
@@ -586,7 +586,7 @@ class AironeApiClientV2 {
           "Content-Type": "application/json;charset=utf-8",
           "X-CSRFToken": getCsrfToken(),
         },
-      },
+      }
     );
   }
 
@@ -600,7 +600,7 @@ class AironeApiClientV2 {
           "Content-Type": "application/json;charset=utf-8",
           "X-CSRFToken": getCsrfToken(),
         },
-      },
+      }
     );
   }
 
@@ -624,7 +624,7 @@ class AironeApiClientV2 {
     entityId: number,
     isActive = true,
     pageNumber = 1,
-    keyword: string,
+    keyword: string
   ): Promise<PaginatedEntryBaseList> {
     //return await this.entry.entryApiV2EntriesList(entityId, isActive, pageNumber);
     // ToDo: This method must pass "isActive" parameter by manupirating DRF API's declaration.
@@ -656,13 +656,13 @@ class AironeApiClientV2 {
           "Content-Type": "application/json;charset=utf-8",
           "X-CSRFToken": getCsrfToken(),
         },
-      },
+      }
     );
   }
 
   async getEntryAttrReferrals(
     attrId: number,
-    keyword?: string,
+    keyword?: string
   ): Promise<Array<GetEntryAttrReferral>> {
     return await this.entry.entryApiV2AttrReferralsList({
       attrId: attrId,
@@ -678,7 +678,7 @@ class AironeApiClientV2 {
     referralName = "",
     searchAllEntities = false,
     page: number,
-    limit = 100,
+    limit = 100
   ): Promise<AdvancedSearchResult> {
     const offset = (page - 1) * limit;
     return await this.entry.entryApiV2AdvancedSearchCreate(
@@ -700,7 +700,7 @@ class AironeApiClientV2 {
           "X-CSRFToken": getCsrfToken(),
           "Content-Type": "application/json;charset=utf-8",
         },
-      },
+      }
     );
   }
 
@@ -710,7 +710,7 @@ class AironeApiClientV2 {
     entryName: string,
     hasReferral: boolean,
     isAllEntities: boolean,
-    format: "yaml" | "csv",
+    format: "yaml" | "csv"
   ): Promise<void> {
     await this.entry.entryApiV2AdvancedSearchResultExportCreate(
       {
@@ -728,7 +728,7 @@ class AironeApiClientV2 {
           "X-CSRFToken": getCsrfToken(),
           "Content-Type": "application/json;charset=utf-8",
         },
-      },
+      }
     );
   }
 
@@ -754,7 +754,7 @@ class AironeApiClientV2 {
           "Content-Type": "application/json;charset=utf-8",
           "X-CSRFToken": getCsrfToken(),
         },
-      },
+      }
     );
   }
 
@@ -786,7 +786,7 @@ class AironeApiClientV2 {
     userId: number,
     oldPassword: string,
     newPassword: string,
-    checkPassword: string,
+    checkPassword: string
   ): Promise<void> {
     await this.user.userApiV2EditPasswdPartialUpdate(
       {
@@ -802,14 +802,14 @@ class AironeApiClientV2 {
           "Content-Type": "application/json;charset=utf-8",
           "X-CSRFToken": getCsrfToken(),
         },
-      },
+      }
     );
   }
 
   async updateUserPasswordAsSuperuser(
     userId: number,
     newPassword: string,
-    checkPassword: string,
+    checkPassword: string
   ): Promise<void> {
     await this.user.userApiV2SuEditPasswdPartialUpdate(
       {
@@ -824,7 +824,7 @@ class AironeApiClientV2 {
           "Content-Type": "application/json;charset=utf-8",
           "X-CSRFToken": getCsrfToken(),
         },
-      },
+      }
     );
   }
 
@@ -856,7 +856,7 @@ class AironeApiClientV2 {
           "Content-Type": "application/yaml",
           "X-CSRFToken": getCsrfToken(),
         },
-      },
+      }
     );
   }
 
@@ -868,13 +868,13 @@ class AironeApiClientV2 {
           "Content-Type": "application/yaml",
           "X-CSRFToken": getCsrfToken(),
         },
-      },
+      }
     );
   }
 
   async importEntries(
     data: string | ArrayBuffer,
-    force: boolean,
+    force: boolean
   ): Promise<void> {
     return await this.entry.entryApiV2ImportCreate(
       {
@@ -886,7 +886,7 @@ class AironeApiClientV2 {
           "X-CSRFToken": getCsrfToken(),
         },
         body: new Blob([data]),
-      },
+      }
     );
   }
 
@@ -902,7 +902,7 @@ class AironeApiClientV2 {
           "Content-Type": "application/json;charset=utf-8",
           "X-CSRFToken": getCsrfToken(),
         },
-      },
+      }
     );
   }
 
@@ -910,7 +910,7 @@ class AironeApiClientV2 {
     uidb64: string,
     token: string,
     password1: string,
-    password2: string,
+    password2: string
   ): Promise<void> {
     await this.user.userApiV2PasswordResetConfirmCreate(
       {
@@ -926,7 +926,7 @@ class AironeApiClientV2 {
           "Content-Type": "application/json;charset=utf-8",
           "X-CSRFToken": getCsrfToken(),
         },
-      },
+      }
     );
   }
 }

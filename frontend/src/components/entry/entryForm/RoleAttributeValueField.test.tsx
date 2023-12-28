@@ -97,14 +97,14 @@ describe("RoleAttributeValueField", () => {
         resolver: zodResolver(schema),
         mode: "onBlur",
         defaultValues,
-      }),
+      })
     );
 
     /* eslint-disable */
     jest
       .spyOn(
         require("../../../repository/AironeApiClientV2").aironeApiClientV2,
-        "getRoles",
+        "getRoles"
       )
       .mockResolvedValue(Promise.resolve(roles));
     /* eslint-enable */
@@ -116,7 +116,7 @@ describe("RoleAttributeValueField", () => {
           control={control}
           setValue={setValue}
         />,
-        { wrapper: TestWrapper },
+        { wrapper: TestWrapper }
       );
     });
 
@@ -146,14 +146,14 @@ describe("RoleAttributeValueField", () => {
         resolver: zodResolver(schema),
         mode: "onBlur",
         defaultValues,
-      }),
+      })
     );
 
     /* eslint-disable */
     jest
       .spyOn(
         require("../../../repository/AironeApiClientV2").aironeApiClientV2,
-        "getRoles",
+        "getRoles"
       )
       .mockResolvedValue(Promise.resolve(roles));
     /* eslint-enable */
@@ -166,7 +166,7 @@ describe("RoleAttributeValueField", () => {
           setValue={setValue}
           multiple
         />,
-        { wrapper: TestWrapper },
+        { wrapper: TestWrapper }
       );
     });
 

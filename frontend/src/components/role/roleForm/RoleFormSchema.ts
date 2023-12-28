@@ -17,7 +17,7 @@ export const schema = schemaForType<RoleForSchema>()(
           z.object({
             id: z.number(),
             username: z.string(),
-          }),
+          })
         )
         .default([]),
       groups: z
@@ -25,7 +25,7 @@ export const schema = schemaForType<RoleForSchema>()(
           z.object({
             id: z.number(),
             name: z.string(),
-          }),
+          })
         )
         .default([]),
       adminUsers: z
@@ -33,7 +33,7 @@ export const schema = schemaForType<RoleForSchema>()(
           z.object({
             id: z.number(),
             username: z.string(),
-          }),
+          })
         )
         .default([]),
       adminGroups: z
@@ -41,7 +41,7 @@ export const schema = schemaForType<RoleForSchema>()(
           z.object({
             id: z.number(),
             name: z.string(),
-          }),
+          })
         )
         .default([]),
     })
@@ -105,7 +105,7 @@ export const schema = schemaForType<RoleForSchema>()(
             message: "メンバーとグループが重複しています",
           });
         });
-    }),
+    })
 );
 
 export type Schema = z.infer<typeof schema>;

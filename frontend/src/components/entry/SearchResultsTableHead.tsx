@@ -59,26 +59,26 @@ export const SearchResultsTableHead: FC<Props> = ({
   const [entryFilter, entryFilterDispatcher] = useReducer(
     (
       _state: string,
-      event: ChangeEvent<HTMLTextAreaElement | HTMLInputElement>,
+      event: ChangeEvent<HTMLTextAreaElement | HTMLInputElement>
     ) => event.target.value,
-    defaultEntryFilter ?? "",
+    defaultEntryFilter ?? ""
   );
   const [referralFilter, referralFilterDispatcher] = useReducer(
     (
       _state: string,
-      event: ChangeEvent<HTMLTextAreaElement | HTMLInputElement>,
+      event: ChangeEvent<HTMLTextAreaElement | HTMLInputElement>
     ) => event.target.value,
-    defaultReferralFilter ?? "",
+    defaultReferralFilter ?? ""
   );
   const [attrsFilter, setAttrsFilter] = useState<AttrsFilter>(
-    defaultAttrsFilter ?? {},
+    defaultAttrsFilter ?? {}
   );
 
   const [attributeMenuEls, setAttributeMenuEls] = useState<{
     [key: string]: HTMLButtonElement | null;
   }>({});
   const [entryMenuEls, setEntryMenuEls] = useState<HTMLButtonElement | null>(
-    null,
+    null
   );
   const [referralMenuEls, setReferralMenuEls] =
     useState<HTMLButtonElement | null>(null);
@@ -103,9 +103,9 @@ export const SearchResultsTableHead: FC<Props> = ({
               return [attrName, attrFilter.keyword !== ""];
           }
           return [attrName, false];
-        }),
+        })
       ),
-    [defaultAttrsFilter],
+    [defaultAttrsFilter]
   );
 
   const handleSelectFilterConditions =
@@ -113,7 +113,7 @@ export const SearchResultsTableHead: FC<Props> = ({
     (
       attrFilter?: AttrFilter,
       overwriteEntryName?: string,
-      overwriteReferral?: string,
+      overwriteReferral?: string
     ) => {
       const _attrsFilter =
         attrName != null && attrFilter != null
@@ -195,7 +195,7 @@ export const SearchResultsTableHead: FC<Props> = ({
                   })
                 }
                 handleSelectFilterConditions={handleSelectFilterConditions(
-                  attrName,
+                  attrName
                 )}
                 handleUpdateAttrFilter={handleUpdateAttrFilter(attrName)}
                 attrType={attrTypes[attrName]}

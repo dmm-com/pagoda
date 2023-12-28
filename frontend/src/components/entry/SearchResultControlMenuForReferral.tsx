@@ -33,7 +33,7 @@ interface Props {
   handleSelectFilterConditions: (
     attrFilter?: AttrFilter,
     overwriteEntryName?: string | undefined,
-    overwriteReferral?: string | undefined,
+    overwriteReferral?: string | undefined
   ) => void;
   handleClear: () => void;
 }

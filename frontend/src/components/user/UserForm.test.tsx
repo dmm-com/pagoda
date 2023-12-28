@@ -50,7 +50,7 @@ describe("UserForm", () => {
         resolver: zodResolver(schema),
         mode: "onBlur",
         defaultValues: userInfo,
-      }),
+      })
     );
 
     render(
@@ -66,17 +66,17 @@ describe("UserForm", () => {
           /* do nothing */
         }}
       />,
-      { wrapper: TestWrapper },
+      { wrapper: TestWrapper }
     );
 
     expect(
-      screen.getByPlaceholderText("ユーザ名を入力してください"),
+      screen.getByPlaceholderText("ユーザ名を入力してください")
     ).toHaveValue("user1");
     expect(
-      screen.getByPlaceholderText("メールアドレスを入力してください"),
+      screen.getByPlaceholderText("メールアドレスを入力してください")
     ).toHaveValue("user1@example.com");
     expect(
-      screen.getByPlaceholderText("パスワードを入力してください"),
+      screen.getByPlaceholderText("パスワードを入力してください")
     ).toHaveValue("user1");
   });
 });

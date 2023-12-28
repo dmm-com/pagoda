@@ -23,7 +23,7 @@ describe("formatAdvancedSearchParams", () => {
           filterKey: AdvancedSearchResultAttrInfoFilterKeyEnum.CLEARED,
           keyword: "",
         },
-      ]),
+      ])
     );
 
     return params;
@@ -56,7 +56,7 @@ describe("formatAdvancedSearchParams", () => {
           filterKey: AdvancedSearchResultAttrInfoFilterKeyEnum.CLEARED,
           keyword: "",
         },
-      ]),
+      ])
     );
   });
 
@@ -89,7 +89,7 @@ describe("formatAdvancedSearchParams", () => {
           filterKey: AdvancedSearchResultAttrInfoFilterKeyEnum.CLEARED,
           keyword: "",
         },
-      ]),
+      ])
     );
   });
 });
@@ -112,7 +112,7 @@ describe("extractAdvancedSearchParams", () => {
           filterKey: AdvancedSearchResultAttrInfoFilterKeyEnum.CLEARED,
           keyword: "",
         },
-      ]),
+      ])
     );
 
     return params;

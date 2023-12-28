@@ -39,7 +39,7 @@ describe("BasicFields", () => {
         resolver: zodResolver(schema),
         mode: "onBlur",
         defaultValues,
-      }),
+      })
     );
 
     render(<BasicFields control={control} />, { wrapper: TestWrapper });
@@ -55,7 +55,7 @@ describe("BasicFields", () => {
     });
 
     expect(screen.getByPlaceholderText("エンティティ名")).toHaveValue(
-      "entity name",
+      "entity name"
     );
     expect(screen.getByPlaceholderText("備考")).toHaveValue("note");
     expect(screen.getByRole("checkbox")).toBeChecked();

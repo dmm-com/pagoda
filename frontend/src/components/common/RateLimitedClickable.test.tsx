@@ -21,7 +21,7 @@ describe("RateLimitedClickable", () => {
       </RateLimitedClickable>,
       {
         wrapper: TestWrapper,
-      },
+      }
     );
 
     // multiple handler calls
@@ -45,7 +45,7 @@ describe("RateLimitedClickable", () => {
       </RateLimitedClickable>,
       {
         wrapper: TestWrapper,
-      },
+      }
     );
 
     // multiple handler calls

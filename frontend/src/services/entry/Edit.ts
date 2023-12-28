@@ -18,7 +18,7 @@ import { Schema } from "components/entry/entryForm/EntryFormSchema";
 export function formalizeEntryInfo(
   entry: EntryRetrieve | undefined,
   entity: EntityDetail,
-  excludeAttrs: string[],
+  excludeAttrs: string[]
 ): Schema {
   return {
     name: entry ? entry.name : "",
@@ -32,7 +32,7 @@ export function formalizeEntryInfo(
       .reduce((acc: Record<string, any>, attr) => {
         function getAttrValue(
           attrType: number,
-          value: EntryAttributeValue | undefined,
+          value: EntryAttributeValue | undefined
         ) {
           if (!value) {
             return {
@@ -91,7 +91,7 @@ export function formalizeEntryInfo(
 }
 
 export function convertAttrsFormatCtoS(
-  attrs: Record<string, EditableEntryAttrs>,
+  attrs: Record<string, EditableEntryAttrs>
 ): AttributeData[] {
   return Object.entries(attrs).map(([{}, attr]) => {
     function getAttrValue(attrType: number, attrValue: EditableEntryAttrValue) {

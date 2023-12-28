@@ -24,7 +24,7 @@ test("should render a component with essential props", function () {
         }}
         hasReferral={false}
       />,
-      { wrapper: TestWrapper },
-    ),
+      { wrapper: TestWrapper }
+    )
   ).not.toThrow();
 });

@@ -39,7 +39,7 @@ describe("AttributesFields", () => {
         resolver: zodResolver(schema),
         mode: "onBlur",
         defaultValues,
-      }),
+      })
     );
 
     render(
@@ -48,7 +48,7 @@ describe("AttributesFields", () => {
         setValue={setValue}
         referralEntities={[]}
       />,
-      { wrapper: TestWrapper },
+      { wrapper: TestWrapper }
     );
 
     expect(screen.queryAllByPlaceholderText("属性名")).toHaveLength(0);

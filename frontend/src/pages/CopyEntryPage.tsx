@@ -68,7 +68,7 @@ export const CopyEntryPage: FC<Props> = ({ CopyForm = DefaultCopyForm }) => {
 
   const handleCancel = () => {
     history.replace(
-      entryDetailsPath(entry.value?.schema?.id ?? 0, entry.value?.id ?? 0),
+      entryDetailsPath(entry.value?.schema?.id ?? 0, entry.value?.id ?? 0)
     );
   };
 

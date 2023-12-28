@@ -11,6 +11,6 @@ import { TestWrapper } from "TestWrapper";
 
 test("should render with essential props", () => {
   expect(() =>
-    render(<ACLHistoryList histories={[]} />, { wrapper: TestWrapper }),
+    render(<ACLHistoryList histories={[]} />, { wrapper: TestWrapper })
   ).not.toThrow();
 });

@@ -20,7 +20,7 @@ describe("AttributeValue", () => {
 
     expect(screen.getAllByRole("listitem")).toHaveLength(1);
     expect(
-      within(screen.getByRole("listitem")).getByText("hoge"),
+      within(screen.getByRole("listitem")).getByText("hoge")
     ).toBeVisible();
   });
 
@@ -33,7 +33,7 @@ describe("AttributeValue", () => {
 
     expect(screen.getAllByRole("listitem")).toHaveLength(1);
     expect(
-      within(screen.getByRole("listitem")).getByText("hoge"),
+      within(screen.getByRole("listitem")).getByText("hoge")
     ).toBeVisible();
   });
 
@@ -46,7 +46,7 @@ describe("AttributeValue", () => {
 
     expect(screen.getAllByRole("listitem")).toHaveLength(1);
     expect(
-      within(screen.getByRole("listitem")).getByText("2020-01-01"),
+      within(screen.getByRole("listitem")).getByText("2020-01-01")
     ).toBeVisible();
   });
 
@@ -59,7 +59,7 @@ describe("AttributeValue", () => {
 
     expect(screen.getAllByRole("listitem")).toHaveLength(1);
     expect(
-      within(screen.getByRole("listitem")).getByRole("checkbox"),
+      within(screen.getByRole("listitem")).getByRole("checkbox")
     ).toBeChecked();
   });
 
@@ -78,7 +78,7 @@ describe("AttributeValue", () => {
 
     expect(screen.getAllByRole("listitem")).toHaveLength(1);
     expect(
-      within(screen.getByRole("listitem")).getByRole("link"),
+      within(screen.getByRole("listitem")).getByRole("link")
     ).toHaveTextContent("object1");
   });
 
@@ -100,10 +100,10 @@ describe("AttributeValue", () => {
 
     expect(screen.getAllByRole("listitem")).toHaveLength(1);
     expect(
-      within(screen.getByRole("listitem")).getByText("name1"),
+      within(screen.getByRole("listitem")).getByText("name1")
     ).toBeVisible();
     expect(
-      within(screen.getByRole("listitem")).getByRole("link"),
+      within(screen.getByRole("listitem")).getByRole("link")
     ).toHaveTextContent("object1");
   });
 
@@ -118,7 +118,7 @@ describe("AttributeValue", () => {
 
     expect(screen.getAllByRole("listitem")).toHaveLength(1);
     expect(
-      within(screen.getByRole("listitem")).getByRole("link"),
+      within(screen.getByRole("listitem")).getByRole("link")
     ).toHaveTextContent("group1");
   });
 
@@ -133,7 +133,7 @@ describe("AttributeValue", () => {
 
     expect(screen.getAllByRole("listitem")).toHaveLength(1);
     expect(
-      within(screen.getByRole("listitem")).getByRole("link"),
+      within(screen.getByRole("listitem")).getByRole("link")
     ).toHaveTextContent("role1");
   });
 
@@ -146,10 +146,10 @@ describe("AttributeValue", () => {
 
     expect(screen.getAllByRole("listitem")).toHaveLength(2);
     expect(
-      within(screen.getAllByRole("listitem")[0]).getByText("hoge"),
+      within(screen.getAllByRole("listitem")[0]).getByText("hoge")
     ).toBeVisible();
     expect(
-      within(screen.getAllByRole("listitem")[1]).getByText("fuga"),
+      within(screen.getAllByRole("listitem")[1]).getByText("fuga")
     ).toBeVisible();
   });
 
@@ -167,10 +167,10 @@ describe("AttributeValue", () => {
 
     expect(screen.getAllByRole("listitem")).toHaveLength(2);
     expect(
-      within(screen.getAllByRole("listitem")[0]).getByRole("link"),
+      within(screen.getAllByRole("listitem")[0]).getByRole("link")
     ).toHaveTextContent("object1");
     expect(
-      within(screen.getAllByRole("listitem")[1]).getByRole("link"),
+      within(screen.getAllByRole("listitem")[1]).getByRole("link")
     ).toHaveTextContent("object2");
   });
 
@@ -204,16 +204,16 @@ describe("AttributeValue", () => {
 
     expect(screen.getAllByRole("listitem")).toHaveLength(2);
     expect(
-      within(screen.getAllByRole("listitem")[0]).getByText("name1"),
+      within(screen.getAllByRole("listitem")[0]).getByText("name1")
     ).toBeVisible();
     expect(
-      within(screen.getAllByRole("listitem")[0]).getByRole("link"),
+      within(screen.getAllByRole("listitem")[0]).getByRole("link")
     ).toHaveTextContent("object1");
     expect(
-      within(screen.getAllByRole("listitem")[1]).getByText("name2"),
+      within(screen.getAllByRole("listitem")[1]).getByText("name2")
     ).toBeVisible();
     expect(
-      within(screen.getAllByRole("listitem")[1]).getByRole("link"),
+      within(screen.getAllByRole("listitem")[1]).getByRole("link")
     ).toHaveTextContent("object2");
   });
 
@@ -231,10 +231,10 @@ describe("AttributeValue", () => {
 
     expect(screen.getAllByRole("listitem")).toHaveLength(2);
     expect(
-      within(screen.getAllByRole("listitem")[0]).getByRole("link"),
+      within(screen.getAllByRole("listitem")[0]).getByRole("link")
     ).toHaveTextContent("group1");
     expect(
-      within(screen.getAllByRole("listitem")[1]).getByRole("link"),
+      within(screen.getAllByRole("listitem")[1]).getByRole("link")
     ).toHaveTextContent("group2");
   });
 
@@ -252,10 +252,10 @@ describe("AttributeValue", () => {
 
     expect(screen.getAllByRole("listitem")).toHaveLength(2);
     expect(
-      within(screen.getAllByRole("listitem")[0]).getByRole("link"),
+      within(screen.getAllByRole("listitem")[0]).getByRole("link")
     ).toHaveTextContent("role1");
     expect(
-      within(screen.getAllByRole("listitem")[1]).getByRole("link"),
+      within(screen.getAllByRole("listitem")[1]).getByRole("link")
     ).toHaveTextContent("role2");
   });
 });

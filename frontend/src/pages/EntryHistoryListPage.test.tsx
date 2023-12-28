@@ -41,14 +41,14 @@ test("should match snapshot", async () => {
   jest
     .spyOn(
       require("repository/AironeApiClientV2").aironeApiClientV2,
-      "getEntry",
+      "getEntry"
     )
     .mockResolvedValue(Promise.resolve(entry));
 
   jest
     .spyOn(
       require("repository/AironeApiClientV2").aironeApiClientV2,
-      "getEntryHistories",
+      "getEntryHistories"
     )
     .mockResolvedValue(Promise.resolve(histories));
   /* eslint-enable */
@@ -63,7 +63,7 @@ test("should match snapshot", async () => {
     </MemoryRouter>,
     {
       wrapper: TestWrapper,
-    },
+    }
   );
   await waitForElementToBeRemoved(screen.getByTestId("loading"));
 

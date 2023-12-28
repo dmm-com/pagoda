@@ -21,7 +21,7 @@ test("should render a component with essential props", function () {
           /* do nothing */
         }}
       />,
-      { wrapper: TestWrapper },
-    ),
+      { wrapper: TestWrapper }
+    )
   ).not.toThrow();
 });

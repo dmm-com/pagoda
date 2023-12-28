@@ -77,7 +77,7 @@ export const EntryDetailsPage: FC<Props> = ({
   const history = useHistory();
 
   const [entryAnchorEl, setEntryAnchorEl] = useState<HTMLButtonElement | null>(
-    null,
+    null
   );
 
   const entry = useAsyncWithThrow(async () => {
@@ -93,10 +93,7 @@ export const EntryDetailsPage: FC<Props> = ({
     // If it'd been deleted, show restore-entry page instead
     if (!entry.loading && entry.value?.isActive === false) {
       history.replace(
-        restoreEntryPath(
-          entry.value?.schema?.id ?? "",
-          entry.value?.name ?? "",
-        ),
+        restoreEntryPath(entry.value?.schema?.id ?? "", entry.value?.name ?? "")
       );
     }
   }, [entry.loading]);
@@ -163,7 +160,7 @@ export const EntryDetailsPage: FC<Props> = ({
                 <EntryAttributes
                   attributes={
                     entry.value?.attrs.filter(
-                      (attr) => !excludeAttrs.includes(attr.schema.name),
+                      (attr) => !excludeAttrs.includes(attr.schema.name)
                     ) ?? []
                   }
                 />

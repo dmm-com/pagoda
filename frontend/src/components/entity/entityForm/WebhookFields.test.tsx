@@ -39,7 +39,7 @@ describe("WebhookFields", () => {
         resolver: zodResolver(schema),
         mode: "onBlur",
         defaultValues,
-      }),
+      })
     );
 
     render(<WebhookFields control={control} />, { wrapper: TestWrapper });
@@ -65,7 +65,7 @@ describe("WebhookFields", () => {
     });
 
     expect(screen.getByPlaceholderText("URL")).toHaveValue(
-      "https://example.com/",
+      "https://example.com/"
     );
     expect(screen.getByPlaceholderText("ラベル")).toHaveValue("label");
     expect(screen.getByRole("checkbox")).toBeChecked();

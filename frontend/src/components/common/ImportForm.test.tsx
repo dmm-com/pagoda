@@ -29,7 +29,7 @@ describe("ImportForm", () => {
     });
 
     expect(
-      screen.queryByText("ファイルのアップロードに失敗しました"),
+      screen.queryByText("ファイルのアップロードに失敗しました")
     ).not.toBeInTheDocument();
   });
 });
