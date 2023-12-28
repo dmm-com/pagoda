@@ -1,3 +1,6 @@
+import Cookies from "js-cookie";
+import fileDownload from "js-file-download";
+
 import {
   ACL,
   ACLHistory,
@@ -33,7 +36,7 @@ import {
   PaginatedEntryHistoryAttributeValueList,
   PaginatedGroupList,
   PaginatedJobSerializersList,
-  PaginatedTriggerBaseList,
+  PaginatedTriggerParentList,
   PaginatedUserListList,
   Role,
   RoleApi,
@@ -47,9 +50,6 @@ import {
   WebhookCreateUpdate,
   GroupTree as _GroupTree,
 } from "@dmm-com/airone-apiclient-typescript-fetch";
-import Cookies from "js-cookie";
-import fileDownload from "js-file-download";
-
 import {
   EntityList as ConstEntityList,
   EntityHistoryList,
@@ -732,7 +732,7 @@ class AironeApiClientV2 {
     );
   }
 
-  async getTriggers(page = 1): Promise<PaginatedTriggerBaseList> {
+  async getTriggers(page = 1): Promise<PaginatedTriggerParentList> {
     return await this.trigger.triggerApiV2List({
       page: page,
     });

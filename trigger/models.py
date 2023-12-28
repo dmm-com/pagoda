@@ -37,9 +37,7 @@ class InputTriggerCondition(object):
                 isinstance(input_condition, str) and input_condition.isdigit()
             ):
                 # convert ID to Entry instance
-                entry = Entry.objects.filter(
-                    id=int(input_condition), is_active=True
-                ).first()
+                entry = Entry.objects.filter(id=int(input_condition), is_active=True).first()
                 if entry:
                     return entry
             return None
@@ -103,13 +101,9 @@ class InputTriggerAction(object):
         elif isinstance(input_value, dict):
             ref_entry = None
             if isinstance(input_value.get("id"), int):
-                ref_entry = Entry.objects.filter(
-                    id=input_value["id"], is_active=True
-                ).first()
+                ref_entry = Entry.objects.filter(id=input_value["id"], is_active=True).first()
             if isinstance(input_value.get("id"), str):
-                ref_entry = Entry.objects.filter(
-                    id=int(input_value["id"]), is_active=True
-                ).first()
+                ref_entry = Entry.objects.filter(id=int(input_value["id"]), is_active=True).first()
             elif isinstance(input_value.get("id"), Entry):
                 ref_entry = input_value["id"]
 
@@ -122,9 +116,7 @@ class InputTriggerAction(object):
 
 
 class TriggerAction(models.Model):
-    condition = models.ForeignKey(
-        "TriggerParentCondition", on_delete=models.CASCADE, related_name="actions"
-    )
+    condition = models.ForeignKey("TriggerParent", on_delete=models.CASCADE, related_name="actions")
     attr = models.ForeignKey("entity.EntityAttr", on_delete=models.CASCADE)
 
     def save_actions(self, input: InputTriggerAction):
@@ -147,9 +139,7 @@ class TriggerAction(models.Model):
         value = value or self.values.first()
         if attr_type & AttrTypeValue["array"]:
             return [
-                self.get_serializer_acceptable_value(
-                    x, attr_type ^ AttrTypeValue["array"]
-                )
+                self.get_serializer_acceptable_value(x, attr_type ^ AttrTypeValue["array"])
                 for x in self.values.all()
             ]
         elif attr_type == AttrTypeValue["boolean"]:
@@ -176,9 +166,7 @@ class TriggerAction(models.Model):
         setting_data = {
             "id": entry.id,
             "name": entry.name,
-            "attrs": [
-                {"id": self.attr.id, "value": self.get_serializer_acceptable_value()}
-            ],
+            "attrs": [{"id": self.attr.id, "value": self.get_serializer_acceptable_value()}],
             "delay_trigger": False,
             "call_stacks": [*call_stacks, self.id],
         }
@@ -191,23 +179,19 @@ class TriggerAction(models.Model):
 
 
 class TriggerActionValue(models.Model):
-    action = models.ForeignKey(
-        TriggerAction, on_delete=models.CASCADE, related_name="values"
-    )
+    action = models.ForeignKey(TriggerAction, on_delete=models.CASCADE, related_name="values")
     str_cond = models.TextField()
-    ref_cond = models.ForeignKey(
-        "entry.Entry", on_delete=models.SET_NULL, null=True, blank=True
-    )
+    ref_cond = models.ForeignKey("entry.Entry", on_delete=models.SET_NULL, null=True, blank=True)
     bool_cond = models.BooleanField(default=False)
 
     # TODO: Add method to register value to Attribute when action is invoked
 
 
-class TriggerParentCondition(models.Model):
+class TriggerParent(models.Model):
     entity = models.ForeignKey("entity.Entity", on_delete=models.CASCADE)
 
     def is_match_condition(self, inputs: list[InputTriggerCondition]):
-        if all([c.is_same_condition(inputs) for c in self.co_conditions.all()]):
+        if all([c.is_same_condition(inputs) for c in self.conditions.all()]):
             return True
         return False
 
@@ -234,15 +218,13 @@ class TriggerParentCondition(models.Model):
         """
 
         def _is_match(condition):
-            for attr_info in [
-                x for x in recv_attrs if x["attr_id"] == condition.attr.id
-            ]:
+            for attr_info in [x for x in recv_attrs if x["attr_id"] == condition.attr.id]:
                 if condition.is_match_condition(attr_info["value"]):
                     return True
 
             return False
 
-        if all([_is_match(c) for c in self.co_conditions.filter(attr__is_active=True)]):
+        if all([_is_match(c) for c in self.conditions.filter(attr__is_active=True)]):
             # In this case, all recv_attrs are matched with configured TriggerCondition,
             # then return corresponding TriggerAction.
             return list(TriggerAction.objects.filter(condition=self))
@@ -255,14 +237,12 @@ class TriggerParentCondition(models.Model):
         TriggerActionValue.objects.filter(action__condition=self).delete()
 
         # delete all conditions and actions that are related with this instance
-        self.co_conditions.all().delete()
+        self.conditions.all().delete()
         self.actions.all().delete()
 
     def update(self, conditions: list, actions: list):
         # convert input to InputTriggerCondition
-        input_trigger_conditions = [
-            InputTriggerCondition(**condition) for condition in conditions
-        ]
+        input_trigger_conditions = [InputTriggerCondition(**condition) for condition in conditions]
 
         # save conditions
         self.save_conditions(input_trigger_conditions)
@@ -277,14 +257,10 @@ class TriggerParentCondition(models.Model):
 
 
 class TriggerCondition(models.Model):
-    parent = models.ForeignKey(
-        TriggerParentCondition, on_delete=models.CASCADE, related_name="co_conditions"
-    )
+    parent = models.ForeignKey(TriggerParent, on_delete=models.CASCADE, related_name="conditions")
     attr = models.ForeignKey("entity.EntityAttr", on_delete=models.CASCADE)
     str_cond = models.TextField()
-    ref_cond = models.ForeignKey(
-        "entry.Entry", on_delete=models.SET_NULL, null=True, blank=True
-    )
+    ref_cond = models.ForeignKey("entry.Entry", on_delete=models.SET_NULL, null=True, blank=True)
     bool_cond = models.BooleanField(default=False)
 
     def is_same_condition(self, input_list: list[InputTriggerCondition]) -> bool:
@@ -347,16 +323,12 @@ class TriggerCondition(models.Model):
         return False
 
     @classmethod
-    def register(
-        cls, entity: Entity, conditions: list, actions: list
-    ) -> TriggerParentCondition:
+    def register(cls, entity: Entity, conditions: list, actions: list) -> TriggerParent:
         # convert input to InputTriggerCondition
-        input_trigger_conditions = [
-            InputTriggerCondition(**condition) for condition in conditions
-        ]
+        input_trigger_conditions = [InputTriggerCondition(**condition) for condition in conditions]
 
         # check if condition is already registered
-        for parent_condition in TriggerParentCondition.objects.filter(entity=entity):
+        for parent_condition in TriggerParent.objects.filter(entity=entity):
             # This prevents to registering exactly same condition that have already been registered
             if parent_condition.is_match_condition(input_trigger_conditions):
                 raise InvalidInputException(
@@ -364,7 +336,7 @@ class TriggerCondition(models.Model):
                 )
 
         # register specified condition as AirOne TriggerCondition
-        parent_condition = TriggerParentCondition.objects.create(entity=entity)
+        parent_condition = TriggerParent.objects.create(entity=entity)
         parent_condition.save_conditions(input_trigger_conditions)
 
         # convert input to InputTriggerCondition
@@ -380,7 +352,7 @@ class TriggerCondition(models.Model):
     @classmethod
     def get_invoked_actions(cls, entity: Entity, recv_data: list):
         actions = []
-        for parent_condition in TriggerParentCondition.objects.filter(entity=entity):
+        for parent_condition in TriggerParent.objects.filter(entity=entity):
             actions += parent_condition.get_actions(
                 [{"attr_id": int(x["id"]), "value": x["value"]} for x in recv_data]
             )

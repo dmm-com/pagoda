@@ -15,7 +15,7 @@ from trigger.models import (
     TriggerAction,
     TriggerActionValue,
     TriggerCondition,
-    TriggerParentCondition,
+    TriggerParent,
 )
 
 
@@ -31,12 +31,14 @@ class TriggerActionValueSerializer(serializers.ModelSerializer):
 
 
 class TriggerActionSerializer(serializers.ModelSerializer):
+    attr = EntityAttrSerializer(read_only=True)
     values = TriggerActionValueSerializer(many=True)
 
     class Meta:
         model = TriggerAction
         fields = [
             "id",
+            "attr",
             "values",
         ]
 
@@ -55,18 +57,18 @@ class TriggerConditionSerializer(serializers.ModelSerializer):
         ]
 
 
-class TriggerParentConditionSerializer(serializers.ModelSerializer):
+class TriggerParentSerializer(serializers.ModelSerializer):
     entity = EntitySerializer(read_only=True)
     actions = TriggerActionSerializer(many=True)
-    co_conditions = TriggerConditionSerializer(many=True)
+    conditions = TriggerConditionSerializer(many=True)
 
     class Meta:
-        model = TriggerParentCondition
+        model = TriggerParent
         fields = [
             "id",
             "entity",
             "actions",
-            "co_conditions",
+            "conditions",
         ]
 
 
@@ -107,15 +109,13 @@ class TriggerParentBaseSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
-        model = TriggerParentCondition
+        model = TriggerParent
         fields = ["id", "entity_id", "conditions", "actions"]
 
     def validate(self, data):
         entity = Entity.objects.filter(id=data["entity_id"], is_active=True).first()
         if not entity:
-            raise ValidationError(
-                "Invalid entity_id(%s) was specified" % data["entity_id"]
-            )
+            raise ValidationError("Invalid entity_id(%s) was specified" % data["entity_id"])
 
         # Element in conditions and actions is necessary at least one
         if not data["conditions"] or not data["actions"]:
@@ -126,9 +126,9 @@ class TriggerParentBaseSerializer(serializers.ModelSerializer):
         # This checks each EntityAttrs in parameters are Entity's one of data["entity_id"]
         for key in ["conditions", "actions"]:
             attr_id_list = [x["attr_id"] for x in data[key]]
-            if EntityAttr.objects.filter(
-                id__in=attr_id_list, parent_entity=entity
-            ).count() != len(data[key]):
+            if EntityAttr.objects.filter(id__in=attr_id_list, parent_entity=entity).count() != len(
+                data[key]
+            ):
                 raise InvalidValueError(
                     "%s.attr_id contains non EntityAttr of specified Entity" % key
                 )
@@ -147,7 +147,7 @@ class TriggerParentCreateSerializer(TriggerParentBaseSerializer):
 
 class TriggerParentUpdateSerializer(TriggerParentBaseSerializer):
     def update(self, parent_condition, validated_data):
-        # clear configurations that have already been registered in this TriggerParentCondition
+        # clear configurations that have already been registered in this TriggerParent
         parent_condition.clear()
 
         # update parent_condition's configuration
@@ -160,7 +160,7 @@ class TriggerParentUpdateSerializer(TriggerParentBaseSerializer):
 
 class TriggerParentDestroySerializer(serializers.ModelSerializer):
     class Meta:
-        model = TriggerParentCondition
+        model = TriggerParent
         fields = ["id"]
 
     def delete(self, *args, **kwargs):

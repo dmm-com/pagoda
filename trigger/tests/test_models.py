@@ -9,7 +9,7 @@ from trigger.models import (
     TriggerAction,
     TriggerActionValue,
     TriggerCondition,
-    TriggerParentCondition,
+    TriggerParent,
 )
 from user.models import User
 
@@ -151,10 +151,7 @@ class ModelTest(AironeTestCase):
         ]
 
     def test_input_airone_trigger_action(self):
-        entries = [
-            self.add_entry(self.user, "test_entry_%s" % i, self.entity)
-            for i in range(3)
-        ]
+        entries = [self.add_entry(self.user, "test_entry_%s" % i, self.entity) for i in range(3)]
 
         # set condition for string typed Attribute
         input_trigger_condition = InputTriggerCondition(
@@ -200,10 +197,7 @@ class ModelTest(AironeTestCase):
         self.assertEqual(input_trigger_condition.bool_cond, True)
 
     def test_create_trigger_action_initialization(self):
-        entries = [
-            self.add_entry(self.user, "test_entry_%s" % i, self.entity)
-            for i in range(3)
-        ]
+        entries = [self.add_entry(self.user, "test_entry_%s" % i, self.entity) for i in range(3)]
 
         settingTriggerConditions = [
             {"attr_id": self.entity.attrs.get(name="str_trigger").id, "cond": "test"},
@@ -240,17 +234,13 @@ class ModelTest(AironeTestCase):
         settingTriggerActions = self.FULL_ACTION_CONFIGURATION_PARAMETERS.copy()
 
         # This tests processing to initialize Airone Triggers and its Actions
-        TriggerCondition.register(
-            self.entity, settingTriggerConditions, settingTriggerActions
-        )
+        TriggerCondition.register(self.entity, settingTriggerConditions, settingTriggerActions)
 
         # This checks expected Trigger condition objects would be created
-        parent_conditions = TriggerParentCondition.objects.filter(entity=self.entity)
+        parent_conditions = TriggerParent.objects.filter(entity=self.entity)
         self.assertEqual(parent_conditions.count(), 1)
 
-        trigger_conditions = TriggerCondition.objects.filter(
-            parent=parent_conditions[0]
-        )
+        trigger_conditions = TriggerCondition.objects.filter(parent=parent_conditions[0])
         self.assertEqual(trigger_conditions.count(), len(settingTriggerConditions))
         # omit tests for TriggerCondition context
 
@@ -280,7 +270,7 @@ class ModelTest(AironeTestCase):
             self.entity, settingTriggerConditions, settingTriggerActions
         )
 
-        # This checks TriggerParentCondition.get_actions() returns expected TriggerActions
+        # This checks TriggerParent.get_actions() returns expected TriggerActions
         # and they have expected context (TriggerActionValue).
         trigger_actions = parent_condition.get_actions(
             [
@@ -297,9 +287,7 @@ class ModelTest(AironeTestCase):
         self.assertEqual(len(trigger_actions), 7)
         self.assertTrue(all([isinstance(a, TriggerAction) for a in trigger_actions]))
         for index, trigger_action in enumerate(trigger_actions):
-            self.assertEqual(
-                trigger_action.attr.id, settingTriggerActions[index]["attr_id"]
-            )
+            self.assertEqual(trigger_action.attr.id, settingTriggerActions[index]["attr_id"])
 
         # This checks each TriggerActionValue has expected context
         self.assertEqual(trigger_actions[0].values.count(), 1)
@@ -321,9 +309,7 @@ class ModelTest(AironeTestCase):
         )
 
         self.assertEqual(trigger_actions[5].values.count(), 3)
-        self.assertEqual(
-            [x.ref_cond for x in trigger_actions[5].values.all()], self.entry_refs
-        )
+        self.assertEqual([x.ref_cond for x in trigger_actions[5].values.all()], self.entry_refs)
 
         self.assertEqual(trigger_actions[6].values.count(), 3)
         self.assertEqual(
@@ -459,14 +445,10 @@ class ModelTest(AironeTestCase):
 
         # Then, check entry is updated as expected
         self.assertEqual(entry.get_attrv("str_action").value, "changed_value")
-        self.assertEqual(
-            entry.get_attrv("ref_action").referral.id, self.entry_refs[0].id
-        )
+        self.assertEqual(entry.get_attrv("ref_action").referral.id, self.entry_refs[0].id)
         self.assertTrue(entry.get_attrv("bool_action"))
         self.assertEqual(entry.get_attrv("named_action").value, "changed_value")
-        self.assertEqual(
-            entry.get_attrv("named_action").referral.id, self.entry_refs[0].id
-        )
+        self.assertEqual(entry.get_attrv("named_action").referral.id, self.entry_refs[0].id)
         self.assertEqual(
             [x.value for x in entry.get_attrv("arr_str_action").data_array.all()],
             ["foo", "bar", "baz"],
@@ -522,9 +504,9 @@ class ModelTest(AironeTestCase):
         self.assertEqual(
             [
                 x.value
-                for x in AttributeValue.objects.filter(
-                    parent_attr__schema=target_attr
-                ).order_by("created_time")
+                for x in AttributeValue.objects.filter(parent_attr__schema=target_attr).order_by(
+                    "created_time"
+                )
             ],
             ["", "fuga", "hoge"],
         )
@@ -540,18 +522,14 @@ class ModelTest(AironeTestCase):
         COUNT_CONDS = len(self.FULL_CONDITION_CONFIGURATION_PARAMETERS)
         COUNT_ACTIONS = len(self.FULL_ACTION_CONFIGURATION_PARAMETERS)
 
-        self.assertEqual(parent_cond.co_conditions.count(), COUNT_CONDS)
+        self.assertEqual(parent_cond.conditions.count(), COUNT_CONDS)
         self.assertEqual(parent_cond.actions.count(), COUNT_ACTIONS)
-        self.assertEqual(
-            TriggerCondition.objects.filter(parent=parent_cond).count(), COUNT_CONDS
-        )
-        self.assertEqual(
-            TriggerAction.objects.filter(condition=parent_cond).count(), COUNT_ACTIONS
-        )
+        self.assertEqual(TriggerCondition.objects.filter(parent=parent_cond).count(), COUNT_CONDS)
+        self.assertEqual(TriggerAction.objects.filter(condition=parent_cond).count(), COUNT_ACTIONS)
 
         # This clears all conditions and actions that are associated with TriggerParnetCondition
         parent_cond.clear()
-        self.assertEqual(parent_cond.co_conditions.count(), 0)
+        self.assertEqual(parent_cond.conditions.count(), 0)
         self.assertEqual(parent_cond.actions.count(), 0)
         self.assertEqual(TriggerCondition.objects.filter(parent=parent_cond).count(), 0)
         self.assertEqual(TriggerAction.objects.filter(condition=parent_cond).count(), 0)
@@ -567,11 +545,7 @@ class ModelTest(AironeTestCase):
         COUNT_CONDS = len(self.FULL_CONDITION_CONFIGURATION_PARAMETERS)
         COUNT_ACTIONS = len(self.FULL_ACTION_CONFIGURATION_PARAMETERS)
 
-        self.assertEqual(parent_cond.co_conditions.count(), COUNT_CONDS)
+        self.assertEqual(parent_cond.conditions.count(), COUNT_CONDS)
         self.assertEqual(parent_cond.actions.count(), COUNT_ACTIONS)
-        self.assertEqual(
-            TriggerCondition.objects.filter(parent=parent_cond).count(), COUNT_CONDS
-        )
-        self.assertEqual(
-            TriggerAction.objects.filter(condition=parent_cond).count(), COUNT_ACTIONS
-        )
+        self.assertEqual(TriggerCondition.objects.filter(parent=parent_cond).count(), COUNT_CONDS)
+        self.assertEqual(TriggerAction.objects.filter(condition=parent_cond).count(), COUNT_ACTIONS)

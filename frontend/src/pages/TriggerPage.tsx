@@ -1,4 +1,14 @@
-import { Box, Container, Typography } from "@mui/material";
+import {
+  Box,
+  Container,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+  Typography,
+} from "@mui/material";
+import { styled } from "@mui/material/styles";
 import React, { FC, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAsync } from "react-use";
@@ -9,6 +19,23 @@ import { Loading } from "components/common/Loading";
 import { PageHeader } from "components/common/PageHeader";
 import { usePage } from "hooks/usePage";
 import { aironeApiClientV2 } from "repository/AironeApiClientV2";
+
+const HeaderTableRow = styled(TableRow)(({}) => ({
+  backgroundColor: "#455A64",
+}));
+
+const HeaderTableCell = styled(TableCell)(({}) => ({
+  color: "#FFFFFF",
+}));
+
+const StyledTableRow = styled(TableRow)(() => ({
+  "&:nth-of-type(odd)": {
+    backgroundColor: "#607D8B0A",
+  },
+  "& td": {
+    padding: "8px 16px",
+  },
+}));
 
 export const TriggerPage: FC = () => {
   const [page, changePage] = usePage();
@@ -35,15 +62,56 @@ export const TriggerPage: FC = () => {
           {triggers.loading ? (
             <Loading />
           ) : (
-            <Box>
-              {triggers.value?.results?.map((trigger) => {
-                return (
-                  <Box key={trigger.id}>
-                    <Typography>{trigger.parent.entity.name}</Typography>
-                  </Box>
-                );
-              })}
-            </Box>
+            <>
+              <Table>
+                <TableHead>
+                  <HeaderTableRow>
+                    <HeaderTableCell width="140px">
+                      エンティティ
+                    </HeaderTableCell>
+                    <HeaderTableCell width="140px">条件</HeaderTableCell>
+                    <HeaderTableCell width="140px">アクション</HeaderTableCell>
+                  </HeaderTableRow>
+                </TableHead>
+                <TableBody>
+                  {triggers.value?.results?.map((trigger) => {
+                    return (
+                      <StyledTableRow key={trigger.id}>
+                        <TableCell>{trigger.entity.name}</TableCell>
+                        <TableCell>
+                          {trigger.conditions?.map((condition) => {
+                            return (
+                              <Box key={condition.id}>
+                                <Typography>{condition.attr.name}</Typography>
+                                <Typography>{condition.strCond}</Typography>
+                              </Box>
+                            );
+                          })}
+                        </TableCell>
+                        <TableCell>
+                          {trigger.actions.map((action) => {
+                            return (
+                              <Box key={action.id}>
+                                <Typography>{action.attr.name}</Typography>
+                                <Typography>
+                                  {action.values.map((value) => {
+                                    return (
+                                      <Box key={value.id}>
+                                        <Typography>{value.strCond}</Typography>
+                                      </Box>
+                                    );
+                                  })}
+                                </Typography>
+                              </Box>
+                            );
+                          })}
+                        </TableCell>
+                      </StyledTableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </>
           )}
         </Box>
       </Container>

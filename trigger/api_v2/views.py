@@ -5,11 +5,11 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from trigger.api_v2.serializers import (
-    TriggerParentConditionSerializer,
     TriggerParentCreateSerializer,
+    TriggerParentSerializer,
     TriggerParentUpdateSerializer,
 )
-from trigger.models import TriggerParentCondition
+from trigger.models import TriggerParent
 
 
 class TriggerAPI(viewsets.ModelViewSet):
@@ -22,7 +22,7 @@ class TriggerAPI(viewsets.ModelViewSet):
             "update": TriggerParentUpdateSerializer,
             "create": TriggerParentCreateSerializer,
         }
-        return serializer.get(self.action, TriggerParentConditionSerializer)
+        return serializer.get(self.action, TriggerParentSerializer)
 
     def get_queryset(self):
         query = {
@@ -34,20 +34,20 @@ class TriggerAPI(viewsets.ModelViewSet):
         if filter_entity_id:
             query["entity__id"] = filter_entity_id
 
-        query = TriggerParentCondition.objects.filter(**query)
+        query = TriggerParent.objects.filter(**query)
         if not query.exists():
             raise Http404
 
         return query
 
     def destroy(self, request, pk):
-        trigger_parent = TriggerParentCondition.objects.filter(pk=pk).last()
+        trigger_parent = TriggerParent.objects.filter(pk=pk).last()
         if trigger_parent:
             # delete TriggerConditions, TriggerActions and TriggerActionValues that
-            # are related with this TriggerParentCondition
+            # are related with this TriggerParent
             trigger_parent.clear()
 
-            # delete this TriggerParentCondition
+            # delete this TriggerParent
             trigger_parent.delete()
 
         return Response(status=status.HTTP_204_NO_CONTENT)
