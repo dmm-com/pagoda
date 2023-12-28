@@ -324,7 +324,6 @@ exports[`should match snapshot 1`] = `
           </table>
           <div
             class="MuiBox-root css-d3lzg9"
-            id="pagination_footer"
           >
             <p
               class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
@@ -360,6 +359,17 @@ exports[`should match snapshot 1`] = `
                           d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"
                         />
                       </svg>
+                    </button>
+                  </li>
+                  <li>
+                    <button
+                      aria-current="true"
+                      aria-label="page 1"
+                      class="MuiButtonBase-root MuiPaginationItem-root MuiPaginationItem-sizeMedium MuiPaginationItem-text MuiPaginationItem-circular MuiPaginationItem-textPrimary Mui-selected MuiPaginationItem-page css-1to7aaw-MuiButtonBase-root-MuiPaginationItem-root"
+                      tabindex="0"
+                      type="button"
+                    >
+                      1
                     </button>
                   </li>
                   <li>
@@ -711,7 +721,6 @@ exports[`should match snapshot 1`] = `
         </table>
         <div
           class="MuiBox-root css-d3lzg9"
-          id="pagination_footer"
         >
           <p
             class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
@@ -747,6 +756,17 @@ exports[`should match snapshot 1`] = `
                         d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"
                       />
                     </svg>
+                  </button>
+                </li>
+                <li>
+                  <button
+                    aria-current="true"
+                    aria-label="page 1"
+                    class="MuiButtonBase-root MuiPaginationItem-root MuiPaginationItem-sizeMedium MuiPaginationItem-text MuiPaginationItem-circular MuiPaginationItem-textPrimary Mui-selected MuiPaginationItem-page css-1to7aaw-MuiButtonBase-root-MuiPaginationItem-root"
+                    tabindex="0"
+                    type="button"
+                  >
+                    1
                   </button>
                 </li>
                 <li>
