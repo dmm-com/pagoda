@@ -12,12 +12,14 @@ test("should render a component with essential props", function () {
   expect(() =>
     render(
       <EntryHistoryList
-        histories={[]}
         entityId={2}
         entryId={1}
+        histories={{
+          count: 0,
+          results: [],
+        }}
         page={1}
-        maxPage={1}
-        handleChangePage={() => {
+        changePage={() => {
           /* do nothing */
         }}
       />,

@@ -62,14 +62,13 @@ export const AdvancedSearchResultsPage: FC = () => {
     );
   }, [page, toggle]);
 
-  const maxPage = useMemo(() => {
-    if (results.loading) {
-      return 0;
-    }
-    return Math.ceil(
-      (results.value?.count ?? 0) / AdvancedSerarchResultList.MAX_ROW_COUNT
-    );
-  }, [results.loading, results.value?.count]);
+  const totalPageCount = useMemo(() => {
+    return results.loading
+      ? 0
+      : Math.ceil(
+          (results.value?.count ?? 0) / AdvancedSerarchResultList.MAX_ROW_COUNT
+        );
+  }, [results.loading, results.value]);
 
   const handleExport = async (exportStyle: "yaml" | "csv") => {
     try {
@@ -185,12 +184,13 @@ export const AdvancedSearchResultsPage: FC = () => {
         </Box>
       </PageHeader>
 
-      {!results.loading ? (
+      {results.loading || !results.value ? (
+        <Loading />
+      ) : (
         <SearchResults
-          results={results.value?.values ?? []}
+          results={results.value}
           page={page}
-          maxPage={maxPage}
-          handleChangePage={changePage}
+          changePage={changePage}
           hasReferral={hasReferral}
           defaultEntryFilter={entryName}
           defaultReferralFilter={referralName}
@@ -208,8 +208,6 @@ export const AdvancedSearchResultsPage: FC = () => {
           bulkOperationEntryIds={bulkOperationEntryIds}
           handleChangeBulkOperationEntryId={handleChangeBulkOperationEntryId}
         />
-      ) : (
-        <Loading />
       )}
       <AdvancedSearchModal
         openModal={openModal}

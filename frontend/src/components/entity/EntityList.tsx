@@ -1,21 +1,22 @@
-import { EntityList as EntityListInterface } from "@dmm-com/airone-apiclient-typescript-fetch";
+import { PaginatedEntityListList } from "@dmm-com/airone-apiclient-typescript-fetch";
 import AddIcon from "@mui/icons-material/Add";
-import { Box, Button, Grid, Pagination, Stack } from "@mui/material";
+import { Box, Button, Grid } from "@mui/material";
 import React, { FC, useState } from "react";
 import { Link } from "react-router-dom";
 
 import { EntityListCard } from "./EntityListCard";
 
 import { newEntityPath } from "Routes";
+import { PaginationFooter } from "components/common/PaginationFooter";
 import { SearchBox } from "components/common/SearchBox";
+import { EntityList as ConstEntityList } from "services/Constants";
 import { normalizeToMatch } from "services/StringUtil";
 
 interface Props {
-  entities: EntityListInterface[];
+  entities: PaginatedEntityListList;
   page: number;
+  changePage: (page: number) => void;
   query?: string;
-  maxPage: number;
-  handleChangePage: (page: number) => void;
   handleChangeQuery: (query: string) => void;
   setToggle?: () => void;
 }
@@ -24,8 +25,7 @@ export const EntityList: FC<Props> = ({
   entities,
   page,
   query,
-  maxPage,
-  handleChangePage,
+  changePage,
   handleChangeQuery,
   setToggle,
 }) => {
@@ -61,25 +61,18 @@ export const EntityList: FC<Props> = ({
 
       {/* This box shows each entity Cards */}
       <Grid container spacing={2} id="entity_list">
-        {entities.map((entity) => (
+        {entities.results?.map((entity) => (
           <Grid item xs={4} key={entity.id}>
             <EntityListCard entity={entity} setToggle={setToggle} />
           </Grid>
         ))}
       </Grid>
-      <Box display="flex" justifyContent="center" my="30px">
-        <Stack spacing={2}>
-          <Pagination
-            id="entity_page"
-            siblingCount={0}
-            boundaryCount={1}
-            count={maxPage}
-            page={page}
-            onChange={(e, page) => handleChangePage(page)}
-            color="primary"
-          />
-        </Stack>
-      </Box>
+      <PaginationFooter
+        count={entities.count ?? 0}
+        maxRowCount={ConstEntityList.MAX_ROW_COUNT}
+        page={page}
+        changePage={changePage}
+      />
     </Box>
   );
 };
