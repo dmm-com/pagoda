@@ -42,6 +42,7 @@ import {
   RoleApi,
   RoleCreateUpdate,
   TriggerApi,
+  TriggerParent,
   UserApi,
   UserCreate,
   UserRetrieve,
@@ -736,6 +737,10 @@ class AironeApiClientV2 {
     return await this.trigger.triggerApiV2List({
       page: page,
     });
+  }
+
+  async getTrigger(id: number): Promise<TriggerParent> {
+    return await this.trigger.triggerApiV2Retrieve({ id });
   }
 
   async getUser(userId: number): Promise<UserRetrieve> {

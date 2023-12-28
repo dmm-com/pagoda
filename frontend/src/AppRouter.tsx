@@ -18,6 +18,7 @@ import {
   advancedSearchResultPath,
   copyEntryPath,
   editEntityPath,
+  editTriggerPath,
   entitiesPath,
   entityEntriesPath,
   entityHistoryPath,
@@ -31,6 +32,7 @@ import {
   newEntryPath,
   newGroupPath,
   newRolePath,
+  newTriggerPath,
   newUserPath,
   restoreEntryPath,
   rolePath,
@@ -48,6 +50,7 @@ import { AdvancedSearchResultsPage } from "pages/AdvancedSearchResultsPage";
 import { DashboardPage } from "pages/DashboardPage";
 import { EditEntityPage } from "pages/EditEntityPage";
 import { EditGroupPage } from "pages/EditGroupPage";
+import { EditTriggerPage } from "pages/EditTriggerPage";
 import { EditUserPage } from "pages/EditUserPage";
 import { EntityHistoryPage } from "pages/EntityHistoryPage";
 import { EntityListPage } from "pages/EntityListPage";
@@ -139,6 +142,11 @@ export const AppRouter: FC<Props> = ({ customRoutes }) => {
                 component={EditEntityPage}
               />
               <Route path={entitiesPath()} component={EntityListPage} />
+              <Route path={newTriggerPath()} component={EditTriggerPage} />
+              <Route
+                path={editTriggerPath(":triggerId")}
+                component={EditTriggerPage}
+              />
               <Route path={triggersPath()} component={TriggerPage} />
               <Route path={newGroupPath()} component={EditGroupPage} />
               <Route path={groupPath(":groupId")} component={EditGroupPage} />
