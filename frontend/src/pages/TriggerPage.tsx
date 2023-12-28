@@ -16,25 +16,27 @@ import {
   TableRow,
   Typography,
 } from "@mui/material";
+import { ExtendButtonBaseTypeMap } from "@mui/material/ButtonBase/ButtonBase";
+import { IconButtonTypeMap } from "@mui/material/IconButton/IconButton";
+import { OverridableComponent } from "@mui/material/OverridableComponent";
 import { styled } from "@mui/material/styles";
+import { useSnackbar } from "notistack";
 import React, { FC, useState } from "react";
 import { Link, useHistory } from "react-router-dom";
 import { useAsync } from "react-use";
 
+import {
+  TriggerAction,
+  TriggerCondition,
+} from "@dmm-com/airone-apiclient-typescript-fetch";
 import { topPath } from "Routes";
-import { useSnackbar } from "notistack";
+import { editTriggerPath, newTriggerPath, triggersPath } from "Routes";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
-import { ExtendButtonBaseTypeMap } from "@mui/material/ButtonBase/ButtonBase";
-import { IconButtonTypeMap } from "@mui/material/IconButton/IconButton";
+import { Confirmable } from "components/common/Confirmable";
 import { Loading } from "components/common/Loading";
-import { OverridableComponent } from "@mui/material/OverridableComponent";
 import { PageHeader } from "components/common/PageHeader";
 import { usePage } from "hooks/usePage";
 import { aironeApiClientV2 } from "repository/AironeApiClientV2";
-
-import { Confirmable } from "components/common/Confirmable";
-import { editTriggerPath, triggersPath, newTriggerPath } from "Routes";
-import { TriggerAction, TriggerCondition } from "@dmm-com/airone-apiclient-typescript-fetch";
 
 const StyledList = styled(List)(() => ({
   padding: "0",
@@ -48,11 +50,11 @@ const StyledIconButton = styled(IconButton)(({ theme }) => ({
   margin: theme.spacing(1),
 })) as OverridableComponent<ExtendButtonBaseTypeMap<IconButtonTypeMap>>;
 
-const HeaderTableRow = styled(TableRow)(({ }) => ({
+const HeaderTableRow = styled(TableRow)(({}) => ({
   backgroundColor: "#455A64",
 }));
 
-const HeaderTableCell = styled(TableCell)(({ }) => ({
+const HeaderTableCell = styled(TableCell)(({}) => ({
   color: "#FFFFFF",
 }));
 
@@ -77,9 +79,7 @@ const TriggerCondition: FC<{
     <StyledBox key={cond.id}>
       <Box>{cond.attr.name}</Box>
       <Divider orientation="vertical" flexItem />
-      <Box>
-        {cond.strCond}
-      </Box>
+      <Box>{cond.strCond}</Box>
     </StyledBox>
   );
 };
@@ -93,11 +93,7 @@ const TriggerAction: FC<{
       <Divider orientation="vertical" flexItem />
       <Box>
         {action.values.map((value) => {
-          return (
-            <Box>
-              {value.strCond}
-            </Box>
-          );
+          return <Box>{value.strCond}</Box>;
         })}
       </Box>
     </StyledBox>
@@ -119,7 +115,7 @@ export const TriggerPage: FC = () => {
 
   const handleDelete = async (triggerId: number) => {
     try {
-      await aironeApiClientV2.deleteRole(triggerId);
+      await aironeApiClientV2.deleteTrigger(triggerId);
       enqueueSnackbar(`トリガーの削除が完了しました`, {
         variant: "success",
       });
@@ -149,7 +145,8 @@ export const TriggerPage: FC = () => {
           to={newTriggerPath()}
           sx={{ height: "48px", borderRadius: "24px", ml: "16px" }}
         >
-          <AddIcon /> 新規トリガー/アクションを作成
+          <AddIcon />
+          新規トリガーを作成
         </Button>
       </PageHeader>
       <Container>
@@ -202,9 +199,7 @@ export const TriggerPage: FC = () => {
                         <TableCell>
                           <Confirmable
                             componentGenerator={(handleOpen) => (
-                              <StyledIconButton
-                                onClick={handleOpen}
-                              >
+                              <StyledIconButton onClick={handleOpen}>
                                 <DeleteOutlineIcon />
                               </StyledIconButton>
                             )}
@@ -230,7 +225,7 @@ export const TriggerPage: FC = () => {
             </>
           )}
         </Box>
-      </Container >
-    </Box >
+      </Container>
+    </Box>
   );
 };
