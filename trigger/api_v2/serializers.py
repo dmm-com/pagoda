@@ -156,13 +156,3 @@ class TriggerParentUpdateSerializer(TriggerParentBaseSerializer):
         )
 
         return parent_condition
-
-
-class TriggerParentDestroySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = TriggerParent
-        fields = ["id"]
-
-    def delete(self, *args, **kwargs):
-        print("[onix/delete] args: %s" % str(args))
-        print("[onix/delete] kwargs: %s" % str(kwargs))

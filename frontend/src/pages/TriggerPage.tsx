@@ -1,6 +1,7 @@
 import {
   Box,
   Container,
+  Divider,
   Table,
   TableBody,
   TableCell,
@@ -20,11 +21,11 @@ import { PageHeader } from "components/common/PageHeader";
 import { usePage } from "hooks/usePage";
 import { aironeApiClientV2 } from "repository/AironeApiClientV2";
 
-const HeaderTableRow = styled(TableRow)(({}) => ({
+const HeaderTableRow = styled(TableRow)(({ }) => ({
   backgroundColor: "#455A64",
 }));
 
-const HeaderTableCell = styled(TableCell)(({}) => ({
+const HeaderTableCell = styled(TableCell)(({ }) => ({
   color: "#FFFFFF",
 }));
 
@@ -36,6 +37,27 @@ const StyledTableRow = styled(TableRow)(() => ({
     padding: "8px 16px",
   },
 }));
+
+const StyledBox = styled(Box)(() => ({
+  display: "flex",
+  gap: "20px",
+}));
+
+const TriggerCondition: FC<{
+  cond: any;
+}> = ({ cond }) => {
+  return cond ? (
+    <StyledBox key={cond.id}>
+      <Box>{cond.attr.name}</Box>
+      <Divider orientation="vertical" flexItem />
+      <Box>
+        {cond.strCond}
+      </Box>
+    </StyledBox>
+  ) : (
+    <Box />
+  );
+};
 
 export const TriggerPage: FC = () => {
   const [page, changePage] = usePage();
@@ -81,10 +103,7 @@ export const TriggerPage: FC = () => {
                         <TableCell>
                           {trigger.conditions?.map((condition) => {
                             return (
-                              <Box key={condition.id}>
-                                <Typography>{condition.attr.name}</Typography>
-                                <Typography>{condition.strCond}</Typography>
-                              </Box>
+                              <TriggerCondition cond={condition} />
                             );
                           })}
                         </TableCell>
