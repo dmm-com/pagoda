@@ -89,6 +89,5 @@ describe("EntityHistoryList", () => {
     expect(within(historyRows[4]).queryByText("属性削除")).toBeInTheDocument();
     expect(within(historyRows[4]).queryAllByText("attr1")).toHaveLength(2);
     expect(within(historyRows[5]).queryByText("削除")).toBeInTheDocument();
-
   });
 });

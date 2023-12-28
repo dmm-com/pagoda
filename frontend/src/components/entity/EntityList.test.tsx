@@ -71,6 +71,5 @@ describe("EntityList", () => {
       "entity"
     );
     expect(handleChangeQuery).toBeCalled();
-
   });
 });
