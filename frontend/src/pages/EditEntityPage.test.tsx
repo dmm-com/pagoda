@@ -28,6 +28,7 @@ const server = setupServer(
         note: "",
         isToplevel: false,
         attrs: [],
+        webhooks: [],
       },
       {
         id: 2,
@@ -35,6 +36,7 @@ const server = setupServer(
         note: "",
         isToplevel: false,
         attrs: [],
+        webhooks: [],
       },
       {
         id: 3,
@@ -42,6 +44,7 @@ const server = setupServer(
         note: "",
         isToplevel: false,
         attrs: [],
+        webhooks: [],
       },
     ]);
   }),
@@ -53,6 +56,7 @@ const server = setupServer(
       note: "",
       isToplevel: false,
       attrs: [],
+      webhooks: [],
     });
   })
 );
