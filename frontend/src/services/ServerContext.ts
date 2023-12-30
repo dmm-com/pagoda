@@ -16,7 +16,7 @@ const FlagKey = {
 type FlagKey = typeof FlagKey[keyof typeof FlagKey];
 
 // A JavaScript representation for Django context
-export class DjangoContext {
+export class ServerContext {
   loginNext: string;
   version: string;
   title: string;
@@ -32,7 +32,7 @@ export class DjangoContext {
   }[];
   flags: Record<FlagKey, boolean>;
 
-  private static _instance: DjangoContext | undefined;
+  private static _instance: ServerContext | undefined;
 
   constructor(context: any) {
     this.loginNext = context.next;
@@ -50,7 +50,7 @@ export class DjangoContext {
 
   static getInstance() {
     if ((window as any).django_context) {
-      this._instance = new DjangoContext((window as any).django_context);
+      this._instance = new ServerContext((window as any).django_context);
     }
     return this._instance;
   }

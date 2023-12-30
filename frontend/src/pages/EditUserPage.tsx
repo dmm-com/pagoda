@@ -23,7 +23,7 @@ import {
   extractAPIException,
   isResponseError,
 } from "services/AironeAPIErrorUtil";
-import { DjangoContext } from "services/DjangoContext";
+import { ServerContext } from "services/ServerContext";
 
 export const EditUserPage: FC = () => {
   const { userId } = useTypedParams<{ userId?: number }>();
@@ -73,13 +73,13 @@ export const EditUserPage: FC = () => {
   }, [user.value]);
 
   const [isSuperuser, isMyself] = useMemo(() => {
-    const djangoContext = DjangoContext.getInstance();
+    const serverContext = ServerContext.getInstance();
     return [
-      djangoContext?.user?.isSuperuser != null &&
-        djangoContext.user.isSuperuser,
+      serverContext?.user?.isSuperuser != null &&
+        serverContext.user.isSuperuser,
       user.value?.id != null &&
-        djangoContext?.user?.id != null &&
-        user.value.id === djangoContext.user.id,
+        serverContext?.user?.id != null &&
+        user.value.id === serverContext.user.id,
     ];
   }, [user.loading]);
 

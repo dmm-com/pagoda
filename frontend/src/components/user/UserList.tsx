@@ -23,7 +23,7 @@ import { SearchBox } from "components/common/SearchBox";
 import { usePage } from "hooks/usePage";
 import { aironeApiClient } from "repository/AironeApiClient";
 import { UserList as ConstUserList } from "services/Constants";
-import { DjangoContext } from "services/DjangoContext";
+import { ServerContext } from "services/ServerContext";
 import { normalizeToMatch } from "services/StringUtil";
 
 export const UserList: FC = ({}) => {
@@ -46,9 +46,9 @@ export const UserList: FC = ({}) => {
   }
 
   const isSuperuser = useMemo(() => {
-    const djangoContext = DjangoContext.getInstance();
+    const serverContext = ServerContext.getInstance();
     return (
-      djangoContext?.user?.isSuperuser != null && djangoContext.user.isSuperuser
+      serverContext?.user?.isSuperuser != null && serverContext.user.isSuperuser
     );
   }, []);
 

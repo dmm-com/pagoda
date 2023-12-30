@@ -18,8 +18,8 @@ import {
   extractAPIException,
   isResponseError,
 } from "services/AironeAPIErrorUtil";
-import { DjangoContext } from "services/DjangoContext";
 import { ForbiddenError } from "services/Exceptions";
+import { ServerContext } from "services/ServerContext";
 
 export const EditGroupPage: FC = () => {
   const { groupId } = useTypedParams<{ groupId?: number }>();
@@ -88,7 +88,7 @@ export const EditGroupPage: FC = () => {
     history.goBack();
   };
 
-  if (DjangoContext.getInstance()?.user?.isSuperuser !== true) {
+  if (ServerContext.getInstance()?.user?.isSuperuser !== true) {
     throw new ForbiddenError("only admin can edit a group");
   }
 

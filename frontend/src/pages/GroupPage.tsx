@@ -17,7 +17,7 @@ import { SearchBox } from "../components/common/SearchBox";
 import { GroupControlMenu } from "../components/group/GroupControlMenu";
 import { GroupImportModal } from "../components/group/GroupImportModal";
 import { GroupTreeRoot } from "../components/group/GroupTreeRoot";
-import { DjangoContext } from "../services/DjangoContext";
+import { ServerContext } from "../services/ServerContext";
 
 import { newGroupPath, topPath } from "Routes";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
@@ -79,7 +79,7 @@ export const GroupPage: FC = () => {
     await aironeApiClient.exportGroups("group.yaml");
   }, []);
 
-  const isSuperuser = DjangoContext.getInstance()?.user?.isSuperuser ?? false;
+  const isSuperuser = ServerContext.getInstance()?.user?.isSuperuser ?? false;
 
   return (
     <Box display="flex" flexDirection="column" flexGrow="1">
