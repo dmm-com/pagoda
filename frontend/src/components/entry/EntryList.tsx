@@ -11,7 +11,7 @@ import { PaginationFooter } from "components/common/PaginationFooter";
 import { SearchBox } from "components/common/SearchBox";
 import { useAsyncWithThrow } from "hooks/useAsyncWithThrow";
 import { usePage } from "hooks/usePage";
-import { aironeApiClientV2 } from "repository/AironeApiClientV2";
+import { aironeApiClient } from "repository/AironeApiClient";
 import { EntryList as ConstEntryList } from "services/Constants";
 import { normalizeToMatch } from "services/StringUtil";
 
@@ -33,7 +33,7 @@ export const EntryList: FC<Props> = ({ entityId, canCreateEntry = true }) => {
   const [toggle, setToggle] = useState(false);
 
   const entries = useAsyncWithThrow(async () => {
-    return await aironeApiClientV2.getEntries(entityId, true, page, query);
+    return await aironeApiClient.getEntries(entityId, true, page, query);
   }, [page, query, toggle]);
 
   const handleChangeQuery = (newQuery?: string) => {

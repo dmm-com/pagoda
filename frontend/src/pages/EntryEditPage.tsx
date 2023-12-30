@@ -19,7 +19,7 @@ import {
 import { Schema, schema } from "components/entry/entryForm/EntryFormSchema";
 import { useFormNotification } from "hooks/useFormNotification";
 import { useTypedParams } from "hooks/useTypedParams";
-import { aironeApiClientV2 } from "repository/AironeApiClientV2";
+import { aironeApiClient } from "repository/AironeApiClient";
 import {
   extractAPIException,
   isResponseError,
@@ -61,12 +61,12 @@ export const EntryEditPage: FC<Props> = ({
   });
 
   const entity = useAsync(async () => {
-    return await aironeApiClientV2.getEntity(entityId);
+    return await aironeApiClient.getEntity(entityId);
   });
 
   const entry = useAsync(async () => {
     return entryId != undefined
-      ? await aironeApiClientV2.getEntry(entryId)
+      ? await aironeApiClient.getEntry(entryId)
       : undefined;
   });
 
@@ -114,9 +114,9 @@ export const EntryEditPage: FC<Props> = ({
 
     try {
       if (willCreate) {
-        await aironeApiClientV2.createEntry(entityId, entry.name, updatedAttr);
+        await aironeApiClient.createEntry(entityId, entry.name, updatedAttr);
       } else {
-        await aironeApiClientV2.updateEntry(entryId, entry.name, updatedAttr);
+        await aironeApiClient.updateEntry(entryId, entry.name, updatedAttr);
       }
       enqueueSubmitResult(true);
     } catch (e) {

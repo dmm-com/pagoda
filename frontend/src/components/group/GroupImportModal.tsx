@@ -3,7 +3,7 @@ import { styled } from "@mui/material/styles";
 import React, { FC, useCallback } from "react";
 
 import { ImportForm } from "components/common/ImportForm";
-import { aironeApiClientV2 } from "repository/AironeApiClientV2";
+import { aironeApiClient } from "repository/AironeApiClient";
 
 const StyledModal = styled(Modal)(({}) => ({
   display: "flex",
@@ -31,7 +31,7 @@ export const GroupImportModal: FC<Props> = ({
   closeImportModal,
 }) => {
   const handleImport = useCallback(async (data: string | ArrayBuffer) => {
-    await aironeApiClientV2.importGroups(data);
+    await aironeApiClient.importGroups(data);
   }, []);
 
   return (

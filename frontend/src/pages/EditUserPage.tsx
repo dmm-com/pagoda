@@ -18,7 +18,7 @@ import { schema, Schema } from "components/user/userForm/UserFormSchema";
 import { useAsyncWithThrow } from "hooks/useAsyncWithThrow";
 import { useFormNotification } from "hooks/useFormNotification";
 import { useTypedParams } from "hooks/useTypedParams";
-import { aironeApiClientV2 } from "repository/AironeApiClientV2";
+import { aironeApiClient } from "repository/AironeApiClient";
 import {
   extractAPIException,
   isResponseError,
@@ -47,7 +47,7 @@ export const EditUserPage: FC = () => {
 
   const user = useAsyncWithThrow(async () => {
     if (userId) {
-      return await aironeApiClientV2.getUser(userId);
+      return await aironeApiClient.getUser(userId);
     }
   }, [userId, shouldRefresh]);
 
@@ -86,14 +86,14 @@ export const EditUserPage: FC = () => {
   const handleSubmitOnValid = async (user: Schema) => {
     try {
       if (isCreateMode) {
-        await aironeApiClientV2.createUser(
+        await aironeApiClient.createUser(
           user.username,
           user.password ?? "",
           user.email,
           user.isSuperuser
         );
       } else {
-        await aironeApiClientV2.updateUser(
+        await aironeApiClient.updateUser(
           userId ?? 0,
           user.username,
           user.email,
@@ -123,7 +123,7 @@ export const EditUserPage: FC = () => {
 
   const handleRefreshToken = async () => {
     try {
-      await aironeApiClientV2.updateUserToken();
+      await aironeApiClient.updateUserToken();
       toggleShouldRefresh();
     } catch (e) {
       if (e instanceof Response) {

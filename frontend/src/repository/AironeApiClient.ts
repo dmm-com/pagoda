@@ -69,7 +69,7 @@ function getCsrfToken(): string {
 /**
  * A rich API client with using auto-generated client with openapi-generator.
  */
-class AironeApiClientV2 {
+class AironeApiClient {
   private acl: AclApi;
   private entity: EntityApi;
   private entry: EntryApi;
@@ -919,6 +919,26 @@ class AironeApiClientV2 {
       }
     );
   }
+
+  async postLogin(formData: FormData): Promise<Response> {
+    return fetch(`/auth/login/?next=${formData.get("next")}`, {
+      method: "POST",
+      headers: {
+        "X-CSRFToken": getCsrfToken(),
+      },
+      body: formData,
+      redirect: "manual",
+    });
+  }
+
+  async postLogout(): Promise<Response> {
+    return fetch("/auth/logout/", {
+      method: "POST",
+      headers: {
+        "X-CSRFToken": getCsrfToken(),
+      },
+    });
+  }
 }
 
-export const aironeApiClientV2 = new AironeApiClientV2();
+export const aironeApiClient = new AironeApiClient();

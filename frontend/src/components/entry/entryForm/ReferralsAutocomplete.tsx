@@ -8,7 +8,7 @@ import {
 import React, { FC, useState } from "react";
 import { useAsync } from "react-use";
 
-import { aironeApiClientV2 } from "../../../repository/AironeApiClientV2";
+import { aironeApiClient } from "../../../repository/AironeApiClient";
 
 interface Props {
   attrId: number;
@@ -32,7 +32,7 @@ export const ReferralsAutocomplete: FC<Props> = ({
   );
 
   const referrals = useAsync(async () => {
-    return await aironeApiClientV2.getEntryAttrReferrals(attrId, inputValue);
+    return await aironeApiClient.getEntryAttrReferrals(attrId, inputValue);
   }, [attrId, inputValue]);
 
   const _handleChange = (

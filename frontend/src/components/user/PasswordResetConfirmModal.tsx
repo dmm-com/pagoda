@@ -3,7 +3,7 @@ import { styled } from "@mui/material/styles";
 import { useSnackbar } from "notistack";
 import React, { FC, useState } from "react";
 
-import { aironeApiClientV2 } from "../../repository/AironeApiClientV2";
+import { aironeApiClient } from "../../repository/AironeApiClient";
 
 const StyledModal = styled(Modal)(({}) => ({
   display: "flex",
@@ -41,7 +41,7 @@ export const PasswordResetConfirmModal: FC<Props> = ({
 
   const handleSubmit = async () => {
     try {
-      await aironeApiClientV2.confirmResetPassword(
+      await aironeApiClient.confirmResetPassword(
         uidb64,
         token,
         password,

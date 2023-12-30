@@ -14,7 +14,7 @@ import { Link } from "react-router-dom";
 import { useAsync } from "react-use";
 
 import { usePage } from "../../hooks/usePage";
-import { aironeApiClientV2 } from "../../repository/AironeApiClientV2";
+import { aironeApiClient } from "../../repository/AironeApiClient";
 import { EntryReferralList } from "../../services/Constants";
 import { normalizeToMatch } from "../../services/StringUtil";
 
@@ -45,7 +45,7 @@ export const EntryReferral: FC<Props> = ({ entryId }) => {
   const [keywordQuery, setKeywordQuery] = useState("");
 
   const referredEntries = useAsync(async () => {
-    return await aironeApiClientV2.getEntryReferral(
+    return await aironeApiClient.getEntryReferral(
       entryId,
       page,
       keywordQuery !== "" ? keywordQuery : undefined

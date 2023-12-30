@@ -19,7 +19,7 @@ import React, { FC, useState } from "react";
 import { Link, useHistory } from "react-router-dom";
 import { useAsync } from "react-use";
 
-import { aironeApiClientV2 } from "../../repository/AironeApiClientV2";
+import { aironeApiClient } from "../../repository/AironeApiClient";
 import { Confirmable } from "../common/Confirmable";
 import { Loading } from "../common/Loading";
 
@@ -35,7 +35,7 @@ export const RoleList: FC = ({}) => {
   const [toggle, setToggle] = useState(false);
 
   const roles = useAsync(async () => {
-    return await aironeApiClientV2.getRoles();
+    return await aironeApiClient.getRoles();
   }, [toggle]);
   if (!roles.loading && roles.error) {
     throw new Error("Failed to get users from AirOne APIv2 endpoint");
@@ -43,7 +43,7 @@ export const RoleList: FC = ({}) => {
 
   const handleDelete = async (roleId: number) => {
     try {
-      await aironeApiClientV2.deleteRole(roleId);
+      await aironeApiClient.deleteRole(roleId);
       enqueueSnackbar(`ロールの削除が完了しました`, {
         variant: "success",
       });

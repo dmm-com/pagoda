@@ -15,7 +15,7 @@ import { EntryAttributes } from "components/entry/EntryAttributes";
 import { EntryBreadcrumbs } from "components/entry/EntryBreadcrumbs";
 import { EntryControlMenu } from "components/entry/EntryControlMenu";
 import { EntryReferral } from "components/entry/EntryReferral";
-import { aironeApiClientV2 } from "repository/AironeApiClientV2";
+import { aironeApiClient } from "repository/AironeApiClient";
 
 const FlexBox = styled(Box)(({}) => ({
   display: "flex",
@@ -79,7 +79,7 @@ export const EntryDetailsPage: FC<Props> = ({
   );
 
   const entry = useAsyncWithThrow(async () => {
-    return await aironeApiClientV2.getEntry(entryId);
+    return await aironeApiClient.getEntry(entryId);
   }, [entryId]);
 
   useEffect(() => {

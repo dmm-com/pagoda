@@ -103,7 +103,7 @@ describe("RoleAttributeValueField", () => {
     /* eslint-disable */
     jest
       .spyOn(
-        require("../../../repository/AironeApiClientV2").aironeApiClientV2,
+        require("../../../repository/AironeApiClient").aironeApiClient,
         "getRoles"
       )
       .mockResolvedValue(Promise.resolve(roles));
@@ -152,7 +152,7 @@ describe("RoleAttributeValueField", () => {
     /* eslint-disable */
     jest
       .spyOn(
-        require("../../../repository/AironeApiClientV2").aironeApiClientV2,
+        require("../../../repository/AironeApiClient").aironeApiClient,
         "getRoles"
       )
       .mockResolvedValue(Promise.resolve(roles));

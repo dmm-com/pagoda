@@ -12,7 +12,7 @@ import React, { FC } from "react";
 import { Link } from "react-router-dom";
 
 import { groupPath } from "../../Routes";
-import { GroupTree } from "../../repository/AironeApiClientV2";
+import { GroupTree } from "../../repository/AironeApiClient";
 import { DjangoContext } from "../../services/DjangoContext";
 
 import { GroupTreeItem } from "./GroupTreeItem";

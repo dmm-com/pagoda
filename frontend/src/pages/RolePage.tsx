@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 
 import { RoleImportModal } from "../components/role/RoleImportModal";
 import { RoleList } from "../components/role/RoleList";
-import { aironeApiClientV2 } from "../repository/AironeApiClientV2";
+import { aironeApiClient } from "../repository/AironeApiClient";
 
 import { newRolePath, topPath } from "Routes";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
@@ -15,7 +15,7 @@ export const RolePage: FC = () => {
   const [openImportModal, setOpenImportModal] = useState(false);
 
   const handleExport = useCallback(async () => {
-    await aironeApiClientV2.exportRoles("role.yaml");
+    await aironeApiClient.exportRoles("role.yaml");
   }, []);
 
   return (

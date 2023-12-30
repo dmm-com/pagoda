@@ -7,13 +7,13 @@ import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { PageHeader } from "components/common/PageHeader";
 import { UserImportModal } from "components/user/UserImportModal";
 import { UserList } from "components/user/UserList";
-import { aironeApiClientV2 } from "repository/AironeApiClientV2";
+import { aironeApiClient } from "repository/AironeApiClient";
 
 export const UserPage: FC = () => {
   const [openImportModal, setOpenImportModal] = useState(false);
 
   const handleExport = useCallback(async () => {
-    await aironeApiClientV2.exportUsers("user.yaml");
+    await aironeApiClient.exportUsers("user.yaml");
   }, []);
 
   return (

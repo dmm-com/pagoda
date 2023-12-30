@@ -18,8 +18,8 @@ import { useHistory } from "react-router-dom";
 
 import { PasswordResetConfirmModal } from "../components/user/PasswordResetConfirmModal";
 import { PasswordResetModal } from "../components/user/PasswordResetModal";
+import { aironeApiClient } from "../repository/AironeApiClient";
 
-import { postLogin } from "repository/AironeAPIClient";
 import { DjangoContext } from "services/DjangoContext";
 
 export const LoginPage: FC = () => {
@@ -62,17 +62,17 @@ export const LoginPage: FC = () => {
     setShowPassword(!showPassword);
   };
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setIsAlert(false);
+
     const data = new FormData(event.currentTarget);
-    postLogin(data).then((resp) => {
-      if (resp.type === "opaqueredirect") {
-        window.location.href = djangoContext?.loginNext ?? "";
-      } else {
-        setIsAlert(true);
-      }
-    });
+    const resp = await aironeApiClient.postLogin(data);
+    if (resp.type === "opaqueredirect") {
+      window.location.href = djangoContext?.loginNext ?? "";
+    } else {
+      setIsAlert(true);
+    }
   };
 
   const handleOpenPasswordResetModal = useCallback(() => {

@@ -19,7 +19,7 @@ import { RateLimitedClickable } from "components/common/RateLimitedClickable";
 import { AdvancedSearchModal } from "components/entry/AdvancedSearchModal";
 import { SearchResults } from "components/entry/SearchResults";
 import { usePage } from "hooks/usePage";
-import { aironeApiClientV2 } from "repository/AironeApiClientV2";
+import { aironeApiClient } from "repository/AironeApiClient";
 import { AdvancedSerarchResultList } from "services/Constants";
 import { extractAdvancedSearchParams } from "services/entry/AdvancedSearch";
 
@@ -47,11 +47,11 @@ export const AdvancedSearchResultsPage: FC = () => {
   }, [location.search]);
 
   const entityAttrs = useAsync(async () => {
-    return await aironeApiClientV2.getEntityAttrs(entityIds, searchAllEntities);
+    return await aironeApiClient.getEntityAttrs(entityIds, searchAllEntities);
   });
 
   const results = useAsync(async () => {
-    return await aironeApiClientV2.advancedSearch(
+    return await aironeApiClient.advancedSearch(
       entityIds,
       entryName,
       attrInfo,
@@ -72,7 +72,7 @@ export const AdvancedSearchResultsPage: FC = () => {
 
   const handleExport = async (exportStyle: "yaml" | "csv") => {
     try {
-      await aironeApiClientV2.exportAdvancedSearchResults(
+      await aironeApiClient.exportAdvancedSearchResults(
         entityIds,
         attrInfo,
         entryName,
@@ -100,7 +100,7 @@ export const AdvancedSearchResultsPage: FC = () => {
 
   const handleBulkDelete = async () => {
     try {
-      await aironeApiClientV2.destroyEntries(bulkOperationEntryIds);
+      await aironeApiClient.destroyEntries(bulkOperationEntryIds);
       enqueueSnackbar("複数エントリの削除に成功しました", {
         variant: "success",
       });

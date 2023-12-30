@@ -21,7 +21,7 @@ import { Loading } from "components/common/Loading";
 import { PaginationFooter } from "components/common/PaginationFooter";
 import { SearchBox } from "components/common/SearchBox";
 import { usePage } from "hooks/usePage";
-import { aironeApiClientV2 } from "repository/AironeApiClientV2";
+import { aironeApiClient } from "repository/AironeApiClient";
 import { UserList as ConstUserList } from "services/Constants";
 import { DjangoContext } from "services/DjangoContext";
 import { normalizeToMatch } from "services/StringUtil";
@@ -39,7 +39,7 @@ export const UserList: FC = ({}) => {
   const [toggle, setToggle] = useState(false);
 
   const users = useAsync(async () => {
-    return await aironeApiClientV2.getUsers(page, query);
+    return await aironeApiClient.getUsers(page, query);
   }, [page, query, toggle]);
   if (!users.loading && users.error) {
     throw new Error("Failed to get users from AirOne APIv2 endpoint");

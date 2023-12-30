@@ -10,7 +10,7 @@ import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { Loading } from "components/common/Loading";
 import { SearchBox } from "components/common/SearchBox";
 import { useSimpleSearch } from "hooks/useSimpleSearch";
-import { aironeApiClientV2 } from "repository/AironeApiClientV2";
+import { aironeApiClient } from "repository/AironeApiClient";
 
 const StyledContainer = styled(Container)({
   marginTop: "16px",
@@ -44,12 +44,12 @@ export const DashboardPage: FC = () => {
 
   const entries = useAsync(async () => {
     if (query != null) {
-      return await aironeApiClientV2.getSearchEntries(query);
+      return await aironeApiClient.getSearchEntries(query);
     }
   }, [location, query]);
 
   const entities = useAsync(async () => {
-    return await aironeApiClientV2.getEntities(undefined, undefined, true);
+    return await aironeApiClient.getEntities(undefined, undefined, true);
   });
 
   // If there is only one search result, move to entry details page.

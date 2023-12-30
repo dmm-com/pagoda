@@ -6,7 +6,7 @@ import { render, screen } from "@testing-library/react";
 import React from "react";
 
 import { TestWrapper } from "../../TestWrapper";
-import { GroupTree } from "../../repository/AironeApiClientV2";
+import { GroupTree } from "../../repository/AironeApiClient";
 
 import { GroupTreeRoot } from "./GroupTreeRoot";
 

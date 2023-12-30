@@ -24,7 +24,7 @@ import {
 } from "react-hook-form";
 import { useAsync } from "react-use";
 
-import { aironeApiClientV2 } from "../../repository/AironeApiClientV2";
+import { aironeApiClient } from "../../repository/AironeApiClient";
 
 import { Schema } from "./roleForm/RoleFormSchema";
 
@@ -41,25 +41,25 @@ export const RoleForm: FC<Props> = ({ control, setValue }) => {
 
   // TODO implement pagination and incremental search
   const adminGroups = useAsync(async () => {
-    const _groups = await aironeApiClientV2.getGroups(1, adminGroupUserKeyword);
+    const _groups = await aironeApiClient.getGroups(1, adminGroupUserKeyword);
     return _groups.results?.map(
       (group): RoleGroup => ({ id: group.id, name: group.name })
     );
   }, [adminGroupUserKeyword]);
   const groups = useAsync(async () => {
-    const _groups = await aironeApiClientV2.getGroups(1, groupUserKeyword);
+    const _groups = await aironeApiClient.getGroups(1, groupUserKeyword);
     return _groups.results?.map(
       (group): RoleGroup => ({ id: group.id, name: group.name })
     );
   }, [groupUserKeyword]);
   const adminUsers = useAsync(async () => {
-    const _users = await aironeApiClientV2.getUsers(1, adminUserKeyword);
+    const _users = await aironeApiClient.getUsers(1, adminUserKeyword);
     return _users.results?.map(
       (user): RoleUser => ({ id: user.id, username: user.username })
     );
   }, [adminUserKeyword]);
   const users = useAsync(async () => {
-    const _users = await aironeApiClientV2.getUsers(1, userKeyword);
+    const _users = await aironeApiClient.getUsers(1, userKeyword);
     return _users.results?.map(
       (user): RoleUser => ({ id: user.id, username: user.username })
     );

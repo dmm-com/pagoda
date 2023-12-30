@@ -4,7 +4,7 @@ import { useSnackbar } from "notistack";
 import React, { FC, useMemo, useState } from "react";
 import { useHistory } from "react-router-dom";
 
-import { aironeApiClientV2 } from "../../repository/AironeApiClientV2";
+import { aironeApiClient } from "../../repository/AironeApiClient";
 import { DjangoContext } from "../../services/DjangoContext";
 
 import { loginPath, topPath, usersPath } from "Routes";
@@ -77,13 +77,13 @@ export const UserPasswordFormModal: FC<Props> = ({
 
     try {
       if (asSuperuser) {
-        await aironeApiClientV2.updateUserPasswordAsSuperuser(
+        await aironeApiClient.updateUserPasswordAsSuperuser(
           userId,
           newPassword,
           checkPassword
         );
       } else {
-        await aironeApiClientV2.updateUserPassword(
+        await aironeApiClient.updateUserPassword(
           userId,
           oldPassword,
           newPassword,

@@ -17,7 +17,7 @@ import { schema, Schema } from "components/entity/entityForm/EntityFormSchema";
 import { useAsyncWithThrow } from "hooks/useAsyncWithThrow";
 import { useFormNotification } from "hooks/useFormNotification";
 import { useTypedParams } from "hooks/useTypedParams";
-import { aironeApiClientV2 } from "repository/AironeApiClientV2";
+import { aironeApiClient } from "repository/AironeApiClient";
 import {
   extractAPIException,
   isResponseError,
@@ -49,14 +49,14 @@ export const EditEntityPage: FC = () => {
 
   const entity = useAsyncWithThrow(async () => {
     if (entityId !== undefined) {
-      return await aironeApiClientV2.getEntity(entityId);
+      return await aironeApiClient.getEntity(entityId);
     } else {
       return undefined;
     }
   }, []);
 
   const referralEntities = useAsync(async () => {
-    const entities = await aironeApiClientV2.getEntities();
+    const entities = await aironeApiClient.getEntities();
     return entities.results;
   });
 
@@ -125,7 +125,7 @@ export const EditEntityPage: FC = () => {
 
     try {
       if (willCreate) {
-        await aironeApiClientV2.createEntity(
+        await aironeApiClient.createEntity(
           entityForm.name,
           entityForm.note,
           entityForm.isToplevel,
@@ -133,7 +133,7 @@ export const EditEntityPage: FC = () => {
           webhooks
         );
       } else {
-        await aironeApiClientV2.updateEntity(
+        await aironeApiClient.updateEntity(
           entityId,
           entityForm.name,
           entityForm.note,

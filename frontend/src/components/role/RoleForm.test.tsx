@@ -50,16 +50,10 @@ describe("RoleForm", () => {
 
     /* eslint-disable */
     jest
-      .spyOn(
-        require("repository/AironeApiClientV2").aironeApiClientV2,
-        "getUsers"
-      )
+      .spyOn(require("repository/AironeApiClient").aironeApiClient, "getUsers")
       .mockResolvedValue(Promise.resolve([]));
     jest
-      .spyOn(
-        require("repository/AironeApiClientV2").aironeApiClientV2,
-        "getGroups"
-      )
+      .spyOn(require("repository/AironeApiClient").aironeApiClient, "getGroups")
       .mockResolvedValue(Promise.resolve([]));
     /* eslint-enable */
 

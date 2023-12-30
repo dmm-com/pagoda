@@ -19,7 +19,7 @@ import { AttributeValue } from "./AttributeValue";
 import { showEntryHistoryPath, topPath } from "Routes";
 import { Confirmable } from "components/common/Confirmable";
 import { PaginationFooter } from "components/common/PaginationFooter";
-import { aironeApiClientV2 } from "repository/AironeApiClientV2";
+import { aironeApiClient } from "repository/AironeApiClient";
 import { EntryHistoryList as ConstEntryHistoryList } from "services/Constants";
 import { formatDateTime } from "services/DateUtil";
 
@@ -60,7 +60,7 @@ export const EntryHistoryList: FC<Props> = ({
 
   const handleRestore = useCallback(async (prevAttrValueId: number) => {
     try {
-      await aironeApiClientV2.restoreEntryHistory(prevAttrValueId);
+      await aironeApiClient.restoreEntryHistory(prevAttrValueId);
       enqueueSnackbar(`変更の復旧が完了しました`, {
         variant: "success",
       });

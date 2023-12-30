@@ -38,8 +38,7 @@ import {
 } from "Routes";
 import { SearchBox } from "components/common/SearchBox";
 import { useSimpleSearch } from "hooks/useSimpleSearch";
-import { postLogout } from "repository/AironeAPIClient";
-import { aironeApiClientV2 } from "repository/AironeApiClientV2";
+import { aironeApiClient } from "repository/AironeApiClient";
 import {
   JobOperations,
   JobRefreshIntervalMilliSec,
@@ -129,7 +128,7 @@ export const Header: FC = () => {
 
   useInterval(async () => {
     try {
-      setRecentJobs(await aironeApiClientV2.getRecentJobs());
+      setRecentJobs(await aironeApiClient.getRecentJobs());
     } catch (e) {
       console.warn("failed to get recent jobs. will auto retried ...");
     }
@@ -141,17 +140,16 @@ export const Header: FC = () => {
       : recentJobs.length;
   }, [latestCheckDate, recentJobs]);
 
-  const handleLogout = () => {
-    postLogout().then(() => {
-      window.location.href = `${loginPath()}?next=${window.location.pathname}`;
-    });
+  const handleLogout = async () => {
+    await aironeApiClient.postLogout();
+    window.location.href = `${loginPath()}?next=${window.location.pathname}`;
   };
 
   const handleOpenMenu = async (e: MouseEvent<HTMLButtonElement>) => {
     setJobAnchorEl(e.currentTarget);
 
     try {
-      setRecentJobs(await aironeApiClientV2.getRecentJobs());
+      setRecentJobs(await aironeApiClient.getRecentJobs());
     } catch (e) {
       console.warn("failed to get recent jobs. will auto retried ...");
     }

@@ -20,7 +20,7 @@ import { SubmitButton } from "components/common/SubmitButton";
 import { EntityBreadcrumbs } from "components/entity/EntityBreadcrumbs";
 import { EntryBreadcrumbs } from "components/entry/EntryBreadcrumbs";
 import { useTypedParams } from "hooks/useTypedParams";
-import { aironeApiClientV2 } from "repository/AironeApiClientV2";
+import { aironeApiClient } from "repository/AironeApiClient";
 
 export const ACLPage: FC = () => {
   const history = useHistory();
@@ -42,7 +42,7 @@ export const ACLPage: FC = () => {
   });
 
   const acl = useAsync(async () => {
-    return await aironeApiClientV2.getAcl(objectId);
+    return await aironeApiClient.getAcl(objectId);
   });
 
   const historyReplace = () => {
@@ -81,7 +81,7 @@ export const ACLPage: FC = () => {
           value: role.currentPermission,
         })) ?? [];
 
-      await aironeApiClientV2.updateAcl(
+      await aironeApiClient.updateAcl(
         objectId,
         aclForm.isPublic,
         aclSettings,
@@ -109,14 +109,14 @@ export const ACLPage: FC = () => {
     });
     switch (acl.value.objtype) {
       case ACLObjtypeEnum.Entity:
-        aironeApiClientV2.getEntity(objectId).then((resp) => {
+        aironeApiClient.getEntity(objectId).then((resp) => {
           setEntity(resp);
           setBreadcrumbs(<EntityBreadcrumbs entity={resp} title="ACL設定" />);
         });
         break;
       case ACLObjtypeEnum.EntityAttr:
         if (acl.value.parent?.id) {
-          aironeApiClientV2.getEntity(acl.value.parent?.id).then((resp) => {
+          aironeApiClient.getEntity(acl.value.parent?.id).then((resp) => {
             setEntity(resp);
             setBreadcrumbs(
               <EntityBreadcrumbs
@@ -130,7 +130,7 @@ export const ACLPage: FC = () => {
 
         break;
       case ACLObjtypeEnum.Entry:
-        aironeApiClientV2.getEntry(objectId).then((resp) => {
+        aironeApiClient.getEntry(objectId).then((resp) => {
           setEntry(resp);
           setBreadcrumbs(<EntryBreadcrumbs entry={resp} title="ACL設定" />);
         });

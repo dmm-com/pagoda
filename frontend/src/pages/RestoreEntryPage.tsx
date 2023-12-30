@@ -9,7 +9,7 @@ import { EntityControlMenu } from "components/entity/EntityControlMenu";
 import { EntryImportModal } from "components/entry/EntryImportModal";
 import { RestorableEntryList } from "components/entry/RestorableEntryList";
 import { useTypedParams } from "hooks/useTypedParams";
-import { aironeApiClientV2 } from "repository/AironeApiClientV2";
+import { aironeApiClient } from "repository/AironeApiClient";
 
 export const RestoreEntryPage: FC = () => {
   const { entityId } = useTypedParams<{ entityId: number }>();
@@ -19,7 +19,7 @@ export const RestoreEntryPage: FC = () => {
   const [openImportModal, setOpenImportModal] = React.useState(false);
 
   const entity = useAsync(async () => {
-    return await aironeApiClientV2.getEntity(entityId);
+    return await aironeApiClient.getEntity(entityId);
   });
 
   return (

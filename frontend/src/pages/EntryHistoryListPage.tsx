@@ -10,7 +10,7 @@ import { EntryControlMenu } from "components/entry/EntryControlMenu";
 import { EntryHistoryList } from "components/entry/EntryHistoryList";
 import { usePage } from "hooks/usePage";
 import { useTypedParams } from "hooks/useTypedParams";
-import { aironeApiClientV2 } from "repository/AironeApiClientV2";
+import { aironeApiClient } from "repository/AironeApiClient";
 
 export const EntryHistoryListPage: FC = () => {
   const { entryId } = useTypedParams<{ entityId: number; entryId: number }>();
@@ -23,12 +23,12 @@ export const EntryHistoryListPage: FC = () => {
 
   const entry = useAsync(async () => {
     return entryId != undefined
-      ? await aironeApiClientV2.getEntry(entryId)
+      ? await aironeApiClient.getEntry(entryId)
       : undefined;
   }, [entryId]);
 
   const histories = useAsync(async () => {
-    return await aironeApiClientV2.getEntryHistories(entryId, page);
+    return await aironeApiClient.getEntryHistories(entryId, page);
   }, [entryId, page]);
 
   return (

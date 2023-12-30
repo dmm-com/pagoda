@@ -3,7 +3,7 @@ import { styled } from "@mui/material/styles";
 import React, { FC, useState } from "react";
 
 import { ImportForm } from "components/common/ImportForm";
-import { aironeApiClientV2 } from "repository/AironeApiClientV2";
+import { aironeApiClient } from "repository/AironeApiClient";
 
 const StyledModal = styled(Modal)(({}) => ({
   display: "flex",
@@ -61,7 +61,7 @@ export const EntryImportModal: FC<Props> = ({
         <Box my="8px">
           <ImportForm
             handleImport={(data: string | ArrayBuffer) =>
-              aironeApiClientV2.importEntries(data, forceImport)
+              aironeApiClient.importEntries(data, forceImport)
             }
             handleCancel={closeImportModal}
           />
