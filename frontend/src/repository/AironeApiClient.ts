@@ -80,10 +80,11 @@ class AironeApiClient {
 
   constructor() {
     const config = new Configuration({ basePath: "" });
+
+    // Each "XXXApi" is associated with "XXXAPI" defined in (~/airone/*/api_v2/views.py)
     this.acl = new AclApi(config);
     this.entity = new EntityApi(config);
     this.entry = new EntryApi(config);
-    // "GroupApi" is associated with "GroupAPI" (~/airone/group/api_v2/views.py)
     this.group = new GroupApi(config);
     this.user = new UserApi(config);
     this.role = new RoleApi(config);
