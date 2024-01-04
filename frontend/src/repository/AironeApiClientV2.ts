@@ -818,6 +818,23 @@ class AironeApiClientV2 {
     );
   }
 
+  async updateUserAuth(userId: number, ldapPassword: string): Promise<void> {
+    await this.user.userApiV2AuthPartialUpdate(
+      {
+        id: userId,
+        patchedUserAuth: {
+          ldapPassword,
+        },
+      },
+      {
+        headers: {
+          "Content-Type": "application/json;charset=utf-8",
+          "X-CSRFToken": getCsrfToken(),
+        },
+      }
+    );
+  }
+
   async getJobs(page = 1): Promise<PaginatedJobSerializersList> {
     return await this.job.jobApiV2JobsList({
       offset: (page - 1) * JobList.MAX_ROW_COUNT,
