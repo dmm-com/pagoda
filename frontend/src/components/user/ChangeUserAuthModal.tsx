@@ -58,8 +58,9 @@ export const ChangeUserAuthModal: FC<Props> = ({
           LDAP への認証方法の変更
         </Typography>
         <Typography variant={"caption"} my="4px">
-          AirOne の認証を LDAP のパスワードで行うことができます。（注：ユーザ "
-          {user.username}" が LDAP に登録されていない場合は変更できません）
+          AirOne の認証を LDAP のパスワードで行うことができます。（注：ユーザ
+          &quot;{user.username}&quot; が
+          LDAPに登録されていない場合は変更できません）
         </Typography>
         <Input
           placeholder="Password for LDAP user"
