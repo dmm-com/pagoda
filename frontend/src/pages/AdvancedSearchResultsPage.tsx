@@ -20,7 +20,6 @@ import { AdvancedSearchModal } from "components/entry/AdvancedSearchModal";
 import { SearchResults } from "components/entry/SearchResults";
 import { usePage } from "hooks/usePage";
 import { aironeApiClient } from "repository/AironeApiClient";
-import { AdvancedSerarchResultList } from "services/Constants";
 import { extractAdvancedSearchParams } from "services/entry/AdvancedSearch";
 
 export const AdvancedSearchResultsPage: FC = () => {
@@ -61,14 +60,6 @@ export const AdvancedSearchResultsPage: FC = () => {
       page
     );
   }, [page, toggle]);
-
-  const totalPageCount = useMemo(() => {
-    return results.loading
-      ? 0
-      : Math.ceil(
-          (results.value?.count ?? 0) / AdvancedSerarchResultList.MAX_ROW_COUNT
-        );
-  }, [results.loading, results.value]);
 
   const handleExport = async (exportStyle: "yaml" | "csv") => {
     try {

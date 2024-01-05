@@ -38,7 +38,7 @@ describe("RoleForm", () => {
   test("should provide role editor", function () {
     const {
       result: {
-        current: { control, getValues, setValue },
+        current: { control, setValue },
       },
     } = renderHook(() =>
       useForm<Schema>({

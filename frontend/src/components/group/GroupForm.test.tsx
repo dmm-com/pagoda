@@ -54,7 +54,7 @@ describe("GroupForm", () => {
   test("should render a component with essential props", function () {
     const {
       result: {
-        current: { control, getValues, setValue },
+        current: { control, setValue },
       },
     } = renderHook(() =>
       useForm<Schema>({
