@@ -8,6 +8,14 @@
 
 ### Fixed
 
+## v3.71.0
+
+### Fixed
+* Fixed advanced search when referral is deleted in array_named_entry type.
+  Contributed by @hinashi
+* Fixed slow ACL search and update.
+  Contributed by @hinashi
+
 ## v3.70.0
 
 ### Changed

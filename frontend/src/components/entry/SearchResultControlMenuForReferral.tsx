@@ -46,7 +46,7 @@ export const SearchResultControlMenuForReferral: FC<Props> = ({
   handleSelectFilterConditions,
   handleClear,
 }) => {
-  const handleKeyPressKeyword = (e: any) => {
+  const handleKeyPressKeyword = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
       setFilterKey(AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_CONTAINED);
       handleSelectFilterConditions();

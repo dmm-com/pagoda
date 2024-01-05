@@ -8,9 +8,7 @@ import {
   Grid,
   IconButton,
   Modal,
-  Pagination,
   Paper,
-  Stack,
   Table,
   TableBody,
   TableCell,
@@ -29,6 +27,7 @@ import { EntryAttributes } from "./EntryAttributes";
 import { restoreEntryPath, topPath } from "Routes";
 import { Confirmable } from "components/common/Confirmable";
 import { Loading } from "components/common/Loading";
+import { PaginationFooter } from "components/common/PaginationFooter";
 import { SearchBox } from "components/common/SearchBox";
 import { useAsyncWithThrow } from "hooks/useAsyncWithThrow";
 import { usePage } from "hooks/usePage";
@@ -153,10 +152,6 @@ export const RestorableEntryList: FC<Props> = ({ entityId }) => {
       });
   };
 
-  const totalPageCount = entries.loading
-    ? 0
-    : Math.ceil((entries.value?.count ?? 0) / ConstEntryList.MAX_ROW_COUNT);
-
   return (
     <Box>
       {/* This box shows search box and create button */}
@@ -218,19 +213,12 @@ export const RestorableEntryList: FC<Props> = ({ entityId }) => {
           })}
         </Grid>
       )}
-      <Box display="flex" justifyContent="center" my="30px">
-        <Stack spacing={2}>
-          <Pagination
-            id="entry_page"
-            siblingCount={0}
-            boundaryCount={1}
-            count={totalPageCount}
-            page={page}
-            onChange={(_, newPage) => changePage(newPage)}
-            color="primary"
-          />
-        </Stack>
-      </Box>
+      <PaginationFooter
+        count={entries.value?.count ?? 0}
+        maxRowCount={ConstEntryList.MAX_ROW_COUNT}
+        page={page}
+        changePage={changePage}
+      />
       <StyledModal
         aria-labelledby="transition-modal-title"
         aria-describedby="transition-modal-description"

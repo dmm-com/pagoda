@@ -1,8 +1,6 @@
-import { EntityHistory } from "@dmm-com/airone-apiclient-typescript-fetch";
+import { PaginatedEntityHistoryList } from "@dmm-com/airone-apiclient-typescript-fetch";
 import {
   Box,
-  Pagination,
-  Stack,
   Table,
   TableBody,
   TableCell,
@@ -12,7 +10,9 @@ import {
 } from "@mui/material";
 import React, { FC } from "react";
 
-import { formatDateTime } from "../../services/DateUtil";
+import { PaginationFooter } from "components/common/PaginationFooter";
+import { EntityHistoryList as ConstEntityHistoryList } from "services/Constants";
+import { formatDateTime } from "services/DateUtil";
 
 const Operations = {
   ADD: 1 << 0,
@@ -26,7 +26,7 @@ const Targets = {
   ENTRY: 1 << 5,
 };
 
-const TargetOperation = {
+export const TargetOperation = {
   ADD_ENTITY: Operations.ADD + Targets.ENTITY,
   ADD_ATTR: Operations.ADD + Targets.ATTR,
   MOD_ENTITY: Operations.MOD + Targets.ENTITY,
@@ -37,17 +37,15 @@ const TargetOperation = {
 };
 
 interface Props {
-  histories: Array<EntityHistory>;
+  histories: PaginatedEntityHistoryList;
   page: number;
-  maxPage: number;
-  handleChangePage: (page: number) => void;
+  changePage: (page: number) => void;
 }
 
 export const EntityHistoryList: FC<Props> = ({
   histories,
   page,
-  maxPage,
-  handleChangePage,
+  changePage,
 }) => {
   return (
     <Box>
@@ -63,7 +61,7 @@ export const EntityHistoryList: FC<Props> = ({
         </TableHead>
 
         <TableBody>
-          {histories.map((history, index) => (
+          {histories.results?.map((history, index) => (
             <TableRow key={index}>
               <TableCell>
                 {(() => {
@@ -130,16 +128,12 @@ export const EntityHistoryList: FC<Props> = ({
         </TableBody>
       </Table>
 
-      <Box display="flex" justifyContent="center" my="30px">
-        <Stack spacing={2}>
-          <Pagination
-            count={maxPage}
-            page={page}
-            onChange={(e, page) => handleChangePage(page)}
-            color="primary"
-          />
-        </Stack>
-      </Box>
+      <PaginationFooter
+        count={histories.count ?? 0}
+        maxRowCount={ConstEntityHistoryList.MAX_ROW_COUNT}
+        page={page}
+        changePage={changePage}
+      />
     </Box>
   );
 };
