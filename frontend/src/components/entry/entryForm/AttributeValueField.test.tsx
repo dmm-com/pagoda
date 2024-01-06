@@ -218,6 +218,27 @@ describe("AttributeValue", () => {
     },
   };
 
+  /* eslint-disable */
+  jest
+    .spyOn(
+      require("../../../repository/AironeApiClientV2").aironeApiClientV2,
+      "getGroups"
+    )
+    .mockResolvedValue(Promise.resolve([]));
+  jest
+    .spyOn(
+      require("../../../repository/AironeApiClientV2").aironeApiClientV2,
+      "getRoles"
+    )
+    .mockResolvedValue(Promise.resolve([]));
+  jest
+    .spyOn(
+      require("../../../repository/AironeApiClientV2").aironeApiClientV2,
+      "getEntryAttrReferrals"
+    )
+    .mockResolvedValue(Promise.resolve([]));
+  /* eslint-enable */
+
   const cases: Array<{
     name: string;
     type: number;

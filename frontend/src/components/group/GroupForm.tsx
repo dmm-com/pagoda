@@ -13,8 +13,8 @@ import {
 } from "@mui/material";
 import React, { FC, useState } from "react";
 import { Control, Controller, UseFormSetValue } from "react-hook-form";
-import { useAsync } from "react-use";
 
+import { useAsyncWithThrow } from "../../hooks/useAsyncWithThrow";
 import { filterAncestorsAndOthers } from "../../services/group/Edit";
 
 import { GroupTreeRoot } from "./GroupTreeRoot";
@@ -32,14 +32,14 @@ interface Props {
 export const GroupForm: FC<Props> = ({ control, setValue, groupId }) => {
   const [userKeyword, setUserKeyword] = useState("");
 
-  const users = useAsync(async () => {
+  const users = useAsyncWithThrow(async () => {
     const _users = await aironeApiClientV2.getUsers(1, userKeyword);
     return _users.results?.map(
       (user): GroupMember => ({ id: user.id, username: user.username })
     );
   }, [userKeyword]);
 
-  const groupTrees = useAsync(async () => {
+  const groupTrees = useAsyncWithThrow(async () => {
     const _groupTrees = await aironeApiClientV2.getGroupTrees();
     return groupId != null
       ? filterAncestorsAndOthers(_groupTrees, groupId)

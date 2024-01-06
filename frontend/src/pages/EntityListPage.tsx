@@ -1,7 +1,8 @@
 import { Box, Button, Container, Typography } from "@mui/material";
 import React, { FC, useCallback, useState } from "react";
 import { Link, useHistory, useLocation } from "react-router-dom";
-import { useAsync } from "react-use";
+
+import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
 
 import { topPath } from "Routes";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
@@ -24,7 +25,7 @@ export const EntityListPage: FC = () => {
   const [query, setQuery] = useState<string>(params.get("query") ?? "");
   const [toggle, setToggle] = useState(false);
 
-  const entities = useAsync(async () => {
+  const entities = useAsyncWithThrow(async () => {
     return await aironeApiClientV2.getEntities(page, query);
   }, [page, query, toggle]);
 

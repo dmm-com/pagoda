@@ -3,7 +3,8 @@ import { Box, Container, Typography } from "@mui/material";
 import React, { FC, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { Link, Prompt, useHistory } from "react-router-dom";
-import { useAsync } from "react-use";
+
+import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
 
 import { groupsPath, topPath } from "Routes";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
@@ -40,7 +41,7 @@ export const EditGroupPage: FC = () => {
     mode: "onBlur",
   });
 
-  const group = useAsync(async () => {
+  const group = useAsyncWithThrow(async () => {
     return groupId != null
       ? await aironeApiClientV2.getGroup(groupId)
       : undefined;
