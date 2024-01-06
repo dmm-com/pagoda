@@ -15,25 +15,24 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - name: Install poetry
+        run: pipx install poetry
       - uses: actions/setup-python@v4
         with:
           python-version: "3.11.5"
+          cache: "poetry"
       - name: apt-get
         run: |
           sudo apt-get update
           sudo apt-get install libldap2-dev libsasl2-dev libxmlsec1-dev libmysqlclient-dev pkg-config
       - name: Install dependencies
         run: |
-          python3 -m venv virtualenv
-          . virtualenv/bin/activate
-          pip install --upgrade pip
           pip install tox
       - name: staticchecks
+        run: |
+          tox
         env:
           TOXENV: "staticchecks"
-        run: |
-          . virtualenv/bin/activate
-          tox
 
   python311:
     runs-on: ubuntu-latest
