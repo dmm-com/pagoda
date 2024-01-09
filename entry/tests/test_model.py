@@ -4587,6 +4587,31 @@ class ModelTest(AironeTestCase):
                     },
                     "str": {"is_readable": True, "type": AttrTypeValue["string"], "value": ""},
                     "text": {"is_readable": True, "type": AttrTypeValue["text"], "value": ""},
+                    "arr_str": {
+                        "is_readable": True,
+                        "type": AttrTypeValue["array_string"],
+                        "value": [],
+                    },
+                    "arr_obj": {
+                        "is_readable": True,
+                        "type": AttrTypeValue["array_object"],
+                        "value": [],
+                    },
+                    "arr_name": {
+                        "is_readable": True,
+                        "type": AttrTypeValue["array_named_object"],
+                        "value": [],
+                    },
+                    "arr_group": {
+                        "is_readable": True,
+                        "type": AttrTypeValue["array_group"],
+                        "value": [],
+                    },
+                    "arr_role": {
+                        "is_readable": True,
+                        "type": AttrTypeValue["array_role"],
+                        "value": [],
+                    },
                 },
             },
         )
