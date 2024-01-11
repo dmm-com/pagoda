@@ -247,20 +247,15 @@ describe("AttributeValue", () => {
 
   /* eslint-disable */
   jest
-    .spyOn(
-      require("../../../repository/AironeApiClientV2").aironeApiClientV2,
-      "getGroups"
-    )
+    .spyOn(require("repository/AironeApiClient").aironeApiClient, "getGroups")
     .mockResolvedValue(Promise.resolve([]));
   jest
-    .spyOn(
-      require("../../../repository/AironeApiClientV2").aironeApiClientV2,
+    .spyOn(require("repository/AironeApiClient").aironeApiClient,
       "getRoles"
     )
     .mockResolvedValue(Promise.resolve([]));
   jest
-    .spyOn(
-      require("../../../repository/AironeApiClientV2").aironeApiClientV2,
+    .spyOn(require("repository/AironeApiClient").aironeApiClient,
       "getEntryAttrReferrals"
     )
     .mockResolvedValue(Promise.resolve([]));
@@ -272,75 +267,75 @@ describe("AttributeValue", () => {
     schemaId: number;
     fn: () => void;
   }> = [
-    // primitive types
-    {
-      name: "string",
-      type: EntryAttributeTypeTypeEnum.STRING,
-      schemaId: 0,
-      fn: () => {
-        expect(screen.getByRole("textbox")).toBeInTheDocument();
+      // primitive types
+      {
+        name: "string",
+        type: EntryAttributeTypeTypeEnum.STRING,
+        schemaId: 0,
+        fn: () => {
+          expect(screen.getByRole("textbox")).toBeInTheDocument();
+        },
       },
-    },
-    {
-      name: "text",
-      type: EntryAttributeTypeTypeEnum.TEXT,
-      schemaId: 1,
-      fn: () => {
-        expect(screen.getByRole("textbox")).toBeInTheDocument();
+      {
+        name: "text",
+        type: EntryAttributeTypeTypeEnum.TEXT,
+        schemaId: 1,
+        fn: () => {
+          expect(screen.getByRole("textbox")).toBeInTheDocument();
+        },
       },
-    },
-    {
-      name: "date",
-      type: EntryAttributeTypeTypeEnum.DATE,
-      schemaId: 2,
-      fn: () => {
-        expect(screen.getByRole("textbox")).toBeInTheDocument();
+      {
+        name: "date",
+        type: EntryAttributeTypeTypeEnum.DATE,
+        schemaId: 2,
+        fn: () => {
+          expect(screen.getByRole("textbox")).toBeInTheDocument();
+        },
       },
-    },
-    {
-      name: "boolean",
-      type: EntryAttributeTypeTypeEnum.BOOLEAN,
-      schemaId: 3,
-      fn: () => {
-        expect(screen.getByRole("checkbox")).toBeInTheDocument();
+      {
+        name: "boolean",
+        type: EntryAttributeTypeTypeEnum.BOOLEAN,
+        schemaId: 3,
+        fn: () => {
+          expect(screen.getByRole("checkbox")).toBeInTheDocument();
+        },
       },
-    },
-    {
-      name: "object",
-      type: EntryAttributeTypeTypeEnum.OBJECT,
-      schemaId: 4,
-      fn: () => {
-        expect(screen.getByRole("combobox")).toBeInTheDocument();
+      {
+        name: "object",
+        type: EntryAttributeTypeTypeEnum.OBJECT,
+        schemaId: 4,
+        fn: () => {
+          expect(screen.getByRole("combobox")).toBeInTheDocument();
+        },
       },
-    },
-    {
-      name: "named-object",
-      type: EntryAttributeTypeTypeEnum.NAMED_OBJECT,
-      schemaId: 5,
-      fn: () => {
-        expect(screen.getByRole("textbox")).toBeInTheDocument();
-        expect(screen.getByRole("combobox")).toBeInTheDocument();
+      {
+        name: "named-object",
+        type: EntryAttributeTypeTypeEnum.NAMED_OBJECT,
+        schemaId: 5,
+        fn: () => {
+          expect(screen.getByRole("textbox")).toBeInTheDocument();
+          expect(screen.getByRole("combobox")).toBeInTheDocument();
+        },
       },
-    },
-    {
-      name: "group",
-      type: EntryAttributeTypeTypeEnum.GROUP,
-      schemaId: 6,
-      fn: () => {
-        expect(screen.getByRole("combobox")).toBeInTheDocument();
+      {
+        name: "group",
+        type: EntryAttributeTypeTypeEnum.GROUP,
+        schemaId: 6,
+        fn: () => {
+          expect(screen.getByRole("combobox")).toBeInTheDocument();
+        },
       },
-    },
-    {
-      name: "role",
-      type: EntryAttributeTypeTypeEnum.ROLE,
-      schemaId: 7,
-      fn: () => {
-        expect(screen.getByRole("combobox")).toBeInTheDocument();
+      {
+        name: "role",
+        type: EntryAttributeTypeTypeEnum.ROLE,
+        schemaId: 7,
+        fn: () => {
+          expect(screen.getByRole("combobox")).toBeInTheDocument();
+        },
       },
-    },
 
-    // TODO array types
-  ];
+      // TODO array types
+    ];
 
   cases.forEach((c) => {
     test(`should show ${c.name} typed value form field`, async () => {
