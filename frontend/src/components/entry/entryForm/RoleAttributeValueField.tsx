@@ -5,7 +5,7 @@ import { Control, Controller } from "react-hook-form";
 import { UseFormSetValue } from "react-hook-form/dist/types/form";
 
 import { useAsyncWithThrow } from "../../../hooks/useAsyncWithThrow";
-import { aironeApiClientV2 } from "../../../repository/AironeApiClientV2";
+import { aironeApiClient } from "../../../repository/AironeApiClient";
 
 import { Schema } from "./EntryFormSchema";
 
@@ -32,7 +32,7 @@ export const RoleAttributeValueField: FC<Props> = ({
   setValue,
 }) => {
   const roles = useAsyncWithThrow(async () => {
-    const _roles = await aironeApiClientV2.getRoles();
+    const _roles = await aironeApiClient.getRoles();
     return _roles.map((g) => ({ id: g.id, name: g.name }));
   }, []);
 

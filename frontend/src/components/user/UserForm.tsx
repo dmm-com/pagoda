@@ -27,7 +27,7 @@ import { Control, Controller } from "react-hook-form";
 import { ChangeUserAuthModal } from "./ChangeUserAuthModal";
 import { Schema } from "./userForm/UserFormSchema";
 
-import { DjangoContext } from "services/DjangoContext";
+import { ServerContext } from "services/ServerContext";
 
 const StyledTableRow = styled(TableRow)(() => ({
   "&:nth-of-type(odd)": {
@@ -278,7 +278,7 @@ const ElemUserPassword: FC<Props> = ({ control }) => {
 };
 
 const ElemIsSuperuser: FC<Props> = ({ control }) => {
-  const djangoContext = DjangoContext.getInstance();
+  const serverContext = ServerContext.getInstance();
 
   return (
     <StyledTableRow>
@@ -294,7 +294,7 @@ const ElemIsSuperuser: FC<Props> = ({ control }) => {
             <Checkbox
               checked={field.value}
               onChange={(e) => field.onChange(e.target.checked)}
-              disabled={!(djangoContext?.user?.isSuperuser ?? false)}
+              disabled={!(serverContext?.user?.isSuperuser ?? false)}
             />
           )}
         />

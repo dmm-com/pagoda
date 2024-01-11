@@ -1,6 +1,3 @@
-import Cookies from "js-cookie";
-import fileDownload from "js-file-download";
-
 import {
   ACL,
   ACLHistory,
@@ -52,6 +49,9 @@ import {
   WebhookCreateUpdate,
   GroupTree as _GroupTree,
 } from "@dmm-com/airone-apiclient-typescript-fetch";
+import Cookies from "js-cookie";
+import fileDownload from "js-file-download";
+
 import {
   EntityList as ConstEntityList,
   EntityHistoryList,
@@ -73,7 +73,7 @@ function getCsrfToken(): string {
 /**
  * A rich API client with using auto-generated client with openapi-generator.
  */
-class AironeApiClientV2 {
+class AironeApiClient {
   private acl: AclApi;
   private entity: EntityApi;
   private entry: EntryApi;
@@ -87,11 +87,11 @@ class AironeApiClientV2 {
     const basePath = process.env.NODE_ENV !== "test" ? "" : undefined;
     const config = new Configuration({ basePath });
 
+    // Each "XXXApi" is associated with "XXXAPI" defined in (~/airone/*/api_v2/views.py)
     this.acl = new AclApi(config);
     this.entity = new EntityApi(config);
     this.entry = new EntryApi(config);
     this.trigger = new TriggerApi(config);
-    // "GroupApi" is associated with "GroupAPI" (~/airone/group/api_v2/views.py)
     this.group = new GroupApi(config);
     this.user = new UserApi(config);
     this.role = new RoleApi(config);
@@ -1000,6 +1000,26 @@ class AironeApiClientV2 {
       }
     );
   }
+
+  async postLogin(formData: FormData): Promise<Response> {
+    return fetch(`/auth/login/?next=${formData.get("next")}`, {
+      method: "POST",
+      headers: {
+        "X-CSRFToken": getCsrfToken(),
+      },
+      body: formData,
+      redirect: "manual",
+    });
+  }
+
+  async postLogout(): Promise<Response> {
+    return fetch("/auth/logout/", {
+      method: "POST",
+      headers: {
+        "X-CSRFToken": getCsrfToken(),
+      },
+    });
+  }
 }
 
-export const aironeApiClientV2 = new AironeApiClientV2();
+export const aironeApiClient = new AironeApiClient();

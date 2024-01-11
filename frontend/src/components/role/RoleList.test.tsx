@@ -48,14 +48,11 @@ describe("RoleList", () => {
   test("should show role list", async function () {
     /* eslint-disable */
     jest
-      .spyOn(
-        require("repository/AironeApiClientV2").aironeApiClientV2,
-        "getRoles"
-      )
+      .spyOn(require("repository/AironeApiClient").aironeApiClient, "getRoles")
       .mockResolvedValue(Promise.resolve(roles));
     jest
       .spyOn(
-        require("repository/AironeApiClientV2").aironeApiClientV2,
+        require("repository/AironeApiClient").aironeApiClient,
         "deleteRole"
       )
       .mockResolvedValue(Promise.resolve());

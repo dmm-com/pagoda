@@ -4,7 +4,7 @@ import React, { FC, useCallback, useState } from "react";
 
 import { AironeModal } from "../common/AironeModal";
 
-import { aironeApiClientV2 } from "repository/AironeApiClientV2";
+import { aironeApiClient } from "repository/AironeApiClient";
 
 interface Props {
   openModal: boolean;
@@ -18,7 +18,7 @@ export const PasswordResetModal: FC<Props> = ({ openModal, closeModal }) => {
 
   const handleSubmit = useCallback(async () => {
     try {
-      await aironeApiClientV2.resetPassword(username);
+      await aironeApiClient.resetPassword(username);
       enqueueSnackbar("パスワードリセットメールの送信に成功しました", {
         variant: "success",
       });

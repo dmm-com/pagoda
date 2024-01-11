@@ -7,16 +7,16 @@ import { Link, Prompt, useHistory } from "react-router-dom";
 
 import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
 
-import { topPath, rolesPath } from "Routes";
+import { rolesPath, topPath } from "Routes";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { Loading } from "components/common/Loading";
 import { PageHeader } from "components/common/PageHeader";
 import { SubmitButton } from "components/common/SubmitButton";
 import { RoleForm } from "components/role/RoleForm";
-import { schema, Schema } from "components/role/roleForm/RoleFormSchema";
+import { Schema, schema } from "components/role/roleForm/RoleFormSchema";
 import { useFormNotification } from "hooks/useFormNotification";
 import { useTypedParams } from "hooks/useTypedParams";
-import { aironeApiClientV2 } from "repository/AironeApiClientV2";
+import { aironeApiClient } from "repository/AironeApiClient";
 import {
   extractAPIException,
   isResponseError,
@@ -42,7 +42,7 @@ export const EditRolePage: FC = () => {
   });
 
   const role = useAsyncWithThrow(async () => {
-    return roleId != null ? await aironeApiClientV2.getRole(roleId) : undefined;
+    return roleId != null ? await aironeApiClient.getRole(roleId) : undefined;
   }, [roleId]);
 
   useEffect(() => {
@@ -65,9 +65,9 @@ export const EditRolePage: FC = () => {
 
       try {
         if (willCreate) {
-          await aironeApiClientV2.createRole(roleCreateUpdate);
+          await aironeApiClient.createRole(roleCreateUpdate);
         } else {
-          await aironeApiClientV2.updateRole(roleId, roleCreateUpdate);
+          await aironeApiClient.updateRole(roleId, roleCreateUpdate);
         }
         enqueueSubmitResult(true);
       } catch (e) {

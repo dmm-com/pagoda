@@ -58,7 +58,7 @@ describe("ChangeUserAuthModal", () => {
     /* eslint-disable */
     jest
       .spyOn(
-        require("repository/AironeApiClientV2").aironeApiClientV2,
+        require("repository/AironeApiClient").aironeApiClient,
         "updateUserAuth"
       )
       .mockResolvedValue(Promise.resolve());
@@ -88,7 +88,7 @@ describe("ChangeUserAuthModal", () => {
     /* eslint-disable */
     jest
       .spyOn(
-        require("repository/AironeApiClientV2").aironeApiClientV2,
+        require("repository/AironeApiClient").aironeApiClient,
         "updateUserAuth"
       )
       .mockResolvedValue(Promise.reject());

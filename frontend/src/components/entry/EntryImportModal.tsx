@@ -4,7 +4,7 @@ import React, { FC, useState } from "react";
 import { AironeModal } from "../common/AironeModal";
 
 import { ImportForm } from "components/common/ImportForm";
-import { aironeApiClientV2 } from "repository/AironeApiClientV2";
+import { aironeApiClient } from "repository/AironeApiClient";
 
 interface Props {
   openImportModal: boolean;
@@ -37,7 +37,7 @@ export const EntryImportModal: FC<Props> = ({
       <Box my="8px">
         <ImportForm
           handleImport={(data: string | ArrayBuffer) =>
-            aironeApiClientV2.importEntries(data, forceImport)
+            aironeApiClient.importEntries(data, forceImport)
           }
           handleCancel={closeImportModal}
         />

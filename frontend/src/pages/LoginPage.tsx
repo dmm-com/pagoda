@@ -18,12 +18,12 @@ import { useHistory } from "react-router-dom";
 
 import { PasswordResetConfirmModal } from "../components/user/PasswordResetConfirmModal";
 import { PasswordResetModal } from "../components/user/PasswordResetModal";
+import { aironeApiClient } from "../repository/AironeApiClient";
 
-import { postLogin } from "repository/AironeAPIClient";
-import { DjangoContext } from "services/DjangoContext";
+import { ServerContext } from "services/ServerContext";
 
 export const LoginPage: FC = () => {
-  const djangoContext = DjangoContext.getInstance();
+  const serverContext = ServerContext.getInstance();
   const history = useHistory();
 
   const [showPassword, setShowPassword] = useState(false);
@@ -62,17 +62,17 @@ export const LoginPage: FC = () => {
     setShowPassword(!showPassword);
   };
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setIsAlert(false);
+
     const data = new FormData(event.currentTarget);
-    postLogin(data).then((resp) => {
-      if (resp.type === "opaqueredirect") {
-        window.location.href = djangoContext?.loginNext ?? "";
-      } else {
-        setIsAlert(true);
-      }
-    });
+    const resp = await aironeApiClient.postLogin(data);
+    if (resp.type === "opaqueredirect") {
+      window.location.href = serverContext?.loginNext ?? "";
+    } else {
+      setIsAlert(true);
+    }
   };
 
   const handleOpenPasswordResetModal = useCallback(() => {
@@ -107,10 +107,10 @@ export const LoginPage: FC = () => {
         bgcolor="white"
       >
         <Typography variant="h1" fontWeight={400}>
-          {djangoContext?.title}
+          {serverContext?.title}
         </Typography>
         <Typography variant="subtitle2" mt={2}>
-          {djangoContext?.subTitle}
+          {serverContext?.subTitle}
         </Typography>
         <Box width={500} height={50} mt={2}>
           {isAlert ? (
@@ -162,13 +162,13 @@ export const LoginPage: FC = () => {
             id="next"
             name="next"
             type="hidden"
-            value={djangoContext?.loginNext}
+            value={serverContext?.loginNext}
           />
           <Box display="flex" flexDirection="column" width="100%" my="8px">
-            {djangoContext?.singleSignOnLoginUrl != null && (
+            {serverContext?.singleSignOnLoginUrl != null && (
               <Link
                 color="secondary"
-                href={djangoContext.singleSignOnLoginUrl}
+                href={serverContext.singleSignOnLoginUrl}
                 sx={{ cursor: "pointer" }}
               >
                 <ExitToApp
@@ -185,7 +185,7 @@ export const LoginPage: FC = () => {
             <Link
               color="secondary"
               sx={{ cursor: "pointer" }}
-              href={djangoContext?.noteLink}
+              href={serverContext?.noteLink}
             >
               <InfoIcon
                 sx={{
@@ -194,7 +194,7 @@ export const LoginPage: FC = () => {
                 }}
               />
               <Typography fontSize="16px" ml={1} display="inline">
-                {djangoContext?.noteDesc}
+                {serverContext?.noteDesc}
               </Typography>
             </Link>
             <Link

@@ -5,7 +5,7 @@ import React, { FC } from "react";
 import { Control } from "react-hook-form";
 import { UseFormSetValue } from "react-hook-form/dist/types/form";
 
-import { DjangoContext } from "../../services/DjangoContext";
+import { ServerContext } from "../../services/ServerContext";
 
 import { AttributesFields } from "./entityForm/AttributesFields";
 import { BasicFields } from "./entityForm/BasicFields";
@@ -32,13 +32,13 @@ export const EntityForm: FC<Props> = ({
   setValue,
   referralEntities,
 }) => {
-  const djangoContext = DjangoContext.getInstance();
+  const serverContext = ServerContext.getInstance();
 
   return (
     <StyledBox>
       <BasicFields control={control} />
 
-      {(djangoContext?.flags.webhook ?? true) && (
+      {(serverContext?.flags.webhook ?? true) && (
         <WebhookFields control={control} />
       )}
 

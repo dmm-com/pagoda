@@ -7,8 +7,9 @@ import {
 } from "@mui/material";
 import React, { FC, useState } from "react";
 
-import { useAsyncWithThrow } from "../../../hooks/useAsyncWithThrow";
-import { aironeApiClientV2 } from "../../../repository/AironeApiClientV2";
+import { aironeApiClient } from "../../../repository/AironeApiClient";
+
+import { useAsyncWithThrow } from "hooks/useAsyncWithThrow";
 
 interface Props {
   attrId: number;
@@ -32,7 +33,7 @@ export const ReferralsAutocomplete: FC<Props> = ({
   );
 
   const referrals = useAsyncWithThrow(async () => {
-    return await aironeApiClientV2.getEntryAttrReferrals(attrId, inputValue);
+    return await aironeApiClient.getEntryAttrReferrals(attrId, inputValue);
   }, [attrId, inputValue]);
 
   const _handleChange = (
