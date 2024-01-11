@@ -1,23 +1,41 @@
 import { z } from "zod";
 
-import { TriggerParentCreate } from "@dmm-com/airone-apiclient-typescript-fetch";
+import { TriggerParent } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { schemaForType } from "services/ZodSchemaUtil";
 
-export const schema = schemaForType<TriggerParentCreate>()(
+export const schema = schemaForType<TriggerParent>()(
   z.object({
     id: z.number(), // Add the 'id' property
-    entityId: z.number(),
+    entity: z.object({
+      id: z.number(),
+      name: z.string(),
+      isPublic: z.boolean().optional(),
+    }),
     conditions: z.array(
       z.object({
-        attrId: z.number(),
-        cond: z.string(),
+        id: z.number(),
+        attr: z.object({
+          id: z.number(),
+          name: z.string(),
+        }),
+        strCond: z.string(),
+        refCond: z.number().nullable(),
+        boolCond: z.boolean().optional(),
       })
     ),
     actions: z.array(
       z.object({
-        attrId: z.number(),
-        value: z.string().optional(),
-        values: z.array(z.string()).optional(),
+        id: z.number(),
+        attr: z.object({
+          id: z.number(),
+          name: z.string(),
+        }),
+        values: z.array(z.object({
+          id: z.number(),
+          strCond: z.string(),
+          refCond: z.number().nullable(),
+          boolCond: z.boolean().optional(),
+        })),
       })
     ),
   })

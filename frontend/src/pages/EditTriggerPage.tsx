@@ -12,7 +12,7 @@ import {
   Typography,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import React, { FC, useCallback } from "react";
+import React, { FC, useCallback, useEffect } from "react";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { useHistory } from "react-router-dom";
 
@@ -91,20 +91,10 @@ export const EditTriggerPage: FC = () => {
   const handleSubmitOnValid = useCallback(
     async (trigger: Schema) => {
       const triggerCreateUpdate: TriggerParentUpdate = {
-        ...trigger,
-        entityId: trigger.entityId,
-        conditions: trigger.conditions.map((condition) => {
-          return {
-            ...condition,
-            attr: condition.attrId,
-          };
-        }),
-        actions: trigger.actions.map((action) => {
-          return {
-            ...action,
-            attr: action.attrId,
-          };
-        }),
+        id: triggerId,
+        entityId: trigger.entity.id,
+        conditions: [],
+        actions: [],
       };
       if (triggerId !== undefined) {
         await aironeApiClient.updateTrigger(triggerId, triggerCreateUpdate);
@@ -120,6 +110,10 @@ export const EditTriggerPage: FC = () => {
   const handleCancel = async () => {
     history.goBack();
   };
+
+  useEffect(() => {
+    !trigger.loading && trigger.value != null && reset(trigger.value);
+  }, [trigger.loading]);
 
   return (
     <Box>
@@ -161,12 +155,16 @@ export const EditTriggerPage: FC = () => {
                 return (
                   <Box key={field.key}>
                     <Controller
-                      name={`conditions.${index}.attrId`}
+                      name={`conditions.${index}.attr.id`}
                       control={control}
-                      defaultValue={0}
+                      defaultValue={field.attr.id}
                       render={({ field }) => (
                         <Select {...field} size="small" fullWidth>
-                          <MenuItem></MenuItem>
+                          {entity.value?.attrs.map((attr) => (
+                            <MenuItem key={attr.id} value={attr.id}>
+                              {attr.name}
+                            </MenuItem>
+                          ))}
                         </Select>
                       )}
                     />
