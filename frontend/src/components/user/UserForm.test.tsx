@@ -43,7 +43,7 @@ describe("UserForm", () => {
   test("should provide user editor", function () {
     const {
       result: {
-        current: { control, getValues, setValue },
+        current: { control },
       },
     } = renderHook(() =>
       useForm<Schema>({
