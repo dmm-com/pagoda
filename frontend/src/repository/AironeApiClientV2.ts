@@ -79,7 +79,9 @@ class AironeApiClientV2 {
   private job: JobApi;
 
   constructor() {
-    const config = new Configuration({ basePath: "" });
+    const basePath = process.env.NODE_ENV !== "test" ? "" : undefined;
+    const config = new Configuration({ basePath });
+
     this.acl = new AclApi(config);
     this.entity = new EntityApi(config);
     this.entry = new EntryApi(config);
