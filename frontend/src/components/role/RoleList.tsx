@@ -17,8 +17,8 @@ import { styled } from "@mui/material/styles";
 import { useSnackbar } from "notistack";
 import React, { FC, useState } from "react";
 import { Link, useHistory } from "react-router-dom";
-import { useAsync } from "react-use";
 
+import { useAsyncWithThrow } from "../../hooks/useAsyncWithThrow";
 import { aironeApiClientV2 } from "../../repository/AironeApiClientV2";
 import { Confirmable } from "../common/Confirmable";
 import { Loading } from "../common/Loading";
@@ -34,12 +34,9 @@ export const RoleList: FC = ({}) => {
   const { enqueueSnackbar } = useSnackbar();
   const [toggle, setToggle] = useState(false);
 
-  const roles = useAsync(async () => {
+  const roles = useAsyncWithThrow(async () => {
     return await aironeApiClientV2.getRoles();
   }, [toggle]);
-  if (!roles.loading && roles.error) {
-    throw new Error("Failed to get users from AirOne APIv2 endpoint");
-  }
 
   const handleDelete = async (roleId: number) => {
     try {

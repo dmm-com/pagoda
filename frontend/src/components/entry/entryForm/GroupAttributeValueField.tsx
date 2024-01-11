@@ -3,8 +3,8 @@ import { styled } from "@mui/material/styles";
 import React, { FC } from "react";
 import { Control, Controller } from "react-hook-form";
 import { UseFormSetValue } from "react-hook-form/dist/types/form";
-import { useAsync } from "react-use";
 
+import { useAsyncWithThrow } from "../../../hooks/useAsyncWithThrow";
 import { aironeApiClientV2 } from "../../../repository/AironeApiClientV2";
 
 import { Schema } from "./EntryFormSchema";
@@ -31,7 +31,7 @@ export const GroupAttributeValueField: FC<Props> = ({
   control,
   setValue,
 }) => {
-  const groups = useAsync(async () => {
+  const groups = useAsyncWithThrow(async () => {
     const _groups = await aironeApiClientV2.getGroups();
     return _groups.results?.map((g) => ({ id: g.id, name: g.name }));
   }, []);

@@ -5,7 +5,6 @@ import React, { FC, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { Prompt } from "react-router-dom";
 import { useHistory } from "react-router-dom";
-import { useAsync } from "react-use";
 
 import { entitiesPath, entityEntriesPath } from "Routes";
 import { Loading } from "components/common/Loading";
@@ -55,7 +54,7 @@ export const EditEntityPage: FC = () => {
     }
   }, []);
 
-  const referralEntities = useAsync(async () => {
+  const referralEntities = useAsyncWithThrow(async () => {
     const entities = await aironeApiClientV2.getEntities();
     return entities.results;
   });

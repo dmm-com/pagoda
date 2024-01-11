@@ -4,7 +4,8 @@ import { Box, Container, Typography } from "@mui/material";
 import React, { FC, useCallback, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { Link, Prompt, useHistory } from "react-router-dom";
-import { useAsync } from "react-use";
+
+import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
 
 import { topPath, rolesPath } from "Routes";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
@@ -40,7 +41,7 @@ export const EditRolePage: FC = () => {
     mode: "onBlur",
   });
 
-  const role = useAsync(async () => {
+  const role = useAsyncWithThrow(async () => {
     return roleId != null ? await aironeApiClientV2.getRole(roleId) : undefined;
   }, [roleId]);
 

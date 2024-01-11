@@ -12,7 +12,8 @@ import {
 } from "@mui/material";
 import React, { FC, useMemo, useState } from "react";
 import { Link, useHistory, useLocation } from "react-router-dom";
-import { useAsync } from "react-use";
+
+import { useAsyncWithThrow } from "../../hooks/useAsyncWithThrow";
 
 import { UserControlMenu } from "./UserControlMenu";
 
@@ -38,12 +39,9 @@ export const UserList: FC = ({}) => {
   }>({});
   const [toggle, setToggle] = useState(false);
 
-  const users = useAsync(async () => {
+  const users = useAsyncWithThrow(async () => {
     return await aironeApiClientV2.getUsers(page, query);
   }, [page, query, toggle]);
-  if (!users.loading && users.error) {
-    throw new Error("Failed to get users from AirOne APIv2 endpoint");
-  }
 
   const isSuperuser = useMemo(() => {
     const djangoContext = DjangoContext.getInstance();

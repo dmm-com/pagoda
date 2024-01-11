@@ -11,8 +11,8 @@ import {
 import { styled } from "@mui/material/styles";
 import React, { FC, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { useAsync } from "react-use";
 
+import { useAsyncWithThrow } from "../../hooks/useAsyncWithThrow";
 import { usePage } from "../../hooks/usePage";
 import { aironeApiClientV2 } from "../../repository/AironeApiClientV2";
 import { EntryReferralList } from "../../services/Constants";
@@ -44,7 +44,7 @@ export const EntryReferral: FC<Props> = ({ entryId }) => {
   const [keyword, setKeyword] = useState("");
   const [keywordQuery, setKeywordQuery] = useState("");
 
-  const referredEntries = useAsync(async () => {
+  const referredEntries = useAsyncWithThrow(async () => {
     return await aironeApiClientV2.getEntryReferral(
       entryId,
       page,
