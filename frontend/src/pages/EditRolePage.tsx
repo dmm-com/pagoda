@@ -4,15 +4,16 @@ import { Box, Container, Typography } from "@mui/material";
 import React, { FC, useCallback, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { Link, Prompt, useHistory } from "react-router-dom";
-import { useAsync } from "react-use";
 
-import { topPath, rolesPath } from "Routes";
+import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
+
+import { rolesPath, topPath } from "Routes";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { Loading } from "components/common/Loading";
 import { PageHeader } from "components/common/PageHeader";
 import { SubmitButton } from "components/common/SubmitButton";
 import { RoleForm } from "components/role/RoleForm";
-import { schema, Schema } from "components/role/roleForm/RoleFormSchema";
+import { Schema, schema } from "components/role/roleForm/RoleFormSchema";
 import { useFormNotification } from "hooks/useFormNotification";
 import { useTypedParams } from "hooks/useTypedParams";
 import { aironeApiClient } from "repository/AironeApiClient";
@@ -40,7 +41,7 @@ export const EditRolePage: FC = () => {
     mode: "onBlur",
   });
 
-  const role = useAsync(async () => {
+  const role = useAsyncWithThrow(async () => {
     return roleId != null ? await aironeApiClient.getRole(roleId) : undefined;
   }, [roleId]);
 

@@ -2,9 +2,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Box } from "@mui/material";
 import React, { FC, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { Prompt } from "react-router-dom";
-import { useHistory } from "react-router-dom";
-import { useAsync } from "react-use";
+import { Prompt, useHistory } from "react-router-dom";
+
+import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
 
 import { entityEntriesPath, entryDetailsPath } from "Routes";
 import { Loading } from "components/common/Loading";
@@ -60,11 +60,11 @@ export const EntryEditPage: FC<Props> = ({
     mode: "onBlur",
   });
 
-  const entity = useAsync(async () => {
+  const entity = useAsyncWithThrow(async () => {
     return await aironeApiClient.getEntity(entityId);
   });
 
-  const entry = useAsync(async () => {
+  const entry = useAsyncWithThrow(async () => {
     return entryId != undefined
       ? await aironeApiClient.getEntry(entryId)
       : undefined;

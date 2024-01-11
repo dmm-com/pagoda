@@ -8,7 +8,8 @@ import { Box, Button, Typography } from "@mui/material";
 import { useSnackbar } from "notistack";
 import React, { FC, useMemo, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { useAsync } from "react-use";
+
+import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
 
 import { advancedSearchPath, topPath } from "Routes";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
@@ -45,11 +46,11 @@ export const AdvancedSearchResultsPage: FC = () => {
     return extractAdvancedSearchParams(params);
   }, [location.search]);
 
-  const entityAttrs = useAsync(async () => {
+  const entityAttrs = useAsyncWithThrow(async () => {
     return await aironeApiClient.getEntityAttrs(entityIds, searchAllEntities);
   });
 
-  const results = useAsync(async () => {
+  const results = useAsyncWithThrow(async () => {
     return await aironeApiClient.advancedSearch(
       entityIds,
       entryName,

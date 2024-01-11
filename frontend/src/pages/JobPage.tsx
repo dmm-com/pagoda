@@ -2,7 +2,9 @@ import ReplayIcon from "@mui/icons-material/Replay";
 import { Box, Button, Container, Typography } from "@mui/material";
 import React, { FC } from "react";
 import { Link } from "react-router-dom";
-import { useAsync, useToggle } from "react-use";
+import { useToggle } from "react-use";
+
+import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
 
 import { topPath } from "Routes";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
@@ -19,7 +21,7 @@ export const JobPage: FC = () => {
 
   const [refresh, toggleRefresh] = useToggle(false);
 
-  const jobs = useAsync(async () => {
+  const jobs = useAsyncWithThrow(async () => {
     return await aironeApiClient.getJobs(page);
   }, [page, refresh]);
 

@@ -8,6 +8,14 @@
 
 ### Fixed
 
+## v3.72.0
+
+### Changed
+* Migrate CircleCI to GitHub Actions.
+  Contributed by @syucream
+* Enable to toggle webhook feature.
+  Contributed by @syucream
+
 ## v3.71.0
 
 ### Fixed

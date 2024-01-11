@@ -4,7 +4,6 @@ import {
   Box,
   Button,
   IconButton,
-  Modal,
   Table,
   TableBody,
   TableCell,
@@ -16,13 +15,9 @@ import { styled } from "@mui/material/styles";
 import React, { FC, useEffect, useState } from "react";
 import { Control, Controller, useFieldArray, useWatch } from "react-hook-form";
 
-import { Schema } from "./EntityFormSchema";
+import { AironeModal } from "../../common/AironeModal";
 
-const StyledModal = styled(Modal)(({}) => ({
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-}));
+import { Schema } from "./EntityFormSchema";
 
 const StyledTable = styled(Table)(({}) => ({
   "& td": {
@@ -31,14 +26,6 @@ const StyledTable = styled(Table)(({}) => ({
     verticalAlign: "top",
     borderBottom: "0px",
   },
-}));
-
-const Paper = styled(Box)(({ theme }) => ({
-  backgroundColor: theme.palette.background.paper,
-  border: "2px solid #000",
-  boxShadow: theme.shadows[5],
-  padding: theme.spacing(2, 4, 3),
-  width: "50%",
 }));
 
 interface Props {
@@ -93,114 +80,112 @@ export const WebhookHeadersModal: FC<Props> = ({
   };
 
   return (
-    <StyledModal open={webhookIndex >= 0} onClose={handleCloseModal}>
-      <Paper id="modal_webhook_header">
-        <Typography variant={"h6"}>AdditionalHeader (Optional)</Typography>
-        <Typography variant={"caption"}>
-          指定した endpoint URL
-          に送るリクエストに付加するヘッダ情報を入力してください。
-        </Typography>
-        <StyledTable className="table">
-          <TableBody>
-            {fields.length === 0 && (
-              <TableRow>
-                <TableCell>
-                  <TextField
-                    label="Key"
-                    variant="standard"
-                    fullWidth
-                    disabled
-                    onClick={() => handleAppendWebhookAdditionalHeader(0)}
-                  />
-                </TableCell>
-                <TableCell>
-                  <TextField
-                    label="Value"
-                    variant="standard"
-                    fullWidth
-                    disabled
-                    onClick={() => handleAppendWebhookAdditionalHeader(0)}
-                  />
-                </TableCell>
-                <TableCell>
-                  <IconButton disabled>
-                    <DeleteOutlineIcon />
-                  </IconButton>
-                </TableCell>
-                <TableCell>
-                  <IconButton
-                    onClick={() => handleAppendWebhookAdditionalHeader(0)}
-                  >
-                    <AddIcon />
-                  </IconButton>
-                </TableCell>
-              </TableRow>
-            )}
-            {fields.map((field, index) => (
-              <TableRow key={field.id}>
-                <TableCell>
-                  <Controller
-                    name={`webhooks.${webhookIndex}.headers.${index}.headerKey`}
-                    control={control}
-                    defaultValue=""
-                    render={({ field, fieldState: { error } }) => (
-                      <TextField
-                        {...field}
-                        label="Key"
-                        variant="standard"
-                        fullWidth
-                        error={error != null}
-                        helperText={error?.message}
-                      />
-                    )}
-                  />
-                </TableCell>
-                <TableCell>
-                  <Controller
-                    name={`webhooks.${webhookIndex}.headers.${index}.headerValue`}
-                    control={control}
-                    defaultValue=""
-                    render={({ field, fieldState: { error } }) => (
-                      <TextField
-                        {...field}
-                        label="Value"
-                        variant="standard"
-                        fullWidth
-                        error={error != null}
-                        helperText={error?.message}
-                      />
-                    )}
-                  />
-                </TableCell>
+    <AironeModal
+      title={"AdditionalHeader (Optional)"}
+      caption={
+        "指定した endpoint URL に送るリクエストに付加するヘッダ情報を入力してください。"
+      }
+      open={webhookIndex >= 0}
+      onClose={handleCloseModal}
+    >
+      <StyledTable className="table">
+        <TableBody>
+          {fields.length === 0 && (
+            <TableRow>
+              <TableCell>
+                <TextField
+                  label="Key"
+                  variant="standard"
+                  fullWidth
+                  disabled
+                  onClick={() => handleAppendWebhookAdditionalHeader(0)}
+                />
+              </TableCell>
+              <TableCell>
+                <TextField
+                  label="Value"
+                  variant="standard"
+                  fullWidth
+                  disabled
+                  onClick={() => handleAppendWebhookAdditionalHeader(0)}
+                />
+              </TableCell>
+              <TableCell>
+                <IconButton disabled>
+                  <DeleteOutlineIcon />
+                </IconButton>
+              </TableCell>
+              <TableCell>
+                <IconButton
+                  onClick={() => handleAppendWebhookAdditionalHeader(0)}
+                >
+                  <AddIcon />
+                </IconButton>
+              </TableCell>
+            </TableRow>
+          )}
+          {fields.map((field, index) => (
+            <TableRow key={field.id}>
+              <TableCell>
+                <Controller
+                  name={`webhooks.${webhookIndex}.headers.${index}.headerKey`}
+                  control={control}
+                  defaultValue=""
+                  render={({ field, fieldState: { error } }) => (
+                    <TextField
+                      {...field}
+                      label="Key"
+                      variant="standard"
+                      fullWidth
+                      error={error != null}
+                      helperText={error?.message}
+                    />
+                  )}
+                />
+              </TableCell>
+              <TableCell>
+                <Controller
+                  name={`webhooks.${webhookIndex}.headers.${index}.headerValue`}
+                  control={control}
+                  defaultValue=""
+                  render={({ field, fieldState: { error } }) => (
+                    <TextField
+                      {...field}
+                      label="Value"
+                      variant="standard"
+                      fullWidth
+                      error={error != null}
+                      helperText={error?.message}
+                    />
+                  )}
+                />
+              </TableCell>
 
-                <TableCell>
-                  <IconButton
-                    onClick={() => handleDeleteWebhookAdditionalHeader(index)}
-                  >
-                    <DeleteOutlineIcon />
-                  </IconButton>
-                </TableCell>
+              <TableCell>
+                <IconButton
+                  onClick={() => handleDeleteWebhookAdditionalHeader(index)}
+                >
+                  <DeleteOutlineIcon />
+                </IconButton>
+              </TableCell>
 
-                <TableCell>
-                  <IconButton
-                    onClick={() =>
-                      handleAppendWebhookAdditionalHeader(index + 1)
-                    }
-                  >
-                    <AddIcon />
-                  </IconButton>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </StyledTable>
+              <TableCell>
+                <IconButton
+                  onClick={() => handleAppendWebhookAdditionalHeader(index + 1)}
+                >
+                  <AddIcon />
+                </IconButton>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </StyledTable>
 
-        <Box sx={{ width: "92%" }}>
-          <Button onClick={handleCloseModal}>
-            <Typography align="right">閉じる</Typography>
-          </Button>
-        </Box>
-      </Paper>
-    </StyledModal>
+      <Box sx={{ width: "92%" }}>
+        <Button onClick={handleCloseModal}>
+          <Typography align="right">閉じる</Typography>
+        </Button>
+      </Box>
+    </AironeModal>
   );
 };

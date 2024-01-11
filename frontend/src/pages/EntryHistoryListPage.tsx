@@ -1,7 +1,8 @@
 import AppsIcon from "@mui/icons-material/Apps";
 import { Box, Container, IconButton } from "@mui/material";
 import React, { FC, useState } from "react";
-import { useAsync } from "react-use";
+
+import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
 
 import { Loading } from "components/common/Loading";
 import { PageHeader } from "components/common/PageHeader";
@@ -21,13 +22,13 @@ export const EntryHistoryListPage: FC = () => {
     null
   );
 
-  const entry = useAsync(async () => {
+  const entry = useAsyncWithThrow(async () => {
     return entryId != undefined
       ? await aironeApiClient.getEntry(entryId)
       : undefined;
   }, [entryId]);
 
-  const histories = useAsync(async () => {
+  const histories = useAsyncWithThrow(async () => {
     return await aironeApiClient.getEntryHistories(entryId, page);
   }, [entryId, page]);
 

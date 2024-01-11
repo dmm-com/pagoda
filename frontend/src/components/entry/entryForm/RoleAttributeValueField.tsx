@@ -3,8 +3,8 @@ import { styled } from "@mui/material/styles";
 import React, { FC } from "react";
 import { Control, Controller } from "react-hook-form";
 import { UseFormSetValue } from "react-hook-form/dist/types/form";
-import { useAsync } from "react-use";
 
+import { useAsyncWithThrow } from "../../../hooks/useAsyncWithThrow";
 import { aironeApiClient } from "../../../repository/AironeApiClient";
 
 import { Schema } from "./EntryFormSchema";
@@ -31,7 +31,7 @@ export const RoleAttributeValueField: FC<Props> = ({
   control,
   setValue,
 }) => {
-  const roles = useAsync(async () => {
+  const roles = useAsyncWithThrow(async () => {
     const _roles = await aironeApiClient.getRoles();
     return _roles.map((g) => ({ id: g.id, name: g.name }));
   }, []);

@@ -3,9 +3,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Box } from "@mui/material";
 import React, { FC, useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { Prompt } from "react-router-dom";
-import { useHistory } from "react-router-dom";
-import { useAsync } from "react-use";
+import { Prompt, useHistory } from "react-router-dom";
 
 import { entitiesPath, entityEntriesPath } from "Routes";
 import { Loading } from "components/common/Loading";
@@ -13,7 +11,7 @@ import { PageHeader } from "components/common/PageHeader";
 import { SubmitButton } from "components/common/SubmitButton";
 import { EntityBreadcrumbs } from "components/entity/EntityBreadcrumbs";
 import { EntityForm } from "components/entity/EntityForm";
-import { schema, Schema } from "components/entity/entityForm/EntityFormSchema";
+import { Schema, schema } from "components/entity/entityForm/EntityFormSchema";
 import { useAsyncWithThrow } from "hooks/useAsyncWithThrow";
 import { useFormNotification } from "hooks/useFormNotification";
 import { useTypedParams } from "hooks/useTypedParams";
@@ -55,7 +53,7 @@ export const EditEntityPage: FC = () => {
     }
   }, []);
 
-  const referralEntities = useAsync(async () => {
+  const referralEntities = useAsyncWithThrow(async () => {
     const entities = await aironeApiClient.getEntities();
     return entities.results;
   });

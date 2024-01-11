@@ -3,7 +3,8 @@ import { OverridableComponent } from "@mui/material/OverridableComponent";
 import { styled } from "@mui/material/styles";
 import React, { FC } from "react";
 import { Link, useHistory, useLocation } from "react-router-dom";
-import { useAsync } from "react-use";
+
+import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
 
 import { entityEntriesPath, entryDetailsPath } from "Routes";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
@@ -42,13 +43,13 @@ export const DashboardPage: FC = () => {
 
   const [query, submitQuery] = useSimpleSearch();
 
-  const entries = useAsync(async () => {
+  const entries = useAsyncWithThrow(async () => {
     if (query != null) {
       return await aironeApiClient.getSearchEntries(query);
     }
   }, [location, query]);
 
-  const entities = useAsync(async () => {
+  const entities = useAsyncWithThrow(async () => {
     return await aironeApiClient.getEntities(undefined, undefined, true);
   });
 

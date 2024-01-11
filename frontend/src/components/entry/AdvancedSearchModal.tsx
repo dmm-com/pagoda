@@ -2,36 +2,12 @@ import {
   AdvancedSearchResultAttrInfo,
   AdvancedSearchResultAttrInfoFilterKeyEnum,
 } from "@dmm-com/airone-apiclient-typescript-fetch";
-import {
-  Modal,
-  Box,
-  Autocomplete,
-  Checkbox,
-  TextField,
-  Typography,
-  Button,
-} from "@mui/material";
-import { styled } from "@mui/material/styles";
+import { Box, Autocomplete, Checkbox, TextField, Button } from "@mui/material";
 import React, { Dispatch, FC, useState, SetStateAction } from "react";
 import { useHistory } from "react-router-dom";
 
 import { formatAdvancedSearchParams } from "../../services/entry/AdvancedSearch";
-
-const StyledModal = styled(Modal)(({}) => ({
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-}));
-
-const Paper = styled(Box)(({ theme }) => ({
-  display: "flex",
-  flexDirection: "column",
-  backgroundColor: theme.palette.background.paper,
-  border: "2px solid #000",
-  boxShadow: theme.shadows[5],
-  padding: theme.spacing(2, 3, 1),
-  width: "50%",
-}));
+import { AironeModal } from "../common/AironeModal";
 
 interface Props {
   openModal: boolean;
@@ -85,57 +61,48 @@ export const AdvancedSearchModal: FC<Props> = ({
   };
 
   return (
-    <StyledModal
-      aria-labelledby="transition-modal-title"
-      aria-describedby="transition-modal-description"
+    <AironeModal
+      title={"検索属性の再設定"}
       open={openModal}
       onClose={() => setOpenModal(false)}
     >
-      <Paper>
-        <Typography color="primary">検索属性の再設定</Typography>
-
-        <Autocomplete
-          options={attrNames}
-          defaultValue={initialAttrNames}
-          onChange={(_, value: Array<string>) => setSelectedAttrNames(value)}
-          renderInput={(params) => (
-            <TextField
-              {...params}
-              variant="outlined"
-              placeholder="属性を選択"
-            />
-          )}
-          multiple
-          sx={{ width: "100%", margin: "20px 0" }}
-        />
-        <Box display="flex" justifyContent="center">
-          <Box>
-            参照エントリも含める
-            <Checkbox
-              checked={hasReferral}
-              onChange={(e) => setHasReferral(e.target.checked)}
-            />
-          </Box>
+      <Autocomplete
+        options={attrNames}
+        defaultValue={initialAttrNames}
+        onChange={(_, value: Array<string>) => setSelectedAttrNames(value)}
+        renderInput={(params) => (
+          <TextField {...params} variant="outlined" placeholder="属性を選択" />
+        )}
+        multiple
+        sx={{ width: "100%", margin: "20px 0" }}
+      />
+      <Box display="flex" justifyContent="center">
+        <Box>
+          参照エントリも含める
+          <Checkbox
+            checked={hasReferral}
+            onChange={(e) => setHasReferral(e.target.checked)}
+          />
         </Box>
-        <Box display="flex" justifyContent="flex-end" my="8px">
-          <Button
-            variant="contained"
-            color="secondary"
-            sx={{ mx: "4px" }}
-            onClick={handleUpdatePageURL}
-          >
-            保存
-          </Button>
-          <Button
-            variant="outlined"
-            color="primary"
-            sx={{ mx: "4px" }}
-            onClick={() => setOpenModal(false)}
-          >
-            キャンセル
-          </Button>
-        </Box>
-      </Paper>
-    </StyledModal>
+      </Box>
+      <Box display="flex" justifyContent="flex-end" my="8px">
+        <Button
+          variant="contained"
+          color="secondary"
+          sx={{ mx: "4px" }}
+          onClick={handleUpdatePageURL}
+        >
+          保存
+        </Button>
+        <Button
+          variant="outlined"
+          color="primary"
+          sx={{ mx: "4px" }}
+          onClick={() => setOpenModal(false)}
+        >
+          キャンセル
+        </Button>
+      </Box>
+    </AironeModal>
   );
 };

@@ -9,11 +9,12 @@ import { useSnackbar } from "notistack";
 import React, { FC, useCallback, useEffect, useState } from "react";
 import { FieldErrors, useForm } from "react-hook-form";
 import { Prompt, useHistory } from "react-router-dom";
-import { useAsync } from "react-use";
+
+import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
 
 import { editEntityPath, entityEntriesPath, entryDetailsPath } from "Routes";
 import { ACLForm } from "components/acl/ACLForm";
-import { schema, Schema } from "components/acl/aclForm/ACLFormSchema";
+import { Schema, schema } from "components/acl/aclForm/ACLFormSchema";
 import { Loading } from "components/common/Loading";
 import { PageHeader } from "components/common/PageHeader";
 import { SubmitButton } from "components/common/SubmitButton";
@@ -41,7 +42,7 @@ export const ACLPage: FC = () => {
     mode: "onSubmit",
   });
 
-  const acl = useAsync(async () => {
+  const acl = useAsyncWithThrow(async () => {
     return await aironeApiClient.getAcl(objectId);
   });
 

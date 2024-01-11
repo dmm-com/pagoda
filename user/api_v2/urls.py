@@ -31,6 +31,10 @@ urlpatterns = [
         views.UserPasswordBySuperuserAPI.as_view(),
     ),
     path(
+        "<int:pk>/auth",
+        views.UserAuthAPI.as_view(),
+    ),
+    path(
         "token/",
         views.UserTokenAPI.as_view(
             {

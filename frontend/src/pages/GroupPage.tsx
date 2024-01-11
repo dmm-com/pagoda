@@ -11,19 +11,19 @@ import {
 import { styled } from "@mui/material/styles";
 import React, { FC, useCallback, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { useAsync } from "react-use";
 
 import { SearchBox } from "../components/common/SearchBox";
 import { GroupControlMenu } from "../components/group/GroupControlMenu";
 import { GroupImportModal } from "../components/group/GroupImportModal";
 import { GroupTreeRoot } from "../components/group/GroupTreeRoot";
-import { ServerContext } from "../services/ServerContext";
+import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
 
 import { newGroupPath, topPath } from "Routes";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { Loading } from "components/common/Loading";
 import { PageHeader } from "components/common/PageHeader";
 import { aironeApiClient } from "repository/AironeApiClient";
+import { ServerContext } from "services/ServerContext";
 
 const StyledBox = styled(Box)({
   position: "absolute",
@@ -46,11 +46,11 @@ export const GroupPage: FC = () => {
   } | null>();
   const [toggle, setToggle] = useState(false);
 
-  const groupTrees = useAsync(async () => {
+  const groupTrees = useAsyncWithThrow(async () => {
     return await aironeApiClient.getGroupTrees();
   }, [toggle]);
 
-  const usersInGroup = useAsync(async (): Promise<
+  const usersInGroup = useAsyncWithThrow(async (): Promise<
     Array<{ id: number; username: string }>
   > => {
     if (selectedGroupId != null) {

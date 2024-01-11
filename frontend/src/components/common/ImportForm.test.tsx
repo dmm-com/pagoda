@@ -9,7 +9,7 @@ import { TestWrapper } from "TestWrapper";
 import { ImportForm } from "components/common/ImportForm";
 
 describe("ImportForm", () => {
-  const file = new File(["key: value"], "test.yml", {
+  const file = new Blob(["key: value"], {
     type: "application/yaml",
   });
 
