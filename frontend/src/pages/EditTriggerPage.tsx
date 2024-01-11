@@ -24,13 +24,13 @@ import { Schema, schema } from "components/trigger/TriggerFormSchema";
 import { useAsyncWithThrow } from "hooks/useAsyncWithThrow";
 import { useFormNotification } from "hooks/useFormNotification";
 import { useTypedParams } from "hooks/useTypedParams";
-import { aironeApiClientV2 } from "repository/AironeApiClientV2";
+import { aironeApiClient } from "repository/AironeApiClient";
 
-const HeaderTableRow = styled(TableRow)(({}) => ({
+const HeaderTableRow = styled(TableRow)(({ }) => ({
   backgroundColor: "#455A64",
 }));
 
-const HeaderTableCell = styled(TableCell)(({}) => ({
+const HeaderTableCell = styled(TableCell)(({ }) => ({
   color: "#FFFFFF",
   boxSizing: "border-box",
 }));
@@ -74,7 +74,7 @@ export const EditTriggerPage: FC = () => {
 
   const trigger = useAsyncWithThrow(async () => {
     if (triggerId !== undefined) {
-      return await aironeApiClientV2.getTrigger(triggerId);
+      return await aironeApiClient.getTrigger(triggerId);
     } else {
       return undefined;
     }
@@ -82,7 +82,7 @@ export const EditTriggerPage: FC = () => {
 
   const entity = useAsyncWithThrow(async () => {
     if (trigger.value) {
-      return await aironeApiClientV2.getEntity(trigger.value.entity.id);
+      return await aironeApiClient.getEntity(trigger.value.entity.id);
     } else {
       return undefined;
     }
@@ -107,10 +107,10 @@ export const EditTriggerPage: FC = () => {
         }),
       };
       if (triggerId !== undefined) {
-        await aironeApiClientV2.updateTrigger(triggerId, triggerCreateUpdate);
+        await aironeApiClient.updateTrigger(triggerId, triggerCreateUpdate);
         enqueueSubmitResult(true);
       } else {
-        await aironeApiClientV2.createTrigger(triggerCreateUpdate);
+        await aironeApiClient.createTrigger(triggerCreateUpdate);
         enqueueSubmitResult(true);
       }
     },

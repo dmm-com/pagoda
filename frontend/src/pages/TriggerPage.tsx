@@ -29,14 +29,13 @@ import {
   TriggerAction,
   TriggerCondition,
 } from "@dmm-com/airone-apiclient-typescript-fetch";
-import { topPath } from "Routes";
-import { editTriggerPath, newTriggerPath, triggersPath } from "Routes";
+import { editTriggerPath, newTriggerPath, topPath, triggersPath } from "Routes";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { Confirmable } from "components/common/Confirmable";
 import { Loading } from "components/common/Loading";
 import { PageHeader } from "components/common/PageHeader";
 import { usePage } from "hooks/usePage";
-import { aironeApiClientV2 } from "repository/AironeApiClientV2";
+import { aironeApiClient } from "repository/AironeApiClient";
 
 const StyledList = styled(List)(() => ({
   padding: "0",
@@ -50,11 +49,11 @@ const StyledIconButton = styled(IconButton)(({ theme }) => ({
   margin: theme.spacing(1),
 })) as OverridableComponent<ExtendButtonBaseTypeMap<IconButtonTypeMap>>;
 
-const HeaderTableRow = styled(TableRow)(({}) => ({
+const HeaderTableRow = styled(TableRow)(({ }) => ({
   backgroundColor: "#455A64",
 }));
 
-const HeaderTableCell = styled(TableCell)(({}) => ({
+const HeaderTableCell = styled(TableCell)(({ }) => ({
   color: "#FFFFFF",
 }));
 
@@ -110,12 +109,12 @@ export const TriggerPage: FC = () => {
   const { enqueueSnackbar } = useSnackbar();
 
   const triggers = useAsync(async () => {
-    return await aironeApiClientV2.getTriggers(page);
+    return await aironeApiClient.getTriggers(page);
   }, [page, query, toggle]);
 
   const handleDelete = async (triggerId: number) => {
     try {
-      await aironeApiClientV2.deleteTrigger(triggerId);
+      await aironeApiClient.deleteTrigger(triggerId);
       enqueueSnackbar(`トリガーの削除が完了しました`, {
         variant: "success",
       });
