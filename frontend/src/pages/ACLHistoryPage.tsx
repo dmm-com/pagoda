@@ -15,7 +15,7 @@ import { EntryBreadcrumbs } from "components/entry/EntryBreadcrumbs";
 import { EntryControlMenu } from "components/entry/EntryControlMenu";
 import { EntryImportModal } from "components/entry/EntryImportModal";
 import { useTypedParams } from "hooks/useTypedParams";
-import { aironeApiClientV2 } from "repository/AironeApiClientV2";
+import { aironeApiClient } from "repository/AironeApiClient";
 
 const MenuBox = styled(Box)(({}) => ({
   width: "50px",
@@ -28,11 +28,11 @@ export const ACLHistoryPage: FC = () => {
   const [openImportModal, setOpenImportModal] = React.useState(false);
 
   const acl = useAsyncWithThrow(async () => {
-    return await aironeApiClientV2.getAcl(objectId);
+    return await aironeApiClient.getAcl(objectId);
   }, [objectId]);
 
   const aclHistory = useAsyncWithThrow(async () => {
-    return await aironeApiClientV2.getAclHistory(objectId);
+    return await aironeApiClient.getAclHistory(objectId);
   }, [objectId]);
 
   const controlMenu = () => {
@@ -66,14 +66,14 @@ export const ACLHistoryPage: FC = () => {
 
     switch (acl.value.objtype) {
       case ACLObjtypeEnum.Entity:
-        aironeApiClientV2.getEntity(objectId).then((resp) => {
+        aironeApiClient.getEntity(objectId).then((resp) => {
           setBreadcrumbs(
             <EntityBreadcrumbs entity={resp} title="ACL変更履歴" />
           );
         });
         break;
       case ACLObjtypeEnum.Entry:
-        aironeApiClientV2.getEntry(objectId).then((resp) => {
+        aironeApiClient.getEntry(objectId).then((resp) => {
           setBreadcrumbs(<EntryBreadcrumbs entry={resp} title="ACL変更履歴" />);
         });
         break;

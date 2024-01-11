@@ -19,7 +19,7 @@ import { Link } from "react-router-dom";
 import { AutocompleteWithAllSelector } from "../components/common/AutocompleteWithAllSelector";
 import { PageHeader } from "../components/common/PageHeader";
 import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
-import { aironeApiClientV2 } from "../repository/AironeApiClientV2";
+import { aironeApiClient } from "../repository/AironeApiClient";
 import { formatAdvancedSearchParams } from "../services/entry/AdvancedSearch";
 
 import { advancedSearchResultPath, topPath } from "Routes";
@@ -52,13 +52,13 @@ export const AdvancedSearchPage: FC = () => {
   const [attrName, setAttrName] = useState("");
 
   const entities = useAsyncWithThrow(async () => {
-    const entities = await aironeApiClientV2.getEntities();
+    const entities = await aironeApiClient.getEntities();
     return entities.results;
   });
 
   const attrs = useAsyncWithThrow(async () => {
     if (selectedEntities.length > 0 || searchAllEntities) {
-      return await aironeApiClientV2.getEntityAttrs(
+      return await aironeApiClient.getEntityAttrs(
         selectedEntities.map((e) => e.id),
         searchAllEntities
       );

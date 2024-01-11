@@ -5,7 +5,7 @@ import { Control, Controller } from "react-hook-form";
 import { UseFormSetValue } from "react-hook-form/dist/types/form";
 
 import { useAsyncWithThrow } from "../../../hooks/useAsyncWithThrow";
-import { aironeApiClientV2 } from "../../../repository/AironeApiClientV2";
+import { aironeApiClient } from "../../../repository/AironeApiClient";
 
 import { Schema } from "./EntryFormSchema";
 
@@ -32,7 +32,7 @@ export const GroupAttributeValueField: FC<Props> = ({
   setValue,
 }) => {
   const groups = useAsyncWithThrow(async () => {
-    const _groups = await aironeApiClientV2.getGroups();
+    const _groups = await aironeApiClient.getGroups();
     return _groups.results?.map((g) => ({ id: g.id, name: g.name }));
   }, []);
 

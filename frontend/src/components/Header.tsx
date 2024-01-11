@@ -38,19 +38,18 @@ import {
 } from "Routes";
 import { SearchBox } from "components/common/SearchBox";
 import { useSimpleSearch } from "hooks/useSimpleSearch";
-import { postLogout } from "repository/AironeAPIClient";
-import { aironeApiClientV2 } from "repository/AironeApiClientV2";
+import { aironeApiClient } from "repository/AironeApiClient";
 import {
   JobOperations,
   JobRefreshIntervalMilliSec,
   JobStatuses,
 } from "services/Constants";
-import { DjangoContext } from "services/DjangoContext";
 import {
   getLatestCheckDate,
   jobTargetLabel,
   updateLatestCheckDate,
 } from "services/JobUtil";
+import { ServerContext } from "services/ServerContext";
 
 const Frame = styled(Box)(({}) => ({
   width: "100%",
@@ -115,7 +114,7 @@ const SearchBoxWrapper = styled(Box)(({}) => ({
 }));
 
 export const Header: FC = () => {
-  const djangoContext = DjangoContext.getInstance();
+  const serverContext = ServerContext.getInstance();
 
   const { t } = useTranslation();
   const [query, submitQuery] = useSimpleSearch();
@@ -129,7 +128,7 @@ export const Header: FC = () => {
 
   useInterval(async () => {
     try {
-      setRecentJobs(await aironeApiClientV2.getRecentJobs());
+      setRecentJobs(await aironeApiClient.getRecentJobs());
     } catch (e) {
       console.warn("failed to get recent jobs. will auto retried ...");
     }
@@ -141,17 +140,16 @@ export const Header: FC = () => {
       : recentJobs.length;
   }, [latestCheckDate, recentJobs]);
 
-  const handleLogout = () => {
-    postLogout().then(() => {
-      window.location.href = `${loginPath()}?next=${window.location.pathname}`;
-    });
+  const handleLogout = async () => {
+    await aironeApiClient.postLogout();
+    window.location.href = `${loginPath()}?next=${window.location.pathname}`;
   };
 
   const handleOpenMenu = async (e: MouseEvent<HTMLButtonElement>) => {
     setJobAnchorEl(e.currentTarget);
 
     try {
-      setRecentJobs(await aironeApiClientV2.getRecentJobs());
+      setRecentJobs(await aironeApiClient.getRecentJobs());
     } catch (e) {
       console.warn("failed to get recent jobs. will auto retried ...");
     }
@@ -168,8 +166,8 @@ export const Header: FC = () => {
               <Title fontSize="24px" component={Link} to={topPath()}>
                 AirOne
               </Title>
-              <Version fontSize="12px" title={djangoContext?.version}>
-                {djangoContext?.version}
+              <Version fontSize="12px" title={serverContext?.version}>
+                {serverContext?.version}
               </Version>
             </TitleBox>
 
@@ -204,7 +202,7 @@ export const Header: FC = () => {
 
               {/* If there is another menu settings are passed from Server,
                   this represent another menu*/}
-              {djangoContext?.extendedHeaderMenus.map((menu, index) => (
+              {serverContext?.extendedHeaderMenus.map((menu, index) => (
                 <PopupState variant="popover" popupId={menu.name} key={index}>
                   {(popupState) => (
                     <React.Fragment>
@@ -226,7 +224,7 @@ export const Header: FC = () => {
             </MenuBox>
 
             <MenuBox justifyContent="flex-end">
-              {djangoContext?.legacyUiDisabled === false && (
+              {serverContext?.legacyUiDisabled === false && (
                 <Button href="/dashboard/">{t("previousVersion")}</Button>
               )}
               <IconButton
@@ -244,13 +242,13 @@ export const Header: FC = () => {
                 keepMounted
               >
                 <MenuItem>
-                  {djangoContext?.user?.username ?? "不明なユーザ"}{" "}
+                  {serverContext?.user?.username ?? "不明なユーザ"}{" "}
                   {t("currentUser")}
                 </MenuItem>
                 <Divider light />
                 <MenuItem
                   component={Link}
-                  to={userPath(djangoContext?.user?.id ?? 0)}
+                  to={userPath(serverContext?.user?.id ?? 0)}
                 >
                   {t("userSetting")}
                 </MenuItem>

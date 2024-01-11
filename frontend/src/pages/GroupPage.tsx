@@ -17,13 +17,13 @@ import { GroupControlMenu } from "../components/group/GroupControlMenu";
 import { GroupImportModal } from "../components/group/GroupImportModal";
 import { GroupTreeRoot } from "../components/group/GroupTreeRoot";
 import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
-import { DjangoContext } from "../services/DjangoContext";
 
 import { newGroupPath, topPath } from "Routes";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { Loading } from "components/common/Loading";
 import { PageHeader } from "components/common/PageHeader";
-import { aironeApiClientV2 } from "repository/AironeApiClientV2";
+import { aironeApiClient } from "repository/AironeApiClient";
+import { ServerContext } from "services/ServerContext";
 
 const StyledBox = styled(Box)({
   position: "absolute",
@@ -47,14 +47,14 @@ export const GroupPage: FC = () => {
   const [toggle, setToggle] = useState(false);
 
   const groupTrees = useAsyncWithThrow(async () => {
-    return await aironeApiClientV2.getGroupTrees();
+    return await aironeApiClient.getGroupTrees();
   }, [toggle]);
 
   const usersInGroup = useAsyncWithThrow(async (): Promise<
     Array<{ id: number; username: string }>
   > => {
     if (selectedGroupId != null) {
-      const group = await aironeApiClientV2.getGroup(selectedGroupId);
+      const group = await aironeApiClient.getGroup(selectedGroupId);
       return group.members.map((member) => ({
         id: member.id,
         username: member.username,
@@ -76,10 +76,10 @@ export const GroupPage: FC = () => {
   };
 
   const handleExport = useCallback(async () => {
-    await aironeApiClientV2.exportGroups("group.yaml");
+    await aironeApiClient.exportGroups("group.yaml");
   }, []);
 
-  const isSuperuser = DjangoContext.getInstance()?.user?.isSuperuser ?? false;
+  const isSuperuser = ServerContext.getInstance()?.user?.isSuperuser ?? false;
 
   return (
     <Box display="flex" flexDirection="column" flexGrow="1">

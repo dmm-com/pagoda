@@ -247,20 +247,14 @@ describe("AttributeValue", () => {
 
   /* eslint-disable */
   jest
-    .spyOn(
-      require("../../../repository/AironeApiClientV2").aironeApiClientV2,
-      "getGroups"
-    )
+    .spyOn(require("repository/AironeApiClient").aironeApiClient, "getGroups")
+    .mockResolvedValue(Promise.resolve([]));
+  jest
+    .spyOn(require("repository/AironeApiClient").aironeApiClient, "getRoles")
     .mockResolvedValue(Promise.resolve([]));
   jest
     .spyOn(
-      require("../../../repository/AironeApiClientV2").aironeApiClientV2,
-      "getRoles"
-    )
-    .mockResolvedValue(Promise.resolve([]));
-  jest
-    .spyOn(
-      require("../../../repository/AironeApiClientV2").aironeApiClientV2,
+      require("repository/AironeApiClient").aironeApiClient,
       "getEntryAttrReferrals"
     )
     .mockResolvedValue(Promise.resolve([]));

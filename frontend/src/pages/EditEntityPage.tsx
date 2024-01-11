@@ -3,8 +3,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Box } from "@mui/material";
 import React, { FC, useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { Prompt } from "react-router-dom";
-import { useHistory } from "react-router-dom";
+import { Prompt, useHistory } from "react-router-dom";
 
 import { entitiesPath, entityEntriesPath } from "Routes";
 import { Loading } from "components/common/Loading";
@@ -12,11 +11,11 @@ import { PageHeader } from "components/common/PageHeader";
 import { SubmitButton } from "components/common/SubmitButton";
 import { EntityBreadcrumbs } from "components/entity/EntityBreadcrumbs";
 import { EntityForm } from "components/entity/EntityForm";
-import { schema, Schema } from "components/entity/entityForm/EntityFormSchema";
+import { Schema, schema } from "components/entity/entityForm/EntityFormSchema";
 import { useAsyncWithThrow } from "hooks/useAsyncWithThrow";
 import { useFormNotification } from "hooks/useFormNotification";
 import { useTypedParams } from "hooks/useTypedParams";
-import { aironeApiClientV2 } from "repository/AironeApiClientV2";
+import { aironeApiClient } from "repository/AironeApiClient";
 import {
   extractAPIException,
   isResponseError,
@@ -48,14 +47,14 @@ export const EditEntityPage: FC = () => {
 
   const entity = useAsyncWithThrow(async () => {
     if (entityId !== undefined) {
-      return await aironeApiClientV2.getEntity(entityId);
+      return await aironeApiClient.getEntity(entityId);
     } else {
       return undefined;
     }
   }, []);
 
   const referralEntities = useAsyncWithThrow(async () => {
-    const entities = await aironeApiClientV2.getEntities();
+    const entities = await aironeApiClient.getEntities();
     return entities.results;
   });
 
@@ -124,7 +123,7 @@ export const EditEntityPage: FC = () => {
 
     try {
       if (willCreate) {
-        await aironeApiClientV2.createEntity(
+        await aironeApiClient.createEntity(
           entityForm.name,
           entityForm.note,
           entityForm.isToplevel,
@@ -132,7 +131,7 @@ export const EditEntityPage: FC = () => {
           webhooks
         );
       } else {
-        await aironeApiClientV2.updateEntity(
+        await aironeApiClient.updateEntity(
           entityId,
           entityForm.name,
           entityForm.note,

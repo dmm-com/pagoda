@@ -3,7 +3,7 @@ import React, { FC, useCallback } from "react";
 import { AironeModal } from "../common/AironeModal";
 
 import { ImportForm } from "components/common/ImportForm";
-import { aironeApiClientV2 } from "repository/AironeApiClientV2";
+import { aironeApiClient } from "repository/AironeApiClient";
 
 interface Props {
   openImportModal: boolean;
@@ -15,7 +15,7 @@ export const RoleImportModal: FC<Props> = ({
   closeImportModal,
 }) => {
   const handleImport = useCallback(async (data: string | ArrayBuffer) => {
-    await aironeApiClientV2.importRoles(data);
+    await aironeApiClient.importRoles(data);
   }, []);
 
   return (

@@ -22,7 +22,7 @@ import {
   aclHistoryPath,
 } from "Routes";
 import { Confirmable } from "components/common/Confirmable";
-import { aironeApiClientV2 } from "repository/AironeApiClientV2";
+import { aironeApiClient } from "repository/AironeApiClient";
 
 interface EntryControlProps {
   entityId: number;
@@ -44,7 +44,7 @@ export const EntryControlMenu: FC<EntryControlProps> = ({
 
   const handleDelete = async (entryId: number) => {
     try {
-      await aironeApiClientV2.destroyEntry(entryId);
+      await aironeApiClient.destroyEntry(entryId);
       enqueueSnackbar("エントリの削除が完了しました", {
         variant: "success",
       });

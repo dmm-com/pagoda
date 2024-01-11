@@ -11,7 +11,7 @@ import { EntryImportModal } from "components/entry/EntryImportModal";
 import { useAsyncWithThrow } from "hooks/useAsyncWithThrow";
 import { usePage } from "hooks/usePage";
 import { useTypedParams } from "hooks/useTypedParams";
-import { aironeApiClientV2 } from "repository/AironeApiClientV2";
+import { aironeApiClient } from "repository/AironeApiClient";
 
 export const EntityHistoryPage: FC = () => {
   const { entityId } = useTypedParams<{ entityId: number }>();
@@ -23,10 +23,10 @@ export const EntityHistoryPage: FC = () => {
   const [openImportModal, setOpenImportModal] = React.useState(false);
 
   const entity = useAsyncWithThrow(async () => {
-    return await aironeApiClientV2.getEntity(entityId);
+    return await aironeApiClient.getEntity(entityId);
   }, [entityId]);
   const histories = useAsyncWithThrow(async () => {
-    return await aironeApiClientV2.getEntityHistories(entityId, page);
+    return await aironeApiClient.getEntityHistories(entityId, page);
   }, [entityId, page]);
 
   return (

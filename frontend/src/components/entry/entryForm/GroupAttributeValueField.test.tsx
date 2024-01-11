@@ -95,7 +95,7 @@ describe("GroupAttributeValueField", () => {
     /* eslint-disable */
     jest
       .spyOn(
-        require("../../../repository/AironeApiClientV2").aironeApiClientV2,
+        require("../../../repository/AironeApiClient").aironeApiClient,
         "getGroups"
       )
       .mockResolvedValue(Promise.resolve(groups));
@@ -150,7 +150,7 @@ describe("GroupAttributeValueField", () => {
     /* eslint-disable */
     jest
       .spyOn(
-        require("../../../repository/AironeApiClientV2").aironeApiClientV2,
+        require("../../../repository/AironeApiClient").aironeApiClient,
         "getGroups"
       )
       .mockResolvedValue(Promise.resolve(groups));

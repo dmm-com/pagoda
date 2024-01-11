@@ -13,7 +13,7 @@ import { PageHeader } from "components/common/PageHeader";
 import { PaginationFooter } from "components/common/PaginationFooter";
 import { JobList } from "components/job/JobList";
 import { usePage } from "hooks/usePage";
-import { aironeApiClientV2 } from "repository/AironeApiClientV2";
+import { aironeApiClient } from "repository/AironeApiClient";
 import { JobList as ConstJobList } from "services/Constants";
 
 export const JobPage: FC = () => {
@@ -22,7 +22,7 @@ export const JobPage: FC = () => {
   const [refresh, toggleRefresh] = useToggle(false);
 
   const jobs = useAsyncWithThrow(async () => {
-    return await aironeApiClientV2.getJobs(page);
+    return await aironeApiClient.getJobs(page);
   }, [page, refresh]);
 
   return (

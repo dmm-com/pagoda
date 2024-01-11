@@ -2,7 +2,7 @@ import { Box, Button, Input } from "@mui/material";
 import { useSnackbar } from "notistack";
 import React, { FC, useState } from "react";
 
-import { aironeApiClientV2 } from "../../repository/AironeApiClientV2";
+import { aironeApiClient } from "../../repository/AironeApiClient";
 import { AironeModal } from "../common/AironeModal";
 
 interface Props {
@@ -25,7 +25,7 @@ export const PasswordResetConfirmModal: FC<Props> = ({
 
   const handleSubmit = async () => {
     try {
-      await aironeApiClientV2.confirmResetPassword(
+      await aironeApiClient.confirmResetPassword(
         uidb64,
         token,
         password,

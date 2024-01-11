@@ -4,7 +4,7 @@ import { styled } from "@mui/material/styles";
 import { useSnackbar } from "notistack";
 import React, { FC, useCallback, useState } from "react";
 
-import { aironeApiClientV2 } from "repository/AironeApiClientV2";
+import { aironeApiClient } from "repository/AironeApiClient";
 
 const StyledModal = styled(Modal)(({}) => ({
   display: "flex",
@@ -39,7 +39,7 @@ export const ChangeUserAuthModal: FC<Props> = ({
 
   const handleSubmit = useCallback(async () => {
     try {
-      await aironeApiClientV2.updateUserAuth(user.id, ldapPassword);
+      await aironeApiClient.updateUserAuth(user.id, ldapPassword);
       enqueueSnackbar("認証方法の変更に成功しました", {
         variant: "success",
       });

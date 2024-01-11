@@ -14,13 +14,13 @@ import { GroupForm } from "components/group/GroupForm";
 import { schema, Schema } from "components/group/groupForm/GroupFormSchema";
 import { useFormNotification } from "hooks/useFormNotification";
 import { useTypedParams } from "hooks/useTypedParams";
-import { aironeApiClientV2 } from "repository/AironeApiClientV2";
+import { aironeApiClient } from "repository/AironeApiClient";
 import {
   extractAPIException,
   isResponseError,
 } from "services/AironeAPIErrorUtil";
-import { DjangoContext } from "services/DjangoContext";
 import { ForbiddenError } from "services/Exceptions";
+import { ServerContext } from "services/ServerContext";
 
 export const EditGroupPage: FC = () => {
   const { groupId } = useTypedParams<{ groupId?: number }>();
@@ -43,7 +43,7 @@ export const EditGroupPage: FC = () => {
 
   const group = useAsyncWithThrow(async () => {
     return groupId != null
-      ? await aironeApiClientV2.getGroup(groupId)
+      ? await aironeApiClient.getGroup(groupId)
       : undefined;
   }, [groupId]);
 
@@ -54,12 +54,12 @@ export const EditGroupPage: FC = () => {
   const handleSubmitOnValid = async (group: Schema) => {
     try {
       if (willCreate) {
-        await aironeApiClientV2.createGroup({
+        await aironeApiClient.createGroup({
           ...group,
           members: group.members.map((member) => member.id),
         });
       } else {
-        await aironeApiClientV2.updateGroup(groupId, {
+        await aironeApiClient.updateGroup(groupId, {
           ...group,
           members: group.members.map((member) => member.id),
         });
@@ -89,7 +89,7 @@ export const EditGroupPage: FC = () => {
     history.goBack();
   };
 
-  if (DjangoContext.getInstance()?.user?.isSuperuser !== true) {
+  if (ServerContext.getInstance()?.user?.isSuperuser !== true) {
     throw new ForbiddenError("only admin can edit a group");
   }
 

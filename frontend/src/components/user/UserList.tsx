@@ -22,9 +22,9 @@ import { Loading } from "components/common/Loading";
 import { PaginationFooter } from "components/common/PaginationFooter";
 import { SearchBox } from "components/common/SearchBox";
 import { usePage } from "hooks/usePage";
-import { aironeApiClientV2 } from "repository/AironeApiClientV2";
+import { aironeApiClient } from "repository/AironeApiClient";
 import { UserList as ConstUserList } from "services/Constants";
-import { DjangoContext } from "services/DjangoContext";
+import { ServerContext } from "services/ServerContext";
 import { normalizeToMatch } from "services/StringUtil";
 
 export const UserList: FC = ({}) => {
@@ -40,13 +40,13 @@ export const UserList: FC = ({}) => {
   const [toggle, setToggle] = useState(false);
 
   const users = useAsyncWithThrow(async () => {
-    return await aironeApiClientV2.getUsers(page, query);
+    return await aironeApiClient.getUsers(page, query);
   }, [page, query, toggle]);
 
   const isSuperuser = useMemo(() => {
-    const djangoContext = DjangoContext.getInstance();
+    const serverContext = ServerContext.getInstance();
     return (
-      djangoContext?.user?.isSuperuser != null && djangoContext.user.isSuperuser
+      serverContext?.user?.isSuperuser != null && serverContext.user.isSuperuser
     );
   }, []);
 
