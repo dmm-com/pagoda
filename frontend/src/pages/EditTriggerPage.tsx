@@ -2,24 +2,24 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Box,
   Container,
-  MenuItem,
-  Select,
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableRow,
-  Typography,
+  Typography
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import React, { FC, useCallback, useEffect } from "react";
-import { Controller, useFieldArray, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { useHistory } from "react-router-dom";
 
 import { TriggerParentUpdate } from "@dmm-com/airone-apiclient-typescript-fetch";
+import { Loading } from "components/common/Loading";
 import { PageHeader } from "components/common/PageHeader";
 import { SubmitButton } from "components/common/SubmitButton";
 import { EntityBreadcrumbs } from "components/entity/EntityBreadcrumbs";
+import { Conditions } from "components/trigger/Conditions";
 import { Schema, schema } from "components/trigger/TriggerFormSchema";
 import { useAsyncWithThrow } from "hooks/useAsyncWithThrow";
 import { useFormNotification } from "hooks/useFormNotification";
@@ -66,11 +66,7 @@ export const EditTriggerPage: FC = () => {
     mode: "onBlur",
   });
 
-  const { fields, insert, remove, swap } = useFieldArray({
-    control,
-    name: "conditions",
-    keyName: "key", // NOTE: attr has 'id' field conflicts default key name
-  });
+
 
   const trigger = useAsyncWithThrow(async () => {
     if (triggerId !== undefined) {
@@ -150,28 +146,11 @@ export const EditTriggerPage: FC = () => {
             </HeaderTableRow>
           </TableHead>
           <StyledTableBody>
-            <>
-              {fields.map((field, index) => {
-                return (
-                  <Box key={field.key}>
-                    <Controller
-                      name={`conditions.${index}.attr.id`}
-                      control={control}
-                      defaultValue={field.attr.id}
-                      render={({ field }) => (
-                        <Select {...field} size="small" fullWidth>
-                          {entity.value?.attrs.map((attr) => (
-                            <MenuItem key={attr.id} value={attr.id}>
-                              {attr.name}
-                            </MenuItem>
-                          ))}
-                        </Select>
-                      )}
-                    />
-                  </Box>
-                );
-              })}
-            </>
+            {!entity.value ? (
+              <Loading />
+            ) : (
+              <Conditions control={control} entity={entity.value} />
+            )}
           </StyledTableBody>
         </Table>
 
