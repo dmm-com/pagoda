@@ -3,7 +3,8 @@ import AppsIcon from "@mui/icons-material/Apps";
 import { Box, Container, IconButton } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import React, { FC, useEffect, useState } from "react";
-import { useAsync } from "react-use";
+
+import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
 
 import { ACLHistoryList } from "components/acl/ACLHistoryList";
 import { Loading } from "components/common/Loading";
@@ -26,11 +27,11 @@ export const ACLHistoryPage: FC = () => {
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
   const [openImportModal, setOpenImportModal] = React.useState(false);
 
-  const acl = useAsync(async () => {
+  const acl = useAsyncWithThrow(async () => {
     return await aironeApiClientV2.getAcl(objectId);
   }, [objectId]);
 
-  const aclHistory = useAsync(async () => {
+  const aclHistory = useAsyncWithThrow(async () => {
     return await aironeApiClientV2.getAclHistory(objectId);
   }, [objectId]);
 

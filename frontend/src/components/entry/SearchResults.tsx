@@ -1,12 +1,10 @@
-import { AdvancedSearchResultValue } from "@dmm-com/airone-apiclient-typescript-fetch";
+import { AdvancedSearchResult } from "@dmm-com/airone-apiclient-typescript-fetch";
 import {
   Box,
   Checkbox,
   List,
   ListItem,
-  Pagination,
   Paper,
-  Stack,
   Table,
   TableBody,
   TableCell,
@@ -21,7 +19,9 @@ import { Link } from "react-router-dom";
 import { SearchResultsTableHead } from "./SearchResultsTableHead";
 
 import { entryDetailsPath } from "Routes";
+import { PaginationFooter } from "components/common/PaginationFooter";
 import { AttributeValue } from "components/entry/AttributeValue";
+import { AdvancedSerarchResultList } from "services/Constants";
 import { AttrsFilter } from "services/entry/AdvancedSearch";
 
 const StyledBox = styled(Box)({
@@ -46,11 +46,10 @@ const StyledTableRow = styled(TableRow)({
 });
 
 interface Props {
-  results: Array<AdvancedSearchResultValue>;
+  results: AdvancedSearchResult;
   page: number;
-  maxPage: number;
+  changePage: (page: number) => void;
   hasReferral: boolean;
-  handleChangePage: (page: number) => void;
   defaultEntryFilter?: string;
   defaultReferralFilter?: string;
   defaultAttrsFilter?: AttrsFilter;
@@ -61,8 +60,7 @@ interface Props {
 export const SearchResults: FC<Props> = ({
   results,
   page,
-  maxPage,
-  handleChangePage,
+  changePage,
   hasReferral,
   defaultEntryFilter,
   defaultReferralFilter,
@@ -77,11 +75,11 @@ export const SearchResults: FC<Props> = ({
     const _attrTypes = Object.fromEntries(
       _attrNames.map((attrName) => [
         attrName,
-        results[0]?.attrs[attrName]?.type,
+        results.values[0]?.attrs[attrName]?.type,
       ])
     );
     return [_attrNames, _attrTypes];
-  }, [defaultAttrsFilter, results]);
+  }, [defaultAttrsFilter, results.values]);
 
   return (
     <Box display="flex" flexDirection="column">
@@ -96,7 +94,7 @@ export const SearchResults: FC<Props> = ({
               defaultAttrsFilter={defaultAttrsFilter}
             />
             <TableBody>
-              {results.map((result) => (
+              {results.values?.map((result) => (
                 <StyledTableRow key={result.entry.id}>
                   <TableCell sx={{ padding: 0 }}>
                     <Checkbox
@@ -159,19 +157,12 @@ export const SearchResults: FC<Props> = ({
           </Table>
         </TableContainer>
 
-        <Box display="flex" justifyContent="center" my="30px">
-          <Stack spacing={2}>
-            <Pagination
-              id="result_page"
-              siblingCount={0}
-              boundaryCount={1}
-              count={maxPage}
-              page={page}
-              onChange={(e, page) => handleChangePage(page)}
-              color="primary"
-            />
-          </Stack>
-        </Box>
+        <PaginationFooter
+          count={results.count}
+          maxRowCount={AdvancedSerarchResultList.MAX_ROW_COUNT}
+          page={page}
+          changePage={changePage}
+        />
       </StyledBox>
     </Box>
   );

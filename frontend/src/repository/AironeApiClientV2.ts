@@ -83,7 +83,9 @@ class AironeApiClientV2 {
   private job: JobApi;
 
   constructor() {
-    const config = new Configuration({ basePath: "" });
+    const basePath = process.env.NODE_ENV !== "test" ? "" : undefined;
+    const config = new Configuration({ basePath });
+
     this.acl = new AclApi(config);
     this.entity = new EntityApi(config);
     this.entry = new EntryApi(config);
@@ -822,6 +824,23 @@ class AironeApiClientV2 {
         patchedUserPasswordBySuperuser: {
           newPasswd: newPassword,
           chkPasswd: checkPassword,
+        },
+      },
+      {
+        headers: {
+          "Content-Type": "application/json;charset=utf-8",
+          "X-CSRFToken": getCsrfToken(),
+        },
+      }
+    );
+  }
+
+  async updateUserAuth(userId: number, ldapPassword: string): Promise<void> {
+    await this.user.userApiV2AuthPartialUpdate(
+      {
+        id: userId,
+        patchedUserAuth: {
+          ldapPassword,
         },
       },
       {

@@ -12,10 +12,12 @@ test("should render a component with essential props", function () {
   expect(() =>
     render(
       <SearchResults
-        results={[]}
+        results={{
+          count: 0,
+          values: [],
+        }}
         page={1}
-        maxPage={1}
-        handleChangePage={() => {
+        changePage={() => {
           /* do nothing */
         }}
         bulkOperationEntryIds={[]}

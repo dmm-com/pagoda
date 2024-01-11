@@ -8,49 +8,47 @@ import {
   CardHeader,
   Grid,
   IconButton,
-  Pagination,
-  Stack,
   Typography,
 } from "@mui/material";
 import React, { FC, useMemo, useState } from "react";
 import { Link, useHistory, useLocation } from "react-router-dom";
-import { useAsync } from "react-use";
 
-import { usePage } from "../../hooks/usePage";
-import { aironeApiClientV2 } from "../../repository/AironeApiClientV2";
-import { DjangoContext } from "../../services/DjangoContext";
-import { normalizeToMatch } from "../../services/StringUtil";
-import { Loading } from "../common/Loading";
-import { SearchBox } from "../common/SearchBox";
+import { useAsyncWithThrow } from "../../hooks/useAsyncWithThrow";
 
 import { UserControlMenu } from "./UserControlMenu";
 
 import { newUserPath, userPath } from "Routes";
+import { Loading } from "components/common/Loading";
+import { PaginationFooter } from "components/common/PaginationFooter";
+import { SearchBox } from "components/common/SearchBox";
+import { usePage } from "hooks/usePage";
+import { aironeApiClientV2 } from "repository/AironeApiClientV2";
 import { UserList as ConstUserList } from "services/Constants";
+import { DjangoContext } from "services/DjangoContext";
+import { normalizeToMatch } from "services/StringUtil";
 
 export const UserList: FC = ({}) => {
   const location = useLocation();
   const history = useHistory();
-
   const [page, changePage] = usePage();
-
-  const [keyword, setKeyword] = useState("");
-
   const params = new URLSearchParams(location.search);
   const [query, setQuery] = useState<string>(params.get("query") ?? "");
-
+  const [keyword, setKeyword] = useState(query ?? "");
   const [userAnchorEls, setUserAnchorEls] = useState<{
     [key: number]: HTMLButtonElement | null;
   }>({});
-
   const [toggle, setToggle] = useState(false);
 
-  const users = useAsync(async () => {
+  const users = useAsyncWithThrow(async () => {
     return await aironeApiClientV2.getUsers(page, query);
   }, [page, query, toggle]);
-  if (!users.loading && users.error) {
-    throw new Error("Failed to get users from AirOne APIv2 endpoint");
-  }
+
+  const isSuperuser = useMemo(() => {
+    const djangoContext = DjangoContext.getInstance();
+    return (
+      djangoContext?.user?.isSuperuser != null && djangoContext.user.isSuperuser
+    );
+  }, []);
 
   const handleChangeQuery = (newQuery?: string) => {
     changePage(1);
@@ -61,19 +59,6 @@ export const UserList: FC = ({}) => {
       search: newQuery ? `?query=${newQuery}` : "",
     });
   };
-
-  const isSuperuser = useMemo(() => {
-    const djangoContext = DjangoContext.getInstance();
-    return (
-      djangoContext?.user?.isSuperuser != null && djangoContext.user.isSuperuser
-    );
-  }, []);
-
-  const totalPageCount = useMemo(() => {
-    return users.loading
-      ? 0
-      : Math.ceil((users.value?.count ?? 0) / ConstUserList.MAX_ROW_COUNT);
-  }, [users.loading, users.value]);
 
   return (
     <Box>
@@ -107,7 +92,7 @@ export const UserList: FC = ({}) => {
       {users.loading ? (
         <Loading />
       ) : (
-        <Grid container spacing={2}>
+        <Grid container spacing={2} id="user_list">
           {users.value?.results?.map((user) => {
             return (
               <Grid item xs={4} key={user.id}>
@@ -169,16 +154,12 @@ export const UserList: FC = ({}) => {
         </Grid>
       )}
 
-      <Box display="flex" justifyContent="center" my="30px">
-        <Stack spacing={2}>
-          <Pagination
-            count={totalPageCount}
-            page={page}
-            onChange={(_, newPage) => changePage(newPage)}
-            color="primary"
-          />
-        </Stack>
-      </Box>
+      <PaginationFooter
+        count={users.value?.count ?? 0}
+        maxRowCount={ConstUserList.MAX_ROW_COUNT}
+        page={page}
+        changePage={changePage}
+      />
     </Box>
   );
 };

@@ -1,25 +1,9 @@
-import { Box, Modal, Typography } from "@mui/material";
-import { styled } from "@mui/material/styles";
 import React, { FC, useCallback } from "react";
+
+import { AironeModal } from "../common/AironeModal";
 
 import { ImportForm } from "components/common/ImportForm";
 import { aironeApiClientV2 } from "repository/AironeApiClientV2";
-
-const StyledModal = styled(Modal)(({}) => ({
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-}));
-
-const Paper = styled(Box)(({ theme }) => ({
-  display: "flex",
-  flexDirection: "column",
-  backgroundColor: theme.palette.background.paper,
-  border: "2px solid #000",
-  boxShadow: theme.shadows[5],
-  padding: theme.spacing(2, 3, 1),
-  width: "50%",
-}));
 
 interface Props {
   openImportModal: boolean;
@@ -35,27 +19,14 @@ export const GroupImportModal: FC<Props> = ({
   }, []);
 
   return (
-    <StyledModal
-      aria-labelledby="transition-modal-title"
-      aria-describedby="transition-modal-description"
+    <AironeModal
+      title={"グループのインポート"}
+      description={"インポートするファイルを選択してください。"}
+      caption={"※CSV形式のファイルは選択できません。"}
       open={openImportModal}
       onClose={closeImportModal}
     >
-      <Paper>
-        <Typography variant={"h6"} my="8px">
-          グループのインポート
-        </Typography>
-        <Typography variant={"body2"} my="4px">
-          インポートするファイルを選択してください。
-        </Typography>
-        <Typography variant={"caption"} my="4px">
-          ※CSV形式のファイルは選択できません。
-        </Typography>
-        <ImportForm
-          handleImport={handleImport}
-          handleCancel={closeImportModal}
-        />
-      </Paper>
-    </StyledModal>
+      <ImportForm handleImport={handleImport} handleCancel={closeImportModal} />
+    </AironeModal>
   );
 };

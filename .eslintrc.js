@@ -25,6 +25,8 @@ module.exports = {
         }],
       },
     ],
+    "no-unused-vars": "off",
+    "@typescript-eslint/no-unused-vars": "error",
   },
   parser: '@typescript-eslint/parser',
   parserOptions: {

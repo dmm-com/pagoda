@@ -1,18 +1,17 @@
 import AppsIcon from "@mui/icons-material/Apps";
 import { Box, Container, IconButton } from "@mui/material";
-import React, { FC, useMemo, useState } from "react";
-import { useAsync } from "react-use";
+import React, { FC, useState } from "react";
 
-import { Loading } from "../components/common/Loading";
-import { EntryControlMenu } from "../components/entry/EntryControlMenu";
-import { EntryHistoryList } from "../components/entry/EntryHistoryList";
-import { usePage } from "../hooks/usePage";
-import { useTypedParams } from "../hooks/useTypedParams";
-import { aironeApiClientV2 } from "../repository/AironeApiClientV2";
-import { EntryHistoryList as ConstEntryHistoryList } from "../services/Constants";
+import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
 
+import { Loading } from "components/common/Loading";
 import { PageHeader } from "components/common/PageHeader";
 import { EntryBreadcrumbs } from "components/entry/EntryBreadcrumbs";
+import { EntryControlMenu } from "components/entry/EntryControlMenu";
+import { EntryHistoryList } from "components/entry/EntryHistoryList";
+import { usePage } from "hooks/usePage";
+import { useTypedParams } from "hooks/useTypedParams";
+import { aironeApiClientV2 } from "repository/AironeApiClientV2";
 
 export const EntryHistoryListPage: FC = () => {
   const { entryId } = useTypedParams<{ entityId: number; entryId: number }>();
@@ -23,23 +22,15 @@ export const EntryHistoryListPage: FC = () => {
     null
   );
 
-  const entry = useAsync(async () => {
+  const entry = useAsyncWithThrow(async () => {
     return entryId != undefined
       ? await aironeApiClientV2.getEntry(entryId)
       : undefined;
   }, [entryId]);
-  const histories = useAsync(async () => {
+
+  const histories = useAsyncWithThrow(async () => {
     return await aironeApiClientV2.getEntryHistories(entryId, page);
   }, [entryId, page]);
-
-  const maxPage = useMemo(() => {
-    if (histories.loading) {
-      return 0;
-    }
-    return Math.ceil(
-      (histories.value?.count ?? 0) / ConstEntryHistoryList.MAX_ROW_COUNT
-    );
-  }, [histories.loading, histories.value?.count]);
 
   return (
     <Box className="container">
@@ -63,17 +54,16 @@ export const EntryHistoryListPage: FC = () => {
         </Box>
       </PageHeader>
 
-      {histories.loading ? (
+      {histories.loading || !histories.value ? (
         <Loading />
       ) : (
         <Container>
           <EntryHistoryList
-            histories={histories.value?.results ?? []}
             entityId={entry.value?.schema?.id ?? 0}
             entryId={entryId}
+            histories={histories.value}
             page={page}
-            maxPage={maxPage}
-            handleChangePage={changePage}
+            changePage={changePage}
           />
         </Container>
       )}

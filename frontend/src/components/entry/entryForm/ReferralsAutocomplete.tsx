@@ -6,8 +6,8 @@ import {
   TextField,
 } from "@mui/material";
 import React, { FC, useState } from "react";
-import { useAsync } from "react-use";
 
+import { useAsyncWithThrow } from "../../../hooks/useAsyncWithThrow";
 import { aironeApiClientV2 } from "../../../repository/AironeApiClientV2";
 
 interface Props {
@@ -31,7 +31,7 @@ export const ReferralsAutocomplete: FC<Props> = ({
     !multiple ? (value as GetEntryAttrReferral | null)?.name ?? "" : ""
   );
 
-  const referrals = useAsync(async () => {
+  const referrals = useAsyncWithThrow(async () => {
     return await aironeApiClientV2.getEntryAttrReferrals(attrId, inputValue);
   }, [attrId, inputValue]);
 

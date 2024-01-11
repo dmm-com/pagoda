@@ -19,10 +19,12 @@ import {
   Checkbox,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import React, { BaseSyntheticEvent, FC } from "react";
+import { useSnackbar } from "notistack";
+import React, { BaseSyntheticEvent, FC, useState, useCallback } from "react";
 import { CopyToClipboard } from "react-copy-to-clipboard";
 import { Control, Controller } from "react-hook-form";
 
+import { ChangeUserAuthModal } from "./ChangeUserAuthModal";
 import { Schema } from "./userForm/UserFormSchema";
 
 import { DjangoContext } from "services/DjangoContext";
@@ -62,19 +64,32 @@ const InputBox: FC<{ children: React.ReactNode }> = ({ children }) => {
 };
 
 const ElemAuthenticationMethod: FC<ReadonlyProps> = ({ user }) => {
+  const [openModal, setOpenModal] = useState(false);
+
   return (
     <StyledTableRow>
       <TableCell sx={{ width: "400px", wordBreak: "break-word" }}>
         認証方法
       </TableCell>
       <TableCell sx={{ width: "750px", p: "0px", wordBreak: "break-word" }}>
-        <InputBox>
-          {user.authenticateType ==
-          UserRetrieveAuthenticateTypeEnum.AUTH_TYPE_LOCAL
-            ? "ローカル認証"
-            : "LDAP 認証"}
-        </InputBox>
+        {user.authenticateType ===
+        UserRetrieveAuthenticateTypeEnum.AUTH_TYPE_LOCAL ? (
+          <Box sx={{ m: 1 }}>
+            <Box sx={{ my: 1 }}>ローカル認証</Box>
+            <Button variant="outlined" onClick={() => setOpenModal(true)}>
+              AirOneの認証方法をLDAPに変更する
+            </Button>
+          </Box>
+        ) : (
+          <InputBox>LDAP 認証</InputBox>
+        )}
       </TableCell>
+
+      <ChangeUserAuthModal
+        user={user}
+        openModal={openModal}
+        closeModal={() => setOpenModal(false)}
+      />
     </StyledTableRow>
   );
 };
@@ -139,6 +154,14 @@ const ElemAccessTokenConfiguration: FC<ReadonlyProps> = ({ user }) => {
 };
 
 const ElemAccessToken: FC<ReadonlyProps> = ({ user }) => {
+  const { enqueueSnackbar } = useSnackbar();
+
+  const handleCopy = useCallback(() => {
+    enqueueSnackbar("アクセストークンをクリップボードにコピーしました", {
+      variant: "success",
+    });
+  }, [enqueueSnackbar]);
+
   return (
     <StyledTableRow>
       <TableCell sx={{ width: "400px", wordBreak: "break-word" }}>
@@ -157,7 +180,7 @@ const ElemAccessToken: FC<ReadonlyProps> = ({ user }) => {
             disabled
           />
           <IconButton type="button" sx={{ p: "10px" }} aria-label="search">
-            <CopyToClipboard text={user.token?.value ?? ""}>
+            <CopyToClipboard text={user.token?.value ?? ""} onCopy={handleCopy}>
               <ContentCopyIcon />
             </CopyToClipboard>
           </IconButton>

@@ -5,6 +5,8 @@
 import { EntryAttributeTypeTypeEnum } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { act, render, renderHook, screen } from "@testing-library/react";
+import { http, HttpResponse } from "msw";
+import { setupServer } from "msw/node";
 import React from "react";
 import { useForm } from "react-hook-form";
 
@@ -12,6 +14,31 @@ import { TestWrapper } from "../../../TestWrapper";
 
 import { AttributeValueField } from "./AttributeValueField";
 import { schema, Schema } from "./EntryFormSchema";
+
+const server = setupServer(
+  // getEntryAttrReferrals
+  http.get("http://localhost/entry/api/v2/4/attr_referrals/", () => {
+    return HttpResponse.json([]);
+  }),
+  // getEntryAttrReferrals
+  http.get("http://localhost/entry/api/v2/5/attr_referrals/", () => {
+    return HttpResponse.json([]);
+  }),
+  // getGroups
+  http.get("http://localhost/group/api/v2/groups", () => {
+    return HttpResponse.json([]);
+  }),
+  // getRoles
+  http.get("http://localhost/role/api/v2/", () => {
+    return HttpResponse.json([]);
+  })
+);
+
+beforeAll(() => server.listen());
+
+afterEach(() => server.resetHandlers());
+
+afterAll(() => server.close());
 
 describe("AttributeValue", () => {
   const defaultValues: Schema = {
@@ -217,6 +244,27 @@ describe("AttributeValue", () => {
       },
     },
   };
+
+  /* eslint-disable */
+  jest
+    .spyOn(
+      require("../../../repository/AironeApiClientV2").aironeApiClientV2,
+      "getGroups"
+    )
+    .mockResolvedValue(Promise.resolve([]));
+  jest
+    .spyOn(
+      require("../../../repository/AironeApiClientV2").aironeApiClientV2,
+      "getRoles"
+    )
+    .mockResolvedValue(Promise.resolve([]));
+  jest
+    .spyOn(
+      require("../../../repository/AironeApiClientV2").aironeApiClientV2,
+      "getEntryAttrReferrals"
+    )
+    .mockResolvedValue(Promise.resolve([]));
+  /* eslint-enable */
 
   const cases: Array<{
     name: string;

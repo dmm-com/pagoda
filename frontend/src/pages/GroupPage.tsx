@@ -11,12 +11,12 @@ import {
 import { styled } from "@mui/material/styles";
 import React, { FC, useCallback, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { useAsync } from "react-use";
 
 import { SearchBox } from "../components/common/SearchBox";
 import { GroupControlMenu } from "../components/group/GroupControlMenu";
 import { GroupImportModal } from "../components/group/GroupImportModal";
 import { GroupTreeRoot } from "../components/group/GroupTreeRoot";
+import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
 import { DjangoContext } from "../services/DjangoContext";
 
 import { newGroupPath, topPath } from "Routes";
@@ -46,11 +46,11 @@ export const GroupPage: FC = () => {
   } | null>();
   const [toggle, setToggle] = useState(false);
 
-  const groupTrees = useAsync(async () => {
+  const groupTrees = useAsyncWithThrow(async () => {
     return await aironeApiClientV2.getGroupTrees();
   }, [toggle]);
 
-  const usersInGroup = useAsync(async (): Promise<
+  const usersInGroup = useAsyncWithThrow(async (): Promise<
     Array<{ id: number; username: string }>
   > => {
     if (selectedGroupId != null) {
