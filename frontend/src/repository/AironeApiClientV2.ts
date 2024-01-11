@@ -43,6 +43,7 @@ import {
   RoleCreateUpdate,
   TriggerApi,
   TriggerParent,
+  TriggerParentUpdate,
   UserApi,
   UserCreate,
   UserRetrieve,
@@ -214,17 +215,17 @@ class AironeApiClientV2 {
   ): Promise<PaginatedEntityListList> {
     const params: EntityApiV2ListRequest = page
       ? {
-          offset: (page - 1) * ConstEntityList.MAX_ROW_COUNT,
-          limit: ConstEntityList.MAX_ROW_COUNT,
-          search: search,
-          isToplevel: isToplevel,
-        }
+        offset: (page - 1) * ConstEntityList.MAX_ROW_COUNT,
+        limit: ConstEntityList.MAX_ROW_COUNT,
+        search: search,
+        isToplevel: isToplevel,
+      }
       : {
-          // Any better way to get all the entities?
-          limit: Number.MAX_SAFE_INTEGER,
-          search: search,
-          isToplevel: isToplevel,
-        };
+        // Any better way to get all the entities?
+        limit: Number.MAX_SAFE_INTEGER,
+        search: search,
+        isToplevel: isToplevel,
+      };
 
     return await this.entity.entityApiV2List(params);
   }
@@ -743,6 +744,52 @@ class AironeApiClientV2 {
 
   async getTrigger(id: number): Promise<TriggerParent> {
     return await this.trigger.triggerApiV2Retrieve({ id });
+  }
+
+  async updateTrigger(
+    triggerId: number,
+    params: TriggerParentUpdate
+  ): Promise<void> {
+    await this.trigger.triggerApiV2Update(
+      {
+        id: triggerId,
+        triggerParentUpdate: params,
+      },
+      {
+        headers: {
+          "Content-Type": "application/json;charset=utf-8",
+          "X-CSRFToken": getCsrfToken(),
+        },
+      }
+    );
+  }
+
+  async createTrigger(params: TriggerParentUpdate): Promise<void> {
+    await this.trigger.triggerApiV2Create(
+      {
+        triggerParentCreate: params,
+      },
+      {
+        headers: {
+          "Content-Type": "application/json;charset=utf-8",
+          "X-CSRFToken": getCsrfToken(),
+        },
+      }
+    );
+  }
+
+  async deleteTrigger(triggerId: number): Promise<void> {
+    await this.trigger.triggerApiV2Destroy(
+      {
+        id: triggerId,
+      },
+      {
+        headers: {
+          "Content-Type": "application/json;charset=utf-8",
+          "X-CSRFToken": getCsrfToken(),
+        },
+      }
+    );
   }
 
   async getUser(userId: number): Promise<UserRetrieve> {
