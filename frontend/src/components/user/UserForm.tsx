@@ -19,7 +19,8 @@ import {
   Checkbox,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import React, { BaseSyntheticEvent, FC, useState } from "react";
+import { useSnackbar } from "notistack";
+import React, { BaseSyntheticEvent, FC, useState, useCallback } from "react";
 import { CopyToClipboard } from "react-copy-to-clipboard";
 import { Control, Controller } from "react-hook-form";
 
@@ -153,6 +154,14 @@ const ElemAccessTokenConfiguration: FC<ReadonlyProps> = ({ user }) => {
 };
 
 const ElemAccessToken: FC<ReadonlyProps> = ({ user }) => {
+  const { enqueueSnackbar } = useSnackbar();
+
+  const handleCopy = useCallback(() => {
+    enqueueSnackbar("アクセストークンをクリップボードにコピーしました", {
+      variant: "success",
+    });
+  }, [enqueueSnackbar]);
+
   return (
     <StyledTableRow>
       <TableCell sx={{ width: "400px", wordBreak: "break-word" }}>
@@ -171,7 +180,7 @@ const ElemAccessToken: FC<ReadonlyProps> = ({ user }) => {
             disabled
           />
           <IconButton type="button" sx={{ p: "10px" }} aria-label="search">
-            <CopyToClipboard text={user.token?.value ?? ""}>
+            <CopyToClipboard text={user.token?.value ?? ""} onCopy={handleCopy}>
               <ContentCopyIcon />
             </CopyToClipboard>
           </IconButton>
