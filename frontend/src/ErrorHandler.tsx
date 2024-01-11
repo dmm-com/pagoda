@@ -41,11 +41,16 @@ interface GenericErrorProps {
 }
 
 const GenericError: FC<GenericErrorProps> = ({ children }) => {
+  const history = useHistory();
   const [open, setOpen] = useState(true);
 
-  const handleClickGoToTop = () => {
-    location.href = topPath();
-  };
+  const handleGoToTop = useCallback(() => {
+    history.replace(topPath());
+  }, [history]);
+
+  const handleReload = useCallback(() => {
+    history.go(0);
+  }, [history]);
 
   return (
     <Dialog open={open} onClose={() => setOpen(false)}>
@@ -65,10 +70,19 @@ const GenericError: FC<GenericErrorProps> = ({ children }) => {
         <Buttons>
           <Button
             variant="outlined"
-            color="secondary"
-            onClick={handleClickGoToTop}
+            color="primary"
+            onClick={handleGoToTop}
+            sx={{ mx: 1 }}
           >
             トップページに戻る
+          </Button>
+          <Button
+            variant="outlined"
+            color="secondary"
+            onClick={handleReload}
+            sx={{ mx: 1 }}
+          >
+            リロードする
           </Button>
         </Buttons>
       </DialogContent>
