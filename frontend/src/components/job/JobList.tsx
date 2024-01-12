@@ -16,7 +16,7 @@ import React, { FC, useState } from "react";
 import { Link, useHistory } from "react-router-dom";
 
 import { entityEntriesPath } from "../../Routes";
-import { aironeApiClientV2 } from "../../repository/AironeApiClientV2";
+import { aironeApiClient } from "../../repository/AironeApiClient";
 import { JobOperations, JobStatuses } from "../../services/Constants";
 import { formatDateTime } from "../../services/DateUtil";
 import { jobOperationLabel, jobStatusLabel } from "../../services/JobUtil";
@@ -114,12 +114,12 @@ export const JobList: FC<Props> = ({ jobs }) => {
   }>({});
 
   const handleRerun = async (jobId: number) => {
-    await aironeApiClientV2.rerunJob(jobId);
+    await aironeApiClient.rerunJob(jobId);
     history.go(0);
   };
 
   const handleCancel = async (jobId: number) => {
-    await aironeApiClientV2.cancelJob(jobId);
+    await aironeApiClient.cancelJob(jobId);
     history.go(0);
   };
 

@@ -46,16 +46,10 @@ describe("UserList", () => {
 
   /* eslint-disable */
   jest
-    .spyOn(
-      require("repository/AironeApiClientV2").aironeApiClientV2,
-      "getUsers"
-    )
+    .spyOn(require("repository/AironeApiClient").aironeApiClient, "getUsers")
     .mockResolvedValue(Promise.resolve(users));
   jest
-    .spyOn(
-      require("repository/AironeApiClientV2").aironeApiClientV2,
-      "destroyUser"
-    )
+    .spyOn(require("repository/AironeApiClient").aironeApiClient, "destroyUser")
     .mockResolvedValue(Promise.resolve());
   /* eslint-enable */
 

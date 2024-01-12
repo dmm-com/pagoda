@@ -15,7 +15,7 @@ import {
   CopyFormProps,
 } from "components/entry/CopyForm";
 import { EntryBreadcrumbs } from "components/entry/EntryBreadcrumbs";
-import { aironeApiClientV2 } from "repository/AironeApiClientV2";
+import { aironeApiClient } from "repository/AironeApiClient";
 
 interface Props {
   CopyForm?: FC<CopyFormProps>;
@@ -34,7 +34,7 @@ export const CopyEntryPage: FC<Props> = ({ CopyForm = DefaultCopyForm }) => {
   const [edited, setEdited] = useState<boolean>(false);
 
   const entry = useAsyncWithThrow(async () => {
-    return await aironeApiClientV2.getEntry(entryId);
+    return await aironeApiClient.getEntry(entryId);
   }, [entryId]);
 
   if (entry.loading) {
@@ -49,7 +49,7 @@ export const CopyEntryPage: FC<Props> = ({ CopyForm = DefaultCopyForm }) => {
   const handleCopy = async () => {
     setSubmitting(true);
     try {
-      await aironeApiClientV2.copyEntry(entryId, entries.split("\n"));
+      await aironeApiClient.copyEntry(entryId, entries.split("\n"));
       setSubmitted(true);
       enqueueSnackbar("エントリコピーのジョブ登録が成功しました", {
         variant: "success",

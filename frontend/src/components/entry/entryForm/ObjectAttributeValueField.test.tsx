@@ -126,7 +126,7 @@ describe("ObjectAttributeValueField", () => {
     /* eslint-disable */
     jest
       .spyOn(
-        require("../../../repository/AironeApiClientV2").aironeApiClientV2,
+        require("../../../repository/AironeApiClient").aironeApiClient,
         "getEntryAttrReferrals"
       )
       .mockResolvedValue(Promise.resolve(entries));
@@ -184,7 +184,7 @@ describe("ObjectAttributeValueField", () => {
     /* eslint-disable */
     jest
       .spyOn(
-        require("../../../repository/AironeApiClientV2").aironeApiClientV2,
+        require("../../../repository/AironeApiClient").aironeApiClient,
         "getEntryAttrReferrals"
       )
       .mockResolvedValue(Promise.resolve(entries));
@@ -251,7 +251,7 @@ describe("ObjectAttributeValueField", () => {
     /* eslint-disable */
     jest
       .spyOn(
-        require("../../../repository/AironeApiClientV2").aironeApiClientV2,
+        require("../../../repository/AironeApiClient").aironeApiClient,
         "getEntryAttrReferrals"
       )
       .mockResolvedValue(Promise.resolve(entries));
@@ -314,7 +314,7 @@ describe("ObjectAttributeValueField", () => {
     /* eslint-disable */
     jest
       .spyOn(
-        require("../../../repository/AironeApiClientV2").aironeApiClientV2,
+        require("../../../repository/AironeApiClient").aironeApiClient,
         "getEntryAttrReferrals"
       )
       .mockResolvedValue(Promise.resolve(entries));

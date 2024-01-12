@@ -34,10 +34,7 @@ test("should match snapshot", async () => {
 
   /* eslint-disable */
   jest
-    .spyOn(
-      require("../repository/AironeApiClientV2").aironeApiClientV2,
-      "getRoles"
-    )
+    .spyOn(require("../repository/AironeApiClient").aironeApiClient, "getRoles")
     .mockResolvedValue(Promise.resolve(roles));
   /* eslint-enable */
 

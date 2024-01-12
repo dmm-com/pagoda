@@ -17,7 +17,7 @@ import { UserPasswordFormModal } from "./UserPasswordFormModal";
 import { topPath } from "Routes";
 import { usersPath } from "Routes";
 import { Confirmable } from "components/common/Confirmable";
-import { aironeApiClientV2 } from "repository/AironeApiClientV2";
+import { aironeApiClient } from "repository/AironeApiClient";
 
 interface UserControlProps {
   user: UserList;
@@ -47,7 +47,7 @@ export const UserControlMenu: FC<UserControlProps> = ({
 
   const handleDelete = async (user: UserList) => {
     try {
-      await aironeApiClientV2.destroyUser(user.id);
+      await aironeApiClient.destroyUser(user.id);
       enqueueSnackbar(`ユーザ(${user.username})の削除が完了しました`, {
         variant: "success",
       });

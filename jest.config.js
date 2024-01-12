@@ -9,6 +9,9 @@ module.exports = {
   transform: {
     "^.+\\.(ts|tsx)$": "ts-jest"
   },
+  setupFiles: [
+      "./jest.polyfills.js",
+  ],
   setupFilesAfterEnv: [
     "@testing-library/jest-dom/extend-expect",
   ],
@@ -17,4 +20,9 @@ module.exports = {
     "node_modules"
   ],
   transformIgnorePatterns: [],
+  testEnvironmentOptions: {
+    // to integrate msw 2.x
+    // ref. https://mswjs.io/docs/migrations/1.x-to-2.x/#cannot-find-module-mswnode-jsdom
+    customExportConditions: [""],
+  },
 }

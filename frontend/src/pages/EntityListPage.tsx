@@ -1,7 +1,8 @@
 import { Box, Button, Container, Typography } from "@mui/material";
 import React, { FC, useCallback, useState } from "react";
 import { Link, useHistory, useLocation } from "react-router-dom";
-import { useAsync } from "react-use";
+
+import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
 
 import { topPath } from "Routes";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
@@ -10,7 +11,7 @@ import { PageHeader } from "components/common/PageHeader";
 import { EntityImportModal } from "components/entity/EntityImportModal";
 import { EntityList } from "components/entity/EntityList";
 import { usePage } from "hooks/usePage";
-import { aironeApiClientV2 } from "repository/AironeApiClientV2";
+import { aironeApiClient } from "repository/AironeApiClient";
 
 export const EntityListPage: FC = () => {
   const location = useLocation();
@@ -24,8 +25,8 @@ export const EntityListPage: FC = () => {
   const [query, setQuery] = useState<string>(params.get("query") ?? "");
   const [toggle, setToggle] = useState(false);
 
-  const entities = useAsync(async () => {
-    return await aironeApiClientV2.getEntities(page, query);
+  const entities = useAsyncWithThrow(async () => {
+    return await aironeApiClient.getEntities(page, query);
   }, [page, query, toggle]);
 
   const handleChangeQuery = (newQuery?: string) => {
@@ -39,7 +40,7 @@ export const EntityListPage: FC = () => {
   };
 
   const handleExport = useCallback(async () => {
-    await aironeApiClientV2.exportEntities("entity.yaml");
+    await aironeApiClient.exportEntities("entity.yaml");
   }, []);
 
   return (

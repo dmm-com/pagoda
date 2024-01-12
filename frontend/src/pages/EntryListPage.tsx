@@ -10,7 +10,7 @@ import { PageHeader } from "components/common/PageHeader";
 import { EntityBreadcrumbs } from "components/entity/EntityBreadcrumbs";
 import { EntryImportModal } from "components/entry/EntryImportModal";
 import { EntryList } from "components/entry/EntryList";
-import { aironeApiClientV2 } from "repository/AironeApiClientV2";
+import { aironeApiClient } from "repository/AironeApiClient";
 
 interface Props {
   canCreateEntry?: boolean;
@@ -24,7 +24,7 @@ export const EntryListPage: FC<Props> = ({ canCreateEntry = true }) => {
   const [openImportModal, setOpenImportModal] = React.useState(false);
 
   const entity = useAsyncWithThrow(async () => {
-    return await aironeApiClientV2.getEntity(entityId);
+    return await aironeApiClient.getEntity(entityId);
   });
 
   return (

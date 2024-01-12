@@ -9,18 +9,19 @@ import { useSnackbar } from "notistack";
 import React, { FC, useCallback, useEffect, useState } from "react";
 import { FieldErrors, useForm } from "react-hook-form";
 import { Prompt, useHistory } from "react-router-dom";
-import { useAsync } from "react-use";
+
+import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
 
 import { editEntityPath, entityEntriesPath, entryDetailsPath } from "Routes";
 import { ACLForm } from "components/acl/ACLForm";
-import { schema, Schema } from "components/acl/aclForm/ACLFormSchema";
+import { Schema, schema } from "components/acl/aclForm/ACLFormSchema";
 import { Loading } from "components/common/Loading";
 import { PageHeader } from "components/common/PageHeader";
 import { SubmitButton } from "components/common/SubmitButton";
 import { EntityBreadcrumbs } from "components/entity/EntityBreadcrumbs";
 import { EntryBreadcrumbs } from "components/entry/EntryBreadcrumbs";
 import { useTypedParams } from "hooks/useTypedParams";
-import { aironeApiClientV2 } from "repository/AironeApiClientV2";
+import { aironeApiClient } from "repository/AironeApiClient";
 
 export const ACLPage: FC = () => {
   const history = useHistory();
@@ -41,8 +42,8 @@ export const ACLPage: FC = () => {
     mode: "onSubmit",
   });
 
-  const acl = useAsync(async () => {
-    return await aironeApiClientV2.getAcl(objectId);
+  const acl = useAsyncWithThrow(async () => {
+    return await aironeApiClient.getAcl(objectId);
   });
 
   const historyReplace = () => {
@@ -81,7 +82,7 @@ export const ACLPage: FC = () => {
           value: role.currentPermission,
         })) ?? [];
 
-      await aironeApiClientV2.updateAcl(
+      await aironeApiClient.updateAcl(
         objectId,
         aclForm.isPublic,
         aclSettings,
@@ -109,14 +110,14 @@ export const ACLPage: FC = () => {
     });
     switch (acl.value.objtype) {
       case ACLObjtypeEnum.Entity:
-        aironeApiClientV2.getEntity(objectId).then((resp) => {
+        aironeApiClient.getEntity(objectId).then((resp) => {
           setEntity(resp);
           setBreadcrumbs(<EntityBreadcrumbs entity={resp} title="ACL設定" />);
         });
         break;
       case ACLObjtypeEnum.EntityAttr:
         if (acl.value.parent?.id) {
-          aironeApiClientV2.getEntity(acl.value.parent?.id).then((resp) => {
+          aironeApiClient.getEntity(acl.value.parent?.id).then((resp) => {
             setEntity(resp);
             setBreadcrumbs(
               <EntityBreadcrumbs
@@ -130,7 +131,7 @@ export const ACLPage: FC = () => {
 
         break;
       case ACLObjtypeEnum.Entry:
-        aironeApiClientV2.getEntry(objectId).then((resp) => {
+        aironeApiClient.getEntry(objectId).then((resp) => {
           setEntry(resp);
           setBreadcrumbs(<EntryBreadcrumbs entry={resp} title="ACL設定" />);
         });

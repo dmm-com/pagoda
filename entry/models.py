@@ -1871,14 +1871,13 @@ class Entry(ACLBase):
             if not (entity_attr.type & AttrTypeValue["array"] and not is_recursive):
                 container.append(attrinfo)
 
-            elif (
-                entity_attr.type & AttrTypeValue["array"] and not is_recursive and attrv is not None
-            ):
-                # Here is the case of parent array, set each child values
-                [
-                    _set_attrinfo(entity_attr, attr, x, container, True)
-                    for x in attrv.data_array.all()
-                ]
+            elif entity_attr.type & AttrTypeValue["array"] and not is_recursive:
+                if attrv is not None:
+                    # Here is the case of parent array, set each child values
+                    [
+                        _set_attrinfo(entity_attr, attr, x, container, True)
+                        for x in attrv.data_array.all()
+                    ]
 
                 # If there is no value in container,
                 # this set blank value for maching blank search request

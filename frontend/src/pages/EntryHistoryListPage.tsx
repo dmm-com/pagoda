@@ -1,7 +1,8 @@
 import AppsIcon from "@mui/icons-material/Apps";
 import { Box, Container, IconButton } from "@mui/material";
 import React, { FC, useState } from "react";
-import { useAsync } from "react-use";
+
+import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
 
 import { Loading } from "components/common/Loading";
 import { PageHeader } from "components/common/PageHeader";
@@ -10,7 +11,7 @@ import { EntryControlMenu } from "components/entry/EntryControlMenu";
 import { EntryHistoryList } from "components/entry/EntryHistoryList";
 import { usePage } from "hooks/usePage";
 import { useTypedParams } from "hooks/useTypedParams";
-import { aironeApiClientV2 } from "repository/AironeApiClientV2";
+import { aironeApiClient } from "repository/AironeApiClient";
 
 export const EntryHistoryListPage: FC = () => {
   const { entryId } = useTypedParams<{ entityId: number; entryId: number }>();
@@ -21,14 +22,14 @@ export const EntryHistoryListPage: FC = () => {
     null
   );
 
-  const entry = useAsync(async () => {
+  const entry = useAsyncWithThrow(async () => {
     return entryId != undefined
-      ? await aironeApiClientV2.getEntry(entryId)
+      ? await aironeApiClient.getEntry(entryId)
       : undefined;
   }, [entryId]);
 
-  const histories = useAsync(async () => {
-    return await aironeApiClientV2.getEntryHistories(entryId, page);
+  const histories = useAsyncWithThrow(async () => {
+    return await aironeApiClient.getEntryHistories(entryId, page);
   }, [entryId, page]);
 
   return (

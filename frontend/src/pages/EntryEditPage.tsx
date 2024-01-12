@@ -2,9 +2,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Box } from "@mui/material";
 import React, { FC, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { Prompt } from "react-router-dom";
-import { useHistory } from "react-router-dom";
-import { useAsync } from "react-use";
+import { Prompt, useHistory } from "react-router-dom";
+
+import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
 
 import { entityEntriesPath, entryDetailsPath } from "Routes";
 import { Loading } from "components/common/Loading";
@@ -19,7 +19,7 @@ import {
 import { Schema, schema } from "components/entry/entryForm/EntryFormSchema";
 import { useFormNotification } from "hooks/useFormNotification";
 import { useTypedParams } from "hooks/useTypedParams";
-import { aironeApiClientV2 } from "repository/AironeApiClientV2";
+import { aironeApiClient } from "repository/AironeApiClient";
 import {
   extractAPIException,
   isResponseError,
@@ -60,13 +60,13 @@ export const EntryEditPage: FC<Props> = ({
     mode: "onBlur",
   });
 
-  const entity = useAsync(async () => {
-    return await aironeApiClientV2.getEntity(entityId);
+  const entity = useAsyncWithThrow(async () => {
+    return await aironeApiClient.getEntity(entityId);
   });
 
-  const entry = useAsync(async () => {
+  const entry = useAsyncWithThrow(async () => {
     return entryId != undefined
-      ? await aironeApiClientV2.getEntry(entryId)
+      ? await aironeApiClient.getEntry(entryId)
       : undefined;
   });
 
@@ -114,9 +114,9 @@ export const EntryEditPage: FC<Props> = ({
 
     try {
       if (willCreate) {
-        await aironeApiClientV2.createEntry(entityId, entry.name, updatedAttr);
+        await aironeApiClient.createEntry(entityId, entry.name, updatedAttr);
       } else {
-        await aironeApiClientV2.updateEntry(entryId, entry.name, updatedAttr);
+        await aironeApiClient.updateEntry(entryId, entry.name, updatedAttr);
       }
       enqueueSubmitResult(true);
     } catch (e) {

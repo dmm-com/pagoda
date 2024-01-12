@@ -13,15 +13,15 @@ import {
 } from "@mui/material";
 import React, { FC, useState } from "react";
 import { Control, Controller, UseFormSetValue } from "react-hook-form";
-import { useAsync } from "react-use";
 
+import { useAsyncWithThrow } from "../../hooks/useAsyncWithThrow";
 import { filterAncestorsAndOthers } from "../../services/group/Edit";
 
 import { GroupTreeRoot } from "./GroupTreeRoot";
 import { Schema } from "./groupForm/GroupFormSchema";
 
 import { Loading } from "components/common/Loading";
-import { aironeApiClientV2 } from "repository/AironeApiClientV2";
+import { aironeApiClient } from "repository/AironeApiClient";
 
 interface Props {
   control: Control<Schema>;
@@ -32,15 +32,15 @@ interface Props {
 export const GroupForm: FC<Props> = ({ control, setValue, groupId }) => {
   const [userKeyword, setUserKeyword] = useState("");
 
-  const users = useAsync(async () => {
-    const _users = await aironeApiClientV2.getUsers(1, userKeyword);
+  const users = useAsyncWithThrow(async () => {
+    const _users = await aironeApiClient.getUsers(1, userKeyword);
     return _users.results?.map(
       (user): GroupMember => ({ id: user.id, username: user.username })
     );
   }, [userKeyword]);
 
-  const groupTrees = useAsync(async () => {
-    const _groupTrees = await aironeApiClientV2.getGroupTrees();
+  const groupTrees = useAsyncWithThrow(async () => {
+    const _groupTrees = await aironeApiClient.getGroupTrees();
     return groupId != null
       ? filterAncestorsAndOthers(_groupTrees, groupId)
       : _groupTrees;

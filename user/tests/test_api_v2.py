@@ -1,5 +1,6 @@
 import json
 from unittest import mock
+from unittest.mock import Mock, patch
 
 import yaml
 from django.contrib.auth.tokens import default_token_generator
@@ -406,3 +407,55 @@ class ViewTest(AironeViewTest):
             "/user/api/v2/%d/su_edit_passwd" % user.id, json.dumps(params), "application/json"
         )
         self.assertEqual(resp.status_code, 403)
+
+    @patch("user.api_v2.serializers.LDAPBackend.is_authenticated", Mock(return_value=True))
+    def test_post_change_auth_with_correct_password(self):
+        login_user = self.guest_login()
+
+        resp = self.client.patch(
+            "/user/api/v2/%d/auth" % login_user.id,
+            json.dumps({"ldap_password": "CORRECT_PASSWORD"}),
+            "application/json",
+        )
+        login_user.refresh_from_db()
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(login_user.authenticate_type, User.AuthenticateType.AUTH_TYPE_LDAP)
+
+    def test_post_change_auth_with_user_already_enables_ldap(self):
+        login_user = self.guest_login()
+        login_user.authenticate_type = User.AuthenticateType.AUTH_TYPE_LDAP
+        login_user.save(update_fields=["authenticate_type"])
+
+        resp = self.client.patch(
+            "/user/api/v2/%d/auth" % login_user.id,
+            json.dumps({"ldap_password": "CORRECT_PASSWORD"}),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 400)
+
+    @patch("user.api_v2.serializers.LDAPBackend.is_authenticated", Mock(return_value=False))
+    def test_post_change_auth_with_incorrect_password(self):
+        login_user = self.guest_login()
+
+        resp = self.client.patch(
+            "/user/api/v2/%d/auth" % login_user.id,
+            json.dumps({"ldap_password": "INCORRECT_PASSWORD"}),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 400)
+
+    def test_post_change_auth_with_invalid_parameters(self):
+        login_user = self.guest_login()
+
+        invalid_parameters = [
+            {"invalid_parameter": "value"},
+            [{"invalid_parameter": "value"}],
+            {"ldap_password": {"invalid_value_type": "value"}},
+            {"ldap_password": [1, 2, 3, 4]},
+            {"ldap_password": ""},
+        ]
+        for _param in invalid_parameters:
+            resp = self.client.patch(
+                "/user/api/v2/%d/auth" % login_user.id, json.dumps(_param), "application/json"
+            )
+            self.assertEqual(resp.status_code, 400)

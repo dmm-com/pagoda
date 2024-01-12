@@ -1,29 +1,14 @@
-import { Box, Button, TextField, Modal, Typography } from "@mui/material";
+import { Box, Button, TextField } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { useSnackbar } from "notistack";
 import React, { FC, useMemo, useState } from "react";
 import { useHistory } from "react-router-dom";
 
-import { aironeApiClientV2 } from "../../repository/AironeApiClientV2";
-import { DjangoContext } from "../../services/DjangoContext";
+import { aironeApiClient } from "../../repository/AironeApiClient";
+import { AironeModal } from "../common/AironeModal";
 
 import { loginPath, topPath, usersPath } from "Routes";
-
-const StyledModal = styled(Modal)(({}) => ({
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-}));
-
-const Paper = styled(Box)(({ theme }) => ({
-  display: "flex",
-  flexDirection: "column",
-  backgroundColor: theme.palette.background.paper,
-  border: "2px solid #000",
-  boxShadow: theme.shadows[5],
-  padding: theme.spacing(2, 3, 1),
-  width: "50%",
-}));
+import { ServerContext } from "services/ServerContext";
 
 const PasswordField = styled(Box)(({ theme }) => ({
   marginTop: theme.spacing(4),
@@ -65,7 +50,7 @@ export const UserPasswordFormModal: FC<Props> = ({
   const [isUnmatch, setIsUnmatch] = useState(false);
 
   const asSuperuser = useMemo(() => {
-    return DjangoContext.getInstance()?.user?.isSuperuser ?? false;
+    return ServerContext.getInstance()?.user?.isSuperuser ?? false;
   }, []);
 
   const handleSubmit = async () => {
@@ -77,13 +62,13 @@ export const UserPasswordFormModal: FC<Props> = ({
 
     try {
       if (asSuperuser) {
-        await aironeApiClientV2.updateUserPasswordAsSuperuser(
+        await aironeApiClient.updateUserPasswordAsSuperuser(
           userId,
           newPassword,
           checkPassword
         );
       } else {
-        await aironeApiClientV2.updateUserPassword(
+        await aironeApiClient.updateUserPassword(
           userId,
           oldPassword,
           newPassword,
@@ -91,7 +76,7 @@ export const UserPasswordFormModal: FC<Props> = ({
         );
       }
 
-      if (DjangoContext.getInstance()?.user?.id == userId) {
+      if (ServerContext.getInstance()?.user?.id == userId) {
         history.replace(loginPath());
       } else {
         history.replace(topPath());
@@ -109,91 +94,87 @@ export const UserPasswordFormModal: FC<Props> = ({
   };
 
   return (
-    <StyledModal open={openModal} onClose={onClose}>
-      <Paper>
-        <Typography variant="h6">パスワード編集</Typography>
-
-        {!asSuperuser && (
-          <PasswordField>
-            <Box>
-              <PasswordFieldLabel>
-                今まで使用していたパスワードをご入力ください。
-              </PasswordFieldLabel>
-            </Box>
-            <PasswordFieldInput
-              variant={"standard"}
-              type="password"
-              placeholder="Old password"
-              value={oldPassword}
-              onChange={(e) => setOldPassword(e.target.value)}
-            />
-          </PasswordField>
-        )}
-
+    <AironeModal title={"パスワード編集"} open={openModal} onClose={onClose}>
+      {!asSuperuser && (
         <PasswordField>
           <Box>
             <PasswordFieldLabel>
-              新しいパスワードをご入力ください。
+              今まで使用していたパスワードをご入力ください。
             </PasswordFieldLabel>
           </Box>
           <PasswordFieldInput
             variant={"standard"}
             type="password"
-            placeholder="New password"
-            value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
+            placeholder="Old password"
+            value={oldPassword}
+            onChange={(e) => setOldPassword(e.target.value)}
           />
         </PasswordField>
-        <PasswordField>
-          <Box>
-            <PasswordFieldLabel>
-              確認のためもう一度、新しいパスワードをご入力ください。
-            </PasswordFieldLabel>
-          </Box>
-          <PasswordFieldInput
-            error={isUnmatch}
-            variant={"standard"}
-            type="password"
-            placeholder="Confirm new password"
-            value={checkPassword}
-            helperText={
-              isUnmatch ? "新しいパスワードと、入力内容が一致しません" : ""
-            }
-            onChange={(e) => {
-              setCheckPassword(e.target.value);
-              setIsUnmatch(false);
-            }}
-          />
-        </PasswordField>
+      )}
 
-        <Buttons>
-          <Button
-            disabled={
-              (asSuperuser && (!newPassword.length || !checkPassword.length)) ||
-              (!asSuperuser &&
-                (!oldPassword.length ||
-                  !newPassword.length ||
-                  !checkPassword.length))
-            }
-            type="submit"
-            variant="contained"
-            color="secondary"
-            onClick={handleSubmit}
-            sx={{ m: 1 }}
-          >
-            保存
-          </Button>
-          <Button
-            type="submit"
-            variant="contained"
-            color="info"
-            onClick={onClose}
-            sx={{ m: 1 }}
-          >
-            キャンセル
-          </Button>
-        </Buttons>
-      </Paper>
-    </StyledModal>
+      <PasswordField>
+        <Box>
+          <PasswordFieldLabel>
+            新しいパスワードをご入力ください。
+          </PasswordFieldLabel>
+        </Box>
+        <PasswordFieldInput
+          variant={"standard"}
+          type="password"
+          placeholder="New password"
+          value={newPassword}
+          onChange={(e) => setNewPassword(e.target.value)}
+        />
+      </PasswordField>
+      <PasswordField>
+        <Box>
+          <PasswordFieldLabel>
+            確認のためもう一度、新しいパスワードをご入力ください。
+          </PasswordFieldLabel>
+        </Box>
+        <PasswordFieldInput
+          error={isUnmatch}
+          variant={"standard"}
+          type="password"
+          placeholder="Confirm new password"
+          value={checkPassword}
+          helperText={
+            isUnmatch ? "新しいパスワードと、入力内容が一致しません" : ""
+          }
+          onChange={(e) => {
+            setCheckPassword(e.target.value);
+            setIsUnmatch(false);
+          }}
+        />
+      </PasswordField>
+
+      <Buttons>
+        <Button
+          disabled={
+            (asSuperuser && (!newPassword.length || !checkPassword.length)) ||
+            (!asSuperuser &&
+              (!oldPassword.length ||
+                !newPassword.length ||
+                !checkPassword.length))
+          }
+          type="submit"
+          variant="contained"
+          color="secondary"
+          onClick={handleSubmit}
+          sx={{ m: 1 }}
+        >
+          保存
+        </Button>
+        <Button
+          type="submit"
+          variant="contained"
+          color="info"
+          onClick={onClose}
+          sx={{ m: 1 }}
+        >
+          キャンセル
+        </Button>
+      </Buttons>
+    </AironeModal>
   );
 };

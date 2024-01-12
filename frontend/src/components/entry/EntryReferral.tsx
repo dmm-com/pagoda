@@ -1,20 +1,20 @@
 import {
   Box,
-  Typography,
   List,
   ListItem,
   ListItemButton,
   ListItemText,
-  Stack,
   Pagination,
+  Stack,
+  Typography,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import React, { FC, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { useAsync } from "react-use";
 
+import { useAsyncWithThrow } from "../../hooks/useAsyncWithThrow";
 import { usePage } from "../../hooks/usePage";
-import { aironeApiClientV2 } from "../../repository/AironeApiClientV2";
+import { aironeApiClient } from "../../repository/AironeApiClient";
 import { EntryReferralList } from "../../services/Constants";
 import { normalizeToMatch } from "../../services/StringUtil";
 
@@ -44,8 +44,8 @@ export const EntryReferral: FC<Props> = ({ entryId }) => {
   const [keyword, setKeyword] = useState("");
   const [keywordQuery, setKeywordQuery] = useState("");
 
-  const referredEntries = useAsync(async () => {
-    return await aironeApiClientV2.getEntryReferral(
+  const referredEntries = useAsyncWithThrow(async () => {
+    return await aironeApiClient.getEntryReferral(
       entryId,
       page,
       keywordQuery !== "" ? keywordQuery : undefined

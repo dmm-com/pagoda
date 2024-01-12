@@ -10,6 +10,7 @@ from rest_framework import serializers
 from rest_framework.authtoken.models import Token
 from rest_framework.exceptions import ValidationError
 
+from airone.auth.ldap import LDAPBackend
 from user.models import User
 
 
@@ -205,7 +206,7 @@ class UserPasswordBySuperuserSerializer(serializers.Serializer):
         return attrs
 
     def save(self, **kwargs):
-        user = self.context["user"]
+        user: User = self.context["user"]
         user.set_password(self.validated_data["new_passwd"])
         user.save(update_fields=["password"])
 
@@ -265,3 +266,24 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
         user.save()
 
         return validated_data
+
+
+class UserAuthSerializer(serializers.Serializer):
+    ldap_password = serializers.CharField(required=True, allow_blank=False)
+
+    def validate(self, attrs: Dict):
+        """Only local to LDAP authentication is allowed."""
+        user: User = self.context["user"]
+
+        if user.authenticate_type == User.AuthenticateType.AUTH_TYPE_LDAP:
+            raise ValidationError("already authenticated by LDAP")
+
+        if not LDAPBackend.is_authenticated(user.username, attrs.get("ldap_password")):
+            raise ValidationError("LDAP authentication was Failed of user %s" % user.username)
+
+        return attrs
+
+    def save(self, **kwargs):
+        user = self.context["user"]
+        user.authenticate_type = User.AuthenticateType.AUTH_TYPE_LDAP
+        user.save(update_fields=["authenticate_type"])

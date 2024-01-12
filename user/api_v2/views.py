@@ -21,6 +21,7 @@ from group.models import Group
 from user.api_v2.serializers import (
     PasswordResetConfirmSerializer,
     PasswordResetSerializer,
+    UserAuthSerializer,
     UserCreateSerializer,
     UserExportSerializer,
     UserImportSerializer,
@@ -294,3 +295,25 @@ class PasswordResetConfirmAPI(viewsets.GenericViewSet):
         serializer.save()
 
         return Response(serializer.validated_data)
+
+
+class UserAuthAPI(generics.UpdateAPIView):
+    queryset = User.objects.filter(is_active=True)
+    serializer_class = UserAuthSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context["user"] = self.get_object()
+        return context
+
+    def put(self, request, *args, **kwargs):
+        return Response(
+            "Unsupported. Use PATCH alternatively", status=status.HTTP_405_METHOD_NOT_ALLOWED
+        )
+
+    def patch(self, request, *args, **kwargs):
+        serializer: Serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({})

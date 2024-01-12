@@ -31,7 +31,7 @@ import { PaginationFooter } from "components/common/PaginationFooter";
 import { SearchBox } from "components/common/SearchBox";
 import { useAsyncWithThrow } from "hooks/useAsyncWithThrow";
 import { usePage } from "hooks/usePage";
-import { aironeApiClientV2 } from "repository/AironeApiClientV2";
+import { aironeApiClient } from "repository/AironeApiClient";
 import { EntryList as ConstEntryList } from "services/Constants";
 import { formatDateTime } from "services/DateUtil";
 import { normalizeToMatch } from "services/StringUtil";
@@ -115,14 +115,14 @@ export const RestorableEntryList: FC<Props> = ({ entityId }) => {
   const [selectedEntryId, setSelectedEntryId] = useState<number>();
 
   const entries = useAsyncWithThrow(async () => {
-    return await aironeApiClientV2.getEntries(entityId, false, page, keyword);
+    return await aironeApiClient.getEntries(entityId, false, page, keyword);
   }, [page, query]);
 
   const entryDetail = useAsyncWithThrow(async () => {
     if (selectedEntryId == null) {
       return null;
     }
-    return await aironeApiClientV2.getEntry(selectedEntryId);
+    return await aironeApiClient.getEntry(selectedEntryId);
   }, [selectedEntryId]);
 
   const handleChangeQuery = (newQuery?: string) => {
@@ -136,7 +136,7 @@ export const RestorableEntryList: FC<Props> = ({ entityId }) => {
   };
 
   const handleRestore = async (entryId: number) => {
-    await aironeApiClientV2
+    await aironeApiClient
       .restoreEntry(entryId)
       .then(() => {
         enqueueSnackbar("エントリの復旧が完了しました", {

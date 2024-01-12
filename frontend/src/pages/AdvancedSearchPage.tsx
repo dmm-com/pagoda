@@ -15,11 +15,11 @@ import {
 import { styled } from "@mui/material/styles";
 import React, { FC, SyntheticEvent, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { useAsync } from "react-use";
 
 import { AutocompleteWithAllSelector } from "../components/common/AutocompleteWithAllSelector";
 import { PageHeader } from "../components/common/PageHeader";
-import { aironeApiClientV2 } from "../repository/AironeApiClientV2";
+import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
+import { aironeApiClient } from "../repository/AironeApiClient";
 import { formatAdvancedSearchParams } from "../services/entry/AdvancedSearch";
 
 import { advancedSearchResultPath, topPath } from "Routes";
@@ -51,14 +51,14 @@ export const AdvancedSearchPage: FC = () => {
   const [entityName, setEntityName] = useState("");
   const [attrName, setAttrName] = useState("");
 
-  const entities = useAsync(async () => {
-    const entities = await aironeApiClientV2.getEntities();
+  const entities = useAsyncWithThrow(async () => {
+    const entities = await aironeApiClient.getEntities();
     return entities.results;
   });
 
-  const attrs = useAsync(async () => {
+  const attrs = useAsyncWithThrow(async () => {
     if (selectedEntities.length > 0 || searchAllEntities) {
-      return await aironeApiClientV2.getEntityAttrs(
+      return await aironeApiClient.getEntityAttrs(
         selectedEntities.map((e) => e.id),
         searchAllEntities
       );

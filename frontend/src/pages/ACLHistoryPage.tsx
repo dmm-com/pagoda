@@ -3,7 +3,8 @@ import AppsIcon from "@mui/icons-material/Apps";
 import { Box, Container, IconButton } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import React, { FC, useEffect, useState } from "react";
-import { useAsync } from "react-use";
+
+import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
 
 import { ACLHistoryList } from "components/acl/ACLHistoryList";
 import { Loading } from "components/common/Loading";
@@ -14,7 +15,7 @@ import { EntryBreadcrumbs } from "components/entry/EntryBreadcrumbs";
 import { EntryControlMenu } from "components/entry/EntryControlMenu";
 import { EntryImportModal } from "components/entry/EntryImportModal";
 import { useTypedParams } from "hooks/useTypedParams";
-import { aironeApiClientV2 } from "repository/AironeApiClientV2";
+import { aironeApiClient } from "repository/AironeApiClient";
 
 const MenuBox = styled(Box)(({}) => ({
   width: "50px",
@@ -26,12 +27,12 @@ export const ACLHistoryPage: FC = () => {
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
   const [openImportModal, setOpenImportModal] = React.useState(false);
 
-  const acl = useAsync(async () => {
-    return await aironeApiClientV2.getAcl(objectId);
+  const acl = useAsyncWithThrow(async () => {
+    return await aironeApiClient.getAcl(objectId);
   }, [objectId]);
 
-  const aclHistory = useAsync(async () => {
-    return await aironeApiClientV2.getAclHistory(objectId);
+  const aclHistory = useAsyncWithThrow(async () => {
+    return await aironeApiClient.getAclHistory(objectId);
   }, [objectId]);
 
   const controlMenu = () => {
@@ -65,14 +66,14 @@ export const ACLHistoryPage: FC = () => {
 
     switch (acl.value.objtype) {
       case ACLObjtypeEnum.Entity:
-        aironeApiClientV2.getEntity(objectId).then((resp) => {
+        aironeApiClient.getEntity(objectId).then((resp) => {
           setBreadcrumbs(
             <EntityBreadcrumbs entity={resp} title="ACL変更履歴" />
           );
         });
         break;
       case ACLObjtypeEnum.Entry:
-        aironeApiClientV2.getEntry(objectId).then((resp) => {
+        aironeApiClient.getEntry(objectId).then((resp) => {
           setBreadcrumbs(<EntryBreadcrumbs entry={resp} title="ACL変更履歴" />);
         });
         break;

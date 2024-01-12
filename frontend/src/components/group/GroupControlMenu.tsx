@@ -13,7 +13,7 @@ import { useHistory } from "react-router-dom";
 
 import { groupPath, groupsPath, topPath } from "Routes";
 import { Confirmable } from "components/common/Confirmable";
-import { aironeApiClientV2 } from "repository/AironeApiClientV2";
+import { aironeApiClient } from "repository/AironeApiClient";
 
 interface Props {
   groupId: number;
@@ -37,7 +37,7 @@ export const GroupControlMenu: FC<Props> = ({
 
   const handleDelete = useCallback(async () => {
     try {
-      await aironeApiClientV2.deleteGroup(groupId);
+      await aironeApiClient.deleteGroup(groupId);
       enqueueSnackbar(`グループの削除が完了しました`, {
         variant: "success",
       });

@@ -3,14 +3,15 @@ import { OverridableComponent } from "@mui/material/OverridableComponent";
 import { styled } from "@mui/material/styles";
 import React, { FC } from "react";
 import { Link, useHistory, useLocation } from "react-router-dom";
-import { useAsync } from "react-use";
+
+import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
 
 import { entityEntriesPath, entryDetailsPath } from "Routes";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { Loading } from "components/common/Loading";
 import { SearchBox } from "components/common/SearchBox";
 import { useSimpleSearch } from "hooks/useSimpleSearch";
-import { aironeApiClientV2 } from "repository/AironeApiClientV2";
+import { aironeApiClient } from "repository/AironeApiClient";
 
 const StyledContainer = styled(Container)({
   marginTop: "16px",
@@ -42,14 +43,14 @@ export const DashboardPage: FC = () => {
 
   const [query, submitQuery] = useSimpleSearch();
 
-  const entries = useAsync(async () => {
+  const entries = useAsyncWithThrow(async () => {
     if (query != null) {
-      return await aironeApiClientV2.getSearchEntries(query);
+      return await aironeApiClient.getSearchEntries(query);
     }
   }, [location, query]);
 
-  const entities = useAsync(async () => {
-    return await aironeApiClientV2.getEntities(undefined, undefined, true);
+  const entities = useAsyncWithThrow(async () => {
+    return await aironeApiClient.getEntities(undefined, undefined, true);
   });
 
   // If there is only one search result, move to entry details page.
