@@ -24,6 +24,14 @@ const server = setupServer(
   http.get("http://localhost/entry/api/v2/5/attr_referrals/", () => {
     return HttpResponse.json([]);
   }),
+  // getEntryAttrReferrals
+  http.get("http://localhost/entry/api/v2/9/attr_referrals/", () => {
+    return HttpResponse.json([]);
+  }),
+  // getEntryAttrReferrals
+  http.get("http://localhost/entry/api/v2/10/attr_referrals/", () => {
+    return HttpResponse.json([]);
+  }),
   // getGroups
   http.get("http://localhost/group/api/v2/groups", () => {
     return HttpResponse.json([]);
@@ -49,7 +57,7 @@ describe("AttributeValue", () => {
     },
     attrs: {
       // primitive types
-      string: {
+      "0": {
         type: EntryAttributeTypeTypeEnum.STRING,
         index: 0,
         isMandatory: false,
@@ -61,7 +69,7 @@ describe("AttributeValue", () => {
           asString: "value",
         },
       },
-      text: {
+      "1": {
         type: EntryAttributeTypeTypeEnum.TEXT,
         index: 1,
         isMandatory: false,
@@ -73,7 +81,7 @@ describe("AttributeValue", () => {
           asString: "value",
         },
       },
-      date: {
+      "2": {
         type: EntryAttributeTypeTypeEnum.DATE,
         index: 2,
         isMandatory: false,
@@ -85,7 +93,7 @@ describe("AttributeValue", () => {
           asString: "2020-01-01",
         },
       },
-      boolean: {
+      "3": {
         type: EntryAttributeTypeTypeEnum.BOOLEAN,
         index: 3,
         isMandatory: false,
@@ -97,7 +105,7 @@ describe("AttributeValue", () => {
           asBoolean: true,
         },
       },
-      object: {
+      "4": {
         type: EntryAttributeTypeTypeEnum.OBJECT,
         index: 4,
         isMandatory: false,
@@ -112,7 +120,7 @@ describe("AttributeValue", () => {
           },
         },
       },
-      namedObject: {
+      "5": {
         type: EntryAttributeTypeTypeEnum.NAMED_OBJECT,
         index: 5,
         isMandatory: false,
@@ -130,7 +138,7 @@ describe("AttributeValue", () => {
           },
         },
       },
-      group: {
+      "6": {
         type: EntryAttributeTypeTypeEnum.GROUP,
         index: 6,
         isMandatory: false,
@@ -142,7 +150,7 @@ describe("AttributeValue", () => {
           asGroup: { id: 100, name: "group1" },
         },
       },
-      role: {
+      "7": {
         type: EntryAttributeTypeTypeEnum.ROLE,
         index: 7,
         isMandatory: false,
@@ -156,7 +164,7 @@ describe("AttributeValue", () => {
       },
 
       // array types
-      arrayString: {
+      "8": {
         type: EntryAttributeTypeTypeEnum.ARRAY_STRING,
         index: 8,
         isMandatory: false,
@@ -168,7 +176,7 @@ describe("AttributeValue", () => {
           asArrayString: [{ value: "hoge" }, { value: "fuga" }],
         },
       },
-      arrayObject: {
+      "9": {
         type: EntryAttributeTypeTypeEnum.ARRAY_OBJECT,
         index: 9,
         isMandatory: false,
@@ -183,7 +191,7 @@ describe("AttributeValue", () => {
           ],
         },
       },
-      arrayNamedObject: {
+      "10": {
         type: EntryAttributeTypeTypeEnum.ARRAY_NAMED_OBJECT,
         index: 10,
         isMandatory: false,
@@ -212,7 +220,7 @@ describe("AttributeValue", () => {
           ],
         },
       },
-      arrayGroup: {
+      "11": {
         type: EntryAttributeTypeTypeEnum.ARRAY_GROUP,
         index: 11,
         isMandatory: false,
@@ -227,7 +235,7 @@ describe("AttributeValue", () => {
           ],
         },
       },
-      arrayRole: {
+      "12": {
         type: EntryAttributeTypeTypeEnum.ARRAY_ROLE,
         index: 12,
         isMandatory: false,
@@ -244,21 +252,6 @@ describe("AttributeValue", () => {
       },
     },
   };
-
-  /* eslint-disable */
-  jest
-    .spyOn(require("repository/AironeApiClient").aironeApiClient, "getGroups")
-    .mockResolvedValue(Promise.resolve([]));
-  jest
-    .spyOn(require("repository/AironeApiClient").aironeApiClient, "getRoles")
-    .mockResolvedValue(Promise.resolve([]));
-  jest
-    .spyOn(
-      require("repository/AironeApiClient").aironeApiClient,
-      "getEntryAttrReferrals"
-    )
-    .mockResolvedValue(Promise.resolve([]));
-  /* eslint-enable */
 
   const cases: Array<{
     name: string;
@@ -333,7 +326,54 @@ describe("AttributeValue", () => {
       },
     },
 
-    // TODO array types
+    // array types
+    {
+      name: "array-string",
+      type: EntryAttributeTypeTypeEnum.ARRAY_STRING,
+      schemaId: 8,
+      fn: () => {
+        expect(screen.queryAllByRole("textbox")).toHaveLength(2);
+      },
+    },
+    {
+      name: "array-object",
+      type: EntryAttributeTypeTypeEnum.ARRAY_OBJECT,
+      schemaId: 9,
+      fn: () => {
+        expect(screen.getByRole("combobox")).toBeInTheDocument();
+        expect(screen.getByText("object1")).toBeInTheDocument();
+        expect(screen.getByText("object2")).toBeInTheDocument();
+      },
+    },
+    {
+      name: "array-named-object",
+      type: EntryAttributeTypeTypeEnum.ARRAY_NAMED_OBJECT,
+      schemaId: 10,
+      fn: () => {
+        expect(screen.queryAllByRole("textbox")).toHaveLength(2);
+        expect(screen.queryAllByRole("combobox")).toHaveLength(2);
+      },
+    },
+    {
+      name: "array-group",
+      type: EntryAttributeTypeTypeEnum.ARRAY_GROUP,
+      schemaId: 11,
+      fn: () => {
+        expect(screen.getByRole("combobox")).toBeInTheDocument();
+        expect(screen.getByText("group1")).toBeInTheDocument();
+        expect(screen.getByText("group2")).toBeInTheDocument();
+      },
+    },
+    {
+      name: "array-role",
+      type: EntryAttributeTypeTypeEnum.ARRAY_ROLE,
+      schemaId: 12,
+      fn: () => {
+        expect(screen.getByRole("combobox")).toBeInTheDocument();
+        expect(screen.getByText("role1")).toBeInTheDocument();
+        expect(screen.getByText("role2")).toBeInTheDocument();
+      },
+    },
   ];
 
   cases.forEach((c) => {
