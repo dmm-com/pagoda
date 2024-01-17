@@ -2,7 +2,7 @@ import { Box, Modal, Typography } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import React, { FC, ReactNode } from "react";
 
-const StyledModal = styled(Modal)(({}) => ({
+const StyledModal = styled(Modal)(({ }) => ({
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
@@ -37,7 +37,7 @@ export const AironeModal: FC<Props> = ({
 }) => {
   return (
     <StyledModal open={open} onClose={onClose}>
-      <Paper>
+      <Paper id="modal">
         <Typography variant={"h6"} my="8px">
           {title}
         </Typography>
