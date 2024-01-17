@@ -414,24 +414,27 @@ class ViewTest(AironeViewTest):
         role.users.add(user)
         role.admin_users.add(user)
 
+        def _put_acl():
+            return self.client.put(
+                "/acl/api/v2/acls/%s" % acl.id,
+                json.dumps(
+                    {
+                        "is_public": True,
+                        "default_permission": str(ACLType.Full.id),
+                        "acl": [
+                            {
+                                "member_id": str(role.id),
+                                "value": str(ACLType.Full.id),
+                            },
+                        ],
+                    }
+                ),
+                "application/json;charset=utf-8",
+            )
+
         # This tries to set ACL of object that user doesn't have permission (even through to read)
         acl = ACLBase.objects.create(name="test", created_user=user, is_public=False)
-        resp = self.client.put(
-            "/acl/api/v2/acls/%s" % acl.id,
-            json.dumps(
-                {
-                    "is_public": True,
-                    "default_permission": str(ACLType.Full.id),
-                    "acl": [
-                        {
-                            "member_id": str(role.id),
-                            "value": str(ACLType.Full.id),
-                        },
-                    ],
-                }
-            ),
-            "application/json;charset=utf-8",
-        )
+        resp = _put_acl()
         self.assertEqual(resp.status_code, 403)
         self.assertEqual(
             resp.json(),
@@ -441,6 +444,35 @@ class ViewTest(AironeViewTest):
             },
         )
         self.assertFalse(role.is_permitted(acl, ACLType.Full))
+
+        acl.readable.roles.add(role)
+        resp = _put_acl()
+        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(
+            resp.json(),
+            {
+                "code": "AE-210000",
+                "message": "You do not have permission to perform this action.",
+            },
+        )
+        self.assertFalse(role.is_permitted(acl, ACLType.Full))
+
+        acl.writable.roles.add(role)
+        resp = _put_acl()
+        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(
+            resp.json(),
+            {
+                "code": "AE-210000",
+                "message": "You do not have permission to perform this action.",
+            },
+        )
+        self.assertFalse(role.is_permitted(acl, ACLType.Full))
+
+        acl.full.roles.add(role)
+        resp = _put_acl()
+        self.assertEqual(resp.status_code, 200)
+        self.assertTrue(role.is_permitted(acl, ACLType.Full))
 
     def test_list_history(self):
         self.initialization_for_retrieve_test()
