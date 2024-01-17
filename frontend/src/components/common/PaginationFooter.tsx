@@ -2,7 +2,7 @@ import { Box, Pagination, Stack, Typography } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import React, { FC } from "react";
 
-const StyledBox = styled(Box)(({ }) => ({
+const StyledBox = styled(Box)(({}) => ({
   display: "flex",
   justifyContent: "center",
   alignItems: "center",
