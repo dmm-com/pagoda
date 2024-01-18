@@ -250,6 +250,7 @@ exports[`should match snapshot 1`] = `
           </table>
           <div
             class="MuiBox-root css-d3lzg9"
+            id="pagination"
           >
             <p
               class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
@@ -562,6 +563,7 @@ exports[`should match snapshot 1`] = `
         </table>
         <div
           class="MuiBox-root css-d3lzg9"
+          id="pagination"
         >
           <p
             class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"

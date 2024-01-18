@@ -23,7 +23,7 @@ export const PaginationFooter: FC<Props> = ({
   changePage,
 }) => {
   return (
-    <StyledBox>
+    <StyledBox id="pagination">
       <Typography>
         {`${Math.min(maxRowCount * (page - 1) + 1, count)} - ${Math.min(
           maxRowCount * page,

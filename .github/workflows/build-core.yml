@@ -15,25 +15,24 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - name: Install poetry
+        run: pipx install poetry
       - uses: actions/setup-python@v4
         with:
           python-version: "3.11.5"
+          cache: "poetry"
       - name: apt-get
         run: |
           sudo apt-get update
           sudo apt-get install libldap2-dev libsasl2-dev libxmlsec1-dev libmysqlclient-dev pkg-config
-      - name: Install dependencies
+      - name: poetry install
         run: |
-          python3 -m venv virtualenv
-          . virtualenv/bin/activate
-          pip install --upgrade pip
-          pip install tox
+          poetry install --no-ansi
       - name: staticchecks
+        run: |
+          poetry run tox
         env:
           TOXENV: "staticchecks"
-        run: |
-          . virtualenv/bin/activate
-          tox
 
   python311:
     runs-on: ubuntu-latest
@@ -70,15 +69,12 @@ jobs:
           --health-retries=3
     steps:
       - uses: actions/checkout@v3
+      - name: Install poetry
+        run: pipx install poetry
       - uses: actions/setup-python@v4
         with:
-          python-version: "3.11"
-      - name: Install dependencies
-        run: |
-          python3 -m venv virtualenv
-          . virtualenv/bin/activate
-          pip install --upgrade pip
-          pip install tox
+          python-version: "3.11.5"
+          cache: "poetry"
       - name: Install additional dependencies
         run: |
           sudo apt-get update
@@ -87,12 +83,14 @@ jobs:
         run: |
           mysql -protocol=tcp -uroot -h127.0.0.1 -ppassword -e "SET GLOBAL character_set_server=utf8; SET GLOBAL collation_server=utf8_general_ci; SET GLOBAL default_storage_engine=InnoDB;"
           mysql -protocol=tcp -uroot -h127.0.0.1 -ppassword -e "GRANT ALL ON *.* to airone@'%' IDENTIFIED BY 'password'"
+      - name: poetry install
+        run: |
+          poetry install --no-ansi
       - name: test
+        run: |
+          poetry run tox
         env:
           TOXENV: "py311"
-        run: |
-          . virtualenv/bin/activate
-          tox
       - name: Coverage
         run: |
           curl -Os https://uploader.codecov.io/latest/linux/codecov
