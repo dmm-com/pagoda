@@ -8,6 +8,20 @@
 
 ### Fixed
 
+## v3.73.0
+
+### Added
+* Allow the error page to reload.
+  Contributed by @syucream
+* Notify copying access token via snackbar.
+  Contributed by @syucream
+* Support changing auth method (local -> LDAP).
+  Contributed by @syucream
+
+### Fixed
+* Fixed an issue where array type attributes added later were not registered in ES
+  Contributed by @hinashi
+
 ## v3.72.0
 
 ### Changed
