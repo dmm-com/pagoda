@@ -21,6 +21,7 @@ import { PageHeader } from "components/common/PageHeader";
 import { SubmitButton } from "components/common/SubmitButton";
 import { EntityBreadcrumbs } from "components/entity/EntityBreadcrumbs";
 import { Conditions } from "components/trigger/Conditions";
+import { ActionForm } from "components/trigger/ActionForm";
 import { Schema, schema } from "components/trigger/TriggerFormSchema";
 import { useAsyncWithThrow } from "hooks/useAsyncWithThrow";
 import { useFormNotification } from "hooks/useFormNotification";
@@ -34,11 +35,11 @@ const StyledFlexColumnBox = styled(Box)({
   marginBottom: "48px",
 });
 
-const HeaderTableRow = styled(TableRow)(({}) => ({
+const HeaderTableRow = styled(TableRow)(({ }) => ({
   backgroundColor: "#455A64",
 }));
 
-const HeaderTableCell = styled(TableCell)(({}) => ({
+const HeaderTableCell = styled(TableCell)(({ }) => ({
   color: "#FFFFFF",
   boxSizing: "border-box",
 }));
@@ -224,6 +225,11 @@ export const EditTriggerPage: FC = () => {
                 <HeaderTableCell width="100px">追加</HeaderTableCell>
               </HeaderTableRow>
             </TableHead>
+            <StyledTableBody>
+              {entity.value && (
+                <ActionForm control={control} entity={entity.value} />
+              )}
+            </StyledTableBody>
           </Table>
         </StyledFlexColumnBox>
       </Container>
