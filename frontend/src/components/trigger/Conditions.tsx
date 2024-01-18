@@ -1,8 +1,21 @@
-import { EntryAttributeTypeTypeEnum } from "@dmm-com/airone-apiclient-typescript-fetch";
-import { EntityDetail, TriggerCondition } from "@dmm-com/airone-apiclient-typescript-fetch";
-import { MenuItem, Select, TableRow, TableCell, TextField } from "@mui/material";
+import {
+  EntityDetail,
+  EntryAttributeTypeTypeEnum,
+  TriggerCondition,
+} from "@dmm-com/airone-apiclient-typescript-fetch";
+import AddIcon from "@mui/icons-material/Add";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import {
+  IconButton,
+  MenuItem,
+  Select,
+  TableCell,
+  TableRow,
+  TextField,
+} from "@mui/material";
 import React, { FC } from "react";
 import { Control, Controller, useFieldArray } from "react-hook-form";
+
 import { Schema } from "./TriggerFormSchema";
 
 interface Props {
@@ -11,16 +24,16 @@ interface Props {
 }
 
 interface PropsConditionValue {
-  index: number,
-  control: Control<Schema>,
-  field: TriggerCondition,
+  index: number;
+  control: Control<Schema>;
+  field: TriggerCondition;
   entity: EntityDetail;
 }
 
 interface PropsConditionValueComponent {
-  index: number,
-  control: Control<Schema>,
-  field: TriggerCondition,
+  index: number;
+  control: Control<Schema>;
+  field: TriggerCondition;
 }
 
 const ConditionValueAsString: FC<PropsConditionValueComponent> = ({
@@ -34,14 +47,11 @@ const ConditionValueAsString: FC<PropsConditionValueComponent> = ({
       control={control}
       defaultValue={field.strCond}
       render={({ field }) => (
-        <TextField {...field}
-          variant="standard"
-          fullWidth
-        />
+        <TextField {...field} variant="standard" fullWidth />
       )}
     />
   );
-}
+};
 
 const ConditionValue: FC<PropsConditionValue> = ({
   index,
@@ -50,15 +60,11 @@ const ConditionValue: FC<PropsConditionValue> = ({
   entity,
 }) => {
   // This is DEBUG code
-  const attrType = EntryAttributeTypeTypeEnum.STRING // TODO: get proper entity attr from entity object
+  const attrType = EntryAttributeTypeTypeEnum.STRING; // TODO: get proper entity attr from entity object
   switch (attrType) {
     case EntryAttributeTypeTypeEnum.STRING:
       return (
-        <ConditionValueAsString
-          index={index}
-          control={control}
-          field={field}
-        />
+        <ConditionValueAsString index={index} control={control} field={field} />
       );
 
     /* 
@@ -73,13 +79,9 @@ const ConditionValue: FC<PropsConditionValue> = ({
       );
     */
   }
-}
+};
 
-export const Conditions: FC<Props> = ({
-  control,
-  entity,
-}) => {
-
+export const Conditions: FC<Props> = ({ control, entity }) => {
   const { fields, insert, remove, swap } = useFieldArray({
     control,
     name: "conditions",
@@ -87,6 +89,19 @@ export const Conditions: FC<Props> = ({
   });
 
   console.log("[onix] entity: ", entity);
+
+  const handleAppendCondition = (index: number) => {
+    insert(index, {
+      id: 0,
+      attr: {
+        id: 0,
+        name: "",
+      },
+      strCond: "",
+      refCond: null,
+      boolCond: undefined,
+    });
+  };
 
   return (
     <>
@@ -117,10 +132,32 @@ export const Conditions: FC<Props> = ({
                 entity={entity}
               />
             </TableCell>
+            <TableCell>
+              {" "}
+              <IconButton onClick={() => remove(index)}>
+                <DeleteOutlineIcon />
+              </IconButton>
+            </TableCell>
+            <TableCell>
+              <IconButton onClick={() => handleAppendCondition(index + 1)}>
+                <AddIcon />
+              </IconButton>
+            </TableCell>
           </TableRow>
         );
       })}
+      {fields.length === 0 && (
+        <TableRow>
+          <TableCell />
+          <TableCell />
+          <TableCell />
+          <TableCell>
+            <IconButton onClick={() => handleAppendCondition(0)}>
+              <AddIcon />
+            </IconButton>
+          </TableCell>
+        </TableRow>
+      )}
     </>
-  )
-
+  );
 };

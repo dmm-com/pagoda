@@ -1,3 +1,4 @@
+import { TriggerParentUpdate } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Autocomplete,
@@ -9,19 +10,13 @@ import {
   TableHead,
   TableRow,
   TextField,
-  Typography
+  Typography,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import React, { FC, useCallback, useEffect, useState } from "react";
-import { useForm, Controller } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { useHistory } from "react-router-dom";
 
-import {
-  TriggerParentUpdate,
-  EntityList,
-  EntityDetail,
-} from "@dmm-com/airone-apiclient-typescript-fetch";
-import { Loading } from "components/common/Loading";
 import { PageHeader } from "components/common/PageHeader";
 import { SubmitButton } from "components/common/SubmitButton";
 import { EntityBreadcrumbs } from "components/entity/EntityBreadcrumbs";
@@ -39,11 +34,11 @@ const StyledFlexColumnBox = styled(Box)({
   marginBottom: "48px",
 });
 
-const HeaderTableRow = styled(TableRow)(({ }) => ({
+const HeaderTableRow = styled(TableRow)(({}) => ({
   backgroundColor: "#455A64",
 }));
 
-const HeaderTableCell = styled(TableCell)(({ }) => ({
+const HeaderTableCell = styled(TableCell)(({}) => ({
   color: "#FFFFFF",
   boxSizing: "border-box",
 }));
@@ -156,9 +151,7 @@ export const EditTriggerPage: FC = () => {
 
       <Container>
         <StyledFlexColumnBox>
-          <Typography variant="h4">
-            設定対象のエンティティ
-          </Typography>
+          <Typography variant="h4">設定対象のエンティティ</Typography>
 
           <Controller
             name={`entity`}
@@ -167,7 +160,9 @@ export const EditTriggerPage: FC = () => {
               <Autocomplete
                 {...field}
                 options={entities.value ?? []}
-                getOptionLabel={(option: { id: number; name: string }) => option.name}
+                getOptionLabel={(option: { id: number; name: string }) =>
+                  option.name
+                }
                 isOptionEqualToValue={(option, value) => option.id === value.id}
                 disabled={entities.loading}
                 onChange={(_, value: { id: number; name: string } | null) => {
@@ -181,12 +176,6 @@ export const EditTriggerPage: FC = () => {
                     });
                   }
                 }}
-                /*
-                onChange={(_, value: Array<EntityList>) =>
-                  setSelectedEntities(value)
-                }
-                onInputChange={handleChangeInputEntityName}
-                */
                 renderInput={(params) => (
                   <TextField
                     {...params}
@@ -215,9 +204,7 @@ export const EditTriggerPage: FC = () => {
               </HeaderTableRow>
             </TableHead>
             <StyledTableBody>
-              {!entity.value ? (
-                <Loading />
-              ) : (
+              {entity.value && (
                 <Conditions control={control} entity={entity.value} />
               )}
             </StyledTableBody>

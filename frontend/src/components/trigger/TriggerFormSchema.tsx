@@ -1,6 +1,6 @@
+import { TriggerParent } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { z } from "zod";
 
-import { TriggerParent } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { schemaForType } from "services/ZodSchemaUtil";
 
 export const schema = schemaForType<TriggerParent>()(
@@ -30,12 +30,14 @@ export const schema = schemaForType<TriggerParent>()(
           id: z.number(),
           name: z.string(),
         }),
-        values: z.array(z.object({
-          id: z.number(),
-          strCond: z.string(),
-          refCond: z.number().nullable(),
-          boolCond: z.boolean().optional(),
-        })),
+        values: z.array(
+          z.object({
+            id: z.number(),
+            strCond: z.string(),
+            refCond: z.number().nullable(),
+            boolCond: z.boolean().optional(),
+          })
+        ),
       })
     ),
   })
