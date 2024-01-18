@@ -137,7 +137,7 @@ export const ACLPage: FC = () => {
         });
         break;
     }
-  }, [acl]);
+  }, [acl.value]);
 
   useEffect(() => {
     if (isSubmitSuccessful) {
