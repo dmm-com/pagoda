@@ -1,5 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
+  Autocomplete,
   Box,
   Container,
   Table,
@@ -7,14 +8,19 @@ import {
   TableCell,
   TableHead,
   TableRow,
+  TextField,
   Typography
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import React, { FC, useCallback, useEffect } from "react";
-import { useForm } from "react-hook-form";
+import React, { FC, useCallback, useEffect, useState } from "react";
+import { useForm, Controller } from "react-hook-form";
 import { useHistory } from "react-router-dom";
 
-import { TriggerParentUpdate } from "@dmm-com/airone-apiclient-typescript-fetch";
+import {
+  TriggerParentUpdate,
+  EntityList,
+  EntityDetail,
+} from "@dmm-com/airone-apiclient-typescript-fetch";
 import { Loading } from "components/common/Loading";
 import { PageHeader } from "components/common/PageHeader";
 import { SubmitButton } from "components/common/SubmitButton";
@@ -25,6 +31,13 @@ import { useAsyncWithThrow } from "hooks/useAsyncWithThrow";
 import { useFormNotification } from "hooks/useFormNotification";
 import { useTypedParams } from "hooks/useTypedParams";
 import { aironeApiClient } from "repository/AironeApiClient";
+
+const StyledFlexColumnBox = styled(Box)({
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  marginBottom: "48px",
+});
 
 const HeaderTableRow = styled(TableRow)(({ }) => ({
   backgroundColor: "#455A64",
@@ -66,7 +79,10 @@ export const EditTriggerPage: FC = () => {
     mode: "onBlur",
   });
 
-
+  const entities = useAsyncWithThrow(async () => {
+    const entities = await aironeApiClient.getEntities();
+    return entities.results;
+  });
 
   const trigger = useAsyncWithThrow(async () => {
     if (triggerId !== undefined) {
@@ -76,13 +92,14 @@ export const EditTriggerPage: FC = () => {
     }
   }, []);
 
+  const [entityId, setEntityId] = useState<number>();
   const entity = useAsyncWithThrow(async () => {
-    if (trigger.value) {
-      return await aironeApiClient.getEntity(trigger.value.entity.id);
+    if (entityId) {
+      return await aironeApiClient.getEntity(entityId);
     } else {
       return undefined;
     }
-  }, [trigger.value]);
+  }, [entityId]);
 
   const handleSubmitOnValid = useCallback(
     async (trigger: Schema) => {
@@ -108,7 +125,12 @@ export const EditTriggerPage: FC = () => {
   };
 
   useEffect(() => {
-    !trigger.loading && trigger.value != null && reset(trigger.value);
+    if (!trigger.loading && trigger.value != null) {
+      // set defult value to React-hook-form
+      reset(trigger.value);
+
+      setEntityId(trigger.value.entity.id);
+    }
   }, [trigger.loading]);
 
   return (
@@ -133,40 +155,90 @@ export const EditTriggerPage: FC = () => {
       </PageHeader>
 
       <Container>
-        <Typography variant="h4" align="center" my="32px">
-          条件
-        </Typography>
-        <Table>
-          <TableHead>
-            <HeaderTableRow>
-              <HeaderTableCell width="400px">属性名</HeaderTableCell>
-              <HeaderTableCell width="400px">値</HeaderTableCell>
-              <HeaderTableCell width="100px">削除</HeaderTableCell>
-              <HeaderTableCell width="100px">追加</HeaderTableCell>
-            </HeaderTableRow>
-          </TableHead>
-          <StyledTableBody>
-            {!entity.value ? (
-              <Loading />
-            ) : (
-              <Conditions control={control} entity={entity.value} />
-            )}
-          </StyledTableBody>
-        </Table>
+        <StyledFlexColumnBox>
+          <Typography variant="h4">
+            設定対象のエンティティ
+          </Typography>
 
-        <Typography variant="h4" align="center" my="32px">
-          アクション
-        </Typography>
-        <Table>
-          <TableHead>
-            <HeaderTableRow>
-              <HeaderTableCell width="400px">属性名</HeaderTableCell>
-              <HeaderTableCell width="400px">値</HeaderTableCell>
-              <HeaderTableCell width="100px">削除</HeaderTableCell>
-              <HeaderTableCell width="100px">追加</HeaderTableCell>
-            </HeaderTableRow>
-          </TableHead>
-        </Table>
+          <Controller
+            name={`entity`}
+            control={control}
+            render={({ field }) => (
+              <Autocomplete
+                {...field}
+                options={entities.value ?? []}
+                getOptionLabel={(option: { id: number; name: string }) => option.name}
+                isOptionEqualToValue={(option, value) => option.id === value.id}
+                disabled={entities.loading}
+                onChange={(_, value: { id: number; name: string } | null) => {
+                  if (value) {
+                    // set EntityId to state variable
+                    setEntityId(value.id);
+
+                    setValue(`entity`, value, {
+                      shouldDirty: true,
+                      shouldValidate: true,
+                    });
+                  }
+                }}
+                /*
+                onChange={(_, value: Array<EntityList>) =>
+                  setSelectedEntities(value)
+                }
+                onInputChange={handleChangeInputEntityName}
+                */
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    variant="outlined"
+                    placeholder="エンティティを選択"
+                  />
+                )}
+                disableCloseOnSelect
+                fullWidth
+              />
+            )}
+          />
+        </StyledFlexColumnBox>
+
+        <StyledFlexColumnBox>
+          <Typography variant="h4" align="center" my="32px">
+            条件
+          </Typography>
+          <Table>
+            <TableHead>
+              <HeaderTableRow>
+                <HeaderTableCell width="400px">属性名</HeaderTableCell>
+                <HeaderTableCell width="400px">値</HeaderTableCell>
+                <HeaderTableCell width="100px">削除</HeaderTableCell>
+                <HeaderTableCell width="100px">追加</HeaderTableCell>
+              </HeaderTableRow>
+            </TableHead>
+            <StyledTableBody>
+              {!entity.value ? (
+                <Loading />
+              ) : (
+                <Conditions control={control} entity={entity.value} />
+              )}
+            </StyledTableBody>
+          </Table>
+        </StyledFlexColumnBox>
+
+        <StyledFlexColumnBox>
+          <Typography variant="h4" align="center" my="32px">
+            アクション
+          </Typography>
+          <Table>
+            <TableHead>
+              <HeaderTableRow>
+                <HeaderTableCell width="400px">属性名</HeaderTableCell>
+                <HeaderTableCell width="400px">値</HeaderTableCell>
+                <HeaderTableCell width="100px">削除</HeaderTableCell>
+                <HeaderTableCell width="100px">追加</HeaderTableCell>
+              </HeaderTableRow>
+            </TableHead>
+          </Table>
+        </StyledFlexColumnBox>
       </Container>
       {/*
       <Prompt
