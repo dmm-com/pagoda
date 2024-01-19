@@ -191,47 +191,52 @@ export const EditTriggerPage: FC = () => {
           />
         </StyledFlexColumnBox>
 
-        <StyledFlexColumnBox>
-          <Typography variant="h4" align="center" my="32px">
-            条件
-          </Typography>
-          <Table>
-            <TableHead>
-              <HeaderTableRow>
-                <HeaderTableCell width="400px">属性名</HeaderTableCell>
-                <HeaderTableCell width="400px">値</HeaderTableCell>
-                <HeaderTableCell width="100px">削除</HeaderTableCell>
-                <HeaderTableCell width="100px">追加</HeaderTableCell>
-              </HeaderTableRow>
-            </TableHead>
-            <StyledTableBody>
-              {entity.value && (
-                <Conditions control={control} entity={entity.value} />
-              )}
-            </StyledTableBody>
-          </Table>
-        </StyledFlexColumnBox>
+        {/* Trigger configuration forms should be shown after target entity is defined */}
+        {entity.value && (
+          <>
+            <StyledFlexColumnBox>
+              <Typography variant="h4" align="center" my="32px">
+                条件
+              </Typography>
+              <Table>
+                <TableHead>
+                  <HeaderTableRow>
+                    <HeaderTableCell width="400px">属性名</HeaderTableCell>
+                    <HeaderTableCell width="400px">値</HeaderTableCell>
+                    <HeaderTableCell width="100px">削除</HeaderTableCell>
+                    <HeaderTableCell width="100px">追加</HeaderTableCell>
+                  </HeaderTableRow>
+                </TableHead>
+                <StyledTableBody>
+                  {entity.value && (
+                    <Conditions control={control} entity={entity.value} />
+                  )}
+                </StyledTableBody>
+              </Table>
+            </StyledFlexColumnBox>
 
-        <StyledFlexColumnBox>
-          <Typography variant="h4" align="center" my="32px">
-            アクション
-          </Typography>
-          <Table>
-            <TableHead>
-              <HeaderTableRow>
-                <HeaderTableCell width="400px">属性名</HeaderTableCell>
-                <HeaderTableCell width="400px">値</HeaderTableCell>
-                <HeaderTableCell width="100px">削除</HeaderTableCell>
-                <HeaderTableCell width="100px">追加</HeaderTableCell>
-              </HeaderTableRow>
-            </TableHead>
-            <StyledTableBody>
-              {entity.value && (
-                <ActionForm control={control} entity={entity.value} />
-              )}
-            </StyledTableBody>
-          </Table>
-        </StyledFlexColumnBox>
+            <StyledFlexColumnBox>
+              <Typography variant="h4" align="center" my="32px">
+                アクション
+              </Typography>
+              <Table>
+                <TableHead>
+                  <HeaderTableRow>
+                    <HeaderTableCell width="400px">属性名</HeaderTableCell>
+                    <HeaderTableCell width="400px">値</HeaderTableCell>
+                    <HeaderTableCell width="100px">削除</HeaderTableCell>
+                    <HeaderTableCell width="100px">追加</HeaderTableCell>
+                  </HeaderTableRow>
+                </TableHead>
+                <StyledTableBody>
+                  {entity.value && (
+                    <ActionForm control={control} entity={entity.value} />
+                  )}
+                </StyledTableBody>
+              </Table>
+            </StyledFlexColumnBox>
+          </>
+        )}
       </Container>
       {/*
       <Prompt
