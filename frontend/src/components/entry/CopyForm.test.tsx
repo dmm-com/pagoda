@@ -3,16 +3,16 @@
  */
 
 import { EntryRetrieve } from "@dmm-com/airone-apiclient-typescript-fetch";
-import { render } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import * as React from "react";
 
 import { TestWrapper } from "TestWrapper";
 import { CopyForm } from "components/entry/CopyForm";
 
-test("should render a component with essential props", function () {
+describe("CopyForm", () => {
   const entry: EntryRetrieve = {
     id: 1,
-    name: "aaa",
+    name: "entry0001",
     schema: {
       id: 2,
       name: "bbb",
@@ -23,16 +23,24 @@ test("should render a component with essential props", function () {
     isPublic: true,
   };
 
-  expect(() =>
+  test("should set copied entries", function () {
+    const setEntries = jest.fn();
+
     render(
       <CopyForm
-        entries=""
-        setEntries={() => {
-          /* nothing */
-        }}
+        entries="entry1"
+        setEntries={setEntries}
         templateEntry={entry}
       />,
       { wrapper: TestWrapper }
-    )
-  ).not.toThrow();
+    );
+
+    act(() => {
+      fireEvent.change(screen.getByPlaceholderText("コピーするエントリ名"), {
+        target: { value: "entry1\nentry2" },
+      });
+    });
+
+    expect(setEntries).toHaveBeenCalledWith("entry1\nentry2");
+  });
 });

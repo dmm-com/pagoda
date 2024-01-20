@@ -393,7 +393,6 @@ exports[`should match snapshot 1`] = `
               >
                 <table
                   class="MuiTable-root css-rqglhn-MuiTable-root"
-                  id="table_attr_list"
                 >
                   <thead
                     class="MuiTableHead-root css-15n4dzy-MuiTableHead-root"
@@ -822,7 +821,6 @@ exports[`should match snapshot 1`] = `
             >
               <table
                 class="MuiTable-root css-rqglhn-MuiTable-root"
-                id="table_attr_list"
               >
                 <thead
                   class="MuiTableHead-root css-15n4dzy-MuiTableHead-root"
