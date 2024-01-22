@@ -1,4 +1,7 @@
-import { TriggerParentUpdate } from "@dmm-com/airone-apiclient-typescript-fetch";
+import {
+  EntryAttributeTypeTypeEnum,
+  TriggerParentUpdate,
+} from "@dmm-com/airone-apiclient-typescript-fetch";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Autocomplete,
@@ -69,10 +72,14 @@ export const EditTriggerPage: FC = () => {
     reset,
     setError,
     setValue,
+    getValues,
     control,
   } = useForm<Schema>({
     resolver: zodResolver(schema),
     mode: "onBlur",
+    defaultValues: {
+      id: 0,
+    },
   });
 
   const entities = useAsyncWithThrow(async () => {
@@ -97,12 +104,40 @@ export const EditTriggerPage: FC = () => {
     }
   }, [entityId]);
 
+  const convertConditions2ServerFormat = (trigger: Schema) => {
+    if (!entity.value) {
+      return [];
+    }
+
+    return trigger.conditions.map((cond) => {
+      const attrInfo = entity.value?.attrs.find((attr) => attr.id === cond.attr.id);
+
+      switch (attrInfo?.type) {
+        case EntryAttributeTypeTypeEnum.STRING:
+        case EntryAttributeTypeTypeEnum.ARRAY_STRING:
+        case EntryAttributeTypeTypeEnum.TEXT:
+          return { attrId: cond.attr.id, cond: cond.strCond };
+
+        case EntryAttributeTypeTypeEnum.BOOLEAN:
+          return { attrId: cond.attr.id, cond: String(cond.boolCond) };
+
+        case EntryAttributeTypeTypeEnum.ARRAY_NAMED_OBJECT:
+        case EntryAttributeTypeTypeEnum.ARRAY_OBJECT:
+        case EntryAttributeTypeTypeEnum.NAMED_OBJECT:
+        case EntryAttributeTypeTypeEnum.OBJECT:
+          return { attrId: cond.attr.id, cond: String(cond.refCond) };
+        default:
+          return { attrId: cond.attr.id, cond: "" };
+      }
+    });
+  }
+
   const handleSubmitOnValid = useCallback(
     async (trigger: Schema) => {
       const triggerCreateUpdate: TriggerParentUpdate = {
         id: triggerId,
         entityId: trigger.entity.id,
-        conditions: [],
+        conditions: convertConditions2ServerFormat(trigger) ?? [],
         actions: [],
       };
       if (triggerId !== undefined) {
@@ -113,7 +148,7 @@ export const EditTriggerPage: FC = () => {
         enqueueSubmitResult(true);
       }
     },
-    [triggerId]
+    [triggerId, entity]
   );
 
   const handleCancel = async () => {
@@ -171,10 +206,23 @@ export const EditTriggerPage: FC = () => {
                     // set EntityId to state variable
                     setEntityId(value.id);
 
+                    // reset Entity information of React-hook-form
+                    const triggerInfo = getValues();
+
+                    // reset whole information conditions and actions because of changing Entity
+                    reset({
+                      ...triggerInfo,
+                      entity: value,
+                      conditions: [],
+                      actions: [],
+                    });
+
+                    /*
                     setValue(`entity`, value, {
                       shouldDirty: true,
                       shouldValidate: true,
                     });
+                    */
                   }
                 }}
                 renderInput={(params) => (
@@ -184,7 +232,6 @@ export const EditTriggerPage: FC = () => {
                     placeholder="エンティティを選択"
                   />
                 )}
-                disableCloseOnSelect
                 fullWidth
               />
             )}
@@ -230,7 +277,16 @@ export const EditTriggerPage: FC = () => {
                 </TableHead>
                 <StyledTableBody>
                   {entity.value && (
-                    <ActionForm control={control} entity={entity.value} />
+                    <ActionForm control={control} entity={entity.value} resetActionValues={(index: number) => {
+                      setValue(`actions.${index}.values`, [{
+                        id: 0,
+                        strCond: "",
+                        refCond: null,
+                      }], {
+                        shouldDirty: true,
+                        shouldValidate: true,
+                      });
+                    }} />
                   )}
                 </StyledTableBody>
               </Table>

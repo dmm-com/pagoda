@@ -159,8 +159,6 @@ export const Conditions: FC<Props> = ({ control, entity }) => {
     keyName: "key", // NOTE: attr has 'id' field conflicts default key name
   });
 
-  console.log("[onix] entity: ", entity);
-
   const handleAppendCondition = (index: number) => {
     insert(index, {
       id: 0,

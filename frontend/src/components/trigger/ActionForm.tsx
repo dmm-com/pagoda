@@ -3,9 +3,12 @@ import {
   EntryAttributeTypeTypeEnum,
   TriggerAction,
 } from "@dmm-com/airone-apiclient-typescript-fetch";
+import CancelIcon from '@mui/icons-material/Cancel';
 import AddIcon from "@mui/icons-material/Add";
+import AddCircleIcon from '@mui/icons-material/AddCircle';
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import {
+  Box,
   IconButton,
   MenuItem,
   Select,
@@ -13,6 +16,7 @@ import {
   TableRow,
   TextField,
 } from "@mui/material";
+import { styled } from "@mui/material/styles";
 import React, { FC } from "react";
 import { Control, Controller, useFieldArray, UseFieldArrayInsert } from "react-hook-form";
 
@@ -21,36 +25,48 @@ import { Schema } from "./TriggerFormSchema";
 interface Props {
   control: Control<Schema>;
   entity: EntityDetail;
+  resetActionValues: (index: number) => void;
 }
 
 interface PropsActionValue {
-  index: number;
+  indexAction: number;
   control: Control<Schema>;
   entity: EntityDetail;
-  field: TriggerAction;
+  actionField: TriggerAction;
 }
 
 interface PropsActionValueComponent {
   // The 'indexAction' indicatates what number of action column
   indexAction: number;
-  // The 'indexActionInput' indicatates what number of input form in the action column
-  indexActionInput: number;
+  // The 'indexActionValue' indicatates what number of input form in the action column
+  indexActionValue: number;
   control: Control<Schema>;
-  field: TriggerAction;
-  insert: any;
 }
+
+interface PropsActionValueComponentWithEntity extends PropsActionValueComponent {
+  entity: EntityDetail;
+  actionField: TriggerAction;
+  handleAddInputValue: (index: number) => void;
+  handleDelInputValue: (index: number) => void;
+}
+
+const StyledBox = styled(Box)(({ }) => ({
+  display: "flex",
+  width: "100%",
+  gap: "0 12px",
+}));
 
 const ActionValueAsString: FC<PropsActionValueComponent> = ({
   indexAction,
-  indexActionInput,
+  indexActionValue,
   control,
-  field,
-  insert
 }) => {
+  console.log("[onix/ActionValueAsString(01)] indexActionValue: ", indexActionValue);
 
   return (
     <Controller
-      name={`actions.${indexAction}.values.${indexActionInput}.strCond`}
+      name={`actions.${indexAction}.values.${indexActionValue}.strCond`}
+      defaultValue=""
       control={control}
       render={({ field }) => (
         <TextField {...field} variant="standard" fullWidth
@@ -60,51 +76,113 @@ const ActionValueAsString: FC<PropsActionValueComponent> = ({
   );
 };
 
-const ActionValue: FC<PropsActionValue> = ({
-  index,
+const ActionValueInputForm: FC<PropsActionValueComponentWithEntity> = ({
+  indexAction,
+  indexActionValue,
   control,
-  field,
+  actionField,
   entity,
+  handleAddInputValue,
+  handleDelInputValue,
 }) => {
-  /* to manupirate values in actions this useFieldArray() is necessary,
-     but, this must be declared in the proper scope */
 
-  const { fields, insert, remove, swap } = useFieldArray({
-    control,
-    name: `actions.${index}.values`,
-    keyName: "key", // NOTE: attr has 'id' field conflicts default key name
-  });
-
-  // debug processing
-  insert(0, {
-    id: 0,
-    strCond: "",
-    refCond: null,
-  });
-
-  // This is DEBUG code
-  const attrType = EntryAttributeTypeTypeEnum.STRING; // TODO: get proper entity attr from entity object
-  switch (attrType) {
+  const attrInfo = entity.attrs.find((attr) => attr.id === actionField.attr.id);
+  switch (attrInfo?.type) {
     case EntryAttributeTypeTypeEnum.STRING:
+    case EntryAttributeTypeTypeEnum.TEXT:
       return (
-        <ActionValueAsString indexAction={index} indexActionInput={0} control={control} field={field} insert={insert} />
+        <ActionValueAsString
+          indexAction={indexAction}
+          indexActionValue={indexActionValue}
+          control={control}
+        />
       );
 
-    /* 
+    case EntryAttributeTypeTypeEnum.ARRAY_STRING:
+      return (
+        <StyledBox>
+          <>
+            <ActionValueAsString
+              indexAction={indexAction}
+              indexActionValue={indexActionValue}
+              control={control}
+            />
+          </>
+          <IconButton onClick={() => handleDelInputValue(indexActionValue)}>
+            <CancelIcon />
+          </IconButton>
+          <IconButton onClick={() => handleAddInputValue(indexActionValue)}>
+            <AddCircleIcon />
+          </IconButton>
+        </StyledBox>
+      );
+
+    /*
     case EntryAttributeTypeTypeEnum.OBJECT:
       return (
         <></>
       );
 
-    case EntryAttributeTypeTypeEnum.BOOLEAN:
+      case EntryAttributeTypeTypeEnum.BOOLEAN:
       return (
-        <></>
+      <></>
       );
-    */
+      */
   }
+}
+
+const ActionValue: FC<PropsActionValue> = ({
+  indexAction,
+  control,
+  actionField,
+  entity,
+}) => {
+  const { fields, insert, remove, swap } = useFieldArray({
+    control,
+    name: `actions.${indexAction}.values`,
+    keyName: "key", // NOTE: attr has 'id' field conflicts default key name
+  });
+
+  const handleAddActionValue = (index: number) => {
+    console.log("[onix/handleAddActionValue(01)] index: ", index);
+    insert(index + 1, {
+      id: 0,
+      strCond: "",
+      refCond: null,
+      boolCond: undefined,
+    });
+  }
+  const handleDelActionValue = (index: number) => {
+    console.log("[onix/handleDelActionValue(01)] index: ", index);
+    remove(index);
+
+    fields.length === 1 && handleAddActionValue(0);
+  }
+
+  return (
+    <>
+      {fields.map((actionValueField, indexActionValue) => {
+        return (
+          <ActionValueInputForm
+            indexAction={indexAction}
+            indexActionValue={indexActionValue}
+            control={control}
+            actionField={actionField}
+            entity={entity}
+            handleAddInputValue={handleAddActionValue}
+            handleDelInputValue={handleDelActionValue}
+          />
+        );
+      })}
+    </>
+  );
 };
 
-export const ActionForm: FC<Props> = ({ control, entity }) => {
+export const ActionForm: FC<Props> = ({
+  control,
+  entity,
+  resetActionValues,
+}) => {
   const { fields, insert, remove, swap } = useFieldArray({
     control,
     name: "actions",
@@ -122,54 +200,61 @@ export const ActionForm: FC<Props> = ({ control, entity }) => {
         id: 0,
         strCond: "",
         refCond: null,
-        boolCond: false,
+        boolCond: undefined,
       }]
     })
   };
 
   return (
     <>
-      {fields.map((field, index) => {
+      {fields.map((actionField, index) => {
         return (
-          <TableRow key={field.key}>
-            <TableCell>
-              <Controller
-                name={`actions.${index}.attr.id`}
-                control={control}
-                defaultValue={field.attr.id}
-                render={({ field }) => (
-                  <Select {...field} size="small" fullWidth>
+          <Controller key={actionField.key}
+            name={`actions.${index}.attr.id`}
+            control={control}
+            defaultValue={actionField.attr.id}
+            render={({ field }) => (
+              <TableRow>
+                <TableCell>
+                  <Select {...field}
+                    size="small"
+                    fullWidth
+                    onChange={(e) => {
+                      field.onChange(e);
+
+                      // clear all action values when attribute is changed
+                      resetActionValues(index);
+                    }}
+                  >
                     {entity.attrs.map((attr) => (
                       <MenuItem key={attr.id} value={attr.id}>
                         {attr.name}
                       </MenuItem>
                     ))}
                   </Select>
-                )}
-              />
-            </TableCell>
-            <TableCell>
-              {/** This raise an exception
-              <ActionValue
-                index={index}
-                control={control}
-                field={field}
-                entity={entity}
-              />
-              */}
-            </TableCell>
-            <TableCell>
-              {" "}
-              <IconButton onClick={() => remove(index)}>
-                <DeleteOutlineIcon />
-              </IconButton>
-            </TableCell>
-            <TableCell>
-              <IconButton onClick={() => handleAppendAction(index + 1)}>
-                <AddIcon />
-              </IconButton>
-            </TableCell>
-          </TableRow>
+                </TableCell>
+                <TableCell>
+                  <ActionValue
+                    indexAction={index}
+                    control={control}
+                    actionField={actionField}
+                    entity={entity}
+                  />
+                </TableCell>
+                <TableCell>
+                  {" "}
+                  <IconButton onClick={() => remove(index)}>
+                    <DeleteOutlineIcon />
+                  </IconButton>
+                </TableCell>
+                <TableCell>
+                  <IconButton onClick={() => handleAppendAction(index + 1)}>
+                    <AddIcon />
+                  </IconButton>
+                </TableCell>
+              </TableRow>
+            )}
+          />
         );
       })}
       {fields.length === 0 && (
