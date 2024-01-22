@@ -8,6 +8,7 @@ from api_v1.urls import urlpatterns as api_v1_urlpatterns
 
 urlpatterns = [
     url(r"^$", views.index, name="index"),
+    url(r"^testtest/", include(("acl.urls", "acl"))),
     url(r"^acl/", include(("acl.urls", "acl"))),
     url(r"^user/", include(("user.urls", "user"))),
     url(r"^group/", include(("group.urls", "group"))),
