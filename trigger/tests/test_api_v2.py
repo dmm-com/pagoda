@@ -161,6 +161,30 @@ class APITest(AironeViewTest):
         resp = self.client.post("/trigger/api/v2/", json.dumps(params), "application/json")
         self.assertEqual(resp.status_code, 400)
 
+    def test_create_trigger_condition_with_invalid_entity_attr_in_actions_param(self):
+        # send request any conditions
+        params = {
+            "entity_id": self.entity_book.id,
+            "conditions": [
+                {
+                    "attr_id": self.entity_book.attrs.get(name="title").id,
+                    "cond": "Harry Potter and the Philosopher's Stone",
+                },
+            ],
+            "actions": [
+                {
+                    "attr_id": -1,  # invalid ID of EntityAttr
+                    "value": "value",
+                }
+            ],
+        }
+        resp = self.client.post("/trigger/api/v2/", json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.json()["non_field_errors"][0]["message"],
+            "actions.attr_id contains non EntityAttr of specified Entity",
+        )
+
     def test_create_trigger_condition_without_element_in_actions(self):
         # send request any conditions
         params = {

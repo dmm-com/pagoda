@@ -126,9 +126,7 @@ class TriggerParentBaseSerializer(serializers.ModelSerializer):
         # This checks each EntityAttrs in parameters are Entity's one of data["entity_id"]
         for key in ["conditions", "actions"]:
             attr_id_list = [x["attr_id"] for x in data[key]]
-            if EntityAttr.objects.filter(id__in=attr_id_list, parent_entity=entity).count() != len(
-                data[key]
-            ):
+            if not EntityAttr.objects.filter(id__in=attr_id_list, parent_entity=entity).exists():
                 raise InvalidValueError(
                     "%s.attr_id contains non EntityAttr of specified Entity" % key
                 )
