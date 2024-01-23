@@ -68,10 +68,13 @@ const ActionValueAsString: FC<PropsActionValueComponent> = ({
       name={`actions.${indexAction}.values.${indexActionValue}.strCond`}
       defaultValue=""
       control={control}
-      render={({ field }) => (
-        <TextField {...field} variant="standard" fullWidth
-        />
-      )}
+      render={({ field }) => {
+        console.log("[onix/ActionValueAsString(01)] field: ", field);
+
+        return (
+          <TextField {...field} variant="standard" fullWidth />
+        )
+      }}
     />
   );
 };
@@ -149,7 +152,6 @@ const ActionValue: FC<PropsActionValue> = ({
       id: 0,
       strCond: "",
       refCond: null,
-      boolCond: undefined,
     });
   }
   const handleDelActionValue = (index: number) => {

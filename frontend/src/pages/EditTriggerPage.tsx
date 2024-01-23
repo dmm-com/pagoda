@@ -30,6 +30,7 @@ import { useAsyncWithThrow } from "hooks/useAsyncWithThrow";
 import { useFormNotification } from "hooks/useFormNotification";
 import { useTypedParams } from "hooks/useTypedParams";
 import { aironeApiClient } from "repository/AironeApiClient";
+import { act } from "react-dom/test-utils";
 
 const StyledFlexColumnBox = styled(Box)({
   display: "flex",
@@ -109,9 +110,11 @@ export const EditTriggerPage: FC = () => {
       return [];
     }
 
+    console.log("[onix/convertConditions2ServerFormat(10)] trigger: ", trigger);
     return trigger.conditions.map((cond) => {
       const attrInfo = entity.value?.attrs.find((attr) => attr.id === cond.attr.id);
 
+      console.log("[onix/convertConditions2ServerFormat(20)] cond: ", cond);
       switch (attrInfo?.type) {
         case EntryAttributeTypeTypeEnum.STRING:
         case EntryAttributeTypeTypeEnum.ARRAY_STRING:
@@ -131,6 +134,44 @@ export const EditTriggerPage: FC = () => {
       }
     });
   }
+  const convertActions2ServerFormat = (trigger: Schema) => {
+    if (!entity.value) {
+      return [];
+    }
+
+    const retValues = Array();
+    trigger.actions.forEach((action) => {
+      const attrInfo = entity.value?.attrs.find((attr) => attr.id === action.attr.id);
+
+      switch (attrInfo?.type) {
+        case EntryAttributeTypeTypeEnum.STRING:
+        case EntryAttributeTypeTypeEnum.ARRAY_STRING:
+        case EntryAttributeTypeTypeEnum.TEXT:
+          action.values.map((val) => {
+            retValues.push({ attrId: action.attr.id, value: val.strCond });
+          });
+          break;
+
+        case EntryAttributeTypeTypeEnum.BOOLEAN:
+          action.values.map((val) => {
+            retValues.push({ attrId: action.attr.id, value: String(val.boolCond) });
+          });
+          break;
+
+        case EntryAttributeTypeTypeEnum.ARRAY_NAMED_OBJECT:
+        case EntryAttributeTypeTypeEnum.ARRAY_OBJECT:
+        case EntryAttributeTypeTypeEnum.NAMED_OBJECT:
+        case EntryAttributeTypeTypeEnum.OBJECT:
+          action.values.map((val) => {
+            retValues.push({ attrId: action.attr.id, value: String(val.refCond) });
+          });
+          break;
+      }
+    });
+    console.log("[onix/convertActions2ServerFormat(90)] retValues: ", retValues);
+
+    return retValues;
+  }
 
   const handleSubmitOnValid = useCallback(
     async (trigger: Schema) => {
@@ -138,15 +179,18 @@ export const EditTriggerPage: FC = () => {
         id: triggerId,
         entityId: trigger.entity.id,
         conditions: convertConditions2ServerFormat(trigger) ?? [],
-        actions: [],
+        actions: convertActions2ServerFormat(trigger) ?? [],
       };
       if (triggerId !== undefined) {
         await aironeApiClient.updateTrigger(triggerId, triggerCreateUpdate);
         enqueueSubmitResult(true);
       } else {
+        console.log("[onix/handleSubmitOnValid(00)]");
         await aironeApiClient.createTrigger(triggerCreateUpdate);
+        console.log("[onix/handleSubmitOnValid(01)]");
         enqueueSubmitResult(true);
       }
+      console.log("[onix/handleSubmitOnValid(02)]");
     },
     [triggerId, entity]
   );

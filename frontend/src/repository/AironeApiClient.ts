@@ -215,17 +215,17 @@ class AironeApiClient {
   ): Promise<PaginatedEntityListList> {
     const params: EntityApiV2ListRequest = page
       ? {
-          offset: (page - 1) * ConstEntityList.MAX_ROW_COUNT,
-          limit: ConstEntityList.MAX_ROW_COUNT,
-          search: search,
-          isToplevel: isToplevel,
-        }
+        offset: (page - 1) * ConstEntityList.MAX_ROW_COUNT,
+        limit: ConstEntityList.MAX_ROW_COUNT,
+        search: search,
+        isToplevel: isToplevel,
+      }
       : {
-          // Any better way to get all the entities?
-          limit: Number.MAX_SAFE_INTEGER,
-          search: search,
-          isToplevel: isToplevel,
-        };
+        // Any better way to get all the entities?
+        limit: Number.MAX_SAFE_INTEGER,
+        search: search,
+        isToplevel: isToplevel,
+      };
 
     return await this.entity.entityApiV2List(params);
   }
@@ -765,7 +765,8 @@ class AironeApiClient {
   }
 
   async createTrigger(params: TriggerParentUpdate): Promise<void> {
-    await this.trigger.triggerApiV2Create(
+    console.log("[onix/createTrigger(00)] params: ", params);
+    const val = await this.trigger.triggerApiV2Create(
       {
         triggerParentCreate: params,
       },
@@ -776,6 +777,7 @@ class AironeApiClient {
         },
       }
     );
+    console.log("[onix/createTrigger(90)] ", val);
   }
 
   async deleteTrigger(triggerId: number): Promise<void> {
