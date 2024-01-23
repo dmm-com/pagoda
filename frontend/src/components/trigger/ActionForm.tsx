@@ -3,9 +3,9 @@ import {
   EntryAttributeTypeTypeEnum,
   TriggerAction,
 } from "@dmm-com/airone-apiclient-typescript-fetch";
-import CancelIcon from '@mui/icons-material/Cancel';
 import AddIcon from "@mui/icons-material/Add";
 import AddCircleIcon from '@mui/icons-material/AddCircle';
+import CancelIcon from '@mui/icons-material/Cancel';
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import {
   Box,
@@ -18,7 +18,7 @@ import {
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import React, { FC } from "react";
-import { Control, Controller, useFieldArray, UseFieldArrayInsert } from "react-hook-form";
+import { Control, Controller, useFieldArray } from "react-hook-form";
 
 import { Schema } from "./TriggerFormSchema";
 
@@ -166,6 +166,7 @@ const ActionValue: FC<PropsActionValue> = ({
       {fields.map((actionValueField, indexActionValue) => {
         return (
           <ActionValueInputForm
+            key={actionValueField.key}
             indexAction={indexAction}
             indexActionValue={indexActionValue}
             control={control}
