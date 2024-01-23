@@ -20,6 +20,7 @@ import React, { FC, useCallback, useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useHistory } from "react-router-dom";
 
+import { triggersPath } from "Routes";
 import { PageHeader } from "components/common/PageHeader";
 import { SubmitButton } from "components/common/SubmitButton";
 import { EntityBreadcrumbs } from "components/entity/EntityBreadcrumbs";
@@ -110,11 +111,9 @@ export const EditTriggerPage: FC = () => {
       return [];
     }
 
-    console.log("[onix/convertConditions2ServerFormat(10)] trigger: ", trigger);
     return trigger.conditions.map((cond) => {
       const attrInfo = entity.value?.attrs.find((attr) => attr.id === cond.attr.id);
 
-      console.log("[onix/convertConditions2ServerFormat(20)] cond: ", cond);
       switch (attrInfo?.type) {
         case EntryAttributeTypeTypeEnum.STRING:
         case EntryAttributeTypeTypeEnum.ARRAY_STRING:
@@ -168,7 +167,6 @@ export const EditTriggerPage: FC = () => {
           break;
       }
     });
-    console.log("[onix/convertActions2ServerFormat(90)] retValues: ", retValues);
 
     return retValues;
   }
@@ -185,12 +183,9 @@ export const EditTriggerPage: FC = () => {
         await aironeApiClient.updateTrigger(triggerId, triggerCreateUpdate);
         enqueueSubmitResult(true);
       } else {
-        console.log("[onix/handleSubmitOnValid(00)]");
         await aironeApiClient.createTrigger(triggerCreateUpdate);
-        console.log("[onix/handleSubmitOnValid(01)]");
         enqueueSubmitResult(true);
       }
-      console.log("[onix/handleSubmitOnValid(02)]");
     },
     [triggerId, entity]
   );
@@ -207,6 +202,12 @@ export const EditTriggerPage: FC = () => {
       setEntityId(trigger.value.entity.id);
     }
   }, [trigger.loading]);
+
+  useEffect(() => {
+    if (isSubmitSuccessful) {
+      history.replace(triggersPath());
+    }
+  }, [isSubmitSuccessful]);
 
   return (
     <Box>
