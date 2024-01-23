@@ -100,12 +100,12 @@ class TriggerActionUpdateSerializer(serializers.Serializer):
 
 
 class TriggerParentBaseSerializer(serializers.ModelSerializer):
-    entity_id = serializers.IntegerField(write_only=True, required=True)
+    entity_id = serializers.IntegerField(write_only=True, required=False)
     conditions = serializers.ListField(
-        child=TriggerConditionUpdateSerializer(), write_only=True, required=True
+        child=TriggerConditionUpdateSerializer(), write_only=True, required=False
     )
     actions = serializers.ListField(
-        child=TriggerActionUpdateSerializer(), write_only=True, required=True
+        child=TriggerActionUpdateSerializer(), write_only=True, required=False
     )
 
     class Meta:
