@@ -32,6 +32,9 @@ import { useFormNotification } from "hooks/useFormNotification";
 import { useTypedParams } from "hooks/useTypedParams";
 import { aironeApiClient } from "repository/AironeApiClient";
 import { act } from "react-dom/test-utils";
+import {
+  isResponseError,
+} from "services/AironeAPIErrorUtil"
 
 const StyledFlexColumnBox = styled(Box)({
   display: "flex",
@@ -68,6 +71,15 @@ export const EditTriggerPage: FC = () => {
   const history = useHistory();
   const { enqueueSubmitResult } = useFormNotification("トリガー", willCreate);
 
+  const actionTrigger = useAsyncWithThrow(async () => {
+    if (triggerId !== undefined) {
+      // set valid for actionTrigger context when opening edit page
+      return await aironeApiClient.getTrigger(triggerId);
+    } else {
+      return undefined;
+    }
+  }, []);
+
   const {
     formState: { isValid, isDirty, isSubmitting, isSubmitSuccessful },
     handleSubmit,
@@ -75,6 +87,7 @@ export const EditTriggerPage: FC = () => {
     setError,
     setValue,
     getValues,
+    trigger,
     control,
   } = useForm<Schema>({
     resolver: zodResolver(schema),
@@ -88,14 +101,6 @@ export const EditTriggerPage: FC = () => {
     const entities = await aironeApiClient.getEntities();
     return entities.results;
   });
-
-  const trigger = useAsyncWithThrow(async () => {
-    if (triggerId !== undefined) {
-      return await aironeApiClient.getTrigger(triggerId);
-    } else {
-      return undefined;
-    }
-  }, []);
 
   const [entityId, setEntityId] = useState<number>();
   const entity = useAsyncWithThrow(async () => {
@@ -179,12 +184,19 @@ export const EditTriggerPage: FC = () => {
         conditions: convertConditions2ServerFormat(trigger) ?? [],
         actions: convertActions2ServerFormat(trigger) ?? [],
       };
-      if (triggerId !== undefined) {
-        await aironeApiClient.updateTrigger(triggerId, triggerCreateUpdate);
-        enqueueSubmitResult(true);
-      } else {
-        await aironeApiClient.createTrigger(triggerCreateUpdate);
-        enqueueSubmitResult(true);
+      try {
+        if (triggerId !== undefined) {
+          await aironeApiClient.updateTrigger(triggerId, triggerCreateUpdate);
+          enqueueSubmitResult(true);
+        } else {
+          await aironeApiClient.createTrigger(triggerCreateUpdate);
+          enqueueSubmitResult(true);
+        }
+      } catch (e) {
+        const errMsg = "Failed to submit trigger"
+
+        enqueueSubmitResult(false, errMsg);
+        setError("conditions", { message: errMsg });
       }
     },
     [triggerId, entity]
@@ -195,19 +207,64 @@ export const EditTriggerPage: FC = () => {
   };
 
   useEffect(() => {
-    if (!trigger.loading && trigger.value != null) {
+    if (!actionTrigger.loading && actionTrigger.value != null) {
       // set defult value to React-hook-form
-      reset(trigger.value);
+      /*
+      reset(actionTrigger.value, {
+        keepIsValid: true,
+      });
+      */
+      reset(actionTrigger.value);
 
-      setEntityId(trigger.value.entity.id);
+      setEntityId(actionTrigger.value.entity.id);
+
+      trigger();
     }
-  }, [trigger.loading]);
+  }, [actionTrigger.loading]);
+
+  useEffect(() => {
+    if (entity.value && entity.value.id !== 0) {
+      setValue(`entity`, {
+        id: entity.value.id,
+        name: entity.value.name,
+      }, {
+        shouldDirty: true,
+        shouldValidate: true,
+      });
+    } else {
+      setValue(`entity`, {
+        id: 0,
+        name: "",
+      }, {
+        shouldDirty: true,
+        shouldValidate: true,
+      });
+    }
+    trigger();
+
+  }, [entity.loading]);
 
   useEffect(() => {
     if (isSubmitSuccessful) {
       history.replace(triggersPath());
     }
   }, [isSubmitSuccessful]);
+
+  const isSubmittable = () => {
+    const triggerInfo = getValues();
+
+    // check trigger has valid information
+    if (!triggerInfo || !triggerInfo.entity || !triggerInfo.conditions || !triggerInfo.actions) {
+      return false;
+    }
+
+    // check trigger has valid context at least one
+    if (triggerInfo.conditions.length === 0 || triggerInfo.actions.length === 0) {
+      return false;
+    }
+
+    return true;
+  }
 
   return (
     <Box>
@@ -218,12 +275,13 @@ export const EditTriggerPage: FC = () => {
       )}
 
       <PageHeader
-        title={entity.value ? entity.value.name : "新規トリガーの作成"}
-        description={entity.value && "トリガー編集"}
+        title={(triggerId && entity.value) ? entity.value.name : "新規トリガーの作成"}
+        description={(triggerId) ? entity.value && "トリガー編集" : ""}
       >
         <SubmitButton
           name="保存"
-          disabled={!isDirty || !isValid || isSubmitting || isSubmitSuccessful}
+          //disabled={!isDirty || !isValid || isSubmitting || isSubmitSuccessful}
+          disabled={!isSubmittable()}
           isSubmitting={isSubmitting}
           handleSubmit={handleSubmit(handleSubmitOnValid)}
           handleCancel={handleCancel}
@@ -237,6 +295,7 @@ export const EditTriggerPage: FC = () => {
           <Controller
             name={`entity`}
             control={control}
+            defaultValue={{ id: 0, name: "" }}
             render={({ field }) => (
               <Autocomplete
                 {...field}
@@ -247,7 +306,7 @@ export const EditTriggerPage: FC = () => {
                 isOptionEqualToValue={(option, value) => option.id === value.id}
                 disabled={entities.loading}
                 onChange={(_, value: { id: number; name: string } | null) => {
-                  if (value) {
+                  if (value && value.id != entityId) {
                     // set EntityId to state variable
                     setEntityId(value.id);
 

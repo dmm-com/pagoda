@@ -6,6 +6,9 @@ from rest_framework.exceptions import ValidationError
 from airone.lib.drf import (
     InvalidValueError,
 )
+from entry.api_v2.serializers import (
+    EntryAttributeValueObject,
+)
 from entity.api_v2.serializers import (
     EntityAttrSerializer,
     EntitySerializer,
@@ -20,6 +23,8 @@ from trigger.models import (
 
 
 class TriggerActionValueSerializer(serializers.ModelSerializer):
+    ref_cond = serializers.SerializerMethodField()
+
     class Meta:
         model = TriggerActionValue
         fields = [
@@ -28,6 +33,19 @@ class TriggerActionValueSerializer(serializers.ModelSerializer):
             "ref_cond",
             "bool_cond",
         ]
+
+    def get_ref_cond(self, obj: TriggerActionValue) -> EntryAttributeValueObject | None:
+        if obj.ref_cond:
+            return {
+                "id": obj.ref_cond.id,
+                "name": obj.ref_cond.name,
+                "schema": {
+                    "id": obj.ref_cond.schema.id,
+                    "name": obj.ref_cond.schema.name,
+                }
+            }
+        else:
+            return None
 
 
 class TriggerActionSerializer(serializers.ModelSerializer):
@@ -45,6 +63,7 @@ class TriggerActionSerializer(serializers.ModelSerializer):
 
 class TriggerConditionSerializer(serializers.ModelSerializer):
     attr = EntityAttrSerializer(read_only=True)
+    ref_cond = serializers.SerializerMethodField()
 
     class Meta:
         model = TriggerCondition
@@ -56,6 +75,18 @@ class TriggerConditionSerializer(serializers.ModelSerializer):
             "bool_cond",
         ]
 
+    def get_ref_cond(self, obj: TriggerCondition) -> EntryAttributeValueObject | None:
+        if obj.ref_cond:
+            return {
+                "id": obj.ref_cond.id,
+                "name": obj.ref_cond.name,
+                "schema": {
+                    "id": obj.ref_cond.schema.id,
+                    "name": obj.ref_cond.schema.name,
+                }
+            }
+        else:
+            return None
 
 class TriggerParentSerializer(serializers.ModelSerializer):
     entity = EntitySerializer(read_only=True)

@@ -17,9 +17,17 @@ export const schema = schemaForType<TriggerParent>()(
         attr: z.object({
           id: z.number(),
           name: z.string(),
+          type: z.number(),
         }),
         strCond: z.string(),
-        refCond: z.number().nullable(),
+        refCond: z.object({
+          id: z.number(),
+          name: z.string(),
+          schema: z.object({
+            id: z.number(),
+            name: z.string(),
+          }),
+        }).nullable(),
         boolCond: z.boolean().optional(),
       })
     ),
@@ -29,11 +37,19 @@ export const schema = schemaForType<TriggerParent>()(
         attr: z.object({
           id: z.number(),
           name: z.string(),
+          type: z.number(),
         }),
         values: z.array(z.object({
           id: z.number(),
           strCond: z.string(),
-          refCond: z.number().nullable(),
+          refCond: z.object({
+            id: z.number(),
+            name: z.string(),
+            schema: z.object({
+              id: z.number(),
+              name: z.string(),
+            }),
+          }).nullable(),
           boolCond: z.boolean().optional(),
         })),
       })

@@ -180,9 +180,11 @@ class EntityUpdateData(TypedDict, total=False):
 
 
 class EntityAttrSerializer(serializers.ModelSerializer):
+    type = serializers.IntegerField(required=False, read_only=True)
+
     class Meta:
         model = EntityAttr
-        fields = ("id", "name")
+        fields = ("id", "name", "type")
 
 
 class EntitySerializer(serializers.ModelSerializer):

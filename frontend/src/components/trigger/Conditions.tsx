@@ -165,6 +165,7 @@ export const Conditions: FC<Props> = ({ control, entity }) => {
       attr: {
         id: 0,
         name: "",
+        type: 0,
       },
       strCond: "",
       refCond: null,

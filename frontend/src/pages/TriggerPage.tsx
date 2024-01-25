@@ -1,4 +1,5 @@
 import {
+  EntryAttributeTypeTypeEnum,
   TriggerAction,
   TriggerCondition,
 } from "@dmm-com/airone-apiclient-typescript-fetch";
@@ -8,6 +9,7 @@ import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import {
   Box,
   Button,
+  Checkbox,
   Container,
   Divider,
   IconButton,
@@ -29,7 +31,13 @@ import React, { FC, useState } from "react";
 import { Link, useHistory } from "react-router-dom";
 import { useAsync } from "react-use";
 
-import { editTriggerPath, newTriggerPath, topPath, triggersPath } from "Routes";
+import {
+  editTriggerPath,
+  entryDetailsPath,
+  newTriggerPath,
+  topPath,
+  triggersPath
+} from "Routes";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { Confirmable } from "components/common/Confirmable";
 import { Loading } from "components/common/Loading";
@@ -49,11 +57,11 @@ const StyledIconButton = styled(IconButton)(({ theme }) => ({
   margin: theme.spacing(1),
 })) as OverridableComponent<ExtendButtonBaseTypeMap<IconButtonTypeMap>>;
 
-const HeaderTableRow = styled(TableRow)(({}) => ({
+const HeaderTableRow = styled(TableRow)(({ }) => ({
   backgroundColor: "#455A64",
 }));
 
-const HeaderTableCell = styled(TableCell)(({}) => ({
+const HeaderTableCell = styled(TableCell)(({ }) => ({
   color: "#FFFFFF",
 }));
 
@@ -71,6 +79,36 @@ const StyledBox = styled(Box)(() => ({
   gap: "20px",
 }));
 
+const ElemTriggerCondition: FC<{
+  cond: TriggerCondition;
+}> = ({ cond }) => {
+  switch (cond.attr.type) {
+    case EntryAttributeTypeTypeEnum.STRING:
+    case EntryAttributeTypeTypeEnum.ARRAY_STRING:
+    case EntryAttributeTypeTypeEnum.TEXT:
+      return (<Box>{cond.strCond}</Box>);
+
+    case EntryAttributeTypeTypeEnum.BOOLEAN:
+      return <Checkbox checked={cond.boolCond} disabled sx={{ p: "0px" }} />;
+
+    case EntryAttributeTypeTypeEnum.ARRAY_NAMED_OBJECT:
+    case EntryAttributeTypeTypeEnum.ARRAY_OBJECT:
+    case EntryAttributeTypeTypeEnum.NAMED_OBJECT:
+    case EntryAttributeTypeTypeEnum.OBJECT:
+      return (
+        <Box
+          component={Link}
+          to={entryDetailsPath(cond.refCond?.schema.id ?? 0, cond.refCond?.id ?? 0)}
+        >
+          {cond.refCond?.name ?? ""}
+        </Box>
+      );
+
+    default:
+      return (<Box />);
+  }
+};
+
 const TriggerCondition: FC<{
   cond: TriggerCondition;
 }> = ({ cond }) => {
@@ -78,7 +116,7 @@ const TriggerCondition: FC<{
     <StyledBox key={cond.id}>
       <Box>{cond.attr.name}</Box>
       <Divider orientation="vertical" flexItem />
-      <Box>{cond.strCond}</Box>
+      <ElemTriggerCondition cond={cond} />
     </StyledBox>
   );
 };

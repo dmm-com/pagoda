@@ -38,7 +38,7 @@ class APITest(AironeViewTest):
             ],
         )
 
-    def test_list_trigger_condition(self):
+    def test_list_trigger_condition_and_action(self):
         # create Entity and TriggerConditions to be retrieved
         entry_tom = self.add_entry(self.user, "Tom", self.entity_people)
 
@@ -48,6 +48,10 @@ class APITest(AironeViewTest):
                 "attr_id": self.entity_book.attrs.get(name="isbn").id,
                 "value": "978-4915512377",
             },
+            {
+                "attr_id": self.entity_book.attrs.get(name="borrowed_by").id,
+                "value": entry_tom,
+            }
         ]
         TriggerCondition.register(
             self.entity_book,
@@ -100,6 +104,20 @@ class APITest(AironeViewTest):
             ),
         )
 
+        # check ref_cond value format is correctly in the conditions
+        elem_ref_cond = [
+            x["ref_cond"] for x in sum([t["conditions"] for t in resp.json()["results"]], [])
+            if x["ref_cond"] is not None
+        ][0]
+        self.assertEqual(elem_ref_cond, {
+            "id": entry_tom.id,
+            "name": entry_tom.name,
+            "schema": {
+                "id": entry_tom.schema.id,
+                "name": entry_tom.schema.name,
+            },
+        })
+
         # list specified Entity's triggers
         resp = self.client.get("/trigger/api/v2/?entity_id=%s" % self.entity_book.id)
         self.assertEqual(resp.status_code, 200)
@@ -110,6 +128,20 @@ class APITest(AironeViewTest):
                 self.entity_book.name,
             ],
         )
+
+        # check ref_cond value format is correctly in the actions
+        elem_ref_cond = [x for x in sum(
+            [x["values"] for x in sum([t["actions"] for t in resp.json()["results"]], [])],
+            []
+        ) if x["ref_cond"] != None][0]
+        self.assertEqual(elem_ref_cond["ref_cond"], {
+            "id": entry_tom.id,
+            "name": entry_tom.name,
+            "schema": {
+                "id": entry_tom.schema.id,
+                "name": entry_tom.schema.name,
+            },
+        })
 
     def test_create_trigger_condition_with_wrong_params_in_conditions(self):
         # send request with parameter that EnttiyAttr in conditions is incompatible with Entity
@@ -227,6 +259,12 @@ class APITest(AironeViewTest):
         }
         resp = self.client.post("/trigger/api/v2/", json.dumps(params), "application/json")
         self.assertEqual(resp.status_code, 201)
+
+        # test to handle request to create TriggerCondition that is exactly same with others
+        err_resp = self.client.post("/trigger/api/v2/", json.dumps(params), "application/json")
+        self.assertEqual(err_resp.status_code, 400)
+        self.assertEqual(err_resp.json()[0]["message"],
+                         "There is condition that have same condition with specified one")
 
         # This checks expected Conditions are created properly
         created_trigger = TriggerParent.objects.get(id=resp.json()["id"])

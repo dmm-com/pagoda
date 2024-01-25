@@ -61,16 +61,12 @@ const ActionValueAsString: FC<PropsActionValueComponent> = ({
   indexActionValue,
   control,
 }) => {
-  console.log("[onix/ActionValueAsString(01)] indexActionValue: ", indexActionValue);
-
   return (
     <Controller
       name={`actions.${indexAction}.values.${indexActionValue}.strCond`}
       defaultValue=""
       control={control}
       render={({ field }) => {
-        console.log("[onix/ActionValueAsString(01)] field: ", field);
-
         return (
           <TextField {...field} variant="standard" fullWidth />
         )
@@ -147,7 +143,6 @@ const ActionValue: FC<PropsActionValue> = ({
   });
 
   const handleAddActionValue = (index: number) => {
-    console.log("[onix/handleAddActionValue(01)] index: ", index);
     insert(index + 1, {
       id: 0,
       strCond: "",
@@ -155,7 +150,6 @@ const ActionValue: FC<PropsActionValue> = ({
     });
   }
   const handleDelActionValue = (index: number) => {
-    console.log("[onix/handleDelActionValue(01)] index: ", index);
     remove(index);
 
     fields.length === 1 && handleAddActionValue(0);
@@ -198,6 +192,7 @@ export const ActionForm: FC<Props> = ({
       attr: {
         id: 0,
         name: "",
+        type: 0,
       },
       values: [{
         id: 0,
