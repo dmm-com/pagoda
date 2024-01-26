@@ -38,6 +38,25 @@ class APITest(AironeViewTest):
             ],
         )
 
+    def _assert_resp_results_of_action_values(self, resp_action_values, ref_entry):
+        ref_action_values = [x for x in sum(
+            [x["values"] for x in resp_action_values if x["attr"]["name"] == "borrowed_by"],
+            []
+        )]
+        self.assertEqual([x for x in ref_action_values if x["ref_cond"] != None][0]["ref_cond"], {
+            "id": ref_entry.id,
+            "name": ref_entry.name,
+            "schema": {
+                "id": ref_entry.schema.id,
+                "name": ref_entry.schema.name,
+            },
+        })
+        bool_action_values = [x for x in sum(
+            [x["values"] for x in resp_action_values if x["attr"]["name"] == "is_overdue"],
+            []
+        )]
+        self.assertTrue(all([x["bool_cond"] for x in bool_action_values]))
+
     def test_list_trigger_condition_and_action(self):
         # create Entity and TriggerConditions to be retrieved
         entry_tom = self.add_entry(self.user, "Tom", self.entity_people)
@@ -51,6 +70,10 @@ class APITest(AironeViewTest):
             {
                 "attr_id": self.entity_book.attrs.get(name="borrowed_by").id,
                 "value": entry_tom,
+            },
+            {
+                "attr_id": self.entity_book.attrs.get(name="is_overdue").id,
+                "value": str(True),
             }
         ]
         TriggerCondition.register(
@@ -130,18 +153,10 @@ class APITest(AironeViewTest):
         )
 
         # check ref_cond value format is correctly in the actions
-        elem_ref_cond = [x for x in sum(
-            [x["values"] for x in sum([t["actions"] for t in resp.json()["results"]], [])],
-            []
-        ) if x["ref_cond"] != None][0]
-        self.assertEqual(elem_ref_cond["ref_cond"], {
-            "id": entry_tom.id,
-            "name": entry_tom.name,
-            "schema": {
-                "id": entry_tom.schema.id,
-                "name": entry_tom.schema.name,
-            },
-        })
+        self._assert_resp_results_of_action_values(
+            sum([t["actions"] for t in resp.json()["results"]], []),
+            entry_tom,
+        )
 
     def test_create_trigger_condition_with_wrong_params_in_conditions(self):
         # send request with parameter that EnttiyAttr in conditions is incompatible with Entity

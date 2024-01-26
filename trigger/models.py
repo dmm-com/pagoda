@@ -87,32 +87,44 @@ class InputTriggerAction(object):
         elif isinstance(value, InputTriggerActionValue):
             self.values.append(value)
 
-    def get_value(self, input_value):
-        if isinstance(input_value, str):
-            return InputTriggerActionValue(str_cond=input_value)
-        elif isinstance(input_value, bool):
-            return InputTriggerActionValue(bool_cond=input_value)
-        elif isinstance(input_value, Entry):
-            return InputTriggerActionValue(ref_cond=input_value)
-        elif isinstance(input_value, int):
-            return InputTriggerActionValue(
-                ref_cond=Entry.objects.filter(id=input_value, is_active=True).first()
-            )
-        elif isinstance(input_value, dict):
-            ref_entry = None
-            if isinstance(input_value.get("id"), int):
-                ref_entry = Entry.objects.filter(id=input_value["id"], is_active=True).first()
-            if isinstance(input_value.get("id"), str):
-                ref_entry = Entry.objects.filter(id=int(input_value["id"]), is_active=True).first()
-            elif isinstance(input_value.get("id"), Entry):
-                ref_entry = input_value["id"]
+    def get_value(self, raw_input_value):
+        def _do_get_value(input_value, attr_type):
+            if attr_type & AttrTypeValue["array"]:
+                return [_do_get_value(x, attr_type ^ AttrTypeValue["array"]) for x in input_value if x]
 
-            return InputTriggerActionValue(
-                str_cond=input_value["name"],
-                ref_cond=ref_entry,
-            )
-        elif isinstance(input_value, list):
-            return [self.get_value(x) for x in input_value if x]
+            elif attr_type in [AttrTypeValue["string"], AttrTypeValue["text"], AttrTypeValue["array_string"]]:
+                return InputTriggerActionValue(str_cond=input_value)
+
+            elif attr_type == AttrTypeValue["named_object"]:
+                ref_entry = None
+                if isinstance(input_value.get("id"), int):
+                    ref_entry = Entry.objects.filter(id=input_value["id"], is_active=True).first()
+                if isinstance(input_value.get("id"), str):
+                    ref_entry = Entry.objects.filter(id=int(input_value["id"]), is_active=True).first()
+                elif isinstance(input_value.get("id"), Entry):
+                    ref_entry = input_value["id"]
+
+                return InputTriggerActionValue(
+                    str_cond=input_value["name"],
+                    ref_cond=ref_entry,
+                )
+
+            elif attr_type == AttrTypeValue["object"]:
+                params = {}
+                if isinstance(input_value, Entry):
+                    params["ref_cond"] = input_value
+                elif isinstance(input_value, int):
+                    params["ref_cond"] = Entry.objects.filter(id=input_value, is_active=True).first()
+
+                return InputTriggerActionValue(**params)
+
+            elif attr_type == AttrTypeValue["boolean"]:
+                if isinstance(input_value, str):
+                    return InputTriggerActionValue(bool_cond=input_value.lower() == "true")
+                else:
+                    return InputTriggerActionValue(bool_cond=input_value)
+
+        return _do_get_value(raw_input_value, self.attr.type)
 
 
 class TriggerAction(models.Model):
