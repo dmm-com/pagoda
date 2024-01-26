@@ -18,7 +18,7 @@ extend-exclude = ["./*/migrations", "manage.py", "./node_modules"]
 
 [tool.poetry]
 name = "airone"
-version = "3.59.0"
+version = "3.73.0"
 description = ""
 authors = ["Hiroyasu OHYAMA"]
 license = "GPLv2"
@@ -53,8 +53,8 @@ pyyaml = "6.0.1"
 requests = "2.31.0"
 six = "1.15.0"
 setproctitle = "1.3.2"
-social-auth-app-django = "4.0.0"
-social-auth-core = "4.4.2"
+social-auth-app-django = "5.4.0"
+social-auth-core = "4.5.1"
 uritemplate = "3.0.1"
 whitenoise = "5.2.0"
 
