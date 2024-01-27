@@ -1,4 +1,5 @@
-[![CircleCI](https://circleci.com/gh/dmm-com/airone.svg?style=svg&circle-token=2e12c068b0ed1bab9d0c2d72529d5ee1da9b53b4)](https://circleci.com/gh/dmm-com/airone)
+[![Build core (Python / Django)](https://github.com/dmm-com/airone/actions/workflows/build-core.yml/badge.svg)](https://github.com/dmm-com/airone/actions/workflows/build-core.yml)
+[![Build frontend](https://github.com/dmm-com/airone/actions/workflows/build-frontend.yml/badge.svg)](https://github.com/dmm-com/airone/actions/workflows/build-frontend.yml)
 [![codecov](https://codecov.io/gh/dmm-com/airone/branch/master/graph/badge.svg)](https://codecov.io/gh/dmm-com/airone)
 
 # AirOne
