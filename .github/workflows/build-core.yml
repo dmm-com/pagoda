@@ -91,9 +91,9 @@ jobs:
           poetry run tox
         env:
           TOXENV: "py311"
-      - name: Coverage
-        run: |
-          curl -Os https://uploader.codecov.io/latest/linux/codecov
-          chmod +x codecov
-          ./codecov -t ${CODECOV_TOKEN}
+      - name: coverage
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{secrets.CODECOV_TOKEN}}
+          flags: core
         continue-on-error: true
