@@ -13,7 +13,7 @@ dependencies:
     name: mysql-innodbcluster
     alias: mysql
     repository: https://mysql.github.io/mysql-operator/
-    version: 2.0.12
+    version: 2.0.13
   - condition: elasticsearch.enabled
     name: elasticsearch
     repository: https://helm.elastic.co
