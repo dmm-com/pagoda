@@ -80,12 +80,10 @@ class InputTriggerAction(object):
             raise InvalidInputException("Specified attr(%s) is invalid" % attr_id)
 
         self.values = []
-
-        value = self.get_value(input.get("value"))
-        if isinstance(value, list):
-            self.values = value
-        elif isinstance(value, InputTriggerActionValue):
-            self.values.append(value)
+        if self.attr.type & AttrTypeValue["array"]:
+            self.values = self.get_value(input.get("values", []))
+        else:
+            self.values = [self.get_value(input.get("value"))]
 
     def get_value(self, raw_input_value):
         def _do_get_value(input_value, attr_type):
@@ -115,6 +113,8 @@ class InputTriggerAction(object):
                     params["ref_cond"] = input_value
                 elif isinstance(input_value, int):
                     params["ref_cond"] = Entry.objects.filter(id=input_value, is_active=True).first()
+                elif isinstance(input_value, str):
+                    params["ref_cond"] = Entry.objects.filter(id=int(input_value), is_active=True).first()
 
                 return InputTriggerActionValue(**params)
 

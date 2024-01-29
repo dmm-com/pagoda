@@ -134,15 +134,15 @@ class ModelTest(AironeTestCase):
             },
             {
                 "attr_id": self.entity.attrs.get(name="arr_str_action").id,
-                "value": ["foo", "bar", "baz"],
+                "values": ["foo", "bar", "baz"],
             },
             {
                 "attr_id": self.entity.attrs.get(name="arr_ref_action").id,
-                "value": self.entry_refs,
+                "values": self.entry_refs,
             },
             {
                 "attr_id": self.entity.attrs.get(name="arr_named_action").id,
-                "value": [
+                "values": [
                     {"name": "foo", "id": self.entry_refs[0]},
                     {"name": "bar", "id": self.entry_refs[1]},
                     {"name": "baz", "id": self.entry_refs[2]},
