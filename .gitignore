@@ -169,9 +169,10 @@ docs/public
 # https://qiita.com/knakajima3027/items/f8d10e3066fbcde117d3
 static_root
 
-# React
+# JavaScript, TypeScript, React
 node_modules
 static/js/ui.js*
+coverage
 
 # local django configuration
 airone/settings.py
