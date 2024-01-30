@@ -23,6 +23,7 @@ import { ReferralsAutocomplete } from "components/entry/entryForm/ReferralsAutoc
 
 import { Schema } from "./TriggerFormSchema";
 import { styled } from "@mui/material/styles";
+import { isSupportedType } from "services/trigger/Edit";
 
 
 const StyledTypography = styled(Typography)(({ }) => ({
@@ -91,18 +92,6 @@ const ConditionValueAsObject: FC<PropsConditionValueComponent> = ({
   control,
   condField,
 }) => {
-  const handleChange = (
-    value: GetEntryAttrReferral | GetEntryAttrReferral[] | null,
-    setter: (...event: any[]) => void,
-  ) => {
-    const newValue = (() => {
-      const _value = value as GetEntryAttrReferral;
-      return _value.id;
-    })();
-
-    setter(newValue as never);
-  };
-
   return (
     <Controller
       name={`conditions.${index}.refCond`}
@@ -111,9 +100,16 @@ const ConditionValueAsObject: FC<PropsConditionValueComponent> = ({
       render={({ field }) => (
         <ReferralsAutocomplete
           attrId={condField.attr.id}
-          value={null}
+          value={condField.refCond}
           handleChange={(v) => {
-            field.onChange((v as GetEntryAttrReferral).id);
+            field.onChange({
+              id: (v as GetEntryAttrReferral).id,
+              name: (v as GetEntryAttrReferral).name,
+              schema: {
+                id: 0,
+                name: "",
+              },
+            });
           }}
           multiple={false}
         />
@@ -132,7 +128,6 @@ const ConditionValue: FC<PropsConditionValuePlusEntity> = ({
   switch (attrInfo?.type) {
     case EntryAttributeTypeTypeEnum.STRING:
     case EntryAttributeTypeTypeEnum.ARRAY_STRING:
-    case EntryAttributeTypeTypeEnum.TEXT:
       return (
         <ConditionValueAsString index={index} control={control} condField={condField} />
       );
@@ -142,9 +137,7 @@ const ConditionValue: FC<PropsConditionValuePlusEntity> = ({
         <ConditionValueAsBoolean index={index} control={control} condField={condField} />
       );
 
-    case EntryAttributeTypeTypeEnum.ARRAY_NAMED_OBJECT:
     case EntryAttributeTypeTypeEnum.ARRAY_OBJECT:
-    case EntryAttributeTypeTypeEnum.NAMED_OBJECT:
     case EntryAttributeTypeTypeEnum.OBJECT:
       return (
         <ConditionValueAsObject index={index} control={control} condField={condField} />
@@ -186,7 +179,7 @@ export const Conditions: FC<Props> = ({ control, entity }) => {
               <TableRow>
                 <TableCell>
                   <Select {...field} size="small" fullWidth>
-                    {entity.attrs.map((attr) => (
+                    {entity.attrs.filter((attr) => isSupportedType(attr)).map((attr) => (
                       <MenuItem key={attr.id} value={attr.id}>
                         {attr.name}
                       </MenuItem>

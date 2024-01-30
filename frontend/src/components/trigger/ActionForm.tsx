@@ -1,7 +1,9 @@
 import {
   EntityDetail,
   EntryAttributeTypeTypeEnum,
+  GetEntryAttrReferral,
   TriggerAction,
+  TriggerActionValue,
 } from "@dmm-com/airone-apiclient-typescript-fetch";
 import AddIcon from "@mui/icons-material/Add";
 import AddCircleIcon from '@mui/icons-material/AddCircle';
@@ -9,6 +11,7 @@ import CancelIcon from '@mui/icons-material/Cancel';
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import {
   Box,
+  Checkbox,
   IconButton,
   MenuItem,
   Select,
@@ -19,8 +22,10 @@ import {
 import { styled } from "@mui/material/styles";
 import React, { FC } from "react";
 import { Control, Controller, useFieldArray } from "react-hook-form";
+import { ReferralsAutocomplete } from "components/entry/entryForm/ReferralsAutocomplete";
 
 import { Schema } from "./TriggerFormSchema";
+import { isSupportedType } from "services/trigger/Edit";
 
 interface Props {
   control: Control<Schema>;
@@ -41,6 +46,11 @@ interface PropsActionValueComponent {
   // The 'indexActionValue' indicatates what number of input form in the action column
   indexActionValue: number;
   control: Control<Schema>;
+  actionValue: TriggerActionValue;
+}
+
+interface PropsActionValueComponentWithAttrId extends PropsActionValueComponent {
+  attrId: number;
 }
 
 interface PropsActionValueComponentWithEntity extends PropsActionValueComponent {
@@ -60,11 +70,12 @@ const ActionValueAsString: FC<PropsActionValueComponent> = ({
   indexAction,
   indexActionValue,
   control,
+  actionValue
 }) => {
   return (
     <Controller
       name={`actions.${indexAction}.values.${indexActionValue}.strCond`}
-      defaultValue=""
+      defaultValue={actionValue.strCond}
       control={control}
       render={({ field }) => {
         return (
@@ -75,11 +86,66 @@ const ActionValueAsString: FC<PropsActionValueComponent> = ({
   );
 };
 
+const ActionValueAsBoolean: FC<PropsActionValueComponent> = ({
+  indexAction,
+  indexActionValue,
+  control,
+  actionValue,
+}) => {
+  return (
+    <Controller
+      name={`actions.${indexAction}.values.${indexActionValue}.boolCond`}
+      defaultValue={actionValue.boolCond}
+      control={control}
+      render={({ field }) => (
+        <Checkbox
+          checked={field.value}
+          onChange={(e) => field.onChange(e.target.checked)}
+        />
+      )}
+    />
+  );
+};
+
+const ActionValueAsObject: FC<PropsActionValueComponentWithAttrId> = ({
+  indexAction,
+  indexActionValue,
+  control,
+  actionValue,
+  attrId,
+}) => {
+  return (
+    <Controller
+      name={`actions.${indexAction}.values.${indexActionValue}.refCond`}
+      control={control}
+      defaultValue={actionValue.refCond}
+      render={({ field }) => (
+        <ReferralsAutocomplete
+          attrId={attrId}
+          value={actionValue.refCond}
+          handleChange={(v) => {
+            field.onChange({
+              id: (v as GetEntryAttrReferral).id,
+              name: (v as GetEntryAttrReferral).name,
+              schema: {
+                id: 0,
+                name: "",
+              },
+            });
+          }}
+          multiple={false}
+        />
+      )}
+    />
+  );
+};
+
 const ActionValueInputForm: FC<PropsActionValueComponentWithEntity> = ({
   indexAction,
   indexActionValue,
   control,
   actionField,
+  actionValue,
   entity,
   handleAddInputValue,
   handleDelInputValue,
@@ -91,6 +157,7 @@ const ActionValueInputForm: FC<PropsActionValueComponentWithEntity> = ({
     case EntryAttributeTypeTypeEnum.TEXT:
       return (
         <ActionValueAsString
+          actionValue={actionValue}
           indexAction={indexAction}
           indexActionValue={indexActionValue}
           control={control}
@@ -102,6 +169,7 @@ const ActionValueInputForm: FC<PropsActionValueComponentWithEntity> = ({
         <StyledBox>
           <>
             <ActionValueAsString
+              actionValue={actionValue}
               indexAction={indexAction}
               indexActionValue={indexActionValue}
               control={control}
@@ -116,17 +184,47 @@ const ActionValueInputForm: FC<PropsActionValueComponentWithEntity> = ({
         </StyledBox>
       );
 
-    /*
-    case EntryAttributeTypeTypeEnum.OBJECT:
+    case EntryAttributeTypeTypeEnum.BOOLEAN:
       return (
-        <></>
+        <ActionValueAsBoolean
+          actionValue={actionValue}
+          indexAction={indexAction}
+          indexActionValue={indexActionValue}
+          control={control}
+        />
       );
 
-      case EntryAttributeTypeTypeEnum.BOOLEAN:
+    case EntryAttributeTypeTypeEnum.OBJECT:
       return (
-      <></>
+        <ActionValueAsObject
+          attrId={actionField.attr.id}
+          actionValue={actionValue}
+          indexAction={indexAction}
+          indexActionValue={indexActionValue}
+          control={control}
+        />
       );
-      */
+
+    case EntryAttributeTypeTypeEnum.ARRAY_OBJECT:
+      return (
+        <StyledBox>
+          <>
+            <ActionValueAsObject
+              attrId={actionField.attr.id}
+              actionValue={actionValue}
+              indexAction={indexAction}
+              indexActionValue={indexActionValue}
+              control={control}
+            />
+          </>
+          <IconButton onClick={() => handleDelInputValue(indexActionValue)}>
+            <CancelIcon />
+          </IconButton>
+          <IconButton onClick={() => handleAddInputValue(indexActionValue)}>
+            <AddCircleIcon />
+          </IconButton>
+        </StyledBox>
+      );
   }
 }
 
@@ -165,6 +263,7 @@ const ActionValue: FC<PropsActionValue> = ({
             indexActionValue={indexActionValue}
             control={control}
             actionField={actionField}
+            actionValue={actionValueField}
             entity={entity}
             handleAddInputValue={handleAddActionValue}
             handleDelInputValue={handleDelActionValue}
@@ -224,7 +323,7 @@ export const ActionForm: FC<Props> = ({
                       resetActionValues(index);
                     }}
                   >
-                    {entity.attrs.map((attr) => (
+                    {entity.attrs.filter((attr) => isSupportedType(attr)).map((attr) => (
                       <MenuItem key={attr.id} value={attr.id}>
                         {attr.name}
                       </MenuItem>

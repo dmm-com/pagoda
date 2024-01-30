@@ -1,6 +1,7 @@
 import {
   EntryAttributeTypeTypeEnum,
   TriggerAction,
+  TriggerActionValue,
   TriggerCondition,
 } from "@dmm-com/airone-apiclient-typescript-fetch";
 import AddIcon from "@mui/icons-material/Add";
@@ -85,7 +86,6 @@ const ElemTriggerCondition: FC<{
   switch (cond.attr.type) {
     case EntryAttributeTypeTypeEnum.STRING:
     case EntryAttributeTypeTypeEnum.ARRAY_STRING:
-    case EntryAttributeTypeTypeEnum.TEXT:
       return (<Box>{cond.strCond}</Box>);
 
     case EntryAttributeTypeTypeEnum.BOOLEAN:
@@ -121,6 +121,34 @@ const TriggerCondition: FC<{
   );
 };
 
+const ElemTriggerActionValue: FC<{
+  action: TriggerAction;
+  value: TriggerActionValue;
+}> = ({ action, value }) => {
+  switch (action.attr.type) {
+    case EntryAttributeTypeTypeEnum.STRING:
+    case EntryAttributeTypeTypeEnum.ARRAY_STRING:
+      return (<Box>{value.strCond}</Box>);
+
+    case EntryAttributeTypeTypeEnum.BOOLEAN:
+      return <Checkbox checked={value.boolCond} disabled sx={{ p: "0px" }} />;
+
+    case EntryAttributeTypeTypeEnum.ARRAY_OBJECT:
+    case EntryAttributeTypeTypeEnum.OBJECT:
+      return (
+        <Box
+          component={Link}
+          to={entryDetailsPath(value.refCond?.schema.id ?? 0, value.refCond?.id ?? 0)}
+        >
+          {value.refCond?.name ?? ""}
+        </Box>
+      );
+
+    default:
+      return (<Box />);
+  }
+};
+
 const TriggerAction: FC<{
   action: TriggerAction;
 }> = ({ action }) => {
@@ -128,11 +156,15 @@ const TriggerAction: FC<{
     <StyledBox key={action.id}>
       <Box>{action.attr.name}</Box>
       <Divider orientation="vertical" flexItem />
-      <Box>
+      <StyledList>
         {action.values.map((value) => {
-          return <Box>{value.strCond}</Box>;
+          return (
+            <StyledListItem>
+              <ElemTriggerActionValue action={action} value={value} />
+            </StyledListItem>
+          );
         })}
-      </Box>
+      </StyledList>
     </StyledBox>
   );
 };

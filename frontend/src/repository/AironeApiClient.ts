@@ -765,7 +765,6 @@ class AironeApiClient {
   }
 
   async createTrigger(params: TriggerParentUpdate): Promise<void> {
-    console.log("[onix/createTrigger(00)] params: ", params);
     const val = await this.trigger.triggerApiV2Create(
       {
         triggerParentCreate: params,
@@ -777,7 +776,6 @@ class AironeApiClient {
         },
       }
     );
-    console.log("[onix/createTrigger(90)] ", val);
   }
 
   async deleteTrigger(triggerId: number): Promise<void> {

@@ -122,17 +122,14 @@ export const EditTriggerPage: FC = () => {
       switch (attrInfo?.type) {
         case EntryAttributeTypeTypeEnum.STRING:
         case EntryAttributeTypeTypeEnum.ARRAY_STRING:
-        case EntryAttributeTypeTypeEnum.TEXT:
           return { attrId: cond.attr.id, cond: cond.strCond };
 
         case EntryAttributeTypeTypeEnum.BOOLEAN:
           return { attrId: cond.attr.id, cond: String(cond.boolCond) };
 
-        case EntryAttributeTypeTypeEnum.ARRAY_NAMED_OBJECT:
         case EntryAttributeTypeTypeEnum.ARRAY_OBJECT:
-        case EntryAttributeTypeTypeEnum.NAMED_OBJECT:
         case EntryAttributeTypeTypeEnum.OBJECT:
-          return { attrId: cond.attr.id, cond: String(cond.refCond) };
+          return { attrId: cond.attr.id, cond: String(cond.refCond?.id ?? 0) };
         default:
           return { attrId: cond.attr.id, cond: "" };
       }
@@ -146,13 +143,17 @@ export const EditTriggerPage: FC = () => {
     const retValues = Array();
     trigger.actions.forEach((action) => {
       const attrInfo = entity.value?.attrs.find((attr) => attr.id === action.attr.id);
-
       switch (attrInfo?.type) {
         case EntryAttributeTypeTypeEnum.STRING:
-        case EntryAttributeTypeTypeEnum.ARRAY_STRING:
-        case EntryAttributeTypeTypeEnum.TEXT:
           action.values.map((val) => {
             retValues.push({ attrId: action.attr.id, value: val.strCond });
+          });
+          break;
+
+        case EntryAttributeTypeTypeEnum.ARRAY_STRING:
+          retValues.push({
+            attrId: action.attr.id,
+            values: action.values.map((val) => val.strCond)
           });
           break;
 
@@ -162,12 +163,16 @@ export const EditTriggerPage: FC = () => {
           });
           break;
 
-        case EntryAttributeTypeTypeEnum.ARRAY_NAMED_OBJECT:
-        case EntryAttributeTypeTypeEnum.ARRAY_OBJECT:
-        case EntryAttributeTypeTypeEnum.NAMED_OBJECT:
         case EntryAttributeTypeTypeEnum.OBJECT:
           action.values.map((val) => {
-            retValues.push({ attrId: action.attr.id, value: String(val.refCond) });
+            retValues.push({ attrId: action.attr.id, value: String(val.refCond?.id ?? 0) });
+          });
+          break;
+
+        case EntryAttributeTypeTypeEnum.ARRAY_OBJECT:
+          retValues.push({
+            attrId: action.attr.id,
+            values: action.values.filter((val) => val.refCond && val.refCond?.id > 0).map((val) => val.refCond?.id ?? 0),
           });
           break;
       }
