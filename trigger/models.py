@@ -42,23 +42,23 @@ class InputTriggerCondition(object):
                     return entry
             return None
 
-        if self.attr.type & AttrTypeValue["named_object"]:
+        if (self.attr.type == AttrTypeValue["named_object"] or self.attr.type == AttrTypeValue["array_named_object"]):
             ref = _convert_value_to_entry()
             if ref:
                 self.ref_cond = ref
             else:
                 self.str_cond = input_condition
 
-        elif self.attr.type & AttrTypeValue["object"]:
+        elif (self.attr.type == AttrTypeValue["object"] or self.attr.type == AttrTypeValue["array_object"]):
             self.ref_cond = _convert_value_to_entry()
 
-        elif self.attr.type & AttrTypeValue["string"]:
-            self.str_cond = input_condition
+        elif (self.attr.type == AttrTypeValue["string"] or self.attr.type == AttrTypeValue["text"]):
+            self.str_cond = input_condition if input_condition else ""
 
-        elif self.attr.type & AttrTypeValue["boolean"]:
+        elif self.attr.type == AttrTypeValue["boolean"]:
             if isinstance(input_condition, bool):
                 self.bool_cond = input_condition
-            if isinstance(input_condition, str):
+            elif isinstance(input_condition, str):
                 self.bool_cond = input_condition.lower() == "true"
             else:
                 self.bool_cond = input_condition is not None
@@ -192,7 +192,7 @@ class TriggerAction(models.Model):
 
 class TriggerActionValue(models.Model):
     action = models.ForeignKey(TriggerAction, on_delete=models.CASCADE, related_name="values")
-    str_cond = models.TextField()
+    str_cond = models.TextField(blank=True, null=True)
     ref_cond = models.ForeignKey("entry.Entry", on_delete=models.SET_NULL, null=True, blank=True)
     bool_cond = models.BooleanField(default=False)
 
@@ -271,7 +271,7 @@ class TriggerParent(models.Model):
 class TriggerCondition(models.Model):
     parent = models.ForeignKey(TriggerParent, on_delete=models.CASCADE, related_name="conditions")
     attr = models.ForeignKey("entity.EntityAttr", on_delete=models.CASCADE)
-    str_cond = models.TextField()
+    str_cond = models.TextField(blank=True, null=True)
     ref_cond = models.ForeignKey("entry.Entry", on_delete=models.SET_NULL, null=True, blank=True)
     bool_cond = models.BooleanField(default=False)
 

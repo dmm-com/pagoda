@@ -115,6 +115,25 @@ class ModelTest(AironeTestCase):
                 "cond": self.entry_refs[2],
             },
         ]
+        self.FULL_CONDITION_CONFIGURATION_PARAMETERS_BUT_EMPTY = [
+            {
+                "attr_id": self.entity.attrs.get(name="str_trigger").id,
+                "cond": "",
+            },
+            {
+                "attr_id": self.entity.attrs.get(name="ref_trigger").id,
+                "cond": None,
+            },
+            {"attr_id": self.entity.attrs.get(name="bool_trigger").id, "cond": False},
+            {
+                "attr_id": self.entity.attrs.get(name="arr_str_trigger").id,
+                "cond": "",
+            },
+            {
+                "attr_id": self.entity.attrs.get(name="arr_ref_trigger").id,
+                "cond": None,
+            },
+        ]
         self.FULL_ACTION_CONFIGURATION_PARAMETERS = [
             {
                 "attr_id": self.entity.attrs.get(name="str_action").id,
@@ -147,6 +166,25 @@ class ModelTest(AironeTestCase):
                     {"name": "bar", "id": self.entry_refs[1]},
                     {"name": "baz", "id": self.entry_refs[2]},
                 ],
+            },
+        ]
+        self.FULL_ACTION_CONFIGURATION_PARAMETERS_BUT_EMPTY = [
+            {
+                "attr_id": self.entity.attrs.get(name="str_action").id,
+                "value": "",
+            },
+            {
+                "attr_id": self.entity.attrs.get(name="ref_action").id,
+                "value": None,
+            },
+            {"attr_id": self.entity.attrs.get(name="bool_action").id, "value": False},
+            {
+                "attr_id": self.entity.attrs.get(name="arr_str_action").id,
+                "values": [],
+            },
+            {
+                "attr_id": self.entity.attrs.get(name="arr_ref_action").id,
+                "values": [],
             },
         ]
 
@@ -422,6 +460,40 @@ class ModelTest(AironeTestCase):
                 self.assertGreaterEqual(len(actions), 1)
             else:
                 self.assertEqual(len(actions), 0)
+
+    def test_register_conditions_with_blank_values(self):
+        # register TriggerCondition and its Actions
+        settingTriggerAction = self.FULL_ACTION_CONFIGURATION_PARAMETERS.copy()[0]
+
+        for cond_param in self.FULL_CONDITION_CONFIGURATION_PARAMETERS_BUT_EMPTY:
+            TriggerCondition.register(self.entity, [cond_param], [settingTriggerAction])
+
+        # check each TriggerConditoins are created correctly
+        self.assertEqual(
+            TriggerParent.objects.filter(entity=self.entity).count(),
+            len(self.FULL_CONDITION_CONFIGURATION_PARAMETERS_BUT_EMPTY),
+        )
+        self.assertEqual(
+            TriggerCondition.objects.filter(parent__entity=self.entity).count(),
+            len(self.FULL_CONDITION_CONFIGURATION_PARAMETERS_BUT_EMPTY),
+        )
+        for cond in TriggerCondition.objects.filter(parent__entity=self.entity):
+            self.assertEqual(cond.str_cond, "");
+            self.assertEqual(cond.ref_cond, None);
+            self.assertFalse(cond.bool_cond);
+
+    def test_register_actions_with_blank_values(self):
+        parent_condition = TriggerCondition.register(
+            self.entity,
+            [{"attr_id": self.entity.attrs.get(name="bool_action").id, "value": True}],
+            self.FULL_ACTION_CONFIGURATION_PARAMETERS_BUT_EMPTY
+        )
+
+        for value in TriggerActionValue.objects.filter(action__condition=parent_condition):
+            self.assertEqual(value.str_cond, "");
+            self.assertEqual(value.ref_cond, None);
+            self.assertFalse(value.bool_cond);
+
 
     def test_run_trigger_action(self):
         # This test to run TriggerAction and check Entry is updated as expected

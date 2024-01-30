@@ -8,6 +8,7 @@ from airone.lib.drf import (
 )
 from entry.api_v2.serializers import (
     EntryAttributeValueObject,
+    EntryAttributeValueNamedObjectSerializer,
 )
 from entity.api_v2.serializers import (
     EntityAttrSerializer,
@@ -126,6 +127,7 @@ class TriggerConditionUpdateSerializer(serializers.Serializer):
 
 class TriggerActionUpdateSerializer(serializers.Serializer):
     attr_id = serializers.IntegerField(required=True)
+    as_named_object = EntryAttributeValueNamedObjectSerializer(required=False, write_only=True)
     values = serializers.ListField(child=serializers.CharField(), required=False)
     value = serializers.CharField(required=False)
 

@@ -35,6 +35,7 @@ class APITest(AironeViewTest):
                 {"name": "isbn", "type": AttrTypeValue["string"]},
                 {"name": "is_overdue", "type": AttrTypeValue["boolean"]},
                 {"name": "memo", "type": AttrTypeValue["string"]},
+                {"name": "history", "type": AttrTypeValue["array_named_object"]},
             ],
         )
 
@@ -346,6 +347,10 @@ class APITest(AironeViewTest):
                 {
                     "attr_id": self.entity_book.attrs.get(name="memo").id,
                     "value": "deploy a staff to the Tom's house!",
+                },
+                {
+                    "attr_id": self.entity_book.attrs.get(name="history").id,
+                    "named_valued": [{"id": str(entry_tom.id), "name": "tom"}],
                 }
             ],
         }
@@ -380,7 +385,10 @@ class APITest(AironeViewTest):
                 )
                 for a in created_trigger.actions.all()
             ],
-            [("memo", [("deploy a staff to the Tom's house!", None, False)])],
+            [
+                ("memo", [("deploy a staff to the Tom's house!", None, False)]),
+                ("history", [])
+            ],
         )
 
     def test_delete_trigger_condition(self):
