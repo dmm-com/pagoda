@@ -24,6 +24,15 @@ class InputTriggerCondition(object):
         # set each condition parameters by specified condition value
         self.parse_input_condition(input.get("cond"))
 
+    def __repr__(self):
+        return "(attr:%s[%s]) str_cond:%s, ref_cond:%s, bool_cond:%s" % (
+            self.attr.name,
+            self.attr.id,
+            str(self.str_cond),
+            str(self.ref_cond),
+            str(self.bool_cond),
+        )
+
     def initialize_condition(self):
         self.str_cond = ""
         self.ref_cond = None
@@ -157,6 +166,7 @@ class TriggerAction(models.Model):
         elif attr_type == AttrTypeValue["boolean"]:
             return value.bool_cond
         elif attr_type == AttrTypeValue["named_object"]:
+            entry = value.ref_cond.id if isinstance(value.ref_cond, Entry) else None
             return {
                 "name": value.str_cond,
                 "id": value.ref_cond.id,
@@ -166,7 +176,7 @@ class TriggerAction(models.Model):
         elif attr_type == AttrTypeValue["text"]:
             return value.str_cond
         elif attr_type == AttrTypeValue["object"]:
-            return value.ref_cond.id
+            return value.ref_cond.id if isinstance(value.ref_cond, Entry) else None
 
     def run(self, user, entry, call_stacks=[]):
         # When self.id contains in call_stacks, it means that this action is already invoked.
@@ -307,18 +317,14 @@ class TriggerCondition(models.Model):
             elif isinstance(val, Entry) or isinstance(val, ACLBase):
                 return self.ref_cond.id == val.id
 
+            elif val is None:
+                return self.ref_cond is None
+
+        # drop array typed bit
         if not attr_type:
-            attr_type = self.attr.type
+            attr_type = self.attr.type & (~AttrTypeValue["array"])
 
-        if attr_type & AttrTypeValue["array"]:
-            return any(
-                [
-                    self.is_match_condition(x, self.attr.type ^ AttrTypeValue["array"])
-                    for x in recv_value
-                ]
-            )
-
-        elif attr_type == AttrTypeValue["named_object"]:
+        if attr_type == AttrTypeValue["named_object"]:
             return _is_match_object(recv_value["id"]) or (
                 self.str_cond != "" and self.str_cond == recv_value["name"]
             )
@@ -327,7 +333,7 @@ class TriggerCondition(models.Model):
             return _is_match_object(recv_value)
 
         elif attr_type == AttrTypeValue["string"]:
-            return self.str_cond != "" and self.str_cond == recv_value
+            return self.str_cond == recv_value
 
         elif attr_type == AttrTypeValue["boolean"]:
             return self.bool_cond == recv_value

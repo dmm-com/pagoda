@@ -34,7 +34,10 @@ class APITest(AironeViewTest):
                 {"name": "borrowed_by", "type": AttrTypeValue["object"]},
                 {"name": "isbn", "type": AttrTypeValue["string"]},
                 {"name": "is_overdue", "type": AttrTypeValue["boolean"]},
+                {"name": "in_preparation", "type": AttrTypeValue["boolean"]},
                 {"name": "memo", "type": AttrTypeValue["string"]},
+                {"name": "authors", "type": AttrTypeValue["array_string"]},
+                {"name": "recommended_by", "type": AttrTypeValue["array_object"]},
                 {"name": "history", "type": AttrTypeValue["array_named_object"]},
             ],
         )
@@ -308,6 +311,35 @@ class APITest(AironeViewTest):
             ],
             [("memo", [("deploy a staff to the Tom's house!", None, False)])],
         )
+
+    def test_create_conditions_with_empty_value(self):
+        entry_john = self.add_entry(self.user, "John Doe", self.entity_people)
+        test_cases = [
+            (
+                self.entity_book.attrs.get(name="title").id,
+                {"value": "-- DEFAULT TITLE --"}
+            ),
+            (
+                self.entity_book.attrs.get(name="authors").id,
+                {"values": ["John Doe"]},
+            ),
+            (
+                self.entity_book.attrs.get(name="in_preparation").id,
+                {"value": "True"}
+            ),
+            (
+                self.entity_book.attrs.get(name="recommended_by").id,
+                {"values": [str(entry_john.id)]},
+            ),
+        ]
+        for (attr_id, value_param) in test_cases:
+            params = {
+                "entity_id": self.entity_book.id,
+                "conditions": [{"attr_id": attr_id, "cond": ""}],
+                "actions": [dict(**value_param, **{"attr_id": attr_id})],
+            }
+            resp = self.client.post("/trigger/api/v2/", json.dumps(params), "application/json")
+            self.assertEqual(resp.status_code, 201)
 
     def test_update_trigger_condition(self):
         trigger_parent = TriggerCondition.register(

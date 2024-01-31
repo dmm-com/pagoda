@@ -482,10 +482,26 @@ class ModelTest(AironeTestCase):
             self.assertEqual(cond.ref_cond, None);
             self.assertFalse(cond.bool_cond);
 
+        # test cases for specifying empty value
+        for (index, cond_info) in enumerate(self.FULL_CONDITION_CONFIGURATION_PARAMETERS_BUT_EMPTY):
+            target_attr = self.entity.attrs.get(id=cond_info["attr_id"])
+            actions = TriggerCondition.get_invoked_actions(
+                self.entity, [{"id": target_attr.id, "value": cond_info["cond"]}]
+            )
+            self.assertEqual(len(actions), 1)
+
+            target_entry = self.add_entry(self.user, "e-%s" % index, self.entity)
+            actions[0].run(self.user, target_entry)
+
+            # This confirms action value is changed by test case value
+            target_attrv = target_entry.get_attrv("str_action")
+            self.assertEqual(target_attrv.value, "changed_value")
+
     def test_register_actions_with_blank_values(self):
+        cond_attr = self.entity.attrs.get(name="bool_action")
         parent_condition = TriggerCondition.register(
             self.entity,
-            [{"attr_id": self.entity.attrs.get(name="bool_action").id, "value": True}],
+            [{"attr_id": cond_attr.id, "cond": True}],
             self.FULL_ACTION_CONFIGURATION_PARAMETERS_BUT_EMPTY
         )
 
@@ -494,6 +510,30 @@ class ModelTest(AironeTestCase):
             self.assertEqual(value.ref_cond, None);
             self.assertFalse(value.bool_cond);
 
+        # create an Entry with valid attribute value to cehck action processing
+        target_entry = self.add_entry(self.user, "test entry", self.entity, values={
+            "str_action": "test-value",
+            "ref_action": self.entry_refs[0],
+            "bool_action": True,
+            "arr_str_action": ["foo", "bar", "baz"],
+            "arr_ref_action": self.entry_refs,
+            "bool_action": False,
+        })
+
+        # invoke trigger action
+        actions = TriggerCondition.get_invoked_actions(
+            self.entity, [{"id": cond_attr.id, "value": True}]
+        )
+        self.assertEqual(len(actions), len(self.FULL_ACTION_CONFIGURATION_PARAMETERS_BUT_EMPTY))
+        for action in actions:
+            action.run(self.user, target_entry)
+
+        # check each values of target_entry were removed by trigger-action processing
+        self.assertEqual(target_entry.get_attrv("str_action").value, "")
+        self.assertEqual(target_entry.get_attrv("ref_action").referral, None)
+        self.assertEqual(target_entry.get_attrv("bool_action").boolean, False)
+        self.assertEqual(target_entry.get_attrv("arr_str_action").data_array.count(), 0)
+        self.assertEqual(target_entry.get_attrv("arr_ref_action").data_array.count(), 0)
 
     def test_run_trigger_action(self):
         # This test to run TriggerAction and check Entry is updated as expected

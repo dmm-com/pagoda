@@ -59,7 +59,7 @@ const ConditionValueAsString: FC<PropsConditionValueComponent> = ({
     <Controller
       name={`conditions.${index}.strCond`}
       control={control}
-      defaultValue={condField.strCond}
+      defaultValue={condField.strCond ?? ""}
       render={({ field }) => (
         <TextField {...field} variant="standard" fullWidth />
       )}

@@ -19,7 +19,7 @@ export const schema = schemaForType<TriggerParent>()(
           name: z.string(),
           type: z.number(),
         }),
-        strCond: z.string(),
+        strCond: z.string().nullable(),
         refCond: z.object({
           id: z.number(),
           name: z.string(),
@@ -41,7 +41,7 @@ export const schema = schemaForType<TriggerParent>()(
         }),
         values: z.array(z.object({
           id: z.number(),
-          strCond: z.string(),
+          strCond: z.string().nullable(),
           refCond: z.object({
             id: z.number(),
             name: z.string(),

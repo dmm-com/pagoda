@@ -122,7 +122,7 @@ export const EditTriggerPage: FC = () => {
       switch (attrInfo?.type) {
         case EntryAttributeTypeTypeEnum.STRING:
         case EntryAttributeTypeTypeEnum.ARRAY_STRING:
-          return { attrId: cond.attr.id, cond: cond.strCond };
+          return { attrId: cond.attr.id, cond: cond.strCond ?? "" };
 
         case EntryAttributeTypeTypeEnum.BOOLEAN:
           return { attrId: cond.attr.id, cond: String(cond.boolCond) };
@@ -146,14 +146,14 @@ export const EditTriggerPage: FC = () => {
       switch (attrInfo?.type) {
         case EntryAttributeTypeTypeEnum.STRING:
           action.values.map((val) => {
-            retValues.push({ attrId: action.attr.id, value: val.strCond });
+            retValues.push({ attrId: action.attr.id, value: val.strCond ?? "" });
           });
           break;
 
         case EntryAttributeTypeTypeEnum.ARRAY_STRING:
           retValues.push({
             attrId: action.attr.id,
-            values: action.values.map((val) => val.strCond)
+            values: action.values.map((val) => val.strCond ?? "")
           });
           break;
 
@@ -214,11 +214,6 @@ export const EditTriggerPage: FC = () => {
   useEffect(() => {
     if (!actionTrigger.loading && actionTrigger.value != null) {
       // set defult value to React-hook-form
-      /*
-      reset(actionTrigger.value, {
-        keepIsValid: true,
-      });
-      */
       reset(actionTrigger.value);
 
       setEntityId(actionTrigger.value.entity.id);

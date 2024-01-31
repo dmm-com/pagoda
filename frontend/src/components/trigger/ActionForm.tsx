@@ -75,7 +75,7 @@ const ActionValueAsString: FC<PropsActionValueComponent> = ({
   return (
     <Controller
       name={`actions.${indexAction}.values.${indexActionValue}.strCond`}
-      defaultValue={actionValue.strCond}
+      defaultValue={actionValue.strCond ?? ""}
       control={control}
       render={({ field }) => {
         return (

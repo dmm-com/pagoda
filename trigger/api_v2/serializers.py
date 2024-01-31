@@ -122,14 +122,14 @@ class TriggerParentUpdateData(TypedDict):
 
 class TriggerConditionUpdateSerializer(serializers.Serializer):
     attr_id = serializers.IntegerField(required=True)
-    cond = serializers.CharField(required=True)
+    cond = serializers.CharField(required=False, allow_blank=True)
 
 
 class TriggerActionUpdateSerializer(serializers.Serializer):
     attr_id = serializers.IntegerField(required=True)
     as_named_object = EntryAttributeValueNamedObjectSerializer(required=False, write_only=True)
-    values = serializers.ListField(child=serializers.CharField(), required=False)
-    value = serializers.CharField(required=False)
+    values = serializers.ListField(child=serializers.CharField(allow_blank=True), required=False)
+    value = serializers.CharField(required=False, allow_blank=True)
 
 
 class TriggerParentBaseSerializer(serializers.ModelSerializer):
