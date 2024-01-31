@@ -452,6 +452,7 @@ class ModelTest(AironeTestCase):
             },
         ]
         for test_input_param in test_input_params:
+            print("[onix-test(10)] %s" % str(test_input_param))
             attr = self.entity.attrs.get(name=test_input_param["attrname"])
             actions = TriggerCondition.get_invoked_actions(
                 self.entity, [{"id": attr.id, "value": test_input_param["value"]}]
@@ -478,9 +479,9 @@ class ModelTest(AironeTestCase):
             len(self.FULL_CONDITION_CONFIGURATION_PARAMETERS_BUT_EMPTY),
         )
         for cond in TriggerCondition.objects.filter(parent__entity=self.entity):
-            self.assertEqual(cond.str_cond, "");
-            self.assertEqual(cond.ref_cond, None);
-            self.assertFalse(cond.bool_cond);
+            self.assertEqual(cond.str_cond, "")
+            self.assertEqual(cond.ref_cond, None)
+            self.assertFalse(cond.bool_cond)
 
         # test cases for specifying empty value
         for (index, cond_info) in enumerate(self.FULL_CONDITION_CONFIGURATION_PARAMETERS_BUT_EMPTY):
@@ -506,9 +507,9 @@ class ModelTest(AironeTestCase):
         )
 
         for value in TriggerActionValue.objects.filter(action__condition=parent_condition):
-            self.assertEqual(value.str_cond, "");
-            self.assertEqual(value.ref_cond, None);
-            self.assertFalse(value.bool_cond);
+            self.assertEqual(value.str_cond, "")
+            self.assertEqual(value.ref_cond, None)
+            self.assertFalse(value.bool_cond)
 
         # create an Entry with valid attribute value to cehck action processing
         target_entry = self.add_entry(self.user, "test entry", self.entity, values={

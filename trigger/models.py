@@ -303,6 +303,7 @@ class TriggerCondition(models.Model):
         return any([_do_check_condition(input) for input in input_list])
 
     def is_match_condition(self, recv_value, attr_type=None) -> bool:
+        print("[onix/is_match_condition(00)] recv_value: %s" % str(recv_value))
         """
         This checks specified value, which is compatible with APIv2 standard, matches
         with this condition.

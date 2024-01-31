@@ -6,15 +6,15 @@ from rest_framework.exceptions import ValidationError
 from airone.lib.drf import (
     InvalidValueError,
 )
-from entry.api_v2.serializers import (
-    EntryAttributeValueObject,
-    EntryAttributeValueNamedObjectSerializer,
-)
 from entity.api_v2.serializers import (
     EntityAttrSerializer,
     EntitySerializer,
 )
 from entity.models import Entity, EntityAttr
+from entry.api_v2.serializers import (
+    EntryAttributeValueNamedObjectSerializer,
+    EntryAttributeValueObject,
+)
 from trigger.models import (
     TriggerAction,
     TriggerActionValue,
