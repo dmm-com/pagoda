@@ -47,7 +47,9 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
       - name: generate client
-        run: npm run generate:client
+        run: |
+          source virtualenv/bin/activate
+          poetry run npm run generate:client
       - run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
