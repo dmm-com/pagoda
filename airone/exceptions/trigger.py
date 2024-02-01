@@ -1,5 +1,4 @@
 from rest_framework.exceptions import ValidationError
-from airone.exceptions import AirOneBaseException
 
 
 class InvalidInputException(ValidationError):
