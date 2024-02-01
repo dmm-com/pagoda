@@ -1,6 +1,9 @@
 name: Release AirOne APIv2 client npm package to GitHub npm Registry
 
 on:
+  push:
+    paths:
+      - ".github/workflows/release-apiv2-client_copy.yml"
   pull_request:
     paths:
       - ".github/workflows/release-apiv2-client_copy.yml"
