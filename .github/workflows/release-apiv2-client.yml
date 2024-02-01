@@ -10,8 +10,6 @@ on:
       - "apiclient/typescript-fetch/package.json"
       - ".github/workflows/release-apiv2-client.yml"
   pull_request:
-    paths:
-      - "tools/generate_client.sh"
 
 jobs:
   release:
