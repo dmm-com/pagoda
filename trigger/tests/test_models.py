@@ -452,7 +452,6 @@ class ModelTest(AironeTestCase):
             },
         ]
         for test_input_param in test_input_params:
-            print("[onix-test(10)] %s" % str(test_input_param))
             attr = self.entity.attrs.get(name=test_input_param["attrname"])
             actions = TriggerCondition.get_invoked_actions(
                 self.entity, [{"id": attr.id, "value": test_input_param["value"]}]

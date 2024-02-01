@@ -324,7 +324,7 @@ class TriggerCondition(models.Model):
 
         return any([_do_check_condition(input) for input in input_list])
 
-    def is_match_condition(self, recv_value, attr_type=None) -> bool:
+    def is_match_condition(self, recv_value) -> bool:
         """
         This checks specified value, which is compatible with APIv2 standard, matches
         with this condition.
@@ -343,19 +343,19 @@ class TriggerCondition(models.Model):
                 return self.ref_cond is None
 
         # TODO: Add support for named_object, array_named_object
-        if attr_type == AttrTypeValue["object"]:
+        if self.attr.type == AttrTypeValue["object"]:
             return _is_match_object(recv_value)
 
-        elif attr_type == AttrTypeValue["array_object"]:
+        elif self.attr.type == AttrTypeValue["array_object"]:
             return any([_is_match_object(x) for x in recv_value])
 
-        elif attr_type == AttrTypeValue["string"] or attr_type == AttrTypeValue["text"]:
+        elif self.attr.type == AttrTypeValue["string"] or self.attr.type == AttrTypeValue["text"]:
             return self.str_cond == recv_value
 
-        elif attr_type == AttrTypeValue["array_string"]:
+        elif self.attr.type == AttrTypeValue["array_string"]:
             return self.str_cond in recv_value
 
-        elif attr_type == AttrTypeValue["boolean"]:
+        elif self.attr.type == AttrTypeValue["boolean"]:
             return self.bool_cond == recv_value
 
         return False
