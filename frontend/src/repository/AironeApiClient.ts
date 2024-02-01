@@ -33,10 +33,14 @@ import {
   PaginatedEntryHistoryAttributeValueList,
   PaginatedGroupList,
   PaginatedJobSerializersList,
+  PaginatedTriggerParentList,
   PaginatedUserListList,
   Role,
   RoleApi,
   RoleCreateUpdate,
+  TriggerApi,
+  TriggerParent,
+  TriggerParentUpdate,
   UserApi,
   UserCreate,
   UserRetrieve,
@@ -73,6 +77,7 @@ class AironeApiClient {
   private acl: AclApi;
   private entity: EntityApi;
   private entry: EntryApi;
+  private trigger: TriggerApi;
   private group: GroupApi;
   private user: UserApi;
   private role: RoleApi;
@@ -86,6 +91,7 @@ class AironeApiClient {
     this.acl = new AclApi(config);
     this.entity = new EntityApi(config);
     this.entry = new EntryApi(config);
+    this.trigger = new TriggerApi(config);
     this.group = new GroupApi(config);
     this.user = new UserApi(config);
     this.role = new RoleApi(config);
@@ -725,6 +731,62 @@ class AironeApiClient {
         headers: {
           "X-CSRFToken": getCsrfToken(),
           "Content-Type": "application/json;charset=utf-8",
+        },
+      }
+    );
+  }
+
+  async getTriggers(page = 1): Promise<PaginatedTriggerParentList> {
+    return await this.trigger.triggerApiV2List({
+      page: page,
+    });
+  }
+
+  async getTrigger(id: number): Promise<TriggerParent> {
+    return await this.trigger.triggerApiV2Retrieve({ id });
+  }
+
+  async updateTrigger(
+    triggerId: number,
+    params: TriggerParentUpdate
+  ): Promise<void> {
+    await this.trigger.triggerApiV2Update(
+      {
+        id: triggerId,
+        triggerParentUpdate: params,
+      },
+      {
+        headers: {
+          "Content-Type": "application/json;charset=utf-8",
+          "X-CSRFToken": getCsrfToken(),
+        },
+      }
+    );
+  }
+
+  async createTrigger(params: TriggerParentUpdate): Promise<void> {
+    await this.trigger.triggerApiV2Create(
+      {
+        triggerParentCreate: params,
+      },
+      {
+        headers: {
+          "Content-Type": "application/json;charset=utf-8",
+          "X-CSRFToken": getCsrfToken(),
+        },
+      }
+    );
+  }
+
+  async deleteTrigger(triggerId: number): Promise<void> {
+    await this.trigger.triggerApiV2Destroy(
+      {
+        id: triggerId,
+      },
+      {
+        headers: {
+          "Content-Type": "application/json;charset=utf-8",
+          "X-CSRFToken": getCsrfToken(),
         },
       }
     );

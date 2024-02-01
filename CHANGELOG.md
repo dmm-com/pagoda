@@ -3,6 +3,8 @@
 ## In development
 
 ### Added
+* Added new feature TriggerAction to be able to update Attributes along with user defined configuration.
+  Contributed by @userlocalhsot, @hinashi
 
 ### Changed
 

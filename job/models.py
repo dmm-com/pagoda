@@ -49,6 +49,7 @@ class JobOperation(Enum):
     EXPORT_ENTRY_V2 = 20
     UPDATE_DOCUMENT = 21
     EXPORT_SEARCH_RESULT_V2 = 22
+    MAY_INVOKE_TRIGGER = 23
 
 
 class Job(models.Model):
@@ -97,6 +98,7 @@ class Job(models.Model):
         JobOperation.NOTIFY_UPDATE_ENTRY.value,
         JobOperation.NOTIFY_DELETE_ENTRY.value,
         JobOperation.UPDATE_DOCUMENT.value,
+        JobOperation.MAY_INVOKE_TRIGGER.value,
     ]
 
     CANCELABLE_OPERATIONS = [
@@ -307,6 +309,7 @@ class Job(models.Model):
             entity_task = kls.get_task_module("entity.tasks")
             group_task = kls.get_task_module("group.tasks")
             role_task = kls.get_task_module("role.tasks")
+            trigger_task = kls.get_task_module("trigger.tasks")
 
             kls._METHOD_TABLE = {
                 JobOperation.CREATE_ENTRY.value: entry_task.create_entry_attrs,
@@ -331,6 +334,7 @@ class Job(models.Model):
                 JobOperation.ROLE_REGISTER_REFERRAL.value: role_task.edit_role_referrals,
                 JobOperation.UPDATE_DOCUMENT.value: entry_task.update_es_documents,
                 JobOperation.EXPORT_SEARCH_RESULT_V2.value: entry_task.export_search_result_v2,
+                JobOperation.MAY_INVOKE_TRIGGER.value: trigger_task.may_invoke_trigger,
             }
 
         return kls._METHOD_TABLE
@@ -520,6 +524,12 @@ class Job(models.Model):
     def new_notify_delete_entry(kls, user, target, text="", params={}):
         return kls._create_new_job(
             user, target, JobOperation.NOTIFY_DELETE_ENTRY.value, text, params
+        )
+
+    @classmethod
+    def new_invoke_trigger(kls, user, target_entry, recv_attrs={}):
+        return kls._create_new_job(
+            user, target_entry, JobOperation.MAY_INVOKE_TRIGGER.value, "", json.dumps(recv_attrs)
         )
 
     def set_cache(self, value):

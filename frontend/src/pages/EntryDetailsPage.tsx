@@ -70,8 +70,10 @@ export const EntryDetailsPage: FC<Props> = ({
   additionalContents = [],
   sideContent = <Box />,
 }) => {
-  const { entityId, entryId } =
-    useTypedParams<{ entityId: number; entryId: number }>();
+  const { entityId, entryId } = useTypedParams<{
+    entityId: number;
+    entryId: number;
+  }>();
   const history = useHistory();
 
   const [entryAnchorEl, setEntryAnchorEl] = useState<HTMLButtonElement | null>(

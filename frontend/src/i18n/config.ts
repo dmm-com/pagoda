@@ -8,6 +8,7 @@ export type TranslationKey =
   | "manageUsers"
   | "manageGroups"
   | "manageRoles"
+  | "manageTriggers"
   | "previousVersion"
   | "currentUser"
   | "userSetting"
@@ -48,6 +49,7 @@ const resources = toResource({
       manageUsers: "Manage users",
       manageGroups: "Manage groups",
       manageRoles: "Manage roles",
+      manageTriggers: "Manage triggers",
       previousVersion: "Previous version",
       currentUser: "is current user",
       userSetting: "User setting",
@@ -64,6 +66,7 @@ const resources = toResource({
       manageUsers: "ユーザ管理",
       manageGroups: "グループ管理",
       manageRoles: "ロール管理",
+      manageTriggers: "トリガー管理",
       previousVersion: "旧デザイン",
       currentUser: "としてログイン",
       userSetting: "ユーザ設定",

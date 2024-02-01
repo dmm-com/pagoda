@@ -26,15 +26,16 @@ import { useInterval } from "react-use";
 import { useTranslation } from "../hooks/useTranslation";
 
 import {
-  jobsPath,
-  userPath,
-  usersPath,
-  groupsPath,
-  entitiesPath,
   advancedSearchPath,
+  entitiesPath,
+  groupsPath,
+  jobsPath,
   loginPath,
   rolesPath,
   topPath,
+  triggersPath,
+  userPath,
+  usersPath,
 } from "Routes";
 import { SearchBox } from "components/common/SearchBox";
 import { useSimpleSearch } from "hooks/useSimpleSearch";
@@ -194,6 +195,9 @@ export const Header: FC = () => {
                       </MenuItem>
                       <MenuItem component={Link} to={rolesPath()}>
                         {t("manageRoles")}
+                      </MenuItem>
+                      <MenuItem component={Link} to={triggersPath()}>
+                        {t("manageTriggers")}
                       </MenuItem>
                     </HoverMenu>
                   </React.Fragment>

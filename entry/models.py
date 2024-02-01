@@ -122,7 +122,11 @@ class AttributeValue(models.Model):
         return cloned_value
 
     def get_value(
-        self, with_metainfo=False, with_entity: bool = False, serialize=False, is_active=True
+        self,
+        with_metainfo=False,
+        with_entity: bool = False,
+        serialize=False,
+        is_active=True,
     ):
         """
         This returns registered value according to the type of Attribute
@@ -365,6 +369,13 @@ class AttributeValue(models.Model):
 
         def _is_validate_attr_object(value) -> bool:
             try:
+                if isinstance(value, Entry) and value.is_active:
+                    return True
+                if (
+                    isinstance(value, ACLBase)
+                    and Entry.objects.filter(id=value.id, is_active=True).exists()
+                ):
+                    raise Exception("value(%s) is not valid entry" % value.name)
                 if value and not Entry.objects.filter(id=value, is_active=True).exists():
                     raise Exception("value(%s) is not entry id" % value)
                 if is_mandatory and not value:
@@ -1889,7 +1900,11 @@ class Entry(ACLBase):
             "name": self.name,
             "attr": [],
             "referrals": [
-                {"id": x.id, "name": x.name, "schema": {"id": x.schema.id, "name": x.schema.name}}
+                {
+                    "id": x.id,
+                    "name": x.name,
+                    "schema": {"id": x.schema.id, "name": x.schema.name},
+                }
                 for x in self.get_referred_objects().select_related("schema")
             ],
             "is_readable": True
@@ -2234,7 +2249,12 @@ class Entry(ACLBase):
     def update_documents(kls, entity: Entity, is_update: bool = False):
         es = ESS()
         query = {
-            "query": {"nested": {"path": "entity", "query": {"match": {"entity.id": entity.id}}}}
+            "query": {
+                "nested": {
+                    "path": "entity",
+                    "query": {"match": {"entity.id": entity.id}},
+                }
+            }
         }
         res = es.search(body=query)
 
