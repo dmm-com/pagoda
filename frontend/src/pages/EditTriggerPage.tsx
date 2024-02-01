@@ -138,7 +138,7 @@ export const EditTriggerPage: FC = () => {
       return [];
     }
 
-    const retValues = [];
+    const retValues: any[] = [];
     trigger.actions.forEach((action) => {
       const attrInfo = entity.value?.attrs.find(
         (attr) => attr.id === action.attr.id
