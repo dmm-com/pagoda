@@ -7,7 +7,6 @@ import {
 import AddIcon from "@mui/icons-material/Add";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import {
-  Box,
   Checkbox,
   IconButton,
   MenuItem,
@@ -15,9 +14,7 @@ import {
   TableCell,
   TableRow,
   TextField,
-  Typography,
 } from "@mui/material";
-import { styled } from "@mui/material/styles";
 import React, { FC } from "react";
 import { Control, Controller, useFieldArray } from "react-hook-form";
 
@@ -25,15 +22,6 @@ import { Schema } from "./TriggerFormSchema";
 
 import { ReferralsAutocomplete } from "components/entry/entryForm/ReferralsAutocomplete";
 import { isSupportedType } from "services/trigger/Edit";
-
-const StyledTypography = styled(Typography)(({}) => ({
-  color: "rgba(0, 0, 0, 0.6)",
-}));
-
-const StyledBox = styled(Box)(({}) => ({
-  display: "flex",
-  alignItems: "center",
-}));
 
 interface Props {
   control: Control<Schema>;
@@ -158,7 +146,7 @@ const ConditionValue: FC<PropsConditionValuePlusEntity> = ({
 };
 
 export const Conditions: FC<Props> = ({ control, entity }) => {
-  const { fields, insert, remove, swap } = useFieldArray({
+  const { fields, insert, remove } = useFieldArray({
     control,
     name: "conditions",
     keyName: "key", // NOTE: attr has 'id' field conflicts default key name

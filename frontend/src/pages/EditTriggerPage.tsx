@@ -77,7 +77,7 @@ export const EditTriggerPage: FC = () => {
   }, []);
 
   const {
-    formState: { isValid, isDirty, isSubmitting, isSubmitSuccessful },
+    formState: { isSubmitting, isSubmitSuccessful },
     handleSubmit,
     reset,
     setError,

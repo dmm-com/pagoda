@@ -43,7 +43,6 @@ import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { Confirmable } from "components/common/Confirmable";
 import { Loading } from "components/common/Loading";
 import { PageHeader } from "components/common/PageHeader";
-import { usePage } from "hooks/usePage";
 import { aironeApiClient } from "repository/AironeApiClient";
 
 const StyledList = styled(List)(() => ({
@@ -163,9 +162,9 @@ const TriggerAction: FC<{
       <Box>{action.attr.name}</Box>
       <Divider orientation="vertical" flexItem />
       <StyledList>
-        {action.values.map((value) => {
+        {action.values.map((value, index) => {
           return (
-            <StyledListItem>
+            <StyledListItem key={index}>
               <ElemTriggerActionValue action={action} value={value} />
             </StyledListItem>
           );
@@ -177,16 +176,12 @@ const TriggerAction: FC<{
 
 export const TriggerPage: FC = () => {
   const history = useHistory();
-  const [page, changePage] = usePage();
-  const [keyword, setKeyword] = useState("");
-  const params = new URLSearchParams(location.search);
-  const [query, setQuery] = useState<string>(params.get("query") ?? "");
   const [toggle, setToggle] = useState(false);
   const { enqueueSnackbar } = useSnackbar();
 
   const triggers = useAsync(async () => {
-    return await aironeApiClient.getTriggers(page);
-  }, [page, query, toggle]);
+    return await aironeApiClient.getTriggers();
+  }, [toggle]);
 
   const handleDelete = async (triggerId: number) => {
     try {

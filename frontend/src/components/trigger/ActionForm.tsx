@@ -234,7 +234,7 @@ const ActionValue: FC<PropsActionValue> = ({
   actionField,
   entity,
 }) => {
-  const { fields, insert, remove, swap } = useFieldArray({
+  const { fields, insert, remove } = useFieldArray({
     control,
     name: `actions.${indexAction}.values`,
     keyName: "key", // NOTE: attr has 'id' field conflicts default key name
@@ -279,7 +279,7 @@ export const ActionForm: FC<Props> = ({
   entity,
   resetActionValues,
 }) => {
-  const { fields, insert, remove, swap } = useFieldArray({
+  const { fields, insert, remove } = useFieldArray({
     control,
     name: "actions",
     keyName: "key", // NOTE: attr has 'id' field conflicts default key name

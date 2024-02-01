@@ -765,7 +765,7 @@ class AironeApiClient {
   }
 
   async createTrigger(params: TriggerParentUpdate): Promise<void> {
-    const val = await this.trigger.triggerApiV2Create(
+    await this.trigger.triggerApiV2Create(
       {
         triggerParentCreate: params,
       },
