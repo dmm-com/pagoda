@@ -6,7 +6,7 @@ on:
       - ".github/workflows/release-apiv2-client_copy.yml"
 
 jobs:
-  release:
+  release_copy:
     runs-on: ubuntu-latest
     permissions:
       contents: read
