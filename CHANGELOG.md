@@ -10,6 +10,12 @@
 
 ### Fixed
 
+## v3.74.0
+
+### Added
+* Changed so that SSO login is also redirected to the next URL.
+  Contributed by @hinashi
+
 ## v3.73.0
 
 ### Added

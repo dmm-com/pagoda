@@ -284,7 +284,7 @@ export const Header: FC = () => {
                         job.operation ==
                           JobOperations.EXPORT_SEARCH_RESULT_V2) &&
                       job.status == JobStatuses.DONE ? (
-                        <a href={`/job/api/v2/download/${job.id}`}>
+                        <a href={`/job/api/v2/${job.id}/download?encode=utf-8`}>
                           {jobTargetLabel(job)}
                         </a>
                       ) : (

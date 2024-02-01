@@ -22,7 +22,7 @@
     "watch:custom": "webpack build --watch --entry ./frontend/src/customview/CustomApp.tsx --mode development",
     "lint": "npx eslint frontend && npx prettier --check frontend",
     "fix": "npx eslint --fix frontend ; npx prettier --write frontend",
-    "test": "TZ=UTC npx jest frontend",
+    "test": "TZ=UTC npx jest --coverage frontend",
     "test:update": "TZ=UTC npx jest -u frontend"
   },
   "repository": {
@@ -56,7 +56,7 @@
     "eslint-import-resolver-webpack": "^0.13.2",
     "eslint-plugin-import": "^2.24.2",
     "eslint-plugin-react": "^7.26.1",
-    "eslint-plugin-unused-imports": "^2.0.0",
+    "eslint-plugin-unused-imports": "^3.0.0",
     "fork-ts-checker-webpack-plugin": "^7.0.0",
     "i18next": "^23.7.3",
     "isomorphic-fetch": "^3.0.0",
@@ -75,7 +75,7 @@
     "webpack": "^5.76.0",
     "webpack-bundle-analyzer": "^4.9.0",
     "webpack-cli": "^4.4.0",
-    "zod": "^3.20.6"
+    "zod": "^3.22.4"
   },
   "dependencies": {
     "@dmm-com/airone-apiclient-typescript-fetch": "^0.0.8",
@@ -86,8 +86,8 @@
     "@mui/material": "^5.11.3",
     "@types/react-beautiful-dnd": "^13.1.4",
     "@types/react-router-dom": "^5.3.3",
-    "@typescript-eslint/eslint-plugin": "^5.4.0",
-    "@typescript-eslint/parser": "^5.4.0",
+    "@typescript-eslint/eslint-plugin": "^6.19.0",
+    "@typescript-eslint/parser": "^6.19.0",
     "ip-num": "^1.4.0",
     "js-cookie": "^2.2.1",
     "js-file-download": "^0.4.12",

@@ -1,12 +1,12 @@
 import { EntryAttributeType } from "@dmm-com/airone-apiclient-typescript-fetch";
 import {
+  Paper,
   Table,
-  TableContainer,
-  TableHead,
   TableBody,
   TableCell,
+  TableContainer,
+  TableHead,
   TableRow,
-  Paper,
   Typography,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";

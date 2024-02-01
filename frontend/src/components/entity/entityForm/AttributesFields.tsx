@@ -133,15 +133,17 @@ export const AttributesFields: FC<Props> = ({
               );
             })}
             {fields.length === 0 && (
-              <AttributeField
-                referralEntities={referralEntities}
-                handleAppendAttribute={handleAppendAttribute}
-                handleDeleteAttribute={handleDeleteAttribute}
-                handleChangeOrderAttribute={handleChangeOrderAttribute}
-                control={control}
-                setValue={setValue}
-                maxIndex={0}
-              />
+              <TableRow>
+                <AttributeField
+                  referralEntities={referralEntities}
+                  handleAppendAttribute={handleAppendAttribute}
+                  handleDeleteAttribute={handleDeleteAttribute}
+                  handleChangeOrderAttribute={handleChangeOrderAttribute}
+                  control={control}
+                  setValue={setValue}
+                  maxIndex={0}
+                />
+              </TableRow>
             )}
           </>
         </StyledTableBody>
