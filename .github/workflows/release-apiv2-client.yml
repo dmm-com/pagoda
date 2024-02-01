@@ -11,7 +11,7 @@ on:
       - ".github/workflows/release-apiv2-client.yml"
   pull_request:
     paths:
-      - "tools/generate_client.sh"
+      - ".github/workflows/release-apiv2-client.yml"
 
 jobs:
   release:
