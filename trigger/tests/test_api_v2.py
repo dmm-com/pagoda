@@ -43,22 +43,29 @@ class APITest(AironeViewTest):
         )
 
     def _assert_resp_results_of_action_values(self, resp_action_values, ref_entry):
-        ref_action_values = [x for x in sum(
-            [x["values"] for x in resp_action_values if x["attr"]["name"] == "borrowed_by"],
-            []
-        )]
-        self.assertEqual([x for x in ref_action_values if x["ref_cond"] != None][0]["ref_cond"], {
-            "id": ref_entry.id,
-            "name": ref_entry.name,
-            "schema": {
-                "id": ref_entry.schema.id,
-                "name": ref_entry.schema.name,
+        ref_action_values = [
+            x
+            for x in sum(
+                [x["values"] for x in resp_action_values if x["attr"]["name"] == "borrowed_by"], []
+            )
+        ]
+        self.assertEqual(
+            [x for x in ref_action_values if x["ref_cond"] is not None][0]["ref_cond"],
+            {
+                "id": ref_entry.id,
+                "name": ref_entry.name,
+                "schema": {
+                    "id": ref_entry.schema.id,
+                    "name": ref_entry.schema.name,
+                },
             },
-        })
-        bool_action_values = [x for x in sum(
-            [x["values"] for x in resp_action_values if x["attr"]["name"] == "is_overdue"],
-            []
-        )]
+        )
+        bool_action_values = [
+            x
+            for x in sum(
+                [x["values"] for x in resp_action_values if x["attr"]["name"] == "is_overdue"], []
+            )
+        ]
         self.assertTrue(all([x["bool_cond"] for x in bool_action_values]))
 
     def test_list_trigger_condition_and_action(self):
@@ -78,7 +85,7 @@ class APITest(AironeViewTest):
             {
                 "attr_id": self.entity_book.attrs.get(name="is_overdue").id,
                 "value": str(True),
-            }
+            },
         ]
         TriggerCondition.register(
             self.entity_book,
@@ -133,17 +140,21 @@ class APITest(AironeViewTest):
 
         # check ref_cond value format is correctly in the conditions
         elem_ref_cond = [
-            x["ref_cond"] for x in sum([t["conditions"] for t in resp.json()["results"]], [])
+            x["ref_cond"]
+            for x in sum([t["conditions"] for t in resp.json()["results"]], [])
             if x["ref_cond"] is not None
         ][0]
-        self.assertEqual(elem_ref_cond, {
-            "id": entry_tom.id,
-            "name": entry_tom.name,
-            "schema": {
-                "id": entry_tom.schema.id,
-                "name": entry_tom.schema.name,
+        self.assertEqual(
+            elem_ref_cond,
+            {
+                "id": entry_tom.id,
+                "name": entry_tom.name,
+                "schema": {
+                    "id": entry_tom.schema.id,
+                    "name": entry_tom.schema.name,
+                },
             },
-        })
+        )
 
         # list specified Entity's triggers
         resp = self.client.get("/trigger/api/v2/?entity_id=%s" % self.entity_book.id)
@@ -282,8 +293,10 @@ class APITest(AironeViewTest):
         # test to handle request to create TriggerCondition that is exactly same with others
         err_resp = self.client.post("/trigger/api/v2/", json.dumps(params), "application/json")
         self.assertEqual(err_resp.status_code, 400)
-        self.assertEqual(err_resp.json()[0]["message"],
-                         "There is condition that have same condition with specified one")
+        self.assertEqual(
+            err_resp.json()[0]["message"],
+            "There is condition that have same condition with specified one",
+        )
 
         # This checks expected Conditions are created properly
         created_trigger = TriggerParent.objects.get(id=resp.json()["id"])
@@ -315,24 +328,18 @@ class APITest(AironeViewTest):
     def test_create_conditions_with_empty_value(self):
         entry_john = self.add_entry(self.user, "John Doe", self.entity_people)
         test_cases = [
-            (
-                self.entity_book.attrs.get(name="title").id,
-                {"value": "-- DEFAULT TITLE --"}
-            ),
+            (self.entity_book.attrs.get(name="title").id, {"value": "-- DEFAULT TITLE --"}),
             (
                 self.entity_book.attrs.get(name="authors").id,
                 {"values": ["John Doe"]},
             ),
-            (
-                self.entity_book.attrs.get(name="in_preparation").id,
-                {"value": "True"}
-            ),
+            (self.entity_book.attrs.get(name="in_preparation").id, {"value": "True"}),
             (
                 self.entity_book.attrs.get(name="recommended_by").id,
                 {"values": [str(entry_john.id)]},
             ),
         ]
-        for (attr_id, value_param) in test_cases:
+        for attr_id, value_param in test_cases:
             params = {
                 "entity_id": self.entity_book.id,
                 "conditions": [{"attr_id": attr_id, "cond": ""}],
@@ -383,7 +390,7 @@ class APITest(AironeViewTest):
                 {
                     "attr_id": self.entity_book.attrs.get(name="history").id,
                     "named_valued": [{"id": str(entry_tom.id), "name": "tom"}],
-                }
+                },
             ],
         }
         resp = self.client.put(
@@ -417,10 +424,7 @@ class APITest(AironeViewTest):
                 )
                 for a in created_trigger.actions.all()
             ],
-            [
-                ("memo", [("deploy a staff to the Tom's house!", None, False)]),
-                ("history", [])
-            ],
+            [("memo", [("deploy a staff to the Tom's house!", None, False)]), ("history", [])],
         )
 
     def test_delete_trigger_condition(self):

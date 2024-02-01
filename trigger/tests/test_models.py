@@ -385,36 +385,36 @@ class ModelTest(AironeTestCase):
                 "value": self.entry_refs[2],
                 "will_invoke": True,
             },
-#            {
-#                "attrname": "named_trigger",
-#                "value": {"name": "Open Sesame", "id": self.entry_refs[0].id},
-#                "will_invoke": False,
-#            },
-#            {
-#                "attrname": "named_trigger",
-#                "value": {"name": "", "id": self.entry_refs[0].id},
-#                "will_invoke": False,
-#            },
-#            {
-#                "attrname": "named_trigger",
-#                "value": {"name": "Unexpected words", "id": None},
-#                "will_invoke": False,
-#            },
-#            {
-#                "attrname": "named_trigger",
-#                "value": {"name": FAT_LADY_PASSWD, "id": None},
-#                "will_invoke": True,
-#            },
-#            {
-#                "attrname": "named_trigger",
-#                "value": {"name": "", "id": self.entry_refs[2].id},
-#                "will_invoke": True,
-#            },
-#            {
-#                "attrname": "named_trigger",
-#                "value": {"name": FAT_LADY_PASSWD, "id": self.entry_refs[2].id},
-#                "will_invoke": True,
-#            },
+            # {
+            #    "attrname": "named_trigger",
+            #    "value": {"name": "Open Sesame", "id": self.entry_refs[0].id},
+            #    "will_invoke": False,
+            # },
+            # {
+            #    "attrname": "named_trigger",
+            #    "value": {"name": "", "id": self.entry_refs[0].id},
+            #    "will_invoke": False,
+            # },
+            # {
+            #    "attrname": "named_trigger",
+            #    "value": {"name": "Unexpected words", "id": None},
+            #    "will_invoke": False,
+            # },
+            # {
+            #    "attrname": "named_trigger",
+            #    "value": {"name": FAT_LADY_PASSWD, "id": None},
+            #    "will_invoke": True,
+            # },
+            # {
+            #    "attrname": "named_trigger",
+            #    "value": {"name": "", "id": self.entry_refs[2].id},
+            #    "will_invoke": True,
+            # },
+            # {
+            #    "attrname": "named_trigger",
+            #    "value": {"name": FAT_LADY_PASSWD, "id": self.entry_refs[2].id},
+            #    "will_invoke": True,
+            # },
             {"attrname": "arr_str_trigger", "value": [""], "will_invoke": False},
             {
                 "attrname": "arr_str_trigger",
@@ -437,19 +437,19 @@ class ModelTest(AironeTestCase):
                 "value": self.entry_refs,
                 "will_invoke": True,
             },
-#            {
-#                "attrname": "arr_named_trigger",
-#                "value": [{"name": "Open Sesame", "id": self.entry_refs[0].id}],
-#                "will_invoke": False,
-#            },
-#            {
-#                "attrname": "arr_named_trigger",
-#                "value": [
-#                    {"name": "Open Sesame", "id": self.entry_refs[0].id},
-#                    {"name": FAT_LADY_PASSWD, "id": self.entry_refs[2].id},
-#                ],
-#                "will_invoke": True,
-#            },
+            # {
+            #    "attrname": "arr_named_trigger",
+            #    "value": [{"name": "Open Sesame", "id": self.entry_refs[0].id}],
+            #    "will_invoke": False,
+            # },
+            # {
+            #    "attrname": "arr_named_trigger",
+            #    "value": [
+            #        {"name": "Open Sesame", "id": self.entry_refs[0].id},
+            #        {"name": FAT_LADY_PASSWD, "id": self.entry_refs[2].id},
+            #    ],
+            #    "will_invoke": True,
+            # },
         ]
         for test_input_param in test_input_params:
             attr = self.entity.attrs.get(name=test_input_param["attrname"])
@@ -483,7 +483,7 @@ class ModelTest(AironeTestCase):
             self.assertFalse(cond.bool_cond)
 
         # test cases for specifying empty value
-        for (index, cond_info) in enumerate(self.FULL_CONDITION_CONFIGURATION_PARAMETERS_BUT_EMPTY):
+        for index, cond_info in enumerate(self.FULL_CONDITION_CONFIGURATION_PARAMETERS_BUT_EMPTY):
             target_attr = self.entity.attrs.get(id=cond_info["attr_id"])
             actions = TriggerCondition.get_invoked_actions(
                 self.entity, [{"id": target_attr.id, "value": cond_info["cond"]}]
@@ -502,7 +502,7 @@ class ModelTest(AironeTestCase):
         parent_condition = TriggerCondition.register(
             self.entity,
             [{"attr_id": cond_attr.id, "cond": True}],
-            self.FULL_ACTION_CONFIGURATION_PARAMETERS_BUT_EMPTY
+            self.FULL_ACTION_CONFIGURATION_PARAMETERS_BUT_EMPTY,
         )
 
         for value in TriggerActionValue.objects.filter(action__condition=parent_condition):
@@ -511,14 +511,18 @@ class ModelTest(AironeTestCase):
             self.assertFalse(value.bool_cond)
 
         # create an Entry with valid attribute value to cehck action processing
-        target_entry = self.add_entry(self.user, "test entry", self.entity, values={
-            "str_action": "test-value",
-            "ref_action": self.entry_refs[0],
-            "bool_action": True,
-            "arr_str_action": ["foo", "bar", "baz"],
-            "arr_ref_action": self.entry_refs,
-            "bool_action": False,
-        })
+        target_entry = self.add_entry(
+            self.user,
+            "test entry",
+            self.entity,
+            values={
+                "str_action": "test-value",
+                "ref_action": self.entry_refs[0],
+                "arr_str_action": ["foo", "bar", "baz"],
+                "arr_ref_action": self.entry_refs,
+                "bool_action": True,
+            },
+        )
 
         # invoke trigger action
         actions = TriggerCondition.get_invoked_actions(

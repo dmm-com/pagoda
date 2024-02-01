@@ -43,7 +43,7 @@ class TriggerActionValueSerializer(serializers.ModelSerializer):
                 "schema": {
                     "id": obj.ref_cond.schema.id,
                     "name": obj.ref_cond.schema.name,
-                }
+                },
             }
         else:
             return None
@@ -84,10 +84,11 @@ class TriggerConditionSerializer(serializers.ModelSerializer):
                 "schema": {
                     "id": obj.ref_cond.schema.id,
                     "name": obj.ref_cond.schema.name,
-                }
+                },
             }
         else:
             return None
+
 
 class TriggerParentSerializer(serializers.ModelSerializer):
     entity = EntitySerializer(read_only=True)

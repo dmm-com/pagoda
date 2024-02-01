@@ -188,7 +188,7 @@ class TriggerAction(models.Model):
         elif attr_type == AttrTypeValue["boolean"]:
             return value.bool_cond
         elif attr_type == AttrTypeValue["named_object"]:
-            entry = value.ref_cond.id if isinstance(value.ref_cond, Entry) else None
+            value.ref_cond.id if isinstance(value.ref_cond, Entry) else None
             return {
                 "name": value.str_cond,
                 "id": value.ref_cond.id,
@@ -329,6 +329,7 @@ class TriggerCondition(models.Model):
         This checks specified value, which is compatible with APIv2 standard, matches
         with this condition.
         """
+
         # This is a helper method when AttrType is "object" or "named_object"
         def _is_match_object(val):
             if isinstance(val, int) or isinstance(val, str):
