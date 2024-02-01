@@ -329,7 +329,6 @@ class TriggerCondition(models.Model):
         This checks specified value, which is compatible with APIv2 standard, matches
         with this condition.
         """
-
         # This is a helper method when AttrType is "object" or "named_object"
         def _is_match_object(val):
             if isinstance(val, int) or isinstance(val, str):
@@ -347,13 +346,23 @@ class TriggerCondition(models.Model):
             return _is_match_object(recv_value)
 
         elif self.attr.type == AttrTypeValue["array_object"]:
-            return any([_is_match_object(x) for x in recv_value])
+            if recv_value is None or not recv_value:
+                # when both recv_value and self.ref_cond is empty, this condition is matched
+                return self.ref_cond is None
+
+            elif isinstance(recv_value, list):
+                return any([_is_match_object(x) for x in recv_value])
 
         elif self.attr.type == AttrTypeValue["string"] or self.attr.type == AttrTypeValue["text"]:
             return self.str_cond == recv_value
 
         elif self.attr.type == AttrTypeValue["array_string"]:
-            return self.str_cond in recv_value
+            if recv_value is None or not recv_value:
+                # when both recv_value and self.str_cond is empty, this condition is matched
+                return self.str_cond == ""
+
+            elif isinstance(recv_value, list):
+                return self.str_cond in recv_value
 
         elif self.attr.type == AttrTypeValue["boolean"]:
             return self.bool_cond == recv_value
