@@ -54,20 +54,20 @@ export function formalizeEntryInfo(
             case EntryAttributeTypeTypeEnum.ARRAY_STRING:
               return value?.asArrayString?.length ?? 0 > 0
                 ? {
-                  asArrayString: value.asArrayString?.map((value) => {
-                    return { value: value };
-                  }),
-                }
+                    asArrayString: value.asArrayString?.map((value) => {
+                      return { value: value };
+                    }),
+                  }
                 : { asArrayString: [{ value: "" }] };
             case EntryAttributeTypeTypeEnum.ARRAY_NAMED_OBJECT:
             case EntryAttributeTypeTypeEnum.ARRAY_NAMED_OBJECT_BOOLEAN:
               return value?.asArrayNamedObject?.length ?? 0 > 0
                 ? value
                 : {
-                  asArrayNamedObject: [
-                    { name: "", object: null, _boolean: false },
-                  ],
-                };
+                    asArrayNamedObject: [
+                      { name: "", object: null, _boolean: false },
+                    ],
+                  };
             default:
               return value;
           }
@@ -93,7 +93,7 @@ export function formalizeEntryInfo(
 export function convertAttrsFormatCtoS(
   attrs: Record<string, EditableEntryAttrs>
 ): AttributeData[] {
-  return Object.entries(attrs).map(([{ }, attr]) => {
+  return Object.entries(attrs).map(([{}, attr]) => {
     function getAttrValue(attrType: number, attrValue: EditableEntryAttrValue) {
       switch (attrType) {
         case EntryAttributeTypeTypeEnum.STRING:

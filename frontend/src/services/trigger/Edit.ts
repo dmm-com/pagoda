@@ -11,7 +11,6 @@ const SUPPORTED_ATTRIBUTE_TYPES = [
   EntryAttributeTypeTypeEnum.ARRAY_OBJECT,
 ];
 
-
 export const isSupportedType = (attr: EntityDetailAttribute): boolean => {
   return SUPPORTED_ATTRIBUTE_TYPES.map((x) => x.valueOf()).includes(attr.type);
-}
+};

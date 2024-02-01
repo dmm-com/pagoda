@@ -1,6 +1,6 @@
+import { TriggerParent } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { z } from "zod";
 
-import { TriggerParent } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { schemaForType } from "services/ZodSchemaUtil";
 
 export const schema = schemaForType<TriggerParent>()(
@@ -20,14 +20,16 @@ export const schema = schemaForType<TriggerParent>()(
           type: z.number(),
         }),
         strCond: z.string().nullable(),
-        refCond: z.object({
-          id: z.number(),
-          name: z.string(),
-          schema: z.object({
+        refCond: z
+          .object({
             id: z.number(),
             name: z.string(),
-          }),
-        }).nullable(),
+            schema: z.object({
+              id: z.number(),
+              name: z.string(),
+            }),
+          })
+          .nullable(),
         boolCond: z.boolean().optional(),
       })
     ),
@@ -39,19 +41,23 @@ export const schema = schemaForType<TriggerParent>()(
           name: z.string(),
           type: z.number(),
         }),
-        values: z.array(z.object({
-          id: z.number(),
-          strCond: z.string().nullable(),
-          refCond: z.object({
+        values: z.array(
+          z.object({
             id: z.number(),
-            name: z.string(),
-            schema: z.object({
-              id: z.number(),
-              name: z.string(),
-            }),
-          }).nullable(),
-          boolCond: z.boolean().optional(),
-        })),
+            strCond: z.string().nullable(),
+            refCond: z
+              .object({
+                id: z.number(),
+                name: z.string(),
+                schema: z.object({
+                  id: z.number(),
+                  name: z.string(),
+                }),
+              })
+              .nullable(),
+            boolCond: z.boolean().optional(),
+          })
+        ),
       })
     ),
   })

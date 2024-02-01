@@ -37,7 +37,7 @@ import {
   entryDetailsPath,
   newTriggerPath,
   topPath,
-  triggersPath
+  triggersPath,
 } from "Routes";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { Confirmable } from "components/common/Confirmable";
@@ -58,11 +58,11 @@ const StyledIconButton = styled(IconButton)(({ theme }) => ({
   margin: theme.spacing(1),
 })) as OverridableComponent<ExtendButtonBaseTypeMap<IconButtonTypeMap>>;
 
-const HeaderTableRow = styled(TableRow)(({ }) => ({
+const HeaderTableRow = styled(TableRow)(({}) => ({
   backgroundColor: "#455A64",
 }));
 
-const HeaderTableCell = styled(TableCell)(({ }) => ({
+const HeaderTableCell = styled(TableCell)(({}) => ({
   color: "#FFFFFF",
 }));
 
@@ -86,7 +86,7 @@ const ElemTriggerCondition: FC<{
   switch (cond.attr.type) {
     case EntryAttributeTypeTypeEnum.STRING:
     case EntryAttributeTypeTypeEnum.ARRAY_STRING:
-      return (<Box>{cond.strCond}</Box>);
+      return <Box>{cond.strCond}</Box>;
 
     case EntryAttributeTypeTypeEnum.BOOLEAN:
       return <Checkbox checked={cond.boolCond} disabled sx={{ p: "0px" }} />;
@@ -98,14 +98,17 @@ const ElemTriggerCondition: FC<{
       return (
         <Box
           component={Link}
-          to={entryDetailsPath(cond.refCond?.schema.id ?? 0, cond.refCond?.id ?? 0)}
+          to={entryDetailsPath(
+            cond.refCond?.schema.id ?? 0,
+            cond.refCond?.id ?? 0
+          )}
         >
           {cond.refCond?.name ?? ""}
         </Box>
       );
 
     default:
-      return (<Box />);
+      return <Box />;
   }
 };
 
@@ -128,7 +131,7 @@ const ElemTriggerActionValue: FC<{
   switch (action.attr.type) {
     case EntryAttributeTypeTypeEnum.STRING:
     case EntryAttributeTypeTypeEnum.ARRAY_STRING:
-      return (<Box>{value.strCond}</Box>);
+      return <Box>{value.strCond}</Box>;
 
     case EntryAttributeTypeTypeEnum.BOOLEAN:
       return <Checkbox checked={value.boolCond} disabled sx={{ p: "0px" }} />;
@@ -138,14 +141,17 @@ const ElemTriggerActionValue: FC<{
       return (
         <Box
           component={Link}
-          to={entryDetailsPath(value.refCond?.schema.id ?? 0, value.refCond?.id ?? 0)}
+          to={entryDetailsPath(
+            value.refCond?.schema.id ?? 0,
+            value.refCond?.id ?? 0
+          )}
         >
           {value.refCond?.name ?? ""}
         </Box>
       );
 
     default:
-      return (<Box />);
+      return <Box />;
   }
 };
 

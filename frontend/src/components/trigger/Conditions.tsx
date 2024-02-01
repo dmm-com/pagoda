@@ -17,20 +17,20 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import { styled } from "@mui/material/styles";
 import React, { FC } from "react";
 import { Control, Controller, useFieldArray } from "react-hook-form";
-import { ReferralsAutocomplete } from "components/entry/entryForm/ReferralsAutocomplete";
 
 import { Schema } from "./TriggerFormSchema";
-import { styled } from "@mui/material/styles";
+
+import { ReferralsAutocomplete } from "components/entry/entryForm/ReferralsAutocomplete";
 import { isSupportedType } from "services/trigger/Edit";
 
-
-const StyledTypography = styled(Typography)(({ }) => ({
+const StyledTypography = styled(Typography)(({}) => ({
   color: "rgba(0, 0, 0, 0.6)",
 }));
 
-const StyledBox = styled(Box)(({ }) => ({
+const StyledBox = styled(Box)(({}) => ({
   display: "flex",
   alignItems: "center",
 }));
@@ -129,18 +129,30 @@ const ConditionValue: FC<PropsConditionValuePlusEntity> = ({
     case EntryAttributeTypeTypeEnum.STRING:
     case EntryAttributeTypeTypeEnum.ARRAY_STRING:
       return (
-        <ConditionValueAsString index={index} control={control} condField={condField} />
+        <ConditionValueAsString
+          index={index}
+          control={control}
+          condField={condField}
+        />
       );
 
     case EntryAttributeTypeTypeEnum.BOOLEAN:
       return (
-        <ConditionValueAsBoolean index={index} control={control} condField={condField} />
+        <ConditionValueAsBoolean
+          index={index}
+          control={control}
+          condField={condField}
+        />
       );
 
     case EntryAttributeTypeTypeEnum.ARRAY_OBJECT:
     case EntryAttributeTypeTypeEnum.OBJECT:
       return (
-        <ConditionValueAsObject index={index} control={control} condField={condField} />
+        <ConditionValueAsObject
+          index={index}
+          control={control}
+          condField={condField}
+        />
       );
   }
 };
@@ -179,11 +191,13 @@ export const Conditions: FC<Props> = ({ control, entity }) => {
               <TableRow>
                 <TableCell>
                   <Select {...field} size="small" fullWidth>
-                    {entity.attrs.filter((attr) => isSupportedType(attr)).map((attr) => (
-                      <MenuItem key={attr.id} value={attr.id}>
-                        {attr.name}
-                      </MenuItem>
-                    ))}
+                    {entity.attrs
+                      .filter((attr) => isSupportedType(attr))
+                      .map((attr) => (
+                        <MenuItem key={attr.id} value={attr.id}>
+                          {attr.name}
+                        </MenuItem>
+                      ))}
                   </Select>
                 </TableCell>
                 <TableCell>

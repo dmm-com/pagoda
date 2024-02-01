@@ -24,17 +24,13 @@ import { triggersPath } from "Routes";
 import { PageHeader } from "components/common/PageHeader";
 import { SubmitButton } from "components/common/SubmitButton";
 import { EntityBreadcrumbs } from "components/entity/EntityBreadcrumbs";
-import { Conditions } from "components/trigger/Conditions";
 import { ActionForm } from "components/trigger/ActionForm";
+import { Conditions } from "components/trigger/Conditions";
 import { Schema, schema } from "components/trigger/TriggerFormSchema";
 import { useAsyncWithThrow } from "hooks/useAsyncWithThrow";
 import { useFormNotification } from "hooks/useFormNotification";
 import { useTypedParams } from "hooks/useTypedParams";
 import { aironeApiClient } from "repository/AironeApiClient";
-import { act } from "react-dom/test-utils";
-import {
-  isResponseError,
-} from "services/AironeAPIErrorUtil"
 
 const StyledFlexColumnBox = styled(Box)({
   display: "flex",
@@ -43,11 +39,11 @@ const StyledFlexColumnBox = styled(Box)({
   marginBottom: "48px",
 });
 
-const HeaderTableRow = styled(TableRow)(({ }) => ({
+const HeaderTableRow = styled(TableRow)(({}) => ({
   backgroundColor: "#455A64",
 }));
 
-const HeaderTableCell = styled(TableCell)(({ }) => ({
+const HeaderTableCell = styled(TableCell)(({}) => ({
   color: "#FFFFFF",
   boxSizing: "border-box",
 }));
@@ -117,7 +113,9 @@ export const EditTriggerPage: FC = () => {
     }
 
     return trigger.conditions.map((cond) => {
-      const attrInfo = entity.value?.attrs.find((attr) => attr.id === cond.attr.id);
+      const attrInfo = entity.value?.attrs.find(
+        (attr) => attr.id === cond.attr.id
+      );
 
       switch (attrInfo?.type) {
         case EntryAttributeTypeTypeEnum.STRING:
@@ -134,52 +132,65 @@ export const EditTriggerPage: FC = () => {
           return { attrId: cond.attr.id, cond: "" };
       }
     });
-  }
+  };
   const convertActions2ServerFormat = (trigger: Schema) => {
     if (!entity.value) {
       return [];
     }
 
-    const retValues = Array();
+    const retValues = [];
     trigger.actions.forEach((action) => {
-      const attrInfo = entity.value?.attrs.find((attr) => attr.id === action.attr.id);
+      const attrInfo = entity.value?.attrs.find(
+        (attr) => attr.id === action.attr.id
+      );
       switch (attrInfo?.type) {
         case EntryAttributeTypeTypeEnum.STRING:
           action.values.map((val) => {
-            retValues.push({ attrId: action.attr.id, value: val.strCond ?? "" });
+            retValues.push({
+              attrId: action.attr.id,
+              value: val.strCond ?? "",
+            });
           });
           break;
 
         case EntryAttributeTypeTypeEnum.ARRAY_STRING:
           retValues.push({
             attrId: action.attr.id,
-            values: action.values.map((val) => val.strCond ?? "")
+            values: action.values.map((val) => val.strCond ?? ""),
           });
           break;
 
         case EntryAttributeTypeTypeEnum.BOOLEAN:
           action.values.map((val) => {
-            retValues.push({ attrId: action.attr.id, value: String(val.boolCond) });
+            retValues.push({
+              attrId: action.attr.id,
+              value: String(val.boolCond),
+            });
           });
           break;
 
         case EntryAttributeTypeTypeEnum.OBJECT:
           action.values.map((val) => {
-            retValues.push({ attrId: action.attr.id, value: String(val.refCond?.id ?? 0) });
+            retValues.push({
+              attrId: action.attr.id,
+              value: String(val.refCond?.id ?? 0),
+            });
           });
           break;
 
         case EntryAttributeTypeTypeEnum.ARRAY_OBJECT:
           retValues.push({
             attrId: action.attr.id,
-            values: action.values.filter((val) => val.refCond && val.refCond?.id > 0).map((val) => val.refCond?.id ?? 0),
+            values: action.values
+              .filter((val) => val.refCond && val.refCond?.id > 0)
+              .map((val) => val.refCond?.id ?? 0),
           });
           break;
       }
     });
 
     return retValues;
-  }
+  };
 
   const handleSubmitOnValid = useCallback(
     async (trigger: Schema) => {
@@ -198,7 +209,7 @@ export const EditTriggerPage: FC = () => {
           enqueueSubmitResult(true);
         }
       } catch (e) {
-        const errMsg = "Failed to submit trigger"
+        const errMsg = "Failed to submit trigger";
 
         enqueueSubmitResult(false, errMsg);
         setError("conditions", { message: errMsg });
@@ -224,24 +235,31 @@ export const EditTriggerPage: FC = () => {
 
   useEffect(() => {
     if (entity.value && entity.value.id !== 0) {
-      setValue(`entity`, {
-        id: entity.value.id,
-        name: entity.value.name,
-      }, {
-        shouldDirty: true,
-        shouldValidate: true,
-      });
+      setValue(
+        `entity`,
+        {
+          id: entity.value.id,
+          name: entity.value.name,
+        },
+        {
+          shouldDirty: true,
+          shouldValidate: true,
+        }
+      );
     } else {
-      setValue(`entity`, {
-        id: 0,
-        name: "",
-      }, {
-        shouldDirty: true,
-        shouldValidate: true,
-      });
+      setValue(
+        `entity`,
+        {
+          id: 0,
+          name: "",
+        },
+        {
+          shouldDirty: true,
+          shouldValidate: true,
+        }
+      );
     }
     trigger();
-
   }, [entity.loading]);
 
   useEffect(() => {
@@ -254,17 +272,25 @@ export const EditTriggerPage: FC = () => {
     const triggerInfo = getValues();
 
     // check trigger has valid information
-    if (!triggerInfo || !triggerInfo.entity || !triggerInfo.conditions || !triggerInfo.actions) {
+    if (
+      !triggerInfo ||
+      !triggerInfo.entity ||
+      !triggerInfo.conditions ||
+      !triggerInfo.actions
+    ) {
       return false;
     }
 
     // check trigger has valid context at least one
-    if (triggerInfo.conditions.length === 0 || triggerInfo.actions.length === 0) {
+    if (
+      triggerInfo.conditions.length === 0 ||
+      triggerInfo.actions.length === 0
+    ) {
       return false;
     }
 
     return true;
-  }
+  };
 
   return (
     <Box>
@@ -275,8 +301,10 @@ export const EditTriggerPage: FC = () => {
       )}
 
       <PageHeader
-        title={(triggerId && entity.value) ? entity.value.name : "新規トリガーの作成"}
-        description={(triggerId) ? entity.value && "トリガー編集" : ""}
+        title={
+          triggerId && entity.value ? entity.value.name : "新規トリガーの作成"
+        }
+        description={triggerId ? entity.value && "トリガー編集" : ""}
       >
         <SubmitButton
           name="保存"
@@ -381,16 +409,26 @@ export const EditTriggerPage: FC = () => {
                 </TableHead>
                 <StyledTableBody>
                   {entity.value && (
-                    <ActionForm control={control} entity={entity.value} resetActionValues={(index: number) => {
-                      setValue(`actions.${index}.values`, [{
-                        id: 0,
-                        strCond: "",
-                        refCond: null,
-                      }], {
-                        shouldDirty: true,
-                        shouldValidate: true,
-                      });
-                    }} />
+                    <ActionForm
+                      control={control}
+                      entity={entity.value}
+                      resetActionValues={(index: number) => {
+                        setValue(
+                          `actions.${index}.values`,
+                          [
+                            {
+                              id: 0,
+                              strCond: "",
+                              refCond: null,
+                            },
+                          ],
+                          {
+                            shouldDirty: true,
+                            shouldValidate: true,
+                          }
+                        );
+                      }}
+                    />
                   )}
                 </StyledTableBody>
               </Table>

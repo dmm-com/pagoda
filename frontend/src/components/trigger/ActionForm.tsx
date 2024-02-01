@@ -6,8 +6,8 @@ import {
   TriggerActionValue,
 } from "@dmm-com/airone-apiclient-typescript-fetch";
 import AddIcon from "@mui/icons-material/Add";
-import AddCircleIcon from '@mui/icons-material/AddCircle';
-import CancelIcon from '@mui/icons-material/Cancel';
+import AddCircleIcon from "@mui/icons-material/AddCircle";
+import CancelIcon from "@mui/icons-material/Cancel";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import {
   Box,
@@ -22,9 +22,10 @@ import {
 import { styled } from "@mui/material/styles";
 import React, { FC } from "react";
 import { Control, Controller, useFieldArray } from "react-hook-form";
-import { ReferralsAutocomplete } from "components/entry/entryForm/ReferralsAutocomplete";
 
 import { Schema } from "./TriggerFormSchema";
+
+import { ReferralsAutocomplete } from "components/entry/entryForm/ReferralsAutocomplete";
 import { isSupportedType } from "services/trigger/Edit";
 
 interface Props {
@@ -49,18 +50,20 @@ interface PropsActionValueComponent {
   actionValue: TriggerActionValue;
 }
 
-interface PropsActionValueComponentWithAttrId extends PropsActionValueComponent {
+interface PropsActionValueComponentWithAttrId
+  extends PropsActionValueComponent {
   attrId: number;
 }
 
-interface PropsActionValueComponentWithEntity extends PropsActionValueComponent {
+interface PropsActionValueComponentWithEntity
+  extends PropsActionValueComponent {
   entity: EntityDetail;
   actionField: TriggerAction;
   handleAddInputValue: (index: number) => void;
   handleDelInputValue: (index: number) => void;
 }
 
-const StyledBox = styled(Box)(({ }) => ({
+const StyledBox = styled(Box)(({}) => ({
   display: "flex",
   width: "100%",
   gap: "0 12px",
@@ -70,7 +73,7 @@ const ActionValueAsString: FC<PropsActionValueComponent> = ({
   indexAction,
   indexActionValue,
   control,
-  actionValue
+  actionValue,
 }) => {
   return (
     <Controller
@@ -78,9 +81,7 @@ const ActionValueAsString: FC<PropsActionValueComponent> = ({
       defaultValue={actionValue.strCond ?? ""}
       control={control}
       render={({ field }) => {
-        return (
-          <TextField {...field} variant="standard" fullWidth />
-        )
+        return <TextField {...field} variant="standard" fullWidth />;
       }}
     />
   );
@@ -150,7 +151,6 @@ const ActionValueInputForm: FC<PropsActionValueComponentWithEntity> = ({
   handleAddInputValue,
   handleDelInputValue,
 }) => {
-
   const attrInfo = entity.attrs.find((attr) => attr.id === actionField.attr.id);
   switch (attrInfo?.type) {
     case EntryAttributeTypeTypeEnum.STRING:
@@ -226,7 +226,7 @@ const ActionValueInputForm: FC<PropsActionValueComponentWithEntity> = ({
         </StyledBox>
       );
   }
-}
+};
 
 const ActionValue: FC<PropsActionValue> = ({
   indexAction,
@@ -246,12 +246,12 @@ const ActionValue: FC<PropsActionValue> = ({
       strCond: "",
       refCond: null,
     });
-  }
+  };
   const handleDelActionValue = (index: number) => {
     remove(index);
 
     fields.length === 1 && handleAddActionValue(0);
-  }
+  };
 
   return (
     <>
@@ -293,27 +293,31 @@ export const ActionForm: FC<Props> = ({
         name: "",
         type: 0,
       },
-      values: [{
-        id: 0,
-        strCond: "",
-        refCond: null,
-        boolCond: undefined,
-      }]
-    })
+      values: [
+        {
+          id: 0,
+          strCond: "",
+          refCond: null,
+          boolCond: undefined,
+        },
+      ],
+    });
   };
 
   return (
     <>
       {fields.map((actionField, index) => {
         return (
-          <Controller key={actionField.key}
+          <Controller
+            key={actionField.key}
             name={`actions.${index}.attr.id`}
             control={control}
             defaultValue={actionField.attr.id}
             render={({ field }) => (
               <TableRow>
                 <TableCell>
-                  <Select {...field}
+                  <Select
+                    {...field}
                     size="small"
                     fullWidth
                     onChange={(e) => {
@@ -323,11 +327,13 @@ export const ActionForm: FC<Props> = ({
                       resetActionValues(index);
                     }}
                   >
-                    {entity.attrs.filter((attr) => isSupportedType(attr)).map((attr) => (
-                      <MenuItem key={attr.id} value={attr.id}>
-                        {attr.name}
-                      </MenuItem>
-                    ))}
+                    {entity.attrs
+                      .filter((attr) => isSupportedType(attr))
+                      .map((attr) => (
+                        <MenuItem key={attr.id} value={attr.id}>
+                          {attr.name}
+                        </MenuItem>
+                      ))}
                   </Select>
                 </TableCell>
                 <TableCell>
