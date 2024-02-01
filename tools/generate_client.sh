@@ -4,6 +4,7 @@ set -u
 
 OPENAPI_GENERATOR_VERSION=v6.6.0
 
+
 # detect errors on spectacular
 generr=$(poetry run python manage.py spectacular 2>&1 > /dev/null | grep ERROR);
 if [ "$generr" != "" ]; then
