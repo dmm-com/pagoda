@@ -51,17 +51,27 @@ class InputTriggerCondition(object):
                     return entry
             return None
 
-        if (self.attr.type == AttrTypeValue["named_object"] or self.attr.type == AttrTypeValue["array_named_object"]):
+        if (
+            self.attr.type == AttrTypeValue["named_object"]
+            or self.attr.type == AttrTypeValue["array_named_object"]
+        ):
             ref = _convert_value_to_entry()
             if ref:
                 self.ref_cond = ref
             else:
                 self.str_cond = input_condition
 
-        elif (self.attr.type == AttrTypeValue["object"] or self.attr.type == AttrTypeValue["array_object"]):
+        elif (
+            self.attr.type == AttrTypeValue["object"]
+            or self.attr.type == AttrTypeValue["array_object"]
+        ):
             self.ref_cond = _convert_value_to_entry()
 
-        elif (self.attr.type == AttrTypeValue["string"] or self.attr.type == AttrTypeValue["text"]):
+        elif (
+            self.attr.type == AttrTypeValue["string"]
+            or self.attr.type == AttrTypeValue["array_string"]
+            or self.attr.type == AttrTypeValue["text"]
+        ):
             self.str_cond = input_condition if input_condition else ""
 
         elif self.attr.type == AttrTypeValue["boolean"]:
@@ -97,9 +107,15 @@ class InputTriggerAction(object):
     def get_value(self, raw_input_value):
         def _do_get_value(input_value, attr_type):
             if attr_type & AttrTypeValue["array"]:
-                return [_do_get_value(x, attr_type ^ AttrTypeValue["array"]) for x in input_value if x]
+                return [
+                    _do_get_value(x, attr_type ^ AttrTypeValue["array"]) for x in input_value if x
+                ]
 
-            elif attr_type in [AttrTypeValue["string"], AttrTypeValue["text"], AttrTypeValue["array_string"]]:
+            elif attr_type in [
+                AttrTypeValue["string"],
+                AttrTypeValue["text"],
+                AttrTypeValue["array_string"],
+            ]:
                 return InputTriggerActionValue(str_cond=input_value)
 
             elif attr_type == AttrTypeValue["named_object"]:
@@ -107,7 +123,9 @@ class InputTriggerAction(object):
                 if isinstance(input_value.get("id"), int):
                     ref_entry = Entry.objects.filter(id=input_value["id"], is_active=True).first()
                 if isinstance(input_value.get("id"), str):
-                    ref_entry = Entry.objects.filter(id=int(input_value["id"]), is_active=True).first()
+                    ref_entry = Entry.objects.filter(
+                        id=int(input_value["id"]), is_active=True
+                    ).first()
                 elif isinstance(input_value.get("id"), Entry):
                     ref_entry = input_value["id"]
 
@@ -121,9 +139,13 @@ class InputTriggerAction(object):
                 if isinstance(input_value, Entry):
                     params["ref_cond"] = input_value
                 elif isinstance(input_value, int):
-                    params["ref_cond"] = Entry.objects.filter(id=input_value, is_active=True).first()
+                    params["ref_cond"] = Entry.objects.filter(
+                        id=input_value, is_active=True
+                    ).first()
                 elif isinstance(input_value, str):
-                    params["ref_cond"] = Entry.objects.filter(id=int(input_value), is_active=True).first()
+                    params["ref_cond"] = Entry.objects.filter(
+                        id=int(input_value), is_active=True
+                    ).first()
 
                 return InputTriggerActionValue(**params)
 
@@ -303,7 +325,6 @@ class TriggerCondition(models.Model):
         return any([_do_check_condition(input) for input in input_list])
 
     def is_match_condition(self, recv_value, attr_type=None) -> bool:
-        print("[onix/is_match_condition(00)] recv_value: %s" % str(recv_value))
         """
         This checks specified value, which is compatible with APIv2 standard, matches
         with this condition.
@@ -321,20 +342,18 @@ class TriggerCondition(models.Model):
             elif val is None:
                 return self.ref_cond is None
 
-        # drop array typed bit
-        if not attr_type:
-            attr_type = self.attr.type & (~AttrTypeValue["array"])
-
-        if attr_type == AttrTypeValue["named_object"]:
-            return _is_match_object(recv_value["id"]) or (
-                self.str_cond != "" and self.str_cond == recv_value["name"]
-            )
-
-        elif attr_type == AttrTypeValue["object"]:
+        # TODO: Add support for named_object, array_named_object
+        if attr_type == AttrTypeValue["object"]:
             return _is_match_object(recv_value)
 
-        elif attr_type == AttrTypeValue["string"]:
+        elif attr_type == AttrTypeValue["array_object"]:
+            return any([_is_match_object(x) for x in recv_value])
+
+        elif attr_type == AttrTypeValue["string"] or attr_type == AttrTypeValue["text"]:
             return self.str_cond == recv_value
+
+        elif attr_type == AttrTypeValue["array_string"]:
+            return self.str_cond in recv_value
 
         elif attr_type == AttrTypeValue["boolean"]:
             return self.bool_cond == recv_value

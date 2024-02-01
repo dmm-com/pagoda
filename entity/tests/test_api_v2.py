@@ -3479,7 +3479,7 @@ class ViewTest(AironeViewTest):
         TriggerCondition.register(
             self.entity,
             [{"attr_id": attr["val"].id, "cond": "hoge"}],
-            [{"attr_id": attr["vals"].id, "value": ["fuga", "piyo"]}],
+            [{"attr_id": attr["vals"].id, "values": ["fuga", "piyo"]}],
         )
         TriggerCondition.register(
             self.entity,
