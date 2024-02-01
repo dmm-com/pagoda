@@ -37,7 +37,7 @@ export const AironeModal: FC<Props> = ({
 }) => {
   return (
     <StyledModal open={open} onClose={onClose}>
-      <Paper>
+      <Paper id="modal">
         <Typography variant={"h6"} my="8px">
           {title}
         </Typography>

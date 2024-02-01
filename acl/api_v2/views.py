@@ -14,13 +14,19 @@ from airone.lib.acl import ACLObjType, ACLType
 from entity.models import Entity, EntityAttr
 from entry.models import Attribute, Entry
 from role.models import HistoricalPermission
+from user.models import User
 
 
-class ACLFullPermission(BasePermission):
+class ACLPermission(BasePermission):
     def has_object_permission(self, request, view, obj):
+        user: User = request.user
+        permisson = {
+            "retrieve": ACLType.Readable,
+            "update": ACLType.Full,
+        }
         if not isinstance(obj, ACLBase):
             return False
-        if not request.user.has_permission(obj, ACLType.Full):
+        if not user.has_permission(obj, permisson.get(view.action)):
             return False
         return True
 
@@ -29,7 +35,7 @@ class ACLAPI(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, viewsets.Generi
     queryset = ACLBase.objects.all()
     serializer_class = ACLSerializer
 
-    permission_classes = [IsAuthenticated & ACLFullPermission]
+    permission_classes = [IsAuthenticated & ACLPermission]
 
 
 @extend_schema(

@@ -29,6 +29,8 @@ from entry.settings import CONFIG
 from group.models import Group
 from job.models import Job, JobOperation
 from role.models import Role
+from trigger import tasks as trigger_tasks
+from trigger.models import TriggerCondition
 from user.models import User
 
 
@@ -703,6 +705,7 @@ class ViewTest(AironeViewTest):
             {
                 "id": entry.id,
                 "name": "entry-change",
+                "delay_trigger": True,
             },
         )
         self.assertEqual(entry.status, 0)
@@ -1043,6 +1046,7 @@ class ViewTest(AironeViewTest):
             "attrs": [
                 {"id": attr["val"].id, "value": "fuga"},
             ],
+            "delay_trigger": True,
         }
 
         def side_effect(handler_name, entity_name, user, *args):
@@ -4532,3 +4536,42 @@ class ViewTest(AironeViewTest):
         self.client.delete("/entry/api/v2/bulk_delete/?ids=%s" % entry.id, None, "application/json")
 
         self.assertTrue(mock_task.called)
+
+    @mock.patch(
+        "trigger.tasks.may_invoke_trigger.delay",
+        mock.Mock(side_effect=trigger_tasks.may_invoke_trigger),
+    )
+    def test_update_entry_when_trigger_is_set(self):
+        # create Entry to be updated in this test
+        entry: Entry = self.add_entry(self.user, "entry", self.entity)
+
+        attr = {}
+        for attr_name in [x["name"] for x in self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY]:
+            attr[attr_name] = self.entity.attrs.get(name=attr_name)
+
+        # register Trigger and Action that specify "fuga" at text attribute
+        # when value "hoge" is set to the Attribute "val".
+        TriggerCondition.register(
+            self.entity,
+            [
+                {"attr_id": self.entity.attrs.get(name="val").id, "cond": "hoge"},
+            ],
+            [
+                {"attr_id": self.entity.attrs.get(name="text").id, "value": "fuga"},
+            ],
+        )
+
+        # send request to update Entry
+        params = {
+            "name": "entry-change",
+            "attrs": [
+                {"id": attr["val"].id, "value": "hoge"},
+            ],
+        }
+        resp = self.client.put(
+            "/entry/api/v2/%s/" % entry.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 200)
+
+        # check Attribute "text", which is specified by TriggerCondition, was changed to "fuga"
+        self.assertEqual(entry.get_attrv("text").value, "fuga")

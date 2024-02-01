@@ -37,7 +37,10 @@ class AironeTestCase(TestCase):
 
     def setUp(self):
         OVERRIDE_ES_CONFIG = settings.ES_CONFIG.copy()
-        OVERRIDE_ES_CONFIG["INDEX_NAME"] = "test-" + settings.ES_CONFIG["INDEX_NAME"]
+        # Attach prefix "test-" to distinguish index name for test with configured one.
+        # This should be only one time.
+        if settings.ES_CONFIG["INDEX_NAME"].find("test-") != 0:
+            OVERRIDE_ES_CONFIG["INDEX_NAME"] = "test-" + settings.ES_CONFIG["INDEX_NAME"]
         OVERRIDE_AIRONE = settings.AIRONE.copy()
         OVERRIDE_AIRONE_FLAGS = settings.AIRONE_FLAGS.copy()
         MEDIA_ROOT = "/tmp/airone_app_test"

@@ -38,8 +38,10 @@ export const EntryEditPage: FC<Props> = ({
   excludeAttrs = [],
   EntryForm = DefaultEntryForm,
 }) => {
-  const { entityId, entryId } =
-    useTypedParams<{ entityId: number; entryId: number }>();
+  const { entityId, entryId } = useTypedParams<{
+    entityId: number;
+    entryId: number;
+  }>();
 
   const willCreate = entryId == null;
 

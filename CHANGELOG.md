@@ -3,10 +3,32 @@
 ## In development
 
 ### Added
+* Added new feature TriggerAction to be able to update Attributes along with user defined configuration.
+  Contributed by @userlocalhsot, @hinashi
 
 ### Changed
 
 ### Fixed
+
+## v3.74.0
+
+### Added
+* Changed so that SSO login is also redirected to the next URL.
+  Contributed by @hinashi
+
+## v3.73.0
+
+### Added
+* Allow the error page to reload.
+  Contributed by @syucream
+* Notify copying access token via snackbar.
+  Contributed by @syucream
+* Support changing auth method (local -> LDAP).
+  Contributed by @syucream
+
+### Fixed
+* Fixed an issue where array type attributes added later were not registered in ES
+  Contributed by @hinashi
 
 ## v3.72.0
 

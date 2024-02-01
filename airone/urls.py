@@ -39,6 +39,7 @@ urlpatterns = [
     re_path(r"^auth/logout/", auth_view.logout, name="logout"),
     re_path(r"^webhook/", include(("webhook.urls", "webhook"))),
     re_path(r"^role/", include(("role.urls", "role"))),
+    re_path(r"^trigger/", include(("trigger.urls", "trigger"))),
 ]
 
 if settings.DEBUG:
