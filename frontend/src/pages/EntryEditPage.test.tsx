@@ -7,6 +7,8 @@ import {
   waitForElementToBeRemoved,
   screen,
 } from "@testing-library/react";
+import { http, HttpResponse } from "msw";
+import { setupServer } from "msw/node";
 import React from "react";
 import { MemoryRouter, Route } from "react-router-dom";
 
@@ -15,11 +17,40 @@ import { EntryEditPage } from "./EntryEditPage";
 import { entryEditPath } from "Routes";
 import { TestWrapper } from "TestWrapper";
 
-afterEach(() => {
-  jest.clearAllMocks();
-});
+const server = setupServer(
+  // getEntity
+  http.get("http://localhost/entity/api/v2/2/", () => {
+    return HttpResponse.json({
+      id: 2,
+      name: "test entity",
+      note: "",
+      isToplevel: false,
+      attrs: [],
+      webhooks: [],
+    });
+  }),
+  // getEntry
+  http.get("http://localhost/entry/api/v2/1/", () => {
+    return HttpResponse.json({
+      id: 1,
+      name: "test entry",
+      isActive: true,
+      schema: {
+        id: 2,
+        name: "test entity",
+      },
+      attrs: [],
+    });
+  })
+);
 
-test("should match snapshot", async () => {
+beforeAll(() => server.listen());
+
+afterEach(() => server.resetHandlers());
+
+afterAll(() => server.close());
+
+describe("EntryEditPage", () => {
   Object.defineProperty(window, "django_context", {
     value: {
       user: {
@@ -29,51 +60,21 @@ test("should match snapshot", async () => {
     writable: false,
   });
 
-  const entity = {
-    id: 2,
-    name: "bbb",
-    note: "",
-    isToplevel: false,
-    attrs: [],
-  };
+  test("should match snapshot", async () => {
+    // wait async calls and get rendered fragment
+    const result = render(
+      <MemoryRouter initialEntries={["/ui/entities/2/entries/1/edit"]}>
+        <Route
+          path={entryEditPath(":entityId", ":entryId")}
+          component={EntryEditPage}
+        />
+      </MemoryRouter>,
+      {
+        wrapper: TestWrapper,
+      }
+    );
+    await waitForElementToBeRemoved(screen.getByTestId("loading"));
 
-  const entry = {
-    id: 1,
-    name: "aaa",
-    isActive: true,
-    schema: {
-      id: 2,
-      name: "bbb",
-    },
-    attrs: [],
-  };
-
-  /* eslint-disable */
-  jest
-    .spyOn(
-      require("../repository/AironeApiClient").aironeApiClient,
-      "getEntity"
-    )
-    .mockResolvedValue(Promise.resolve(entity));
-
-  jest
-    .spyOn(require("repository/AironeApiClient").aironeApiClient, "getEntry")
-    .mockResolvedValue(Promise.resolve(entry));
-  /* eslint-enable */
-
-  // wait async calls and get rendered fragment
-  const result = render(
-    <MemoryRouter initialEntries={["/ui/entities/2/entries/1/edit"]}>
-      <Route
-        path={entryEditPath(":entityId", ":entryId")}
-        component={EntryEditPage}
-      />
-    </MemoryRouter>,
-    {
-      wrapper: TestWrapper,
-    }
-  );
-  await waitForElementToBeRemoved(screen.getByTestId("loading"));
-
-  expect(result).toMatchSnapshot();
+    expect(result).toMatchSnapshot();
+  });
 });
