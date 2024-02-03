@@ -197,6 +197,10 @@ class ESS(Elasticsearch):
                                 "type": "integer",
                                 "index": "false",
                             },
+                            "bool_value": {
+                                "type": "boolean",
+                                "index": "true",
+                            },
                             "is_readable": {
                                 "type": "boolean",
                                 "index": "true",
@@ -1072,6 +1076,7 @@ def make_search_results(
                             attrinfo["key"]: {
                                 "id": attrinfo["referral_id"],
                                 "name": attrinfo["value"],
+                                "bool": attrinfo["bool_value"],
                             }
                         }
                     )
