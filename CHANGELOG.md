@@ -3,12 +3,24 @@
 ## In development
 
 ### Added
-* Added new feature TriggerAction to be able to update Attributes along with user defined configuration.
-  Contributed by @userlocalhsot, @hinashi
 
 ### Changed
 
 ### Fixed
+
+## v3.75.0
+
+### Added
+* Added new feature TriggerAction to be able to update Attributes along with user defined configuration.
+  Contributed by @userlocalhsot, @hinashi
+* Enable collecting coverage on the frontend.
+  Contributed by @syucream
+
+### Changed
+
+### Fixed
+* Fix download links shown in header menu.
+  Contributed by @syucream
 
 ## v3.74.0
 
