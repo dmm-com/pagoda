@@ -31,6 +31,8 @@ from entry.settings import CONFIG as ENTRY_CONFIG
 from group.models import Group
 from job.models import Job, JobOperation
 from role.models import Role
+from trigger import tasks as trigger_tasks
+from trigger.models import TriggerCondition
 from user.models import User
 
 
@@ -1902,6 +1904,62 @@ class ViewTest(AironeViewTest):
         self.assertFalse(entry.attrs.get(schema__name="Role").is_updated(role))
         self.assertFalse(entry.attrs.get(schema__name="RoleArray").is_updated([role]))
 
+    @patch(
+        "entry.tasks.create_entry_attrs.delay",
+        Mock(side_effect=tasks.create_entry_attrs),
+    )
+    @patch(
+        "trigger.tasks.may_invoke_trigger.delay",
+        Mock(side_effect=trigger_tasks.may_invoke_trigger),
+    )
+    def test_create_entry_with_trigger_configuration(self):
+        user = self.guest_login()
+
+        # initialize Entity which has Role related Attributes
+        entity = self.create_entity(
+            user,
+            "Personal Information",
+            attrs=[
+                {"name": "address", "type": AttrTypeValue["string"]},
+                {"name": "age", "type": AttrTypeValue["string"]},
+            ],
+        )
+
+        # register TriggerAction configuration before creating an Entry
+        TriggerCondition.register(
+            entity,
+            [{"attr_id": entity.attrs.get(name="age").id, "cond": "0"}],
+            [{"attr_id": entity.attrs.get(name="address").id, "value": "Tokyo"}],
+        )
+
+        # create an Entry to invoke TriggerAction
+        params = {
+            "entry_name": "Jhon Doe",
+            "attrs": [
+                {
+                    "id": str(entity.attrs.get(name="age").id),
+                    "type": str(AttrTypeValue["string"]),
+                    "value": [{"data": "0", "index": 0}],
+                    "referral_key": [],
+                }
+            ],
+        }
+        resp = self.client.post(
+            reverse("entry:do_create", args=[entity.id]),
+            json.dumps(params),
+            "application/json",
+        )
+
+        # check trigger action was worked properly
+        job_query = Job.objects.filter(operation=JobOperation.MAY_INVOKE_TRIGGER.value)
+        self.assertEqual(job_query.count(), 1)
+        self.assertEqual(job_query.first().status, Job.STATUS["DONE"])
+
+        # check created Entry's attributes are set properly by TriggerAction
+        entry = Entry.objects.get(id=resp.json().get("entry_id"))
+        self.assertEqual(entry.get_attrv("age").value, "0")
+        self.assertEqual(entry.get_attrv("address").value, "Tokyo")
+
     @patch("entry.tasks.edit_entry_attrs.delay", Mock(side_effect=tasks.edit_entry_attrs))
     def test_edit_entry_with_role_attributes(self):
         user = self.guest_login()
@@ -1947,6 +2005,60 @@ class ViewTest(AironeViewTest):
         updatedEntry = Entry.objects.get(id=resp.json().get("entry_id"))
         self.assertFalse(updatedEntry.attrs.get(schema__name="Role").is_updated(role))
         self.assertFalse(updatedEntry.attrs.get(schema__name="RoleArray").is_updated([role]))
+
+    @patch("entry.tasks.edit_entry_attrs.delay", Mock(side_effect=tasks.edit_entry_attrs))
+    @patch(
+        "trigger.tasks.may_invoke_trigger.delay",
+        Mock(side_effect=trigger_tasks.may_invoke_trigger),
+    )
+    def test_edit_entry_with_trigger_configuration(self):
+        user = self.guest_login()
+
+        # initialize Entity and Entry which will be updated by TriggerAction
+        entity = self.create_entity(
+            user,
+            "Personal Information",
+            attrs=[
+                {"name": "age", "type": AttrTypeValue["string"]},
+                {"name": "address", "type": AttrTypeValue["string"]},
+            ],
+        )
+        entry = self.add_entry(user, "Jhon Doe", entity)
+
+        # register TriggerAction configuration before creating an Entry
+        TriggerCondition.register(
+            entity,
+            [{"attr_id": entity.attrs.get(name="age").id, "cond": "0"}],
+            [{"attr_id": entity.attrs.get(name="address").id, "value": "Tokyo"}],
+        )
+
+        # send request for editing Entry to invoke TriggerAction
+        sending_params = {
+            "entry_name": "entry",
+            "attrs": [
+                {
+                    "entity_attr_id": str(entity.attrs.get(name="age").id),
+                    "id": str(entry.attrs.get(schema__name="age").id),
+                    "value": [{"data": "0", "index": 0}],
+                }
+            ],
+        }
+        resp = self.client.post(
+            reverse("entry:do_edit", args=[entry.id]),
+            json.dumps(sending_params),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 200)
+
+        # check trigger action was worked properly
+        job_query = Job.objects.filter(operation=JobOperation.MAY_INVOKE_TRIGGER.value)
+        self.assertEqual(job_query.count(), 1)
+        self.assertEqual(job_query.first().status, Job.STATUS["DONE"])
+
+        # check updated Entry's attributes are set properly by TriggerAction
+        self.assertEqual(resp.json().get("entry_id"), entry.id)
+        self.assertEqual(entry.get_attrv("age").value, "0")
+        self.assertEqual(entry.get_attrv("address").value, "Tokyo")
 
     @patch(
         "entry.tasks.create_entry_attrs.delay",
