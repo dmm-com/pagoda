@@ -6,21 +6,21 @@ import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import {
   Box,
   Button,
+  Checkbox,
   IconButton,
   InputAdornment,
   Paper,
   Table,
-  TableContainer,
   TableBody,
   TableCell,
+  TableContainer,
   TableHead,
   TableRow,
   TextField,
-  Checkbox,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { useSnackbar } from "notistack";
-import React, { BaseSyntheticEvent, FC, useState, useCallback } from "react";
+import React, { BaseSyntheticEvent, FC, useCallback, useState } from "react";
 import { CopyToClipboard } from "react-copy-to-clipboard";
 import { Control, Controller } from "react-hook-form";
 
@@ -119,6 +119,7 @@ const ElemAccessTokenConfiguration: FC<ReadonlyProps> = ({ user }) => {
                   }}
                   value={user.token.lifetime}
                   disabled
+                  data-testid="token-lifetime"
                 />
               </Box>
 
@@ -130,6 +131,7 @@ const ElemAccessTokenConfiguration: FC<ReadonlyProps> = ({ user }) => {
                   InputProps={{ disableUnderline: true, readOnly: true }}
                   value={user.token.created}
                   disabled
+                  data-testid="token-created"
                 />
 
                 <TextField
@@ -141,6 +143,7 @@ const ElemAccessTokenConfiguration: FC<ReadonlyProps> = ({ user }) => {
                     user.token.lifetime === 0 ? "無期限" : user.token.expire
                   }
                   disabled
+                  data-testid="token-expire"
                 />
               </Box>
             </Box>
