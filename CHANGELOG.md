@@ -8,6 +8,11 @@
 
 ### Fixed
 
+## v3.76.0
+
+### Changed
+* Upgrade django version from 3.2.23 to 3.2.24
+
 ## v3.75.0
 
 ### Added
