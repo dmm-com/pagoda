@@ -22,7 +22,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v3
         with:
-          node-version: 16
+          node-version: 20
           registry-url: https://npm.pkg.github.com/
           scope: '@dmm-com'
           cache: 'npm'
@@ -41,7 +41,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v3
         with:
-          node-version: 16
+          node-version: 20
           registry-url: https://npm.pkg.github.com/
           scope: '@dmm-com'
           cache: 'npm'
@@ -60,7 +60,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v3
         with:
-          node-version: 16
+          node-version: 20
           registry-url: https://npm.pkg.github.com/
           scope: '@dmm-com'
           cache: 'npm'
