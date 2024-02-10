@@ -8,7 +8,7 @@ from elasticsearch import Elasticsearch
 
 from airone.lib.acl import ACLType
 from airone.lib.log import Logger
-from airone.lib.types import AttrTypeValue
+from airone.lib.types import AttrType, AttrTypeValue
 from entity.models import Entity
 from entry.settings import CONFIG
 from user.models import User
@@ -256,16 +256,15 @@ def make_query(
 
     # Conversion processing from "filter_key" to "keyword" for each hint_attrs
     for hint_attr in hint_attrs:
-        filter_key = hint_attr.get("filter_key", None)
-        if filter_key is not None:
-            if filter_key == FilterKey.CLEARED.value:
+        match hint_attr.get("filter_key", None):
+            case FilterKey.TEXT_CONTAINED.value:
                 # remove "keyword" parameter
                 hint_attr.pop("keyword", None)
-            elif filter_key == FilterKey.EMPTY.value:
+            case FilterKey.EMPTY.value:
                 hint_attr["keyword"] = "\\"
-            elif filter_key == FilterKey.NON_EMPTY.value:
+            case FilterKey.NON_EMPTY.value:
                 hint_attr["keyword"] = "*"
-            elif filter_key == FilterKey.DUPLICATED.value:
+            case FilterKey.DUPLICATED.value:
                 aggs_query = make_aggs_query(hint_attr["name"])
                 # TODO Set to 1 for convenience
                 resp = execute_query(aggs_query, 1)
@@ -815,18 +814,17 @@ def _make_an_attribute_filter(hint: AttrHint, keyword: str) -> dict[str, dict]:
         }
         for range_check, date_obj in date_results:
             timestr = date_obj.strftime("%Y-%m-%d")
-            if range_check == "<":
-                # search of before date user specified
-                date_cond["range"]["attr.date_value"]["lt"] = timestr
-
-            elif range_check == ">":
-                # search of after date user specified
-                date_cond["range"]["attr.date_value"]["gt"] = timestr
-
-            else:
-                # search of exact day
-                date_cond["range"]["attr.date_value"]["gte"] = timestr
-                date_cond["range"]["attr.date_value"]["lte"] = timestr
+            match range_check:
+                case "<":
+                    # search of before date user specified
+                    date_cond["range"]["attr.date_value"]["lt"] = timestr
+                case ">":
+                    # search of after date user specified
+                    date_cond["range"]["attr.date_value"]["gt"] = timestr
+                case _:
+                    # search of exact day
+                    date_cond["range"]["attr.date_value"]["gte"] = timestr
+                    date_cond["range"]["attr.date_value"]["lte"] = timestr
 
         str_cond = {"regexp": {"attr.value": _get_regex_pattern(keyword)}}
 
@@ -1030,61 +1028,60 @@ def make_search_results(
                     ret_attrinfo["is_readable"] = False
                     continue
 
-            if (
-                attrinfo["type"] == AttrTypeValue["string"]
-                or attrinfo["type"] == AttrTypeValue["text"]
-                or attrinfo["type"] == AttrTypeValue["boolean"]
-            ):
-                ret_attrinfo["value"] = attrinfo["value"]
+            match attrinfo["type"]:
+                case AttrType.STRING | AttrType.TEXT | AttrType.BOOLEAN:
+                    ret_attrinfo["value"] = attrinfo["value"]
 
-            elif attrinfo["type"] == AttrTypeValue["date"]:
-                ret_attrinfo["value"] = attrinfo["date_value"]
+                case AttrType.DATE:
+                    ret_attrinfo["value"] = attrinfo["date_value"]
 
-            elif (
-                attrinfo["type"] == AttrTypeValue["object"]
-                or attrinfo["type"] == AttrTypeValue["group"]
-                or attrinfo["type"] == AttrTypeValue["role"]
-            ):
-                ret_attrinfo["value"] = {
-                    "id": attrinfo["referral_id"],
-                    "name": attrinfo["value"],
-                }
-
-            elif attrinfo["type"] == AttrTypeValue["named_object"]:
-                ret_attrinfo["value"] = {
-                    attrinfo["key"]: {
+                case AttrType.OBJECT | AttrType.GROUP | AttrType.ROLE:
+                    ret_attrinfo["value"] = {
                         "id": attrinfo["referral_id"],
                         "name": attrinfo["value"],
                     }
-                }
 
-            elif attrinfo["type"] & AttrTypeValue["array"]:
-                if "value" not in ret_attrinfo:
-                    ret_attrinfo["value"] = []
-
-                # If there is no value, it will be skipped.
-                if attrinfo["key"] == attrinfo["value"] == attrinfo["referral_id"] == "":
-                    continue
-
-                if attrinfo["type"] & AttrTypeValue["named"]:
-                    ret_attrinfo["value"].append(
-                        {
-                            attrinfo["key"]: {
-                                "id": attrinfo["referral_id"],
-                                "name": attrinfo["value"],
-                            }
+                case AttrType.NAMED_OBJECT:
+                    ret_attrinfo["value"] = {
+                        attrinfo["key"]: {
+                            "id": attrinfo["referral_id"],
+                            "name": attrinfo["value"],
                         }
-                    )
+                    }
 
-                elif attrinfo["type"] & AttrTypeValue["string"]:
-                    ret_attrinfo["value"].append(attrinfo["value"])
-
-                elif attrinfo["type"] & (
-                    AttrTypeValue["object"] | AttrTypeValue["group"] | AttrTypeValue["role"]
+                case (
+                    AttrType.ARRAY_OBJECT
+                    | AttrType.ARRAY_STRING
+                    | AttrType.ARRAY_NAMED_OBJECT
+                    | AttrType.ARRAY_NAMED_OBJECT_BOOLEAN
+                    | AttrType.ARRAY_GROUP
+                    | AttrType.ARRAY_ROLE
                 ):
-                    ret_attrinfo["value"].append(
-                        {"id": attrinfo["referral_id"], "name": attrinfo["value"]}
-                    )
+                    if "value" not in ret_attrinfo:
+                        ret_attrinfo["value"] = []
+
+                    # If there is no value, it will be skipped.
+                    if attrinfo["key"] == attrinfo["value"] == attrinfo["referral_id"] == "":
+                        continue
+
+                    match attrinfo["type"]:
+                        case AttrType.ARRAY_NAMED_OBJECT:
+                            ret_attrinfo["value"].append(
+                                {
+                                    attrinfo["key"]: {
+                                        "id": attrinfo["referral_id"],
+                                        "name": attrinfo["value"],
+                                    }
+                                }
+                            )
+
+                        case AttrType.ARRAY_STRING:
+                            ret_attrinfo["value"].append(attrinfo["value"])
+
+                        case AttrType.ARRAY_OBJECT | AttrType.ARRAY_GROUP | AttrType.ARRAY_ROLE:
+                            ret_attrinfo["value"].append(
+                                {"id": attrinfo["referral_id"], "name": attrinfo["value"]}
+                            )
 
         results["ret_values"].append(ret_info)
 
