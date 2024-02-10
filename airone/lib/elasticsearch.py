@@ -257,7 +257,7 @@ def make_query(
     # Conversion processing from "filter_key" to "keyword" for each hint_attrs
     for hint_attr in hint_attrs:
         match hint_attr.get("filter_key", None):
-            case FilterKey.TEXT_CONTAINED.value:
+            case FilterKey.CLEARED.value:
                 # remove "keyword" parameter
                 hint_attr.pop("keyword", None)
             case FilterKey.EMPTY.value:
@@ -1028,7 +1028,14 @@ def make_search_results(
                     ret_attrinfo["is_readable"] = False
                     continue
 
-            match attrinfo["type"]:
+            try:
+                attr_type = AttrType(attrinfo["type"])
+            except ValueError:
+                # For compatibility; continue that, and record the error
+                Logger.error("Invalid attribute type: %s" % attrinfo["type"])
+                continue
+
+            match attr_type:
                 case AttrType.STRING | AttrType.TEXT | AttrType.BOOLEAN:
                     ret_attrinfo["value"] = attrinfo["value"]
 
@@ -1064,7 +1071,7 @@ def make_search_results(
                     if attrinfo["key"] == attrinfo["value"] == attrinfo["referral_id"] == "":
                         continue
 
-                    match attrinfo["type"]:
+                    match attr_type:
                         case AttrType.ARRAY_NAMED_OBJECT:
                             ret_attrinfo["value"].append(
                                 {
