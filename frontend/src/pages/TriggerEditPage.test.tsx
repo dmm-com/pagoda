@@ -2,23 +2,35 @@
  * @jest-environment jsdom
  */
 
-import {
-  render,
-  screen,
-  waitForElementToBeRemoved,
-} from "@testing-library/react";
-import { HttpResponse, http } from "msw";
+import { render } from "@testing-library/react";
+import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import React from "react";
 import { MemoryRouter, Route } from "react-router-dom";
 
-import { editEntityPath } from "../Routes";
+import { editTriggerPath } from "../Routes";
 
-import { EditEntityPage } from "./EditEntityPage";
+import { TriggerEditPage } from "./TriggerEditPage";
 
-import { TestWrapperWithoutRoutes } from "TestWrapper";
+import { TestWrapper } from "TestWrapper";
 
 const server = setupServer(
+  // getTrigger
+  http.get("http://localhost/trigger/api/v2/1", () => {
+    return HttpResponse.json({
+      id: 1,
+      entity: {
+        id: 1,
+        name: "test entity",
+        note: "",
+        isToplevel: false,
+        attrs: [],
+        webhooks: [],
+      },
+      actions: [],
+      conditions: [],
+    });
+  }),
   // getEntities
   http.get("http://localhost/entity/api/v2/", () => {
     return HttpResponse.json([
@@ -67,27 +79,20 @@ afterEach(() => server.resetHandlers());
 
 afterAll(() => server.close());
 
-describe("EditEntityPage", () => {
-  Object.defineProperty(window, "django_context", {
-    value: {
-      user: {
-        is_superuser: false,
-      },
-    },
-    writable: false,
-  });
-
+describe("EditTriggerPage", () => {
   test("should match snapshot", async () => {
     // wait async calls and get rendered fragment
     const result = render(
-      <MemoryRouter initialEntries={["/ui/entities/1"]}>
-        <Route path={editEntityPath(":entityId")} component={EditEntityPage} />
+      <MemoryRouter initialEntries={["/ui/triggers/1"]}>
+        <Route
+          path={editTriggerPath(":triggerId")}
+          component={TriggerEditPage}
+        />
       </MemoryRouter>,
       {
-        wrapper: TestWrapperWithoutRoutes,
+        wrapper: TestWrapper,
       }
     );
-    await waitForElementToBeRemoved(screen.getByTestId("loading"));
 
     expect(result).toMatchSnapshot();
   });

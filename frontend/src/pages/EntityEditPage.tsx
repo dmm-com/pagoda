@@ -22,7 +22,7 @@ import {
 } from "services/AironeAPIErrorUtil";
 import { findDuplicateIndexes } from "services/entity/Edit";
 
-export const EditEntityPage: FC = () => {
+export const EntityEditPage: FC = () => {
   const { entityId } = useTypedParams<{ entityId: number }>();
 
   const willCreate = entityId === undefined;

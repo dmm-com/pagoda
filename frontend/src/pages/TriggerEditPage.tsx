@@ -60,7 +60,7 @@ const StyledTableBody = styled(TableBody)({
   },
 });
 
-export const EditTriggerPage: FC = () => {
+export const TriggerEditPage: FC = () => {
   const { triggerId } = useTypedParams<{ triggerId: number }>();
   const willCreate = triggerId === undefined;
 

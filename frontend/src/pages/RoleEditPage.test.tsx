@@ -11,7 +11,7 @@ import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import React from "react";
 
-import { EditRolePage } from "./EditRolePage";
+import { RoleEditPage } from "./RoleEditPage";
 
 import { TestWrapper } from "TestWrapper";
 
@@ -94,7 +94,7 @@ afterAll(() => server.close());
 describe("EditRolePage", () => {
   test("should match snapshot", async () => {
     // wait async calls and get rendered fragment
-    const result = render(<EditRolePage />, {
+    const result = render(<RoleEditPage />, {
       wrapper: TestWrapper,
     });
     await waitForElementToBeRemoved(screen.getByTestId("loading"));

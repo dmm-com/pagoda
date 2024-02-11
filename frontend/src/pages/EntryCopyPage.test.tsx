@@ -9,7 +9,7 @@ import {
 } from "@testing-library/react";
 import React from "react";
 
-import { CopyEntryPage } from "./CopyEntryPage";
+import { EntryCopyPage } from "./EntryCopyPage";
 
 import { TestWrapper } from "TestWrapper";
 
@@ -35,7 +35,7 @@ test("should match snapshot", async () => {
   /* eslint-enable */
 
   // wait async calls and get rendered fragment
-  const result = render(<CopyEntryPage />, {
+  const result = render(<EntryCopyPage />, {
     wrapper: TestWrapper,
   });
   await waitForElementToBeRemoved(screen.getByTestId("loading"));
