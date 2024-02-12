@@ -78,7 +78,7 @@ export const ACLHistoryPage: FC = () => {
         });
         break;
     }
-  }, [acl]);
+  }, [acl.loading]);
 
   return (
     <Box className="container-fluid">
