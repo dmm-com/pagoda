@@ -16,7 +16,7 @@ import { usePage } from "hooks/usePage";
 import { aironeApiClient } from "repository/AironeApiClient";
 import { JobList as ConstJobList } from "services/Constants";
 
-export const JobPage: FC = () => {
+export const JobListPage: FC = () => {
   const [page, changePage] = usePage();
 
   const [refresh, toggleRefresh] = useToggle(false);

@@ -10,7 +10,7 @@ import {
 import React from "react";
 
 import { TestWrapper } from "TestWrapper";
-import { UserPage } from "pages/UserPage";
+import { UserListPage } from "pages/UserListPage";
 
 afterEach(() => {
   jest.clearAllMocks();
@@ -47,7 +47,7 @@ test("should match snapshot", async () => {
   /* eslint-enable */
 
   // wait async calls and get rendered fragment
-  const result = render(<UserPage />, {
+  const result = render(<UserListPage />, {
     wrapper: TestWrapper,
   });
   await waitForElementToBeRemoved(screen.getByTestId("loading"));

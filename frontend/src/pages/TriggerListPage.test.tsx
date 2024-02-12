@@ -11,7 +11,7 @@ import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import React from "react";
 
-import { TriggerPage } from "./TriggerPage";
+import { TriggerListPage } from "./TriggerListPage";
 
 import { TestWrapper } from "TestWrapper";
 
@@ -63,7 +63,7 @@ afterAll(() => server.close());
 describe("TriggerPage", () => {
   test("should match snapshot", async () => {
     // wait async calls and get rendered fragment
-    const result = render(<TriggerPage />, {
+    const result = render(<TriggerListPage />, {
       wrapper: TestWrapper,
     });
     await waitForElementToBeRemoved(screen.getByTestId("loading"));

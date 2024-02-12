@@ -10,7 +10,7 @@ import {
 } from "@testing-library/react";
 import React from "react";
 
-import { RolePage } from "./RolePage";
+import { RoleListPage } from "./RoleListPage";
 
 import { TestWrapper } from "TestWrapper";
 
@@ -39,7 +39,7 @@ test("should match snapshot", async () => {
   /* eslint-enable */
 
   // wait async calls and get rendered fragment
-  const result = render(<RolePage />, {
+  const result = render(<RoleListPage />, {
     wrapper: TestWrapper,
   });
   await waitForElementToBeRemoved(screen.getByTestId("loading"));

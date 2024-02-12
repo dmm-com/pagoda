@@ -9,7 +9,7 @@ import { EntryDetailsPage } from "./pages/EntryDetailsPage";
 import { EntryRestorePage } from "./pages/EntryRestorePage";
 import { NotFoundErrorPage } from "./pages/NotFoundErrorPage";
 import { RoleEditPage } from "./pages/RoleEditPage";
-import { RolePage } from "./pages/RolePage";
+import { RoleListPage } from "./pages/RoleListPage";
 
 import {
   aclHistoryPath,
@@ -55,13 +55,13 @@ import { EntryEditPage } from "pages/EntryEditPage";
 import { EntryHistoryListPage } from "pages/EntryHistoryListPage";
 import { EntryListPage } from "pages/EntryListPage";
 import { GroupEditPage } from "pages/GroupEditPage";
-import { GroupPage } from "pages/GroupPage";
-import { JobPage } from "pages/JobPage";
+import { GroupListPage } from "pages/GroupListPage";
+import { JobListPage } from "pages/JobListPage";
 import { LoginPage } from "pages/LoginPage";
 import { TriggerEditPage } from "pages/TriggerEditPage";
-import { TriggerPage } from "pages/TriggerPage";
+import { TriggerListPage } from "pages/TriggerListPage";
 import { UserEditPage } from "pages/UserEditPage";
-import { UserPage } from "pages/UserPage";
+import { UserListPage } from "pages/UserListPage";
 
 interface Props {
   customRoutes?: {
@@ -147,11 +147,11 @@ export const AppRouter: FC<Props> = ({ customRoutes }) => {
                 path={editTriggerPath(":triggerId")}
                 component={TriggerEditPage}
               />
-              <Route path={triggersPath()} component={TriggerPage} />
+              <Route path={triggersPath()} component={TriggerListPage} />
               <Route path={newGroupPath()} component={GroupEditPage} />
               <Route path={groupPath(":groupId")} component={GroupEditPage} />
-              <Route path={groupsPath()} component={GroupPage} />
-              <Route path={jobsPath()} component={JobPage} />
+              <Route path={groupsPath()} component={GroupListPage} />
+              <Route path={jobsPath()} component={JobListPage} />
               <Route
                 path={aclHistoryPath(":objectId")}
                 component={ACLHistoryPage}
@@ -159,10 +159,10 @@ export const AppRouter: FC<Props> = ({ customRoutes }) => {
               <Route path={aclPath(":objectId")} component={ACLPage} />
               <Route path={newUserPath()} component={UserEditPage} />
               <Route path={userPath(":userId")} component={UserEditPage} />
-              <Route path={usersPath()} component={UserPage} />
+              <Route path={usersPath()} component={UserListPage} />
               <Route path={newRolePath()} component={RoleEditPage} />
               <Route path={rolePath(":roleId")} component={RoleEditPage} />
-              <Route path={rolesPath()} component={RolePage} />
+              <Route path={rolesPath()} component={RoleListPage} />
               <Route exact path={topPath()} component={DashboardPage} />
               <Route component={NotFoundErrorPage} />
             </Switch>

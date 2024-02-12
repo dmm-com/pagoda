@@ -9,7 +9,7 @@ import { UserImportModal } from "components/user/UserImportModal";
 import { UserList } from "components/user/UserList";
 import { aironeApiClient } from "repository/AironeApiClient";
 
-export const UserPage: FC = () => {
+export const UserListPage: FC = () => {
   const [openImportModal, setOpenImportModal] = useState(false);
 
   const handleExport = useCallback(async () => {
