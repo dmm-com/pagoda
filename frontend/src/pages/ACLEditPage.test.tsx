@@ -10,7 +10,7 @@ import {
 import React from "react";
 
 import { TestWrapper } from "TestWrapper";
-import { ACLPage } from "pages/ACLPage";
+import { ACLEditPage } from "pages/ACLEditPage";
 
 afterEach(() => {
   jest.clearAllMocks();
@@ -58,7 +58,7 @@ test("should match snapshot", async () => {
   /* eslint-enable */
 
   // wait async calls and get rendered fragment
-  const result = render(<ACLPage />, {
+  const result = render(<ACLEditPage />, {
     wrapper: TestWrapper,
   });
   await waitForElementToBeRemoved(screen.getByTestId("loading"));

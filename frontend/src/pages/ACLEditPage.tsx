@@ -23,7 +23,7 @@ import { EntryBreadcrumbs } from "components/entry/EntryBreadcrumbs";
 import { useTypedParams } from "hooks/useTypedParams";
 import { aironeApiClient } from "repository/AironeApiClient";
 
-export const ACLPage: FC = () => {
+export const ACLEditPage: FC = () => {
   const history = useHistory();
   const { enqueueSnackbar } = useSnackbar();
   const { objectId } = useTypedParams<{ objectId: number }>();

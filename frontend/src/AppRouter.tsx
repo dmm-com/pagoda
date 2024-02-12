@@ -44,7 +44,7 @@ import {
   usersPath,
 } from "Routes";
 import { Header } from "components/Header";
-import { ACLPage } from "pages/ACLPage";
+import { ACLEditPage } from "pages/ACLEditPage";
 import { AdvancedSearchPage } from "pages/AdvancedSearchPage";
 import { AdvancedSearchResultsPage } from "pages/AdvancedSearchResultsPage";
 import { DashboardPage } from "pages/DashboardPage";
@@ -156,7 +156,7 @@ export const AppRouter: FC<Props> = ({ customRoutes }) => {
                 path={aclHistoryPath(":objectId")}
                 component={ACLHistoryPage}
               />
-              <Route path={aclPath(":objectId")} component={ACLPage} />
+              <Route path={aclPath(":objectId")} component={ACLEditPage} />
               <Route path={newUserPath()} component={UserEditPage} />
               <Route path={userPath(":userId")} component={UserEditPage} />
               <Route path={usersPath()} component={UserListPage} />
