@@ -3773,12 +3773,11 @@ class ModelTest(AironeTestCase):
             },
         ]
         for info in expected_attrinfos:
-            self.assertEqual(
-                [x["value"] for x in ret_dict["attrs"] if x["name"] == info["name"]],
-                [info["value"]],
-            )
-            self.assertIn("id", info)
-            self.assertIn("schema_id", info)
+            ret_attr_infos = [x for x in ret_dict["attrs"] if x["name"] == info["name"]]
+            self.assertEqual(len(ret_attr_infos), 1)
+            self.assertEqual(ret_attr_infos[0]["value"], info["value"])
+            self.assertIn("id", ret_attr_infos[0])
+            self.assertIn("schema_id", ret_attr_infos[0])
 
     def test_to_dict_entry_for_checking_permission(self):
         admin_user = User.objects.create(username="admin", is_superuser=True)
@@ -3831,7 +3830,12 @@ class ModelTest(AironeTestCase):
                 "name": entries[2].name,
                 "entity": {"id": public_entity.id, "name": public_entity.name},
                 "attrs": [
-                    {"name": "attr1", "value": "hoge"},
+                    {
+                        "id": entries[2].attrs.get(schema__name="attr1").id,
+                        "schema_id": entries[2].attrs.get(schema__name="attr1").schema.id,
+                        "name": "attr1",
+                        "value": "hoge"
+                    },
                 ],
             },
         )

@@ -357,10 +357,20 @@ class ViewTest(AironeViewTest):
         # checks created jobs and its params are as expected
         jobs = Job.objects.filter(user=user, target=entry)
         job_expectations = [
-            {"operation": JobOperation.CREATE_ENTRY, "status": Job.STATUS["DONE"]},
+            {
+                "operation": JobOperation.CREATE_ENTRY,
+                "status": Job.STATUS["DONE"],
+                "dependent_job": None,
+            },
             {
                 "operation": JobOperation.NOTIFY_CREATE_ENTRY,
                 "status": Job.STATUS["DONE"],
+                "dependent_job": None,
+            },
+            {
+                "operation": JobOperation.MAY_INVOKE_TRIGGER,
+                "status": Job.STATUS["PREPARING"],
+                "dependent_job": jobs.get(operation=JobOperation.CREATE_ENTRY.value),
             },
         ]
         self.assertEqual(jobs.count(), len(job_expectations))
@@ -369,7 +379,7 @@ class ViewTest(AironeViewTest):
             self.assertEqual(obj.target.id, entry.id)
             self.assertEqual(obj.target_type, Job.TARGET_ENTRY)
             self.assertEqual(obj.status, expectation["status"])
-            self.assertIsNone(obj.dependent_job)
+            self.assertEqual(obj.dependent_job, expectation["dependent_job"])
 
         # checks specify part of attribute parameter then set AttributeValue
         # which is only specified one
@@ -887,14 +897,25 @@ class ViewTest(AironeViewTest):
         # checks created jobs and its params are as expected
         jobs = Job.objects.filter(user=user, target=entry)
         job_expectations = [
-            {"operation": JobOperation.EDIT_ENTRY, "status": Job.STATUS["DONE"]},
+            {
+                "operation": JobOperation.EDIT_ENTRY,
+                "status": Job.STATUS["DONE"],
+                "dependent_job": None,
+            },
             {
                 "operation": JobOperation.REGISTER_REFERRALS,
                 "status": Job.STATUS["PREPARING"],
+                "dependent_job": None,
             },
             {
                 "operation": JobOperation.NOTIFY_UPDATE_ENTRY,
                 "status": Job.STATUS["DONE"],
+                "dependent_job": None,
+            },
+            {
+                "operation": JobOperation.MAY_INVOKE_TRIGGER,
+                "status": Job.STATUS["PREPARING"],
+                "dependent_job": jobs.get(operation=JobOperation.EDIT_ENTRY.value),
             },
         ]
         self.assertEqual(jobs.count(), len(job_expectations))
@@ -903,7 +924,7 @@ class ViewTest(AironeViewTest):
             self.assertEqual(obj.target.id, entry.id)
             self.assertEqual(obj.target_type, Job.TARGET_ENTRY)
             self.assertEqual(obj.status, expectation["status"])
-            self.assertIsNone(obj.dependent_job)
+            self.assertEqual(obj.dependent_job, expectation["dependent_job"])
 
         # checks specify part of attribute parameter then set AttributeValue
         # which is only specified one
@@ -5256,10 +5277,20 @@ class ViewTest(AironeViewTest):
         # checks created jobs and its params are as expected
         jobs = Job.objects.filter(user=user, target=entry)
         job_expectations = [
-            {"operation": JobOperation.CREATE_ENTRY, "status": Job.STATUS["DONE"]},
+            {
+                "operation": JobOperation.CREATE_ENTRY,
+                "status": Job.STATUS["DONE"],
+                "dependent_job": None,
+            },
             {
                 "operation": JobOperation.NOTIFY_CREATE_ENTRY,
                 "status": Job.STATUS["PREPARING"],
+                "dependent_job": None,
+            },
+            {
+                "operation": JobOperation.MAY_INVOKE_TRIGGER,
+                "status": Job.STATUS["PREPARING"],
+                "dependent_job": jobs.get(operation=JobOperation.CREATE_ENTRY.value),
             },
         ]
         self.assertEqual(jobs.count(), len(job_expectations))
@@ -5268,7 +5299,7 @@ class ViewTest(AironeViewTest):
             self.assertEqual(obj.target.id, entry.id)
             self.assertEqual(obj.target_type, Job.TARGET_ENTRY)
             self.assertEqual(obj.status, expectation["status"])
-            self.assertIsNone(obj.dependent_job)
+            self.assertEqual(obj.dependent_job, expectation["dependent_job"])
 
         # Rerun creating that entry job (This is core processing of this test)
         job_create = Job.objects.get(user=user, operation=JobOperation.CREATE_ENTRY.value)
