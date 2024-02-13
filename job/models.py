@@ -532,7 +532,12 @@ class Job(models.Model):
     @classmethod
     def new_invoke_trigger(kls, user, target_entry, recv_attrs={}, dependent_job=None):
         return kls._create_new_job(
-            user, target_entry, JobOperation.MAY_INVOKE_TRIGGER.value, "", json.dumps(recv_attrs), dependent_job
+            user,
+            target_entry,
+            JobOperation.MAY_INVOKE_TRIGGER.value,
+            "",
+            json.dumps(recv_attrs),
+            dependent_job,
         )
 
     def set_cache(self, value):

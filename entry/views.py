@@ -359,7 +359,7 @@ def do_edit(request, entry_id, recv_data):
     job_edit_entry.run()
 
     # Create job for TriggerAction
-    Job.new_invoke_trigger(request.user, entry, recv_data.get("attrs", []), job).run()
+    Job.new_invoke_trigger(request.user, entry, recv_data.get("attrs", []), job_edit_entry).run()
 
     # running job of re-register referrals because of chaning entry's name
     if job_register_referrals:

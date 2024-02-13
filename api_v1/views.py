@@ -26,7 +26,7 @@ class EntryAPI(APIView):
 
             elif attrtype & AttrTypeValue["named"]:
                 [co_value] = list(value.values())
-                
+
                 return co_value["id"] if co_value else None
 
             elif attrtype & AttrTypeValue["object"]:
@@ -38,21 +38,19 @@ class EntryAPI(APIView):
         trigger_params = []
         for attrname in request_params["attrs"].keys():
             try:
-                [(entity_attr_id, attrtype, attrvalue)] = [(
-                    x["schema_id"],
-                    x["value"]["type"],
-                    x["value"]["value"]
-                ) for x in entry_dict["attrs"] if x["name"] == attrname]
+                [(entity_attr_id, attrtype, attrvalue)] = [
+                    (x["schema_id"], x["value"]["type"], x["value"]["value"])
+                    for x in entry_dict["attrs"]
+                    if x["name"] == attrname
+                ]
             except ValueError:
-                continue 
+                continue
 
-            trigger_params.append({
-                "id": entity_attr_id,
-                "value": _get_value(attrname, attrtype, attrvalue)
-            })
+            trigger_params.append(
+                {"id": entity_attr_id, "value": _get_value(attrname, attrtype, attrvalue)}
+            )
 
         return trigger_params
-
 
     def post(self, request, format=None):
         sel = PostEntrySerializer(data=request.data)

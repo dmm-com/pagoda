@@ -1295,9 +1295,7 @@ class APITest(AironeViewTest):
             if param["type"] & AttrTypeValue["object"]:
                 param["ref"] = ref_entity
 
-        entity = self.create_entity(
-            **{"user": user, "name": "Entity", "attrs": params}
-        )
+        entity = self.create_entity(**{"user": user, "name": "Entity", "attrs": params})
         TriggerCondition.register(
             entity,
             [
@@ -1308,9 +1306,7 @@ class APITest(AironeViewTest):
                 {"attr_id": entity.attrs.get(name="text").id, "cond": "hoge"},
                 {"attr_id": entity.attrs.get(name="refs").id, "cond": ref_entry.id},
             ],
-            [
-                {"attr_id": entity.attrs.get(name="vals").id, "values": ["fuga", "piyo"]}
-            ],
+            [{"attr_id": entity.attrs.get(name="vals").id, "values": ["fuga", "piyo"]}],
         )
 
         # send a request to create an Entry with value that invoke TriggerAction
@@ -1338,8 +1334,12 @@ class APITest(AironeViewTest):
         entry = Entry.objects.get(id=resp.json()["result"])
         self.assertEqual(entry.name, "entry1")
         self.assertEqual(entry.get_attrv("val").value, "hoge")
-        self.assertEqual([x.referral.id for x in entry.get_attrv("refs").data_array.all()], [ref_entry.id])
-        self.assertEqual([x.value for x in entry.get_attrv("vals").data_array.all()], ["fuga", "piyo"])
+        self.assertEqual(
+            [x.referral.id for x in entry.get_attrv("refs").data_array.all()], [ref_entry.id]
+        )
+        self.assertEqual(
+            [x.value for x in entry.get_attrv("vals").data_array.all()], ["fuga", "piyo"]
+        )
 
     @mock.patch(
         "trigger.tasks.may_invoke_trigger.delay",
@@ -1382,4 +1382,6 @@ class APITest(AironeViewTest):
 
         # check created Entry has expected value that is set by TriggerAction
         self.assertEqual(entry.get_attrv("val").value, "hoge")
-        self.assertEqual([x.value for x in entry.get_attrv("vals").data_array.all()], ["fuga", "piyo"])
+        self.assertEqual(
+            [x.value for x in entry.get_attrv("vals").data_array.all()], ["fuga", "piyo"]
+        )

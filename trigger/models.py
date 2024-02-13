@@ -335,7 +335,9 @@ class TriggerCondition(models.Model):
             This method retrieve value from recv_value that is specified by user. This processing
             is necessary to compatible with both API versions (v1 and v2)
             """
-            if isinstance(recv_value, list) and all([isinstance(x, dict) and "data" in x for x in recv_value]):
+            if isinstance(recv_value, list) and all(
+                [isinstance(x, dict) and "data" in x for x in recv_value]
+            ):
                 # In this case, the recv_value is compatible with APIv1 standard
                 # it's necessary to convert it to APIv2 standard
                 if self.attr.type & AttrTypeValue["array"]:
@@ -348,9 +350,9 @@ class TriggerCondition(models.Model):
                 # and this method designed for it.
                 return recv_value
 
-
         # This is a helper method when AttrType is "object" or "named_object"
         recv_value = _compatible_with_apiv1(raw_recv_value)
+
         def _is_match_object(val):
             if isinstance(val, int) or isinstance(val, str):
                 if self.ref_cond and self.ref_cond.is_active:
