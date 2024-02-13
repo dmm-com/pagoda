@@ -1865,6 +1865,8 @@ class ModelTest(AironeTestCase):
         )
         exported_data = entry.export(user)
         self.assertTrue("new_attr" in exported_data["attrs"])
+        self.assertEqual(exported_data["id"], entry.id)
+        self.assertEqual(exported_data["name"], entry.name)
 
     def test_export_entry_v2(self):
         user = User.objects.create(username="hoge")
@@ -1901,6 +1903,7 @@ class ModelTest(AironeTestCase):
         entry.attrs.get(name="str2").add_value(user, "bar")
 
         exported_data = entry.export_v2(user)
+        self.assertEqual(exported_data["id"], entry.id)
         self.assertEqual(exported_data["name"], entry.name)
         self.assertEqual(
             len(exported_data["attrs"]),
