@@ -756,21 +756,25 @@ class APITest(AironeViewTest):
         self.assertEqual(len(results[0]["attrs"]), entry.attrs.count())
         self.assertEqual(
             [x for x in results[0]["attrs"] if x["name"] == "group"],
-            [{
-                "id": entry.attrs.get(schema__name="group").id,
-                "schema_id": entry.attrs.get(schema__name="group").schema.id,
-                "name": "group",
-                "value": "group1"
-            }],
+            [
+                {
+                    "id": entry.attrs.get(schema__name="group").id,
+                    "schema_id": entry.attrs.get(schema__name="group").schema.id,
+                    "name": "group",
+                    "value": "group1",
+                }
+            ],
         )
         self.assertEqual(
             [x for x in results[0]["attrs"] if x["name"] == "groups"],
-            [{
-                "id": entry.attrs.get(schema__name="groups").id,
-                "schema_id": entry.attrs.get(schema__name="groups").schema.id,
-                "name": "groups",
-                "value": ["group1", "group2"]
-            }],
+            [
+                {
+                    "id": entry.attrs.get(schema__name="groups").id,
+                    "schema_id": entry.attrs.get(schema__name="groups").schema.id,
+                    "name": "groups",
+                    "value": ["group1", "group2"],
+                }
+            ],
         )
 
         # the case to specify only 'entry' parameter

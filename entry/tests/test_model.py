@@ -3834,7 +3834,7 @@ class ModelTest(AironeTestCase):
                         "id": entries[2].attrs.get(schema__name="attr1").id,
                         "schema_id": entries[2].attrs.get(schema__name="attr1").schema.id,
                         "name": "attr1",
-                        "value": "hoge"
+                        "value": "hoge",
                     },
                 ],
             },
