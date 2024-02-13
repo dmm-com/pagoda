@@ -3777,6 +3777,8 @@ class ModelTest(AironeTestCase):
                 [x["value"] for x in ret_dict["attrs"] if x["name"] == info["name"]],
                 [info["value"]],
             )
+            self.assertIn("id", info)
+            self.assertIn("schema_id", info)
 
     def test_to_dict_entry_for_checking_permission(self):
         admin_user = User.objects.create(username="admin", is_superuser=True)
