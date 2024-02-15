@@ -251,6 +251,9 @@ def do_create(request, entity_id, recv_data):
     job_create_entry = Job.new_create(request.user, entry, params=recv_data)
     job_create_entry.run()
 
+    # Create job for TriggerAction
+    Job.new_invoke_trigger(request.user, entry, recv_data.get("attrs", []), job_create_entry).run()
+
     return JsonResponse(
         {
             "entry_id": entry.id,
@@ -354,6 +357,9 @@ def do_edit(request, entry_id, recv_data):
     # Create new jobs to edit entry and notify it to registered webhook endpoint if it's necessary
     job_edit_entry = Job.new_edit(request.user, entry, params=recv_data)
     job_edit_entry.run()
+
+    # Create job for TriggerAction
+    Job.new_invoke_trigger(request.user, entry, recv_data.get("attrs", []), job_edit_entry).run()
 
     # running job of re-register referrals because of chaning entry's name
     if job_register_referrals:

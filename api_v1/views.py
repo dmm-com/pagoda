@@ -7,6 +7,7 @@ from rest_framework.views import APIView
 
 import custom_view
 from airone.lib.acl import ACLType
+from airone.lib.types import AttrTypeValue
 from entity.models import Entity
 from entry.models import Entry
 from entry.settings import CONFIG as ENTRY_CONFIG
@@ -16,6 +17,41 @@ from .serializers import PostEntrySerializer
 
 
 class EntryAPI(APIView):
+    def _be_compatible_with_trigger(self, entry, request_params):
+        entry_dict = entry.to_dict(self.request.user, with_metainfo=True)
+
+        def _get_value(attrname, attrtype, value):
+            if isinstance(value, list):
+                return [_get_value(attrname, attrtype, x) for x in value]
+
+            elif attrtype & AttrTypeValue["named"]:
+                [co_value] = list(value.values())
+
+                return co_value["id"] if co_value else None
+
+            elif attrtype & AttrTypeValue["object"]:
+                return value["id"] if value else None
+
+            else:
+                return value
+
+        trigger_params = []
+        for attrname in request_params["attrs"].keys():
+            try:
+                [(entity_attr_id, attrtype, attrvalue)] = [
+                    (x["schema_id"], x["value"]["type"], x["value"]["value"])
+                    for x in entry_dict["attrs"]
+                    if x["name"] == attrname
+                ]
+            except ValueError:
+                continue
+
+            trigger_params.append(
+                {"id": entity_attr_id, "value": _get_value(attrname, attrtype, attrvalue)}
+            )
+
+        return trigger_params
+
     def post(self, request, format=None):
         sel = PostEntrySerializer(data=request.data)
 
@@ -134,6 +170,12 @@ class EntryAPI(APIView):
 
         # register target Entry to the Elasticsearch
         entry.register_es()
+
+        # Create job for TriggerAction. Before calling, it's necessary to make parameters to pass
+        # to TriggerAction from raw_request_data by _be_compatible_with_trigger() method.
+        Job.new_invoke_trigger(
+            request.user, entry, self._be_compatible_with_trigger(entry, raw_request_data)
+        ).run()
 
         entry.del_status(Entry.STATUS_CREATING | Entry.STATUS_EDITING)
 

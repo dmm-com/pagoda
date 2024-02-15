@@ -1628,6 +1628,8 @@ class Entry(ACLBase):
             if attrv is None:
                 returning_attrs.append(
                     {
+                        "id": attr.id,
+                        "schema_id": attr.schema.id,
                         "name": attr.schema.name,
                         "value": AttributeValue.get_default_value(attr),
                     }
@@ -1636,6 +1638,8 @@ class Entry(ACLBase):
             else:
                 returning_attrs.append(
                     {
+                        "id": attr.id,
+                        "schema_id": attr.schema.id,
                         "name": attr.schema.name,
                         "value": attrv.get_value(serialize=True, with_metainfo=with_metainfo),
                     }
