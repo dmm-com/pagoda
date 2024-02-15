@@ -4865,6 +4865,58 @@ class ViewTest(AironeViewTest):
 
         self.assertEqual(mock_task.call_count, len(attr_info))
 
+    @patch(
+        "trigger.tasks.may_invoke_trigger.delay",
+        Mock(side_effect=trigger_tasks.may_invoke_trigger),
+    )
+    def test_invoke_trigger_by_revert_attrv(self):
+        user = self.guest_login()
+
+        # initialize Entity and Entry that are used in this test
+        entity = self.create_entity(
+            user,
+            "Entity",
+            [
+                {"name": "cond", "type": AttrTypeValue["string"]},
+                {"name": "action", "type": AttrTypeValue["string"]},
+            ],
+        )
+        entry = self.add_entry(
+            user,
+            "TestEntry",
+            entity,
+            values={
+                "cond": "hoge",
+            },
+        )
+
+        # changed value to retrieve
+        changing_attr = entry.attrs.get(name="cond")
+        changing_attr.add_value(user, "changed")
+
+        # register TriggerAction configuration before creating an Entry
+        TriggerCondition.register(
+            entity,
+            [{"attr_id": entity.attrs.get(name="cond").id, "cond": "hoge"}],
+            [{"attr_id": entity.attrs.get(name="action").id, "value": "fuga"}],
+        )
+
+        # send request to revert attribute value of "cond"
+        revert_attrv = changing_attr.values.filter(value="hoge").last()
+        params = {"attr_id": str(changing_attr.id), "attrv_id": str(revert_attrv.id)}
+        resp = self.client.post(
+            reverse("entry:revert_attrv"), json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 200)
+
+        # This check that Attribute value of "action" would be updated by TriggerAction
+        self.assertEqual(entry.get_attrv("action").value, "fuga")
+
+        # check trigger action was worked properly
+        job_query = Job.objects.filter(operation=JobOperation.MAY_INVOKE_TRIGGER.value)
+        self.assertEqual(job_query.count(), 1)
+        self.assertEqual(job_query.first().status, Job.STATUS["DONE"])
+
     def test_revert_attrv_with_invalid_value(self):
         user = self.guest_login()
 
