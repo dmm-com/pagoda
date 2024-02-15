@@ -2371,3 +2371,38 @@ class Entry(ACLBase):
             parent_attr__schema__is_active=True,
             parent_attr__parent_entry=self,
         ).last()
+
+    def get_trigger_params(self, user, attrnames):
+        entry_dict = self.to_dict(user, with_metainfo=True)
+
+        def _get_value(attrname, attrtype, value):
+            if isinstance(value, list):
+                return [_get_value(attrname, attrtype, x) for x in value]
+
+            elif attrtype & AttrTypeValue["named"]:
+                [co_value] = list(value.values())
+
+                return co_value["id"] if co_value else None
+
+            elif attrtype & AttrTypeValue["object"]:
+                return value["id"] if value else None
+
+            else:
+                return value
+
+        trigger_params = []
+        for attrname in attrnames:
+            try:
+                [(entity_attr_id, attrtype, attrvalue)] = [
+                    (x["schema_id"], x["value"]["type"], x["value"]["value"])
+                    for x in entry_dict["attrs"]
+                    if x["name"] == attrname
+                ]
+            except ValueError:
+                continue
+
+            trigger_params.append(
+                {"id": entity_attr_id, "value": _get_value(attrname, attrtype, attrvalue)}
+            )
+
+        return trigger_params

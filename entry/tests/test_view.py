@@ -3549,6 +3549,34 @@ class ViewTest(AironeViewTest):
         res = self._es.get(index=settings.ES_CONFIG["INDEX_NAME"], id=entry.id)
         self.assertTrue(res["found"])
 
+    @patch(
+        "trigger.tasks.may_invoke_trigger.delay",
+        Mock(side_effect=trigger_tasks.may_invoke_trigger),
+    )
+    @patch("entry.tasks.import_entries.delay", Mock(side_effect=tasks.import_entries))
+    def test_import_entry_when_trigger_is_set(self):
+        user = self.guest_login()
+
+        entity = self.create_entity(
+            user, "Entity", [{"name": "str", "type": AttrTypeValue["string"]}]
+        )
+
+        TriggerCondition.register(
+            entity,
+            [
+                {"attr_id": entity.attrs.get(name="str").id, "cond": "foo"},
+            ],
+            [{"attr_id": entity.attrs.get(name="str").id, "value": "fuga"}],
+        )
+
+        fp = self.open_fixture_file("import_data01.yaml")
+        resp = self.client.post(reverse("entry:do_import", args=[entity.id]), {"file": fp})
+        fp.close()
+
+        self.assertEqual(resp.status_code, 303)
+        entry = Entry.objects.get(name="Entry", schema=entity)
+        self.assertEqual(entry.get_attrv("str").value, "fuga")
+
     def test_import_entry_invalid_param(self):
         user: User = self.guest_login()
         role: Role = Role.objects.create(name="Role")
