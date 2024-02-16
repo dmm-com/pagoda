@@ -7,7 +7,6 @@ from rest_framework.views import APIView
 
 import custom_view
 from airone.lib.acl import ACLType
-from airone.lib.types import AttrTypeValue
 from entity.models import Entity
 from entry.models import Entry
 from entry.settings import CONFIG as ENTRY_CONFIG

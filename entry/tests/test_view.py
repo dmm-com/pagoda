@@ -3535,6 +3535,10 @@ class ViewTest(AironeViewTest):
         job_expectations = [
             {"operation": JobOperation.IMPORT_ENTRY, "status": Job.STATUS["DONE"]},
             {
+                "operation": JobOperation.MAY_INVOKE_TRIGGER,
+                "status": Job.STATUS["PREPARING"],
+            },
+            {
                 "operation": JobOperation.NOTIFY_CREATE_ENTRY,
                 "status": Job.STATUS["PREPARING"],
             },

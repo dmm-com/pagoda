@@ -1,7 +1,7 @@
 import re
 from collections.abc import Iterable
 from datetime import date, datetime
-from typing import Any, Optional
+from typing import Any, List, Optional
 
 from django.conf import settings
 from django.db import models
@@ -1591,7 +1591,7 @@ class Entry(ACLBase):
         return ret_attrs
 
     # NOTE: Type-Read
-    def to_dict(self, user, with_metainfo=False):
+    def to_dict(self, user: User, with_metainfo=False):
         # check permissions for each entry, entity and attrs
         if not user.has_permission(self.schema, ACLType.Readable) or not user.has_permission(
             self, ACLType.Readable
@@ -1605,7 +1605,7 @@ class Entry(ACLBase):
             ),
             to_attr="attr_list",
         )
-        sorted_attrs = [
+        sorted_attrs: List[Attribute] = [
             x.attr_list[0]
             for x in self.schema.attrs.filter(is_active=True)
             .prefetch_related(attr_prefetch)
@@ -1626,12 +1626,17 @@ class Entry(ACLBase):
         for attr in attrs:
             attrv = attr.get_latest_value(is_readonly=True)
             if attrv is None:
+                value = AttributeValue.get_default_value(attr)
+                if attr.schema.type == AttrTypeValue["named_object"]:
+                    value = {"": None}
+                if with_metainfo:
+                    value = {"type": attr.schema.type, "value": value}
                 returning_attrs.append(
                     {
                         "id": attr.id,
                         "schema_id": attr.schema.id,
                         "name": attr.schema.name,
-                        "value": AttributeValue.get_default_value(attr),
+                        "value": value,
                     }
                 )
 
