@@ -12,6 +12,8 @@
 
 ### Changed
 * Upgrade django version from 3.2.23 to 3.2.24
+* Enable to invoke TriggerAction when import and revert processing.
+  Contributed by @hinashi, @userlocalhost
 
 ## v3.75.0
 

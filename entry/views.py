@@ -839,6 +839,12 @@ def revert_attrv(request, recv_data):
         # register update to the Elasticsearch
         attr.parent_entry.register_es()
 
+        # Create job for TriggerAction
+        entry = attr.parent_entry
+        Job.new_invoke_trigger(
+            request.user, entry, entry.get_trigger_params(request.user, [attr.name])
+        ).run()
+
         # Send notification to the webhook URL
         job_notify = Job.new_notify_update_entry(request.user, attr.parent_entry)
         job_notify.run()
