@@ -3696,6 +3696,7 @@ class ModelTest(AironeTestCase):
     def test_to_dict_entry_with_metainfo_param(self):
         user = User.objects.create(username="hoge")
         test_group = Group.objects.create(name="test-group")
+        test_role = Role.objects.create(name="test-role")
 
         # create referred Entity and Entries
         ref_entity = Entity.objects.create(name="Referred Entity", created_user=user)
@@ -3705,7 +3706,7 @@ class ModelTest(AironeTestCase):
         entry = Entry.objects.create(name="entry", schema=entity, created_user=user)
         entry.complement_attrs(user)
 
-        for info in self._get_attrinfo_template(ref_entry, test_group):
+        for info in self._get_attrinfo_template(ref_entry, test_group, test_role):
             attr = entry.attrs.get(schema__name=info["name"])
             attr.add_value(user, info["set_val"])
 
@@ -3771,12 +3772,114 @@ class ModelTest(AironeTestCase):
                     "value": [{"id": test_group.id, "name": test_group.name}],
                 },
             },
+            {
+                "name": "role",
+                "value": {
+                    "type": AttrTypeValue["role"],
+                    "value": {"id": test_role.id, "name": test_role.name},
+                },
+            },
+            {
+                "name": "arr_role",
+                "value": {
+                    "type": AttrTypeValue["array_role"],
+                    "value": [{"id": test_role.id, "name": test_role.name}],
+                },
+            },
         ]
         for info in expected_attrinfos:
-            self.assertEqual(
-                [x["value"] for x in ret_dict["attrs"] if x["name"] == info["name"]],
-                [info["value"]],
-            )
+            ret_attr_infos = [x for x in ret_dict["attrs"] if x["name"] == info["name"]]
+            self.assertEqual(len(ret_attr_infos), 1)
+            self.assertEqual(ret_attr_infos[0]["value"], info["value"])
+            self.assertIn("id", ret_attr_infos[0])
+            self.assertIn("schema_id", ret_attr_infos[0])
+
+        # non attrv case
+        entry = Entry.objects.create(name="non_attrv_entry", schema=entity, created_user=user)
+        entry.complement_attrs(user)
+
+        ret_dict = entry.to_dict(user, with_metainfo=True)
+        expected_attrinfos = [
+            {"name": "str", "value": {"type": AttrTypeValue["string"], "value": ""}},
+            {"name": "text", "value": {"type": AttrTypeValue["text"], "value": ""}},
+            {
+                "name": "bool",
+                "value": {"type": AttrTypeValue["boolean"], "value": False},
+            },
+            {
+                "name": "date",
+                "value": {"type": AttrTypeValue["date"], "value": None},
+            },
+            {
+                "name": "arr_str",
+                "value": {
+                    "type": AttrTypeValue["array_string"],
+                    "value": [],
+                },
+            },
+            {
+                "name": "obj",
+                "value": {
+                    "type": AttrTypeValue["object"],
+                    "value": None,
+                },
+            },
+            {
+                "name": "name",
+                "value": {
+                    "type": AttrTypeValue["named_object"],
+                    "value": {"": None},
+                },
+            },
+            {
+                "name": "arr_obj",
+                "value": {
+                    "type": AttrTypeValue["array_object"],
+                    "value": [],
+                },
+            },
+            {
+                "name": "arr_name",
+                "value": {
+                    "type": AttrTypeValue["array_named_object"],
+                    "value": [],
+                },
+            },
+            {
+                "name": "group",
+                "value": {
+                    "type": AttrTypeValue["group"],
+                    "value": None,
+                },
+            },
+            {
+                "name": "arr_group",
+                "value": {
+                    "type": AttrTypeValue["array_group"],
+                    "value": [],
+                },
+            },
+            {
+                "name": "role",
+                "value": {
+                    "type": AttrTypeValue["role"],
+                    "value": None,
+                },
+            },
+            {
+                "name": "arr_role",
+                "value": {
+                    "type": AttrTypeValue["array_role"],
+                    "value": [],
+                },
+            },
+        ]
+        for info in expected_attrinfos:
+            ret_attr_infos = [x for x in ret_dict["attrs"] if x["name"] == info["name"]]
+            self.assertEqual(len(ret_attr_infos), 1)
+            self.assertEqual(ret_attr_infos[0]["value"], info["value"])
+            self.assertIn("id", ret_attr_infos[0])
+            self.assertIn("schema_id", ret_attr_infos[0])
 
     def test_to_dict_entry_for_checking_permission(self):
         admin_user = User.objects.create(username="admin", is_superuser=True)
@@ -3829,7 +3932,12 @@ class ModelTest(AironeTestCase):
                 "name": entries[2].name,
                 "entity": {"id": public_entity.id, "name": public_entity.name},
                 "attrs": [
-                    {"name": "attr1", "value": "hoge"},
+                    {
+                        "id": entries[2].attrs.get(schema__name="attr1").id,
+                        "schema_id": entries[2].attrs.get(schema__name="attr1").schema.id,
+                        "name": "attr1",
+                        "value": "hoge",
+                    },
                 ],
             },
         )

@@ -205,6 +205,11 @@ def _do_import_entries(job: Job):
             if custom_view_handler:
                 custom_view.call_custom(custom_view_handler, entity.name, user, entry, attr, value)
 
+        # Create job for TriggerAction
+        Job.new_invoke_trigger(
+            user, entry, entry.get_trigger_params(user, entry_data["attrs"].keys())
+        ).run()
+
         if not job_notify and is_update:
             job_notify = Job.new_notify_update_entry(user, entry)
 

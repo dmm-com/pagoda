@@ -262,7 +262,7 @@ class Job(models.Model):
             return method(self.id)
 
     @classmethod
-    def _create_new_job(kls, user, target, operation, text, params) -> "Job":
+    def _create_new_job(kls, user, target, operation, text, params, depend_on=None) -> "Job":
         t_type = kls.TARGET_UNKNOWN
         if isinstance(target, Entry):
             t_type = kls.TARGET_ENTRY
@@ -280,6 +280,9 @@ class Job(models.Model):
                 .order_by("updated_at")
                 .last()
             )
+
+        if dependent_job is None and depend_on is not None:
+            dependent_job = depend_on
 
         params = {
             "user": user,
@@ -527,9 +530,14 @@ class Job(models.Model):
         )
 
     @classmethod
-    def new_invoke_trigger(kls, user, target_entry, recv_attrs={}):
+    def new_invoke_trigger(kls, user, target_entry, recv_attrs={}, dependent_job=None):
         return kls._create_new_job(
-            user, target_entry, JobOperation.MAY_INVOKE_TRIGGER.value, "", json.dumps(recv_attrs)
+            user,
+            target_entry,
+            JobOperation.MAY_INVOKE_TRIGGER.value,
+            "",
+            json.dumps(recv_attrs),
+            dependent_job,
         )
 
     def set_cache(self, value):

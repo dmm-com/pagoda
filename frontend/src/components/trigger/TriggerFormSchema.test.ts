@@ -46,4 +46,59 @@ describe("schema", () => {
     const value = { ...baseValue };
     expect(schema.parse(value)).toEqual(value);
   });
+
+  test("validation fails if it does not have an entity", () => {
+    const value = {
+      ...baseValue,
+      entity: undefined,
+    };
+
+    expect(() => schema.parse(value)).toThrow();
+  });
+
+  test("validation fails if it does not have conditions", () => {
+    const value = {
+      ...baseValue,
+      conditions: [],
+    };
+
+    expect(() => schema.parse(value)).toThrow();
+  });
+
+  test("validation fails if it has a condition without an attr", () => {
+    const value = {
+      ...baseValue,
+      conditions: [
+        {
+          ...baseValue.conditions[0],
+          attr: undefined,
+        },
+      ],
+    };
+
+    expect(() => schema.parse(value)).toThrow();
+  });
+
+  test("validation fails if it does not have actions", () => {
+    const value = {
+      ...baseValue,
+      actions: [],
+    };
+
+    expect(() => schema.parse(value)).toThrow();
+  });
+
+  test("validation fails if it has an action without an attr", () => {
+    const value = {
+      ...baseValue,
+      actions: [
+        {
+          ...baseValue.actions[0],
+          attr: undefined,
+        },
+      ],
+    };
+
+    expect(() => schema.parse(value)).toThrow();
+  });
 });

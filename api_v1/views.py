@@ -135,6 +135,14 @@ class EntryAPI(APIView):
         # register target Entry to the Elasticsearch
         entry.register_es()
 
+        # Create job for TriggerAction. Before calling, it's necessary to make parameters to pass
+        # to TriggerAction from raw_request_data by _be_compatible_with_trigger() method.
+        Job.new_invoke_trigger(
+            request.user,
+            entry,
+            entry.get_trigger_params(request.user, raw_request_data["attrs"].keys()),
+        ).run()
+
         entry.del_status(Entry.STATUS_CREATING | Entry.STATUS_EDITING)
 
         return Response(dict({"result": entry.id}, **resp_data))

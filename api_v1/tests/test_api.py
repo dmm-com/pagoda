@@ -19,6 +19,8 @@ from entry.settings import CONFIG as ENTRY_CONFIG
 from group.models import Group
 from job.models import Job, JobOperation
 from role.models import Role
+from trigger import tasks as trigger_tasks
+from trigger.models import TriggerCondition
 from user.models import User
 
 
@@ -754,11 +756,25 @@ class APITest(AironeViewTest):
         self.assertEqual(len(results[0]["attrs"]), entry.attrs.count())
         self.assertEqual(
             [x for x in results[0]["attrs"] if x["name"] == "group"],
-            [{"name": "group", "value": "group1"}],
+            [
+                {
+                    "id": entry.attrs.get(schema__name="group").id,
+                    "schema_id": entry.attrs.get(schema__name="group").schema.id,
+                    "name": "group",
+                    "value": "group1",
+                }
+            ],
         )
         self.assertEqual(
             [x for x in results[0]["attrs"] if x["name"] == "groups"],
-            [{"name": "groups", "value": ["group1", "group2"]}],
+            [
+                {
+                    "id": entry.attrs.get(schema__name="groups").id,
+                    "schema_id": entry.attrs.get(schema__name="groups").schema.id,
+                    "name": "groups",
+                    "value": ["group1", "group2"],
+                }
+            ],
         )
 
         # the case to specify only 'entry' parameter
@@ -1277,3 +1293,109 @@ class APITest(AironeViewTest):
         }
         resp = self.client.post("/api/v1/entry", json.dumps(params), "application/json")
         self.assertEqual(resp.status_code, 200)
+
+    @mock.patch(
+        "trigger.tasks.may_invoke_trigger.delay",
+        mock.Mock(side_effect=trigger_tasks.may_invoke_trigger),
+    )
+    def test_create_entry_when_trigger_is_set(self):
+        user = self.guest_login()
+
+        # Initialize Entity, Entries and TriggerConditoin
+        ref_entity = Entity.objects.create(name="Referred Entity", created_user=user)
+        ref_entry = Entry.objects.create(name="ref0", schema=ref_entity, created_user=user)
+        params = self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY.copy()
+        for param in params:
+            if param["type"] & AttrTypeValue["object"]:
+                param["ref"] = ref_entity
+
+        entity = self.create_entity(**{"user": user, "name": "Entity", "attrs": params})
+        TriggerCondition.register(
+            entity,
+            [
+                {"attr_id": entity.attrs.get(name="val").id, "cond": "hoge"},
+                {"attr_id": entity.attrs.get(name="ref").id, "cond": ref_entry.id},
+                {"attr_id": entity.attrs.get(name="bool").id, "cond": True},
+                {"attr_id": entity.attrs.get(name="vals").id, "cond": "hoge"},
+                {"attr_id": entity.attrs.get(name="text").id, "cond": "hoge"},
+                {"attr_id": entity.attrs.get(name="refs").id, "cond": ref_entry.id},
+            ],
+            [{"attr_id": entity.attrs.get(name="vals").id, "values": ["fuga", "piyo"]}],
+        )
+
+        # send a request to create an Entry with value that invoke TriggerAction
+        params = {
+            "name": "entry1",
+            "entity": entity.name,
+            "attrs": {
+                "val": "hoge",
+                "ref": "ref0",
+                "bool": True,
+                "vals": ["hoge", "fuga"],
+                "text": "hoge",
+                "refs": ["ref0"],
+            },
+        }
+        resp = self.client.post("/api/v1/entry", json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, 200)
+
+        # check trigger action was worked properly
+        job_query = Job.objects.filter(operation=JobOperation.MAY_INVOKE_TRIGGER.value)
+        self.assertEqual(job_query.count(), 1)
+        self.assertEqual(job_query.first().status, Job.STATUS["DONE"])
+
+        # check created Entry has expected value that is set by TriggerAction
+        entry = Entry.objects.get(id=resp.json()["result"])
+        self.assertEqual(entry.name, "entry1")
+        self.assertEqual(entry.get_attrv("val").value, "hoge")
+        self.assertEqual(
+            [x.referral.id for x in entry.get_attrv("refs").data_array.all()], [ref_entry.id]
+        )
+        self.assertEqual(
+            [x.value for x in entry.get_attrv("vals").data_array.all()], ["fuga", "piyo"]
+        )
+
+    @mock.patch(
+        "trigger.tasks.may_invoke_trigger.delay",
+        mock.Mock(side_effect=trigger_tasks.may_invoke_trigger),
+    )
+    def test_update_entry_when_trigger_is_set(self):
+        user = self.guest_login()
+
+        # Initialize Entity, Entry and TriggerConditoin
+        entity = self.create_entity(
+            **{
+                "user": user,
+                "name": "Entity",
+                "attrs": self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY,
+            }
+        )
+        entry = self.add_entry(user, "entry", entity)
+        TriggerCondition.register(
+            entity,
+            [{"attr_id": entity.attrs.get(name="val").id, "cond": "hoge"}],
+            [{"attr_id": entity.attrs.get(name="vals").id, "values": ["fuga", "piyo"]}],
+        )
+
+        # send a request to edit created Entry with value toinvoke TriggerAction
+        params = {
+            "id": entry.id,
+            "name": "Changing Entry name",
+            "entity": entity.name,
+            "attrs": {
+                "val": "hoge",
+            },
+        }
+        resp = self.client.post("/api/v1/entry", json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, 200)
+
+        # check trigger action was worked properly
+        job_query = Job.objects.filter(operation=JobOperation.MAY_INVOKE_TRIGGER.value)
+        self.assertEqual(job_query.count(), 1)
+        self.assertEqual(job_query.first().status, Job.STATUS["DONE"])
+
+        # check created Entry has expected value that is set by TriggerAction
+        self.assertEqual(entry.get_attrv("val").value, "hoge")
+        self.assertEqual(
+            [x.value for x in entry.get_attrv("vals").data_array.all()], ["fuga", "piyo"]
+        )

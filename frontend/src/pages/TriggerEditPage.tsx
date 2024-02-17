@@ -18,7 +18,7 @@ import {
 import { styled } from "@mui/material/styles";
 import React, { FC, useCallback, useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { useHistory } from "react-router-dom";
+import { Prompt, useHistory } from "react-router-dom";
 
 import { triggersPath } from "Routes";
 import { PageHeader } from "components/common/PageHeader";
@@ -77,7 +77,7 @@ export const TriggerEditPage: FC = () => {
   }, []);
 
   const {
-    formState: { isSubmitting, isSubmitSuccessful },
+    formState: { isDirty, isValid, isSubmitting, isSubmitSuccessful },
     handleSubmit,
     reset,
     setError,
@@ -242,19 +242,6 @@ export const TriggerEditPage: FC = () => {
           name: entity.value.name,
         },
         {
-          shouldDirty: true,
-          shouldValidate: true,
-        }
-      );
-    } else {
-      setValue(
-        `entity`,
-        {
-          id: 0,
-          name: "",
-        },
-        {
-          shouldDirty: true,
           shouldValidate: true,
         }
       );
@@ -267,30 +254,6 @@ export const TriggerEditPage: FC = () => {
       history.replace(triggersPath());
     }
   }, [isSubmitSuccessful]);
-
-  const isSubmittable = () => {
-    const triggerInfo = getValues();
-
-    // check trigger has valid information
-    if (
-      !triggerInfo ||
-      !triggerInfo.entity ||
-      !triggerInfo.conditions ||
-      !triggerInfo.actions
-    ) {
-      return false;
-    }
-
-    // check trigger has valid context at least one
-    if (
-      triggerInfo.conditions.length === 0 ||
-      triggerInfo.actions.length === 0
-    ) {
-      return false;
-    }
-
-    return true;
-  };
 
   return (
     <Box>
@@ -308,8 +271,7 @@ export const TriggerEditPage: FC = () => {
       >
         <SubmitButton
           name="保存"
-          //disabled={!isDirty || !isValid || isSubmitting || isSubmitSuccessful}
-          disabled={!isSubmittable()}
+          disabled={!isDirty || !isValid || isSubmitting || isSubmitSuccessful}
           isSubmitting={isSubmitting}
           handleSubmit={handleSubmit(handleSubmitOnValid)}
           handleCancel={handleCancel}
@@ -323,10 +285,9 @@ export const TriggerEditPage: FC = () => {
           <Controller
             name={`entity`}
             control={control}
-            defaultValue={{ id: 0, name: "" }}
             render={({ field }) => (
               <Autocomplete
-                {...field}
+                value={field.value ?? null}
                 options={entities.value ?? []}
                 getOptionLabel={(option: { id: number; name: string }) =>
                   option.name
@@ -436,12 +397,10 @@ export const TriggerEditPage: FC = () => {
           </>
         )}
       </Container>
-      {/*
       <Prompt
         when={isDirty && !isSubmitSuccessful}
         message="編集した内容は失われてしまいますが、このページを離れてもよろしいですか？"
       />
-      */}
     </Box>
   );
 };
