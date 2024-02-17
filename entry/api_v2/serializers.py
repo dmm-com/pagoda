@@ -493,7 +493,7 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
                     return {"as_array_named_object": array_named_object}
 
                 case AttrType.ARRAY_GROUP:
-                    groups = [Group.objects.get(id=x.value) for x in attrv.data_array.all()]
+                    groups = Group.objects.filter(id__in=[x.value for x in attrv.data_array.all()])
                     return {
                         "as_array_group": [
                             {
@@ -505,7 +505,7 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
                     }
 
                 case AttrType.ARRAY_ROLE:
-                    roles = [Role.objects.get(id=x.value) for x in attrv.data_array.all()]
+                    roles = Role.objects.filter(id__in=[x.value for x in attrv.data_array.all()])
                     return {
                         "as_array_role": [
                             {
@@ -908,7 +908,7 @@ class EntryHistoryAttributeValueSerializer(serializers.ModelSerializer):
                 return {"as_array_named_object": array_named_object}
 
             case AttrType.ARRAY_GROUP:
-                groups = [Group.objects.get(id=x.value) for x in obj.data_array.all()]
+                groups = Group.objects.filter(id__in=[x.value for x in obj.data_array.all()])
                 return {
                     "as_array_group": [
                         {
@@ -920,7 +920,7 @@ class EntryHistoryAttributeValueSerializer(serializers.ModelSerializer):
                 }
 
             case AttrType.ARRAY_ROLE:
-                roles = [Role.objects.get(id=x.value) for x in obj.data_array.all()]
+                roles = Role.objects.filter(id__in=[x.value for x in obj.data_array.all()])
                 return {
                     "as_array_role": [
                         {
