@@ -444,18 +444,40 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
             if not attrv:
                 return {}
 
-            if attr.schema.type & AttrTypeValue["array"]:
-                if attr.schema.type & AttrTypeValue["string"]:
+            try:
+                attr_type = AttrType(attr.schema.type)
+            except ValueError:
+                Logger.error("Invalid attribute type: %s" % attr.schema.type)
+                return {}
+
+            match attr_type:
+                case AttrType.ARRAY_STRING:
                     return {
                         "as_array_string": [x.value for x in attrv.data_array.all()],
                     }
 
-                elif attr.schema.type & AttrTypeValue["named"]:
+                case AttrType.ARRAY_OBJECT:
+                    return {
+                        "as_array_object": [
+                            {
+                                "id": x.referral.id if x.referral else 0,
+                                "name": x.referral.name if x.referral else "",
+                                "schema": {
+                                    "id": x.referral.entry.schema.id,
+                                    "name": x.referral.entry.schema.name,
+                                },
+                            }
+                            for x in attrv.data_array.all()
+                            if x.referral and x.referral.is_active
+                        ]
+                    }
+
+                case AttrType.ARRAY_NAMED_OBJECT:
                     array_named_object: list[EntryAttributeValueNamedObject] = [
                         {
                             "name": x.value,
                             "object": {
-                                "id": x.referral.id if x.referral else None,
+                                "id": x.referral.id if x.referral else 0,
                                 "name": x.referral.name if x.referral else "",
                                 "schema": {
                                     "id": x.referral.entry.schema.id,
@@ -470,23 +492,7 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
                     ]
                     return {"as_array_named_object": array_named_object}
 
-                elif attr.schema.type & AttrTypeValue["object"]:
-                    return {
-                        "as_array_object": [
-                            {
-                                "id": x.referral.id if x.referral else None,
-                                "name": x.referral.name if x.referral else "",
-                                "schema": {
-                                    "id": x.referral.entry.schema.id,
-                                    "name": x.referral.entry.schema.name,
-                                },
-                            }
-                            for x in attrv.data_array.all()
-                            if x.referral and x.referral.is_active
-                        ]
-                    }
-
-                elif attr.schema.type & AttrTypeValue["group"]:
+                case AttrType.ARRAY_GROUP:
                     groups = [Group.objects.get(id=x.value) for x in attrv.data_array.all()]
                     return {
                         "as_array_group": [
@@ -498,7 +504,7 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
                         ]
                     }
 
-                elif attr.schema.type & AttrTypeValue["role"]:
+                case AttrType.ARRAY_ROLE:
                     roles = [Role.objects.get(id=x.value) for x in attrv.data_array.all()]
                     return {
                         "as_array_role": [
@@ -510,109 +516,113 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
                         ]
                     }
 
-            elif (
-                attr.schema.type & AttrTypeValue["string"]
-                or attr.schema.type & AttrTypeValue["text"]
-            ):
-                return {"as_string": attrv.value}
+                case AttrType.STRING | AttrType.TEXT:
+                    return {"as_string": attrv.value}
 
-            elif attr.schema.type & AttrTypeValue["named"]:
-                named: EntryAttributeValueNamedObject = {
-                    "name": attrv.value,
-                    "object": {
-                        "id": attrv.referral.id if attrv.referral else None,
-                        "name": attrv.referral.name if attrv.referral else "",
-                        "schema": {
-                            "id": attrv.referral.entry.schema.id,
-                            "name": attrv.referral.entry.schema.name,
-                        },
+                case AttrType.OBJECT:
+                    return {
+                        "as_object": {
+                            "id": attrv.referral.id if attrv.referral else 0,
+                            "name": attrv.referral.name if attrv.referral else "",
+                            "schema": {
+                                "id": attrv.referral.entry.schema.id,
+                                "name": attrv.referral.entry.schema.name,
+                            },
+                        }
+                        if attrv.referral and attrv.referral.is_active
+                        else None,
                     }
-                    if attrv.referral and attrv.referral.is_active
-                    else None,
-                }
-                return {"as_named_object": named}
 
-            elif attr.schema.type & AttrTypeValue["object"]:
-                return {
-                    "as_object": {
-                        "id": attrv.referral.id if attrv.referral else None,
-                        "name": attrv.referral.name if attrv.referral else "",
-                        "schema": {
-                            "id": attrv.referral.entry.schema.id,
-                            "name": attrv.referral.entry.schema.name,
-                        },
+                case AttrType.NAMED_OBJECT:
+                    named: EntryAttributeValueNamedObject = {
+                        "name": attrv.value,
+                        "object": {
+                            "id": attrv.referral.id if attrv.referral else 0,
+                            "name": attrv.referral.name if attrv.referral else "",
+                            "schema": {
+                                "id": attrv.referral.entry.schema.id,
+                                "name": attrv.referral.entry.schema.name,
+                            },
+                        }
+                        if attrv.referral and attrv.referral.is_active
+                        else None,
                     }
-                    if attrv.referral and attrv.referral.is_active
-                    else None
-                }
+                    return {"as_named_object": named}
 
-            elif attr.schema.type & AttrTypeValue["boolean"]:
-                return {"as_boolean": attrv.boolean}
+                case AttrType.BOOLEAN:
+                    return {"as_boolean": attrv.boolean}
 
-            elif attr.schema.type & AttrTypeValue["date"]:
-                return {"as_string": attrv.date if attrv.date else ""}
+                case AttrType.DATE:
+                    return {"as_string": attrv.date if attrv.date else ""}
 
-            elif attr.schema.type & AttrTypeValue["group"] and attrv.value:
-                group = Group.objects.get(id=attrv.value)
-                return {
-                    "as_group": {
-                        "id": group.id,
-                        "name": group.name,
+                case AttrType.GROUP if attrv.value:
+                    group = Group.objects.get(id=attrv.value)
+                    return {
+                        "as_group": {
+                            "id": group.id,
+                            "name": group.name,
+                        }
                     }
-                }
 
-            elif attr.schema.type & AttrTypeValue["role"] and attrv.value:
-                role = Role.objects.get(id=attrv.value)
-                return {
-                    "as_role": {
-                        "id": role.id,
-                        "name": role.name,
+                case AttrType.ROLE if attrv.value:
+                    role = Role.objects.get(id=attrv.value)
+                    return {
+                        "as_role": {
+                            "id": role.id,
+                            "name": role.name,
+                        }
                     }
-                }
 
-            return {}
+                case _:
+                    return {}
 
         def get_default_attr_value(type: int) -> EntryAttributeValue:
-            if type & AttrTypeValue["array"]:
-                if type & AttrTypeValue["string"]:
+            try:
+                attr_type = AttrType(type)
+            except ValueError:
+                raise IncorrectTypeError(f"unexpected type: {type}")
+
+            match attr_type:
+                case AttrType.ARRAY_STRING:
                     return {
                         "as_array_string": AttrDefaultValue[type],
                     }
 
-                elif type & AttrTypeValue["named"]:
+                case AttrType.ARRAY_NAMED_OBJECT:
                     return {"as_array_named_object": []}
 
-                elif type & AttrTypeValue["object"]:
+                case AttrType.ARRAY_OBJECT:
                     return {"as_array_object": AttrDefaultValue[type]}
 
-                elif type & AttrTypeValue["group"]:
+                case AttrType.ARRAY_GROUP:
                     return {"as_array_group": AttrDefaultValue[type]}
 
-                elif type & AttrTypeValue["role"]:
+                case AttrType.ARRAY_ROLE:
                     return {"as_array_role": AttrDefaultValue[type]}
 
-            elif type & AttrTypeValue["string"] or type & AttrTypeValue["text"]:
-                return {"as_string": AttrDefaultValue[type]}
+                case AttrType.STRING | AttrType.TEXT:
+                    return {"as_string": AttrDefaultValue[type]}
 
-            elif type & AttrTypeValue["named"]:
-                return {"as_named_object": {"name": "", "object": None}}
+                case AttrType.OBJECT:
+                    return {"as_object": AttrDefaultValue[type]}
 
-            elif type & AttrTypeValue["object"]:
-                return {"as_object": AttrDefaultValue[type]}
+                case AttrType.NAMED_OBJECT:
+                    return {"as_named_object": {"name": "", "object": None}}
 
-            elif type & AttrTypeValue["boolean"]:
-                return {"as_boolean": AttrDefaultValue[type]}
+                case AttrType.BOOLEAN:
+                    return {"as_boolean": AttrDefaultValue[type]}
 
-            elif type & AttrTypeValue["date"]:
-                return {"as_string": AttrDefaultValue[type]}
+                case AttrType.DATE:
+                    return {"as_string": AttrDefaultValue[type]}
 
-            elif type & AttrTypeValue["group"]:
-                return {"as_group": AttrDefaultValue[type]}
+                case AttrType.GROUP:
+                    return {"as_group": AttrDefaultValue[type]}
 
-            elif type & AttrTypeValue["role"]:
-                return {"as_role": AttrDefaultValue[type]}
+                case AttrType.ROLE:
+                    return {"as_role": AttrDefaultValue[type]}
 
-            raise IncorrectTypeError(f"unexpected type: {type}")
+                case _:
+                    raise IncorrectTypeError(f"unexpected type: {type}")
 
         attr_prefetch = Prefetch(
             "attribute_set",
@@ -851,131 +861,139 @@ class EntryHistoryAttributeValueSerializer(serializers.ModelSerializer):
         )
 
     def _get_value(self, obj: AttributeValue) -> EntryAttributeValue:
-        if obj.data_type == AttrTypeValue["array_string"]:
-            return {"as_array_string": [x.value for x in obj.data_array.all()]}
+        try:
+            attr_type = AttrType(obj.data_type)
+        except ValueError:
+            Logger.error("Invalid attribute type: %s" % obj.data_type)
+            return {}
 
-        elif obj.data_type == AttrTypeValue["array_object"]:
-            return {
-                "as_array_object": [
+        match attr_type:
+            case AttrType.ARRAY_STRING:
+                return {"as_array_string": [x.value for x in obj.data_array.all()]}
+
+            case AttrType.ARRAY_OBJECT:
+                return {
+                    "as_array_object": [
+                        {
+                            "id": x.referral.id if x.referral else None,
+                            "name": x.referral.name if x.referral else "",
+                            "schema": {
+                                "id": x.referral.entry.schema.id,
+                                "name": x.referral.entry.schema.name,
+                            },
+                        }
+                        if x.referral and x.referral.is_active
+                        else None
+                        for x in obj.data_array.all()
+                    ]
+                }
+
+            case AttrType.ARRAY_NAMED_OBJECT:
+                array_named_object: list[EntryAttributeValueNamedObject] = [
                     {
-                        "id": x.referral.id if x.referral else None,
-                        "name": x.referral.name if x.referral else "",
-                        "schema": {
-                            "id": x.referral.entry.schema.id,
-                            "name": x.referral.entry.schema.name,
-                        },
+                        "name": x.value,
+                        "object": {
+                            "id": x.referral.id if x.referral else 0,
+                            "name": x.referral.name if x.referral else "",
+                            "schema": {
+                                "id": x.referral.entry.schema.id,
+                                "name": x.referral.entry.schema.name,
+                            },
+                        }
+                        if x.referral and x.referral.is_active
+                        else None,
                     }
-                    if x.referral and x.referral.is_active
-                    else None
                     for x in obj.data_array.all()
                 ]
-            }
+                return {"as_array_named_object": array_named_object}
 
-        elif obj.data_type == AttrTypeValue["object"]:
-            return {
-                "as_object": {
-                    "id": obj.referral.id if obj.referral else None,
-                    "name": obj.referral.name if obj.referral else "",
-                    "schema": {
-                        "id": obj.referral.entry.schema.id,
-                        "name": obj.referral.entry.schema.name,
-                    },
+            case AttrType.ARRAY_GROUP:
+                groups = [Group.objects.get(id=x.value) for x in obj.data_array.all()]
+                return {
+                    "as_array_group": [
+                        {
+                            "id": group.id,
+                            "name": group.name,
+                        }
+                        for group in groups
+                    ]
                 }
-                if obj.referral and obj.referral.is_active
-                else None
-            }
 
-        elif obj.data_type == AttrTypeValue["boolean"]:
-            return {"as_boolean": obj.boolean}
-
-        elif obj.data_type == AttrTypeValue["date"]:
-            return {"as_string": obj.date if obj.date else ""}
-
-        elif obj.data_type == AttrTypeValue["named_object"]:
-            named: EntryAttributeValueNamedObject = {
-                "name": obj.value,
-                "object": {
-                    "id": obj.referral.id if obj.referral else None,
-                    "name": obj.referral.name if obj.referral else "",
-                    "schema": {
-                        "id": obj.referral.entry.schema.id,
-                        "name": obj.referral.entry.schema.name,
-                    },
+            case AttrType.ARRAY_ROLE:
+                roles = [Role.objects.get(id=x.value) for x in obj.data_array.all()]
+                return {
+                    "as_array_role": [
+                        {
+                            "id": role.id,
+                            "name": role.name,
+                        }
+                        for role in roles
+                    ]
                 }
-                if obj.referral and obj.referral.is_active
-                else None,
-            }
-            return {"as_named_object": named}
 
-        elif obj.data_type == AttrTypeValue["array_named_object"]:
-            array_named_object: list[EntryAttributeValueNamedObject] = [
-                {
-                    "name": x.value,
-                    "object": {
-                        "id": x.referral.id if x.referral else None,
-                        "name": x.referral.name if x.referral else "",
+            case AttrType.STRING | AttrType.TEXT:
+                return {"as_string": obj.value}
+
+            case AttrType.BOOLEAN:
+                return {"as_boolean": obj.boolean}
+
+            case AttrType.DATE:
+                return {"as_string": obj.date if obj.date else ""}
+
+            case AttrType.OBJECT:
+                return {
+                    "as_object": {
+                        "id": obj.referral.id if obj.referral else 0,
+                        "name": obj.referral.name if obj.referral else "",
                         "schema": {
-                            "id": x.referral.entry.schema.id,
-                            "name": x.referral.entry.schema.name,
+                            "id": obj.referral.entry.schema.id,
+                            "name": obj.referral.entry.schema.name,
                         },
                     }
-                    if x.referral and x.referral.is_active
+                    if obj.referral and obj.referral.is_active
                     else None,
                 }
-                for x in obj.data_array.all()
-            ]
-            return {"as_array_named_object": array_named_object}
 
-        elif obj.data_type == AttrTypeValue["group"]:
-            group = Group.objects.get(id=obj.value) if obj.value else None
-            return {
-                "as_group": {
-                    "id": group.id,
-                    "name": group.name,
+            case AttrType.NAMED_OBJECT:
+                named: EntryAttributeValueNamedObject = {
+                    "name": obj.value,
+                    "object": {
+                        "id": obj.referral.id if obj.referral else 0,
+                        "name": obj.referral.name if obj.referral else "",
+                        "schema": {
+                            "id": obj.referral.entry.schema.id,
+                            "name": obj.referral.entry.schema.name,
+                        },
+                    }
+                    if obj.referral and obj.referral.is_active
+                    else None,
                 }
-                if group
-                else None
-            }
+                return {"as_named_object": named}
 
-        elif obj.data_type == AttrTypeValue["array_group"]:
-            groups = [Group.objects.get(id=x.value) for x in obj.data_array.all()]
-            return {
-                "as_array_group": [
-                    {
+            case AttrType.GROUP:
+                group = Group.objects.get(id=obj.value) if obj.value else None
+                return {
+                    "as_group": {
                         "id": group.id,
                         "name": group.name,
                     }
-                    for group in groups
-                ]
-            }
-
-        elif obj.data_type == AttrTypeValue["role"]:
-            role = Role.objects.get(id=obj.value) if obj.value else None
-            return {
-                "as_role": {
-                    "id": role.id,
-                    "name": role.name,
+                    if group
+                    else None
                 }
-                if role
-                else None
-            }
 
-        elif obj.data_type == AttrTypeValue["array_role"]:
-            roles = [Role.objects.get(id=x.value) for x in obj.data_array.all()]
-            return {
-                "as_array_role": [
-                    {
+            case AttrType.ROLE:
+                role = Role.objects.get(id=obj.value) if obj.value else None
+                return {
+                    "as_role": {
                         "id": role.id,
                         "name": role.name,
                     }
-                    for role in roles
-                ]
-            }
+                    if role
+                    else None
+                }
 
-        elif obj.data_type == AttrTypeValue["string"] or obj.data_type == AttrTypeValue["text"]:
-            return {"as_string": obj.value}
-
-        return {}
+            case _:
+                return {}
 
     @extend_schema_field(EntryAttributeValueSerializer())
     def get_curr_value(self, obj: AttributeValue) -> EntryAttributeValue:
