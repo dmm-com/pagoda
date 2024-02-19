@@ -12,7 +12,7 @@ import { setupServer } from "msw/node";
 import React from "react";
 
 import { TestWrapper } from "TestWrapper";
-import { EditUserPage } from "pages/EditUserPage";
+import { UserEditPage } from "pages/UserEditPage";
 
 const server = setupServer(
   // getUser
@@ -44,7 +44,7 @@ describe("EditUserPage", () => {
 
   test("should match snapshot", async () => {
     // wait async calls and get rendered fragment
-    const result = render(<EditUserPage />, {
+    const result = render(<UserEditPage />, {
       wrapper: TestWrapper,
     });
     await waitForElementToBeRemoved(screen.getByTestId("loading"));

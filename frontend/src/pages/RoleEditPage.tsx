@@ -22,7 +22,7 @@ import {
   isResponseError,
 } from "services/AironeAPIErrorUtil";
 
-export const EditRolePage: FC = () => {
+export const RoleEditPage: FC = () => {
   const { roleId } = useTypedParams<{ roleId?: number }>();
   const willCreate = roleId == null;
 

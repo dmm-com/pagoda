@@ -36,7 +36,7 @@ const StyledContainer = styled(Container)({
   borderColor: "rgba(0, 0, 0, 0.12)",
 });
 
-export const GroupPage: FC = () => {
+export const GroupListPage: FC = () => {
   const [keyword, setKeyword] = useState("");
   const [selectedGroupId, setSelectedGroupId] = useState<number | null>(null);
   const [openImportModal, setOpenImportModal] = useState(false);

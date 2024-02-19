@@ -25,7 +25,7 @@ import {
 } from "services/AironeAPIErrorUtil";
 import { ServerContext } from "services/ServerContext";
 
-export const EditUserPage: FC = () => {
+export const UserEditPage: FC = () => {
   const { userId } = useTypedParams<{ userId?: number }>();
   const willCreate = userId == null;
 

@@ -9,7 +9,7 @@ import {
 } from "@testing-library/react";
 import React from "react";
 
-import { RestoreEntryPage } from "./RestoreEntryPage";
+import { EntryRestorePage } from "./EntryRestorePage";
 
 import { TestWrapper } from "TestWrapper";
 
@@ -62,7 +62,7 @@ test("should match snapshot", async () => {
   /* eslint-enable */
 
   // wait async calls and get rendered fragment
-  const result = render(<RestoreEntryPage />, {
+  const result = render(<EntryRestorePage />, {
     wrapper: TestWrapper,
   });
   await waitForElementToBeRemoved(screen.getByTestId("loading"));

@@ -10,7 +10,7 @@ import {
 import React from "react";
 
 import { TestWrapper } from "TestWrapper";
-import { ACLPage } from "pages/ACLPage";
+import { GroupListPage } from "pages/GroupListPage";
 
 afterEach(() => {
   jest.clearAllMocks();
@@ -20,45 +20,47 @@ test("should match snapshot", async () => {
   Object.defineProperty(window, "django_context", {
     value: {
       user: {
-        is_superuser: false,
+        isSuperuser: true,
       },
     },
     writable: false,
   });
 
-  const acl = {
-    name: "acl1",
-    objtype: "type1",
-    is_public: false,
-    default_permission: 1,
-    parent: {
-      id: 10,
-      name: "Entity1",
+  const groups = [
+    {
+      id: 1,
+      name: "group1",
+      children: [
+        {
+          id: 1,
+          name: "group1",
+          children: [],
+        },
+        {
+          id: 2,
+          name: "group2",
+          children: [],
+        },
+      ],
     },
-    acltypes: [
-      {
-        id: 1,
-        name: "type1",
-      },
-    ],
-    roles: [
-      {
-        id: 1,
-        name: "member1",
-        type: 1,
-        current_permission: 1,
-      },
-    ],
-  };
+    {
+      id: 2,
+      name: "group2",
+      children: [],
+    },
+  ];
 
   /* eslint-disable */
   jest
-    .spyOn(require("../repository/AironeApiClient").aironeApiClient, "getAcl")
-    .mockResolvedValue(Promise.resolve(acl));
+    .spyOn(
+      require("../repository/AironeApiClient").aironeApiClient,
+      "getGroupTrees"
+    )
+    .mockResolvedValue(Promise.resolve(groups));
   /* eslint-enable */
 
   // wait async calls and get rendered fragment
-  const result = render(<ACLPage />, {
+  const result = render(<GroupListPage />, {
     wrapper: TestWrapper,
   });
   await waitForElementToBeRemoved(screen.getByTestId("loading"));

@@ -11,7 +11,7 @@ import {
 import React from "react";
 
 import { TestWrapper } from "TestWrapper";
-import { JobPage } from "pages/JobPage";
+import { JobListPage } from "pages/JobListPage";
 
 afterEach(() => {
   jest.clearAllMocks();
@@ -56,7 +56,7 @@ test("should match snapshot", async () => {
   /* eslint-enable */
 
   // wait async calls and get rendered fragment
-  const result = render(<JobPage />, {
+  const result = render(<JobListPage />, {
     wrapper: TestWrapper,
   });
   await waitForElementToBeRemoved(screen.getByTestId("loading"));

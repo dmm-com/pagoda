@@ -22,7 +22,7 @@ import {
 import { ForbiddenError } from "services/Exceptions";
 import { ServerContext } from "services/ServerContext";
 
-export const EditGroupPage: FC = () => {
+export const GroupEditPage: FC = () => {
   const { groupId } = useTypedParams<{ groupId?: number }>();
   const willCreate = groupId == null;
 

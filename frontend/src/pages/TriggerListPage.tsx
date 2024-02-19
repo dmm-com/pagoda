@@ -174,7 +174,7 @@ const TriggerAction: FC<{
   );
 };
 
-export const TriggerPage: FC = () => {
+export const TriggerListPage: FC = () => {
   const history = useHistory();
   const [toggle, setToggle] = useState(false);
   const { enqueueSnackbar } = useSnackbar();

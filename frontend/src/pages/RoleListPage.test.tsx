@@ -2,6 +2,7 @@
  * @jest-environment jsdom
  */
 
+import { Role } from "@dmm-com/airone-apiclient-typescript-fetch";
 import {
   render,
   waitForElementToBeRemoved,
@@ -9,7 +10,7 @@ import {
 } from "@testing-library/react";
 import React from "react";
 
-import { CopyEntryPage } from "./CopyEntryPage";
+import { RoleListPage } from "./RoleListPage";
 
 import { TestWrapper } from "TestWrapper";
 
@@ -18,24 +19,27 @@ afterEach(() => {
 });
 
 test("should match snapshot", async () => {
-  const entry = {
-    id: 1,
-    name: "aaa",
-    schema: {
-      id: 2,
-      name: "bbb",
+  const roles: Role[] = [
+    {
+      id: 0,
+      name: "",
+      description: "",
+      users: [],
+      groups: [],
+      adminUsers: [],
+      adminGroups: [],
+      isEditable: true,
     },
-    attrs: [],
-  };
+  ];
 
   /* eslint-disable */
   jest
-    .spyOn(require("repository/AironeApiClient").aironeApiClient, "getEntry")
-    .mockResolvedValue(Promise.resolve(entry));
+    .spyOn(require("../repository/AironeApiClient").aironeApiClient, "getRoles")
+    .mockResolvedValue(Promise.resolve(roles));
   /* eslint-enable */
 
   // wait async calls and get rendered fragment
-  const result = render(<CopyEntryPage />, {
+  const result = render(<RoleListPage />, {
     wrapper: TestWrapper,
   });
   await waitForElementToBeRemoved(screen.getByTestId("loading"));

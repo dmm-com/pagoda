@@ -12,7 +12,7 @@ import { RestorableEntryList } from "components/entry/RestorableEntryList";
 import { useTypedParams } from "hooks/useTypedParams";
 import { aironeApiClient } from "repository/AironeApiClient";
 
-export const RestoreEntryPage: FC = () => {
+export const EntryRestorePage: FC = () => {
   const { entityId } = useTypedParams<{ entityId: number }>();
 
   const [entityAnchorEl, setEntityAnchorEl] =

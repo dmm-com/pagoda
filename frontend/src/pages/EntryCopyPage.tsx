@@ -21,7 +21,7 @@ interface Props {
   CopyForm?: FC<CopyFormProps>;
 }
 
-export const CopyEntryPage: FC<Props> = ({ CopyForm = DefaultCopyForm }) => {
+export const EntryCopyPage: FC<Props> = ({ CopyForm = DefaultCopyForm }) => {
   const history = useHistory();
   const { enqueueSnackbar } = useSnackbar();
   const { entityId, entryId } = useTypedParams<{

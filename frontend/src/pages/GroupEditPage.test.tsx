@@ -12,7 +12,7 @@ import { setupServer } from "msw/node";
 import React from "react";
 
 import { TestWrapper } from "TestWrapper";
-import { EditGroupPage } from "pages/EditGroupPage";
+import { GroupEditPage } from "pages/GroupEditPage";
 
 const server = setupServer(
   // getGroup
@@ -97,7 +97,7 @@ describe("EditGroupPage", () => {
 
   test("should match snapshot", async () => {
     // wait async calls and get rendered fragment
-    const result = render(<EditGroupPage />, {
+    const result = render(<GroupEditPage />, {
       wrapper: TestWrapper,
     });
     await waitForElementToBeRemoved(screen.getByTestId("loading"));

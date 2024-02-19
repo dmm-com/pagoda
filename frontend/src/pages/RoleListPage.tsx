@@ -11,7 +11,7 @@ import { newRolePath, topPath } from "Routes";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { PageHeader } from "components/common/PageHeader";
 
-export const RolePage: FC = () => {
+export const RoleListPage: FC = () => {
   const [openImportModal, setOpenImportModal] = useState(false);
 
   const handleExport = useCallback(async () => {
