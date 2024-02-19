@@ -8,12 +8,20 @@
 
 ### Fixed
 
+## v3.77.0
+
+### Changed
+* Enable to invoke TriggerAction when import and revert processing.
+  Contributed by @hinashi, @userlocalhost
+
+### Fixed
+* Fix deps to avoid inifinite fetching in acl history page.
+  Contributed by @syucream
+
 ## v3.76.0
 
 ### Changed
 * Upgrade django version from 3.2.23 to 3.2.24
-* Enable to invoke TriggerAction when import and revert processing.
-  Contributed by @hinashi, @userlocalhost
 
 ## v3.75.0
 
