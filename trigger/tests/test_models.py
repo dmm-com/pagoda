@@ -89,7 +89,10 @@ class ModelTest(AironeTestCase):
                 "attr_id": self.entity.attrs.get(name="ref_trigger").id,
                 "cond": self.entry_refs[2],
             },
-            {"attr_id": self.entity.attrs.get(name="bool_trigger").id, "cond": True},
+            {
+                "attr_id": self.entity.attrs.get(name="bool_trigger").id,
+                "cond": True
+            },
             {
                 "attr_id": self.entity.attrs.get(name="named_trigger").id,
                 "cond": FAT_LADY_PASSWD,
@@ -97,6 +100,7 @@ class ModelTest(AironeTestCase):
             {
                 "attr_id": self.entity.attrs.get(name="named_trigger").id,
                 "cond": self.entry_refs[2],
+                "hint": "entry",
             },
             {
                 "attr_id": self.entity.attrs.get(name="arr_str_trigger").id,
@@ -113,6 +117,7 @@ class ModelTest(AironeTestCase):
             {
                 "attr_id": self.entity.attrs.get(name="arr_named_trigger").id,
                 "cond": self.entry_refs[2],
+                "hint": "entry",
             },
         ]
         self.FULL_CONDITION_CONFIGURATION_PARAMETERS_BUT_EMPTY = [
@@ -250,6 +255,7 @@ class ModelTest(AironeTestCase):
             {
                 "attr_id": self.entity.attrs.get(name="named_trigger").id,
                 "cond": entries[0].id,
+                "hint": "entry",
             },
             {"attr_id": self.entity.attrs.get(name="bool_trigger").id, "cond": False},
             {
@@ -267,6 +273,7 @@ class ModelTest(AironeTestCase):
             {
                 "attr_id": self.entity.attrs.get(name="arr_named_trigger").id,
                 "cond": entries[0].id,
+                "hint": "entry",
             },
         ]
         settingTriggerActions = self.FULL_ACTION_CONFIGURATION_PARAMETERS.copy()
@@ -374,7 +381,11 @@ class ModelTest(AironeTestCase):
             {"attrname": "str_trigger", "value": "", "will_invoke": False},
             {"attrname": "str_trigger", "value": "Open Sesame", "will_invoke": False},
             {"attrname": "str_trigger", "value": FAT_LADY_PASSWD, "will_invoke": True},
-            {"attrname": "ref_trigger", "value": None, "will_invoke": False},
+            {
+                "attrname": "ref_trigger",
+                "value": None,
+                "will_invoke": False
+            },
             {
                 "attrname": "ref_trigger",
                 "value": self.entry_refs[0],
@@ -385,37 +396,41 @@ class ModelTest(AironeTestCase):
                 "value": self.entry_refs[2],
                 "will_invoke": True,
             },
-            # {
-            #    "attrname": "named_trigger",
-            #    "value": {"name": "Open Sesame", "id": self.entry_refs[0].id},
-            #    "will_invoke": False,
-            # },
-            # {
-            #    "attrname": "named_trigger",
-            #    "value": {"name": "", "id": self.entry_refs[0].id},
-            #    "will_invoke": False,
-            # },
-            # {
-            #    "attrname": "named_trigger",
-            #    "value": {"name": "Unexpected words", "id": None},
-            #    "will_invoke": False,
-            # },
-            # {
-            #    "attrname": "named_trigger",
-            #    "value": {"name": FAT_LADY_PASSWD, "id": None},
-            #    "will_invoke": True,
-            # },
-            # {
-            #    "attrname": "named_trigger",
-            #    "value": {"name": "", "id": self.entry_refs[2].id},
-            #    "will_invoke": True,
-            # },
-            # {
-            #    "attrname": "named_trigger",
-            #    "value": {"name": FAT_LADY_PASSWD, "id": self.entry_refs[2].id},
-            #    "will_invoke": True,
-            # },
-            {"attrname": "arr_str_trigger", "value": [""], "will_invoke": False},
+            {
+               "attrname": "named_trigger",
+               "value": {"name": "Open Sesame", "id": self.entry_refs[0].id},
+               "will_invoke": False,
+            },
+            {
+               "attrname": "named_trigger",
+               "value": {"name": "", "id": self.entry_refs[0].id},
+               "will_invoke": False,
+            },
+            {
+               "attrname": "named_trigger",
+               "value": {"name": "Unexpected words", "id": None},
+               "will_invoke": False,
+            },
+            {
+               "attrname": "named_trigger",
+               "value": {"name": FAT_LADY_PASSWD, "id": None},
+               "will_invoke": True,
+            },
+            {
+               "attrname": "named_trigger",
+               "value": {"name": "", "id": self.entry_refs[2].id},
+               "will_invoke": True,
+            },
+            {
+               "attrname": "named_trigger",
+               "value": {"name": FAT_LADY_PASSWD, "id": self.entry_refs[2].id},
+               "will_invoke": True,
+            },
+            {
+                "attrname": "arr_str_trigger",
+                "value": [""],
+                "will_invoke": False
+            },
             {
                 "attrname": "arr_str_trigger",
                 "value": ["Open Sesame"],
@@ -426,7 +441,11 @@ class ModelTest(AironeTestCase):
                 "value": ["Open Sesame", FAT_LADY_PASSWD],
                 "will_invoke": True,
             },
-            {"attrname": "arr_ref_trigger", "value": [], "will_invoke": False},
+            {
+                "attrname": "arr_ref_trigger",
+                "value": [],
+                "will_invoke": False
+            },
             {
                 "attrname": "arr_ref_trigger",
                 "value": [self.entry_refs[0], self.entry_refs[1]],
@@ -437,19 +456,19 @@ class ModelTest(AironeTestCase):
                 "value": self.entry_refs,
                 "will_invoke": True,
             },
-            # {
-            #    "attrname": "arr_named_trigger",
-            #    "value": [{"name": "Open Sesame", "id": self.entry_refs[0].id}],
-            #    "will_invoke": False,
-            # },
-            # {
-            #    "attrname": "arr_named_trigger",
-            #    "value": [
-            #        {"name": "Open Sesame", "id": self.entry_refs[0].id},
-            #        {"name": FAT_LADY_PASSWD, "id": self.entry_refs[2].id},
-            #    ],
-            #    "will_invoke": True,
-            # },
+            {
+               "attrname": "arr_named_trigger",
+               "value": [{"name": "Open Sesame", "id": self.entry_refs[0].id}],
+               "will_invoke": False,
+            },
+            {
+               "attrname": "arr_named_trigger",
+               "value": [
+                   {"name": "Open Sesame", "id": self.entry_refs[0].id},
+                   {"name": FAT_LADY_PASSWD, "id": self.entry_refs[2].id},
+               ],
+               "will_invoke": True,
+            },
         ]
         for test_input_param in test_input_params:
             attr = self.entity.attrs.get(name=test_input_param["attrname"])

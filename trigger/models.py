@@ -3,7 +3,8 @@ from django.db import models
 from acl.models import ACLBase
 from airone.exceptions.trigger import InvalidInputException
 from airone.lib.http import DRFRequest
-from airone.lib.types import AttrTypeValue
+from airone.lib.log import Logger
+from airone.lib.types import AttrTypeValue, AttrType
 from entity.models import Entity, EntityAttr
 from entry.api_v2.serializers import EntryUpdateSerializer
 from entry.models import Entry
@@ -22,7 +23,7 @@ class InputTriggerCondition(object):
         self.initialize_condition()
 
         # set each condition parameters by specified condition value
-        self.parse_input_condition(input.get("cond"))
+        self.parse_input_condition(input.get("cond"), input.get("hint"))
 
     def __repr__(self):
         return "(attr:%s[%s]) str_cond:%s, ref_cond:%s, bool_cond:%s" % (
@@ -38,7 +39,7 @@ class InputTriggerCondition(object):
         self.ref_cond = None
         self.bool_cond = False
 
-    def parse_input_condition(self, input_condition):
+    def parse_input_condition(self, input_condition, hint=None):
         def _convert_value_to_entry():
             if isinstance(input_condition, Entry):
                 return input_condition
@@ -55,9 +56,8 @@ class InputTriggerCondition(object):
             self.attr.type == AttrTypeValue["named_object"]
             or self.attr.type == AttrTypeValue["array_named_object"]
         ):
-            ref = _convert_value_to_entry()
-            if ref:
-                self.ref_cond = ref
+            if hint == "entry":
+                self.ref_cond = _convert_value_to_entry()
             else:
                 self.str_cond = input_condition
 
@@ -329,7 +329,6 @@ class TriggerCondition(models.Model):
         This checks specified value, which is compatible with APIv2 standard, matches
         with this condition.
         """
-
         def _compatible_with_apiv1(recv_value):
             """
             This method retrieve value from recv_value that is specified by user. This processing
@@ -364,31 +363,62 @@ class TriggerCondition(models.Model):
             elif val is None:
                 return self.ref_cond is None
 
-        # TODO: Add support for named_object, array_named_object
-        if self.attr.type == AttrTypeValue["object"]:
-            return _is_match_object(recv_value)
 
-        elif self.attr.type == AttrTypeValue["array_object"]:
-            if recv_value is None or not recv_value:
-                # when both recv_value and self.ref_cond is empty, this condition is matched
-                return self.ref_cond is None
+        try:
+            attr_type = AttrType(self.attr.type)
+        except ValueError:
+            Logger.error("Invalid Attribute Type(%s) was registered (attr_id: %s)" (
+                self.attr.type,
+                self.attr.id
+            ))
+            return False
 
-            elif isinstance(recv_value, list):
-                return any([_is_match_object(x) for x in recv_value])
+        match attr_type:
+            case AttrType.OBJECT:
+                return _is_match_object(recv_value)
 
-        elif self.attr.type == AttrTypeValue["string"] or self.attr.type == AttrTypeValue["text"]:
-            return self.str_cond == recv_value
+            case AttrType.ARRAY_OBJECT:
+                if recv_value is None or not recv_value:
+                    # when both recv_value and self.ref_cond is empty, this condition is matched
+                    return self.ref_cond is None
 
-        elif self.attr.type == AttrTypeValue["array_string"]:
-            if recv_value is None or not recv_value:
-                # when both recv_value and self.str_cond is empty, this condition is matched
-                return self.str_cond == ""
+                elif isinstance(recv_value, list):
+                    return any([_is_match_object(x) for x in recv_value])
 
-            elif isinstance(recv_value, list):
-                return self.str_cond in recv_value
+            case AttrType.STRING | AttrType.TEXT:
+                return self.str_cond == recv_value
 
-        elif self.attr.type == AttrTypeValue["boolean"]:
-            return self.bool_cond == recv_value
+            case AttrType.NAMED_OBJECT:
+                if recv_value.get("name") and self.str_cond == recv_value.get("name"):
+                    return True
+
+                if recv_value.get("id") and _is_match_object(recv_value.get("id")):
+                    return True
+
+                # this matches explicit empty value
+                if (
+                    self.str_cond == recv_value.get("name", "") == "" and
+                    self.ref_cond == recv_value.get("id") == None):
+                    return True
+
+            case AttrType.ARRAY_STRING:
+                if recv_value is None or not recv_value:
+                    # when both recv_value and self.str_cond is empty, this condition is matched
+                    return self.str_cond == ""
+
+                elif isinstance(recv_value, list):
+                    return self.str_cond in recv_value
+
+            case AttrType.ARRAY_NAMED_OBJECT:
+                for info in recv_value:
+                    if self.str_cond == info.get("name", ""):
+                        return True
+
+                    if _is_match_object(info.get("id")):
+                        return True
+
+            case AttrType.BOOLEAN:
+                return self.bool_cond == recv_value
 
         return False
 
