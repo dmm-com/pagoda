@@ -158,7 +158,7 @@ export const GroupListPage: FC = () => {
             setKeyword(e.target.value);
           }}
         />
-        <List>
+        <List data-testid="GroupMember">
           {filteredUsersInGroup.map((user, index) => (
             <Box key={user.id}>
               {index !== 0 && <Divider />}

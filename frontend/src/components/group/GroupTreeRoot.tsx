@@ -1,6 +1,5 @@
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import {
-  Box,
   Checkbox,
   IconButton,
   List,
@@ -45,51 +44,49 @@ export const GroupTreeRoot: FC<Props> = ({
   const isSuperuser = ServerContext.getInstance()?.user?.isSuperuser ?? false;
 
   return (
-    <Box>
-      <List>
-        {groupTrees.map((groupTree) => (
-          <StyledListItem key={groupTree.id}>
-            <List sx={{ width: "100%" }}>
-              <ListItem sx={{ width: "100%" }}>
-                <Checkbox
-                  checked={groupTree.id === selectedGroupId}
-                  onChange={(e) =>
-                    handleSelectGroupId(e.target.checked ? groupTree.id : null)
-                  }
-                />
-                <Typography
-                  component={Link}
-                  to={isSuperuser ? groupPath(groupTree.id) : "#"}
+    <List data-testid="GroupList">
+      {groupTrees.map((groupTree) => (
+        <StyledListItem key={groupTree.id}>
+          <List sx={{ width: "100%" }}>
+            <ListItem sx={{ width: "100%" }}>
+              <Checkbox
+                checked={groupTree.id === selectedGroupId}
+                onChange={(e) =>
+                  handleSelectGroupId(e.target.checked ? groupTree.id : null)
+                }
+              />
+              <Typography
+                component={Link}
+                to={isSuperuser ? groupPath(groupTree.id) : "#"}
+              >
+                {groupTree.name}
+              </Typography>
+              {setGroupAnchorEls != null && (
+                <IconButton
+                  sx={{ margin: "0 0 0 auto" }}
+                  onClick={(e) => {
+                    setGroupAnchorEls({
+                      groupId: groupTree.id,
+                      el: e.currentTarget,
+                    });
+                  }}
                 >
-                  {groupTree.name}
-                </Typography>
-                {setGroupAnchorEls != null && (
-                  <IconButton
-                    sx={{ margin: "0 0 0 auto" }}
-                    onClick={(e) => {
-                      setGroupAnchorEls({
-                        groupId: groupTree.id,
-                        el: e.currentTarget,
-                      });
-                    }}
-                  >
-                    <MoreVertIcon />
-                  </IconButton>
-                )}
-              </ListItem>
-              {groupTree.children.length > 0 && (
-                <GroupTreeItem
-                  depth={1}
-                  groupTrees={groupTree.children}
-                  selectedGroupId={selectedGroupId}
-                  handleSelectGroupId={handleSelectGroupId}
-                  setGroupAnchorEls={setGroupAnchorEls}
-                />
+                  <MoreVertIcon />
+                </IconButton>
               )}
-            </List>
-          </StyledListItem>
-        ))}
-      </List>
-    </Box>
+            </ListItem>
+            {groupTree.children.length > 0 && (
+              <GroupTreeItem
+                depth={1}
+                groupTrees={groupTree.children}
+                selectedGroupId={selectedGroupId}
+                handleSelectGroupId={handleSelectGroupId}
+                setGroupAnchorEls={setGroupAnchorEls}
+              />
+            )}
+          </List>
+        </StyledListItem>
+      ))}
+    </List>
   );
 };
