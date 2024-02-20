@@ -292,150 +292,147 @@ exports[`EditGroupPage should match snapshot 1`] = `
             <hr
               class="MuiDivider-root MuiDivider-fullWidth css-uok36i-MuiDivider-root"
             />
-            <div
-              class="MuiBox-root css-0"
+            <ul
+              class="MuiList-root MuiList-padding css-h4y409-MuiList-root"
+              data-testid="GroupList"
             >
-              <ul
-                class="MuiList-root MuiList-padding css-h4y409-MuiList-root"
+              <li
+                class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-6un4cd-MuiListItem-root"
               >
-                <li
-                  class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-6un4cd-MuiListItem-root"
+                <ul
+                  class="MuiList-root MuiList-padding css-1lbrbe2-MuiList-root"
                 >
-                  <ul
-                    class="MuiList-root MuiList-padding css-1lbrbe2-MuiList-root"
+                  <li
+                    class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-122ling-MuiListItem-root"
                   >
-                    <li
-                      class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-122ling-MuiListItem-root"
+                    <span
+                      class="MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium PrivateSwitchBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
                     >
-                      <span
-                        class="MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium PrivateSwitchBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
+                      <input
+                        class="PrivateSwitchBase-input css-1m9pwf3"
+                        data-indeterminate="false"
+                        type="checkbox"
+                      />
+                      <svg
+                        aria-hidden="true"
+                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                        data-testid="CheckBoxOutlineBlankIcon"
+                        focusable="false"
+                        viewBox="0 0 24 24"
                       >
-                        <input
-                          class="PrivateSwitchBase-input css-1m9pwf3"
-                          data-indeterminate="false"
-                          type="checkbox"
+                        <path
+                          d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"
                         />
-                        <svg
-                          aria-hidden="true"
-                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
-                          data-testid="CheckBoxOutlineBlankIcon"
-                          focusable="false"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"
-                          />
-                        </svg>
-                      </span>
-                      <a
-                        class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
-                        href="/ui/groups/1"
-                      >
-                        group1
-                      </a>
-                    </li>
-                    <li
-                      class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-fdj07o-MuiListItem-root"
+                      </svg>
+                    </span>
+                    <a
+                      class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                      href="/ui/groups/1"
                     >
-                      <span
-                        class="MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium PrivateSwitchBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
-                      >
-                        <input
-                          class="PrivateSwitchBase-input css-1m9pwf3"
-                          data-indeterminate="false"
-                          type="checkbox"
-                        />
-                        <svg
-                          aria-hidden="true"
-                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
-                          data-testid="CheckBoxOutlineBlankIcon"
-                          focusable="false"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"
-                          />
-                        </svg>
-                      </span>
-                      <a
-                        class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
-                        href="/ui/groups/1"
-                      >
-                        group1
-                      </a>
-                    </li>
-                    <li
-                      class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-fdj07o-MuiListItem-root"
+                      group1
+                    </a>
+                  </li>
+                  <li
+                    class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-fdj07o-MuiListItem-root"
+                  >
+                    <span
+                      class="MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium PrivateSwitchBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
                     >
-                      <span
-                        class="MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium PrivateSwitchBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
+                      <input
+                        class="PrivateSwitchBase-input css-1m9pwf3"
+                        data-indeterminate="false"
+                        type="checkbox"
+                      />
+                      <svg
+                        aria-hidden="true"
+                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                        data-testid="CheckBoxOutlineBlankIcon"
+                        focusable="false"
+                        viewBox="0 0 24 24"
                       >
-                        <input
-                          class="PrivateSwitchBase-input css-1m9pwf3"
-                          data-indeterminate="false"
-                          type="checkbox"
+                        <path
+                          d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"
                         />
-                        <svg
-                          aria-hidden="true"
-                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
-                          data-testid="CheckBoxOutlineBlankIcon"
-                          focusable="false"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"
-                          />
-                        </svg>
-                      </span>
-                      <a
-                        class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
-                        href="/ui/groups/2"
+                      </svg>
+                    </span>
+                    <a
+                      class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                      href="/ui/groups/1"
+                    >
+                      group1
+                    </a>
+                  </li>
+                  <li
+                    class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-fdj07o-MuiListItem-root"
+                  >
+                    <span
+                      class="MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium PrivateSwitchBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
+                    >
+                      <input
+                        class="PrivateSwitchBase-input css-1m9pwf3"
+                        data-indeterminate="false"
+                        type="checkbox"
+                      />
+                      <svg
+                        aria-hidden="true"
+                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                        data-testid="CheckBoxOutlineBlankIcon"
+                        focusable="false"
+                        viewBox="0 0 24 24"
                       >
-                        group2
-                      </a>
-                    </li>
-                  </ul>
-                </li>
-                <li
-                  class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-6un4cd-MuiListItem-root"
+                        <path
+                          d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"
+                        />
+                      </svg>
+                    </span>
+                    <a
+                      class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                      href="/ui/groups/2"
+                    >
+                      group2
+                    </a>
+                  </li>
+                </ul>
+              </li>
+              <li
+                class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-6un4cd-MuiListItem-root"
+              >
+                <ul
+                  class="MuiList-root MuiList-padding css-1lbrbe2-MuiList-root"
                 >
-                  <ul
-                    class="MuiList-root MuiList-padding css-1lbrbe2-MuiList-root"
+                  <li
+                    class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-122ling-MuiListItem-root"
                   >
-                    <li
-                      class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-122ling-MuiListItem-root"
+                    <span
+                      class="MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium PrivateSwitchBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
                     >
-                      <span
-                        class="MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium PrivateSwitchBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
+                      <input
+                        class="PrivateSwitchBase-input css-1m9pwf3"
+                        data-indeterminate="false"
+                        type="checkbox"
+                      />
+                      <svg
+                        aria-hidden="true"
+                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                        data-testid="CheckBoxOutlineBlankIcon"
+                        focusable="false"
+                        viewBox="0 0 24 24"
                       >
-                        <input
-                          class="PrivateSwitchBase-input css-1m9pwf3"
-                          data-indeterminate="false"
-                          type="checkbox"
+                        <path
+                          d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"
                         />
-                        <svg
-                          aria-hidden="true"
-                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
-                          data-testid="CheckBoxOutlineBlankIcon"
-                          focusable="false"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"
-                          />
-                        </svg>
-                      </span>
-                      <a
-                        class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
-                        href="/ui/groups/2"
-                      >
-                        group2
-                      </a>
-                    </li>
-                  </ul>
-                </li>
-              </ul>
-            </div>
+                      </svg>
+                    </span>
+                    <a
+                      class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                      href="/ui/groups/2"
+                    >
+                      group2
+                    </a>
+                  </li>
+                </ul>
+              </li>
+            </ul>
           </div>
         </div>
       </div>
@@ -729,150 +726,147 @@ exports[`EditGroupPage should match snapshot 1`] = `
           <hr
             class="MuiDivider-root MuiDivider-fullWidth css-uok36i-MuiDivider-root"
           />
-          <div
-            class="MuiBox-root css-0"
+          <ul
+            class="MuiList-root MuiList-padding css-h4y409-MuiList-root"
+            data-testid="GroupList"
           >
-            <ul
-              class="MuiList-root MuiList-padding css-h4y409-MuiList-root"
+            <li
+              class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-6un4cd-MuiListItem-root"
             >
-              <li
-                class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-6un4cd-MuiListItem-root"
+              <ul
+                class="MuiList-root MuiList-padding css-1lbrbe2-MuiList-root"
               >
-                <ul
-                  class="MuiList-root MuiList-padding css-1lbrbe2-MuiList-root"
+                <li
+                  class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-122ling-MuiListItem-root"
                 >
-                  <li
-                    class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-122ling-MuiListItem-root"
+                  <span
+                    class="MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium PrivateSwitchBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
                   >
-                    <span
-                      class="MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium PrivateSwitchBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
+                    <input
+                      class="PrivateSwitchBase-input css-1m9pwf3"
+                      data-indeterminate="false"
+                      type="checkbox"
+                    />
+                    <svg
+                      aria-hidden="true"
+                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                      data-testid="CheckBoxOutlineBlankIcon"
+                      focusable="false"
+                      viewBox="0 0 24 24"
                     >
-                      <input
-                        class="PrivateSwitchBase-input css-1m9pwf3"
-                        data-indeterminate="false"
-                        type="checkbox"
+                      <path
+                        d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"
                       />
-                      <svg
-                        aria-hidden="true"
-                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
-                        data-testid="CheckBoxOutlineBlankIcon"
-                        focusable="false"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"
-                        />
-                      </svg>
-                    </span>
-                    <a
-                      class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
-                      href="/ui/groups/1"
-                    >
-                      group1
-                    </a>
-                  </li>
-                  <li
-                    class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-fdj07o-MuiListItem-root"
+                    </svg>
+                  </span>
+                  <a
+                    class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                    href="/ui/groups/1"
                   >
-                    <span
-                      class="MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium PrivateSwitchBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
-                    >
-                      <input
-                        class="PrivateSwitchBase-input css-1m9pwf3"
-                        data-indeterminate="false"
-                        type="checkbox"
-                      />
-                      <svg
-                        aria-hidden="true"
-                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
-                        data-testid="CheckBoxOutlineBlankIcon"
-                        focusable="false"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"
-                        />
-                      </svg>
-                    </span>
-                    <a
-                      class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
-                      href="/ui/groups/1"
-                    >
-                      group1
-                    </a>
-                  </li>
-                  <li
-                    class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-fdj07o-MuiListItem-root"
+                    group1
+                  </a>
+                </li>
+                <li
+                  class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-fdj07o-MuiListItem-root"
+                >
+                  <span
+                    class="MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium PrivateSwitchBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
                   >
-                    <span
-                      class="MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium PrivateSwitchBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
+                    <input
+                      class="PrivateSwitchBase-input css-1m9pwf3"
+                      data-indeterminate="false"
+                      type="checkbox"
+                    />
+                    <svg
+                      aria-hidden="true"
+                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                      data-testid="CheckBoxOutlineBlankIcon"
+                      focusable="false"
+                      viewBox="0 0 24 24"
                     >
-                      <input
-                        class="PrivateSwitchBase-input css-1m9pwf3"
-                        data-indeterminate="false"
-                        type="checkbox"
+                      <path
+                        d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"
                       />
-                      <svg
-                        aria-hidden="true"
-                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
-                        data-testid="CheckBoxOutlineBlankIcon"
-                        focusable="false"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"
-                        />
-                      </svg>
-                    </span>
-                    <a
-                      class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
-                      href="/ui/groups/2"
+                    </svg>
+                  </span>
+                  <a
+                    class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                    href="/ui/groups/1"
+                  >
+                    group1
+                  </a>
+                </li>
+                <li
+                  class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-fdj07o-MuiListItem-root"
+                >
+                  <span
+                    class="MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium PrivateSwitchBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
+                  >
+                    <input
+                      class="PrivateSwitchBase-input css-1m9pwf3"
+                      data-indeterminate="false"
+                      type="checkbox"
+                    />
+                    <svg
+                      aria-hidden="true"
+                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                      data-testid="CheckBoxOutlineBlankIcon"
+                      focusable="false"
+                      viewBox="0 0 24 24"
                     >
-                      group2
-                    </a>
-                  </li>
-                </ul>
-              </li>
-              <li
-                class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-6un4cd-MuiListItem-root"
+                      <path
+                        d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"
+                      />
+                    </svg>
+                  </span>
+                  <a
+                    class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                    href="/ui/groups/2"
+                  >
+                    group2
+                  </a>
+                </li>
+              </ul>
+            </li>
+            <li
+              class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-6un4cd-MuiListItem-root"
+            >
+              <ul
+                class="MuiList-root MuiList-padding css-1lbrbe2-MuiList-root"
               >
-                <ul
-                  class="MuiList-root MuiList-padding css-1lbrbe2-MuiList-root"
+                <li
+                  class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-122ling-MuiListItem-root"
                 >
-                  <li
-                    class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-122ling-MuiListItem-root"
+                  <span
+                    class="MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium PrivateSwitchBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
                   >
-                    <span
-                      class="MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium PrivateSwitchBase-root MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium MuiCheckbox-root MuiCheckbox-colorPrimary MuiCheckbox-sizeMedium css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
+                    <input
+                      class="PrivateSwitchBase-input css-1m9pwf3"
+                      data-indeterminate="false"
+                      type="checkbox"
+                    />
+                    <svg
+                      aria-hidden="true"
+                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                      data-testid="CheckBoxOutlineBlankIcon"
+                      focusable="false"
+                      viewBox="0 0 24 24"
                     >
-                      <input
-                        class="PrivateSwitchBase-input css-1m9pwf3"
-                        data-indeterminate="false"
-                        type="checkbox"
+                      <path
+                        d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"
                       />
-                      <svg
-                        aria-hidden="true"
-                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
-                        data-testid="CheckBoxOutlineBlankIcon"
-                        focusable="false"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"
-                        />
-                      </svg>
-                    </span>
-                    <a
-                      class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
-                      href="/ui/groups/2"
-                    >
-                      group2
-                    </a>
-                  </li>
-                </ul>
-              </li>
-            </ul>
-          </div>
+                    </svg>
+                  </span>
+                  <a
+                    class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                    href="/ui/groups/2"
+                  >
+                    group2
+                  </a>
+                </li>
+              </ul>
+            </li>
+          </ul>
         </div>
       </div>
     </div>
