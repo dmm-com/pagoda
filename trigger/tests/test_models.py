@@ -138,6 +138,14 @@ class ModelTest(AironeTestCase):
                 "attr_id": self.entity.attrs.get(name="arr_ref_trigger").id,
                 "cond": None,
             },
+            {
+                "attr_id": self.entity.attrs.get(name="named_trigger").id,
+                "cond": "",
+            },
+            {
+                "attr_id": self.entity.attrs.get(name="arr_named_trigger").id,
+                "cond": "",
+            },
         ]
         self.FULL_ACTION_CONFIGURATION_PARAMETERS = [
             {
@@ -189,6 +197,14 @@ class ModelTest(AironeTestCase):
             },
             {
                 "attr_id": self.entity.attrs.get(name="arr_ref_action").id,
+                "values": [],
+            },
+            {
+                "attr_id": self.entity.attrs.get(name="named_action").id,
+                "value": {},
+            },
+            {
+                "attr_id": self.entity.attrs.get(name="arr_named_action").id,
                 "values": [],
             },
         ]

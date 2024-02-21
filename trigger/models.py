@@ -4,7 +4,7 @@ from acl.models import ACLBase
 from airone.exceptions.trigger import InvalidInputException
 from airone.lib.http import DRFRequest
 from airone.lib.log import Logger
-from airone.lib.types import AttrTypeValue, AttrType
+from airone.lib.types import AttrType, AttrTypeValue
 from entity.models import Entity, EntityAttr
 from entry.api_v2.serializers import EntryUpdateSerializer
 from entry.models import Entry
@@ -307,18 +307,26 @@ class TriggerCondition(models.Model):
     ref_cond = models.ForeignKey("entry.Entry", on_delete=models.SET_NULL, null=True, blank=True)
     bool_cond = models.BooleanField(default=False)
 
+    @property
+    def ATTR_TYPE(self):
+        return AttrType(self.attr.type)
+
     def is_same_condition(self, input_list: list[InputTriggerCondition]) -> bool:
         # This checks one of the InputCondition which is in input_list matches with this condition
         def _do_check_condition(input: InputTriggerCondition):
             if self.attr.id == input.attr.id:
-                if self.attr.type & AttrTypeValue["boolean"]:
-                    return self.bool_cond == input.bool_cond
-
-                elif self.attr.type & AttrTypeValue["object"]:
-                    return self.ref_cond == input.ref_cond
-
-                elif self.attr.type & AttrTypeValue["string"]:
-                    return self.str_cond == input.str_cond
+                match self.ATTR_TYPE:
+                    case AttrType.STRING | AttrType.TEXT:
+                        return self.str_cond == input.str_cond
+                    case AttrType.OBJECT:
+                        return self.ref_cond == input.ref_cond
+                    case AttrType.BOOLEAN:
+                        return self.bool_cond == input.bool_cond
+                    case AttrType.NAMED_OBJECT:
+                        return (
+                            self.str_cond == input.str_cond and
+                            self.ref_cond == input.ref_cond
+                        )
 
             return False
 
@@ -363,62 +371,77 @@ class TriggerCondition(models.Model):
             elif val is None:
                 return self.ref_cond is None
 
+        def _is_match_named_object(val):
+            # This refilling processing is necessary because any type of value is acceptable
+            eval_value = {
+                "name": "",
+                "id": None,
+            }
+            if isinstance(val, str):
+                eval_value["name"] = val
+                eval_value["id"] = val if val.isdigit() else None
+            if isinstance(val, int):
+                eval_value["id"] = val
+            if isinstance(val, dict):
+                eval_value["name"] = val.get("name", "")
+                eval_value["id"] = val.get("id")
+
+            # check specified value is matched with this condition
+            if eval_value.get("name") and self.str_cond == eval_value.get("name"):
+                return True
+
+            if eval_value.get("id") and _is_match_object(eval_value.get("id")):
+                return True
+
+            # this matches explicit empty eval_valueue
+            if (
+                self.str_cond == eval_value.get("name", "") == "" and
+                self.ref_cond == eval_value.get("id") == None):
+                return True
 
         try:
-            attr_type = AttrType(self.attr.type)
+            match self.ATTR_TYPE:
+                case AttrType.OBJECT:
+                    return _is_match_object(recv_value)
+
+                case AttrType.ARRAY_OBJECT:
+                    if recv_value is None or not recv_value:
+                        # when both recv_value and self.ref_cond is empty, this condition is matched
+                        return self.ref_cond is None
+
+                    elif isinstance(recv_value, list):
+                        return any([_is_match_object(x) for x in recv_value])
+
+                case AttrType.STRING | AttrType.TEXT:
+                    return self.str_cond == recv_value
+
+                case AttrType.NAMED_OBJECT:
+                    return _is_match_named_object(recv_value)
+
+                case AttrType.ARRAY_NAMED_OBJECT:
+                    if recv_value is None or not recv_value:
+                        # when both recv_value and self.ref_cond is empty, this condition is matched
+                        return self.ref_cond is None and self.str_cond == ""
+
+                    elif isinstance(recv_value, list):
+                        return any([_is_match_named_object(x) for x in recv_value])
+
+                case AttrType.ARRAY_STRING:
+                    if recv_value is None or not recv_value:
+                        # when both recv_value and self.str_cond is empty, this condition is matched
+                        return self.str_cond == ""
+
+                    elif isinstance(recv_value, list):
+                        return self.str_cond in recv_value
+
+                case AttrType.BOOLEAN:
+                    return self.bool_cond == recv_value
+
         except ValueError:
             Logger.error("Invalid Attribute Type(%s) was registered (attr_id: %s)" (
                 self.attr.type,
                 self.attr.id
             ))
-            return False
-
-        match attr_type:
-            case AttrType.OBJECT:
-                return _is_match_object(recv_value)
-
-            case AttrType.ARRAY_OBJECT:
-                if recv_value is None or not recv_value:
-                    # when both recv_value and self.ref_cond is empty, this condition is matched
-                    return self.ref_cond is None
-
-                elif isinstance(recv_value, list):
-                    return any([_is_match_object(x) for x in recv_value])
-
-            case AttrType.STRING | AttrType.TEXT:
-                return self.str_cond == recv_value
-
-            case AttrType.NAMED_OBJECT:
-                if recv_value.get("name") and self.str_cond == recv_value.get("name"):
-                    return True
-
-                if recv_value.get("id") and _is_match_object(recv_value.get("id")):
-                    return True
-
-                # this matches explicit empty value
-                if (
-                    self.str_cond == recv_value.get("name", "") == "" and
-                    self.ref_cond == recv_value.get("id") == None):
-                    return True
-
-            case AttrType.ARRAY_STRING:
-                if recv_value is None or not recv_value:
-                    # when both recv_value and self.str_cond is empty, this condition is matched
-                    return self.str_cond == ""
-
-                elif isinstance(recv_value, list):
-                    return self.str_cond in recv_value
-
-            case AttrType.ARRAY_NAMED_OBJECT:
-                for info in recv_value:
-                    if self.str_cond == info.get("name", ""):
-                        return True
-
-                    if _is_match_object(info.get("id")):
-                        return True
-
-            case AttrType.BOOLEAN:
-                return self.bool_cond == recv_value
 
         return False
 
