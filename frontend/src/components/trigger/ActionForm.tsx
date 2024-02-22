@@ -18,6 +18,7 @@ import {
   TableCell,
   TableRow,
   TextField,
+  Typography,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import React, { FC } from "react";
@@ -63,10 +64,27 @@ interface PropsActionValueComponentWithEntity
   handleDelInputValue: (index: number) => void;
 }
 
-const StyledBox = styled(Box)(({}) => ({
+const StyledBox = styled(Box)(({ }) => ({
   display: "flex",
   width: "100%",
   gap: "0 12px",
+}));
+
+const NamedObjectBox = styled(Box)(({ }) => ({
+  display: "flex",
+  alignItems: "flex-end",
+  gap: "0 12px",
+  width: "100%",
+}));
+const FlexBox = styled(Box)(({ }) => ({
+  display: "flex",
+  flexDirection: "column",
+}));
+const NameBox = styled(Box)(({ }) => ({
+  width: "280px",
+}));
+const StyledTypography = styled(Typography)(({ }) => ({
+  color: "rgba(0, 0, 0, 0.6)",
 }));
 
 const ActionValueAsString: FC<PropsActionValueComponent> = ({
@@ -141,6 +159,55 @@ const ActionValueAsObject: FC<PropsActionValueComponentWithAttrId> = ({
   );
 };
 
+const ActionValueAsName: FC<PropsActionValueComponentWithAttrId> = ({
+  indexAction,
+  indexActionValue,
+  control,
+  actionValue,
+  attrId,
+}) => {
+  return (
+    <NamedObjectBox>
+      <FlexBox>
+        <NameBox>
+          <Controller
+            name={`actions.${indexAction}.values.${indexActionValue}.strCond`}
+            defaultValue={actionValue.strCond ?? ""}
+            control={control}
+            render={({ field }) => {
+              return <TextField {...field} variant="standard" fullWidth />;
+            }}
+          />
+        </NameBox>
+      </FlexBox>
+      <Box flexGrow={1}>
+        <Controller
+          name={`actions.${indexAction}.values.${indexActionValue}.refCond`}
+          control={control}
+          defaultValue={actionValue.refCond}
+          render={({ field }) => (
+            <ReferralsAutocomplete
+              attrId={attrId}
+              value={actionValue.refCond}
+              handleChange={(v) => {
+                field.onChange({
+                  id: (v as GetEntryAttrReferral).id,
+                  name: (v as GetEntryAttrReferral).name,
+                  schema: {
+                    id: 0,
+                    name: "",
+                  },
+                });
+              }}
+              multiple={false}
+            />
+          )}
+        />
+      </Box>
+    </NamedObjectBox>
+  );
+};
+
 const ActionValueInputForm: FC<PropsActionValueComponentWithEntity> = ({
   indexAction,
   indexActionValue,
@@ -197,6 +264,17 @@ const ActionValueInputForm: FC<PropsActionValueComponentWithEntity> = ({
     case EntryAttributeTypeTypeEnum.OBJECT:
       return (
         <ActionValueAsObject
+          attrId={actionField.attr.id}
+          actionValue={actionValue}
+          indexAction={indexAction}
+          indexActionValue={indexActionValue}
+          control={control}
+        />
+      );
+
+    case EntryAttributeTypeTypeEnum.NAMED_OBJECT:
+      return (
+        <ActionValueAsName
           attrId={actionField.attr.id}
           actionValue={actionValue}
           indexAction={indexAction}

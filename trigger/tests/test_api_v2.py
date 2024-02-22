@@ -18,6 +18,7 @@ class APITest(AironeViewTest):
         self.user: User = self.guest_login()
 
         # create Entities that are used for each tests
+        self.entity_currency = self.create_entity(self.user, "Currency")
         self.entity_people = self.create_entity(
             self.user,
             "people",
@@ -38,9 +39,21 @@ class APITest(AironeViewTest):
                 {"name": "memo", "type": AttrTypeValue["string"]},
                 {"name": "authors", "type": AttrTypeValue["array_string"]},
                 {"name": "recommended_by", "type": AttrTypeValue["array_object"]},
+                {"name": "price", "type": AttrTypeValue["named_object"], "ref": self.entity_currency},
                 {"name": "history", "type": AttrTypeValue["array_named_object"]},
             ],
         )
+
+        self.FULL_PARAMS_FOR_ACTION = [
+            {
+                "attr_id": self.entity_book.attrs.get(name="title").id,
+                "value": "default title",
+            },
+            {
+                "attr_id": self.entity_book.attrs.get(name="").id,
+                "value": "default title",
+            },
+        ]
 
     def _assert_resp_results_of_action_values(self, resp_action_values, ref_entry):
         ref_action_values = [
@@ -264,6 +277,7 @@ class APITest(AironeViewTest):
 
     def test_create_trigger_condition(self):
         entry_tom = self.add_entry(self.user, "Tom", self.entity_people)
+        entry_yen = self.add_entry(self.user, "YEN", self.entity_currency)
         params = {
             "entity_id": self.entity_book.id,
             "conditions": [
@@ -278,6 +292,11 @@ class APITest(AironeViewTest):
                 {
                     "attr_id": self.entity_book.attrs.get(name="is_overdue").id,
                     "cond": str(True),
+                },
+                {
+                    "attr_id": self.entity_book.attrs.get(name="price").id,
+                    "cond": str(entry_yen.id),
+                    "hint": "entry",
                 },
             ],
             "actions": [
@@ -310,6 +329,7 @@ class APITest(AironeViewTest):
                 ("title", "Harry Potter and the Philosopher's Stone", None, False),
                 ("borrowed_by", "", entry_tom, False),
                 ("is_overdue", "", None, True),
+                ("price", "", entry_yen, False),
             ],
         )
 
@@ -453,3 +473,25 @@ class APITest(AironeViewTest):
         self.assertEqual(TriggerCondition.objects.count(), 0)
         self.assertEqual(TriggerAction.objects.count(), 0)
         self.assertEqual(TriggerActionValue.objects.count(), 0)
+
+
+    def test_create_trigger_with_all_typed_for_action(self):
+        entry_tom = self.add_entry(self.user, "Tom", self.entity_people)
+        entry_yen = self.add_entry(self.user, "YEN", self.entity_currency)
+        params = {
+            "entity_id": self.entity_book.id,
+            "conditions": [
+                {
+                    "attr_id": self.entity_book.attrs.get(name="title").id,
+                    "cond": "",
+                },
+            ],
+            "actions": [
+                {
+                    "attr_id": self.entity_book.attrs.get(name="title").id,
+                    "value": "default title",
+                },
+            ],
+        }
+        resp = self.client.post("/trigger/api/v2/", json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, 201)

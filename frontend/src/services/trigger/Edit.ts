@@ -8,6 +8,7 @@ const SUPPORTED_ATTRIBUTE_TYPES = [
   EntryAttributeTypeTypeEnum.ARRAY_STRING,
   EntryAttributeTypeTypeEnum.BOOLEAN,
   EntryAttributeTypeTypeEnum.OBJECT,
+  EntryAttributeTypeTypeEnum.NAMED_OBJECT,
   EntryAttributeTypeTypeEnum.ARRAY_OBJECT,
 ];
 
