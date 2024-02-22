@@ -64,26 +64,26 @@ interface PropsActionValueComponentWithEntity
   handleDelInputValue: (index: number) => void;
 }
 
-const StyledBox = styled(Box)(({ }) => ({
+const StyledBox = styled(Box)(({}) => ({
   display: "flex",
   width: "100%",
   gap: "0 12px",
 }));
 
-const NamedObjectBox = styled(Box)(({ }) => ({
+const NamedObjectBox = styled(Box)(({}) => ({
   display: "flex",
   alignItems: "flex-end",
   gap: "0 12px",
   width: "100%",
 }));
-const FlexBox = styled(Box)(({ }) => ({
+const FlexBox = styled(Box)(({}) => ({
   display: "flex",
   flexDirection: "column",
 }));
-const NameBox = styled(Box)(({ }) => ({
-  width: "280px",
+const NameBox = styled(Box)(({}) => ({
+  width: "150px",
 }));
-const StyledTypography = styled(Typography)(({ }) => ({
+const StyledTypography = styled(Typography)(({}) => ({
   color: "rgba(0, 0, 0, 0.6)",
 }));
 
@@ -303,6 +303,27 @@ const ActionValueInputForm: FC<PropsActionValueComponentWithEntity> = ({
           </IconButton>
         </StyledBox>
       );
+
+    case EntryAttributeTypeTypeEnum.ARRAY_NAMED_OBJECT:
+      return (
+        <StyledBox>
+          <>
+            <ActionValueAsName
+              attrId={actionField.attr.id}
+              actionValue={actionValue}
+              indexAction={indexAction}
+              indexActionValue={indexActionValue}
+              control={control}
+            />
+          </>
+          <IconButton onClick={() => handleDelInputValue(indexActionValue)}>
+            <CancelIcon />
+          </IconButton>
+          <IconButton onClick={() => handleAddInputValue(indexActionValue)}>
+            <AddCircleIcon />
+          </IconButton>
+        </StyledBox>
+      );
   }
 };
 
@@ -432,7 +453,7 @@ export const ActionForm: FC<Props> = ({
             </IconButton>
           </TableCell>
           <TableCell>
-            <IconButton onClick={() => handleAppendAction(index + 1)}>
+            <IconButton onClick={() => handleAppendAction(index)}>
               <AddIcon />
             </IconButton>
           </TableCell>

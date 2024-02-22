@@ -1,6 +1,6 @@
 import {
-  EntryAttributeTypeTypeEnum,
   EntityDetailAttribute,
+  EntryAttributeTypeTypeEnum,
 } from "@dmm-com/airone-apiclient-typescript-fetch";
 
 const SUPPORTED_ATTRIBUTE_TYPES = [
@@ -10,6 +10,7 @@ const SUPPORTED_ATTRIBUTE_TYPES = [
   EntryAttributeTypeTypeEnum.OBJECT,
   EntryAttributeTypeTypeEnum.NAMED_OBJECT,
   EntryAttributeTypeTypeEnum.ARRAY_OBJECT,
+  EntryAttributeTypeTypeEnum.ARRAY_NAMED_OBJECT,
 ];
 
 export const isSupportedType = (attr: EntityDetailAttribute): boolean => {

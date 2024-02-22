@@ -39,11 +39,11 @@ const StyledFlexColumnBox = styled(Box)({
   marginBottom: "48px",
 });
 
-const HeaderTableRow = styled(TableRow)(({ }) => ({
+const HeaderTableRow = styled(TableRow)(({}) => ({
   backgroundColor: "#455A64",
 }));
 
-const HeaderTableCell = styled(TableCell)(({ }) => ({
+const HeaderTableCell = styled(TableCell)(({}) => ({
   color: "#FFFFFF",
   boxSizing: "border-box",
 }));
@@ -179,8 +179,14 @@ export const TriggerEditPage: FC = () => {
           break;
 
         case EntryAttributeTypeTypeEnum.NAMED_OBJECT:
-          console.log("[onix/EntryAttributeTypeTypeEnum.NAMED_OBJECT] attr: ", action.attr);
-          console.log("[onix/EntryAttributeTypeTypeEnum.NAMED_OBJECT] values: ", action.values);
+          console.log(
+            "[onix/EntryAttributeTypeTypeEnum.NAMED_OBJECT] attr: ",
+            action.attr
+          );
+          console.log(
+            "[onix/EntryAttributeTypeTypeEnum.NAMED_OBJECT] values: ",
+            action.values
+          );
           action.values.map((val) => {
             retValues.push({
               attrId: action.attr.id,
@@ -198,6 +204,17 @@ export const TriggerEditPage: FC = () => {
             values: action.values
               .filter((val) => val.refCond && val.refCond?.id > 0)
               .map((val) => val.refCond?.id ?? 0),
+          });
+          break;
+
+        case EntryAttributeTypeTypeEnum.ARRAY_NAMED_OBJECT:
+          console.log("action", action);
+          retValues.push({
+            attrId: action.attr.id,
+            values: action.values.map((val) => ({
+              name: val.strCond,
+              id: val.refCond?.id ?? 0,
+            })),
           });
           break;
       }

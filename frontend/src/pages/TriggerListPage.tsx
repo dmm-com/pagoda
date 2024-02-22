@@ -149,6 +149,23 @@ const ElemTriggerActionValue: FC<{
         </Box>
       );
 
+    case EntryAttributeTypeTypeEnum.ARRAY_NAMED_OBJECT:
+    case EntryAttributeTypeTypeEnum.NAMED_OBJECT:
+      return (
+        <StyledBox>
+          <Box>{value.strCond}</Box>
+          <Box
+            component={Link}
+            to={entryDetailsPath(
+              value.refCond?.schema.id ?? 0,
+              value.refCond?.id ?? 0
+            )}
+          >
+            {value.refCond?.name ?? ""}
+          </Box>
+        </StyledBox>
+      );
+
     default:
       return <Box />;
   }
