@@ -2058,7 +2058,7 @@ class ViewTest(AironeViewTest):
             "entry_name": "entry",
             "attrs": [
                 {
-                    "entity_attr_id": str(entity.attrs.get(name="age").id),
+                    "entity_attr_id": "",
                     "id": str(entry.attrs.get(schema__name="age").id),
                     "value": [{"data": "0", "index": 0}],
                 }

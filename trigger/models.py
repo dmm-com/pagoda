@@ -6,7 +6,7 @@ from airone.lib.http import DRFRequest
 from airone.lib.types import AttrTypeValue
 from entity.models import Entity, EntityAttr
 from entry.api_v2.serializers import EntryUpdateSerializer
-from entry.models import Entry
+from entry.models import Attribute, Entry
 
 
 ## These are internal classes for AirOne trigger and action
@@ -428,7 +428,15 @@ class TriggerCondition(models.Model):
         # with both API versions.
         if all(["entity_attr_id" in x for x in recv_data]):
             # This is for APIv1
-            params = [{"attr_id": int(x["entity_attr_id"]), "value": x["value"]} for x in recv_data]
+            params = []
+            for data in recv_data:
+                if data["entity_attr_id"]:
+                    entity_attr = EntityAttr.objects.filter(id=data["entity_attr_id"]).first()
+                else:
+                    attr = Attribute.objects.filter(id=data["id"]).first()
+                    entity_attr = attr.schema if attr else None
+                attr_id = int(entity_attr.id) if entity_attr else 0
+                params.append({"attr_id": attr_id, "value": data["value"]})
         else:
             # This is for APIv2
             params = [{"attr_id": int(x["id"]), "value": x["value"]} for x in recv_data]
