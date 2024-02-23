@@ -240,8 +240,8 @@ class AironeApiClient {
     isToplevel: boolean,
     attrs: Array<EntityAttrCreate>,
     webhooks: Array<WebhookCreateUpdate>
-  ): Promise<EntityCreate> {
-    return await this.entity.entityApiV2Create(
+  ): Promise<void> {
+    await this.entity.entityApiV2Create(
       {
         entityCreate: {
           id: -1,

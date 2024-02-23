@@ -29,6 +29,7 @@ from entity.api_v2.serializers import (
 from entity.models import Entity, EntityAttr
 from entry.api_v2.serializers import EntryBaseSerializer, EntryCreateSerializer
 from entry.models import Entry
+from job.models import Job
 from user.models import History, User
 
 
@@ -110,7 +111,7 @@ class EntityAPI(viewsets.ModelViewSet):
     def get_serializer_class(self):
         serializer = {
             "list": EntityListSerializer,
-            "create": EntityCreateSerializer,
+            "create": serializers.Serializer,
             "update": EntityUpdateSerializer,
         }
         return serializer.get(self.action, EntityDetailSerializer)
@@ -128,6 +129,18 @@ class EntityAPI(viewsets.ModelViewSet):
                 exclude_condition["status"] = F("status").bitor(Entity.STATUS_TOP_LEVEL)
 
         return Entity.objects.filter(**filter_condition).exclude(**exclude_condition)
+
+    @extend_schema(request=EntityCreateSerializer)
+    def create(self, request, *args, **kwargs):
+        user: User = request.user
+
+        serializer = EntityCreateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        job = Job.new_create_entity_v2(user, None, params=serializer.validated_data)
+        job.run()
+
+        return Response(status=status.HTTP_202_ACCEPTED)
 
     def destroy(self, request, pk):
         entity: Entity = self.get_object()

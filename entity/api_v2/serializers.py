@@ -204,7 +204,7 @@ class EntitySerializer(serializers.ModelSerializer):
 
         entity: Entity
         entity, is_created_entity = Entity.objects.get_or_create(
-            id=entity_id, defaults={**validated_data}
+            id=entity_id, created_user=user, defaults={**validated_data}
         )
         if not is_created_entity:
             # record history for specific fields on update
@@ -324,11 +324,10 @@ class EntityCreateSerializer(EntitySerializer):
         child=EntityAttrCreateSerializer(), write_only=True, required=False, default=[]
     )
     webhooks = WebhookCreateUpdateSerializer(many=True, write_only=True, required=False, default=[])
-    created_user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     class Meta:
         model = Entity
-        fields = ["id", "name", "note", "is_toplevel", "attrs", "webhooks", "created_user"]
+        fields = ["id", "name", "note", "is_toplevel", "attrs", "webhooks"]
         extra_kwargs = {"note": {"write_only": True}}
 
     def validate_name(self, name):
@@ -353,7 +352,14 @@ class EntityCreateSerializer(EntitySerializer):
         return webhooks
 
     def create(self, validated_data: EntityCreateData):
-        user: User = self.context["request"].user
+        user: User | None = None
+        if "request" in self.context:
+            user = self.context["request"].user
+        if "_user" in self.context:
+            user = self.context["_user"]
+
+        if user is None:
+            raise RequiredParameterError("user is required")
 
         if custom_view.is_custom("before_create_entity_V2"):
             validated_data = custom_view.call_custom(

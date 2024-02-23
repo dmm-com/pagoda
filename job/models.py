@@ -50,6 +50,7 @@ class JobOperation(Enum):
     UPDATE_DOCUMENT = 21
     EXPORT_SEARCH_RESULT_V2 = 22
     MAY_INVOKE_TRIGGER = 23
+    CREATE_ENTITY_V2 = 24
 
 
 class Job(models.Model):
@@ -338,6 +339,7 @@ class Job(models.Model):
                 JobOperation.UPDATE_DOCUMENT.value: entry_task.update_es_documents,
                 JobOperation.EXPORT_SEARCH_RESULT_V2.value: entry_task.export_search_result_v2,
                 JobOperation.MAY_INVOKE_TRIGGER.value: trigger_task.may_invoke_trigger,
+                JobOperation.CREATE_ENTITY_V2.value: entity_task.create_entity_v2,
             }
 
         return kls._METHOD_TABLE
@@ -538,6 +540,17 @@ class Job(models.Model):
             "",
             json.dumps(recv_attrs),
             dependent_job,
+        )
+
+    @classmethod
+    def new_create_entity_v2(kls, user, target, text="", params={}):
+        print(params)
+        return kls._create_new_job(
+            user,
+            target,
+            JobOperation.CREATE_ENTITY_V2.value,
+            text,
+            json.dumps(params, default=_support_time_default, sort_keys=True),
         )
 
     def set_cache(self, value):
