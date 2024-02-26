@@ -8,6 +8,16 @@
 
 ### Fixed
 
+## v3.78.0
+
+### Changed
+* Renamed frontend page component.
+  Contributed by @syucream
+
+### Fixed
+* Fixed invoke trigger failure with do_edit.
+  Contributed by @hinashi
+
 ## v3.77.0
 
 ### Changed
