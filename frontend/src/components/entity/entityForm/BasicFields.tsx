@@ -93,7 +93,7 @@ export const BasicFields: FC<Props> = ({ control }) => {
             </TableCell>
           </StyledTableRow>
           <StyledTableRow>
-            <TableCell>サイドバーに表示</TableCell>
+            <TableCell>トップページに表示</TableCell>
             <TableCell>
               <Controller
                 name="isToplevel"
