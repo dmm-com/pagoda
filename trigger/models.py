@@ -316,13 +316,13 @@ class TriggerCondition(models.Model):
         def _do_check_condition(input: InputTriggerCondition):
             if self.attr.id == input.attr.id:
                 match self.ATTR_TYPE:
-                    case AttrType.STRING | AttrType.TEXT:
+                    case AttrType.STRING | AttrType.TEXT | AttrType.ARRAY_STRING:
                         return self.str_cond == input.str_cond
-                    case AttrType.OBJECT:
+                    case AttrType.OBJECT | AttrType.ARRAY_OBJECT:
                         return self.ref_cond == input.ref_cond
                     case AttrType.BOOLEAN:
                         return self.bool_cond == input.bool_cond
-                    case AttrType.NAMED_OBJECT:
+                    case AttrType.NAMED_OBJECT | AttrType.ARRAY_NAMED_OBJECT:
                         return (
                             self.str_cond == input.str_cond and
                             self.ref_cond == input.ref_cond
