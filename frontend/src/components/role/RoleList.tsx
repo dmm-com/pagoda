@@ -89,22 +89,22 @@ export const RoleList: FC = ({}) => {
                 <TableCell>
                   <StyledList>
                     {role.users.map((user) => (
-                      <StyledListItem>
-                        <Typography key={user.id} ml="58px" my="4px">
+                      <StyledListItem key={user.id}>
+                        <Typography ml="58px" my="4px">
                           {user.username}
                         </Typography>
                       </StyledListItem>
                     ))}
                     {role.groups.map((group) => (
-                      <StyledListItem>
-                        <Typography key={group.id} ml="58px" my="4px">
+                      <StyledListItem key={group.id}>
+                        <Typography ml="58px" my="4px">
                           {group.name}
                         </Typography>
                       </StyledListItem>
                     ))}
                     {role.adminUsers.map((user) => (
-                      <StyledListItem>
-                        <Box key={user.id} display="flex" my="4px">
+                      <StyledListItem key={user.id}>
+                        <Box display="flex" my="4px">
                           <Box
                             display="flex"
                             alignItems="center"
@@ -123,8 +123,8 @@ export const RoleList: FC = ({}) => {
                       </StyledListItem>
                     ))}
                     {role.adminGroups.map((group) => (
-                      <StyledListItem>
-                        <Box key={group.id} display="flex" my="4px">
+                      <StyledListItem key={group.id}>
+                        <Box display="flex" my="4px">
                           <Box
                             display="flex"
                             alignItems="center"
