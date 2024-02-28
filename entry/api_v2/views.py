@@ -47,6 +47,30 @@ from role.models import Role
 from user.models import User
 
 
+def delete_entry_with_notifucation(user, entry):
+    """
+    This implements whole processing related with Entry's deletion such as
+    - running custom_view processing
+    - invoking job about notification
+    """
+
+    if custom_view.is_custom("before_delete_entry_v2", entry.schema.name):
+        custom_view.call_custom("before_delete_entry_v2", entry.schema.name, user, entry)
+
+    # register operation History for deleting entry
+    user.seth_entry_del(entry)
+
+    # delete entry
+    entry.delete(deleted_user=user)
+
+    if custom_view.is_custom("after_delete_entry_v2", entry.schema.name):
+        custom_view.call_custom("after_delete_entry_v2", entry.schema.name, user, entry)
+
+    # Send notification to the webhook URL
+    job_notify: Job = Job.new_notify_delete_entry(user, entry)
+    job_notify.run()
+
+
 class EntryPermission(BasePermission):
     def has_object_permission(self, request, view, obj):
         user: User = request.user
@@ -86,21 +110,7 @@ class EntryAPI(viewsets.ModelViewSet):
 
         user: User = request.user
 
-        if custom_view.is_custom("before_delete_entry_v2", entry.schema.name):
-            custom_view.call_custom("before_delete_entry_v2", entry.schema.name, user, entry)
-
-        # register operation History for deleting entry
-        user.seth_entry_del(entry)
-
-        # delete entry
-        entry.delete(deleted_user=user)
-
-        if custom_view.is_custom("after_delete_entry_v2", entry.schema.name):
-            custom_view.call_custom("after_delete_entry_v2", entry.schema.name, user, entry)
-
-        # Send notification to the webhook URL
-        job_notify: Job = Job.new_notify_delete_entry(user, entry)
-        job_notify.run()
+        delete_entry_with_notifucation(user, entry)
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -566,20 +576,6 @@ class EntryBulkDeleteAPI(generics.DestroyAPIView):
             raise PermissionDenied("deleting some entries is not allowed")
 
         for entry in entries:
-            if custom_view.is_custom("before_delete_entry_v2", entry.schema.name):
-                custom_view.call_custom("before_delete_entry_v2", entry.schema.name, user, entry)
-
-            # register operation History for deleting entry
-            user.seth_entry_del(entry)
-
-            # delete entry
-            entry.delete(deleted_user=user)
-
-            if custom_view.is_custom("after_delete_entry_v2", entry.schema.name):
-                custom_view.call_custom("after_delete_entry_v2", entry.schema.name, user, entry)
-
-            # Send notification to the webhook URL
-            job_notify: Job = Job.new_notify_delete_entry(user, entry)
-            job_notify.run()
+            delete_entry_with_notifucation(user, entry)
 
         return Response(status=status.HTTP_204_NO_CONTENT)
