@@ -129,6 +129,7 @@ exports[`EditRolePage should match snapshot 1`] = `
             >
               <table
                 class="MuiTable-root table table-bordered css-rqglhn-MuiTable-root"
+                data-testid="basic"
               >
                 <thead
                   class="MuiTableHead-root css-15wwp11-MuiTableHead-root"
@@ -244,6 +245,7 @@ exports[`EditRolePage should match snapshot 1`] = `
                 </p>
                 <table
                   class="MuiTable-root css-rqglhn-MuiTable-root"
+                  data-testid="group"
                 >
                   <thead
                     class="MuiTableHead-root css-15wwp11-MuiTableHead-root"
@@ -445,6 +447,7 @@ exports[`EditRolePage should match snapshot 1`] = `
                 </p>
                 <table
                   class="MuiTable-root css-rqglhn-MuiTable-root"
+                  data-testid="user"
                 >
                   <thead
                     class="MuiTableHead-root css-15wwp11-MuiTableHead-root"
@@ -767,6 +770,7 @@ exports[`EditRolePage should match snapshot 1`] = `
           >
             <table
               class="MuiTable-root table table-bordered css-rqglhn-MuiTable-root"
+              data-testid="basic"
             >
               <thead
                 class="MuiTableHead-root css-15wwp11-MuiTableHead-root"
@@ -882,6 +886,7 @@ exports[`EditRolePage should match snapshot 1`] = `
               </p>
               <table
                 class="MuiTable-root css-rqglhn-MuiTable-root"
+                data-testid="group"
               >
                 <thead
                   class="MuiTableHead-root css-15wwp11-MuiTableHead-root"
@@ -1083,6 +1088,7 @@ exports[`EditRolePage should match snapshot 1`] = `
               </p>
               <table
                 class="MuiTable-root css-rqglhn-MuiTable-root"
+                data-testid="user"
               >
                 <thead
                   class="MuiTableHead-root css-15wwp11-MuiTableHead-root"
