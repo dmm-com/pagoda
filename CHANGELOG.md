@@ -8,6 +8,12 @@
 
 ### Fixed
 
+## v3.79.0
+
+### Fixed
+* Fix description for isTopLevel.
+  Contributed by @syucream
+
 ## v3.78.0
 
 ### Changed
