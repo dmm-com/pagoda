@@ -112,7 +112,7 @@ class EntityAPI(viewsets.ModelViewSet):
         serializer = {
             "list": EntityListSerializer,
             "create": serializers.Serializer,
-            "update": EntityUpdateSerializer,
+            "update": serializers.Serializer,
         }
         return serializer.get(self.action, EntityDetailSerializer)
 
@@ -138,6 +138,21 @@ class EntityAPI(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
 
         job = Job.new_create_entity_v2(user, None, params=request.data)
+        job.run()
+
+        return Response(status=status.HTTP_202_ACCEPTED)
+
+    @extend_schema(request=EntityUpdateSerializer)
+    def update(self, request, *args, **kwargs):
+        user: User = request.user
+        entity: Entity = self.get_object()
+
+        serializer = EntityUpdateSerializer(
+            instance=entity, data=request.data, context={"_user": user}
+        )
+        serializer.is_valid(raise_exception=True)
+
+        job = Job.new_edit_entity_v2(user, entity, params=request.data)
         job.run()
 
         return Response(status=status.HTTP_202_ACCEPTED)

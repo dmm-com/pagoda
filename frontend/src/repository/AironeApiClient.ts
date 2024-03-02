@@ -268,8 +268,8 @@ class AironeApiClient {
     isToplevel: boolean,
     attrs: Array<EntityAttrUpdate>,
     webhooks: Array<WebhookCreateUpdate>
-  ): Promise<EntityUpdate> {
-    return await this.entity.entityApiV2Update(
+  ): Promise<void> {
+    await this.entity.entityApiV2Update(
       {
         id: id,
         entityUpdate: {

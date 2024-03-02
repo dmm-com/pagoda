@@ -4,6 +4,7 @@ import time
 from datetime import date, datetime, timedelta
 from enum import Enum
 from importlib import import_module
+from typing import Any
 
 import pytz
 from django.conf import settings
@@ -51,6 +52,7 @@ class JobOperation(Enum):
     EXPORT_SEARCH_RESULT_V2 = 22
     MAY_INVOKE_TRIGGER = 23
     CREATE_ENTITY_V2 = 24
+    EDIT_ENTITY_V2 = 25
 
 
 class Job(models.Model):
@@ -263,7 +265,9 @@ class Job(models.Model):
             return method(self.id)
 
     @classmethod
-    def _create_new_job(kls, user, target, operation, text, params, depend_on=None) -> "Job":
+    def _create_new_job(
+        kls, user, target: Entity | Entry | Any, operation, text, params, depend_on=None
+    ) -> "Job":
         t_type = kls.TARGET_UNKNOWN
         if isinstance(target, Entry):
             t_type = kls.TARGET_ENTRY
@@ -340,6 +344,7 @@ class Job(models.Model):
                 JobOperation.EXPORT_SEARCH_RESULT_V2.value: entry_task.export_search_result_v2,
                 JobOperation.MAY_INVOKE_TRIGGER.value: trigger_task.may_invoke_trigger,
                 JobOperation.CREATE_ENTITY_V2.value: entity_task.create_entity_v2,
+                JobOperation.EDIT_ENTITY_V2.value: entity_task.edit_entity_v2,
             }
 
         return kls._METHOD_TABLE
@@ -548,6 +553,16 @@ class Job(models.Model):
             user,
             target,
             JobOperation.CREATE_ENTITY_V2.value,
+            text,
+            json.dumps(params, default=_support_time_default, sort_keys=True),
+        )
+
+    @classmethod
+    def new_edit_entity_v2(kls, user, target: Entity, text="", params={}):
+        return kls._create_new_job(
+            user,
+            target,
+            JobOperation.EDIT_ENTITY_V2.value,
             text,
             json.dumps(params, default=_support_time_default, sort_keys=True),
         )

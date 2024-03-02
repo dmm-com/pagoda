@@ -423,7 +423,14 @@ class EntityUpdateSerializer(EntitySerializer):
         return webhooks
 
     def update(self, entity: Entity, validated_data: EntityUpdateData):
-        user: User = self.context["request"].user
+        user: User | None = None
+        if "request" in self.context:
+            user = self.context["request"].user
+        if "_user" in self.context:
+            user = self.context["_user"]
+
+        if user is None:
+            raise RequiredParameterError("user is required")
 
         if custom_view.is_custom("before_update_entity_v2"):
             validated_data = custom_view.call_custom(

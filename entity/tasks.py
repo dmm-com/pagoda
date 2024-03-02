@@ -2,7 +2,7 @@ import json
 
 from airone.celery import app
 from airone.lib.types import AttrTypeValue
-from entity.api_v2.serializers import EntityCreateSerializer
+from entity.api_v2.serializers import EntityCreateSerializer, EntityUpdateSerializer
 from entity.models import Entity, EntityAttr
 from job.models import Job
 from user.models import User
@@ -256,6 +256,34 @@ def create_entity_v2(self, job_id: int):
         return
 
     serializer.create(serializer.validated_data)
+
+    # update job status and save it
+    job.update(Job.STATUS["DONE"])
+
+
+@app.task(bind=True)
+def edit_entity_v2(self, job_id: int):
+    job = Job.objects.get(id=job_id)
+
+    if not job.proceed_if_ready():
+        return
+
+    # At the first time, update job status to prevent executing this job duplicately
+    job.update(Job.STATUS["PROCESSING"])
+
+    entity: Entity | None = Entity.objects.filter(id=job.target.id, is_active=True).first()
+    if not entity:
+        job.update(Job.STATUS["ERROR"])
+        return
+
+    serializer = EntityUpdateSerializer(
+        instance=entity, data=json.loads(job.params), context={"_user": job.user}
+    )
+    if not serializer.is_valid():
+        job.update(Job.STATUS["ERROR"])
+        return
+
+    serializer.update(entity, serializer.validated_data)
 
     # update job status and save it
     job.update(Job.STATUS["DONE"])
