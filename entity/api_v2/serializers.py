@@ -142,7 +142,7 @@ class EntityAttrUpdateSerializer(serializers.ModelSerializer):
             if "type" in attr and attr["type"] != entity_attr.type:
                 raise ValidationError("type cannot be changed")
 
-            user: User = self.context["request"].user
+            user: User = self.context.get("_user") or self.context["request"].user
             if attr["is_deleted"] and not user.has_permission(entity_attr, ACLType.Full):
                 raise PermissionDenied("Does not have permission to delete")
             if not attr["is_deleted"] and not user.has_permission(entity_attr, ACLType.Writable):

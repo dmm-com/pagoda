@@ -255,7 +255,11 @@ def create_entity_v2(self, job_id: int):
         job.update(Job.STATUS["ERROR"])
         return
 
-    serializer.create(serializer.validated_data)
+    try:
+        serializer.create(serializer.validated_data)
+    except Exception:
+        job.update(Job.STATUS["ERROR"])
+        return
 
     # update job status and save it
     job.update(Job.STATUS["DONE"])
@@ -283,7 +287,11 @@ def edit_entity_v2(self, job_id: int):
         job.update(Job.STATUS["ERROR"])
         return
 
-    serializer.update(entity, serializer.validated_data)
+    try:
+        serializer.update(entity, serializer.validated_data)
+    except Exception:
+        job.update(Job.STATUS["ERROR"])
+        return
 
     # update job status and save it
     job.update(Job.STATUS["DONE"])

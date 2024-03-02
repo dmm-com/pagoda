@@ -1283,11 +1283,11 @@ class ViewTest(AironeViewTest):
         entity: Entity = Entity.objects.get(name=params["name"])
         self.assertEqual([x.is_verified for x in entity.webhooks.all()], [True, False])
 
-    @mock.patch("custom_view.is_custom", mock.Mock(return_value=True))
-    @mock.patch("custom_view.call_custom")
     @mock.patch(
         "entity.tasks.create_entity_v2.delay", mock.Mock(side_effect=tasks.create_entity_v2)
     )
+    @mock.patch("custom_view.is_custom", mock.Mock(return_value=True))
+    @mock.patch("custom_view.call_custom")
     def test_create_entity_with_customview(self, mock_call_custom):
         params = {"name": "hoge"}
 
@@ -1296,8 +1296,8 @@ class ViewTest(AironeViewTest):
 
         mock_call_custom.side_effect = side_effect
         resp = self.client.post("/entity/api/v2/", json.dumps(params), "application/json")
-        self.assertEqual(resp.status_code, 400)
-        self.assertEqual(resp.json(), [{"code": "AE-121000", "message": "create error"}])
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
+        self.assertTrue(mock_call_custom.called)
 
         def side_effect(handler_name, entity_name, user, *args):
             # Check specified parameters are expected
@@ -1351,6 +1351,7 @@ class ViewTest(AironeViewTest):
         finally:
             settings.AIRONE_FLAGS = {"WEBHOOK": True}
 
+    @mock.patch("entity.tasks.edit_entity_v2.delay", mock.Mock(side_effect=tasks.edit_entity_v2))
     def test_update_entity(self):
         entity: Entity = self.create_entity(
             **{
@@ -1403,15 +1404,8 @@ class ViewTest(AironeViewTest):
         resp = self.client.put(
             "/entity/api/v2/%d/" % entity.id, json.dumps(params), "application/json"
         )
-        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
 
-        self.assertEqual(
-            resp.json(),
-            {
-                "id": entity.id,
-                "name": "change-entity1",
-            },
-        )
         entity.refresh_from_db()
         self.assertEqual(entity.name, "change-entity1")
         self.assertEqual(entity.note, "change-hoge")
@@ -1567,6 +1561,7 @@ class ViewTest(AironeViewTest):
             {"is_toplevel": [{"code": "AE-121000", "message": "Must be a valid boolean."}]},
         )
 
+    @mock.patch("entity.tasks.edit_entity_v2.delay", mock.Mock(side_effect=tasks.edit_entity_v2))
     def test_update_entity_with_invalid_param_attrs(self):
         params = {
             "attrs": "hoge",
@@ -2088,7 +2083,7 @@ class ViewTest(AironeViewTest):
         resp = self.client.put(
             "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
         )
-        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
         self.assertTrue(
             all(["hoge" not in x.name for x in self.entity.attrs.filter(is_active=True)])
         )
@@ -2133,7 +2128,7 @@ class ViewTest(AironeViewTest):
         resp = self.client.put(
             "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
         )
-        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
 
     def test_update_entity_with_invalid_param_webhooks(self):
         params = {
@@ -2429,6 +2424,7 @@ class ViewTest(AironeViewTest):
             },
         )
 
+    @mock.patch("entity.tasks.edit_entity_v2.delay", mock.Mock(side_effect=tasks.edit_entity_v2))
     def test_update_entity_with_attrs_referral(self):
         self.entity.attrs.all().delete()
         params = {
@@ -2446,7 +2442,7 @@ class ViewTest(AironeViewTest):
         resp = self.client.put(
             "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
         )
-        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
 
         for entity_attr in self.entity.attrs.all():
             if entity_attr.type & AttrTypeValue["object"]:
@@ -2454,6 +2450,7 @@ class ViewTest(AironeViewTest):
             else:
                 self.assertEqual([x.id for x in entity_attr.referral.all()], [])
 
+    @mock.patch("entity.tasks.edit_entity_v2.delay", mock.Mock(side_effect=tasks.edit_entity_v2))
     def test_update_entity_with_webhook_is_verified(self):
         self.entity.webhooks.all().delete()
         params = {
@@ -2463,10 +2460,11 @@ class ViewTest(AironeViewTest):
         resp = self.client.put(
             "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
         )
-        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
 
         self.assertEqual([x.is_verified for x in self.entity.webhooks.all()], [True, False])
 
+    @mock.patch("entity.tasks.edit_entity_v2.delay", mock.Mock(side_effect=tasks.edit_entity_v2))
     @mock.patch("custom_view.is_custom", mock.Mock(return_value=True))
     @mock.patch("custom_view.call_custom")
     def test_update_entity_with_customview(self, mock_call_custom):
@@ -2479,8 +2477,8 @@ class ViewTest(AironeViewTest):
         resp = self.client.put(
             "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
         )
-        self.assertEqual(resp.status_code, 400)
-        self.assertEqual(resp.json(), [{"code": "AE-121000", "message": "update error"}])
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
+        self.assertTrue(mock_call_custom.called)
 
         def side_effect(handler_name, entity_name, user, *args):
             # Check specified parameters are expected
@@ -2506,9 +2504,10 @@ class ViewTest(AironeViewTest):
         resp = self.client.put(
             "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
         )
-        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
         self.assertTrue(mock_call_custom.called)
 
+    @mock.patch("entity.tasks.edit_entity_v2.delay", mock.Mock(side_effect=tasks.edit_entity_v2))
     def test_update_entry_with_specified_only_param(self):
         self.entity.note = "hoge"
         self.entity.status = Entity.STATUS_TOP_LEVEL
@@ -2525,7 +2524,7 @@ class ViewTest(AironeViewTest):
         resp = self.client.put(
             "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
         )
-        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
 
         self.entity.refresh_from_db()
         changed_attr_count = self.entity.attrs.filter(is_active=True).count()
@@ -2536,6 +2535,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(attr_count, changed_attr_count)
         self.assertEqual(webhook_count, changed_webhook_count)
 
+    @mock.patch("entity.tasks.edit_entity_v2.delay", mock.Mock(side_effect=tasks.edit_entity_v2))
     def test_update_entity_without_permission(self):
         self.role.users.add(self.user)
 
@@ -2574,7 +2574,7 @@ class ViewTest(AironeViewTest):
         resp = self.client.put(
             "/entity/api/v2/%d/" % self.entity.id, json.dumps(paramas), "application/json"
         )
-        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
 
         # permission nothing EntityAttr update
         self.entity.is_public = True
@@ -2608,7 +2608,7 @@ class ViewTest(AironeViewTest):
         resp = self.client.put(
             "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
         )
-        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
 
         # permission writable EntityAttr delete
         params = {"attrs": [{"id": entity_attr.id, "is_deleted": True}]}
@@ -2626,7 +2626,7 @@ class ViewTest(AironeViewTest):
         resp = self.client.put(
             "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
         )
-        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
 
     def test_update_entity_with_webhook_is_disabled(self):
         entity: Entity = self.create_entity(
