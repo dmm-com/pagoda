@@ -544,7 +544,6 @@ class Job(models.Model):
 
     @classmethod
     def new_create_entity_v2(kls, user, target, text="", params={}):
-        print(params)
         return kls._create_new_job(
             user,
             target,

@@ -134,10 +134,10 @@ class EntityAPI(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         user: User = request.user
 
-        serializer = EntityCreateSerializer(data=request.data)
+        serializer = EntityCreateSerializer(data=request.data, context={"_user": user})
         serializer.is_valid(raise_exception=True)
 
-        job = Job.new_create_entity_v2(user, None, params=serializer.validated_data)
+        job = Job.new_create_entity_v2(user, None, params=request.data)
         job.run()
 
         return Response(status=status.HTTP_202_ACCEPTED)

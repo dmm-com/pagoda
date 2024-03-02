@@ -11,6 +11,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied, ValidationError
 
 import custom_view
+from airone.lib import drf
 from airone.lib.acl import ACLType
 from airone.lib.drf import DuplicatedObjectExistsError, ObjectNotExistsError, RequiredParameterError
 from airone.lib.log import Logger
@@ -69,7 +70,7 @@ class WebhookCreateUpdateSerializer(serializers.ModelSerializer):
 
 
 class EntityAttrCreateSerializer(serializers.ModelSerializer):
-    created_user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+    created_user = serializers.HiddenField(default=drf.AironeUserDefault())
 
     class Meta:
         model = EntityAttr
@@ -361,6 +362,7 @@ class EntityCreateSerializer(EntitySerializer):
         if user is None:
             raise RequiredParameterError("user is required")
 
+        validated_data["created_user"] = user
         if custom_view.is_custom("before_create_entity_V2"):
             validated_data = custom_view.call_custom(
                 "before_create_entity_v2", None, user, validated_data

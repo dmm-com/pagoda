@@ -6,6 +6,7 @@ from unittest import mock
 import yaml
 from django.conf import settings
 from django.urls import reverse
+from rest_framework import status
 from rest_framework.exceptions import ValidationError
 
 from acl.models import ACLBase
@@ -465,6 +466,9 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.json()["count"], 2)
 
+    @mock.patch(
+        "entity.tasks.create_entity_v2.delay", mock.Mock(side_effect=tasks.create_entity_v2)
+    )
     def test_create_entity(self):
         params = {
             "name": "entity1",
@@ -493,16 +497,9 @@ class ViewTest(AironeViewTest):
         }
 
         resp = self.client.post("/entity/api/v2/", json.dumps(params), "application/json")
-        self.assertEqual(resp.status_code, 201)
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
 
-        entity: Entity = Entity.objects.get(id=resp.json()["id"])
-        self.assertEqual(
-            resp.json(),
-            {
-                "id": entity.id,
-                "name": "entity1",
-            },
-        )
+        entity: Entity = Entity.objects.get(name=params["name"])
         self.assertEqual(entity.name, "entity1")
         self.assertEqual(entity.note, "hoge")
         self.assertEqual(entity.status, Entity.STATUS_TOP_LEVEL)
@@ -1246,6 +1243,9 @@ class ViewTest(AironeViewTest):
             },
         )
 
+    @mock.patch(
+        "entity.tasks.create_entity_v2.delay", mock.Mock(side_effect=tasks.create_entity_v2)
+    )
     def test_create_entity_with_attrs_referral(self):
         params = {
             "name": "entity1",
@@ -1261,25 +1261,33 @@ class ViewTest(AironeViewTest):
         }
 
         resp = self.client.post("/entity/api/v2/", json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
 
-        entity: Entity = Entity.objects.get(id=resp.json()["id"])
+        entity: Entity = Entity.objects.get(name=params["name"])
         for entity_attr in entity.attrs.all():
             if entity_attr.type & AttrTypeValue["object"]:
                 self.assertEqual([x.id for x in entity_attr.referral.all()], [self.ref_entity.id])
             else:
                 self.assertEqual([x.id for x in entity_attr.referral.all()], [])
 
+    @mock.patch(
+        "entity.tasks.create_entity_v2.delay", mock.Mock(side_effect=tasks.create_entity_v2)
+    )
     def test_create_entity_with_webhook_is_verified(self):
         params = {
             "name": "entity1",
             "webhooks": [{"url": "http://example.net/"}, {"url": "http://hoge.hoge/"}],
         }
         resp = self.client.post("/entity/api/v2/", json.dumps(params), "application/json")
-        entity: Entity = Entity.objects.get(id=resp.json()["id"])
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
+        entity: Entity = Entity.objects.get(name=params["name"])
         self.assertEqual([x.is_verified for x in entity.webhooks.all()], [True, False])
 
     @mock.patch("custom_view.is_custom", mock.Mock(return_value=True))
     @mock.patch("custom_view.call_custom")
+    @mock.patch(
+        "entity.tasks.create_entity_v2.delay", mock.Mock(side_effect=tasks.create_entity_v2)
+    )
     def test_create_entity_with_customview(self, mock_call_custom):
         params = {"name": "hoge"}
 
@@ -1297,7 +1305,7 @@ class ViewTest(AironeViewTest):
             self.assertEqual(user, self.user)
 
             if handler_name == "before_create_entity_v2":
-                self.assertEqual(
+                self.assertDictEqual(
                     args[0],
                     {
                         "name": "hoge",
@@ -1315,7 +1323,7 @@ class ViewTest(AironeViewTest):
 
         mock_call_custom.side_effect = side_effect
         resp = self.client.post("/entity/api/v2/", json.dumps(params), "application/json")
-        self.assertEqual(resp.status_code, 201)
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
         self.assertTrue(mock_call_custom.called)
 
     def test_create_entity_with_webhook_is_disabled(self):

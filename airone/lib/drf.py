@@ -2,6 +2,7 @@ from collections import OrderedDict
 
 import yaml
 from django.conf import settings
+from rest_framework import serializers
 from rest_framework.exceptions import APIException, ParseError, ValidationError
 from rest_framework.parsers import BaseParser
 from rest_framework.renderers import BaseRenderer
@@ -150,3 +151,17 @@ def custom_exception_handler(exc, context):
         response.data = _convert_error_code(response.data)
 
     return response
+
+
+class AironeUserDefault(serializers.CurrentUserDefault):
+    """
+    It enables to get user from the custom field in the context.
+    The original CurrentUserDefault fetches it from request context,
+    so it fails if the context doesn't have request.
+    """
+
+    def __call__(self, serializer_field):
+        if "_user" in serializer_field.context:
+            return serializer_field.context["_user"]
+
+        return super().__call__(serializer_field)
