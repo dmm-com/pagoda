@@ -7,7 +7,7 @@ from airone.celery import app
 from airone.lib.test import AironeTestCase
 from entity.models import Entity
 from entry.models import Entry
-from job.models import Job, JobOperation
+from job.models import Job, JobOperation, JobTarget
 from user.models import User
 
 
@@ -32,7 +32,7 @@ class ModelTest(AironeTestCase):
 
             self.assertEqual(job.user, self.guest)
             self.assertEqual(job.target, self.entry)
-            self.assertEqual(job.target_type, Job.TARGET_ENTRY)
+            self.assertEqual(job.target_type, JobTarget.ENTRY.value)
             self.assertEqual(job.status, Job.STATUS["PREPARING"])
             self.assertEqual(job.operation, info["op"])
 
@@ -48,7 +48,7 @@ class ModelTest(AironeTestCase):
 
         # create a new job
         job = Job.new_export(self.guest, text="hoge", params=params)
-        self.assertEqual(job.target_type, Job.TARGET_UNKNOWN)
+        self.assertEqual(job.target_type, JobTarget.UNKNOWN.value)
         self.assertEqual(job.operation, JobOperation.EXPORT_ENTRY.value)
         self.assertEqual(job.text, "hoge")
 
