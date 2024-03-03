@@ -2663,9 +2663,12 @@ class ViewTest(AironeViewTest):
         finally:
             settings.AIRONE_FLAGS = {"WEBHOOK": True}
 
+    @mock.patch(
+        "entity.tasks.delete_entity_v2.delay", mock.Mock(side_effect=tasks.delete_entity_v2)
+    )
     def test_delete_entity(self):
-        resp = self.client.delete("/entity/api/v2/%d/" % self.entity.id, None, "application/json")
-        self.assertEqual(resp.status_code, 204)
+        resp = self.client.delete("/entity/api/v2/%d/" % self.entity.id)
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
 
         self.entity.refresh_from_db()
         self.assertFalse(self.entity.is_active)
@@ -2676,6 +2679,9 @@ class ViewTest(AironeViewTest):
         self.assertEqual(history.details.count(), self.entity.attrs.count())
         self.assertEqual(history.details.first().target_obj, self.entity.attrs.first().aclbase_ptr)
 
+    @mock.patch(
+        "entity.tasks.delete_entity_v2.delay", mock.Mock(side_effect=tasks.delete_entity_v2)
+    )
     @mock.patch("custom_view.is_custom", mock.Mock(return_value=True))
     @mock.patch("custom_view.call_custom")
     def test_delete_entity_with_customview(self, mock_call_custom):
@@ -2683,8 +2689,9 @@ class ViewTest(AironeViewTest):
             raise ValidationError("delete error")
 
         mock_call_custom.side_effect = side_effect
-        resp = self.client.delete("/entity/api/v2/%d/" % self.entity.id, None, "application/json")
-        self.assertEqual(resp.status_code, 400)
+        resp = self.client.delete("/entity/api/v2/%d/" % self.entity.id)
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
+        self.assertTrue(mock_call_custom.called)
 
         def side_effect(handler_name, entity_name, user, entity):
             # Check specified parameters are expected
@@ -2694,8 +2701,8 @@ class ViewTest(AironeViewTest):
             self.assertEqual(entity, self.entity)
 
         mock_call_custom.side_effect = side_effect
-        resp = self.client.delete("/entity/api/v2/%d/" % self.entity.id, None, "application/json")
-        self.assertEqual(resp.status_code, 204)
+        resp = self.client.delete("/entity/api/v2/%d/" % self.entity.id)
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
         self.assertTrue(mock_call_custom.called)
 
     def test_delete_entity_with_invalid_param(self):

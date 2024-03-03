@@ -1,11 +1,12 @@
 import json
 
+import custom_view
 from airone.celery import app
 from airone.lib.types import AttrTypeValue
 from entity.api_v2.serializers import EntityCreateSerializer, EntityUpdateSerializer
 from entity.models import Entity, EntityAttr
 from job.models import Job
-from user.models import User
+from user.models import History, User
 
 
 @app.task(bind=True)
@@ -289,6 +290,46 @@ def edit_entity_v2(self, job_id: int):
 
     try:
         serializer.update(entity, serializer.validated_data)
+    except Exception:
+        job.update(Job.STATUS["ERROR"])
+        return
+
+    # update job status and save it
+    job.update(Job.STATUS["DONE"])
+
+
+@app.task(bind=True)
+def delete_entity_v2(self, job_id: int):
+    job = Job.objects.get(id=job_id)
+
+    if not job.proceed_if_ready():
+        return
+
+    # At the first time, update job status to prevent executing this job duplicately
+    job.update(Job.STATUS["PROCESSING"])
+
+    entity: Entity | None = Entity.objects.filter(id=job.target.id, is_active=True).first()
+    if not entity:
+        job.update(Job.STATUS["ERROR"])
+        return
+
+    try:
+        if custom_view.is_custom("before_delete_entity_v2"):
+            custom_view.call_custom("before_delete_entity_v2", None, job.user, entity)
+
+        # register operation History for deleting entity
+        history: History = job.user.seth_entity_del(entity)
+
+        entity.delete()
+
+        # Delete all attributes which target Entity have
+        entity_attr: EntityAttr
+        for entity_attr in entity.attrs.filter(is_active=True):
+            history.del_attr(entity_attr)
+            entity_attr.delete()
+
+        if custom_view.is_custom("after_delete_entity_v2"):
+            custom_view.call_custom("after_delete_entity_v2", None, job.user, entity)
     except Exception:
         job.update(Job.STATUS["ERROR"])
         return

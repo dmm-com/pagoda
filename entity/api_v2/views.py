@@ -13,7 +13,6 @@ from rest_framework.permissions import BasePermission, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.serializers import Serializer
 
-import custom_view
 from airone.lib.acl import ACLType, get_permitted_objects
 from airone.lib.drf import ObjectNotExistsError, YAMLParser, YAMLRenderer
 from airone.lib.http import http_get
@@ -157,9 +156,9 @@ class EntityAPI(viewsets.ModelViewSet):
 
         return Response(status=status.HTTP_202_ACCEPTED)
 
-    def destroy(self, request, pk):
-        entity: Entity = self.get_object()
+    def destroy(self, request, *args, **kwargs):
         user: User = request.user
+        entity: Entity = self.get_object()
 
         if not entity.is_active:
             raise ObjectNotExistsError("specified entity has already been deleted")
@@ -169,24 +168,10 @@ class EntityAPI(viewsets.ModelViewSet):
                 "cannot delete Entity because one or more Entries are not deleted"
             )
 
-        if custom_view.is_custom("before_delete_entity_v2"):
-            custom_view.call_custom("before_delete_entity_v2", None, user, entity)
+        job = Job.new_delete_entity_v2(user, entity, params=request.data)
+        job.run()
 
-        # register operation History for deleting entity
-        history: History = user.seth_entity_del(entity)
-
-        entity.delete()
-
-        # Delete all attributes which target Entity have
-        entity_attr: EntityAttr
-        for entity_attr in entity.attrs.filter(is_active=True):
-            history.del_attr(entity_attr)
-            entity_attr.delete()
-
-        if custom_view.is_custom("after_delete_entity_v2"):
-            custom_view.call_custom("after_delete_entity_v2", None, user, entity)
-
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(status=status.HTTP_202_ACCEPTED)
 
 
 class EntityEntryAPI(viewsets.ModelViewSet):

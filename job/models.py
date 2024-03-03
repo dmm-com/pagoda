@@ -53,6 +53,7 @@ class JobOperation(Enum):
     MAY_INVOKE_TRIGGER = 23
     CREATE_ENTITY_V2 = 24
     EDIT_ENTITY_V2 = 25
+    DELETE_ENTITY_V2 = 26
 
 
 class Job(models.Model):
@@ -345,6 +346,7 @@ class Job(models.Model):
                 JobOperation.MAY_INVOKE_TRIGGER.value: trigger_task.may_invoke_trigger,
                 JobOperation.CREATE_ENTITY_V2.value: entity_task.create_entity_v2,
                 JobOperation.EDIT_ENTITY_V2.value: entity_task.edit_entity_v2,
+                JobOperation.DELETE_ENTITY_V2.value: entity_task.delete_entity_v2,
             }
 
         return kls._METHOD_TABLE
@@ -563,6 +565,16 @@ class Job(models.Model):
             user,
             target,
             JobOperation.EDIT_ENTITY_V2.value,
+            text,
+            json.dumps(params, default=_support_time_default, sort_keys=True),
+        )
+
+    @classmethod
+    def new_delete_entity_v2(kls, user, target: Entity, text="", params={}):
+        return kls._create_new_job(
+            user,
+            target,
+            JobOperation.DELETE_ENTITY_V2.value,
             text,
             json.dumps(params, default=_support_time_default, sort_keys=True),
         )
