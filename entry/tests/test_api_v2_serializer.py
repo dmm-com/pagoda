@@ -2,8 +2,10 @@ from airone.lib.acl import ACLType
 from airone.lib.http import DRFRequest
 from airone.lib.test import AironeViewTest
 from airone.lib.types import AttrTypeValue
-from entry.api_v2.serializers import PrivilegedEntryCreateSerializer, PrivilegedEntryUpdateSerializer
-from role.models import Role
+from entry.api_v2.serializers import (
+    PrivilegedEntryCreateSerializer,
+    PrivilegedEntryUpdateSerializer,
+)
 from user.models import User
 
 
@@ -42,7 +44,9 @@ class ViewTest(AironeViewTest):
             ],
             "created_user": login_user,
         }
-        serializer = PrivilegedEntryCreateSerializer(data=setting_data, context={"request": DRFRequest(login_user)})
+        serializer = PrivilegedEntryCreateSerializer(
+            data=setting_data, context={"request": DRFRequest(login_user)}
+        )
         self.assertIsNotNone(serializer)
         serializer.is_valid(raise_exception=True)
         entry = serializer.save()

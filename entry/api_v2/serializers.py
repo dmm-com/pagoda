@@ -314,6 +314,7 @@ class EntryCreateSerializer(EntryBaseSerializer):
 
         return entry
 
+
 class PrivilegedEntryCreateSerializer(EntryCreateSerializer):
     privileged_mode = True
 
