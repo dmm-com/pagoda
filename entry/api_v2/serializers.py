@@ -164,6 +164,11 @@ class EntryAttributeTypeSerializer(serializers.Serializer):
 
 
 class EntryBaseSerializer(serializers.ModelSerializer):
+    # This attribute toggle privileged mode that allow user to CRUD Entry without
+    # considering permission. This must not change from program, but declare in a
+    # serializer.
+    privileged_mode = False
+
     schema = EntitySerializer(read_only=True)
     deleted_user = UserBaseSerializer(read_only=True, allow_null=True)
 
@@ -282,7 +287,7 @@ class EntryCreateSerializer(EntryBaseSerializer):
             attr: Attribute = entry.add_attribute_from_base(entity_attr, user)
 
             # skip for unpermitted attributes
-            if not user.has_permission(attr, ACLType.Writable):
+            if not self.privileged_mode and not user.has_permission(attr, ACLType.Writable):
                 continue
 
             # make an initial AttributeValue object if the initial value is specified
@@ -308,6 +313,9 @@ class EntryCreateSerializer(EntryBaseSerializer):
         job_notify_event.run()
 
         return entry
+
+class PrivilegedEntryCreateSerializer(EntryCreateSerializer):
+    privileged_mode = True
 
 
 class EntryUpdateData(TypedDict, total=False):
@@ -368,7 +376,7 @@ class EntryUpdateSerializer(EntryBaseSerializer):
                 attr = entry.add_attribute_from_base(entity_attr, user)
 
             # skip for unpermitted attributes
-            if not user.has_permission(attr, ACLType.Writable):
+            if not self.privileged_mode and not user.has_permission(attr, ACLType.Writable):
                 continue
 
             # make AttributeValue object if the value is specified
@@ -416,6 +424,10 @@ class EntryUpdateSerializer(EntryBaseSerializer):
             job_notify_event.run()
 
         return entry
+
+
+class PrivilegedEntryUpdateSerializer(EntryUpdateSerializer):
+    privileged_mode = True
 
 
 class EntryRetrieveSerializer(EntryBaseSerializer):
