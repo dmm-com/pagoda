@@ -5,6 +5,8 @@
 ### Added
 
 ### Changed
+* Add privileged mode at DRF serializer of Entry mainly for custom_view processing
+  Contributed by @userlocalhost
 
 ### Fixed
 
