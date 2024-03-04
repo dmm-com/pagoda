@@ -29,7 +29,7 @@ from entry import tasks
 from entry.models import Attribute, AttributeValue, Entry
 from entry.settings import CONFIG as ENTRY_CONFIG
 from group.models import Group
-from job.models import Job, JobOperation
+from job.models import Job, JobOperation, JobTarget
 from role.models import Role
 from trigger import tasks as trigger_tasks
 from trigger.models import TriggerCondition
@@ -377,7 +377,7 @@ class ViewTest(AironeViewTest):
         for expectation in job_expectations:
             obj = jobs.get(operation=expectation["operation"].value)
             self.assertEqual(obj.target.id, entry.id)
-            self.assertEqual(obj.target_type, Job.TARGET_ENTRY)
+            self.assertEqual(obj.target_type, JobTarget.ENTRY.value)
             self.assertEqual(obj.status, expectation["status"])
             self.assertEqual(obj.dependent_job, expectation["dependent_job"])
 
@@ -922,7 +922,7 @@ class ViewTest(AironeViewTest):
         for expectation in job_expectations:
             obj = jobs.get(operation=expectation["operation"].value)
             self.assertEqual(obj.target.id, entry.id)
-            self.assertEqual(obj.target_type, Job.TARGET_ENTRY)
+            self.assertEqual(obj.target_type, JobTarget.ENTRY.value)
             self.assertEqual(obj.status, expectation["status"])
             self.assertEqual(obj.dependent_job, expectation["dependent_job"])
 
@@ -1630,7 +1630,7 @@ class ViewTest(AironeViewTest):
         for expectation in job_expectations:
             obj = jobs.get(operation=expectation["operation"].value)
             self.assertEqual(obj.target.id, entry.id)
-            self.assertEqual(obj.target_type, Job.TARGET_ENTRY)
+            self.assertEqual(obj.target_type, JobTarget.ENTRY.value)
             self.assertEqual(obj.status, expectation["status"])
             self.assertEqual(obj.dependent_job, expectation["dependent_job"])
 
@@ -3286,7 +3286,7 @@ class ViewTest(AironeViewTest):
         for obj in do_copy_jobs.all():
             self.assertTrue(any([obj.target.name == x for x in ["foo", "bar", "baz"]]))
             self.assertEqual(obj.text, "original entry: %s" % entry.name)
-            self.assertEqual(obj.target_type, Job.TARGET_ENTRY)
+            self.assertEqual(obj.target_type, JobTarget.ENTRY.value)
             self.assertEqual(obj.status, Job.STATUS["DONE"])
             self.assertNotEqual(obj.created_at, obj.updated_at)
             self.assertTrue((obj.updated_at - obj.created_at).total_seconds() > 0)
@@ -4451,7 +4451,7 @@ class ViewTest(AironeViewTest):
 
             self.assertEqual(job.user.id, user.id)
             self.assertEqual(job.target.id, entry.id)
-            self.assertEqual(job.target_type, Job.TARGET_ENTRY)
+            self.assertEqual(job.target_type, JobTarget.ENTRY.value)
             self.assertEqual(job.status, Job.STATUS["PREPARING"])
             self.assertEqual(job.operation, JobOperation.EDIT_ENTRY.value)
 
@@ -5381,7 +5381,7 @@ class ViewTest(AironeViewTest):
         for expectation in job_expectations:
             obj = jobs.get(operation=expectation["operation"].value)
             self.assertEqual(obj.target.id, entry.id)
-            self.assertEqual(obj.target_type, Job.TARGET_ENTRY)
+            self.assertEqual(obj.target_type, JobTarget.ENTRY.value)
             self.assertEqual(obj.status, expectation["status"])
             self.assertEqual(obj.dependent_job, expectation["dependent_job"])
 
