@@ -17,6 +17,7 @@ from airone.lib.types import AttrTypeArrStr, AttrTypeStr, AttrTypeText, AttrType
 from entity import tasks
 from entity.models import Entity, EntityAttr
 from entry.models import Entry
+from entry.tasks import create_entry_v2
 from group.models import Group
 from role.models import Role
 from trigger import tasks as trigger_tasks
@@ -2834,6 +2835,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 404)
         self.assertEqual(resp.json(), {"code": "AE-230000", "message": "Not found."})
 
+    @mock.patch("entry.tasks.create_entry_v2.delay", mock.Mock(side_effect=create_entry_v2))
     def test_create_entry(self):
         attr = {}
         for attr_name in [x["name"] for x in self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY]:
@@ -2860,16 +2862,9 @@ class ViewTest(AironeViewTest):
         resp = self.client.post(
             "/entity/api/v2/%s/entries/" % self.entity.id, json.dumps(params), "application/json"
         )
-        self.assertEqual(resp.status_code, 201)
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
 
-        entry: Entry = Entry.objects.get(id=resp.json()["id"], is_active=True)
-        self.assertEqual(
-            resp.json(),
-            {
-                "id": entry.id,
-                "name": "entry1",
-            },
-        )
+        entry: Entry = Entry.objects.get(name=params["name"], is_active=True)
         self.assertEqual(entry.schema, self.entity)
         self.assertEqual(entry.created_user, self.user)
         self.assertEqual(entry.status, 0)
@@ -2937,8 +2932,9 @@ class ViewTest(AironeViewTest):
         resp = self.client.post(
             "/entity/api/v2/%s/entries/" % self.entity.id, json.dumps(params), "application/json"
         )
-        self.assertEqual(resp.status_code, 201)
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
 
+    @mock.patch("entry.tasks.create_entry_v2.delay", mock.Mock(side_effect=create_entry_v2))
     def test_create_entry_without_permission_entity_attr(self):
         attr = {}
         for attr_name in [x["name"] for x in self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY]:
@@ -2958,9 +2954,9 @@ class ViewTest(AironeViewTest):
             json.dumps({**params, "name": "entry1"}),
             "application/json",
         )
-        self.assertEqual(resp.status_code, 201)
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
 
-        entry: Entry = Entry.objects.get(id=resp.json()["id"], is_active=True)
+        entry: Entry = Entry.objects.get(name="entry1", is_active=True)
         self.assertEqual(entry.attrs.get(schema=attr["val"]).get_latest_value().get_value(), "hoge")
         self.assertEqual(entry.attrs.get(schema=attr["vals"]).get_latest_value().get_value(), [])
 
@@ -3027,7 +3023,7 @@ class ViewTest(AironeViewTest):
             json.dumps({"name": "a" * (Entry._meta.get_field("name").max_length)}),
             "application/json",
         )
-        self.assertEqual(resp.status_code, 201)
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
 
         entry = self.add_entry(self.user, "hoge", self.entity)
         resp = self.client.post(
@@ -3047,7 +3043,7 @@ class ViewTest(AironeViewTest):
             json.dumps({"name": "hoge"}),
             "application/json",
         )
-        self.assertEqual(resp.status_code, 201)
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
 
     def test_create_entry_with_invalid_param_attrs(self):
         attr = {}
@@ -3188,8 +3184,9 @@ class ViewTest(AironeViewTest):
         resp = self.client.post(
             "/entity/api/v2/%s/entries/" % self.entity.id, json.dumps(params), "application/json"
         )
-        self.assertEqual(resp.status_code, 201)
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
 
+    @mock.patch("entry.tasks.create_entry_v2.delay", mock.Mock(side_effect=create_entry_v2))
     @mock.patch("entry.tasks.notify_create_entry.delay")
     def test_create_entry_notify(self, mock_task):
         self.client.post(
@@ -3200,6 +3197,7 @@ class ViewTest(AironeViewTest):
 
         self.assertTrue(mock_task.called)
 
+    @mock.patch("entry.tasks.create_entry_v2.delay", mock.Mock(side_effect=create_entry_v2))
     @mock.patch("custom_view.is_custom", mock.Mock(return_value=True))
     @mock.patch("custom_view.call_custom")
     def test_create_entry_with_customview(self, mock_call_custom):
@@ -3220,8 +3218,8 @@ class ViewTest(AironeViewTest):
         resp = self.client.post(
             "/entity/api/v2/%s/entries/" % self.entity.id, json.dumps(params), "application/json"
         )
-        self.assertEqual(resp.status_code, 400)
-        self.assertEqual(resp.json(), [{"code": "AE-121000", "message": "create error"}])
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
+        self.assertTrue(mock_call_custom.called)
 
         def side_effect(handler_name, entity_name, user, *args):
             # Check specified parameters are expected
@@ -3242,7 +3240,7 @@ class ViewTest(AironeViewTest):
         resp = self.client.post(
             "/entity/api/v2/%s/entries/" % self.entity.id, json.dumps(params), "application/json"
         )
-        self.assertEqual(resp.status_code, 201)
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
         self.assertTrue(mock_call_custom.called)
 
     @mock.patch("entity.tasks.create_entity.delay", mock.Mock(side_effect=tasks.create_entity))
@@ -3480,6 +3478,7 @@ class ViewTest(AironeViewTest):
         resp = self.client.get("/entity/api/v2/attrs?entity_ids=9999")
         self.assertEqual(resp.status_code, 400)
 
+    @mock.patch("entry.tasks.create_entry_v2.delay", mock.Mock(side_effect=create_entry_v2))
     @mock.patch(
         "trigger.tasks.may_invoke_trigger.delay",
         mock.Mock(side_effect=trigger_tasks.may_invoke_trigger),
@@ -3510,10 +3509,10 @@ class ViewTest(AironeViewTest):
         resp = self.client.post(
             "/entity/api/v2/%s/entries/" % self.entity.id, json.dumps(params), "application/json"
         )
-        self.assertEqual(resp.status_code, 201)
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
 
         # check Attribute "vals", which is specified by TriggerCondition, was changed as expected
-        entry: Entry = Entry.objects.get(id=resp.json()["id"], is_active=True)
+        entry: Entry = Entry.objects.get(name=params["name"], is_active=True)
         self.assertEqual(entry.get_attrv("text").value, "hogefuga")
         self.assertEqual(
             [x.value for x in entry.get_attrv("vals").data_array.all()], ["fuga", "piyo"]
