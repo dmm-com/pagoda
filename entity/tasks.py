@@ -2,6 +2,7 @@ import json
 
 import custom_view
 from airone.celery import app
+from airone.lib.job import may_schedule_until_job_is_ready
 from airone.lib.types import AttrTypeValue
 from entity.api_v2.serializers import EntityCreateSerializer, EntityUpdateSerializer
 from entity.models import Entity, EntityAttr
@@ -242,40 +243,21 @@ def delete_entity(self, job_id):
 
 
 @app.task(bind=True)
-def create_entity_v2(self, job_id: int):
-    job = Job.objects.get(id=job_id)
-
-    if not job.proceed_if_ready():
-        return
-
-    # At the first time, update job status to prevent executing this job duplicately
-    job.update(Job.STATUS["PROCESSING"])
-
+@may_schedule_until_job_is_ready
+def create_entity_v2(self, job: Job):
     serializer = EntityCreateSerializer(data=json.loads(job.params), context={"_user": job.user})
     if not serializer.is_valid():
-        job.update(Job.STATUS["ERROR"])
-        return
+        return Job.STATUS["ERROR"]
 
-    try:
-        serializer.create(serializer.validated_data)
-    except Exception:
-        job.update(Job.STATUS["ERROR"])
-        return
+    serializer.create(serializer.validated_data)
 
     # update job status and save it
-    job.update(Job.STATUS["DONE"])
+    return Job.STATUS["DONE"]
 
 
 @app.task(bind=True)
-def edit_entity_v2(self, job_id: int):
-    job = Job.objects.get(id=job_id)
-
-    if not job.proceed_if_ready():
-        return
-
-    # At the first time, update job status to prevent executing this job duplicately
-    job.update(Job.STATUS["PROCESSING"])
-
+@may_schedule_until_job_is_ready
+def edit_entity_v2(self, job: Job):
     entity: Entity | None = Entity.objects.filter(id=job.target.id, is_active=True).first()
     if not entity:
         job.update(Job.STATUS["ERROR"])
@@ -285,54 +267,34 @@ def edit_entity_v2(self, job_id: int):
         instance=entity, data=json.loads(job.params), context={"_user": job.user}
     )
     if not serializer.is_valid():
-        job.update(Job.STATUS["ERROR"])
-        return
+        return Job.STATUS["ERROR"]
 
-    try:
-        serializer.update(entity, serializer.validated_data)
-    except Exception:
-        job.update(Job.STATUS["ERROR"])
-        return
+    serializer.update(entity, serializer.validated_data)
 
-    # update job status and save it
-    job.update(Job.STATUS["DONE"])
+    return Job.STATUS["DONE"]
 
 
 @app.task(bind=True)
-def delete_entity_v2(self, job_id: int):
-    job = Job.objects.get(id=job_id)
-
-    if not job.proceed_if_ready():
-        return
-
-    # At the first time, update job status to prevent executing this job duplicately
-    job.update(Job.STATUS["PROCESSING"])
-
+@may_schedule_until_job_is_ready
+def delete_entity_v2(self, job: Job):
     entity: Entity | None = Entity.objects.filter(id=job.target.id, is_active=True).first()
     if not entity:
-        job.update(Job.STATUS["ERROR"])
-        return
+        return Job.STATUS["ERROR"]
 
-    try:
-        if custom_view.is_custom("before_delete_entity_v2"):
-            custom_view.call_custom("before_delete_entity_v2", None, job.user, entity)
+    if custom_view.is_custom("before_delete_entity_v2"):
+        custom_view.call_custom("before_delete_entity_v2", None, job.user, entity)
 
-        # register operation History for deleting entity
-        history: History = job.user.seth_entity_del(entity)
+    # register operation History for deleting entity
+    history: History = job.user.seth_entity_del(entity)
+    entity.delete()
 
-        entity.delete()
+    # Delete all attributes which target Entity have
+    entity_attr: EntityAttr
+    for entity_attr in entity.attrs.filter(is_active=True):
+        history.del_attr(entity_attr)
+        entity_attr.delete()
 
-        # Delete all attributes which target Entity have
-        entity_attr: EntityAttr
-        for entity_attr in entity.attrs.filter(is_active=True):
-            history.del_attr(entity_attr)
-            entity_attr.delete()
+    if custom_view.is_custom("after_delete_entity_v2"):
+        custom_view.call_custom("after_delete_entity_v2", None, job.user, entity)
 
-        if custom_view.is_custom("after_delete_entity_v2"):
-            custom_view.call_custom("after_delete_entity_v2", None, job.user, entity)
-    except Exception:
-        job.update(Job.STATUS["ERROR"])
-        return
-
-    # update job status and save it
-    job.update(Job.STATUS["DONE"])
+    return Job.STATUS["DONE"]
