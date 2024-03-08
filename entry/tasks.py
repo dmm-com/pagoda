@@ -914,10 +914,7 @@ def create_entry_v2(self, job: Job) -> int:
     if not serializer.is_valid():
         return Job.STATUS["ERROR"]
 
-    try:
-        serializer.create(serializer.validated_data)
-    except Exception:
-        return Job.STATUS["ERROR"]
+    serializer.create(serializer.validated_data)
 
     return Job.STATUS["DONE"]
 
@@ -935,10 +932,7 @@ def edit_entry_v2(self, job: Job) -> int:
     if not serializer.is_valid():
         return Job.STATUS["ERROR"]
 
-    try:
-        serializer.update(entry, serializer.validated_data)
-    except Exception:
-        return Job.STATUS["ERROR"]
+    serializer.update(entry, serializer.validated_data)
 
     return Job.STATUS["DONE"]
 
@@ -950,21 +944,18 @@ def delete_entry_v2(self, job: Job) -> int:
     if not entry:
         return Job.STATUS["ERROR"]
 
-    try:
-        if custom_view.is_custom("before_delete_entry_v2", entry.schema.name):
-            custom_view.call_custom("before_delete_entry_v2", entry.schema.name, job.user, entry)
+    if custom_view.is_custom("before_delete_entry_v2", entry.schema.name):
+        custom_view.call_custom("before_delete_entry_v2", entry.schema.name, job.user, entry)
 
-        # register operation History for deleting entry
-        job.user.seth_entry_del(entry)
-        entry.delete(deleted_user=job.user)
-
-        if custom_view.is_custom("after_delete_entry_v2", entry.schema.name):
-            custom_view.call_custom("after_delete_entry_v2", entry.schema.name, job.user, entry)
-    except Exception:
-        return Job.STATUS["ERROR"]
+    # register operation History for deleting entry
+    job.user.seth_entry_del(entry)
+    entry.delete(deleted_user=job.user)
 
     # Send notification to the webhook URL
     job_notify: Job = Job.new_notify_delete_entry(job.user, entry)
     job_notify.run()
+
+    if custom_view.is_custom("after_delete_entry_v2", entry.schema.name):
+        custom_view.call_custom("after_delete_entry_v2", entry.schema.name, job.user, entry)
 
     return Job.STATUS["DONE"]

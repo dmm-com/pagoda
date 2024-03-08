@@ -1297,6 +1297,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
         self.assertTrue(mock_call_custom.called)
 
+    @patch("entry.tasks.delete_entry_v2.delay", Mock(side_effect=tasks.delete_entry_v2))
     @mock.patch("entry.tasks.notify_delete_entry.delay")
     def test_destroy_entry_notify(self, mock_task):
         entry: Entry = self.add_entry(self.user, "entry", self.entity)
@@ -4573,6 +4574,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
         self.assertTrue(mock_call_custom.called)
 
+    @patch("entry.tasks.delete_entry_v2.delay", Mock(side_effect=tasks.delete_entry_v2))
     @mock.patch("entry.tasks.notify_delete_entry.delay")
     def test_destroy_entries_notify(self, mock_task):
         entry: Entry = self.add_entry(self.user, "entry", self.entity)

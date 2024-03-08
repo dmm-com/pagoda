@@ -11,8 +11,11 @@ def may_schedule_until_job_is_ready(func):
             # update Job status from PREPARING to PROCEEDING
             job.update(Job.STATUS["PROCESSING"])
 
-            # running Job processing
-            ret = func(kls, job)
+            try:
+                # running Job processing
+                ret: int | tuple = func(kls, job)
+            except Exception:
+                ret = Job.STATUS["ERROR"]
 
             # update Job status after finishing Job processing
             if isinstance(ret, int):
