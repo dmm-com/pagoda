@@ -361,8 +361,8 @@ class AironeApiClient {
     entityId: number,
     name: string,
     attrs: AttributeData[]
-  ): Promise<EntryCreate> {
-    return await this.entity.entityApiV2EntriesCreate(
+  ): Promise<void> {
+    await this.entity.entityApiV2EntriesCreate(
       { entityId, entryCreate: { id: -1, name, attrs } },
       {
         headers: {

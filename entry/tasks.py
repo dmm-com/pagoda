@@ -905,3 +905,18 @@ def notify_update_entry(self, job):
 @may_schedule_until_job_is_ready
 def notify_delete_entry(self, job):
     return _notify_event(notify_entry_delete, job.target.id, job.user)
+
+
+@app.task(bind=True)
+@may_schedule_until_job_is_ready
+def create_entry_v2(self, job: Job) -> int:
+    serializer = EntryCreateSerializer(data=json.loads(job.params), context={"_user": job.user})
+    if not serializer.is_valid():
+        return Job.STATUS["ERROR"]
+
+    try:
+        serializer.create(serializer.validated_data)
+    except Exception:
+        return Job.STATUS["ERROR"]
+
+    return Job.STATUS["DONE"]

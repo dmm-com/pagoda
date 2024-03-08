@@ -185,7 +185,7 @@ class EntityEntryAPI(viewsets.ModelViewSet):
 
     def get_serializer_class(self):
         serializer = {
-            "create": EntryCreateSerializer,
+            "create": serializers.Serializer,
         }
         return serializer.get(self.action, EntryBaseSerializer)
 
@@ -195,9 +195,18 @@ class EntityEntryAPI(viewsets.ModelViewSet):
             raise Http404
         return self.queryset.filter(schema=entity)
 
+    @extend_schema(request=EntryCreateSerializer)
     def create(self, request, entity_id):
+        user: User = request.user
         request.data["schema"] = entity_id
-        return super().create(request)
+
+        serializer = EntryCreateSerializer(data=request.data, context={"_user": user})
+        serializer.is_valid(raise_exception=True)
+
+        job = Job.new_create_entry_v2(user, None, params=request.data)
+        job.run()
+
+        return Response(status=status.HTTP_202_ACCEPTED)
 
 
 class EntityHistoryAPI(viewsets.ReadOnlyModelViewSet):
