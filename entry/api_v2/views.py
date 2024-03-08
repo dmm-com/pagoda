@@ -47,24 +47,16 @@ from role.models import Role
 from user.models import User
 
 
-def delete_entry_with_notifucation(user, entry):
+def delete_entry_with_notifucation(user: User, entry: Entry):
     """
     This implements whole processing related with Entry's deletion such as
-    - running custom_view processing
+    - invoking job about deletion
     - invoking job about notification
     """
 
-    if custom_view.is_custom("before_delete_entry_v2", entry.schema.name):
-        custom_view.call_custom("before_delete_entry_v2", entry.schema.name, user, entry)
-
-    # register operation History for deleting entry
-    user.seth_entry_del(entry)
-
-    # delete entry
-    entry.delete(deleted_user=user)
-
-    if custom_view.is_custom("after_delete_entry_v2", entry.schema.name):
-        custom_view.call_custom("after_delete_entry_v2", entry.schema.name, user, entry)
+    # delete an entry
+    job: Job = Job.new_delete_entry_v2(user, entry)
+    job.run()
 
     # Send notification to the webhook URL
     job_notify: Job = Job.new_notify_delete_entry(user, entry)

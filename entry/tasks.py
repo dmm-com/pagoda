@@ -941,3 +941,26 @@ def edit_entry_v2(self, job: Job) -> int:
         return Job.STATUS["ERROR"]
 
     return Job.STATUS["DONE"]
+
+
+@app.task(bind=True)
+@may_schedule_until_job_is_ready
+def delete_entry_v2(self, job: Job) -> int:
+    entry: Entry | None = Entry.objects.filter(id=job.target.id, is_active=True).first()
+    if not entry:
+        return Job.STATUS["ERROR"]
+
+    if custom_view.is_custom("before_delete_entry_v2", entry.schema.name):
+        custom_view.call_custom("before_delete_entry_v2", entry.schema.name, job.user, entry)
+
+    try:
+        # register operation History for deleting entry
+        job.user.seth_entry_del(entry)
+        entry.delete()
+    except Exception:
+        return Job.STATUS["ERROR"]
+
+    if custom_view.is_custom("after_delete_entry_v2", entry.schema.name):
+        custom_view.call_custom("after_delete_entry_v2", entry.schema.name, job.user, entry)
+
+    return Job.STATUS["DONE"]
