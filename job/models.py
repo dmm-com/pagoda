@@ -56,6 +56,12 @@ class JobOperation(Enum):
     DELETE_ENTITY_V2 = 26
 
 
+class JobTarget(Enum):
+    UNKNOWN = 0
+    ENTRY = 1
+    ENTITY = 2
+
+
 class Job(models.Model):
     """
     This manage processing which is executed on backend.
@@ -77,11 +83,6 @@ class Job(models.Model):
 
     # This hash table describes operation status value and operation processing
     _METHOD_TABLE = {}
-
-    # TODO: these constants should be changed as dict value like STATUS for maintainability
-    TARGET_UNKNOWN = 0
-    TARGET_ENTRY = 1
-    TARGET_ENTITY = 2
 
     STATUS = {
         "PREPARING": 1,
@@ -232,7 +233,7 @@ class Job(models.Model):
 
         self.save(update_fields=update_fields)
 
-    def to_json(self):
+    def to_json(self) -> dict:
         # For advanced search results export, target is assumed to be empty.
         return {
             "id": self.id,
@@ -267,13 +268,19 @@ class Job(models.Model):
 
     @classmethod
     def _create_new_job(
-        kls, user, target: Entity | Entry | Any, operation, text, params, depend_on=None
+        kls,
+        user: User,
+        target: Entity | Entry | Any,
+        operation: int,
+        text: str | None,
+        params,
+        depend_on=None,
     ) -> "Job":
-        t_type = kls.TARGET_UNKNOWN
+        t_type = JobTarget.UNKNOWN.value
         if isinstance(target, Entry):
-            t_type = kls.TARGET_ENTRY
+            t_type = JobTarget.ENTRY.value
         elif isinstance(target, Entity):
-            t_type = kls.TARGET_ENTITY
+            t_type = JobTarget.ENTITY.value
 
         # set dependent job to prevent running tasks simultaneously which set to target same one.
         dependent_job = None

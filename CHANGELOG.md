@@ -5,8 +5,26 @@
 ### Added
 
 ### Changed
+* Add privileged mode at DRF serializer of Entry mainly for custom_view processing
+  Contributed by @userlocalhost
 
 ### Fixed
+
+## v3.79.0
+
+### Fixed
+* Fix description for isTopLevel.
+  Contributed by @syucream
+
+## v3.78.0
+
+### Changed
+* Renamed frontend page component.
+  Contributed by @syucream
+
+### Fixed
+* Fixed invoke trigger failure with do_edit.
+  Contributed by @hinashi
 
 ## v3.77.0
 
