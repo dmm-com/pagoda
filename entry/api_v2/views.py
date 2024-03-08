@@ -47,22 +47,6 @@ from role.models import Role
 from user.models import User
 
 
-def delete_entry_with_notifucation(user: User, entry: Entry):
-    """
-    This implements whole processing related with Entry's deletion such as
-    - invoking job about deletion
-    - invoking job about notification
-    """
-
-    # delete an entry
-    job: Job = Job.new_delete_entry_v2(user, entry)
-    job.run()
-
-    # Send notification to the webhook URL
-    job_notify: Job = Job.new_notify_delete_entry(user, entry)
-    job_notify.run()
-
-
 class EntryPermission(BasePermission):
     def has_object_permission(self, request, view, obj):
         user: User = request.user
@@ -117,7 +101,8 @@ class EntryAPI(viewsets.ModelViewSet):
 
         user: User = request.user
 
-        delete_entry_with_notifucation(user, entry)
+        job: Job = Job.new_delete_entry_v2(user, entry)
+        job.run()
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -583,6 +568,7 @@ class EntryBulkDeleteAPI(generics.DestroyAPIView):
             raise PermissionDenied("deleting some entries is not allowed")
 
         for entry in entries:
-            delete_entry_with_notifucation(user, entry)
+            job: Job = Job.new_delete_entry_v2(user, entry)
+            job.run()
 
         return Response(status=status.HTTP_204_NO_CONTENT)

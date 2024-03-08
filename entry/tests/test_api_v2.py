@@ -7,6 +7,7 @@ from unittest import mock
 from unittest.mock import Mock, patch
 
 import yaml
+from rest_framework import status
 from rest_framework.exceptions import ValidationError
 
 from airone.lib.log import Logger
@@ -670,6 +671,7 @@ class ViewTest(AironeViewTest):
             },
         )
 
+    @patch("entry.tasks.edit_entry_v2.delay", Mock(side_effect=tasks.edit_entry_v2))
     def test_update_entry(self):
         entry: Entry = self.add_entry(self.user, "entry", self.entity)
 
@@ -698,16 +700,8 @@ class ViewTest(AironeViewTest):
         resp = self.client.put(
             "/entry/api/v2/%s/" % entry.id, json.dumps(params), "application/json"
         )
-        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
 
-        self.assertEqual(
-            resp.json(),
-            {
-                "id": entry.id,
-                "name": "entry-change",
-                "delay_trigger": True,
-            },
-        )
         self.assertEqual(entry.status, 0)
         self.assertEqual(
             {
@@ -774,7 +768,7 @@ class ViewTest(AironeViewTest):
         resp = self.client.put(
             "/entry/api/v2/%s/" % entry.id, json.dumps(params), "application/json"
         )
-        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
 
         # permission nothing entry
         entry.is_public = False
@@ -810,8 +804,9 @@ class ViewTest(AironeViewTest):
         resp = self.client.put(
             "/entry/api/v2/%s/" % entry.id, json.dumps(params), "application/json"
         )
-        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
 
+    @patch("entry.tasks.edit_entry_v2.delay", Mock(side_effect=tasks.edit_entry_v2))
     def test_update_entry_without_permission_attr(self):
         entry: Entry = self.add_entry(self.user, "entry", self.entity)
         entity_attr = {}
@@ -832,7 +827,7 @@ class ViewTest(AironeViewTest):
         resp = self.client.put(
             "/entry/api/v2/%s/" % entry.id, json.dumps(params), "application/json"
         )
-        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
         self.assertEqual(attr["val"].get_latest_value().get_value(), "hoge")
         self.assertEqual(attr["vals"].get_latest_value().get_value(), [])
 
@@ -850,7 +845,7 @@ class ViewTest(AironeViewTest):
         resp = self.client.put(
             "/entry/api/v2/%s/" % entry.id, json.dumps(params), "application/json"
         )
-        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
         self.assertEqual(attr["val"].get_latest_value().get_value(), "fuga")
         self.assertEqual(attr["vals"].get_latest_value().get_value(), [])
 
@@ -891,7 +886,7 @@ class ViewTest(AironeViewTest):
             json.dumps({"name": "a" * (Entry._meta.get_field("name").max_length)}),
             "application/json",
         )
-        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
 
         hoge_entry: Entry = self.add_entry(self.user, "hoge", self.entity)
         resp = self.client.put(
@@ -925,7 +920,7 @@ class ViewTest(AironeViewTest):
         resp = self.client.put(
             "/entry/api/v2/%s/" % entry.id, json.dumps({"name": "hoge"}), "application/json"
         )
-        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
 
     def test_update_entry_with_invalid_param_attrs(self):
         entry: Entry = self.add_entry(self.user, "entry", self.entity)
@@ -1025,6 +1020,7 @@ class ViewTest(AironeViewTest):
             self.assertEqual(resp.status_code, 400)
             self.assertEqual(resp.json(), test_value["error_msg"])
 
+    @patch("entry.tasks.edit_entry_v2.delay", Mock(side_effect=tasks.edit_entry_v2))
     @mock.patch("entry.tasks.notify_update_entry.delay")
     def test_update_entry_notify(self, mock_task):
         entry: Entry = self.add_entry(self.user, "entry", self.entity)
@@ -1034,6 +1030,7 @@ class ViewTest(AironeViewTest):
 
         self.assertTrue(mock_task.called)
 
+    @patch("entry.tasks.edit_entry_v2.delay", Mock(side_effect=tasks.edit_entry_v2))
     @mock.patch("custom_view.is_custom", mock.Mock(return_value=True))
     @mock.patch("custom_view.call_custom")
     def test_update_entry_with_customview(self, mock_call_custom):
@@ -1056,8 +1053,8 @@ class ViewTest(AironeViewTest):
         resp = self.client.put(
             "/entry/api/v2/%s/" % entry.id, json.dumps(params), "application/json"
         )
-        self.assertEqual(resp.status_code, 400)
-        self.assertEqual(resp.json(), [{"code": "AE-121000", "message": "update error"}])
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
+        self.assertTrue(mock_call_custom.called)
 
         def side_effect(handler_name, entity_name, user, *args):
             self.assertEqual(entity_name, self.entity.name)
@@ -1075,7 +1072,7 @@ class ViewTest(AironeViewTest):
         resp = self.client.put(
             "/entry/api/v2/%s/" % entry.id, json.dumps(params), "application/json"
         )
-        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
         self.assertTrue(mock_call_custom.called)
 
     @mock.patch("entry.tasks.notify_update_entry.delay")
@@ -1112,6 +1109,7 @@ class ViewTest(AironeViewTest):
     @mock.patch(
         "entry.tasks.register_referrals.delay", mock.Mock(side_effect=tasks.register_referrals)
     )
+    @patch("entry.tasks.edit_entry_v2.delay", Mock(side_effect=tasks.edit_entry_v2))
     def test_update_entry_with_referral(self):
         self.add_entry(
             self.user,
@@ -1137,8 +1135,49 @@ class ViewTest(AironeViewTest):
         resp = self.client.put(
             "/entry/api/v2/%s/" % self.ref_entry.id, json.dumps({}), "application/json"
         )
-        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
 
+    @patch("entry.tasks.edit_entry_v2.delay", Mock(side_effect=tasks.edit_entry_v2))
+    @mock.patch(
+        "trigger.tasks.may_invoke_trigger.delay",
+        mock.Mock(side_effect=trigger_tasks.may_invoke_trigger),
+    )
+    def test_update_entry_when_trigger_is_set(self):
+        # create Entry to be updated in this test
+        entry: Entry = self.add_entry(self.user, "entry", self.entity)
+
+        attr = {}
+        for attr_name in [x["name"] for x in self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY]:
+            attr[attr_name] = self.entity.attrs.get(name=attr_name)
+
+        # register Trigger and Action that specify "fuga" at text attribute
+        # when value "hoge" is set to the Attribute "val".
+        TriggerCondition.register(
+            self.entity,
+            [
+                {"attr_id": self.entity.attrs.get(name="val").id, "cond": "hoge"},
+            ],
+            [
+                {"attr_id": self.entity.attrs.get(name="text").id, "value": "fuga"},
+            ],
+        )
+
+        # send request to update Entry
+        params = {
+            "name": "entry-change",
+            "attrs": [
+                {"id": attr["val"].id, "value": "hoge"},
+            ],
+        }
+        resp = self.client.put(
+            "/entry/api/v2/%s/" % entry.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
+
+        # check Attribute "text", which is specified by TriggerCondition, was changed to "fuga"
+        self.assertEqual(entry.get_attrv("text").value, "fuga")
+
+    @patch("entry.tasks.delete_entry_v2.delay", Mock(side_effect=tasks.delete_entry_v2))
     def test_destroy_entry(self):
         entry: Entry = self.add_entry(self.user, "entry", self.entity)
 
@@ -1233,6 +1272,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 404)
         self.assertEqual(resp.json(), {"code": "AE-230000", "message": "Not found."})
 
+    @patch("entry.tasks.delete_entry_v2.delay", Mock(side_effect=tasks.delete_entry_v2))
     @mock.patch("custom_view.is_custom", mock.Mock(return_value=True))
     @mock.patch("custom_view.call_custom")
     def test_destroy_entry_with_custom_view(self, mock_call_custom):
@@ -1243,8 +1283,8 @@ class ViewTest(AironeViewTest):
 
         mock_call_custom.side_effect = side_effect
         resp = self.client.delete("/entry/api/v2/%s/" % entry.id, None, "application/json")
-        self.assertEqual(resp.status_code, 400)
-        self.assertEqual(resp.json(), [{"code": "AE-121000", "message": "delete error"}])
+        self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertTrue(mock_call_custom.called)
 
         def side_effect(handler_name, entity_name, user, entry):
             self.assertTrue(handler_name in ["before_delete_entry_v2", "after_delete_entry_v2"])
@@ -1254,7 +1294,7 @@ class ViewTest(AironeViewTest):
 
         mock_call_custom.side_effect = side_effect
         resp = self.client.delete("/entry/api/v2/%s/" % entry.id, None, "application/json")
-        self.assertEqual(resp.status_code, 204)
+        self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
         self.assertTrue(mock_call_custom.called)
 
     @mock.patch("entry.tasks.notify_delete_entry.delay")
@@ -1401,6 +1441,34 @@ class ViewTest(AironeViewTest):
         self.client.post("/entry/api/v2/%s/restore/" % entry.id, None, "application/json")
 
         self.assertTrue(mock_task.called)
+
+    @patch("entry.tasks.edit_entry_v2.delay", Mock(side_effect=tasks.edit_entry_v2))
+    def test_restore_entry_attribute_value(self):
+        entry: Entry = self.add_entry(self.user, "entry", self.entity)
+
+        attr = self.entity.attrs.get(name="val")
+        prev_attrv = entry.attrs.get(schema=attr).get_latest_value()
+
+        # update
+        params = {
+            "name": "entry-change",
+            "attrs": [
+                {"id": attr.id, "value": "updated"},
+            ],
+        }
+        resp = self.client.put(
+            "/entry/api/v2/%s/" % entry.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
+
+        # restore to previous value
+        resp = self.client.patch(
+            "/entry/api/v2/%s/attrv_restore/" % prev_attrv.id, json.dumps({}), "application/json"
+        )
+        self.assertEqual(resp.status_code, 200)
+
+        attrv = entry.attrs.get(schema=attr).get_latest_value()
+        self.assertEqual(attrv.value, prev_attrv.value)
 
     @mock.patch("entry.tasks.copy_entry.delay", mock.Mock(side_effect=tasks.copy_entry))
     def test_copy_entry(self):
@@ -3105,33 +3173,6 @@ class ViewTest(AironeViewTest):
         )
         self.assertEqual(resp.status_code, 400)
 
-    def test_restore_entry_attribute_value(self):
-        entry: Entry = self.add_entry(self.user, "entry", self.entity)
-
-        attr = self.entity.attrs.get(name="val")
-        prev_attrv = entry.attrs.get(schema=attr).get_latest_value()
-
-        # update
-        params = {
-            "name": "entry-change",
-            "attrs": [
-                {"id": attr.id, "value": "updated"},
-            ],
-        }
-        resp = self.client.put(
-            "/entry/api/v2/%s/" % entry.id, json.dumps(params), "application/json"
-        )
-        self.assertEqual(resp.status_code, 200)
-
-        # restore to previous value
-        resp = self.client.patch(
-            "/entry/api/v2/%s/attrv_restore/" % prev_attrv.id, json.dumps({}), "application/json"
-        )
-        self.assertEqual(resp.status_code, 200)
-
-        attrv = entry.attrs.get(schema=attr).get_latest_value()
-        self.assertEqual(attrv.value, prev_attrv.value)
-
     @patch(
         "entry.tasks.export_search_result_v2.delay", Mock(side_effect=tasks.export_search_result_v2)
     )
@@ -4411,6 +4452,7 @@ class ViewTest(AironeViewTest):
             )
         )
 
+    @patch("entry.tasks.delete_entry_v2.delay", Mock(side_effect=tasks.delete_entry_v2))
     def test_destroy_entries(self):
         entry1: Entry = self.add_entry(self.user, "entry1", self.entity)
         entry2: Entry = self.add_entry(self.user, "entry2", self.entity)
@@ -4502,6 +4544,7 @@ class ViewTest(AironeViewTest):
         )
         self.assertEqual(resp.status_code, 404)
 
+    @patch("entry.tasks.delete_entry_v2.delay", Mock(side_effect=tasks.delete_entry_v2))
     @mock.patch("custom_view.is_custom", mock.Mock(return_value=True))
     @mock.patch("custom_view.call_custom")
     def test_destroy_entries_with_custom_view(self, mock_call_custom):
@@ -4514,8 +4557,8 @@ class ViewTest(AironeViewTest):
         resp = self.client.delete(
             "/entry/api/v2/bulk_delete/?ids=%s" % entry.id, None, "application/json"
         )
-        self.assertEqual(resp.status_code, 400)
-        self.assertEqual(resp.json(), [{"code": "AE-121000", "message": "delete error"}])
+        self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertTrue(mock_call_custom.called)
 
         def side_effect(handler_name, entity_name, user, entry):
             self.assertTrue(handler_name in ["before_delete_entry_v2", "after_delete_entry_v2"])
@@ -4527,7 +4570,7 @@ class ViewTest(AironeViewTest):
         resp = self.client.delete(
             "/entry/api/v2/bulk_delete/?ids=%s" % entry.id, None, "application/json"
         )
-        self.assertEqual(resp.status_code, 204)
+        self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
         self.assertTrue(mock_call_custom.called)
 
     @mock.patch("entry.tasks.notify_delete_entry.delay")
@@ -4536,42 +4579,3 @@ class ViewTest(AironeViewTest):
         self.client.delete("/entry/api/v2/bulk_delete/?ids=%s" % entry.id, None, "application/json")
 
         self.assertTrue(mock_task.called)
-
-    @mock.patch(
-        "trigger.tasks.may_invoke_trigger.delay",
-        mock.Mock(side_effect=trigger_tasks.may_invoke_trigger),
-    )
-    def test_update_entry_when_trigger_is_set(self):
-        # create Entry to be updated in this test
-        entry: Entry = self.add_entry(self.user, "entry", self.entity)
-
-        attr = {}
-        for attr_name in [x["name"] for x in self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY]:
-            attr[attr_name] = self.entity.attrs.get(name=attr_name)
-
-        # register Trigger and Action that specify "fuga" at text attribute
-        # when value "hoge" is set to the Attribute "val".
-        TriggerCondition.register(
-            self.entity,
-            [
-                {"attr_id": self.entity.attrs.get(name="val").id, "cond": "hoge"},
-            ],
-            [
-                {"attr_id": self.entity.attrs.get(name="text").id, "value": "fuga"},
-            ],
-        )
-
-        # send request to update Entry
-        params = {
-            "name": "entry-change",
-            "attrs": [
-                {"id": attr["val"].id, "value": "hoge"},
-            ],
-        }
-        resp = self.client.put(
-            "/entry/api/v2/%s/" % entry.id, json.dumps(params), "application/json"
-        )
-        self.assertEqual(resp.status_code, 200)
-
-        # check Attribute "text", which is specified by TriggerCondition, was changed to "fuga"
-        self.assertEqual(entry.get_attrv("text").value, "fuga")
