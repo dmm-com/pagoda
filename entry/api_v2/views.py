@@ -97,11 +97,26 @@ class EntryAPI(viewsets.ModelViewSet):
     def get_serializer_class(self):
         serializer = {
             "retrieve": EntryRetrieveSerializer,
-            "update": EntryUpdateSerializer,
+            "update": serializers.Serializer,
             "copy": EntryCopySerializer,
             "list": EntryHistoryAttributeValueSerializer,
         }
         return serializer.get(self.action, EntryBaseSerializer)
+
+    @extend_schema(request=EntryUpdateSerializer)
+    def update(self, request, *args, **kwargs):
+        user: User = request.user
+        entry: Entry = self.get_object()
+
+        serializer = EntryUpdateSerializer(
+            instance=entry, data=request.data, context={"_user": user}
+        )
+        serializer.is_valid(raise_exception=True)
+
+        job = Job.new_edit_entry_v2(user, entry, params=request.data)
+        job.run()
+
+        return Response(status=status.HTTP_202_ACCEPTED)
 
     def destroy(self, request, pk):
         entry: Entry = self.get_object()

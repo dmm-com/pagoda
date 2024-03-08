@@ -362,7 +362,14 @@ class EntryUpdateSerializer(EntryBaseSerializer):
 
     def update(self, entry: Entry, validated_data: EntryUpdateData):
         entry.set_status(Entry.STATUS_EDITING)
-        user: User = self.context["request"].user
+
+        user: User | None = None
+        if "request" in self.context:
+            user = self.context["request"].user
+        if "_user" in self.context:
+            user = self.context["_user"]
+        if user is None:
+            raise RequiredParameterError("user is required")
 
         # for history record
         entry._history_user = user

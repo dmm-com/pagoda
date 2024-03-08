@@ -358,6 +358,7 @@ class Job(models.Model):
                 JobOperation.EDIT_ENTITY_V2.value: entity_task.edit_entity_v2,
                 JobOperation.DELETE_ENTITY_V2.value: entity_task.delete_entity_v2,
                 JobOperation.CREATE_ENTRY_V2.value: entry_task.create_entry_v2,
+                JobOperation.EDIT_ENTRY_V2.value: entry_task.edit_entry_v2,
             }
 
         return kls._METHOD_TABLE

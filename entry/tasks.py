@@ -920,3 +920,24 @@ def create_entry_v2(self, job: Job) -> int:
         return Job.STATUS["ERROR"]
 
     return Job.STATUS["DONE"]
+
+
+@app.task(bind=True)
+@may_schedule_until_job_is_ready
+def edit_entry_v2(self, job: Job) -> int:
+    entry: Entry | None = Entry.objects.filter(id=job.target.id, is_active=True).first()
+    if not entry:
+        return Job.STATUS["ERROR"]
+
+    serializer = EntryUpdateSerializer(
+        instance=entry, data=json.loads(job.params), context={"_user": job.user}
+    )
+    if not serializer.is_valid():
+        return Job.STATUS["ERROR"]
+
+    try:
+        serializer.update(entry, serializer.validated_data)
+    except Exception:
+        return Job.STATUS["ERROR"]
+
+    return Job.STATUS["DONE"]

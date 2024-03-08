@@ -377,8 +377,8 @@ class AironeApiClient {
     id: number,
     name: string,
     attrs: AttributeData[]
-  ): Promise<EntryUpdate> {
-    return await this.entry.entryApiV2Update(
+  ): Promise<void> {
+    await this.entry.entryApiV2Update(
       { id, entryUpdate: { id: id, name, attrs } },
       {
         headers: {
