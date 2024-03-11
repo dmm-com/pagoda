@@ -3,6 +3,8 @@ import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import {
   Box,
   IconButton,
+  List,
+  ListItem,
   Table,
   TableBody,
   TableCell,
@@ -24,6 +26,14 @@ import { Confirmable } from "../common/Confirmable";
 import { Loading } from "../common/Loading";
 
 import { rolePath, rolesPath, topPath } from "Routes";
+
+const StyledList = styled(List)(() => ({
+  padding: "0",
+}));
+
+const StyledListItem = styled(ListItem)(() => ({
+  padding: "0",
+}));
 
 const StyledIconButton = styled(IconButton)(({ theme }) => ({
   margin: theme.spacing(1),
@@ -59,10 +69,10 @@ export const RoleList: FC = ({}) => {
       {roles.loading ? (
         <Loading />
       ) : (
-        <Table>
+        <Table data-testid="RoleList">
           <TableHead>
             <TableRow sx={{ backgroundColor: "#455A64" }}>
-              <TableCell sx={{ color: "#FFFFFF" }}>項目</TableCell>
+              <TableCell sx={{ color: "#FFFFFF" }}>ロール</TableCell>
               <TableCell sx={{ color: "#FFFFFF" }}>備考</TableCell>
               <TableCell sx={{ color: "#FFFFFF" }}>
                 登録ユーザ・グループ
@@ -77,54 +87,62 @@ export const RoleList: FC = ({}) => {
                 <TableCell>{role.name}</TableCell>
                 <TableCell>{role.description}</TableCell>
                 <TableCell>
-                  <>
+                  <StyledList>
                     {role.users.map((user) => (
-                      <Typography key={user.id} ml="58px" my="4px">
-                        {user.username}
-                      </Typography>
+                      <StyledListItem key={user.id}>
+                        <Typography ml="58px" my="4px">
+                          {user.username}
+                        </Typography>
+                      </StyledListItem>
                     ))}
                     {role.groups.map((group) => (
-                      <Typography key={group.id} ml="58px" my="4px">
-                        {group.name}
-                      </Typography>
+                      <StyledListItem key={group.id}>
+                        <Typography ml="58px" my="4px">
+                          {group.name}
+                        </Typography>
+                      </StyledListItem>
                     ))}
                     {role.adminUsers.map((user) => (
-                      <Box key={user.id} display="flex" my="4px">
-                        <Box
-                          display="flex"
-                          alignItems="center"
-                          p="4px"
-                          mx="4px"
-                          sx={{
-                            color: "white",
-                            backgroundColor: "#0000008A",
-                            borderRadius: "12px",
-                          }}
-                        >
-                          管理者
+                      <StyledListItem key={user.id}>
+                        <Box display="flex" my="4px">
+                          <Box
+                            display="flex"
+                            alignItems="center"
+                            p="4px"
+                            mx="4px"
+                            sx={{
+                              color: "white",
+                              backgroundColor: "#0000008A",
+                              borderRadius: "12px",
+                            }}
+                          >
+                            管理者
+                          </Box>
+                          <Typography>{user.username}</Typography>
                         </Box>
-                        <Typography>{user.username}</Typography>
-                      </Box>
+                      </StyledListItem>
                     ))}
                     {role.adminGroups.map((group) => (
-                      <Box key={group.id} display="flex" my="4px">
-                        <Box
-                          display="flex"
-                          alignItems="center"
-                          p="4px"
-                          mx="4px"
-                          sx={{
-                            color: "white",
-                            backgroundColor: "#0000008A",
-                            borderRadius: "12px",
-                          }}
-                        >
-                          管理者
+                      <StyledListItem key={group.id}>
+                        <Box display="flex" my="4px">
+                          <Box
+                            display="flex"
+                            alignItems="center"
+                            p="4px"
+                            mx="4px"
+                            sx={{
+                              color: "white",
+                              backgroundColor: "#0000008A",
+                              borderRadius: "12px",
+                            }}
+                          >
+                            管理者
+                          </Box>
+                          <Typography>{group.name}</Typography>
                         </Box>
-                        <Typography>{group.name}</Typography>
-                      </Box>
+                      </StyledListItem>
                     ))}
-                  </>
+                  </StyledList>
                 </TableCell>
                 <TableCell>
                   <Confirmable

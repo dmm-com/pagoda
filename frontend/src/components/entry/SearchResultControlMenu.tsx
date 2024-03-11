@@ -169,7 +169,7 @@ export const SearchResultControlMenu: FC<Props> = ({
 
       {/* date-type specific text selector */}
       {attrType === EntryAttributeTypeTypeEnum.DATE && (
-        <>
+        <Box>
           <StyledBox display="flex" flexDirection="column">
             <StyledTypography variant="caption">次を含む日付</StyledTypography>
             <LocalizationProvider dateAdapter={AdapterDateFns}>
@@ -234,12 +234,12 @@ export const SearchResultControlMenu: FC<Props> = ({
               />
             </LocalizationProvider>
           </StyledBox>
-        </>
+        </Box>
       )}
 
       {/* date-type specific text selector */}
       {attrType === EntryAttributeTypeTypeEnum.BOOLEAN && (
-        <>
+        <Box>
           <MenuItem
             onClick={() =>
               handleSelectFilterConditions({
@@ -276,13 +276,13 @@ export const SearchResultControlMenu: FC<Props> = ({
             )}
             <Typography>false のみ</Typography>
           </MenuItem>
-        </>
+        </Box>
       )}
 
       {/* default text selector */}
       {attrType !== EntryAttributeTypeTypeEnum.DATE &&
         attrType !== EntryAttributeTypeTypeEnum.BOOLEAN && (
-          <>
+          <Box>
             <Box>
               <StyledTextField
                 size="small"
@@ -319,7 +319,7 @@ export const SearchResultControlMenu: FC<Props> = ({
                 )}
               />
             </Box>
-          </>
+          </Box>
         )}
     </Menu>
   );

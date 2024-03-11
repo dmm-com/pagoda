@@ -3,12 +3,57 @@
 ## In development
 
 ### Added
+
+### Changed
+* Add privileged mode at DRF serializer of Entry mainly for custom_view processing
+  Contributed by @userlocalhost
+
+### Fixed
+
+## v3.79.0
+
+### Fixed
+* Fix description for isTopLevel.
+  Contributed by @syucream
+
+## v3.78.0
+
+### Changed
+* Renamed frontend page component.
+  Contributed by @syucream
+
+### Fixed
+* Fixed invoke trigger failure with do_edit.
+  Contributed by @hinashi
+
+## v3.77.0
+
+### Changed
+* Enable to invoke TriggerAction when import and revert processing.
+  Contributed by @hinashi, @userlocalhost
+
+### Fixed
+* Fix deps to avoid inifinite fetching in acl history page.
+  Contributed by @syucream
+
+## v3.76.0
+
+### Changed
+* Upgrade django version from 3.2.23 to 3.2.24
+
+## v3.75.0
+
+### Added
 * Added new feature TriggerAction to be able to update Attributes along with user defined configuration.
   Contributed by @userlocalhsot, @hinashi
+* Enable collecting coverage on the frontend.
+  Contributed by @syucream
 
 ### Changed
 
 ### Fixed
+* Fix download links shown in header menu.
+  Contributed by @syucream
 
 ## v3.74.0
 

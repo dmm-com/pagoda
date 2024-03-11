@@ -7,59 +7,63 @@ export const schema = schemaForType<TriggerParent>()(
   z.object({
     id: z.number(), // Add the 'id' property
     entity: z.object({
-      id: z.number(),
+      id: z.number().min(1, "エンティティは必須です"),
       name: z.string(),
       isPublic: z.boolean().optional(),
     }),
-    conditions: z.array(
-      z.object({
-        id: z.number(),
-        attr: z.object({
+    conditions: z
+      .array(
+        z.object({
           id: z.number(),
-          name: z.string(),
-          type: z.number(),
-        }),
-        strCond: z.string().nullable(),
-        refCond: z
-          .object({
-            id: z.number(),
+          attr: z.object({
+            id: z.number().min(1, "属性は必須です"),
             name: z.string(),
-            schema: z.object({
+            type: z.number(),
+          }),
+          strCond: z.string().nullable(),
+          refCond: z
+            .object({
               id: z.number(),
               name: z.string(),
-            }),
-          })
-          .nullable(),
-        boolCond: z.boolean().optional(),
-      })
-    ),
-    actions: z.array(
-      z.object({
-        id: z.number(),
-        attr: z.object({
-          id: z.number(),
-          name: z.string(),
-          type: z.number(),
-        }),
-        values: z.array(
-          z.object({
-            id: z.number(),
-            strCond: z.string().nullable(),
-            refCond: z
-              .object({
+              schema: z.object({
                 id: z.number(),
                 name: z.string(),
-                schema: z.object({
+              }),
+            })
+            .nullable(),
+          boolCond: z.boolean().optional(),
+        })
+      )
+      .min(1, "最低でもひとつの条件を設定してください"),
+    actions: z
+      .array(
+        z.object({
+          id: z.number(),
+          attr: z.object({
+            id: z.number().min(1, "属性は必須です"),
+            name: z.string(),
+            type: z.number(),
+          }),
+          values: z.array(
+            z.object({
+              id: z.number(),
+              strCond: z.string().nullable(),
+              refCond: z
+                .object({
                   id: z.number(),
                   name: z.string(),
-                }),
-              })
-              .nullable(),
-            boolCond: z.boolean().optional(),
-          })
-        ),
-      })
-    ),
+                  schema: z.object({
+                    id: z.number(),
+                    name: z.string(),
+                  }),
+                })
+                .nullable(),
+              boolCond: z.boolean().optional(),
+            })
+          ),
+        })
+      )
+      .min(1, "最低でもひとつのアクションを設定してください"),
   })
 );
 

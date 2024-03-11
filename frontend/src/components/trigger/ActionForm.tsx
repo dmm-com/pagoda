@@ -306,15 +306,14 @@ export const ActionForm: FC<Props> = ({
 
   return (
     <>
-      {fields.map((actionField, index) => {
-        return (
+      {fields.map((actionField, index) => (
+        <TableRow key={actionField.key}>
           <Controller
-            key={actionField.key}
             name={`actions.${index}.attr.id`}
             control={control}
             defaultValue={actionField.attr.id}
             render={({ field }) => (
-              <TableRow>
+              <>
                 <TableCell>
                   <Select
                     {...field}
@@ -327,6 +326,7 @@ export const ActionForm: FC<Props> = ({
                       resetActionValues(index);
                     }}
                   >
+                    <MenuItem key={0} value={0} disabled hidden />
                     {entity.attrs
                       .filter((attr) => isSupportedType(attr))
                       .map((attr) => (
@@ -344,22 +344,22 @@ export const ActionForm: FC<Props> = ({
                     entity={entity}
                   />
                 </TableCell>
-                <TableCell>
-                  {" "}
-                  <IconButton onClick={() => remove(index)}>
-                    <DeleteOutlineIcon />
-                  </IconButton>
-                </TableCell>
-                <TableCell>
-                  <IconButton onClick={() => handleAppendAction(index + 1)}>
-                    <AddIcon />
-                  </IconButton>
-                </TableCell>
-              </TableRow>
+              </>
             )}
           />
-        );
-      })}
+          <TableCell>
+            {" "}
+            <IconButton onClick={() => remove(index)}>
+              <DeleteOutlineIcon />
+            </IconButton>
+          </TableCell>
+          <TableCell>
+            <IconButton onClick={() => handleAppendAction(index + 1)}>
+              <AddIcon />
+            </IconButton>
+          </TableCell>
+        </TableRow>
+      ))}
       {fields.length === 0 && (
         <TableRow>
           <TableCell />

@@ -4,6 +4,7 @@ import time
 from datetime import date, datetime, timedelta
 from enum import Enum
 from importlib import import_module
+from typing import Any
 
 import pytz
 from django.conf import settings
@@ -52,6 +53,12 @@ class JobOperation(Enum):
     MAY_INVOKE_TRIGGER = 23
 
 
+class JobTarget(Enum):
+    UNKNOWN = 0
+    ENTRY = 1
+    ENTITY = 2
+
+
 class Job(models.Model):
     """
     This manage processing which is executed on backend.
@@ -73,11 +80,6 @@ class Job(models.Model):
 
     # This hash table describes operation status value and operation processing
     _METHOD_TABLE = {}
-
-    # TODO: these constants should be changed as dict value like STATUS for maintainability
-    TARGET_UNKNOWN = 0
-    TARGET_ENTRY = 1
-    TARGET_ENTITY = 2
 
     STATUS = {
         "PREPARING": 1,
@@ -228,7 +230,7 @@ class Job(models.Model):
 
         self.save(update_fields=update_fields)
 
-    def to_json(self):
+    def to_json(self) -> dict:
         # For advanced search results export, target is assumed to be empty.
         return {
             "id": self.id,
@@ -262,12 +264,20 @@ class Job(models.Model):
             return method(self.id)
 
     @classmethod
-    def _create_new_job(kls, user, target, operation, text, params) -> "Job":
-        t_type = kls.TARGET_UNKNOWN
+    def _create_new_job(
+        kls,
+        user: User,
+        target: Entity | Entry | Any,
+        operation: int,
+        text: str | None,
+        params,
+        depend_on=None,
+    ) -> "Job":
+        t_type = JobTarget.UNKNOWN.value
         if isinstance(target, Entry):
-            t_type = kls.TARGET_ENTRY
+            t_type = JobTarget.ENTRY.value
         elif isinstance(target, Entity):
-            t_type = kls.TARGET_ENTITY
+            t_type = JobTarget.ENTITY.value
 
         # set dependent job to prevent running tasks simultaneously which set to target same one.
         dependent_job = None
@@ -280,6 +290,9 @@ class Job(models.Model):
                 .order_by("updated_at")
                 .last()
             )
+
+        if dependent_job is None and depend_on is not None:
+            dependent_job = depend_on
 
         params = {
             "user": user,
@@ -527,9 +540,14 @@ class Job(models.Model):
         )
 
     @classmethod
-    def new_invoke_trigger(kls, user, target_entry, recv_attrs={}):
+    def new_invoke_trigger(kls, user, target_entry, recv_attrs={}, dependent_job=None):
         return kls._create_new_job(
-            user, target_entry, JobOperation.MAY_INVOKE_TRIGGER.value, "", json.dumps(recv_attrs)
+            user,
+            target_entry,
+            JobOperation.MAY_INVOKE_TRIGGER.value,
+            "",
+            json.dumps(recv_attrs),
+            dependent_job,
         )
 
     def set_cache(self, value):

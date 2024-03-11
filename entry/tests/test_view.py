@@ -29,8 +29,10 @@ from entry import tasks
 from entry.models import Attribute, AttributeValue, Entry
 from entry.settings import CONFIG as ENTRY_CONFIG
 from group.models import Group
-from job.models import Job, JobOperation
+from job.models import Job, JobOperation, JobTarget
 from role.models import Role
+from trigger import tasks as trigger_tasks
+from trigger.models import TriggerCondition
 from user.models import User
 
 
@@ -355,19 +357,29 @@ class ViewTest(AironeViewTest):
         # checks created jobs and its params are as expected
         jobs = Job.objects.filter(user=user, target=entry)
         job_expectations = [
-            {"operation": JobOperation.CREATE_ENTRY, "status": Job.STATUS["DONE"]},
+            {
+                "operation": JobOperation.CREATE_ENTRY,
+                "status": Job.STATUS["DONE"],
+                "dependent_job": None,
+            },
             {
                 "operation": JobOperation.NOTIFY_CREATE_ENTRY,
                 "status": Job.STATUS["DONE"],
+                "dependent_job": None,
+            },
+            {
+                "operation": JobOperation.MAY_INVOKE_TRIGGER,
+                "status": Job.STATUS["PREPARING"],
+                "dependent_job": jobs.get(operation=JobOperation.CREATE_ENTRY.value),
             },
         ]
         self.assertEqual(jobs.count(), len(job_expectations))
         for expectation in job_expectations:
             obj = jobs.get(operation=expectation["operation"].value)
             self.assertEqual(obj.target.id, entry.id)
-            self.assertEqual(obj.target_type, Job.TARGET_ENTRY)
+            self.assertEqual(obj.target_type, JobTarget.ENTRY.value)
             self.assertEqual(obj.status, expectation["status"])
-            self.assertIsNone(obj.dependent_job)
+            self.assertEqual(obj.dependent_job, expectation["dependent_job"])
 
         # checks specify part of attribute parameter then set AttributeValue
         # which is only specified one
@@ -885,23 +897,34 @@ class ViewTest(AironeViewTest):
         # checks created jobs and its params are as expected
         jobs = Job.objects.filter(user=user, target=entry)
         job_expectations = [
-            {"operation": JobOperation.EDIT_ENTRY, "status": Job.STATUS["DONE"]},
+            {
+                "operation": JobOperation.EDIT_ENTRY,
+                "status": Job.STATUS["DONE"],
+                "dependent_job": None,
+            },
             {
                 "operation": JobOperation.REGISTER_REFERRALS,
                 "status": Job.STATUS["PREPARING"],
+                "dependent_job": None,
             },
             {
                 "operation": JobOperation.NOTIFY_UPDATE_ENTRY,
                 "status": Job.STATUS["DONE"],
+                "dependent_job": None,
+            },
+            {
+                "operation": JobOperation.MAY_INVOKE_TRIGGER,
+                "status": Job.STATUS["PREPARING"],
+                "dependent_job": jobs.get(operation=JobOperation.EDIT_ENTRY.value),
             },
         ]
         self.assertEqual(jobs.count(), len(job_expectations))
         for expectation in job_expectations:
             obj = jobs.get(operation=expectation["operation"].value)
             self.assertEqual(obj.target.id, entry.id)
-            self.assertEqual(obj.target_type, Job.TARGET_ENTRY)
+            self.assertEqual(obj.target_type, JobTarget.ENTRY.value)
             self.assertEqual(obj.status, expectation["status"])
-            self.assertIsNone(obj.dependent_job)
+            self.assertEqual(obj.dependent_job, expectation["dependent_job"])
 
         # checks specify part of attribute parameter then set AttributeValue
         # which is only specified one
@@ -1607,7 +1630,7 @@ class ViewTest(AironeViewTest):
         for expectation in job_expectations:
             obj = jobs.get(operation=expectation["operation"].value)
             self.assertEqual(obj.target.id, entry.id)
-            self.assertEqual(obj.target_type, Job.TARGET_ENTRY)
+            self.assertEqual(obj.target_type, JobTarget.ENTRY.value)
             self.assertEqual(obj.status, expectation["status"])
             self.assertEqual(obj.dependent_job, expectation["dependent_job"])
 
@@ -1902,6 +1925,62 @@ class ViewTest(AironeViewTest):
         self.assertFalse(entry.attrs.get(schema__name="Role").is_updated(role))
         self.assertFalse(entry.attrs.get(schema__name="RoleArray").is_updated([role]))
 
+    @patch(
+        "entry.tasks.create_entry_attrs.delay",
+        Mock(side_effect=tasks.create_entry_attrs),
+    )
+    @patch(
+        "trigger.tasks.may_invoke_trigger.delay",
+        Mock(side_effect=trigger_tasks.may_invoke_trigger),
+    )
+    def test_create_entry_with_trigger_configuration(self):
+        user = self.guest_login()
+
+        # initialize Entity which has Role related Attributes
+        entity = self.create_entity(
+            user,
+            "Personal Information",
+            attrs=[
+                {"name": "address", "type": AttrTypeValue["string"]},
+                {"name": "age", "type": AttrTypeValue["string"]},
+            ],
+        )
+
+        # register TriggerAction configuration before creating an Entry
+        TriggerCondition.register(
+            entity,
+            [{"attr_id": entity.attrs.get(name="age").id, "cond": "0"}],
+            [{"attr_id": entity.attrs.get(name="address").id, "value": "Tokyo"}],
+        )
+
+        # create an Entry to invoke TriggerAction
+        params = {
+            "entry_name": "Jhon Doe",
+            "attrs": [
+                {
+                    "id": str(entity.attrs.get(name="age").id),
+                    "type": str(AttrTypeValue["string"]),
+                    "value": [{"data": "0", "index": 0}],
+                    "referral_key": [],
+                }
+            ],
+        }
+        resp = self.client.post(
+            reverse("entry:do_create", args=[entity.id]),
+            json.dumps(params),
+            "application/json",
+        )
+
+        # check trigger action was worked properly
+        job_query = Job.objects.filter(operation=JobOperation.MAY_INVOKE_TRIGGER.value)
+        self.assertEqual(job_query.count(), 1)
+        self.assertEqual(job_query.first().status, Job.STATUS["DONE"])
+
+        # check created Entry's attributes are set properly by TriggerAction
+        entry = Entry.objects.get(id=resp.json().get("entry_id"))
+        self.assertEqual(entry.get_attrv("age").value, "0")
+        self.assertEqual(entry.get_attrv("address").value, "Tokyo")
+
     @patch("entry.tasks.edit_entry_attrs.delay", Mock(side_effect=tasks.edit_entry_attrs))
     def test_edit_entry_with_role_attributes(self):
         user = self.guest_login()
@@ -1947,6 +2026,60 @@ class ViewTest(AironeViewTest):
         updatedEntry = Entry.objects.get(id=resp.json().get("entry_id"))
         self.assertFalse(updatedEntry.attrs.get(schema__name="Role").is_updated(role))
         self.assertFalse(updatedEntry.attrs.get(schema__name="RoleArray").is_updated([role]))
+
+    @patch("entry.tasks.edit_entry_attrs.delay", Mock(side_effect=tasks.edit_entry_attrs))
+    @patch(
+        "trigger.tasks.may_invoke_trigger.delay",
+        Mock(side_effect=trigger_tasks.may_invoke_trigger),
+    )
+    def test_edit_entry_with_trigger_configuration(self):
+        user = self.guest_login()
+
+        # initialize Entity and Entry which will be updated by TriggerAction
+        entity = self.create_entity(
+            user,
+            "Personal Information",
+            attrs=[
+                {"name": "age", "type": AttrTypeValue["string"]},
+                {"name": "address", "type": AttrTypeValue["string"]},
+            ],
+        )
+        entry = self.add_entry(user, "Jhon Doe", entity)
+
+        # register TriggerAction configuration before creating an Entry
+        TriggerCondition.register(
+            entity,
+            [{"attr_id": entity.attrs.get(name="age").id, "cond": "0"}],
+            [{"attr_id": entity.attrs.get(name="address").id, "value": "Tokyo"}],
+        )
+
+        # send request for editing Entry to invoke TriggerAction
+        sending_params = {
+            "entry_name": "entry",
+            "attrs": [
+                {
+                    "entity_attr_id": "",
+                    "id": str(entry.attrs.get(schema__name="age").id),
+                    "value": [{"data": "0", "index": 0}],
+                }
+            ],
+        }
+        resp = self.client.post(
+            reverse("entry:do_edit", args=[entry.id]),
+            json.dumps(sending_params),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 200)
+
+        # check trigger action was worked properly
+        job_query = Job.objects.filter(operation=JobOperation.MAY_INVOKE_TRIGGER.value)
+        self.assertEqual(job_query.count(), 1)
+        self.assertEqual(job_query.first().status, Job.STATUS["DONE"])
+
+        # check updated Entry's attributes are set properly by TriggerAction
+        self.assertEqual(resp.json().get("entry_id"), entry.id)
+        self.assertEqual(entry.get_attrv("age").value, "0")
+        self.assertEqual(entry.get_attrv("address").value, "Tokyo")
 
     @patch(
         "entry.tasks.create_entry_attrs.delay",
@@ -3153,7 +3286,7 @@ class ViewTest(AironeViewTest):
         for obj in do_copy_jobs.all():
             self.assertTrue(any([obj.target.name == x for x in ["foo", "bar", "baz"]]))
             self.assertEqual(obj.text, "original entry: %s" % entry.name)
-            self.assertEqual(obj.target_type, Job.TARGET_ENTRY)
+            self.assertEqual(obj.target_type, JobTarget.ENTRY.value)
             self.assertEqual(obj.status, Job.STATUS["DONE"])
             self.assertNotEqual(obj.created_at, obj.updated_at)
             self.assertTrue((obj.updated_at - obj.created_at).total_seconds() > 0)
@@ -3402,6 +3535,10 @@ class ViewTest(AironeViewTest):
         job_expectations = [
             {"operation": JobOperation.IMPORT_ENTRY, "status": Job.STATUS["DONE"]},
             {
+                "operation": JobOperation.MAY_INVOKE_TRIGGER,
+                "status": Job.STATUS["PREPARING"],
+            },
+            {
                 "operation": JobOperation.NOTIFY_CREATE_ENTRY,
                 "status": Job.STATUS["PREPARING"],
             },
@@ -3415,6 +3552,34 @@ class ViewTest(AironeViewTest):
         # checks that created entry was registered to the Elasticsearch
         res = self._es.get(index=settings.ES_CONFIG["INDEX_NAME"], id=entry.id)
         self.assertTrue(res["found"])
+
+    @patch(
+        "trigger.tasks.may_invoke_trigger.delay",
+        Mock(side_effect=trigger_tasks.may_invoke_trigger),
+    )
+    @patch("entry.tasks.import_entries.delay", Mock(side_effect=tasks.import_entries))
+    def test_import_entry_when_trigger_is_set(self):
+        user = self.guest_login()
+
+        entity = self.create_entity(
+            user, "Entity", [{"name": "str", "type": AttrTypeValue["string"]}]
+        )
+
+        TriggerCondition.register(
+            entity,
+            [
+                {"attr_id": entity.attrs.get(name="str").id, "cond": "foo"},
+            ],
+            [{"attr_id": entity.attrs.get(name="str").id, "value": "fuga"}],
+        )
+
+        fp = self.open_fixture_file("import_data01.yaml")
+        resp = self.client.post(reverse("entry:do_import", args=[entity.id]), {"file": fp})
+        fp.close()
+
+        self.assertEqual(resp.status_code, 303)
+        entry = Entry.objects.get(name="Entry", schema=entity)
+        self.assertEqual(entry.get_attrv("str").value, "fuga")
 
     def test_import_entry_invalid_param(self):
         user: User = self.guest_login()
@@ -4286,7 +4451,7 @@ class ViewTest(AironeViewTest):
 
             self.assertEqual(job.user.id, user.id)
             self.assertEqual(job.target.id, entry.id)
-            self.assertEqual(job.target_type, Job.TARGET_ENTRY)
+            self.assertEqual(job.target_type, JobTarget.ENTRY.value)
             self.assertEqual(job.status, Job.STATUS["PREPARING"])
             self.assertEqual(job.operation, JobOperation.EDIT_ENTRY.value)
 
@@ -4703,6 +4868,58 @@ class ViewTest(AironeViewTest):
                 self.assertEqual(data["value"], value)
 
         self.assertEqual(mock_task.call_count, len(attr_info))
+
+    @patch(
+        "trigger.tasks.may_invoke_trigger.delay",
+        Mock(side_effect=trigger_tasks.may_invoke_trigger),
+    )
+    def test_invoke_trigger_by_revert_attrv(self):
+        user = self.guest_login()
+
+        # initialize Entity and Entry that are used in this test
+        entity = self.create_entity(
+            user,
+            "Entity",
+            [
+                {"name": "cond", "type": AttrTypeValue["string"]},
+                {"name": "action", "type": AttrTypeValue["string"]},
+            ],
+        )
+        entry = self.add_entry(
+            user,
+            "TestEntry",
+            entity,
+            values={
+                "cond": "hoge",
+            },
+        )
+
+        # changed value to retrieve
+        changing_attr = entry.attrs.get(name="cond")
+        changing_attr.add_value(user, "changed")
+
+        # register TriggerAction configuration before creating an Entry
+        TriggerCondition.register(
+            entity,
+            [{"attr_id": entity.attrs.get(name="cond").id, "cond": "hoge"}],
+            [{"attr_id": entity.attrs.get(name="action").id, "value": "fuga"}],
+        )
+
+        # send request to revert attribute value of "cond"
+        revert_attrv = changing_attr.values.filter(value="hoge").last()
+        params = {"attr_id": str(changing_attr.id), "attrv_id": str(revert_attrv.id)}
+        resp = self.client.post(
+            reverse("entry:revert_attrv"), json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 200)
+
+        # This check that Attribute value of "action" would be updated by TriggerAction
+        self.assertEqual(entry.get_attrv("action").value, "fuga")
+
+        # check trigger action was worked properly
+        job_query = Job.objects.filter(operation=JobOperation.MAY_INVOKE_TRIGGER.value)
+        self.assertEqual(job_query.count(), 1)
+        self.assertEqual(job_query.first().status, Job.STATUS["DONE"])
 
     def test_revert_attrv_with_invalid_value(self):
         user = self.guest_login()
@@ -5144,19 +5361,29 @@ class ViewTest(AironeViewTest):
         # checks created jobs and its params are as expected
         jobs = Job.objects.filter(user=user, target=entry)
         job_expectations = [
-            {"operation": JobOperation.CREATE_ENTRY, "status": Job.STATUS["DONE"]},
+            {
+                "operation": JobOperation.CREATE_ENTRY,
+                "status": Job.STATUS["DONE"],
+                "dependent_job": None,
+            },
             {
                 "operation": JobOperation.NOTIFY_CREATE_ENTRY,
                 "status": Job.STATUS["PREPARING"],
+                "dependent_job": None,
+            },
+            {
+                "operation": JobOperation.MAY_INVOKE_TRIGGER,
+                "status": Job.STATUS["PREPARING"],
+                "dependent_job": jobs.get(operation=JobOperation.CREATE_ENTRY.value),
             },
         ]
         self.assertEqual(jobs.count(), len(job_expectations))
         for expectation in job_expectations:
             obj = jobs.get(operation=expectation["operation"].value)
             self.assertEqual(obj.target.id, entry.id)
-            self.assertEqual(obj.target_type, Job.TARGET_ENTRY)
+            self.assertEqual(obj.target_type, JobTarget.ENTRY.value)
             self.assertEqual(obj.status, expectation["status"])
-            self.assertIsNone(obj.dependent_job)
+            self.assertEqual(obj.dependent_job, expectation["dependent_job"])
 
         # Rerun creating that entry job (This is core processing of this test)
         job_create = Job.objects.get(user=user, operation=JobOperation.CREATE_ENTRY.value)

@@ -9,6 +9,7 @@ on:
       - "**/*.py"
       - "templates/**/*.html"
       - ".github/workflows/build-core.yml"
+      - "tox.ini"
 
 jobs:
   lint:

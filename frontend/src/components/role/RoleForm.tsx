@@ -68,7 +68,7 @@ export const RoleForm: FC<Props> = ({ control, setValue }) => {
   return (
     <Box>
       <Box>
-        <Table className="table table-bordered">
+        <Table className="table table-bordered" data-testid="basic">
           <TableHead>
             <TableRow sx={{ backgroundColor: "#455A64" }}>
               <TableCell sx={{ color: "#FFFFFF" }}>項目</TableCell>
@@ -133,7 +133,7 @@ export const RoleForm: FC<Props> = ({ control, setValue }) => {
           <Typography align="left" my="8px">
             グループ登録
           </Typography>
-          <Table>
+          <Table data-testid="group">
             <TableHead>
               <TableRow sx={{ backgroundColor: "#455A64" }}>
                 <TableCell sx={{ color: "#FFFFFF" }}>項目</TableCell>
@@ -294,7 +294,7 @@ export const RoleForm: FC<Props> = ({ control, setValue }) => {
           <Typography align="left" my="8px">
             ユーザ登録
           </Typography>
-          <Table>
+          <Table data-testid="user">
             <TableHead>
               <TableRow sx={{ backgroundColor: "#455A64" }}>
                 <TableCell sx={{ color: "#FFFFFF" }}>項目</TableCell>

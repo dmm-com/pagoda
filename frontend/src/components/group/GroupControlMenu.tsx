@@ -9,7 +9,7 @@ import {
 } from "@mui/material";
 import { useSnackbar } from "notistack";
 import React, { FC, useCallback } from "react";
-import { useHistory } from "react-router-dom";
+import { Link, useHistory } from "react-router-dom";
 
 import { groupPath, groupsPath, topPath } from "Routes";
 import { Confirmable } from "components/common/Confirmable";
@@ -30,10 +30,6 @@ export const GroupControlMenu: FC<Props> = ({
 }) => {
   const { enqueueSnackbar } = useSnackbar();
   const history = useHistory();
-
-  const handleEdit = useCallback(() => {
-    history.push(groupPath(groupId));
-  }, [history, groupId]);
 
   const handleDelete = useCallback(async () => {
     try {
@@ -66,7 +62,7 @@ export const GroupControlMenu: FC<Props> = ({
       }}
     >
       <Box sx={{ width: 150 }}>
-        <MenuItem onClick={handleEdit}>
+        <MenuItem component={Link} to={groupPath(groupId)}>
           <Typography>グループ編集</Typography>
         </MenuItem>
         <Confirmable

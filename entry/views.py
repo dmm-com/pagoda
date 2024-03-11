@@ -251,6 +251,9 @@ def do_create(request, entity_id, recv_data):
     job_create_entry = Job.new_create(request.user, entry, params=recv_data)
     job_create_entry.run()
 
+    # Create job for TriggerAction
+    Job.new_invoke_trigger(request.user, entry, recv_data.get("attrs", []), job_create_entry).run()
+
     return JsonResponse(
         {
             "entry_id": entry.id,
@@ -354,6 +357,9 @@ def do_edit(request, entry_id, recv_data):
     # Create new jobs to edit entry and notify it to registered webhook endpoint if it's necessary
     job_edit_entry = Job.new_edit(request.user, entry, params=recv_data)
     job_edit_entry.run()
+
+    # Create job for TriggerAction
+    Job.new_invoke_trigger(request.user, entry, recv_data.get("attrs", []), job_edit_entry).run()
 
     # running job of re-register referrals because of chaning entry's name
     if job_register_referrals:
@@ -832,6 +838,12 @@ def revert_attrv(request, recv_data):
 
         # register update to the Elasticsearch
         attr.parent_entry.register_es()
+
+        # Create job for TriggerAction
+        entry = attr.parent_entry
+        Job.new_invoke_trigger(
+            request.user, entry, entry.get_trigger_params(request.user, [attr.name])
+        ).run()
 
         # Send notification to the webhook URL
         job_notify = Job.new_notify_update_entry(request.user, attr.parent_entry)

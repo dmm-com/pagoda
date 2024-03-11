@@ -6,7 +6,7 @@ from airone.lib.http import DRFRequest
 from airone.lib.types import AttrTypeValue
 from entity.models import Entity, EntityAttr
 from entry.api_v2.serializers import EntryUpdateSerializer
-from entry.models import Entry
+from entry.models import Attribute, Entry
 
 
 ## These are internal classes for AirOne trigger and action
@@ -324,13 +324,35 @@ class TriggerCondition(models.Model):
 
         return any([_do_check_condition(input) for input in input_list])
 
-    def is_match_condition(self, recv_value) -> bool:
+    def is_match_condition(self, raw_recv_value) -> bool:
         """
         This checks specified value, which is compatible with APIv2 standard, matches
         with this condition.
         """
 
+        def _compatible_with_apiv1(recv_value):
+            """
+            This method retrieve value from recv_value that is specified by user. This processing
+            is necessary to compatible with both API versions (v1 and v2)
+            """
+            if isinstance(recv_value, list) and all(
+                [isinstance(x, dict) and "data" in x for x in recv_value]
+            ):
+                # In this case, the recv_value is compatible with APIv1 standard
+                # it's necessary to convert it to APIv2 standard
+                if self.attr.type & AttrTypeValue["array"]:
+                    return [x["data"] for x in recv_value]
+                else:
+                    return recv_value[0]["data"]
+
+            else:
+                # In this case, the recv_value is compatible with APIv2 standard
+                # and this method designed for it.
+                return recv_value
+
         # This is a helper method when AttrType is "object" or "named_object"
+        recv_value = _compatible_with_apiv1(raw_recv_value)
+
         def _is_match_object(val):
             if isinstance(val, int) or isinstance(val, str):
                 if self.ref_cond and self.ref_cond.is_active:
@@ -399,10 +421,28 @@ class TriggerCondition(models.Model):
 
     @classmethod
     def get_invoked_actions(cls, entity: Entity, recv_data: list):
+        # The APIv1 and APIv2 format is different.
+        # In the APIv2, the "id" parameter in the recv_data variable means EntityAttr ID.
+        # But in the APIv1, the "id" parameter in the recv_data variable means Attribute ID
+        # of Entry. So, it's necessary to refer "entity_attr_id" parameter to be compatible
+        # with both API versions.
+        if all(["entity_attr_id" in x for x in recv_data]):
+            # This is for APIv1
+            params = []
+            for data in recv_data:
+                if data["entity_attr_id"]:
+                    entity_attr = EntityAttr.objects.filter(id=data["entity_attr_id"]).first()
+                else:
+                    attr = Attribute.objects.filter(id=data["id"]).first()
+                    entity_attr = attr.schema if attr else None
+                attr_id = int(entity_attr.id) if entity_attr else 0
+                params.append({"attr_id": attr_id, "value": data["value"]})
+        else:
+            # This is for APIv2
+            params = [{"attr_id": int(x["id"]), "value": x["value"]} for x in recv_data]
+
         actions = []
         for parent_condition in TriggerParent.objects.filter(entity=entity):
-            actions += parent_condition.get_actions(
-                [{"attr_id": int(x["id"]), "value": x["value"]} for x in recv_data]
-            )
+            actions += parent_condition.get_actions(params)
 
         return actions
