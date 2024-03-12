@@ -5,10 +5,16 @@
 ### Added
 
 ### Changed
-* Add privileged mode at DRF serializer of Entry mainly for custom_view processing
-  Contributed by @userlocalhost
 
 ### Fixed
+
+## v3.80.0
+
+### Changed
+* Add privileged mode at DRF serializer of Entry mainly for custom_view processing
+  Contributed by @userlocalhost
+* Improve job class with type hints and enum
+  Contributed by @syucream
 
 ## v3.79.0
 
