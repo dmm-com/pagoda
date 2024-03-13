@@ -13,6 +13,8 @@ import {
   Box,
   Checkbox,
   IconButton,
+  List,
+  ListItem,
   MenuItem,
   Select,
   TableCell,
@@ -67,6 +69,14 @@ const StyledBox = styled(Box)(({}) => ({
   display: "flex",
   width: "100%",
   gap: "0 12px",
+}));
+
+const StyledList = styled(List)(({}) => ({
+  padding: "0",
+}));
+
+const StyledListItem = styled(ListItem)(({}) => ({
+  padding: "0",
 }));
 
 const ActionValueAsString: FC<PropsActionValueComponent> = ({
@@ -167,14 +177,12 @@ const ActionValueInputForm: FC<PropsActionValueComponentWithEntity> = ({
     case EntryAttributeTypeTypeEnum.ARRAY_STRING:
       return (
         <StyledBox>
-          <>
-            <ActionValueAsString
-              actionValue={actionValue}
-              indexAction={indexAction}
-              indexActionValue={indexActionValue}
-              control={control}
-            />
-          </>
+          <ActionValueAsString
+            actionValue={actionValue}
+            indexAction={indexAction}
+            indexActionValue={indexActionValue}
+            control={control}
+          />
           <IconButton onClick={() => handleDelInputValue(indexActionValue)}>
             <CancelIcon />
           </IconButton>
@@ -208,15 +216,13 @@ const ActionValueInputForm: FC<PropsActionValueComponentWithEntity> = ({
     case EntryAttributeTypeTypeEnum.ARRAY_OBJECT:
       return (
         <StyledBox>
-          <>
-            <ActionValueAsObject
-              attrId={actionField.attr.id}
-              actionValue={actionValue}
-              indexAction={indexAction}
-              indexActionValue={indexActionValue}
-              control={control}
-            />
-          </>
+          <ActionValueAsObject
+            attrId={actionField.attr.id}
+            actionValue={actionValue}
+            indexAction={indexAction}
+            indexActionValue={indexActionValue}
+            control={control}
+          />
           <IconButton onClick={() => handleDelInputValue(indexActionValue)}>
             <CancelIcon />
           </IconButton>
@@ -254,23 +260,25 @@ const ActionValue: FC<PropsActionValue> = ({
   };
 
   return (
-    <>
+    <StyledList>
       {fields.map((actionValueField, indexActionValue) => {
         return (
-          <ActionValueInputForm
-            key={actionValueField.key}
-            indexAction={indexAction}
-            indexActionValue={indexActionValue}
-            control={control}
-            actionField={actionField}
-            actionValue={actionValueField}
-            entity={entity}
-            handleAddInputValue={handleAddActionValue}
-            handleDelInputValue={handleDelActionValue}
-          />
+          <StyledListItem>
+            <ActionValueInputForm
+              key={actionValueField.key}
+              indexAction={indexAction}
+              indexActionValue={indexActionValue}
+              control={control}
+              actionField={actionField}
+              actionValue={actionValueField}
+              entity={entity}
+              handleAddInputValue={handleAddActionValue}
+              handleDelInputValue={handleDelActionValue}
+            />
+          </StyledListItem>
         );
       })}
-    </>
+    </StyledList>
   );
 };
 
@@ -286,7 +294,7 @@ export const ActionForm: FC<Props> = ({
   });
 
   const handleAppendAction = (index: number) => {
-    insert(index + 1, {
+    insert(index, {
       id: 0,
       attr: {
         id: 0,
