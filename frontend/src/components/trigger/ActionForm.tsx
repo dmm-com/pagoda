@@ -263,9 +263,8 @@ const ActionValue: FC<PropsActionValue> = ({
     <StyledList>
       {fields.map((actionValueField, indexActionValue) => {
         return (
-          <StyledListItem>
+          <StyledListItem key={actionValueField.key}>
             <ActionValueInputForm
-              key={actionValueField.key}
               indexAction={indexAction}
               indexActionValue={indexActionValue}
               control={control}
