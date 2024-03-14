@@ -1,10 +1,13 @@
 import json
 
+import custom_view
 from airone.celery import app
+from airone.lib.job import may_schedule_until_job_is_ready
 from airone.lib.types import AttrTypeValue
+from entity.api_v2.serializers import EntityCreateSerializer, EntityUpdateSerializer
 from entity.models import Entity, EntityAttr
 from job.models import Job
-from user.models import User
+from user.models import History, User
 
 
 @app.task(bind=True)
@@ -237,3 +240,61 @@ def delete_entity(self, job_id):
 
         # update job status and save it
         job.update(Job.STATUS["DONE"])
+
+
+@app.task(bind=True)
+@may_schedule_until_job_is_ready
+def create_entity_v2(self, job: Job):
+    serializer = EntityCreateSerializer(data=json.loads(job.params), context={"_user": job.user})
+    if not serializer.is_valid():
+        return Job.STATUS["ERROR"]
+
+    serializer.create(serializer.validated_data)
+
+    # update job status and save it
+    return Job.STATUS["DONE"]
+
+
+@app.task(bind=True)
+@may_schedule_until_job_is_ready
+def edit_entity_v2(self, job: Job):
+    entity: Entity | None = Entity.objects.filter(id=job.target.id, is_active=True).first()
+    if not entity:
+        job.update(Job.STATUS["ERROR"])
+        return
+
+    serializer = EntityUpdateSerializer(
+        instance=entity, data=json.loads(job.params), context={"_user": job.user}
+    )
+    if not serializer.is_valid():
+        return Job.STATUS["ERROR"]
+
+    serializer.update(entity, serializer.validated_data)
+
+    return Job.STATUS["DONE"]
+
+
+@app.task(bind=True)
+@may_schedule_until_job_is_ready
+def delete_entity_v2(self, job: Job):
+    entity: Entity | None = Entity.objects.filter(id=job.target.id, is_active=True).first()
+    if not entity:
+        return Job.STATUS["ERROR"]
+
+    if custom_view.is_custom("before_delete_entity_v2"):
+        custom_view.call_custom("before_delete_entity_v2", None, job.user, entity)
+
+    # register operation History for deleting entity
+    history: History = job.user.seth_entity_del(entity)
+    entity.delete()
+
+    # Delete all attributes which target Entity have
+    entity_attr: EntityAttr
+    for entity_attr in entity.attrs.filter(is_active=True):
+        history.del_attr(entity_attr)
+        entity_attr.delete()
+
+    if custom_view.is_custom("after_delete_entity_v2"):
+        custom_view.call_custom("after_delete_entity_v2", None, job.user, entity)
+
+    return Job.STATUS["DONE"]

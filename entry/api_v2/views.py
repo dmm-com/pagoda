@@ -47,30 +47,6 @@ from role.models import Role
 from user.models import User
 
 
-def delete_entry_with_notifucation(user, entry):
-    """
-    This implements whole processing related with Entry's deletion such as
-    - running custom_view processing
-    - invoking job about notification
-    """
-
-    if custom_view.is_custom("before_delete_entry_v2", entry.schema.name):
-        custom_view.call_custom("before_delete_entry_v2", entry.schema.name, user, entry)
-
-    # register operation History for deleting entry
-    user.seth_entry_del(entry)
-
-    # delete entry
-    entry.delete(deleted_user=user)
-
-    if custom_view.is_custom("after_delete_entry_v2", entry.schema.name):
-        custom_view.call_custom("after_delete_entry_v2", entry.schema.name, user, entry)
-
-    # Send notification to the webhook URL
-    job_notify: Job = Job.new_notify_delete_entry(user, entry)
-    job_notify.run()
-
-
 class EntryPermission(BasePermission):
     def has_object_permission(self, request, view, obj):
         user: User = request.user
@@ -97,11 +73,26 @@ class EntryAPI(viewsets.ModelViewSet):
     def get_serializer_class(self):
         serializer = {
             "retrieve": EntryRetrieveSerializer,
-            "update": EntryUpdateSerializer,
+            "update": serializers.Serializer,
             "copy": EntryCopySerializer,
             "list": EntryHistoryAttributeValueSerializer,
         }
         return serializer.get(self.action, EntryBaseSerializer)
+
+    @extend_schema(request=EntryUpdateSerializer)
+    def update(self, request, *args, **kwargs):
+        user: User = request.user
+        entry: Entry = self.get_object()
+
+        serializer = EntryUpdateSerializer(
+            instance=entry, data=request.data, context={"_user": user}
+        )
+        serializer.is_valid(raise_exception=True)
+
+        job = Job.new_edit_entry_v2(user, entry, params=request.data)
+        job.run()
+
+        return Response(status=status.HTTP_202_ACCEPTED)
 
     def destroy(self, request, pk):
         entry: Entry = self.get_object()
@@ -110,7 +101,8 @@ class EntryAPI(viewsets.ModelViewSet):
 
         user: User = request.user
 
-        delete_entry_with_notifucation(user, entry)
+        job: Job = Job.new_delete_entry_v2(user, entry)
+        job.run()
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -576,6 +568,7 @@ class EntryBulkDeleteAPI(generics.DestroyAPIView):
             raise PermissionDenied("deleting some entries is not allowed")
 
         for entry in entries:
-            delete_entry_with_notifucation(user, entry)
+            job: Job = Job.new_delete_entry_v2(user, entry)
+            job.run()
 
         return Response(status=status.HTTP_204_NO_CONTENT)

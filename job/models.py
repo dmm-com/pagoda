@@ -51,6 +51,12 @@ class JobOperation(Enum):
     UPDATE_DOCUMENT = 21
     EXPORT_SEARCH_RESULT_V2 = 22
     MAY_INVOKE_TRIGGER = 23
+    CREATE_ENTITY_V2 = 24
+    EDIT_ENTITY_V2 = 25
+    DELETE_ENTITY_V2 = 26
+    CREATE_ENTRY_V2 = 27
+    EDIT_ENTRY_V2 = 28
+    DELETE_ENTRY_V2 = 29
 
 
 class JobTarget(Enum):
@@ -348,6 +354,12 @@ class Job(models.Model):
                 JobOperation.UPDATE_DOCUMENT.value: entry_task.update_es_documents,
                 JobOperation.EXPORT_SEARCH_RESULT_V2.value: entry_task.export_search_result_v2,
                 JobOperation.MAY_INVOKE_TRIGGER.value: trigger_task.may_invoke_trigger,
+                JobOperation.CREATE_ENTITY_V2.value: entity_task.create_entity_v2,
+                JobOperation.EDIT_ENTITY_V2.value: entity_task.edit_entity_v2,
+                JobOperation.DELETE_ENTITY_V2.value: entity_task.delete_entity_v2,
+                JobOperation.CREATE_ENTRY_V2.value: entry_task.create_entry_v2,
+                JobOperation.EDIT_ENTRY_V2.value: entry_task.edit_entry_v2,
+                JobOperation.DELETE_ENTRY_V2.value: entry_task.delete_entry_v2,
             }
 
         return kls._METHOD_TABLE
@@ -548,6 +560,66 @@ class Job(models.Model):
             "",
             json.dumps(recv_attrs),
             dependent_job,
+        )
+
+    @classmethod
+    def new_create_entity_v2(kls, user, target, text="", params={}):
+        return kls._create_new_job(
+            user,
+            target,
+            JobOperation.CREATE_ENTITY_V2.value,
+            text,
+            json.dumps(params, default=_support_time_default, sort_keys=True),
+        )
+
+    @classmethod
+    def new_edit_entity_v2(kls, user, target: Entity, text="", params={}):
+        return kls._create_new_job(
+            user,
+            target,
+            JobOperation.EDIT_ENTITY_V2.value,
+            text,
+            json.dumps(params, default=_support_time_default, sort_keys=True),
+        )
+
+    @classmethod
+    def new_delete_entity_v2(kls, user, target: Entity, text="", params={}):
+        return kls._create_new_job(
+            user,
+            target,
+            JobOperation.DELETE_ENTITY_V2.value,
+            text,
+            json.dumps(params, default=_support_time_default, sort_keys=True),
+        )
+
+    @classmethod
+    def new_create_entry_v2(kls, user, target, text="", params={}):
+        return kls._create_new_job(
+            user,
+            target,
+            JobOperation.CREATE_ENTRY_V2.value,
+            text,
+            json.dumps(params, default=_support_time_default, sort_keys=True),
+        )
+
+    @classmethod
+    def new_edit_entry_v2(kls, user, target: Entry, text="", params={}):
+        return kls._create_new_job(
+            user,
+            target,
+            JobOperation.EDIT_ENTRY_V2.value,
+            text,
+            json.dumps(params, default=_support_time_default, sort_keys=True),
+        )
+
+    @classmethod
+    def new_delete_entry_v2(kls, user, target: Entry, text="", params={}):
+        return kls._create_new_job(
+            user,
+            target,
+            JobOperation.DELETE_ENTRY_V2.value,
+            text,
+            json.dumps(params, default=_support_time_default, sort_keys=True),
         )
 
     def set_cache(self, value):

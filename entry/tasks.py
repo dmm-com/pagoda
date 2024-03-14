@@ -905,3 +905,57 @@ def notify_update_entry(self, job):
 @may_schedule_until_job_is_ready
 def notify_delete_entry(self, job):
     return _notify_event(notify_entry_delete, job.target.id, job.user)
+
+
+@app.task(bind=True)
+@may_schedule_until_job_is_ready
+def create_entry_v2(self, job: Job) -> int:
+    serializer = EntryCreateSerializer(data=json.loads(job.params), context={"_user": job.user})
+    if not serializer.is_valid():
+        return Job.STATUS["ERROR"]
+
+    serializer.create(serializer.validated_data)
+
+    return Job.STATUS["DONE"]
+
+
+@app.task(bind=True)
+@may_schedule_until_job_is_ready
+def edit_entry_v2(self, job: Job) -> int:
+    entry: Entry | None = Entry.objects.filter(id=job.target.id, is_active=True).first()
+    if not entry:
+        return Job.STATUS["ERROR"]
+
+    serializer = EntryUpdateSerializer(
+        instance=entry, data=json.loads(job.params), context={"_user": job.user}
+    )
+    if not serializer.is_valid():
+        return Job.STATUS["ERROR"]
+
+    serializer.update(entry, serializer.validated_data)
+
+    return Job.STATUS["DONE"]
+
+
+@app.task(bind=True)
+@may_schedule_until_job_is_ready
+def delete_entry_v2(self, job: Job) -> int:
+    entry: Entry | None = Entry.objects.filter(id=job.target.id, is_active=True).first()
+    if not entry:
+        return Job.STATUS["ERROR"]
+
+    if custom_view.is_custom("before_delete_entry_v2", entry.schema.name):
+        custom_view.call_custom("before_delete_entry_v2", entry.schema.name, job.user, entry)
+
+    # register operation History for deleting entry
+    job.user.seth_entry_del(entry)
+    entry.delete(deleted_user=job.user)
+
+    # Send notification to the webhook URL
+    job_notify: Job = Job.new_notify_delete_entry(job.user, entry)
+    job_notify.run()
+
+    if custom_view.is_custom("after_delete_entry_v2", entry.schema.name):
+        custom_view.call_custom("after_delete_entry_v2", entry.schema.name, job.user, entry)
+
+    return Job.STATUS["DONE"]

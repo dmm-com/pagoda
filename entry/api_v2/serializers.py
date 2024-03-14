@@ -7,6 +7,7 @@ from rest_framework.exceptions import PermissionDenied, ValidationError
 
 import custom_view
 from acl.models import ACLBase
+from airone.lib import drf
 from airone.lib.acl import ACLType
 from airone.lib.drf import (
     DuplicatedObjectExistsError,
@@ -205,7 +206,14 @@ class EntryBaseSerializer(serializers.ModelSerializer):
     def _validate(self, schema: Entity, attrs: list[dict[str, Any]]):
         # In create case, check attrs mandatory attribute
         if not self.instance:
-            user: User = self.context["request"].user
+            user: User | None = None
+            if "request" in self.context:
+                user = self.context["request"].user
+            if "_user" in self.context:
+                user = self.context["_user"]
+            if user is None:
+                raise RequiredParameterError("user is required")
+
             for mandatory_attr in schema.attrs.filter(is_mandatory=True, is_active=True):
                 if not user.has_permission(mandatory_attr, ACLType.Writable):
                     raise PermissionDenied(
@@ -256,7 +264,7 @@ class EntryCreateSerializer(EntryBaseSerializer):
         queryset=Entity.objects.all(), write_only=True, required=True
     )
     attrs = serializers.ListField(child=AttributeDataSerializer(), write_only=True, required=False)
-    created_user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+    created_user = serializers.HiddenField(default=drf.AironeUserDefault())
 
     class Meta:
         model = Entry
@@ -267,7 +275,13 @@ class EntryCreateSerializer(EntryBaseSerializer):
         return params
 
     def create(self, validated_data: EntryCreateData):
-        user: User = self.context["request"].user
+        user: User | None = None
+        if "request" in self.context:
+            user = self.context["request"].user
+        if "_user" in self.context:
+            user = self.context["_user"]
+        if user is None:
+            raise RequiredParameterError("user is required")
 
         entity_name = validated_data["schema"].name
         if custom_view.is_custom("before_create_entry_v2", entity_name):
@@ -348,7 +362,14 @@ class EntryUpdateSerializer(EntryBaseSerializer):
 
     def update(self, entry: Entry, validated_data: EntryUpdateData):
         entry.set_status(Entry.STATUS_EDITING)
-        user: User = self.context["request"].user
+
+        user: User | None = None
+        if "request" in self.context:
+            user = self.context["request"].user
+        if "_user" in self.context:
+            user = self.context["_user"]
+        if user is None:
+            raise RequiredParameterError("user is required")
 
         # for history record
         entry._history_user = user

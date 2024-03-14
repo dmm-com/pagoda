@@ -13,7 +13,6 @@ from rest_framework.permissions import BasePermission, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.serializers import Serializer
 
-import custom_view
 from airone.lib.acl import ACLType, get_permitted_objects
 from airone.lib.drf import ObjectNotExistsError, YAMLParser, YAMLRenderer
 from airone.lib.http import http_get
@@ -29,6 +28,7 @@ from entity.api_v2.serializers import (
 from entity.models import Entity, EntityAttr
 from entry.api_v2.serializers import EntryBaseSerializer, EntryCreateSerializer
 from entry.models import Entry
+from job.models import Job
 from user.models import History, User
 
 
@@ -110,8 +110,8 @@ class EntityAPI(viewsets.ModelViewSet):
     def get_serializer_class(self):
         serializer = {
             "list": EntityListSerializer,
-            "create": EntityCreateSerializer,
-            "update": EntityUpdateSerializer,
+            "create": serializers.Serializer,
+            "update": serializers.Serializer,
         }
         return serializer.get(self.action, EntityDetailSerializer)
 
@@ -129,9 +129,36 @@ class EntityAPI(viewsets.ModelViewSet):
 
         return Entity.objects.filter(**filter_condition).exclude(**exclude_condition)
 
-    def destroy(self, request, pk):
-        entity: Entity = self.get_object()
+    @extend_schema(request=EntityCreateSerializer)
+    def create(self, request, *args, **kwargs):
         user: User = request.user
+
+        serializer = EntityCreateSerializer(data=request.data, context={"_user": user})
+        serializer.is_valid(raise_exception=True)
+
+        job = Job.new_create_entity_v2(user, None, params=request.data)
+        job.run()
+
+        return Response(status=status.HTTP_202_ACCEPTED)
+
+    @extend_schema(request=EntityUpdateSerializer)
+    def update(self, request, *args, **kwargs):
+        user: User = request.user
+        entity: Entity = self.get_object()
+
+        serializer = EntityUpdateSerializer(
+            instance=entity, data=request.data, context={"_user": user}
+        )
+        serializer.is_valid(raise_exception=True)
+
+        job = Job.new_edit_entity_v2(user, entity, params=request.data)
+        job.run()
+
+        return Response(status=status.HTTP_202_ACCEPTED)
+
+    def destroy(self, request, *args, **kwargs):
+        user: User = request.user
+        entity: Entity = self.get_object()
 
         if not entity.is_active:
             raise ObjectNotExistsError("specified entity has already been deleted")
@@ -141,24 +168,10 @@ class EntityAPI(viewsets.ModelViewSet):
                 "cannot delete Entity because one or more Entries are not deleted"
             )
 
-        if custom_view.is_custom("before_delete_entity_v2"):
-            custom_view.call_custom("before_delete_entity_v2", None, user, entity)
+        job = Job.new_delete_entity_v2(user, entity, params=request.data)
+        job.run()
 
-        # register operation History for deleting entity
-        history: History = user.seth_entity_del(entity)
-
-        entity.delete()
-
-        # Delete all attributes which target Entity have
-        entity_attr: EntityAttr
-        for entity_attr in entity.attrs.filter(is_active=True):
-            history.del_attr(entity_attr)
-            entity_attr.delete()
-
-        if custom_view.is_custom("after_delete_entity_v2"):
-            custom_view.call_custom("after_delete_entity_v2", None, user, entity)
-
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(status=status.HTTP_202_ACCEPTED)
 
 
 class EntityEntryAPI(viewsets.ModelViewSet):
@@ -172,7 +185,7 @@ class EntityEntryAPI(viewsets.ModelViewSet):
 
     def get_serializer_class(self):
         serializer = {
-            "create": EntryCreateSerializer,
+            "create": serializers.Serializer,
         }
         return serializer.get(self.action, EntryBaseSerializer)
 
@@ -182,9 +195,18 @@ class EntityEntryAPI(viewsets.ModelViewSet):
             raise Http404
         return self.queryset.filter(schema=entity)
 
+    @extend_schema(request=EntryCreateSerializer)
     def create(self, request, entity_id):
+        user: User = request.user
         request.data["schema"] = entity_id
-        return super().create(request)
+
+        serializer = EntryCreateSerializer(data=request.data, context={"_user": user})
+        serializer.is_valid(raise_exception=True)
+
+        job = Job.new_create_entry_v2(user, None, params=request.data)
+        job.run()
+
+        return Response(status=status.HTTP_202_ACCEPTED)
 
 
 class EntityHistoryAPI(viewsets.ReadOnlyModelViewSet):

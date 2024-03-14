@@ -1,9 +1,12 @@
 import json
 
+from mock import mock
+
 from acl.models import ACLBase
 from airone.lib.acl import ACLType
 from airone.lib.test import AironeViewTest
 from airone.lib.types import AttrTypeValue
+from entity import tasks
 from entity.models import Entity, EntityAttr
 from role.models import Role
 
@@ -474,6 +477,9 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 200)
         self.assertTrue(role.is_permitted(acl, ACLType.Full))
 
+    @mock.patch(
+        "entity.tasks.create_entity_v2.delay", mock.Mock(side_effect=tasks.create_entity_v2)
+    )
     def test_list_history(self):
         self.initialization_for_retrieve_test()
         self.client.post("/entity/api/v2/", json.dumps({"name": "test"}), "application/json")
@@ -594,6 +600,9 @@ class ViewTest(AironeViewTest):
             ],
         )
 
+    @mock.patch(
+        "entity.tasks.create_entity_v2.delay", mock.Mock(side_effect=tasks.create_entity_v2)
+    )
     def test_list_history_with_entity_attr(self):
         self.initialization_for_retrieve_test()
 
