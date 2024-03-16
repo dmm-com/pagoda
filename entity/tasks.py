@@ -6,7 +6,7 @@ from airone.lib.job import may_schedule_until_job_is_ready
 from airone.lib.types import AttrTypeValue
 from entity.api_v2.serializers import EntityCreateSerializer, EntityUpdateSerializer
 from entity.models import Entity, EntityAttr
-from job.models import Job
+from job.models import Job, JobStatus
 from user.models import History, User
 
 
@@ -16,7 +16,7 @@ def create_entity(self, job_id):
 
     if job.proceed_if_ready():
         # At the first time, update job status to prevent executing this job duplicately
-        job.update(Job.STATUS["PROCESSING"])
+        job.update(JobStatus.PROCESSING.value)
 
         user = User.objects.filter(id=job.user.id).first()
         entity = Entity.objects.filter(id=job.target.id, is_active=True).first()
@@ -26,7 +26,7 @@ def create_entity(self, job_id):
 
         if not entity or not user:
             # Abort when specified entity doesn't exist
-            job.update(Job.STATUS["CANCELED"])
+            job.update(JobStatus.CANCELED.value)
             return
 
         recv_data = json.loads(job.params)
@@ -63,7 +63,7 @@ def create_entity(self, job_id):
         entity.del_status(Entity.STATUS_CREATING)
 
         # update job status and save it
-        job.update(Job.STATUS["DONE"])
+        job.update(JobStatus.DONE.value)
 
 
 @app.task(bind=True)
@@ -72,7 +72,7 @@ def edit_entity(self, job_id):
 
     if job.proceed_if_ready():
         # At the first time, update job status to prevent executing this job duplicately
-        job.update(Job.STATUS["PROCESSING"])
+        job.update(JobStatus.PROCESSING.value)
 
         user = User.objects.filter(id=job.user.id).first()
         entity = Entity.objects.filter(id=job.target.id, is_active=True).first()
@@ -82,7 +82,7 @@ def edit_entity(self, job_id):
 
         if not entity or not user:
             # Abort when specified entity doesn't exist
-            job.update(Job.STATUS["CANCELED"])
+            job.update(JobStatus.CANCELED.value)
             return
 
         recv_data = json.loads(job.params)
@@ -208,7 +208,7 @@ def edit_entity(self, job_id):
         entity.del_status(Entity.STATUS_EDITING)
 
         # update job status and save it
-        job.update(Job.STATUS["DONE"])
+        job.update(JobStatus.DONE.value)
 
 
 @app.task(bind=True)
@@ -217,7 +217,7 @@ def delete_entity(self, job_id):
 
     if job.proceed_if_ready():
         # At the first time, update job status to prevent executing this job duplicately
-        job.update(Job.STATUS["PROCESSING"])
+        job.update(JobStatus.PROCESSING.value)
 
         user = User.objects.filter(id=job.user.id).first()
         entity = Entity.objects.filter(id=job.target.id, is_active=False).first()
@@ -227,7 +227,7 @@ def delete_entity(self, job_id):
 
         if not entity or not user:
             # Abort when specified entity doesn't exist
-            job.update(Job.STATUS["CANCELED"])
+            job.update(JobStatus.CANCELED.value)
             return
 
         entity.delete()
@@ -239,47 +239,46 @@ def delete_entity(self, job_id):
             history.del_attr(attr)
 
         # update job status and save it
-        job.update(Job.STATUS["DONE"])
+        job.update(JobStatus.DONE.value)
 
 
 @app.task(bind=True)
 @may_schedule_until_job_is_ready
-def create_entity_v2(self, job: Job):
+def create_entity_v2(self, job: Job) -> JobStatus:
     serializer = EntityCreateSerializer(data=json.loads(job.params), context={"_user": job.user})
     if not serializer.is_valid():
-        return Job.STATUS["ERROR"]
+        return JobStatus.ERROR
 
     serializer.create(serializer.validated_data)
 
     # update job status and save it
-    return Job.STATUS["DONE"]
+    return JobStatus.DONE
 
 
 @app.task(bind=True)
 @may_schedule_until_job_is_ready
-def edit_entity_v2(self, job: Job):
+def edit_entity_v2(self, job: Job) -> JobStatus:
     entity: Entity | None = Entity.objects.filter(id=job.target.id, is_active=True).first()
     if not entity:
-        job.update(Job.STATUS["ERROR"])
-        return
+        return JobStatus.ERROR
 
     serializer = EntityUpdateSerializer(
         instance=entity, data=json.loads(job.params), context={"_user": job.user}
     )
     if not serializer.is_valid():
-        return Job.STATUS["ERROR"]
+        return JobStatus.ERROR
 
     serializer.update(entity, serializer.validated_data)
 
-    return Job.STATUS["DONE"]
+    return JobStatus.DONE
 
 
 @app.task(bind=True)
 @may_schedule_until_job_is_ready
-def delete_entity_v2(self, job: Job):
+def delete_entity_v2(self, job: Job) -> JobStatus:
     entity: Entity | None = Entity.objects.filter(id=job.target.id, is_active=True).first()
     if not entity:
-        return Job.STATUS["ERROR"]
+        return JobStatus.ERROR
 
     if custom_view.is_custom("before_delete_entity_v2"):
         custom_view.call_custom("before_delete_entity_v2", None, job.user, entity)
@@ -297,4 +296,4 @@ def delete_entity_v2(self, job: Job):
     if custom_view.is_custom("after_delete_entity_v2"):
         custom_view.call_custom("after_delete_entity_v2", None, job.user, entity)
 
-    return Job.STATUS["DONE"]
+    return JobStatus.DONE

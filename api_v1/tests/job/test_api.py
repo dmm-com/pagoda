@@ -5,7 +5,7 @@ from airone.lib.test import AironeViewTest
 from airone.lib.types import AttrTypeValue
 from entity.models import Entity, EntityAttr
 from entry.models import Entry
-from job.models import Job, JobOperation
+from job.models import Job, JobOperation, JobStatus
 from job.settings import CONFIG
 
 # constants using this tests
@@ -64,10 +64,10 @@ class APITest(AironeViewTest):
         self.assertEqual(
             results["constant"]["status"],
             {
-                "processing": Job.STATUS["PROCESSING"],
-                "done": Job.STATUS["DONE"],
-                "error": Job.STATUS["ERROR"],
-                "timeout": Job.STATUS["TIMEOUT"],
+                "processing": JobStatus.PROCESSING.value,
+                "done": JobStatus.DONE.value,
+                "error": JobStatus.ERROR.value,
+                "timeout": JobStatus.TIMEOUT.value,
             },
         )
 
@@ -119,7 +119,7 @@ class APITest(AironeViewTest):
         self.assertEqual(resp.content, b'"Success to run command"')
 
         job = Job.objects.get(id=job.id)
-        self.assertEqual(job.status, Job.STATUS["DONE"])
+        self.assertEqual(job.status, JobStatus.DONE.value)
         self.assertEqual(entry.attrs.count(), 1)
 
         attrv = entry.attrs.first().get_latest_value()
@@ -152,7 +152,7 @@ class APITest(AironeViewTest):
 
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.content, b'"Success to run command"')
-        self.assertEqual(Job.objects.get(id=job.id).status, Job.STATUS["DONE"])
+        self.assertEqual(Job.objects.get(id=job.id).status, JobStatus.DONE.value)
         self.assertEqual(entry.attrs.first().get_latest_value().value, "fuga")
 
         # make and send a job to copy entry
@@ -161,7 +161,7 @@ class APITest(AironeViewTest):
 
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.content, b'"Success to run command"')
-        self.assertEqual(Job.objects.get(id=job.id).status, Job.STATUS["DONE"])
+        self.assertEqual(Job.objects.get(id=job.id).status, JobStatus.DONE.value)
 
         # checks it's success to clone entry
         new_entry = Entry.objects.get(name="new_entry", schema=entity)
@@ -225,7 +225,7 @@ class APITest(AironeViewTest):
 
         # make a job
         job = Job.new_delete(user, entry)
-        self.assertEqual(job.status, Job.STATUS["PREPARING"])
+        self.assertEqual(job.status, JobStatus.PREPARING.value)
 
         # send request without any parameters
         resp = self.client.delete("/api/v1/job/", json.dumps({}), "application/json")
@@ -246,7 +246,7 @@ class APITest(AironeViewTest):
 
         # send request with proper parameter
         job = Job.new_create(user, entry)
-        self.assertEqual(job.status, Job.STATUS["PREPARING"])
+        self.assertEqual(job.status, JobStatus.PREPARING.value)
 
         resp = self.client.delete(
             "/api/v1/job/", json.dumps({"job_id": job.id}), "application/json"
@@ -255,7 +255,7 @@ class APITest(AironeViewTest):
         self.assertEqual(resp.content, b'"Success to cancel job"')
 
         job.refresh_from_db()
-        self.assertEqual(job.status, Job.STATUS["CANCELED"])
+        self.assertEqual(job.status, JobStatus.CANCELED.value)
 
     def test_hidden_jobs_is_not_shown(self):
         user = self.guest_login()

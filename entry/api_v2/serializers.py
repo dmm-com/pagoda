@@ -24,7 +24,7 @@ from entity.models import Entity, EntityAttr
 from entry.models import Attribute, AttributeValue, Entry
 from entry.settings import CONFIG as CONFIG_ENTRY
 from group.models import Group
-from job.models import Job
+from job.models import Job, JobStatus
 from role.models import Role
 from user.api_v2.serializers import UserBaseSerializer
 from user.models import User
@@ -1199,7 +1199,7 @@ class AdvancedSearchResultExportSerializer(serializers.Serializer):
     def save(self, **kwargs):
         user: User = self.context["request"].user
 
-        job_status_not_finished = [Job.STATUS["PREPARING"], Job.STATUS["PROCESSING"]]
+        job_status_not_finished = [JobStatus.PREPARING.value, JobStatus.PROCESSING.value]
         if (
             Job.get_job_with_params(user, self.validated_data)
             .filter(status__in=job_status_not_finished)

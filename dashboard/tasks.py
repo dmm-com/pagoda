@@ -10,7 +10,7 @@ from natsort import natsorted
 from airone.celery import app
 from airone.lib.types import AttrTypeValue
 from entry.models import Entry
-from job.models import Job
+from job.models import Job, JobStatus
 
 
 def _csv_export(job: Job, values, recv_data: dict, has_referral: bool) -> Optional[io.StringIO]:
@@ -170,7 +170,7 @@ def export_search_result(self, job_id):
         return
 
     # set flag to indicate that this job starts processing
-    job.update(Job.STATUS["PROCESSING"])
+    job.update(JobStatus.PROCESSING.value)
 
     user = job.user
     recv_data = json.loads(job.params)
@@ -202,4 +202,4 @@ def export_search_result(self, job_id):
 
     # update job status and save it except for the case that target job is canceled.
     if not job.is_canceled():
-        job.update(Job.STATUS["DONE"])
+        job.update(JobStatus.DONE.value)

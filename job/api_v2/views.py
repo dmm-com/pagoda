@@ -11,7 +11,7 @@ from rest_framework.response import Response
 from airone.lib.drf import FileIsNotExistsError, InvalidValueError, JobIsNotDoneError
 from airone.lib.http import get_download_response
 from job.api_v2.serializers import JobSerializers
-from job.models import Job, JobOperation
+from job.models import Job, JobOperation, JobStatus
 
 
 class JobAPI(viewsets.ModelViewSet):
@@ -23,14 +23,14 @@ class JobAPI(viewsets.ModelViewSet):
     def destroy(self, request, *args, **kwargs):
         job: Job = self.get_object()
 
-        if job.status == Job.STATUS["DONE"]:
+        if job.status == JobStatus.DONE.value:
             return Response("Target job has already been done", status=status.HTTP_400_BAD_REQUEST)
 
         if job.operation not in Job.CANCELABLE_OPERATIONS:
             return Response("Target job cannot be canceled", status=status.HTTP_400_BAD_REQUEST)
 
         # update job.status to be canceled
-        job.update(Job.STATUS["CANCELED"])
+        job.update(JobStatus.CANCELED.value)
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -55,7 +55,7 @@ class JobAPI(viewsets.ModelViewSet):
         if job.operation not in Job.DOWNLOADABLE_OPERATIONS:
             raise InvalidValueError("Target job cannot be downloaded")
 
-        if job.status != Job.STATUS["DONE"]:
+        if job.status != JobStatus.DONE.value:
             raise JobIsNotDoneError("Target job has not yet done")
 
         # get value associated this Job from cache
@@ -125,9 +125,9 @@ class JobRerunAPI(generics.UpdateAPIView):
         job: Job = self.get_object()
 
         # check job status before starting processing
-        if job.status == Job.STATUS["DONE"]:
+        if job.status == JobStatus.DONE.value:
             return Response("Target job has already been done")
-        elif job.status == Job.STATUS["PROCESSING"]:
+        elif job.status == JobStatus.PROCESSING.value:
             return Response("Target job is under processing", status=status.HTTP_400_BAD_REQUEST)
 
         # check job target status
