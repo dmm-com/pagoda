@@ -34,8 +34,17 @@ class WebhookSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Webhook
-        fields = ["id", "label", "url", "is_enabled", "is_verified", "headers", "is_deleted"]
-        read_only_fields = ["is_verified"]
+        fields = [
+            "id",
+            "label",
+            "url",
+            "is_enabled",
+            "is_verified",
+            "verification_error_details",
+            "headers",
+            "is_deleted",
+        ]
+        read_only_fields = ["is_verified", "verification_error_details"]
 
 
 class WebhookCreateUpdateSerializer(serializers.ModelSerializer):
@@ -291,6 +300,7 @@ class EntitySerializer(serializers.ModelSerializer):
                 id=webhook_data.get("id", None), defaults={**webhook_data}
             )
             entity.webhooks.add(webhook)
+
             try:
                 resp = requests.post(
                     webhook.url,
@@ -300,11 +310,17 @@ class EntitySerializer(serializers.ModelSerializer):
                 )
                 # The is_verified parameter will be set True,
                 # when requests received HTTP 200 from specifying endpoint.
-                webhook.is_verified = resp.ok
-            except ConnectionError:
+                if resp.ok:
+                    webhook.is_verified = True
+                    webhook.verification_error_details = None
+                else:
+                    webhook.is_verified = False
+                    webhook.verification_error_details = resp.reason
+            except ConnectionError as e:
                 webhook.is_verified = False
+                webhook.verification_error_details = str(e)
 
-            webhook.save(update_fields=["is_verified"])
+            webhook.save(update_fields=["is_verified", "verification_error_details"])
 
         # unset Editing MODE
         if is_created_entity:

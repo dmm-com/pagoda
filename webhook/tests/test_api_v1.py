@@ -17,6 +17,7 @@ class APITest(AironeViewTest):
         # Declare requests mock that responds HTTP 400(ERROR)
         mock_resp = mock.Mock()
         mock_resp.ok = False
+        mock_resp.reason = "test-failure"
         mock_resp.text = "test-failure"
         mock_requests.post.return_value = mock_resp
 

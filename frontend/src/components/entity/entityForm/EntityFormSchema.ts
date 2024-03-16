@@ -16,6 +16,7 @@ export const schema = z.object({
         label: z.string().default(""),
         isEnabled: z.boolean().default(false),
         isVerified: z.boolean().default(false).optional(),
+        verificationErrorDetails: z.string().nullable().optional(),
         headers: z
           .array(
             z.object({

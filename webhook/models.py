@@ -20,6 +20,9 @@ class Webhook(models.Model):
     # This is set by system when specified webhook_url is available
     is_verified = models.BooleanField(default=False)
 
+    # This is set by system when specified webhook_url is unavailable
+    verification_error_details = models.TextField(null=True, blank=True)
+
     # This contains HTTP headers when sending request to the specified URL
     # (e.g. authentication header if it's needed)
     # [{
