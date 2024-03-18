@@ -21,7 +21,7 @@ from airone.lib.drf import (
     RequiredParameterError,
     YAMLParser,
 )
-from airone.lib.types import AttrTypeValue
+from airone.lib.types import AttrTypeValue, AttrType
 from entity.models import Entity, EntityAttr
 from entry.api_v2.pagination import EntryReferralPagination
 from entry.api_v2.serializers import (
@@ -228,6 +228,58 @@ class AdvancedSearchAPI(generics.GenericAPIView):
         is_all_entities = serializer.validated_data["is_all_entities"]
         entry_limit = serializer.validated_data["entry_limit"]
         entry_offset = serializer.validated_data["entry_offset"]
+        join_attrs = serializer.validated_data.get("join_attrs", [])
+
+        def _get_joined_resp(prev_results, join_attr):
+            """
+            This is a helper method for join_attrs that will get specified attr values
+            that prev_result's ones refer to.
+            """
+            # set hint_entity_ids for joining Items search and get item names
+            # that specified attribute refers
+            item_names = []
+            hint_entity_ids = []
+            for result in prev_results:
+                entity = Entity.objects.filter(id=result["entity"]["id"]).last()
+                if entity is None:
+                    continue
+
+                attr = entity.attrs.filter(name=join_attr["name"], is_active=True).last()
+                if attr is None:
+                    continue
+
+                if attr.type == AttrTypeValue["object"]:
+                    # set hint Model ID
+                    hint_entity_ids += [x.id for x in attr.referral.filter(is_active=True)]
+
+                    # set Item name
+                    attrinfo = result["attrs"][join_attr["name"]]
+                    if attrinfo["value"]["name"] not in item_names:
+                        item_names.append(attrinfo["value"]["name"])
+
+            # set parameters to filter joining search results
+            hint_attrs = []
+            for attrinfo in join_attr.get("attrinfo", []):
+                hint_attrs.append({
+                    "name": attrinfo["name"],
+                    "keyword": attrinfo.get("keyword"),
+                    "filter_key": attrinfo.get("filter_key"),
+                })
+
+            # search Items from elasticsearch to join
+            return Entry.search_entries(
+                request.user,
+                hint_entity_ids=list(set(hint_entity_ids)),  # this removes depulicated IDs
+                hint_attrs=hint_attrs,
+                limit=entry_limit,
+                entry_name="|".join(item_names),
+                hint_referral=None,
+                is_output_all=is_output_all,
+                hint_referral_entity_id=None,
+                offset=join_attr.get("offset", 0),
+            )
+
+        # === End of Function: _get_joined_resp() ===
 
         if not has_referral:
             hint_referral = None
@@ -271,6 +323,49 @@ class AdvancedSearchAPI(generics.GenericAPIView):
             is_output_all,
             offset=entry_offset,
         )
+
+        for join_attr in join_attrs:
+            joined_resp = _get_joined_resp(resp["ret_values"], join_attr)
+
+            # This is needed to set result as blank value
+            blank_joining_info = {
+                "%s.%s" % (join_attr["name"], k["name"]) : {
+                    "is_readable": True,
+                    "type": AttrType.STRING.value,
+                    "value": "",
+                }
+            for k in join_attr["attrinfo"]}
+
+            # convert search result to dict to be able to handle it without loop
+            joined_resp_info = {
+                x["entry"]["id"]: {
+                    "%s.%s" % (join_attr["name"], k) : v
+                for k, v in x["attrs"].items() if any(_x["name"] == k for _x in join_attr["attrinfo"])}
+                for x in joined_resp["ret_values"]}
+
+            # this inserts result to previous search result
+            for resp_result in resp["ret_values"]:
+                ref_info = resp_result["attrs"].get(join_attr["name"])
+                if (
+                    # ignore no joined data
+                    ref_info is None or
+                    # ignore unexpected typed attributes
+                    ref_info["type"] != AttrType.OBJECT.value or
+                    # ignore when original result doesn't refer any item
+                    ref_info["value"].get("id") is None
+                ):
+                    # join EMPTY value
+                    resp_result["attrs"] |= blank_joining_info
+
+                # joining search result to original one
+                ref_id = ref_info["value"].get("id")
+                if ref_id in joined_resp_info:
+                    # join valid value
+                    resp_result["attrs"] |= joined_resp_info[ref_id]
+
+                else:
+                    # join EMPTY value
+                    resp_result["attrs"] |= blank_joining_info
 
         # convert field values to fit entry retrieve API data type, as a workaround.
         # FIXME should be replaced with DRF serializer etc
