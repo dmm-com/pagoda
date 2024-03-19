@@ -1,5 +1,6 @@
 import {
   AdvancedSearchResultAttrInfo,
+  AdvancedSearchJoinAttrInfo,
   AdvancedSearchResultAttrInfoFilterKeyEnum,
 } from "@dmm-com/airone-apiclient-typescript-fetch";
 
@@ -10,6 +11,11 @@ export type AttrFilter = {
 
 export type AttrsFilter = Record<string, AttrFilter>;
 
+export type JoinAttr = {
+  name: string;
+  attrinfo: AdvancedSearchResultAttrInfo[];
+}
+
 interface AdvancedSearchParams {
   entityIds: number[];
   searchAllEntities: boolean;
@@ -17,6 +23,7 @@ interface AdvancedSearchParams {
   hasReferral: boolean;
   referralName: string;
   attrInfo: AdvancedSearchResultAttrInfo[];
+  joinAttrs: AdvancedSearchJoinAttrInfo[];
 }
 
 const AdvancedSearchParamKey = {
@@ -27,6 +34,7 @@ const AdvancedSearchParamKey = {
   REFERRAL_NAME: "referral_name",
   ATTR_INFO: "attrinfo",
   PAGE: "page",
+  JOIN_ATTRS: "join_attrs",
 } as const;
 type AdvancedSearchParamKey =
   typeof AdvancedSearchParamKey[keyof typeof AdvancedSearchParamKey];
@@ -74,6 +82,7 @@ export function formatAdvancedSearchParams({
   hasReferral,
   referralName,
   baseParams,
+  joinAttrs,
 }: {
   attrsFilter?: AttrsFilter;
   entityIds?: string[];
@@ -82,6 +91,7 @@ export function formatAdvancedSearchParams({
   hasReferral?: boolean;
   referralName?: string;
   baseParams?: URLSearchParams;
+  joinAttrs?: JoinAttr[];
 }): URLSearchParams {
   const params = new AdvancedSearchParamsInner(new URLSearchParams(baseParams));
 
@@ -123,6 +133,14 @@ export function formatAdvancedSearchParams({
     );
   }
 
+  if (joinAttrs != null) {
+    joinAttrs.forEach((joinAttr) => {
+      // adding debug parameter
+      console.log("[onix/AdvancedSearch(10)] joinAttr: ", joinAttr);
+      params.append("join_attrs", JSON.stringify(joinAttr));
+    });
+  }
+
   params.delete("page");
 
   return params.urlSearchParams();
@@ -141,6 +159,7 @@ export function extractAdvancedSearchParams(
   const attrInfo: AdvancedSearchResultAttrInfo[] = JSON.parse(
     params.get("attrinfo") ?? "[]"
   );
+  const joinAttrs: AdvancedSearchJoinAttrInfo[] = params.getAll("join_attrs")?.map((x) => JSON.parse(x)) ?? [];
 
   return {
     entityIds,
@@ -149,5 +168,6 @@ export function extractAdvancedSearchParams(
     hasReferral,
     referralName,
     attrInfo,
+    joinAttrs,
   };
 }

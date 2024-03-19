@@ -13,7 +13,7 @@ import {
   Typography,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import React, { FC, useMemo } from "react";
+import React, { FC, useMemo, Dispatch, SetStateAction } from "react";
 import { Link } from "react-router-dom";
 
 import { SearchResultsTableHead } from "./SearchResultsTableHead";
@@ -55,6 +55,7 @@ interface Props {
   defaultAttrsFilter?: AttrsFilter;
   bulkOperationEntryIds: Array<number>;
   handleChangeBulkOperationEntryId: (id: number, checked: boolean) => void;
+  setJoinAttrname: Dispatch<SetStateAction<string>>;
 }
 
 export const SearchResults: FC<Props> = ({
@@ -67,6 +68,7 @@ export const SearchResults: FC<Props> = ({
   defaultAttrsFilter = {},
   bulkOperationEntryIds,
   handleChangeBulkOperationEntryId,
+  setJoinAttrname,
 }) => {
   // NOTE attrTypes are guessed by the first element on the results. So if it has no appropriate attr,
   // the type guess doesn't work well. We should improve attr type API if more accurate type is needed.
@@ -92,6 +94,7 @@ export const SearchResults: FC<Props> = ({
               defaultEntryFilter={defaultEntryFilter}
               defaultReferralFilter={defaultReferralFilter}
               defaultAttrsFilter={defaultAttrsFilter}
+              setJoinAttrname={setJoinAttrname}
             />
             <TableBody>
               {results.values?.map((result) => (

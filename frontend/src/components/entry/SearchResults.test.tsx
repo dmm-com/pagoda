@@ -25,6 +25,9 @@ test("should render a component with essential props", function () {
           /* do nothing */
         }}
         hasReferral={false}
+        setJoinAttrname={() => {
+          /* do nothing */
+        }}
       />,
       { wrapper: TestWrapper }
     )

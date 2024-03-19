@@ -1,4 +1,8 @@
-import { AdvancedSearchResultAttrInfoFilterKeyEnum } from "@dmm-com/airone-apiclient-typescript-fetch";
+import {
+  AdvancedSearchResultAttrInfoFilterKeyEnum,
+  EntryAttributeTypeTypeEnum,
+} from "@dmm-com/airone-apiclient-typescript-fetch";
+import AddIcon from '@mui/icons-material/Add';
 import FilterAltIcon from "@mui/icons-material/FilterAlt";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import {
@@ -10,7 +14,7 @@ import {
   Typography,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import React, { ChangeEvent, FC, useMemo, useReducer, useState } from "react";
+import React, { ChangeEvent, FC, useMemo, useReducer, useState, Dispatch, SetStateAction } from "react";
 import { useHistory, useLocation } from "react-router-dom";
 
 import {
@@ -38,12 +42,49 @@ const StyledTableCell = styled(TableCell)(({ theme }) => ({
   minWidth: "300px",
 }));
 
+interface JoiningProps {
+  attrType: number;
+  attrName: string;
+  setJoinAttrname: Dispatch<SetStateAction<string>>;
+}
+
+const JoinableAttrHeader: FC<JoiningProps> = ({
+  attrType,
+  attrName,
+  setJoinAttrname,
+}) => {
+  const JoinableBox = styled(Box)({
+    display: "flex",
+    flexDirection: "row",
+    alignItems: "center",
+  });
+
+  switch (attrType) {
+    case AdvancedSearchResultAttrInfoFilterKeyEnum.EMPTY:
+      return (
+        <JoinableBox>
+          <Typography>{attrName}</Typography>
+          <StyledIconButton
+            onClick={(e) => { setJoinAttrname(attrName) }}>
+            <AddIcon />
+          </StyledIconButton>
+        </JoinableBox>
+      );
+
+    default:
+      return (
+        <Typography>{attrName}</Typography>
+      );
+  }
+};
+
 interface Props {
   hasReferral: boolean;
   attrTypes: Record<string, number>;
   defaultEntryFilter?: string;
   defaultReferralFilter?: string;
   defaultAttrsFilter?: AttrsFilter;
+  setJoinAttrname: Dispatch<SetStateAction<string>>;
 }
 
 export const SearchResultsTableHead: FC<Props> = ({
@@ -52,6 +93,7 @@ export const SearchResultsTableHead: FC<Props> = ({
   defaultEntryFilter,
   defaultReferralFilter,
   defaultAttrsFilter = {},
+  setJoinAttrname,
 }) => {
   const location = useLocation();
   const history = useHistory();
@@ -92,7 +134,7 @@ export const SearchResultsTableHead: FC<Props> = ({
       Object.fromEntries(
         Object.keys(defaultAttrsFilter ?? {}).map((attrName: string) => {
           const attrFilter = defaultAttrsFilter[attrName];
-          switch (attrFilter.filterKey) {
+          switch (attrFilter?.filterKey) {
             case AdvancedSearchResultAttrInfoFilterKeyEnum.EMPTY:
             case AdvancedSearchResultAttrInfoFilterKeyEnum.NON_EMPTY:
             case AdvancedSearchResultAttrInfoFilterKeyEnum.DUPLICATED:
@@ -110,30 +152,30 @@ export const SearchResultsTableHead: FC<Props> = ({
 
   const handleSelectFilterConditions =
     (attrName?: string) =>
-    (
-      attrFilter?: AttrFilter,
-      overwriteEntryName?: string,
-      overwriteReferral?: string
-    ) => {
-      const _attrsFilter =
-        attrName != null && attrFilter != null
-          ? { ...attrsFilter, [attrName]: attrFilter }
-          : attrsFilter;
+      (
+        attrFilter?: AttrFilter,
+        overwriteEntryName?: string,
+        overwriteReferral?: string
+      ) => {
+        const _attrsFilter =
+          attrName != null && attrFilter != null
+            ? { ...attrsFilter, [attrName]: attrFilter }
+            : attrsFilter;
 
-      const newParams = formatAdvancedSearchParams({
-        attrsFilter: _attrsFilter,
-        entryName: overwriteEntryName ?? entryFilter,
-        referralName: overwriteReferral ?? referralFilter,
-        baseParams: new URLSearchParams(location.search),
-      });
+        const newParams = formatAdvancedSearchParams({
+          attrsFilter: _attrsFilter,
+          entryName: overwriteEntryName ?? entryFilter,
+          referralName: overwriteReferral ?? referralFilter,
+          baseParams: new URLSearchParams(location.search),
+        });
 
-      // simply reload with the new params
-      history.push({
-        pathname: location.pathname,
-        search: "?" + newParams.toString(),
-      });
-      history.go(0);
-    };
+        // simply reload with the new params
+        history.push({
+          pathname: location.pathname,
+          search: "?" + newParams.toString(),
+        });
+        history.go(0);
+      };
 
   const handleUpdateAttrFilter =
     (attrName: string) => (attrFilter: AttrFilter) => {
@@ -170,7 +212,11 @@ export const SearchResultsTableHead: FC<Props> = ({
         {attrNames.map((attrName) => (
           <StyledTableCell key={attrName}>
             <HeaderBox>
-              <Typography>{attrName}</Typography>
+              <JoinableAttrHeader
+                attrType={attrTypes[attrName]}
+                attrName={attrName}
+                setJoinAttrname={setJoinAttrname}
+              />
               <StyledIconButton
                 onClick={(e) => {
                   setAttributeMenuEls({

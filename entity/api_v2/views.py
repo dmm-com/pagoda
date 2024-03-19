@@ -285,10 +285,8 @@ class EntityAttrNameAPI(generics.GenericAPIView):
                 return (
                     # filter only names appear in all specified entities
                     EntityAttr.objects.filter(parent_entity__in=entities, is_active=True)
-                    .values("name")
                     .annotate(count=Count("name"))
                     .filter(count=len(entity_ids))
-                    .values_list("name", flat=True)
                     .order_by("name")
                 )
 
