@@ -6,10 +6,6 @@ build-backend = "poetry.core.masonry.api"
 allow_untyped_globals = true
 follow_imports = "silent"
 ignore_missing_imports = true
-plugins = ["mypy_django_plugin.main"]
-
-[tool.django-stubs]
-django_settings_module = "airone.settings"
 
 [tool.ruff]
 # Pyflakes (F), pycodestyle (E, W), isort (I)
@@ -74,4 +70,3 @@ types-pytz = "^2023.3.0.1"
 types-mock = "^5.1.0.1"
 ruff = "^0.1.7"
 tox = "^4.11.4"
-django-stubs = "^4.2.7"
