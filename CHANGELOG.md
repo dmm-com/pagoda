@@ -8,6 +8,12 @@
 
 ### Fixed
 
+## v3.81.0
+
+### Changed
+* Support celery task for entry APIv2.
+  Contributed by @syucream
+
 ## v3.80.0
 
 ### Changed
