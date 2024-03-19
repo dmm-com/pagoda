@@ -267,6 +267,7 @@ class ViewTest(AironeViewTest):
                     "url": "http://airone.com/",
                     "is_enabled": True,
                     "is_verified": True,
+                    "verification_error_details": None,
                     "label": "hoge",
                     "headers": [],
                 }
@@ -291,6 +292,7 @@ class ViewTest(AironeViewTest):
                     "url": "http://airone.com/",
                     "is_enabled": True,
                     "is_verified": True,
+                    "verification_error_details": None,
                     "label": "hoge",
                     "headers": [
                         {"header_key": "key1", "header_value": "value1"},

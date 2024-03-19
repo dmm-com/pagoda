@@ -90,6 +90,11 @@
               </div>
             </div>
             <small>{{ webhook.label }}</small>
+            {% if not webhook.is_verified %}
+              <p class='text-danger small'>
+                エラーのため webhook が有効になっていません。詳細: {{ webhook.verification_error_details }}
+              </p>
+            {% endif %}
           </li>
           {% endfor %}
 
