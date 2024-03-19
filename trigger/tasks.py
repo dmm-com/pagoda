@@ -2,7 +2,7 @@ import json
 
 from airone.celery import app
 from entry.models import Entry
-from job.models import Job
+from job.models import Job, JobStatus
 from trigger.models import (
     TriggerCondition,
 )
@@ -15,7 +15,7 @@ def may_invoke_trigger(self, job_id):
 
     if job.proceed_if_ready():
         # At the first time, update jobestatus to prevent executing this job duplicately
-        job.update(Job.STATUS["PROCESSING"])
+        job.update(JobStatus.PROCESSING.value)
 
         # Get job parameters that are set at frontend processing
         user = User.objects.filter(id=job.user.id).first()
@@ -26,4 +26,4 @@ def may_invoke_trigger(self, job_id):
         for action in TriggerCondition.get_invoked_actions(entry.schema, recv_data):
             action.run(user, entry)
 
-        job.update(Job.STATUS["DONE"])
+        job.update(JobStatus.DONE.value)

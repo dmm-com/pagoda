@@ -5,7 +5,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from job.models import Job, JobOperation
+from job.models import Job, JobOperation, JobStatus
 from job.settings import CONFIG as JOB_CONFIG
 
 
@@ -18,10 +18,10 @@ class JobAPI(APIView):
 
         constant = {
             "status": {
-                "processing": Job.STATUS["PROCESSING"],
-                "done": Job.STATUS["DONE"],
-                "error": Job.STATUS["ERROR"],
-                "timeout": Job.STATUS["TIMEOUT"],
+                "processing": JobStatus.PROCESSING.value,
+                "done": JobStatus.DONE.value,
+                "error": JobStatus.ERROR.value,
+                "timeout": JobStatus.TIMEOUT.value,
             },
             "operation": {
                 "create": JobOperation.CREATE_ENTRY.value,
@@ -72,14 +72,14 @@ class JobAPI(APIView):
                 "Failed to find Job(id=%s)" % job_id, status=status.HTTP_400_BAD_REQUEST
             )
 
-        if job.status == Job.STATUS["DONE"]:
+        if job.status == JobStatus.DONE.value:
             return Response("Target job has already been done")
 
         if job.operation not in Job.CANCELABLE_OPERATIONS:
             return Response("Target job cannot be canceled", status=status.HTTP_400_BAD_REQUEST)
 
         # update job.status to be canceled
-        job.update(Job.STATUS["CANCELED"])
+        job.update(JobStatus.CANCELED.value)
 
         return Response("Success to cancel job")
 
@@ -93,9 +93,9 @@ class SpecificJobAPI(APIView):
             )
 
         # check job status before starting processing
-        if job.status == Job.STATUS["DONE"]:
+        if job.status == JobStatus.DONE.value:
             return Response("Target job has already been done")
-        elif job.status == Job.STATUS["PROCESSING"]:
+        elif job.status == JobStatus.PROCESSING.value:
             return Response("Target job is under processing", status=status.HTTP_400_BAD_REQUEST)
 
         # check job target status

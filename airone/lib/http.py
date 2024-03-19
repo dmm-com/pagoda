@@ -13,7 +13,7 @@ from airone.lib.acl import ACLObjType
 from airone.lib.types import AttrTypes, AttrTypeValue
 from entity import models as entity_models
 from entry import models as entry_models
-from job.models import Job, JobOperation
+from job.models import JobOperation, JobStatus
 from user.models import History, User
 
 
@@ -155,7 +155,7 @@ def render(request, template, context={}):
 
     # set constracts for job
     context["JOB"] = {
-        "STATUS": Job.STATUS,
+        "STATUS": {s.name: s.value for s in JobStatus},
         "OPERATION": {
             "CREATE": JobOperation.CREATE_ENTRY.value,
             "EDIT": JobOperation.EDIT_ENTRY.value,

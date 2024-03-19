@@ -28,7 +28,7 @@ from entry import tasks
 from entry.models import Attribute, AttributeValue, Entry
 from entry.settings import CONFIG
 from group.models import Group
-from job.models import Job, JobOperation
+from job.models import Job, JobOperation, JobStatus
 from role.models import Role
 from trigger import tasks as trigger_tasks
 from trigger.models import TriggerCondition
@@ -1975,7 +1975,7 @@ class ViewTest(AironeViewTest):
 
         job = Job.objects.last()
         self.assertEqual(job.operation, JobOperation.EXPORT_ENTRY_V2.value)
-        self.assertEqual(job.status, Job.STATUS["DONE"])
+        self.assertEqual(job.status, JobStatus.DONE.value)
         self.assertEqual(job.text, "entry_ほげ.yaml")
 
         obj = yaml.load(job.get_cache(), Loader=yaml.SafeLoader)
@@ -2144,7 +2144,7 @@ class ViewTest(AironeViewTest):
 
         job = Job.objects.last()
         self.assertEqual(job.operation, JobOperation.EXPORT_ENTRY_V2.value)
-        self.assertEqual(job.status, Job.STATUS["DONE"])
+        self.assertEqual(job.status, JobStatus.DONE.value)
 
         obj = yaml.load(job.get_cache(), Loader=yaml.SafeLoader)
 
@@ -2476,7 +2476,7 @@ class ViewTest(AironeViewTest):
 
         self.assertEqual(resp.status_code, 200)
         job = Job.objects.get(operation=JobOperation.IMPORT_ENTRY_V2.value)
-        self.assertEqual(job.status, Job.STATUS["DONE"])
+        self.assertEqual(job.status, JobStatus.DONE.value)
         self.assertEqual(job.text, "Imported Entry count: 1")
         self.assertEqual(
             resp.json(),
@@ -2512,7 +2512,7 @@ class ViewTest(AironeViewTest):
 
         entry = Entry.objects.get(name="test-entry")
         job_notify = Job.objects.get(target=entry, operation=JobOperation.NOTIFY_CREATE_ENTRY.value)
-        self.assertEqual(job_notify.status, Job.STATUS["DONE"])
+        self.assertEqual(job_notify.status, JobStatus.DONE.value)
 
     @patch("entry.tasks.notify_update_entry.delay", Mock(side_effect=tasks.notify_update_entry))
     @patch("entry.tasks.import_entries_v2.delay", Mock(side_effect=tasks.import_entries_v2))
@@ -2524,7 +2524,7 @@ class ViewTest(AironeViewTest):
 
         self.assertEqual(resp.status_code, 200)
         job = Job.objects.get(operation=JobOperation.IMPORT_ENTRY_V2.value)
-        self.assertEqual(job.status, Job.STATUS["DONE"])
+        self.assertEqual(job.status, JobStatus.DONE.value)
 
         result = Entry.search_entries(self.user, [self.entity.id], is_output_all=True)
         self.assertEqual(result["ret_count"], 1)
@@ -2548,7 +2548,7 @@ class ViewTest(AironeViewTest):
             self.assertEqual(result["ret_values"][0]["attrs"][attr_name]["value"], attrs[attr_name])
 
         job_notify = Job.objects.get(target=entry, operation=JobOperation.NOTIFY_UPDATE_ENTRY.value)
-        self.assertEqual(job_notify.status, Job.STATUS["DONE"])
+        self.assertEqual(job_notify.status, JobStatus.DONE.value)
 
         # Update only some attributes
         fp = self.open_fixture_file("import_data_v2_update_some.yaml")
@@ -2557,7 +2557,7 @@ class ViewTest(AironeViewTest):
 
         self.assertEqual(resp.status_code, 200)
         job = Job.objects.filter(operation=JobOperation.IMPORT_ENTRY_V2.value).last()
-        self.assertEqual(job.status, Job.STATUS["DONE"])
+        self.assertEqual(job.status, JobStatus.DONE.value)
 
         result = Entry.search_entries(self.user, [self.entity.id], is_output_all=True)
         attrs["val"] = "bar"
@@ -2571,7 +2571,7 @@ class ViewTest(AironeViewTest):
 
         self.assertEqual(resp.status_code, 200)
         job = Job.objects.filter(operation=JobOperation.IMPORT_ENTRY_V2.value).last()
-        self.assertEqual(job.status, Job.STATUS["DONE"])
+        self.assertEqual(job.status, JobStatus.DONE.value)
 
         result = Entry.search_entries(self.user, [self.entity.id], is_output_all=True)
         attrs = {
@@ -2638,7 +2638,7 @@ class ViewTest(AironeViewTest):
 
         self.assertEqual(resp.status_code, 200)
         job = Job.objects.get(operation=JobOperation.IMPORT_ENTRY_V2.value)
-        self.assertEqual(job.status, Job.STATUS["DONE"])
+        self.assertEqual(job.status, JobStatus.DONE.value)
         self.assertEqual(job.text, "Imported Entry count: 1")
         self.assertEqual(
             resp.json(),
@@ -2674,7 +2674,7 @@ class ViewTest(AironeViewTest):
 
         entry = Entry.objects.get(name="test-entry")
         job_notify = Job.objects.get(target=entry, operation=JobOperation.NOTIFY_CREATE_ENTRY.value)
-        self.assertEqual(job_notify.status, Job.STATUS["DONE"])
+        self.assertEqual(job_notify.status, JobStatus.DONE.value)
 
         with self.assertLogs(logger=Logger, level=logging.WARNING) as warning_log:
             fp = self.open_fixture_file("import_data_v2.yaml")
@@ -2832,7 +2832,7 @@ class ViewTest(AironeViewTest):
         fp.close()
         job_id = resp.json()["result"]["job_ids"][0]
         job = Job.objects.get(id=job_id)
-        self.assertEqual(job.status, Job.STATUS["WARNING"])
+        self.assertEqual(job.status, JobStatus.WARNING.value)
         self.assertTrue("Imported Entry count: 17" in job.text)
 
     @patch("entry.tasks.import_entries_v2.delay", Mock(side_effect=tasks.import_entries_v2))
@@ -2889,7 +2889,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 200)
         job_id = resp.json()["result"]["job_ids"][0]
         job = Job.objects.get(id=job_id)
-        self.assertEqual(job.status, Job.STATUS["WARNING"])
+        self.assertEqual(job.status, JobStatus.WARNING.value)
         self.assertEqual(job.text, "Imported Entry count: 2, Failed import Entry: ['test-entry1']")
         self.assertTrue(Entry.objects.filter(name="test-entry2").exists())
 
@@ -2903,7 +2903,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 200)
         job_id = resp.json()["result"]["job_ids"][0]
         job = Job.objects.get(id=job_id)
-        self.assertEqual(job.status, Job.STATUS["CANCELED"])
+        self.assertEqual(job.status, JobStatus.CANCELED.value)
         self.assertEqual(job.text, "Now importing... (progress: [    1/    1])")
         self.assertFalse(Entry.objects.filter(name="test-entry").exists())
 
@@ -4030,7 +4030,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 200)
 
         # When the job is finished, the processing is passed.
-        job.status = Job.STATUS["DONE"]
+        job.status = JobStatus.DONE.value
         job.save(update_fields=["status"])
         resp = self.client.post(
             "/entry/api/v2/advanced_search_result_export/",

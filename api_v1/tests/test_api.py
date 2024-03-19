@@ -17,7 +17,7 @@ from entry import tasks
 from entry.models import Attribute, AttributeValue, Entry
 from entry.settings import CONFIG as ENTRY_CONFIG
 from group.models import Group
-from job.models import Job, JobOperation
+from job.models import Job, JobOperation, JobStatus
 from role.models import Role
 from trigger import tasks as trigger_tasks
 from trigger.models import TriggerCondition
@@ -1182,7 +1182,7 @@ class APITest(AironeViewTest):
         # check notification event was invoked
         entry = Entry.objects.get(id=resp.json()["result"])
         job_notify = Job.objects.get(target=entry, operation=JobOperation.NOTIFY_CREATE_ENTRY.value)
-        self.assertEqual(job_notify.status, Job.STATUS["DONE"])
+        self.assertEqual(job_notify.status, JobStatus.DONE.value)
 
     @mock.patch("entry.tasks.notify_entry_update", mock.Mock(return_value=mock.Mock()))
     @mock.patch(
@@ -1234,7 +1234,7 @@ class APITest(AironeViewTest):
 
         # check creating NOTIFY_UPDATE_ENTRY is created because of changing Entry name
         job_notify = Job.objects.get(target=entry, operation=JobOperation.NOTIFY_UPDATE_ENTRY.value)
-        self.assertEqual(job_notify.status, Job.STATUS["DONE"])
+        self.assertEqual(job_notify.status, JobStatus.DONE.value)
 
     @mock.patch("entry.tasks.delete_entry.delay", mock.Mock(side_effect=tasks.delete_entry))
     @mock.patch("entry.tasks.notify_entry_delete", mock.Mock(return_value=mock.Mock()))
@@ -1260,7 +1260,7 @@ class APITest(AironeViewTest):
         self.assertEqual(resp.status_code, 200)
 
         job_notify = Job.objects.get(target=entry, operation=JobOperation.NOTIFY_DELETE_ENTRY.value)
-        self.assertEqual(job_notify.status, Job.STATUS["DONE"])
+        self.assertEqual(job_notify.status, JobStatus.DONE.value)
 
     def test_update_entry_that_has_deleted_attribute(self):
         """
@@ -1342,7 +1342,7 @@ class APITest(AironeViewTest):
         # check trigger action was worked properly
         job_query = Job.objects.filter(operation=JobOperation.MAY_INVOKE_TRIGGER.value)
         self.assertEqual(job_query.count(), 1)
-        self.assertEqual(job_query.first().status, Job.STATUS["DONE"])
+        self.assertEqual(job_query.first().status, JobStatus.DONE.value)
 
         # check created Entry has expected value that is set by TriggerAction
         entry = Entry.objects.get(id=resp.json()["result"])
@@ -1392,7 +1392,7 @@ class APITest(AironeViewTest):
         # check trigger action was worked properly
         job_query = Job.objects.filter(operation=JobOperation.MAY_INVOKE_TRIGGER.value)
         self.assertEqual(job_query.count(), 1)
-        self.assertEqual(job_query.first().status, Job.STATUS["DONE"])
+        self.assertEqual(job_query.first().status, JobStatus.DONE.value)
 
         # check created Entry has expected value that is set by TriggerAction
         self.assertEqual(entry.get_attrv("val").value, "hoge")

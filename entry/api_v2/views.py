@@ -42,7 +42,7 @@ from entry.models import Attribute, AttributeValue, Entry
 from entry.settings import CONFIG
 from entry.settings import CONFIG as ENTRY_CONFIG
 from group.models import Group
-from job.models import Job, JobOperation
+from job.models import Job, JobOperation, JobStatus
 from role.models import Role
 from user.models import User
 
@@ -410,7 +410,7 @@ class EntryExportAPI(generics.GenericAPIView):
         }
 
         # check whether same job is sent
-        job_status_not_finished = [Job.STATUS["PREPARING"], Job.STATUS["PROCESSING"]]
+        job_status_not_finished = [JobStatus.PREPARING.value, JobStatus.PROCESSING.value]
         if (
             Job.get_job_with_params(request.user, job_params)
             .filter(status__in=job_status_not_finished)
@@ -505,7 +505,11 @@ class EntryImportAPI(generics.GenericAPIView):
 
         # limit import job to deny accidental frequent import for same entity
         if request.query_params.get("force", "") not in ["true", "True"]:
-            valid_statuses = [Job.STATUS["PREPARING"], Job.STATUS["PROCESSING"], Job.STATUS["DONE"]]
+            valid_statuses = [
+                JobStatus.PREPARING.value,
+                JobStatus.PROCESSING.value,
+                JobStatus.DONE.value,
+            ]
             yesterday = datetime.now() - timedelta(days=1)
             if Job.objects.filter(
                 status__in=valid_statuses,
