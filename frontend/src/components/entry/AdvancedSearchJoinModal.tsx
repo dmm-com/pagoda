@@ -44,7 +44,11 @@ export const AdvancedSearchJoinModal: FC<Props> = ({
   }
 
   const handleUpdatePageURL = () => {
-    const joinAttrs = [{
+    // to prevent duplication of same name parameter
+    const currentJoinAttrs = joinAttrs.filter((attr) => attr.name !== targetAttrname);
+    console.log("[onix/handleUpdatePageURL(10)] currentJoinAttrs: ", ...currentJoinAttrs);
+
+    const newJoinAttrs = [...currentJoinAttrs, {
       name: targetAttrname,
       attrinfo: selectedAttrNames.map((name) => {
         return {
@@ -52,10 +56,34 @@ export const AdvancedSearchJoinModal: FC<Props> = ({
         };
       }),
     }]
+    console.log("[onix/handleUpdatePageURL(20)] newJoinAttrs: ", ...newJoinAttrs);
+
+    /*
+    const currJoinAttr = joinAttrs.find((attr) => attr.name === targetAttrname);
+    if (currJoinAttr === undefined) {
+      // register new join attribute
+      const newJoinAttrs = [...joinAttrs, {
+        name: targetAttrname,
+        attrinfo: selectedAttrNames.map((name) => {
+          return {
+            name: name,
+          };
+        }),
+      }]
+    } else {
+      // update attrinfo parameter of selected attribute to join
+      currJoinAttr.attrinfo = selectedAttrNames.map((name) => {
+        return {
+          name: name,
+        };
+      }
+    }
+    */
+
 
     const params = formatAdvancedSearchParams({
-      joinAttrs: joinAttrs,
       baseParams: new URLSearchParams(location.search),
+      joinAttrs: newJoinAttrs,
     });
 
     // Update Page URL parameters

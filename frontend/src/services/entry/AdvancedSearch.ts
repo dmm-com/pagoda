@@ -133,11 +133,17 @@ export function formatAdvancedSearchParams({
     );
   }
 
+  joinAttrs?.forEach((x, i) => {
+    console.log(`[onix/AdvancedSearchParams] (${i}) joinAttr: `, x);
+  });
+  // First of all, delete parameter when joinAttr.attrinfo is empty
+  //params.delete("join_attrs");
   if (joinAttrs != null) {
     joinAttrs.forEach((joinAttr) => {
-      // adding debug parameter
-      console.log("[onix/AdvancedSearch(10)] joinAttr: ", joinAttr);
-      params.append("join_attrs", JSON.stringify(joinAttr));
+      if (joinAttr.attrinfo.length > 0) {
+        // adding debug parameter
+        params.append("join_attrs", JSON.stringify(joinAttr));
+      }
     });
   }
 
