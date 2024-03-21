@@ -3156,13 +3156,18 @@ class ViewTest(AironeViewTest):
         ) for i in range(2)]
 
         # create Items that are search by ordinary processing
-        for (index, ref_id) in enumerate([ref_entries[0].id, ref_entries[0].id, ref_entries[1].id, None]):
+        for (index, (val, ref_id)) in enumerate([
+            ("foo", ref_entries[0].id),
+            ("bar", ref_entries[0].id),
+            ("baz", ref_entries[1].id),
+            ("qux", None)
+        ]):
             entry: Entry = self.add_entry(
                 self.user,
                 "Entry%s" % index,
                 self.entity,
                 values={
-                    "val": "fuga-%s" % index,
+                    "val": val,
                     "ref": ref_id,
                     "name": {"name": "fuga", "id": ref_id},
                 }
@@ -3222,6 +3227,28 @@ class ViewTest(AironeViewTest):
             for (attrname, attrvalue) in e_attrinfo.items():
                 self.assertEqual(result["attrs"][attrname]["value"], attrvalue)
 
+        # This sends request with keyword in join_attrs parameter and
+        # confirms filter processing works with its filter parameter of attrinfo
+        params = {
+            "entities": [self.entity.id],
+            "attrinfo": [
+                {"name": "val", "keyword": "bar"},
+                {"name": "ref"},
+            ],
+            "join_attrs": [
+                {"name": "ref", "attrinfo": [
+                    {"name": "val", "keyword": "hoge-0"},
+                ]},
+            ],
+        }
+        resp = self.client.post(
+            "/entry/api/v2/advanced_search/", json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(
+            [x["entry"]["name"] for x in resp.json()["values"]],
+            ["Entry1"]
+        )
 
     def test_advanced_search_all_entities(self):
         params = {

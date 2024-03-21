@@ -267,16 +267,20 @@ class AdvancedSearchAPI(generics.GenericAPIView):
                 })
 
             # search Items from elasticsearch to join
-            return Entry.search_entries(
-                request.user,
-                hint_entity_ids=list(set(hint_entity_ids)),  # this removes depulicated IDs
-                hint_attrs=hint_attrs,
-                limit=entry_limit,
-                entry_name="|".join(item_names),
-                hint_referral=None,
-                is_output_all=is_output_all,
-                hint_referral_entity_id=None,
-                offset=join_attr.get("offset", 0),
+            return (
+                # This represents whether user want to narrow down results by keyword of joined attr
+                any([x.get("keyword") is not None for x in join_attr.get("attrinfo", [])]),
+                Entry.search_entries(
+                    request.user,
+                    hint_entity_ids=list(set(hint_entity_ids)),  # this removes depulicated IDs
+                    hint_attrs=hint_attrs,
+                    limit=entry_limit,
+                    entry_name="|".join(item_names),
+                    hint_referral=None,
+                    is_output_all=is_output_all,
+                    hint_referral_entity_id=None,
+                    offset=join_attr.get("offset", 0),
+                )
             )
 
         # === End of Function: _get_joined_resp() ===
@@ -325,7 +329,7 @@ class AdvancedSearchAPI(generics.GenericAPIView):
         )
 
         for join_attr in join_attrs:
-            joined_resp = _get_joined_resp(resp["ret_values"], join_attr)
+            (will_filter_by_joined_attr, joined_resp) = _get_joined_resp(resp["ret_values"], join_attr)
 
             # This is needed to set result as blank value
             blank_joining_info = {
@@ -344,6 +348,7 @@ class AdvancedSearchAPI(generics.GenericAPIView):
                 for x in joined_resp["ret_values"]}
 
             # this inserts result to previous search result
+            new_ret_values = []
             for resp_result in resp["ret_values"]:
                 ref_info = resp_result["attrs"].get(join_attr["name"])
                 if (
@@ -363,9 +368,16 @@ class AdvancedSearchAPI(generics.GenericAPIView):
                     # join valid value
                     resp_result["attrs"] |= joined_resp_info[ref_id]
 
+                    # collect only the result that matches with keyword of joined_attr parameter
+                    new_ret_values.append(resp_result)
+
                 else:
                     # join EMPTY value
                     resp_result["attrs"] |= blank_joining_info
+
+            if will_filter_by_joined_attr:
+                resp["ret_values"] = new_ret_values
+                resp["ret_count"] = len(new_ret_values)
 
         # convert field values to fit entry retrieve API data type, as a workaround.
         # FIXME should be replaced with DRF serializer etc
