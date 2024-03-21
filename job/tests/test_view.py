@@ -8,7 +8,7 @@ from airone.lib.test import AironeViewTest
 from entity.models import Entity
 from entry import tasks
 from entry.models import Entry
-from job.models import Job, JobOperation
+from job.models import Job, JobOperation, JobStatus
 from job.settings import CONFIG
 
 # constants using this tests
@@ -147,7 +147,7 @@ class ViewTest(AironeViewTest):
         def side_effect():
             # send re-run request for executing job by calling API
             job = Job.objects.last()
-            self.assertEqual(job.status, Job.STATUS["PROCESSING"])
+            self.assertEqual(job.status, JobStatus.PROCESSING.value)
 
             # check that backend processing never run by calling API
             resp = self.client.post("/api/v1/job/run/%d" % job.id)

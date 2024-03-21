@@ -2,7 +2,7 @@ import json
 import pickle
 import time
 from datetime import date, datetime, timedelta
-from enum import Enum
+from enum import Enum, IntEnum
 from importlib import import_module
 from typing import Any
 
@@ -59,10 +59,20 @@ class JobOperation(Enum):
     DELETE_ENTRY_V2 = 29
 
 
-class JobTarget(Enum):
+class JobTarget(IntEnum):
     UNKNOWN = 0
     ENTRY = 1
     ENTITY = 2
+
+
+class JobStatus(IntEnum):
+    PREPARING = 1
+    DONE = 2
+    ERROR = 3
+    TIMEOUT = 4
+    PROCESSING = 5
+    CANCELED = 6
+    WARNING = 7
 
 
 class Job(models.Model):
@@ -86,16 +96,6 @@ class Job(models.Model):
 
     # This hash table describes operation status value and operation processing
     _METHOD_TABLE = {}
-
-    STATUS = {
-        "PREPARING": 1,
-        "DONE": 2,
-        "ERROR": 3,
-        "TIMEOUT": 4,
-        "PROCESSING": 5,
-        "CANCELED": 6,
-        "WARNING": 7,
-    }
 
     # In some jobs sholdn't make user aware of existence because of user experience
     # (e.g. re-registrating elasticsearch data of entries which refer to changed name entry).
@@ -189,11 +189,11 @@ class Job(models.Model):
 
         # This value indicates that there is no more processing for a job
         finished_status = [
-            Job.STATUS["DONE"],
-            Job.STATUS["ERROR"],
-            Job.STATUS["TIMEOUT"],
-            Job.STATUS["CANCELED"],
-            Job.STATUS["WARNING"],
+            JobStatus.DONE.value,
+            JobStatus.ERROR.value,
+            JobStatus.TIMEOUT.value,
+            JobStatus.CANCELED.value,
+            JobStatus.WARNING.value,
         ]
 
         return self.status in finished_status or self.is_timeout()
@@ -202,11 +202,11 @@ class Job(models.Model):
         # Sync status flag information with the data which is stored in database
         self.refresh_from_db(fields=["status"])
 
-        return self.status == Job.STATUS["CANCELED"]
+        return self.status == JobStatus.CANCELED.value
 
     def proceed_if_ready(self):
         # In this case, job is finished (might be canceled or proceeded same job by other process)
-        if self.is_finished() or self.status == Job.STATUS["PROCESSING"]:
+        if self.is_finished() or self.status == JobStatus.PROCESSING.value:
             return False
 
         # This checks whether dependent job is and it hasn't finished yet.
@@ -215,10 +215,10 @@ class Job(models.Model):
 
         return True
 
-    def update(self, status=None, text=None, target=None, operation=None):
+    def update(self, status: int | None = None, text=None, target=None, operation=None):
         update_fields = ["updated_at"]
 
-        if status is not None and status in Job.STATUS.values():
+        if status is not None and status in [s.value for s in JobStatus]:
             update_fields.append("status")
             self.status = status
 
@@ -304,7 +304,7 @@ class Job(models.Model):
             "user": user,
             "target": target,
             "target_type": t_type,
-            "status": kls.STATUS["PREPARING"],
+            "status": JobStatus.PREPARING.value,
             "operation": operation,
             "text": text,
             "params": params,
