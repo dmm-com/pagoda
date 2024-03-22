@@ -52,18 +52,24 @@ interface JoiningProps {
   attrType: number;
   attrName: string;
   setJoinAttrname: Dispatch<SetStateAction<string>>;
+  unjoinable: boolean,
 }
 
 const JoinableAttrHeader: FC<JoiningProps> = ({
   attrType,
   attrName,
   setJoinAttrname,
+  unjoinable,
 }) => {
   const JoinableBox = styled(Box)({
     display: "flex",
     flexDirection: "row",
     alignItems: "center",
   });
+
+  if (unjoinable) {
+    return <Typography>{attrName}</Typography>;
+  }
 
   switch (attrType) {
     case AdvancedSearchResultAttrInfoFilterKeyEnum.EMPTY:
@@ -122,7 +128,6 @@ export const SearchResultsTableHead: FC<Props> = ({
   const [attrsFilter, setAttrsFilter] = useState<AttrsFilter>(
     defaultAttrsFilter ?? {}
   );
-  console.log("[onix/SearchResultsTableHead(00)] attrFilter: ", attrsFilter);
 
   const [attributeMenuEls, setAttributeMenuEls] = useState<{
     [key: string]: HTMLButtonElement | null;
@@ -170,32 +175,6 @@ export const SearchResultsTableHead: FC<Props> = ({
             ? { ...attrsFilter, [attrName]: attrFilter }
             : attrsFilter;
 
-        console.log(
-          "[onix/handleSelectFilterConditions(00)] _attrsFilter: ",
-          _attrsFilter
-        );
-        console.log(
-          "[onix/handleSelectFilterConditions(01)] filteredValue: ",
-          Object.keys(_attrsFilter)
-            .filter((k) => _attrsFilter[k].joinedAttrname === undefined)
-            .reduce((a, k) => ({ ...a, [k]: _attrsFilter[k] }), {})
-        );
-        console.log(
-          "[onix/handleSelectFilterConditions(09)] joinAttrs: ",
-          Object.keys(_attrsFilter)
-            .filter((k) => _attrsFilter[k].joinedAttrname !== undefined)
-            .map((k) => ({
-              name: _attrsFilter[k].baseAttrname,
-              attrinfo: Object.keys(_attrsFilter)
-                .filter((j) => _attrsFilter[j].baseAttrname === _attrsFilter[k].baseAttrname)
-                .map((j) => ({
-                  name: _attrsFilter[j].joinedAttrname,
-                  filterKey: _attrsFilter[j].filterKey,
-                  keyword: _attrsFilter[j].keyword,
-                }))
-            }))
-        );
-
         const newParams = formatAdvancedSearchParams({
           attrsFilter: Object.keys(_attrsFilter)
             .filter((k) => _attrsFilter[k].joinedAttrname === undefined)
@@ -215,6 +194,8 @@ export const SearchResultsTableHead: FC<Props> = ({
                   keyword: _attrsFilter[j].keyword,
                 }))
             }))
+            // This removes duplicates
+            .filter((v, i, a) => a.findIndex(t => t.name === v.name) === i)
         });
 
         // simply reload with the new params
@@ -264,6 +245,7 @@ export const SearchResultsTableHead: FC<Props> = ({
                 attrType={attrTypes[attrName]}
                 attrName={attrName}
                 setJoinAttrname={setJoinAttrname}
+                unjoinable={defaultAttrsFilter[attrName].joinedAttrname !== undefined}
               />
               <StyledIconButton
                 onClick={(e) => {
