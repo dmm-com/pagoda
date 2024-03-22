@@ -7,6 +7,8 @@ import {
 export type AttrFilter = {
   filterKey: AdvancedSearchResultAttrInfoFilterKeyEnum;
   keyword: string;
+  baseAttrname?: string;
+  joinedAttrname?: string;
 };
 
 export type AttrsFilter = Record<string, AttrFilter>;

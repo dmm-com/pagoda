@@ -83,8 +83,6 @@ export const SearchResults: FC<Props> = ({
     return [_attrNames, _attrTypes];
   }, [defaultAttrsFilter, results.values]);
 
-  console.log("defaultAttrsFilter", defaultAttrsFilter);
-
   return (
     <Box display="flex" flexDirection="column">
       <StyledBox>

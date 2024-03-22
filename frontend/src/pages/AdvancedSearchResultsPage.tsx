@@ -211,6 +211,8 @@ export const AdvancedSearchResultsPage: FC = () => {
                           y.filterKey ||
                           AdvancedSearchResultAttrInfoFilterKeyEnum.CLEARED,
                         keyword: y.keyword || "",
+                        baseAttrname: x.name,
+                        joinedAttrname: y.name,
                       },
                     ])
                     .flat()

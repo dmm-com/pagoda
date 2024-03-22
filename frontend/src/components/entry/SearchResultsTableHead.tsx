@@ -1,8 +1,4 @@
-import {
-  AdvancedSearchResultAttrInfoFilterKeyEnum,
-  EntryAttributeTypeTypeEnum,
-} from "@dmm-com/airone-apiclient-typescript-fetch";
-import AddIcon from '@mui/icons-material/Add';
+import AddIcon from "@mui/icons-material/Add";
 import FilterAltIcon from "@mui/icons-material/FilterAlt";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import {
@@ -14,7 +10,15 @@ import {
   Typography,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import React, { ChangeEvent, FC, useMemo, useReducer, useState, Dispatch, SetStateAction } from "react";
+import React, {
+  ChangeEvent,
+  FC,
+  useMemo,
+  useReducer,
+  useState,
+  Dispatch,
+  SetStateAction,
+} from "react";
 import { useHistory, useLocation } from "react-router-dom";
 
 import {
@@ -26,6 +30,8 @@ import {
 import { SearchResultControlMenu } from "./SearchResultControlMenu";
 import { SearchResultControlMenuForEntry } from "./SearchResultControlMenuForEntry";
 import { SearchResultControlMenuForReferral } from "./SearchResultControlMenuForReferral";
+
+import { AdvancedSearchResultAttrInfoFilterKeyEnum } from "@dmm-com/airone-apiclient-typescript-fetch";
 
 const HeaderBox = styled(Box)({
   display: "flex",
@@ -65,16 +71,17 @@ const JoinableAttrHeader: FC<JoiningProps> = ({
         <JoinableBox>
           <Typography>{attrName}</Typography>
           <StyledIconButton
-            onClick={(e) => { setJoinAttrname(attrName) }}>
+            onClick={(e) => {
+              setJoinAttrname(attrName);
+            }}
+          >
             <AddIcon />
           </StyledIconButton>
         </JoinableBox>
       );
 
     default:
-      return (
-        <Typography>{attrName}</Typography>
-      );
+      return <Typography>{attrName}</Typography>;
   }
 };
 
@@ -115,6 +122,7 @@ export const SearchResultsTableHead: FC<Props> = ({
   const [attrsFilter, setAttrsFilter] = useState<AttrsFilter>(
     defaultAttrsFilter ?? {}
   );
+  console.log("[onix/SearchResultsTableHead(00)] attrFilter: ", attrsFilter);
 
   const [attributeMenuEls, setAttributeMenuEls] = useState<{
     [key: string]: HTMLButtonElement | null;
@@ -162,11 +170,51 @@ export const SearchResultsTableHead: FC<Props> = ({
             ? { ...attrsFilter, [attrName]: attrFilter }
             : attrsFilter;
 
+        console.log(
+          "[onix/handleSelectFilterConditions(00)] _attrsFilter: ",
+          _attrsFilter
+        );
+        console.log(
+          "[onix/handleSelectFilterConditions(01)] filteredValue: ",
+          Object.keys(_attrsFilter)
+            .filter((k) => _attrsFilter[k].joinedAttrname === undefined)
+            .reduce((a, k) => ({ ...a, [k]: _attrsFilter[k] }), {})
+        );
+        console.log(
+          "[onix/handleSelectFilterConditions(09)] joinAttrs: ",
+          Object.keys(_attrsFilter)
+            .filter((k) => _attrsFilter[k].joinedAttrname !== undefined)
+            .map((k) => ({
+              name: _attrsFilter[k].baseAttrname,
+              attrinfo: Object.keys(_attrsFilter)
+                .filter((j) => _attrsFilter[j].baseAttrname === _attrsFilter[k].baseAttrname)
+                .map((j) => ({
+                  name: _attrsFilter[j].joinedAttrname,
+                  filterKey: _attrsFilter[j].filterKey,
+                  keyword: _attrsFilter[j].keyword,
+                }))
+            }))
+        );
+
         const newParams = formatAdvancedSearchParams({
-          attrsFilter: _attrsFilter,
+          attrsFilter: Object.keys(_attrsFilter)
+            .filter((k) => _attrsFilter[k].joinedAttrname === undefined)
+            .reduce((a, k) => ({ ...a, [k]: _attrsFilter[k] }), {}),
           entryName: overwriteEntryName ?? entryFilter,
           referralName: overwriteReferral ?? referralFilter,
           baseParams: new URLSearchParams(location.search),
+          joinAttrs: Object.keys(_attrsFilter)
+            .filter((k) => _attrsFilter[k].joinedAttrname !== undefined)
+            .map((k) => ({
+              name: _attrsFilter[k]?.baseAttrname ?? "",
+              attrinfo: Object.keys(_attrsFilter)
+                .filter((j) => _attrsFilter[j].baseAttrname === _attrsFilter[k].baseAttrname)
+                .map((j) => ({
+                  name: _attrsFilter[j]?.joinedAttrname ?? "",
+                  filterKey: _attrsFilter[j].filterKey,
+                  keyword: _attrsFilter[j].keyword,
+                }))
+            }))
         });
 
         // simply reload with the new params
