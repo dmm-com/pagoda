@@ -214,7 +214,7 @@ class EntitySerializer(serializers.ModelSerializer):
 
         entity: Entity
         entity, is_created_entity = Entity.objects.get_or_create(
-            id=entity_id, created_user=user, defaults={**validated_data}
+            id=entity_id, defaults={**validated_data}
         )
         if not is_created_entity:
             # record history for specific fields on update
