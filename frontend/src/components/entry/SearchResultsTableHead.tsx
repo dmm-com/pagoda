@@ -52,7 +52,7 @@ interface JoiningProps {
   attrType: number;
   attrName: string;
   setJoinAttrname: Dispatch<SetStateAction<string>>;
-  unjoinable: boolean,
+  unjoinable: boolean;
 }
 
 const JoinableAttrHeader: FC<JoiningProps> = ({
@@ -77,7 +77,7 @@ const JoinableAttrHeader: FC<JoiningProps> = ({
         <JoinableBox>
           <Typography>{attrName}</Typography>
           <StyledIconButton
-            onClick={(e) => {
+            onClick={() => {
               setJoinAttrname(attrName);
             }}
           >
@@ -165,46 +165,49 @@ export const SearchResultsTableHead: FC<Props> = ({
 
   const handleSelectFilterConditions =
     (attrName?: string) =>
-      (
-        attrFilter?: AttrFilter,
-        overwriteEntryName?: string,
-        overwriteReferral?: string
-      ) => {
-        const _attrsFilter =
-          attrName != null && attrFilter != null
-            ? { ...attrsFilter, [attrName]: attrFilter }
-            : attrsFilter;
+    (
+      attrFilter?: AttrFilter,
+      overwriteEntryName?: string,
+      overwriteReferral?: string
+    ) => {
+      const _attrsFilter =
+        attrName != null && attrFilter != null
+          ? { ...attrsFilter, [attrName]: attrFilter }
+          : attrsFilter;
 
-        const newParams = formatAdvancedSearchParams({
-          attrsFilter: Object.keys(_attrsFilter)
-            .filter((k) => _attrsFilter[k].joinedAttrname === undefined)
-            .reduce((a, k) => ({ ...a, [k]: _attrsFilter[k] }), {}),
-          entryName: overwriteEntryName ?? entryFilter,
-          referralName: overwriteReferral ?? referralFilter,
-          baseParams: new URLSearchParams(location.search),
-          joinAttrs: Object.keys(_attrsFilter)
-            .filter((k) => _attrsFilter[k].joinedAttrname !== undefined)
-            .map((k) => ({
-              name: _attrsFilter[k]?.baseAttrname ?? "",
-              attrinfo: Object.keys(_attrsFilter)
-                .filter((j) => _attrsFilter[j].baseAttrname === _attrsFilter[k].baseAttrname)
-                .map((j) => ({
-                  name: _attrsFilter[j]?.joinedAttrname ?? "",
-                  filterKey: _attrsFilter[j].filterKey,
-                  keyword: _attrsFilter[j].keyword,
-                }))
-            }))
-            // This removes duplicates
-            .filter((v, i, a) => a.findIndex(t => t.name === v.name) === i)
-        });
+      const newParams = formatAdvancedSearchParams({
+        attrsFilter: Object.keys(_attrsFilter)
+          .filter((k) => _attrsFilter[k].joinedAttrname === undefined)
+          .reduce((a, k) => ({ ...a, [k]: _attrsFilter[k] }), {}),
+        entryName: overwriteEntryName ?? entryFilter,
+        referralName: overwriteReferral ?? referralFilter,
+        baseParams: new URLSearchParams(location.search),
+        joinAttrs: Object.keys(_attrsFilter)
+          .filter((k) => _attrsFilter[k].joinedAttrname !== undefined)
+          .map((k) => ({
+            name: _attrsFilter[k]?.baseAttrname ?? "",
+            attrinfo: Object.keys(_attrsFilter)
+              .filter(
+                (j) =>
+                  _attrsFilter[j].baseAttrname === _attrsFilter[k].baseAttrname
+              )
+              .map((j) => ({
+                name: _attrsFilter[j]?.joinedAttrname ?? "",
+                filterKey: _attrsFilter[j].filterKey,
+                keyword: _attrsFilter[j].keyword,
+              })),
+          }))
+          // This removes duplicates
+          .filter((v, i, a) => a.findIndex((t) => t.name === v.name) === i),
+      });
 
-        // simply reload with the new params
-        history.push({
-          pathname: location.pathname,
-          search: "?" + newParams.toString(),
-        });
-        history.go(0);
-      };
+      // simply reload with the new params
+      history.push({
+        pathname: location.pathname,
+        search: "?" + newParams.toString(),
+      });
+      history.go(0);
+    };
 
   const handleUpdateAttrFilter =
     (attrName: string) => (attrFilter: AttrFilter) => {
@@ -245,7 +248,9 @@ export const SearchResultsTableHead: FC<Props> = ({
                 attrType={attrTypes[attrName]}
                 attrName={attrName}
                 setJoinAttrname={setJoinAttrname}
-                unjoinable={defaultAttrsFilter[attrName].joinedAttrname !== undefined}
+                unjoinable={
+                  defaultAttrsFilter[attrName].joinedAttrname !== undefined
+                }
               />
               <StyledIconButton
                 onClick={(e) => {

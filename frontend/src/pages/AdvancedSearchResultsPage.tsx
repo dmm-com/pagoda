@@ -195,37 +195,44 @@ export const AdvancedSearchResultsPage: FC = () => {
             // make defaultAttrFilter to make fabric contexts of joinAttrs into the one of attrinfo
             // for considering order of showing attribute by userdefined one and connection of
             // attrinfo and its related joined attrinfo
-            attrInfo.map((info) => {
-              const results = Array();
+            attrInfo
+              .map((info) => {
+                const results = [];
 
-              results.push({
-                key: info.name,
-                val: {
-                  filterKey: info.filterKey || AdvancedSearchResultAttrInfoFilterKeyEnum.CLEARED,
-                  keyword: info.keyword || "",
-                }
-              });
+                results.push({
+                  key: info.name,
+                  val: {
+                    filterKey:
+                      info.filterKey ||
+                      AdvancedSearchResultAttrInfoFilterKeyEnum.CLEARED,
+                    keyword: info.keyword || "",
+                  },
+                });
 
-              // weave joined attributes into the defaultAttrFilterArray
-              joinAttrs.forEach((join) => {
-                if (join.name === info.name) {
-                  join.attrinfo.forEach((joinedInfo) => {
-                    results.push({
-                      key: `${join.name}.${joinedInfo.name}`,
-                      val: {
-                        filterKey: joinedInfo.filterKey || AdvancedSearchResultAttrInfoFilterKeyEnum.CLEARED,
-                        keyword: joinedInfo.keyword || "",
-                        baseAttrname: join.name,
-                        joinedAttrname: joinedInfo.name,
-                      }
+                // weave joined attributes into the defaultAttrFilterArray
+                joinAttrs.forEach((join) => {
+                  if (join.name === info.name) {
+                    join.attrinfo.forEach((joinedInfo) => {
+                      results.push({
+                        key: `${join.name}.${joinedInfo.name}`,
+                        val: {
+                          filterKey:
+                            joinedInfo.filterKey ||
+                            AdvancedSearchResultAttrInfoFilterKeyEnum.CLEARED,
+                          keyword: joinedInfo.keyword || "",
+                          baseAttrname: join.name,
+                          joinedAttrname: joinedInfo.name,
+                        },
+                      });
                     });
-                  });
-                }
-              });
-              return results;
+                  }
+                });
+                return results;
 
-              // this convert array to dict using reduce()
-            }).flat().reduce((a, x) => ({ ...a, [x.key]: x.val }), {})
+                // this convert array to dict using reduce()
+              })
+              .flat()
+              .reduce((a, x) => ({ ...a, [x.key]: x.val }), {})
           }
           bulkOperationEntryIds={bulkOperationEntryIds}
           handleChangeBulkOperationEntryId={handleChangeBulkOperationEntryId}
