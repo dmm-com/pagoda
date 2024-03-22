@@ -17,8 +17,8 @@ import { Confirmable } from "components/common/Confirmable";
 import { Loading } from "components/common/Loading";
 import { PageHeader } from "components/common/PageHeader";
 import { RateLimitedClickable } from "components/common/RateLimitedClickable";
-import { AdvancedSearchModal } from "components/entry/AdvancedSearchModal";
 import { AdvancedSearchJoinModal } from "components/entry/AdvancedSearchJoinModal";
+import { AdvancedSearchModal } from "components/entry/AdvancedSearchModal";
 import { SearchResults } from "components/entry/SearchResults";
 import { usePage } from "hooks/usePage";
 import { aironeApiClient } from "repository/AironeApiClient";
@@ -191,15 +191,32 @@ export const AdvancedSearchResultsPage: FC = () => {
           defaultEntryFilter={entryName}
           defaultReferralFilter={referralName}
           defaultAttrsFilter={Object.fromEntries(
-            attrInfo.map((i: AdvancedSearchResultAttrInfo) => [
-              i.name,
-              {
-                filterKey:
-                  i.filterKey ||
-                  AdvancedSearchResultAttrInfoFilterKeyEnum.CLEARED,
-                keyword: i.keyword || "",
-              },
-            ]).concat(joinAttrs.map((x) => x.attrinfo.map((y) => `${x.name}.${y.name}`).flat())).sort()
+            attrInfo
+              .map((i: AdvancedSearchResultAttrInfo) => [
+                i.name,
+                {
+                  filterKey:
+                    i.filterKey ||
+                    AdvancedSearchResultAttrInfoFilterKeyEnum.CLEARED,
+                  keyword: i.keyword || "",
+                },
+              ])
+              .concat(
+                joinAttrs.map((x) =>
+                  x.attrinfo
+                    .map((y) => [
+                      `${x.name}.${y.name}`,
+                      {
+                        filterKey:
+                          y.filterKey ||
+                          AdvancedSearchResultAttrInfoFilterKeyEnum.CLEARED,
+                        keyword: y.keyword || "",
+                      },
+                    ])
+                    .flat()
+                )
+              )
+              .sort()
           )}
           bulkOperationEntryIds={bulkOperationEntryIds}
           handleChangeBulkOperationEntryId={handleChangeBulkOperationEntryId}

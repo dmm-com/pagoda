@@ -1,6 +1,6 @@
 import {
-  AdvancedSearchResultAttrInfo,
   AdvancedSearchJoinAttrInfo,
+  AdvancedSearchResultAttrInfo,
   AdvancedSearchResultAttrInfoFilterKeyEnum,
 } from "@dmm-com/airone-apiclient-typescript-fetch";
 
@@ -14,7 +14,7 @@ export type AttrsFilter = Record<string, AttrFilter>;
 export type JoinAttr = {
   name: string;
   attrinfo: AdvancedSearchResultAttrInfo[];
-}
+};
 
 interface AdvancedSearchParams {
   entityIds: number[];
@@ -133,15 +133,10 @@ export function formatAdvancedSearchParams({
     );
   }
 
-  joinAttrs?.forEach((x, i) => {
-    console.log(`[onix/AdvancedSearchParams] (${i}) joinAttr: `, x);
-  });
-  // First of all, delete parameter when joinAttr.attrinfo is empty
-  //params.delete("join_attrs");
   if (joinAttrs != null) {
+    params.delete("join_attrs");
     joinAttrs.forEach((joinAttr) => {
       if (joinAttr.attrinfo.length > 0) {
-        // adding debug parameter
         params.append("join_attrs", JSON.stringify(joinAttr));
       }
     });
@@ -165,7 +160,8 @@ export function extractAdvancedSearchParams(
   const attrInfo: AdvancedSearchResultAttrInfo[] = JSON.parse(
     params.get("attrinfo") ?? "[]"
   );
-  const joinAttrs: AdvancedSearchJoinAttrInfo[] = params.getAll("join_attrs")?.map((x) => JSON.parse(x)) ?? [];
+  const joinAttrs: AdvancedSearchJoinAttrInfo[] =
+    params.getAll("join_attrs")?.map((x) => JSON.parse(x)) ?? [];
 
   return {
     entityIds,

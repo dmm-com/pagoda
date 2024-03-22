@@ -13,7 +13,7 @@ import {
   Typography,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import React, { FC, useMemo, Dispatch, SetStateAction } from "react";
+import React, { Dispatch, FC, SetStateAction, useMemo } from "react";
 import { Link } from "react-router-dom";
 
 import { SearchResultsTableHead } from "./SearchResultsTableHead";
@@ -82,6 +82,8 @@ export const SearchResults: FC<Props> = ({
     );
     return [_attrNames, _attrTypes];
   }, [defaultAttrsFilter, results.values]);
+
+  console.log("defaultAttrsFilter", defaultAttrsFilter);
 
   return (
     <Box display="flex" flexDirection="column">

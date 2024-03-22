@@ -1,22 +1,21 @@
 import {
-  AdvancedSearchResultAttrInfo,
   AdvancedSearchJoinAttrInfo,
   AdvancedSearchResultAttrInfoFilterKeyEnum,
 } from "@dmm-com/airone-apiclient-typescript-fetch";
-import { Box, Autocomplete, Checkbox, TextField, Button } from "@mui/material";
-import React, { Dispatch, FC, useState, SetStateAction } from "react";
+import { Autocomplete, Box, Button, TextField } from "@mui/material";
+import React, { FC, useState } from "react";
 import { useHistory } from "react-router-dom";
-import { aironeApiClient } from "../../repository/AironeApiClient";
 
-import { formatAdvancedSearchParams } from "../../services/entry/AdvancedSearch";
-import { AironeModal } from "../common/AironeModal";
-import { useAsyncWithThrow } from "../..//hooks/useAsyncWithThrow";
+import { AironeModal } from "components/common/AironeModal";
+import { useAsyncWithThrow } from "hooks/useAsyncWithThrow";
+import { aironeApiClient } from "repository/AironeApiClient";
+import { formatAdvancedSearchParams } from "services/entry/AdvancedSearch";
 
 interface Props {
   targetAttrname: string;
   referralIds: number[] | undefined;
   joinAttrs: AdvancedSearchJoinAttrInfo[];
-  setJoinAttrname: Dispatch<SetStateAction<string>>;
+  setJoinAttrname: (name: string) => void;
 }
 
 export const AdvancedSearchJoinModal: FC<Props> = ({
@@ -26,11 +25,11 @@ export const AdvancedSearchJoinModal: FC<Props> = ({
   setJoinAttrname,
 }) => {
   const history = useHistory();
-  const params = new URLSearchParams(location.search);
   // This is join attributes that have been already been selected before.
-  const currentAttrInfo: AdvancedSearchJoinAttrInfo | undefined = joinAttrs.find((attr) => attr.name === targetAttrname);
+  const currentAttrInfo: AdvancedSearchJoinAttrInfo | undefined =
+    joinAttrs.find((attr) => attr.name === targetAttrname);
 
-  const [selectedAttrNames, setSelectedAttrNames] = useState(Array());
+  const [selectedAttrNames, setSelectedAttrNames] = useState<string[]>([]);
 
   const referralAttrs = useAsyncWithThrow(async () => {
     if (referralIds !== undefined && referralIds.length > 0) {
@@ -41,46 +40,27 @@ export const AdvancedSearchJoinModal: FC<Props> = ({
 
   const closeModal = () => {
     setJoinAttrname("");
-  }
+  };
 
   const handleUpdatePageURL = () => {
     // to prevent duplication of same name parameter
-    const currentJoinAttrs = joinAttrs.filter((attr) => attr.name !== targetAttrname);
-    console.log("[onix/handleUpdatePageURL(10)] currentJoinAttrs: ", ...currentJoinAttrs);
+    const currentJoinAttrs = joinAttrs.filter(
+      (attr) => attr.name !== targetAttrname
+    );
 
-    const newJoinAttrs = [...currentJoinAttrs, {
-      name: targetAttrname,
-      attrinfo: selectedAttrNames.map((name) => {
-        return {
-          name: name,
-        };
-      }),
-    }]
-    console.log("[onix/handleUpdatePageURL(20)] newJoinAttrs: ", ...newJoinAttrs);
-
-    /*
-    const currJoinAttr = joinAttrs.find((attr) => attr.name === targetAttrname);
-    if (currJoinAttr === undefined) {
-      // register new join attribute
-      const newJoinAttrs = [...joinAttrs, {
+    const newJoinAttrs = [
+      ...currentJoinAttrs,
+      {
         name: targetAttrname,
         attrinfo: selectedAttrNames.map((name) => {
           return {
             name: name,
+            filterKey: AdvancedSearchResultAttrInfoFilterKeyEnum.CLEARED,
+            keyword: "",
           };
         }),
-      }]
-    } else {
-      // update attrinfo parameter of selected attribute to join
-      currJoinAttr.attrinfo = selectedAttrNames.map((name) => {
-        return {
-          name: name,
-        };
-      }
-    }
-    */
-
-
+      },
+    ];
     const params = formatAdvancedSearchParams({
       baseParams: new URLSearchParams(location.search),
       joinAttrs: newJoinAttrs,
@@ -103,7 +83,7 @@ export const AdvancedSearchJoinModal: FC<Props> = ({
       <Autocomplete
         options={referralAttrs.value?.map((x) => x.name) || []}
         defaultValue={currentAttrInfo?.attrinfo.map((x) => x.name) || []}
-        onChange={(_, value: Array<string>) => {
+        onChange={(_, value: string[]) => {
           setSelectedAttrNames(value);
         }}
         renderInput={(params) => (
