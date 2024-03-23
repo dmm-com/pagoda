@@ -6,6 +6,7 @@ from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import generics, mixins, viewsets
 from rest_framework.permissions import BasePermission, IsAuthenticated
+from rest_framework.request import Request
 from rest_framework.response import Response
 
 from acl.api_v2.serializers import ACLHistorySerializer, ACLSerializer
@@ -18,7 +19,7 @@ from user.models import User
 
 
 class ACLPermission(BasePermission):
-    def has_object_permission(self, request, view, obj):
+    def has_object_permission(self, request: Request, view, obj) -> bool:
         user: User = request.user
         permisson = {
             "retrieve": ACLType.Readable,
@@ -50,7 +51,7 @@ class ACLHistoryAPI(generics.ListAPIView):
         """Unnecessary in this serializer"""
         pass
 
-    def get(self, request, pk: int):
+    def get(self, request: Request, pk: int) -> Response:
         acl = ACLBase.objects.filter(id=pk).first()
         if not acl:
             raise Http404

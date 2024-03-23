@@ -6,6 +6,7 @@ from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import generics, serializers, status, viewsets
 from rest_framework.pagination import LimitOffsetPagination
+from rest_framework.request import Request
 from rest_framework.response import Response
 
 from airone.lib.drf import FileIsNotExistsError, InvalidValueError, JobIsNotDoneError
@@ -20,7 +21,7 @@ class JobAPI(viewsets.ModelViewSet):
     def get_queryset(self):
         return Job.objects.filter(user=self.request.user)
 
-    def destroy(self, request, *args, **kwargs):
+    def destroy(self, request: Request, *args, **kwargs) -> Response:
         job: Job = self.get_object()
 
         if job.status == JobStatus.DONE.value:
@@ -45,7 +46,7 @@ class JobAPI(viewsets.ModelViewSet):
             ),
         ],
     )
-    def download(self, request, *args, **kwargs):
+    def download(self, request: Request, *args, **kwargs) -> Response:
         job: Job = self.get_object()
         encode_param = request.query_params.get("encode", "utf-8")
 
@@ -116,12 +117,12 @@ class JobRerunAPI(generics.UpdateAPIView):
     def get_queryset(self):
         return Job.objects.filter(user=self.request.user)
 
-    def update(self, request, *args, **kwargs):
+    def update(self, request: Request, *args, **kwargs) -> Response:
         return Response(
             "Unsupported. use PATCH alternatively", status=status.HTTP_405_METHOD_NOT_ALLOWED
         )
 
-    def patch(self, request, *args, **kwargs):
+    def patch(self, request: Request, *args, **kwargs) -> Response:
         job: Job = self.get_object()
 
         # check job status before starting processing
