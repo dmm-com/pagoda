@@ -4361,6 +4361,10 @@ class ViewTest(AironeViewTest):
             resp_data,
             [
                 {
+                    "entity": "ref_entity",
+                    "entries": [{"attrs": [{"name": "val", "value": ""}], "name": "r-0"}],
+                },
+                {
                     "entity": "test-entity",
                     "entries": [{"attrs": [{"name": "val", "value": "hoge"}], "name": "Entry"}],
                 }
