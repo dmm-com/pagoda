@@ -1,9 +1,8 @@
-from typing import Optional
-
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, generics, serializers, status, viewsets
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import BasePermission, IsAuthenticated
+from rest_framework.request import Request
 from rest_framework.response import Response
 
 from airone.lib.drf import YAMLParser, YAMLRenderer
@@ -58,7 +57,7 @@ class GroupImportAPI(generics.GenericAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = serializers.Serializer
 
-    def post(self, request):
+    def post(self, request: Request) -> Response:
         import_datas = request.data
         serializer = GroupImportSerializer(data=import_datas, many=True)
         serializer.is_valid(raise_exception=True)
@@ -67,7 +66,7 @@ class GroupImportAPI(generics.GenericAPIView):
         for group_data in import_datas:
             if "id" in group_data:
                 # update group by id
-                group: Optional[Group] = Group.objects.filter(id=group_data["id"]).first()
+                group: Group | None = Group.objects.filter(id=group_data["id"]).first()
                 if not group:
                     return Response(
                         "Specified id group does not exist(id:%s, group:%s)"

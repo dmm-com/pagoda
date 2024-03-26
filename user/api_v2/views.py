@@ -13,6 +13,7 @@ from rest_framework.authtoken.models import Token
 from rest_framework.generics import get_object_or_404
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import BasePermission, IsAuthenticated
+from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.serializers import Serializer
 
@@ -36,7 +37,7 @@ from user.models import User
 
 
 class UserPermission(BasePermission):
-    def has_object_permission(self, request, view, obj: User):
+    def has_object_permission(self, request: Request, view, obj: User):
         current_user: User = request.user
         permisson = {
             "retrieve": current_user.is_superuser or current_user == obj,
@@ -67,7 +68,7 @@ class UserAPI(viewsets.ModelViewSet):
         }
         return serializer.get(self.action, UserRetrieveSerializer)
 
-    def destroy(self, request, pk):
+    def destroy(self, request: Request, pk) -> Response:
         user: User = self.get_object()
         user.delete()
 
@@ -78,12 +79,12 @@ class UserTokenAPI(viewsets.ModelViewSet):
     serializer_class = UserTokenSerializer
     permission_classes = [IsAuthenticated]
 
-    def retrieve(self, request):
+    def retrieve(self, request: Request) -> Response:
         instance = get_object_or_404(Token.objects.filter(user=request.user))
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
 
-    def refresh(self, request):
+    def refresh(self, request: Request) -> Response:
         Token.objects.filter(user=request.user).delete()
         instance = Token.objects.create(user=request.user)
         serializer = self.get_serializer(instance)
@@ -95,7 +96,7 @@ class UserImportAPI(generics.GenericAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = Serializer
 
-    def post(self, request):
+    def post(self, request: Request) -> Response:
         import_datas = request.data
         serializer = UserImportSerializer(data=import_datas)
         serializer.is_valid(raise_exception=True)
@@ -106,10 +107,10 @@ class UserImportAPI(generics.GenericAPIView):
                 if param not in user_data:
                     return Response("'%s' is required" % param, status=400)
 
-            user = None
+            user: User | None = None
             if "id" in user_data:
                 # update user by id when id is specified
-                user: Optional[User] = User.objects.filter(id=user_data["id"]).first()
+                user = User.objects.filter(id=user_data["id"]).first()
                 if not user:
                     return Response(
                         "Specified id user does not exist(id:%s, user:%s)"
@@ -171,12 +172,12 @@ class UserPasswordAPI(generics.UpdateAPIView):
         context["user"] = self.get_object()
         return context
 
-    def put(self, request, *args, **kwargs):
+    def put(self, request: Request, *args, **kwargs) -> Response:
         return Response(
             "Unsupported. Use PATCH alternatively", status=status.HTTP_405_METHOD_NOT_ALLOWED
         )
 
-    def patch(self, request, *args, **kwargs):
+    def patch(self, request: Request, *args, **kwargs) -> Response:
         serializer: Serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
@@ -193,12 +194,12 @@ class UserPasswordBySuperuserAPI(generics.UpdateAPIView):
         context["user"] = self.get_object()
         return context
 
-    def put(self, request, *args, **kwargs):
+    def put(self, request: Request, *args, **kwargs) -> Response:
         return Response(
             "Unsupported. Use PATCH alternatively", status=status.HTTP_405_METHOD_NOT_ALLOWED
         )
 
-    def patch(self, request, *args, **kwargs):
+    def patch(self, request: Request, *args, **kwargs) -> Response:
         serializer: Serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
@@ -209,7 +210,7 @@ class PasswordResetAPI(viewsets.GenericViewSet):
     serializer_class = PasswordResetSerializer
     permission_classes = []
 
-    def reset(self, request):
+    def reset(self, request: Request) -> Response:
         serializer = PasswordResetSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
@@ -245,7 +246,7 @@ class PasswordResetAPI(viewsets.GenericViewSet):
 
         return Response(serializer.validated_data)
 
-    def _get_user(self, username):
+    def _get_user(self, username: str):
         """
         Given a username, return matching user who should receive a reset or None.
         """
@@ -262,12 +263,12 @@ class PasswordResetAPI(viewsets.GenericViewSet):
 
     def _send_mail(
         self,
-        subject_template_name,
-        email_template_name,
+        subject_template_name: str,
+        email_template_name: str,
         context,
-        from_email,
-        to_email,
-        html_email_template_name=None,
+        from_email: str | None,
+        to_email: str,
+        html_email_template_name: str | None = None,
     ):
         """
         Sends a django.core.mail.EmailMultiAlternatives to `to_email`.
@@ -289,7 +290,7 @@ class PasswordResetConfirmAPI(viewsets.GenericViewSet):
     serializer_class = PasswordResetConfirmSerializer
     permission_classes = []
 
-    def confirm(self, request):
+    def confirm(self, request: Request) -> Response:
         serializer = PasswordResetConfirmSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
@@ -307,12 +308,12 @@ class UserAuthAPI(generics.UpdateAPIView):
         context["user"] = self.get_object()
         return context
 
-    def put(self, request, *args, **kwargs):
+    def put(self, request: Request, *args, **kwargs) -> Response:
         return Response(
             "Unsupported. Use PATCH alternatively", status=status.HTTP_405_METHOD_NOT_ALLOWED
         )
 
-    def patch(self, request, *args, **kwargs):
+    def patch(self, request: Request, *args, **kwargs) -> Response:
         serializer: Serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()

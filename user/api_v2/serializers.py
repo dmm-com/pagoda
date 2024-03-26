@@ -205,7 +205,7 @@ class UserPasswordBySuperuserSerializer(serializers.Serializer):
 
         return attrs
 
-    def save(self, **kwargs):
+    def save(self, **kwargs) -> None:
         user: User = self.context["user"]
         user.set_password(self.validated_data["new_passwd"])
         user.save(update_fields=["password"])

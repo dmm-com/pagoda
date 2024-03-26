@@ -717,7 +717,7 @@ class EntryCopySerializer(serializers.Serializer):
     class Meta:
         fields = "copy_entry_names"
 
-    def validate_copy_entry_names(self, copy_entry_names):
+    def validate_copy_entry_names(self, copy_entry_names: list[str]):
         entry: Entry = self.instance
         for copy_entry_name in copy_entry_names:
             if Entry.objects.filter(
@@ -751,16 +751,16 @@ class EntryImportEntitySerializer(serializers.Serializer):
     entity = serializers.CharField()
     entries = serializers.ListField(child=EntryImportEntriesSerializer())
 
-    def validate(self, params):
+    def validate(self, params: dict):
         # It runs only in the background, because it takes a long time to process.
         if self.parent:
             return params
 
-        def _convert_value_name_to_id(attr_data, entity_attrs):
+        def _convert_value_name_to_id(attr_data: dict, entity_attrs: dict):
             def _object(
-                val: Optional[str | dict],
+                val: str | dict | None,
                 refs: list[Entity],
-            ) -> Optional[int]:
+            ) -> int | None:
                 if val:
                     # for compatibility;
                     # it will pick wrong entry if there are multiple entries with same name
@@ -771,7 +771,7 @@ class EntryImportEntitySerializer(serializers.Serializer):
                                 val,
                                 [x.name for x in refs],
                             )
-                        ref_entry: Optional[Entry] = Entry.objects.filter(
+                        ref_entry: Entry | None = Entry.objects.filter(
                             name=val, schema__in=refs
                         ).first()
                         return ref_entry.id if ref_entry else 0
@@ -783,7 +783,7 @@ class EntryImportEntitySerializer(serializers.Serializer):
                         return ref_entry.id if ref_entry else 0
                 return None
 
-            def _group(val) -> Optional[int]:
+            def _group(val) -> int | None:
                 if val:
                     ref_group: Optional[Group] = Group.objects.filter(name=val).first()
                     return ref_group.id if ref_group else 0
@@ -833,9 +833,7 @@ class EntryImportEntitySerializer(serializers.Serializer):
                 if entity_attrs[attr_data["name"]]["type"] & AttrTypeValue["group"]:
                     attr_data["value"] = _group(attr_data["value"])
 
-        entity: Optional[Entity] = Entity.objects.filter(
-            name=params["entity"], is_active=True
-        ).first()
+        entity: Entity | None = Entity.objects.filter(name=params["entity"], is_active=True).first()
         if not entity:
             return params
         entity_attrs = {
@@ -1196,7 +1194,7 @@ class AdvancedSearchResultExportSerializer(serializers.Serializer):
 
         return params
 
-    def save(self, **kwargs):
+    def save(self, **kwargs) -> None:
         user: User = self.context["request"].user
 
         job_status_not_finished = [JobStatus.PREPARING.value, JobStatus.PROCESSING.value]
