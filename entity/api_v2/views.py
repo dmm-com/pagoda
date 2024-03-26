@@ -1,4 +1,5 @@
 from distutils.util import strtobool
+from typing import Dict, List
 
 from django.db.models import Count, F
 from django.http import Http404
@@ -284,14 +285,16 @@ class EntityAttrNameAPI(generics.GenericAPIView):
     def get(self, request):
         queryset = self.get_queryset()
 
-        entity_ids = list(filter(None, self.request.query_params.get("entity_ids", "").split(",")))
+        entity_ids: List[int] = list(
+            filter(None, self.request.query_params.get("entity_ids", "").split(","))
+        )
         names_query = queryset.values("name")
         if len(entity_ids) > 0:
             names_query = names_query.annotate(count=Count("name")).filter(count=len(entity_ids))
 
         # Compile each attribute of referrals by attribute name
         serializer: Serializer = self.get_serializer(queryset)
-        results = {}
+        results: Dict[str, Dict] = {}
         for attrname in names_query.values_list("name", flat=True):
             for attrinfo in [x for x in serializer.data if x["name"] == attrname]:
                 if attrname in results:

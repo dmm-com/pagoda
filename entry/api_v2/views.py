@@ -375,11 +375,11 @@ class AdvancedSearchAPI(generics.GenericAPIView):
                     ref_info["value"].get("id") is None
                 ):
                     # join EMPTY value
-                    resp_result["attrs"] |= blank_joining_info
+                    resp_result["attrs"] |= blank_joining_info  # type: ignore
 
                 # joining search result to original one
-                ref_id = ref_info["value"].get("id")
-                if ref_id in joined_resp_info:
+                ref_id = ref_info["value"].get("id") if "value" in ref_info is not None else None  # type: ignore
+                if ref_id and ref_id in joined_resp_info:  # type: ignore
                     # join valid value
                     resp_result["attrs"] |= joined_resp_info[ref_id]
 
@@ -388,7 +388,7 @@ class AdvancedSearchAPI(generics.GenericAPIView):
 
                 else:
                     # join EMPTY value
-                    resp_result["attrs"] |= blank_joining_info
+                    resp_result["attrs"] |= blank_joining_info  # type: ignore
 
             if will_filter_by_joined_attr:
                 resp["ret_values"] = new_ret_values
