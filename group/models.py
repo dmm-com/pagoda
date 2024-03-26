@@ -17,7 +17,7 @@ class Group(DjangoGroup):
         "Group", on_delete=models.DO_NOTHING, related_name="subordinates", null=True
     )
 
-    def save(self, *args, **kwargs):
+    def save(self, *args, **kwargs) -> None:
         """
         Override Model.save method of Django
         """

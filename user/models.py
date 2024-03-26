@@ -190,7 +190,7 @@ class User(AbstractUser):
 
         return True
 
-    def save(self, *args, **kwargs):
+    def save(self, *args, **kwargs) -> None:
         """
         Override Model.save method of Django
         """
