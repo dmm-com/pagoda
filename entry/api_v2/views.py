@@ -9,6 +9,7 @@ from rest_framework import generics, serializers, status, viewsets
 from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import BasePermission, IsAuthenticated
+from rest_framework.request import Request
 from rest_framework.response import Response
 
 import custom_view
@@ -48,7 +49,7 @@ from user.models import User
 
 
 class EntryPermission(BasePermission):
-    def has_object_permission(self, request, view, obj):
+    def has_object_permission(self, request: Request, view, obj) -> bool:
         user: User = request.user
         permisson = {
             "retrieve": ACLType.Readable,
@@ -80,7 +81,7 @@ class EntryAPI(viewsets.ModelViewSet):
         return serializer.get(self.action, EntryBaseSerializer)
 
     @extend_schema(request=EntryUpdateSerializer)
-    def update(self, request, *args, **kwargs):
+    def update(self, request: Request, *args, **kwargs) -> Response:
         user: User = request.user
         entry: Entry = self.get_object()
 
@@ -94,7 +95,7 @@ class EntryAPI(viewsets.ModelViewSet):
 
         return Response(status=status.HTTP_202_ACCEPTED)
 
-    def destroy(self, request, pk):
+    def destroy(self, request: Request, *args, **kwargs) -> Response:
         entry: Entry = self.get_object()
         if not entry.is_active:
             raise ObjectNotExistsError("specified entry has already been deleted")
@@ -106,7 +107,7 @@ class EntryAPI(viewsets.ModelViewSet):
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-    def restore(self, request, pk):
+    def restore(self, request: Request, *args, **kwargs) -> Response:
         entry: Entry = self.get_object()
 
         if entry.is_active:
@@ -140,7 +141,7 @@ class EntryAPI(viewsets.ModelViewSet):
 
         return Response({}, status=status.HTTP_201_CREATED)
 
-    def copy(self, request, pk):
+    def copy(self, request: Request, *args, **kwargs) -> Response:
         src_entry: Entry = self.get_object()
 
         if not src_entry.is_active:
@@ -163,7 +164,7 @@ class EntryAPI(viewsets.ModelViewSet):
         return Response({}, status=status.HTTP_200_OK)
 
     # histories view
-    def list(self, request, pk):
+    def list(self, request: Request, *args, **kwargs) -> Response:
         user: User = self.request.user
         entry: Entry = self.get_object()
 
@@ -182,7 +183,7 @@ class EntryAPI(viewsets.ModelViewSet):
             .select_related("parent_attr")
         )
 
-        return super(EntryAPI, self).list(request, pk)
+        return super(EntryAPI, self).list(request, *args, **kwargs)
 
 
 @extend_schema(
@@ -215,7 +216,7 @@ class AdvancedSearchAPI(generics.GenericAPIView):
         request=AdvancedSearchSerializer,
         responses=AdvancedSearchResultSerializer,
     )
-    def post(self, request, format=None):
+    def post(self, request: Request) -> Response:
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
@@ -475,7 +476,7 @@ class AdvancedSearchAPI(generics.GenericAPIView):
 class AdvancedSearchResultAPI(generics.GenericAPIView):
     serializer_class = AdvancedSearchResultExportSerializer
 
-    def post(self, request):
+    def post(self, request: Request) -> Response:
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
@@ -514,7 +515,7 @@ class EntryReferralAPI(viewsets.ReadOnlyModelViewSet):
 class EntryExportAPI(generics.GenericAPIView):
     serializer_class = EntryExportSerializer
 
-    def post(self, request, entity_id: int):
+    def post(self, request: Request, entity_id: int) -> Response:
         if not Entity.objects.filter(id=entity_id).exists():
             return Response(
                 "Failed to get entity of specified id", status=status.HTTP_400_BAD_REQUEST
@@ -618,7 +619,7 @@ class EntryImportAPI(generics.GenericAPIView):
         entity_names = [d["entity"] for d in import_data]
         return Entity.objects.filter(name__in=entity_names, is_active=True)
 
-    def post(self, request):
+    def post(self, request: Request) -> Response:
         import_datas = request.data
         user: User = request.user
         serializer = EntryImportSerializer(data=import_datas)
@@ -680,7 +681,7 @@ class EntryAttributeValueRestoreAPI(generics.UpdateAPIView):
     ],
 )
 class EntryBulkDeleteAPI(generics.DestroyAPIView):
-    def delete(self, request, *args, **kwargs):
+    def delete(self, request: Request, *args, **kwargs) -> Response:
         ids: list[str] = self.request.query_params.getlist("ids", [])
         if len(ids) == 0 or not all([id.isdecimal() for id in ids]):
             raise RequiredParameterError("some ids are invalid")

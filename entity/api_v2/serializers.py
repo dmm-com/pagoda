@@ -59,14 +59,14 @@ class WebhookCreateUpdateSerializer(serializers.ModelSerializer):
         read_only_fields = ["is_verified"]
         extra_kwargs = {"url": {"required": False}}
 
-    def validate_id(self, id: Optional[int]):
+    def validate_id(self, id: int | None):
         entity: Entity = self.parent.parent.instance
         if id is not None and not entity.webhooks.filter(id=id).exists():
             raise ObjectNotExistsError("Invalid id(%s) object does not exist" % id)
 
         return id
 
-    def validate(self, webhook):
+    def validate(self, webhook: dict):
         # case create Webhook
         if "id" not in webhook and "url" not in webhook:
             raise RequiredParameterError("id or url field is required")
@@ -95,13 +95,13 @@ class EntityAttrCreateSerializer(serializers.ModelSerializer):
             "note",
         ]
 
-    def validate_type(self, type):
+    def validate_type(self, type: int | None):
         if type not in AttrTypeValue.values():
             raise ObjectNotExistsError("attrs type(%s) does not exist" % type)
 
         return type
 
-    def validate(self, attr):
+    def validate(self, attr: dict):
         referral = attr.get("referral", [])
 
         if attr["type"] & AttrTypeValue["object"] and not len(referral):
@@ -130,7 +130,7 @@ class EntityAttrUpdateSerializer(serializers.ModelSerializer):
         ]
         extra_kwargs = {"name": {"required": False}, "type": {"required": False}}
 
-    def validate_id(self, id):
+    def validate_id(self, id: int):
         entity: Entity = self.parent.parent.instance
         entity_attr: Optional[EntityAttr] = entity.attrs.filter(id=id, is_active=True).first()
         if not entity_attr:
@@ -138,13 +138,13 @@ class EntityAttrUpdateSerializer(serializers.ModelSerializer):
 
         return id
 
-    def validate_type(self, type):
+    def validate_type(self, type: int | None):
         if type not in AttrTypeValue.values():
             raise ObjectNotExistsError("attrs type(%s) does not exist" % type)
 
         return type
 
-    def validate(self, attr):
+    def validate(self, attr: dict):
         # case update EntityAttr
         if "id" in attr:
             entity_attr = EntityAttr.objects.get(id=attr["id"])
@@ -207,14 +207,14 @@ class EntitySerializer(serializers.ModelSerializer):
         user: User,
         entity_id: Optional[int],
         validated_data: EntityCreateData | EntityUpdateData,
-    ):
+    ) -> Entity:
         is_toplevel_data = validated_data.pop("is_toplevel", None)
         attrs_data = validated_data.pop("attrs")
         webhooks_data = validated_data.pop("webhooks")
 
         entity: Entity
         entity, is_created_entity = Entity.objects.get_or_create(
-            id=entity_id, created_user=user, defaults={**validated_data}
+            id=entity_id, defaults={**validated_data}
         )
         if not is_created_entity:
             # record history for specific fields on update
@@ -347,7 +347,7 @@ class EntityCreateSerializer(EntitySerializer):
         fields = ["id", "name", "note", "is_toplevel", "attrs", "webhooks"]
         extra_kwargs = {"note": {"write_only": True}}
 
-    def validate_name(self, name):
+    def validate_name(self, name: str):
         if Entity.objects.filter(name=name, is_active=True).exists():
             raise DuplicatedObjectExistsError("Duplication error. There is same named Entity")
 
@@ -399,7 +399,7 @@ class EntityUpdateSerializer(EntitySerializer):
         fields = ["id", "name", "note", "is_toplevel", "attrs", "webhooks"]
         extra_kwargs = {"name": {"required": False}, "note": {"write_only": True}}
 
-    def validate_name(self, name):
+    def validate_name(self, name: str):
         if self.instance.name != name and Entity.objects.filter(name=name, is_active=True).exists():
             raise DuplicatedObjectExistsError("Duplication error. There is same named Entity")
 
@@ -630,10 +630,10 @@ class EntityImportExportRootSerializer(serializers.Serializer):
     Entity = EntityImportExportSerializer(many=True)
     EntityAttr = EntityAttrImportExportSerializer(many=True)
 
-    def save(self, **kwargs):
+    def save(self, **kwargs) -> None:
         user: User = self.context.get("request").user
 
-        def _do_import(resource, iter_data):
+        def _do_import(resource, iter_data: Any):
             results = []
             for data in iter_data:
                 try:

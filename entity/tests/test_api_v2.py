@@ -2631,6 +2631,25 @@ class ViewTest(AironeViewTest):
         )
         self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
 
+    @mock.patch("entity.tasks.edit_entity_v2.delay", mock.Mock(side_effect=tasks.edit_entity_v2))
+    def test_update_entity_with_other_created_user(self):
+        self.admin_login()
+
+        params = {
+            "id": self.entity.id,
+            "name": "change-entity",
+            "note": "change-hoge",
+        }
+
+        resp = self.client.put(
+            "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
+
+        self.entity.refresh_from_db()
+        self.assertEqual(self.entity.name, "change-entity")
+        self.assertEqual(self.entity.note, "change-hoge")
+
     def test_update_entity_with_webhook_is_disabled(self):
         entity: Entity = self.create_entity(
             **{

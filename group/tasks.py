@@ -1,20 +1,18 @@
 import json
 
 from airone.celery import app
+from airone.lib.job import may_schedule_until_job_is_ready
 from group.models import Group
 from job.models import Job, JobStatus
 
 
 @app.task(bind=True)
-def edit_group_referrals(self, job_id):
-    job = Job.objects.get(id=job_id)
+@may_schedule_until_job_is_ready
+def edit_group_referrals(self, job: Job) -> JobStatus:
+    params = json.loads(job.params)
+    group = Group.objects.get(id=params["group_id"])
 
-    if job.proceed_if_ready():
-        job.update(JobStatus.PROCESSING.value)
-        params = json.loads(job.params)
-        group = Group.objects.get(id=params["group_id"])
+    for entry in [x for x in group.get_referred_entries()]:
+        entry.register_es()
 
-        for entry in [x for x in group.get_referred_entries()]:
-            entry.register_es()
-
-        job.update(JobStatus.DONE.value)
+    return JobStatus.DONE

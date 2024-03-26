@@ -11,6 +11,16 @@
 
 ### Fixed
 
+## v3.82.0
+
+### Added
+* Enable to check verification error details on webhooks by users.
+  Contributed by @syucream
+
+### Changed
+* Use enum on the job status.
+  Contributed by @syucream
+
 ## v3.81.0
 
 ### Changed

@@ -629,18 +629,14 @@ def do_copy_entry(self, job_id: int):
 
 
 @app.task(bind=True)
-def import_entries(self, job_id):
-    job = Job.objects.get(id=job_id)
+@may_schedule_until_job_is_ready
+def import_entries(self, job: Job) -> tuple[JobStatus, str] | None:
+    try:
+        _do_import_entries(job)
+    except Exception as e:
+        return JobStatus.ERROR, "[task.import] [job:%d] %s" % (job.id, str(e))
 
-    if job.proceed_if_ready():
-        job.update(JobStatus.PROCESSING.value)
-        try:
-            _do_import_entries(job)
-        except Exception as e:
-            job.update(
-                status=JobStatus.ERROR.value,
-                text="[task.import] [job:%d] %s" % (job.id, str(e)),
-            )
+    return None
 
 
 @app.task(bind=True)
@@ -653,14 +649,8 @@ def import_entries_v2(self, job_id: int):
 
 
 @app.task(bind=True)
-def export_entries(self, job_id: int):
-    job = Job.objects.get(id=job_id)
-
-    if not job.proceed_if_ready():
-        return
-
-    job.update(JobStatus.PROCESSING.value)
-
+@may_schedule_until_job_is_ready
+def export_entries(self, job: Job):
     user = job.user
     entity = Entity.objects.get(id=job.target.id)
     params = json.loads(job.params)
@@ -719,20 +709,10 @@ def export_entries(self, job_id: int):
     if output:
         job.set_cache(output.getvalue())
 
-    # update job status and save it except for the case that target job is canceled.
-    if not job.is_canceled():
-        job.update(JobStatus.DONE.value)
-
 
 @app.task(bind=True)
-def export_entries_v2(self, job_id: int):
-    job = Job.objects.get(id=job_id)
-
-    if not job.proceed_if_ready():
-        return
-
-    job.update(JobStatus.PROCESSING.value)
-
+@may_schedule_until_job_is_ready
+def export_entries_v2(self, job: Job):
     user = job.user
     entity = Entity.objects.get(id=job.target.id)
     params = json.loads(job.params)
@@ -800,19 +780,10 @@ def export_entries_v2(self, job_id: int):
     if output:
         job.set_cache(output.getvalue())
 
-    # update job status and save it except for the case that target job is canceled.
-    if not job.is_canceled():
-        job.update(JobStatus.DONE.value)
-
 
 @app.task(bind=True)
-def export_search_result_v2(self, job_id: int):
-    job: Job = Job.objects.get(id=job_id)
-
-    if not job.proceed_if_ready():
-        return
-    job.update(JobStatus.PROCESSING.value)
-
+@may_schedule_until_job_is_ready
+def export_search_result_v2(self, job: Job):
     user = job.user
     serializer = AdvancedSearchResultExportSerializer(data=json.loads(job.params))
     serializer.is_valid(raise_exception=True)
@@ -843,26 +814,14 @@ def export_search_result_v2(self, job_id: int):
     if output:
         job.set_cache(output.getvalue())
 
-    # update job status and save it except for the case that target job is canceled.
-    if not job.is_canceled():
-        job.update(JobStatus.DONE.value)
-
 
 @app.task(bind=True)
-def register_referrals(self, job_id: int):
-    job = Job.objects.get(id=job_id)
-
-    # The python client for elasticsearch is thread safe, so this start processing
-    # without waiting any other jobs.
-    job.update(JobStatus.PROCESSING.value)
-
+@may_schedule_until_job_is_ready
+def register_referrals(self, job: Job):
     # register entries data which refer target entry to elasticsearch
     entry = Entry.objects.filter(id=job.target.id, is_active=True).first()
     if entry:
         [r.register_es() for r in entry.get_referred_objects()]
-
-    if not job.is_canceled():
-        job.update(JobStatus.DONE.value)
 
 
 def _notify_event(notification_method, object_id, user) -> tuple[JobStatus, str] | None:

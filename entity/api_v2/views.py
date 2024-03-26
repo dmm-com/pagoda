@@ -11,6 +11,7 @@ from rest_framework import filters, generics, serializers, status, viewsets
 from rest_framework.exceptions import ValidationError
 from rest_framework.pagination import LimitOffsetPagination, PageNumberPagination
 from rest_framework.permissions import BasePermission, IsAuthenticated
+from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.serializers import Serializer
 
@@ -34,7 +35,7 @@ from user.models import History, User
 
 
 @http_get
-def history(request, pk):
+def history(request, pk: int) -> HttpResponse:
     if not Entity.objects.filter(id=pk).exists():
         return HttpResponse("Failed to get entity of specified id", status=400)
 
@@ -68,7 +69,7 @@ def history(request, pk):
 
 
 class EntityPermission(BasePermission):
-    def has_permission(self, request, view):
+    def has_permission(self, request: Request, view) -> bool:
         permisson = {
             "list": ACLType.Readable,
             "create": ACLType.Writable,
@@ -82,7 +83,7 @@ class EntityPermission(BasePermission):
         view.entity = entity
         return True
 
-    def has_object_permission(self, request, view, obj):
+    def has_object_permission(self, request: Request, view, obj) -> bool:
         user: User = request.user
         permisson = {
             "retrieve": ACLType.Readable,
@@ -131,7 +132,7 @@ class EntityAPI(viewsets.ModelViewSet):
         return Entity.objects.filter(**filter_condition).exclude(**exclude_condition)
 
     @extend_schema(request=EntityCreateSerializer)
-    def create(self, request, *args, **kwargs):
+    def create(self, request: Request, *args, **kwargs) -> Response:
         user: User = request.user
 
         serializer = EntityCreateSerializer(data=request.data, context={"_user": user})
@@ -143,7 +144,7 @@ class EntityAPI(viewsets.ModelViewSet):
         return Response(status=status.HTTP_202_ACCEPTED)
 
     @extend_schema(request=EntityUpdateSerializer)
-    def update(self, request, *args, **kwargs):
+    def update(self, request: Request, *args, **kwargs) -> Response:
         user: User = request.user
         entity: Entity = self.get_object()
 
@@ -157,7 +158,7 @@ class EntityAPI(viewsets.ModelViewSet):
 
         return Response(status=status.HTTP_202_ACCEPTED)
 
-    def destroy(self, request, *args, **kwargs):
+    def destroy(self, request: Request, *args, **kwargs) -> Response:
         user: User = request.user
         entity: Entity = self.get_object()
 
@@ -197,7 +198,7 @@ class EntityEntryAPI(viewsets.ModelViewSet):
         return self.queryset.filter(schema=entity)
 
     @extend_schema(request=EntryCreateSerializer)
-    def create(self, request, entity_id):
+    def create(self, request: Request, entity_id: int) -> Response:
         user: User = request.user
         request.data["schema"] = entity_id
 
@@ -233,7 +234,7 @@ class EntityImportAPI(generics.GenericAPIView):
     parser_classes = [YAMLParser]
     serializer_class = serializers.Serializer
 
-    def post(self, request):
+    def post(self, request: Request) -> Response:
         import_datas = request.data
         serializer = EntityImportExportRootSerializer(
             data=import_datas, context={"request": self.request}
@@ -248,7 +249,7 @@ class EntityExportAPI(generics.RetrieveAPIView):
     serializer_class = EntityImportExportRootSerializer
     renderer_classes = [YAMLRenderer]
 
-    def get_object(self):
+    def get_object(self) -> dict:
         user: User = self.request.user
         entities = get_permitted_objects(user, Entity, ACLType.Readable)
         attrs = get_permitted_objects(user, EntityAttr, ACLType.Readable)
@@ -282,7 +283,7 @@ class EntityAttrNameAPI(generics.GenericAPIView):
                 # filter only names appear in all specified entities
                 return EntityAttr.objects.filter(parent_entity__in=entities, is_active=True)
 
-    def get(self, request):
+    def get(self, request: Request) -> Response:
         queryset = self.get_queryset()
 
         entity_ids: List[int] = list(
