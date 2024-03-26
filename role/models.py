@@ -1,14 +1,14 @@
 import importlib
 import sys
 from datetime import datetime
-from typing import List, Optional
+from typing import List
 
+from django.conf import settings
 from django.contrib.auth.models import Group, Permission
 from django.db import models
 from django.db.models import Q
 from simple_history.models import HistoricalRecords
 
-from airone import settings
 from airone.lib.acl import ACLType
 from airone.lib.types import AttrTypeValue
 
@@ -93,7 +93,7 @@ class Role(models.Model):
         """
         Override Model.save method of Django
         """
-        max_roles: Optional[int] = settings.MAX_ROLES
+        max_roles: int | None = settings.MAX_ROLES
         if max_roles and Role.objects.count() >= max_roles:
             raise RuntimeError("The number of roles is over the limit")
         return super(Role, self).save(*args, **kwargs)

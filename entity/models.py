@@ -1,10 +1,10 @@
 from typing import Optional
 
+from django.conf import settings
 from django.db import models
 from simple_history.models import HistoricalRecords
 
 from acl.models import ACLBase
-from airone import settings
 from airone.lib.acl import ACLObjType
 from webhook.models import Webhook
 

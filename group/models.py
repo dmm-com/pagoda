@@ -3,11 +3,11 @@ import sys
 from datetime import datetime
 from typing import Optional
 
+from django.conf import settings
 from django.contrib.auth.models import Group as DjangoGroup
 from django.db import models
 from django.db.models import Q
 
-from airone import settings
 from airone.lib.types import AttrTypeValue
 
 
