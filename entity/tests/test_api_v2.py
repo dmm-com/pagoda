@@ -305,7 +305,9 @@ class ViewTest(AironeViewTest):
     def test_retrieve_entity_with_invalid_param(self):
         resp = self.client.get("/entity/api/v2/%d/" % 9999)
         self.assertEqual(resp.status_code, 404)
-        self.assertEqual(resp.json(), {"code": "AE-230000", "message": "Not found."})
+        self.assertEqual(
+            resp.json(), {"code": "AE-230000", "message": "No Entity matches the given query."}
+        )
 
         resp = self.client.get("/entity/api/v2/%s/" % "hoge")
         self.assertEqual(resp.status_code, 404)
@@ -313,7 +315,9 @@ class ViewTest(AironeViewTest):
         self.entity.delete()
         resp = self.client.get("/entity/api/v2/%d/" % self.entity.id)
         self.assertEqual(resp.status_code, 404)
-        self.assertEqual(resp.json(), {"code": "AE-230000", "message": "Not found."})
+        self.assertEqual(
+            resp.json(), {"code": "AE-230000", "message": "No Entity matches the given query."}
+        )
 
     def test_retrieve_entity_without_permission(self):
         # permission nothing entity
@@ -1462,7 +1466,9 @@ class ViewTest(AironeViewTest):
         params = {}
         resp = self.client.put("/entity/api/v2/%d/" % 9999, json.dumps(params), "application/json")
         self.assertEqual(resp.status_code, 404)
-        self.assertEqual(resp.json(), {"code": "AE-230000", "message": "Not found."})
+        self.assertEqual(
+            resp.json(), {"code": "AE-230000", "message": "No Entity matches the given query."}
+        )
 
         self.entity.delete()
         params = {}
@@ -1470,7 +1476,9 @@ class ViewTest(AironeViewTest):
             "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
         )
         self.assertEqual(resp.status_code, 404)
-        self.assertEqual(resp.json(), {"code": "AE-230000", "message": "Not found."})
+        self.assertEqual(
+            resp.json(), {"code": "AE-230000", "message": "No Entity matches the given query."}
+        )
 
     def test_update_entity_with_invalid_param(self):
         # name param
@@ -2733,12 +2741,16 @@ class ViewTest(AironeViewTest):
 
         resp = self.client.delete("/entity/api/v2/%d/" % 9999, None, "application/json")
         self.assertEqual(resp.status_code, 404)
-        self.assertEqual(resp.json(), {"code": "AE-230000", "message": "Not found."})
+        self.assertEqual(
+            resp.json(), {"code": "AE-230000", "message": "No Entity matches the given query."}
+        )
 
         self.entity.delete()
         resp = self.client.delete("/entity/api/v2/%d/" % self.entity.id, None, "application/json")
         self.assertEqual(resp.status_code, 404)
-        self.assertEqual(resp.json(), {"code": "AE-230000", "message": "Not found."})
+        self.assertEqual(
+            resp.json(), {"code": "AE-230000", "message": "No Entity matches the given query."}
+        )
 
     def test_delete_entity_with_exist_entry(self):
         self.add_entry(self.user, "entry", self.entity)
