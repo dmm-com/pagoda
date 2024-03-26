@@ -13,7 +13,7 @@ from acl.models import ACLBase
 from airone.lib import types as atype
 from airone.lib.log import Logger
 from airone.lib.test import AironeViewTest
-from airone.lib.types import AttrTypeArrStr, AttrTypeStr, AttrTypeText, AttrTypeValue, AttrType
+from airone.lib.types import AttrType, AttrTypeArrStr, AttrTypeStr, AttrTypeText, AttrTypeValue
 from entity import tasks
 from entity.models import Entity, EntityAttr
 from entry.models import Entry
@@ -3477,7 +3477,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual([x["name"] for x in resp.json()], sorted(["bar", "fuga"]))
         self.assertEqual(
             [x["referral"] for x in resp.json() if x["type"] == AttrType.OBJECT.value][0],
-            list(entities.values_list("id", flat=True))
+            list(entities.values_list("id", flat=True)),
         )
 
         # get all attribute infomations are returned collectly

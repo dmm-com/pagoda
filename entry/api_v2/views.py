@@ -21,7 +21,7 @@ from airone.lib.drf import (
     RequiredParameterError,
     YAMLParser,
 )
-from airone.lib.types import AttrTypeValue, AttrType
+from airone.lib.types import AttrType, AttrTypeValue
 from entity.models import Entity, EntityAttr
 from entry.api_v2.pagination import EntryReferralPagination
 from entry.api_v2.serializers import (
@@ -260,11 +260,13 @@ class AdvancedSearchAPI(generics.GenericAPIView):
             # set parameters to filter joining search results
             hint_attrs = []
             for attrinfo in join_attr.get("attrinfo", []):
-                hint_attrs.append({
-                    "name": attrinfo["name"],
-                    "keyword": attrinfo.get("keyword"),
-                    "filter_key": attrinfo.get("filter_key"),
-                })
+                hint_attrs.append(
+                    {
+                        "name": attrinfo["name"],
+                        "keyword": attrinfo.get("keyword"),
+                        "filter_key": attrinfo.get("filter_key"),
+                    }
+                )
 
             # search Items from elasticsearch to join
             return (
@@ -280,7 +282,7 @@ class AdvancedSearchAPI(generics.GenericAPIView):
                     is_output_all=is_output_all,
                     hint_referral_entity_id=None,
                     offset=join_attr.get("offset", 0),
-                )
+                ),
             )
 
         # === End of Function: _get_joined_resp() ===
@@ -329,23 +331,29 @@ class AdvancedSearchAPI(generics.GenericAPIView):
         )
 
         for join_attr in join_attrs:
-            (will_filter_by_joined_attr, joined_resp) = _get_joined_resp(resp["ret_values"], join_attr)
+            (will_filter_by_joined_attr, joined_resp) = _get_joined_resp(
+                resp["ret_values"], join_attr
+            )
 
             # This is needed to set result as blank value
             blank_joining_info = {
-                "%s.%s" % (join_attr["name"], k["name"]) : {
+                "%s.%s" % (join_attr["name"], k["name"]): {
                     "is_readable": True,
                     "type": AttrType.STRING.value,
                     "value": "",
                 }
-            for k in join_attr["attrinfo"]}
+                for k in join_attr["attrinfo"]
+            }
 
             # convert search result to dict to be able to handle it without loop
             joined_resp_info = {
                 x["entry"]["id"]: {
-                    "%s.%s" % (join_attr["name"], k) : v
-                for k, v in x["attrs"].items() if any(_x["name"] == k for _x in join_attr["attrinfo"])}
-                for x in joined_resp["ret_values"]}
+                    "%s.%s" % (join_attr["name"], k): v
+                    for k, v in x["attrs"].items()
+                    if any(_x["name"] == k for _x in join_attr["attrinfo"])
+                }
+                for x in joined_resp["ret_values"]
+            }
 
             # this inserts result to previous search result
             new_ret_values = []
@@ -353,9 +361,11 @@ class AdvancedSearchAPI(generics.GenericAPIView):
                 ref_info = resp_result["attrs"].get(join_attr["name"])
                 if (
                     # ignore no joined data
-                    ref_info is None or
+                    ref_info is None
+                    or
                     # ignore unexpected typed attributes
-                    ref_info["type"] != AttrType.OBJECT.value or
+                    ref_info["type"] != AttrType.OBJECT.value
+                    or
                     # ignore when original result doesn't refer any item
                     ref_info["value"].get("id") is None
                 ):
