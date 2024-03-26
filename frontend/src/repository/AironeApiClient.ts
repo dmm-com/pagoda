@@ -213,17 +213,17 @@ class AironeApiClient {
   ): Promise<PaginatedEntityListList> {
     const params: EntityApiV2ListRequest = page
       ? {
-        offset: (page - 1) * ConstEntityList.MAX_ROW_COUNT,
-        limit: ConstEntityList.MAX_ROW_COUNT,
-        search: search,
-        isToplevel: isToplevel,
-      }
+          offset: (page - 1) * ConstEntityList.MAX_ROW_COUNT,
+          limit: ConstEntityList.MAX_ROW_COUNT,
+          search: search,
+          isToplevel: isToplevel,
+        }
       : {
-        // Any better way to get all the entities?
-        limit: Number.MAX_SAFE_INTEGER,
-        search: search,
-        isToplevel: isToplevel,
-      };
+          // Any better way to get all the entities?
+          limit: Number.MAX_SAFE_INTEGER,
+          search: search,
+          isToplevel: isToplevel,
+        };
 
     return await this.entity.entityApiV2List(params);
   }

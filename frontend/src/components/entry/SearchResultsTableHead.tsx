@@ -1,3 +1,4 @@
+import { AdvancedSearchResultAttrInfoFilterKeyEnum } from "@dmm-com/airone-apiclient-typescript-fetch";
 import AddIcon from "@mui/icons-material/Add";
 import FilterAltIcon from "@mui/icons-material/FilterAlt";
 import FilterListIcon from "@mui/icons-material/FilterList";
@@ -30,8 +31,6 @@ import {
 import { SearchResultControlMenu } from "./SearchResultControlMenu";
 import { SearchResultControlMenuForEntry } from "./SearchResultControlMenuForEntry";
 import { SearchResultControlMenuForReferral } from "./SearchResultControlMenuForReferral";
-
-import { AdvancedSearchResultAttrInfoFilterKeyEnum } from "@dmm-com/airone-apiclient-typescript-fetch";
 
 const HeaderBox = styled(Box)({
   display: "flex",
