@@ -1,19 +1,20 @@
 import csv
 import io
 import json
-from typing import Any, Optional
+from typing import Any
 
 import yaml
 from django.conf import settings
 from natsort import natsorted
 
 from airone.celery import app
+from airone.lib.job import may_schedule_until_job_is_ready
 from airone.lib.types import AttrTypeValue
 from entry.models import Entry
-from job.models import Job, JobStatus
+from job.models import Job
 
 
-def _csv_export(job: Job, values, recv_data: dict, has_referral: bool) -> Optional[io.StringIO]:
+def _csv_export(job: Job, values, recv_data: dict, has_referral: bool) -> io.StringIO | None:
     output = io.StringIO(newline="")
     writer = csv.writer(output)
 
@@ -102,7 +103,7 @@ def _csv_export(job: Job, values, recv_data: dict, has_referral: bool) -> Option
     return output
 
 
-def _yaml_export(job: Job, values, recv_data: dict, has_referral: bool) -> Optional[io.StringIO]:
+def _yaml_export(job: Job, values, recv_data: dict, has_referral: bool) -> io.StringIO | None:
     output = io.StringIO()
 
     def _get_attr_value(atype: int, value: dict):
@@ -163,22 +164,15 @@ def _yaml_export(job: Job, values, recv_data: dict, has_referral: bool) -> Optio
 
 
 @app.task(bind=True)
-def export_search_result(self, job_id):
-    job = Job.objects.get(id=job_id)
-
-    if not job.proceed_if_ready():
-        return
-
-    # set flag to indicate that this job starts processing
-    job.update(JobStatus.PROCESSING.value)
-
+@may_schedule_until_job_is_ready
+def export_search_result(self, job: Job):
     user = job.user
     recv_data = json.loads(job.params)
 
     # Do not care whether the "has_referral" value is
     has_referral: bool = recv_data.get("has_referral", False)
-    referral_name: Optional[str] = recv_data.get("referral_name")
-    entry_name: Optional[str] = recv_data.get("entry_name")
+    referral_name: str | None = recv_data.get("referral_name")
+    entry_name: str | None = recv_data.get("entry_name")
     if has_referral and referral_name is None:
         referral_name = ""
 
@@ -191,7 +185,7 @@ def export_search_result(self, job_id):
         referral_name,
     )
 
-    io_stream: Optional[io.StringIO] = None
+    io_stream: io.StringIO | None = None
     if recv_data["export_style"] == "yaml":
         io_stream = _yaml_export(job, resp["ret_values"], recv_data, has_referral)
     elif recv_data["export_style"] == "csv":
@@ -199,7 +193,3 @@ def export_search_result(self, job_id):
 
     if io_stream:
         job.set_cache(io_stream.getvalue())
-
-    # update job status and save it except for the case that target job is canceled.
-    if not job.is_canceled():
-        job.update(JobStatus.DONE.value)
