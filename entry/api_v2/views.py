@@ -271,7 +271,12 @@ class AdvancedSearchAPI(generics.GenericAPIView):
             # search Items from elasticsearch to join
             return (
                 # This represents whether user want to narrow down results by keyword of joined attr
-                any([x.get("keyword") for x in join_attr.get("attrinfo", [])]),
+                any(
+                    [
+                        x.get("keyword") or x.get("filter_key", 0) > 0
+                        for x in join_attr.get("attrinfo", [])
+                    ]
+                ),
                 Entry.search_entries(
                     request.user,
                     hint_entity_ids=list(set(hint_entity_ids)),  # this removes depulicated IDs

@@ -10,6 +10,7 @@ import yaml
 from rest_framework import status
 from rest_framework.exceptions import ValidationError
 
+from airone.lib.elasticsearch import FilterKey
 from airone.lib.log import Logger
 from airone.lib.test import AironeViewTest
 from airone.lib.types import (
@@ -3152,7 +3153,7 @@ class ViewTest(AironeViewTest):
                 "RefEntry-%s" % i,
                 self.ref_entity,
                 values={
-                    "val": "hoge-%s" % i,
+                    "val": "hoge-%s" % i if i % 2 == 0 else "",
                     "ref": self.ref_entry.id,
                     "name": {"name": "abcd-%s" % i, "id": self.ref_entry.id},
                 },
@@ -3226,7 +3227,7 @@ class ViewTest(AironeViewTest):
             (
                 "Entry2",
                 {
-                    "ref.val": {"as_string": "hoge-1"},
+                    "ref.val": {"as_string": ""},
                     "ref.ref": {"as_object": REF_DATA},
                     "ref.name": {"as_named_object": {"name": "abcd-1", "object": REF_DATA}},
                 },
@@ -3271,6 +3272,61 @@ class ViewTest(AironeViewTest):
         )
         self.assertEqual(resp.status_code, 200)
         self.assertEqual([x["entry"]["name"] for x in resp.json()["values"]], ["Entry1"])
+
+        # This sends request with join_attrs that have filter_key to get empty Items
+        params = {
+            "entities": [self.entity.id],
+            "attrinfo": [],
+            "join_attrs": [
+                {
+                    "name": "ref",
+                    "attrinfo": [
+                        {"name": "val", "filter_key": FilterKey.EMPTY.value},
+                    ],
+                },
+            ],
+        }
+        resp = self.client.post(
+            "/entry/api/v2/advanced_search/", json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual([x["entry"]["name"] for x in resp.json()["values"]], ["Entry2"])
+        self.assertEqual(
+            [x["attrs"]["ref.val"]["value"] for x in resp.json()["values"]], [{"as_string": ""}]
+        )
+
+        # This sends request with join_attrs that have filter_key to get non-empty Items
+        params = {
+            "entities": [self.entity.id],
+            "attrinfo": [],
+            "join_attrs": [
+                {
+                    "name": "ref",
+                    "attrinfo": [
+                        {"name": "val", "filter_key": FilterKey.NON_EMPTY.value},
+                    ],
+                },
+            ],
+        }
+        resp = self.client.post(
+            "/entry/api/v2/advanced_search/", json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual([x["entry"]["name"] for x in resp.json()["values"]], ["Entry0", "Entry1"])
+        self.assertEqual(
+            [x["attrs"]["ref.val"]["value"] for x in resp.json()["values"]],
+            [
+                {"as_string": "hoge-0"},
+                {"as_string": "hoge-0"},
+            ],
+        )
+
+    def test_advanced_search_with_join_attrs_that_have_filter_key1(self):
+        """
+        Test advanced_search APIv2 with join_attrs parameter that have
+        valid filter_key attribute.
+        """
+        pass
 
     def test_advanced_search_all_entities(self):
         params = {
