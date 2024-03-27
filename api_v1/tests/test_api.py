@@ -1181,8 +1181,8 @@ class APITest(AironeViewTest):
 
         # check notification event was invoked
         entry = Entry.objects.get(id=resp.json()["result"])
-        job_notify = Job.objects.get(target=entry, operation=JobOperation.NOTIFY_CREATE_ENTRY.value)
-        self.assertEqual(job_notify.status, JobStatus.DONE.value)
+        job_notify = Job.objects.get(target=entry, operation=JobOperation.NOTIFY_CREATE_ENTRY)
+        self.assertEqual(job_notify.status, JobStatus.DONE)
 
     @mock.patch("entry.tasks.notify_entry_update", mock.Mock(return_value=mock.Mock()))
     @mock.patch(
@@ -1204,9 +1204,7 @@ class APITest(AironeViewTest):
         # check creating NOTIFY_UPDATE_ENTRY is restricted because entry is not actually changed
         self.assertEqual(updated_entry.id, entry.id)
         self.assertFalse(
-            Job.objects.filter(
-                target=entry, operation=JobOperation.NOTIFY_UPDATE_ENTRY.value
-            ).exists()
+            Job.objects.filter(target=entry, operation=JobOperation.NOTIFY_UPDATE_ENTRY).exists()
         )
 
     @mock.patch("entry.tasks.notify_entry_update", mock.Mock(return_value=mock.Mock()))
@@ -1233,8 +1231,8 @@ class APITest(AironeViewTest):
         self.assertEqual(updated_entry.id, entry.id)
 
         # check creating NOTIFY_UPDATE_ENTRY is created because of changing Entry name
-        job_notify = Job.objects.get(target=entry, operation=JobOperation.NOTIFY_UPDATE_ENTRY.value)
-        self.assertEqual(job_notify.status, JobStatus.DONE.value)
+        job_notify = Job.objects.get(target=entry, operation=JobOperation.NOTIFY_UPDATE_ENTRY)
+        self.assertEqual(job_notify.status, JobStatus.DONE)
 
     @mock.patch("entry.tasks.delete_entry.delay", mock.Mock(side_effect=tasks.delete_entry))
     @mock.patch("entry.tasks.notify_entry_delete", mock.Mock(return_value=mock.Mock()))
@@ -1259,8 +1257,8 @@ class APITest(AironeViewTest):
         )
         self.assertEqual(resp.status_code, 200)
 
-        job_notify = Job.objects.get(target=entry, operation=JobOperation.NOTIFY_DELETE_ENTRY.value)
-        self.assertEqual(job_notify.status, JobStatus.DONE.value)
+        job_notify = Job.objects.get(target=entry, operation=JobOperation.NOTIFY_DELETE_ENTRY)
+        self.assertEqual(job_notify.status, JobStatus.DONE)
 
     def test_update_entry_that_has_deleted_attribute(self):
         """
@@ -1340,9 +1338,9 @@ class APITest(AironeViewTest):
         self.assertEqual(resp.status_code, 200)
 
         # check trigger action was worked properly
-        job_query = Job.objects.filter(operation=JobOperation.MAY_INVOKE_TRIGGER.value)
+        job_query = Job.objects.filter(operation=JobOperation.MAY_INVOKE_TRIGGER)
         self.assertEqual(job_query.count(), 1)
-        self.assertEqual(job_query.first().status, JobStatus.DONE.value)
+        self.assertEqual(job_query.first().status, JobStatus.DONE)
 
         # check created Entry has expected value that is set by TriggerAction
         entry = Entry.objects.get(id=resp.json()["result"])
@@ -1390,9 +1388,9 @@ class APITest(AironeViewTest):
         self.assertEqual(resp.status_code, 200)
 
         # check trigger action was worked properly
-        job_query = Job.objects.filter(operation=JobOperation.MAY_INVOKE_TRIGGER.value)
+        job_query = Job.objects.filter(operation=JobOperation.MAY_INVOKE_TRIGGER)
         self.assertEqual(job_query.count(), 1)
-        self.assertEqual(job_query.first().status, JobStatus.DONE.value)
+        self.assertEqual(job_query.first().status, JobStatus.DONE)
 
         # check created Entry has expected value that is set by TriggerAction
         self.assertEqual(entry.get_attrv("val").value, "hoge")

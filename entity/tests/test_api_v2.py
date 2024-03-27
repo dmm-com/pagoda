@@ -3507,7 +3507,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 200)
         self.assertEqual([x["name"] for x in resp.json()], sorted(["bar", "fuga"]))
         self.assertEqual(
-            [x["referral"] for x in resp.json() if x["type"] == AttrType.OBJECT.value][0],
+            [x["referral"] for x in resp.json() if x["type"] == AttrType.OBJECT][0],
             list(entities.values_list("id", flat=True)),
         )
 

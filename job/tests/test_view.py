@@ -92,7 +92,7 @@ class ViewTest(AironeViewTest):
 
         # Confirm that the delete job can be obtained
         self.assertEqual(len(resp.context["jobs"]), 1)
-        self.assertEqual(resp.context["jobs"][0]["operation"], JobOperation.DELETE_ENTRY.value)
+        self.assertEqual(resp.context["jobs"][0]["operation"], JobOperation.DELETE_ENTRY)
 
         # check respond HTML has expected elements which are specified of CSS selectors
         parser = HTML(html=resp.content.decode("utf-8"))
@@ -147,7 +147,7 @@ class ViewTest(AironeViewTest):
         def side_effect():
             # send re-run request for executing job by calling API
             job = Job.objects.last()
-            self.assertEqual(job.status, JobStatus.PROCESSING.value)
+            self.assertEqual(job.status, JobStatus.PROCESSING)
 
             # check that backend processing never run by calling API
             resp = self.client.post("/api/v1/job/run/%d" % job.id)
@@ -235,4 +235,4 @@ class ViewTest(AironeViewTest):
         resp = self.client.get("/job/")
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(len(resp.context["jobs"]), 1)
-        self.assertEqual(resp.context["jobs"][0]["operation"], JobOperation.CREATE_ENTRY.value)
+        self.assertEqual(resp.context["jobs"][0]["operation"], JobOperation.CREATE_ENTRY)

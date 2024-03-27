@@ -305,7 +305,7 @@ def advanced_search_result(request):
 )
 def export_search_result(request, recv_data):
     # check whether same job is sent
-    job_status_not_finished = [JobStatus.PREPARING.value, JobStatus.PROCESSING.value]
+    job_status_not_finished: list[JobStatus] = [JobStatus.PREPARING, JobStatus.PROCESSING]
     if (
         Job.get_job_with_params(request.user, recv_data)
         .filter(status__in=job_status_not_finished)

@@ -100,7 +100,7 @@ def do_edit(request, group_id, recv_data):
         job_register_referrals = Job.new_register_referrals(
             request.user,
             None,
-            operation_value=JobOperation.GROUP_REGISTER_REFERRAL.value,
+            operation_value=JobOperation.GROUP_REGISTER_REFERRAL,
             params={"group_id": group.id},
         )
 

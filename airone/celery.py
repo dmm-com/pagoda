@@ -68,5 +68,5 @@ def celery_task_failure_update_job_status(**kwargs):
 
     job_id = kwargs["args"][0]
     job = Job.objects.get(id=job_id)
-    job.status = JobStatus.ERROR.value
+    job.status = JobStatus.ERROR
     job.save(update_fields=["status"])

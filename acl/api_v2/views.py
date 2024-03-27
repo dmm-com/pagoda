@@ -64,7 +64,7 @@ class ACLHistoryAPI(generics.ListAPIView):
             | Q(codename="%s.%s" % (instance.id, ACLType.Writable.id))  # type: ignore
             | Q(codename="%s.%s" % (instance.id, ACLType.Readable.id))  # type: ignore
         )
-        if instance.objtype == ACLObjType.Entity.value:
+        if instance.objtype == ACLObjType.Entity:
             attrs = instance.attrs.filter(is_active=True)
             acl_history = acl_history + list(
                 itertools.chain.from_iterable([attr.history.all() for attr in attrs])

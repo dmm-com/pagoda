@@ -14,7 +14,7 @@ def may_schedule_until_job_is_ready(
         if not job.proceed_if_ready():
             return
         # update Job status from PREPARING to PROCEEDING
-        job.update(JobStatus.PROCESSING.value)
+        job.update(JobStatus.PROCESSING)
 
         try:
             # running Job processing
@@ -24,10 +24,10 @@ def may_schedule_until_job_is_ready(
 
         # update Job status after finishing Job processing
         if isinstance(ret, JobStatus):
-            job.update(status=ret.value)
+            job.update(status=ret)
         elif isinstance(ret, tuple) and isinstance(ret[0], JobStatus) and isinstance(ret[1], str):
-            job.update(status=ret[0].value, text=ret[1])
+            job.update(status=ret[0], text=ret[1])
         elif not job.is_canceled():
-            job.update(JobStatus.DONE.value)
+            job.update(JobStatus.DONE)
 
     return wrapper

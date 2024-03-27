@@ -24,14 +24,14 @@ class JobAPI(viewsets.ModelViewSet):
     def destroy(self, request: Request, *args, **kwargs) -> Response:
         job: Job = self.get_object()
 
-        if job.status == JobStatus.DONE.value:
+        if job.status == JobStatus.DONE:
             return Response("Target job has already been done", status=status.HTTP_400_BAD_REQUEST)
 
         if job.operation not in Job.CANCELABLE_OPERATIONS:
             return Response("Target job cannot be canceled", status=status.HTTP_400_BAD_REQUEST)
 
         # update job.status to be canceled
-        job.update(JobStatus.CANCELED.value)
+        job.update(JobStatus.CANCELED)
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -56,7 +56,7 @@ class JobAPI(viewsets.ModelViewSet):
         if job.operation not in Job.DOWNLOADABLE_OPERATIONS:
             raise InvalidValueError("Target job cannot be downloaded")
 
-        if job.status != JobStatus.DONE.value:
+        if job.status != JobStatus.DONE:
             raise JobIsNotDoneError("Target job has not yet done")
 
         # get value associated this Job from cache
@@ -84,11 +84,11 @@ class JobListAPI(viewsets.ModelViewSet):
         user = self.request.user
         created_after = self.request.query_params.get("created_after", None)
 
-        export_operations = [
-            JobOperation.EXPORT_ENTRY.value,
-            JobOperation.EXPORT_ENTRY_V2.value,
-            JobOperation.EXPORT_SEARCH_RESULT.value,
-            JobOperation.EXPORT_SEARCH_RESULT_V2.value,
+        export_operations: list[JobOperation] = [
+            JobOperation.EXPORT_ENTRY,
+            JobOperation.EXPORT_ENTRY_V2,
+            JobOperation.EXPORT_SEARCH_RESULT,
+            JobOperation.EXPORT_SEARCH_RESULT_V2,
         ]
         query = Q(
             Q(user=user),
@@ -100,8 +100,8 @@ class JobListAPI(viewsets.ModelViewSet):
                     target__isnull=False,
                     target__is_active=True,
                 )
-                | Q(operation=JobOperation.DELETE_ENTITY.value, target__isnull=False)
-                | Q(operation=JobOperation.DELETE_ENTRY.value, target__isnull=False)
+                | Q(operation=JobOperation.DELETE_ENTITY, target__isnull=False)
+                | Q(operation=JobOperation.DELETE_ENTRY, target__isnull=False)
             ),
         )
 
@@ -126,9 +126,9 @@ class JobRerunAPI(generics.UpdateAPIView):
         job: Job = self.get_object()
 
         # check job status before starting processing
-        if job.status == JobStatus.DONE.value:
+        if job.status == JobStatus.DONE:
             return Response("Target job has already been done")
-        elif job.status == JobStatus.PROCESSING.value:
+        elif job.status == JobStatus.PROCESSING:
             return Response("Target job is under processing", status=status.HTTP_400_BAD_REQUEST)
 
         # check job target status
