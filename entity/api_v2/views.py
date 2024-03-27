@@ -1,4 +1,5 @@
 from distutils.util import strtobool
+from typing import Dict, List
 
 from django.db.models import Count, F
 from django.http import Http404
@@ -271,29 +272,35 @@ class EntityAttrNameAPI(generics.GenericAPIView):
         entity_ids = list(filter(None, self.request.query_params.get("entity_ids", "").split(",")))
 
         if len(entity_ids) == 0:
-            return (
-                EntityAttr.objects.filter(is_active=True)
-                .values_list("name", flat=True)
-                .order_by("name")
-                .distinct()
-            )
+            return EntityAttr.objects.filter(is_active=True)
+
         else:
             entities = Entity.objects.filter(id__in=entity_ids, is_active=True)
             if len(entity_ids) != len(entities):
                 # the case invalid entity-id was specified
                 raise ValidationError("Target Entity doesn't exist")
             else:
-                return (
-                    # filter only names appear in all specified entities
-                    EntityAttr.objects.filter(parent_entity__in=entities, is_active=True)
-                    .values("name")
-                    .annotate(count=Count("name"))
-                    .filter(count=len(entity_ids))
-                    .values_list("name", flat=True)
-                    .order_by("name")
-                )
+                # filter only names appear in all specified entities
+                return EntityAttr.objects.filter(parent_entity__in=entities, is_active=True)
 
     def get(self, request: Request) -> Response:
         queryset = self.get_queryset()
+
+        entity_ids: List[int] = list(
+            filter(None, self.request.query_params.get("entity_ids", "").split(","))
+        )
+        names_query = queryset.values("name")
+        if len(entity_ids) > 0:
+            names_query = names_query.annotate(count=Count("name")).filter(count=len(entity_ids))
+
+        # Compile each attribute of referrals by attribute name
         serializer: Serializer = self.get_serializer(queryset)
-        return Response(serializer.data)
+        results: Dict[str, Dict] = {}
+        for attrname in names_query.values_list("name", flat=True):
+            for attrinfo in [x for x in serializer.data if x["name"] == attrname]:
+                if attrname in results:
+                    results[attrname]["referral"] += attrinfo["referral"]
+                else:
+                    results[attrname] = attrinfo
+
+        return Response(results.values())

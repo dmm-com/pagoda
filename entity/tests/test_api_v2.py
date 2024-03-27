@@ -13,7 +13,7 @@ from acl.models import ACLBase
 from airone.lib import types as atype
 from airone.lib.log import Logger
 from airone.lib.test import AironeViewTest
-from airone.lib.types import AttrTypeArrStr, AttrTypeStr, AttrTypeText, AttrTypeValue
+from airone.lib.types import AttrType, AttrTypeArrStr, AttrTypeStr, AttrTypeText, AttrTypeValue
 from entity import tasks
 from entity.models import Entity, EntityAttr
 from entry.models import Entry
@@ -3465,18 +3465,23 @@ class ViewTest(AironeViewTest):
             "test_entity1": ["foo", "bar", "fuga"],
             "test_entity2": ["bar", "hoge", "fuga"],
         }
-        for entity_name, attrnames in entity_info.items():
+        for i, (entity_name, attrnames) in enumerate(entity_info.items()):
             entity = Entity.objects.create(name=entity_name, created_user=user)
 
-            for attrname in attrnames:
-                entity.attrs.add(
-                    EntityAttr.objects.create(
-                        name=attrname,
-                        type=AttrTypeValue["string"],
-                        created_user=user,
-                        parent_entity=entity,
-                    )
+            for j, attrname in enumerate(attrnames):
+                is_object = attrname == "bar"
+                attrtype = AttrType.OBJECT if is_object else AttrType.STRING
+
+                attr = EntityAttr.objects.create(
+                    name=attrname,
+                    type=attrtype.value,
+                    created_user=user,
+                    parent_entity=entity,
                 )
+                if is_object:
+                    attr.referral.add(entity)
+
+                entity.attrs.add(attr)
 
         self.ref_entity.delete()
         self.entity.attrs.all().delete()
@@ -3488,12 +3493,16 @@ class ViewTest(AironeViewTest):
             "/entity/api/v2/attrs?entity_ids=%s" % ",".join([str(x.id) for x in entities])
         )
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(resp.json(), sorted(["bar", "fuga"]))
+        self.assertEqual([x["name"] for x in resp.json()], sorted(["bar", "fuga"]))
+        self.assertEqual(
+            [x["referral"] for x in resp.json() if x["type"] == AttrType.OBJECT.value][0],
+            list(entities.values_list("id", flat=True)),
+        )
 
-        # get all
+        # get all attribute infomations are returned collectly
         resp = self.client.get("/entity/api/v2/attrs")
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(resp.json(), sorted(["foo", "bar", "hoge", "fuga"]))
+        self.assertEqual([x["name"] for x in resp.json()], ["foo", "bar", "fuga", "hoge"])
 
         # invalid entity_id(s)
         resp = self.client.get("/entity/api/v2/attrs?entity_ids=9999")

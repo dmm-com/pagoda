@@ -6,10 +6,12 @@ import {
   AclApi,
   AdvancedSearchResult,
   AdvancedSearchResultAttrInfo,
+  AdvancedSearchJoinAttrInfo,
   AttributeData,
   Configuration,
   EntityApi,
   EntityApiV2ListRequest,
+  EntityAttr,
   EntityAttrCreate,
   EntityAttrUpdate,
   EntityDetail,
@@ -328,7 +330,7 @@ class AironeApiClient {
   async getEntityAttrs(
     entityIds: number[],
     searchAllEntities = false
-  ): Promise<Array<string>> {
+  ): Promise<Array<EntityAttr>> {
     return await this.entity.entityApiV2AttrsList({
       entityIds: searchAllEntities
         ? ""
@@ -674,6 +676,7 @@ class AironeApiClient {
     entityIds: number[] = [],
     entryName = "",
     attrInfo: AdvancedSearchResultAttrInfo[] = [],
+    joinAttrs: AdvancedSearchJoinAttrInfo[] = [],
     hasReferral = false,
     referralName = "",
     searchAllEntities = false,
@@ -686,6 +689,7 @@ class AironeApiClient {
         advancedSearch: {
           entities: entityIds,
           attrinfo: attrInfo,
+          joinAttrs: joinAttrs,
           entryName: entryName,
           hasReferral: hasReferral,
           isOutputAll: false,

@@ -1100,10 +1100,17 @@ class AdvancedSearchResultAttrInfoSerializer(serializers.Serializer):
         return filter_key
 
 
+class AdvancedSearchJoinAttrInfoSerializer(serializers.Serializer):
+    name = serializers.CharField()
+    offset = serializers.IntegerField(default=0)
+    attrinfo = AdvancedSearchResultAttrInfoSerializer(many=True)
+
+
 class AdvancedSearchSerializer(serializers.Serializer):
     entities = serializers.ListField(child=serializers.IntegerField())
     entry_name = serializers.CharField(allow_blank=True, default="")
     attrinfo = AdvancedSearchResultAttrInfoSerializer(many=True)
+    join_attrs = AdvancedSearchJoinAttrInfoSerializer(many=True, required=False)
     has_referral = serializers.BooleanField(default=False)
     referral_name = serializers.CharField(required=False, allow_blank=True)
     is_output_all = serializers.BooleanField(default=True)

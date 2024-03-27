@@ -3,6 +3,9 @@
 ## In development
 
 ### Added
+* Added new feature that user can get referred Item's contents that an Item
+  of advanced search result refers to from advanced search result page.
+  Contributed by @userlocalhost, @hinashi
 
 ### Changed
 

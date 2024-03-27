@@ -1,4 +1,5 @@
 import { AdvancedSearchResultAttrInfoFilterKeyEnum } from "@dmm-com/airone-apiclient-typescript-fetch";
+import AddIcon from "@mui/icons-material/Add";
 import FilterAltIcon from "@mui/icons-material/FilterAlt";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import {
@@ -10,7 +11,15 @@ import {
   Typography,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import React, { ChangeEvent, FC, useMemo, useReducer, useState } from "react";
+import React, {
+  ChangeEvent,
+  FC,
+  useMemo,
+  useReducer,
+  useState,
+  Dispatch,
+  SetStateAction,
+} from "react";
 import { useHistory, useLocation } from "react-router-dom";
 
 import {
@@ -38,12 +47,56 @@ const StyledTableCell = styled(TableCell)(({ theme }) => ({
   minWidth: "300px",
 }));
 
+interface JoiningProps {
+  attrType: number;
+  attrName: string;
+  setJoinAttrname: Dispatch<SetStateAction<string>>;
+  unjoinable: boolean;
+}
+
+const JoinableAttrHeader: FC<JoiningProps> = ({
+  attrType,
+  attrName,
+  setJoinAttrname,
+  unjoinable,
+}) => {
+  const JoinableBox = styled(Box)({
+    display: "flex",
+    flexDirection: "row",
+    alignItems: "center",
+  });
+
+  if (unjoinable) {
+    return <Typography>{attrName}</Typography>;
+  }
+
+  switch (attrType) {
+    case AdvancedSearchResultAttrInfoFilterKeyEnum.EMPTY:
+      return (
+        <JoinableBox>
+          <Typography>{attrName}</Typography>
+          <StyledIconButton
+            onClick={() => {
+              setJoinAttrname(attrName);
+            }}
+          >
+            <AddIcon />
+          </StyledIconButton>
+        </JoinableBox>
+      );
+
+    default:
+      return <Typography>{attrName}</Typography>;
+  }
+};
+
 interface Props {
   hasReferral: boolean;
   attrTypes: Record<string, number>;
   defaultEntryFilter?: string;
   defaultReferralFilter?: string;
   defaultAttrsFilter?: AttrsFilter;
+  setJoinAttrname: Dispatch<SetStateAction<string>>;
 }
 
 export const SearchResultsTableHead: FC<Props> = ({
@@ -52,6 +105,7 @@ export const SearchResultsTableHead: FC<Props> = ({
   defaultEntryFilter,
   defaultReferralFilter,
   defaultAttrsFilter = {},
+  setJoinAttrname,
 }) => {
   const location = useLocation();
   const history = useHistory();
@@ -92,7 +146,7 @@ export const SearchResultsTableHead: FC<Props> = ({
       Object.fromEntries(
         Object.keys(defaultAttrsFilter ?? {}).map((attrName: string) => {
           const attrFilter = defaultAttrsFilter[attrName];
-          switch (attrFilter.filterKey) {
+          switch (attrFilter?.filterKey) {
             case AdvancedSearchResultAttrInfoFilterKeyEnum.EMPTY:
             case AdvancedSearchResultAttrInfoFilterKeyEnum.NON_EMPTY:
             case AdvancedSearchResultAttrInfoFilterKeyEnum.DUPLICATED:
@@ -121,10 +175,29 @@ export const SearchResultsTableHead: FC<Props> = ({
           : attrsFilter;
 
       const newParams = formatAdvancedSearchParams({
-        attrsFilter: _attrsFilter,
+        attrsFilter: Object.keys(_attrsFilter)
+          .filter((k) => _attrsFilter[k].joinedAttrname === undefined)
+          .reduce((a, k) => ({ ...a, [k]: _attrsFilter[k] }), {}),
         entryName: overwriteEntryName ?? entryFilter,
         referralName: overwriteReferral ?? referralFilter,
         baseParams: new URLSearchParams(location.search),
+        joinAttrs: Object.keys(_attrsFilter)
+          .filter((k) => _attrsFilter[k].joinedAttrname !== undefined)
+          .map((k) => ({
+            name: _attrsFilter[k]?.baseAttrname ?? "",
+            attrinfo: Object.keys(_attrsFilter)
+              .filter(
+                (j) =>
+                  _attrsFilter[j].baseAttrname === _attrsFilter[k].baseAttrname
+              )
+              .map((j) => ({
+                name: _attrsFilter[j]?.joinedAttrname ?? "",
+                filterKey: _attrsFilter[j].filterKey,
+                keyword: _attrsFilter[j].keyword,
+              })),
+          }))
+          // This removes duplicates
+          .filter((v, i, a) => a.findIndex((t) => t.name === v.name) === i),
       });
 
       // simply reload with the new params
@@ -170,7 +243,14 @@ export const SearchResultsTableHead: FC<Props> = ({
         {attrNames.map((attrName) => (
           <StyledTableCell key={attrName}>
             <HeaderBox>
-              <Typography>{attrName}</Typography>
+              <JoinableAttrHeader
+                attrType={attrTypes[attrName]}
+                attrName={attrName}
+                setJoinAttrname={setJoinAttrname}
+                unjoinable={
+                  defaultAttrsFilter[attrName].joinedAttrname !== undefined
+                }
+              />
               <StyledIconButton
                 onClick={(e) => {
                   setAttributeMenuEls({
