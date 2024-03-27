@@ -51,7 +51,7 @@ class ExportedEntityEntries(TypedDict):
     entries: list[ExportedEntry]
 
 
-def _merge_referrals_by_index(ref_list, name_list):
+def _merge_referrals_by_index(ref_list: list[Any], name_list: list[Any]) -> dict:
     """This is a helper function to set array_named_object value.
     This re-formats data construction with index parameter of argument.
     """
@@ -66,7 +66,7 @@ def _merge_referrals_by_index(ref_list, name_list):
     for args in [(ref_list, name_list), (name_list, ref_list)]:
         be_aligned(*args)
 
-    result = {}
+    result: dict = {}
     for ref_info, name_info in zip(ref_list, name_list):
         if ref_info:
             if ref_info["index"] not in result:
@@ -374,6 +374,7 @@ def _yaml_export_v2(job: Job, values, recv_data: dict, has_referral: bool) -> Op
 
 
 @app.task(bind=True)
+@may_schedule_until_job_is_ready
 def create_entry_attrs(self, job_id: int):
     job = Job.objects.get(id=job_id)
 
@@ -453,179 +454,143 @@ def create_entry_attrs(self, job_id: int):
 
 
 @app.task(bind=True)
-def edit_entry_attrs(self, job_id: int):
-    job = Job.objects.get(id=job_id)
+@may_schedule_until_job_is_ready
+def edit_entry_attrs(self, job: Job):
+    user = User.objects.get(id=job.user.id)
+    entry = Entry.objects.get(id=job.target.id)
 
-    if job.proceed_if_ready():
-        # At the first time, update job status to prevent executing this job duplicately
-        job.update(JobStatus.PROCESSING.value)
+    # for history record
+    entry._history_user = user
 
-        user = User.objects.get(id=job.user.id)
-        entry = Entry.objects.get(id=job.target.id)
+    recv_data = json.loads(job.params)
 
-        # for history record
-        entry._history_user = user
+    for info in recv_data["attrs"]:
+        if info["id"]:
+            attr = Attribute.objects.get(id=info["id"])
+        else:
+            entity_attr = EntityAttr.objects.get(id=info["entity_attr_id"])
+            attr = entry.attrs.filter(schema=entity_attr, is_active=True).first()
+            if not attr:
+                attr = entry.add_attribute_from_base(entity_attr, user)
 
-        recv_data = json.loads(job.params)
+        # check permission of EntityAttr
+        if not user.has_permission(attr, ACLType.Writable):
+            continue
 
-        for info in recv_data["attrs"]:
-            if info["id"]:
-                attr = Attribute.objects.get(id=info["id"])
-            else:
-                entity_attr = EntityAttr.objects.get(id=info["entity_attr_id"])
-                attr = entry.attrs.filter(schema=entity_attr, is_active=True).first()
-                if not attr:
-                    attr = entry.add_attribute_from_base(entity_attr, user)
+        try:
+            converted_value = _convert_data_value(attr, info)
+        except ValueError as e:
+            Logger.warning("(%s) attr_data: %s" % (e, str(info)))
+            continue
 
-            # check permission of EntityAttr
-            if not user.has_permission(attr, ACLType.Writable):
-                continue
+        # Check a new update value is specified, or not
+        if not attr.is_updated(converted_value):
+            continue
 
-            try:
-                converted_value = _convert_data_value(attr, info)
-            except ValueError as e:
-                Logger.warning("(%s) attr_data: %s" % (e, str(info)))
-                continue
+        # Add new AttributeValue instance to Attribute instnace
+        attr.add_value(user, converted_value)
 
-            # Check a new update value is specified, or not
-            if not attr.is_updated(converted_value):
-                continue
+    if custom_view.is_custom("after_edit_entry", entry.schema.name):
+        custom_view.call_custom("after_edit_entry", entry.schema.name, recv_data, user, entry)
 
-            # Add new AttributeValue instance to Attribute instnace
-            attr.add_value(user, converted_value)
+    # update entry information to Elasticsearch
+    entry.register_es()
 
-        if custom_view.is_custom("after_edit_entry", entry.schema.name):
-            custom_view.call_custom("after_edit_entry", entry.schema.name, recv_data, user, entry)
+    # clear flag to specify this entry has been completed to edit
+    entry.del_status(Entry.STATUS_EDITING)
 
-        # update entry information to Elasticsearch
-        entry.register_es()
-
-        # clear flag to specify this entry has been completed to edit
-        entry.del_status(Entry.STATUS_EDITING)
-
-        # update job status and save it
-        job.update(JobStatus.DONE.value)
-
-        # running job to notify changing entry event
-        job_notify_event = Job.new_notify_update_entry(user, entry)
-        job_notify_event.run()
+    # running job to notify changing entry event
+    job_notify_event = Job.new_notify_update_entry(user, entry)
+    job_notify_event.run()
 
 
 @app.task(bind=True)
-def delete_entry(self, job_id: int):
-    job = Job.objects.get(id=job_id)
+@may_schedule_until_job_is_ready
+def delete_entry(self, job: Job):
+    entry = Entry.objects.get(id=job.target.id)
 
-    if job.proceed_if_ready():
-        job.update(JobStatus.PROCESSING.value)
+    # for history record
+    entry._history_user = job.user
 
-        entry = Entry.objects.get(id=job.target.id)
+    entry.delete()
 
-        # for history record
-        entry._history_user = job.user
-
-        entry.delete()
-
-        if custom_view.is_custom("after_delete_entry", entry.schema.name):
-            custom_view.call_custom("after_delete_entry", entry.schema.name, job.user, entry)
-
-        # update job status and save it
-        job.update(JobStatus.DONE.value)
+    if custom_view.is_custom("after_delete_entry", entry.schema.name):
+        custom_view.call_custom("after_delete_entry", entry.schema.name, job.user, entry)
 
 
 @app.task(bind=True)
-def restore_entry(self, job_id):
-    job = Job.objects.get(id=job_id)
+@may_schedule_until_job_is_ready
+def restore_entry(self, job: Job):
+    entry = Entry.objects.get(id=job.target.id)
 
-    if job.proceed_if_ready():
-        job.update(JobStatus.PROCESSING.value)
+    # for history record
+    entry._history_user = job.user
 
-        entry = Entry.objects.get(id=job.target.id)
+    entry.restore()
 
-        # for history record
-        entry._history_user = job.user
+    # remove status flag which is set before calling this
+    entry.del_status(Entry.STATUS_CREATING)
 
-        entry.restore()
+    # Send notification to the webhook URL
+    job_notify = Job.new_notify_create_entry(job.user, entry)
+    job_notify.run()
 
-        # remove status flag which is set before calling this
-        entry.del_status(Entry.STATUS_CREATING)
-
-        # Send notification to the webhook URL
-        job_notify = Job.new_notify_create_entry(job.user, entry)
-        job_notify.run()
-
-        # calling custom view processing if necessary
-        if custom_view.is_custom("after_restore_entry", entry.schema.name):
-            custom_view.call_custom("after_restore_entry", entry.schema.name, job.user, entry)
-
-        # update job status and save it
-        job.update(JobStatus.DONE.value)
+    # calling custom view processing if necessary
+    if custom_view.is_custom("after_restore_entry", entry.schema.name):
+        custom_view.call_custom("after_restore_entry", entry.schema.name, job.user, entry)
 
 
 @app.task(bind=True)
-def copy_entry(self, job_id):
-    job = Job.objects.get(id=job_id)
+@may_schedule_until_job_is_ready
+def copy_entry(self, job: Job) -> tuple[JobStatus, str] | None:
+    src_entry = Entry.objects.get(id=job.target.id)
 
-    if job.proceed_if_ready():
-        # update job status
-        job.update(JobStatus.PROCESSING.value)
-
-        src_entry = Entry.objects.get(id=job.target.id)
-
-        params = json.loads(job.params)
-        total_count = len(params["new_name_list"])
-        for index, new_name in enumerate(params["new_name_list"]):
-            # abort processing when job is canceled
-            if job.is_canceled():
-                job.text = "Copy completed [%5d/%5d]" % (index, total_count)
-                job.save(update_fields=["text"])
-                return
-
-            job.text = "Now copying... (progress: [%5d/%5d])" % (index + 1, total_count)
+    params = json.loads(job.params)
+    total_count = len(params["new_name_list"])
+    for index, new_name in enumerate(params["new_name_list"]):
+        # abort processing when job is canceled
+        if job.is_canceled():
+            job.text = "Copy completed [%5d/%5d]" % (index, total_count)
             job.save(update_fields=["text"])
+            return None
 
-            params["new_name"] = new_name
-            job_do_copy_entry = Job.new_do_copy(job.user, src_entry, new_name, params)
-            job_do_copy_entry.run(will_delay=False)
+        job.text = "Now copying... (progress: [%5d/%5d])" % (index + 1, total_count)
+        job.save(update_fields=["text"])
 
-        # update job status and save it
-        job.update(
-            status=JobStatus.DONE.value,
-            text="Copy completed [%5d/%5d]" % (total_count, total_count),
+        params["new_name"] = new_name
+        job_do_copy_entry = Job.new_do_copy(job.user, src_entry, new_name, params)
+        job_do_copy_entry.run(will_delay=False)
+
+    return JobStatus.DONE, "Copy completed [%5d/%5d]" % (total_count, total_count)
+
+
+@app.task(bind=True)
+@may_schedule_until_job_is_ready
+def do_copy_entry(self, job: Job):
+    src_entry = Entry.objects.get(id=job.target.id)
+
+    params = json.loads(job.params)
+    dest_entry = Entry.objects.filter(schema=src_entry.schema, name=params["new_name"]).first()
+    if not dest_entry:
+        dest_entry = src_entry.clone(job.user, name=params["new_name"])
+        dest_entry.register_es()
+
+    if custom_view.is_custom("after_copy_entry", src_entry.schema.name):
+        custom_view.call_custom(
+            "after_copy_entry",
+            src_entry.schema.name,
+            job.user,
+            src_entry,
+            dest_entry,
+            params["post_data"],
         )
 
+    # update job status and save it
+    job.update(JobStatus.DONE.value, "original entry: %s" % src_entry.name, dest_entry)
 
-@app.task(bind=True)
-def do_copy_entry(self, job_id: int):
-    job = Job.objects.get(id=job_id)
-
-    if job.proceed_if_ready():
-        # update job status
-        job.update(JobStatus.PROCESSING.value)
-
-        src_entry = Entry.objects.get(id=job.target.id)
-
-        params = json.loads(job.params)
-        dest_entry = Entry.objects.filter(schema=src_entry.schema, name=params["new_name"]).first()
-        if not dest_entry:
-            dest_entry = src_entry.clone(job.user, name=params["new_name"])
-            dest_entry.register_es()
-
-        if custom_view.is_custom("after_copy_entry", src_entry.schema.name):
-            custom_view.call_custom(
-                "after_copy_entry",
-                src_entry.schema.name,
-                job.user,
-                src_entry,
-                dest_entry,
-                params["post_data"],
-            )
-
-        # update job status and save it
-        job.update(JobStatus.DONE.value, "original entry: %s" % src_entry.name, dest_entry)
-
-        # create and run event notification job
-        job_notify_event = Job.new_notify_create_entry(job.user, dest_entry)
-        job_notify_event.run()
+    # create and run event notification job
+    job_notify_event = Job.new_notify_create_entry(job.user, dest_entry)
+    job_notify_event.run()
 
 
 @app.task(bind=True)
@@ -640,12 +605,9 @@ def import_entries(self, job: Job) -> tuple[JobStatus, str] | None:
 
 
 @app.task(bind=True)
-def import_entries_v2(self, job_id: int):
-    job: Job = Job.objects.get(id=job_id)
-
-    if job.proceed_if_ready():
-        job.update(JobStatus.PROCESSING.value)
-        _do_import_entries_v2(job)
+@may_schedule_until_job_is_ready
+def import_entries_v2(self, job: Job):
+    _do_import_entries_v2(job)
 
 
 @app.task(bind=True)
