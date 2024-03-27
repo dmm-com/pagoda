@@ -126,7 +126,9 @@ class ViewTest(AironeViewTest):
         user = self.guest_login()
         resp = self.client.get("/job/api/v2/%d/" % 9999)
         self.assertEqual(resp.status_code, 404)
-        self.assertEqual(resp.json(), {"code": "AE-230000", "message": "Not found."})
+        self.assertEqual(
+            resp.json(), {"code": "AE-230000", "message": "No Job matches the given query."}
+        )
 
         resp = self.client.get("/job/api/v2/%s/" % "hoge")
         self.assertEqual(resp.status_code, 404)
@@ -139,7 +141,9 @@ class ViewTest(AironeViewTest):
         self.admin_login()
         resp = self.client.get("/job/api/v2/%d/" % job.id)
         self.assertEqual(resp.status_code, 404)
-        self.assertEqual(resp.json(), {"code": "AE-230000", "message": "Not found."})
+        self.assertEqual(
+            resp.json(), {"code": "AE-230000", "message": "No Job matches the given query."}
+        )
 
     def test_cancel_job(self):
         user = self.guest_login()
@@ -266,7 +270,9 @@ class ViewTest(AironeViewTest):
         # send request to download job with invalid job-id
         resp = self.client.get("/job/api/v2/%d/download" % 9999)
         self.assertEqual(resp.status_code, 404)
-        self.assertEqual(resp.json(), {"message": "Not found.", "code": "AE-230000"})
+        self.assertEqual(
+            resp.json(), {"message": "No Job matches the given query.", "code": "AE-230000"}
+        )
 
         # Send a request to a job that cannot be downloaded
         job = Job.new_create(user, None)
@@ -325,4 +331,6 @@ class ViewTest(AironeViewTest):
         self.admin_login()
         resp = self.client.get("/job/api/v2/%d/download" % job.id)
         self.assertEqual(resp.status_code, 404)
-        self.assertEqual(resp.json(), {"message": "Not found.", "code": "AE-230000"})
+        self.assertEqual(
+            resp.json(), {"message": "No Job matches the given query.", "code": "AE-230000"}
+        )

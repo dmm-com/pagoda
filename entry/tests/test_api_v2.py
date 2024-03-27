@@ -538,7 +538,9 @@ class ViewTest(AironeViewTest):
 
         resp = self.client.get("/entry/api/v2/%s/" % 9999)
         self.assertEqual(resp.status_code, 404)
-        self.assertEqual(resp.json(), {"code": "AE-230000", "message": "Not found."})
+        self.assertEqual(
+            resp.json(), {"code": "AE-230000", "message": "No Entry matches the given query."}
+        )
 
     @mock.patch("custom_view.is_custom", mock.Mock(return_value=True))
     @mock.patch("custom_view.call_custom")
@@ -868,7 +870,9 @@ class ViewTest(AironeViewTest):
             "/entry/api/v2/%s/" % 9999, json.dumps({"name": "entry1"}), "application/json"
         )
         self.assertEqual(resp.status_code, 404)
-        self.assertEqual(resp.json(), {"code": "AE-230000", "message": "Not found."})
+        self.assertEqual(
+            resp.json(), {"code": "AE-230000", "message": "No Entry matches the given query."}
+        )
 
     def test_update_entry_with_invalid_param_name(self):
         entry: Entry = self.add_entry(self.user, "entry", self.entity)
@@ -1279,7 +1283,9 @@ class ViewTest(AironeViewTest):
 
         resp = self.client.delete("/entry/api/v2/%s/" % 9999, None, "application/json")
         self.assertEqual(resp.status_code, 404)
-        self.assertEqual(resp.json(), {"code": "AE-230000", "message": "Not found."})
+        self.assertEqual(
+            resp.json(), {"code": "AE-230000", "message": "No Entry matches the given query."}
+        )
 
     @patch("entry.tasks.delete_entry_v2.delay", Mock(side_effect=tasks.delete_entry_v2))
     @mock.patch("custom_view.is_custom", mock.Mock(return_value=True))
@@ -1406,7 +1412,9 @@ class ViewTest(AironeViewTest):
 
         resp = self.client.post("/entry/api/v2/%s/restore/" % 9999, None, "application/json")
         self.assertEqual(resp.status_code, 404)
-        self.assertEqual(resp.json(), {"code": "AE-230000", "message": "Not found."})
+        self.assertEqual(
+            resp.json(), {"code": "AE-230000", "message": "No Entry matches the given query."}
+        )
 
         entry = self.add_entry(self.user, "entry", self.entity)
         entry.delete()
@@ -1587,7 +1595,9 @@ class ViewTest(AironeViewTest):
             "/entry/api/v2/%s/copy/" % 9999, json.dumps(params), "application/json"
         )
         self.assertEqual(resp.status_code, 404)
-        self.assertEqual(resp.json(), {"code": "AE-230000", "message": "Not found."})
+        self.assertEqual(
+            resp.json(), {"code": "AE-230000", "message": "No Entry matches the given query."}
+        )
 
         entry = self.add_entry(self.user, "entry", self.entity)
 
