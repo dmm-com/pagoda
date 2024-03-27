@@ -496,7 +496,7 @@ def import_data(request, entity_id):
 
 
 @http_file_upload
-def do_import_data(request, entity_id, context):
+def do_import_data(request, entity_id: int, context):
     user: User = request.user
     entity: Entity
     entity, error = get_obj_with_check_perm(user, Entity, entity_id, ACLType.Writable)
