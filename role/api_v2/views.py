@@ -1,7 +1,6 @@
-from typing import Optional
-
 from rest_framework import generics, serializers, status, viewsets
 from rest_framework.permissions import BasePermission, IsAuthenticated
+from rest_framework.request import Request
 from rest_framework.response import Response
 
 from acl.models import ACLBase
@@ -47,7 +46,7 @@ class RoleImportAPI(generics.GenericAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = serializers.Serializer
 
-    def post(self, request):
+    def post(self, request: Request) -> Response:
         import_datas = request.data
         serializer = RoleImportSerializer(data=import_datas)
         serializer.is_valid(raise_exception=True)
@@ -59,7 +58,7 @@ class RoleImportAPI(generics.GenericAPIView):
 
             if "id" in role_data:
                 # update group by id
-                role: Optional[Role] = Role.objects.filter(id=role_data["id"]).first()
+                role = Role.objects.filter(id=role_data["id"]).first()
                 if not role:
                     return Response(
                         "Specified id role does not exist(id:%s, group:%s)"
@@ -94,29 +93,25 @@ class RoleImportAPI(generics.GenericAPIView):
             # set registered members (users, groups and administrative ones) to that role
             for key in ["users", "admin_users"]:
                 for name in role_data[key]:
-                    instance: Optional[User] = User.objects.filter(
-                        username=name, is_active=True
-                    ).first()
-                    if not instance:
+                    user: User | None = User.objects.filter(username=name, is_active=True).first()
+                    if not user:
                         return Response(
                             "specified user is not found (username: %s)" % name,
                             status=status.HTTP_400_BAD_REQUEST,
                         )
-                    getattr(role, key).add(instance)
+                    getattr(role, key).add(user)
             for key in ["groups", "admin_groups"]:
                 for name in role_data[key]:
-                    instance: Optional[Group] = Group.objects.filter(
-                        name=name, is_active=True
-                    ).first()
-                    if not instance:
+                    group: Group | None = Group.objects.filter(name=name, is_active=True).first()
+                    if not group:
                         return Response(
                             "specified group is not found (name: %s)" % name,
                             status=status.HTTP_400_BAD_REQUEST,
                         )
-                    getattr(role, key).add(instance)
+                    getattr(role, key).add(group)
 
             for permission in role_data.get("permissions", []):
-                acl: Optional[ACLBase] = ACLBase.objects.filter(id=permission["obj_id"]).first()
+                acl: ACLBase | None = ACLBase.objects.filter(id=permission["obj_id"]).first()
                 if not acl:
                     return Response(
                         "Invalid obj_id given: %s" % str(permission["obj_id"]),

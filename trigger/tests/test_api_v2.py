@@ -8,14 +8,13 @@ from trigger.models import (
     TriggerCondition,
     TriggerParent,
 )
-from user.models import User
 
 
 class APITest(AironeViewTest):
     def setUp(self):
         super(APITest, self).setUp()
 
-        self.user: User = self.guest_login()
+        self.user = self.guest_login()
 
         # create Entities that are used for each tests
         self.entity_currency = self.create_entity(self.user, "Currency")

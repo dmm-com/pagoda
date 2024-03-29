@@ -23,19 +23,18 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.ref }}
           repository: ${{ github.event.pull_request.head.repo.full_name }}
+      - name: Install poetry
+        run: pipx install poetry
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.11.5"
+          cache: "poetry"
       - name: apt-get
         run: |
           sudo apt-get update
           sudo apt-get install libldap2-dev libsasl2-dev libxmlsec1-dev libmysqlclient-dev pkg-config
-      - uses: actions/setup-python@v4
-        with:
-          python-version: "3.11.5"
-      - name: venv
+      - name: poetry install
         run: |
-          python3 -m venv virtualenv
-          source virtualenv/bin/activate
-          pip install pip --upgrade
-          pip install poetry
           poetry install --no-ansi
       - uses: actions/setup-node@v3
         with:
@@ -48,7 +47,6 @@ jobs:
           NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
       - name: generate client
         run: |
-          source virtualenv/bin/activate
           poetry run npm run generate:client
       - run: npm publish
         env:

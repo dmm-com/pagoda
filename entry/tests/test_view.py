@@ -29,7 +29,7 @@ from entry import tasks
 from entry.models import Attribute, AttributeValue, Entry
 from entry.settings import CONFIG as ENTRY_CONFIG
 from group.models import Group
-from job.models import Job, JobOperation
+from job.models import Job, JobOperation, JobStatus, JobTarget
 from role.models import Role
 from trigger import tasks as trigger_tasks
 from trigger.models import TriggerCondition
@@ -359,17 +359,17 @@ class ViewTest(AironeViewTest):
         job_expectations = [
             {
                 "operation": JobOperation.CREATE_ENTRY,
-                "status": Job.STATUS["DONE"],
+                "status": JobStatus.DONE.value,
                 "dependent_job": None,
             },
             {
                 "operation": JobOperation.NOTIFY_CREATE_ENTRY,
-                "status": Job.STATUS["DONE"],
+                "status": JobStatus.DONE.value,
                 "dependent_job": None,
             },
             {
                 "operation": JobOperation.MAY_INVOKE_TRIGGER,
-                "status": Job.STATUS["PREPARING"],
+                "status": JobStatus.PREPARING.value,
                 "dependent_job": jobs.get(operation=JobOperation.CREATE_ENTRY.value),
             },
         ]
@@ -377,7 +377,7 @@ class ViewTest(AironeViewTest):
         for expectation in job_expectations:
             obj = jobs.get(operation=expectation["operation"].value)
             self.assertEqual(obj.target.id, entry.id)
-            self.assertEqual(obj.target_type, Job.TARGET_ENTRY)
+            self.assertEqual(obj.target_type, JobTarget.ENTRY.value)
             self.assertEqual(obj.status, expectation["status"])
             self.assertEqual(obj.dependent_job, expectation["dependent_job"])
 
@@ -899,22 +899,22 @@ class ViewTest(AironeViewTest):
         job_expectations = [
             {
                 "operation": JobOperation.EDIT_ENTRY,
-                "status": Job.STATUS["DONE"],
+                "status": JobStatus.DONE.value,
                 "dependent_job": None,
             },
             {
                 "operation": JobOperation.REGISTER_REFERRALS,
-                "status": Job.STATUS["PREPARING"],
+                "status": JobStatus.PREPARING.value,
                 "dependent_job": None,
             },
             {
                 "operation": JobOperation.NOTIFY_UPDATE_ENTRY,
-                "status": Job.STATUS["DONE"],
+                "status": JobStatus.DONE.value,
                 "dependent_job": None,
             },
             {
                 "operation": JobOperation.MAY_INVOKE_TRIGGER,
-                "status": Job.STATUS["PREPARING"],
+                "status": JobStatus.PREPARING.value,
                 "dependent_job": jobs.get(operation=JobOperation.EDIT_ENTRY.value),
             },
         ]
@@ -922,7 +922,7 @@ class ViewTest(AironeViewTest):
         for expectation in job_expectations:
             obj = jobs.get(operation=expectation["operation"].value)
             self.assertEqual(obj.target.id, entry.id)
-            self.assertEqual(obj.target_type, Job.TARGET_ENTRY)
+            self.assertEqual(obj.target_type, JobTarget.ENTRY.value)
             self.assertEqual(obj.status, expectation["status"])
             self.assertEqual(obj.dependent_job, expectation["dependent_job"])
 
@@ -1396,7 +1396,7 @@ class ViewTest(AironeViewTest):
 
         job = Job.objects.last()
         self.assertEqual(job.operation, JobOperation.EXPORT_ENTRY.value)
-        self.assertEqual(job.status, Job.STATUS["DONE"])
+        self.assertEqual(job.status, JobStatus.DONE.value)
         self.assertEqual(job.text, "entry_ほげ.yaml")
 
         obj = yaml.load(job.get_cache(), Loader=yaml.SafeLoader)
@@ -1617,12 +1617,12 @@ class ViewTest(AironeViewTest):
         job_expectations = [
             {
                 "operation": JobOperation.DELETE_ENTRY,
-                "status": Job.STATUS["DONE"],
+                "status": JobStatus.DONE.value,
                 "dependent_job": jobs.get(operation=JobOperation.NOTIFY_DELETE_ENTRY.value),
             },
             {
                 "operation": JobOperation.NOTIFY_DELETE_ENTRY,
-                "status": Job.STATUS["DONE"],
+                "status": JobStatus.DONE.value,
                 "dependent_job": None,
             },
         ]
@@ -1630,7 +1630,7 @@ class ViewTest(AironeViewTest):
         for expectation in job_expectations:
             obj = jobs.get(operation=expectation["operation"].value)
             self.assertEqual(obj.target.id, entry.id)
-            self.assertEqual(obj.target_type, Job.TARGET_ENTRY)
+            self.assertEqual(obj.target_type, JobTarget.ENTRY.value)
             self.assertEqual(obj.status, expectation["status"])
             self.assertEqual(obj.dependent_job, expectation["dependent_job"])
 
@@ -1974,7 +1974,7 @@ class ViewTest(AironeViewTest):
         # check trigger action was worked properly
         job_query = Job.objects.filter(operation=JobOperation.MAY_INVOKE_TRIGGER.value)
         self.assertEqual(job_query.count(), 1)
-        self.assertEqual(job_query.first().status, Job.STATUS["DONE"])
+        self.assertEqual(job_query.first().status, JobStatus.DONE.value)
 
         # check created Entry's attributes are set properly by TriggerAction
         entry = Entry.objects.get(id=resp.json().get("entry_id"))
@@ -2058,7 +2058,7 @@ class ViewTest(AironeViewTest):
             "entry_name": "entry",
             "attrs": [
                 {
-                    "entity_attr_id": str(entity.attrs.get(name="age").id),
+                    "entity_attr_id": "",
                     "id": str(entry.attrs.get(schema__name="age").id),
                     "value": [{"data": "0", "index": 0}],
                 }
@@ -2074,7 +2074,7 @@ class ViewTest(AironeViewTest):
         # check trigger action was worked properly
         job_query = Job.objects.filter(operation=JobOperation.MAY_INVOKE_TRIGGER.value)
         self.assertEqual(job_query.count(), 1)
-        self.assertEqual(job_query.first().status, Job.STATUS["DONE"])
+        self.assertEqual(job_query.first().status, JobStatus.DONE.value)
 
         # check updated Entry's attributes are set properly by TriggerAction
         self.assertEqual(resp.json().get("entry_id"), entry.id)
@@ -3279,22 +3279,22 @@ class ViewTest(AironeViewTest):
         copy_job = Job.objects.filter(user=user, operation=JobOperation.COPY_ENTRY.value).first()
         self.assertEqual(copy_job.text, "Copy completed [%5d/%5d]" % (3, 3))
         self.assertEqual(copy_job.target.entry, entry)
-        self.assertEqual(copy_job.status, Job.STATUS["DONE"])
+        self.assertEqual(copy_job.status, JobStatus.DONE.value)
 
         do_copy_jobs = Job.objects.filter(user=user, operation=JobOperation.DO_COPY_ENTRY.value)
         self.assertEqual(do_copy_jobs.count(), 3)
         for obj in do_copy_jobs.all():
             self.assertTrue(any([obj.target.name == x for x in ["foo", "bar", "baz"]]))
             self.assertEqual(obj.text, "original entry: %s" % entry.name)
-            self.assertEqual(obj.target_type, Job.TARGET_ENTRY)
-            self.assertEqual(obj.status, Job.STATUS["DONE"])
+            self.assertEqual(obj.target_type, JobTarget.ENTRY.value)
+            self.assertEqual(obj.status, JobStatus.DONE.value)
             self.assertNotEqual(obj.created_at, obj.updated_at)
             self.assertTrue((obj.updated_at - obj.created_at).total_seconds() > 0)
 
         # check notification jobs were create in the copy entry's processing
         notify_jobs = Job.objects.filter(
             operation=JobOperation.NOTIFY_CREATE_ENTRY.value,
-            status=Job.STATUS["PREPARING"],
+            status=JobStatus.PREPARING.value,
             user=user,
         )
         self.assertEqual(notify_jobs.count(), do_copy_jobs.count())
@@ -3533,14 +3533,14 @@ class ViewTest(AironeViewTest):
         # checks created jobs and its params are as expected
         jobs = Job.objects.filter(user=user)
         job_expectations = [
-            {"operation": JobOperation.IMPORT_ENTRY, "status": Job.STATUS["DONE"]},
+            {"operation": JobOperation.IMPORT_ENTRY, "status": JobStatus.DONE.value},
             {
                 "operation": JobOperation.MAY_INVOKE_TRIGGER,
-                "status": Job.STATUS["PREPARING"],
+                "status": JobStatus.PREPARING.value,
             },
             {
                 "operation": JobOperation.NOTIFY_CREATE_ENTRY,
-                "status": Job.STATUS["PREPARING"],
+                "status": JobStatus.PREPARING.value,
             },
         ]
         self.assertEqual(jobs.count(), len(job_expectations))
@@ -3809,7 +3809,7 @@ class ViewTest(AironeViewTest):
         fp.close()
 
         job = Job.objects.filter(operation=JobOperation.IMPORT_ENTRY.value).last()
-        self.assertEqual(job.status, Job.STATUS["DONE"])
+        self.assertEqual(job.status, JobStatus.DONE.value)
 
         self.assertTrue(
             Job.objects.filter(operation=JobOperation.NOTIFY_CREATE_ENTRY.value).exists()
@@ -3828,7 +3828,7 @@ class ViewTest(AironeViewTest):
         fp.close()
 
         job = Job.objects.filter(operation=JobOperation.IMPORT_ENTRY.value).last()
-        self.assertEqual(job.status, Job.STATUS["DONE"])
+        self.assertEqual(job.status, JobStatus.DONE.value)
 
         self.assertFalse(
             Job.objects.filter(operation=JobOperation.NOTIFY_UPDATE_ENTRY.value).exists()
@@ -3842,7 +3842,7 @@ class ViewTest(AironeViewTest):
         fp.close()
 
         job = Job.objects.filter(operation=JobOperation.IMPORT_ENTRY.value).last()
-        self.assertEqual(job.status, Job.STATUS["DONE"])
+        self.assertEqual(job.status, JobStatus.DONE.value)
 
         self.assertTrue(
             Job.objects.filter(operation=JobOperation.NOTIFY_UPDATE_ENTRY.value).exists()
@@ -4451,8 +4451,8 @@ class ViewTest(AironeViewTest):
 
             self.assertEqual(job.user.id, user.id)
             self.assertEqual(job.target.id, entry.id)
-            self.assertEqual(job.target_type, Job.TARGET_ENTRY)
-            self.assertEqual(job.status, Job.STATUS["PREPARING"])
+            self.assertEqual(job.target_type, JobTarget.ENTRY.value)
+            self.assertEqual(job.status, JobStatus.PREPARING.value)
             self.assertEqual(job.operation, JobOperation.EDIT_ENTRY.value)
 
         with patch("entry.tasks.edit_entry_attrs.delay", Mock(side_effect=side_effect)):
@@ -4919,7 +4919,7 @@ class ViewTest(AironeViewTest):
         # check trigger action was worked properly
         job_query = Job.objects.filter(operation=JobOperation.MAY_INVOKE_TRIGGER.value)
         self.assertEqual(job_query.count(), 1)
-        self.assertEqual(job_query.first().status, Job.STATUS["DONE"])
+        self.assertEqual(job_query.first().status, JobStatus.DONE.value)
 
     def test_revert_attrv_with_invalid_value(self):
         user = self.guest_login()
@@ -5144,7 +5144,7 @@ class ViewTest(AironeViewTest):
 
         # Check Job processing was ended successfully
         job = Job.objects.filter(user=user, operation=JobOperation.IMPORT_ENTRY.value).last()
-        self.assertEqual(job.status, Job.STATUS["DONE"])
+        self.assertEqual(job.status, JobStatus.DONE.value)
 
     @patch("entry.tasks.import_entries.delay", Mock(side_effect=tasks.import_entries))
     @patch("entry.tasks._do_import_entries")
@@ -5167,7 +5167,7 @@ class ViewTest(AironeViewTest):
 
         # Check Job processing was failed
         job = Job.objects.filter(user=user, operation=JobOperation.IMPORT_ENTRY.value).last()
-        self.assertEqual(job.status, Job.STATUS["ERROR"])
+        self.assertEqual(job.status, JobStatus.ERROR.value)
         self.assertEqual(
             job.text,
             "[task.import] [job:%d] Unexpected situation was happened" % job.id,
@@ -5363,17 +5363,17 @@ class ViewTest(AironeViewTest):
         job_expectations = [
             {
                 "operation": JobOperation.CREATE_ENTRY,
-                "status": Job.STATUS["DONE"],
+                "status": JobStatus.DONE.value,
                 "dependent_job": None,
             },
             {
                 "operation": JobOperation.NOTIFY_CREATE_ENTRY,
-                "status": Job.STATUS["PREPARING"],
+                "status": JobStatus.PREPARING.value,
                 "dependent_job": None,
             },
             {
                 "operation": JobOperation.MAY_INVOKE_TRIGGER,
-                "status": Job.STATUS["PREPARING"],
+                "status": JobStatus.PREPARING.value,
                 "dependent_job": jobs.get(operation=JobOperation.CREATE_ENTRY.value),
             },
         ]
@@ -5381,13 +5381,13 @@ class ViewTest(AironeViewTest):
         for expectation in job_expectations:
             obj = jobs.get(operation=expectation["operation"].value)
             self.assertEqual(obj.target.id, entry.id)
-            self.assertEqual(obj.target_type, Job.TARGET_ENTRY)
+            self.assertEqual(obj.target_type, JobTarget.ENTRY.value)
             self.assertEqual(obj.status, expectation["status"])
             self.assertEqual(obj.dependent_job, expectation["dependent_job"])
 
         # Rerun creating that entry job (This is core processing of this test)
         job_create = Job.objects.get(user=user, operation=JobOperation.CREATE_ENTRY.value)
-        job_create.status = Job.STATUS["PREPARING"]
+        job_create.status = JobStatus.PREPARING.value
         job_create.save()
         job_create.run(will_delay=False)
 

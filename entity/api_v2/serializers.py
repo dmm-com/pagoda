@@ -11,6 +11,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied, ValidationError
 
 import custom_view
+from airone.lib import drf
 from airone.lib.acl import ACLType
 from airone.lib.drf import DuplicatedObjectExistsError, ObjectNotExistsError, RequiredParameterError
 from airone.lib.log import Logger
@@ -33,8 +34,17 @@ class WebhookSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Webhook
-        fields = ["id", "label", "url", "is_enabled", "is_verified", "headers", "is_deleted"]
-        read_only_fields = ["is_verified"]
+        fields = [
+            "id",
+            "label",
+            "url",
+            "is_enabled",
+            "is_verified",
+            "verification_error_details",
+            "headers",
+            "is_deleted",
+        ]
+        read_only_fields = ["is_verified", "verification_error_details"]
 
 
 class WebhookCreateUpdateSerializer(serializers.ModelSerializer):
@@ -49,14 +59,14 @@ class WebhookCreateUpdateSerializer(serializers.ModelSerializer):
         read_only_fields = ["is_verified"]
         extra_kwargs = {"url": {"required": False}}
 
-    def validate_id(self, id: Optional[int]):
+    def validate_id(self, id: int | None):
         entity: Entity = self.parent.parent.instance
         if id is not None and not entity.webhooks.filter(id=id).exists():
             raise ObjectNotExistsError("Invalid id(%s) object does not exist" % id)
 
         return id
 
-    def validate(self, webhook):
+    def validate(self, webhook: dict):
         # case create Webhook
         if "id" not in webhook and "url" not in webhook:
             raise RequiredParameterError("id or url field is required")
@@ -69,7 +79,7 @@ class WebhookCreateUpdateSerializer(serializers.ModelSerializer):
 
 
 class EntityAttrCreateSerializer(serializers.ModelSerializer):
-    created_user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+    created_user = serializers.HiddenField(default=drf.AironeUserDefault())
 
     class Meta:
         model = EntityAttr
@@ -85,13 +95,13 @@ class EntityAttrCreateSerializer(serializers.ModelSerializer):
             "note",
         ]
 
-    def validate_type(self, type):
+    def validate_type(self, type: int | None):
         if type not in AttrTypeValue.values():
             raise ObjectNotExistsError("attrs type(%s) does not exist" % type)
 
         return type
 
-    def validate(self, attr):
+    def validate(self, attr: dict):
         referral = attr.get("referral", [])
 
         if attr["type"] & AttrTypeValue["object"] and not len(referral):
@@ -120,7 +130,7 @@ class EntityAttrUpdateSerializer(serializers.ModelSerializer):
         ]
         extra_kwargs = {"name": {"required": False}, "type": {"required": False}}
 
-    def validate_id(self, id):
+    def validate_id(self, id: int):
         entity: Entity = self.parent.parent.instance
         entity_attr: Optional[EntityAttr] = entity.attrs.filter(id=id, is_active=True).first()
         if not entity_attr:
@@ -128,20 +138,20 @@ class EntityAttrUpdateSerializer(serializers.ModelSerializer):
 
         return id
 
-    def validate_type(self, type):
+    def validate_type(self, type: int | None):
         if type not in AttrTypeValue.values():
             raise ObjectNotExistsError("attrs type(%s) does not exist" % type)
 
         return type
 
-    def validate(self, attr):
+    def validate(self, attr: dict):
         # case update EntityAttr
         if "id" in attr:
             entity_attr = EntityAttr.objects.get(id=attr["id"])
             if "type" in attr and attr["type"] != entity_attr.type:
                 raise ValidationError("type cannot be changed")
 
-            user: User = self.context["request"].user
+            user: User = self.context.get("_user") or self.context["request"].user
             if attr["is_deleted"] and not user.has_permission(entity_attr, ACLType.Full):
                 raise PermissionDenied("Does not have permission to delete")
             if not attr["is_deleted"] and not user.has_permission(entity_attr, ACLType.Writable):
@@ -184,7 +194,7 @@ class EntityAttrSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = EntityAttr
-        fields = ("id", "name", "type")
+        fields = ("id", "name", "type", "referral")
 
 
 class EntitySerializer(serializers.ModelSerializer):
@@ -197,7 +207,7 @@ class EntitySerializer(serializers.ModelSerializer):
         user: User,
         entity_id: Optional[int],
         validated_data: EntityCreateData | EntityUpdateData,
-    ):
+    ) -> Entity:
         is_toplevel_data = validated_data.pop("is_toplevel", None)
         attrs_data = validated_data.pop("attrs")
         webhooks_data = validated_data.pop("webhooks")
@@ -290,6 +300,7 @@ class EntitySerializer(serializers.ModelSerializer):
                 id=webhook_data.get("id", None), defaults={**webhook_data}
             )
             entity.webhooks.add(webhook)
+
             try:
                 resp = requests.post(
                     webhook.url,
@@ -299,11 +310,17 @@ class EntitySerializer(serializers.ModelSerializer):
                 )
                 # The is_verified parameter will be set True,
                 # when requests received HTTP 200 from specifying endpoint.
-                webhook.is_verified = resp.ok
-            except ConnectionError:
+                if resp.ok:
+                    webhook.is_verified = True
+                    webhook.verification_error_details = None
+                else:
+                    webhook.is_verified = False
+                    webhook.verification_error_details = resp.reason
+            except ConnectionError as e:
                 webhook.is_verified = False
+                webhook.verification_error_details = str(e)
 
-            webhook.save(update_fields=["is_verified"])
+            webhook.save(update_fields=["is_verified", "verification_error_details"])
 
         # unset Editing MODE
         if is_created_entity:
@@ -324,14 +341,13 @@ class EntityCreateSerializer(EntitySerializer):
         child=EntityAttrCreateSerializer(), write_only=True, required=False, default=[]
     )
     webhooks = WebhookCreateUpdateSerializer(many=True, write_only=True, required=False, default=[])
-    created_user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     class Meta:
         model = Entity
-        fields = ["id", "name", "note", "is_toplevel", "attrs", "webhooks", "created_user"]
+        fields = ["id", "name", "note", "is_toplevel", "attrs", "webhooks"]
         extra_kwargs = {"note": {"write_only": True}}
 
-    def validate_name(self, name):
+    def validate_name(self, name: str):
         if Entity.objects.filter(name=name, is_active=True).exists():
             raise DuplicatedObjectExistsError("Duplication error. There is same named Entity")
 
@@ -353,8 +369,16 @@ class EntityCreateSerializer(EntitySerializer):
         return webhooks
 
     def create(self, validated_data: EntityCreateData):
-        user: User = self.context["request"].user
+        user: User | None = None
+        if "request" in self.context:
+            user = self.context["request"].user
+        if "_user" in self.context:
+            user = self.context["_user"]
 
+        if user is None:
+            raise RequiredParameterError("user is required")
+
+        validated_data["created_user"] = user
         if custom_view.is_custom("before_create_entity_V2"):
             validated_data = custom_view.call_custom(
                 "before_create_entity_v2", None, user, validated_data
@@ -375,7 +399,7 @@ class EntityUpdateSerializer(EntitySerializer):
         fields = ["id", "name", "note", "is_toplevel", "attrs", "webhooks"]
         extra_kwargs = {"name": {"required": False}, "note": {"write_only": True}}
 
-    def validate_name(self, name):
+    def validate_name(self, name: str):
         if self.instance.name != name and Entity.objects.filter(name=name, is_active=True).exists():
             raise DuplicatedObjectExistsError("Duplication error. There is same named Entity")
 
@@ -415,7 +439,14 @@ class EntityUpdateSerializer(EntitySerializer):
         return webhooks
 
     def update(self, entity: Entity, validated_data: EntityUpdateData):
-        user: User = self.context["request"].user
+        user: User | None = None
+        if "request" in self.context:
+            user = self.context["request"].user
+        if "_user" in self.context:
+            user = self.context["_user"]
+
+        if user is None:
+            raise RequiredParameterError("user is required")
 
         if custom_view.is_custom("before_update_entity_v2"):
             validated_data = custom_view.call_custom(
@@ -599,10 +630,10 @@ class EntityImportExportRootSerializer(serializers.Serializer):
     Entity = EntityImportExportSerializer(many=True)
     EntityAttr = EntityAttrImportExportSerializer(many=True)
 
-    def save(self, **kwargs):
+    def save(self, **kwargs) -> None:
         user: User = self.context.get("request").user
 
-        def _do_import(resource, iter_data):
+        def _do_import(resource, iter_data: Any):
             results = []
             for data in iter_data:
                 try:
@@ -618,4 +649,4 @@ class EntityImportExportRootSerializer(serializers.Serializer):
 
 
 class EntityAttrNameSerializer(serializers.ListSerializer):
-    child = serializers.CharField()
+    child = EntityAttrSerializer()

@@ -20,7 +20,7 @@ class ModelTest(AironeTestCase):
     def setUp(self):
         super(ModelTest, self).setUp()
 
-        self.user: User = User.objects.create(username="test")
+        self.user = User.objects.create(username="test")
         self.entity_ref = self.create_entity(self.user, "test_entity_ref")
         self.entity = self.create_entity(
             self.user,

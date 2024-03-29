@@ -17,6 +17,7 @@ import { Confirmable } from "components/common/Confirmable";
 import { Loading } from "components/common/Loading";
 import { PageHeader } from "components/common/PageHeader";
 import { RateLimitedClickable } from "components/common/RateLimitedClickable";
+import { AdvancedSearchJoinModal } from "components/entry/AdvancedSearchJoinModal";
 import { AdvancedSearchModal } from "components/entry/AdvancedSearchModal";
 import { SearchResults } from "components/entry/SearchResults";
 import { usePage } from "hooks/usePage";
@@ -29,6 +30,7 @@ export const AdvancedSearchResultsPage: FC = () => {
   const [page, changePage] = usePage();
 
   const [openModal, setOpenModal] = useState(false);
+  const [joinAttrname, setJoinAttrname] = useState("");
   const [bulkOperationEntryIds, setBulkOperationEntryIds] = useState<
     Array<number>
   >([]);
@@ -41,6 +43,7 @@ export const AdvancedSearchResultsPage: FC = () => {
     hasReferral,
     referralName,
     attrInfo,
+    joinAttrs,
   } = useMemo(() => {
     const params = new URLSearchParams(location.search);
     return extractAdvancedSearchParams(params);
@@ -55,6 +58,7 @@ export const AdvancedSearchResultsPage: FC = () => {
       entityIds,
       entryName,
       attrInfo,
+      joinAttrs,
       hasReferral,
       referralName,
       searchAllEntities,
@@ -141,6 +145,7 @@ export const AdvancedSearchResultsPage: FC = () => {
               sx={{ marginLeft: "40px" }}
               variant="contained"
               color="info"
+              disabled={joinAttrs.length > 0}
             >
               YAML 出力
             </Button>
@@ -186,19 +191,52 @@ export const AdvancedSearchResultsPage: FC = () => {
           hasReferral={hasReferral}
           defaultEntryFilter={entryName}
           defaultReferralFilter={referralName}
-          defaultAttrsFilter={Object.fromEntries(
-            attrInfo.map((i: AdvancedSearchResultAttrInfo) => [
-              i.name,
-              {
-                filterKey:
-                  i.filterKey ||
-                  AdvancedSearchResultAttrInfoFilterKeyEnum.CLEARED,
-                keyword: i.keyword || "",
-              },
-            ])
-          )}
+          defaultAttrsFilter={
+            // make defaultAttrFilter to make fabric contexts of joinAttrs into the one of attrinfo
+            // for considering order of showing attribute by userdefined one and connection of
+            // attrinfo and its related joined attrinfo
+            attrInfo
+              .map((info) => {
+                const results = [];
+
+                results.push({
+                  key: info.name,
+                  val: {
+                    filterKey:
+                      info.filterKey ||
+                      AdvancedSearchResultAttrInfoFilterKeyEnum.CLEARED,
+                    keyword: info.keyword || "",
+                  },
+                });
+
+                // weave joined attributes into the defaultAttrFilterArray
+                joinAttrs.forEach((join) => {
+                  if (join.name === info.name) {
+                    join.attrinfo.forEach((joinedInfo) => {
+                      results.push({
+                        key: `${join.name}.${joinedInfo.name}`,
+                        val: {
+                          filterKey:
+                            joinedInfo.filterKey ||
+                            AdvancedSearchResultAttrInfoFilterKeyEnum.CLEARED,
+                          keyword: joinedInfo.keyword || "",
+                          baseAttrname: join.name,
+                          joinedAttrname: joinedInfo.name,
+                        },
+                      });
+                    });
+                  }
+                });
+                return results;
+
+                // this convert array to dict using reduce()
+              })
+              .flat()
+              .reduce((a, x) => ({ ...a, [x.key]: x.val }), {})
+          }
           bulkOperationEntryIds={bulkOperationEntryIds}
           handleChangeBulkOperationEntryId={handleChangeBulkOperationEntryId}
+          setJoinAttrname={setJoinAttrname}
         />
       )}
       <AdvancedSearchModal
@@ -206,13 +244,23 @@ export const AdvancedSearchResultsPage: FC = () => {
         setOpenModal={setOpenModal}
         attrNames={
           !entityAttrs.loading && entityAttrs.value != null
-            ? entityAttrs.value
+            ? entityAttrs.value.map((x) => x.name)
             : []
         }
         initialAttrNames={attrInfo.map(
           (e: AdvancedSearchResultAttrInfo) => e.name
         )}
         attrInfos={attrInfo}
+      />
+      <AdvancedSearchJoinModal
+        targetAttrname={joinAttrname}
+        setJoinAttrname={setJoinAttrname}
+        referralIds={
+          !entityAttrs.loading && entityAttrs.value != null
+            ? entityAttrs.value.find((x) => x.name === joinAttrname)?.referral
+            : []
+        }
+        joinAttrs={joinAttrs}
       />
     </Box>
   );

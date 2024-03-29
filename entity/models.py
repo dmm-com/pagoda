@@ -1,10 +1,10 @@
 from typing import Optional
 
+from django.conf import settings
 from django.db import models
 from simple_history.models import HistoricalRecords
 
 from acl.models import ACLBase
-from airone import settings
 from airone.lib.acl import ACLObjType
 from webhook.models import Webhook
 
@@ -76,7 +76,7 @@ class EntityAttr(ACLBase):
         if adding_referral:
             self.referral.add(adding_referral)
 
-    def save(self, *args, **kwargs):
+    def save(self, *args, **kwargs) -> None:
         max_attributes_per_entity: Optional[int] = settings.MAX_ATTRIBUTES_PER_ENTITY
         if (
             max_attributes_per_entity
@@ -104,7 +104,7 @@ class Entity(ACLBase):
         super(Entity, self).__init__(*args, **kwargs)
         self.objtype = ACLObjType.Entity.value
 
-    def save(self, *args, **kwargs):
+    def save(self, *args, **kwargs) -> None:
         max_entities: Optional[int] = settings.MAX_ENTITIES
         if max_entities and Entity.objects.count() >= max_entities:
             raise RuntimeError("The number of entities is over the limit")

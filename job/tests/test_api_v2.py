@@ -4,7 +4,7 @@ from airone.lib.test import AironeViewTest
 from airone.lib.types import AttrTypeValue
 from entity.models import Entity, EntityAttr
 from entry.models import Entry
-from job.models import Job, JobOperation
+from job.models import Job, JobOperation, JobStatus
 
 # constants using this tests
 _TEST_MAX_LIST_VIEW = 2
@@ -119,14 +119,16 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 200)
         body = resp.json()
         self.assertEqual(body["id"], job.id)
-        self.assertEqual(body["status"], Job.STATUS["PREPARING"])
+        self.assertEqual(body["status"], JobStatus.PREPARING.value)
         self.assertEqual(body["text"], "hoge")
 
     def test_get_job_with_invalid_param(self):
         user = self.guest_login()
         resp = self.client.get("/job/api/v2/%d/" % 9999)
         self.assertEqual(resp.status_code, 404)
-        self.assertEqual(resp.json(), {"code": "AE-230000", "message": "Not found."})
+        self.assertEqual(
+            resp.json(), {"code": "AE-230000", "message": "No Job matches the given query."}
+        )
 
         resp = self.client.get("/job/api/v2/%s/" % "hoge")
         self.assertEqual(resp.status_code, 404)
@@ -139,7 +141,9 @@ class ViewTest(AironeViewTest):
         self.admin_login()
         resp = self.client.get("/job/api/v2/%d/" % job.id)
         self.assertEqual(resp.status_code, 404)
-        self.assertEqual(resp.json(), {"code": "AE-230000", "message": "Not found."})
+        self.assertEqual(
+            resp.json(), {"code": "AE-230000", "message": "No Job matches the given query."}
+        )
 
     def test_cancel_job(self):
         user = self.guest_login()
@@ -149,7 +153,7 @@ class ViewTest(AironeViewTest):
 
         # make a job which isn't cancellable
         job = Job.new_delete(user, entry)
-        self.assertEqual(job.status, Job.STATUS["PREPARING"])
+        self.assertEqual(job.status, JobStatus.PREPARING.value)
 
         # send request with invalid job id
         resp = self.client.delete("/job/api/v2/%d/" % 99999)
@@ -161,7 +165,7 @@ class ViewTest(AironeViewTest):
 
         # make a cancellable job
         job = Job.new_create(user, entry)
-        self.assertEqual(job.status, Job.STATUS["PREPARING"])
+        self.assertEqual(job.status, JobStatus.PREPARING.value)
         resp = self.client.delete("/job/api/v2/%d/" % job.id)
         self.assertEqual(resp.status_code, 204)
 
@@ -198,7 +202,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 200)
 
         job = Job.objects.get(id=job.id)
-        self.assertEqual(job.status, Job.STATUS["DONE"])
+        self.assertEqual(job.status, JobStatus.DONE.value)
         self.assertEqual(entry.attrs.count(), 1)
 
         attrv = entry.attrs.first().get_latest_value()
@@ -228,14 +232,14 @@ class ViewTest(AironeViewTest):
         )
         resp = self.client.patch("/job/api/v2/%d/rerun" % job.id)
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(Job.objects.get(id=job.id).status, Job.STATUS["DONE"])
+        self.assertEqual(Job.objects.get(id=job.id).status, JobStatus.DONE.value)
         self.assertEqual(entry.attrs.first().get_latest_value().value, "fuga")
 
         # make and send a job to copy entry
         job = Job.new_do_copy(user, entry, params={"new_name": "new_entry"})
         resp = self.client.patch("/job/api/v2/%d/rerun" % job.id)
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(Job.objects.get(id=job.id).status, Job.STATUS["DONE"])
+        self.assertEqual(Job.objects.get(id=job.id).status, JobStatus.DONE.value)
 
         # checks it's success to clone entry
         new_entry = Entry.objects.get(name="new_entry", schema=entity)
@@ -266,7 +270,9 @@ class ViewTest(AironeViewTest):
         # send request to download job with invalid job-id
         resp = self.client.get("/job/api/v2/%d/download" % 9999)
         self.assertEqual(resp.status_code, 404)
-        self.assertEqual(resp.json(), {"message": "Not found.", "code": "AE-230000"})
+        self.assertEqual(
+            resp.json(), {"message": "No Job matches the given query.", "code": "AE-230000"}
+        )
 
         # Send a request to a job that cannot be downloaded
         job = Job.new_create(user, None)
@@ -287,7 +293,7 @@ class ViewTest(AironeViewTest):
         )
 
         # send request to download job when not exists file
-        job.status = Job.STATUS["DONE"]
+        job.status = JobStatus.DONE.value
         job.save()
 
         resp = self.client.get("/job/api/v2/%d/download" % job.id)
@@ -325,4 +331,6 @@ class ViewTest(AironeViewTest):
         self.admin_login()
         resp = self.client.get("/job/api/v2/%d/download" % job.id)
         self.assertEqual(resp.status_code, 404)
-        self.assertEqual(resp.json(), {"message": "Not found.", "code": "AE-230000"})
+        self.assertEqual(
+            resp.json(), {"message": "No Job matches the given query.", "code": "AE-230000"}
+        )

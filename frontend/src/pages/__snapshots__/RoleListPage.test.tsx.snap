@@ -132,6 +132,7 @@ exports[`should match snapshot 1`] = `
           >
             <table
               class="MuiTable-root css-rqglhn-MuiTable-root"
+              data-testid="RoleList"
             >
               <thead
                 class="MuiTableHead-root css-15wwp11-MuiTableHead-root"
@@ -143,7 +144,7 @@ exports[`should match snapshot 1`] = `
                     class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-qs7hxv-MuiTableCell-root"
                     scope="col"
                   >
-                    項目
+                    ロール
                   </th>
                   <th
                     class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-qs7hxv-MuiTableCell-root"
@@ -185,7 +186,11 @@ exports[`should match snapshot 1`] = `
                   />
                   <td
                     class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
-                  />
+                  >
+                    <ul
+                      class="MuiList-root MuiList-padding css-1xu392-MuiList-root"
+                    />
+                  </td>
                   <td
                     class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
                   >
@@ -368,6 +373,7 @@ exports[`should match snapshot 1`] = `
         >
           <table
             class="MuiTable-root css-rqglhn-MuiTable-root"
+            data-testid="RoleList"
           >
             <thead
               class="MuiTableHead-root css-15wwp11-MuiTableHead-root"
@@ -379,7 +385,7 @@ exports[`should match snapshot 1`] = `
                   class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-qs7hxv-MuiTableCell-root"
                   scope="col"
                 >
-                  項目
+                  ロール
                 </th>
                 <th
                   class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-qs7hxv-MuiTableCell-root"
@@ -421,7 +427,11 @@ exports[`should match snapshot 1`] = `
                 />
                 <td
                   class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
-                />
+                >
+                  <ul
+                    class="MuiList-root MuiList-padding css-1xu392-MuiList-root"
+                  />
+                </td>
                 <td
                   class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
                 >

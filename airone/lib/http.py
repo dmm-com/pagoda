@@ -13,7 +13,7 @@ from airone.lib.acl import ACLObjType
 from airone.lib.types import AttrTypes, AttrTypeValue
 from entity import models as entity_models
 from entry import models as entry_models
-from job.models import Job, JobOperation
+from job.models import JobOperation, JobStatus
 from user.models import History, User
 
 
@@ -42,7 +42,7 @@ def http_get(func):
     return wrapper
 
 
-def get_obj_with_check_perm(user, model, object_id, permission_level):
+def get_obj_with_check_perm(user: User, model, object_id: int, permission_level):
     target_obj = model.objects.filter(id=object_id).first()
     if not target_obj:
         return (None, HttpResponse("Failed to get entity of specified id", status=400))
@@ -155,7 +155,7 @@ def render(request, template, context={}):
 
     # set constracts for job
     context["JOB"] = {
-        "STATUS": Job.STATUS,
+        "STATUS": {s.name: s.value for s in JobStatus},
         "OPERATION": {
             "CREATE": JobOperation.CREATE_ENTRY.value,
             "EDIT": JobOperation.EDIT_ENTRY.value,

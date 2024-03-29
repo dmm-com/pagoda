@@ -78,9 +78,15 @@ def set_webhook(request, entity_id, recv_data):
 
         # The is_verified parameter will be set True,
         # when requests received HTTP 200 from specifying endpoint.
-        webhook.is_verified = resp.ok
-    except ConnectionError:
+        if resp.ok:
+            webhook.is_verified = True
+            webhook.verification_error_details = None
+        else:
+            webhook.is_verified = False
+            webhook.verification_error_details = resp.reason
+    except ConnectionError as e:
         webhook.is_verified = False
+        webhook.verification_error_details = str(e)
 
     webhook.save()
 

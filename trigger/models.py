@@ -1,3 +1,5 @@
+from typing import TYPE_CHECKING
+
 from django.db import models
 
 from acl.models import ACLBase
@@ -7,7 +9,10 @@ from airone.lib.log import Logger
 from airone.lib.types import AttrType, AttrTypeValue
 from entity.models import Entity, EntityAttr
 from entry.api_v2.serializers import EntryUpdateSerializer
-from entry.models import Entry
+from entry.models import Attribute, Entry
+
+if TYPE_CHECKING:
+    from django.db.models import Manager
 
 
 ## These are internal classes for AirOne trigger and action
@@ -158,81 +163,12 @@ class InputTriggerAction(object):
         return _do_get_value(raw_input_value, self.attr.type)
 
 
-class TriggerAction(models.Model):
-    condition = models.ForeignKey("TriggerParent", on_delete=models.CASCADE, related_name="actions")
-    attr = models.ForeignKey("entity.EntityAttr", on_delete=models.CASCADE)
-
-    def save_actions(self, input: InputTriggerAction):
-        for input_action_value in input.values:
-            params = {
-                "action": self,
-                "str_cond": input_action_value.str_cond,
-                "ref_cond": input_action_value.ref_cond,
-                "bool_cond": input_action_value.bool_cond,
-            }
-            TriggerActionValue.objects.create(**params)
-
-    def get_serializer_acceptable_value(self, value=None, attr_type=None):
-        """
-        This converts TriggerActionValue to the value that EntryUpdateSerializer can accept.
-        """
-        if not attr_type:
-            attr_type = self.attr.type
-
-        value = value or self.values.first()
-        if attr_type & AttrTypeValue["array"]:
-            return [
-                self.get_serializer_acceptable_value(x, attr_type ^ AttrTypeValue["array"])
-                for x in self.values.all()
-            ]
-        elif attr_type == AttrTypeValue["boolean"]:
-            return value.bool_cond
-        elif attr_type == AttrTypeValue["named_object"]:
-            value.ref_cond.id if isinstance(value.ref_cond, Entry) else None
-            return {
-                "name": value.str_cond,
-                "id": value.ref_cond.id,
-            }
-        elif attr_type == AttrTypeValue["string"]:
-            return value.str_cond
-        elif attr_type == AttrTypeValue["text"]:
-            return value.str_cond
-        elif attr_type == AttrTypeValue["object"]:
-            return value.ref_cond.id if isinstance(value.ref_cond, Entry) else None
-
-    def run(self, user, entry, call_stacks=[]):
-        # When self.id contains in call_stacks, it means that this action is already invoked.
-        # This prevents infinite loop.
-        if self.id in call_stacks:
-            return
-
-        # update specified Entry by configured attribute value
-        setting_data = {
-            "id": entry.id,
-            "name": entry.name,
-            "attrs": [{"id": self.attr.id, "value": self.get_serializer_acceptable_value()}],
-            "delay_trigger": False,
-            "call_stacks": [*call_stacks, self.id],
-        }
-        serializer = EntryUpdateSerializer(
-            instance=entry, data=setting_data, context={"request": DRFRequest(user)}
-        )
-        if serializer:
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
-
-
-class TriggerActionValue(models.Model):
-    action = models.ForeignKey(TriggerAction, on_delete=models.CASCADE, related_name="values")
-    str_cond = models.TextField(blank=True, null=True)
-    ref_cond = models.ForeignKey("entry.Entry", on_delete=models.SET_NULL, null=True, blank=True)
-    bool_cond = models.BooleanField(default=False)
-
-    # TODO: Add method to register value to Attribute when action is invoked
-
-
 class TriggerParent(models.Model):
     entity = models.ForeignKey("entity.Entity", on_delete=models.CASCADE)
+
+    if TYPE_CHECKING:
+        conditions: Manager["TriggerCondition"]
+        actions: Manager["TriggerAction"]
 
     def is_match_condition(self, inputs: list[InputTriggerCondition]):
         if all([c.is_same_condition(inputs) for c in self.conditions.all()]):
@@ -251,7 +187,7 @@ class TriggerParent(models.Model):
             if not TriggerCondition.objects.filter(**params).exists():
                 TriggerCondition.objects.create(**params)
 
-    def get_actions(self, recv_attrs: list) -> list[TriggerAction]:
+    def get_actions(self, recv_attrs: list) -> list["TriggerAction"]:
         """
         This method checks whether specified entity's Trigger is invoked by recv_attrs context.
         The recv_attrs format should be compatible with APIv2 standard.
@@ -261,7 +197,7 @@ class TriggerParent(models.Model):
         context to reduce DB query to get it from Attribute instance.
         """
 
-        def _is_match(condition):
+        def _is_match(condition: TriggerCondition):
             for attr_info in [x for x in recv_attrs if x["attr_id"] == condition.attr.id]:
                 if condition.is_match_condition(attr_info["value"]):
                     return True
@@ -481,7 +417,15 @@ class TriggerCondition(models.Model):
         # with both API versions.
         if all(["entity_attr_id" in x for x in recv_data]):
             # This is for APIv1
-            params = [{"attr_id": int(x["entity_attr_id"]), "value": x["value"]} for x in recv_data]
+            params = []
+            for data in recv_data:
+                if data["entity_attr_id"]:
+                    entity_attr = EntityAttr.objects.filter(id=data["entity_attr_id"]).first()
+                else:
+                    attr = Attribute.objects.filter(id=data["id"]).first()
+                    entity_attr = attr.schema if attr else None
+                attr_id = int(entity_attr.id) if entity_attr else 0
+                params.append({"attr_id": attr_id, "value": data["value"]})
         else:
             # This is for APIv2
             params = [{"attr_id": int(x["id"]), "value": x["value"]} for x in recv_data]
@@ -491,3 +435,79 @@ class TriggerCondition(models.Model):
             actions += parent_condition.get_actions(params)
 
         return actions
+
+
+class TriggerAction(models.Model):
+    condition = models.ForeignKey(TriggerParent, on_delete=models.CASCADE, related_name="actions")
+    attr = models.ForeignKey("entity.EntityAttr", on_delete=models.CASCADE)
+
+    if TYPE_CHECKING:
+        values: Manager["TriggerActionValue"]
+
+    def save_actions(self, input: InputTriggerAction):
+        for input_action_value in input.values:
+            params = {
+                "action": self,
+                "str_cond": input_action_value.str_cond,
+                "ref_cond": input_action_value.ref_cond,
+                "bool_cond": input_action_value.bool_cond,
+            }
+            TriggerActionValue.objects.create(**params)
+
+    def get_serializer_acceptable_value(self, value=None, attr_type=None):
+        """
+        This converts TriggerActionValue to the value that EntryUpdateSerializer can accept.
+        """
+        if not attr_type:
+            attr_type = self.attr.type
+
+        value = value or self.values.first()
+        if attr_type & AttrTypeValue["array"]:
+            return [
+                self.get_serializer_acceptable_value(x, attr_type ^ AttrTypeValue["array"])
+                for x in self.values.all()
+            ]
+        elif attr_type == AttrTypeValue["boolean"]:
+            return value.bool_cond
+        elif attr_type == AttrTypeValue["named_object"]:
+            value.ref_cond.id if isinstance(value.ref_cond, Entry) else None
+            return {
+                "name": value.str_cond,
+                "id": value.ref_cond.id,
+            }
+        elif attr_type == AttrTypeValue["string"]:
+            return value.str_cond
+        elif attr_type == AttrTypeValue["text"]:
+            return value.str_cond
+        elif attr_type == AttrTypeValue["object"]:
+            return value.ref_cond.id if isinstance(value.ref_cond, Entry) else None
+
+    def run(self, user, entry, call_stacks=[]):
+        # When self.id contains in call_stacks, it means that this action is already invoked.
+        # This prevents infinite loop.
+        if self.id in call_stacks:
+            return
+
+        # update specified Entry by configured attribute value
+        setting_data = {
+            "id": entry.id,
+            "name": entry.name,
+            "attrs": [{"id": self.attr.id, "value": self.get_serializer_acceptable_value()}],
+            "delay_trigger": False,
+            "call_stacks": [*call_stacks, self.id],
+        }
+        serializer = EntryUpdateSerializer(
+            instance=entry, data=setting_data, context={"request": DRFRequest(user)}
+        )
+        if serializer:
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+
+
+class TriggerActionValue(models.Model):
+    action = models.ForeignKey(TriggerAction, on_delete=models.CASCADE, related_name="values")
+    str_cond = models.TextField(blank=True, null=True)
+    ref_cond = models.ForeignKey("entry.Entry", on_delete=models.SET_NULL, null=True, blank=True)
+    bool_cond = models.BooleanField(default=False)
+
+    # TODO: Add method to register value to Attribute when action is invoked

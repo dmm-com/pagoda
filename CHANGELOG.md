@@ -8,6 +8,57 @@
 
 ### Fixed
 
+## v3.83.0
+
+### Added
+* Added new feature that user can get referred Item's contents that an Item
+  of advanced search result refers to from advanced search result page.
+  Contributed by @userlocalhost, @hinashi
+
+### Changed
+* Upgrade DRF version from v3.11.2 to v3.15.1
+  Contributed by @syucream
+
+## v3.82.0
+
+### Added
+* Enable to check verification error details on webhooks by users.
+  Contributed by @syucream
+
+### Changed
+* Use enum on the job status.
+  Contributed by @syucream
+
+## v3.81.0
+
+### Changed
+* Support celery task for entry APIv2.
+  Contributed by @syucream
+
+## v3.80.0
+
+### Changed
+* Add privileged mode at DRF serializer of Entry mainly for custom_view processing
+  Contributed by @userlocalhost
+* Improve job class with type hints and enum
+  Contributed by @syucream
+
+## v3.79.0
+
+### Fixed
+* Fix description for isTopLevel.
+  Contributed by @syucream
+
+## v3.78.0
+
+### Changed
+* Renamed frontend page component.
+  Contributed by @syucream
+
+### Fixed
+* Fixed invoke trigger failure with do_edit.
+  Contributed by @hinashi
+
 ## v3.77.0
 
 ### Changed

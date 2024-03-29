@@ -26,7 +26,7 @@ from entity.models import Entity
 from entry.models import Attribute, AttributeValue, Entry
 from entry.utils import get_sort_order
 from group.models import Group
-from job.models import Job
+from job.models import Job, JobStatus
 from role.models import Role
 from user.models import User
 
@@ -459,7 +459,7 @@ def export(request, entity_id, recv_data):
         job_params["export_format"] = "csv"
 
     # check whether same job is sent
-    job_status_not_finished = [Job.STATUS["PREPARING"], Job.STATUS["PROCESSING"]]
+    job_status_not_finished = [JobStatus.PREPARING.value, JobStatus.PROCESSING.value]
     if (
         Job.get_job_with_params(request.user, job_params)
         .filter(status__in=job_status_not_finished)
@@ -496,7 +496,7 @@ def import_data(request, entity_id):
 
 
 @http_file_upload
-def do_import_data(request, entity_id, context):
+def do_import_data(request, entity_id: int, context):
     user: User = request.user
     entity: Entity
     entity, error = get_obj_with_check_perm(user, Entity, entity_id, ACLType.Writable)

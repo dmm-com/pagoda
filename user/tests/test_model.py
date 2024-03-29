@@ -1,8 +1,8 @@
+from django.conf import settings
 from django.test import TestCase
 from rest_framework.authtoken.models import Token
 from social_django.models import UserSocialAuth
 
-from airone import settings
 from airone.lib.acl import ACLType
 from airone.lib.types import AttrTypeValue
 from entity.models import Entity, EntityAttr

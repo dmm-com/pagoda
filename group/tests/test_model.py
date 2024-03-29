@@ -1,4 +1,5 @@
-from airone import settings
+from django.conf import settings
+
 from airone.lib.test import AironeTestCase
 from airone.lib.types import AttrTypeValue
 from entry.models import Entry

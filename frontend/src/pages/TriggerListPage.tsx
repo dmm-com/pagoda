@@ -242,7 +242,7 @@ export const TriggerListPage: FC = () => {
             <Loading />
           ) : (
             <>
-              <Table>
+              <Table data-testid="TriggerList">
                 <TableHead>
                   <HeaderTableRow>
                     <HeaderTableCell width="200px">

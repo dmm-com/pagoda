@@ -2,8 +2,9 @@ import json
 import pickle
 import time
 from datetime import date, datetime, timedelta
-from enum import Enum
+from enum import IntEnum
 from importlib import import_module
+from typing import Any
 
 import pytz
 from django.conf import settings
@@ -25,7 +26,7 @@ def _support_time_default(o):
     raise TypeError(repr(o) + " is not JSON serializable")
 
 
-class JobOperation(Enum):
+class JobOperation(IntEnum):
     # Constant to describes status of each jobs
     CREATE_ENTRY = 1
     EDIT_ENTRY = 2
@@ -50,6 +51,28 @@ class JobOperation(Enum):
     UPDATE_DOCUMENT = 21
     EXPORT_SEARCH_RESULT_V2 = 22
     MAY_INVOKE_TRIGGER = 23
+    CREATE_ENTITY_V2 = 24
+    EDIT_ENTITY_V2 = 25
+    DELETE_ENTITY_V2 = 26
+    CREATE_ENTRY_V2 = 27
+    EDIT_ENTRY_V2 = 28
+    DELETE_ENTRY_V2 = 29
+
+
+class JobTarget(IntEnum):
+    UNKNOWN = 0
+    ENTRY = 1
+    ENTITY = 2
+
+
+class JobStatus(IntEnum):
+    PREPARING = 1
+    DONE = 2
+    ERROR = 3
+    TIMEOUT = 4
+    PROCESSING = 5
+    CANCELED = 6
+    WARNING = 7
 
 
 class Job(models.Model):
@@ -73,21 +96,6 @@ class Job(models.Model):
 
     # This hash table describes operation status value and operation processing
     _METHOD_TABLE = {}
-
-    # TODO: these constants should be changed as dict value like STATUS for maintainability
-    TARGET_UNKNOWN = 0
-    TARGET_ENTRY = 1
-    TARGET_ENTITY = 2
-
-    STATUS = {
-        "PREPARING": 1,
-        "DONE": 2,
-        "ERROR": 3,
-        "TIMEOUT": 4,
-        "PROCESSING": 5,
-        "CANCELED": 6,
-        "WARNING": 7,
-    }
 
     # In some jobs sholdn't make user aware of existence because of user experience
     # (e.g. re-registrating elasticsearch data of entries which refer to changed name entry).
@@ -181,11 +189,11 @@ class Job(models.Model):
 
         # This value indicates that there is no more processing for a job
         finished_status = [
-            Job.STATUS["DONE"],
-            Job.STATUS["ERROR"],
-            Job.STATUS["TIMEOUT"],
-            Job.STATUS["CANCELED"],
-            Job.STATUS["WARNING"],
+            JobStatus.DONE.value,
+            JobStatus.ERROR.value,
+            JobStatus.TIMEOUT.value,
+            JobStatus.CANCELED.value,
+            JobStatus.WARNING.value,
         ]
 
         return self.status in finished_status or self.is_timeout()
@@ -194,11 +202,11 @@ class Job(models.Model):
         # Sync status flag information with the data which is stored in database
         self.refresh_from_db(fields=["status"])
 
-        return self.status == Job.STATUS["CANCELED"]
+        return self.status == JobStatus.CANCELED.value
 
     def proceed_if_ready(self):
         # In this case, job is finished (might be canceled or proceeded same job by other process)
-        if self.is_finished() or self.status == Job.STATUS["PROCESSING"]:
+        if self.is_finished() or self.status == JobStatus.PROCESSING.value:
             return False
 
         # This checks whether dependent job is and it hasn't finished yet.
@@ -207,10 +215,10 @@ class Job(models.Model):
 
         return True
 
-    def update(self, status=None, text=None, target=None, operation=None):
+    def update(self, status: int | None = None, text=None, target=None, operation=None):
         update_fields = ["updated_at"]
 
-        if status is not None and status in Job.STATUS.values():
+        if status is not None and status in [s.value for s in JobStatus]:
             update_fields.append("status")
             self.status = status
 
@@ -228,7 +236,7 @@ class Job(models.Model):
 
         self.save(update_fields=update_fields)
 
-    def to_json(self):
+    def to_json(self) -> dict:
         # For advanced search results export, target is assumed to be empty.
         return {
             "id": self.id,
@@ -262,12 +270,20 @@ class Job(models.Model):
             return method(self.id)
 
     @classmethod
-    def _create_new_job(kls, user, target, operation, text, params, depend_on=None) -> "Job":
-        t_type = kls.TARGET_UNKNOWN
+    def _create_new_job(
+        kls,
+        user: User,
+        target: Entity | Entry | Any,
+        operation: int,
+        text: str | None,
+        params,
+        depend_on=None,
+    ) -> "Job":
+        t_type = JobTarget.UNKNOWN.value
         if isinstance(target, Entry):
-            t_type = kls.TARGET_ENTRY
+            t_type = JobTarget.ENTRY.value
         elif isinstance(target, Entity):
-            t_type = kls.TARGET_ENTITY
+            t_type = JobTarget.ENTITY.value
 
         # set dependent job to prevent running tasks simultaneously which set to target same one.
         dependent_job = None
@@ -288,7 +304,7 @@ class Job(models.Model):
             "user": user,
             "target": target,
             "target_type": t_type,
-            "status": kls.STATUS["PREPARING"],
+            "status": JobStatus.PREPARING.value,
             "operation": operation,
             "text": text,
             "params": params,
@@ -338,6 +354,12 @@ class Job(models.Model):
                 JobOperation.UPDATE_DOCUMENT.value: entry_task.update_es_documents,
                 JobOperation.EXPORT_SEARCH_RESULT_V2.value: entry_task.export_search_result_v2,
                 JobOperation.MAY_INVOKE_TRIGGER.value: trigger_task.may_invoke_trigger,
+                JobOperation.CREATE_ENTITY_V2.value: entity_task.create_entity_v2,
+                JobOperation.EDIT_ENTITY_V2.value: entity_task.edit_entity_v2,
+                JobOperation.DELETE_ENTITY_V2.value: entity_task.delete_entity_v2,
+                JobOperation.CREATE_ENTRY_V2.value: entry_task.create_entry_v2,
+                JobOperation.EDIT_ENTRY_V2.value: entry_task.edit_entry_v2,
+                JobOperation.DELETE_ENTRY_V2.value: entry_task.delete_entry_v2,
             }
 
         return kls._METHOD_TABLE
@@ -538,6 +560,66 @@ class Job(models.Model):
             "",
             json.dumps(recv_attrs),
             dependent_job,
+        )
+
+    @classmethod
+    def new_create_entity_v2(kls, user, target, text="", params={}):
+        return kls._create_new_job(
+            user,
+            target,
+            JobOperation.CREATE_ENTITY_V2.value,
+            text,
+            json.dumps(params, default=_support_time_default, sort_keys=True),
+        )
+
+    @classmethod
+    def new_edit_entity_v2(kls, user, target: Entity, text="", params={}):
+        return kls._create_new_job(
+            user,
+            target,
+            JobOperation.EDIT_ENTITY_V2.value,
+            text,
+            json.dumps(params, default=_support_time_default, sort_keys=True),
+        )
+
+    @classmethod
+    def new_delete_entity_v2(kls, user, target: Entity, text="", params={}):
+        return kls._create_new_job(
+            user,
+            target,
+            JobOperation.DELETE_ENTITY_V2.value,
+            text,
+            json.dumps(params, default=_support_time_default, sort_keys=True),
+        )
+
+    @classmethod
+    def new_create_entry_v2(kls, user, target, text="", params={}):
+        return kls._create_new_job(
+            user,
+            target,
+            JobOperation.CREATE_ENTRY_V2.value,
+            text,
+            json.dumps(params, default=_support_time_default, sort_keys=True),
+        )
+
+    @classmethod
+    def new_edit_entry_v2(kls, user, target: Entry, text="", params={}):
+        return kls._create_new_job(
+            user,
+            target,
+            JobOperation.EDIT_ENTRY_V2.value,
+            text,
+            json.dumps(params, default=_support_time_default, sort_keys=True),
+        )
+
+    @classmethod
+    def new_delete_entry_v2(kls, user, target: Entry, text="", params={}):
+        return kls._create_new_job(
+            user,
+            target,
+            JobOperation.DELETE_ENTRY_V2.value,
+            text,
+            json.dumps(params, default=_support_time_default, sort_keys=True),
         )
 
     def set_cache(self, value):

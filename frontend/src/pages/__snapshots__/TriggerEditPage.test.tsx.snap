@@ -45,9 +45,9 @@ exports[`EditTriggerPage should match snapshot 1`] = `
                   >
                     <a
                       class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
-                      href="/ui/entities"
+                      href="/ui/triggers"
                     >
-                      エンティティ一覧
+                      トリガー管理
                     </a>
                   </li>
                   <li
@@ -62,7 +62,7 @@ exports[`EditTriggerPage should match snapshot 1`] = `
                     <p
                       class="MuiTypography-root MuiTypography-body1 css-1gqyz35-MuiTypography-root"
                     >
-                      作成
+                      編集
                     </p>
                   </li>
                 </ol>
@@ -243,9 +243,9 @@ exports[`EditTriggerPage should match snapshot 1`] = `
                 >
                   <a
                     class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
-                    href="/ui/entities"
+                    href="/ui/triggers"
                   >
-                    エンティティ一覧
+                    トリガー管理
                   </a>
                 </li>
                 <li
@@ -260,7 +260,7 @@ exports[`EditTriggerPage should match snapshot 1`] = `
                   <p
                     class="MuiTypography-root MuiTypography-body1 css-1gqyz35-MuiTypography-root"
                   >
-                    作成
+                    編集
                   </p>
                 </li>
               </ol>
