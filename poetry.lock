@@ -1358,6 +1358,20 @@ htmlsoup = ["BeautifulSoup4"]
 source = ["Cython (>=3.0.10)"]
 
 [[package]]
+name = "lxml-html-clean"
+version = "0.1.0"
+description = "HTML cleaner from lxml project"
+optional = false
+python-versions = "*"
+files = [
+    {file = "lxml_html_clean-0.1.0-py3-none-any.whl", hash = "sha256:f21a33d279eb3bddd336ebfa0c73d3d5b359dbfa8113014f7d1f2d8738fdc305"},
+    {file = "lxml_html_clean-0.1.0.tar.gz", hash = "sha256:003b61437129b2df4f6f6455e20f5f57707828e2067bc5524d0142e240bb4cd1"},
+]
+
+[package.dependencies]
+lxml = "*"
+
+[[package]]
 name = "markuppy"
 version = "1.14"
 description = "An HTML/XML generator"
@@ -2853,4 +2867,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "ba36cd4a0eb1d0754e04066d4e84bdff6995eb99ac4eb01f83c305c5dfbe6312"
+content-hash = "37dbb31e2bd863ef4c7c27610bf50aedc9673f88a2273b12e606a3b9cba99f0e"
