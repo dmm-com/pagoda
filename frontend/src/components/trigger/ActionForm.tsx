@@ -20,7 +20,6 @@ import {
   TableCell,
   TableRow,
   TextField,
-  Typography,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import React, { FC } from "react";
@@ -84,9 +83,6 @@ const FlexBox = styled(Box)(({}) => ({
 }));
 const NameBox = styled(Box)(({}) => ({
   width: "150px",
-}));
-const StyledTypography = styled(Typography)(({}) => ({
-  color: "rgba(0, 0, 0, 0.6)",
 }));
 const StyledList = styled(List)(({}) => ({
   padding: "0",
