@@ -5,7 +5,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from job.models import Job, JobOperation
+from job.models import Job, JobOperation, JobStatus
 from job.settings import CONFIG as JOB_CONFIG
 
 
@@ -18,27 +18,27 @@ class JobAPI(APIView):
 
         constant = {
             "status": {
-                "processing": Job.STATUS["PROCESSING"],
-                "done": Job.STATUS["DONE"],
-                "error": Job.STATUS["ERROR"],
-                "timeout": Job.STATUS["TIMEOUT"],
+                "processing": JobStatus.PROCESSING,
+                "done": JobStatus.DONE,
+                "error": JobStatus.ERROR,
+                "timeout": JobStatus.TIMEOUT,
             },
             "operation": {
-                "create": JobOperation.CREATE_ENTRY.value,
-                "edit": JobOperation.EDIT_ENTRY.value,
-                "delete": JobOperation.DELETE_ENTRY.value,
-                "copy": JobOperation.COPY_ENTRY.value,
-                "do_copy": JobOperation.DO_COPY_ENTRY.value,
-                "import": JobOperation.IMPORT_ENTRY.value,
-                "import_v2": JobOperation.IMPORT_ENTRY_V2.value,
-                "export": JobOperation.EXPORT_ENTRY.value,
-                "export_v2": JobOperation.EXPORT_ENTRY_V2.value,
-                "export_search_result": JobOperation.EXPORT_SEARCH_RESULT.value,
-                "export_search_result_v2": JobOperation.EXPORT_SEARCH_RESULT_V2.value,
-                "restore": JobOperation.RESTORE_ENTRY.value,
-                "create_entity": JobOperation.CREATE_ENTITY.value,
-                "edit_entity": JobOperation.EDIT_ENTITY.value,
-                "delete_entity": JobOperation.DELETE_ENTITY.value,
+                "create": JobOperation.CREATE_ENTRY,
+                "edit": JobOperation.EDIT_ENTRY,
+                "delete": JobOperation.DELETE_ENTRY,
+                "copy": JobOperation.COPY_ENTRY,
+                "do_copy": JobOperation.DO_COPY_ENTRY,
+                "import": JobOperation.IMPORT_ENTRY,
+                "import_v2": JobOperation.IMPORT_ENTRY_V2,
+                "export": JobOperation.EXPORT_ENTRY,
+                "export_v2": JobOperation.EXPORT_ENTRY_V2,
+                "export_search_result": JobOperation.EXPORT_SEARCH_RESULT,
+                "export_search_result_v2": JobOperation.EXPORT_SEARCH_RESULT_V2,
+                "restore": JobOperation.RESTORE_ENTRY,
+                "create_entity": JobOperation.CREATE_ENTITY,
+                "edit_entity": JobOperation.EDIT_ENTITY,
+                "delete_entity": JobOperation.DELETE_ENTITY,
             },
         }
 
@@ -72,14 +72,14 @@ class JobAPI(APIView):
                 "Failed to find Job(id=%s)" % job_id, status=status.HTTP_400_BAD_REQUEST
             )
 
-        if job.status == Job.STATUS["DONE"]:
+        if job.status == JobStatus.DONE:
             return Response("Target job has already been done")
 
         if job.operation not in Job.CANCELABLE_OPERATIONS:
             return Response("Target job cannot be canceled", status=status.HTTP_400_BAD_REQUEST)
 
         # update job.status to be canceled
-        job.update(Job.STATUS["CANCELED"])
+        job.update(JobStatus.CANCELED)
 
         return Response("Success to cancel job")
 
@@ -93,9 +93,9 @@ class SpecificJobAPI(APIView):
             )
 
         # check job status before starting processing
-        if job.status == Job.STATUS["DONE"]:
+        if job.status == JobStatus.DONE:
             return Response("Target job has already been done")
-        elif job.status == Job.STATUS["PROCESSING"]:
+        elif job.status == JobStatus.PROCESSING:
             return Response("Target job is under processing", status=status.HTTP_400_BAD_REQUEST)
 
         # check job target status

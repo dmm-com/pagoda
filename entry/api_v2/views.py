@@ -9,6 +9,7 @@ from rest_framework import generics, serializers, status, viewsets
 from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import BasePermission, IsAuthenticated
+from rest_framework.request import Request
 from rest_framework.response import Response
 
 import custom_view
@@ -21,7 +22,7 @@ from airone.lib.drf import (
     RequiredParameterError,
     YAMLParser,
 )
-from airone.lib.types import AttrTypeValue
+from airone.lib.types import AttrType, AttrTypeValue
 from entity.models import Entity, EntityAttr
 from entry.api_v2.pagination import EntryReferralPagination
 from entry.api_v2.serializers import (
@@ -42,37 +43,13 @@ from entry.models import Attribute, AttributeValue, Entry
 from entry.settings import CONFIG
 from entry.settings import CONFIG as ENTRY_CONFIG
 from group.models import Group
-from job.models import Job, JobOperation
+from job.models import Job, JobOperation, JobStatus
 from role.models import Role
 from user.models import User
 
 
-def delete_entry_with_notifucation(user, entry):
-    """
-    This implements whole processing related with Entry's deletion such as
-    - running custom_view processing
-    - invoking job about notification
-    """
-
-    if custom_view.is_custom("before_delete_entry_v2", entry.schema.name):
-        custom_view.call_custom("before_delete_entry_v2", entry.schema.name, user, entry)
-
-    # register operation History for deleting entry
-    user.seth_entry_del(entry)
-
-    # delete entry
-    entry.delete(deleted_user=user)
-
-    if custom_view.is_custom("after_delete_entry_v2", entry.schema.name):
-        custom_view.call_custom("after_delete_entry_v2", entry.schema.name, user, entry)
-
-    # Send notification to the webhook URL
-    job_notify: Job = Job.new_notify_delete_entry(user, entry)
-    job_notify.run()
-
-
 class EntryPermission(BasePermission):
-    def has_object_permission(self, request, view, obj):
+    def has_object_permission(self, request: Request, view, obj) -> bool:
         user: User = request.user
         permisson = {
             "retrieve": ACLType.Readable,
@@ -97,24 +74,40 @@ class EntryAPI(viewsets.ModelViewSet):
     def get_serializer_class(self):
         serializer = {
             "retrieve": EntryRetrieveSerializer,
-            "update": EntryUpdateSerializer,
+            "update": serializers.Serializer,
             "copy": EntryCopySerializer,
             "list": EntryHistoryAttributeValueSerializer,
         }
         return serializer.get(self.action, EntryBaseSerializer)
 
-    def destroy(self, request, pk):
+    @extend_schema(request=EntryUpdateSerializer)
+    def update(self, request: Request, *args, **kwargs) -> Response:
+        user: User = request.user
+        entry: Entry = self.get_object()
+
+        serializer = EntryUpdateSerializer(
+            instance=entry, data=request.data, context={"_user": user}
+        )
+        serializer.is_valid(raise_exception=True)
+
+        job = Job.new_edit_entry_v2(user, entry, params=request.data)
+        job.run()
+
+        return Response(status=status.HTTP_202_ACCEPTED)
+
+    def destroy(self, request: Request, *args, **kwargs) -> Response:
         entry: Entry = self.get_object()
         if not entry.is_active:
             raise ObjectNotExistsError("specified entry has already been deleted")
 
         user: User = request.user
 
-        delete_entry_with_notifucation(user, entry)
+        job: Job = Job.new_delete_entry_v2(user, entry)
+        job.run()
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-    def restore(self, request, pk):
+    def restore(self, request: Request, *args, **kwargs) -> Response:
         entry: Entry = self.get_object()
 
         if entry.is_active:
@@ -148,7 +141,7 @@ class EntryAPI(viewsets.ModelViewSet):
 
         return Response({}, status=status.HTTP_201_CREATED)
 
-    def copy(self, request, pk):
+    def copy(self, request: Request, *args, **kwargs) -> Response:
         src_entry: Entry = self.get_object()
 
         if not src_entry.is_active:
@@ -171,7 +164,7 @@ class EntryAPI(viewsets.ModelViewSet):
         return Response({}, status=status.HTTP_200_OK)
 
     # histories view
-    def list(self, request, pk):
+    def list(self, request: Request, *args, **kwargs) -> Response:
         user: User = self.request.user
         entry: Entry = self.get_object()
 
@@ -190,7 +183,7 @@ class EntryAPI(viewsets.ModelViewSet):
             .select_related("parent_attr")
         )
 
-        return super(EntryAPI, self).list(request, pk)
+        return super(EntryAPI, self).list(request, *args, **kwargs)
 
 
 @extend_schema(
@@ -223,7 +216,7 @@ class AdvancedSearchAPI(generics.GenericAPIView):
         request=AdvancedSearchSerializer,
         responses=AdvancedSearchResultSerializer,
     )
-    def post(self, request, format=None):
+    def post(self, request: Request) -> Response:
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
@@ -236,6 +229,69 @@ class AdvancedSearchAPI(generics.GenericAPIView):
         is_all_entities = serializer.validated_data["is_all_entities"]
         entry_limit = serializer.validated_data["entry_limit"]
         entry_offset = serializer.validated_data["entry_offset"]
+        join_attrs = serializer.validated_data.get("join_attrs", [])
+
+        def _get_joined_resp(prev_results, join_attr):
+            """
+            This is a helper method for join_attrs that will get specified attr values
+            that prev_result's ones refer to.
+            """
+            # set hint_entity_ids for joining Items search and get item names
+            # that specified attribute refers
+            item_names = []
+            hint_entity_ids = []
+            for result in prev_results:
+                entity = Entity.objects.filter(id=result["entity"]["id"]).last()
+                if entity is None:
+                    continue
+
+                attr = entity.attrs.filter(name=join_attr["name"], is_active=True).last()
+                if attr is None:
+                    continue
+
+                if attr.type == AttrTypeValue["object"]:
+                    # set hint Model ID
+                    hint_entity_ids += [x.id for x in attr.referral.filter(is_active=True)]
+
+                    # set Item name
+                    attrinfo = result["attrs"][join_attr["name"]]
+                    if attrinfo["value"]["name"] not in item_names:
+                        item_names.append(attrinfo["value"]["name"])
+
+            # set parameters to filter joining search results
+            hint_attrs = []
+            for attrinfo in join_attr.get("attrinfo", []):
+                hint_attrs.append(
+                    {
+                        "name": attrinfo["name"],
+                        "keyword": attrinfo.get("keyword"),
+                        "filter_key": attrinfo.get("filter_key"),
+                    }
+                )
+
+            # search Items from elasticsearch to join
+            return (
+                # This represents whether user want to narrow down results by keyword of joined attr
+                any(
+                    [
+                        x.get("keyword") or x.get("filter_key", 0) > 0
+                        for x in join_attr.get("attrinfo", [])
+                    ]
+                ),
+                Entry.search_entries(
+                    request.user,
+                    hint_entity_ids=list(set(hint_entity_ids)),  # this removes depulicated IDs
+                    hint_attrs=hint_attrs,
+                    limit=entry_limit,
+                    entry_name="|".join(item_names),
+                    hint_referral=None,
+                    is_output_all=is_output_all,
+                    hint_referral_entity_id=None,
+                    offset=join_attr.get("offset", 0),
+                ),
+            )
+
+        # === End of Function: _get_joined_resp() ===
 
         if not has_referral:
             hint_referral = None
@@ -279,6 +335,65 @@ class AdvancedSearchAPI(generics.GenericAPIView):
             is_output_all,
             offset=entry_offset,
         )
+
+        for join_attr in join_attrs:
+            (will_filter_by_joined_attr, joined_resp) = _get_joined_resp(
+                resp["ret_values"], join_attr
+            )
+
+            # This is needed to set result as blank value
+            blank_joining_info = {
+                "%s.%s" % (join_attr["name"], k["name"]): {
+                    "is_readable": True,
+                    "type": AttrType.STRING,
+                    "value": "",
+                }
+                for k in join_attr["attrinfo"]
+            }
+
+            # convert search result to dict to be able to handle it without loop
+            joined_resp_info = {
+                x["entry"]["id"]: {
+                    "%s.%s" % (join_attr["name"], k): v
+                    for k, v in x["attrs"].items()
+                    if any(_x["name"] == k for _x in join_attr["attrinfo"])
+                }
+                for x in joined_resp["ret_values"]
+            }
+
+            # this inserts result to previous search result
+            new_ret_values = []
+            for resp_result in resp["ret_values"]:
+                ref_info = resp_result["attrs"].get(join_attr["name"])
+                if (
+                    # ignore no joined data
+                    ref_info is None
+                    or
+                    # ignore unexpected typed attributes
+                    ref_info["type"] != AttrType.OBJECT
+                    or
+                    # ignore when original result doesn't refer any item
+                    ref_info["value"].get("id") is None
+                ):
+                    # join EMPTY value
+                    resp_result["attrs"] |= blank_joining_info  # type: ignore
+
+                # joining search result to original one
+                ref_id = ref_info["value"].get("id") if "value" in ref_info is not None else None  # type: ignore
+                if ref_id and ref_id in joined_resp_info:  # type: ignore
+                    # join valid value
+                    resp_result["attrs"] |= joined_resp_info[ref_id]
+
+                    # collect only the result that matches with keyword of joined_attr parameter
+                    new_ret_values.append(resp_result)
+
+                else:
+                    # join EMPTY value
+                    resp_result["attrs"] |= blank_joining_info  # type: ignore
+
+            if will_filter_by_joined_attr:
+                resp["ret_values"] = new_ret_values
+                resp["ret_count"] = len(new_ret_values)
 
         # convert field values to fit entry retrieve API data type, as a workaround.
         # FIXME should be replaced with DRF serializer etc
@@ -361,7 +476,7 @@ class AdvancedSearchAPI(generics.GenericAPIView):
 class AdvancedSearchResultAPI(generics.GenericAPIView):
     serializer_class = AdvancedSearchResultExportSerializer
 
-    def post(self, request):
+    def post(self, request: Request) -> Response:
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
@@ -400,7 +515,7 @@ class EntryReferralAPI(viewsets.ReadOnlyModelViewSet):
 class EntryExportAPI(generics.GenericAPIView):
     serializer_class = EntryExportSerializer
 
-    def post(self, request, entity_id: int):
+    def post(self, request: Request, entity_id: int) -> Response:
         if not Entity.objects.filter(id=entity_id).exists():
             return Response(
                 "Failed to get entity of specified id", status=status.HTTP_400_BAD_REQUEST
@@ -418,7 +533,7 @@ class EntryExportAPI(generics.GenericAPIView):
         }
 
         # check whether same job is sent
-        job_status_not_finished = [Job.STATUS["PREPARING"], Job.STATUS["PROCESSING"]]
+        job_status_not_finished = [JobStatus.PREPARING, JobStatus.PROCESSING]
         if (
             Job.get_job_with_params(request.user, job_params)
             .filter(status__in=job_status_not_finished)
@@ -504,7 +619,7 @@ class EntryImportAPI(generics.GenericAPIView):
         entity_names = [d["entity"] for d in import_data]
         return Entity.objects.filter(name__in=entity_names, is_active=True)
 
-    def post(self, request):
+    def post(self, request: Request) -> Response:
         import_datas = request.data
         user: User = request.user
         serializer = EntryImportSerializer(data=import_datas)
@@ -513,11 +628,15 @@ class EntryImportAPI(generics.GenericAPIView):
 
         # limit import job to deny accidental frequent import for same entity
         if request.query_params.get("force", "") not in ["true", "True"]:
-            valid_statuses = [Job.STATUS["PREPARING"], Job.STATUS["PROCESSING"], Job.STATUS["DONE"]]
+            valid_statuses: list[JobStatus] = [
+                JobStatus.PREPARING,
+                JobStatus.PROCESSING,
+                JobStatus.DONE,
+            ]
             yesterday = datetime.now() - timedelta(days=1)
             if Job.objects.filter(
                 status__in=valid_statuses,
-                operation=JobOperation.IMPORT_ENTRY_V2.value,
+                operation=JobOperation.IMPORT_ENTRY_V2,
                 target__in=entities,
                 created_at__gte=yesterday,
             ).exists():
@@ -562,7 +681,7 @@ class EntryAttributeValueRestoreAPI(generics.UpdateAPIView):
     ],
 )
 class EntryBulkDeleteAPI(generics.DestroyAPIView):
-    def delete(self, request, *args, **kwargs):
+    def delete(self, request: Request, *args, **kwargs) -> Response:
         ids: list[str] = self.request.query_params.getlist("ids", [])
         if len(ids) == 0 or not all([id.isdecimal() for id in ids]):
             raise RequiredParameterError("some ids are invalid")
@@ -576,6 +695,7 @@ class EntryBulkDeleteAPI(generics.DestroyAPIView):
             raise PermissionDenied("deleting some entries is not allowed")
 
         for entry in entries:
-            delete_entry_with_notifucation(user, entry)
+            job: Job = Job.new_delete_entry_v2(user, entry)
+            job.run()
 
         return Response(status=status.HTTP_204_NO_CONTENT)

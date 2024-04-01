@@ -10,6 +10,7 @@ on:
       - "templates/**/*.html"
       - ".github/workflows/build-core.yml"
       - "tox.ini"
+      - "poetry.lock"
 
 jobs:
   lint:

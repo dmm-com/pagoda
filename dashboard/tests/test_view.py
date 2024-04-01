@@ -24,7 +24,7 @@ from entity.models import Entity, EntityAttr
 from entry import tasks as entry_tasks
 from entry.models import Attribute, AttributeValue, Entry
 from group.models import Group
-from job.models import Job, JobOperation
+from job.models import Job, JobOperation, JobStatus
 from role.models import Role
 from user.models import User
 
@@ -272,8 +272,8 @@ class ViewTest(AironeViewTest):
 
         # check export task is executed
         job = Job.objects.last()
-        self.assertEqual(job.operation, JobOperation.EXPORT_SEARCH_RESULT.value)
-        self.assertEqual(job.status, Job.STATUS["DONE"])
+        self.assertEqual(job.operation, JobOperation.EXPORT_SEARCH_RESULT)
+        self.assertEqual(job.status, JobStatus.DONE)
         self.assertEqual(json.loads(job.params), export_params)
 
         # check result is set at cache
@@ -300,7 +300,7 @@ class ViewTest(AironeViewTest):
             # check export task is executed
             job = Job.objects.last()
             self.assertEqual(resp.status_code, 200)
-            self.assertEqual(job.operation, JobOperation.EXPORT_SEARCH_RESULT.value)
+            self.assertEqual(job.operation, JobOperation.EXPORT_SEARCH_RESULT)
             with self.assertRaises(OSError) as e:
                 raise OSError
 
@@ -1450,7 +1450,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 200)
 
         # When the job is finished, the processing is passed.
-        job.status = Job.STATUS["DONE"]
+        job.status = JobStatus.DONE
         job.save(update_fields=["status"])
         resp = self.client.post(
             reverse("dashboard:export_search_result"),

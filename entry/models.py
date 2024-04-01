@@ -489,7 +489,7 @@ class Attribute(ACLBase):
 
     def __init__(self, *args, **kwargs):
         super(Attribute, self).__init__(*args, **kwargs)
-        self.objtype = ACLObjType.EntryAttr.value
+        self.objtype = ACLObjType.EntryAttr
 
     def is_array(self):
         return self.schema.type & AttrTypeValue["array"]
@@ -1226,8 +1226,8 @@ class Attribute(ACLBase):
             if updated_data and self.is_updated(updated_data):
                 self.add_value(user, updated_data, boolean=attrv.boolean)
 
-    def may_remove_referral(self):
-        def _may_remove_referral(referral):
+    def may_remove_referral(self) -> None:
+        def _may_remove_referral(referral: ACLBase):
             if not referral:
                 # the case this refers no entry, do nothing
                 return
@@ -1333,7 +1333,7 @@ class Entry(ACLBase):
 
     def __init__(self, *args, **kwargs):
         super(Entry, self).__init__(*args, **kwargs)
-        self.objtype = ACLObjType.Entry.value
+        self.objtype = ACLObjType.Entry
 
     def add_attribute_from_base(self, base, request_user):
         if not isinstance(base, EntityAttr):
@@ -1660,7 +1660,7 @@ class Entry(ACLBase):
             "attrs": returning_attrs,
         }
 
-    def save(self, *args, **kwargs):
+    def save(self, *args, **kwargs) -> None:
         max_entries: Optional[int] = settings.MAX_ENTRIES
         if max_entries and Entry.objects.count() >= max_entries:
             raise RuntimeError("The number of entries is over the limit")

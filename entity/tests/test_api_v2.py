@@ -6,16 +6,18 @@ from unittest import mock
 import yaml
 from django.conf import settings
 from django.urls import reverse
+from rest_framework import status
 from rest_framework.exceptions import ValidationError
 
 from acl.models import ACLBase
 from airone.lib import types as atype
 from airone.lib.log import Logger
 from airone.lib.test import AironeViewTest
-from airone.lib.types import AttrTypeArrStr, AttrTypeStr, AttrTypeText, AttrTypeValue
+from airone.lib.types import AttrType, AttrTypeArrStr, AttrTypeStr, AttrTypeText, AttrTypeValue
 from entity import tasks
 from entity.models import Entity, EntityAttr
 from entry.models import Entry
+from entry.tasks import create_entry_v2
 from group.models import Group
 from role.models import Role
 from trigger import tasks as trigger_tasks
@@ -265,6 +267,7 @@ class ViewTest(AironeViewTest):
                     "url": "http://airone.com/",
                     "is_enabled": True,
                     "is_verified": True,
+                    "verification_error_details": None,
                     "label": "hoge",
                     "headers": [],
                 }
@@ -289,6 +292,7 @@ class ViewTest(AironeViewTest):
                     "url": "http://airone.com/",
                     "is_enabled": True,
                     "is_verified": True,
+                    "verification_error_details": None,
                     "label": "hoge",
                     "headers": [
                         {"header_key": "key1", "header_value": "value1"},
@@ -301,7 +305,9 @@ class ViewTest(AironeViewTest):
     def test_retrieve_entity_with_invalid_param(self):
         resp = self.client.get("/entity/api/v2/%d/" % 9999)
         self.assertEqual(resp.status_code, 404)
-        self.assertEqual(resp.json(), {"code": "AE-230000", "message": "Not found."})
+        self.assertEqual(
+            resp.json(), {"code": "AE-230000", "message": "No Entity matches the given query."}
+        )
 
         resp = self.client.get("/entity/api/v2/%s/" % "hoge")
         self.assertEqual(resp.status_code, 404)
@@ -309,7 +315,9 @@ class ViewTest(AironeViewTest):
         self.entity.delete()
         resp = self.client.get("/entity/api/v2/%d/" % self.entity.id)
         self.assertEqual(resp.status_code, 404)
-        self.assertEqual(resp.json(), {"code": "AE-230000", "message": "Not found."})
+        self.assertEqual(
+            resp.json(), {"code": "AE-230000", "message": "No Entity matches the given query."}
+        )
 
     def test_retrieve_entity_without_permission(self):
         # permission nothing entity
@@ -465,6 +473,9 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.json()["count"], 2)
 
+    @mock.patch(
+        "entity.tasks.create_entity_v2.delay", mock.Mock(side_effect=tasks.create_entity_v2)
+    )
     def test_create_entity(self):
         params = {
             "name": "entity1",
@@ -493,16 +504,9 @@ class ViewTest(AironeViewTest):
         }
 
         resp = self.client.post("/entity/api/v2/", json.dumps(params), "application/json")
-        self.assertEqual(resp.status_code, 201)
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
 
-        entity: Entity = Entity.objects.get(id=resp.json()["id"])
-        self.assertEqual(
-            resp.json(),
-            {
-                "id": entity.id,
-                "name": "entity1",
-            },
-        )
+        entity: Entity = Entity.objects.get(name=params["name"])
         self.assertEqual(entity.name, "entity1")
         self.assertEqual(entity.note, "hoge")
         self.assertEqual(entity.status, Entity.STATUS_TOP_LEVEL)
@@ -1246,6 +1250,9 @@ class ViewTest(AironeViewTest):
             },
         )
 
+    @mock.patch(
+        "entity.tasks.create_entity_v2.delay", mock.Mock(side_effect=tasks.create_entity_v2)
+    )
     def test_create_entity_with_attrs_referral(self):
         params = {
             "name": "entity1",
@@ -1261,23 +1268,31 @@ class ViewTest(AironeViewTest):
         }
 
         resp = self.client.post("/entity/api/v2/", json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
 
-        entity: Entity = Entity.objects.get(id=resp.json()["id"])
+        entity: Entity = Entity.objects.get(name=params["name"])
         for entity_attr in entity.attrs.all():
             if entity_attr.type & AttrTypeValue["object"]:
                 self.assertEqual([x.id for x in entity_attr.referral.all()], [self.ref_entity.id])
             else:
                 self.assertEqual([x.id for x in entity_attr.referral.all()], [])
 
+    @mock.patch(
+        "entity.tasks.create_entity_v2.delay", mock.Mock(side_effect=tasks.create_entity_v2)
+    )
     def test_create_entity_with_webhook_is_verified(self):
         params = {
             "name": "entity1",
             "webhooks": [{"url": "http://example.net/"}, {"url": "http://hoge.hoge/"}],
         }
         resp = self.client.post("/entity/api/v2/", json.dumps(params), "application/json")
-        entity: Entity = Entity.objects.get(id=resp.json()["id"])
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
+        entity: Entity = Entity.objects.get(name=params["name"])
         self.assertEqual([x.is_verified for x in entity.webhooks.all()], [True, False])
 
+    @mock.patch(
+        "entity.tasks.create_entity_v2.delay", mock.Mock(side_effect=tasks.create_entity_v2)
+    )
     @mock.patch("custom_view.is_custom", mock.Mock(return_value=True))
     @mock.patch("custom_view.call_custom")
     def test_create_entity_with_customview(self, mock_call_custom):
@@ -1288,8 +1303,8 @@ class ViewTest(AironeViewTest):
 
         mock_call_custom.side_effect = side_effect
         resp = self.client.post("/entity/api/v2/", json.dumps(params), "application/json")
-        self.assertEqual(resp.status_code, 400)
-        self.assertEqual(resp.json(), [{"code": "AE-121000", "message": "create error"}])
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
+        self.assertTrue(mock_call_custom.called)
 
         def side_effect(handler_name, entity_name, user, *args):
             # Check specified parameters are expected
@@ -1297,7 +1312,7 @@ class ViewTest(AironeViewTest):
             self.assertEqual(user, self.user)
 
             if handler_name == "before_create_entity_v2":
-                self.assertEqual(
+                self.assertDictEqual(
                     args[0],
                     {
                         "name": "hoge",
@@ -1315,7 +1330,7 @@ class ViewTest(AironeViewTest):
 
         mock_call_custom.side_effect = side_effect
         resp = self.client.post("/entity/api/v2/", json.dumps(params), "application/json")
-        self.assertEqual(resp.status_code, 201)
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
         self.assertTrue(mock_call_custom.called)
 
     def test_create_entity_with_webhook_is_disabled(self):
@@ -1343,6 +1358,7 @@ class ViewTest(AironeViewTest):
         finally:
             settings.AIRONE_FLAGS = {"WEBHOOK": True}
 
+    @mock.patch("entity.tasks.edit_entity_v2.delay", mock.Mock(side_effect=tasks.edit_entity_v2))
     def test_update_entity(self):
         entity: Entity = self.create_entity(
             **{
@@ -1395,15 +1411,8 @@ class ViewTest(AironeViewTest):
         resp = self.client.put(
             "/entity/api/v2/%d/" % entity.id, json.dumps(params), "application/json"
         )
-        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
 
-        self.assertEqual(
-            resp.json(),
-            {
-                "id": entity.id,
-                "name": "change-entity1",
-            },
-        )
         entity.refresh_from_db()
         self.assertEqual(entity.name, "change-entity1")
         self.assertEqual(entity.note, "change-hoge")
@@ -1457,7 +1466,9 @@ class ViewTest(AironeViewTest):
         params = {}
         resp = self.client.put("/entity/api/v2/%d/" % 9999, json.dumps(params), "application/json")
         self.assertEqual(resp.status_code, 404)
-        self.assertEqual(resp.json(), {"code": "AE-230000", "message": "Not found."})
+        self.assertEqual(
+            resp.json(), {"code": "AE-230000", "message": "No Entity matches the given query."}
+        )
 
         self.entity.delete()
         params = {}
@@ -1465,7 +1476,9 @@ class ViewTest(AironeViewTest):
             "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
         )
         self.assertEqual(resp.status_code, 404)
-        self.assertEqual(resp.json(), {"code": "AE-230000", "message": "Not found."})
+        self.assertEqual(
+            resp.json(), {"code": "AE-230000", "message": "No Entity matches the given query."}
+        )
 
     def test_update_entity_with_invalid_param(self):
         # name param
@@ -1559,6 +1572,7 @@ class ViewTest(AironeViewTest):
             {"is_toplevel": [{"code": "AE-121000", "message": "Must be a valid boolean."}]},
         )
 
+    @mock.patch("entity.tasks.edit_entity_v2.delay", mock.Mock(side_effect=tasks.edit_entity_v2))
     def test_update_entity_with_invalid_param_attrs(self):
         params = {
             "attrs": "hoge",
@@ -2080,7 +2094,7 @@ class ViewTest(AironeViewTest):
         resp = self.client.put(
             "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
         )
-        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
         self.assertTrue(
             all(["hoge" not in x.name for x in self.entity.attrs.filter(is_active=True)])
         )
@@ -2125,7 +2139,7 @@ class ViewTest(AironeViewTest):
         resp = self.client.put(
             "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
         )
-        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
 
     def test_update_entity_with_invalid_param_webhooks(self):
         params = {
@@ -2421,6 +2435,7 @@ class ViewTest(AironeViewTest):
             },
         )
 
+    @mock.patch("entity.tasks.edit_entity_v2.delay", mock.Mock(side_effect=tasks.edit_entity_v2))
     def test_update_entity_with_attrs_referral(self):
         self.entity.attrs.all().delete()
         params = {
@@ -2438,7 +2453,7 @@ class ViewTest(AironeViewTest):
         resp = self.client.put(
             "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
         )
-        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
 
         for entity_attr in self.entity.attrs.all():
             if entity_attr.type & AttrTypeValue["object"]:
@@ -2446,6 +2461,7 @@ class ViewTest(AironeViewTest):
             else:
                 self.assertEqual([x.id for x in entity_attr.referral.all()], [])
 
+    @mock.patch("entity.tasks.edit_entity_v2.delay", mock.Mock(side_effect=tasks.edit_entity_v2))
     def test_update_entity_with_webhook_is_verified(self):
         self.entity.webhooks.all().delete()
         params = {
@@ -2455,10 +2471,11 @@ class ViewTest(AironeViewTest):
         resp = self.client.put(
             "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
         )
-        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
 
         self.assertEqual([x.is_verified for x in self.entity.webhooks.all()], [True, False])
 
+    @mock.patch("entity.tasks.edit_entity_v2.delay", mock.Mock(side_effect=tasks.edit_entity_v2))
     @mock.patch("custom_view.is_custom", mock.Mock(return_value=True))
     @mock.patch("custom_view.call_custom")
     def test_update_entity_with_customview(self, mock_call_custom):
@@ -2471,8 +2488,8 @@ class ViewTest(AironeViewTest):
         resp = self.client.put(
             "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
         )
-        self.assertEqual(resp.status_code, 400)
-        self.assertEqual(resp.json(), [{"code": "AE-121000", "message": "update error"}])
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
+        self.assertTrue(mock_call_custom.called)
 
         def side_effect(handler_name, entity_name, user, *args):
             # Check specified parameters are expected
@@ -2498,9 +2515,10 @@ class ViewTest(AironeViewTest):
         resp = self.client.put(
             "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
         )
-        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
         self.assertTrue(mock_call_custom.called)
 
+    @mock.patch("entity.tasks.edit_entity_v2.delay", mock.Mock(side_effect=tasks.edit_entity_v2))
     def test_update_entry_with_specified_only_param(self):
         self.entity.note = "hoge"
         self.entity.status = Entity.STATUS_TOP_LEVEL
@@ -2517,7 +2535,7 @@ class ViewTest(AironeViewTest):
         resp = self.client.put(
             "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
         )
-        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
 
         self.entity.refresh_from_db()
         changed_attr_count = self.entity.attrs.filter(is_active=True).count()
@@ -2528,6 +2546,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(attr_count, changed_attr_count)
         self.assertEqual(webhook_count, changed_webhook_count)
 
+    @mock.patch("entity.tasks.edit_entity_v2.delay", mock.Mock(side_effect=tasks.edit_entity_v2))
     def test_update_entity_without_permission(self):
         self.role.users.add(self.user)
 
@@ -2566,7 +2585,7 @@ class ViewTest(AironeViewTest):
         resp = self.client.put(
             "/entity/api/v2/%d/" % self.entity.id, json.dumps(paramas), "application/json"
         )
-        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
 
         # permission nothing EntityAttr update
         self.entity.is_public = True
@@ -2600,7 +2619,7 @@ class ViewTest(AironeViewTest):
         resp = self.client.put(
             "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
         )
-        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
 
         # permission writable EntityAttr delete
         params = {"attrs": [{"id": entity_attr.id, "is_deleted": True}]}
@@ -2618,7 +2637,26 @@ class ViewTest(AironeViewTest):
         resp = self.client.put(
             "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
         )
-        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
+
+    @mock.patch("entity.tasks.edit_entity_v2.delay", mock.Mock(side_effect=tasks.edit_entity_v2))
+    def test_update_entity_with_other_created_user(self):
+        self.admin_login()
+
+        params = {
+            "id": self.entity.id,
+            "name": "change-entity",
+            "note": "change-hoge",
+        }
+
+        resp = self.client.put(
+            "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
+
+        self.entity.refresh_from_db()
+        self.assertEqual(self.entity.name, "change-entity")
+        self.assertEqual(self.entity.note, "change-hoge")
 
     def test_update_entity_with_webhook_is_disabled(self):
         entity: Entity = self.create_entity(
@@ -2655,9 +2693,12 @@ class ViewTest(AironeViewTest):
         finally:
             settings.AIRONE_FLAGS = {"WEBHOOK": True}
 
+    @mock.patch(
+        "entity.tasks.delete_entity_v2.delay", mock.Mock(side_effect=tasks.delete_entity_v2)
+    )
     def test_delete_entity(self):
-        resp = self.client.delete("/entity/api/v2/%d/" % self.entity.id, None, "application/json")
-        self.assertEqual(resp.status_code, 204)
+        resp = self.client.delete("/entity/api/v2/%d/" % self.entity.id)
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
 
         self.entity.refresh_from_db()
         self.assertFalse(self.entity.is_active)
@@ -2668,6 +2709,9 @@ class ViewTest(AironeViewTest):
         self.assertEqual(history.details.count(), self.entity.attrs.count())
         self.assertEqual(history.details.first().target_obj, self.entity.attrs.first().aclbase_ptr)
 
+    @mock.patch(
+        "entity.tasks.delete_entity_v2.delay", mock.Mock(side_effect=tasks.delete_entity_v2)
+    )
     @mock.patch("custom_view.is_custom", mock.Mock(return_value=True))
     @mock.patch("custom_view.call_custom")
     def test_delete_entity_with_customview(self, mock_call_custom):
@@ -2675,8 +2719,9 @@ class ViewTest(AironeViewTest):
             raise ValidationError("delete error")
 
         mock_call_custom.side_effect = side_effect
-        resp = self.client.delete("/entity/api/v2/%d/" % self.entity.id, None, "application/json")
-        self.assertEqual(resp.status_code, 400)
+        resp = self.client.delete("/entity/api/v2/%d/" % self.entity.id)
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
+        self.assertTrue(mock_call_custom.called)
 
         def side_effect(handler_name, entity_name, user, entity):
             # Check specified parameters are expected
@@ -2686,8 +2731,8 @@ class ViewTest(AironeViewTest):
             self.assertEqual(entity, self.entity)
 
         mock_call_custom.side_effect = side_effect
-        resp = self.client.delete("/entity/api/v2/%d/" % self.entity.id, None, "application/json")
-        self.assertEqual(resp.status_code, 204)
+        resp = self.client.delete("/entity/api/v2/%d/" % self.entity.id)
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
         self.assertTrue(mock_call_custom.called)
 
     def test_delete_entity_with_invalid_param(self):
@@ -2696,12 +2741,16 @@ class ViewTest(AironeViewTest):
 
         resp = self.client.delete("/entity/api/v2/%d/" % 9999, None, "application/json")
         self.assertEqual(resp.status_code, 404)
-        self.assertEqual(resp.json(), {"code": "AE-230000", "message": "Not found."})
+        self.assertEqual(
+            resp.json(), {"code": "AE-230000", "message": "No Entity matches the given query."}
+        )
 
         self.entity.delete()
         resp = self.client.delete("/entity/api/v2/%d/" % self.entity.id, None, "application/json")
         self.assertEqual(resp.status_code, 404)
-        self.assertEqual(resp.json(), {"code": "AE-230000", "message": "Not found."})
+        self.assertEqual(
+            resp.json(), {"code": "AE-230000", "message": "No Entity matches the given query."}
+        )
 
     def test_delete_entity_with_exist_entry(self):
         self.add_entry(self.user, "entry", self.entity)
@@ -2819,6 +2868,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 404)
         self.assertEqual(resp.json(), {"code": "AE-230000", "message": "Not found."})
 
+    @mock.patch("entry.tasks.create_entry_v2.delay", mock.Mock(side_effect=create_entry_v2))
     def test_create_entry(self):
         attr = {}
         for attr_name in [x["name"] for x in self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY]:
@@ -2845,16 +2895,9 @@ class ViewTest(AironeViewTest):
         resp = self.client.post(
             "/entity/api/v2/%s/entries/" % self.entity.id, json.dumps(params), "application/json"
         )
-        self.assertEqual(resp.status_code, 201)
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
 
-        entry: Entry = Entry.objects.get(id=resp.json()["id"], is_active=True)
-        self.assertEqual(
-            resp.json(),
-            {
-                "id": entry.id,
-                "name": "entry1",
-            },
-        )
+        entry: Entry = Entry.objects.get(name=params["name"], is_active=True)
         self.assertEqual(entry.schema, self.entity)
         self.assertEqual(entry.created_user, self.user)
         self.assertEqual(entry.status, 0)
@@ -2922,8 +2965,9 @@ class ViewTest(AironeViewTest):
         resp = self.client.post(
             "/entity/api/v2/%s/entries/" % self.entity.id, json.dumps(params), "application/json"
         )
-        self.assertEqual(resp.status_code, 201)
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
 
+    @mock.patch("entry.tasks.create_entry_v2.delay", mock.Mock(side_effect=create_entry_v2))
     def test_create_entry_without_permission_entity_attr(self):
         attr = {}
         for attr_name in [x["name"] for x in self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY]:
@@ -2943,9 +2987,9 @@ class ViewTest(AironeViewTest):
             json.dumps({**params, "name": "entry1"}),
             "application/json",
         )
-        self.assertEqual(resp.status_code, 201)
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
 
-        entry: Entry = Entry.objects.get(id=resp.json()["id"], is_active=True)
+        entry: Entry = Entry.objects.get(name="entry1", is_active=True)
         self.assertEqual(entry.attrs.get(schema=attr["val"]).get_latest_value().get_value(), "hoge")
         self.assertEqual(entry.attrs.get(schema=attr["vals"]).get_latest_value().get_value(), [])
 
@@ -3012,7 +3056,7 @@ class ViewTest(AironeViewTest):
             json.dumps({"name": "a" * (Entry._meta.get_field("name").max_length)}),
             "application/json",
         )
-        self.assertEqual(resp.status_code, 201)
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
 
         entry = self.add_entry(self.user, "hoge", self.entity)
         resp = self.client.post(
@@ -3032,7 +3076,7 @@ class ViewTest(AironeViewTest):
             json.dumps({"name": "hoge"}),
             "application/json",
         )
-        self.assertEqual(resp.status_code, 201)
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
 
     def test_create_entry_with_invalid_param_attrs(self):
         attr = {}
@@ -3173,8 +3217,9 @@ class ViewTest(AironeViewTest):
         resp = self.client.post(
             "/entity/api/v2/%s/entries/" % self.entity.id, json.dumps(params), "application/json"
         )
-        self.assertEqual(resp.status_code, 201)
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
 
+    @mock.patch("entry.tasks.create_entry_v2.delay", mock.Mock(side_effect=create_entry_v2))
     @mock.patch("entry.tasks.notify_create_entry.delay")
     def test_create_entry_notify(self, mock_task):
         self.client.post(
@@ -3185,6 +3230,7 @@ class ViewTest(AironeViewTest):
 
         self.assertTrue(mock_task.called)
 
+    @mock.patch("entry.tasks.create_entry_v2.delay", mock.Mock(side_effect=create_entry_v2))
     @mock.patch("custom_view.is_custom", mock.Mock(return_value=True))
     @mock.patch("custom_view.call_custom")
     def test_create_entry_with_customview(self, mock_call_custom):
@@ -3205,8 +3251,8 @@ class ViewTest(AironeViewTest):
         resp = self.client.post(
             "/entity/api/v2/%s/entries/" % self.entity.id, json.dumps(params), "application/json"
         )
-        self.assertEqual(resp.status_code, 400)
-        self.assertEqual(resp.json(), [{"code": "AE-121000", "message": "create error"}])
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
+        self.assertTrue(mock_call_custom.called)
 
         def side_effect(handler_name, entity_name, user, *args):
             # Check specified parameters are expected
@@ -3227,7 +3273,7 @@ class ViewTest(AironeViewTest):
         resp = self.client.post(
             "/entity/api/v2/%s/entries/" % self.entity.id, json.dumps(params), "application/json"
         )
-        self.assertEqual(resp.status_code, 201)
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
         self.assertTrue(mock_call_custom.called)
 
     @mock.patch("entity.tasks.create_entity.delay", mock.Mock(side_effect=tasks.create_entity))
@@ -3431,18 +3477,23 @@ class ViewTest(AironeViewTest):
             "test_entity1": ["foo", "bar", "fuga"],
             "test_entity2": ["bar", "hoge", "fuga"],
         }
-        for entity_name, attrnames in entity_info.items():
+        for i, (entity_name, attrnames) in enumerate(entity_info.items()):
             entity = Entity.objects.create(name=entity_name, created_user=user)
 
-            for attrname in attrnames:
-                entity.attrs.add(
-                    EntityAttr.objects.create(
-                        name=attrname,
-                        type=AttrTypeValue["string"],
-                        created_user=user,
-                        parent_entity=entity,
-                    )
+            for j, attrname in enumerate(attrnames):
+                is_object = attrname == "bar"
+                attrtype = AttrType.OBJECT if is_object else AttrType.STRING
+
+                attr = EntityAttr.objects.create(
+                    name=attrname,
+                    type=attrtype.value,
+                    created_user=user,
+                    parent_entity=entity,
                 )
+                if is_object:
+                    attr.referral.add(entity)
+
+                entity.attrs.add(attr)
 
         self.ref_entity.delete()
         self.entity.attrs.all().delete()
@@ -3454,17 +3505,22 @@ class ViewTest(AironeViewTest):
             "/entity/api/v2/attrs?entity_ids=%s" % ",".join([str(x.id) for x in entities])
         )
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(resp.json(), sorted(["bar", "fuga"]))
+        self.assertEqual([x["name"] for x in resp.json()], sorted(["bar", "fuga"]))
+        self.assertEqual(
+            [x["referral"] for x in resp.json() if x["type"] == AttrType.OBJECT][0],
+            list(entities.values_list("id", flat=True)),
+        )
 
-        # get all
+        # get all attribute infomations are returned collectly
         resp = self.client.get("/entity/api/v2/attrs")
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(resp.json(), sorted(["foo", "bar", "hoge", "fuga"]))
+        self.assertEqual([x["name"] for x in resp.json()], ["foo", "bar", "fuga", "hoge"])
 
         # invalid entity_id(s)
         resp = self.client.get("/entity/api/v2/attrs?entity_ids=9999")
         self.assertEqual(resp.status_code, 400)
 
+    @mock.patch("entry.tasks.create_entry_v2.delay", mock.Mock(side_effect=create_entry_v2))
     @mock.patch(
         "trigger.tasks.may_invoke_trigger.delay",
         mock.Mock(side_effect=trigger_tasks.may_invoke_trigger),
@@ -3495,10 +3551,10 @@ class ViewTest(AironeViewTest):
         resp = self.client.post(
             "/entity/api/v2/%s/entries/" % self.entity.id, json.dumps(params), "application/json"
         )
-        self.assertEqual(resp.status_code, 201)
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
 
         # check Attribute "vals", which is specified by TriggerCondition, was changed as expected
-        entry: Entry = Entry.objects.get(id=resp.json()["id"], is_active=True)
+        entry: Entry = Entry.objects.get(name=params["name"], is_active=True)
         self.assertEqual(entry.get_attrv("text").value, "hogefuga")
         self.assertEqual(
             [x.value for x in entry.get_attrv("vals").data_array.all()], ["fuga", "piyo"]

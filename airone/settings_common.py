@@ -82,7 +82,7 @@ class Common(Configuration):
         "social_django.middleware.SocialAuthExceptionMiddleware",
         "airone.lib.db.AirOneReplicationMiddleware",
         "simple_history.middleware.HistoryRequestMiddleware",
-    ]
+    ] + env.list("AIRONE_MIDDLEWARE", None, [])
 
     # SECURITY WARNING: don't run with debug turned on in production!
     DEBUG = env.bool("AIRONE_DEBUG", False)

@@ -7,6 +7,7 @@ from rest_framework.exceptions import PermissionDenied, ValidationError
 
 import custom_view
 from acl.models import ACLBase
+from airone.lib import drf
 from airone.lib.acl import ACLType
 from airone.lib.drf import (
     DuplicatedObjectExistsError,
@@ -23,7 +24,7 @@ from entity.models import Entity, EntityAttr
 from entry.models import Attribute, AttributeValue, Entry
 from entry.settings import CONFIG as CONFIG_ENTRY
 from group.models import Group
-from job.models import Job
+from job.models import Job, JobStatus
 from role.models import Role
 from user.api_v2.serializers import UserBaseSerializer
 from user.models import User
@@ -205,7 +206,14 @@ class EntryBaseSerializer(serializers.ModelSerializer):
     def _validate(self, schema: Entity, attrs: list[dict[str, Any]]):
         # In create case, check attrs mandatory attribute
         if not self.instance:
-            user: User = self.context["request"].user
+            user: User | None = None
+            if "request" in self.context:
+                user = self.context["request"].user
+            if "_user" in self.context:
+                user = self.context["_user"]
+            if user is None:
+                raise RequiredParameterError("user is required")
+
             for mandatory_attr in schema.attrs.filter(is_mandatory=True, is_active=True):
                 if not user.has_permission(mandatory_attr, ACLType.Writable):
                     raise PermissionDenied(
@@ -256,7 +264,7 @@ class EntryCreateSerializer(EntryBaseSerializer):
         queryset=Entity.objects.all(), write_only=True, required=True
     )
     attrs = serializers.ListField(child=AttributeDataSerializer(), write_only=True, required=False)
-    created_user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+    created_user = serializers.HiddenField(default=drf.AironeUserDefault())
 
     class Meta:
         model = Entry
@@ -267,7 +275,13 @@ class EntryCreateSerializer(EntryBaseSerializer):
         return params
 
     def create(self, validated_data: EntryCreateData):
-        user: User = self.context["request"].user
+        user: User | None = None
+        if "request" in self.context:
+            user = self.context["request"].user
+        if "_user" in self.context:
+            user = self.context["_user"]
+        if user is None:
+            raise RequiredParameterError("user is required")
 
         entity_name = validated_data["schema"].name
         if custom_view.is_custom("before_create_entry_v2", entity_name):
@@ -348,7 +362,14 @@ class EntryUpdateSerializer(EntryBaseSerializer):
 
     def update(self, entry: Entry, validated_data: EntryUpdateData):
         entry.set_status(Entry.STATUS_EDITING)
-        user: User = self.context["request"].user
+
+        user: User | None = None
+        if "request" in self.context:
+            user = self.context["request"].user
+        if "_user" in self.context:
+            user = self.context["_user"]
+        if user is None:
+            raise RequiredParameterError("user is required")
 
         # for history record
         entry._history_user = user
@@ -696,7 +717,7 @@ class EntryCopySerializer(serializers.Serializer):
     class Meta:
         fields = "copy_entry_names"
 
-    def validate_copy_entry_names(self, copy_entry_names):
+    def validate_copy_entry_names(self, copy_entry_names: list[str]):
         entry: Entry = self.instance
         for copy_entry_name in copy_entry_names:
             if Entry.objects.filter(
@@ -730,16 +751,16 @@ class EntryImportEntitySerializer(serializers.Serializer):
     entity = serializers.CharField()
     entries = serializers.ListField(child=EntryImportEntriesSerializer())
 
-    def validate(self, params):
+    def validate(self, params: dict):
         # It runs only in the background, because it takes a long time to process.
         if self.parent:
             return params
 
-        def _convert_value_name_to_id(attr_data, entity_attrs):
+        def _convert_value_name_to_id(attr_data: dict, entity_attrs: dict):
             def _object(
-                val: Optional[str | dict],
+                val: str | dict | None,
                 refs: list[Entity],
-            ) -> Optional[int]:
+            ) -> int | None:
                 if val:
                     # for compatibility;
                     # it will pick wrong entry if there are multiple entries with same name
@@ -750,7 +771,7 @@ class EntryImportEntitySerializer(serializers.Serializer):
                                 val,
                                 [x.name for x in refs],
                             )
-                        ref_entry: Optional[Entry] = Entry.objects.filter(
+                        ref_entry: Entry | None = Entry.objects.filter(
                             name=val, schema__in=refs
                         ).first()
                         return ref_entry.id if ref_entry else 0
@@ -762,7 +783,7 @@ class EntryImportEntitySerializer(serializers.Serializer):
                         return ref_entry.id if ref_entry else 0
                 return None
 
-            def _group(val) -> Optional[int]:
+            def _group(val) -> int | None:
                 if val:
                     ref_group: Optional[Group] = Group.objects.filter(name=val).first()
                     return ref_group.id if ref_group else 0
@@ -812,9 +833,7 @@ class EntryImportEntitySerializer(serializers.Serializer):
                 if entity_attrs[attr_data["name"]]["type"] & AttrTypeValue["group"]:
                     attr_data["value"] = _group(attr_data["value"])
 
-        entity: Optional[Entity] = Entity.objects.filter(
-            name=params["entity"], is_active=True
-        ).first()
+        entity: Entity | None = Entity.objects.filter(name=params["entity"], is_active=True).first()
         if not entity:
             return params
         entity_attrs = {
@@ -1081,10 +1100,17 @@ class AdvancedSearchResultAttrInfoSerializer(serializers.Serializer):
         return filter_key
 
 
+class AdvancedSearchJoinAttrInfoSerializer(serializers.Serializer):
+    name = serializers.CharField()
+    offset = serializers.IntegerField(default=0)
+    attrinfo = AdvancedSearchResultAttrInfoSerializer(many=True)
+
+
 class AdvancedSearchSerializer(serializers.Serializer):
     entities = serializers.ListField(child=serializers.IntegerField())
     entry_name = serializers.CharField(allow_blank=True, default="")
     attrinfo = AdvancedSearchResultAttrInfoSerializer(many=True)
+    join_attrs = AdvancedSearchJoinAttrInfoSerializer(many=True, required=False)
     has_referral = serializers.BooleanField(default=False)
     referral_name = serializers.CharField(required=False, allow_blank=True)
     is_output_all = serializers.BooleanField(default=True)
@@ -1175,10 +1201,10 @@ class AdvancedSearchResultExportSerializer(serializers.Serializer):
 
         return params
 
-    def save(self, **kwargs):
+    def save(self, **kwargs) -> None:
         user: User = self.context["request"].user
 
-        job_status_not_finished = [Job.STATUS["PREPARING"], Job.STATUS["PROCESSING"]]
+        job_status_not_finished: list[JobStatus] = [JobStatus.PREPARING, JobStatus.PROCESSING]
         if (
             Job.get_job_with_params(user, self.validated_data)
             .filter(status__in=job_status_not_finished)

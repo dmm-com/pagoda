@@ -38,7 +38,7 @@ class AdvancedSearchResults(TypedDict):
     ret_values: list[AdvancedSearchResultValue]
 
 
-class FilterKey(enum.Enum):
+class FilterKey(enum.IntEnum):
     CLEARED = 0
     EMPTY = 1
     NON_EMPTY = 2
@@ -257,14 +257,14 @@ def make_query(
     # Conversion processing from "filter_key" to "keyword" for each hint_attrs
     for hint_attr in hint_attrs:
         match hint_attr.get("filter_key", None):
-            case FilterKey.CLEARED.value:
+            case FilterKey.CLEARED:
                 # remove "keyword" parameter
                 hint_attr.pop("keyword", None)
-            case FilterKey.EMPTY.value:
+            case FilterKey.EMPTY:
                 hint_attr["keyword"] = "\\"
-            case FilterKey.NON_EMPTY.value:
+            case FilterKey.NON_EMPTY:
                 hint_attr["keyword"] = "*"
-            case FilterKey.DUPLICATED.value:
+            case FilterKey.DUPLICATED:
                 aggs_query = make_aggs_query(hint_attr["name"])
                 # TODO Set to 1 for convenience
                 resp = execute_query(aggs_query, 1)
@@ -828,7 +828,7 @@ def _make_an_attribute_filter(hint: AttrHint, keyword: str) -> dict[str, dict]:
 
         str_cond = {"regexp": {"attr.value": _get_regex_pattern(keyword)}}
 
-        if hint.get("filter_key") == FilterKey.TEXT_NOT_CONTAINED.value:
+        if hint.get("filter_key") == FilterKey.TEXT_NOT_CONTAINED:
             cond_attr.append({"bool": {"must_not": [date_cond, str_cond]}})
         else:
             cond_attr.append({"bool": {"should": [date_cond, str_cond]}})
@@ -857,7 +857,7 @@ def _make_an_attribute_filter(hint: AttrHint, keyword: str) -> dict[str, dict]:
             if "exact_match" not in hint:
                 cond_val.append({"regexp": {"attr.value": _get_regex_pattern(hint_keyword_val)}})
 
-            if hint.get("filter_key") == FilterKey.TEXT_NOT_CONTAINED.value:
+            if hint.get("filter_key") == FilterKey.TEXT_NOT_CONTAINED:
                 cond_attr.append({"bool": {"must_not": cond_val}})
             else:
                 cond_attr.append({"bool": {"should": cond_val}})

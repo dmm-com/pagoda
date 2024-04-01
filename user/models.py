@@ -2,11 +2,11 @@ from datetime import datetime
 from importlib import import_module
 from typing import Optional
 
+from django.conf import settings
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
 from rest_framework.authtoken.models import Token
 
-from airone import settings
 from airone.lib.acl import ACLType, ACLTypeBase
 from group.models import Group
 from role.models import Role
@@ -190,7 +190,7 @@ class User(AbstractUser):
 
         return True
 
-    def save(self, *args, **kwargs):
+    def save(self, *args, **kwargs) -> None:
         """
         Override Model.save method of Django
         """

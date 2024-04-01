@@ -112,6 +112,7 @@ exports[`TriggerPage should match snapshot 1`] = `
           >
             <table
               class="MuiTable-root css-rqglhn-MuiTable-root"
+              data-testid="TriggerList"
             >
               <thead
                 class="MuiTableHead-root css-15wwp11-MuiTableHead-root"
@@ -408,6 +409,7 @@ exports[`TriggerPage should match snapshot 1`] = `
         >
           <table
             class="MuiTable-root css-rqglhn-MuiTable-root"
+            data-testid="TriggerList"
           >
             <thead
               class="MuiTableHead-root css-15wwp11-MuiTableHead-root"

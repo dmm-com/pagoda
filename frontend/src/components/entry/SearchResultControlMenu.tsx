@@ -106,8 +106,8 @@ export const SearchResultControlMenu: FC<Props> = ({
     };
 
   const filterKey =
-    attrFilter.filterKey ?? AdvancedSearchResultAttrInfoFilterKeyEnum.CLEARED;
-  const keyword = attrFilter.keyword ?? "";
+    attrFilter?.filterKey ?? AdvancedSearchResultAttrInfoFilterKeyEnum.CLEARED;
+  const keyword = attrFilter?.keyword ?? "";
 
   return (
     <Menu

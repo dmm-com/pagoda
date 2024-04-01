@@ -64,9 +64,9 @@ full traceback:
 @task_failure.connect()
 def celery_task_failure_update_job_status(**kwargs):
     """This event handler is update job status when an exception error in celery."""
-    from job.models import Job
+    from job.models import Job, JobStatus
 
     job_id = kwargs["args"][0]
     job = Job.objects.get(id=job_id)
-    job.status = Job.STATUS["ERROR"]
+    job.status = JobStatus.ERROR
     job.save(update_fields=["status"])

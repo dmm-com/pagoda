@@ -214,7 +214,7 @@ def do_edit(request, role_id, recv_data):
         job_register_referrals = Job.new_register_referrals(
             request.user,
             None,
-            operation_value=JobOperation.ROLE_REGISTER_REFERRAL.value,
+            operation_value=JobOperation.ROLE_REGISTER_REFERRAL,
             params={"role_id": role.id},
         )
 

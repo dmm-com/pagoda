@@ -95,14 +95,23 @@ export const WebhookFields: FC<Props> = ({ control }) => {
                   <Controller
                     name={`webhooks.${index}.isVerified`}
                     control={control}
-                    render={({ field }) => {
-                      switch (field.value) {
+                    render={({ field: _field }) => {
+                      switch (_field.value) {
                         case undefined:
                           return <></>;
                         case true:
                           return <CheckCircleOutlineIcon color="success" />;
                         case false:
-                          return <ErrorOutlineIcon color="error" />;
+                          return (
+                            <ErrorOutlineIcon
+                              color="error"
+                              titleAccess={
+                                field.verificationErrorDetails
+                                  ? `エラーのため webhook が有効になっていません。詳細: ${field.verificationErrorDetails}`
+                                  : undefined
+                              }
+                            />
+                          );
                       }
                     }}
                   />

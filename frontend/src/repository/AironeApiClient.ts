@@ -6,21 +6,19 @@ import {
   AclApi,
   AdvancedSearchResult,
   AdvancedSearchResultAttrInfo,
+  AdvancedSearchJoinAttrInfo,
   AttributeData,
   Configuration,
   EntityApi,
   EntityApiV2ListRequest,
+  EntityAttr,
   EntityAttrCreate,
   EntityAttrUpdate,
-  EntityCreate,
   EntityDetail,
-  EntityUpdate,
   EntryApi,
   EntryBase,
   EntryCopy,
-  EntryCreate,
   EntryRetrieve,
-  EntryUpdate,
   GetEntryAttrReferral,
   Group,
   GroupApi,
@@ -240,8 +238,8 @@ class AironeApiClient {
     isToplevel: boolean,
     attrs: Array<EntityAttrCreate>,
     webhooks: Array<WebhookCreateUpdate>
-  ): Promise<EntityCreate> {
-    return await this.entity.entityApiV2Create(
+  ): Promise<void> {
+    await this.entity.entityApiV2Create(
       {
         entityCreate: {
           id: -1,
@@ -268,8 +266,8 @@ class AironeApiClient {
     isToplevel: boolean,
     attrs: Array<EntityAttrUpdate>,
     webhooks: Array<WebhookCreateUpdate>
-  ): Promise<EntityUpdate> {
-    return await this.entity.entityApiV2Update(
+  ): Promise<void> {
+    await this.entity.entityApiV2Update(
       {
         id: id,
         entityUpdate: {
@@ -332,7 +330,7 @@ class AironeApiClient {
   async getEntityAttrs(
     entityIds: number[],
     searchAllEntities = false
-  ): Promise<Array<string>> {
+  ): Promise<Array<EntityAttr>> {
     return await this.entity.entityApiV2AttrsList({
       entityIds: searchAllEntities
         ? ""
@@ -361,8 +359,8 @@ class AironeApiClient {
     entityId: number,
     name: string,
     attrs: AttributeData[]
-  ): Promise<EntryCreate> {
-    return await this.entity.entityApiV2EntriesCreate(
+  ): Promise<void> {
+    await this.entity.entityApiV2EntriesCreate(
       { entityId, entryCreate: { id: -1, name, attrs } },
       {
         headers: {
@@ -377,8 +375,8 @@ class AironeApiClient {
     id: number,
     name: string,
     attrs: AttributeData[]
-  ): Promise<EntryUpdate> {
-    return await this.entry.entryApiV2Update(
+  ): Promise<void> {
+    await this.entry.entryApiV2Update(
       { id, entryUpdate: { id: id, name, attrs } },
       {
         headers: {
@@ -678,6 +676,7 @@ class AironeApiClient {
     entityIds: number[] = [],
     entryName = "",
     attrInfo: AdvancedSearchResultAttrInfo[] = [],
+    joinAttrs: AdvancedSearchJoinAttrInfo[] = [],
     hasReferral = false,
     referralName = "",
     searchAllEntities = false,
@@ -690,6 +689,7 @@ class AironeApiClient {
         advancedSearch: {
           entities: entityIds,
           attrinfo: attrInfo,
+          joinAttrs: joinAttrs,
           entryName: entryName,
           hasReferral: hasReferral,
           isOutputAll: false,

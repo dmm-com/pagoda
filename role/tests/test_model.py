@@ -1,4 +1,5 @@
-from airone import settings
+from django.conf import settings
+
 from airone.lib.acl import ACLType
 from airone.lib.types import AttrTypeValue
 from entity.models import Entity

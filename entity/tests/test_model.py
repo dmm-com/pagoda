@@ -1,8 +1,8 @@
 from copy import copy
 
+from django.conf import settings
 from django.test import TestCase
 
-from airone import settings
 from airone.lib.types import AttrTypeValue
 from entity.admin import EntityAttrResource, EntityResource
 from entity.models import Entity, EntityAttr

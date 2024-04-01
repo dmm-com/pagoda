@@ -10,7 +10,7 @@ class Iteratable(object):
         return self._types.__iter__()
 
 
-class ACLObjType(enum.Enum):
+class ACLObjType(enum.IntEnum):
     Entity = 1 << 0
     EntityAttr = 1 << 1
     Entry = 1 << 2

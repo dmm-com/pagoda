@@ -1,4 +1,5 @@
 from distutils.util import strtobool
+from typing import Dict, List
 
 from django.db.models import Count, F
 from django.http import Http404
@@ -10,10 +11,10 @@ from rest_framework import filters, generics, serializers, status, viewsets
 from rest_framework.exceptions import ValidationError
 from rest_framework.pagination import LimitOffsetPagination, PageNumberPagination
 from rest_framework.permissions import BasePermission, IsAuthenticated
+from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.serializers import Serializer
 
-import custom_view
 from airone.lib.acl import ACLType, get_permitted_objects
 from airone.lib.drf import ObjectNotExistsError, YAMLParser, YAMLRenderer
 from airone.lib.http import http_get
@@ -29,11 +30,12 @@ from entity.api_v2.serializers import (
 from entity.models import Entity, EntityAttr
 from entry.api_v2.serializers import EntryBaseSerializer, EntryCreateSerializer
 from entry.models import Entry
+from job.models import Job
 from user.models import History, User
 
 
 @http_get
-def history(request, pk):
+def history(request, pk: int) -> HttpResponse:
     if not Entity.objects.filter(id=pk).exists():
         return HttpResponse("Failed to get entity of specified id", status=400)
 
@@ -67,7 +69,7 @@ def history(request, pk):
 
 
 class EntityPermission(BasePermission):
-    def has_permission(self, request, view):
+    def has_permission(self, request: Request, view) -> bool:
         permisson = {
             "list": ACLType.Readable,
             "create": ACLType.Writable,
@@ -81,7 +83,7 @@ class EntityPermission(BasePermission):
         view.entity = entity
         return True
 
-    def has_object_permission(self, request, view, obj):
+    def has_object_permission(self, request: Request, view, obj) -> bool:
         user: User = request.user
         permisson = {
             "retrieve": ACLType.Readable,
@@ -110,8 +112,8 @@ class EntityAPI(viewsets.ModelViewSet):
     def get_serializer_class(self):
         serializer = {
             "list": EntityListSerializer,
-            "create": EntityCreateSerializer,
-            "update": EntityUpdateSerializer,
+            "create": serializers.Serializer,
+            "update": serializers.Serializer,
         }
         return serializer.get(self.action, EntityDetailSerializer)
 
@@ -129,9 +131,36 @@ class EntityAPI(viewsets.ModelViewSet):
 
         return Entity.objects.filter(**filter_condition).exclude(**exclude_condition)
 
-    def destroy(self, request, pk):
-        entity: Entity = self.get_object()
+    @extend_schema(request=EntityCreateSerializer)
+    def create(self, request: Request, *args, **kwargs) -> Response:
         user: User = request.user
+
+        serializer = EntityCreateSerializer(data=request.data, context={"_user": user})
+        serializer.is_valid(raise_exception=True)
+
+        job = Job.new_create_entity_v2(user, None, params=request.data)
+        job.run()
+
+        return Response(status=status.HTTP_202_ACCEPTED)
+
+    @extend_schema(request=EntityUpdateSerializer)
+    def update(self, request: Request, *args, **kwargs) -> Response:
+        user: User = request.user
+        entity: Entity = self.get_object()
+
+        serializer = EntityUpdateSerializer(
+            instance=entity, data=request.data, context={"_user": user}
+        )
+        serializer.is_valid(raise_exception=True)
+
+        job = Job.new_edit_entity_v2(user, entity, params=request.data)
+        job.run()
+
+        return Response(status=status.HTTP_202_ACCEPTED)
+
+    def destroy(self, request: Request, *args, **kwargs) -> Response:
+        user: User = request.user
+        entity: Entity = self.get_object()
 
         if not entity.is_active:
             raise ObjectNotExistsError("specified entity has already been deleted")
@@ -141,24 +170,10 @@ class EntityAPI(viewsets.ModelViewSet):
                 "cannot delete Entity because one or more Entries are not deleted"
             )
 
-        if custom_view.is_custom("before_delete_entity_v2"):
-            custom_view.call_custom("before_delete_entity_v2", None, user, entity)
+        job = Job.new_delete_entity_v2(user, entity, params=request.data)
+        job.run()
 
-        # register operation History for deleting entity
-        history: History = user.seth_entity_del(entity)
-
-        entity.delete()
-
-        # Delete all attributes which target Entity have
-        entity_attr: EntityAttr
-        for entity_attr in entity.attrs.filter(is_active=True):
-            history.del_attr(entity_attr)
-            entity_attr.delete()
-
-        if custom_view.is_custom("after_delete_entity_v2"):
-            custom_view.call_custom("after_delete_entity_v2", None, user, entity)
-
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(status=status.HTTP_202_ACCEPTED)
 
 
 class EntityEntryAPI(viewsets.ModelViewSet):
@@ -172,7 +187,7 @@ class EntityEntryAPI(viewsets.ModelViewSet):
 
     def get_serializer_class(self):
         serializer = {
-            "create": EntryCreateSerializer,
+            "create": serializers.Serializer,
         }
         return serializer.get(self.action, EntryBaseSerializer)
 
@@ -182,9 +197,18 @@ class EntityEntryAPI(viewsets.ModelViewSet):
             raise Http404
         return self.queryset.filter(schema=entity)
 
-    def create(self, request, entity_id):
+    @extend_schema(request=EntryCreateSerializer)
+    def create(self, request: Request, entity_id: int) -> Response:
+        user: User = request.user
         request.data["schema"] = entity_id
-        return super().create(request)
+
+        serializer = EntryCreateSerializer(data=request.data, context={"_user": user})
+        serializer.is_valid(raise_exception=True)
+
+        job = Job.new_create_entry_v2(user, None, params=request.data)
+        job.run()
+
+        return Response(status=status.HTTP_202_ACCEPTED)
 
 
 class EntityHistoryAPI(viewsets.ReadOnlyModelViewSet):
@@ -210,7 +234,7 @@ class EntityImportAPI(generics.GenericAPIView):
     parser_classes = [YAMLParser]
     serializer_class = serializers.Serializer
 
-    def post(self, request):
+    def post(self, request: Request) -> Response:
         import_datas = request.data
         serializer = EntityImportExportRootSerializer(
             data=import_datas, context={"request": self.request}
@@ -225,7 +249,7 @@ class EntityExportAPI(generics.RetrieveAPIView):
     serializer_class = EntityImportExportRootSerializer
     renderer_classes = [YAMLRenderer]
 
-    def get_object(self):
+    def get_object(self) -> dict:
         user: User = self.request.user
         entities = get_permitted_objects(user, Entity, ACLType.Readable)
         attrs = get_permitted_objects(user, EntityAttr, ACLType.Readable)
@@ -248,29 +272,35 @@ class EntityAttrNameAPI(generics.GenericAPIView):
         entity_ids = list(filter(None, self.request.query_params.get("entity_ids", "").split(",")))
 
         if len(entity_ids) == 0:
-            return (
-                EntityAttr.objects.filter(is_active=True)
-                .values_list("name", flat=True)
-                .order_by("name")
-                .distinct()
-            )
+            return EntityAttr.objects.filter(is_active=True)
+
         else:
             entities = Entity.objects.filter(id__in=entity_ids, is_active=True)
             if len(entity_ids) != len(entities):
                 # the case invalid entity-id was specified
                 raise ValidationError("Target Entity doesn't exist")
             else:
-                return (
-                    # filter only names appear in all specified entities
-                    EntityAttr.objects.filter(parent_entity__in=entities, is_active=True)
-                    .values("name")
-                    .annotate(count=Count("name"))
-                    .filter(count=len(entity_ids))
-                    .values_list("name", flat=True)
-                    .order_by("name")
-                )
+                # filter only names appear in all specified entities
+                return EntityAttr.objects.filter(parent_entity__in=entities, is_active=True)
 
-    def get(self, request):
+    def get(self, request: Request) -> Response:
         queryset = self.get_queryset()
+
+        entity_ids: List[int] = list(
+            filter(None, self.request.query_params.get("entity_ids", "").split(","))
+        )
+        names_query = queryset.values("name")
+        if len(entity_ids) > 0:
+            names_query = names_query.annotate(count=Count("name")).filter(count=len(entity_ids))
+
+        # Compile each attribute of referrals by attribute name
         serializer: Serializer = self.get_serializer(queryset)
-        return Response(serializer.data)
+        results: Dict[str, Dict] = {}
+        for attrname in names_query.values_list("name", flat=True):
+            for attrinfo in [x for x in serializer.data if x["name"] == attrname]:
+                if attrname in results:
+                    results[attrname]["referral"] += attrinfo["referral"]
+                else:
+                    results[attrname] = attrinfo
+
+        return Response(results.values())
