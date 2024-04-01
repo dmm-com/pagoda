@@ -372,9 +372,8 @@ class TriggerCondition(models.Model):
 
         except ValueError:
             Logger.error(
-                "Invalid Attribute Type(%s) was registered (attr_id: %s)"(
-                    self.attr.type, self.attr.id
-                )
+                "Invalid Attribute Type(%s) was registered (attr_id: %s)"
+                % (self.attr.type, self.attr.id)
             )
 
         return False
