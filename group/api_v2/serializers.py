@@ -68,7 +68,7 @@ class GroupCreateUpdateSerializer(serializers.ModelSerializer):
             job_register_referrals = Job.new_register_referrals(
                 self.context["request"].user,
                 None,
-                operation_value=JobOperation.GROUP_REGISTER_REFERRAL.value,
+                operation_value=JobOperation.GROUP_REGISTER_REFERRAL,
                 params={"group_id": instance.id},
             )
 

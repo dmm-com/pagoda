@@ -459,7 +459,7 @@ def export(request, entity_id, recv_data):
         job_params["export_format"] = "csv"
 
     # check whether same job is sent
-    job_status_not_finished = [JobStatus.PREPARING.value, JobStatus.PROCESSING.value]
+    job_status_not_finished = [JobStatus.PREPARING, JobStatus.PROCESSING]
     if (
         Job.get_job_with_params(request.user, job_params)
         .filter(status__in=job_status_not_finished)

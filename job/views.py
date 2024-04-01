@@ -22,8 +22,8 @@ def index(request):
         limitation = None
 
     export_operations = [
-        JobOperation.EXPORT_ENTRY.value,
-        JobOperation.EXPORT_SEARCH_RESULT.value,
+        JobOperation.EXPORT_ENTRY,
+        JobOperation.EXPORT_SEARCH_RESULT,
     ]
 
     query = Q(Q(user=request.user), ~Q(operation__in=Job.HIDDEN_OPERATIONS))
@@ -45,8 +45,8 @@ def index(request):
             if (
                 x.operation in export_operations
                 or (x.operation not in export_operations and x.target and x.target.is_active)
-                or (x.operation is JobOperation.DELETE_ENTITY.value and x.target)
-                or (x.operation is JobOperation.DELETE_ENTRY.value and x.target)
+                or (x.operation == JobOperation.DELETE_ENTITY and x.target)
+                or (x.operation == JobOperation.DELETE_ENTRY and x.target)
             )
         ]
     }

@@ -33,7 +33,7 @@ class CeleryTest(AironeViewTest):
 
     def test_celery_task_failure_update_job_status(self):
         user = self.guest_login()
-        job: Job = Job.objects.create(user=user, status=JobStatus.PREPARING.value)
+        job: Job = Job.objects.create(user=user, status=JobStatus.PREPARING)
         celery_task_failure_update_job_status(
             task_id="test_task_id",
             exception=Exception("Test"),
@@ -43,4 +43,4 @@ class CeleryTest(AironeViewTest):
             einfo=ExceptionInfo,
         )
         job.refresh_from_db()
-        self.assertEqual(job.status, JobStatus.ERROR.value)
+        self.assertEqual(job.status, JobStatus.ERROR)

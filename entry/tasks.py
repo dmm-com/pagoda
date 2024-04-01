@@ -220,7 +220,7 @@ def _do_import_entries(job: Job):
             # run notification job
             job_notify.run()
 
-    job.update(status=JobStatus.DONE.value, text="")
+    job.update(status=JobStatus.DONE, text="")
 
 
 def _do_import_entries_v2(job: Job):
@@ -238,7 +238,7 @@ def _do_import_entries_v2(job: Job):
 
         # abort processing when job is canceled
         if job.is_canceled():
-            job.status = JobStatus.CANCELED.value
+            job.status = JobStatus.CANCELED
             job.save(update_fields=["status"])
             return
 
@@ -262,10 +262,10 @@ def _do_import_entries_v2(job: Job):
 
     if err_msg:
         text = "Imported Entry count: %d, Failed import Entry: %s" % (total_count, err_msg)
-        job.update(status=JobStatus.WARNING.value, text=text)
+        job.update(status=JobStatus.WARNING, text=text)
     else:
         text = "Imported Entry count: %d" % total_count
-        job.update(status=JobStatus.DONE.value, text=text)
+        job.update(status=JobStatus.DONE, text=text)
 
 
 def _yaml_export_v2(job: Job, values, recv_data: dict, has_referral: bool) -> Optional[io.StringIO]:
@@ -379,7 +379,7 @@ def create_entry_attrs(self, job_id: int):
 
     if job.proceed_if_ready():
         # At the first time, update job status to prevent executing this job duplicately
-        job.update(JobStatus.PROCESSING.value)
+        job.update(JobStatus.PROCESSING)
 
         user = User.objects.filter(id=job.user.id).first()
         entry = Entry.objects.filter(id=job.target.id, is_active=True).first()
@@ -389,7 +389,7 @@ def create_entry_attrs(self, job_id: int):
 
         if not entry or not user:
             # Abort when specified entry doesn't exist
-            job.update(JobStatus.CANCELED.value)
+            job.update(JobStatus.CANCELED)
             return
 
         recv_data = json.loads(job.params)
@@ -439,7 +439,7 @@ def create_entry_attrs(self, job_id: int):
 
         # update job status and save it except for the case that target job is canceled.
         if not job.is_canceled():
-            job.update(JobStatus.DONE.value)
+            job.update(JobStatus.DONE)
 
             # Send notification to the webhook URL
             job_notify_event = Job.new_notify_create_entry(user, entry)
@@ -458,7 +458,7 @@ def edit_entry_attrs(self, job_id: int):
 
     if job.proceed_if_ready():
         # At the first time, update job status to prevent executing this job duplicately
-        job.update(JobStatus.PROCESSING.value)
+        job.update(JobStatus.PROCESSING)
 
         user = User.objects.get(id=job.user.id)
         entry = Entry.objects.get(id=job.target.id)
@@ -504,7 +504,7 @@ def edit_entry_attrs(self, job_id: int):
         entry.del_status(Entry.STATUS_EDITING)
 
         # update job status and save it
-        job.update(JobStatus.DONE.value)
+        job.update(JobStatus.DONE)
 
         # running job to notify changing entry event
         job_notify_event = Job.new_notify_update_entry(user, entry)
@@ -516,7 +516,7 @@ def delete_entry(self, job_id: int):
     job = Job.objects.get(id=job_id)
 
     if job.proceed_if_ready():
-        job.update(JobStatus.PROCESSING.value)
+        job.update(JobStatus.PROCESSING)
 
         entry = Entry.objects.get(id=job.target.id)
 
@@ -529,7 +529,7 @@ def delete_entry(self, job_id: int):
             custom_view.call_custom("after_delete_entry", entry.schema.name, job.user, entry)
 
         # update job status and save it
-        job.update(JobStatus.DONE.value)
+        job.update(JobStatus.DONE)
 
 
 @app.task(bind=True)
@@ -537,7 +537,7 @@ def restore_entry(self, job_id):
     job = Job.objects.get(id=job_id)
 
     if job.proceed_if_ready():
-        job.update(JobStatus.PROCESSING.value)
+        job.update(JobStatus.PROCESSING)
 
         entry = Entry.objects.get(id=job.target.id)
 
@@ -558,7 +558,7 @@ def restore_entry(self, job_id):
             custom_view.call_custom("after_restore_entry", entry.schema.name, job.user, entry)
 
         # update job status and save it
-        job.update(JobStatus.DONE.value)
+        job.update(JobStatus.DONE)
 
 
 @app.task(bind=True)
@@ -567,7 +567,7 @@ def copy_entry(self, job_id):
 
     if job.proceed_if_ready():
         # update job status
-        job.update(JobStatus.PROCESSING.value)
+        job.update(JobStatus.PROCESSING)
 
         src_entry = Entry.objects.get(id=job.target.id)
 
@@ -589,7 +589,7 @@ def copy_entry(self, job_id):
 
         # update job status and save it
         job.update(
-            status=JobStatus.DONE.value,
+            status=JobStatus.DONE,
             text="Copy completed [%5d/%5d]" % (total_count, total_count),
         )
 
@@ -600,7 +600,7 @@ def do_copy_entry(self, job_id: int):
 
     if job.proceed_if_ready():
         # update job status
-        job.update(JobStatus.PROCESSING.value)
+        job.update(JobStatus.PROCESSING)
 
         src_entry = Entry.objects.get(id=job.target.id)
 
@@ -621,7 +621,7 @@ def do_copy_entry(self, job_id: int):
             )
 
         # update job status and save it
-        job.update(JobStatus.DONE.value, "original entry: %s" % src_entry.name, dest_entry)
+        job.update(JobStatus.DONE, "original entry: %s" % src_entry.name, dest_entry)
 
         # create and run event notification job
         job_notify_event = Job.new_notify_create_entry(job.user, dest_entry)
@@ -644,7 +644,7 @@ def import_entries_v2(self, job_id: int):
     job: Job = Job.objects.get(id=job_id)
 
     if job.proceed_if_ready():
-        job.update(JobStatus.PROCESSING.value)
+        job.update(JobStatus.PROCESSING)
         _do_import_entries_v2(job)
 
 
@@ -839,7 +839,7 @@ def _notify_event(notification_method, object_id, user) -> tuple[JobStatus, str]
 @app.task(bind=True)
 def update_es_documents(self, job_id: int):
     job = Job.objects.get(id=job_id)
-    job.update(JobStatus.PROCESSING.value)
+    job.update(JobStatus.PROCESSING)
     params = json.loads(job.params)
 
     entity = Entity.objects.get(id=job.target.id)

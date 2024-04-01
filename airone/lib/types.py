@@ -162,7 +162,7 @@ AttrDefaultValue = {
 }
 
 
-class AttrType(enum.Enum):
+class AttrType(enum.IntEnum):
     OBJECT = AttrTypeObj.TYPE
     STRING = AttrTypeStr.TYPE
     NAMED_OBJECT = AttrTypeNamedObj.TYPE

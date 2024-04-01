@@ -44,30 +44,30 @@ class APITest(AironeViewTest):
         self.assertEqual(
             results["constant"]["operation"],
             {
-                "create": JobOperation.CREATE_ENTRY.value,
-                "edit": JobOperation.EDIT_ENTRY.value,
-                "delete": JobOperation.DELETE_ENTRY.value,
-                "copy": JobOperation.COPY_ENTRY.value,
-                "do_copy": JobOperation.DO_COPY_ENTRY.value,
-                "import": JobOperation.IMPORT_ENTRY.value,
-                "import_v2": JobOperation.IMPORT_ENTRY_V2.value,
-                "export": JobOperation.EXPORT_ENTRY.value,
-                "export_search_result": JobOperation.EXPORT_SEARCH_RESULT.value,
-                "export_v2": JobOperation.EXPORT_ENTRY_V2.value,
-                "export_search_result_v2": JobOperation.EXPORT_SEARCH_RESULT_V2.value,
-                "restore": JobOperation.RESTORE_ENTRY.value,
-                "create_entity": JobOperation.CREATE_ENTITY.value,
-                "edit_entity": JobOperation.EDIT_ENTITY.value,
-                "delete_entity": JobOperation.DELETE_ENTITY.value,
+                "create": JobOperation.CREATE_ENTRY,
+                "edit": JobOperation.EDIT_ENTRY,
+                "delete": JobOperation.DELETE_ENTRY,
+                "copy": JobOperation.COPY_ENTRY,
+                "do_copy": JobOperation.DO_COPY_ENTRY,
+                "import": JobOperation.IMPORT_ENTRY,
+                "import_v2": JobOperation.IMPORT_ENTRY_V2,
+                "export": JobOperation.EXPORT_ENTRY,
+                "export_search_result": JobOperation.EXPORT_SEARCH_RESULT,
+                "export_v2": JobOperation.EXPORT_ENTRY_V2,
+                "export_search_result_v2": JobOperation.EXPORT_SEARCH_RESULT_V2,
+                "restore": JobOperation.RESTORE_ENTRY,
+                "create_entity": JobOperation.CREATE_ENTITY,
+                "edit_entity": JobOperation.EDIT_ENTITY,
+                "delete_entity": JobOperation.DELETE_ENTITY,
             },
         )
         self.assertEqual(
             results["constant"]["status"],
             {
-                "processing": JobStatus.PROCESSING.value,
-                "done": JobStatus.DONE.value,
-                "error": JobStatus.ERROR.value,
-                "timeout": JobStatus.TIMEOUT.value,
+                "processing": JobStatus.PROCESSING,
+                "done": JobStatus.DONE,
+                "error": JobStatus.ERROR,
+                "timeout": JobStatus.TIMEOUT,
             },
         )
 
@@ -119,7 +119,7 @@ class APITest(AironeViewTest):
         self.assertEqual(resp.content, b'"Success to run command"')
 
         job = Job.objects.get(id=job.id)
-        self.assertEqual(job.status, JobStatus.DONE.value)
+        self.assertEqual(job.status, JobStatus.DONE)
         self.assertEqual(entry.attrs.count(), 1)
 
         attrv = entry.attrs.first().get_latest_value()
@@ -152,7 +152,7 @@ class APITest(AironeViewTest):
 
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.content, b'"Success to run command"')
-        self.assertEqual(Job.objects.get(id=job.id).status, JobStatus.DONE.value)
+        self.assertEqual(Job.objects.get(id=job.id).status, JobStatus.DONE)
         self.assertEqual(entry.attrs.first().get_latest_value().value, "fuga")
 
         # make and send a job to copy entry
@@ -161,7 +161,7 @@ class APITest(AironeViewTest):
 
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.content, b'"Success to run command"')
-        self.assertEqual(Job.objects.get(id=job.id).status, JobStatus.DONE.value)
+        self.assertEqual(Job.objects.get(id=job.id).status, JobStatus.DONE)
 
         # checks it's success to clone entry
         new_entry = Entry.objects.get(name="new_entry", schema=entity)
@@ -203,12 +203,12 @@ class APITest(AironeViewTest):
         self.assertEqual(resp.status_code, 400)
 
         # send request with a GET parameter that doesn't match any job
-        resp = self.client.get("/api/v1/job/search", {"operation": JobOperation.COPY_ENTRY.value})
+        resp = self.client.get("/api/v1/job/search", {"operation": JobOperation.COPY_ENTRY})
         self.assertEqual(resp.status_code, 404)
 
         # send requests with GET parameter that matches the created job
         for param in [
-            {"operation": JobOperation.DELETE_ENTRY.value},
+            {"operation": JobOperation.DELETE_ENTRY},
             {"target_id": entry.id},
         ]:
             resp = self.client.get("/api/v1/job/search", param)
@@ -225,7 +225,7 @@ class APITest(AironeViewTest):
 
         # make a job
         job = Job.new_delete(user, entry)
-        self.assertEqual(job.status, JobStatus.PREPARING.value)
+        self.assertEqual(job.status, JobStatus.PREPARING)
 
         # send request without any parameters
         resp = self.client.delete("/api/v1/job/", json.dumps({}), "application/json")
@@ -246,7 +246,7 @@ class APITest(AironeViewTest):
 
         # send request with proper parameter
         job = Job.new_create(user, entry)
-        self.assertEqual(job.status, JobStatus.PREPARING.value)
+        self.assertEqual(job.status, JobStatus.PREPARING)
 
         resp = self.client.delete(
             "/api/v1/job/", json.dumps({"job_id": job.id}), "application/json"
@@ -255,7 +255,7 @@ class APITest(AironeViewTest):
         self.assertEqual(resp.content, b'"Success to cancel job"')
 
         job.refresh_from_db()
-        self.assertEqual(job.status, JobStatus.CANCELED.value)
+        self.assertEqual(job.status, JobStatus.CANCELED)
 
     def test_hidden_jobs_is_not_shown(self):
         user = self.guest_login()
@@ -275,4 +275,4 @@ class APITest(AironeViewTest):
         # check API result doesn't contain hidden job
         resp_data = resp.json()
         self.assertEqual(len(resp_data["result"]), 1)
-        self.assertEqual(resp_data["result"][0]["operation"], JobOperation.CREATE_ENTRY.value)
+        self.assertEqual(resp_data["result"][0]["operation"], JobOperation.CREATE_ENTRY)

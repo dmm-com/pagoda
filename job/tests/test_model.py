@@ -22,18 +22,18 @@ class ModelTest(AironeTestCase):
 
     def test_create_object(self):
         jobinfos = [
-            {"method": "new_create", "op": JobOperation.CREATE_ENTRY.value},
-            {"method": "new_edit", "op": JobOperation.EDIT_ENTRY.value},
-            {"method": "new_delete", "op": JobOperation.DELETE_ENTRY.value},
-            {"method": "new_copy", "op": JobOperation.COPY_ENTRY.value},
+            {"method": "new_create", "op": JobOperation.CREATE_ENTRY},
+            {"method": "new_edit", "op": JobOperation.EDIT_ENTRY},
+            {"method": "new_delete", "op": JobOperation.DELETE_ENTRY},
+            {"method": "new_copy", "op": JobOperation.COPY_ENTRY},
         ]
         for info in jobinfos:
             job = getattr(Job, info["method"])(self.guest, self.entry)
 
             self.assertEqual(job.user, self.guest)
             self.assertEqual(job.target, self.entry)
-            self.assertEqual(job.target_type, JobTarget.ENTRY.value)
-            self.assertEqual(job.status, JobStatus.PREPARING.value)
+            self.assertEqual(job.target_type, JobTarget.ENTRY)
+            self.assertEqual(job.status, JobStatus.PREPARING)
             self.assertEqual(job.operation, info["op"])
 
     def test_get_object(self):
@@ -48,8 +48,8 @@ class ModelTest(AironeTestCase):
 
         # create a new job
         job = Job.new_export(self.guest, text="hoge", params=params)
-        self.assertEqual(job.target_type, JobTarget.UNKNOWN.value)
-        self.assertEqual(job.operation, JobOperation.EXPORT_ENTRY.value)
+        self.assertEqual(job.target_type, JobTarget.UNKNOWN)
+        self.assertEqual(job.operation, JobOperation.EXPORT_ENTRY)
         self.assertEqual(job.text, "hoge")
 
         # check created job is got by specified params
@@ -103,11 +103,11 @@ class ModelTest(AironeTestCase):
         job = Job.new_create(self.guest, self.entry)
 
         for status in [
-            JobStatus.DONE.value,
-            JobStatus.ERROR.value,
-            JobStatus.TIMEOUT.value,
-            JobStatus.CANCELED.value,
-            JobStatus.WARNING.value,
+            JobStatus.DONE,
+            JobStatus.ERROR,
+            JobStatus.TIMEOUT,
+            JobStatus.CANCELED,
+            JobStatus.WARNING,
         ]:
             job.status = status
             job.save(update_fields=["status"])
@@ -119,83 +119,83 @@ class ModelTest(AironeTestCase):
         self.assertFalse(job.is_canceled())
 
         # change status of target job
-        job.update(JobStatus.CANCELED.value)
+        job.update(JobStatus.CANCELED)
 
         # confirms that is_canceled would be true by changing job status parameter
         self.assertTrue(job.is_canceled())
 
     def test_update_method(self):
         job = Job.new_create(self.guest, self.entry, "original text")
-        self.assertEqual(job.status, JobStatus.PREPARING.value)
-        self.assertEqual(job.operation, JobOperation.CREATE_ENTRY.value)
+        self.assertEqual(job.status, JobStatus.PREPARING)
+        self.assertEqual(job.operation, JobOperation.CREATE_ENTRY)
         last_updated_time = job.updated_at
 
         # When an invalid status value is specified, status value won't be changed
         job.update(9999)
         job.refresh_from_db()
 
-        self.assertEqual(job.status, JobStatus.PREPARING.value)
+        self.assertEqual(job.status, JobStatus.PREPARING)
         self.assertEqual(job.text, "original text")
         self.assertEqual(job.target.id, self.entry.id)
-        self.assertEqual(job.operation, JobOperation.CREATE_ENTRY.value)
+        self.assertEqual(job.operation, JobOperation.CREATE_ENTRY)
         self.assertGreater(job.updated_at, last_updated_time)
         last_updated_time = job.updated_at
 
         # update only status parameter
-        job.update(JobStatus.PROCESSING.value)
+        job.update(JobStatus.PROCESSING)
         job.refresh_from_db()
 
-        self.assertEqual(job.status, JobStatus.PROCESSING.value)
+        self.assertEqual(job.status, JobStatus.PROCESSING)
         self.assertEqual(job.text, "original text")
         self.assertEqual(job.target.id, self.entry.id)
-        self.assertEqual(job.operation, JobOperation.CREATE_ENTRY.value)
+        self.assertEqual(job.operation, JobOperation.CREATE_ENTRY)
         self.assertGreater(job.updated_at, last_updated_time)
         last_updated_time = job.updated_at
 
         # update status and text parameters
-        job.update(JobStatus.CANCELED.value, "changed message")
+        job.update(JobStatus.CANCELED, "changed message")
         job.refresh_from_db()
-        self.assertEqual(job.status, JobStatus.CANCELED.value)
+        self.assertEqual(job.status, JobStatus.CANCELED)
         self.assertEqual(job.text, "changed message")
         self.assertEqual(job.target.id, self.entry.id)
-        self.assertEqual(job.operation, JobOperation.CREATE_ENTRY.value)
+        self.assertEqual(job.operation, JobOperation.CREATE_ENTRY)
         self.assertGreater(job.updated_at, last_updated_time)
         last_updated_time = job.updated_at
 
         # update status, text and target parameters
         new_entry = Entry.objects.create(name="newone", created_user=self.guest, schema=self.entity)
-        job.update(JobStatus.DONE.value, "further changed message", new_entry)
+        job.update(JobStatus.DONE, "further changed message", new_entry)
         job.refresh_from_db()
 
-        self.assertEqual(job.status, JobStatus.DONE.value)
+        self.assertEqual(job.status, JobStatus.DONE)
         self.assertEqual(job.text, "further changed message")
         self.assertEqual(job.target.id, new_entry.id)
-        self.assertEqual(job.operation, JobOperation.CREATE_ENTRY.value)
+        self.assertEqual(job.operation, JobOperation.CREATE_ENTRY)
         self.assertGreater(job.updated_at, last_updated_time)
 
         # update invalid operation, job operation parameter won't be changed
         job.update(operation=9999)
-        self.assertEqual(job.operation, JobOperation.CREATE_ENTRY.value)
+        self.assertEqual(job.operation, JobOperation.CREATE_ENTRY)
 
         # update valid operation, job operation parameter will be changed
-        job.update(operation=JobOperation.EDIT_ENTRY.value)
-        self.assertEqual(job.operation, JobOperation.EDIT_ENTRY.value)
+        job.update(operation=JobOperation.EDIT_ENTRY)
+        self.assertEqual(job.operation, JobOperation.EDIT_ENTRY)
 
     def test_proceed_if_ready(self):
         job = Job.new_create(self.guest, self.entry)
 
         for status in [
-            JobStatus.DONE.value,
-            JobStatus.ERROR.value,
-            JobStatus.TIMEOUT.value,
-            JobStatus.CANCELED.value,
-            JobStatus.PROCESSING.value,
+            JobStatus.DONE,
+            JobStatus.ERROR,
+            JobStatus.TIMEOUT,
+            JobStatus.CANCELED,
+            JobStatus.PROCESSING,
         ]:
             job.status = status
             job.save(update_fields=["status"])
             self.assertFalse(job.proceed_if_ready())
 
-        job.status = JobStatus.PREPARING.value
+        job.status = JobStatus.PREPARING
         job.save(update_fields=["status"])
         self.assertTrue(job.proceed_if_ready())
 
@@ -231,7 +231,7 @@ class ModelTest(AironeTestCase):
     def test_may_schedule_with_parallelizable_operation(self):
         [job1, job2] = [Job.new_notify_update_entry(self.guest, self.entry) for _ in range(2)]
         self.assertEqual(job2.dependent_job, job1)
-        self.assertEqual(job1.status, JobStatus.PREPARING.value)
+        self.assertEqual(job1.status, JobStatus.PREPARING)
         self.assertTrue(job2.proceed_if_ready())
 
     @mock.patch("job.models.import_module")

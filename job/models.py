@@ -100,43 +100,43 @@ class Job(models.Model):
     # In some jobs sholdn't make user aware of existence because of user experience
     # (e.g. re-registrating elasticsearch data of entries which refer to changed name entry).
     # These are the jobs that should be proceeded transparently.
-    HIDDEN_OPERATIONS = [
-        JobOperation.REGISTER_REFERRALS.value,
-        JobOperation.NOTIFY_CREATE_ENTRY.value,
-        JobOperation.NOTIFY_UPDATE_ENTRY.value,
-        JobOperation.NOTIFY_DELETE_ENTRY.value,
-        JobOperation.UPDATE_DOCUMENT.value,
-        JobOperation.MAY_INVOKE_TRIGGER.value,
+    HIDDEN_OPERATIONS: list[JobOperation] = [
+        JobOperation.REGISTER_REFERRALS,
+        JobOperation.NOTIFY_CREATE_ENTRY,
+        JobOperation.NOTIFY_UPDATE_ENTRY,
+        JobOperation.NOTIFY_DELETE_ENTRY,
+        JobOperation.UPDATE_DOCUMENT,
+        JobOperation.MAY_INVOKE_TRIGGER,
     ]
 
-    CANCELABLE_OPERATIONS = [
-        JobOperation.CREATE_ENTRY.value,
-        JobOperation.COPY_ENTRY.value,
-        JobOperation.IMPORT_ENTRY.value,
-        JobOperation.IMPORT_ENTRY_V2.value,
-        JobOperation.EXPORT_ENTRY.value,
-        JobOperation.EXPORT_ENTRY_V2.value,
-        JobOperation.REGISTER_REFERRALS.value,
-        JobOperation.EXPORT_SEARCH_RESULT.value,
-        JobOperation.EXPORT_SEARCH_RESULT_V2.value,
+    CANCELABLE_OPERATIONS: list[JobOperation] = [
+        JobOperation.CREATE_ENTRY,
+        JobOperation.COPY_ENTRY,
+        JobOperation.IMPORT_ENTRY,
+        JobOperation.IMPORT_ENTRY_V2,
+        JobOperation.EXPORT_ENTRY,
+        JobOperation.EXPORT_ENTRY_V2,
+        JobOperation.REGISTER_REFERRALS,
+        JobOperation.EXPORT_SEARCH_RESULT,
+        JobOperation.EXPORT_SEARCH_RESULT_V2,
     ]
 
-    PARALLELIZABLE_OPERATIONS = [
-        JobOperation.NOTIFY_CREATE_ENTRY.value,
-        JobOperation.NOTIFY_UPDATE_ENTRY.value,
-        JobOperation.NOTIFY_DELETE_ENTRY.value,
-        JobOperation.COPY_ENTRY.value,
-        JobOperation.DO_COPY_ENTRY.value,
-        JobOperation.IMPORT_ENTRY.value,
-        JobOperation.EXPORT_ENTRY.value,
-        JobOperation.UPDATE_DOCUMENT.value,
+    PARALLELIZABLE_OPERATIONS: list[JobOperation] = [
+        JobOperation.NOTIFY_CREATE_ENTRY,
+        JobOperation.NOTIFY_UPDATE_ENTRY,
+        JobOperation.NOTIFY_DELETE_ENTRY,
+        JobOperation.COPY_ENTRY,
+        JobOperation.DO_COPY_ENTRY,
+        JobOperation.IMPORT_ENTRY,
+        JobOperation.EXPORT_ENTRY,
+        JobOperation.UPDATE_DOCUMENT,
     ]
 
-    DOWNLOADABLE_OPERATIONS = [
-        JobOperation.EXPORT_ENTRY.value,
-        JobOperation.EXPORT_ENTRY_V2.value,
-        JobOperation.EXPORT_SEARCH_RESULT.value,
-        JobOperation.EXPORT_SEARCH_RESULT_V2.value,
+    DOWNLOADABLE_OPERATIONS: list[JobOperation] = [
+        JobOperation.EXPORT_ENTRY,
+        JobOperation.EXPORT_ENTRY_V2,
+        JobOperation.EXPORT_SEARCH_RESULT,
+        JobOperation.EXPORT_SEARCH_RESULT_V2,
     ]
 
     user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
@@ -188,12 +188,12 @@ class Job(models.Model):
         self.refresh_from_db(fields=["status"])
 
         # This value indicates that there is no more processing for a job
-        finished_status = [
-            JobStatus.DONE.value,
-            JobStatus.ERROR.value,
-            JobStatus.TIMEOUT.value,
-            JobStatus.CANCELED.value,
-            JobStatus.WARNING.value,
+        finished_status: list[JobStatus] = [
+            JobStatus.DONE,
+            JobStatus.ERROR,
+            JobStatus.TIMEOUT,
+            JobStatus.CANCELED,
+            JobStatus.WARNING,
         ]
 
         return self.status in finished_status or self.is_timeout()
@@ -202,11 +202,11 @@ class Job(models.Model):
         # Sync status flag information with the data which is stored in database
         self.refresh_from_db(fields=["status"])
 
-        return self.status == JobStatus.CANCELED.value
+        return self.status == JobStatus.CANCELED
 
     def proceed_if_ready(self):
         # In this case, job is finished (might be canceled or proceeded same job by other process)
-        if self.is_finished() or self.status == JobStatus.PROCESSING.value:
+        if self.is_finished() or self.status == JobStatus.PROCESSING:
             return False
 
         # This checks whether dependent job is and it hasn't finished yet.
@@ -279,11 +279,11 @@ class Job(models.Model):
         params,
         depend_on=None,
     ) -> "Job":
-        t_type = JobTarget.UNKNOWN.value
+        t_type = JobTarget.UNKNOWN
         if isinstance(target, Entry):
-            t_type = JobTarget.ENTRY.value
+            t_type = JobTarget.ENTRY
         elif isinstance(target, Entity):
-            t_type = JobTarget.ENTITY.value
+            t_type = JobTarget.ENTITY
 
         # set dependent job to prevent running tasks simultaneously which set to target same one.
         dependent_job = None
@@ -304,7 +304,7 @@ class Job(models.Model):
             "user": user,
             "target": target,
             "target_type": t_type,
-            "status": JobStatus.PREPARING.value,
+            "status": JobStatus.PREPARING,
             "operation": operation,
             "text": text,
             "params": params,
@@ -331,35 +331,35 @@ class Job(models.Model):
             trigger_task = kls.get_task_module("trigger.tasks")
 
             kls._METHOD_TABLE = {
-                JobOperation.CREATE_ENTRY.value: entry_task.create_entry_attrs,
-                JobOperation.EDIT_ENTRY.value: entry_task.edit_entry_attrs,
-                JobOperation.DELETE_ENTRY.value: entry_task.delete_entry,
-                JobOperation.COPY_ENTRY.value: entry_task.copy_entry,
-                JobOperation.DO_COPY_ENTRY.value: entry_task.do_copy_entry,
-                JobOperation.IMPORT_ENTRY.value: entry_task.import_entries,
-                JobOperation.IMPORT_ENTRY_V2.value: entry_task.import_entries_v2,
-                JobOperation.EXPORT_ENTRY.value: entry_task.export_entries,
-                JobOperation.EXPORT_ENTRY_V2.value: entry_task.export_entries_v2,
-                JobOperation.RESTORE_ENTRY.value: entry_task.restore_entry,
-                JobOperation.EXPORT_SEARCH_RESULT.value: dashboard_task.export_search_result,
-                JobOperation.REGISTER_REFERRALS.value: entry_task.register_referrals,
-                JobOperation.CREATE_ENTITY.value: entity_task.create_entity,
-                JobOperation.EDIT_ENTITY.value: entity_task.edit_entity,
-                JobOperation.DELETE_ENTITY.value: entity_task.delete_entity,
-                JobOperation.NOTIFY_CREATE_ENTRY.value: entry_task.notify_create_entry,
-                JobOperation.NOTIFY_UPDATE_ENTRY.value: entry_task.notify_update_entry,
-                JobOperation.NOTIFY_DELETE_ENTRY.value: entry_task.notify_delete_entry,
-                JobOperation.GROUP_REGISTER_REFERRAL.value: group_task.edit_group_referrals,
-                JobOperation.ROLE_REGISTER_REFERRAL.value: role_task.edit_role_referrals,
-                JobOperation.UPDATE_DOCUMENT.value: entry_task.update_es_documents,
-                JobOperation.EXPORT_SEARCH_RESULT_V2.value: entry_task.export_search_result_v2,
-                JobOperation.MAY_INVOKE_TRIGGER.value: trigger_task.may_invoke_trigger,
-                JobOperation.CREATE_ENTITY_V2.value: entity_task.create_entity_v2,
-                JobOperation.EDIT_ENTITY_V2.value: entity_task.edit_entity_v2,
-                JobOperation.DELETE_ENTITY_V2.value: entity_task.delete_entity_v2,
-                JobOperation.CREATE_ENTRY_V2.value: entry_task.create_entry_v2,
-                JobOperation.EDIT_ENTRY_V2.value: entry_task.edit_entry_v2,
-                JobOperation.DELETE_ENTRY_V2.value: entry_task.delete_entry_v2,
+                JobOperation.CREATE_ENTRY: entry_task.create_entry_attrs,
+                JobOperation.EDIT_ENTRY: entry_task.edit_entry_attrs,
+                JobOperation.DELETE_ENTRY: entry_task.delete_entry,
+                JobOperation.COPY_ENTRY: entry_task.copy_entry,
+                JobOperation.DO_COPY_ENTRY: entry_task.do_copy_entry,
+                JobOperation.IMPORT_ENTRY: entry_task.import_entries,
+                JobOperation.IMPORT_ENTRY_V2: entry_task.import_entries_v2,
+                JobOperation.EXPORT_ENTRY: entry_task.export_entries,
+                JobOperation.EXPORT_ENTRY_V2: entry_task.export_entries_v2,
+                JobOperation.RESTORE_ENTRY: entry_task.restore_entry,
+                JobOperation.EXPORT_SEARCH_RESULT: dashboard_task.export_search_result,
+                JobOperation.REGISTER_REFERRALS: entry_task.register_referrals,
+                JobOperation.CREATE_ENTITY: entity_task.create_entity,
+                JobOperation.EDIT_ENTITY: entity_task.edit_entity,
+                JobOperation.DELETE_ENTITY: entity_task.delete_entity,
+                JobOperation.NOTIFY_CREATE_ENTRY: entry_task.notify_create_entry,
+                JobOperation.NOTIFY_UPDATE_ENTRY: entry_task.notify_update_entry,
+                JobOperation.NOTIFY_DELETE_ENTRY: entry_task.notify_delete_entry,
+                JobOperation.GROUP_REGISTER_REFERRAL: group_task.edit_group_referrals,
+                JobOperation.ROLE_REGISTER_REFERRAL: role_task.edit_role_referrals,
+                JobOperation.UPDATE_DOCUMENT: entry_task.update_es_documents,
+                JobOperation.EXPORT_SEARCH_RESULT_V2: entry_task.export_search_result_v2,
+                JobOperation.MAY_INVOKE_TRIGGER: trigger_task.may_invoke_trigger,
+                JobOperation.CREATE_ENTITY_V2: entity_task.create_entity_v2,
+                JobOperation.EDIT_ENTITY_V2: entity_task.edit_entity_v2,
+                JobOperation.DELETE_ENTITY_V2: entity_task.delete_entity_v2,
+                JobOperation.CREATE_ENTRY_V2: entry_task.create_entry_v2,
+                JobOperation.EDIT_ENTRY_V2: entry_task.edit_entry_v2,
+                JobOperation.DELETE_ENTRY_V2: entry_task.delete_entry_v2,
             }
 
         return kls._METHOD_TABLE
@@ -381,7 +381,7 @@ class Job(models.Model):
         return kls._create_new_job(
             user,
             target,
-            JobOperation.CREATE_ENTRY.value,
+            JobOperation.CREATE_ENTRY,
             text,
             json.dumps(params, default=_support_time_default, sort_keys=True),
         )
@@ -391,21 +391,21 @@ class Job(models.Model):
         return kls._create_new_job(
             user,
             target,
-            JobOperation.EDIT_ENTRY.value,
+            JobOperation.EDIT_ENTRY,
             text,
             json.dumps(params, default=_support_time_default, sort_keys=True),
         )
 
     @classmethod
     def new_delete(kls, user, target, text="", params={}):
-        return kls._create_new_job(user, target, JobOperation.DELETE_ENTRY.value, text, params)
+        return kls._create_new_job(user, target, JobOperation.DELETE_ENTRY, text, params)
 
     @classmethod
     def new_copy(kls, user, target, text="", params={}):
         return kls._create_new_job(
             user,
             target,
-            JobOperation.COPY_ENTRY.value,
+            JobOperation.COPY_ENTRY,
             text,
             json.dumps(params, sort_keys=True),
         )
@@ -415,7 +415,7 @@ class Job(models.Model):
         return kls._create_new_job(
             user,
             target,
-            JobOperation.DO_COPY_ENTRY.value,
+            JobOperation.DO_COPY_ENTRY,
             text,
             json.dumps(params, sort_keys=True),
         )
@@ -425,7 +425,7 @@ class Job(models.Model):
         return kls._create_new_job(
             user,
             entity,
-            JobOperation.IMPORT_ENTRY.value,
+            JobOperation.IMPORT_ENTRY,
             text,
             json.dumps(params, default=_support_time_default, sort_keys=True),
         )
@@ -435,7 +435,7 @@ class Job(models.Model):
         return kls._create_new_job(
             user,
             entity,
-            JobOperation.IMPORT_ENTRY_V2.value,
+            JobOperation.IMPORT_ENTRY_V2,
             text,
             json.dumps(params, default=_support_time_default, sort_keys=True),
         )
@@ -445,7 +445,7 @@ class Job(models.Model):
         return kls._create_new_job(
             user,
             target,
-            JobOperation.EXPORT_ENTRY.value,
+            JobOperation.EXPORT_ENTRY,
             text,
             json.dumps(params, default=_support_time_default, sort_keys=True),
         )
@@ -455,21 +455,21 @@ class Job(models.Model):
         return kls._create_new_job(
             user,
             target,
-            JobOperation.EXPORT_ENTRY_V2.value,
+            JobOperation.EXPORT_ENTRY_V2,
             text,
             json.dumps(params, default=_support_time_default, sort_keys=True),
         )
 
     @classmethod
     def new_restore(kls, user, target, text="", params={}):
-        return kls._create_new_job(user, target, JobOperation.RESTORE_ENTRY.value, text, params)
+        return kls._create_new_job(user, target, JobOperation.RESTORE_ENTRY, text, params)
 
     @classmethod
     def new_export_search_result(kls, user, target=None, text="", params={}):
         return kls._create_new_job(
             user,
             target,
-            JobOperation.EXPORT_SEARCH_RESULT.value,
+            JobOperation.EXPORT_SEARCH_RESULT,
             text,
             json.dumps(params, default=_support_time_default, sort_keys=True),
         )
@@ -479,14 +479,14 @@ class Job(models.Model):
         return kls._create_new_job(
             user,
             target,
-            JobOperation.EXPORT_SEARCH_RESULT_V2.value,
+            JobOperation.EXPORT_SEARCH_RESULT_V2,
             text,
             json.dumps(params, default=_support_time_default, sort_keys=True),
         )
 
     @classmethod
     def new_register_referrals(
-        kls, user, target, operation_value=JobOperation.REGISTER_REFERRALS.value, params={}
+        kls, user, target, operation_value=JobOperation.REGISTER_REFERRALS, params={}
     ):
         return kls._create_new_job(
             user,
@@ -501,7 +501,7 @@ class Job(models.Model):
         return kls._create_new_job(
             user,
             target,
-            JobOperation.CREATE_ENTITY.value,
+            JobOperation.CREATE_ENTITY,
             text,
             json.dumps(params, default=_support_time_default, sort_keys=True),
         )
@@ -511,14 +511,14 @@ class Job(models.Model):
         return kls._create_new_job(
             user,
             target,
-            JobOperation.EDIT_ENTITY.value,
+            JobOperation.EDIT_ENTITY,
             text,
             json.dumps(params, default=_support_time_default, sort_keys=True),
         )
 
     @classmethod
     def new_delete_entity(kls, user, target, text="", params={}):
-        return kls._create_new_job(user, target, JobOperation.DELETE_ENTITY.value, text, params)
+        return kls._create_new_job(user, target, JobOperation.DELETE_ENTITY, text, params)
 
     @classmethod
     def new_update_documents(kls, target, text="", params={}):
@@ -528,35 +528,29 @@ class Job(models.Model):
         return kls._create_new_job(
             user,
             target,
-            JobOperation.UPDATE_DOCUMENT.value,
+            JobOperation.UPDATE_DOCUMENT,
             text,
             json.dumps(params, sort_keys=True),
         )
 
     @classmethod
     def new_notify_create_entry(kls, user, target, text="", params={}):
-        return kls._create_new_job(
-            user, target, JobOperation.NOTIFY_CREATE_ENTRY.value, text, params
-        )
+        return kls._create_new_job(user, target, JobOperation.NOTIFY_CREATE_ENTRY, text, params)
 
     @classmethod
     def new_notify_update_entry(kls, user, target, text="", params={}):
-        return kls._create_new_job(
-            user, target, JobOperation.NOTIFY_UPDATE_ENTRY.value, text, params
-        )
+        return kls._create_new_job(user, target, JobOperation.NOTIFY_UPDATE_ENTRY, text, params)
 
     @classmethod
     def new_notify_delete_entry(kls, user, target, text="", params={}):
-        return kls._create_new_job(
-            user, target, JobOperation.NOTIFY_DELETE_ENTRY.value, text, params
-        )
+        return kls._create_new_job(user, target, JobOperation.NOTIFY_DELETE_ENTRY, text, params)
 
     @classmethod
     def new_invoke_trigger(kls, user, target_entry, recv_attrs={}, dependent_job=None):
         return kls._create_new_job(
             user,
             target_entry,
-            JobOperation.MAY_INVOKE_TRIGGER.value,
+            JobOperation.MAY_INVOKE_TRIGGER,
             "",
             json.dumps(recv_attrs),
             dependent_job,
@@ -567,7 +561,7 @@ class Job(models.Model):
         return kls._create_new_job(
             user,
             target,
-            JobOperation.CREATE_ENTITY_V2.value,
+            JobOperation.CREATE_ENTITY_V2,
             text,
             json.dumps(params, default=_support_time_default, sort_keys=True),
         )
@@ -577,7 +571,7 @@ class Job(models.Model):
         return kls._create_new_job(
             user,
             target,
-            JobOperation.EDIT_ENTITY_V2.value,
+            JobOperation.EDIT_ENTITY_V2,
             text,
             json.dumps(params, default=_support_time_default, sort_keys=True),
         )
@@ -587,7 +581,7 @@ class Job(models.Model):
         return kls._create_new_job(
             user,
             target,
-            JobOperation.DELETE_ENTITY_V2.value,
+            JobOperation.DELETE_ENTITY_V2,
             text,
             json.dumps(params, default=_support_time_default, sort_keys=True),
         )
@@ -597,7 +591,7 @@ class Job(models.Model):
         return kls._create_new_job(
             user,
             target,
-            JobOperation.CREATE_ENTRY_V2.value,
+            JobOperation.CREATE_ENTRY_V2,
             text,
             json.dumps(params, default=_support_time_default, sort_keys=True),
         )
@@ -607,7 +601,7 @@ class Job(models.Model):
         return kls._create_new_job(
             user,
             target,
-            JobOperation.EDIT_ENTRY_V2.value,
+            JobOperation.EDIT_ENTRY_V2,
             text,
             json.dumps(params, default=_support_time_default, sort_keys=True),
         )
@@ -617,7 +611,7 @@ class Job(models.Model):
         return kls._create_new_job(
             user,
             target,
-            JobOperation.DELETE_ENTRY_V2.value,
+            JobOperation.DELETE_ENTRY_V2,
             text,
             json.dumps(params, default=_support_time_default, sort_keys=True),
         )
