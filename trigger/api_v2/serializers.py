@@ -13,7 +13,6 @@ from entity.api_v2.serializers import (
 from entity.models import Entity, EntityAttr
 from entry.api_v2.serializers import (
     AttributeValueField,
-    EntryAttributeValueNamedObjectSerializer,
     EntryAttributeValueObject,
 )
 from trigger.models import (

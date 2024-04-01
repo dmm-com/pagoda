@@ -38,7 +38,11 @@ class APITest(AironeViewTest):
                 {"name": "memo", "type": AttrTypeValue["string"]},
                 {"name": "authors", "type": AttrTypeValue["array_string"]},
                 {"name": "recommended_by", "type": AttrTypeValue["array_object"]},
-                {"name": "price", "type": AttrTypeValue["named_object"], "ref": self.entity_currency},
+                {
+                    "name": "price",
+                    "type": AttrTypeValue["named_object"],
+                    "ref": self.entity_currency,
+                },
                 {"name": "history", "type": AttrTypeValue["array_named_object"]},
             ],
         )
@@ -130,7 +134,6 @@ class APITest(AironeViewTest):
         self.assertTrue(all([x["bool_cond"] for x in bool_action_values]))
 
     def test_list_trigger_condition_and_action(self):
-
         # create TriggerCondition for test_entity
         settingTriggerActions = [
             {
@@ -341,7 +344,7 @@ class APITest(AironeViewTest):
                 },
                 {
                     "attr_id": self.entity_book.attrs.get(name="recommended_by").id,
-                    "value": [self.entry_tom, entry_jerry.id],
+                    "values": [self.entry_tom.id, entry_jerry.id],
                 },
                 {
                     "attr_id": self.entity_book.attrs.get(name="in_preparation").id,
@@ -575,7 +578,6 @@ class APITest(AironeViewTest):
         self.assertEqual(TriggerCondition.objects.count(), 0)
         self.assertEqual(TriggerAction.objects.count(), 0)
         self.assertEqual(TriggerActionValue.objects.count(), 0)
-
 
     def test_create_trigger_with_all_typed_for_action(self):
         params = {
