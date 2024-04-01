@@ -1204,7 +1204,7 @@ class AdvancedSearchResultExportSerializer(serializers.Serializer):
     def save(self, **kwargs) -> None:
         user: User = self.context["request"].user
 
-        job_status_not_finished = [JobStatus.PREPARING.value, JobStatus.PROCESSING.value]
+        job_status_not_finished: list[JobStatus] = [JobStatus.PREPARING, JobStatus.PROCESSING]
         if (
             Job.get_job_with_params(user, self.validated_data)
             .filter(status__in=job_status_not_finished)

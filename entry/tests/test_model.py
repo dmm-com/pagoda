@@ -149,7 +149,7 @@ class ModelTest(AironeTestCase):
         self._attr.values.add(value)
 
         self.assertEqual(Attribute.objects.count(), 1)
-        self.assertEqual(Attribute.objects.last().objtype, ACLObjType.EntryAttr.value)
+        self.assertEqual(Attribute.objects.last().objtype, ACLObjType.EntryAttr)
         self.assertEqual(Attribute.objects.last().values.count(), 1)
         self.assertEqual(Attribute.objects.last().values.last(), value)
 
@@ -2198,7 +2198,7 @@ class ModelTest(AironeTestCase):
                     {
                         "name": attr.name,
                         "keyword": "*",
-                        "filter_key": FilterKey.TEXT_CONTAINED.value,
+                        "filter_key": FilterKey.TEXT_CONTAINED,
                     }
                 ],
             )
@@ -2213,7 +2213,7 @@ class ModelTest(AironeTestCase):
                 [
                     {
                         "name": attr.name,
-                        "filter_key": FilterKey.NON_EMPTY.value,
+                        "filter_key": FilterKey.NON_EMPTY,
                     }
                 ],
             )
@@ -2227,7 +2227,7 @@ class ModelTest(AironeTestCase):
                 [
                     {
                         "name": attr.name,
-                        "filter_key": FilterKey.EMPTY.value,
+                        "filter_key": FilterKey.EMPTY,
                     }
                 ],
             )
@@ -2246,7 +2246,7 @@ class ModelTest(AironeTestCase):
                     {
                         "name": attr.name,
                         "keyword": "DO MATCH NOTHING",
-                        "filter_key": FilterKey.CLEARED.value,
+                        "filter_key": FilterKey.CLEARED,
                     }
                 ],
             )
@@ -2281,7 +2281,7 @@ class ModelTest(AironeTestCase):
             [
                 {
                     "name": "str",
-                    "filter_key": FilterKey.DUPLICATED.value,
+                    "filter_key": FilterKey.DUPLICATED,
                 },
             ],
         )
@@ -2311,7 +2311,7 @@ class ModelTest(AironeTestCase):
                 {
                     "name": "str",
                     "keyword": "hoge",
-                    "filter_key": FilterKey.TEXT_NOT_CONTAINED.value,
+                    "filter_key": FilterKey.TEXT_NOT_CONTAINED,
                 },
             ],
         )

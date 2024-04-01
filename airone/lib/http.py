@@ -135,10 +135,10 @@ def render(request, template, context={}):
     context["navigator"] = {
         "entities": [x for x in entity_objects],
         "acl_objtype": {
-            "entity": ACLObjType.Entity.value,
-            "entry": ACLObjType.Entry.value,
-            "attrbase": ACLObjType.EntityAttr.value,
-            "attr": ACLObjType.EntryAttr.value,
+            "entity": ACLObjType.Entity,
+            "entry": ACLObjType.Entry,
+            "attrbase": ACLObjType.EntityAttr,
+            "attr": ACLObjType.EntryAttr,
         },
     }
 
@@ -157,21 +157,21 @@ def render(request, template, context={}):
     context["JOB"] = {
         "STATUS": {s.name: s.value for s in JobStatus},
         "OPERATION": {
-            "CREATE": JobOperation.CREATE_ENTRY.value,
-            "EDIT": JobOperation.EDIT_ENTRY.value,
-            "DELETE": JobOperation.DELETE_ENTRY.value,
-            "COPY": JobOperation.COPY_ENTRY.value,
-            "DO_COPY": JobOperation.DO_COPY_ENTRY.value,
-            "IMPORT": JobOperation.IMPORT_ENTRY.value,
-            "IMPORT_V2": JobOperation.IMPORT_ENTRY_V2.value,
-            "EXPORT": JobOperation.EXPORT_ENTRY.value,
-            "EXPORT_V2": JobOperation.EXPORT_ENTRY_V2.value,
-            "RESTORE": JobOperation.RESTORE_ENTRY.value,
-            "EXPORT_SEARCH_RESULT": JobOperation.EXPORT_SEARCH_RESULT.value,
-            "EXPORT_SEARCH_RESULT_V2": JobOperation.EXPORT_SEARCH_RESULT_V2.value,
-            "CREATE_ENTITY": JobOperation.CREATE_ENTITY.value,
-            "EDIT_ENTITY": JobOperation.EDIT_ENTITY.value,
-            "DELETE_ENTITY": JobOperation.DELETE_ENTITY.value,
+            "CREATE": JobOperation.CREATE_ENTRY,
+            "EDIT": JobOperation.EDIT_ENTRY,
+            "DELETE": JobOperation.DELETE_ENTRY,
+            "COPY": JobOperation.COPY_ENTRY,
+            "DO_COPY": JobOperation.DO_COPY_ENTRY,
+            "IMPORT": JobOperation.IMPORT_ENTRY,
+            "IMPORT_V2": JobOperation.IMPORT_ENTRY_V2,
+            "EXPORT": JobOperation.EXPORT_ENTRY,
+            "EXPORT_V2": JobOperation.EXPORT_ENTRY_V2,
+            "RESTORE": JobOperation.RESTORE_ENTRY,
+            "EXPORT_SEARCH_RESULT": JobOperation.EXPORT_SEARCH_RESULT,
+            "EXPORT_SEARCH_RESULT_V2": JobOperation.EXPORT_SEARCH_RESULT_V2,
+            "CREATE_ENTITY": JobOperation.CREATE_ENTITY,
+            "EDIT_ENTITY": JobOperation.EDIT_ENTITY,
+            "DELETE_ENTITY": JobOperation.DELETE_ENTITY,
         },
     }
 

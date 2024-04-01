@@ -61,7 +61,7 @@ class ViewTest(AironeViewTest):
         # Confirm that the delete job can be obtained
         body = resp.json()
         self.assertEqual(body["count"], 1)
-        self.assertEqual(body["results"][0]["operation"], JobOperation.DELETE_ENTRY.value)
+        self.assertEqual(body["results"][0]["operation"], JobOperation.DELETE_ENTRY)
 
     def test_get_non_target_job(self):
         user = self.guest_login()
@@ -119,7 +119,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 200)
         body = resp.json()
         self.assertEqual(body["id"], job.id)
-        self.assertEqual(body["status"], JobStatus.PREPARING.value)
+        self.assertEqual(body["status"], JobStatus.PREPARING)
         self.assertEqual(body["text"], "hoge")
 
     def test_get_job_with_invalid_param(self):
@@ -153,7 +153,7 @@ class ViewTest(AironeViewTest):
 
         # make a job which isn't cancellable
         job = Job.new_delete(user, entry)
-        self.assertEqual(job.status, JobStatus.PREPARING.value)
+        self.assertEqual(job.status, JobStatus.PREPARING)
 
         # send request with invalid job id
         resp = self.client.delete("/job/api/v2/%d/" % 99999)
@@ -165,7 +165,7 @@ class ViewTest(AironeViewTest):
 
         # make a cancellable job
         job = Job.new_create(user, entry)
-        self.assertEqual(job.status, JobStatus.PREPARING.value)
+        self.assertEqual(job.status, JobStatus.PREPARING)
         resp = self.client.delete("/job/api/v2/%d/" % job.id)
         self.assertEqual(resp.status_code, 204)
 
@@ -202,7 +202,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 200)
 
         job = Job.objects.get(id=job.id)
-        self.assertEqual(job.status, JobStatus.DONE.value)
+        self.assertEqual(job.status, JobStatus.DONE)
         self.assertEqual(entry.attrs.count(), 1)
 
         attrv = entry.attrs.first().get_latest_value()
@@ -232,14 +232,14 @@ class ViewTest(AironeViewTest):
         )
         resp = self.client.patch("/job/api/v2/%d/rerun" % job.id)
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(Job.objects.get(id=job.id).status, JobStatus.DONE.value)
+        self.assertEqual(Job.objects.get(id=job.id).status, JobStatus.DONE)
         self.assertEqual(entry.attrs.first().get_latest_value().value, "fuga")
 
         # make and send a job to copy entry
         job = Job.new_do_copy(user, entry, params={"new_name": "new_entry"})
         resp = self.client.patch("/job/api/v2/%d/rerun" % job.id)
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(Job.objects.get(id=job.id).status, JobStatus.DONE.value)
+        self.assertEqual(Job.objects.get(id=job.id).status, JobStatus.DONE)
 
         # checks it's success to clone entry
         new_entry = Entry.objects.get(name="new_entry", schema=entity)
@@ -293,7 +293,7 @@ class ViewTest(AironeViewTest):
         )
 
         # send request to download job when not exists file
-        job.status = JobStatus.DONE.value
+        job.status = JobStatus.DONE
         job.save()
 
         resp = self.client.get("/job/api/v2/%d/download" % job.id)

@@ -345,7 +345,7 @@ class AdvancedSearchAPI(generics.GenericAPIView):
             blank_joining_info = {
                 "%s.%s" % (join_attr["name"], k["name"]): {
                     "is_readable": True,
-                    "type": AttrType.STRING.value,
+                    "type": AttrType.STRING,
                     "value": "",
                 }
                 for k in join_attr["attrinfo"]
@@ -370,7 +370,7 @@ class AdvancedSearchAPI(generics.GenericAPIView):
                     ref_info is None
                     or
                     # ignore unexpected typed attributes
-                    ref_info["type"] != AttrType.OBJECT.value
+                    ref_info["type"] != AttrType.OBJECT
                     or
                     # ignore when original result doesn't refer any item
                     ref_info["value"].get("id") is None
@@ -533,7 +533,7 @@ class EntryExportAPI(generics.GenericAPIView):
         }
 
         # check whether same job is sent
-        job_status_not_finished = [JobStatus.PREPARING.value, JobStatus.PROCESSING.value]
+        job_status_not_finished = [JobStatus.PREPARING, JobStatus.PROCESSING]
         if (
             Job.get_job_with_params(request.user, job_params)
             .filter(status__in=job_status_not_finished)
@@ -628,15 +628,15 @@ class EntryImportAPI(generics.GenericAPIView):
 
         # limit import job to deny accidental frequent import for same entity
         if request.query_params.get("force", "") not in ["true", "True"]:
-            valid_statuses = [
-                JobStatus.PREPARING.value,
-                JobStatus.PROCESSING.value,
-                JobStatus.DONE.value,
+            valid_statuses: list[JobStatus] = [
+                JobStatus.PREPARING,
+                JobStatus.PROCESSING,
+                JobStatus.DONE,
             ]
             yesterday = datetime.now() - timedelta(days=1)
             if Job.objects.filter(
                 status__in=valid_statuses,
-                operation=JobOperation.IMPORT_ENTRY_V2.value,
+                operation=JobOperation.IMPORT_ENTRY_V2,
                 target__in=entities,
                 created_at__gte=yesterday,
             ).exists():
