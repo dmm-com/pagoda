@@ -41,11 +41,11 @@ const StyledFlexColumnBox = styled(Box)({
   marginBottom: "48px",
 });
 
-const HeaderTableRow = styled(TableRow)(({ }) => ({
+const HeaderTableRow = styled(TableRow)(({}) => ({
   backgroundColor: "#455A64",
 }));
 
-const HeaderTableCell = styled(TableCell)(({ }) => ({
+const HeaderTableCell = styled(TableCell)(({}) => ({
   color: "#FFFFFF",
   boxSizing: "border-box",
 }));
@@ -202,7 +202,7 @@ export const TriggerEditPage: FC = () => {
                 name: val.strCond,
                 id: val.refCond?.id ?? 0,
               })),
-            }
+            },
           ];
       }
 
