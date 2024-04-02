@@ -114,7 +114,7 @@ export const TriggerEditPage: FC = () => {
       return [];
     }
 
-    return trigger.conditions.map((cond) => {
+    return trigger.conditions.flatMap((cond) => {
       const attrInfo = entity.value?.attrs.find(
         (attr) => attr.id === cond.attr.id
       );
@@ -127,9 +127,23 @@ export const TriggerEditPage: FC = () => {
         case EntryAttributeTypeTypeEnum.BOOLEAN:
           return { attrId: cond.attr.id, cond: String(cond.boolCond) };
 
-        case EntryAttributeTypeTypeEnum.ARRAY_OBJECT:
         case EntryAttributeTypeTypeEnum.OBJECT:
+        case EntryAttributeTypeTypeEnum.ARRAY_OBJECT:
           return { attrId: cond.attr.id, cond: String(cond.refCond?.id ?? 0) };
+
+        case EntryAttributeTypeTypeEnum.NAMED_OBJECT:
+        case EntryAttributeTypeTypeEnum.ARRAY_NAMED_OBJECT:
+          return [
+            {
+              attrId: cond.attr.id,
+              cond: JSON.stringify({
+                name: cond.strCond,
+                id: cond.refCond?.id ?? 0,
+              }),
+              hint: "json",
+            },
+          ];
+
         default:
           return { attrId: cond.attr.id, cond: "" };
       }
@@ -176,7 +190,7 @@ export const TriggerEditPage: FC = () => {
           }));
 
         case EntryAttributeTypeTypeEnum.NAMED_OBJECT:
-          action.values.map((val) => ({
+          return action.values.map((val) => ({
             attrId: action.attr.id,
             value: {
               name: val.strCond,

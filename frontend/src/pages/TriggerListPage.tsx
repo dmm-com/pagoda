@@ -90,9 +90,7 @@ const ElemTriggerCondition: FC<{
     case EntryAttributeTypeTypeEnum.BOOLEAN:
       return <Checkbox checked={cond.boolCond} disabled sx={{ p: "0px" }} />;
 
-    case EntryAttributeTypeTypeEnum.ARRAY_NAMED_OBJECT:
     case EntryAttributeTypeTypeEnum.ARRAY_OBJECT:
-    case EntryAttributeTypeTypeEnum.NAMED_OBJECT:
     case EntryAttributeTypeTypeEnum.OBJECT:
       return (
         <Box
@@ -104,6 +102,23 @@ const ElemTriggerCondition: FC<{
         >
           {cond.refCond?.name ?? ""}
         </Box>
+      );
+
+    case EntryAttributeTypeTypeEnum.ARRAY_NAMED_OBJECT:
+    case EntryAttributeTypeTypeEnum.NAMED_OBJECT:
+      return (
+        <StyledBox>
+          <Box>{cond.strCond}</Box>
+          <Box
+            component={Link}
+            to={entryDetailsPath(
+              cond.refCond?.schema.id ?? 0,
+              cond.refCond?.id ?? 0
+            )}
+          >
+            {cond.refCond?.name ?? ""}
+          </Box>
+        </StyledBox>
       );
 
     default:
