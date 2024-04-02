@@ -1,4 +1,5 @@
 import json
+
 import mock
 
 from airone.lib.test import AironeTestCase
