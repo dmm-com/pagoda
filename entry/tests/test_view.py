@@ -1937,11 +1937,17 @@ class ViewTest(AironeViewTest):
         user = self.guest_login()
 
         # initialize Entity which has Role related Attributes
+        entity_pref = self.create_entity(user, "Prefecture")
+        entry_tokyo = self.add_entry(user, "Tokyo", entity_pref)
+        pref_info = {
+            "tokyo": self.add_entry(user, "Tokyo", entity_pref)
+        }
+
         entity = self.create_entity(
             user,
             "Personal Information",
             attrs=[
-                {"name": "address", "type": AttrTypeValue["string"]},
+                {"name": "address", "type": AttrTypeValue["named_object"], "ref": entity_pref},
                 {"name": "age", "type": AttrTypeValue["string"]},
             ],
         )
@@ -1949,8 +1955,16 @@ class ViewTest(AironeViewTest):
         # register TriggerAction configuration before creating an Entry
         TriggerCondition.register(
             entity,
-            [{"attr_id": entity.attrs.get(name="age").id, "cond": "0"}],
-            [{"attr_id": entity.attrs.get(name="address").id, "value": "Tokyo"}],
+            [{"attr_id": entity.attrs.get(name="address").id, "hint": "json", "cond": json.dumps({
+                "name": "unknown", "id": None,
+            })}],
+            [
+                {"attr_id": entity.attrs.get(name="age").id, "value": "0"},
+                {"attr_id": entity.attrs.get(name="address").id, "value": {
+                    "name": "Chiyoda ward",
+                    "id": pref_info["tokyo"],
+                }},
+            ],
         )
 
         # create an Entry to invoke TriggerAction
@@ -1958,10 +1972,10 @@ class ViewTest(AironeViewTest):
             "entry_name": "Jhon Doe",
             "attrs": [
                 {
-                    "id": str(entity.attrs.get(name="age").id),
+                    "id": str(entity.attrs.get(name="address").id),
                     "type": str(AttrTypeValue["string"]),
-                    "value": [{"data": "0", "index": 0}],
-                    "referral_key": [],
+                    "value": [{"data": "", "index": 0}],
+                    "referral_key": [{"data": "unknown", "index": 0}],
                 }
             ],
         }
@@ -1979,7 +1993,8 @@ class ViewTest(AironeViewTest):
         # check created Entry's attributes are set properly by TriggerAction
         entry = Entry.objects.get(id=resp.json().get("entry_id"))
         self.assertEqual(entry.get_attrv("age").value, "0")
-        self.assertEqual(entry.get_attrv("address").value, "Tokyo")
+        self.assertEqual(entry.get_attrv("address").value, "Chiyoda ward")
+        self.assertEqual(entry.get_attrv("address").referral.id, pref_info["tokyo"].id)
 
     @patch("entry.tasks.edit_entry_attrs.delay", Mock(side_effect=tasks.edit_entry_attrs))
     def test_edit_entry_with_role_attributes(self):
