@@ -1,3 +1,5 @@
+import json
+
 from typing import TYPE_CHECKING
 
 from django.db import models
@@ -45,27 +47,39 @@ class InputTriggerCondition(object):
         self.bool_cond = False
 
     def parse_input_condition(self, input_condition, hint=None):
-        def _convert_value_to_entry():
-            if isinstance(input_condition, Entry):
-                return input_condition
-            elif isinstance(input_condition, int) or (
-                isinstance(input_condition, str) and input_condition.isdigit()
+        def _convert_value_to_entry(value):
+            if isinstance(value, Entry):
+                return value
+            elif isinstance(value, int) or (
+                isinstance(value, str) and value.isdigit()
             ):
                 # convert ID to Entry instance
-                entry = Entry.objects.filter(id=int(input_condition), is_active=True).first()
+                entry = Entry.objects.filter(id=int(value), is_active=True).first()
                 if entry:
                     return entry
             return None
 
+        def _decode_value(value):
+            try:
+                return json.loads(value)
+            except (ValueError, TypeError):
+                return {}
+
         match AttrType(self.attr.type):
             case AttrType.NAMED_OBJECT | AttrType.ARRAY_NAMED_OBJECT:
-                if hint == "entry":
-                    self.ref_cond = _convert_value_to_entry()
-                else:
-                    self.str_cond = input_condition
+                match hint:
+                    case "entry":
+                        self.ref_cond = _convert_value_to_entry(input_condition)
+                    case "json":
+                        info = _decode_value(input_condition)
+
+                        self.ref_cond = _convert_value_to_entry(info.get("id"))
+                        self.str_cond = info.get("name", "")
+                    case _:
+                        self.str_cond = input_condition
 
             case AttrType.OBJECT | AttrType.ARRAY_OBJECT:
-                self.ref_cond = _convert_value_to_entry()
+                self.ref_cond = _convert_value_to_entry(input_condition)
 
             case AttrType.STRING | AttrType.ARRAY_STRING | AttrType.TEXT:
                 self.str_cond = input_condition if input_condition else ""
@@ -316,6 +330,14 @@ class TriggerCondition(models.Model):
             if isinstance(val, dict):
                 eval_value["name"] = val.get("name", "")
                 eval_value["id"] = val.get("id")
+
+            # when both str_cond and ref_cond are set in the same condition
+            # this returns True only when both values are matched with eval_value
+            if self.str_cond != "" and self.ref_cond is not None:
+                return (
+                    self.str_cond == eval_value.get("name") and
+                    _is_match_object(eval_value.get("id"))
+                )
 
             # check specified value is matched with this condition
             if eval_value.get("name") and self.str_cond == eval_value.get("name"):
