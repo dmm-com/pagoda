@@ -12,7 +12,7 @@ from entity.api_v2.serializers import (
 )
 from entity.models import Entity, EntityAttr
 from entry.api_v2.serializers import (
-    EntryAttributeValueNamedObjectSerializer,
+    AttributeValueField,
     EntryAttributeValueObject,
 )
 from trigger.models import (
@@ -124,13 +124,13 @@ class TriggerParentUpdateData(TypedDict):
 class TriggerConditionUpdateSerializer(serializers.Serializer):
     attr_id = serializers.IntegerField(required=True)
     cond = serializers.CharField(required=False, allow_blank=True)
+    hint = serializers.CharField(required=False, allow_blank=True)
 
 
 class TriggerActionUpdateSerializer(serializers.Serializer):
     attr_id = serializers.IntegerField(required=True)
-    as_named_object = EntryAttributeValueNamedObjectSerializer(required=False, write_only=True)
-    values = serializers.ListField(child=serializers.CharField(allow_blank=True), required=False)
-    value = serializers.CharField(required=False, allow_blank=True)
+    values = serializers.ListField(child=AttributeValueField(allow_null=True), required=False)
+    value = AttributeValueField(allow_null=True, required=False)
 
 
 class TriggerParentBaseSerializer(serializers.ModelSerializer):

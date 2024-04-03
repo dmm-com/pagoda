@@ -3,6 +3,8 @@
 ## In development
 
 ### Added
+* Added Attribute type (`named_object` and `array_named_object`) for TriggerAction
+  Contributed by @userlocalhost, @hinashi
 
 ### Changed
 

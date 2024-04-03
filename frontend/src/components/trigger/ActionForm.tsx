@@ -71,6 +71,19 @@ const StyledBox = styled(Box)(({}) => ({
   gap: "0 12px",
 }));
 
+const NamedObjectBox = styled(Box)(({}) => ({
+  display: "flex",
+  alignItems: "flex-end",
+  gap: "0 12px",
+  width: "100%",
+}));
+const FlexBox = styled(Box)(({}) => ({
+  display: "flex",
+  flexDirection: "column",
+}));
+const NameBox = styled(Box)(({}) => ({
+  width: "150px",
+}));
 const StyledList = styled(List)(({}) => ({
   padding: "0",
 }));
@@ -151,6 +164,55 @@ const ActionValueAsObject: FC<PropsActionValueComponentWithAttrId> = ({
   );
 };
 
+const ActionValueAsName: FC<PropsActionValueComponentWithAttrId> = ({
+  indexAction,
+  indexActionValue,
+  control,
+  actionValue,
+  attrId,
+}) => {
+  return (
+    <NamedObjectBox>
+      <FlexBox>
+        <NameBox>
+          <Controller
+            name={`actions.${indexAction}.values.${indexActionValue}.strCond`}
+            defaultValue={actionValue.strCond ?? ""}
+            control={control}
+            render={({ field }) => {
+              return <TextField {...field} variant="standard" fullWidth />;
+            }}
+          />
+        </NameBox>
+      </FlexBox>
+      <Box flexGrow={1}>
+        <Controller
+          name={`actions.${indexAction}.values.${indexActionValue}.refCond`}
+          control={control}
+          defaultValue={actionValue.refCond}
+          render={({ field }) => (
+            <ReferralsAutocomplete
+              attrId={attrId}
+              value={actionValue.refCond}
+              handleChange={(v) => {
+                field.onChange({
+                  id: (v as GetEntryAttrReferral).id,
+                  name: (v as GetEntryAttrReferral).name,
+                  schema: {
+                    id: 0,
+                    name: "",
+                  },
+                });
+              }}
+              multiple={false}
+            />
+          )}
+        />
+      </Box>
+    </NamedObjectBox>
+  );
+};
+
 const ActionValueInputForm: FC<PropsActionValueComponentWithEntity> = ({
   indexAction,
   indexActionValue,
@@ -213,6 +275,17 @@ const ActionValueInputForm: FC<PropsActionValueComponentWithEntity> = ({
         />
       );
 
+    case EntryAttributeTypeTypeEnum.NAMED_OBJECT:
+      return (
+        <ActionValueAsName
+          attrId={actionField.attr.id}
+          actionValue={actionValue}
+          indexAction={indexAction}
+          indexActionValue={indexActionValue}
+          control={control}
+        />
+      );
+
     case EntryAttributeTypeTypeEnum.ARRAY_OBJECT:
       return (
         <StyledBox>
@@ -223,6 +296,27 @@ const ActionValueInputForm: FC<PropsActionValueComponentWithEntity> = ({
             indexActionValue={indexActionValue}
             control={control}
           />
+          <IconButton onClick={() => handleDelInputValue(indexActionValue)}>
+            <CancelIcon />
+          </IconButton>
+          <IconButton onClick={() => handleAddInputValue(indexActionValue)}>
+            <AddCircleIcon />
+          </IconButton>
+        </StyledBox>
+      );
+
+    case EntryAttributeTypeTypeEnum.ARRAY_NAMED_OBJECT:
+      return (
+        <StyledBox>
+          <>
+            <ActionValueAsName
+              attrId={actionField.attr.id}
+              actionValue={actionValue}
+              indexAction={indexAction}
+              indexActionValue={indexActionValue}
+              control={control}
+            />
+          </>
           <IconButton onClick={() => handleDelInputValue(indexActionValue)}>
             <CancelIcon />
           </IconButton>
@@ -361,7 +455,7 @@ export const ActionForm: FC<Props> = ({
             </IconButton>
           </TableCell>
           <TableCell>
-            <IconButton onClick={() => handleAppendAction(index + 1)}>
+            <IconButton onClick={() => handleAppendAction(index)}>
               <AddIcon />
             </IconButton>
           </TableCell>
