@@ -1,3 +1,4 @@
+import itertools
 import json
 from typing import TYPE_CHECKING
 
@@ -430,17 +431,47 @@ class TriggerCondition(models.Model):
         # But in the APIv1, the "id" parameter in the recv_data variable means Attribute ID
         # of Entry. So, it's necessary to refer "entity_attr_id" parameter to be compatible
         # with both API versions.
-        if all(["entity_attr_id" in x for x in recv_data]):
+        if any([("entity_attr_id" in x) or ("referral_key" in x) for x in recv_data]):
             # This is for APIv1
             params = []
             for data in recv_data:
-                if data["entity_attr_id"]:
-                    entity_attr = EntityAttr.objects.filter(id=data["entity_attr_id"]).first()
-                else:
+                # this is for create Item operation
+                entity_attr = EntityAttr.objects.filter(id=data["id"]).first()
+
+                # this is for update Item operation
+                if entity_attr is None:
                     attr = Attribute.objects.filter(id=data["id"]).first()
                     entity_attr = attr.schema if attr else None
-                attr_id = int(entity_attr.id) if entity_attr else 0
-                params.append({"attr_id": attr_id, "value": data["value"]})
+
+                    if entity_attr is None and data["entity_attr_id"]:
+                        entity_attr = EntityAttr.objects.filter(id=data["entity_attr_id"]).first()
+
+                if entity_attr.type & AttrType.NAMED_OBJECT.value:
+                    # merge name and id value to the data parameter to be compatible with APIv2
+                    # for naemd_object typed Attribute
+                    v = [
+                        {
+                            "index": v["index"],
+                            "data": {
+                                "name": r["data"],
+                                "id": v["data"],
+                            },
+                        }
+                        for (v, r) in itertools.zip_longest(
+                            sorted(data["value"], key=lambda x: x["index"]),
+                            sorted(data["referral_key"], key=lambda x: x["index"]),
+                        )
+                    ]
+                    params.append(
+                        {"attr_id": int(entity_attr.id) if entity_attr else 0, "value": v}
+                    )
+                else:
+                    params.append(
+                        {
+                            "attr_id": int(entity_attr.id) if entity_attr else 0,
+                            "value": data["value"],
+                        }
+                    )
         else:
             # This is for APIv2
             params = [{"attr_id": int(x["id"]), "value": x["value"]} for x in recv_data]
