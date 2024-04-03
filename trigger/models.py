@@ -451,10 +451,10 @@ class TriggerCondition(models.Model):
                     # for naemd_object typed Attribute
                     v = [
                         {
-                            "index": v["index"],
+                            "index": v["index"] if v else "0",
                             "data": {
-                                "name": r["data"],
-                                "id": v["data"],
+                                "name": r["data"] if r else "",
+                                "id": v["data"] if v else None,
                             },
                         }
                         for (v, r) in itertools.zip_longest(
