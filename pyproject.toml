@@ -57,6 +57,7 @@ social-auth-app-django = "5.4.0"
 social-auth-core = "4.5.1"
 uritemplate = "3.0.1"
 whitenoise = "5.2.0"
+pydantic = "^2.6.4"
 
 
 [tool.poetry.group.dev.dependencies]
