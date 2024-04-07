@@ -2,10 +2,11 @@ import csv
 import io
 import json
 from datetime import datetime
-from typing import Any, List, NotRequired, Optional, TypedDict
+from typing import Any, List, Literal, NotRequired, Optional, TypedDict
 
 import yaml
 from django.conf import settings
+from pydantic import BaseModel
 from rest_framework.exceptions import ValidationError
 
 import custom_view
@@ -49,6 +50,11 @@ class ExportedEntry(TypedDict):
 class ExportedEntityEntries(TypedDict):
     entity: str
     entries: list[ExportedEntry]
+
+
+class ExportTaskParams(BaseModel):
+    export_format: Literal["yaml", "csv"]
+    target_id: int
 
 
 def _merge_referrals_by_index(ref_list, name_list):
@@ -715,8 +721,8 @@ def export_entries(self, job: Job):
 def export_entries_v2(self, job: Job):
     user = job.user
     entity = Entity.objects.get(id=job.target.id)
-    params = json.loads(job.params)
-    with_entity = params["export_format"] != "csv"
+    params = ExportTaskParams.model_validate_json(job.params)
+    with_entity = params.export_format != "csv"
 
     exported_entity: list[ExportedEntityEntries] = []
     exported_entries: list[ExportedEntry] = []
@@ -749,7 +755,7 @@ def export_entries_v2(self, job: Job):
     )
 
     output = None
-    if params["export_format"] == "csv":
+    if params.export_format == "csv":
         # newline is blank because csv module performs universal newlines
         # https://docs.python.org/ja/3/library/csv.html#id3
         output = io.StringIO(newline="")
