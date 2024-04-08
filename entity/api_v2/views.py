@@ -1,7 +1,6 @@
 from distutils.util import strtobool
-from typing import Dict, List
 
-from django.db.models import Count, F
+from django.db.models import F
 from django.http import Http404
 from django.http.response import HttpResponse, JsonResponse
 from django_filters.rest_framework import DjangoFilterBackend
@@ -13,7 +12,6 @@ from rest_framework.pagination import LimitOffsetPagination, PageNumberPaginatio
 from rest_framework.permissions import BasePermission, IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
-from rest_framework.serializers import Serializer
 
 from airone.lib.acl import ACLType, get_permitted_objects
 from airone.lib.drf import ObjectNotExistsError, YAMLParser, YAMLRenderer
@@ -263,6 +261,7 @@ class EntityExportAPI(generics.RetrieveAPIView):
 @extend_schema(
     parameters=[
         OpenApiParameter("entity_ids", OpenApiTypes.STR, OpenApiParameter.QUERY),
+        OpenApiParameter("referral_attr", OpenApiTypes.STR, OpenApiParameter.QUERY),
     ],
 )
 class EntityAttrNameAPI(generics.GenericAPIView):
@@ -270,37 +269,32 @@ class EntityAttrNameAPI(generics.GenericAPIView):
 
     def get_queryset(self):
         entity_ids = list(filter(None, self.request.query_params.get("entity_ids", "").split(",")))
+        referral_attr = self.request.query_params.get("referral_attr")
 
-        if len(entity_ids) == 0:
-            return EntityAttr.objects.filter(is_active=True)
-
-        else:
+        entity_attrs = EntityAttr.objects.filter(is_active=True)
+        if len(entity_ids) != 0:
             entities = Entity.objects.filter(id__in=entity_ids, is_active=True)
             if len(entity_ids) != len(entities):
                 # the case invalid entity-id was specified
                 raise ValidationError("Target Entity doesn't exist")
-            else:
-                # filter only names appear in all specified entities
-                return EntityAttr.objects.filter(parent_entity__in=entities, is_active=True)
+
+            # filter only names appear in all specified entities
+            entity_attrs = entity_attrs.filter(parent_entity__in=entities)
+
+        if referral_attr:
+            referral_entity_ids = (
+                entity_attrs.filter(name=referral_attr)
+                .exclude(referral__id__isnull=True)
+                .values_list("referral", flat=True)
+                .distinct()
+            )
+            entity_attrs = EntityAttr.objects.filter(
+                parent_entity__in=referral_entity_ids, is_active=True
+            )
+
+        return entity_attrs.values_list("name", flat=True).order_by("name").distinct()
 
     def get(self, request: Request) -> Response:
         queryset = self.get_queryset()
-
-        entity_ids: List[int] = list(
-            filter(None, self.request.query_params.get("entity_ids", "").split(","))
-        )
-        names_query = queryset.values("name")
-        if len(entity_ids) > 0:
-            names_query = names_query.annotate(count=Count("name")).filter(count=len(entity_ids))
-
-        # Compile each attribute of referrals by attribute name
-        serializer: Serializer = self.get_serializer(queryset)
-        results: Dict[str, Dict] = {}
-        for attrname in names_query.values_list("name", flat=True):
-            for attrinfo in [x for x in serializer.data if x["name"] == attrname]:
-                if attrname in results:
-                    results[attrname]["referral"] += attrinfo["referral"]
-                else:
-                    results[attrname] = attrinfo
-
-        return Response(results.values())
+        serializer: serializers.Serializer = self.get_serializer(queryset)
+        return Response(serializer.data)

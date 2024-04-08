@@ -242,24 +242,17 @@ export const AdvancedSearchResultsPage: FC = () => {
       <AdvancedSearchModal
         openModal={openModal}
         setOpenModal={setOpenModal}
-        attrNames={
-          !entityAttrs.loading && entityAttrs.value != null
-            ? entityAttrs.value.map((x) => x.name)
-            : []
-        }
+        attrNames={entityAttrs.value ?? []}
         initialAttrNames={attrInfo.map(
           (e: AdvancedSearchResultAttrInfo) => e.name
         )}
         attrInfos={attrInfo}
       />
       <AdvancedSearchJoinModal
+        targetEntityIds={entityIds}
+        searchAllEntities={searchAllEntities}
         targetAttrname={joinAttrname}
         setJoinAttrname={setJoinAttrname}
-        referralIds={
-          !entityAttrs.loading && entityAttrs.value != null
-            ? entityAttrs.value.find((x) => x.name === joinAttrname)?.referral
-            : []
-        }
         joinAttrs={joinAttrs}
       />
     </Box>

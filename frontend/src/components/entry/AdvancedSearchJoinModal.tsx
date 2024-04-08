@@ -12,15 +12,17 @@ import { aironeApiClient } from "repository/AironeApiClient";
 import { formatAdvancedSearchParams } from "services/entry/AdvancedSearch";
 
 interface Props {
+  targetEntityIds: number[];
+  searchAllEntities: boolean;
   targetAttrname: string;
-  referralIds: number[] | undefined;
   joinAttrs: AdvancedSearchJoinAttrInfo[];
   setJoinAttrname: (name: string) => void;
 }
 
 export const AdvancedSearchJoinModal: FC<Props> = ({
+  targetEntityIds,
+  searchAllEntities,
   targetAttrname,
-  referralIds,
   joinAttrs,
   setJoinAttrname,
 }) => {
@@ -32,11 +34,12 @@ export const AdvancedSearchJoinModal: FC<Props> = ({
   const [selectedAttrNames, setSelectedAttrNames] = useState<string[]>([]);
 
   const referralAttrs = useAsyncWithThrow(async () => {
-    if (referralIds !== undefined && referralIds.length > 0) {
-      return await aironeApiClient.getEntityAttrs(referralIds);
-    }
-    return [];
-  }, [referralIds]);
+    return await aironeApiClient.getEntityAttrs(
+      targetEntityIds,
+      searchAllEntities,
+      targetAttrname
+    );
+  }, [targetEntityIds, searchAllEntities, targetAttrname]);
 
   const closeModal = () => {
     setJoinAttrname("");
@@ -81,7 +84,7 @@ export const AdvancedSearchJoinModal: FC<Props> = ({
       onClose={() => closeModal()}
     >
       <Autocomplete
-        options={referralAttrs.value?.map((x) => x.name) || []}
+        options={referralAttrs.value ?? []}
         defaultValue={currentAttrInfo?.attrinfo.map((x) => x.name) || []}
         onChange={(_, value: string[]) => {
           setSelectedAttrNames(value);
