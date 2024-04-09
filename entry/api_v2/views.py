@@ -249,14 +249,20 @@ class AdvancedSearchAPI(generics.GenericAPIView):
                 if attr is None:
                     continue
 
-                if attr.type == AttrTypeValue["object"]:
+                if attr.type & AttrType.OBJECT:
                     # set hint Model ID
                     hint_entity_ids += [x.id for x in attr.referral.filter(is_active=True)]
 
                     # set Item name
                     attrinfo = result["attrs"][join_attr["name"]]
-                    if attrinfo["value"]["name"] not in item_names:
+
+                    if attr.type == AttrType.OBJECT and attrinfo["value"]["name"] not in item_names:
                         item_names.append(attrinfo["value"]["name"])
+
+                    if attr.type == AttrType.NAMED_OBJECT:
+                        for co_info in attrinfo["value"].values():
+                            if co_info["name"] not in item_names:
+                                item_names.append(co_info["name"])
 
             # set parameters to filter joining search results
             hint_attrs = []
@@ -292,6 +298,18 @@ class AdvancedSearchAPI(generics.GenericAPIView):
             )
 
         # === End of Function: _get_joined_resp() ===
+
+        def _get_ref_id_from_es_result(attrinfo):
+            if attrinfo["type"] == AttrType.OBJECT:
+                if attrinfo.get("value") is not None:
+                    return attrinfo["value"].get("id")
+
+            if attrinfo["type"] == AttrType.NAMED_OBJECT:
+                if attrinfo.get("value") is not None:
+                    [ref_info] = attrinfo["value"].values()
+                    return ref_info.get("id")
+
+        # === End of Function: _get_ref_id_from_es_result() ===
 
         if not has_referral:
             hint_referral = None
@@ -364,22 +382,9 @@ class AdvancedSearchAPI(generics.GenericAPIView):
             # this inserts result to previous search result
             new_ret_values = []
             for resp_result in resp["ret_values"]:
-                ref_info = resp_result["attrs"].get(join_attr["name"])
-                if (
-                    # ignore no joined data
-                    ref_info is None
-                    or
-                    # ignore unexpected typed attributes
-                    ref_info["type"] != AttrType.OBJECT
-                    or
-                    # ignore when original result doesn't refer any item
-                    ref_info["value"].get("id") is None
-                ):
-                    # join EMPTY value
-                    resp_result["attrs"] |= blank_joining_info  # type: ignore
-
                 # joining search result to original one
-                ref_id = ref_info["value"].get("id") if "value" in ref_info is not None else None  # type: ignore
+                ref_info = resp_result["attrs"].get(join_attr["name"])
+                ref_id = _get_ref_id_from_es_result(ref_info)
                 if ref_id and ref_id in joined_resp_info:  # type: ignore
                     # join valid value
                     resp_result["attrs"] |= joined_resp_info[ref_id]

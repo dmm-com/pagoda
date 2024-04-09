@@ -3208,6 +3208,14 @@ class ViewTest(AironeViewTest):
                         {"name": "name"},
                     ],
                 },
+                {
+                    "name": "name",
+                    "attrinfo": [
+                        {"name": "val"},
+                        {"name": "ref"},
+                        {"name": "name"},
+                    ],
+                },
             ],
         }
         resp = self.client.post(
@@ -3224,6 +3232,9 @@ class ViewTest(AironeViewTest):
                     "ref.val": {"as_string": "hoge-0"},
                     "ref.ref": {"as_object": REF_DATA},
                     "ref.name": {"as_named_object": {"name": "abcd-0", "object": REF_DATA}},
+                    "name.val": {"as_string": "hoge-0"},
+                    "name.ref": {"as_object": REF_DATA},
+                    "name.name": {"as_named_object": {"name": "abcd-0", "object": REF_DATA}},
                 },
             ),
             (
@@ -3232,6 +3243,9 @@ class ViewTest(AironeViewTest):
                     "ref.val": {"as_string": "hoge-0"},
                     "ref.ref": {"as_object": REF_DATA},
                     "ref.name": {"as_named_object": {"name": "abcd-0", "object": REF_DATA}},
+                    "name.val": {"as_string": "hoge-0"},
+                    "name.ref": {"as_object": REF_DATA},
+                    "name.name": {"as_named_object": {"name": "abcd-0", "object": REF_DATA}},
                 },
             ),
             (
@@ -3240,6 +3254,9 @@ class ViewTest(AironeViewTest):
                     "ref.val": {"as_string": ""},
                     "ref.ref": {"as_object": REF_DATA},
                     "ref.name": {"as_named_object": {"name": "abcd-1", "object": REF_DATA}},
+                    "name.val": {"as_string": ""},
+                    "name.ref": {"as_object": REF_DATA},
+                    "name.name": {"as_named_object": {"name": "abcd-1", "object": REF_DATA}},
                 },
             ),
             (
@@ -3248,6 +3265,9 @@ class ViewTest(AironeViewTest):
                     "ref.val": {"as_string": ""},
                     "ref.ref": {"as_string": ""},
                     "ref.name": {"as_string": ""},
+                    "name.val": {"as_string": ""},
+                    "name.ref": {"as_string": ""},
+                    "name.name": {"as_string": ""},
                 },
             ),
         ]
@@ -3330,13 +3350,6 @@ class ViewTest(AironeViewTest):
                 {"as_string": "hoge-0"},
             ],
         )
-
-    def test_advanced_search_with_join_attrs_that_have_filter_key1(self):
-        """
-        Test advanced_search APIv2 with join_attrs parameter that have
-        valid filter_key attribute.
-        """
-        pass
 
     def test_advanced_search_all_entities(self):
         params = {
