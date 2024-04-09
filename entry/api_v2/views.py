@@ -1,4 +1,5 @@
 import re
+from copy import deepcopy
 from datetime import datetime, timedelta
 from typing import Optional
 
@@ -264,6 +265,15 @@ class AdvancedSearchAPI(generics.GenericAPIView):
                             if co_info["name"] not in item_names:
                                 item_names.append(co_info["name"])
 
+                    if attr.type == AttrType.ARRAY_OBJECT:
+                        for r in attrinfo["value"]:
+                            item_names.append(r["name"])
+
+                    if attr.type == AttrType.ARRAY_NAMED_OBJECT:
+                        for r in attrinfo["value"]:
+                            [co_info] = r.values()
+                            item_names.append(co_info["name"])
+
             # set parameters to filter joining search results
             hint_attrs = []
             for attrinfo in join_attr.get("attrinfo", []):
@@ -302,12 +312,20 @@ class AdvancedSearchAPI(generics.GenericAPIView):
         def _get_ref_id_from_es_result(attrinfo):
             if attrinfo["type"] == AttrType.OBJECT:
                 if attrinfo.get("value") is not None:
-                    return attrinfo["value"].get("id")
+                    return [attrinfo["value"].get("id")]
 
             if attrinfo["type"] == AttrType.NAMED_OBJECT:
                 if attrinfo.get("value") is not None:
                     [ref_info] = attrinfo["value"].values()
-                    return ref_info.get("id")
+                    return [ref_info.get("id")]
+
+            if attrinfo["type"] == AttrType.ARRAY_OBJECT:
+                return [x.get("id") for x in attrinfo["value"]]
+
+            if attrinfo["type"] == AttrType.ARRAY_NAMED_OBJECT:
+                return sum([[y["id"] for y in x.values()] for x in attrinfo["value"]], [])
+
+            return []
 
         # === End of Function: _get_ref_id_from_es_result() ===
 
@@ -358,7 +376,6 @@ class AdvancedSearchAPI(generics.GenericAPIView):
             (will_filter_by_joined_attr, joined_resp) = _get_joined_resp(
                 resp["ret_values"], join_attr
             )
-
             # This is needed to set result as blank value
             blank_joining_info = {
                 "%s.%s" % (join_attr["name"], k["name"]): {
@@ -381,24 +398,39 @@ class AdvancedSearchAPI(generics.GenericAPIView):
 
             # this inserts result to previous search result
             new_ret_values = []
+            joined_ret_values = []
             for resp_result in resp["ret_values"]:
                 # joining search result to original one
                 ref_info = resp_result["attrs"].get(join_attr["name"])
-                ref_id = _get_ref_id_from_es_result(ref_info)
-                if ref_id and ref_id in joined_resp_info:  # type: ignore
-                    # join valid value
-                    resp_result["attrs"] |= joined_resp_info[ref_id]
 
-                    # collect only the result that matches with keyword of joined_attr parameter
-                    new_ret_values.append(resp_result)
+                # This get referral Item-ID from joined search result
+                ref_list = _get_ref_id_from_es_result(ref_info)
+                for ref_id in ref_list:
+                    if ref_id and ref_id in joined_resp_info:  # type: ignore
+                        # join valid value
+                        resp_result["attrs"] |= joined_resp_info[ref_id]
 
-                else:
+                        # collect only the result that matches with keyword of joined_attr parameter
+                        copied_result = deepcopy(resp_result)
+                        new_ret_values.append(copied_result)
+                        joined_ret_values.append(copied_result)
+
+                    else:
+                        # join EMPTY value
+                        resp_result["attrs"] |= blank_joining_info  # type: ignore
+                        joined_ret_values.append(resp_result)
+
+                if len(ref_list) == 0:
                     # join EMPTY value
                     resp_result["attrs"] |= blank_joining_info  # type: ignore
+                    joined_ret_values.append(resp_result)
 
             if will_filter_by_joined_attr:
                 resp["ret_values"] = new_ret_values
                 resp["ret_count"] = len(new_ret_values)
+            else:
+                resp["ret_values"] = joined_ret_values
+                resp["ret_count"] = len(joined_ret_values)
 
         # convert field values to fit entry retrieve API data type, as a workaround.
         # FIXME should be replaced with DRF serializer etc
