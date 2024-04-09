@@ -16,7 +16,7 @@ interface Props {
   searchAllEntities: boolean;
   targetAttrname: string;
   joinAttrs: AdvancedSearchJoinAttrInfo[];
-  setJoinAttrname: (name: string) => void;
+  handleClose: () => void;
 }
 
 export const AdvancedSearchJoinModal: FC<Props> = ({
@@ -24,14 +24,16 @@ export const AdvancedSearchJoinModal: FC<Props> = ({
   searchAllEntities,
   targetAttrname,
   joinAttrs,
-  setJoinAttrname,
+  handleClose,
 }) => {
   const history = useHistory();
   // This is join attributes that have been already been selected before.
   const currentAttrInfo: AdvancedSearchJoinAttrInfo | undefined =
     joinAttrs.find((attr) => attr.name === targetAttrname);
 
-  const [selectedAttrNames, setSelectedAttrNames] = useState<string[]>([]);
+  const [selectedAttrNames, setSelectedAttrNames] = useState<Array<string>>(
+    currentAttrInfo?.attrinfo.map((attr) => attr.name) ?? []
+  );
 
   const referralAttrs = useAsyncWithThrow(async () => {
     return await aironeApiClient.getEntityAttrs(
@@ -40,10 +42,6 @@ export const AdvancedSearchJoinModal: FC<Props> = ({
       targetAttrname
     );
   }, [targetEntityIds, searchAllEntities, targetAttrname]);
-
-  const closeModal = () => {
-    setJoinAttrname("");
-  };
 
   const handleUpdatePageURL = () => {
     // to prevent duplication of same name parameter
@@ -74,19 +72,18 @@ export const AdvancedSearchJoinModal: FC<Props> = ({
       pathname: location.pathname,
       search: "?" + params.toString(),
     });
-    history.go(0);
   };
 
   return (
     <AironeModal
       title={"結合するアイテムの属性名"}
       open={targetAttrname !== ""}
-      onClose={() => closeModal()}
+      onClose={handleClose}
     >
       <Autocomplete
         options={referralAttrs.value ?? []}
-        defaultValue={currentAttrInfo?.attrinfo.map((x) => x.name) || []}
-        onChange={(_, value: string[]) => {
+        value={selectedAttrNames}
+        onChange={(_, value: Array<string>) => {
           setSelectedAttrNames(value);
         }}
         renderInput={(params) => (
@@ -108,7 +105,7 @@ export const AdvancedSearchJoinModal: FC<Props> = ({
           variant="outlined"
           color="primary"
           sx={{ mx: "4px" }}
-          onClick={() => closeModal()}
+          onClick={handleClose}
         >
           キャンセル
         </Button>

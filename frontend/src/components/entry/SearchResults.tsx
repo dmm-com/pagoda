@@ -1,4 +1,7 @@
-import { AdvancedSearchResult } from "@dmm-com/airone-apiclient-typescript-fetch";
+import {
+  AdvancedSearchJoinAttrInfo,
+  AdvancedSearchResult,
+} from "@dmm-com/airone-apiclient-typescript-fetch";
 import {
   Box,
   Checkbox,
@@ -13,7 +16,7 @@ import {
   Typography,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import React, { Dispatch, FC, SetStateAction, useMemo } from "react";
+import React, { FC, useMemo } from "react";
 import { Link } from "react-router-dom";
 
 import { SearchResultsTableHead } from "./SearchResultsTableHead";
@@ -55,7 +58,9 @@ interface Props {
   defaultAttrsFilter?: AttrsFilter;
   bulkOperationEntryIds: Array<number>;
   handleChangeBulkOperationEntryId: (id: number, checked: boolean) => void;
-  setJoinAttrname: Dispatch<SetStateAction<string>>;
+  entityIds: number[];
+  searchAllEntities: boolean;
+  joinAttrs: AdvancedSearchJoinAttrInfo[];
 }
 
 export const SearchResults: FC<Props> = ({
@@ -68,7 +73,9 @@ export const SearchResults: FC<Props> = ({
   defaultAttrsFilter = {},
   bulkOperationEntryIds,
   handleChangeBulkOperationEntryId,
-  setJoinAttrname,
+  entityIds,
+  searchAllEntities,
+  joinAttrs,
 }) => {
   // NOTE attrTypes are guessed by the first element on the results. So if it has no appropriate attr,
   // the type guess doesn't work well. We should improve attr type API if more accurate type is needed.
@@ -94,7 +101,9 @@ export const SearchResults: FC<Props> = ({
               defaultEntryFilter={defaultEntryFilter}
               defaultReferralFilter={defaultReferralFilter}
               defaultAttrsFilter={defaultAttrsFilter}
-              setJoinAttrname={setJoinAttrname}
+              entityIds={entityIds}
+              searchAllEntities={searchAllEntities}
+              joinAttrs={joinAttrs}
             />
             <TableBody>
               {results.values?.map((result) => (
