@@ -5,6 +5,9 @@
 ### Added
 
 ### Changed
+* Update background processing to support any OBJECT typed Attribute for join_attr
+  at the advacend serarch processing.
+  Contributed by @userlocalhost
 
 ### Fixed
 
