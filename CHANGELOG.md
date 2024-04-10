@@ -8,6 +8,18 @@
 
 ### Fixed
 
+## v3.84.0
+
+### Added
+* Added Attribute type (`named_object` and `array_named_object`) for TriggerAction
+  Contributed by @userlocalhost, @hinashi
+* Added env to add middleware settings.
+  Contributed by @hinashi
+
+### Changed
+* Refactored to use IntEnum.
+  Contributed by @syucream
+
 ## v3.83.0
 
 ### Added

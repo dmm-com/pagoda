@@ -1,3 +1,5 @@
+import itertools
+import json
 from typing import TYPE_CHECKING
 
 from django.db import models
@@ -5,7 +7,8 @@ from django.db import models
 from acl.models import ACLBase
 from airone.exceptions.trigger import InvalidInputException
 from airone.lib.http import DRFRequest
-from airone.lib.types import AttrTypeValue
+from airone.lib.log import Logger
+from airone.lib.types import AttrType, AttrTypeValue
 from entity.models import Entity, EntityAttr
 from entry.api_v2.serializers import EntryUpdateSerializer
 from entry.models import Attribute, Entry
@@ -27,7 +30,7 @@ class InputTriggerCondition(object):
         self.initialize_condition()
 
         # set each condition parameters by specified condition value
-        self.parse_input_condition(input.get("cond"))
+        self.parse_input_condition(input.get("cond"), input.get("hint"))
 
     def __repr__(self):
         return "(attr:%s[%s]) str_cond:%s, ref_cond:%s, bool_cond:%s" % (
@@ -43,49 +46,49 @@ class InputTriggerCondition(object):
         self.ref_cond = None
         self.bool_cond = False
 
-    def parse_input_condition(self, input_condition):
-        def _convert_value_to_entry():
-            if isinstance(input_condition, Entry):
-                return input_condition
-            elif isinstance(input_condition, int) or (
-                isinstance(input_condition, str) and input_condition.isdigit()
-            ):
+    def parse_input_condition(self, input_condition, hint=None):
+        def _convert_value_to_entry(value):
+            if isinstance(value, Entry):
+                return value
+            elif isinstance(value, int) or (isinstance(value, str) and value.isdigit()):
                 # convert ID to Entry instance
-                entry = Entry.objects.filter(id=int(input_condition), is_active=True).first()
+                entry = Entry.objects.filter(id=int(value), is_active=True).first()
                 if entry:
                     return entry
             return None
 
-        if (
-            self.attr.type == AttrTypeValue["named_object"]
-            or self.attr.type == AttrTypeValue["array_named_object"]
-        ):
-            ref = _convert_value_to_entry()
-            if ref:
-                self.ref_cond = ref
-            else:
-                self.str_cond = input_condition
+        def _decode_value(value):
+            try:
+                return json.loads(value)
+            except (ValueError, TypeError):
+                return {}
 
-        elif (
-            self.attr.type == AttrTypeValue["object"]
-            or self.attr.type == AttrTypeValue["array_object"]
-        ):
-            self.ref_cond = _convert_value_to_entry()
+        match AttrType(self.attr.type):
+            case AttrType.NAMED_OBJECT | AttrType.ARRAY_NAMED_OBJECT:
+                match hint:
+                    case "entry":
+                        self.ref_cond = _convert_value_to_entry(input_condition)
+                    case "json":
+                        info = _decode_value(input_condition)
 
-        elif (
-            self.attr.type == AttrTypeValue["string"]
-            or self.attr.type == AttrTypeValue["array_string"]
-            or self.attr.type == AttrTypeValue["text"]
-        ):
-            self.str_cond = input_condition if input_condition else ""
+                        self.ref_cond = _convert_value_to_entry(info.get("id"))
+                        self.str_cond = info.get("name", "")
+                    case _:
+                        self.str_cond = input_condition
 
-        elif self.attr.type == AttrTypeValue["boolean"]:
-            if isinstance(input_condition, bool):
-                self.bool_cond = input_condition
-            elif isinstance(input_condition, str):
-                self.bool_cond = input_condition.lower() == "true"
-            else:
-                self.bool_cond = input_condition is not None
+            case AttrType.OBJECT | AttrType.ARRAY_OBJECT:
+                self.ref_cond = _convert_value_to_entry(input_condition)
+
+            case AttrType.STRING | AttrType.ARRAY_STRING | AttrType.TEXT:
+                self.str_cond = input_condition if input_condition else ""
+
+            case AttrType.BOOLEAN:
+                if isinstance(input_condition, bool):
+                    self.bool_cond = input_condition
+                elif isinstance(input_condition, str):
+                    self.bool_cond = input_condition.lower() == "true"
+                else:
+                    self.bool_cond = input_condition is not None
 
 
 class InputTriggerActionValue(object):
@@ -111,54 +114,60 @@ class InputTriggerAction(object):
 
     def get_value(self, raw_input_value):
         def _do_get_value(input_value, attr_type):
-            if attr_type & AttrTypeValue["array"]:
-                return [
-                    _do_get_value(x, attr_type ^ AttrTypeValue["array"]) for x in input_value if x
-                ]
+            match AttrType(attr_type):
+                case (
+                    AttrType.ARRAY_OBJECT
+                    | AttrType.ARRAY_NAMED_OBJECT
+                    | AttrType.ARRAY_NAMED_OBJECT_BOOLEAN
+                    | AttrType.ARRAY_STRING
+                ):
+                    return [
+                        _do_get_value(x, attr_type ^ AttrTypeValue["array"])
+                        for x in input_value
+                        if x
+                    ]
 
-            elif attr_type in [
-                AttrTypeValue["string"],
-                AttrTypeValue["text"],
-                AttrTypeValue["array_string"],
-            ]:
-                return InputTriggerActionValue(str_cond=input_value)
+                case AttrType.STRING | AttrType.TEXT:
+                    return InputTriggerActionValue(str_cond=input_value)
 
-            elif attr_type == AttrTypeValue["named_object"]:
-                ref_entry = None
-                if isinstance(input_value.get("id"), int):
-                    ref_entry = Entry.objects.filter(id=input_value["id"], is_active=True).first()
-                if isinstance(input_value.get("id"), str):
-                    ref_entry = Entry.objects.filter(
-                        id=int(input_value["id"]), is_active=True
-                    ).first()
-                elif isinstance(input_value.get("id"), Entry):
-                    ref_entry = input_value["id"]
+                case AttrType.NAMED_OBJECT:
+                    ref_entry = None
+                    if isinstance(input_value.get("id"), int):
+                        ref_entry = Entry.objects.filter(
+                            id=input_value["id"], is_active=True
+                        ).first()
+                    if isinstance(input_value.get("id"), str):
+                        ref_entry = Entry.objects.filter(
+                            id=int(input_value["id"]), is_active=True
+                        ).first()
+                    elif isinstance(input_value.get("id"), Entry):
+                        ref_entry = input_value["id"]
 
-                return InputTriggerActionValue(
-                    str_cond=input_value["name"],
-                    ref_cond=ref_entry,
-                )
+                    return InputTriggerActionValue(
+                        str_cond=input_value.get("name", ""),
+                        ref_cond=ref_entry,
+                    )
 
-            elif attr_type == AttrTypeValue["object"]:
-                params = {}
-                if isinstance(input_value, Entry):
-                    params["ref_cond"] = input_value
-                elif isinstance(input_value, int):
-                    params["ref_cond"] = Entry.objects.filter(
-                        id=input_value, is_active=True
-                    ).first()
-                elif isinstance(input_value, str):
-                    params["ref_cond"] = Entry.objects.filter(
-                        id=int(input_value), is_active=True
-                    ).first()
+                case AttrType.OBJECT:
+                    params = {}
+                    if isinstance(input_value, Entry):
+                        params["ref_cond"] = input_value
+                    elif isinstance(input_value, int):
+                        params["ref_cond"] = Entry.objects.filter(
+                            id=input_value, is_active=True
+                        ).first()
+                    elif isinstance(input_value, str):
+                        params["ref_cond"] = Entry.objects.filter(
+                            id=int(input_value), is_active=True
+                        ).first()
 
-                return InputTriggerActionValue(**params)
+                    return InputTriggerActionValue(**params)
 
-            elif attr_type == AttrTypeValue["boolean"]:
-                if isinstance(input_value, str):
-                    return InputTriggerActionValue(bool_cond=input_value.lower() == "true")
-                else:
-                    return InputTriggerActionValue(bool_cond=input_value)
+                case AttrType.BOOLEAN:
+                    if isinstance(input_value, str):
+                        return InputTriggerActionValue(bool_cond=input_value.lower() == "true")
+                    else:
+                        return InputTriggerActionValue(bool_cond=input_value)
 
         return _do_get_value(raw_input_value, self.attr.type)
 
@@ -243,18 +252,23 @@ class TriggerCondition(models.Model):
     ref_cond = models.ForeignKey("entry.Entry", on_delete=models.SET_NULL, null=True, blank=True)
     bool_cond = models.BooleanField(default=False)
 
+    @property
+    def ATTR_TYPE(self):
+        return AttrType(self.attr.type)
+
     def is_same_condition(self, input_list: list[InputTriggerCondition]) -> bool:
         # This checks one of the InputCondition which is in input_list matches with this condition
         def _do_check_condition(input: InputTriggerCondition):
             if self.attr.id == input.attr.id:
-                if self.attr.type & AttrTypeValue["boolean"]:
-                    return self.bool_cond == input.bool_cond
-
-                elif self.attr.type & AttrTypeValue["object"]:
-                    return self.ref_cond == input.ref_cond
-
-                elif self.attr.type & AttrTypeValue["string"]:
-                    return self.str_cond == input.str_cond
+                match self.ATTR_TYPE:
+                    case AttrType.STRING | AttrType.TEXT | AttrType.ARRAY_STRING:
+                        return self.str_cond == input.str_cond
+                    case AttrType.OBJECT | AttrType.ARRAY_OBJECT:
+                        return self.ref_cond == input.ref_cond
+                    case AttrType.BOOLEAN:
+                        return self.bool_cond == input.bool_cond
+                    case AttrType.NAMED_OBJECT | AttrType.ARRAY_NAMED_OBJECT:
+                        return self.str_cond == input.str_cond and self.ref_cond == input.ref_cond
 
             return False
 
@@ -300,31 +314,86 @@ class TriggerCondition(models.Model):
             elif val is None:
                 return self.ref_cond is None
 
-        # TODO: Add support for named_object, array_named_object
-        if self.attr.type == AttrTypeValue["object"]:
-            return _is_match_object(recv_value)
+        def _is_match_named_object(val):
+            # This refilling processing is necessary because any type of value is acceptable
+            eval_value = {
+                "name": "",
+                "id": None,
+            }
+            if isinstance(val, str):
+                eval_value["name"] = val
+                eval_value["id"] = val if val.isdigit() else None
+            if isinstance(val, int):
+                eval_value["id"] = val
+            if isinstance(val, dict):
+                eval_value["name"] = val.get("name", "")
+                eval_value["id"] = val.get("id")
 
-        elif self.attr.type == AttrTypeValue["array_object"]:
-            if recv_value is None or not recv_value:
-                # when both recv_value and self.ref_cond is empty, this condition is matched
-                return self.ref_cond is None
+            # when both str_cond and ref_cond are set in the same condition
+            # this returns True only when both values are matched with eval_value
+            if self.str_cond != "" and self.ref_cond is not None:
+                return self.str_cond == eval_value.get("name") and _is_match_object(
+                    eval_value.get("id")
+                )
 
-            elif isinstance(recv_value, list):
-                return any([_is_match_object(x) for x in recv_value])
+            # check specified value is matched with this condition
+            if eval_value.get("name") and self.str_cond == eval_value.get("name"):
+                return True
 
-        elif self.attr.type == AttrTypeValue["string"] or self.attr.type == AttrTypeValue["text"]:
-            return self.str_cond == recv_value
+            if eval_value.get("id") and _is_match_object(eval_value.get("id")):
+                return True
 
-        elif self.attr.type == AttrTypeValue["array_string"]:
-            if recv_value is None or not recv_value:
-                # when both recv_value and self.str_cond is empty, this condition is matched
-                return self.str_cond == ""
+            # this matches explicit empty eval_valueue
+            if (
+                self.str_cond == eval_value.get("name", "") == ""
+                and self.ref_cond is None
+                and eval_value.get("id") is None
+            ):
+                return True
 
-            elif isinstance(recv_value, list):
-                return self.str_cond in recv_value
+        try:
+            match self.ATTR_TYPE:
+                case AttrType.OBJECT:
+                    return _is_match_object(recv_value)
 
-        elif self.attr.type == AttrTypeValue["boolean"]:
-            return self.bool_cond == recv_value
+                case AttrType.ARRAY_OBJECT:
+                    if recv_value is None or not recv_value:
+                        # when both recv_value and self.ref_cond is empty, this condition is matched
+                        return self.ref_cond is None
+
+                    elif isinstance(recv_value, list):
+                        return any([_is_match_object(x) for x in recv_value])
+
+                case AttrType.STRING | AttrType.TEXT:
+                    return self.str_cond == recv_value
+
+                case AttrType.NAMED_OBJECT:
+                    return _is_match_named_object(recv_value)
+
+                case AttrType.ARRAY_NAMED_OBJECT:
+                    if recv_value is None or not recv_value:
+                        # when both recv_value and self.ref_cond is empty, this condition is matched
+                        return self.ref_cond is None and self.str_cond == ""
+
+                    elif isinstance(recv_value, list):
+                        return any([_is_match_named_object(x) for x in recv_value])
+
+                case AttrType.ARRAY_STRING:
+                    if recv_value is None or not recv_value:
+                        # when both recv_value and self.str_cond is empty, this condition is matched
+                        return self.str_cond == ""
+
+                    elif isinstance(recv_value, list):
+                        return self.str_cond in recv_value
+
+                case AttrType.BOOLEAN:
+                    return self.bool_cond == recv_value
+
+        except ValueError:
+            Logger.error(
+                "Invalid Attribute Type(%s) was registered (attr_id: %s)"
+                % (self.attr.type, self.attr.id)
+            )
 
         return False
 
@@ -362,17 +431,47 @@ class TriggerCondition(models.Model):
         # But in the APIv1, the "id" parameter in the recv_data variable means Attribute ID
         # of Entry. So, it's necessary to refer "entity_attr_id" parameter to be compatible
         # with both API versions.
-        if all(["entity_attr_id" in x for x in recv_data]):
+        if any([("entity_attr_id" in x) or ("referral_key" in x) for x in recv_data]):
             # This is for APIv1
             params = []
             for data in recv_data:
-                if data["entity_attr_id"]:
-                    entity_attr = EntityAttr.objects.filter(id=data["entity_attr_id"]).first()
-                else:
+                # this is for create Item operation
+                entity_attr = EntityAttr.objects.filter(id=data["id"]).first()
+
+                # this is for update Item operation
+                if entity_attr is None:
                     attr = Attribute.objects.filter(id=data["id"]).first()
                     entity_attr = attr.schema if attr else None
-                attr_id = int(entity_attr.id) if entity_attr else 0
-                params.append({"attr_id": attr_id, "value": data["value"]})
+
+                    if entity_attr is None and data["entity_attr_id"]:
+                        entity_attr = EntityAttr.objects.filter(id=data["entity_attr_id"]).first()
+
+                if entity_attr.type & AttrType.NAMED_OBJECT.value:
+                    # merge name and id value to the data parameter to be compatible with APIv2
+                    # for naemd_object typed Attribute
+                    v = [
+                        {
+                            "index": v["index"] if v else "0",
+                            "data": {
+                                "name": r["data"] if r else "",
+                                "id": v["data"] if v else None,
+                            },
+                        }
+                        for (v, r) in itertools.zip_longest(
+                            sorted(data["value"], key=lambda x: x["index"]),
+                            sorted(data["referral_key"], key=lambda x: x["index"]),
+                        )
+                    ]
+                    params.append(
+                        {"attr_id": int(entity_attr.id) if entity_attr else 0, "value": v}
+                    )
+                else:
+                    params.append(
+                        {
+                            "attr_id": int(entity_attr.id) if entity_attr else 0,
+                            "value": data["value"],
+                        }
+                    )
         else:
             # This is for APIv2
             params = [{"attr_id": int(x["id"]), "value": x["value"]} for x in recv_data]
@@ -417,10 +516,9 @@ class TriggerAction(models.Model):
         elif attr_type == AttrTypeValue["boolean"]:
             return value.bool_cond
         elif attr_type == AttrTypeValue["named_object"]:
-            value.ref_cond.id if isinstance(value.ref_cond, Entry) else None
             return {
                 "name": value.str_cond,
-                "id": value.ref_cond.id,
+                "id": value.ref_cond.id if isinstance(value.ref_cond, Entry) else None,
             }
         elif attr_type == AttrTypeValue["string"]:
             return value.str_cond

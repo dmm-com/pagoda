@@ -2385,9 +2385,12 @@ class Entry(ACLBase):
                 return [_get_value(attrname, attrtype, x) for x in value]
 
             elif attrtype & AttrTypeValue["named"]:
-                [co_value] = list(value.values())
+                [name, ref] = list(value.keys()) + list(value.values())
 
-                return co_value["id"] if co_value else None
+                return {
+                    "id": ref["id"] if ref else None,
+                    "name": name,
+                }
 
             elif attrtype & AttrTypeValue["object"]:
                 return value["id"] if value else None

@@ -65,6 +65,7 @@ describe("GroupAttributeValueField", () => {
   };
 
   const groups: PaginatedGroupList = {
+    count: 0,
     results: [
       {
         id: 1,

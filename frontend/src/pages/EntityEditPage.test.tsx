@@ -3,6 +3,10 @@
  */
 
 import {
+  EntityDetail,
+  PaginatedEntityListList,
+} from "@dmm-com/airone-apiclient-typescript-fetch";
+import {
   render,
   screen,
   waitForElementToBeRemoved,
@@ -18,46 +22,47 @@ import { EntityEditPage } from "./EntityEditPage";
 
 import { TestWrapperWithoutRoutes } from "TestWrapper";
 
+const entityList: PaginatedEntityListList = {
+  count: 3,
+  results: [
+    {
+      id: 1,
+      name: "aaa",
+      note: "",
+      isToplevel: false,
+    },
+    {
+      id: 2,
+      name: "aaaaa",
+      note: "",
+      isToplevel: false,
+    },
+    {
+      id: 3,
+      name: "bbbbb",
+      note: "",
+      isToplevel: false,
+    },
+  ],
+};
+
+const entity: EntityDetail = {
+  id: 1,
+  name: "test entity",
+  note: "",
+  isToplevel: false,
+  attrs: [],
+  webhooks: [],
+};
+
 const server = setupServer(
   // getEntities
   http.get("http://localhost/entity/api/v2/", () => {
-    return HttpResponse.json([
-      {
-        id: 1,
-        name: "aaa",
-        note: "",
-        isToplevel: false,
-        attrs: [],
-        webhooks: [],
-      },
-      {
-        id: 2,
-        name: "aaaaa",
-        note: "",
-        isToplevel: false,
-        attrs: [],
-        webhooks: [],
-      },
-      {
-        id: 3,
-        name: "bbbbb",
-        note: "",
-        isToplevel: false,
-        attrs: [],
-        webhooks: [],
-      },
-    ]);
+    return HttpResponse.json(entityList);
   }),
   // getEntity
   http.get("http://localhost/entity/api/v2/1/", () => {
-    return HttpResponse.json({
-      id: 1,
-      name: "test entity",
-      note: "",
-      isToplevel: false,
-      attrs: [],
-      webhooks: [],
-    });
+    return HttpResponse.json(entity);
   })
 );
 
