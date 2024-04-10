@@ -203,7 +203,7 @@ export const SearchResultsTableHead: FC<Props> = ({
             <HeaderBox>
               <Typography>{attrName}</Typography>
 
-              {attrTypes[attrName] === EntryAttributeTypeTypeEnum.OBJECT &&
+              {(attrTypes[attrName] & EntryAttributeTypeTypeEnum.OBJECT) > 0 &&
                 attrsFilter[attrName].joinedAttrname === undefined && (
                   <StyledIconButton onClick={() => setJoinAttrname(attrName)}>
                     <AddIcon />

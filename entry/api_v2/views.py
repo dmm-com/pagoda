@@ -418,12 +418,12 @@ class AdvancedSearchAPI(generics.GenericAPIView):
                     else:
                         # join EMPTY value
                         resp_result["attrs"] |= blank_joining_info  # type: ignore
-                        joined_ret_values.append(resp_result)
+                        joined_ret_values.append(deepcopy(resp_result))
 
                 if len(ref_list) == 0:
                     # join EMPTY value
                     resp_result["attrs"] |= blank_joining_info  # type: ignore
-                    joined_ret_values.append(resp_result)
+                    joined_ret_values.append(deepcopy(resp_result))
 
             if will_filter_by_joined_attr:
                 resp["ret_values"] = new_ret_values
