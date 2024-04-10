@@ -7,7 +7,7 @@ import {
   EntryAttributeTypeTypeEnum,
   PaginatedEntityListList,
 } from "@dmm-com/airone-apiclient-typescript-fetch";
-import { render, screen } from "@testing-library/react";
+import { act, render, screen, fireEvent } from "@testing-library/react";
 import { HttpResponse, http } from "msw";
 import { setupServer } from "msw/node";
 import React from "react";
@@ -43,7 +43,7 @@ const entityAttrs: Array<EntityAttr> = [
     id: 4,
     name: "obj",
     type: EntryAttributeTypeTypeEnum.OBJECT,
-    referral: [2],
+    //referral: [2],
   },
 ];
 
@@ -64,19 +64,40 @@ afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 
 describe("AdvancedSearchPage", () => {
-  test("should render the component", () => {
-    render(
-      <Router>
-        <AdvancedSearchPage />
-      </Router>
-    );
+  test("should render the component", async () => {
+    await act(async () => {
+      render(
+        <Router>
+          <AdvancedSearchPage />
+        </Router>
+      );
+    });
 
-    screen.getByPlaceholderText("エンティティを選択").click();
+    const elemInputEntity = screen.getByPlaceholderText("エンティティを選択");
 
-    const selectElement = screen.getByRole("combobox");
+    elemInputEntity.click();
 
-    console.log(selectElement);
+    //console.debug(screen.getAllByRole("option"));
 
+    // NG pattern - that uses userEvent
+    //userEvent.type(screen.getByRole("combobox"), "entity");
+
+    // OK pattern1
+    //fireEvent.change(screen.getByRole("combobox"), { target: { value: "entity" } });
+
+    // write down text to the input field
+    fireEvent.change(elemInputEntity, { target: { value: "entity" } });
+    expect(elemInputEntity).toHaveValue("entity");
+
+    // check expected values that are retrieved from API will be displaied.
     screen.debug();
+
+    //expect(elemInputEntity).toHaveValue("entity");
+
+    //console.debug(elemInputEntity);
+
+
+    //const selectElement = screen.getByRole("combobox");
+
   });
 });
