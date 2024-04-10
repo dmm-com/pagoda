@@ -4,14 +4,13 @@ import {
   ACLObjtypeEnum,
   ACLSetting,
   AclApi,
+  AdvancedSearchJoinAttrInfo,
   AdvancedSearchResult,
   AdvancedSearchResultAttrInfo,
-  AdvancedSearchJoinAttrInfo,
   AttributeData,
   Configuration,
   EntityApi,
   EntityApiV2ListRequest,
-  EntityAttr,
   EntityAttrCreate,
   EntityAttrUpdate,
   EntityDetail,
@@ -329,12 +328,14 @@ class AironeApiClient {
 
   async getEntityAttrs(
     entityIds: number[],
-    searchAllEntities = false
-  ): Promise<Array<EntityAttr>> {
+    searchAllEntities = false,
+    referralAttr: string = ""
+  ): Promise<Array<string>> {
     return await this.entity.entityApiV2AttrsList({
       entityIds: searchAllEntities
         ? ""
         : entityIds.map((id) => id.toString()).join(","),
+      referralAttr: referralAttr,
     });
   }
 
