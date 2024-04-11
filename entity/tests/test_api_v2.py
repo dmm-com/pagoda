@@ -3524,7 +3524,7 @@ class ViewTest(AironeViewTest):
             "/entity/api/v2/attrs?entity_ids=%s&referral_attr=%s" % (entity3.id, "puyo")
         )
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(resp.json(), ["bar", "foo", "fuga"])
+        self.assertEqual(resp.json(), ["foo", "bar", "fuga"])
 
         # get all attribute infomations are returned collectly
         resp = self.client.get("/entity/api/v2/attrs")
@@ -3533,7 +3533,10 @@ class ViewTest(AironeViewTest):
 
         # invalid entity_id(s)
         resp = self.client.get("/entity/api/v2/attrs?entity_ids=9999")
-        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.status_code, 404)
+        self.assertEqual(
+            resp.json(), {"code": "AE-230000", "message": "Target Entity doesn't exist"}
+        )
 
     @mock.patch("entry.tasks.create_entry_v2.delay", mock.Mock(side_effect=create_entry_v2))
     @mock.patch(
