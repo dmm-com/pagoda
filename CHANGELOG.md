@@ -10,6 +10,9 @@
   Contributed by @userlocalhost
 
 ### Fixed
+* Fixed a problem not to be able to invoke Trigger when an Item is not updated,
+  but it sould be invoked trigger for applying setting default value trigger.
+  Contributed by @hinashi, @userlocalhost
 
 ## v3.84.0
 
