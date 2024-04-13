@@ -18,6 +18,7 @@ from airone.lib.log import Logger
 from airone.lib.types import AttrTypeValue
 from entity.admin import EntityAttrResource, EntityResource
 from entity.models import Entity, EntityAttr
+from job.models import Job, JobStatus
 from user.models import History, User
 from webhook.models import Webhook
 
@@ -493,10 +494,11 @@ class EntityDetailAttributeSerializer(serializers.Serializer):
 class EntityDetailSerializer(EntityListSerializer):
     attrs = serializers.SerializerMethodField(method_name="get_attrs")
     webhooks = WebhookSerializer(many=True)
+    has_ongoing_changes = serializers.SerializerMethodField()
 
     class Meta:
         model = Entity
-        fields = ["id", "name", "note", "status", "is_toplevel", "attrs", "webhooks", "is_public"]
+        fields = ["id", "name", "note", "status", "is_toplevel", "attrs", "webhooks", "is_public", "has_ongoing_changes"]
 
     @extend_schema_field(serializers.ListField(child=EntityDetailAttributeSerializer()))
     def get_attrs(self, obj: Entity) -> list[EntityDetailAttributeSerializer.EntityDetailAttribute]:
@@ -528,6 +530,9 @@ class EntityDetailSerializer(EntityListSerializer):
             attrinfo = custom_view.call_custom("get_entity_attr", obj.name, obj, attrinfo)
 
         return attrinfo
+
+    def get_has_ongoing_changes(self, obj: Entity) -> bool:
+        return Job.objects.filter(target=obj, status__in=[JobStatus.PREPARING, JobStatus.PROCESSING]).exists()
 
 
 class EntityHistorySerializer(serializers.ModelSerializer):
