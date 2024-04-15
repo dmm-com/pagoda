@@ -5,11 +5,21 @@
 ### Added
 
 ### Changed
+
+### Fixed
+
+## v3.85.0
+
+### Changed
 * Update background processing to support any OBJECT typed Attribute for join_attr
   at the advacend serarch processing.
   Contributed by @userlocalhost
+* Simplify some remaining entry tasks additionally.
+  Contributed by @syucream
 
 ### Fixed
+* Fixed an error when specifying all entities in advanced search.
+  Contributed by @hinashi
 
 ## v3.84.0
 
