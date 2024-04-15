@@ -212,17 +212,6 @@ class ESS(Elasticsearch):
         )
 
 
-__all__ = [
-    "make_query",
-    "make_query_for_simple",
-    "execute_query",
-    "make_search_results",
-    "make_search_results_for_simple",
-    "prepend_escape_character",
-    "is_date_check",
-]
-
-
 def make_query(
     hint_entity: Entity,
     hint_attrs: list[AttrHint],
@@ -265,7 +254,7 @@ def make_query(
             case FilterKey.NON_EMPTY:
                 hint_attr["keyword"] = "*"
             case FilterKey.DUPLICATED:
-                aggs_query = make_aggs_query(hint_attr["name"])
+                aggs_query = _make_aggs_query(hint_attr["name"])
                 # TODO Set to 1 for convenience
                 resp = execute_query(aggs_query, 1)
                 keyword_infos = resp["aggregations"]["attr_aggs"]["attr_name_aggs"][
@@ -393,7 +382,7 @@ def make_query_for_simple(
     return query
 
 
-def make_aggs_query(hint_attr_name: str) -> dict:
+def _make_aggs_query(hint_attr_name: str) -> dict:
     return {
         "aggs": {
             "attr_aggs": {
@@ -582,7 +571,7 @@ def _make_referral_entity_query(referral_entity_id: int) -> dict[str, str]:
     return referral_or_query
 
 
-def _make_attr_query_for_simple(hint_string: str) -> dict[str, str]:
+def _make_attr_query_for_simple(hint_string: str) -> dict[str, dict]:
     """Create a search query for the AttributeValue in simple search.
 
     Divides the search string with OR.
@@ -597,16 +586,16 @@ def _make_attr_query_for_simple(hint_string: str) -> dict[str, str]:
 
     """
 
-    attr_query: dict = {
+    attr_query: dict[str, dict] = {
         "bool": {"filter": {"nested": {"path": "attr", "inner_hits": {"_source": ["attr.name"]}}}}
     }
 
-    attr_or_query: dict = {"bool": {"should": []}}
+    attr_or_query: dict[str, dict] = {"bool": {"should": []}}
     for keyword_divided_or in hint_string.split(CONFIG.OR_SEARCH_CHARACTER):
         if not keyword_divided_or:
             continue
 
-        attr_and_query: dict = {"bool": {"filter": []}}
+        attr_and_query: dict[str, dict] = {"bool": {"filter": []}}
         for keyword_divided_and in keyword_divided_or.split(CONFIG.AND_SEARCH_CHARACTER):
             if not keyword_divided_and:
                 continue
@@ -1117,7 +1106,7 @@ def make_search_results_for_simple(res: dict[str, Any]) -> dict[str, str]:
     return result
 
 
-def is_date_check(value: str) -> Optional[tuple[str, datetime]]:
+def _is_date_check(value: str) -> Optional[tuple[str, datetime]]:
     try:
         for delimiter in ["-", "/"]:
             date_format = "%%Y%(del)s%%m%(del)s%%d" % {"del": delimiter}
@@ -1142,7 +1131,7 @@ def is_date_check(value: str) -> Optional[tuple[str, datetime]]:
 
 def _is_date(value: str) -> Optional[list]:
     # checks all specified value is date format
-    result = [is_date_check(x) for x in value.split(" ") if x]
+    result = [_is_date_check(x) for x in value.split(" ") if x]
 
     # If result is not empty and all value is date, this returns the result
     return result if result and all(result) else None
