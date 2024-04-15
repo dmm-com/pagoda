@@ -19,7 +19,7 @@ from airone.lib.event_notification import (
 from airone.lib.http import DRFRequest
 from airone.lib.job import may_schedule_until_job_is_ready
 from airone.lib.log import Logger
-from airone.lib.types import AttrTypeValue
+from airone.lib.types import AttrType, AttrTypeValue
 from dashboard.tasks import _csv_export
 from entity.models import Entity, EntityAttr
 from entry.api_v2.serializers import (
@@ -100,25 +100,24 @@ def _convert_data_value(attr, info):
         if "referral_key" in info and info["referral_key"] and "data" in info["referral_key"][0]:
             recv_ref_key = info["referral_key"][0]["data"]
 
-        if attr.schema.type & AttrTypeValue["named"]:
-            return {
-                "name": recv_ref_key,
-                "id": recv_value,
-            }
-        elif attr.schema.type & AttrTypeValue["date"]:
-            if recv_value is None or recv_value == "":
-                return None
-            else:
-                return datetime.strptime(recv_value, "%Y-%m-%d").date()
-
-        elif attr.schema.type & AttrTypeValue["boolean"]:
-            if recv_value is None or recv_value == "":
-                return False
-            else:
+        match attr.schema.type:
+            case AttrType.NAMED_OBJECT | AttrType.ARRAY_NAMED_OBJECT:
+                return {
+                    "name": recv_ref_key,
+                    "id": recv_value,
+                }
+            case AttrType.DATE:
+                if recv_value is None or recv_value == "":
+                    return None
+                else:
+                    return datetime.strptime(recv_value, "%Y-%m-%d").date()
+            case AttrType.BOOLEAN:
+                if recv_value is None or recv_value == "":
+                    return False
+                else:
+                    return recv_value
+            case _:
                 return recv_value
-
-        else:
-            return recv_value
 
 
 def _do_import_entries(job: Job):
@@ -224,59 +223,66 @@ def _do_import_entries(job: Job):
 
 
 def _yaml_export_v2(job: Job, values, recv_data: dict, has_referral: bool) -> Optional[io.StringIO]:
-    def _get_attr_value(atype: int, value: dict):
-        if atype & AttrTypeValue["array"]:
-            return [_get_attr_value(atype ^ AttrTypeValue["array"], x) for x in value]
+    def _get_attr_value(atype: int, value: dict) -> Any:
+        match atype:
+            case _ if atype & AttrTypeValue["array"]:
+                return [_get_attr_value(atype ^ AttrTypeValue["array"], x) for x in value]
 
-        if atype == AttrTypeValue["named_object"]:
-            [(key, val)] = value.items()
-            entry = (
-                Entry.objects.filter(id=val["id"]).first()
-                if isinstance(val.get("id"), int)
-                else None
-            )
-            if entry:
-                return {
-                    key: {
-                        "entity": entry.schema.name,
-                        "name": val["name"],
+            case AttrType.NAMED_OBJECT:
+                [(key, val)] = value.items()
+                entry: Entry | None = (
+                    Entry.objects.filter(id=val["id"]).first()
+                    if isinstance(val.get("id"), int)
+                    else None
+                )
+                if entry:
+                    return {
+                        key: {
+                            "entity": entry.schema.name,
+                            "name": val["name"],
+                        }
                     }
-                }
-            elif len(key) > 0:
-                return {
-                    key: None,
-                }
-            else:
-                return {}
+                elif len(key) > 0:
+                    return {
+                        key: None,
+                    }
+                else:
+                    return {}
 
-        if atype == AttrTypeValue["object"]:
-            entry = (
-                Entry.objects.filter(id=value["id"]).first()
-                if isinstance(value.get("id"), int)
-                else None
-            )
-            if entry:
-                return {
-                    "entity": entry.schema.name,
-                    "name": value["name"],
-                }
-            else:
-                return None
+            case AttrType.OBJECT:
+                entry = (
+                    Entry.objects.filter(id=value["id"]).first()
+                    if isinstance(value.get("id"), int)
+                    else None
+                )
+                if entry:
+                    return {
+                        "entity": entry.schema.name,
+                        "name": value["name"],
+                    }
+                else:
+                    return None
 
-        elif atype == AttrTypeValue["group"]:
-            if isinstance(value.get("id"), int) and Group.objects.filter(id=value["id"]).exists():
-                return value["name"]
-            else:
-                return None
+            case AttrType.GROUP:
+                if (
+                    isinstance(value.get("id"), int)
+                    and Group.objects.filter(id=value["id"]).exists()
+                ):
+                    return value["name"]
+                else:
+                    return None
 
-        elif atype == AttrTypeValue["role"]:
-            if isinstance(value.get("id"), int) and Role.objects.filter(id=value["id"]).exists():
-                return value["name"]
-            else:
-                return None
+            case AttrType.ROLE:
+                if (
+                    isinstance(value.get("id"), int)
+                    and Role.objects.filter(id=value["id"]).exists()
+                ):
+                    return value["name"]
+                else:
+                    return None
 
-        else:
-            return value
+            case _:
+                return value
 
     resp_data: List[ExportedEntityEntries] = []
     for index, entry_info in enumerate(values):
@@ -652,7 +658,7 @@ def export_entries(self, job: Job):
         attrs = [x.name for x in entity.attrs.filter(is_active=True)]
         writer.writerow(["Name"] + attrs)
 
-        def data2str(data):
+        def data2str(data: Any | None) -> str:
             if not data:
                 return ""
             return str(data)
@@ -723,7 +729,7 @@ def export_entries_v2(self, job: Job):
         attrs = [x.name for x in entity.attrs.filter(is_active=True)]
         writer.writerow(["Name"] + attrs)
 
-        def data2str(data):
+        def data2str(data: Any | None) -> str:
             if not data:
                 return ""
             return str(data)

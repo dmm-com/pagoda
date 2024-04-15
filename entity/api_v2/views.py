@@ -297,7 +297,7 @@ class EntityAttrNameAPI(generics.GenericAPIView):
             return entity_attrs.values_list("name", flat=True).order_by("name").distinct()
         # single parent_entity case
         else:
-            return entity_attrs.values_list("name", flat=True).order_by("index")
+            return entity_attrs.values_list("name", flat=True).order_by("index", "pk")
 
     def get(self, request: Request) -> Response:
         queryset = self.get_queryset()
