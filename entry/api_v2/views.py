@@ -14,6 +14,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 
 import custom_view
+from airone.exceptions import ElasticsearchException
 from airone.lib.acl import ACLType
 from airone.lib.drf import (
     DuplicatedObjectExistsError,
@@ -24,6 +25,7 @@ from airone.lib.drf import (
     YAMLParser,
 )
 from airone.lib.types import AttrType, AttrTypeValue
+from api_v1.entry.serializer import EntrySearchChainSerializer
 from entity.models import Entity, EntityAttr
 from entry.api_v2.pagination import EntryReferralPagination
 from entry.api_v2.serializers import (
@@ -508,6 +510,38 @@ class AdvancedSearchAPI(generics.GenericAPIView):
         # return Response(serializer.validated_data)
 
         return Response(serializer.initial_data)
+
+
+class AdvancedSearchChainAPI(generics.GenericAPIView):
+    serializer_class = EntrySearchChainSerializer
+    """
+    NOTE For now, it's just copied from /api/v1/entry/search_chain.
+    And the AttributeValue is missing from the response.
+    """
+
+    @extend_schema(
+        request=EntrySearchChainSerializer,
+        responses=EntryBaseSerializer(many=True),
+    )
+    def post(self, request: Request) -> Response:
+        serializer = EntrySearchChainSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        try:
+            (_, ret_data) = serializer.search_entries(request.user)
+        except ElasticsearchException:
+            return Response(
+                {
+                    "reason": (
+                        "Data overflow was happened. " "Please narrow down intermediate conditions"
+                    )
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        entries = Entry.objects.filter(id__in=[x["id"] for x in ret_data])
+
+        return Response(EntryBaseSerializer(entries, many=True).data)
 
 
 class AdvancedSearchResultAPI(generics.GenericAPIView):

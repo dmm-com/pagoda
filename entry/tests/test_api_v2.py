@@ -4277,6 +4277,76 @@ class ViewTest(BaseViewTest):
             ],
         )
 
+    def test_advanced_search_chain(self):
+        ref_entry = self.add_entry(self.user, "RefEntry", self.ref_entity, values={"val": "hoge"})
+        entry = self.add_entry(
+            self.user,
+            "Entry",
+            self.entity,
+            values={
+                "ref": ref_entry.id,
+            },
+        )
+
+        params = {
+            "entities": [self.entity.id],
+            "attrs": [{"name": "ref", "attrs": [{"name": "val", "value": "hoge"}]}],
+        }
+        resp = self.client.post(
+            "/entry/api/v2/advanced_search_chain/", json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(
+            resp.json(),
+            [
+                {
+                    "id": entry.id,
+                    "name": "Entry",
+                    "schema": {
+                        "id": entry.schema.id,
+                        "name": "test-entity",
+                        "is_public": True,
+                    },
+                    "is_active": True,
+                    "deleted_user": None,
+                    "deleted_time": None,
+                    "updated_time": entry.updated_time.astimezone(self.TZ_INFO).isoformat(),
+                },
+            ],
+        )
+
+        # empty result case
+        params = {
+            "entities": [self.entity.id],
+            "attrs": [{"name": "ref", "attrs": [{"name": "val", "value": "fuga"}]}],
+        }
+        resp = self.client.post(
+            "/entry/api/v2/advanced_search_chain/", json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json(), [])
+
+        # bad request case
+        params = {
+            "entities": [self.entity.id],
+            "attrs": [{"name": "ref", "attrs": [{"value": "fuga"}]}],
+        }
+        resp = self.client.post(
+            "/entry/api/v2/advanced_search_chain/", json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.json(),
+            {
+                "non_field_errors": [
+                    {
+                        "code": "AE-121000",
+                        "message": "Invalid condition({'value': 'fuga'}) was specified",
+                    }
+                ]
+            },
+        )
+
     def test_entry_history(self):
         values = {
             "val": {"value": "hoge", "result": {"as_string": "hoge"}},
