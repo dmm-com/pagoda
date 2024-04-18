@@ -1,5 +1,6 @@
 import {
   AdvancedSearchJoinAttrInfo,
+  AdvancedSearchResult,
   AdvancedSearchResultAttrInfoFilterKeyEnum,
   EntryAttributeTypeTypeEnum,
 } from "@dmm-com/airone-apiclient-typescript-fetch";
@@ -29,6 +30,10 @@ import {
   formatAdvancedSearchParams,
 } from "services/entry/AdvancedSearch";
 
+interface AirOneAdvancedSearchResult extends AdvancedSearchResult {
+  isForceUpdate: boolean;
+}
+
 const HeaderBox = styled(Box)({
   display: "flex",
   justifyContent: "space-between",
@@ -53,6 +58,7 @@ interface Props {
   entityIds: number[];
   searchAllEntities: boolean;
   joinAttrs: AdvancedSearchJoinAttrInfo[];
+  setSearchResults: () => void;
 }
 
 export const SearchResultsTableHead: FC<Props> = ({
@@ -64,6 +70,7 @@ export const SearchResultsTableHead: FC<Props> = ({
   entityIds,
   searchAllEntities,
   joinAttrs,
+  setSearchResults,
 }) => {
   const location = useLocation();
   const history = useHistory();
@@ -158,7 +165,8 @@ export const SearchResultsTableHead: FC<Props> = ({
           // This removes duplicates
           .filter((v, i, a) => a.findIndex((t) => t.name === v.name) === i),
       });
-
+      console.log("handleSelectFilterConditions");
+      setSearchResults();
       // simply reload with the new params
       history.push({
         pathname: location.pathname,
@@ -216,6 +224,7 @@ export const SearchResultsTableHead: FC<Props> = ({
                   targetAttrname={joinAttrName}
                   joinAttrs={joinAttrs}
                   handleClose={() => setJoinAttrname("")}
+                  setSearchResults={() => setSearchResults()}
                 />
               )}
               <StyledIconButton

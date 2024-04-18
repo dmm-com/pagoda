@@ -7,12 +7,11 @@ import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import SettingsIcon from "@mui/icons-material/Settings";
 import { Box, Button, Typography } from "@mui/material";
 import { useSnackbar } from "notistack";
-import React, { FC, useMemo, useState } from "react";
+import React, { FC, useEffect, useMemo, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 
 import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
 
-import { AdvancedSerarchResultList } from "services/Constants";
 import { advancedSearchPath, topPath } from "Routes";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { Confirmable } from "components/common/Confirmable";
@@ -23,7 +22,12 @@ import { AdvancedSearchModal } from "components/entry/AdvancedSearchModal";
 import { SearchResults } from "components/entry/SearchResults";
 import { usePage } from "hooks/usePage";
 import { aironeApiClient } from "repository/AironeApiClient";
+import { AdvancedSerarchResultList } from "services/Constants";
 import { extractAdvancedSearchParams } from "services/entry/AdvancedSearch";
+
+interface AirOneAdvancedSearchResult extends AdvancedSearchResult {
+  offset: number;
+}
 
 export const AdvancedSearchResultsPage: FC = () => {
   const location = useLocation();
@@ -35,10 +39,12 @@ export const AdvancedSearchResultsPage: FC = () => {
     Array<number>
   >([]);
   const [toggle, setToggle] = useState(false);
-  const [searchResults, setSearchResults] = useState<AdvancedSearchResult>({
-    count: 0,
-    values: [],
-  });
+  const [searchResults, setSearchResults] =
+    useState<AirOneAdvancedSearchResult>({
+      count: 0,
+      values: [],
+      offset: 0,
+    });
 
   const {
     entityIds,
@@ -57,6 +63,7 @@ export const AdvancedSearchResultsPage: FC = () => {
     return await aironeApiClient.getEntityAttrs(entityIds, searchAllEntities);
   });
 
+  /*
   while (searchResults.count < AdvancedSerarchResultList.MAX_ROW_COUNT) {
     const results = useAsyncWithThrow(async () => {
       return await aironeApiClient.advancedSearch(
@@ -78,6 +85,46 @@ export const AdvancedSearchResultsPage: FC = () => {
       });
     }
   }
+  */
+
+  const handleSetResults = () => {
+    console.log("handleSetResults");
+    setSearchResults({
+      count: 0,
+      values: [],
+      offset: 0,
+    });
+  };
+
+  useEffect(() => {
+    console.log("useEffect start", searchResults.count);
+    if (searchResults.count >= AdvancedSerarchResultList.MAX_ROW_COUNT) {
+      console.log("useEffect return", searchResults.count);
+      return;
+    }
+
+    aironeApiClient
+      .advancedSearch(
+        entityIds,
+        entryName,
+        attrInfo,
+        joinAttrs,
+        hasReferral,
+        referralName,
+        searchAllEntities,
+        page,
+        AdvancedSerarchResultList.MAX_ROW_COUNT,
+        searchResults.offset
+      )
+      .then((results) => {
+        setSearchResults({
+          count: searchResults.count + results.count,
+          values: searchResults.values.concat(results.values),
+          offset:
+            searchResults.offset + AdvancedSerarchResultList.MAX_ROW_COUNT,
+        });
+      });
+  }, [page, toggle, location.search, searchResults]);
 
   const handleExport = async (exportStyle: "yaml" | "csv") => {
     try {
@@ -252,6 +299,7 @@ export const AdvancedSearchResultsPage: FC = () => {
           entityIds={entityIds}
           searchAllEntities={searchAllEntities}
           joinAttrs={joinAttrs}
+          setSearchResults={() => handleSetResults()}
         />
       )}
       <AdvancedSearchModal

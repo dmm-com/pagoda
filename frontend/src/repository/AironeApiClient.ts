@@ -214,17 +214,17 @@ class AironeApiClient {
   ): Promise<PaginatedEntityListList> {
     const params: EntityApiV2ListRequest = page
       ? {
-        offset: (page - 1) * ConstEntityList.MAX_ROW_COUNT,
-        limit: ConstEntityList.MAX_ROW_COUNT,
-        search: search,
-        isToplevel: isToplevel,
-      }
+          offset: (page - 1) * ConstEntityList.MAX_ROW_COUNT,
+          limit: ConstEntityList.MAX_ROW_COUNT,
+          search: search,
+          isToplevel: isToplevel,
+        }
       : {
-        // Any better way to get all the entities?
-        limit: Number.MAX_SAFE_INTEGER,
-        search: search,
-        isToplevel: isToplevel,
-      };
+          // Any better way to get all the entities?
+          limit: Number.MAX_SAFE_INTEGER,
+          search: search,
+          isToplevel: isToplevel,
+        };
 
     return await this.entity.entityApiV2List(params);
   }
@@ -684,9 +684,9 @@ class AironeApiClient {
     referralName = "",
     searchAllEntities = false,
     page: number,
-    limit = AdvancedSerarchResultList.MAX_ROW_COUNT,
+    limit: number = AdvancedSerarchResultList.MAX_ROW_COUNT,
+    offset: number = 0
   ): Promise<AdvancedSearchResult> {
-    const offset = (page - 1) * limit;
     return await this.entry.entryApiV2AdvancedSearchCreate(
       {
         advancedSearch: {
@@ -699,7 +699,7 @@ class AironeApiClient {
           isAllEntities: searchAllEntities,
           referralName: referralName,
           entryLimit: limit,
-          entryOffset: offset,
+          entryOffset: offset === 0 ? (page - 1) * limit : offset,
         },
       },
       {

@@ -27,6 +27,10 @@ import { AttributeValue } from "components/entry/AttributeValue";
 import { AdvancedSerarchResultList } from "services/Constants";
 import { AttrsFilter } from "services/entry/AdvancedSearch";
 
+interface AirOneAdvancedSearchResult extends AdvancedSearchResult {
+  isForceUpdate: boolean;
+}
+
 const StyledBox = styled(Box)({
   display: "table",
   overflowX: "inherit",
@@ -61,6 +65,7 @@ interface Props {
   entityIds: number[];
   searchAllEntities: boolean;
   joinAttrs: AdvancedSearchJoinAttrInfo[];
+  setSearchResults: () => void;
 }
 
 export const SearchResults: FC<Props> = ({
@@ -76,6 +81,7 @@ export const SearchResults: FC<Props> = ({
   entityIds,
   searchAllEntities,
   joinAttrs,
+  setSearchResults,
 }) => {
   // NOTE attrTypes are guessed by the first element on the results. So if it has no appropriate attr,
   // the type guess doesn't work well. We should improve attr type API if more accurate type is needed.
@@ -104,6 +110,7 @@ export const SearchResults: FC<Props> = ({
               entityIds={entityIds}
               searchAllEntities={searchAllEntities}
               joinAttrs={joinAttrs}
+              setSearchResults={setSearchResults}
             />
             <TableBody>
               {results.values?.map((result) => (

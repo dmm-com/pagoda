@@ -28,6 +28,7 @@ test("should render a component with essential props", function () {
         entityIds={[]}
         joinAttrs={[]}
         searchAllEntities={false}
+        setSearchResults={() => {}}
       />,
       { wrapper: TestWrapper }
     )
