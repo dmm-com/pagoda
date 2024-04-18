@@ -43,7 +43,6 @@ from entry.api_v2.serializers import (
     GetEntryAttrReferralSerializer,
 )
 from entry.models import Attribute, AttributeValue, Entry
-from entry.settings import CONFIG
 from entry.settings import CONFIG as ENTRY_CONFIG
 from group.models import Group
 from job.models import Job, JobOperation, JobStatus
@@ -363,16 +362,28 @@ class AdvancedSearchAPI(generics.GenericAPIView):
             if entity and request.user.has_permission(entity, ACLType.Readable):
                 hint_entity_ids.append(entity.id)
 
-        resp = Entry.search_entries(
-            request.user,
-            hint_entity_ids,
-            hint_attrs,
-            entry_limit,
-            hint_entry_name,
-            hint_referral,
-            is_output_all,
-            offset=entry_offset,
-        )
+        if not join_attrs:
+            resp = Entry.search_entries(
+                request.user,
+                hint_entity_ids,
+                hint_attrs,
+                entry_limit,
+                hint_entry_name,
+                hint_referral,
+                is_output_all,
+                offset=entry_offset,
+            )
+        else:
+            resp = Entry.search_entries(
+                request.user,
+                hint_entity_ids,
+                hint_attrs,
+                ENTRY_CONFIG.ADVANCED_SEARCH_LIMIT,
+                hint_entry_name,
+                hint_referral,
+                is_output_all,
+                offset=0,
+            )
 
         for join_attr in join_attrs:
             (will_filter_by_joined_attr, joined_resp) = _get_joined_resp(
@@ -665,13 +676,13 @@ class EntryAttrReferralsAPI(viewsets.ReadOnlyModelViewSet):
         if entity_attr.type & AttrTypeValue["object"]:
             return Entry.objects.filter(
                 **conditions, schema__in=entity_attr.referral.all()
-            ).order_by("name")[0 : CONFIG.MAX_LIST_REFERRALS]
+            ).order_by("name")[0 : ENTRY_CONFIG.MAX_LIST_REFERRALS]
         elif entity_attr.type & AttrTypeValue["group"]:
             return Group.objects.filter(**conditions).order_by("name")[
-                0 : CONFIG.MAX_LIST_REFERRALS
+                0 : ENTRY_CONFIG.MAX_LIST_REFERRALS
             ]
         elif entity_attr.type & AttrTypeValue["role"]:
-            return Role.objects.filter(**conditions).order_by("name")[0 : CONFIG.MAX_LIST_REFERRALS]
+            return Role.objects.filter(**conditions).order_by("name")[0 : ENTRY_CONFIG.MAX_LIST_REFERRALS]
         else:
             raise IncorrectTypeError(f"unsupported attr type: {entity_attr.type}")
 

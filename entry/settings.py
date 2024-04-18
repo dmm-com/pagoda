@@ -21,6 +21,7 @@ CONFIG = Settings(
         "MAX_QUERY_SIZE": 249,  # '.*' + '[aA]'*249 + '.*' = 1000
         "MAX_QUERY_COUNT": 1000,
         "SEARCH_CHAIN_ACCEPTABLE_RESULT_COUNT": 1000,
+        "ADVANCED_SEARCH_LIMIT": 100000,
         "EMPTY_SEARCH_CHARACTER": "\\",
         "EMPTY_SEARCH_CHARACTER_CODE": chr(165),
         "EXSIT_CHARACTER": "*",
