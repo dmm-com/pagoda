@@ -715,7 +715,7 @@ class AironeApiClient {
   ): Promise<EntryBase[]> {
     return await this.entry.entryApiV2AdvancedSearchChainCreate(
       {
-        entrySearchChain: entrySearchChain
+        entrySearchChain: entrySearchChain,
       },
       {
         headers: {
