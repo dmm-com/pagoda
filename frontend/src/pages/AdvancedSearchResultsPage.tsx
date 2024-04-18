@@ -1,4 +1,5 @@
 import {
+  AdvancedSearchResult,
   AdvancedSearchResultAttrInfo,
   AdvancedSearchResultAttrInfoFilterKeyEnum,
 } from "@dmm-com/airone-apiclient-typescript-fetch";
@@ -11,6 +12,7 @@ import { Link, useLocation } from "react-router-dom";
 
 import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
 
+import { AdvancedSerarchResultList } from "services/Constants";
 import { advancedSearchPath, topPath } from "Routes";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { Confirmable } from "components/common/Confirmable";
@@ -33,6 +35,10 @@ export const AdvancedSearchResultsPage: FC = () => {
     Array<number>
   >([]);
   const [toggle, setToggle] = useState(false);
+  const [searchResults, setSearchResults] = useState<AdvancedSearchResult>({
+    count: 0,
+    values: [],
+  });
 
   const {
     entityIds,
@@ -51,18 +57,27 @@ export const AdvancedSearchResultsPage: FC = () => {
     return await aironeApiClient.getEntityAttrs(entityIds, searchAllEntities);
   });
 
-  const results = useAsyncWithThrow(async () => {
-    return await aironeApiClient.advancedSearch(
-      entityIds,
-      entryName,
-      attrInfo,
-      joinAttrs,
-      hasReferral,
-      referralName,
-      searchAllEntities,
-      page
-    );
-  }, [page, toggle, location.search]);
+  while (searchResults.count < AdvancedSerarchResultList.MAX_ROW_COUNT) {
+    const results = useAsyncWithThrow(async () => {
+      return await aironeApiClient.advancedSearch(
+        entityIds,
+        entryName,
+        attrInfo,
+        joinAttrs,
+        hasReferral,
+        referralName,
+        searchAllEntities,
+        page
+      );
+    }, [page, toggle, location.search]);
+
+    if (!results.loading && results.value) {
+      setSearchResults({
+        count: searchResults.count + results.value.count,
+        values: searchResults.values.concat(results.value.values),
+      });
+    }
+  }
 
   const handleExport = async (exportStyle: "yaml" | "csv") => {
     try {
@@ -121,7 +136,7 @@ export const AdvancedSearchResultsPage: FC = () => {
 
       <PageHeader
         title="検索結果"
-        description={`${results.value?.count ?? 0} 件`}
+        description={`${searchResults.count ?? 0} 件`}
       >
         <Box display="flex" justifyContent="center">
           <Button
@@ -179,11 +194,11 @@ export const AdvancedSearchResultsPage: FC = () => {
         </Box>
       </PageHeader>
 
-      {results.loading || !results.value ? (
+      {searchResults.count == 0 ? (
         <Loading />
       ) : (
         <SearchResults
-          results={results.value}
+          results={searchResults}
           page={page}
           changePage={changePage}
           hasReferral={hasReferral}

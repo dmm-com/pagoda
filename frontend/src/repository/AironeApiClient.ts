@@ -51,6 +51,7 @@ import Cookies from "js-cookie";
 import fileDownload from "js-file-download";
 
 import {
+  AdvancedSerarchResultList,
   EntityList as ConstEntityList,
   EntityHistoryList,
   EntryHistoryList,
@@ -213,17 +214,17 @@ class AironeApiClient {
   ): Promise<PaginatedEntityListList> {
     const params: EntityApiV2ListRequest = page
       ? {
-          offset: (page - 1) * ConstEntityList.MAX_ROW_COUNT,
-          limit: ConstEntityList.MAX_ROW_COUNT,
-          search: search,
-          isToplevel: isToplevel,
-        }
+        offset: (page - 1) * ConstEntityList.MAX_ROW_COUNT,
+        limit: ConstEntityList.MAX_ROW_COUNT,
+        search: search,
+        isToplevel: isToplevel,
+      }
       : {
-          // Any better way to get all the entities?
-          limit: Number.MAX_SAFE_INTEGER,
-          search: search,
-          isToplevel: isToplevel,
-        };
+        // Any better way to get all the entities?
+        limit: Number.MAX_SAFE_INTEGER,
+        search: search,
+        isToplevel: isToplevel,
+      };
 
     return await this.entity.entityApiV2List(params);
   }
@@ -683,7 +684,7 @@ class AironeApiClient {
     referralName = "",
     searchAllEntities = false,
     page: number,
-    limit = 100
+    limit = AdvancedSerarchResultList.MAX_ROW_COUNT,
   ): Promise<AdvancedSearchResult> {
     const offset = (page - 1) * limit;
     return await this.entry.entryApiV2AdvancedSearchCreate(
