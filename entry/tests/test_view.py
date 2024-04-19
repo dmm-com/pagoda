@@ -7,6 +7,7 @@ from unittest.mock import Mock, patch
 
 import yaml
 from django.conf import settings
+from django.db.models import Q
 from django.http import HttpResponse
 from django.http.response import JsonResponse
 from django.urls import reverse
@@ -1937,11 +1938,15 @@ class ViewTest(AironeViewTest):
         user = self.guest_login()
 
         # initialize Entity which has Role related Attributes
+        entity_pref = self.create_entity(user, "Prefecture")
+        self.add_entry(user, "Tokyo", entity_pref)
+        pref_info = {"tokyo": self.add_entry(user, "Tokyo", entity_pref)}
+
         entity = self.create_entity(
             user,
             "Personal Information",
             attrs=[
-                {"name": "address", "type": AttrTypeValue["string"]},
+                {"name": "address", "type": AttrTypeValue["named_object"], "ref": entity_pref},
                 {"name": "age", "type": AttrTypeValue["string"]},
             ],
         )
@@ -1949,8 +1954,28 @@ class ViewTest(AironeViewTest):
         # register TriggerAction configuration before creating an Entry
         TriggerCondition.register(
             entity,
-            [{"attr_id": entity.attrs.get(name="age").id, "cond": "0"}],
-            [{"attr_id": entity.attrs.get(name="address").id, "value": "Tokyo"}],
+            [
+                {
+                    "attr_id": entity.attrs.get(name="address").id,
+                    "hint": "json",
+                    "cond": json.dumps(
+                        {
+                            "name": "unknown",
+                            "id": None,
+                        }
+                    ),
+                }
+            ],
+            [
+                {"attr_id": entity.attrs.get(name="age").id, "value": "0"},
+                {
+                    "attr_id": entity.attrs.get(name="address").id,
+                    "value": {
+                        "name": "Chiyoda ward",
+                        "id": pref_info["tokyo"],
+                    },
+                },
+            ],
         )
 
         # create an Entry to invoke TriggerAction
@@ -1958,10 +1983,10 @@ class ViewTest(AironeViewTest):
             "entry_name": "Jhon Doe",
             "attrs": [
                 {
-                    "id": str(entity.attrs.get(name="age").id),
+                    "id": str(entity.attrs.get(name="address").id),
                     "type": str(AttrTypeValue["string"]),
-                    "value": [{"data": "0", "index": 0}],
-                    "referral_key": [],
+                    "value": [{"data": "", "index": 0}],
+                    "referral_key": [{"data": "unknown", "index": 0}],
                 }
             ],
         }
@@ -1974,12 +1999,13 @@ class ViewTest(AironeViewTest):
         # check trigger action was worked properly
         job_query = Job.objects.filter(operation=JobOperation.MAY_INVOKE_TRIGGER)
         self.assertEqual(job_query.count(), 1)
-        self.assertEqual(job_query.first().status, JobStatus.DONE)
+        self.assertEqual(job_query.first().status, JobStatus.DONE.value)
 
         # check created Entry's attributes are set properly by TriggerAction
         entry = Entry.objects.get(id=resp.json().get("entry_id"))
         self.assertEqual(entry.get_attrv("age").value, "0")
-        self.assertEqual(entry.get_attrv("address").value, "Tokyo")
+        self.assertEqual(entry.get_attrv("address").value, "Chiyoda ward")
+        self.assertEqual(entry.get_attrv("address").referral.id, pref_info["tokyo"].id)
 
     @patch("entry.tasks.edit_entry_attrs.delay", Mock(side_effect=tasks.edit_entry_attrs))
     def test_edit_entry_with_role_attributes(self):
@@ -2035,13 +2061,17 @@ class ViewTest(AironeViewTest):
     def test_edit_entry_with_trigger_configuration(self):
         user = self.guest_login()
 
-        # initialize Entity and Entry which will be updated by TriggerAction
+        # initialize Entity which has Role related Attributes
+        entity_pref = self.create_entity(user, "Prefecture")
+        self.add_entry(user, "Tokyo", entity_pref)
+        pref_info = {"tokyo": self.add_entry(user, "Tokyo", entity_pref)}
+
         entity = self.create_entity(
             user,
             "Personal Information",
             attrs=[
+                {"name": "address", "type": AttrTypeValue["named_object"], "ref": entity_pref},
                 {"name": "age", "type": AttrTypeValue["string"]},
-                {"name": "address", "type": AttrTypeValue["string"]},
             ],
         )
         entry = self.add_entry(user, "Jhon Doe", entity)
@@ -2049,8 +2079,28 @@ class ViewTest(AironeViewTest):
         # register TriggerAction configuration before creating an Entry
         TriggerCondition.register(
             entity,
-            [{"attr_id": entity.attrs.get(name="age").id, "cond": "0"}],
-            [{"attr_id": entity.attrs.get(name="address").id, "value": "Tokyo"}],
+            [
+                {
+                    "attr_id": entity.attrs.get(name="address").id,
+                    "hint": "json",
+                    "cond": json.dumps(
+                        {
+                            "name": "unknown",
+                            "id": None,
+                        }
+                    ),
+                }
+            ],
+            [
+                {"attr_id": entity.attrs.get(name="age").id, "value": "0"},
+                {
+                    "attr_id": entity.attrs.get(name="address").id,
+                    "value": {
+                        "name": "Chiyoda ward",
+                        "id": pref_info["tokyo"],
+                    },
+                },
+            ],
         )
 
         # send request for editing Entry to invoke TriggerAction
@@ -2059,8 +2109,9 @@ class ViewTest(AironeViewTest):
             "attrs": [
                 {
                     "entity_attr_id": "",
-                    "id": str(entry.attrs.get(schema__name="age").id),
-                    "value": [{"data": "0", "index": 0}],
+                    "id": str(entry.attrs.get(schema__name="address").id),
+                    "value": [{"data": "", "index": 0}],
+                    "referral_key": [{"data": "unknown", "index": 0}],
                 }
             ],
         }
@@ -2074,12 +2125,13 @@ class ViewTest(AironeViewTest):
         # check trigger action was worked properly
         job_query = Job.objects.filter(operation=JobOperation.MAY_INVOKE_TRIGGER)
         self.assertEqual(job_query.count(), 1)
-        self.assertEqual(job_query.first().status, JobStatus.DONE)
+        self.assertEqual(job_query.first().status, JobStatus.DONE.value)
 
         # check updated Entry's attributes are set properly by TriggerAction
         self.assertEqual(resp.json().get("entry_id"), entry.id)
         self.assertEqual(entry.get_attrv("age").value, "0")
-        self.assertEqual(entry.get_attrv("address").value, "Tokyo")
+        self.assertEqual(entry.get_attrv("address").value, "Chiyoda ward")
+        self.assertEqual(entry.get_attrv("address").referral.id, pref_info["tokyo"].id)
 
     @patch(
         "entry.tasks.create_entry_attrs.delay",
@@ -4875,45 +4927,61 @@ class ViewTest(AironeViewTest):
             user,
             "Entity",
             [
-                {"name": "cond", "type": AttrTypeValue["string"]},
+                {"name": "cond_str", "type": AttrTypeValue["string"]},
+                {"name": "cond_name", "type": AttrTypeValue["named_object"]},
                 {"name": "action", "type": AttrTypeValue["string"]},
             ],
         )
-        entry = self.add_entry(
-            user,
-            "TestEntry",
-            entity,
-            values={
-                "cond": "hoge",
-            },
-        )
-
-        # changed value to retrieve
-        changing_attr = entry.attrs.get(name="cond")
-        changing_attr.add_value(user, "changed")
 
         # register TriggerAction configuration before creating an Entry
         TriggerCondition.register(
             entity,
-            [{"attr_id": entity.attrs.get(name="cond").id, "cond": "hoge"}],
+            [{"attr_id": entity.attrs.get(name="cond_str").id, "cond": "hoge"}],
+            [{"attr_id": entity.attrs.get(name="action").id, "value": "fuga"}],
+        )
+        TriggerCondition.register(
+            entity,
+            [{"attr_id": entity.attrs.get(name="cond_name").id, "cond": "foo"}],
             [{"attr_id": entity.attrs.get(name="action").id, "value": "fuga"}],
         )
 
-        # send request to revert attribute value of "cond"
-        revert_attrv = changing_attr.values.filter(value="hoge").last()
-        params = {"attr_id": str(changing_attr.id), "attrv_id": str(revert_attrv.id)}
-        resp = self.client.post(
-            reverse("entry:revert_attrv"), json.dumps(params), "application/json"
-        )
-        self.assertEqual(resp.status_code, 200)
+        # changed value to retrieve
+        testing_params = [
+            ("cond_str", "hoge", "changed", Q(value="hoge")),
+            (
+                "cond_name",
+                {"name": "foo", "id": None},
+                {"name": "changed", "id": None},
+                Q(value="foo"),
+            ),
+        ]
+        for index, (attrname, initial_value, changed_value, query) in enumerate(testing_params):
+            entry = self.add_entry(
+                user,
+                "TestEntry",
+                entity,
+                values={
+                    attrname: initial_value,
+                },
+            )
+            changing_attr = entry.attrs.get(name=attrname)
+            changing_attr.add_value(user, changed_value)
 
-        # This check that Attribute value of "action" would be updated by TriggerAction
-        self.assertEqual(entry.get_attrv("action").value, "fuga")
+            # send request to revert attribute value of "cond"
+            revert_attrv = changing_attr.values.filter(query).last()
+            params = {"attr_id": str(changing_attr.id), "attrv_id": str(revert_attrv.id)}
+            resp = self.client.post(
+                reverse("entry:revert_attrv"), json.dumps(params), "application/json"
+            )
+            self.assertEqual(resp.status_code, 200)
 
-        # check trigger action was worked properly
-        job_query = Job.objects.filter(operation=JobOperation.MAY_INVOKE_TRIGGER)
-        self.assertEqual(job_query.count(), 1)
-        self.assertEqual(job_query.first().status, JobStatus.DONE)
+            # This check that Attribute value of "action" would be updated by TriggerAction
+            self.assertEqual(entry.get_attrv("action").value, "fuga")
+
+            # check trigger action was worked properly
+            job_query = Job.objects.filter(operation=JobOperation.MAY_INVOKE_TRIGGER)
+            self.assertEqual(job_query.count(), 1 + index)
+            self.assertEqual(job_query.last().status, JobStatus.DONE)
 
     def test_revert_attrv_with_invalid_value(self):
         user = self.guest_login()

@@ -7,6 +7,7 @@ import {
 import AddIcon from "@mui/icons-material/Add";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import {
+  Box,
   Checkbox,
   IconButton,
   MenuItem,
@@ -15,6 +16,7 @@ import {
   TableRow,
   TextField,
 } from "@mui/material";
+import { styled } from "@mui/material/styles";
 import React, { FC } from "react";
 import { Control, Controller, useFieldArray } from "react-hook-form";
 
@@ -22,6 +24,20 @@ import { Schema } from "./TriggerFormSchema";
 
 import { ReferralsAutocomplete } from "components/entry/entryForm/ReferralsAutocomplete";
 import { isSupportedType } from "services/trigger/Edit";
+
+const NamedObjectBox = styled(Box)(({}) => ({
+  display: "flex",
+  alignItems: "flex-end",
+  gap: "0 12px",
+  width: "100%",
+}));
+const FlexBox = styled(Box)(({}) => ({
+  display: "flex",
+  flexDirection: "column",
+}));
+const NameBox = styled(Box)(({}) => ({
+  width: "150px",
+}));
 
 interface Props {
   control: Control<Schema>;
@@ -106,6 +122,54 @@ const ConditionValueAsObject: FC<PropsConditionValueComponent> = ({
   );
 };
 
+const ConditionValueAsName: FC<PropsConditionValueComponent> = ({
+  index,
+  control,
+  condField,
+}) => {
+  return (
+    <NamedObjectBox>
+      <FlexBox>
+        <NameBox>
+          <Controller
+            name={`conditions.${index}.strCond`}
+            control={control}
+            defaultValue={condField.strCond ?? ""}
+            render={({ field }) => (
+              <TextField {...field} variant="standard" fullWidth />
+            )}
+          />
+        </NameBox>
+      </FlexBox>
+
+      <Box flexGrow={1}>
+        <Controller
+          name={`conditions.${index}.refCond`}
+          control={control}
+          defaultValue={condField.refCond}
+          render={({ field }) => (
+            <ReferralsAutocomplete
+              attrId={condField.attr.id}
+              value={condField.refCond}
+              handleChange={(v) => {
+                field.onChange({
+                  id: (v as GetEntryAttrReferral).id,
+                  name: (v as GetEntryAttrReferral).name,
+                  schema: {
+                    id: 0,
+                    name: "",
+                  },
+                });
+              }}
+              multiple={false}
+            />
+          )}
+        />
+      </Box>
+    </NamedObjectBox>
+  );
+};
+
 const ConditionValue: FC<PropsConditionValuePlusEntity> = ({
   index,
   control,
@@ -137,6 +201,16 @@ const ConditionValue: FC<PropsConditionValuePlusEntity> = ({
     case EntryAttributeTypeTypeEnum.OBJECT:
       return (
         <ConditionValueAsObject
+          index={index}
+          control={control}
+          condField={condField}
+        />
+      );
+
+    case EntryAttributeTypeTypeEnum.NAMED_OBJECT:
+    case EntryAttributeTypeTypeEnum.ARRAY_NAMED_OBJECT:
+      return (
+        <ConditionValueAsName
           index={index}
           control={control}
           condField={condField}

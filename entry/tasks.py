@@ -19,7 +19,7 @@ from airone.lib.event_notification import (
 from airone.lib.http import DRFRequest
 from airone.lib.job import may_schedule_until_job_is_ready
 from airone.lib.log import Logger
-from airone.lib.types import AttrTypeValue
+from airone.lib.types import AttrType, AttrTypeValue
 from dashboard.tasks import _csv_export
 from entity.models import Entity, EntityAttr
 from entry.api_v2.serializers import (
@@ -100,25 +100,24 @@ def _convert_data_value(attr, info):
         if "referral_key" in info and info["referral_key"] and "data" in info["referral_key"][0]:
             recv_ref_key = info["referral_key"][0]["data"]
 
-        if attr.schema.type & AttrTypeValue["named"]:
-            return {
-                "name": recv_ref_key,
-                "id": recv_value,
-            }
-        elif attr.schema.type & AttrTypeValue["date"]:
-            if recv_value is None or recv_value == "":
-                return None
-            else:
-                return datetime.strptime(recv_value, "%Y-%m-%d").date()
-
-        elif attr.schema.type & AttrTypeValue["boolean"]:
-            if recv_value is None or recv_value == "":
-                return False
-            else:
+        match attr.schema.type:
+            case AttrType.NAMED_OBJECT | AttrType.ARRAY_NAMED_OBJECT:
+                return {
+                    "name": recv_ref_key,
+                    "id": recv_value,
+                }
+            case AttrType.DATE:
+                if recv_value is None or recv_value == "":
+                    return None
+                else:
+                    return datetime.strptime(recv_value, "%Y-%m-%d").date()
+            case AttrType.BOOLEAN:
+                if recv_value is None or recv_value == "":
+                    return False
+                else:
+                    return recv_value
+            case _:
                 return recv_value
-
-        else:
-            return recv_value
 
 
 def _do_import_entries(job: Job):
@@ -223,105 +222,67 @@ def _do_import_entries(job: Job):
     job.update(status=JobStatus.DONE, text="")
 
 
-def _do_import_entries_v2(job: Job):
-    user: User = job.user
-    entity = Entity.objects.get(id=job.target.id)
-    import_serializer = EntryImportEntitySerializer(data=json.loads(job.params))
-    import_serializer.is_valid()
-    context = {"request": DRFRequest(user)}
-
-    total_count = len(import_serializer.validated_data["entries"])
-    err_msg: list[str] = []
-    for index, entry_data in enumerate(import_serializer.validated_data["entries"]):
-        job.text = "Now importing... (progress: [%5d/%5d])" % (index + 1, total_count)
-        job.save(update_fields=["text"])
-
-        # abort processing when job is canceled
-        if job.is_canceled():
-            job.status = JobStatus.CANCELED
-            job.save(update_fields=["status"])
-            return
-
-        entry_data["schema"] = entity
-        entry: Optional[Entry] = Entry.objects.filter(
-            name=entry_data["name"], schema=entity, is_active=True
-        ).first()
-        if entry:
-            serializer = EntryUpdateSerializer(instance=entry, data=entry_data, context=context)
-        else:
-            serializer = EntryCreateSerializer(data=entry_data, context=context)
-        try:
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
-        except ValidationError as e:
-            err_msg.append(entry_data["name"])
-            Logger.warning(
-                "failed to validate on entry import v2: entry=%s, error=%s"
-                % (entry_data["name"], e)
-            )
-
-    if err_msg:
-        text = "Imported Entry count: %d, Failed import Entry: %s" % (total_count, err_msg)
-        job.update(status=JobStatus.WARNING, text=text)
-    else:
-        text = "Imported Entry count: %d" % total_count
-        job.update(status=JobStatus.DONE, text=text)
-
-
 def _yaml_export_v2(job: Job, values, recv_data: dict, has_referral: bool) -> Optional[io.StringIO]:
-    def _get_attr_value(atype: int, value: dict):
-        if atype & AttrTypeValue["array"]:
-            return [_get_attr_value(atype ^ AttrTypeValue["array"], x) for x in value]
+    def _get_attr_value(atype: int, value: dict) -> Any:
+        match atype:
+            case _ if atype & AttrTypeValue["array"]:
+                return [_get_attr_value(atype ^ AttrTypeValue["array"], x) for x in value]
 
-        if atype == AttrTypeValue["named_object"]:
-            [(key, val)] = value.items()
-            entry = (
-                Entry.objects.filter(id=val["id"]).first()
-                if isinstance(val.get("id"), int)
-                else None
-            )
-            if entry:
-                return {
-                    key: {
-                        "entity": entry.schema.name,
-                        "name": val["name"],
+            case AttrType.NAMED_OBJECT:
+                [(key, val)] = value.items()
+                entry: Entry | None = (
+                    Entry.objects.filter(id=val["id"]).first()
+                    if isinstance(val.get("id"), int)
+                    else None
+                )
+                if entry:
+                    return {
+                        key: {
+                            "entity": entry.schema.name,
+                            "name": val["name"],
+                        }
                     }
-                }
-            elif len(key) > 0:
-                return {
-                    key: None,
-                }
-            else:
-                return {}
+                elif len(key) > 0:
+                    return {
+                        key: None,
+                    }
+                else:
+                    return {}
 
-        if atype == AttrTypeValue["object"]:
-            entry = (
-                Entry.objects.filter(id=value["id"]).first()
-                if isinstance(value.get("id"), int)
-                else None
-            )
-            if entry:
-                return {
-                    "entity": entry.schema.name,
-                    "name": value["name"],
-                }
-            else:
-                return None
+            case AttrType.OBJECT:
+                entry = (
+                    Entry.objects.filter(id=value["id"]).first()
+                    if isinstance(value.get("id"), int)
+                    else None
+                )
+                if entry:
+                    return {
+                        "entity": entry.schema.name,
+                        "name": value["name"],
+                    }
+                else:
+                    return None
 
-        elif atype == AttrTypeValue["group"]:
-            if isinstance(value.get("id"), int) and Group.objects.filter(id=value["id"]).exists():
-                return value["name"]
-            else:
-                return None
+            case AttrType.GROUP:
+                if (
+                    isinstance(value.get("id"), int)
+                    and Group.objects.filter(id=value["id"]).exists()
+                ):
+                    return value["name"]
+                else:
+                    return None
 
-        elif atype == AttrTypeValue["role"]:
-            if isinstance(value.get("id"), int) and Role.objects.filter(id=value["id"]).exists():
-                return value["name"]
-            else:
-                return None
+            case AttrType.ROLE:
+                if (
+                    isinstance(value.get("id"), int)
+                    and Role.objects.filter(id=value["id"]).exists()
+                ):
+                    return value["name"]
+                else:
+                    return None
 
-        else:
-            return value
+            case _:
+                return value
 
     resp_data: List[ExportedEntityEntries] = []
     for index, entry_info in enumerate(values):
@@ -453,199 +414,209 @@ def create_entry_attrs(self, job_id: int):
 
 
 @app.task(bind=True)
-def edit_entry_attrs(self, job_id: int):
-    job = Job.objects.get(id=job_id)
+@may_schedule_until_job_is_ready
+def edit_entry_attrs(self, job: Job) -> JobStatus:
+    user = User.objects.get(id=job.user.id)
+    entry = Entry.objects.get(id=job.target.id)
 
-    if job.proceed_if_ready():
-        # At the first time, update job status to prevent executing this job duplicately
-        job.update(JobStatus.PROCESSING)
+    # for history record
+    entry._history_user = user
 
-        user = User.objects.get(id=job.user.id)
-        entry = Entry.objects.get(id=job.target.id)
+    recv_data = json.loads(job.params)
 
-        # for history record
-        entry._history_user = user
+    for info in recv_data["attrs"]:
+        if info["id"]:
+            attr = Attribute.objects.get(id=info["id"])
+        else:
+            entity_attr = EntityAttr.objects.get(id=info["entity_attr_id"])
+            attr = entry.attrs.filter(schema=entity_attr, is_active=True).first()
+            if not attr:
+                attr = entry.add_attribute_from_base(entity_attr, user)
 
-        recv_data = json.loads(job.params)
+        # check permission of EntityAttr
+        if not user.has_permission(attr, ACLType.Writable):
+            continue
 
-        for info in recv_data["attrs"]:
-            if info["id"]:
-                attr = Attribute.objects.get(id=info["id"])
-            else:
-                entity_attr = EntityAttr.objects.get(id=info["entity_attr_id"])
-                attr = entry.attrs.filter(schema=entity_attr, is_active=True).first()
-                if not attr:
-                    attr = entry.add_attribute_from_base(entity_attr, user)
+        try:
+            converted_value = _convert_data_value(attr, info)
+        except ValueError as e:
+            Logger.warning("(%s) attr_data: %s" % (e, str(info)))
+            continue
 
-            # check permission of EntityAttr
-            if not user.has_permission(attr, ACLType.Writable):
-                continue
+        # Check a new update value is specified, or not
+        if not attr.is_updated(converted_value):
+            continue
 
-            try:
-                converted_value = _convert_data_value(attr, info)
-            except ValueError as e:
-                Logger.warning("(%s) attr_data: %s" % (e, str(info)))
-                continue
+        # Add new AttributeValue instance to Attribute instnace
+        attr.add_value(user, converted_value)
 
-            # Check a new update value is specified, or not
-            if not attr.is_updated(converted_value):
-                continue
+    if custom_view.is_custom("after_edit_entry", entry.schema.name):
+        custom_view.call_custom("after_edit_entry", entry.schema.name, recv_data, user, entry)
 
-            # Add new AttributeValue instance to Attribute instnace
-            attr.add_value(user, converted_value)
+    # update entry information to Elasticsearch
+    entry.register_es()
 
-        if custom_view.is_custom("after_edit_entry", entry.schema.name):
-            custom_view.call_custom("after_edit_entry", entry.schema.name, recv_data, user, entry)
+    # clear flag to specify this entry has been completed to edit
+    entry.del_status(Entry.STATUS_EDITING)
 
-        # update entry information to Elasticsearch
-        entry.register_es()
+    # running job to notify changing entry event
+    job_notify_event = Job.new_notify_update_entry(user, entry)
+    job_notify_event.run()
 
-        # clear flag to specify this entry has been completed to edit
-        entry.del_status(Entry.STATUS_EDITING)
-
-        # update job status and save it
-        job.update(JobStatus.DONE)
-
-        # running job to notify changing entry event
-        job_notify_event = Job.new_notify_update_entry(user, entry)
-        job_notify_event.run()
-
-
-@app.task(bind=True)
-def delete_entry(self, job_id: int):
-    job = Job.objects.get(id=job_id)
-
-    if job.proceed_if_ready():
-        job.update(JobStatus.PROCESSING)
-
-        entry = Entry.objects.get(id=job.target.id)
-
-        # for history record
-        entry._history_user = job.user
-
-        entry.delete()
-
-        if custom_view.is_custom("after_delete_entry", entry.schema.name):
-            custom_view.call_custom("after_delete_entry", entry.schema.name, job.user, entry)
-
-        # update job status and save it
-        job.update(JobStatus.DONE)
-
-
-@app.task(bind=True)
-def restore_entry(self, job_id):
-    job = Job.objects.get(id=job_id)
-
-    if job.proceed_if_ready():
-        job.update(JobStatus.PROCESSING)
-
-        entry = Entry.objects.get(id=job.target.id)
-
-        # for history record
-        entry._history_user = job.user
-
-        entry.restore()
-
-        # remove status flag which is set before calling this
-        entry.del_status(Entry.STATUS_CREATING)
-
-        # Send notification to the webhook URL
-        job_notify = Job.new_notify_create_entry(job.user, entry)
-        job_notify.run()
-
-        # calling custom view processing if necessary
-        if custom_view.is_custom("after_restore_entry", entry.schema.name):
-            custom_view.call_custom("after_restore_entry", entry.schema.name, job.user, entry)
-
-        # update job status and save it
-        job.update(JobStatus.DONE)
-
-
-@app.task(bind=True)
-def copy_entry(self, job_id):
-    job = Job.objects.get(id=job_id)
-
-    if job.proceed_if_ready():
-        # update job status
-        job.update(JobStatus.PROCESSING)
-
-        src_entry = Entry.objects.get(id=job.target.id)
-
-        params = json.loads(job.params)
-        total_count = len(params["new_name_list"])
-        for index, new_name in enumerate(params["new_name_list"]):
-            # abort processing when job is canceled
-            if job.is_canceled():
-                job.text = "Copy completed [%5d/%5d]" % (index, total_count)
-                job.save(update_fields=["text"])
-                return
-
-            job.text = "Now copying... (progress: [%5d/%5d])" % (index + 1, total_count)
-            job.save(update_fields=["text"])
-
-            params["new_name"] = new_name
-            job_do_copy_entry = Job.new_do_copy(job.user, src_entry, new_name, params)
-            job_do_copy_entry.run(will_delay=False)
-
-        # update job status and save it
-        job.update(
-            status=JobStatus.DONE,
-            text="Copy completed [%5d/%5d]" % (total_count, total_count),
-        )
-
-
-@app.task(bind=True)
-def do_copy_entry(self, job_id: int):
-    job = Job.objects.get(id=job_id)
-
-    if job.proceed_if_ready():
-        # update job status
-        job.update(JobStatus.PROCESSING)
-
-        src_entry = Entry.objects.get(id=job.target.id)
-
-        params = json.loads(job.params)
-        dest_entry = Entry.objects.filter(schema=src_entry.schema, name=params["new_name"]).first()
-        if not dest_entry:
-            dest_entry = src_entry.clone(job.user, name=params["new_name"])
-            dest_entry.register_es()
-
-        if custom_view.is_custom("after_copy_entry", src_entry.schema.name):
-            custom_view.call_custom(
-                "after_copy_entry",
-                src_entry.schema.name,
-                job.user,
-                src_entry,
-                dest_entry,
-                params["post_data"],
-            )
-
-        # update job status and save it
-        job.update(JobStatus.DONE, "original entry: %s" % src_entry.name, dest_entry)
-
-        # create and run event notification job
-        job_notify_event = Job.new_notify_create_entry(job.user, dest_entry)
-        job_notify_event.run()
+    return JobStatus.DONE
 
 
 @app.task(bind=True)
 @may_schedule_until_job_is_ready
-def import_entries(self, job: Job) -> tuple[JobStatus, str] | None:
+def delete_entry(self, job: Job) -> JobStatus:
+    entry = Entry.objects.get(id=job.target.id)
+
+    # for history record
+    entry._history_user = job.user
+
+    entry.delete()
+
+    if custom_view.is_custom("after_delete_entry", entry.schema.name):
+        custom_view.call_custom("after_delete_entry", entry.schema.name, job.user, entry)
+
+    return JobStatus.DONE
+
+
+@app.task(bind=True)
+@may_schedule_until_job_is_ready
+def restore_entry(self, job: Job):
+    entry = Entry.objects.get(id=job.target.id)
+
+    # for history record
+    entry._history_user = job.user
+
+    entry.restore()
+
+    # remove status flag which is set before calling this
+    entry.del_status(Entry.STATUS_CREATING)
+
+    # Send notification to the webhook URL
+    job_notify = Job.new_notify_create_entry(job.user, entry)
+    job_notify.run()
+
+    # calling custom view processing if necessary
+    if custom_view.is_custom("after_restore_entry", entry.schema.name):
+        custom_view.call_custom("after_restore_entry", entry.schema.name, job.user, entry)
+
+    return JobStatus.DONE
+
+
+@app.task(bind=True)
+@may_schedule_until_job_is_ready
+def copy_entry(self, job: Job) -> tuple[JobStatus, str, None] | None:
+    src_entry = Entry.objects.get(id=job.target.id)
+
+    params = json.loads(job.params)
+    total_count = len(params["new_name_list"])
+    for index, new_name in enumerate(params["new_name_list"]):
+        # abort processing when job is canceled
+        if job.is_canceled():
+            job.text = "Copy completed [%5d/%5d]" % (index, total_count)
+            job.save(update_fields=["text"])
+            return None
+
+        job.text = "Now copying... (progress: [%5d/%5d])" % (index + 1, total_count)
+        job.save(update_fields=["text"])
+
+        params["new_name"] = new_name
+        job_do_copy_entry = Job.new_do_copy(job.user, src_entry, new_name, params)
+        job_do_copy_entry.run(will_delay=False)
+
+    # update job status and save it
+    return JobStatus.DONE, "Copy completed [%5d/%5d]" % (total_count, total_count), None
+
+
+@app.task(bind=True)
+@may_schedule_until_job_is_ready
+def do_copy_entry(self, job: Job) -> tuple[JobStatus, str, None]:
+    src_entry = Entry.objects.get(id=job.target.id)
+
+    params = json.loads(job.params)
+    dest_entry = Entry.objects.filter(schema=src_entry.schema, name=params["new_name"]).first()
+    if not dest_entry:
+        dest_entry = src_entry.clone(job.user, name=params["new_name"])
+        dest_entry.register_es()
+
+    if custom_view.is_custom("after_copy_entry", src_entry.schema.name):
+        custom_view.call_custom(
+            "after_copy_entry",
+            src_entry.schema.name,
+            job.user,
+            src_entry,
+            dest_entry,
+            params["post_data"],
+        )
+
+    # create and run event notification job
+    job_notify_event = Job.new_notify_create_entry(job.user, dest_entry)
+    job_notify_event.run()
+
+    return JobStatus.DONE, "original entry: %s" % src_entry.name, dest_entry
+
+
+@app.task(bind=True)
+@may_schedule_until_job_is_ready
+def import_entries(self, job: Job) -> tuple[JobStatus, str, None] | None:
     try:
         _do_import_entries(job)
     except Exception as e:
-        return JobStatus.ERROR, "[task.import] [job:%d] %s" % (job.id, str(e))
+        return JobStatus.ERROR, "[task.import] [job:%d] %s" % (job.id, str(e)), None
 
     return None
 
 
 @app.task(bind=True)
-def import_entries_v2(self, job_id: int):
-    job: Job = Job.objects.get(id=job_id)
+@may_schedule_until_job_is_ready
+def import_entries_v2(self, job: Job) -> tuple[JobStatus, str, None] | None:
+    user: User = job.user
+    entity = Entity.objects.get(id=job.target.id)
+    import_serializer = EntryImportEntitySerializer(data=json.loads(job.params))
+    import_serializer.is_valid()
+    context = {"request": DRFRequest(user)}
 
-    if job.proceed_if_ready():
-        job.update(JobStatus.PROCESSING)
-        _do_import_entries_v2(job)
+    total_count = len(import_serializer.validated_data["entries"])
+    err_msg: list[str] = []
+    for index, entry_data in enumerate(import_serializer.validated_data["entries"]):
+        job.text = "Now importing... (progress: [%5d/%5d])" % (index + 1, total_count)
+        job.save(update_fields=["text"])
+
+        # abort processing when job is canceled
+        if job.is_canceled():
+            job.status = JobStatus.CANCELED
+            job.save(update_fields=["status"])
+            return None
+
+        entry_data["schema"] = entity
+        entry: Optional[Entry] = Entry.objects.filter(
+            name=entry_data["name"], schema=entity, is_active=True
+        ).first()
+        if entry:
+            serializer = EntryUpdateSerializer(instance=entry, data=entry_data, context=context)
+        else:
+            serializer = EntryCreateSerializer(data=entry_data, context=context)
+        try:
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+        except ValidationError as e:
+            err_msg.append(entry_data["name"])
+            Logger.warning(
+                "failed to validate on entry import v2: entry=%s, error=%s"
+                % (entry_data["name"], e)
+            )
+
+    if err_msg:
+        return (
+            JobStatus.WARNING,
+            "Imported Entry count: %d, Failed import Entry: %s" % (total_count, err_msg),
+            None,
+        )
+    else:
+        return JobStatus.DONE, "Imported Entry count: %d" % total_count, None
 
 
 @app.task(bind=True)
@@ -687,7 +658,7 @@ def export_entries(self, job: Job):
         attrs = [x.name for x in entity.attrs.filter(is_active=True)]
         writer.writerow(["Name"] + attrs)
 
-        def data2str(data):
+        def data2str(data: Any | None) -> str:
             if not data:
                 return ""
             return str(data)
@@ -758,7 +729,7 @@ def export_entries_v2(self, job: Job):
         attrs = [x.name for x in entity.attrs.filter(is_active=True)]
         writer.writerow(["Name"] + attrs)
 
-        def data2str(data):
+        def data2str(data: Any | None) -> str:
             if not data:
                 return ""
             return str(data)
@@ -824,22 +795,23 @@ def register_referrals(self, job: Job):
         [r.register_es() for r in entry.get_referred_objects()]
 
 
-def _notify_event(notification_method, object_id, user) -> tuple[JobStatus, str] | None:
+def _notify_event(notification_method, object_id, user) -> tuple[JobStatus, str, None] | None:
     entry = Entry.objects.filter(id=object_id).first()
     if not entry:
-        return JobStatus.ERROR, "Failed to get job.target (%s)" % object_id
+        return JobStatus.ERROR, "Failed to get job.target (%s)" % object_id, None
 
     try:
         notification_method(entry, user)
         return None
     except Exception as e:
-        return JobStatus.ERROR, str(e)
+        return JobStatus.ERROR, str(e), None
 
 
 @app.task(bind=True)
 def update_es_documents(self, job_id: int):
     job = Job.objects.get(id=job_id)
     job.update(JobStatus.PROCESSING)
+
     params = json.loads(job.params)
 
     entity = Entity.objects.get(id=job.target.id)
@@ -850,19 +822,19 @@ def update_es_documents(self, job_id: int):
 
 @app.task(bind=True)
 @may_schedule_until_job_is_ready
-def notify_create_entry(self, job: Job) -> tuple[JobStatus, str] | None:
+def notify_create_entry(self, job: Job) -> tuple[JobStatus, str, None] | None:
     return _notify_event(notify_entry_create, job.target.id, job.user)
 
 
 @app.task(bind=True)
 @may_schedule_until_job_is_ready
-def notify_update_entry(self, job: Job) -> tuple[JobStatus, str] | None:
+def notify_update_entry(self, job: Job) -> tuple[JobStatus, str, None] | None:
     return _notify_event(notify_entry_update, job.target.id, job.user)
 
 
 @app.task(bind=True)
 @may_schedule_until_job_is_ready
-def notify_delete_entry(self, job: Job) -> tuple[JobStatus, str] | None:
+def notify_delete_entry(self, job: Job) -> tuple[JobStatus, str, None] | None:
     return _notify_event(notify_entry_delete, job.target.id, job.user)
 
 

@@ -1,4 +1,5 @@
 import re
+from copy import deepcopy
 from datetime import datetime, timedelta
 from typing import Optional
 
@@ -13,6 +14,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 
 import custom_view
+from airone.exceptions import ElasticsearchException
 from airone.lib.acl import ACLType
 from airone.lib.drf import (
     DuplicatedObjectExistsError,
@@ -23,6 +25,7 @@ from airone.lib.drf import (
     YAMLParser,
 )
 from airone.lib.types import AttrType, AttrTypeValue
+from api_v1.entry.serializer import EntrySearchChainSerializer
 from entity.models import Entity, EntityAttr
 from entry.api_v2.pagination import EntryReferralPagination
 from entry.api_v2.serializers import (
@@ -249,14 +252,29 @@ class AdvancedSearchAPI(generics.GenericAPIView):
                 if attr is None:
                     continue
 
-                if attr.type == AttrTypeValue["object"]:
+                if attr.type & AttrType.OBJECT:
                     # set hint Model ID
                     hint_entity_ids += [x.id for x in attr.referral.filter(is_active=True)]
 
                     # set Item name
                     attrinfo = result["attrs"][join_attr["name"]]
-                    if attrinfo["value"]["name"] not in item_names:
+
+                    if attr.type == AttrType.OBJECT and attrinfo["value"]["name"] not in item_names:
                         item_names.append(attrinfo["value"]["name"])
+
+                    if attr.type == AttrType.NAMED_OBJECT:
+                        for co_info in attrinfo["value"].values():
+                            if co_info["name"] not in item_names:
+                                item_names.append(co_info["name"])
+
+                    if attr.type == AttrType.ARRAY_OBJECT:
+                        for r in attrinfo["value"]:
+                            item_names.append(r["name"])
+
+                    if attr.type == AttrType.ARRAY_NAMED_OBJECT:
+                        for r in attrinfo["value"]:
+                            [co_info] = r.values()
+                            item_names.append(co_info["name"])
 
             # set parameters to filter joining search results
             hint_attrs = []
@@ -292,6 +310,26 @@ class AdvancedSearchAPI(generics.GenericAPIView):
             )
 
         # === End of Function: _get_joined_resp() ===
+
+        def _get_ref_id_from_es_result(attrinfo):
+            if attrinfo["type"] == AttrType.OBJECT:
+                if attrinfo.get("value") is not None:
+                    return [attrinfo["value"].get("id")]
+
+            if attrinfo["type"] == AttrType.NAMED_OBJECT:
+                if attrinfo.get("value") is not None:
+                    [ref_info] = attrinfo["value"].values()
+                    return [ref_info.get("id")]
+
+            if attrinfo["type"] == AttrType.ARRAY_OBJECT:
+                return [x.get("id") for x in attrinfo["value"]]
+
+            if attrinfo["type"] == AttrType.ARRAY_NAMED_OBJECT:
+                return sum([[y["id"] for y in x.values()] for x in attrinfo["value"]], [])
+
+            return []
+
+        # === End of Function: _get_ref_id_from_es_result() ===
 
         if not has_referral:
             hint_referral = None
@@ -340,7 +378,6 @@ class AdvancedSearchAPI(generics.GenericAPIView):
             (will_filter_by_joined_attr, joined_resp) = _get_joined_resp(
                 resp["ret_values"], join_attr
             )
-
             # This is needed to set result as blank value
             blank_joining_info = {
                 "%s.%s" % (join_attr["name"], k["name"]): {
@@ -363,37 +400,39 @@ class AdvancedSearchAPI(generics.GenericAPIView):
 
             # this inserts result to previous search result
             new_ret_values = []
+            joined_ret_values = []
             for resp_result in resp["ret_values"]:
-                ref_info = resp_result["attrs"].get(join_attr["name"])
-                if (
-                    # ignore no joined data
-                    ref_info is None
-                    or
-                    # ignore unexpected typed attributes
-                    ref_info["type"] != AttrType.OBJECT
-                    or
-                    # ignore when original result doesn't refer any item
-                    ref_info["value"].get("id") is None
-                ):
-                    # join EMPTY value
-                    resp_result["attrs"] |= blank_joining_info  # type: ignore
-
                 # joining search result to original one
-                ref_id = ref_info["value"].get("id") if "value" in ref_info is not None else None  # type: ignore
-                if ref_id and ref_id in joined_resp_info:  # type: ignore
-                    # join valid value
-                    resp_result["attrs"] |= joined_resp_info[ref_id]
+                ref_info = resp_result["attrs"].get(join_attr["name"])
 
-                    # collect only the result that matches with keyword of joined_attr parameter
-                    new_ret_values.append(resp_result)
+                # This get referral Item-ID from joined search result
+                ref_list = _get_ref_id_from_es_result(ref_info)
+                for ref_id in ref_list:
+                    if ref_id and ref_id in joined_resp_info:  # type: ignore
+                        # join valid value
+                        resp_result["attrs"] |= joined_resp_info[ref_id]
 
-                else:
+                        # collect only the result that matches with keyword of joined_attr parameter
+                        copied_result = deepcopy(resp_result)
+                        new_ret_values.append(copied_result)
+                        joined_ret_values.append(copied_result)
+
+                    else:
+                        # join EMPTY value
+                        resp_result["attrs"] |= blank_joining_info  # type: ignore
+                        joined_ret_values.append(deepcopy(resp_result))
+
+                if len(ref_list) == 0:
                     # join EMPTY value
                     resp_result["attrs"] |= blank_joining_info  # type: ignore
+                    joined_ret_values.append(deepcopy(resp_result))
 
             if will_filter_by_joined_attr:
                 resp["ret_values"] = new_ret_values
                 resp["ret_count"] = len(new_ret_values)
+            else:
+                resp["ret_values"] = joined_ret_values
+                resp["ret_count"] = len(joined_ret_values)
 
         # convert field values to fit entry retrieve API data type, as a workaround.
         # FIXME should be replaced with DRF serializer etc
@@ -471,6 +510,38 @@ class AdvancedSearchAPI(generics.GenericAPIView):
         # return Response(serializer.validated_data)
 
         return Response(serializer.initial_data)
+
+
+class AdvancedSearchChainAPI(generics.GenericAPIView):
+    serializer_class = EntrySearchChainSerializer
+    """
+    NOTE For now, it's just copied from /api/v1/entry/search_chain.
+    And the AttributeValue is missing from the response.
+    """
+
+    @extend_schema(
+        request=EntrySearchChainSerializer,
+        responses=EntryBaseSerializer(many=True),
+    )
+    def post(self, request: Request) -> Response:
+        serializer = EntrySearchChainSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        try:
+            (_, ret_data) = serializer.search_entries(request.user)
+        except ElasticsearchException:
+            return Response(
+                {
+                    "reason": (
+                        "Data overflow was happened. " "Please narrow down intermediate conditions"
+                    )
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        entries = Entry.objects.filter(id__in=[x["id"] for x in ret_data])
+
+        return Response(EntryBaseSerializer(entries, many=True).data)
 
 
 class AdvancedSearchResultAPI(generics.GenericAPIView):

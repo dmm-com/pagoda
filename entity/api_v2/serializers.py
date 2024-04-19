@@ -194,7 +194,7 @@ class EntityAttrSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = EntityAttr
-        fields = ("id", "name", "type", "referral")
+        fields = ("id", "name", "type")
 
 
 class EntitySerializer(serializers.ModelSerializer):
@@ -649,4 +649,4 @@ class EntityImportExportRootSerializer(serializers.Serializer):
 
 
 class EntityAttrNameSerializer(serializers.ListSerializer):
-    child = EntityAttrSerializer()
+    child = serializers.CharField()

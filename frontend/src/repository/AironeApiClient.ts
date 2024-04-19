@@ -4,14 +4,13 @@ import {
   ACLObjtypeEnum,
   ACLSetting,
   AclApi,
+  AdvancedSearchJoinAttrInfo,
   AdvancedSearchResult,
   AdvancedSearchResultAttrInfo,
-  AdvancedSearchJoinAttrInfo,
   AttributeData,
   Configuration,
   EntityApi,
   EntityApiV2ListRequest,
-  EntityAttr,
   EntityAttrCreate,
   EntityAttrUpdate,
   EntityDetail,
@@ -19,6 +18,7 @@ import {
   EntryBase,
   EntryCopy,
   EntryRetrieve,
+  EntrySearchChain,
   GetEntryAttrReferral,
   Group,
   GroupApi,
@@ -329,12 +329,14 @@ class AironeApiClient {
 
   async getEntityAttrs(
     entityIds: number[],
-    searchAllEntities = false
-  ): Promise<Array<EntityAttr>> {
+    searchAllEntities = false,
+    referralAttr: string = ""
+  ): Promise<Array<string>> {
     return await this.entity.entityApiV2AttrsList({
       entityIds: searchAllEntities
         ? ""
         : entityIds.map((id) => id.toString()).join(","),
+      referralAttr: referralAttr,
     });
   }
 
@@ -698,6 +700,22 @@ class AironeApiClient {
           entryLimit: limit,
           entryOffset: offset,
         },
+      },
+      {
+        headers: {
+          "X-CSRFToken": getCsrfToken(),
+          "Content-Type": "application/json;charset=utf-8",
+        },
+      }
+    );
+  }
+
+  async advancedSearchChain(
+    entrySearchChain: EntrySearchChain
+  ): Promise<EntryBase[]> {
+    return await this.entry.entryApiV2AdvancedSearchChainCreate(
+      {
+        entrySearchChain: entrySearchChain,
       },
       {
         headers: {

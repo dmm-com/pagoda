@@ -34,7 +34,7 @@ const server = setupServer(
   }),
   // getGroups
   http.get("http://localhost/group/api/v2/groups", () => {
-    return HttpResponse.json([]);
+    return HttpResponse.json({ count: 0, results: [] });
   }),
   // getRoles
   http.get("http://localhost/role/api/v2/", () => {
