@@ -18,6 +18,7 @@ import {
   EntryBase,
   EntryCopy,
   EntryRetrieve,
+  EntrySearchChain,
   GetEntryAttrReferral,
   Group,
   GroupApi,
@@ -699,6 +700,22 @@ class AironeApiClient {
           entryLimit: limit,
           entryOffset: offset,
         },
+      },
+      {
+        headers: {
+          "X-CSRFToken": getCsrfToken(),
+          "Content-Type": "application/json;charset=utf-8",
+        },
+      }
+    );
+  }
+
+  async advancedSearchChain(
+    entrySearchChain: EntrySearchChain
+  ): Promise<EntryBase[]> {
+    return await this.entry.entryApiV2AdvancedSearchChainCreate(
+      {
+        entrySearchChain: entrySearchChain,
       },
       {
         headers: {

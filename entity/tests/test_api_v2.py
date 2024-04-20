@@ -3525,7 +3525,8 @@ class ViewTest(AironeViewTest):
             "/entity/api/v2/attrs?entity_ids=%s&referral_attr=%s" % (entity3.id, "puyo")
         )
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(resp.json(), ["foo", "bar", "fuga"])
+        # order in the list is non-deterministic and it's not necessary
+        self.assertEqual(sorted(resp.json()), sorted(["foo", "bar", "fuga"]))
 
         # get all attribute infomations are returned collectly
         resp = self.client.get("/entity/api/v2/attrs")
