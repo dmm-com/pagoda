@@ -18,7 +18,6 @@ from airone.lib.log import Logger
 from airone.lib.types import AttrTypeValue
 from entity.admin import EntityAttrResource, EntityResource
 from entity.models import Entity, EntityAttr
-from job.models import Job, JobStatus
 from user.models import History, User
 from webhook.models import Webhook
 
@@ -206,48 +205,19 @@ class EntitySerializer(serializers.ModelSerializer):
     def _update_or_create(
         self,
         user: User,
-        entity_id: Optional[int],
+        entity: Entity,
+        is_create_mode: bool,
         validated_data: EntityCreateData | EntityUpdateData,
     ) -> Entity:
-        is_toplevel_data = validated_data.pop("is_toplevel", None)
-        attrs_data = validated_data.pop("attrs")
-        webhooks_data = validated_data.pop("webhooks")
-
-        entity: Entity
-        entity, is_created_entity = Entity.objects.get_or_create(
-            id=entity_id, defaults={**validated_data}
-        )
-        if not is_created_entity:
-            # record history for specific fields on update
-            updated_fields: list[str] = []
-            if "name" in validated_data and entity.name != validated_data.get("name"):
-                entity.name = validated_data.get("name")
-                updated_fields.append("name")
-            if "note" in validated_data and entity.note != validated_data.get("note"):
-                entity.note = validated_data.get("note")
-                updated_fields.append("note")
-            if len(updated_fields) > 0:
-                entity.save(update_fields=updated_fields)
-            else:
-                entity.save_without_historical_record()
-
-        if is_toplevel_data is None:
-            is_toplevel_data = (entity.status & Entity.STATUS_TOP_LEVEL) != 0
+        attrs_data: list = validated_data.get("attrs", [])
+        webhooks_data: list = validated_data.get("webhooks", [])
 
         # register history to create, update Entity
         history: History
-        if is_created_entity:
-            entity.set_status(Entity.STATUS_CREATING)
+        if is_create_mode:
             history = user.seth_entity_add(entity)
         else:
-            entity.set_status(Entity.STATUS_EDITING)
             history = user.seth_entity_mod(entity)
-
-        # set status parameters
-        if is_toplevel_data:
-            entity.set_status(Entity.STATUS_TOP_LEVEL)
-        else:
-            entity.del_status(Entity.STATUS_TOP_LEVEL)
 
         # create EntityAttr instances in associated with specifying data
         for attr_data in attrs_data:
@@ -324,7 +294,7 @@ class EntitySerializer(serializers.ModelSerializer):
             webhook.save(update_fields=["is_verified", "verification_error_details"])
 
         # unset Editing MODE
-        if is_created_entity:
+        if is_create_mode:
             entity.del_status(Entity.STATUS_CREATING)
             if custom_view.is_custom("after_create_entity_v2"):
                 custom_view.call_custom("after_create_entity_v2", None, user, entity)
@@ -369,13 +339,12 @@ class EntityCreateSerializer(EntitySerializer):
 
         return webhooks
 
-    def create(self, validated_data: EntityCreateData):
+    def create(self, validated_data: EntityCreateData) -> Entity:
         user: User | None = None
         if "request" in self.context:
             user = self.context["request"].user
         if "_user" in self.context:
             user = self.context["_user"]
-
         if user is None:
             raise RequiredParameterError("user is required")
 
@@ -385,7 +354,29 @@ class EntityCreateSerializer(EntitySerializer):
                 "before_create_entity_v2", None, user, validated_data
             )
 
-        return self._update_or_create(user, None, validated_data)
+        entity = Entity.objects.create(
+            name=validated_data.get("name"),
+            note=validated_data.get("note", ""),
+            created_user=validated_data.get("created_user"),
+        )
+
+        # set status parameters
+        if validated_data.get("is_toplevel", False):
+            entity.set_status(Entity.STATUS_TOP_LEVEL)
+        entity.set_status(Entity.STATUS_CREATING)
+
+        return entity
+
+    def create_remaining(self, entity: Entity, validated_data: EntityCreateData) -> Entity:
+        user: User | None = None
+        if "request" in self.context:
+            user = self.context["request"].user
+        if "_user" in self.context:
+            user = self.context["_user"]
+        if user is None:
+            raise RequiredParameterError("user is required")
+
+        return self._update_or_create(user, entity, True, validated_data)
 
 
 class EntityUpdateSerializer(EntitySerializer):
@@ -454,7 +445,38 @@ class EntityUpdateSerializer(EntitySerializer):
                 "before_update_entity_v2", None, user, validated_data, entity
             )
 
-        return self._update_or_create(user, entity.id, validated_data)
+        # record history for specific fields on update
+        updated_fields: list[str] = []
+        if "name" in validated_data and entity.name != validated_data.get("name"):
+            entity.name = validated_data.get("name")
+            updated_fields.append("name")
+        if "note" in validated_data and entity.note != validated_data.get("note"):
+            entity.note = validated_data.get("note")
+            updated_fields.append("note")
+        if len(updated_fields) > 0:
+            entity.save(update_fields=updated_fields)
+        else:
+            entity.save_without_historical_record()
+
+        # set status parameters
+        if validated_data.pop("is_toplevel", (entity.status & Entity.STATUS_TOP_LEVEL) != 0):
+            entity.set_status(Entity.STATUS_TOP_LEVEL)
+        else:
+            entity.del_status(Entity.STATUS_TOP_LEVEL)
+        entity.set_status(Entity.STATUS_EDITING)
+
+        return entity
+
+    def update_remaining(self, entity: Entity, validated_data: EntityUpdateData) -> Entity:
+        user: User | None = None
+        if "request" in self.context:
+            user = self.context["request"].user
+        if "_user" in self.context:
+            user = self.context["_user"]
+        if user is None:
+            raise RequiredParameterError("user is required")
+
+        return self._update_or_create(user, entity, False, validated_data)
 
 
 class EntityListSerializer(EntitySerializer):
@@ -498,7 +520,17 @@ class EntityDetailSerializer(EntityListSerializer):
 
     class Meta:
         model = Entity
-        fields = ["id", "name", "note", "status", "is_toplevel", "attrs", "webhooks", "is_public", "has_ongoing_changes"]
+        fields = [
+            "id",
+            "name",
+            "note",
+            "status",
+            "is_toplevel",
+            "attrs",
+            "webhooks",
+            "is_public",
+            "has_ongoing_changes",
+        ]
 
     @extend_schema_field(serializers.ListField(child=EntityDetailAttributeSerializer()))
     def get_attrs(self, obj: Entity) -> list[EntityDetailAttributeSerializer.EntityDetailAttribute]:
@@ -532,7 +564,7 @@ class EntityDetailSerializer(EntityListSerializer):
         return attrinfo
 
     def get_has_ongoing_changes(self, obj: Entity) -> bool:
-        return Job.objects.filter(target=obj, status__in=[JobStatus.PREPARING, JobStatus.PROCESSING]).exists()
+        return (obj.status & Entity.STATUS_CREATING) > 0 or (obj.status & Entity.STATUS_EDITING) > 0
 
 
 class EntityHistorySerializer(serializers.ModelSerializer):

@@ -64,6 +64,7 @@ class ViewTest(AironeViewTest):
                 "attrs": [],
                 "webhooks": [],
                 "is_public": True,
+                "has_ongoing_changes": False,
             },
         )
 
@@ -1303,7 +1304,7 @@ class ViewTest(AironeViewTest):
 
         mock_call_custom.side_effect = side_effect
         resp = self.client.post("/entity/api/v2/", json.dumps(params), "application/json")
-        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
+        self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertTrue(mock_call_custom.called)
 
         def side_effect(handler_name, entity_name, user, *args):
@@ -2488,7 +2489,7 @@ class ViewTest(AironeViewTest):
         resp = self.client.put(
             "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
         )
-        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
+        self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertTrue(mock_call_custom.called)
 
         def side_effect(handler_name, entity_name, user, *args):
