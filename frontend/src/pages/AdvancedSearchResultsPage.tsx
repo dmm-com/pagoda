@@ -17,7 +17,6 @@ import { Confirmable } from "components/common/Confirmable";
 import { Loading } from "components/common/Loading";
 import { PageHeader } from "components/common/PageHeader";
 import { RateLimitedClickable } from "components/common/RateLimitedClickable";
-import { AdvancedSearchJoinModal } from "components/entry/AdvancedSearchJoinModal";
 import { AdvancedSearchModal } from "components/entry/AdvancedSearchModal";
 import { SearchResults } from "components/entry/SearchResults";
 import { usePage } from "hooks/usePage";
@@ -30,7 +29,6 @@ export const AdvancedSearchResultsPage: FC = () => {
   const [page, changePage] = usePage();
 
   const [openModal, setOpenModal] = useState(false);
-  const [joinAttrname, setJoinAttrname] = useState("");
   const [bulkOperationEntryIds, setBulkOperationEntryIds] = useState<
     Array<number>
   >([]);
@@ -64,7 +62,7 @@ export const AdvancedSearchResultsPage: FC = () => {
       searchAllEntities,
       page
     );
-  }, [page, toggle]);
+  }, [page, toggle, location.search]);
 
   const handleExport = async (exportStyle: "yaml" | "csv") => {
     try {
@@ -236,31 +234,19 @@ export const AdvancedSearchResultsPage: FC = () => {
           }
           bulkOperationEntryIds={bulkOperationEntryIds}
           handleChangeBulkOperationEntryId={handleChangeBulkOperationEntryId}
-          setJoinAttrname={setJoinAttrname}
+          entityIds={entityIds}
+          searchAllEntities={searchAllEntities}
+          joinAttrs={joinAttrs}
         />
       )}
       <AdvancedSearchModal
         openModal={openModal}
         setOpenModal={setOpenModal}
-        attrNames={
-          !entityAttrs.loading && entityAttrs.value != null
-            ? entityAttrs.value.map((x) => x.name)
-            : []
-        }
+        attrNames={entityAttrs.value ?? []}
         initialAttrNames={attrInfo.map(
           (e: AdvancedSearchResultAttrInfo) => e.name
         )}
         attrInfos={attrInfo}
-      />
-      <AdvancedSearchJoinModal
-        targetAttrname={joinAttrname}
-        setJoinAttrname={setJoinAttrname}
-        referralIds={
-          !entityAttrs.loading && entityAttrs.value != null
-            ? entityAttrs.value.find((x) => x.name === joinAttrname)?.referral
-            : []
-        }
-        joinAttrs={joinAttrs}
       />
     </Box>
   );

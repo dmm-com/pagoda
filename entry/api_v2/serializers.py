@@ -420,18 +420,18 @@ class EntryUpdateSerializer(EntryBaseSerializer):
         if is_updated:
             entry.register_es()
 
-            # run task that may run TriggerAction in response to TriggerCondition configuration
-            if validated_data["delay_trigger"]:
-                Job.new_invoke_trigger(user, entry, attrs_data).run()
-            else:
-                # This declaration prevents circular reference because TriggerAction module
-                # imports this module indirectly. And this might affect little negative affect
-                # because Python interpreter will cache imported module once it's imported.
-                from trigger.models import TriggerCondition
+        # run task that may run TriggerAction in response to TriggerCondition configuration
+        if validated_data["delay_trigger"]:
+            Job.new_invoke_trigger(user, entry, attrs_data).run()
+        else:
+            # This declaration prevents circular reference because TriggerAction module
+            # imports this module indirectly. And this might affect little negative affect
+            # because Python interpreter will cache imported module once it's imported.
+            from trigger.models import TriggerCondition
 
-                # run TriggerActions immediately if it's necessary
-                for action in TriggerCondition.get_invoked_actions(entry.schema, attrs_data):
-                    action.run(user, entry, validated_data["call_stacks"])
+            # run TriggerActions immediately if it's necessary
+            for action in TriggerCondition.get_invoked_actions(entry.schema, attrs_data):
+                action.run(user, entry, validated_data["call_stacks"])
 
         # clear flag to specify this entry has been completed to edit
         entry.del_status(Entry.STATUS_EDITING)

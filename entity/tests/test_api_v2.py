@@ -3473,6 +3473,10 @@ class ViewTest(AironeViewTest):
     def test_get_entity_attr_names(self):
         user = self.admin_login()
 
+        self.ref_entity.delete()
+        self.entity.attrs.all().delete()
+        self.entity.delete()
+
         entity_info = {
             "test_entity1": ["foo", "bar", "fuga"],
             "test_entity2": ["bar", "hoge", "fuga"],
@@ -3495,30 +3499,45 @@ class ViewTest(AironeViewTest):
 
                 entity.attrs.add(attr)
 
-        self.ref_entity.delete()
-        self.entity.attrs.all().delete()
-        self.entity.delete()
+        entities = Entity.objects.filter(name__contains="test_entity")
+
+        entity3 = self.create_entity(
+            user,
+            "test_entity3",
+            [
+                {
+                    "name": "puyo",
+                    "type": AttrTypeValue["object"],
+                    "ref": entities.first(),
+                }
+            ],
+        )
 
         # get partially
-        entities = Entity.objects.filter(name__contains="test_entity")
         resp = self.client.get(
-            "/entity/api/v2/attrs?entity_ids=%s" % ",".join([str(x.id) for x in entities])
+            "/entity/api/v2/attrs?entity_ids=%s" % ",".join([str(x.id) for x in entities[:2]])
         )
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual([x["name"] for x in resp.json()], sorted(["bar", "fuga"]))
-        self.assertEqual(
-            [x["referral"] for x in resp.json() if x["type"] == AttrType.OBJECT][0],
-            list(entities.values_list("id", flat=True)),
+        self.assertEqual(resp.json(), ["bar", "foo", "fuga", "hoge"])
+
+        resp = self.client.get(
+            "/entity/api/v2/attrs?entity_ids=%s&referral_attr=%s" % (entity3.id, "puyo")
         )
+        self.assertEqual(resp.status_code, 200)
+        # order in the list is non-deterministic and it's not necessary
+        self.assertEqual(sorted(resp.json()), sorted(["foo", "bar", "fuga"]))
 
         # get all attribute infomations are returned collectly
         resp = self.client.get("/entity/api/v2/attrs")
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual([x["name"] for x in resp.json()], ["foo", "bar", "fuga", "hoge"])
+        self.assertEqual(resp.json(), ["bar", "foo", "fuga", "hoge", "puyo"])
 
         # invalid entity_id(s)
         resp = self.client.get("/entity/api/v2/attrs?entity_ids=9999")
-        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.status_code, 404)
+        self.assertEqual(
+            resp.json(), {"code": "AE-230000", "message": "Target Entity doesn't exist"}
+        )
 
     @mock.patch("entry.tasks.create_entry_v2.delay", mock.Mock(side_effect=create_entry_v2))
     @mock.patch(
