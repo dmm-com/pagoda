@@ -1402,6 +1402,20 @@ htmlsoup = ["BeautifulSoup4"]
 source = ["Cython (>=3.0.10)"]
 
 [[package]]
+name = "lxml-html-clean"
+version = "0.1.1"
+description = "HTML cleaner from lxml project"
+optional = false
+python-versions = "*"
+files = [
+    {file = "lxml_html_clean-0.1.1-py3-none-any.whl", hash = "sha256:58c04176593c9caf72ec92e033d2f38859e918b3eff0cc0f8051ad27dc2ab8ef"},
+    {file = "lxml_html_clean-0.1.1.tar.gz", hash = "sha256:8a644ed01dbbe132fabddb9467f077f6dad12a1d4f3a6a553e280f3815fa46df"},
+]
+
+[package.dependencies]
+lxml = "*"
+
+[[package]]
 name = "mock"
 version = "2.0.0"
 description = "Rolling backport of unittest.mock for all Pythons"
@@ -2929,4 +2943,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "00a00596e6c03d6284fdb8a1cbe51a102c0a32fc644279412827dd1f2abba4c5"
+content-hash = "49acce817c96450368a864e5133ce720485366a63ed2620a49b5d8855313e550"
