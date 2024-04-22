@@ -41,12 +41,15 @@ class AironeTestCase(TestCase):
         # This should be only one time.
         if settings.ES_CONFIG["INDEX_NAME"].find("test-") != 0:
             OVERRIDE_ES_CONFIG["INDEX_NAME"] = "test-" + settings.ES_CONFIG["INDEX_NAME"]
+        # Append pid suffix to enable parallel test
+        OVERRIDE_ES_CONFIG["INDEX_NAME"] += "-" + str(os.getpid())
         OVERRIDE_AIRONE = settings.AIRONE.copy()
         OVERRIDE_AIRONE_FLAGS = settings.AIRONE_FLAGS.copy()
-        MEDIA_ROOT = "/tmp/airone_app_test"
+        # Append pid suffix to enable parallel test
+        MEDIA_ROOT = "/tmp/airone_app_test_" + str(os.getpid())
 
-        if not os.path.exists("/tmp/airone_app_test"):
-            os.makedirs("/tmp/airone_app_test")
+        if not os.path.exists(MEDIA_ROOT):
+            os.makedirs(MEDIA_ROOT)
 
         # update django settings
         self._settings: override_settings = self.settings(
