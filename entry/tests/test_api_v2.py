@@ -2162,7 +2162,7 @@ class ViewTest(BaseViewTest):
             {"result": "Succeed in registering export processing. Please check Job list."},
         )
 
-        job = Job.objects.last()
+        job = Job.objects.filter(target=entity).last()
         self.assertEqual(job.operation, JobOperation.EXPORT_ENTRY_V2)
         self.assertEqual(job.status, JobStatus.DONE)
 
@@ -2304,7 +2304,7 @@ class ViewTest(BaseViewTest):
             )
             self.assertEqual(resp.status_code, 200)
 
-            content = Job.objects.last().get_cache()
+            content = Job.objects.filter(target=test_entity).last().get_cache()
             header = content.splitlines()[0]
             self.assertEqual(header, 'Name,"%s,""ATTR"""' % type_name)
 
