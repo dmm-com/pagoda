@@ -1,5 +1,5 @@
+import AutorenewIcon from "@mui/icons-material/Autorenew";
 import { Box, Divider, Tooltip, Typography } from "@mui/material";
-import AutorenewIcon from '@mui/icons-material/Autorenew';
 import { styled } from "@mui/material/styles";
 import React, { FC } from "react";
 
@@ -45,7 +45,12 @@ interface Props {
   children?: React.ReactNode;
 }
 
-export const PageHeader: FC<Props> = ({ title, description, hasOngoingProcess, children }) => {
+export const PageHeader: FC<Props> = ({
+  title,
+  description,
+  hasOngoingProcess,
+  children,
+}) => {
   return (
     <Frame>
       <Fixed>
@@ -57,7 +62,9 @@ export const PageHeader: FC<Props> = ({ title, description, hasOngoingProcess, c
             {description}
           </Typography>
           {hasOngoingProcess && (
-            <Tooltip title="未処理の変更があります。現在表示されているデータは最新でない可能性があります。"><AutorenewIcon /></Tooltip>
+            <Tooltip title="未処理の変更があります。現在表示されているデータは最新でない可能性があります。">
+              <AutorenewIcon />
+            </Tooltip>
           )}
           <ChildrenBox>{children}</ChildrenBox>
         </Header>

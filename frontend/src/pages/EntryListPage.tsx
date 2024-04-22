@@ -31,7 +31,11 @@ export const EntryListPage: FC<Props> = ({ canCreateEntry = true }) => {
     <Box>
       <EntityBreadcrumbs entity={entity.value} />
 
-      <PageHeader title={entity.value?.name ?? ""} description="エントリ一覧" hasOngoingProcess={entity.value?.hasOngoingChanges}>
+      <PageHeader
+        title={entity.value?.name ?? ""}
+        description="エントリ一覧"
+        hasOngoingProcess={entity.value?.hasOngoingChanges}
+      >
         <Box width="50px">
           <IconButton
             id="entity_menu"
