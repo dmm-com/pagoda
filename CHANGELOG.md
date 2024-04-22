@@ -5,6 +5,9 @@
 ### Added
 
 ### Changed
+* Enable to get search advanced_search results sequentially and check its progres
+  when join_attr parameter is specified.
+  Contributed by @userlocalhost, @hinashi
 
 ### Fixed
 

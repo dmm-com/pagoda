@@ -24,6 +24,8 @@ import { SearchResultControlMenu } from "./SearchResultControlMenu";
 import { SearchResultControlMenuForEntry } from "./SearchResultControlMenuForEntry";
 import { SearchResultControlMenuForReferral } from "./SearchResultControlMenuForReferral";
 
+import { getIsFiltered } from "pages/AdvancedSearchResultsPage";
+
 import {
   AttrFilter,
   AttrsFilter,
@@ -58,7 +60,7 @@ interface Props {
   entityIds: number[];
   searchAllEntities: boolean;
   joinAttrs: AdvancedSearchJoinAttrInfo[];
-  setSearchResults: () => void;
+  setSearchResults: (isJoinSearching: boolean) => void;
 }
 
 export const SearchResultsTableHead: FC<Props> = ({
@@ -112,17 +114,7 @@ export const SearchResultsTableHead: FC<Props> = ({
       Object.fromEntries(
         Object.keys(defaultAttrsFilter ?? {}).map((attrName: string) => {
           const attrFilter = defaultAttrsFilter[attrName];
-          switch (attrFilter?.filterKey) {
-            case AdvancedSearchResultAttrInfoFilterKeyEnum.EMPTY:
-            case AdvancedSearchResultAttrInfoFilterKeyEnum.NON_EMPTY:
-            case AdvancedSearchResultAttrInfoFilterKeyEnum.DUPLICATED:
-              return [attrName, true];
-            case AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_CONTAINED:
-              return [attrName, attrFilter.keyword !== ""];
-            case AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_NOT_CONTAINED:
-              return [attrName, attrFilter.keyword !== ""];
-          }
-          return [attrName, false];
+          return [attrName, getIsFiltered(attrFilter.filterKey, attrFilter.keyword)];
         })
       ),
     [defaultAttrsFilter]
@@ -130,49 +122,49 @@ export const SearchResultsTableHead: FC<Props> = ({
 
   const handleSelectFilterConditions =
     (attrName?: string) =>
-    (
-      attrFilter?: AttrFilter,
-      overwriteEntryName?: string,
-      overwriteReferral?: string
-    ) => {
-      const _attrsFilter =
-        attrName != null && attrFilter != null
-          ? { ...attrsFilter, [attrName]: attrFilter }
-          : attrsFilter;
+      (
+        attrFilter?: AttrFilter,
+        overwriteEntryName?: string,
+        overwriteReferral?: string
+      ) => {
+        const _attrsFilter =
+          attrName != null && attrFilter != null
+            ? { ...attrsFilter, [attrName]: attrFilter }
+            : attrsFilter;
 
-      const newParams = formatAdvancedSearchParams({
-        attrsFilter: Object.keys(_attrsFilter)
-          .filter((k) => _attrsFilter[k].joinedAttrname === undefined)
-          .reduce((a, k) => ({ ...a, [k]: _attrsFilter[k] }), {}),
-        entryName: overwriteEntryName ?? entryFilter,
-        referralName: overwriteReferral ?? referralFilter,
-        baseParams: new URLSearchParams(location.search),
-        joinAttrs: Object.keys(_attrsFilter)
-          .filter((k) => _attrsFilter[k].joinedAttrname !== undefined)
-          .map((k) => ({
-            name: _attrsFilter[k]?.baseAttrname ?? "",
-            attrinfo: Object.keys(_attrsFilter)
-              .filter(
-                (j) =>
-                  _attrsFilter[j].baseAttrname === _attrsFilter[k].baseAttrname
-              )
-              .map((j) => ({
-                name: _attrsFilter[j]?.joinedAttrname ?? "",
-                filterKey: _attrsFilter[j].filterKey,
-                keyword: _attrsFilter[j].keyword,
-              })),
-          }))
-          // This removes duplicates
-          .filter((v, i, a) => a.findIndex((t) => t.name === v.name) === i),
-      });
-      console.log("handleSelectFilterConditions");
-      setSearchResults();
-      // simply reload with the new params
-      history.push({
-        pathname: location.pathname,
-        search: "?" + newParams.toString(),
-      });
-    };
+        const newParams = formatAdvancedSearchParams({
+          attrsFilter: Object.keys(_attrsFilter)
+            .filter((k) => _attrsFilter[k].joinedAttrname === undefined)
+            .reduce((a, k) => ({ ...a, [k]: _attrsFilter[k] }), {}),
+          entryName: overwriteEntryName ?? entryFilter,
+          referralName: overwriteReferral ?? referralFilter,
+          baseParams: new URLSearchParams(location.search),
+          joinAttrs: Object.keys(_attrsFilter)
+            .filter((k) => _attrsFilter[k].joinedAttrname !== undefined)
+            .map((k) => ({
+              name: _attrsFilter[k]?.baseAttrname ?? "",
+              attrinfo: Object.keys(_attrsFilter)
+                .filter(
+                  (j) =>
+                    _attrsFilter[j].baseAttrname === _attrsFilter[k].baseAttrname
+                )
+                .map((j) => ({
+                  name: _attrsFilter[j]?.joinedAttrname ?? "",
+                  filterKey: _attrsFilter[j].filterKey,
+                  keyword: _attrsFilter[j].keyword,
+                })),
+            }))
+            // This removes duplicates
+            .filter((v, i, a) => a.findIndex((t) => t.name === v.name) === i),
+        });
+
+        setSearchResults(getIsFiltered(attrFilter?.filterKey, attrFilter?.keyword));
+        // simply reload with the new params
+        history.push({
+          pathname: location.pathname,
+          search: "?" + newParams.toString(),
+        });
+      };
 
   const handleUpdateAttrFilter =
     (attrName: string) => (attrFilter: AttrFilter) => {
@@ -224,7 +216,7 @@ export const SearchResultsTableHead: FC<Props> = ({
                   targetAttrname={joinAttrName}
                   joinAttrs={joinAttrs}
                   handleClose={() => setJoinAttrname("")}
-                  setSearchResults={() => setSearchResults()}
+                  setSearchResults={() => setSearchResults(getIsFiltered(attrsFilter[attrName].filterKey, attrsFilter[attrName].keyword))}
                 />
               )}
               <StyledIconButton

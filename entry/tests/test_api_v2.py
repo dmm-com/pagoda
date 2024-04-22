@@ -2990,6 +2990,7 @@ class ViewTest(BaseViewTest):
             resp.json(),
             {
                 "count": 2,
+                "total_count": 2,
                 "values": [
                     {
                         "entity": {"id": self.entity.id, "name": "test-entity"},

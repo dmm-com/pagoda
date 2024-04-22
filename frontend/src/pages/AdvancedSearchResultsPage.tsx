@@ -23,10 +23,32 @@ import { SearchResults } from "components/entry/SearchResults";
 import { usePage } from "hooks/usePage";
 import { aironeApiClient } from "repository/AironeApiClient";
 import { AdvancedSerarchResultList } from "services/Constants";
-import { extractAdvancedSearchParams } from "services/entry/AdvancedSearch";
+import {
+  AttrFilter,
+  extractAdvancedSearchParams,
+} from "services/entry/AdvancedSearch";
 
-interface AirOneAdvancedSearchResult extends AdvancedSearchResult {
+export const getIsFiltered = (filterKey?: number, keyword?: string) => {
+  switch (filterKey) {
+    case AdvancedSearchResultAttrInfoFilterKeyEnum.EMPTY:
+    case AdvancedSearchResultAttrInfoFilterKeyEnum.NON_EMPTY:
+    case AdvancedSearchResultAttrInfoFilterKeyEnum.DUPLICATED:
+      return true
+    case AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_CONTAINED:
+      return keyword !== "";
+    case AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_NOT_CONTAINED:
+      return keyword !== "";
+  }
+
+  return false;
+}
+
+export interface AirOneAdvancedSearchResult extends AdvancedSearchResult {
   offset: number;
+  page: number;
+  isInProcessing: boolean;
+  isJoinSearching: boolean;
+  totalCount: number;
 }
 
 export const AdvancedSearchResultsPage: FC = () => {
@@ -39,12 +61,6 @@ export const AdvancedSearchResultsPage: FC = () => {
     Array<number>
   >([]);
   const [toggle, setToggle] = useState(false);
-  const [searchResults, setSearchResults] =
-    useState<AirOneAdvancedSearchResult>({
-      count: 0,
-      values: [],
-      offset: 0,
-    });
 
   const {
     entityIds,
@@ -59,71 +75,97 @@ export const AdvancedSearchResultsPage: FC = () => {
     return extractAdvancedSearchParams(params);
   }, [location.search]);
 
+  const [searchResults, setSearchResults] =
+    useState<AirOneAdvancedSearchResult>({
+      count: 0,
+      values: [],
+      offset: 0,
+      page: page,
+      isInProcessing: true,
+      isJoinSearching: joinAttrs.length > 0,
+      totalCount: 0,
+    });
+
   const entityAttrs = useAsyncWithThrow(async () => {
     return await aironeApiClient.getEntityAttrs(entityIds, searchAllEntities);
   });
 
-  /*
-  while (searchResults.count < AdvancedSerarchResultList.MAX_ROW_COUNT) {
-    const results = useAsyncWithThrow(async () => {
-      return await aironeApiClient.advancedSearch(
-        entityIds,
-        entryName,
-        attrInfo,
-        joinAttrs,
-        hasReferral,
-        referralName,
-        searchAllEntities,
-        page
-      );
-    }, [page, toggle, location.search]);
-
-    if (!results.loading && results.value) {
-      setSearchResults({
-        count: searchResults.count + results.value.count,
-        values: searchResults.values.concat(results.value.values),
-      });
-    }
-  }
-  */
-
-  const handleSetResults = () => {
-    console.log("handleSetResults");
+  const handleSetResults = (isJoinSearching: boolean = false) => {
     setSearchResults({
       count: 0,
       values: [],
       offset: 0,
+      page: page,
+      isInProcessing: true,
+      isJoinSearching: isJoinSearching,
+      totalCount: searchResults.totalCount,
     });
   };
 
   useEffect(() => {
-    console.log("useEffect start", searchResults.count);
-    if (searchResults.count >= AdvancedSerarchResultList.MAX_ROW_COUNT) {
-      console.log("useEffect return", searchResults.count);
+    const sendSearchRequest = function (offset: number) {
+      return aironeApiClient
+        .advancedSearch(
+          entityIds,
+          entryName,
+          attrInfo,
+          joinAttrs,
+          hasReferral,
+          referralName,
+          searchAllEntities,
+          page,
+          AdvancedSerarchResultList.MAX_ROW_COUNT,
+          offset
+        );
+    }
+
+    // pagination processing is prioritize than others
+    if (page !== searchResults.page) {
+      sendSearchRequest(0).then((results) => {
+        setSearchResults({
+          count: results.count,
+          values: results.values,
+          offset: page * AdvancedSerarchResultList.MAX_ROW_COUNT,
+          page: page,
+          isInProcessing: false,
+          isJoinSearching: joinAttrs.some((x) => {
+            return x.attrinfo.some((y) => {
+              return getIsFiltered(y.filterKey, y.keyword);
+            });
+          }),
+          totalCount: results.totalCount,
+        });
+      });
+    }
+
+    // abort when isInProcessing is false
+    if (!searchResults.isInProcessing) {
       return;
     }
 
-    aironeApiClient
-      .advancedSearch(
-        entityIds,
-        entryName,
-        attrInfo,
-        joinAttrs,
-        hasReferral,
-        referralName,
-        searchAllEntities,
-        page,
-        AdvancedSerarchResultList.MAX_ROW_COUNT,
-        searchResults.offset
-      )
-      .then((results) => {
+    if (searchResults.isJoinSearching || searchResults.count < AdvancedSerarchResultList.MAX_ROW_COUNT) {
+      sendSearchRequest(searchResults.offset).then((results) => {
         setSearchResults({
+          ...searchResults,
           count: searchResults.count + results.count,
           values: searchResults.values.concat(results.values),
           offset:
             searchResults.offset + AdvancedSerarchResultList.MAX_ROW_COUNT,
+          isInProcessing: true,
+          isJoinSearching: searchResults.isJoinSearching,
+          totalCount: results.totalCount,
         });
+
+        // quit to scan if whole area have been scaned
+        if (searchResults.offset > searchResults.totalCount) {
+          // finished to search
+          setSearchResults({ ...searchResults, isInProcessing: false });
+        }
       });
+    } else {
+      // clear isInProcessing flag
+      setSearchResults({ ...searchResults, isInProcessing: false });
+    }
   }, [page, toggle, location.search, searchResults]);
 
   const handleExport = async (exportStyle: "yaml" | "csv") => {
@@ -169,6 +211,20 @@ export const AdvancedSearchResultsPage: FC = () => {
     }
   };
 
+  const getSearchProgress = () => {
+    if (searchResults.isInProcessing) {
+      let progress_msg = "";
+      if (searchResults.totalCount > 0) {
+        progress_msg = `[${((searchResults.offset / searchResults.totalCount) * 100).toFixed()} %]`;
+      }
+      return `${searchResults.count ?? 0} / ${searchResults.totalCount} 件 ${progress_msg}`;
+    } else if (searchResults.count < searchResults.totalCount) {
+      return `${searchResults.count ?? 0} / ${searchResults.totalCount} 件`;
+    } else {
+      return `${searchResults.count ?? 0} 件`;
+    }
+  }
+
   return (
     <Box className="container-fluid">
       <AironeBreadcrumbs>
@@ -183,7 +239,7 @@ export const AdvancedSearchResultsPage: FC = () => {
 
       <PageHeader
         title="検索結果"
-        description={`${searchResults.count ?? 0} 件`}
+        description={getSearchProgress()}
       >
         <Box display="flex" justifyContent="center">
           <Button
@@ -241,7 +297,7 @@ export const AdvancedSearchResultsPage: FC = () => {
         </Box>
       </PageHeader>
 
-      {searchResults.count == 0 ? (
+      {(searchResults.count === 0 && searchResults.isInProcessing) ? (
         <Loading />
       ) : (
         <SearchResults
@@ -299,7 +355,8 @@ export const AdvancedSearchResultsPage: FC = () => {
           entityIds={entityIds}
           searchAllEntities={searchAllEntities}
           joinAttrs={joinAttrs}
-          setSearchResults={() => handleSetResults()}
+          disablePaginationFooter={joinAttrs.length > 0}
+          setSearchResults={handleSetResults}
         />
       )}
       <AdvancedSearchModal

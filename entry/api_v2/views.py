@@ -373,6 +373,8 @@ class AdvancedSearchAPI(generics.GenericAPIView):
             is_output_all,
             offset=entry_offset,
         )
+        # save total population number
+        total_count = deepcopy(resp["ret_count"])
 
         for join_attr in join_attrs:
             (will_filter_by_joined_attr, joined_resp) = _get_joined_resp(
@@ -501,7 +503,11 @@ class AdvancedSearchAPI(generics.GenericAPIView):
                     ]
 
         serializer = AdvancedSearchResultSerializer(
-            data={"count": resp["ret_count"], "values": resp["ret_values"]}
+            data={
+                "count": resp["ret_count"],
+                "values": resp["ret_values"],
+                "total_count": total_count,
+            }
         )
 
         # TODO validate response data strictly, like below.

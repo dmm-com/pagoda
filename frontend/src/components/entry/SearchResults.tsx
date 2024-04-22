@@ -65,6 +65,7 @@ interface Props {
   entityIds: number[];
   searchAllEntities: boolean;
   joinAttrs: AdvancedSearchJoinAttrInfo[];
+  disablePaginationFooter: boolean;
   setSearchResults: () => void;
 }
 
@@ -81,6 +82,7 @@ export const SearchResults: FC<Props> = ({
   entityIds,
   searchAllEntities,
   joinAttrs,
+  disablePaginationFooter,
   setSearchResults,
 }) => {
   // NOTE attrTypes are guessed by the first element on the results. So if it has no appropriate attr,
@@ -176,12 +178,14 @@ export const SearchResults: FC<Props> = ({
           </Table>
         </TableContainer>
 
-        <PaginationFooter
-          count={results.count}
-          maxRowCount={AdvancedSerarchResultList.MAX_ROW_COUNT}
-          page={page}
-          changePage={changePage}
-        />
+        {!disablePaginationFooter && (
+          <PaginationFooter
+            count={results.count}
+            maxRowCount={AdvancedSerarchResultList.MAX_ROW_COUNT}
+            page={page}
+            changePage={changePage}
+          />
+        )}
       </StyledBox>
     </Box>
   );

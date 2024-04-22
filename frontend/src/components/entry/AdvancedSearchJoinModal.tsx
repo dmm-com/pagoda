@@ -17,7 +17,7 @@ interface Props {
   targetAttrname: string;
   joinAttrs: AdvancedSearchJoinAttrInfo[];
   handleClose: () => void;
-  setSearchResults: () => void;
+  setSearchResults: (isJoinSearching: boolean) => void;
 }
 
 export const AdvancedSearchJoinModal: FC<Props> = ({
@@ -69,7 +69,8 @@ export const AdvancedSearchJoinModal: FC<Props> = ({
       joinAttrs: newJoinAttrs,
     });
 
-    setSearchResults();
+    // update page by changing joined Attribute filter condition
+    setSearchResults(true);
 
     // Update Page URL parameters
     history.push({
