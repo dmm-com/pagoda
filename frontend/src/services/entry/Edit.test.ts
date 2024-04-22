@@ -27,6 +27,7 @@ test("formalizeEntryInfo should return expect value", () => {
     note: "hoge",
     status: 0,
     isToplevel: true,
+    hasOngoingChanges: false,
     attrs: [
       {
         id: 2,

@@ -135,8 +135,9 @@ class EntityAPI(viewsets.ModelViewSet):
 
         serializer = EntityCreateSerializer(data=request.data, context={"_user": user})
         serializer.is_valid(raise_exception=True)
+        entity = serializer.create(serializer.validated_data)
 
-        job = Job.new_create_entity_v2(user, None, params=request.data)
+        job = Job.new_create_entity_v2(user, entity, params=request.data)
         job.run()
 
         return Response(status=status.HTTP_202_ACCEPTED)
@@ -150,6 +151,7 @@ class EntityAPI(viewsets.ModelViewSet):
             instance=entity, data=request.data, context={"_user": user}
         )
         serializer.is_valid(raise_exception=True)
+        serializer.update(entity, serializer.validated_data)
 
         job = Job.new_edit_entity_v2(user, entity, params=request.data)
         job.run()
