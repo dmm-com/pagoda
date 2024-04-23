@@ -1162,6 +1162,7 @@ class AdvancedSearchResultValueSerializer(serializers.Serializer):
 class AdvancedSearchResultSerializer(serializers.Serializer):
     count = serializers.IntegerField()
     values = AdvancedSearchResultValueSerializer(many=True)
+    total_count = serializers.IntegerField()
 
 
 class AdvancedSearchResultExportSerializer(serializers.Serializer):
