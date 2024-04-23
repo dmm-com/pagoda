@@ -42,7 +42,7 @@ export const getIsFiltered = (filterKey?: number, keyword?: string) => {
   return false;
 };
 
-const FullWidthIconBox = styled(IconButton)(({ theme }) => ({
+const FullWidthIconBox = styled(IconButton)(({}) => ({
   width: "100%",
 }));
 

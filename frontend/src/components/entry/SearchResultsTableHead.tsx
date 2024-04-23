@@ -1,6 +1,5 @@
 import {
   AdvancedSearchJoinAttrInfo,
-  AdvancedSearchResult,
   EntryAttributeTypeTypeEnum,
 } from "@dmm-com/airone-apiclient-typescript-fetch";
 import AddIcon from "@mui/icons-material/Add";
@@ -29,10 +28,6 @@ import {
   AttrsFilter,
   formatAdvancedSearchParams,
 } from "services/entry/AdvancedSearch";
-
-interface AirOneAdvancedSearchResult extends AdvancedSearchResult {
-  isForceUpdate: boolean;
-}
 
 const HeaderBox = styled(Box)({
   display: "flex",

@@ -27,10 +27,6 @@ import { AttributeValue } from "components/entry/AttributeValue";
 import { AdvancedSerarchResultList } from "services/Constants";
 import { AttrsFilter } from "services/entry/AdvancedSearch";
 
-interface AirOneAdvancedSearchResult extends AdvancedSearchResult {
-  isForceUpdate: boolean;
-}
-
 const StyledBox = styled(Box)({
   display: "table",
   overflowX: "inherit",
