@@ -1,19 +1,14 @@
-import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import {
   AdvancedSearchResult,
   AdvancedSearchResultAttrInfo,
   AdvancedSearchResultAttrInfoFilterKeyEnum,
 } from "@dmm-com/airone-apiclient-typescript-fetch";
+import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import SettingsIcon from "@mui/icons-material/Settings";
-import {
-  IconButton,
-  Box,
-  Button,
-  Typography
-} from "@mui/material";
-import { useSnackbar } from "notistack";
+import { IconButton, Box, Button, Typography } from "@mui/material";
 import { styled } from "@mui/material/styles";
+import { useSnackbar } from "notistack";
 import React, { FC, useEffect, useMemo, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 
@@ -30,17 +25,14 @@ import { SearchResults } from "components/entry/SearchResults";
 import { usePage } from "hooks/usePage";
 import { aironeApiClient } from "repository/AironeApiClient";
 import { AdvancedSerarchResultList } from "services/Constants";
-import {
-  AttrFilter,
-  extractAdvancedSearchParams,
-} from "services/entry/AdvancedSearch";
+import { extractAdvancedSearchParams } from "services/entry/AdvancedSearch";
 
 export const getIsFiltered = (filterKey?: number, keyword?: string) => {
   switch (filterKey) {
     case AdvancedSearchResultAttrInfoFilterKeyEnum.EMPTY:
     case AdvancedSearchResultAttrInfoFilterKeyEnum.NON_EMPTY:
     case AdvancedSearchResultAttrInfoFilterKeyEnum.DUPLICATED:
-      return true
+      return true;
     case AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_CONTAINED:
       return keyword !== "";
     case AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_NOT_CONTAINED:
@@ -48,7 +40,7 @@ export const getIsFiltered = (filterKey?: number, keyword?: string) => {
   }
 
   return false;
-}
+};
 
 const FullWidthIconBox = styled(IconButton)(({ theme }) => ({
   width: "100%",
@@ -115,20 +107,19 @@ export const AdvancedSearchResultsPage: FC = () => {
 
   useEffect(() => {
     const sendSearchRequest = function (offset: number) {
-      return aironeApiClient
-        .advancedSearch(
-          entityIds,
-          entryName,
-          attrInfo,
-          joinAttrs,
-          hasReferral,
-          referralName,
-          searchAllEntities,
-          page,
-          AdvancedSerarchResultList.MAX_ROW_COUNT,
-          offset
-        );
-    }
+      return aironeApiClient.advancedSearch(
+        entityIds,
+        entryName,
+        attrInfo,
+        joinAttrs,
+        hasReferral,
+        referralName,
+        searchAllEntities,
+        page,
+        AdvancedSerarchResultList.MAX_ROW_COUNT,
+        offset
+      );
+    };
 
     // pagination processing is prioritize than others
     if (page !== searchResults.page) {
@@ -154,15 +145,12 @@ export const AdvancedSearchResultsPage: FC = () => {
       return;
     }
 
-    console.log("[onix/useEffect(10)] ", searchResults);
-
     sendSearchRequest(searchResults.offset).then((results) => {
       setSearchResults({
         ...searchResults,
         count: searchResults.count + results.count,
         values: searchResults.values.concat(results.values),
-        offset:
-          searchResults.offset + AdvancedSerarchResultList.MAX_ROW_COUNT,
+        offset: searchResults.offset + AdvancedSerarchResultList.MAX_ROW_COUNT,
         isInProcessing: false,
         isJoinSearching: searchResults.isJoinSearching,
         totalCount: results.totalCount,
@@ -221,7 +209,7 @@ export const AdvancedSearchResultsPage: FC = () => {
     } else {
       return `${searchResults.count ?? 0} 件`;
     }
-  }
+  };
 
   return (
     <Box className="container-fluid">
@@ -235,10 +223,7 @@ export const AdvancedSearchResultsPage: FC = () => {
         <Typography color="textPrimary">検索結果</Typography>
       </AironeBreadcrumbs>
 
-      <PageHeader
-        title="検索結果"
-        description={getSearchProgress()}
-      >
+      <PageHeader title="検索結果" description={getSearchProgress()}>
         <Box display="flex" justifyContent="center">
           <Button
             variant="contained"
@@ -295,7 +280,7 @@ export const AdvancedSearchResultsPage: FC = () => {
         </Box>
       </PageHeader>
 
-      {(searchResults.count === 0 && searchResults.isInProcessing) ? (
+      {searchResults.count === 0 && searchResults.isInProcessing ? (
         <Loading />
       ) : (
         <Box>
@@ -361,8 +346,14 @@ export const AdvancedSearchResultsPage: FC = () => {
           {/* show button to show continuous search results manually when joinAttrs are specified */}
           {joinAttrs.length > 0 && (
             <FullWidthIconBox
-              disabled={searchResults.isInProcessing || searchResults.count >= searchResults.totalCount}
-              onClick={() => setSearchResults({ ...searchResults, isInProcessing: true })}>
+              disabled={
+                searchResults.isInProcessing ||
+                searchResults.count >= searchResults.totalCount
+              }
+              onClick={() =>
+                setSearchResults({ ...searchResults, isInProcessing: true })
+              }
+            >
               <ArrowDropDownIcon />
             </FullWidthIconBox>
           )}
