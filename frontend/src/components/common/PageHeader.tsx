@@ -1,4 +1,5 @@
-import { Box, Divider, Typography } from "@mui/material";
+import AutorenewIcon from "@mui/icons-material/Autorenew";
+import { Box, Divider, Tooltip, Typography } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import React, { FC } from "react";
 
@@ -20,7 +21,7 @@ const Fixed = styled(Box)({
 const Header = styled(Box)(({ theme }) => ({
   width: theme.breakpoints.values.lg,
   display: "flex",
-  alignItems: "baseline",
+  alignItems: "center",
   marginBottom: "16px",
 }));
 
@@ -40,10 +41,16 @@ const ChildrenBox = styled(Box)({
 interface Props {
   title: string;
   description?: string;
+  hasOngoingProcess?: boolean;
   children?: React.ReactNode;
 }
 
-export const PageHeader: FC<Props> = ({ title, description, children }) => {
+export const PageHeader: FC<Props> = ({
+  title,
+  description,
+  hasOngoingProcess,
+  children,
+}) => {
   return (
     <Frame>
       <Fixed>
@@ -54,6 +61,11 @@ export const PageHeader: FC<Props> = ({ title, description, children }) => {
           <Typography id="description" variant="subtitle1">
             {description}
           </Typography>
+          {hasOngoingProcess && (
+            <Tooltip title="未処理の変更があります。現在表示されているデータは最新でない可能性があります。">
+              <AutorenewIcon />
+            </Tooltip>
+          )}
           <ChildrenBox>{children}</ChildrenBox>
         </Header>
         <Divider flexItem />

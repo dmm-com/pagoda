@@ -11,6 +11,16 @@
 
 ### Fixed
 
+## v3.86.0
+
+### Added
+* Added advanced search chain apiv2.
+  Contributed by @hinashi
+
+### Changed
+* Refactor entry exports.
+  Contributed by @syucream
+
 ## v3.85.0
 
 ### Changed

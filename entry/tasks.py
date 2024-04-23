@@ -43,7 +43,7 @@ class ExportedEntryAttribute(TypedDict):
 class ExportedEntry(TypedDict):
     name: str
     attrs: list[ExportedEntryAttribute]
-    referrals: NotRequired[list[dict]]  # same as ExportedEntityEntries, avoiding cycle definition
+    referrals: NotRequired[list["ExportedEntityEntries"]]
 
 
 class ExportedEntityEntries(TypedDict):
@@ -312,7 +312,7 @@ def _yaml_export_v2(job: Job, values, recv_data: dict, has_referral: bool) -> Op
             data["referrals"] = [
                 {
                     "entity": x["schema"]["name"],
-                    "entry": x["name"],
+                    "entries": x["name"],
                 }
                 for x in entry_info["referrals"]
             ]

@@ -108,7 +108,7 @@ exports[`EditEntityPage should match snapshot 1`] = `
             class="MuiBox-root css-t1gim7"
           >
             <div
-              class="MuiBox-root css-1pj6r2l"
+              class="MuiBox-root css-9rtbay"
             >
               <h6
                 class="MuiTypography-root MuiTypography-h6 css-178toxd-MuiTypography-root"
@@ -671,7 +671,7 @@ exports[`EditEntityPage should match snapshot 1`] = `
           class="MuiBox-root css-t1gim7"
         >
           <div
-            class="MuiBox-root css-1pj6r2l"
+            class="MuiBox-root css-9rtbay"
           >
             <h6
               class="MuiTypography-root MuiTypography-h6 css-178toxd-MuiTypography-root"

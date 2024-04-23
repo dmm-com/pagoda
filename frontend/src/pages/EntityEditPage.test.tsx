@@ -51,6 +51,7 @@ const entity: EntityDetail = {
   name: "test entity",
   note: "",
   isToplevel: false,
+  hasOngoingChanges: false,
   attrs: [],
   webhooks: [],
 };
