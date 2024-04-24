@@ -43,6 +43,12 @@ user@hostname:~/airone$ source virtualenv/bin/activate
 (virtualenv) user@hostname:~/airone$ poetry install
 ```
 
+(for use docker)
+If run the application with docker
+```
+user@hostname:~/airone$ docker-compose --profile airone up -d
+```
+
 ## Setting-up Backend with docker-compose
 
 Install docker-compose command.  
