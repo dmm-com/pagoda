@@ -1,8 +1,8 @@
+import enum
 import json
 import pickle
 import time
 from datetime import date, datetime, timedelta
-from enum import IntEnum
 from importlib import import_module
 from typing import Any
 
@@ -26,7 +26,8 @@ def _support_time_default(o):
     raise TypeError(repr(o) + " is not JSON serializable")
 
 
-class JobOperation(IntEnum):
+@enum.unique
+class JobOperation(enum.IntEnum):
     # Constant to describes status of each jobs
     CREATE_ENTRY = 1
     EDIT_ENTRY = 2
@@ -59,13 +60,15 @@ class JobOperation(IntEnum):
     DELETE_ENTRY_V2 = 29
 
 
-class JobTarget(IntEnum):
+@enum.unique
+class JobTarget(enum.IntEnum):
     UNKNOWN = 0
     ENTRY = 1
     ENTITY = 2
 
 
-class JobStatus(IntEnum):
+@enum.unique
+class JobStatus(enum.IntEnum):
     PREPARING = 1
     DONE = 2
     ERROR = 3
