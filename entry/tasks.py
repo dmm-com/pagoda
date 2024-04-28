@@ -2,7 +2,7 @@ import csv
 import io
 import json
 from datetime import datetime
-from typing import Any, List, NotRequired, Optional, TypedDict
+from typing import Any, Callable, List, NotRequired, Optional, TypedDict
 
 import yaml
 from django.conf import settings
@@ -795,7 +795,9 @@ def register_referrals(self, job: Job):
         [r.register_es() for r in entry.get_referred_objects()]
 
 
-def _notify_event(notification_method, object_id, user) -> tuple[JobStatus, str, None] | None:
+def _notify_event(
+    notification_method: Callable[[Entry, User], None], object_id: int, user: User
+) -> tuple[JobStatus, str, None] | None:
     entry = Entry.objects.filter(id=object_id).first()
     if not entry:
         return JobStatus.ERROR, "Failed to get job.target (%s)" % object_id, None

@@ -1,6 +1,6 @@
 import itertools
 import json
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from django.db import models
 
@@ -47,7 +47,7 @@ class InputTriggerCondition(object):
         self.bool_cond = False
 
     def parse_input_condition(self, input_condition, hint=None):
-        def _convert_value_to_entry(value):
+        def _convert_value_to_entry(value: Entry | int | str | Any):
             if isinstance(value, Entry):
                 return value
             elif isinstance(value, int) or (isinstance(value, str) and value.isdigit()):
@@ -57,7 +57,7 @@ class InputTriggerCondition(object):
                     return entry
             return None
 
-        def _decode_value(value):
+        def _decode_value(value) -> dict:
             try:
                 return json.loads(value)
             except (ValueError, TypeError):
@@ -303,7 +303,7 @@ class TriggerCondition(models.Model):
         # This is a helper method when AttrType is "object" or "named_object"
         recv_value = _compatible_with_apiv1(raw_recv_value)
 
-        def _is_match_object(val):
+        def _is_match_object(val) -> bool:
             if isinstance(val, int) or isinstance(val, str):
                 if self.ref_cond and self.ref_cond.is_active:
                     return self.ref_cond.id == int(val)
@@ -314,9 +314,11 @@ class TriggerCondition(models.Model):
             elif val is None:
                 return self.ref_cond is None
 
-        def _is_match_named_object(val):
+            return False
+
+        def _is_match_named_object(val) -> bool:
             # This refilling processing is necessary because any type of value is acceptable
-            eval_value = {
+            eval_value: dict[str, Any] = {
                 "name": "",
                 "id": None,
             }
@@ -350,6 +352,8 @@ class TriggerCondition(models.Model):
                 and eval_value.get("id") is None
             ):
                 return True
+
+            return False
 
         try:
             match self.ATTR_TYPE:

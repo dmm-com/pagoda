@@ -5,7 +5,7 @@ from typing import Any, List, Optional
 
 from django.conf import settings
 from django.db import models
-from django.db.models import Prefetch, Q
+from django.db.models import Prefetch, Q, QuerySet
 from simple_history.models import HistoricalRecords
 
 from acl.models import ACLBase
@@ -91,15 +91,15 @@ class AttributeValue(models.Model):
         """
         return AttrDefaultValue[attr.schema.type]
 
-    def set_status(self, val):
+    def set_status(self, val: int):
         self.status |= val
         self.save(update_fields=["status"])
 
-    def del_status(self, val):
+    def del_status(self, val: int):
         self.status &= ~val
         self.save(update_fields=["status"])
 
-    def get_status(self, val):
+    def get_status(self, val: int):
         return self.status & val
 
     def clone(self, user, **extra_params):
@@ -350,7 +350,7 @@ class AttributeValue(models.Model):
     @classmethod
     def validate_attr_value(
         kls, type: int, input_value: Any, is_mandatory: bool
-    ) -> tuple[bool, Optional[str]]:
+    ) -> tuple[bool, str | None]:
         """
         Validate if to add_value is a possible value.
         Returns: (is_valid, msg)
@@ -813,7 +813,7 @@ class Attribute(ACLBase):
         self.values.filter(is_latest=True).exclude(exclude).update(is_latest=False)
 
     def _validate_value(self, value):
-        def _is_group_object(val, model):
+        def _is_group_object(val, model) -> bool:
             return isinstance(val, model) or isinstance(val, int) or isinstance(val, str) or not val
 
         if self.is_array():
@@ -1122,7 +1122,7 @@ class Attribute(ACLBase):
         return None
 
     # NOTE: Type-Write
-    def remove_from_attrv(self, user, referral=None, value=""):
+    def remove_from_attrv(self, user: User, referral=None, value=""):
         """
         This method removes target entry from specified attribute
         """
@@ -1187,7 +1187,7 @@ class Attribute(ACLBase):
                 self.add_value(user, updated_data, boolean=attrv.boolean)
 
     # NOTE: Type-Write
-    def add_to_attrv(self, user, referral=None, value="", boolean=False):
+    def add_to_attrv(self, user: User, referral=None, value="", boolean=False):
         """
         This method adds target entry to specified attribute with referral_key
         """
@@ -1403,7 +1403,9 @@ class Entry(ACLBase):
 
         return Entry.objects.filter(id__in=entry_ids)
 
-    def get_referred_objects(self, filter_entities=[], exclude_entities=[]):
+    def get_referred_objects(
+        self, filter_entities: list[str] = [], exclude_entities: list[str] = []
+    ) -> QuerySet:
         """
         This returns objects that refer current Entry in the AttributeValue
         """
@@ -1420,7 +1422,7 @@ class Entry(ACLBase):
 
         return Entry.objects.filter(query).exclude(schema__name__in=exclude_entities)
 
-    def complement_attrs(self, user):
+    def complement_attrs(self, user: User):
         """
         This method complements Attributes which are appended after creation of Entity
         """
@@ -1453,9 +1455,9 @@ class Entry(ACLBase):
                 newattr.values.add(attr_value)
 
     # NOTE: Type-Read
-    def get_available_attrs(self, user, permission=ACLType.Readable):
+    def get_available_attrs(self, user: User, permission=ACLType.Readable) -> list[dict[str, Any]]:
         # To avoid unnecessary DB access for caching referral entries
-        ret_attrs = []
+        ret_attrs: list[dict[str, Any]] = []
         attrv_prefetch = Prefetch(
             "values",
             queryset=AttributeValue.objects.filter(is_latest=True)
@@ -1475,7 +1477,7 @@ class Entry(ACLBase):
             .prefetch_related(attr_prefetch)
             .order_by("index")
         ):
-            attrinfo = {}
+            attrinfo: dict[str, Any] = {}
             attrinfo["id"] = ""
             attrinfo["entity_attr_id"] = entity_attr.id
             attrinfo["name"] = entity_attr.name
@@ -1953,7 +1955,7 @@ class Entry(ACLBase):
 
         return document
 
-    def register_es(self, es=None, recursive_call_stack=[]):
+    def register_es(self, es: ESS | None = None, recursive_call_stack=[]):
         """
         Arguments
           * recursive_call_stack:
@@ -2017,14 +2019,14 @@ class Entry(ACLBase):
                 entry = Entry.objects.get(id=refer["dst_entry_id"])
                 entry.register_es(es, recursive_call_stack + [self])
 
-    def unregister_es(self, es=None):
+    def unregister_es(self, es: ESS | None = None):
         if not es:
             es = ESS()
 
         es.delete(id=self.id, ignore=[404])
         es.refresh(ignore=[404])
 
-    def get_value_history(self, user, count=CONFIG.MAX_HISTORY_COUNT, index=0):
+    def get_value_history(self, user: User, count=CONFIG.MAX_HISTORY_COUNT, index=0) -> list[dict]:
         def _get_values(attrv):
             return {
                 "attrv_id": attrv.id,
@@ -2033,7 +2035,7 @@ class Entry(ACLBase):
                 "created_user": attrv.created_user.username,
             }
 
-        ret_values = []
+        ret_values: list[dict] = []
         all_attrv = AttributeValue.objects.filter(
             parent_attr__in=self.attrs.all(), parent_attrv__isnull=True
         ).order_by("-created_time")[index:]
@@ -2195,7 +2197,7 @@ class Entry(ACLBase):
         exclude_entity_names=[],
         limit: int = CONFIG.MAX_LIST_ENTRIES,
         offset: int = 0,
-    ):
+    ) -> dict[str, Any]:
         """Method called from simple search.
         Returns the count and values of entries with hint_attr_value.
 
@@ -2251,7 +2253,7 @@ class Entry(ACLBase):
         return make_search_results_for_simple(resp)
 
     @classmethod
-    def get_all_es_docs(kls):
+    def get_all_es_docs(kls) -> dict[str, Any]:
         return ESS().search(body={"query": {"match_all": {}}}, ignore=[404])
 
     @classmethod
@@ -2333,7 +2335,7 @@ class Entry(ACLBase):
         es.indices.refresh()
 
     @classmethod
-    def is_importable_data(kls, data):
+    def is_importable_data(kls, data) -> bool:
         """This method confirms import data has following data structure
         Entity:
             - name: entry_name
@@ -2363,7 +2365,7 @@ class Entry(ACLBase):
 
         return True
 
-    def get_attrv(self, attr_name):
+    def get_attrv(self, attr_name: str):
         """This returns specified attribute's value without permission check. Because
         this prioritizes performance (less frequency of sending query to Database) over
         authorization safety.
