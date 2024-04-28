@@ -9,7 +9,7 @@ from natsort import natsorted
 
 from airone.celery import app
 from airone.lib.job import may_schedule_until_job_is_ready
-from airone.lib.types import AttrTypeValue
+from airone.lib.types import AttrType, AttrTypeValue
 from entry.models import Entry
 from job.models import Job
 
@@ -55,43 +55,32 @@ def _csv_export(job: Job, values, recv_data: dict, has_referral: bool) -> io.Str
 
             if not value or "value" not in value or value["value"] is None:
                 line_data.append("")
+                continue
 
-            elif (
-                vtype == AttrTypeValue["string"]
-                or vtype == AttrTypeValue["text"]
-                or vtype == AttrTypeValue["boolean"]
-                or vtype == AttrTypeValue["date"]
-            ):
-                line_data.append(str(vval))
+            match vtype:
+                case AttrType.STRING | AttrType.TEXT | AttrType.BOOLEAN | AttrType.DATE:
+                    line_data.append(str(vval))
 
-            elif (
-                vtype == AttrTypeValue["object"]
-                or vtype == AttrTypeValue["group"]
-                or vtype == AttrTypeValue["role"]
-            ):
-                line_data.append(str(vval["name"]))
+                case AttrType.OBJECT | AttrType.GROUP | AttrType.ROLE:
+                    line_data.append(str(vval["name"]))
 
-            elif vtype == AttrTypeValue["named_object"]:
-                [(k, v)] = vval.items()
-                line_data.append("%s: %s" % (k, v["name"]))
+                case AttrType.NAMED_OBJECT:
+                    [(k, v)] = vval.items()
+                    line_data.append("%s: %s" % (k, v["name"]))
 
-            elif vtype == AttrTypeValue["array_string"]:
-                line_data.append("\n".join(natsorted(vval)))
+                case AttrType.ARRAY_STRING:
+                    line_data.append("\n".join(natsorted(vval)))
 
-            elif (
-                vtype == AttrTypeValue["array_object"]
-                or vtype == AttrTypeValue["array_group"]
-                or vtype == AttrTypeValue["array_role"]
-            ):
-                line_data.append("\n".join(natsorted([x["name"] for x in vval])))
+                case AttrType.ARRAY_OBJECT | AttrType.ARRAY_GROUP | AttrType.ARRAY_ROLE:
+                    line_data.append("\n".join(natsorted([x["name"] for x in vval])))
 
-            elif vtype == AttrTypeValue["array_named_object"]:
-                items = []
-                for vset in vval:
-                    [(k, v)] = vset.items()
-                    items.append("%s: %s" % (k, v["name"]))
+                case AttrType.ARRAY_NAMED_OBJECT:
+                    items = []
+                    for vset in vval:
+                        [(k, v)] = vset.items()
+                        items.append("%s: %s" % (k, v["name"]))
 
-                line_data.append("\n".join(natsorted(items)))
+                    line_data.append("\n".join(natsorted(items)))
 
         if has_referral is not False:
             line_data.append(
@@ -107,23 +96,19 @@ def _yaml_export(job: Job, values, recv_data: dict, has_referral: bool) -> io.St
     output = io.StringIO()
 
     def _get_attr_value(atype: int, value: dict):
-        if atype & AttrTypeValue["array"]:
-            return [_get_attr_value(atype ^ AttrTypeValue["array"], x) for x in value]
+        match atype:
+            case _ if atype & AttrTypeValue["array"]:
+                return [_get_attr_value(atype ^ AttrTypeValue["array"], x) for x in value]
 
-        if atype == AttrTypeValue["named_object"]:
-            [(key, val)] = value.items()
+            case AttrType.NAMED_OBJECT:
+                [(key, val)] = value.items()
+                return {key: val["name"]}
 
-            return {key: val["name"]}
+            case AttrType.OBJECT | AttrType.GROUP | AttrType.ROLE:
+                return value["name"]
 
-        elif (
-            atype == AttrTypeValue["object"]
-            or atype == AttrTypeValue["group"]
-            or atype == AttrTypeValue["role"]
-        ):
-            return value["name"]
-
-        else:
-            return value
+            case _:
+                return value
 
     resp_data: dict = {}
     for index, entry_info in enumerate(values):

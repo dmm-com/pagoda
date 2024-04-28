@@ -15,6 +15,7 @@ test("should render a component with essential props", function () {
         results={{
           count: 0,
           values: [],
+          totalCount: 0,
         }}
         page={1}
         changePage={() => {
@@ -25,9 +26,11 @@ test("should render a component with essential props", function () {
           /* do nothing */
         }}
         hasReferral={false}
-        setJoinAttrname={() => {
-          /* do nothing */
-        }}
+        entityIds={[]}
+        joinAttrs={[]}
+        disablePaginationFooter={false}
+        searchAllEntities={false}
+        setSearchResults={() => {}}
       />,
       { wrapper: TestWrapper }
     )

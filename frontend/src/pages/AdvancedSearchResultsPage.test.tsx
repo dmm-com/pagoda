@@ -63,6 +63,7 @@ test("should match snapshot", async () => {
       Promise.resolve({
         count: 1,
         values: results,
+        totalCount: 1,
       })
     );
   jest

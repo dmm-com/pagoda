@@ -22,6 +22,7 @@ test("should render a component with essential props", function () {
     name: "bbb",
     note: "",
     isToplevel: false,
+    hasOngoingChanges: false,
     attrs: [],
     webhooks: [],
   };

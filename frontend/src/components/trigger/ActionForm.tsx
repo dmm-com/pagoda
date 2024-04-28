@@ -387,7 +387,7 @@ export const ActionForm: FC<Props> = ({
   });
 
   const handleAppendAction = (index: number) => {
-    insert(index, {
+    insert(index + 1, {
       id: 0,
       attr: {
         id: 0,

@@ -227,11 +227,13 @@ def delete_entity(self, job: Job) -> JobStatus:
 @app.task(bind=True)
 @may_schedule_until_job_is_ready
 def create_entity_v2(self, job: Job) -> JobStatus:
-    serializer = EntityCreateSerializer(data=json.loads(job.params), context={"_user": job.user})
-    if not serializer.is_valid():
+    entity: Entity | None = Entity.objects.filter(id=job.target.id, is_active=True).first()
+    if not entity:
         return JobStatus.ERROR
 
-    serializer.create(serializer.validated_data)
+    # pass to validate the params because the entity should be already created
+    serializer = EntityCreateSerializer(data=json.loads(job.params), context={"_user": job.user})
+    serializer.create_remaining(entity, serializer.initial_data)
 
     # update job status and save it
     return JobStatus.DONE
@@ -250,7 +252,7 @@ def edit_entity_v2(self, job: Job) -> JobStatus:
     if not serializer.is_valid():
         return JobStatus.ERROR
 
-    serializer.update(entity, serializer.validated_data)
+    serializer.update_remaining(entity, serializer.validated_data)
 
     return JobStatus.DONE
 

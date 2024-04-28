@@ -5,8 +5,37 @@
 ### Added
 
 ### Changed
+* Enable to get search advanced_search results sequentially and check its progres
+  when join_attr parameter is specified.
+  Contributed by @userlocalhost, @hinashi
 
 ### Fixed
+
+## v3.86.0
+
+### Added
+* Added advanced search chain apiv2.
+  Contributed by @hinashi
+
+### Changed
+* Refactor entry exports.
+  Contributed by @syucream
+
+## v3.85.0
+
+### Changed
+* Update background processing to support any OBJECT typed Attribute for join_attr
+  at the advacend serarch processing.
+  Contributed by @userlocalhost
+* Simplify some remaining entry tasks additionally.
+  Contributed by @syucream
+
+### Fixed
+* Fixed an error when specifying all entities in advanced search.
+  Contributed by @hinashi
+* Fixed a problem not to be able to invoke Trigger when an Item is not updated,
+  but it sould be invoked trigger for applying setting default value trigger.
+  Contributed by @hinashi, @userlocalhost
 
 ## v3.84.0
 

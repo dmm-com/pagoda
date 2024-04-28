@@ -215,7 +215,13 @@ class Job(models.Model):
 
         return True
 
-    def update(self, status: int | None = None, text=None, target=None, operation=None):
+    def update(
+        self,
+        status: int | None = None,
+        text: str | None = None,
+        target: ACLBase | None = None,
+        operation: int | None = None,
+    ):
         update_fields = ["updated_at"]
 
         if status is not None and status in [s.value for s in JobStatus]:
@@ -557,7 +563,7 @@ class Job(models.Model):
         )
 
     @classmethod
-    def new_create_entity_v2(kls, user, target, text="", params={}):
+    def new_create_entity_v2(kls, user, target: Entity, text="", params={}):
         return kls._create_new_job(
             user,
             target,

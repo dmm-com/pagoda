@@ -1,4 +1,7 @@
-import { AdvancedSearchResultAttrInfoFilterKeyEnum } from "@dmm-com/airone-apiclient-typescript-fetch";
+import {
+  AdvancedSearchJoinAttrInfo,
+  EntryAttributeTypeTypeEnum,
+} from "@dmm-com/airone-apiclient-typescript-fetch";
 import AddIcon from "@mui/icons-material/Add";
 import FilterAltIcon from "@mui/icons-material/FilterAlt";
 import FilterListIcon from "@mui/icons-material/FilterList";
@@ -11,26 +14,20 @@ import {
   Typography,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import React, {
-  ChangeEvent,
-  FC,
-  useMemo,
-  useReducer,
-  useState,
-  Dispatch,
-  SetStateAction,
-} from "react";
+import React, { ChangeEvent, FC, useMemo, useReducer, useState } from "react";
 import { useHistory, useLocation } from "react-router-dom";
 
+import { AdvancedSearchJoinModal } from "./AdvancedSearchJoinModal";
+import { SearchResultControlMenu } from "./SearchResultControlMenu";
+import { SearchResultControlMenuForEntry } from "./SearchResultControlMenuForEntry";
+import { SearchResultControlMenuForReferral } from "./SearchResultControlMenuForReferral";
+
+import { getIsFiltered } from "pages/AdvancedSearchResultsPage";
 import {
   AttrFilter,
   AttrsFilter,
   formatAdvancedSearchParams,
-} from "../../services/entry/AdvancedSearch";
-
-import { SearchResultControlMenu } from "./SearchResultControlMenu";
-import { SearchResultControlMenuForEntry } from "./SearchResultControlMenuForEntry";
-import { SearchResultControlMenuForReferral } from "./SearchResultControlMenuForReferral";
+} from "services/entry/AdvancedSearch";
 
 const HeaderBox = styled(Box)({
   display: "flex",
@@ -47,56 +44,16 @@ const StyledTableCell = styled(TableCell)(({ theme }) => ({
   minWidth: "300px",
 }));
 
-interface JoiningProps {
-  attrType: number;
-  attrName: string;
-  setJoinAttrname: Dispatch<SetStateAction<string>>;
-  unjoinable: boolean;
-}
-
-const JoinableAttrHeader: FC<JoiningProps> = ({
-  attrType,
-  attrName,
-  setJoinAttrname,
-  unjoinable,
-}) => {
-  const JoinableBox = styled(Box)({
-    display: "flex",
-    flexDirection: "row",
-    alignItems: "center",
-  });
-
-  if (unjoinable) {
-    return <Typography>{attrName}</Typography>;
-  }
-
-  switch (attrType) {
-    case AdvancedSearchResultAttrInfoFilterKeyEnum.EMPTY:
-      return (
-        <JoinableBox>
-          <Typography>{attrName}</Typography>
-          <StyledIconButton
-            onClick={() => {
-              setJoinAttrname(attrName);
-            }}
-          >
-            <AddIcon />
-          </StyledIconButton>
-        </JoinableBox>
-      );
-
-    default:
-      return <Typography>{attrName}</Typography>;
-  }
-};
-
 interface Props {
   hasReferral: boolean;
   attrTypes: Record<string, number>;
   defaultEntryFilter?: string;
   defaultReferralFilter?: string;
   defaultAttrsFilter?: AttrsFilter;
-  setJoinAttrname: Dispatch<SetStateAction<string>>;
+  entityIds: number[];
+  searchAllEntities: boolean;
+  joinAttrs: AdvancedSearchJoinAttrInfo[];
+  setSearchResults: (isJoinSearching: boolean) => void;
 }
 
 export const SearchResultsTableHead: FC<Props> = ({
@@ -105,7 +62,10 @@ export const SearchResultsTableHead: FC<Props> = ({
   defaultEntryFilter,
   defaultReferralFilter,
   defaultAttrsFilter = {},
-  setJoinAttrname,
+  entityIds,
+  searchAllEntities,
+  joinAttrs,
+  setSearchResults,
 }) => {
   const location = useLocation();
   const history = useHistory();
@@ -128,6 +88,7 @@ export const SearchResultsTableHead: FC<Props> = ({
     defaultAttrsFilter ?? {}
   );
 
+  const [joinAttrName, setJoinAttrname] = useState<string>("");
   const [attributeMenuEls, setAttributeMenuEls] = useState<{
     [key: string]: HTMLButtonElement | null;
   }>({});
@@ -146,17 +107,10 @@ export const SearchResultsTableHead: FC<Props> = ({
       Object.fromEntries(
         Object.keys(defaultAttrsFilter ?? {}).map((attrName: string) => {
           const attrFilter = defaultAttrsFilter[attrName];
-          switch (attrFilter?.filterKey) {
-            case AdvancedSearchResultAttrInfoFilterKeyEnum.EMPTY:
-            case AdvancedSearchResultAttrInfoFilterKeyEnum.NON_EMPTY:
-            case AdvancedSearchResultAttrInfoFilterKeyEnum.DUPLICATED:
-              return [attrName, true];
-            case AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_CONTAINED:
-              return [attrName, attrFilter.keyword !== ""];
-            case AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_NOT_CONTAINED:
-              return [attrName, attrFilter.keyword !== ""];
-          }
-          return [attrName, false];
+          return [
+            attrName,
+            getIsFiltered(attrFilter.filterKey, attrFilter.keyword),
+          ];
         })
       ),
     [defaultAttrsFilter]
@@ -200,12 +154,14 @@ export const SearchResultsTableHead: FC<Props> = ({
           .filter((v, i, a) => a.findIndex((t) => t.name === v.name) === i),
       });
 
+      setSearchResults(
+        getIsFiltered(attrFilter?.filterKey, attrFilter?.keyword)
+      );
       // simply reload with the new params
       history.push({
         pathname: location.pathname,
         search: "?" + newParams.toString(),
       });
-      history.go(0);
     };
 
   const handleUpdateAttrFilter =
@@ -243,14 +199,31 @@ export const SearchResultsTableHead: FC<Props> = ({
         {attrNames.map((attrName) => (
           <StyledTableCell key={attrName}>
             <HeaderBox>
-              <JoinableAttrHeader
-                attrType={attrTypes[attrName]}
-                attrName={attrName}
-                setJoinAttrname={setJoinAttrname}
-                unjoinable={
-                  defaultAttrsFilter[attrName].joinedAttrname !== undefined
-                }
-              />
+              <Typography>{attrName}</Typography>
+
+              {(attrTypes[attrName] & EntryAttributeTypeTypeEnum.OBJECT) > 0 &&
+                attrsFilter[attrName].joinedAttrname === undefined && (
+                  <StyledIconButton onClick={() => setJoinAttrname(attrName)}>
+                    <AddIcon />
+                  </StyledIconButton>
+                )}
+              {attrName === joinAttrName && (
+                <AdvancedSearchJoinModal
+                  targetEntityIds={entityIds}
+                  searchAllEntities={searchAllEntities}
+                  targetAttrname={joinAttrName}
+                  joinAttrs={joinAttrs}
+                  handleClose={() => setJoinAttrname("")}
+                  setSearchResults={() =>
+                    setSearchResults(
+                      getIsFiltered(
+                        attrsFilter[attrName].filterKey,
+                        attrsFilter[attrName].keyword
+                      )
+                    )
+                  }
+                />
+              )}
               <StyledIconButton
                 onClick={(e) => {
                   setAttributeMenuEls({
@@ -258,6 +231,7 @@ export const SearchResultsTableHead: FC<Props> = ({
                     [attrName]: e.currentTarget,
                   });
                 }}
+                sx={{ marginLeft: "auto" }}
               >
                 {isFiltered[attrName] ?? false ? (
                   <FilterAltIcon />

@@ -12,35 +12,38 @@ import { aironeApiClient } from "repository/AironeApiClient";
 import { formatAdvancedSearchParams } from "services/entry/AdvancedSearch";
 
 interface Props {
+  targetEntityIds: number[];
+  searchAllEntities: boolean;
   targetAttrname: string;
-  referralIds: number[] | undefined;
   joinAttrs: AdvancedSearchJoinAttrInfo[];
-  setJoinAttrname: (name: string) => void;
+  handleClose: () => void;
+  setSearchResults: (isJoinSearching: boolean) => void;
 }
 
 export const AdvancedSearchJoinModal: FC<Props> = ({
+  targetEntityIds,
+  searchAllEntities,
   targetAttrname,
-  referralIds,
   joinAttrs,
-  setJoinAttrname,
+  handleClose,
+  setSearchResults,
 }) => {
   const history = useHistory();
   // This is join attributes that have been already been selected before.
   const currentAttrInfo: AdvancedSearchJoinAttrInfo | undefined =
     joinAttrs.find((attr) => attr.name === targetAttrname);
 
-  const [selectedAttrNames, setSelectedAttrNames] = useState<string[]>([]);
+  const [selectedAttrNames, setSelectedAttrNames] = useState<Array<string>>(
+    currentAttrInfo?.attrinfo.map((attr) => attr.name) ?? []
+  );
 
   const referralAttrs = useAsyncWithThrow(async () => {
-    if (referralIds !== undefined && referralIds.length > 0) {
-      return await aironeApiClient.getEntityAttrs(referralIds);
-    }
-    return [];
-  }, [referralIds]);
-
-  const closeModal = () => {
-    setJoinAttrname("");
-  };
+    return await aironeApiClient.getEntityAttrs(
+      targetEntityIds,
+      searchAllEntities,
+      targetAttrname
+    );
+  }, [targetEntityIds, searchAllEntities, targetAttrname]);
 
   const handleUpdatePageURL = () => {
     // to prevent duplication of same name parameter
@@ -66,24 +69,26 @@ export const AdvancedSearchJoinModal: FC<Props> = ({
       joinAttrs: newJoinAttrs,
     });
 
+    // update page by changing joined Attribute filter condition
+    setSearchResults(true);
+
     // Update Page URL parameters
     history.push({
       pathname: location.pathname,
       search: "?" + params.toString(),
     });
-    history.go(0);
   };
 
   return (
     <AironeModal
       title={"結合するアイテムの属性名"}
       open={targetAttrname !== ""}
-      onClose={() => closeModal()}
+      onClose={handleClose}
     >
       <Autocomplete
-        options={referralAttrs.value?.map((x) => x.name) || []}
-        defaultValue={currentAttrInfo?.attrinfo.map((x) => x.name) || []}
-        onChange={(_, value: string[]) => {
+        options={referralAttrs.value ?? []}
+        value={selectedAttrNames}
+        onChange={(_, value: Array<string>) => {
           setSelectedAttrNames(value);
         }}
         renderInput={(params) => (
@@ -105,7 +110,7 @@ export const AdvancedSearchJoinModal: FC<Props> = ({
           variant="outlined"
           color="primary"
           sx={{ mx: "4px" }}
-          onClick={() => closeModal()}
+          onClick={handleClose}
         >
           キャンセル
         </Button>
