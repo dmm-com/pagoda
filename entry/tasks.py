@@ -2,12 +2,13 @@ import csv
 import io
 import json
 from datetime import datetime
-from typing import Any, List, Literal, NotRequired, Optional, TypedDict
+from typing import Any, List, Literal, Optional
 
 import yaml
 from django.conf import settings
 from pydantic import BaseModel
 from rest_framework.exceptions import ValidationError
+from typing_extensions import TypedDict
 
 import custom_view
 from airone.celery import app
@@ -41,13 +42,13 @@ class ExportedEntryAttribute(TypedDict):
     value: Any
 
 
-class ExportedEntry(TypedDict):
+class ExportedEntry(BaseModel):
     name: str
     attrs: list[ExportedEntryAttribute]
-    referrals: NotRequired[list["ExportedEntityEntries"]]
+    referrals: list["ExportedEntityEntries"] | None
 
 
-class ExportedEntityEntries(TypedDict):
+class ExportedEntityEntries(BaseModel):
     entity: str
     entries: list[ExportedEntry]
 
@@ -292,10 +293,11 @@ def _yaml_export_v2(job: Job, values, recv_data: dict, has_referral: bool) -> Op
 
     resp_data: List[ExportedEntityEntries] = []
     for index, entry_info in enumerate(values):
-        data: ExportedEntry = {
-            "name": entry_info["entry"]["name"],
-            "attrs": [],
-        }
+        data: ExportedEntry = ExportedEntry(
+            name=entry_info["entry"]["name"],
+            attrs=[],
+            referrals=None,
+        )
 
         # Abort processing when job is canceled
         if index % Job.STATUS_CHECK_FREQUENCY == 0 and job.is_canceled():
@@ -307,7 +309,7 @@ def _yaml_export_v2(job: Job, values, recv_data: dict, has_referral: bool) -> Op
                 if "value" not in _adata:
                     continue
 
-                data["attrs"].append(
+                data.attrs.append(
                     {
                         "name": attrinfo["name"],
                         "value": _get_attr_value(_adata["type"], _adata["value"]),
@@ -315,27 +317,29 @@ def _yaml_export_v2(job: Job, values, recv_data: dict, has_referral: bool) -> Op
                 )
 
         if has_referral is not False:
-            data["referrals"] = [
-                {
-                    "entity": x["schema"]["name"],
-                    "entries": x["name"],
-                }
+            data.referrals = [
+                ExportedEntityEntries(
+                    entity=x["schema"]["name"],
+                    entries=x["name"],
+                )
                 for x in entry_info["referrals"]
             ]
 
-        found = next(filter(lambda x: x["entity"] == entry_info["entity"]["name"], resp_data), None)
+        found = next(filter(lambda x: x.entity == entry_info["entity"]["name"], resp_data), None)
         if found:
-            found["entries"].append(data)
+            found.entries.append(data)
         else:
             resp_data.append(
-                {
-                    "entity": entry_info["entity"]["name"],
-                    "entries": [data],
-                }
+                ExportedEntityEntries(
+                    entity=entry_info["entity"]["name"],
+                    entries=[data],
+                )
             )
 
     output = io.StringIO()
-    output.write(yaml.dump(resp_data, default_flow_style=False, allow_unicode=True))
+    output.write(
+        yaml.dump([x.dict() for x in resp_data], default_flow_style=False, allow_unicode=True)
+    )
 
     return output
 
@@ -718,12 +722,7 @@ def export_entries_v2(self, job: Job):
         # increment loop counter
         export_item_counter += 1
 
-    exported_entity.append(
-        {
-            "entity": entity.name,
-            "entries": exported_entries,
-        }
-    )
+    exported_entity.append(ExportedEntityEntries(entity=entity.name, entries=exported_entries))
 
     output = None
     if params.export_format == "csv":
@@ -740,9 +739,9 @@ def export_entries_v2(self, job: Job):
                 return ""
             return str(data)
 
-        for data in exported_entity[0]["entries"]:
+        for data in exported_entity[0].entries:
             writer.writerow(
-                [data["name"]] + [data2str(x["value"]) for x in data["attrs"] if x["name"] in attrs]
+                [data.name] + [data2str(x["value"]) for x in data.attrs if x["name"] in attrs]
             )
     else:
         output = io.StringIO()
