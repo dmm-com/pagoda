@@ -19,7 +19,8 @@
             "request": "launch",
             "program": "${workspaceFolder}/manage.py",
             "args": [
-                "runserver"
+                "runserver",
+                "0.0.0.0:8080"
             ],
             "django": true,
         },
@@ -35,6 +36,8 @@
                 "worker",
                 "-l",
                 "info",
+                "-c",
+                "1"
             ]
         },
         {

@@ -1,11 +1,11 @@
 services:
-  airone:
+  backend:
     build:
       dockerfile: backend.Dockerfile
       args:
         USER_ID: ${UID:-1000}
-    container_name: airone
-    hostname: airone
+    container_name: backend
+    hostname: backend
     command: sleep infinity
     ports:
       - 8080:8080
@@ -15,6 +15,21 @@ services:
       AIRONE_RABBITMQ_URL: "amqp://guest:guest@rabbitmq//"
     volumes:
       - .:/airone
+    profiles:
+      - airone
+
+  frontend:
+    build:
+      dockerfile: frontend.Dockerfile
+      args:
+        USER_ID: ${UID:-1000}
+    container_name: frontend
+    hostname: frontend
+    command: sleep infinity
+    volumes:
+      - .:/airone
+    profiles:
+      - airone
 
   mysql:
     platform: linux/x86_64
