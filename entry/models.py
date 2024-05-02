@@ -84,7 +84,7 @@ class AttributeValue(models.Model):
     )
 
     @classmethod
-    def get_default_value(kls, attr):
+    def get_default_value(kls, attr: "Attribute"):
         """
         Returns the default value for each attribute type.
         Used when there is no attribute value.

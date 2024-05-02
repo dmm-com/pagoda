@@ -1,17 +1,25 @@
 import enum
 from typing import Any
 
-from six import with_metaclass
 
-_ATTR_OBJECT_TYPE = 1 << 0
-_ATTR_STRING_TYPE = 1 << 1
-_ATTR_TEXT_TYPE = 1 << 2
-_ATTR_BOOL_TYPE = 1 << 3
-_ATTR_GROUP_TYPE = 1 << 4
-_ATTR_DATE_TYPE = 1 << 5
-_ATTR_ROLE_TYPE = 1 << 6
-_ATTR_ARRAY_TYPE = 1 << 10
-_ATTR_NAMED_TYPE = 1 << 11
+@enum.unique
+class AttrType(enum.IntFlag):
+    OBJECT = 1 << 0
+    STRING = 1 << 1
+    TEXT = 1 << 2
+    BOOLEAN = 1 << 3
+    GROUP = 1 << 4
+    DATE = 1 << 5
+    ROLE = 1 << 6
+    _ARRAY = 1 << 10
+    _NAMED = 1 << 11
+    NAMED_OBJECT = _NAMED | OBJECT
+    ARRAY_OBJECT = _ARRAY | OBJECT
+    ARRAY_STRING = _ARRAY | STRING
+    ARRAY_NAMED_OBJECT = _ARRAY | _NAMED | OBJECT
+    ARRAY_NAMED_OBJECT_BOOLEAN = 3081  # unmanaged by AttrTypeXXX
+    ARRAY_GROUP = _ARRAY | GROUP
+    ARRAY_ROLE = _ARRAY | ROLE
 
 
 class MetaAttrType(type):
@@ -22,7 +30,6 @@ class MetaAttrType(type):
             return cls.NAME == comp
         else:
             return cls.TYPE == comp.TYPE
-        return False
 
     def __ne__(cls, comp):
         return not cls == comp
@@ -34,82 +41,82 @@ class MetaAttrType(type):
         return cls.TYPE
 
 
-class AttrTypeObj(with_metaclass(MetaAttrType)):
+class AttrTypeObj(metaclass=MetaAttrType):
     NAME = "entry"
-    TYPE = _ATTR_OBJECT_TYPE
+    TYPE = AttrType.OBJECT
     DEFAULT_VALUE = None
 
 
 # STRING-type restricts data size to AttributeValue.MAXIMUM_VALUE_LENGTH
-class AttrTypeStr(with_metaclass(MetaAttrType)):
+class AttrTypeStr(metaclass=MetaAttrType):
     NAME = "string"
-    TYPE = _ATTR_STRING_TYPE
+    TYPE = AttrType.STRING
     DEFAULT_VALUE = ""
 
 
-class AttrTypeNamedObj(with_metaclass(MetaAttrType)):
+class AttrTypeNamedObj(metaclass=MetaAttrType):
     NAME = "named_entry"
-    TYPE = _ATTR_OBJECT_TYPE | _ATTR_NAMED_TYPE
+    TYPE = AttrType.NAMED_OBJECT
     DEFAULT_VALUE = {"name": "", "id": None}
 
 
-class AttrTypeArrObj(with_metaclass(MetaAttrType)):
+class AttrTypeArrObj(metaclass=MetaAttrType):
     NAME = "array_entry"
-    TYPE = _ATTR_OBJECT_TYPE | _ATTR_ARRAY_TYPE
+    TYPE = AttrType.ARRAY_OBJECT
     DEFAULT_VALUE = []
 
 
-class AttrTypeArrStr(with_metaclass(MetaAttrType)):
+class AttrTypeArrStr(metaclass=MetaAttrType):
     NAME = "array_string"
-    TYPE = _ATTR_STRING_TYPE | _ATTR_ARRAY_TYPE
+    TYPE = AttrType.ARRAY_STRING
     DEFAULT_VALUE = []
 
 
-class AttrTypeArrNamedObj(with_metaclass(MetaAttrType)):
+class AttrTypeArrNamedObj(metaclass=MetaAttrType):
     NAME = "array_named_entry"
-    TYPE = _ATTR_OBJECT_TYPE | _ATTR_NAMED_TYPE | _ATTR_ARRAY_TYPE
+    TYPE = AttrType.ARRAY_NAMED_OBJECT
     DEFAULT_VALUE: Any = dict().values()
 
 
-class AttrTypeArrGroup(with_metaclass(MetaAttrType)):
+class AttrTypeArrGroup(metaclass=MetaAttrType):
     NAME = "array_group"
-    TYPE = _ATTR_GROUP_TYPE | _ATTR_ARRAY_TYPE
+    TYPE = AttrType.ARRAY_GROUP
     DEFAULT_VALUE = []
 
 
-class AttrTypeText(with_metaclass(MetaAttrType)):
+class AttrTypeText(metaclass=MetaAttrType):
     NAME = "textarea"
-    TYPE = _ATTR_TEXT_TYPE
+    TYPE = AttrType.TEXT
     DEFAULT_VALUE = ""
 
 
-class AttrTypeBoolean(with_metaclass(MetaAttrType)):
+class AttrTypeBoolean(metaclass=MetaAttrType):
     NAME = "boolean"
-    TYPE = _ATTR_BOOL_TYPE
+    TYPE = AttrType.BOOLEAN
     DEFAULT_VALUE = False
 
 
-class AttrTypeGroup(with_metaclass(MetaAttrType)):
+class AttrTypeGroup(metaclass=MetaAttrType):
     NAME = "group"
-    TYPE = _ATTR_GROUP_TYPE
+    TYPE = AttrType.GROUP
     DEFAULT_VALUE = None
 
 
-class AttrTypeDate(with_metaclass(MetaAttrType)):
+class AttrTypeDate(metaclass=MetaAttrType):
     NAME = "date"
-    TYPE = _ATTR_DATE_TYPE
+    TYPE = AttrType.DATE
     DEFAULT_VALUE = None
 
 
-class AttrTypeRole(with_metaclass(MetaAttrType)):
+class AttrTypeRole(metaclass=MetaAttrType):
     NAME = "role"
-    TYPE = _ATTR_ROLE_TYPE
+    TYPE = AttrType.ROLE
     DEFAULT_VALUE = None
 
 
-class AttrTypeArrRole(with_metaclass(MetaAttrType)):
+class AttrTypeArrRole(metaclass=MetaAttrType):
     NAME = "array_role"
-    TYPE = _ATTR_ROLE_TYPE | _ATTR_ARRAY_TYPE
+    TYPE = AttrType.ARRAY_ROLE
     DEFAULT_VALUE = []
 
 
@@ -129,51 +136,34 @@ AttrTypes = [
     AttrTypeArrRole,
 ]
 AttrTypeValue = {
-    "object": AttrTypeObj.TYPE,
-    "string": AttrTypeStr.TYPE,
-    "named": _ATTR_NAMED_TYPE,
-    "named_object": AttrTypeNamedObj.TYPE,
-    "array": _ATTR_ARRAY_TYPE,
-    "array_object": AttrTypeArrObj.TYPE,
-    "array_string": AttrTypeArrStr.TYPE,
-    "array_named_object": AttrTypeArrNamedObj.TYPE,
-    "array_group": AttrTypeArrGroup.TYPE,
-    "array_role": AttrTypeArrRole.TYPE,
-    "text": AttrTypeText.TYPE,
-    "boolean": AttrTypeBoolean.TYPE,
-    "group": AttrTypeGroup.TYPE,
-    "date": AttrTypeDate.TYPE,
-    "role": AttrTypeRole.TYPE,
+    "object": AttrType.OBJECT,
+    "string": AttrType.STRING,
+    "named": AttrType._NAMED,
+    "named_object": AttrType.NAMED_OBJECT,
+    "array": AttrType._ARRAY,
+    "array_object": AttrType.ARRAY_OBJECT,
+    "array_string": AttrType.ARRAY_STRING,
+    "array_named_object": AttrType.ARRAY_NAMED_OBJECT,
+    "array_group": AttrType.ARRAY_GROUP,
+    "array_role": AttrType.ARRAY_ROLE,
+    "text": AttrType.TEXT,
+    "boolean": AttrType.BOOLEAN,
+    "group": AttrType.GROUP,
+    "date": AttrType.DATE,
+    "role": AttrType.ROLE,
 }
-AttrDefaultValue = {
-    AttrTypeValue["object"]: AttrTypeObj.DEFAULT_VALUE,
-    AttrTypeValue["string"]: AttrTypeStr.DEFAULT_VALUE,
-    AttrTypeValue["named_object"]: AttrTypeNamedObj.DEFAULT_VALUE,
-    AttrTypeValue["array_object"]: AttrTypeArrObj.DEFAULT_VALUE,
-    AttrTypeValue["array_string"]: AttrTypeArrStr.DEFAULT_VALUE,
-    AttrTypeValue["array_named_object"]: AttrTypeArrNamedObj.DEFAULT_VALUE,
-    AttrTypeValue["array_group"]: AttrTypeArrGroup.DEFAULT_VALUE,
-    AttrTypeValue["array_role"]: AttrTypeArrRole.DEFAULT_VALUE,
-    AttrTypeValue["text"]: AttrTypeText.DEFAULT_VALUE,
-    AttrTypeValue["boolean"]: AttrTypeBoolean.DEFAULT_VALUE,
-    AttrTypeValue["group"]: AttrTypeGroup.DEFAULT_VALUE,
-    AttrTypeValue["date"]: AttrTypeDate.DEFAULT_VALUE,
-    AttrTypeValue["role"]: AttrTypeRole.DEFAULT_VALUE,
+AttrDefaultValue: dict[int, Any] = {
+    AttrType.OBJECT: AttrTypeObj.DEFAULT_VALUE,
+    AttrType.STRING: AttrTypeStr.DEFAULT_VALUE,
+    AttrType.NAMED_OBJECT: AttrTypeNamedObj.DEFAULT_VALUE,
+    AttrType.ARRAY_OBJECT: AttrTypeArrObj.DEFAULT_VALUE,
+    AttrType.ARRAY_STRING: AttrTypeArrStr.DEFAULT_VALUE,
+    AttrType.ARRAY_NAMED_OBJECT: AttrTypeArrNamedObj.DEFAULT_VALUE,
+    AttrType.ARRAY_GROUP: AttrTypeArrGroup.DEFAULT_VALUE,
+    AttrType.ARRAY_ROLE: AttrTypeArrRole.DEFAULT_VALUE,
+    AttrType.TEXT: AttrTypeText.DEFAULT_VALUE,
+    AttrType.BOOLEAN: AttrTypeBoolean.DEFAULT_VALUE,
+    AttrType.GROUP: AttrTypeGroup.DEFAULT_VALUE,
+    AttrType.DATE: AttrTypeDate.DEFAULT_VALUE,
+    AttrType.ROLE: AttrTypeRole.DEFAULT_VALUE,
 }
-
-
-class AttrType(enum.IntEnum):
-    OBJECT = AttrTypeObj.TYPE
-    STRING = AttrTypeStr.TYPE
-    NAMED_OBJECT = AttrTypeNamedObj.TYPE
-    ARRAY_OBJECT = AttrTypeArrObj.TYPE
-    ARRAY_STRING = AttrTypeArrStr.TYPE
-    ARRAY_NAMED_OBJECT = AttrTypeArrNamedObj.TYPE
-    ARRAY_NAMED_OBJECT_BOOLEAN = 3081  # unmanaged by AttrTypeXXX
-    ARRAY_GROUP = AttrTypeArrGroup.TYPE
-    ARRAY_ROLE = AttrTypeArrRole.TYPE
-    TEXT = AttrTypeText.TYPE
-    BOOLEAN = AttrTypeBoolean.TYPE
-    GROUP = AttrTypeGroup.TYPE
-    DATE = AttrTypeDate.TYPE
-    ROLE = AttrTypeRole.TYPE
