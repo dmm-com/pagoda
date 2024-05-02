@@ -1,0 +1,7 @@
+{
+  "name": "frontend",
+  "dockerComposeFile": "../../docker-compose.yml",
+  "service": "frontend",
+  "workspaceFolder": "/workspace/airone",
+  "postCreateCommand": "npm install"
+}

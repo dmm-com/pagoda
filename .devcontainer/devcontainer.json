@@ -1,6 +1,0 @@
-{
-  "name": "airone",
-  "build": {
-    "dockerfile": "Dockerfile"
-  },
-}

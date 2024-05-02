@@ -1,5 +1,33 @@
-version: '2.0'
 services:
+  backend:
+    build:
+      context: .
+      dockerfile: .devcontainer/backend/Dockerfile
+      args:
+        USER_ID: ${UID:-1000}
+    container_name: backend
+    hostname: backend
+    command: sleep infinity
+    ports:
+      - 8080:8080
+    environment:
+      AIRONE_MYSQL_MASTER_URL: "mysql://airone:password@mysql:3306/airone?charset=utf8mb4"
+      AIRONE_ELASTICSEARCH_URL: "elasticsearch://airone:password@elasticsearch:9200/airone"
+      AIRONE_RABBITMQ_URL: "amqp://guest:guest@rabbitmq//"
+    volumes:
+      - .:/workspace/airone/
+
+  frontend:
+    build:
+      dockerfile: .devcontainer/frontend/Dockerfile
+      args:
+        USER_ID: ${UID:-1000}
+    container_name: frontend
+    hostname: frontend
+    command: sleep infinity
+    volumes:
+      - .:/workspace/airone/
+
   mysql:
     platform: linux/x86_64
     image: mysql:5.7.34
