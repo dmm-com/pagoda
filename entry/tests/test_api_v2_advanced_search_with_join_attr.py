@@ -1,6 +1,8 @@
 import json
 
 from airone.lib.elasticsearch import FilterKey
+from airone.lib.types import AttrTypeValue
+from entity.models import Entity
 from entry.tests.test_api_v2 import BaseViewTest
 
 
@@ -276,24 +278,42 @@ class ViewTest(BaseViewTest):
         )
 
     def test_recursive_join_attr(self):
+        entity: Entity = self.create_entity(
+            **{
+                "user": self.user,
+                "name": "entity",
+                "attrs": [
+                    {"name": "top", "type": AttrTypeValue["object"], "ref": self.ref_entity},
+                ],
+            }
+        )
         # Create items that has following referral structure
         # I0.ref -> I1.ref -> I2
         item2 = self.add_entry(self.user, "I2", self.ref_entity)
-        item1 = self.add_entry(self.user, "I1", self.ref_entity, values={"ref": item2})
-        item0 = self.add_entry(self.user, "I0", self.ref_entity, values={"ref": item1})
+        item1 = self.add_entry(self.user, "I1", self.ref_entity, values={"text": "fuga"})
+        item0 = self.add_entry(
+            self.user, "I0", self.ref_entity, values={"val": "hoge", "ref": item1}
+        )
+
+        entry = self.add_entry(
+            self.user,
+            "entry",
+            entity,
+            values={
+                "top": item0,
+            },
+        )
 
         params = {
-            "entities": [self.entity.id],
+            "entities": [entity.id],
             "attrinfo": [],
             "join_attrs": [
                 {
-                    "name": "ref",
-                    "attrinfo": [{"name": "val"}],
-                    "join_attrs": [{
-                        "name": "ref",
-                        "attrinfo": [{"name": "name"}],
-                        "join_attrs": []
-                    }],
+                    "name": "top",
+                    "attrinfo": [{"name": "val"}, {"name": "ref"}],
+                    "join_attrs": [
+                        {"name": "ref", "attrinfo": [{"name": "text"}], "join_attrs": []}
+                    ],
                 },
             ],
         }

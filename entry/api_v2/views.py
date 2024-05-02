@@ -367,11 +367,11 @@ class AdvancedSearchAPI(generics.GenericAPIView):
                     joined_ret_values.append(deepcopy(resp_result))
 
             # re-search using join_attrs parameter that is specified in join_attrs parameter
-#            for co_join_attr in join_attr.get("join_attrs", []):
-#                joined_results = _re_search_by_join_attr(joined_resp, co_join_attr)
-#                if joined_results:
-#                    joined_resp["ret_values"] = joined_results
-#                    joined_resp["ret_count"] = len(joined_results)
+            for co_join_attr in join_attr.get("join_attrs", []):
+                joined_results = _re_search_by_join_attr(joined_resp, co_join_attr)
+                if joined_results:
+                    joined_resp["ret_values"] = joined_results
+                    joined_resp["ret_count"] = len(joined_results)
 
             if will_filter_by_joined_attr:
                 return new_ret_values
