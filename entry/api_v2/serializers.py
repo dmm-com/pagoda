@@ -1104,6 +1104,15 @@ class AdvancedSearchJoinAttrInfoSerializer(serializers.Serializer):
     name = serializers.CharField()
     offset = serializers.IntegerField(default=0)
     attrinfo = AdvancedSearchResultAttrInfoSerializer(many=True)
+    join_attrs = serializers.ListField(child=serializers.DictField(), required=False)
+
+    def to_representation(self, instance):
+        # self.__class__ = AdvancedSearchJoinAttrInfoSerializer
+        ret = super().to_representation(instance)
+        ret["join_attrs"] = AdvancedSearchJoinAttrInfoSerializer(
+            instance.join_attrs.all(), many=True
+        ).data
+        return ret
 
 
 class AdvancedSearchSerializer(serializers.Serializer):
