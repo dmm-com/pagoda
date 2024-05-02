@@ -1,7 +1,7 @@
 import errno
 import io
 
-from django.db.models import Q
+from django.db.models import Q, QuerySet
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import generics, serializers, status, viewsets
@@ -80,7 +80,7 @@ class JobListAPI(viewsets.ModelViewSet):
     serializer_class = JobSerializers
     pagination_class = LimitOffsetPagination
 
-    def get_queryset(self):
+    def get_queryset(self) -> QuerySet:
         user = self.request.user
         created_after = self.request.query_params.get("created_after", None)
 

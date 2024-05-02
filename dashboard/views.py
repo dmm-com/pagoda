@@ -303,7 +303,7 @@ def advanced_search_result(request):
         },
     ]
 )
-def export_search_result(request, recv_data):
+def export_search_result(request, recv_data) -> HttpResponse:
     # check whether same job is sent
     job_status_not_finished: list[JobStatus] = [JobStatus.PREPARING, JobStatus.PROCESSING]
     if (

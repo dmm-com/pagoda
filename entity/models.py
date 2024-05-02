@@ -36,7 +36,7 @@ class EntityAttr(ACLBase):
         super(ACLBase, self).__init__(*args, **kwargs)
         self.objtype = ACLObjType.EntityAttr
 
-    def is_updated(self, name, is_mandatory, is_delete_in_chain, index):
+    def is_updated(self, name, is_mandatory, is_delete_in_chain, index) -> bool:
         # checks each parameters that are different between current object parameters
         if (
             self.name != name
@@ -45,8 +45,9 @@ class EntityAttr(ACLBase):
             or self.index != int(index)
         ):
             return True
+        return False
 
-    def is_referral_updated(self, refs):
+    def is_referral_updated(self, refs) -> bool:
         # checks each parameters that are different between current object parameters
         return sorted([x.id for x in self.referral.all()]) != sorted(refs)
 
