@@ -274,3 +274,37 @@ class ViewTest(BaseViewTest):
                 {"as_string": "hoge-0"},
             ],
         )
+
+    def test_recursive_join_attr(self):
+        # Create items that has following referral structure
+        # I0.ref -> I1.ref -> I2
+        item2 = self.add_entry(self.user, "I2", self.ref_entity)
+        item1 = self.add_entry(self.user, "I1", self.ref_entity, values={"ref": item2})
+        item0 = self.add_entry(self.user, "I0", self.ref_entity, values={"ref": item1})
+
+        params = {
+            "entities": [self.entity.id],
+            "attrinfo": [],
+            "join_attrs": [
+                {
+                    "name": "ref",
+                    "attrinfo": [{"name": "val"}],
+                    "join_attrs": [{
+                        "name": "ref",
+                        "attrinfo": [{"name": "name"}],
+                        "join_attrs": []
+                    }],
+                },
+            ],
+        }
+        resp = self.client.post(
+            "/entry/api/v2/advanced_search/", json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 200)
+
+        print("[onix-test(00)] %s" % resp.json())
+        for v in resp.json()["values"]:
+            print("  [onix-test(10)] %s" % v["entry"]["name"])
+
+            for attrinfo in v["attrs"]:
+                print("    [onix-test(20)] %s" % str(attrinfo))
