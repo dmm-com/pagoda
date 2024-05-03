@@ -133,7 +133,7 @@ class AironeTestCase(TestCase):
 
         return entity
 
-    def add_entry(self, user, name, schema, values={}, is_public=True):
+    def add_entry(self, user: User, name: str, schema: Entity, values={}, is_public=True) -> Entry:
         entry = Entry.objects.create(
             name=name, schema=schema, created_user=user, is_public=is_public
         )
@@ -155,7 +155,7 @@ class AironeViewTest(AironeTestCase):
 
         self.client = Client()
 
-    def _do_login(self, uname, is_superuser=False):
+    def _do_login(self, uname, is_superuser=False) -> User:
         # create test user to authenticate
         user = User(username=uname, is_superuser=is_superuser)
         user.set_password(uname)
@@ -165,10 +165,10 @@ class AironeViewTest(AironeTestCase):
 
         return user
 
-    def admin_login(self):
+    def admin_login(self) -> User:
         return self._do_login("admin", True)
 
-    def guest_login(self, uname="guest"):
+    def guest_login(self, uname="guest") -> User:
         return self._do_login(uname)
 
     def open_fixture_file(self, fname):

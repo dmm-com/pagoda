@@ -24,7 +24,7 @@ class Role(models.Model):
     admin_groups = models.ManyToManyField("group.Group", related_name="admin_role", blank=True)
 
     @classmethod
-    def editable(kls, user, admin_users, admin_groups: List[Group]):
+    def editable(kls, user, admin_users, admin_groups: List[Group]) -> bool:
         # This checks whether spcified user is belonged to the specified
         # admin_users and admin_groups.
         if user.is_superuser:
@@ -38,7 +38,7 @@ class Role(models.Model):
 
         return False
 
-    def is_belonged_to(self, user, as_member=False):
+    def is_belonged_to(self, user, as_member=False) -> bool:
         """This checks wether specified User is belonged to this Role.
         When "as_member" parameter is True, then this method only doesn't check
         admin users and groups.
@@ -68,7 +68,7 @@ class Role(models.Model):
 
         return False
 
-    def is_editable(self, user):
+    def is_editable(self, user) -> bool:
         """check wether specified User has permission to edit this Role"""
         return Role.editable(
             user,
@@ -76,7 +76,7 @@ class Role(models.Model):
             list(self.admin_groups.all()),
         )
 
-    def is_permitted(self, target_obj, permission_level):
+    def is_permitted(self, target_obj, permission_level) -> bool:
         """This method has regulation
         * You don't call this method to check object permission directly because,
           this method don't care about hieralchical data structure
@@ -119,7 +119,7 @@ class Role(models.Model):
         else:
             return ACLType.Nothing().id
 
-    def get_referred_entries(self, entity_name=None):
+    def get_referred_entries(self, entity_name: str | None = None):
         # make query to identify AttributeValue that specify this Role instance
         query = Q(
             Q(

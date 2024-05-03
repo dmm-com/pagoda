@@ -324,7 +324,7 @@ class History(models.Model):
             raise TypeError("Couldn't register history '%s' because of invalid type" % str(target))
 
     @classmethod
-    def _type_check(kls, target, operation):
+    def _type_check(kls, target, operation) -> bool:
         if (
             operation & kls.TARGET_ENTITY
             and isinstance(target, import_module("entity.models").Entity)

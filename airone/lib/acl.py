@@ -1,7 +1,5 @@
 import enum
 
-from six import with_metaclass
-
 __all__ = ["ACLType", "ACLObjType"]
 
 
@@ -10,6 +8,7 @@ class Iteratable(object):
         return self._types.__iter__()
 
 
+@enum.unique
 class ACLObjType(enum.IntEnum):
     Entity = 1 << 0
     EntityAttr = 1 << 1
@@ -40,7 +39,7 @@ class MetaACLType(type):
             return False
 
 
-class ACLTypeBase(with_metaclass(MetaACLType)):
+class ACLTypeBase(metaclass=MetaACLType):
     pass
 
 

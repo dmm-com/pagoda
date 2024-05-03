@@ -35,7 +35,7 @@ def _does_custom_method_defined(method_name, spec_name, filepath):
     return True
 
 
-def is_custom(handler_name, entity_name=None):
+def is_custom(handler_name: str, entity_name: str | None = None) -> bool:
     # When 'entity_name' is specified, this tries to load custom_view of Entry.
     # But it tries to load Entity's custom_view when 'entity_name' parameter doesn't specified.
     if entity_name:
@@ -52,7 +52,7 @@ def is_custom(handler_name, entity_name=None):
     return _does_custom_method_defined(handler_name, spec_name, filepath)
 
 
-def call_custom(handler_name, spec_name=None, *args, **kwargs):
+def call_custom(handler_name: str, spec_name: str | None = None, *args, **kwargs):
     if not spec_name:
         filepath = "%s/entity.py" % BASE_DIR
     else:

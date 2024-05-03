@@ -38,6 +38,7 @@ class AdvancedSearchResults(TypedDict):
     ret_values: list[AdvancedSearchResultValue]
 
 
+@enum.unique
 class FilterKey(enum.IntEnum):
     CLEARED = 0
     EMPTY = 1
