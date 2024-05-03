@@ -2,6 +2,7 @@ import functools
 from typing import Any, Callable
 
 from acl.models import ACLBase
+from airone.lib.log import Logger
 from job.models import Job, JobStatus
 
 
@@ -20,7 +21,8 @@ def may_schedule_until_job_is_ready(
         try:
             # running Job processing
             ret: JobStatus | tuple[JobStatus, str, ACLBase | None] | None = func(kls, job)
-        except Exception:
+        except Exception as e:
+            Logger.error(f"An error occurred while processing Job(id={job.id}): {str(e)}")
             ret = JobStatus.ERROR
 
         # update Job status after finishing Job processing
