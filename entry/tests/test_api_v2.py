@@ -4269,11 +4269,19 @@ class ViewTest(BaseViewTest):
             [
                 {
                     "entity": "ref_entity",
-                    "entries": [{"attrs": [{"name": "val", "value": ""}], "name": "r-0"}],
+                    "entries": [
+                        {"attrs": [{"name": "val", "value": ""}], "name": "r-0", "referrals": None}
+                    ],
                 },
                 {
                     "entity": "test-entity",
-                    "entries": [{"attrs": [{"name": "val", "value": "hoge"}], "name": "Entry"}],
+                    "entries": [
+                        {
+                            "attrs": [{"name": "val", "value": "hoge"}],
+                            "name": "Entry",
+                            "referrals": None,
+                        }
+                    ],
                 },
             ],
         )

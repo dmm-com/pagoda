@@ -2,13 +2,11 @@ import csv
 import io
 import json
 from datetime import datetime
-from typing import Any, Callable, List, Literal, Optional
+from typing import Any, Callable, List, Optional
 
 import yaml
 from django.conf import settings
-from pydantic import BaseModel
 from rest_framework.exceptions import ValidationError
-from typing_extensions import TypedDict
 
 import custom_view
 from airone.celery import app
@@ -29,38 +27,16 @@ from entry.api_v2.serializers import (
     EntryCreateSerializer,
     EntryImportEntitySerializer,
     EntryUpdateSerializer,
+    ExportedEntityEntries,
+    ExportedEntry,
+    ExportTaskParams,
+    ReferralEntry,
 )
 from entry.models import Attribute, Entry
 from group.models import Group
 from job.models import Job, JobStatus
 from role.models import Role
 from user.models import User
-
-
-class ExportedEntryAttribute(TypedDict):
-    name: str
-    value: Any
-
-
-class ReferralEntry(BaseModel):
-    entity: str
-    entry: str
-
-
-class ExportedEntry(BaseModel):
-    name: str
-    attrs: list[ExportedEntryAttribute]
-    referrals: list[ReferralEntry] | None = None
-
-
-class ExportedEntityEntries(BaseModel):
-    entity: str
-    entries: list[ExportedEntry]
-
-
-class ExportTaskParams(BaseModel):
-    export_format: Literal["yaml", "csv"]
-    target_id: int
 
 
 def _merge_referrals_by_index(ref_list, name_list):
@@ -298,7 +274,7 @@ def _yaml_export_v2(job: Job, values, recv_data: dict, has_referral: bool) -> Op
 
     resp_data: List[ExportedEntityEntries] = []
     for index, entry_info in enumerate(values):
-        data: ExportedEntry = ExportedEntry(
+        data = ExportedEntry(
             name=entry_info["entry"]["name"],
             attrs=[],
         )
@@ -343,7 +319,7 @@ def _yaml_export_v2(job: Job, values, recv_data: dict, has_referral: bool) -> Op
     output = io.StringIO()
     output.write(
         yaml.dump(
-            [x.dict(exclude_none=True) for x in resp_data],
+            [x.dict() for x in resp_data],
             default_flow_style=False,
             allow_unicode=True,
         )
