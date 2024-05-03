@@ -42,10 +42,15 @@ class ExportedEntryAttribute(TypedDict):
     value: Any
 
 
+class ReferralEntry(BaseModel):
+    entity: str
+    entry: str
+
+
 class ExportedEntry(BaseModel):
     name: str
     attrs: list[ExportedEntryAttribute]
-    referrals: list["ExportedEntityEntries"] | None
+    referrals: list[ReferralEntry] | None = None
 
 
 class ExportedEntityEntries(BaseModel):
@@ -296,7 +301,6 @@ def _yaml_export_v2(job: Job, values, recv_data: dict, has_referral: bool) -> Op
         data: ExportedEntry = ExportedEntry(
             name=entry_info["entry"]["name"],
             attrs=[],
-            referrals=None,
         )
 
         # Abort processing when job is canceled
@@ -318,9 +322,9 @@ def _yaml_export_v2(job: Job, values, recv_data: dict, has_referral: bool) -> Op
 
         if has_referral is not False:
             data.referrals = [
-                ExportedEntityEntries(
+                ReferralEntry(
                     entity=x["schema"]["name"],
-                    entries=x["name"],
+                    entry=x["name"],
                 )
                 for x in entry_info["referrals"]
             ]
@@ -338,7 +342,11 @@ def _yaml_export_v2(job: Job, values, recv_data: dict, has_referral: bool) -> Op
 
     output = io.StringIO()
     output.write(
-        yaml.dump([x.dict() for x in resp_data], default_flow_style=False, allow_unicode=True)
+        yaml.dump(
+            [x.dict(exclude_none=True) for x in resp_data],
+            default_flow_style=False,
+            allow_unicode=True,
+        )
     )
 
     return output
@@ -747,7 +755,7 @@ def export_entries_v2(self, job: Job):
         output = io.StringIO()
         output.write(
             yaml.dump(
-                exported_entity,
+                [x.dict() for x in exported_entity],
                 default_flow_style=False,
                 allow_unicode=True,
             )
