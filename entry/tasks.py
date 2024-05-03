@@ -45,7 +45,7 @@ class ExportedEntryAttribute(TypedDict):
 class ExportedEntry(BaseModel):
     name: str
     attrs: list[ExportedEntryAttribute]
-    referrals: list["ExportedEntityEntries"] | None
+    referrals: list["ExportedEntityEntries"] | None = None
 
 
 class ExportedEntityEntries(BaseModel):
@@ -747,7 +747,7 @@ def export_entries_v2(self, job: Job):
         output = io.StringIO()
         output.write(
             yaml.dump(
-                exported_entity,
+                [x.dict() for x in exported_entity],
                 default_flow_style=False,
                 allow_unicode=True,
             )
