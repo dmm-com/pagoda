@@ -1,0 +1,18 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: .devcontainer/backend/Dockerfile
+      args:
+        USER_ID: ${UID:-1000}
+    container_name: backend
+    hostname: backend
+    command: sleep infinity
+    ports:
+      - 8080:8080
+    environment:
+      AIRONE_MYSQL_MASTER_URL: "mysql://airone:password@mysql:3306/airone?charset=utf8mb4"
+      AIRONE_ELASTICSEARCH_URL: "elasticsearch://airone:password@elasticsearch:9200/airone"
+      AIRONE_RABBITMQ_URL: "amqp://guest:guest@rabbitmq//"
+    volumes:
+      - .:/workspace/airone/

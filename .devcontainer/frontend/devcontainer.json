@@ -1,7 +1,11 @@
 {
   "name": "frontend",
-  "dockerComposeFile": "../../docker-compose.yml",
+  "dockerComposeFile": [
+    "../../docker-compose.yml",
+    "docker-compose.frontend.yml"
+  ],
   "service": "frontend",
   "workspaceFolder": "/workspace/airone",
-  "postCreateCommand": "npm install"
+  "postCreateCommand": "npm install",
+  "remoteUser": "airone",
 }

@@ -16,4 +16,3 @@ RUN pip install --no-cache-dir --upgrade \
 ARG USER_ID=1000
 RUN getent passwd $USER_ID || useradd -u $USER_ID -m -s /bin/bash airone
 RUN echo "#$USER_ID ALL=NOPASSWD: ALL" > /etc/sudoers.d/airone
-USER $USER_ID

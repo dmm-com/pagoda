@@ -1,0 +1,12 @@
+services:
+  frontend:
+    build:
+      dockerfile: .devcontainer/frontend/Dockerfile
+      args:
+        USER_ID: ${UID:-1000}
+    container_name: frontend
+    hostname: frontend
+    command: sleep infinity
+    volumes:
+      - .:/workspace/airone/
+      - ~/.npmrc:/home/node/.npmrc

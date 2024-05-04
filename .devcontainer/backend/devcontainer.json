@@ -1,13 +1,18 @@
 {
   "name": "backend",
-  "dockerComposeFile": "../../docker-compose.yml",
+  "dockerComposeFile": [
+    "../../docker-compose.yml",
+    "docker-compose.backend.yml",
+  ],
   "service": "backend",
   "workspaceFolder": "/workspace/airone",
   "postCreateCommand": "poetry config virtualenvs.in-project true && poetry config virtualenvs.path .venv && poetry install",
+  "remoteUser": "airone",
   "customizations": {
     "vscode": {
       "extensions": [
         "ms-python.python",
+        "ms-python.debugpy",
         "charliermarsh.ruff"
       ],
       "settings": {
