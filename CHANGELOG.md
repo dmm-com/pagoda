@@ -5,11 +5,22 @@
 ### Added
 
 ### Changed
+
+### Fixed
+
+## v3.87.0
+
+### Added
+* Added test in parallel.
+  Contributed by @syucream
+
+* Show 'ongoing' status on entity if it has non-finished jobs.
+  Contributed by @syucream
+
+### Changed
 * Enable to get search advanced_search results sequentially and check its progres
   when join_attr parameter is specified.
   Contributed by @userlocalhost, @hinashi
-
-### Fixed
 
 ## v3.86.0
 
