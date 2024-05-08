@@ -289,10 +289,17 @@ class ViewTest(BaseViewTest):
         )
         # Create items that has following referral structure
         # I0.ref -> I1.ref -> I2
-        item2 = self.add_entry(self.user, "I2", self.ref_entity)
-        item1 = self.add_entry(self.user, "I1", self.ref_entity, values={"text": "fuga"})
+        item2 = self.add_entry(self.user, "I2", self.ref_entity, values={"text": "puyo"})
+        item1 = self.add_entry(self.user, "I1", self.ref_entity, values={
+            "ref": item2,
+            "text": "fuga",
+        })
         item0 = self.add_entry(
-            self.user, "I0", self.ref_entity, values={"val": "hoge", "ref": item1}
+            self.user, "I0", self.ref_entity, values={
+                "val": "hoge",
+                "ref": item1,
+                "refs": [item2],
+            }
         )
 
         entry = self.add_entry(
@@ -311,9 +318,15 @@ class ViewTest(BaseViewTest):
                 {
                     "name": "top",
                     "attrinfo": [{"name": "val"}, {"name": "ref"}],
-                    "join_attrs": [
-                        {"name": "ref", "attrinfo": [{"name": "text"}], "join_attrs": []}
-                    ],
+                    "join_attrs": [{
+                        "name": "ref",
+                        "attrinfo": [{"name": "text"}, {"name": "ref"}],
+                        "join_attrs": [{
+                            "name": "ref",
+                            "attrinfo": [{"name": "text"}],
+                            "join_attrs": [],
+                        }]
+                    }],
                 },
             ],
         }
@@ -322,9 +335,12 @@ class ViewTest(BaseViewTest):
         )
         self.assertEqual(resp.status_code, 200)
 
+        self.assertEqual(resp.json()["entry"]["name"], entry.name)
+        self.assertEqual(resp.json()["entry"]["id"], entry.id)
+
         print("[onix-test(00)] %s" % resp.json())
         for v in resp.json()["values"]:
             print("  [onix-test(10)] %s" % v["entry"]["name"])
 
-            for attrinfo in v["attrs"]:
-                print("    [onix-test(20)] %s" % str(attrinfo))
+            for name, value in v["attrs"].items():
+                print("    [onix-test(20)] %s: %s" % (name, str(value)))
