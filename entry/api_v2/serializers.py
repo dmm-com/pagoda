@@ -1,4 +1,4 @@
-from typing import Any, Literal, Optional
+from typing import Any, Dict, Literal, Optional
 
 from django.db.models import Prefetch
 from drf_spectacular.utils import extend_schema_field, extend_schema_serializer
@@ -56,6 +56,32 @@ class ExportedEntityEntries(BaseModel):
 class ExportTaskParams(BaseModel):
     export_format: Literal["yaml", "csv"]
     target_id: int
+
+
+class AdvancedSearchResultAttrInfoParams(BaseModel):
+    name: str
+    filter_key: FilterKey
+    keyword: str
+
+
+class AdvancedSearchJoinAttrInfoParams(BaseModel):
+    name: str
+    offset: int
+    attrinfo: AdvancedSearchResultAttrInfoParams
+    join_attrs: list[dict]
+
+
+class AdvancedSearchParams(BaseModel):
+    entities: list[int]
+    join_attrs: AdvancedSearchJoinAttrInfoParams
+    # entry_name = serializers.CharField(allow_blank=True, default="")
+    # attrinfo = AdvancedSearchResultAttrInfoSerializer(many=True)
+    # has_referral = serializers.BooleanField(default=False)
+    # referral_name = serializers.CharField(required=False, allow_blank=True)
+    # is_output_all = serializers.BooleanField(default=True)
+    # is_all_entities = serializers.BooleanField(default=False)
+    # entry_limit = serializers.IntegerField(default=CONFIG_ENTRY.MAX_LIST_ENTRIES)
+    # entry_offset = serializers.IntegerField(default=0)
 
 
 class EntityAttributeType(TypedDict):
@@ -1156,6 +1182,10 @@ class AdvancedSearchSerializer(serializers.Serializer):
         if any([len(attr.get("keyword", "")) > CONFIG_ENTRY.MAX_QUERY_SIZE for attr in attrs]):
             raise ValidationError("keyword(s) in attrs are too large")
         return attrs
+
+    def validate(self, params: AdvancedSearchParams):
+        print(params)
+        return params
 
 
 class AdvancedSearchResultValueAttrSerializer(serializers.Serializer):

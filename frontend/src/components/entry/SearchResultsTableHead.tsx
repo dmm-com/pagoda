@@ -67,6 +67,8 @@ export const SearchResultsTableHead: FC<Props> = ({
   joinAttrs,
   setSearchResults,
 }) => {
+  console.log("defaultAttrsFilter", defaultAttrsFilter)
+  console.log("attrTypes", attrTypes)
   const location = useLocation();
   const history = useHistory();
 
@@ -118,51 +120,51 @@ export const SearchResultsTableHead: FC<Props> = ({
 
   const handleSelectFilterConditions =
     (attrName?: string) =>
-    (
-      attrFilter?: AttrFilter,
-      overwriteEntryName?: string,
-      overwriteReferral?: string
-    ) => {
-      const _attrsFilter =
-        attrName != null && attrFilter != null
-          ? { ...attrsFilter, [attrName]: attrFilter }
-          : attrsFilter;
+      (
+        attrFilter?: AttrFilter,
+        overwriteEntryName?: string,
+        overwriteReferral?: string
+      ) => {
+        const _attrsFilter =
+          attrName != null && attrFilter != null
+            ? { ...attrsFilter, [attrName]: attrFilter }
+            : attrsFilter;
 
-      const newParams = formatAdvancedSearchParams({
-        attrsFilter: Object.keys(_attrsFilter)
-          .filter((k) => _attrsFilter[k].joinedAttrname === undefined)
-          .reduce((a, k) => ({ ...a, [k]: _attrsFilter[k] }), {}),
-        entryName: overwriteEntryName ?? entryFilter,
-        referralName: overwriteReferral ?? referralFilter,
-        baseParams: new URLSearchParams(location.search),
-        joinAttrs: Object.keys(_attrsFilter)
-          .filter((k) => _attrsFilter[k].joinedAttrname !== undefined)
-          .map((k) => ({
-            name: _attrsFilter[k]?.baseAttrname ?? "",
-            attrinfo: Object.keys(_attrsFilter)
-              .filter(
-                (j) =>
-                  _attrsFilter[j].baseAttrname === _attrsFilter[k].baseAttrname
-              )
-              .map((j) => ({
-                name: _attrsFilter[j]?.joinedAttrname ?? "",
-                filterKey: _attrsFilter[j].filterKey,
-                keyword: _attrsFilter[j].keyword,
-              })),
-          }))
-          // This removes duplicates
-          .filter((v, i, a) => a.findIndex((t) => t.name === v.name) === i),
-      });
+        const newParams = formatAdvancedSearchParams({
+          attrsFilter: Object.keys(_attrsFilter)
+            .filter((k) => _attrsFilter[k].joinedAttrname === undefined)
+            .reduce((a, k) => ({ ...a, [k]: _attrsFilter[k] }), {}),
+          entryName: overwriteEntryName ?? entryFilter,
+          referralName: overwriteReferral ?? referralFilter,
+          baseParams: new URLSearchParams(location.search),
+          joinAttrs: Object.keys(_attrsFilter)
+            .filter((k) => _attrsFilter[k].joinedAttrname !== undefined)
+            .map((k) => ({
+              name: _attrsFilter[k]?.baseAttrname ?? "",
+              attrinfo: Object.keys(_attrsFilter)
+                .filter(
+                  (j) =>
+                    _attrsFilter[j].baseAttrname === _attrsFilter[k].baseAttrname
+                )
+                .map((j) => ({
+                  name: _attrsFilter[j]?.joinedAttrname ?? "",
+                  filterKey: _attrsFilter[j].filterKey,
+                  keyword: _attrsFilter[j].keyword,
+                })),
+            }))
+            // This removes duplicates
+            .filter((v, i, a) => a.findIndex((t) => t.name === v.name) === i),
+        });
 
-      setSearchResults(
-        getIsFiltered(attrFilter?.filterKey, attrFilter?.keyword)
-      );
-      // simply reload with the new params
-      history.push({
-        pathname: location.pathname,
-        search: "?" + newParams.toString(),
-      });
-    };
+        setSearchResults(
+          getIsFiltered(attrFilter?.filterKey, attrFilter?.keyword)
+        );
+        // simply reload with the new params
+        history.push({
+          pathname: location.pathname,
+          search: "?" + newParams.toString(),
+        });
+      };
 
   const handleUpdateAttrFilter =
     (attrName: string) => (attrFilter: AttrFilter) => {
@@ -201,8 +203,11 @@ export const SearchResultsTableHead: FC<Props> = ({
             <HeaderBox>
               <Typography>{attrName}</Typography>
 
-              {(attrTypes[attrName] & EntryAttributeTypeTypeEnum.OBJECT) > 0 &&
-                attrsFilter[attrName].joinedAttrname === undefined && (
+              {
+                /*(attrTypes[attrName] & EntryAttributeTypeTypeEnum.OBJECT) > 0 &&
+                attrsFilter[attrName].joinedAttrname === undefined && 
+                */
+                (attrTypes[attrName] & EntryAttributeTypeTypeEnum.OBJECT) > 0 && (
                   <StyledIconButton onClick={() => setJoinAttrname(attrName)}>
                     <AddIcon />
                   </StyledIconButton>

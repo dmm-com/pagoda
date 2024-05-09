@@ -6,7 +6,7 @@ import {
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import SettingsIcon from "@mui/icons-material/Settings";
-import { IconButton, Box, Button, Typography } from "@mui/material";
+import { Box, Button, IconButton, Typography } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { useSnackbar } from "notistack";
 import React, { FC, useEffect, useMemo, useState } from "react";
@@ -42,7 +42,7 @@ export const getIsFiltered = (filterKey?: number, keyword?: string) => {
   return false;
 };
 
-const FullWidthIconBox = styled(IconButton)(({}) => ({
+const FullWidthIconBox = styled(IconButton)(({ }) => ({
   width: "100%",
 }));
 
