@@ -1,13 +1,12 @@
 {
-  "name": "backend",
+  "name": "airone",
   "dockerComposeFile": [
-    "../../docker-compose.yml",
-    "docker-compose.backend.yml",
+    "../docker-compose.yml",
+    "docker-compose.yml"
   ],
-  "service": "backend",
+  "service": "airone",
   "workspaceFolder": "/workspace/airone",
-  "postCreateCommand": "poetry config virtualenvs.in-project true && poetry config virtualenvs.path .venv && poetry install",
-  "remoteUser": "airone",
+  "postCreateCommand": "poetry config virtualenvs.in-project true && poetry config virtualenvs.path .venv && poetry install && npm install",
   "customizations": {
     "vscode": {
       "extensions": [

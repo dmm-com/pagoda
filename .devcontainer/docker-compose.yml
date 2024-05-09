@@ -1,12 +1,12 @@
 services:
-  backend:
+  airone:
     build:
       context: .
-      dockerfile: .devcontainer/backend/Dockerfile
+      dockerfile: .devcontainer/Dockerfile
       args:
         USER_ID: ${UID:-1000}
-    container_name: backend
-    hostname: backend
+    container_name: airone
+    hostname: airone
     command: sleep infinity
     ports:
       - 8080:8080
