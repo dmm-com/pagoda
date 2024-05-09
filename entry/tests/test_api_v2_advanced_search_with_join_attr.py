@@ -1,7 +1,7 @@
 import json
 
 from airone.lib.elasticsearch import FilterKey
-from airone.lib.types import AttrTypeValue
+from airone.lib.types import AttrType
 from entity.models import Entity
 from entry.tests.test_api_v2 import BaseViewTest
 
@@ -283,12 +283,12 @@ class ViewTest(BaseViewTest):
                 "user": self.user,
                 "name": "entity",
                 "attrs": [
-                    {"name": "top", "type": AttrTypeValue["object"], "ref": self.ref_entity},
+                    {"name": "top", "type": AttrType.OBJECT, "ref": self.ref_entity},
                 ],
             }
         )
         # Create items that has following referral structure
-        # I0.ref -> I1.ref -> I2
+        # entry.top -> I0(.ref) -> I1(.ref) -> I2.text.puyo
         item2 = self.add_entry(self.user, "I2", self.ref_entity, values={"text": "puyo"})
         item1 = self.add_entry(self.user, "I1", self.ref_entity, values={
             "ref": item2,
@@ -316,13 +316,13 @@ class ViewTest(BaseViewTest):
             "attrinfo": [],
             "join_attrs": [
                 {
-                    "name": "top",
+                    "name": "top",  # means I0 entry
                     "attrinfo": [{"name": "val"}, {"name": "ref"}],
                     "join_attrs": [{
-                        "name": "ref",
+                        "name": "ref",  # means I1 entry
                         "attrinfo": [{"name": "text"}, {"name": "ref"}],
                         "join_attrs": [{
-                            "name": "ref",
+                            "name": "ref",  # means I2 entry
                             "attrinfo": [{"name": "text"}],
                             "join_attrs": [],
                         }]
@@ -334,13 +334,17 @@ class ViewTest(BaseViewTest):
             "/entry/api/v2/advanced_search/", json.dumps(params), "application/json"
         )
         self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json()["count"], 1)
 
-        #self.assertEqual(resp.json()["entry"]["name"], entry.name)
-        #self.assertEqual(resp.json()["entry"]["id"], entry.id)
-
-        print("[onix-test(00)] %s" % resp.json())
-        for v in resp.json()["values"]:
-            print("  [onix-test(10)] %s" % v["entry"]["name"])
-
-            for name, value in v["attrs"].items():
-                print("    [onix-test(20)] %s: %s" % (name, str(value)))
+        # This checks returned value has specified recursive join_attr results
+        tgt_info = resp.json()["values"][0]
+        self.assertEqual(tgt_info["entity"]["name"], entity.name)
+        self.assertEqual(tgt_info["entity"]["id"], entity.id)
+        self.assertEqual(tgt_info["attrs"], {
+            "top": {"is_readable": True, "type": AttrType.OBJECT, "value": {'as_object': {'id': item0.id, 'name': item0.name}}},
+            "top.val": {'is_readable': True, 'type': AttrType.STRING, 'value': {'as_string': 'hoge'}},
+            "top.ref": {'is_readable': True, 'type': AttrType.OBJECT, 'value': {'as_object': {'id': item1.id, 'name': item1.name}}},
+            "top.ref.ref": {'is_readable': True, 'type': AttrType.OBJECT, 'value': {'as_object': {'id': item2.id, 'name': item2.name}}},
+            "top.ref.text": {'is_readable': True, 'type': AttrType.TEXT, 'value': {'as_string': 'fuga'}},
+            "top.ref.ref.text": {'is_readable': True, 'type': AttrType.TEXT, 'value': {'as_string': 'puyo'}},
+        })
