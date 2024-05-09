@@ -290,16 +290,24 @@ class ViewTest(BaseViewTest):
         # Create items that has following referral structure
         # entry.top -> I0(.ref) -> I1(.ref) -> I2.text.puyo
         item2 = self.add_entry(self.user, "I2", self.ref_entity, values={"text": "puyo"})
-        item1 = self.add_entry(self.user, "I1", self.ref_entity, values={
-            "ref": item2,
-            "text": "fuga",
-        })
+        item1 = self.add_entry(
+            self.user,
+            "I1",
+            self.ref_entity,
+            values={
+                "ref": item2,
+                "text": "fuga",
+            },
+        )
         item0 = self.add_entry(
-            self.user, "I0", self.ref_entity, values={
+            self.user,
+            "I0",
+            self.ref_entity,
+            values={
                 "val": "hoge",
                 "ref": item1,
                 "refs": [item2],
-            }
+            },
         )
 
         entry = self.add_entry(
@@ -317,16 +325,43 @@ class ViewTest(BaseViewTest):
             "join_attrs": [
                 {
                     "name": "top",  # means I0 entry
-                    "attrinfo": [{"name": "val"}, {"name": "ref"}],
-                    "join_attrs": [{
-                        "name": "ref",  # means I1 entry
-                        "attrinfo": [{"name": "text"}, {"name": "ref"}],
-                        "join_attrs": [{
-                            "name": "ref",  # means I2 entry
-                            "attrinfo": [{"name": "text"}],
-                            "join_attrs": [],
-                        }]
-                    }],
+                    "attrinfo": [
+                        {"name": "val", "filter_key": int(FilterKey.CLEARED), "keyword": ""},
+                        {"name": "ref", "filter_key": int(FilterKey.CLEARED), "keyword": ""},
+                    ],
+                    "join_attrs": [
+                        {
+                            "name": "ref",  # means I1 entry
+                            "attrinfo": [
+                                {
+                                    "name": "text",
+                                    "filter_key": int(FilterKey.CLEARED),
+                                    "keyword": "",
+                                },
+                                {
+                                    "name": "ref",
+                                    "filter_key": int(FilterKey.CLEARED),
+                                    "keyword": "",
+                                },
+                            ],
+                            "join_attrs": [
+                                {
+                                    "name": "ref",  # means I2 entry
+                                    "attrinfo": [
+                                        {
+                                            "name": "text",
+                                            "filter_key": int(FilterKey.CLEARED),
+                                            "keyword": "",
+                                        }
+                                    ],
+                                    "join_attrs": [],
+                                    "offset": 0,
+                                }
+                            ],
+                            "offset": 0,
+                        }
+                    ],
+                    "offset": 0,
                 },
             ],
         }
@@ -340,11 +375,139 @@ class ViewTest(BaseViewTest):
         tgt_info = resp.json()["values"][0]
         self.assertEqual(tgt_info["entity"]["name"], entity.name)
         self.assertEqual(tgt_info["entity"]["id"], entity.id)
-        self.assertEqual(tgt_info["attrs"], {
-            "top": {"is_readable": True, "type": AttrType.OBJECT, "value": {'as_object': {'id': item0.id, 'name': item0.name}}},
-            "top.val": {'is_readable': True, 'type': AttrType.STRING, 'value': {'as_string': 'hoge'}},
-            "top.ref": {'is_readable': True, 'type': AttrType.OBJECT, 'value': {'as_object': {'id': item1.id, 'name': item1.name}}},
-            "top.ref.ref": {'is_readable': True, 'type': AttrType.OBJECT, 'value': {'as_object': {'id': item2.id, 'name': item2.name}}},
-            "top.ref.text": {'is_readable': True, 'type': AttrType.TEXT, 'value': {'as_string': 'fuga'}},
-            "top.ref.ref.text": {'is_readable': True, 'type': AttrType.TEXT, 'value': {'as_string': 'puyo'}},
-        })
+        self.assertEqual(
+            tgt_info["attrs"],
+            {
+                "top": {
+                    "is_readable": True,
+                    "type": AttrType.OBJECT,
+                    "value": {"as_object": {"id": item0.id, "name": item0.name}},
+                },
+                "top.val": {
+                    "is_readable": True,
+                    "type": AttrType.STRING,
+                    "value": {"as_string": "hoge"},
+                },
+                "top.ref": {
+                    "is_readable": True,
+                    "type": AttrType.OBJECT,
+                    "value": {"as_object": {"id": item1.id, "name": item1.name}},
+                },
+                "top.ref.ref": {
+                    "is_readable": True,
+                    "type": AttrType.OBJECT,
+                    "value": {"as_object": {"id": item2.id, "name": item2.name}},
+                },
+                "top.ref.text": {
+                    "is_readable": True,
+                    "type": AttrType.TEXT,
+                    "value": {"as_string": "fuga"},
+                },
+                "top.ref.ref.text": {
+                    "is_readable": True,
+                    "type": AttrType.TEXT,
+                    "value": {"as_string": "puyo"},
+                },
+            },
+        )
+
+    def test_recursive_join_attr_with_wrong_attrinfo(self):
+        entity: Entity = self.create_entity(
+            **{
+                "user": self.user,
+                "name": "entity",
+                "attrs": [
+                    {"name": "top", "type": AttrType.OBJECT, "ref": self.ref_entity},
+                ],
+            }
+        )
+        # Create items that has following referral structure
+        # entry.top -> I0(.ref) -> I1(.ref) -> I2.text.puyo
+        item2 = self.add_entry(self.user, "I2", self.ref_entity, values={"text": "puyo"})
+        item1 = self.add_entry(
+            self.user,
+            "I1",
+            self.ref_entity,
+            values={
+                "ref": item2,
+                "text": "fuga",
+            },
+        )
+        item0 = self.add_entry(
+            self.user,
+            "I0",
+            self.ref_entity,
+            values={
+                "val": "hoge",
+                "ref": item1,
+                "refs": [item2],
+            },
+        )
+
+        entry = self.add_entry(
+            self.user,
+            "entry",
+            entity,
+            values={
+                "top": item0,
+            },
+        )
+
+        params = {
+            "entities": [entity.id],
+            "attrinfo": [],
+            "join_attrs": [
+                {
+                    "name": "top",  # means I0 entry
+                    "attrinfo": [
+                        {"name": "val", "filter_key": int(FilterKey.CLEARED), "keyword": ""},
+                        {"name": "ref", "filter_key": int(FilterKey.CLEARED), "keyword": ""},
+                    ],
+                    "join_attrs": [
+                        {
+                            "name": "ref",  # means I1 entry
+                            "attrinfo": [
+                                {
+                                    "name": "text",
+                                    "filter_key": int(FilterKey.CLEARED),
+                                    "keyword": "",
+                                },
+                                {
+                                    "name": "hoge",
+                                    "filter_key": int(FilterKey.CLEARED),
+                                    "keyword": "",
+                                },
+                            ],
+                            "join_attrs": [
+                                {
+                                    "name": "ref",  # means I2 entry
+                                    "attrinfo": [
+                                        {
+                                            "name": "text",
+                                            "filter_key": int(FilterKey.CLEARED),
+                                            "keyword": "",
+                                        }
+                                    ],
+                                    "join_attrs": [],
+                                    "offset": 0,
+                                }
+                            ],
+                            "offset": 0,
+                        }
+                    ],
+                    "offset": 0,
+                },
+            ],
+        }
+        resp = self.client.post(
+            "/entry/api/v2/advanced_search/", json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.json(),
+            {
+                "non_field_errors": [
+                    {"message": "The specified attrinfo(hoge) does not exist", "code": "AE-121000"}
+                ]
+            },
+        )

@@ -1,4 +1,4 @@
-from typing import Any, Dict, Literal, Optional
+from typing import Any, Literal, Optional
 
 from django.db.models import Prefetch
 from drf_spectacular.utils import extend_schema_field, extend_schema_serializer
@@ -62,26 +62,27 @@ class AdvancedSearchResultAttrInfoParams(BaseModel):
     name: str
     filter_key: FilterKey
     keyword: str
+    type: int = 0
 
 
 class AdvancedSearchJoinAttrInfoParams(BaseModel):
     name: str
     offset: int
-    attrinfo: AdvancedSearchResultAttrInfoParams
-    join_attrs: list[dict]
+    attrinfo: list[AdvancedSearchResultAttrInfoParams]
+    join_attrs: list["AdvancedSearchJoinAttrInfoParams"]
 
 
 class AdvancedSearchParams(BaseModel):
     entities: list[int]
-    join_attrs: AdvancedSearchJoinAttrInfoParams
-    # entry_name = serializers.CharField(allow_blank=True, default="")
-    # attrinfo = AdvancedSearchResultAttrInfoSerializer(many=True)
-    # has_referral = serializers.BooleanField(default=False)
-    # referral_name = serializers.CharField(required=False, allow_blank=True)
-    # is_output_all = serializers.BooleanField(default=True)
-    # is_all_entities = serializers.BooleanField(default=False)
-    # entry_limit = serializers.IntegerField(default=CONFIG_ENTRY.MAX_LIST_ENTRIES)
-    # entry_offset = serializers.IntegerField(default=0)
+    entry_name: str
+    attrinfo: list[AdvancedSearchResultAttrInfoParams]
+    join_attrs: list[AdvancedSearchJoinAttrInfoParams]
+    has_referral: bool
+    referral_name: str = ""
+    is_output_all: bool
+    is_all_entities: bool
+    entry_limit: int
+    entry_offset: int
 
 
 class EntityAttributeType(TypedDict):
@@ -1159,6 +1160,7 @@ class AdvancedSearchJoinAttrInfoSerializer(serializers.Serializer):
     offset = serializers.IntegerField(default=0)
     attrinfo = AdvancedSearchResultAttrInfoSerializer(many=True)
     join_attrs = serializers.ListField(child=serializers.DictField(), required=False)
+    # join_attrs = AdvancedSearchJoinAttrInfoSerializer(many=True, required=False)
 
 
 class AdvancedSearchSerializer(serializers.Serializer):
@@ -1184,8 +1186,38 @@ class AdvancedSearchSerializer(serializers.Serializer):
         return attrs
 
     def validate(self, params: AdvancedSearchParams):
-        print(params)
-        return params
+        advanced_search_params = AdvancedSearchParams(**params)
+
+        def _insert_type_to_joinattr(entities, join_attrs: list[AdvancedSearchJoinAttrInfoParams]):
+            for join_attr in join_attrs:
+                join_attr_entity_attrs = EntityAttr.objects.filter(
+                    name=join_attr.name, parent_entity__in=entities
+                )
+                referral_entities = Entity.objects.filter(
+                    id__in=sum(
+                        [[y.id for y in x.referral.all()] for x in join_attr_entity_attrs], []
+                    )
+                )
+                referral_attrs = EntityAttr.objects.filter(parent_entity__in=referral_entities)
+
+                for attr_info in join_attr.attrinfo:
+                    for info in referral_attrs:
+                        if attr_info.name == info.name:
+                            attr_info.type = info.type
+                            break
+
+                    if attr_info.type == 0:
+                        raise ValidationError(
+                            f"The specified attrinfo({attr_info.name}) does not exist"
+                        )
+
+                # insert type parameter recursively
+                if join_attr.join_attrs is not None:
+                    _insert_type_to_joinattr(referral_entities, join_attr.join_attrs)
+
+        _insert_type_to_joinattr(advanced_search_params.entities, advanced_search_params.join_attrs)
+
+        return advanced_search_params.model_dump()
 
 
 class AdvancedSearchResultValueAttrSerializer(serializers.Serializer):
