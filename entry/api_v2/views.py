@@ -45,6 +45,7 @@ from entry.api_v2.serializers import (
 from entry.models import Attribute, AttributeValue, Entry
 from entry.settings import CONFIG
 from entry.settings import CONFIG as ENTRY_CONFIG
+from entry.tasks import ExportTaskParams
 from group.models import Group
 from job.models import Job, JobOperation, JobStatus
 from role.models import Role
@@ -667,15 +668,14 @@ class EntryExportAPI(generics.GenericAPIView):
                 "Parameters in post body is invalid", status=status.HTTP_400_BAD_REQUEST
             )
 
-        job_params = {
-            "export_format": serializer.validated_data["format"],
-            "target_id": entity_id,
-        }
+        job_params = ExportTaskParams(
+            export_format=serializer.validated_data["format"], target_id=entity_id
+        )
 
         # check whether same job is sent
         job_status_not_finished = [JobStatus.PREPARING, JobStatus.PROCESSING]
         if (
-            Job.get_job_with_params(request.user, job_params)
+            Job.get_job_with_params(request.user, job_params.dict())
             .filter(status__in=job_status_not_finished)
             .exists()
         ):
@@ -693,9 +693,9 @@ class EntryExportAPI(generics.GenericAPIView):
         job = Job.new_export_v2(
             request.user,
             **{
-                "text": "entry_%s.%s" % (entity.name, job_params["export_format"]),
+                "text": "entry_%s.%s" % (entity.name, str(job_params.export_format)),
                 "target": entity,
-                "params": job_params,
+                "params": job_params.dict(),
             },
         )
         job.run()
