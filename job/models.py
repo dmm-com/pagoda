@@ -285,7 +285,7 @@ class Job(models.Model):
         target: Entity | Entry | Any,
         operation: int,
         text: str | None,
-        params,
+        params: str | None = None,
         depend_on=None,
     ) -> "Job":
         t_type = JobTarget.UNKNOWN
@@ -295,7 +295,7 @@ class Job(models.Model):
             t_type = JobTarget.ENTITY
 
         # set dependent job to prevent running tasks simultaneously which set to target same one.
-        dependent_job = None
+        dependent_job: Job | None = None
         if target:
             threshold = datetime.now(pytz.timezone(settings.TIME_ZONE)) - timedelta(
                 seconds=kls._get_job_timeout()
@@ -309,18 +309,18 @@ class Job(models.Model):
         if dependent_job is None and depend_on is not None:
             dependent_job = depend_on
 
-        params = {
+        job_params = {
             "user": user,
             "target": target,
             "target_type": t_type,
             "status": JobStatus.PREPARING,
             "operation": operation,
             "text": text,
-            "params": params,
+            "params": params if params is not None else "{}",
             "dependent_job": dependent_job,
         }
 
-        return kls.objects.create(**params)
+        return kls.objects.create(**job_params)
 
     @classmethod
     def get_task_module(kls, component: str):
@@ -406,8 +406,8 @@ class Job(models.Model):
         )
 
     @classmethod
-    def new_delete(kls, user: User, target, text="", params={}):
-        return kls._create_new_job(user, target, JobOperation.DELETE_ENTRY, text, params)
+    def new_delete(kls, user: User, target, text=""):
+        return kls._create_new_job(user, target, JobOperation.DELETE_ENTRY, text)
 
     @classmethod
     def new_copy(kls, user: User, target, text="", params={}):
@@ -526,8 +526,8 @@ class Job(models.Model):
         )
 
     @classmethod
-    def new_delete_entity(kls, user: User, target, text="", params={}):
-        return kls._create_new_job(user, target, JobOperation.DELETE_ENTITY, text, params)
+    def new_delete_entity(kls, user: User, target, text=""):
+        return kls._create_new_job(user, target, JobOperation.DELETE_ENTITY, text)
 
     @classmethod
     def new_update_documents(kls, target, text="", params={}):
@@ -543,16 +543,16 @@ class Job(models.Model):
         )
 
     @classmethod
-    def new_notify_create_entry(kls, user: User, target, text="", params={}):
-        return kls._create_new_job(user, target, JobOperation.NOTIFY_CREATE_ENTRY, text, params)
+    def new_notify_create_entry(kls, user: User, target, text=""):
+        return kls._create_new_job(user, target, JobOperation.NOTIFY_CREATE_ENTRY, text)
 
     @classmethod
-    def new_notify_update_entry(kls, user: User, target, text="", params={}):
-        return kls._create_new_job(user, target, JobOperation.NOTIFY_UPDATE_ENTRY, text, params)
+    def new_notify_update_entry(kls, user: User, target, text=""):
+        return kls._create_new_job(user, target, JobOperation.NOTIFY_UPDATE_ENTRY, text)
 
     @classmethod
-    def new_notify_delete_entry(kls, user: User, target, text="", params={}):
-        return kls._create_new_job(user, target, JobOperation.NOTIFY_DELETE_ENTRY, text, params)
+    def new_notify_delete_entry(kls, user: User, target, text=""):
+        return kls._create_new_job(user, target, JobOperation.NOTIFY_DELETE_ENTRY, text)
 
     @classmethod
     def new_invoke_trigger(kls, user: User, target_entry, recv_attrs={}, dependent_job=None):

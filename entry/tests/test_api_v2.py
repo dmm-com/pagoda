@@ -4135,7 +4135,7 @@ class ViewTest(BaseViewTest):
         referrals = referred_entity["entries"][0]["referrals"]
         self.assertEqual(len(referrals), 1)
         self.assertEqual(referrals[0]["entity"], "entity")
-        self.assertEqual(referrals[0]["entries"], "entry")
+        self.assertEqual(referrals[0]["entry"], "entry")
 
     @patch(
         "entry.tasks.export_search_result_v2.delay", Mock(side_effect=tasks.export_search_result_v2)
@@ -4269,11 +4269,19 @@ class ViewTest(BaseViewTest):
             [
                 {
                     "entity": "ref_entity",
-                    "entries": [{"attrs": [{"name": "val", "value": ""}], "name": "r-0"}],
+                    "entries": [
+                        {"attrs": [{"name": "val", "value": ""}], "name": "r-0", "referrals": None}
+                    ],
                 },
                 {
                     "entity": "test-entity",
-                    "entries": [{"attrs": [{"name": "val", "value": "hoge"}], "name": "Entry"}],
+                    "entries": [
+                        {
+                            "attrs": [{"name": "val", "value": "hoge"}],
+                            "name": "Entry",
+                            "referrals": None,
+                        }
+                    ],
                 },
             ],
         )
