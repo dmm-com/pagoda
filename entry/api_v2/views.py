@@ -248,7 +248,6 @@ class AdvancedSearchAPI(generics.GenericAPIView):
                 if entity is None:
                     continue
 
-                print("[onix/_get_joined_resp(10)] name: %s" % join_attr["name"])
                 attr = entity.attrs.filter(name=join_attr["name"], is_active=True).last()
                 if attr is None:
                     continue
@@ -325,7 +324,7 @@ class AdvancedSearchAPI(generics.GenericAPIView):
             # convert search result to dict to be able to handle it without loop
             joined_resp_info = {
                 x["entry"]["id"]: {
-                    "%s.%s" % (base_name, k): v
+                    "%s.%s" % (base_name, k): {**v, "joined_history": attr_history + [join_attr["name"]]}
                     for k, v in x["attrs"].items()
                     if any(_x["name"] == k for _x in join_attr["attrinfo"])
                 }
@@ -336,10 +335,8 @@ class AdvancedSearchAPI(generics.GenericAPIView):
             new_ret_values = []
             joined_ret_values = []
             for resp_result in superior_resp:
-                print("[onix/_combine_joinattr_result(10)] resp_result: %s" % str(resp_result))
                 # joining search result to original one
                 ref_info = resp_result["attrs"].get(join_attr["name"])
-                print("[onix/_combine_joinattr_result(11)] ref_info: %s" % str(ref_info))
 
                 # This get referral Item-ID from joined search result
                 ref_list = _get_ref_id_from_es_result(ref_info)
@@ -370,30 +367,36 @@ class AdvancedSearchAPI(generics.GenericAPIView):
 
         # === End of Function: _combine_joinattr_result() ===
 
-        def _join_combined_results(dst_results, src_results, target_attrnames):
+        def _unite_combined_results(dst_results, src_results, target_attrnames):
             """
             This method joins 2-combined results into one
             """
             for dst_result in dst_results:
                 dst_ref_list = sum([_get_ref_id_from_es_result(x) for x in dst_result["attrs"].values()], [])
                 for cb_result in src_results:
-                    target_ref_id = cb_result["entry"]["id"]
-                    if target_ref_id not in dst_ref_list:
-                        # This is not proper column (Entry) to join attribute combined result
-                        break
+                    for (attrname, attrinfo) in cb_result["attrs"].items():
+                        if attrinfo.get("joined_history") is None:
+                            # When there is no parameter of joined_history, it's no value to unite
+                            continue
 
-                    for tgt_attrname in target_attrnames:
-                        attrinfo = cb_result["attrs"].get(tgt_attrname)
+                        if dst_result["attrs"].get(attrname) is not None:
+                            # It's has alreday registered
+                            continue
 
-                        # set combined attribute infomation from src_result into proper dst_results
-                        dst_result["attrs"][tgt_attrname] = attrinfo
+                        # This checks dst_result is qualified to be joined by whether
+                        # - parent attribute information of attrinfo is existed.
+                        # - it has actual value (the attrinfo that has actual value
+                        #   must have "joined_history").
+                        parent_attrname = ".".join(attrinfo["joined_history"])
+                        dst_parent_attrinfo = dst_result["attrs"].get(parent_attrname, {})
+                        if dst_parent_attrinfo and dst_parent_attrinfo.get("joined_history"):
+                            dst_result["attrs"][attrname] = attrinfo
 
             return dst_results
 
-        # === End of Function: _join_combined_results() ===
+        # === End of Function: _unite_combined_results() ===
 
         def _re_search_by_join_attr(superior_resp, join_attr, attr_history=[]):
-            print("[onix/_re_search_by_join_attr(00)] attr_history: %s" % str(attr_history))
             # NOTE: it's need to stop recursive limit
 
             # get results of Entry.search_entries() with join_attr parameter
@@ -405,30 +408,20 @@ class AdvancedSearchAPI(generics.GenericAPIView):
             combined_results = _combine_joinattr_result(
                 superior_resp["ret_values"], joined_resp["ret_values"], join_attr, attr_history, will_filter_by_joined_attr
             )
-            print("[onix/_re_search_by_join_attr(50)] combined_rsults: %s" % str(combined_results))
 
             # re-search using join_attrs parameter that is specified in join_attrs parameter
             attr_stacks = attr_history + [join_attr["name"]]
-            print("[onix/_re_search_by_join_attr(51)] attr_stacks: %s" % ".".join(attr_stacks))
 
             for co_join_attr in join_attr.get("join_attrs", []):
-                print("[onix/_re_search_by_join_attr(71)] co_join_attr: %s" % str(co_join_attr))
                 _co_results = _re_search_by_join_attr(joined_resp, co_join_attr, attr_stacks)
-                print("[onix/_re_search_by_join_attr(72)] joined_resp: %s" % str(_co_results))
                 if _co_results:
                     # This merge results from both _re_search_by_join_attr(),
                     # which are combined_results and _co_results, into the combined_results.
                     # In this processing, the _combine_joinattr_result() is useless
                     # because _result is the value that is returned from it.
-                    combined_results = _join_combined_results(combined_results, _co_results, [
+                    combined_results = _unite_combined_results(combined_results, _co_results, [
                         ".".join(attr_stacks + [co_join_attr["name"], x["name"]])
                     for x in co_join_attr["attrinfo"]])
-                    print("[onix/_re_search_by_join_attr(73)] combined_results %s" % str(combined_results))
-
-#                    joined_resp["ret_values"] = joined_results
-#                    joined_resp["ret_count"] = len(joined_results)
-
-            print("[onix/_re_search_by_join_attr(99)] combined_results: %s" % str(combined_results))
 
             return combined_results
 
@@ -502,12 +495,9 @@ class AdvancedSearchAPI(generics.GenericAPIView):
         # Additional processing when join_attrs parameter is specified
         for join_attr in join_attrs:
             joined_results = _re_search_by_join_attr(resp, join_attr)
-            print("[onix/post(30)] joined_results: %s" % str(joined_results))
             if joined_results:
                 resp["ret_values"] = joined_results
                 resp["ret_count"] = len(joined_results)
-
-            print("[onix/post(40)] resp: %s" % str(resp))
 
         # convert field values to fit entry retrieve API data type, as a workaround.
         # FIXME should be replaced with DRF serializer etc
