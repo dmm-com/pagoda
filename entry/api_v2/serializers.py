@@ -32,9 +32,27 @@ from user.api_v2.serializers import UserBaseSerializer
 from user.models import User
 
 
-class ExportedEntryAttribute(TypedDict):
+class ExportedEntryAttributeValueObject(BaseModel):
+    entity: str
     name: str
-    value: Any
+
+
+ExportedEntryAttributePrimitiveValue = (
+    str  # includes text, string, date, group, role
+    | bool
+    | ExportedEntryAttributeValueObject
+    | dict[str, ExportedEntryAttributeValueObject | None]
+    | None
+)
+
+ExportedEntryAttributeValue = (
+    ExportedEntryAttributePrimitiveValue | list[ExportedEntryAttributePrimitiveValue]
+)
+
+
+class ExportedEntryAttribute(BaseModel):
+    name: str
+    value: ExportedEntryAttributeValue
 
 
 class ReferralEntry(BaseModel):

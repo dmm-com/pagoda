@@ -29,6 +29,10 @@ from entry.api_v2.serializers import (
     EntryUpdateSerializer,
     ExportedEntityEntries,
     ExportedEntry,
+    ExportedEntryAttribute,
+    ExportedEntryAttributePrimitiveValue,
+    ExportedEntryAttributeValue,
+    ExportedEntryAttributeValueObject,
     ExportTaskParams,
     ReferralEntry,
 )
@@ -211,11 +215,8 @@ def _do_import_entries(job: Job):
 
 
 def _yaml_export_v2(job: Job, values, recv_data: dict, has_referral: bool) -> Optional[io.StringIO]:
-    def _get_attr_value(atype: int, value: dict) -> Any:
+    def _get_attr_primitive_value(atype: int, value: dict) -> ExportedEntryAttributePrimitiveValue:
         match atype:
-            case _ if atype & AttrTypeValue["array"]:
-                return [_get_attr_value(atype ^ AttrTypeValue["array"], x) for x in value]
-
             case AttrType.NAMED_OBJECT:
                 [(key, val)] = value.items()
                 entry: Entry | None = (
@@ -225,10 +226,10 @@ def _yaml_export_v2(job: Job, values, recv_data: dict, has_referral: bool) -> Op
                 )
                 if entry:
                     return {
-                        key: {
-                            "entity": entry.schema.name,
-                            "name": val["name"],
-                        }
+                        key: ExportedEntryAttributeValueObject(
+                            entity=entry.schema.name,
+                            name=val["name"],
+                        )
                     }
                 elif len(key) > 0:
                     return {
@@ -244,10 +245,10 @@ def _yaml_export_v2(job: Job, values, recv_data: dict, has_referral: bool) -> Op
                     else None
                 )
                 if entry:
-                    return {
-                        "entity": entry.schema.name,
-                        "name": value["name"],
-                    }
+                    return ExportedEntryAttributeValueObject(
+                        entity=entry.schema.name,
+                        name=value["name"],
+                    )
                 else:
                     return None
 
@@ -272,6 +273,13 @@ def _yaml_export_v2(job: Job, values, recv_data: dict, has_referral: bool) -> Op
             case _:
                 return value
 
+    def _get_attr_value(atype: int, value: dict) -> ExportedEntryAttributeValue:
+        match atype:
+            case _ if atype & AttrTypeValue["array"]:
+                return [_get_attr_primitive_value(atype ^ AttrTypeValue["array"], x) for x in value]
+            case _:
+                return _get_attr_primitive_value(atype, value)
+
     resp_data: List[ExportedEntityEntries] = []
     for index, entry_info in enumerate(values):
         data = ExportedEntry(
@@ -290,10 +298,10 @@ def _yaml_export_v2(job: Job, values, recv_data: dict, has_referral: bool) -> Op
                     continue
 
                 data.attrs.append(
-                    {
-                        "name": attrinfo["name"],
-                        "value": _get_attr_value(_adata["type"], _adata["value"]),
-                    }
+                    ExportedEntryAttribute(
+                        name=attrinfo["name"],
+                        value=_get_attr_value(_adata["type"], _adata["value"]),
+                    )
                 )
 
         if has_referral is not False:
@@ -718,14 +726,14 @@ def export_entries_v2(self, job: Job):
         attrs = [x.name for x in entity.attrs.filter(is_active=True)]
         writer.writerow(["Name"] + attrs)
 
-        def data2str(data: Any | None) -> str:
+        def data2str(data: ExportedEntryAttributeValue | None) -> str:
             if not data:
                 return ""
             return str(data)
 
         for data in exported_entity[0].entries:
             writer.writerow(
-                [data.name] + [data2str(x["value"]) for x in data.attrs if x["name"] in attrs]
+                [data.name] + [data2str(x.value) for x in data.attrs if x.name in attrs]
             )
     else:
         output = io.StringIO()
