@@ -3,7 +3,7 @@ import json
 import logging
 import os
 import subprocess
-from typing import Any, Optional
+from typing import Any
 
 import environ
 from configurations import Configuration
@@ -460,9 +460,9 @@ class Common(Configuration):
         )
 
     # Dynamic record number limitations on model level validation (None means unlimited)
-    MAX_ENTITIES: Optional[int] = env.int("AIRONE_MAX_ENTITIES", None)
-    MAX_ATTRIBUTES_PER_ENTITY: Optional[int] = env.int("AIRONE_MAX_ATTRIBUTES_PER_ENTITY", None)
-    MAX_ENTRIES: Optional[int] = env.int("AIRONE_MAX_ENTRIES", None)
-    MAX_USERS: Optional[int] = env.int("AIRONE_MAX_USERS", None)
-    MAX_GROUPS: Optional[int] = env.int("AIRONE_MAX_GROUPS", None)
-    MAX_ROLES: Optional[int] = env.int("AIRONE_MAX_ROLES", None)
+    MAX_ENTITIES: int | None = env.int("AIRONE_MAX_ENTITIES", None)
+    MAX_ATTRIBUTES_PER_ENTITY: int | None = env.int("AIRONE_MAX_ATTRIBUTES_PER_ENTITY", None)
+    MAX_ENTRIES: int | None = env.int("AIRONE_MAX_ENTRIES", None)
+    MAX_USERS: int | None = env.int("AIRONE_MAX_USERS", None)
+    MAX_GROUPS: int | None = env.int("AIRONE_MAX_GROUPS", None)
+    MAX_ROLES: int | None = env.int("AIRONE_MAX_ROLES", None)

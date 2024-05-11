@@ -1,6 +1,6 @@
 import math
 from datetime import datetime, timezone
-from typing import Optional, TypedDict
+from typing import TypedDict
 
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
@@ -12,8 +12,8 @@ from job.models import Job
 class JobTarget(TypedDict):
     id: int
     name: str
-    schema_id: Optional[int]
-    schema_name: Optional[str]
+    schema_id: int | None
+    schema_name: str | None
 
 
 class JobTargetSerializer(serializers.Serializer):
@@ -32,7 +32,7 @@ class JobSerializers(serializers.ModelSerializer):
         fields = ["id", "text", "status", "operation", "created_at", "target", "passed_time"]
 
     @extend_schema_field(JobTargetSerializer())
-    def get_target(self, obj: Job) -> Optional[JobTarget]:
+    def get_target(self, obj: Job) -> JobTarget | None:
         if obj.target is not None:
             sub = obj.target.get_subclass_object()
             if isinstance(sub, Entry):
