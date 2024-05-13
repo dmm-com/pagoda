@@ -1,7 +1,6 @@
 import importlib
 import sys
 from datetime import datetime
-from typing import Optional
 
 from django.conf import settings
 from django.contrib.auth.models import Group as DjangoGroup
@@ -21,7 +20,7 @@ class Group(DjangoGroup):
         """
         Override Model.save method of Django
         """
-        max_groups: Optional[int] = settings.MAX_GROUPS
+        max_groups: int | None = settings.MAX_GROUPS
         if max_groups and Group.objects.count() >= max_groups:
             raise RuntimeError("The number of groups is over the limit")
         return super(Group, self).save(*args, **kwargs)

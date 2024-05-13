@@ -1,7 +1,7 @@
 import enum
 import re
 from datetime import datetime
-from typing import Any, NotRequired, Optional, TypedDict
+from typing import Any, NotRequired, TypedDict
 
 from django.conf import settings
 from elasticsearch import Elasticsearch
@@ -216,9 +216,9 @@ class ESS(Elasticsearch):
 def make_query(
     hint_entity: Entity,
     hint_attrs: list[AttrHint],
-    entry_name: Optional[str],
-    hint_referral: Optional[str] = None,
-    hint_referral_entity_id: Optional[int] = None,
+    entry_name: str | None,
+    hint_referral: str | None = None,
+    hint_referral_entity_id: int | None = None,
 ) -> dict[str, str]:
     """Create a search query for Elasticsearch.
 
@@ -863,14 +863,14 @@ def _make_an_attribute_filter(hint: AttrHint, keyword: str) -> dict[str, dict]:
 
 
 def execute_query(
-    query: dict[str, str], size: Optional[int] = None, offset: Optional[int] = None
+    query: dict[str, str], size: int | None = None, offset: int | None = None
 ) -> dict[str, Any]:
     """Run a search query.
 
     Args:
         query (dict[str, str]): Search query
-        size (Optional[int]): Size of search query results
-        offset (Optional[int]): Offset of search query results
+        size (int | None): Size of search query results
+        offset (int | None): Offset of search query results
 
     Raises:
         Exception: If query execution fails, output error details.
@@ -900,7 +900,7 @@ def make_search_results(
     user: User,
     res: dict[str, Any],
     hint_attrs: list[AttrHint],
-    hint_referral: Optional[str],
+    hint_referral: str | None,
     limit: int,
 ) -> AdvancedSearchResults:
     """Acquires and returns the attribute values held by each search result
@@ -1107,7 +1107,7 @@ def make_search_results_for_simple(res: dict[str, Any]) -> dict[str, str]:
     return result
 
 
-def _is_date_check(value: str) -> Optional[tuple[str, datetime]]:
+def _is_date_check(value: str) -> tuple[str, datetime] | None:
     try:
         for delimiter in ["-", "/"]:
             date_format = "%%Y%(del)s%%m%(del)s%%d" % {"del": delimiter}
@@ -1130,7 +1130,7 @@ def _is_date_check(value: str) -> Optional[tuple[str, datetime]]:
     return None
 
 
-def _is_date(value: str) -> Optional[list]:
+def _is_date(value: str) -> list | None:
     # checks all specified value is date format
     result = [_is_date_check(x) for x in value.split(" ") if x]
 

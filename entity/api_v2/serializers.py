@@ -1,6 +1,6 @@
 import collections
 import json
-from typing import Any, Optional, TypedDict
+from typing import Any, TypedDict
 
 import requests
 from django.conf import settings
@@ -132,7 +132,7 @@ class EntityAttrUpdateSerializer(serializers.ModelSerializer):
 
     def validate_id(self, id: int):
         entity: Entity = self.parent.parent.instance
-        entity_attr: Optional[EntityAttr] = entity.attrs.filter(id=id, is_active=True).first()
+        entity_attr: EntityAttr | None = entity.attrs.filter(id=id, is_active=True).first()
         if not entity_attr:
             raise ObjectNotExistsError("Invalid id(%s) object does not exist" % id)
 

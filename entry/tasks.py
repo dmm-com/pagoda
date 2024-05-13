@@ -2,7 +2,7 @@ import csv
 import io
 import json
 from datetime import datetime
-from typing import Any, Callable, List, Optional
+from typing import Any, Callable, List
 
 import yaml
 from django.conf import settings
@@ -122,7 +122,7 @@ def _do_import_entries(job: Job):
 
     # create or update entry
     for index, entry_data in enumerate(import_data):
-        job_notify: Optional[Job] = None
+        job_notify: Job | None = None
         job.text = "Now importing... (progress: [%5d/%5d] for %s)" % (
             index + 1,
             total_count,
@@ -210,7 +210,7 @@ def _do_import_entries(job: Job):
     job.update(status=JobStatus.DONE, text="")
 
 
-def _yaml_export_v2(job: Job, values, recv_data: dict, has_referral: bool) -> Optional[io.StringIO]:
+def _yaml_export_v2(job: Job, values, recv_data: dict, has_referral: bool) -> io.StringIO | None:
     def _get_attr_value(atype: int, value: dict) -> Any:
         match atype:
             case _ if atype & AttrTypeValue["array"]:
@@ -586,7 +586,7 @@ def import_entries_v2(self, job: Job) -> tuple[JobStatus, str, None] | None:
             return None
 
         entry_data["schema"] = entity
-        entry: Optional[Entry] = Entry.objects.filter(
+        entry: Entry | None = Entry.objects.filter(
             name=entry_data["name"], schema=entity, is_active=True
         ).first()
         if entry:
@@ -750,8 +750,8 @@ def export_search_result_v2(self, job: Job):
     params: dict = serializer.validated_data
 
     has_referral: bool = params.get("has_referral", False)
-    referral_name: Optional[str] = params.get("referral_name")
-    entry_name: Optional[str] = params.get("entry_name")
+    referral_name: str | None = params.get("referral_name")
+    entry_name: str | None = params.get("entry_name")
     if has_referral and referral_name is None:
         referral_name = ""
 
@@ -764,7 +764,7 @@ def export_search_result_v2(self, job: Job):
         referral_name,
     )
 
-    output: Optional[io.StringIO] = None
+    output: io.StringIO | None = None
     if params["export_style"] == "yaml":
         output = _yaml_export_v2(job, resp["ret_values"], params, has_referral)
     elif params["export_style"] == "csv":

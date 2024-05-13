@@ -1,5 +1,3 @@
-from typing import Optional
-
 from django.contrib.auth.forms import UserModel
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sites.shortcuts import get_current_site
@@ -140,7 +138,7 @@ class UserImportAPI(generics.GenericAPIView):
             for group_name in user_data["groups"].split(","):
                 if group_name == "":
                     continue
-                new_group: Optional[Group] = Group.objects.filter(name=group_name).first()
+                new_group: Group | None = Group.objects.filter(name=group_name).first()
                 if not new_group:
                     return Response(
                         "Specified group does not exist(user:%s, group:%s)"

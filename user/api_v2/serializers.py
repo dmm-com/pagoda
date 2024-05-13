@@ -1,5 +1,5 @@
 from datetime import timedelta
-from typing import Dict, Optional, TypedDict
+from typing import Dict, TypedDict
 
 from django.contrib.auth import password_validation
 from django.contrib.auth.tokens import default_token_generator
@@ -98,7 +98,7 @@ class UserRetrieveSerializer(UserBaseSerializer):
         ]
 
     @extend_schema_field(UserRetrieveTokenSerializer(required=False))
-    def get_token(self, obj: User) -> Optional[UserRetrieveTokenSerializer.UserTokenTypedDict]:
+    def get_token(self, obj: User) -> UserRetrieveTokenSerializer.UserTokenTypedDict | None:
         current_user = self.context["request"].user
         if (current_user.id == obj.id or current_user.is_superuser) and obj.token:
             return {
@@ -223,7 +223,7 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
 
     token_generator = default_token_generator
 
-    def _get_user(self) -> Optional[User]:
+    def _get_user(self) -> User | None:
         try:
             uidb64 = self.initial_data.get("uidb64")
             uid = urlsafe_base64_decode(uidb64).decode()
