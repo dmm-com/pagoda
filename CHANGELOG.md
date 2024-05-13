@@ -8,6 +8,12 @@
 
 ### Fixed
 
+## v3.88.0
+
+### Added
+* Added pydantic model in export v2.
+  Contributed by @syucream
+
 ## v3.87.0
 
 ### Added
