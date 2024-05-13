@@ -1,8 +1,8 @@
 import json
 
 import mock
+from django.conf import settings
 
-from airone import settings
 from airone.lib.event_notification import (
     notify_entry_create,
     notify_entry_delete,

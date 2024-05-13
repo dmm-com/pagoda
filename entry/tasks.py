@@ -2,7 +2,7 @@ import csv
 import io
 import json
 from datetime import datetime
-from typing import Any, List, NotRequired, Optional, TypedDict
+from typing import Any, Callable, List, Optional
 
 import yaml
 from django.conf import settings
@@ -27,28 +27,16 @@ from entry.api_v2.serializers import (
     EntryCreateSerializer,
     EntryImportEntitySerializer,
     EntryUpdateSerializer,
+    ExportedEntityEntries,
+    ExportedEntry,
+    ExportTaskParams,
+    ReferralEntry,
 )
 from entry.models import Attribute, Entry
 from group.models import Group
 from job.models import Job, JobStatus
 from role.models import Role
 from user.models import User
-
-
-class ExportedEntryAttribute(TypedDict):
-    name: str
-    value: Any
-
-
-class ExportedEntry(TypedDict):
-    name: str
-    attrs: list[ExportedEntryAttribute]
-    referrals: NotRequired[list[dict]]  # same as ExportedEntityEntries, avoiding cycle definition
-
-
-class ExportedEntityEntries(TypedDict):
-    entity: str
-    entries: list[ExportedEntry]
 
 
 def _merge_referrals_by_index(ref_list, name_list):
@@ -286,10 +274,10 @@ def _yaml_export_v2(job: Job, values, recv_data: dict, has_referral: bool) -> Op
 
     resp_data: List[ExportedEntityEntries] = []
     for index, entry_info in enumerate(values):
-        data: ExportedEntry = {
-            "name": entry_info["entry"]["name"],
-            "attrs": [],
-        }
+        data = ExportedEntry(
+            name=entry_info["entry"]["name"],
+            attrs=[],
+        )
 
         # Abort processing when job is canceled
         if index % Job.STATUS_CHECK_FREQUENCY == 0 and job.is_canceled():
@@ -301,7 +289,7 @@ def _yaml_export_v2(job: Job, values, recv_data: dict, has_referral: bool) -> Op
                 if "value" not in _adata:
                     continue
 
-                data["attrs"].append(
+                data.attrs.append(
                     {
                         "name": attrinfo["name"],
                         "value": _get_attr_value(_adata["type"], _adata["value"]),
@@ -309,27 +297,33 @@ def _yaml_export_v2(job: Job, values, recv_data: dict, has_referral: bool) -> Op
                 )
 
         if has_referral is not False:
-            data["referrals"] = [
-                {
-                    "entity": x["schema"]["name"],
-                    "entry": x["name"],
-                }
+            data.referrals = [
+                ReferralEntry(
+                    entity=x["schema"]["name"],
+                    entry=x["name"],
+                )
                 for x in entry_info["referrals"]
             ]
 
-        found = next(filter(lambda x: x["entity"] == entry_info["entity"]["name"], resp_data), None)
+        found = next(filter(lambda x: x.entity == entry_info["entity"]["name"], resp_data), None)
         if found:
-            found["entries"].append(data)
+            found.entries.append(data)
         else:
             resp_data.append(
-                {
-                    "entity": entry_info["entity"]["name"],
-                    "entries": [data],
-                }
+                ExportedEntityEntries(
+                    entity=entry_info["entity"]["name"],
+                    entries=[data],
+                )
             )
 
     output = io.StringIO()
-    output.write(yaml.dump(resp_data, default_flow_style=False, allow_unicode=True))
+    output.write(
+        yaml.dump(
+            [x.dict() for x in resp_data],
+            default_flow_style=False,
+            allow_unicode=True,
+        )
+    )
 
     return output
 
@@ -686,8 +680,8 @@ def export_entries(self, job: Job):
 def export_entries_v2(self, job: Job):
     user = job.user
     entity = Entity.objects.get(id=job.target.id)
-    params = json.loads(job.params)
-    with_entity = params["export_format"] != "csv"
+    params = ExportTaskParams.model_validate_json(job.params)
+    with_entity = params.export_format != "csv"
 
     exported_entity: list[ExportedEntityEntries] = []
     exported_entries: list[ExportedEntry] = []
@@ -712,15 +706,10 @@ def export_entries_v2(self, job: Job):
         # increment loop counter
         export_item_counter += 1
 
-    exported_entity.append(
-        {
-            "entity": entity.name,
-            "entries": exported_entries,
-        }
-    )
+    exported_entity.append(ExportedEntityEntries(entity=entity.name, entries=exported_entries))
 
     output = None
-    if params["export_format"] == "csv":
+    if params.export_format == "csv":
         # newline is blank because csv module performs universal newlines
         # https://docs.python.org/ja/3/library/csv.html#id3
         output = io.StringIO(newline="")
@@ -734,15 +723,15 @@ def export_entries_v2(self, job: Job):
                 return ""
             return str(data)
 
-        for data in exported_entity[0]["entries"]:
+        for data in exported_entity[0].entries:
             writer.writerow(
-                [data["name"]] + [data2str(x["value"]) for x in data["attrs"] if x["name"] in attrs]
+                [data.name] + [data2str(x["value"]) for x in data.attrs if x["name"] in attrs]
             )
     else:
         output = io.StringIO()
         output.write(
             yaml.dump(
-                exported_entity,
+                [x.dict() for x in exported_entity],
                 default_flow_style=False,
                 allow_unicode=True,
             )
@@ -795,7 +784,9 @@ def register_referrals(self, job: Job):
         [r.register_es() for r in entry.get_referred_objects()]
 
 
-def _notify_event(notification_method, object_id, user) -> tuple[JobStatus, str, None] | None:
+def _notify_event(
+    notification_method: Callable[[Entry, User], None], object_id: int, user: User
+) -> tuple[JobStatus, str, None] | None:
     entry = Entry.objects.filter(id=object_id).first()
     if not entry:
         return JobStatus.ERROR, "Failed to get job.target (%s)" % object_id, None

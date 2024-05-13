@@ -1,8 +1,8 @@
+import enum
 import json
 import pickle
 import time
 from datetime import date, datetime, timedelta
-from enum import IntEnum
 from importlib import import_module
 from typing import Any
 
@@ -26,7 +26,8 @@ def _support_time_default(o):
     raise TypeError(repr(o) + " is not JSON serializable")
 
 
-class JobOperation(IntEnum):
+@enum.unique
+class JobOperation(enum.IntEnum):
     # Constant to describes status of each jobs
     CREATE_ENTRY = 1
     EDIT_ENTRY = 2
@@ -59,13 +60,15 @@ class JobOperation(IntEnum):
     DELETE_ENTRY_V2 = 29
 
 
-class JobTarget(IntEnum):
+@enum.unique
+class JobTarget(enum.IntEnum):
     UNKNOWN = 0
     ENTRY = 1
     ENTITY = 2
 
 
-class JobStatus(IntEnum):
+@enum.unique
+class JobStatus(enum.IntEnum):
     PREPARING = 1
     DONE = 2
     ERROR = 3
@@ -92,10 +95,10 @@ class Job(models.Model):
     DEFAULT_JOB_TIMEOUT = 86400
 
     # This caches each task module to be able to call them from Job instance
-    _TASK_MODULE = {}
+    _TASK_MODULE: dict[str, Any] = {}
 
     # This hash table describes operation status value and operation processing
-    _METHOD_TABLE = {}
+    _METHOD_TABLE: dict[JobOperation, Any] = {}
 
     # In some jobs sholdn't make user aware of existence because of user experience
     # (e.g. re-registrating elasticsearch data of entries which refer to changed name entry).
@@ -157,7 +160,7 @@ class Job(models.Model):
     # When this has another job, this job have to wait until it would be finished.
     dependent_job = models.ForeignKey("Job", null=True, on_delete=models.SET_NULL)
 
-    def may_schedule(self):
+    def may_schedule(self) -> bool:
         # Operations that can run in parallel exclude checking for dependent jobs
         if self.operation in self.PARALLELIZABLE_OPERATIONS:
             return False
@@ -175,7 +178,7 @@ class Job(models.Model):
         else:
             return False
 
-    def is_timeout(self):
+    def is_timeout(self) -> bool:
         # Sync updated_at time information with the data which is stored in database
         self.refresh_from_db(fields=["updated_at"])
 
@@ -183,7 +186,7 @@ class Job(models.Model):
 
         return datetime.now(pytz.timezone(settings.TIME_ZONE)) > task_expiry
 
-    def is_finished(self):
+    def is_finished(self) -> bool:
         # Sync status flag information with the data which is stored in database
         self.refresh_from_db(fields=["status"])
 
@@ -198,13 +201,13 @@ class Job(models.Model):
 
         return self.status in finished_status or self.is_timeout()
 
-    def is_canceled(self):
+    def is_canceled(self) -> bool:
         # Sync status flag information with the data which is stored in database
         self.refresh_from_db(fields=["status"])
 
         return self.status == JobStatus.CANCELED
 
-    def proceed_if_ready(self):
+    def proceed_if_ready(self) -> bool:
         # In this case, job is finished (might be canceled or proceeded same job by other process)
         if self.is_finished() or self.status == JobStatus.PROCESSING:
             return False
@@ -282,7 +285,7 @@ class Job(models.Model):
         target: Entity | Entry | Any,
         operation: int,
         text: str | None,
-        params,
+        params: str | None = None,
         depend_on=None,
     ) -> "Job":
         t_type = JobTarget.UNKNOWN
@@ -292,7 +295,7 @@ class Job(models.Model):
             t_type = JobTarget.ENTITY
 
         # set dependent job to prevent running tasks simultaneously which set to target same one.
-        dependent_job = None
+        dependent_job: Job | None = None
         if target:
             threshold = datetime.now(pytz.timezone(settings.TIME_ZONE)) - timedelta(
                 seconds=kls._get_job_timeout()
@@ -306,21 +309,21 @@ class Job(models.Model):
         if dependent_job is None and depend_on is not None:
             dependent_job = depend_on
 
-        params = {
+        job_params = {
             "user": user,
             "target": target,
             "target_type": t_type,
             "status": JobStatus.PREPARING,
             "operation": operation,
             "text": text,
-            "params": params,
+            "params": params if params is not None else "{}",
             "dependent_job": dependent_job,
         }
 
-        return kls.objects.create(**params)
+        return kls.objects.create(**job_params)
 
     @classmethod
-    def get_task_module(kls, component):
+    def get_task_module(kls, component: str):
         if component not in kls._TASK_MODULE:
             kls._TASK_MODULE[component] = import_module(component)
 
@@ -371,19 +374,19 @@ class Job(models.Model):
         return kls._METHOD_TABLE
 
     @classmethod
-    def register_method_table(kls, operation, method):
+    def register_method_table(kls, operation: JobOperation, method):
         if operation not in kls.method_table():
             kls._METHOD_TABLE[operation] = method
 
     @classmethod
-    def get_job_with_params(kls, user, params):
+    def get_job_with_params(kls, user: User, params):
         return kls.objects.filter(
             user=user,
             params=json.dumps(params, default=_support_time_default, sort_keys=True),
         )
 
     @classmethod
-    def new_create(kls, user, target, text="", params={}):
+    def new_create(kls, user: User, target, text="", params={}):
         return kls._create_new_job(
             user,
             target,
@@ -393,7 +396,7 @@ class Job(models.Model):
         )
 
     @classmethod
-    def new_edit(kls, user, target, text="", params={}):
+    def new_edit(kls, user: User, target, text="", params={}):
         return kls._create_new_job(
             user,
             target,
@@ -403,11 +406,11 @@ class Job(models.Model):
         )
 
     @classmethod
-    def new_delete(kls, user, target, text="", params={}):
-        return kls._create_new_job(user, target, JobOperation.DELETE_ENTRY, text, params)
+    def new_delete(kls, user: User, target, text=""):
+        return kls._create_new_job(user, target, JobOperation.DELETE_ENTRY, text)
 
     @classmethod
-    def new_copy(kls, user, target, text="", params={}):
+    def new_copy(kls, user: User, target, text="", params={}):
         return kls._create_new_job(
             user,
             target,
@@ -417,7 +420,7 @@ class Job(models.Model):
         )
 
     @classmethod
-    def new_do_copy(kls, user, target, text="", params={}):
+    def new_do_copy(kls, user: User, target, text="", params={}):
         return kls._create_new_job(
             user,
             target,
@@ -427,7 +430,7 @@ class Job(models.Model):
         )
 
     @classmethod
-    def new_import(kls, user, entity, text="", params={}):
+    def new_import(kls, user: User, entity, text="", params={}):
         return kls._create_new_job(
             user,
             entity,
@@ -437,7 +440,7 @@ class Job(models.Model):
         )
 
     @classmethod
-    def new_import_v2(kls, user, entity, text="", params={}) -> "Job":
+    def new_import_v2(kls, user: User, entity, text="", params={}) -> "Job":
         return kls._create_new_job(
             user,
             entity,
@@ -447,7 +450,7 @@ class Job(models.Model):
         )
 
     @classmethod
-    def new_export(kls, user, target=None, text="", params={}):
+    def new_export(kls, user: User, target=None, text="", params={}):
         return kls._create_new_job(
             user,
             target,
@@ -457,7 +460,7 @@ class Job(models.Model):
         )
 
     @classmethod
-    def new_export_v2(kls, user, target=None, text="", params={}):
+    def new_export_v2(kls, user: User, target=None, text="", params={}):
         return kls._create_new_job(
             user,
             target,
@@ -467,11 +470,11 @@ class Job(models.Model):
         )
 
     @classmethod
-    def new_restore(kls, user, target, text="", params={}):
+    def new_restore(kls, user: User, target, text="", params={}):
         return kls._create_new_job(user, target, JobOperation.RESTORE_ENTRY, text, params)
 
     @classmethod
-    def new_export_search_result(kls, user, target=None, text="", params={}):
+    def new_export_search_result(kls, user: User, target=None, text="", params={}):
         return kls._create_new_job(
             user,
             target,
@@ -481,7 +484,7 @@ class Job(models.Model):
         )
 
     @classmethod
-    def new_export_search_result_v2(kls, user, target=None, text="", params={}):
+    def new_export_search_result_v2(kls, user: User, target=None, text="", params={}):
         return kls._create_new_job(
             user,
             target,
@@ -492,7 +495,7 @@ class Job(models.Model):
 
     @classmethod
     def new_register_referrals(
-        kls, user, target, operation_value=JobOperation.REGISTER_REFERRALS, params={}
+        kls, user: User, target, operation_value=JobOperation.REGISTER_REFERRALS, params={}
     ):
         return kls._create_new_job(
             user,
@@ -503,7 +506,7 @@ class Job(models.Model):
         )
 
     @classmethod
-    def new_create_entity(kls, user, target, text="", params={}):
+    def new_create_entity(kls, user: User, target, text="", params={}):
         return kls._create_new_job(
             user,
             target,
@@ -513,7 +516,7 @@ class Job(models.Model):
         )
 
     @classmethod
-    def new_edit_entity(kls, user, target, text="", params={}):
+    def new_edit_entity(kls, user: User, target, text="", params={}):
         return kls._create_new_job(
             user,
             target,
@@ -523,8 +526,8 @@ class Job(models.Model):
         )
 
     @classmethod
-    def new_delete_entity(kls, user, target, text="", params={}):
-        return kls._create_new_job(user, target, JobOperation.DELETE_ENTITY, text, params)
+    def new_delete_entity(kls, user: User, target, text=""):
+        return kls._create_new_job(user, target, JobOperation.DELETE_ENTITY, text)
 
     @classmethod
     def new_update_documents(kls, target, text="", params={}):
@@ -540,19 +543,19 @@ class Job(models.Model):
         )
 
     @classmethod
-    def new_notify_create_entry(kls, user, target, text="", params={}):
-        return kls._create_new_job(user, target, JobOperation.NOTIFY_CREATE_ENTRY, text, params)
+    def new_notify_create_entry(kls, user: User, target, text=""):
+        return kls._create_new_job(user, target, JobOperation.NOTIFY_CREATE_ENTRY, text)
 
     @classmethod
-    def new_notify_update_entry(kls, user, target, text="", params={}):
-        return kls._create_new_job(user, target, JobOperation.NOTIFY_UPDATE_ENTRY, text, params)
+    def new_notify_update_entry(kls, user: User, target, text=""):
+        return kls._create_new_job(user, target, JobOperation.NOTIFY_UPDATE_ENTRY, text)
 
     @classmethod
-    def new_notify_delete_entry(kls, user, target, text="", params={}):
-        return kls._create_new_job(user, target, JobOperation.NOTIFY_DELETE_ENTRY, text, params)
+    def new_notify_delete_entry(kls, user: User, target, text=""):
+        return kls._create_new_job(user, target, JobOperation.NOTIFY_DELETE_ENTRY, text)
 
     @classmethod
-    def new_invoke_trigger(kls, user, target_entry, recv_attrs={}, dependent_job=None):
+    def new_invoke_trigger(kls, user: User, target_entry, recv_attrs={}, dependent_job=None):
         return kls._create_new_job(
             user,
             target_entry,
@@ -563,7 +566,7 @@ class Job(models.Model):
         )
 
     @classmethod
-    def new_create_entity_v2(kls, user, target, text="", params={}):
+    def new_create_entity_v2(kls, user: User, target: Entity, text="", params={}):
         return kls._create_new_job(
             user,
             target,
@@ -573,7 +576,7 @@ class Job(models.Model):
         )
 
     @classmethod
-    def new_edit_entity_v2(kls, user, target: Entity, text="", params={}):
+    def new_edit_entity_v2(kls, user: User, target: Entity, text="", params={}):
         return kls._create_new_job(
             user,
             target,
@@ -583,7 +586,7 @@ class Job(models.Model):
         )
 
     @classmethod
-    def new_delete_entity_v2(kls, user, target: Entity, text="", params={}):
+    def new_delete_entity_v2(kls, user: User, target: Entity, text="", params={}):
         return kls._create_new_job(
             user,
             target,
@@ -593,7 +596,7 @@ class Job(models.Model):
         )
 
     @classmethod
-    def new_create_entry_v2(kls, user, target, text="", params={}):
+    def new_create_entry_v2(kls, user: User, target, text="", params={}):
         return kls._create_new_job(
             user,
             target,
@@ -603,7 +606,7 @@ class Job(models.Model):
         )
 
     @classmethod
-    def new_edit_entry_v2(kls, user, target: Entry, text="", params={}):
+    def new_edit_entry_v2(kls, user: User, target: Entry, text="", params={}):
         return kls._create_new_job(
             user,
             target,
@@ -613,7 +616,7 @@ class Job(models.Model):
         )
 
     @classmethod
-    def new_delete_entry_v2(kls, user, target: Entry, text="", params={}):
+    def new_delete_entry_v2(kls, user: User, target: Entry, text="", params={}):
         return kls._create_new_job(
             user,
             target,
@@ -633,7 +636,7 @@ class Job(models.Model):
         return value
 
     @classmethod
-    def _get_job_timeout(kls):
+    def _get_job_timeout(kls) -> int:
         if "JOB_TIMEOUT" in settings.AIRONE and settings.AIRONE["JOB_TIMEOUT"]:
             return settings.AIRONE["JOB_TIMEOUT"]
         else:

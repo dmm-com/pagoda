@@ -61,6 +61,8 @@ interface Props {
   entityIds: number[];
   searchAllEntities: boolean;
   joinAttrs: AdvancedSearchJoinAttrInfo[];
+  disablePaginationFooter: boolean;
+  setSearchResults: () => void;
 }
 
 export const SearchResults: FC<Props> = ({
@@ -76,6 +78,8 @@ export const SearchResults: FC<Props> = ({
   entityIds,
   searchAllEntities,
   joinAttrs,
+  disablePaginationFooter,
+  setSearchResults,
 }) => {
   // NOTE attrTypes are guessed by the first element on the results. So if it has no appropriate attr,
   // the type guess doesn't work well. We should improve attr type API if more accurate type is needed.
@@ -104,6 +108,7 @@ export const SearchResults: FC<Props> = ({
               entityIds={entityIds}
               searchAllEntities={searchAllEntities}
               joinAttrs={joinAttrs}
+              setSearchResults={setSearchResults}
             />
             <TableBody>
               {results.values?.map((result) => (
@@ -169,12 +174,14 @@ export const SearchResults: FC<Props> = ({
           </Table>
         </TableContainer>
 
-        <PaginationFooter
-          count={results.count}
-          maxRowCount={AdvancedSerarchResultList.MAX_ROW_COUNT}
-          page={page}
-          changePage={changePage}
-        />
+        {!disablePaginationFooter && (
+          <PaginationFooter
+            count={results.count}
+            maxRowCount={AdvancedSerarchResultList.MAX_ROW_COUNT}
+            page={page}
+            changePage={changePage}
+          />
+        )}
       </StyledBox>
     </Box>
   );

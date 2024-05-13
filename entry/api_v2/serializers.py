@@ -1,9 +1,11 @@
-from typing import Any, Optional, TypedDict
+from typing import Any, Literal, Optional
 
 from django.db.models import Prefetch
 from drf_spectacular.utils import extend_schema_field, extend_schema_serializer
+from pydantic import BaseModel
 from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied, ValidationError
+from typing_extensions import TypedDict
 
 import custom_view
 from acl.models import ACLBase
@@ -28,6 +30,32 @@ from job.models import Job, JobStatus
 from role.models import Role
 from user.api_v2.serializers import UserBaseSerializer
 from user.models import User
+
+
+class ExportedEntryAttribute(TypedDict):
+    name: str
+    value: Any
+
+
+class ReferralEntry(BaseModel):
+    entity: str
+    entry: str
+
+
+class ExportedEntry(BaseModel):
+    name: str
+    attrs: list[ExportedEntryAttribute]
+    referrals: list[ReferralEntry] | None = None
+
+
+class ExportedEntityEntries(BaseModel):
+    entity: str
+    entries: list[ExportedEntry]
+
+
+class ExportTaskParams(BaseModel):
+    export_format: Literal["yaml", "csv"]
+    target_id: int
 
 
 class EntityAttributeType(TypedDict):
@@ -1162,6 +1190,7 @@ class AdvancedSearchResultValueSerializer(serializers.Serializer):
 class AdvancedSearchResultSerializer(serializers.Serializer):
     count = serializers.IntegerField()
     values = AdvancedSearchResultValueSerializer(many=True)
+    total_count = serializers.IntegerField()
 
 
 class AdvancedSearchResultExportSerializer(serializers.Serializer):

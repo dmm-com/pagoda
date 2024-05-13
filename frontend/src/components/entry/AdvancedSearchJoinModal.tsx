@@ -17,6 +17,7 @@ interface Props {
   targetAttrname: string;
   joinAttrs: AdvancedSearchJoinAttrInfo[];
   handleClose: () => void;
+  setSearchResults: (isJoinSearching: boolean) => void;
 }
 
 export const AdvancedSearchJoinModal: FC<Props> = ({
@@ -25,6 +26,7 @@ export const AdvancedSearchJoinModal: FC<Props> = ({
   targetAttrname,
   joinAttrs,
   handleClose,
+  setSearchResults,
 }) => {
   const history = useHistory();
   // This is join attributes that have been already been selected before.
@@ -66,6 +68,9 @@ export const AdvancedSearchJoinModal: FC<Props> = ({
       baseParams: new URLSearchParams(location.search),
       joinAttrs: newJoinAttrs,
     });
+
+    // update page by changing joined Attribute filter condition
+    setSearchResults(true);
 
     // Update Page URL parameters
     history.push({

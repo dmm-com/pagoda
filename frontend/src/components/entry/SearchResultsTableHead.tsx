@@ -1,6 +1,5 @@
 import {
   AdvancedSearchJoinAttrInfo,
-  AdvancedSearchResultAttrInfoFilterKeyEnum,
   EntryAttributeTypeTypeEnum,
 } from "@dmm-com/airone-apiclient-typescript-fetch";
 import AddIcon from "@mui/icons-material/Add";
@@ -23,6 +22,7 @@ import { SearchResultControlMenu } from "./SearchResultControlMenu";
 import { SearchResultControlMenuForEntry } from "./SearchResultControlMenuForEntry";
 import { SearchResultControlMenuForReferral } from "./SearchResultControlMenuForReferral";
 
+import { getIsFiltered } from "pages/AdvancedSearchResultsPage";
 import {
   AttrFilter,
   AttrsFilter,
@@ -53,6 +53,7 @@ interface Props {
   entityIds: number[];
   searchAllEntities: boolean;
   joinAttrs: AdvancedSearchJoinAttrInfo[];
+  setSearchResults: (isJoinSearching: boolean) => void;
 }
 
 export const SearchResultsTableHead: FC<Props> = ({
@@ -64,6 +65,7 @@ export const SearchResultsTableHead: FC<Props> = ({
   entityIds,
   searchAllEntities,
   joinAttrs,
+  setSearchResults,
 }) => {
   const location = useLocation();
   const history = useHistory();
@@ -105,17 +107,10 @@ export const SearchResultsTableHead: FC<Props> = ({
       Object.fromEntries(
         Object.keys(defaultAttrsFilter ?? {}).map((attrName: string) => {
           const attrFilter = defaultAttrsFilter[attrName];
-          switch (attrFilter?.filterKey) {
-            case AdvancedSearchResultAttrInfoFilterKeyEnum.EMPTY:
-            case AdvancedSearchResultAttrInfoFilterKeyEnum.NON_EMPTY:
-            case AdvancedSearchResultAttrInfoFilterKeyEnum.DUPLICATED:
-              return [attrName, true];
-            case AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_CONTAINED:
-              return [attrName, attrFilter.keyword !== ""];
-            case AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_NOT_CONTAINED:
-              return [attrName, attrFilter.keyword !== ""];
-          }
-          return [attrName, false];
+          return [
+            attrName,
+            getIsFiltered(attrFilter.filterKey, attrFilter.keyword),
+          ];
         })
       ),
     [defaultAttrsFilter]
@@ -159,6 +154,9 @@ export const SearchResultsTableHead: FC<Props> = ({
           .filter((v, i, a) => a.findIndex((t) => t.name === v.name) === i),
       });
 
+      setSearchResults(
+        getIsFiltered(attrFilter?.filterKey, attrFilter?.keyword)
+      );
       // simply reload with the new params
       history.push({
         pathname: location.pathname,
@@ -216,6 +214,14 @@ export const SearchResultsTableHead: FC<Props> = ({
                   targetAttrname={joinAttrName}
                   joinAttrs={joinAttrs}
                   handleClose={() => setJoinAttrname("")}
+                  setSearchResults={() =>
+                    setSearchResults(
+                      getIsFiltered(
+                        attrsFilter[attrName].filterKey,
+                        attrsFilter[attrName].keyword
+                      )
+                    )
+                  }
                 />
               )}
               <StyledIconButton

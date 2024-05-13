@@ -1,12 +1,15 @@
 import {
+  AdvancedSearchResult,
   AdvancedSearchResultAttrInfo,
   AdvancedSearchResultAttrInfoFilterKeyEnum,
 } from "@dmm-com/airone-apiclient-typescript-fetch";
+import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import SettingsIcon from "@mui/icons-material/Settings";
-import { Box, Button, Typography } from "@mui/material";
+import { IconButton, Box, Button, Typography } from "@mui/material";
+import { styled } from "@mui/material/styles";
 import { useSnackbar } from "notistack";
-import React, { FC, useMemo, useState } from "react";
+import React, { FC, useEffect, useMemo, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 
 import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
@@ -21,7 +24,35 @@ import { AdvancedSearchModal } from "components/entry/AdvancedSearchModal";
 import { SearchResults } from "components/entry/SearchResults";
 import { usePage } from "hooks/usePage";
 import { aironeApiClient } from "repository/AironeApiClient";
+import { AdvancedSerarchResultList } from "services/Constants";
 import { extractAdvancedSearchParams } from "services/entry/AdvancedSearch";
+
+export const getIsFiltered = (filterKey?: number, keyword?: string) => {
+  switch (filterKey) {
+    case AdvancedSearchResultAttrInfoFilterKeyEnum.EMPTY:
+    case AdvancedSearchResultAttrInfoFilterKeyEnum.NON_EMPTY:
+    case AdvancedSearchResultAttrInfoFilterKeyEnum.DUPLICATED:
+      return true;
+    case AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_CONTAINED:
+      return keyword !== "";
+    case AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_NOT_CONTAINED:
+      return keyword !== "";
+  }
+
+  return false;
+};
+
+const FullWidthIconBox = styled(IconButton)(({}) => ({
+  width: "100%",
+}));
+
+export interface AirOneAdvancedSearchResult extends AdvancedSearchResult {
+  offset: number;
+  page: number;
+  isInProcessing: boolean;
+  isJoinSearching: boolean;
+  totalCount: number;
+}
 
 export const AdvancedSearchResultsPage: FC = () => {
   const location = useLocation();
@@ -47,22 +78,85 @@ export const AdvancedSearchResultsPage: FC = () => {
     return extractAdvancedSearchParams(params);
   }, [location.search]);
 
+  const [searchResults, setSearchResults] =
+    useState<AirOneAdvancedSearchResult>({
+      count: 0,
+      values: [],
+      offset: 0,
+      page: page,
+      isInProcessing: true,
+      isJoinSearching: joinAttrs.length > 0,
+      totalCount: 0,
+    });
+
   const entityAttrs = useAsyncWithThrow(async () => {
     return await aironeApiClient.getEntityAttrs(entityIds, searchAllEntities);
   });
 
-  const results = useAsyncWithThrow(async () => {
-    return await aironeApiClient.advancedSearch(
-      entityIds,
-      entryName,
-      attrInfo,
-      joinAttrs,
-      hasReferral,
-      referralName,
-      searchAllEntities,
-      page
-    );
-  }, [page, toggle, location.search]);
+  const handleSetResults = (isJoinSearching: boolean = false) => {
+    setSearchResults({
+      count: 0,
+      values: [],
+      offset: 0,
+      page: page,
+      isInProcessing: true,
+      isJoinSearching: isJoinSearching,
+      totalCount: searchResults.totalCount,
+    });
+  };
+
+  useEffect(() => {
+    const sendSearchRequest = function (offset: number) {
+      return aironeApiClient.advancedSearch(
+        entityIds,
+        entryName,
+        attrInfo,
+        joinAttrs,
+        hasReferral,
+        referralName,
+        searchAllEntities,
+        page,
+        AdvancedSerarchResultList.MAX_ROW_COUNT,
+        offset
+      );
+    };
+
+    // pagination processing is prioritize than others
+    if (page !== searchResults.page) {
+      sendSearchRequest(0).then((results) => {
+        setSearchResults({
+          count: results.count,
+          values: results.values,
+          offset: page * AdvancedSerarchResultList.MAX_ROW_COUNT,
+          page: page,
+          isInProcessing: false,
+          isJoinSearching: joinAttrs.some((x) => {
+            return x.attrinfo.some((y) => {
+              return getIsFiltered(y.filterKey, y.keyword);
+            });
+          }),
+          totalCount: results.totalCount,
+        });
+      });
+    }
+
+    // abort when isInProcessing is false
+    if (!searchResults.isInProcessing) {
+      return;
+    }
+
+    sendSearchRequest(searchResults.offset).then((results) => {
+      setSearchResults({
+        ...searchResults,
+        count: searchResults.count + results.count,
+        values: searchResults.values.concat(results.values),
+        offset: searchResults.offset + AdvancedSerarchResultList.MAX_ROW_COUNT,
+        isInProcessing: false,
+        isJoinSearching: searchResults.isJoinSearching,
+        totalCount: results.totalCount,
+      });
+    });
+  }, [page, toggle, location.search, searchResults]);
 
   const handleExport = async (exportStyle: "yaml" | "csv") => {
     try {
@@ -107,6 +201,16 @@ export const AdvancedSearchResultsPage: FC = () => {
     }
   };
 
+  const getSearchProgress = () => {
+    if (searchResults.isInProcessing) {
+      return "検索中...";
+    } else if (searchResults.count < searchResults.totalCount) {
+      return `${searchResults.count ?? 0} / ${searchResults.totalCount} 件`;
+    } else {
+      return `${searchResults.count ?? 0} 件`;
+    }
+  };
+
   return (
     <Box className="container-fluid">
       <AironeBreadcrumbs>
@@ -119,10 +223,7 @@ export const AdvancedSearchResultsPage: FC = () => {
         <Typography color="textPrimary">検索結果</Typography>
       </AironeBreadcrumbs>
 
-      <PageHeader
-        title="検索結果"
-        description={`${results.value?.count ?? 0} 件`}
-      >
+      <PageHeader title="検索結果" description={getSearchProgress()}>
         <Box display="flex" justifyContent="center">
           <Button
             variant="contained"
@@ -179,66 +280,86 @@ export const AdvancedSearchResultsPage: FC = () => {
         </Box>
       </PageHeader>
 
-      {results.loading || !results.value ? (
+      {searchResults.count === 0 && searchResults.isInProcessing ? (
         <Loading />
       ) : (
-        <SearchResults
-          results={results.value}
-          page={page}
-          changePage={changePage}
-          hasReferral={hasReferral}
-          defaultEntryFilter={entryName}
-          defaultReferralFilter={referralName}
-          defaultAttrsFilter={
-            // make defaultAttrFilter to make fabric contexts of joinAttrs into the one of attrinfo
-            // for considering order of showing attribute by userdefined one and connection of
-            // attrinfo and its related joined attrinfo
-            attrInfo
-              .map((info) => {
-                const results = [];
+        <Box>
+          <SearchResults
+            results={searchResults}
+            page={page}
+            changePage={changePage}
+            hasReferral={hasReferral}
+            defaultEntryFilter={entryName}
+            defaultReferralFilter={referralName}
+            defaultAttrsFilter={
+              // make defaultAttrFilter to make fabric contexts of joinAttrs into the one of attrinfo
+              // for considering order of showing attribute by userdefined one and connection of
+              // attrinfo and its related joined attrinfo
+              attrInfo
+                .map((info) => {
+                  const results = [];
 
-                results.push({
-                  key: info.name,
-                  val: {
-                    filterKey:
-                      info.filterKey ||
-                      AdvancedSearchResultAttrInfoFilterKeyEnum.CLEARED,
-                    keyword: info.keyword || "",
-                  },
-                });
+                  results.push({
+                    key: info.name,
+                    val: {
+                      filterKey:
+                        info.filterKey ||
+                        AdvancedSearchResultAttrInfoFilterKeyEnum.CLEARED,
+                      keyword: info.keyword || "",
+                    },
+                  });
 
-                // weave joined attributes into the defaultAttrFilterArray
-                joinAttrs.forEach((join) => {
-                  if (join.name === info.name) {
-                    join.attrinfo.forEach((joinedInfo) => {
-                      results.push({
-                        key: `${join.name}.${joinedInfo.name}`,
-                        val: {
-                          filterKey:
-                            joinedInfo.filterKey ||
-                            AdvancedSearchResultAttrInfoFilterKeyEnum.CLEARED,
-                          keyword: joinedInfo.keyword || "",
-                          baseAttrname: join.name,
-                          joinedAttrname: joinedInfo.name,
-                        },
+                  // weave joined attributes into the defaultAttrFilterArray
+                  joinAttrs.forEach((join) => {
+                    if (join.name === info.name) {
+                      join.attrinfo.forEach((joinedInfo) => {
+                        results.push({
+                          key: `${join.name}.${joinedInfo.name}`,
+                          val: {
+                            filterKey:
+                              joinedInfo.filterKey ||
+                              AdvancedSearchResultAttrInfoFilterKeyEnum.CLEARED,
+                            keyword: joinedInfo.keyword || "",
+                            baseAttrname: join.name,
+                            joinedAttrname: joinedInfo.name,
+                          },
+                        });
                       });
-                    });
-                  }
-                });
-                return results;
+                    }
+                  });
+                  return results;
 
-                // this convert array to dict using reduce()
-              })
-              .flat()
-              .reduce((a, x) => ({ ...a, [x.key]: x.val }), {})
-          }
-          bulkOperationEntryIds={bulkOperationEntryIds}
-          handleChangeBulkOperationEntryId={handleChangeBulkOperationEntryId}
-          entityIds={entityIds}
-          searchAllEntities={searchAllEntities}
-          joinAttrs={joinAttrs}
-        />
+                  // this convert array to dict using reduce()
+                })
+                .flat()
+                .reduce((a, x) => ({ ...a, [x.key]: x.val }), {})
+            }
+            bulkOperationEntryIds={bulkOperationEntryIds}
+            handleChangeBulkOperationEntryId={handleChangeBulkOperationEntryId}
+            entityIds={entityIds}
+            searchAllEntities={searchAllEntities}
+            joinAttrs={joinAttrs}
+            disablePaginationFooter={joinAttrs.length > 0}
+            setSearchResults={handleSetResults}
+          />
+
+          {/* show button to show continuous search results manually when joinAttrs are specified */}
+          {joinAttrs.length > 0 && (
+            <FullWidthIconBox
+              disabled={
+                searchResults.isInProcessing ||
+                searchResults.count >= searchResults.totalCount
+              }
+              onClick={() =>
+                setSearchResults({ ...searchResults, isInProcessing: true })
+              }
+            >
+              <ArrowDropDownIcon />
+            </FullWidthIconBox>
+          )}
+        </Box>
       )}
+
       <AdvancedSearchModal
         openModal={openModal}
         setOpenModal={setOpenModal}
