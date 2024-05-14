@@ -9,7 +9,7 @@ settings.AIRONE["SUBTITLE"] = "SUBTITLE"
 settings.AIRONE["NOTE_DESC"] = "NOTE_DESC"
 settings.AIRONE["NOTE_LINK"] = "NOTE_LINK"
 settings.AIRONE["SSO_DESC"] = "SSO_DESC"
-settings.AIRONE["PASSWORD_RESET"] = True
+settings.AIRONE["PASSWORD_RESET_DISABLED"] = True
 
 
 class ViewTest(AironeViewTest):
