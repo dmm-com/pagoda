@@ -1,4 +1,5 @@
 <html>
+  {% csrf_token %}
   {% if '/ui/' not in next %}
   <head>
     <!-- custom script head -->
@@ -15,7 +16,6 @@
     <br>
     {% endif %}
     <form method="post">
-      {% csrf_token %}
       {{ form.as_p }}
       <button type="submit">Login</button>
       {% if request.GET.next %}
@@ -23,7 +23,7 @@
       {% endif %}
     </form>
     {% if password_reset_disabled %}
-      <s><p>If you forget your password, you can Reset Password.</p></s>
+    <s><p>If you forget your password, you can Reset Password. {{ password_reset_disabled }}</p></s>
     {% else %}
       <p>If you forget your password, you can <a href="{% url 'user:password_reset' %}">Reset Password</a>.</p>
     {% endif %}
