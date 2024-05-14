@@ -1,10 +1,10 @@
-from django.conf.urls import url
+from django.urls import re_path
 
 from . import views
 
 urlpatterns = [
-    url(r"^search$", views.EntrySearchAPI.as_view()),
-    url(r"^search_chain$", views.EntrySearchChainAPI.as_view()),
-    url(r"^referral$", views.EntryReferredAPI.as_view()),
-    url(r"^update_history$", views.UpdateHistory.as_view()),
+    re_path(r"^search$", views.EntrySearchAPI.as_view()),
+    re_path(r"^search_chain$", views.EntrySearchChainAPI.as_view()),
+    re_path(r"^referral$", views.EntryReferredAPI.as_view()),
+    re_path(r"^update_history$", views.UpdateHistory.as_view()),
 ]

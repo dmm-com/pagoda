@@ -177,9 +177,7 @@ class ImportTest(AironeViewTest):
         # - 1 is the latest value of attr 'attr-obj'
         # - 1 is the latest value of attr 'attr-arr-str', but child attrs don't set latet flag
         # - 1 is the latest value of attr 'attr-arr-obj', but child attrs don't set latet flag
-        self.assertEqual(
-            AttributeValue.objects.extra(where=["is_latest > 0"]).count(), 1 + 1 + 1 + 1
-        )
+        self.assertEqual(AttributeValue.objects.filter(is_latest=True).count(), 1 + 1 + 1 + 1)
 
         # checks that imported Entries were registered to the Elasticsearch
         res = Entry.get_all_es_docs()

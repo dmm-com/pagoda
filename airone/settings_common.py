@@ -196,12 +196,22 @@ class Common(Configuration):
     STATIC_URL = "/static/"
     STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
     STATIC_ROOT = os.path.join(BASE_DIR, "static_root")
-    STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
-
     MEDIA_ROOT = env.str("AIRONE_FILE_STORE_PATH", "/tmp/airone_app")
 
+    STORAGES = {
+        "default": {
+            "BACKEND": "django.core.files.storage.FileSystemStorage",
+        },
+        "staticfiles": {
+            "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        },
+    }
     if env.bool("AIRONE_STORAGE_ENABLE", False):
-        DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
+        STORAGES = {
+            "default": {
+                "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
+            },
+        }
         AWS_ACCESS_KEY_ID = env.str("AIRONE_STORAGE_ACCESS_KEY", "")
         AWS_SECRET_ACCESS_KEY = env.str("AIRONE_STORAGE_SECRET_ACCESS_KEY", "")
         AWS_STORAGE_BUCKET_NAME = env.str("AIRONE_STORAGE_BUCKET_NAME", "")

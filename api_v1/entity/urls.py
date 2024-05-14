@@ -1,7 +1,7 @@
-from django.conf.urls import url
+from django.urls import re_path
 
 from . import views
 
 urlpatterns = [
-    url(r"^attrs/([\d,]+)$", views.EntityAttrsAPI.as_view()),
+    re_path(r"^attrs/([\d,]+)$", views.EntityAttrsAPI.as_view()),
 ]

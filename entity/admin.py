@@ -33,7 +33,7 @@ class EntityResource(AironeModelResource):
         fields = ("id", "name", "note", "status")
         export_order = ("id", "name", "note", "user")
 
-    def import_obj(self, instance, data, dry_run):
+    def import_obj(self, instance, data, dry_run, **kwargs):
         # will not import duplicate entity
         if Entity.objects.filter(name=data["name"]).exists():
             entity = Entity.objects.filter(name=data["name"]).get()
@@ -46,7 +46,7 @@ class EntityResource(AironeModelResource):
             if error:
                 raise RuntimeError(error)
 
-        super(EntityResource, self).import_obj(instance, data, dry_run)
+        super(EntityResource, self).import_obj(instance, data, dry_run, **kwargs)
 
 
 class EntityAttrResource(AironeModelResource):
@@ -103,7 +103,7 @@ class EntityAttrResource(AironeModelResource):
             if not entity.attrs.filter(id=instance.id).exists():
                 entity.attrs.add(instance)
 
-    def import_obj(self, instance, data, dry_run):
+    def import_obj(self, instance, data, dry_run, **kwargs):
         if not Entity.objects.filter(name=data["entity"]).exists():
             raise RuntimeError("failed to identify entity object")
 
@@ -126,4 +126,4 @@ class EntityAttrResource(AironeModelResource):
         if instance.pk:
             data["type"] = instance.type
 
-        super(EntityAttrResource, self).import_obj(instance, data, dry_run)
+        super(EntityAttrResource, self).import_obj(instance, data, dry_run, **kwargs)
