@@ -197,21 +197,33 @@ export const LoginPage: FC = () => {
                 {serverContext?.noteDesc}
               </Typography>
             </Link>
-            <Link
-              color="secondary"
-              onClick={handleOpenPasswordResetModal}
-              sx={{ cursor: "pointer" }}
-            >
-              <InfoIcon
-                sx={{
-                  fontSize: "14px",
-                  verticalAlign: "middle",
-                }}
-              />
-              <Typography fontSize="16px" ml={1} display="inline">
+            {serverContext?.passwordResetDisabled ? (
+              <Typography
+                color="secondary"
+                fontSize="16px"
+                ml={1}
+                display="inline"
+                sx={{ textDecoration: "line-through" }}
+              >
                 パスワードリセット
               </Typography>
-            </Link>
+            ) : (
+              <Link
+                color="secondary"
+                onClick={handleOpenPasswordResetModal}
+                sx={{ cursor: "pointer" }}
+              >
+                <InfoIcon
+                  sx={{
+                    fontSize: "14px",
+                    verticalAlign: "middle",
+                  }}
+                />
+                <Typography fontSize="16px" ml={1} display="inline">
+                  パスワードリセット
+                </Typography>
+              </Link>
+            )}
           </Box>
           <Button
             type="submit"

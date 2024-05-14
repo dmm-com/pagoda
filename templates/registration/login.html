@@ -22,7 +22,11 @@
         <input name="next" type="hidden" value="{{ request.GET.next }}"></input>
       {% endif %}
     </form>
-    <p>If you forget your password, you can <a href="{% url 'user:password_reset' %}">Reset Password</a>.</p>
+    {% if password_reset_disabled %}
+    <s><p>If you forget your password, you can Reset Password. {{ password_reset_disabled }}</p></s>
+    {% else %}
+      <p>If you forget your password, you can <a href="{% url 'user:password_reset' %}">Reset Password</a>.</p>
+    {% endif %}
   </body>
   {% else %}
   <head>
@@ -47,6 +51,7 @@
           {% if idp %}
           singleSignOnLoginUrl: "{% url 'social:begin' 'saml' %}?idp={{ idp }}&next={{ next }}",
           {% endif %}
+          password_reset_disabled: {{password_reset_disabled|yesno:"true,false"}},
       };
     </script>
     <script src="/static/js/ui.js"></script>

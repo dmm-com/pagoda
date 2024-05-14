@@ -5,6 +5,8 @@
 ### Added
 
 ### Changed
+* Disable to show change password feature when PASSWORD_RESET_DISABLED environment variable is set.
+  Contributed by @hinashi, @userlocalhost
 
 ### Fixed
 * Fixed bug not to be able to login because of CSRF token failure at the login page.
