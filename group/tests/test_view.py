@@ -434,7 +434,16 @@ class ViewTest(AironeViewTest):
 
         self.assertEqual(resp.status_code, 400)
 
-    def test_import_user_and_group(self):
+    def test_import_user_and_group_by_ordinary_user(self):
+        self.guest_login()
+
+        resp = self.client.get(reverse("group:import_user_and_group"))
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.content.decode("utf-8"), "This page needs administrative permission to access"
+        )
+
+    def test_import_user_and_group_by_admin_user(self):
         self.admin_login()
 
         fp = self.open_fixture_file("import_user_and_group.yaml")
