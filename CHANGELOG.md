@@ -7,6 +7,8 @@
 ### Changed
 
 ### Fixed
+* Fixed bug not to be able to login because of CSRF token failure at the login page.
+  Contributed by @userlocalhost, @hinashi
 
 ## v3.88.0
 
