@@ -49,8 +49,7 @@ export class ServerContext {
     this.user = context.user ? new User(context.user) : undefined;
     this.singleSignOnLoginUrl = context.singleSignOnLoginUrl;
     this.legacyUiDisabled = context.legacyUiDisabled;
-    this.passwordResetDisabled =
-      context.password_reset_disabled.toString().toLowerCase() === "true";
+    this.passwordResetDisabled = context.password_reset_disabled;
     this.extendedHeaderMenus = context.extendedHeaderMenus;
     this.flags = context.flags ?? { webhook: true };
   }

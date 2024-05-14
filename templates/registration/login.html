@@ -51,7 +51,7 @@
           {% if idp %}
           singleSignOnLoginUrl: "{% url 'social:begin' 'saml' %}?idp={{ idp }}&next={{ next }}",
           {% endif %}
-          password_reset_disabled: "{{password_reset_disabled}}",
+          password_reset_disabled: {{password_reset_disabled|yesno:"true,false"}},
       };
     </script>
     <script src="/static/js/ui.js"></script>

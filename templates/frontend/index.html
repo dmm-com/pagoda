@@ -31,7 +31,6 @@
               isSuperuser: {{user.is_superuser|yesno:"true,false"}},
           },
           legacyUiDisabled: {{airone.LEGACY_UI_DISABLED|yesno:"true,false"}},
-          password_reset_disabled: {{airone.PASSWORD_RESET_DISABLED|yesno:"true,false"}},
           extendedHeaderMenus: {{ airone.EXTENDED_HEADER_MENUS|safe }},
           flags: {
               webhook: {{ airone_flags.WEBHOOK|yesno:"true,false" }},
