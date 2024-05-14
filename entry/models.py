@@ -1420,7 +1420,7 @@ class Entry(ACLBase):
         if filter_entities:
             query &= Q(schema__name__in=filter_entities)
 
-        return Entry.objects.filter(query).exclude(schema__name__in=exclude_entities)
+        return Entry.objects.filter(query).exclude(schema__name__in=exclude_entities).order_by("id")
 
     def complement_attrs(self, user: User):
         """
