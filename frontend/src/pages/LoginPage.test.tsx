@@ -17,7 +17,7 @@ test("should match snapshot", async () => {
   Object.defineProperty(window, "django_context", {
     value: {
       title: "AirOne",
-      password_reset_disabled: "False"
+      password_reset_disabled: "False",
     },
     writable: false,
   });
