@@ -5,6 +5,8 @@
 ### Added
 
 ### Changed
+* Disable to show change password feature when PASSWORD_RESET_DISABLED environment variable is set.
+  Contributed by @hinashi, @userlocalhost
 
 ### Fixed
 
