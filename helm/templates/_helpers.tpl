@@ -83,6 +83,10 @@ Shared environment block used across each component.
 - name: AIRONE_PASSWORD_RESET_DISABLED
   value: {{ default  .Values.airone.paswordResetDisabled | quote }}
 {{- end }}
+{{- if .Values.airone.legacyUiDisabled }}
+- name: AIRONE_LEGACY_UI_DISABLED
+  value: {{ default  .Values.airone.legacyUiDisabled | quote }}
+{{- end }}
 {{- if .Values.airone.extensions }}
 - name: AIRONE_EXTENSIONS
   value: {{ default  .Values.airone.extensions | quote }}
