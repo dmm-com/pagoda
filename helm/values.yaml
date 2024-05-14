@@ -57,6 +57,7 @@ airone:
   noteDesc: ""
   noteLink: ""
   ssoDesc: ""
+  paswordResetDisabled: false
   extensions: []
   ldap:
     enabled: false

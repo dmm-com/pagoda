@@ -230,6 +230,7 @@ class Common(Configuration):
         "NOTE_LINK": env.str("AIRONE_NOTE_LINK", ""),
         "SSO_DESC": env.str("AIRONE_SSO_DESC", "SSO"),
         "LEGACY_UI_DISABLED": env.bool("AIRONE_LEGACY_UI_DISABLED", False),
+        "PASSWORD_RESET_DISABLED": env.bool("AIRONE_PASSWORD_RESET_DISABLED", False),
         "EXTENDED_HEADER_MENUS": json.loads(
             env.str(
                 "EXTENDED_HEADER_MENUS",

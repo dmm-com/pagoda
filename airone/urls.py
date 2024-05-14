@@ -32,6 +32,7 @@ urlpatterns = [
                 "idp": list(settings.SOCIAL_AUTH_SAML_ENABLED_IDPS.keys())[0]
                 if hasattr(settings, "SOCIAL_AUTH_SAML_ENABLED_IDPS")
                 else None,
+                "password_reset_disabled": settings.AIRONE["PASSWORD_RESET_DISABLED"],
             },
         ),
         name="login",
