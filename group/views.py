@@ -251,6 +251,7 @@ def export(request):
 
 
 @http_get
+@check_superuser
 def import_user_and_group(request):
     return render(request, "import_user_and_group.html", {})
 

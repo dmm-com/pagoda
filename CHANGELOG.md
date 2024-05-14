@@ -7,6 +7,8 @@
 ### Changed
 
 ### Fixed
+* Prevent to showing both adding user and importing user/group pages by ordinary user.
+  Contributed by @userlocalhost, @hinashi
 
 ## v3.88.0
 
