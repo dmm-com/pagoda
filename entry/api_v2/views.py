@@ -1,7 +1,6 @@
 import re
 from copy import deepcopy
 from datetime import datetime, timedelta
-from typing import Optional
 
 from django.db.models import Q
 from drf_spectacular.types import OpenApiTypes
@@ -785,7 +784,7 @@ class EntryImportAPI(generics.GenericAPIView):
         job_ids: list[int] = []
         error_list: list[str] = []
         for import_data in import_datas:
-            entity: Optional[Entity] = next(
+            entity: Entity | None = next(
                 (e for e in entities if e.name == import_data["entity"]), None
             )
             if not entity:

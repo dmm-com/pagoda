@@ -1,8 +1,8 @@
-from django.conf.urls import url
+from django.urls import re_path
 
 from . import views
 
 urlpatterns = [
-    url(r"^set/(\d+)$", views.set_webhook, name="set_webhook"),
-    url(r"^del/(\d+)$", views.del_webhook, name="del_webhook"),
+    re_path(r"^set/(\d+)$", views.set_webhook, name="set_webhook"),
+    re_path(r"^del/(\d+)$", views.del_webhook, name="del_webhook"),
 ]

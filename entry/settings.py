@@ -56,6 +56,7 @@ CONFIG = Settings(
         "ESCAPE_CHARACTERS_ENTRY_LIST": [
             "$",
             "(",
+            ")",
             "^",
             "\\",
             "|",
@@ -64,6 +65,8 @@ CONFIG = Settings(
             "*",
             ".",
             "?",
+            "{",
+            "}",
         ],
         "TIME_FORMAT": "%Y-%m-%dT%H:%M:%S",
     }

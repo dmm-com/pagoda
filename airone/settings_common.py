@@ -3,7 +3,7 @@ import json
 import logging
 import os
 import subprocess
-from typing import Any, Optional
+from typing import Any
 
 import environ
 from configurations import Configuration
@@ -196,12 +196,22 @@ class Common(Configuration):
     STATIC_URL = "/static/"
     STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
     STATIC_ROOT = os.path.join(BASE_DIR, "static_root")
-    STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
-
     MEDIA_ROOT = env.str("AIRONE_FILE_STORE_PATH", "/tmp/airone_app")
 
+    STORAGES = {
+        "default": {
+            "BACKEND": "django.core.files.storage.FileSystemStorage",
+        },
+        "staticfiles": {
+            "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        },
+    }
     if env.bool("AIRONE_STORAGE_ENABLE", False):
-        DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
+        STORAGES = {
+            "default": {
+                "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
+            },
+        }
         AWS_ACCESS_KEY_ID = env.str("AIRONE_STORAGE_ACCESS_KEY", "")
         AWS_SECRET_ACCESS_KEY = env.str("AIRONE_STORAGE_SECRET_ACCESS_KEY", "")
         AWS_STORAGE_BUCKET_NAME = env.str("AIRONE_STORAGE_BUCKET_NAME", "")
@@ -220,6 +230,7 @@ class Common(Configuration):
         "NOTE_LINK": env.str("AIRONE_NOTE_LINK", ""),
         "SSO_DESC": env.str("AIRONE_SSO_DESC", "SSO"),
         "LEGACY_UI_DISABLED": env.bool("AIRONE_LEGACY_UI_DISABLED", False),
+        "PASSWORD_RESET_DISABLED": env.bool("AIRONE_PASSWORD_RESET_DISABLED", False),
         "EXTENDED_HEADER_MENUS": json.loads(
             env.str(
                 "EXTENDED_HEADER_MENUS",
@@ -460,9 +471,9 @@ class Common(Configuration):
         )
 
     # Dynamic record number limitations on model level validation (None means unlimited)
-    MAX_ENTITIES: Optional[int] = env.int("AIRONE_MAX_ENTITIES", None)
-    MAX_ATTRIBUTES_PER_ENTITY: Optional[int] = env.int("AIRONE_MAX_ATTRIBUTES_PER_ENTITY", None)
-    MAX_ENTRIES: Optional[int] = env.int("AIRONE_MAX_ENTRIES", None)
-    MAX_USERS: Optional[int] = env.int("AIRONE_MAX_USERS", None)
-    MAX_GROUPS: Optional[int] = env.int("AIRONE_MAX_GROUPS", None)
-    MAX_ROLES: Optional[int] = env.int("AIRONE_MAX_ROLES", None)
+    MAX_ENTITIES: int | None = env.int("AIRONE_MAX_ENTITIES", None)
+    MAX_ATTRIBUTES_PER_ENTITY: int | None = env.int("AIRONE_MAX_ATTRIBUTES_PER_ENTITY", None)
+    MAX_ENTRIES: int | None = env.int("AIRONE_MAX_ENTRIES", None)
+    MAX_USERS: int | None = env.int("AIRONE_MAX_USERS", None)
+    MAX_GROUPS: int | None = env.int("AIRONE_MAX_GROUPS", None)
+    MAX_ROLES: int | None = env.int("AIRONE_MAX_ROLES", None)

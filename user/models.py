@@ -1,6 +1,5 @@
 from datetime import datetime
 from importlib import import_module
-from typing import Optional
 
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser, BaseUserManager
@@ -194,7 +193,7 @@ class User(AbstractUser):
         """
         Override Model.save method of Django
         """
-        max_users: Optional[int] = settings.MAX_USERS
+        max_users: int | None = settings.MAX_USERS
         if max_users and User.objects.count() >= max_users:
             raise RuntimeError("The number of users is over the limit")
         return super(User, self).save(*args, **kwargs)

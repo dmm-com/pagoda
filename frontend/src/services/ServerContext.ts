@@ -30,6 +30,7 @@ export class ServerContext {
   user?: User;
   singleSignOnLoginUrl?: string;
   legacyUiDisabled?: boolean;
+  passwordResetDisabled?: boolean;
   extendedHeaderMenus: {
     name: string;
     children: { name: string; url: string }[];
@@ -48,6 +49,7 @@ export class ServerContext {
     this.user = context.user ? new User(context.user) : undefined;
     this.singleSignOnLoginUrl = context.singleSignOnLoginUrl;
     this.legacyUiDisabled = context.legacyUiDisabled;
+    this.passwordResetDisabled = context.password_reset_disabled;
     this.extendedHeaderMenus = context.extendedHeaderMenus;
     this.flags = context.flags ?? { webhook: true };
   }

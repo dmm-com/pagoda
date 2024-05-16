@@ -1,7 +1,7 @@
-from django.conf.urls import url
+from django.urls import re_path
 
 from . import views
 
 urlpatterns = [
-    url(r"^tree$", views.GroupTreeAPI.as_view()),
+    re_path(r"^tree$", views.GroupTreeAPI.as_view()),
 ]

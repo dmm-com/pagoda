@@ -1,8 +1,8 @@
-from django.conf.urls import include, url
+from django.urls import include, re_path
 
 from . import views
 
 urlpatterns = [
-    url(r"^api/v1/", include(("webhook.api_v1.urls", "webhook.api_v1"))),
-    url(r"^(\d+)$", views.list_webhook, name="list_webhook"),
+    re_path(r"^api/v1/", include(("webhook.api_v1.urls", "webhook.api_v1"))),
+    re_path(r"^(\d+)$", views.list_webhook, name="list_webhook"),
 ]

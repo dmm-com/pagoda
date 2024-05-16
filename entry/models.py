@@ -1420,7 +1420,7 @@ class Entry(ACLBase):
         if filter_entities:
             query &= Q(schema__name__in=filter_entities)
 
-        return Entry.objects.filter(query).exclude(schema__name__in=exclude_entities)
+        return Entry.objects.filter(query).exclude(schema__name__in=exclude_entities).order_by("id")
 
     def complement_attrs(self, user: User):
         """
@@ -1663,7 +1663,7 @@ class Entry(ACLBase):
         }
 
     def save(self, *args, **kwargs) -> None:
-        max_entries: Optional[int] = settings.MAX_ENTRIES
+        max_entries: int | None = settings.MAX_ENTRIES
         if max_entries and Entry.objects.count() >= max_entries:
             raise RuntimeError("The number of entries is over the limit")
         return super(Entry, self).save(*args, **kwargs)
@@ -1783,7 +1783,7 @@ class Entry(ACLBase):
                 continue
 
             latest_value = attr.get_latest_value()
-            value: Optional[Any] = None
+            value: Any | None = None
             if latest_value:
                 if latest_value.data_type == AttrTypeValue["array_object"]:
                     # remove elements have None value
@@ -2075,12 +2075,12 @@ class Entry(ACLBase):
         kls,
         user: User,
         hint_entity_ids: list[str],
-        hint_attrs: Optional[list[AttrHint]] = None,
+        hint_attrs: list[AttrHint] | None = None,
         limit: int = CONFIG.MAX_LIST_ENTRIES,
-        entry_name: Optional[str] = None,
-        hint_referral: Optional[str] = None,
+        entry_name: str | None = None,
+        hint_referral: str | None = None,
         is_output_all: bool = False,
-        hint_referral_entity_id: Optional[int] = None,
+        hint_referral_entity_id: int | None = None,
         offset: int = 0,
     ) -> AdvancedSearchResults:
         """Main method called from advanced search.

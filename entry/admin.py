@@ -195,7 +195,7 @@ class EntryResource(AironeModelResource):
         skip_unchanged = True
         instance_loader_class = CachedInstanceLoader
 
-    def import_obj(self, instance, data, dry_run):
+    def import_obj(self, instance, data, dry_run, **kwargs):
         # will not import entry which refers invalid entity
         if not Entity.objects.filter(name=data["entity"]).exists():
             raise RuntimeError("Specified entity(%s) doesn't exist" % data["entity"])
@@ -207,7 +207,7 @@ class EntryResource(AironeModelResource):
             if "id" not in data or not data["id"] or entry.id != data["id"]:
                 raise RuntimeError("There is a duplicate entry object")
 
-        super(EntryResource, self).import_obj(instance, data, dry_run)
+        super(EntryResource, self).import_obj(instance, data, dry_run, **kwargs)
 
     def after_save_instance(self, instance, using_transactions, dry_run):
         if not dry_run:
