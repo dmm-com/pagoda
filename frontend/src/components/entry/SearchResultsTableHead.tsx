@@ -151,6 +151,8 @@ export const SearchResultsTableHead: FC<Props> = ({
                   filterKey: _attrsFilter[j].filterKey,
                   keyword: _attrsFilter[j].keyword,
                 })),
+              offset: 0,
+              joinAttrs: [],
             }))
             // This removes duplicates
             .filter((v, i, a) => a.findIndex((t) => t.name === v.name) === i),

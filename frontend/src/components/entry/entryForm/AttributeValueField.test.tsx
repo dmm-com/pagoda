@@ -121,7 +121,7 @@ describe("AttributeValue", () => {
         },
       },
       "5": {
-        type: EntryAttributeTypeTypeEnum.NAMED_OBJECT,
+        type: EntryAttributeTypeTypeEnum._NAMED || EntryAttributeTypeTypeEnum.OBJECT,
         index: 5,
         isMandatory: false,
         schema: {

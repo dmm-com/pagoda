@@ -62,6 +62,8 @@ export const AdvancedSearchJoinModal: FC<Props> = ({
             keyword: "",
           };
         }),
+        offset: 0,
+        joinAttrs: [],
       },
     ];
     const params = formatAdvancedSearchParams({
