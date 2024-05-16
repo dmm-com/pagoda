@@ -16,6 +16,7 @@
     <br>
     {% endif %}
     <form method="post">
+      {% csrf_token %}
       {{ form.as_p }}
       <button type="submit">Login</button>
       {% if request.GET.next %}
