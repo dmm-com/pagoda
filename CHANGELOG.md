@@ -5,6 +5,14 @@
 ### Added
 
 ### Changed
+
+### Fixed
+
+## v3.89.0
+
+### Changed
+* Upgrade django version from 3.2.25 to 4.2.11
+  Contributed by @syucream
 * Disable to show change password feature when PASSWORD_RESET_DISABLED environment variable is set.
   Contributed by @hinashi, @userlocalhost
 
