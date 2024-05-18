@@ -41,7 +41,9 @@ ExportedEntryAttributePrimitiveValue = (
     str  # includes text, string, date, group, role
     | bool
     | ExportedEntryAttributeValueObject
-    | dict[str, ExportedEntryAttributeValueObject | None]
+    | dict[str, ExportedEntryAttributeValueObject]  # named entry for yaml export
+    | dict[str, str]  # named entry for csv export
+    | dict[str, None]
     | None
 )
 

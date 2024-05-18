@@ -25,6 +25,7 @@ from airone.lib.elasticsearch import (
 from airone.lib.log import Logger
 from airone.lib.types import (
     AttrDefaultValue,
+    AttrType,
     AttrTypeArrObj,
     AttrTypeArrStr,
     AttrTypeObj,
@@ -1785,25 +1786,26 @@ class Entry(ACLBase):
             latest_value = attr.get_latest_value()
             value: Optional[Any] = None
             if latest_value:
-                if latest_value.data_type == AttrTypeValue["array_object"]:
-                    # remove elements have None value
-                    value = [x for x in latest_value.get_value(with_entity=with_entity) if x]
-                elif latest_value.data_type == AttrTypeValue["named_object"]:
-                    # remove elements have empty name and None value
-                    value = {
-                        n: v
-                        for n, v in latest_value.get_value(with_entity=with_entity).items()
-                        if len(n) > 0 or v
-                    }
-                elif latest_value.data_type == AttrTypeValue["array_named_object"]:
-                    # remove elements have empty name and None value
-                    value = [
-                        x
-                        for x in latest_value.get_value(with_entity=with_entity)
-                        if len(list(x.keys())[0]) > 0 or list(x.values())[0]
-                    ]
-                else:
-                    value = latest_value.get_value(with_entity=with_entity)
+                match latest_value.data_type:
+                    case AttrType.ARRAY_OBJECT:
+                        # remove elements have None value
+                        value = [x for x in latest_value.get_value(with_entity=with_entity) if x]
+                    case AttrType.NAMED_OBJECT:
+                        # remove elements have empty name and None value
+                        value = {
+                            n: v
+                            for n, v in latest_value.get_value(with_entity=with_entity).items()
+                            if len(n) > 0 or v
+                        }
+                    case AttrType.ARRAY_NAMED_OBJECT:
+                        # remove elements have empty name and None value
+                        value = [
+                            x
+                            for x in latest_value.get_value(with_entity=with_entity)
+                            if len(list(x.keys())[0]) > 0 or list(x.values())[0]
+                        ]
+                    case _:
+                        value = latest_value.get_value(with_entity=with_entity)
 
             attrinfo.append(
                 {
