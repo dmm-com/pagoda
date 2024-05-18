@@ -9,7 +9,6 @@ on:
       - "**/*.py"
       - "templates/**/*.html"
       - ".github/workflows/build-core.yml"
-      - "tox.ini"
       - "poetry.lock"
 
 jobs:
@@ -32,12 +31,28 @@ jobs:
           poetry install --no-ansi
       - name: staticchecks
         run: |
-          poetry run tox
-        env:
-          TOXENV: "staticchecks"
+          poetry run mypy ./
+          poetry run ruff check --output-format=github .
+          poetry run ruff format --check .
+
+  # set modules have python test code outputs.modules
+  setup_python311:
+    runs-on: ubuntu-latest
+    outputs:
+      targets: ${{ steps.modules.outputs.targets }}
+    steps:
+      - uses: actions/checkout@v3
+      - id: modules
+        run: |
+          modules=$(ls -d */tests/ | sed 's/\/tests\///' | jq -Rsc 'split("\n")[:-1]')
+          echo "targets=$modules" >> $GITHUB_OUTPUT
 
   python311:
     runs-on: ubuntu-latest
+    needs: setup_python311
+    strategy:
+      matrix:
+        target: ${{ fromJson(needs.setup_python311.outputs.targets) }}
     services:
       rabbitmq:
         image: rabbitmq:3.8.19-management
@@ -71,6 +86,7 @@ jobs:
           --health-retries=3
     steps:
       - uses: actions/checkout@v3
+      - run: echo '${{ needs.setup_python311.outputs.targets }}'
       - name: Install poetry
         run: pipx install poetry
       - uses: actions/setup-python@v4
@@ -90,12 +106,15 @@ jobs:
           poetry install --no-ansi
       - name: test
         run: |
-          poetry run tox
-        env:
-          TOXENV: "py311"
+          poetry run python manage.py makemigrations
+          poetry run python manage.py migrate
+          poetry run python manage.py collectstatic
+          poetry run coverage run manage.py test ${{ matrix.target }} --parallel 
+          poetry run coverage report
+          poetry run coverage xml
       - name: coverage
         uses: codecov/codecov-action@v3
         with:
-          token: ${{secrets.CODECOV_TOKEN}}
-          flags: core
+          token: ${{ secrets.CODECOV_TOKEN }}
+          flags: core/${{ matrix.target }}
         continue-on-error: true
