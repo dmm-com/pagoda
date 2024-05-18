@@ -5,8 +5,19 @@
 ### Added
 
 ### Changed
+* Disable to show change password feature when PASSWORD_RESET_DISABLED environment variable is set.
+  Contributed by @hinashi, @userlocalhost
 
 ### Fixed
+* Fixed bug not to be able to login because of CSRF token failure at the login page.
+* Prevent to showing both adding user and importing user/group pages by ordinary user.
+  Contributed by @userlocalhost, @hinashi
+
+## v3.88.0
+
+### Added
+* Added pydantic model in export v2.
+  Contributed by @syucream
 
 ## v3.87.0
 

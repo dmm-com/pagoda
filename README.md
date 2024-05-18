@@ -2,8 +2,8 @@
 [![Build frontend](https://github.com/dmm-com/airone/actions/workflows/build-frontend.yml/badge.svg)](https://github.com/dmm-com/airone/actions/workflows/build-frontend.yml)
 [![codecov](https://codecov.io/gh/dmm-com/airone/branch/master/graph/badge.svg)](https://codecov.io/gh/dmm-com/airone)
 
-# AirOne
-This is a yet another DCIM(Data Center Infrastructure Management).
+# Pagoda
+Yet another SSoT system to be able to define flexible data-structure, relation and ACL.
 
 # Feature
 These are the features of this software.
@@ -11,10 +11,10 @@ These are the features of this software.
 - Structured data. You can make data schema flexibly and dynamically.
 
 # Setup
-Here is the documentation to setup the development environment of AirOne.
+Here is the documentation to setup the development environment of Pagoda.
 
-## Installation of AirOne
-You have to install Python3.11+ to run AirOne like below (for the case of `ubuntu`).
+## Installation of Pagoda
+You have to install Python3.11+ to run Pagoda like below (for the case of `ubuntu`).
 ```
 user@hostname:~$ sudo apt-get update
 user@hostname:~$ sudo apt-get install python3 python3-pip python3-venv
@@ -94,7 +94,7 @@ user@hostname:~$ wget https://artifacts.elastic.co/downloads/elasticsearch/elast
 user@hostname:~$ tar -xvf elasticsearch-7.17.6-linux-x86_64.tar.gz
 ```
 
-After installing it, you have to change configuration to accept connecting from AirOne nodes.
+After installing it, you have to change configuration to accept connecting from Pagoda nodes.
 ```diff
 --- elasticsearch-7.17.6-linux-x86_64/config/elasticsearch.yml.old        2020-01-29 10:19:40.511687943 +0900
 +++ elasticsearch-7.17.6-linux-x86_64/config/elasticsearch.yml            2020-01-29 10:41:23.103687943 +0900
@@ -123,7 +123,7 @@ user@hostname:~$ elasticsearch-7.17.6-linux-x86_64/bin/elasticsearch
 
 This step is optional. You can skip it if you don't use email notifications.
 
-AirOne supports email based notification, now it's mainly used for password-reset. You can set email backend, with like this config:
+Pagoda supports email based notification, now it's mainly used for password-reset. You can set email backend, with like this config:
 
 ```
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
@@ -157,7 +157,7 @@ user@hostname:~$ sudo mkdir /etc/nginx/ssl
 user@hostname:~$ sudo mv server* /etc/nginx/ssl
 ```
 
-Write following configuration for AirOne on Nginx at `/etc/nginx/conf.d/airone.conf`.
+Write following configuration for Pagoda on Nginx at `/etc/nginx/conf.d/airone.conf`.
 ```
 upstream airone {
   server hostname:8080;
@@ -191,9 +191,9 @@ server {
 }
 ```
 
-This includes the configuration to proxy HTTP request to AirOne and cache static files. The static file path indicates the static directory which is in the top of AirOne local repository. If necessary, please fix this value depending on your environment.
+This includes the configuration to proxy HTTP request to Pagoda and cache static files. The static file path indicates the static directory which is in the top of Pagoda local repository. If necessary, please fix this value depending on your environment.
 
-## Initialize AirOne configuratoin
+## Initialize Pagoda configuratoin
 
 You should create user and attach role in Elasticsearch.
 ```
@@ -251,9 +251,9 @@ You can do it just by following command. The configurations about the database t
 (virtualenv) user@hostname:~/airone$ python tools/initialize_es_document.py
 ```
 
-## Run AirOne
-You can start AirOne as following and can browse from `http://hostname:8080/`  
-(Please change the `hostname` to the appropriate one on which you installed AirOne).
+## Run Pagoda
+You can start Pagoda as following and can browse from `http://hostname:8080/`  
+(Please change the `hostname` to the appropriate one on which you installed Pagoda).
 e.g. 
 
 ```

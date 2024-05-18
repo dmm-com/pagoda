@@ -1,5 +1,3 @@
-from typing import Optional
-
 from django.conf import settings
 from django.db import models
 from simple_history.models import HistoricalRecords
@@ -78,7 +76,7 @@ class EntityAttr(ACLBase):
             self.referral.add(adding_referral)
 
     def save(self, *args, **kwargs) -> None:
-        max_attributes_per_entity: Optional[int] = settings.MAX_ATTRIBUTES_PER_ENTITY
+        max_attributes_per_entity: int | None = settings.MAX_ATTRIBUTES_PER_ENTITY
         if (
             max_attributes_per_entity
             and EntityAttr.objects.filter(parent_entity=self.parent_entity).count()
@@ -106,7 +104,7 @@ class Entity(ACLBase):
         self.objtype = ACLObjType.Entity
 
     def save(self, *args, **kwargs) -> None:
-        max_entities: Optional[int] = settings.MAX_ENTITIES
+        max_entities: int | None = settings.MAX_ENTITIES
         if max_entities and Entity.objects.count() >= max_entities:
             raise RuntimeError("The number of entities is over the limit")
         return super(Entity, self).save(*args, **kwargs)

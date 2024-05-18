@@ -72,7 +72,16 @@ class ViewTest(AironeViewTest):
         resp = self.client.get(reverse("user:create"))
         self.assertEqual(resp.status_code, 303)
 
-    def test_create_get_with_login(self):
+    def test_create_get_with_login_by_normal_user(self):
+        self._guest_login()
+
+        resp = self.client.get(reverse("user:create"))
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.content.decode("utf-8"), "This page needs administrative permission to access"
+        )
+
+    def test_create_get_with_login_by_admin_user(self):
         self._admin_login()
 
         resp = self.client.get(reverse("user:create"))

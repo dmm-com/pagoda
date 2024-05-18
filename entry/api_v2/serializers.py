@@ -1,4 +1,4 @@
-from typing import Any, Literal, Optional
+from typing import Any, Literal
 
 from django.db.models import Prefetch
 from drf_spectacular.utils import extend_schema_field, extend_schema_serializer
@@ -91,7 +91,7 @@ class EntryAttributeValueObject(TypedDict):
 
 class EntryAttributeValueNamedObject(TypedDict):
     name: str
-    object: Optional[EntryAttributeValueObject]
+    object: EntryAttributeValueObject | None
 
 
 class EntryAttributeValueNamedObjectBoolean(EntryAttributeValueNamedObject):
@@ -114,23 +114,23 @@ class EntryAttributeValueRole(TypedDict):
 
 # A thin container returns typed value(s)
 class EntryAttributeValue(TypedDict, total=False):
-    as_object: Optional[EntryAttributeValueObject]
+    as_object: EntryAttributeValueObject | None
     as_string: str
     as_named_object: EntryAttributeValueNamedObject
-    as_array_object: list[Optional[EntryAttributeValueObject]]
+    as_array_object: list[EntryAttributeValueObject | None]
     as_array_string: list[str]
     as_array_named_object: list[EntryAttributeValueNamedObject]
     as_array_group: list[EntryAttributeValueGroup]
     # text; use string instead
     as_boolean: bool
-    as_group: Optional[EntryAttributeValueGroup]
+    as_group: EntryAttributeValueGroup | None
     # date; use string instead
-    as_role: Optional[EntryAttributeValueRole]
+    as_role: EntryAttributeValueRole | None
     as_array_role: list[EntryAttributeValueRole]
 
 
 class EntryAttributeType(TypedDict):
-    id: Optional[int]
+    id: int | None
     type: int
     is_mandatory: bool
     is_readable: bool
@@ -433,7 +433,7 @@ class EntryUpdateSerializer(EntryBaseSerializer):
         is_updated = False
         # update name of Entry object. If name would be updated, the elasticsearch data of entries
         # that refers this entry also be updated by creating REGISTERED_REFERRALS task.
-        job_register_referrals: Optional[Job] = None
+        job_register_referrals: Job | None = None
         if "name" in validated_data and entry.name != validated_data["name"]:
             entry.name = validated_data["name"]
             entry.save(update_fields=["name"])
@@ -833,7 +833,7 @@ class EntryImportEntitySerializer(serializers.Serializer):
 
             def _group(val) -> int | None:
                 if val:
-                    ref_group: Optional[Group] = Group.objects.filter(name=val).first()
+                    ref_group: Group | None = Group.objects.filter(name=val).first()
                     return ref_group.id if ref_group else 0
                 return None
 
@@ -1080,13 +1080,13 @@ class EntryHistoryAttributeValueSerializer(serializers.ModelSerializer):
         return self._get_value(obj)
 
     @extend_schema_field(EntryAttributeValueSerializer())
-    def get_prev_value(self, obj: AttributeValue) -> Optional[EntryAttributeValue]:
+    def get_prev_value(self, obj: AttributeValue) -> EntryAttributeValue | None:
         prev_value = obj.get_preview_value()
         if prev_value:
             return self._get_value(prev_value)
         return None
 
-    def get_prev_id(self, obj: AttributeValue) -> Optional[int]:
+    def get_prev_id(self, obj: AttributeValue) -> int | None:
         prev_value = obj.get_preview_value()
         if prev_value:
             return prev_value.id

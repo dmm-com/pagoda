@@ -1,4 +1,4 @@
-from typing import Any, Optional, TypedDict
+from typing import Any, TypedDict
 
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
@@ -76,7 +76,7 @@ class ACLSerializer(serializers.ModelSerializer):
             "name": {"read_only": True},
         }
 
-    def get_parent(self, obj: ACLBase) -> Optional[ACLParentType]:
+    def get_parent(self, obj: ACLBase) -> ACLParentType | None:
         airone_model = obj.get_subclass_object()
         if isinstance(airone_model, Entry):
             return {

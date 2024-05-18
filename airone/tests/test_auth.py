@@ -9,6 +9,7 @@ settings.AIRONE["SUBTITLE"] = "SUBTITLE"
 settings.AIRONE["NOTE_DESC"] = "NOTE_DESC"
 settings.AIRONE["NOTE_LINK"] = "NOTE_LINK"
 settings.AIRONE["SSO_DESC"] = "SSO_DESC"
+settings.AIRONE["PASSWORD_RESET_DISABLED"] = True
 
 
 class ViewTest(AironeViewTest):
@@ -19,6 +20,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.context["note_desc"], "NOTE_DESC")
         self.assertEqual(resp.context["note_link"], "NOTE_LINK")
         self.assertEqual(resp.context["sso_desc"], "SSO_DESC")
+        self.assertEqual(resp.context["password_reset_disabled"], True)
 
     def test_logout_with_get(self):
         self.guest_login()

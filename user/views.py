@@ -29,6 +29,7 @@ def index(request):
 
 
 @http_get
+@check_superuser
 def create(request):
     return render(request, "create_user.html")
 

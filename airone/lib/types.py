@@ -3,7 +3,7 @@ from typing import Any
 
 
 @enum.unique
-class AttrType(enum.IntFlag):
+class AttrType(enum.IntEnum):
     OBJECT = 1 << 0
     STRING = 1 << 1
     TEXT = 1 << 2

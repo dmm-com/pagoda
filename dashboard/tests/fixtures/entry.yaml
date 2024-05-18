@@ -30,21 +30,21 @@ Attribute:
 
 AttributeValue:
 - {attribute_id: 15, created_time: '2017-08-29 03:07:21', created_user: admin, data_arr: '',
-  id: 1, refer: '', status: 0, value: 'I am srv001'}
+  id: 101, refer: '', status: 0, value: 'I am srv001'}
 - {attribute_id: 16, created_time: '2017-08-29 03:07:21', created_user: admin, data_arr: '',
-  id: 2, refer: 8, status: 0, value: ''}
-- {attribute_id: 17, created_time: '2017-08-29 03:07:21', created_user: admin, data_arr: '4,5',
-  id: 3, refer: '', status: 1, value: ''}
+  id: 102, refer: 8, status: 0, value: ''}
+- {attribute_id: 17, created_time: '2017-08-29 03:07:21', created_user: admin, data_arr: '104,105',
+  id: 103, refer: '', status: 1, value: ''}
 - {attribute_id: 17, created_time: '2017-08-29 03:07:21', created_user: admin, data_arr: '',
-  id: 4, refer: '', status: 0, value: hoge}
+  id: 104, refer: '', status: 0, value: hoge}
 - {attribute_id: 17, created_time: '2017-08-29 03:07:21', created_user: admin, data_arr: '',
-  id: 5, refer: '', status: 0, value: fuga}
-- {attribute_id: 18, created_time: '2017-08-29 03:07:22', created_user: admin, data_arr: '7,8',
-  id: 6, refer: '', status: 1, value: ''}
+  id: 105, refer: '', status: 0, value: fuga}
+- {attribute_id: 18, created_time: '2017-08-29 03:07:22', created_user: admin, data_arr: '107,108',
+  id: 106, refer: '', status: 1, value: ''}
 - {attribute_id: 18, created_time: '2017-08-29 03:07:22', created_user: admin, data_arr: '',
-  id: 7, refer: 11, status: 0, value: ''}
+  id: 107, refer: 11, status: 0, value: ''}
 - {attribute_id: 18, created_time: '2017-08-29 03:07:22', created_user: admin, data_arr: '',
-  id: 8, refer: 12, status: 0, value: ''}
+  id: 108, refer: 12, status: 0, value: ''}
 # Create a new AttributeValue for String type Attribute
 - {attribute_id: 15, created_time: '2017-08-29 03:07:28', created_user: admin, data_arr: '',
   id: 999, refer: '', status: 0, value: bar}
