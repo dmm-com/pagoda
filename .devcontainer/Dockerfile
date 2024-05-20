@@ -12,7 +12,7 @@ RUN apt-get update \
     libsasl2-dev \
     libxmlsec1-dev \
     default-mysql-client \
-    default-libmysqlclient-dev 
+    default-libmysqlclient-dev
 
 ARG USER_ID=1000
 RUN getent passwd $USER_ID || useradd -u $USER_ID -m -s /bin/bash airone
@@ -22,8 +22,8 @@ USER $USER_ID
 # nodenv, node
 COPY .node-version ./
 RUN curl -fsSL https://github.com/nodenv/nodenv-installer/raw/HEAD/bin/nodenv-installer | bash
-RUN echo 'export PATH="$HOME/.nodenv/bin:$PATH"' >> ~/.bashrc
-RUN echo 'eval "$(nodenv init -)"' >> ~/.bashrc
+RUN echo 'export PATH="$HOME/.nodenv/bin:$PATH"' >> ~/.profile
+RUN echo 'eval "$(nodenv init -)"' >> ~/.profile
 RUN bash -c '\
     export PATH="$HOME/.nodenv/bin:$PATH"; \
     eval "$(nodenv init -)"; \
