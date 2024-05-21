@@ -5,6 +5,8 @@
 ### Added
 
 ### Changed
+* Updated to delete obsoleted title to new one, which is defined in the Django configuration file.
+  Contributed by @hinashi, @userlocalhost
 
 ### Fixed
 

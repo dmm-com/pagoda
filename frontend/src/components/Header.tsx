@@ -165,7 +165,7 @@ export const Header: FC = () => {
           <StyledToolbar variant="dense">
             <TitleBox>
               <Title fontSize="24px" component={Link} to={topPath()}>
-                AirOne
+                {serverContext?.title}
               </Title>
               <Version fontSize="12px" title={serverContext?.version}>
                 {serverContext?.version}
