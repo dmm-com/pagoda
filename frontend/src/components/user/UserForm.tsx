@@ -77,7 +77,7 @@ const ElemAuthenticationMethod: FC<ReadonlyProps> = ({ user }) => {
           <Box sx={{ m: 1 }}>
             <Box sx={{ my: 1 }}>ローカル認証</Box>
             <Button variant="outlined" onClick={() => setOpenModal(true)}>
-              AirOneの認証方法をLDAPに変更する
+              認証方法をLDAPに変更する
             </Button>
           </Box>
         ) : (
