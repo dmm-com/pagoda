@@ -8,6 +8,12 @@ from user.models import User
 class LDAPBackend(object):
     # This method is called by Django to authenticate user by specified username and password.
     def authenticate(self, request, username=None, password=None):
+        # If the HTTP method is GET or HEAD, use the slave DB by the django_replicated.
+        # Return None because session information cannot be written to SlaveDB.
+        if request and request.method in ["GET", "HEAD"]:
+            Logger.info("Failed to authenticate because of GET or HEAD method")
+            return None
+
         # check authentication with local database at first.
         user = User.objects.filter(
             username=username,
