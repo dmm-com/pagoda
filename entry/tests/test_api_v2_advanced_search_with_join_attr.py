@@ -511,3 +511,34 @@ class ViewTest(BaseViewTest):
                 ]
             },
         )
+
+    def test_recursive_join_attr_of_array_entry_with_empty_value(self):
+        """
+        This test for the fixing, that result with join_attr parameter has wrong attribute
+        type for array_object typed attribute.
+        """
+        params = {
+            "entities": [self.entity.id],
+            "attrinfo": [
+                {"name": "ref", "filter_key": int(FilterKey.CLEARED), "keyword": "RefEntry", },
+                {"name": "refs", "filter_key": int(FilterKey.CLEARED), "keyword": ""},
+            ],
+            "join_attrs": [
+                {
+                    "name": "ref",
+                    "attrinfo": [
+                        {"name": "refs", "filter_key": int(FilterKey.CLEARED), "keyword": ""}
+                    ],
+                    "join_attrs": [],
+                },
+            ],
+        }
+        resp = self.client.post(
+            "/entry/api/v2/advanced_search/", json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 200)
+        for info in resp.json()["values"]:
+            # check result of ARRAY_ENTRY typed joined attr infomation that
+            # each type parameters are set correctly whatever value is empty.
+            self.assertEqual(info["attrs"]["ref.refs"]["type"], AttrType.ARRAY_OBJECT)
+            self.assertEqual(info["attrs"]["ref.refs"]["value"], {"as_array_object": []})

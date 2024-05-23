@@ -23,7 +23,7 @@ from airone.lib.drf import (
     RequiredParameterError,
     YAMLParser,
 )
-from airone.lib.types import AttrType, AttrTypeValue
+from airone.lib.types import AttrType, AttrTypeValue, AttrDefaultValue
 from api_v1.entry.serializer import EntrySearchChainSerializer
 from entity.models import Entity, EntityAttr
 from entry.api_v2.pagination import EntryReferralPagination
@@ -319,7 +319,7 @@ class AdvancedSearchAPI(generics.GenericAPIView):
                 "%s.%s" % (base_name, k["name"]): {
                     "is_readable": True,
                     "type": k["type"],
-                    "value": "",
+                    "value": AttrDefaultValue.get(k["type"]),
                 }
                 for k in join_attr["attrinfo"]
             }
