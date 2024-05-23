@@ -11,7 +11,7 @@ if [[ $@ == *"--docker"* ]]; then
   SPECTACULAR_CMD="docker compose exec -w /workspace/airone airone bash -lc 'poetry run python manage.py spectacular --file spec.yaml'"
   PRETTIER_CMD="docker compose exec -w /workspace/airone airone bash -lc 'npx prettier --write $dst'"
 else
-  CHECK_CMD="poetry run python manage.py spectacular2>&1 > /dev/null | grep ERROR"
+  CHECK_CMD="poetry run python manage.py spectacular 2>&1 > /dev/null | grep ERROR"
   SPECTACULAR_CMD="poetry run python manage.py spectacular --file spec.yaml"
   PRETTIER_CMD="npx prettier --write $dst"
 fi
