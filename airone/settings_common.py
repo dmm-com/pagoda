@@ -224,7 +224,7 @@ class Common(Configuration):
         "VERSION": "unknown",
         "AUTO_COMPLEMENT_USER": "auto_complementer",
         "EXTENSIONS": env.list("AIRONE_EXTENSIONS", None, ""),
-        "TITLE": env.str("AIRONE_TITLE", "AirOne"),
+        "TITLE": env.str("AIRONE_TITLE", "Pagoda"),
         "SUBTITLE": env.str("AIRONE_SUBTITLE", "SubTitle, Please change it"),
         "NOTE_DESC": env.str("AIRONE_NOTE_DESC", "Description, Please change it"),
         "NOTE_LINK": env.str("AIRONE_NOTE_LINK", ""),
@@ -421,7 +421,7 @@ class Common(Configuration):
     REST_FRAMEWORK = {
         "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
         "DEFAULT_AUTHENTICATION_CLASSES": [
-            "rest_framework.authentication.BasicAuthentication",
+            "api_v1.auth.LoggingBasicAuthentication",
             "rest_framework.authentication.SessionAuthentication",
             "api_v1.auth.AironeTokenAuth",
         ],

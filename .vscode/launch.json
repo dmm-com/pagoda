@@ -3,7 +3,7 @@
     "configurations": [
         {
             "name": "Test",
-            "type": "python",
+            "type": "debugpy",
             "justMyCode": false,
             "request": "launch",
             "program": "${workspaceFolder}/manage.py",
@@ -14,18 +14,22 @@
         },
         {
             "name": "Django",
-            "type": "python",
+            "type": "debugpy",
             "justMyCode": false,
             "request": "launch",
             "program": "${workspaceFolder}/manage.py",
             "args": [
-                "runserver"
+                "runserver",
+                "0.0.0.0:8080",
             ],
             "django": true,
+            "env": {
+                "AIRONE_DEBUG": "true",
+            },
         },
         {
             "name": "Celery",
-            "type": "python",
+            "type": "debugpy",
             "justMyCode": false,
             "request": "launch",
             "module": "celery",
@@ -35,11 +39,13 @@
                 "worker",
                 "-l",
                 "info",
+                "-c",
+                "1",
             ]
         },
         {
             "name": "Gunicorn",
-            "type": "python",
+            "type": "debugpy",
             "justMyCode": false,
             "request": "launch",
             "program": "${workspaceFolder}/virtualenv/bin/gunicorn",
@@ -50,7 +56,7 @@
         },
         {
             "name": "spectacular",
-            "type": "python",
+            "type": "debugpy",
             "justMyCode": false,
             "request": "launch",
             "program": "${workspaceFolder}/manage.py",
@@ -63,7 +69,7 @@
         },
         {
             "name": "Shell",
-            "type": "python",
+            "type": "debugpy",
             "justMyCode": false,
             "request": "launch",
             "program": "${workspaceFolder}/manage.py",
@@ -74,7 +80,7 @@
         },
         {
             "name": "DebugSQLShell",
-            "type": "python",
+            "type": "debugpy",
             "justMyCode": false,
             "request": "launch",
             "program": "${workspaceFolder}/manage.py",

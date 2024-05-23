@@ -1,13 +1,6 @@
 {
-    "python.linting.enabled": true,
-    "python.linting.pylintEnabled": false,
-    "python.linting.flake8Enabled": true,
-    "editor.formatOnSave": true,
-    "python.formatting.provider": "black",
     "[python]": {
-        "editor.codeActionsOnSave": {
-            "source.organizeImports": true
-        }
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "charliermarsh.ruff",
     },
-    "python.defaultInterpreterPath": "virtualenv/bin/python"
 }

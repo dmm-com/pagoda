@@ -1,6 +1,6 @@
 ---
-baseURL: https://dmm-com.github.io/airone/
-title: AirOne
+baseURL: https://dmm-com.github.io/pagoda/
+title: Pagoda
 theme: hugo-geekdoc
 canonifyURLs: true
 pygmentsUseClasses: true

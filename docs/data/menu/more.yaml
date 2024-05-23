@@ -4,10 +4,10 @@ more:
     ref: "/posts"
     icon: "notification"
   - name: Releases
-    ref: "https://github.com/dmm-com/airone/releases"
+    ref: "https://github.com/dmm-com/pagoda/releases"
     external: true
     icon: "download"
   - name: "View Source"
-    ref: "https://github.com/dmm-com/airone"
+    ref: "https://github.com/dmm-com/pagoda"
     external: true
     icon: "github"

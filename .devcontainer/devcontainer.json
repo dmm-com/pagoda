@@ -1,0 +1,22 @@
+{
+  "name": "airone",
+  "dockerComposeFile": [
+    "../docker-compose.yml",
+    "docker-compose.yml"
+  ],
+  "service": "airone",
+  "workspaceFolder": "/workspace/airone",
+  "postCreateCommand": "poetry config virtualenvs.in-project true && poetry config virtualenvs.path .venv && poetry install && npm install",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-python.debugpy",
+        "charliermarsh.ruff"
+      ],
+      "settings": {
+        "python.defaultInterpreterPath": "/workspace/airone/.venv/bin/python"
+      }
+    }
+  }
+}

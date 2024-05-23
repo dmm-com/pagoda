@@ -1,9 +1,10 @@
 from datetime import datetime, timedelta
 
 import pytz
-from rest_framework.authentication import TokenAuthentication
+from rest_framework.authentication import BasicAuthentication, TokenAuthentication
 from rest_framework.exceptions import AuthenticationFailed
 
+from airone.lib.log import Logger
 from user.models import User
 
 
@@ -20,3 +21,12 @@ class AironeTokenAuth(TokenAuthentication):
             raise AuthenticationFailed("Token lifetime is expired")
 
         return (user, token)
+
+
+class LoggingBasicAuthentication(BasicAuthentication):
+    def authenticate(self, request):
+        result = super().authenticate(request)
+        if result is not None:
+            user, _ = result
+            Logger.warn(f"User({user.username}) used BASIC authentication")
+        return result
