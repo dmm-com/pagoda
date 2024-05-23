@@ -176,6 +176,8 @@ export const SearchResultsTableHead: FC<Props> = ({
       }));
     };
 
+  console.log("joinAttrName", joinAttrName)
+
   return (
     <TableHead>
       <TableRow sx={{ backgroundColor: "primary.dark" }}>
@@ -206,9 +208,6 @@ export const SearchResultsTableHead: FC<Props> = ({
               <Typography>{attrName}</Typography>
 
               {
-                /*(attrTypes[attrName] & EntryAttributeTypeTypeEnum.OBJECT) > 0 &&
-                attrsFilter[attrName].joinedAttrname === undefined && 
-                */
                 (attrTypes[attrName] & EntryAttributeTypeTypeEnum.OBJECT) > 0 && (
                   <StyledIconButton onClick={() => setJoinAttrname(attrName)}>
                     <AddIcon />

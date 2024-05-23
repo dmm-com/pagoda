@@ -17,7 +17,7 @@ export type JoinAttr = {
   name: string;
   attrinfo: AdvancedSearchResultAttrInfo[];
   offset?: number;
-  joinAttrs?: JoinAttr[];
+  joinAttrs?: { [key: string]: any }[];
 };
 
 interface AdvancedSearchParams {

@@ -308,14 +308,17 @@ class AdvancedSearchAPI(generics.GenericAPIView):
                     offset=join_attr.get("offset", 0),
                 ),
             )
+
         # === End of Function: _get_joined_resp() ===
-        def _combine_joinattr_result(superior_resp, joined_resp, join_attr, attr_history, will_filter_by_joined_attr):
+        def _combine_joinattr_result(
+            superior_resp, joined_resp, join_attr, attr_history, will_filter_by_joined_attr
+        ):
             # This is needed to set result as blank value
             base_name = ".".join(attr_history + [join_attr["name"]])
             blank_joining_info = {
                 "%s.%s" % (base_name, k["name"]): {
                     "is_readable": True,
-                    "type": AttrType.STRING,
+                    "type": k["type"],
                     "value": "",
                 }
                 for k in join_attr["attrinfo"]
@@ -324,7 +327,10 @@ class AdvancedSearchAPI(generics.GenericAPIView):
             # convert search result to dict to be able to handle it without loop
             joined_resp_info = {
                 x["entry"]["id"]: {
-                    "%s.%s" % (base_name, k): {**v, "joined_history": attr_history + [join_attr["name"]]}
+                    "%s.%s" % (base_name, k): {
+                        **v,
+                        "joined_history": attr_history + [join_attr["name"]],
+                    }
                     for k, v in x["attrs"].items()
                     if any(_x["name"] == k for _x in join_attr["attrinfo"])
                 }
@@ -372,9 +378,11 @@ class AdvancedSearchAPI(generics.GenericAPIView):
             This method joins 2-combined results into one
             """
             for dst_result in dst_results:
-                dst_ref_list = sum([_get_ref_id_from_es_result(x) for x in dst_result["attrs"].values()], [])
+                # dst_ref_list = sum(
+                #    [_get_ref_id_from_es_result(x) for x in dst_result["attrs"].values()], []
+                # )
                 for cb_result in src_results:
-                    for (attrname, attrinfo) in cb_result["attrs"].items():
+                    for attrname, attrinfo in cb_result["attrs"].items():
                         if attrinfo.get("joined_history") is None:
                             # When there is no parameter of joined_history, it's no value to unite
                             continue
@@ -406,7 +414,11 @@ class AdvancedSearchAPI(generics.GenericAPIView):
 
             # combine search results with join_attr parameter into original one
             combined_results = _combine_joinattr_result(
-                superior_resp["ret_values"], joined_resp["ret_values"], join_attr, attr_history, will_filter_by_joined_attr
+                superior_resp["ret_values"],
+                joined_resp["ret_values"],
+                join_attr,
+                attr_history,
+                will_filter_by_joined_attr,
             )
 
             # re-search using join_attrs parameter that is specified in join_attrs parameter
@@ -419,9 +431,14 @@ class AdvancedSearchAPI(generics.GenericAPIView):
                     # which are combined_results and _co_results, into the combined_results.
                     # In this processing, the _combine_joinattr_result() is useless
                     # because _result is the value that is returned from it.
-                    combined_results = _unite_combined_results(combined_results, _co_results, [
-                        ".".join(attr_stacks + [co_join_attr["name"], x["name"]])
-                    for x in co_join_attr["attrinfo"]])
+                    combined_results = _unite_combined_results(
+                        combined_results,
+                        _co_results,
+                        [
+                            ".".join(attr_stacks + [co_join_attr["name"], x["name"]])
+                            for x in co_join_attr["attrinfo"]
+                        ],
+                    )
 
             return combined_results
 

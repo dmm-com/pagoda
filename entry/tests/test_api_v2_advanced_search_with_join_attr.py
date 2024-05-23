@@ -310,7 +310,7 @@ class ViewTest(BaseViewTest):
             },
         )
 
-        entry = self.add_entry(
+        self.add_entry(
             self.user,
             "entry",
             entity,
@@ -444,7 +444,7 @@ class ViewTest(BaseViewTest):
             },
         )
 
-        entry = self.add_entry(
+        self.add_entry(
             self.user,
             "entry",
             entity,

@@ -38,6 +38,7 @@ export const AdvancedSearchJoinModal: FC<Props> = ({
   );
 
   const referralAttrs = useAsyncWithThrow(async () => {
+    console.log("targetAttrname", targetAttrname)
     return await aironeApiClient.getEntityAttrs(
       targetEntityIds,
       searchAllEntities,
