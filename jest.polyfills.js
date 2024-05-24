@@ -5,10 +5,12 @@
  */
 
 const { TextDecoder, TextEncoder } = require('node:util');
+const { clearImmediate } = require("node:timers");
 
 Object.defineProperties(globalThis, {
     TextDecoder: { value: TextDecoder },
     TextEncoder: { value: TextEncoder },
+    clearImmediate: { value: clearImmediate },
 });
 
 const { ReadableStream } = require('node:stream/web');
