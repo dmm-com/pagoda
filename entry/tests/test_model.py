@@ -1,5 +1,6 @@
+import datetime
 import logging
-from datetime import date
+from datetime import date, timezone
 from unittest import skip
 
 from django.conf import settings
@@ -10,7 +11,7 @@ from airone.lib.drf import ExceedLimitError
 from airone.lib.elasticsearch import FilterKey
 from airone.lib.log import Logger
 from airone.lib.test import AironeTestCase
-from airone.lib.types import AttrTypeValue
+from airone.lib.types import AttrType, AttrTypeValue
 from entity.models import Entity, EntityAttr
 from entry.models import Attribute, AttributeValue, Entry
 from entry.settings import CONFIG
@@ -59,6 +60,11 @@ class ModelTest(AironeTestCase):
                 "set_val": date(2018, 12, 31),
                 "exp_val": date(2018, 12, 31),
             },
+            {
+                "name": "datetime",
+                "set_val": datetime(2018, 12, 31, 12, 34, 56, tzinfo=timezone.utc),
+                "exp_val": datetime(2018, 12, 31, 12, 34, 56, tzinfo=timezone.utc),
+            },
         ]
         if ref:
             attrinfo.append({"name": "obj", "set_val": ref, "exp_val": ref.name})
@@ -101,6 +107,7 @@ class ModelTest(AironeTestCase):
             "group": AttrTypeValue["group"],
             "date": AttrTypeValue["date"],
             "role": AttrTypeValue["role"],
+            "datetime": AttrType.DATETIME,
             "arr_str": AttrTypeValue["array_string"],
             "arr_obj": AttrTypeValue["array_object"],
             "arr_name": AttrTypeValue["array_named_object"],
@@ -1597,6 +1604,11 @@ class ModelTest(AironeTestCase):
             },
             {"name": "arr_role", "set_val": [test_role.id], "exp_val": [test_role.name]},
             {"name": "arr_role", "set_val": [test_role], "exp_val": [test_role.name]},
+            {
+                "name": "datetime",
+                "set_val": datetime(2018, 12, 31, 12, 34, 56, tzinfo=timezone.utc),
+                "exp_val": datetime(2018, 12, 31, 12, 34, 56, tzinfo=timezone.utc),
+            },
         ]
         for info in attr_info:
             attr = entry.attrs.get(name=info["name"])
@@ -1957,6 +1969,10 @@ class ModelTest(AironeTestCase):
             "group": {"type": AttrTypeValue["group"], "value": str(ref_group.id)},
             "date": {"type": AttrTypeValue["date"], "value": date(2018, 12, 31)},
             "role": {"type": AttrTypeValue["role"], "value": str(ref_role.id)},
+            "datetime": {
+                "type": AttrType.DATETIME,
+                "value": date(2018, 12, 31, 12, 34, 56, tzinfo=timezone.utc),
+            },
             "arr_str": {
                 "type": AttrTypeValue["array_string"],
                 "value": ["foo", "bar", "baz"],
@@ -2015,6 +2031,7 @@ class ModelTest(AironeTestCase):
                 {"name": "group"},
                 {"name": "date"},
                 {"name": "role"},
+                {"name": "datetime"},
                 {"name": "arr_str"},
                 {"name": "arr_obj"},
                 {"name": "arr_name"},
@@ -2102,6 +2119,9 @@ class ModelTest(AironeTestCase):
                         attrinfo["value"],
                         [{"id": ref_role.id, "name": ref_role.name}],
                     )
+
+                elif attrname == "datetime":
+                    self.assertEqual(attrinfo["value"], attrv.datetime.isoformat())
 
                 else:
                     raise "Invalid result was happend (attrname: %s)" % attrname
@@ -3786,6 +3806,10 @@ class ModelTest(AironeTestCase):
                     "value": [{"id": test_role.id, "name": test_role.name}],
                 },
             },
+            {
+                "name": "datetime",
+                "value": {"type": AttrType.DATETIME, "value": "2018-12-31T00:00:00Z"},
+            },
         ]
         for info in expected_attrinfos:
             ret_attr_infos = [x for x in ret_dict["attrs"] if x["name"] == info["name"]]
@@ -3872,6 +3896,10 @@ class ModelTest(AironeTestCase):
                     "type": AttrTypeValue["array_role"],
                     "value": [],
                 },
+            },
+            {
+                "name": "datetime",
+                "value": {"type": AttrType.DATETIME, "value": None},
             },
         ]
         for info in expected_attrinfos:
@@ -4631,6 +4659,12 @@ class ModelTest(AironeTestCase):
                 "value": [test_role.name],
                 "referral_id": [test_role.id],
             },
+            "datetime": {
+                "key": [""],
+                "value": [""],
+                "referral_id": [""],
+                "datetime_value": ["2018-12-31T00:00:00Z"],
+            },
         }
         # check all attributes are expected ones
         self.assertEqual(
@@ -4719,6 +4753,11 @@ class ModelTest(AironeTestCase):
                         "is_readable": True,
                         "type": AttrTypeValue["array_role"],
                         "value": [],
+                    },
+                    "datetime": {
+                        "is_readable": True,
+                        "type": AttrType.DATETIME,
+                        "value": None,
                     },
                 },
             },
@@ -5063,6 +5102,11 @@ class ModelTest(AironeTestCase):
             {"name": "arr_group", "set_val": [test_grp.id], "exp_val": [test_grp]},
             {"name": "arr_group", "set_val": [test_grp], "exp_val": [test_grp]},
             {"name": "arr_group", "set_val": ["abcd"], "exp_val": []},
+            {
+                "name": "datetime",
+                "set_val": datetime(2018, 12, 31, 0, 0, 0, tzinfo=timezone.utc),
+                "exp_val": datetime(2018, 12, 31, 0, 0, 0, tzinfo=timezone.utc),
+            },
         ]
         for info in attr_info:
             attr = entry.attrs.get(name=info["name"])
@@ -5090,6 +5134,7 @@ class ModelTest(AironeTestCase):
             "arr_group": [],
             "role": None,
             "arr_role": [],
+            "datetime": None,
         }
         for attr in entry.attrs.all():
             if attr.name == "arr_name":

@@ -1,3 +1,4 @@
+import datetime
 import errno
 import json
 from datetime import date
@@ -9,6 +10,7 @@ from django.urls import reverse
 
 from airone.lib.test import AironeViewTest
 from airone.lib.types import (
+    AttrType,
     AttrTypeArrNamedObj,
     AttrTypeArrObj,
     AttrTypeArrStr,
@@ -639,6 +641,7 @@ class ViewTest(AironeViewTest):
                 "type": AttrTypeValue["array_named_object"],
                 "value": [{"name": "hoge", "id": ref_entry.id}],
             },
+            "datetime": {"type": AttrType.DATETIME, "value": "2020-01-01T00:00:00Z"},
         }
 
         entity = Entity.objects.create(name="Entity", created_user=user)
@@ -671,6 +674,7 @@ class ViewTest(AironeViewTest):
             {"name": "obj", "value": "ref_entry"},
             {"name": "grp", "value": "group_entry"},
             {"name": "role", "value": "role_entry"},
+            {"name": "datetime", "value": "2020-01-01T00:00:00Z"},
             {"name": "name", "value": "bar: ref_entry"},
             {"name": "arr_str", "value": "foo"},
             {"name": "arr_obj", "value": "ref_entry"},
@@ -1254,6 +1258,10 @@ class ViewTest(AironeViewTest):
                 "value": [str(entry_role.id)],
             },
             "date": {"type": AttrTypeValue["date"], "value": date(2020, 1, 1)},
+            "datetime": {
+                "type": AttrType.DATETIME,
+                "value": date(2020, 1, 1, 0, 0, 0, datetime.UTC),
+            },
         }
         entities = []
         for index in range(2):
@@ -1329,6 +1337,7 @@ class ViewTest(AironeViewTest):
                 "role": "role",
                 "arr_role": ["role"],
                 "date": "2020-01-01",
+                "datetime": "2020-01-01T00:00:00Z",
             },
         )
 
@@ -1351,6 +1360,7 @@ class ViewTest(AironeViewTest):
             "role": "new_role",
             "arr_role": ["new_role"],
             "date": "1999-01-01",
+            "datetime": "1999-01-01T00:00:00Z",
         }
         resp_data["Entity-1"][0]["attrs"] = new_attr_values
 
@@ -1414,6 +1424,8 @@ class ViewTest(AironeViewTest):
                 )
             elif attr_name == "date":
                 self.assertEqual(attrv.date, date(1999, 1, 1))
+            elif attr_name == "datetime":
+                self.assertEqual(attrv.date, date(1999, 1, 1, 0, 0, 0, datetime.UTC))
 
     @patch(
         "dashboard.tasks.export_search_result.delay",
@@ -1565,6 +1577,7 @@ class ViewTest(AironeViewTest):
             {"column": "date", "csv": "", "yaml": None},
             {"column": "role", "csv": "", "yaml": ""},
             {"column": "roles", "csv": "", "yaml": []},
+            {"column": "datetime", "csv": "", "yaml": None},
         ]
 
         # send request to export data

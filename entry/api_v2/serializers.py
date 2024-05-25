@@ -655,6 +655,9 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
                         }
                     }
 
+                case AttrType.DATETIME:
+                    return {"as_string": attrv.datetime if attrv.datetime else ""}
+
                 case _:
                     return {}
 
@@ -1071,6 +1074,9 @@ class EntryHistoryAttributeValueSerializer(serializers.ModelSerializer):
                     if role
                     else None
                 }
+
+            case AttrType.DATE:
+                return {"as_string": obj.datetime if obj.datetime else ""}
 
             case _:
                 return {}

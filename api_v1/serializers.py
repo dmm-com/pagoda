@@ -3,7 +3,7 @@ from datetime import datetime
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
-from airone.lib.types import AttrTypeValue
+from airone.lib.types import AttrType, AttrTypeValue
 from entity.models import Entity
 from entry.models import AttributeValue, Entry
 from group.models import Group
@@ -78,6 +78,9 @@ class GetEntrySerializer(serializers.ModelSerializer):
                     "id": group.id,
                     "name": group.name,
                 }
+
+            elif attr.schema.type & AttrType.DATETIME:
+                return attrv.datetime
 
         return [
             {
@@ -203,6 +206,16 @@ class PostEntrySerializer(serializers.Serializer):
 
         elif attr.type & AttrTypeValue["role"]:
             return AttributeValue.uniform_storable(value, Role)
+
+        elif attr.type & AttrType.DATETIME:
+            if isinstance(value, str):
+                try:
+                    datetime.fromisoformat(value)
+                except ValueError:
+                    raise ValueError("Incorrect data format, should be ISO8601 format")
+                return datetime.fromisoformat(value)
+            else:
+                return None
 
         return None
 

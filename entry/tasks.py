@@ -108,6 +108,11 @@ def _convert_data_value(attr, info):
                     return False
                 else:
                     return recv_value
+            case AttrType.DATETIME:
+                if recv_value is None or recv_value == "":
+                    return None
+                else:
+                    return datetime.fromisoformat(recv_value)
             case _:
                 return recv_value
 

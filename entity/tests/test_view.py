@@ -7,6 +7,7 @@ from django.urls import reverse
 
 from airone.lib.test import AironeViewTest
 from airone.lib.types import (
+    AttrType,
     AttrTypeArrObj,
     AttrTypeArrStr,
     AttrTypeObj,
@@ -157,6 +158,13 @@ class ViewTest(AironeViewTest):
                     "is_delete_in_chain": False,
                     "is_mandatory": False,
                     "row_index": "6",
+                },
+                {
+                    "name": "attr_datetime",
+                    "type": str(AttrType.DATETIME),
+                    "is_delete_in_chain": False,
+                    "is_mandatory": False,
+                    "row_index": "7",
                 },
             ],
         }

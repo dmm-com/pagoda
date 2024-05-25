@@ -7,7 +7,7 @@ from django.test import Client, TestCase, override_settings
 from pytz import timezone
 
 from airone.lib.acl import ACLType
-from airone.lib.types import AttrTypeValue
+from airone.lib.types import AttrType, AttrTypeValue
 from entity.models import Entity, EntityAttr
 from entry.models import Entry
 from user.models import User
@@ -31,6 +31,7 @@ class AironeTestCase(TestCase):
         {"name": "date", "type": AttrTypeValue["date"]},
         {"name": "role", "type": AttrTypeValue["role"]},
         {"name": "roles", "type": AttrTypeValue["array_role"]},
+        {"name": "datetime", "type": AttrType.DATETIME},
     ]
 
     TZ_INFO = timezone(settings.TIME_ZONE)

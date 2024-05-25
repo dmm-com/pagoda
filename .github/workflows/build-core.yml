@@ -51,6 +51,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: setup_python311
     strategy:
+      fail-fast: true
       matrix:
         target: ${{ fromJson(needs.setup_python311.outputs.targets) }}
     services:

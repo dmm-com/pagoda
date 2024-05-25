@@ -61,6 +61,7 @@ class AttributeValue(models.Model):
     status = models.IntegerField(default=0)
     boolean = models.BooleanField(default=False)
     date = models.DateField(null=True)
+    datetime = models.DateTimeField(null=True)
 
     # This parameter means that target AttributeValue is the latest one. This is usefull to
     # find out enabled AttributeValues by Attribute or EntityAttr object. And separating this
@@ -209,6 +210,12 @@ class AttributeValue(models.Model):
 
         elif self.parent_attr.schema.type == AttrTypeValue["role"] and self.value:
             value = _get_model_value(self, Role)
+
+        elif self.parent_attr.schema.type == AttrType.DATETIME and self.value:
+            if serialize:
+                value = self.datetime.isoformat()
+            else:
+                value = self.datetime
 
         elif self.parent_attr.is_array():
             if self.parent_attr.schema.type & AttrTypeValue["named"]:
@@ -450,6 +457,15 @@ class AttributeValue(models.Model):
                 except (ValueError, TypeError):
                     raise Exception("value(%s) is not int" % value)
 
+            if type & AttrType.DATETIME:
+                try:
+                    if value:
+                        datetime.fromisoformat(value)
+                    if is_mandatory and not value:
+                        return False
+                except (ValueError, TypeError):
+                    raise Exception("value(%s) is not ISO8601 format" % value)
+
             return True
 
         try:
@@ -614,6 +630,15 @@ class Attribute(ACLBase):
                     return last_value.date is not None
 
             return last_value.date != recv_value
+
+        elif self.schema.type == AttrType.DATETIME:
+            if isinstance(recv_value, str):
+                try:
+                    return last_value.datetime != datetime.fromisoformat(recv_value)
+                except ValueError:
+                    return last_value.datetime is not None
+
+            return last_value.datetime != recv_value
 
         elif self.schema.type == AttrTypeValue["named_object"]:
             # the case that specified value is empty or invalid
@@ -882,6 +907,24 @@ class Attribute(ACLBase):
         if self.schema.type & AttrTypeValue["role"]:
             return _is_group_object(value, Role)
 
+        if self.schema.type & AttrType.DATETIME:
+
+            def _is_iso8601(v: str) -> bool:
+                try:
+                    datetime.fromisoformat(v)
+                    return True
+                except ValueError:
+                    return False
+
+            try:
+                return (
+                    not value
+                    or isinstance(value, datetime)
+                    or (isinstance(value, str) and _is_iso8601(value))
+                )
+            except ValueError:
+                return False
+
         return False
 
     def add_value(self, user, value, boolean=False):
@@ -959,6 +1002,12 @@ class Attribute(ACLBase):
 
                 if not attrv.referral and not attrv.value:
                     return
+
+            elif attr_type == AttrType.DATETIME:
+                if isinstance(val, str) and val:
+                    attrv.datetime = datetime.fromisoformat(val)
+                elif isinstance(val, date):
+                    attrv.datetime = val
 
             return attrv
 
@@ -1091,6 +1140,9 @@ class Attribute(ACLBase):
                 return None
 
             return get_named_object(value)
+
+        elif self.schema.type == AttrType.DATETIME:
+            return value
 
         elif self.is_array():
             if not isinstance(value, list):
@@ -1589,6 +1641,9 @@ class Entry(ACLBase):
                     if x
                 ]
 
+            elif last_value.data_type == AttrType.DATETIME:
+                attrinfo["last_value"] = last_value.datetime
+
             ret_attrs.append(attrinfo)
 
         return ret_attrs
@@ -1833,6 +1888,7 @@ class Entry(ACLBase):
                 "key": "",
                 "value": "",
                 "date_value": None,
+                "datetime_value": None,
                 "referral_id": "",
                 "is_readable": True
                 if (not attr or attr.is_public or attr.default_permission >= ACLType.Readable.id)
@@ -1866,6 +1922,9 @@ class Entry(ACLBase):
 
             elif entity_attr.type & AttrTypeValue["date"]:
                 attrinfo["date_value"] = attrv.date.strftime("%Y-%m-%d") if attrv.date else None
+
+            elif entity_attr.type & AttrType.DATETIME:
+                attrinfo["datetime_value"] = attrv.datetime.isoformat() if attrv.datetime else None
 
             elif entity_attr.type & AttrTypeValue["named"]:
                 attrinfo["key"] = attrv.value

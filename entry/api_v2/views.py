@@ -467,6 +467,8 @@ class AdvancedSearchAPI(generics.GenericAPIView):
                         return "as_group"
                     elif type & AttrTypeValue["role"]:
                         return "as_role"
+                    elif type & AttrType.DATETIME:
+                        return "as_string"
                     raise IncorrectTypeError(f"unexpected type: {type}")
 
                 entry["attrs"][name] = {

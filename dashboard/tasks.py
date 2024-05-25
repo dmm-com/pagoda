@@ -58,7 +58,13 @@ def _csv_export(job: Job, values, recv_data: dict, has_referral: bool) -> io.Str
                 continue
 
             match vtype:
-                case AttrType.STRING | AttrType.TEXT | AttrType.BOOLEAN | AttrType.DATE:
+                case (
+                    AttrType.STRING
+                    | AttrType.TEXT
+                    | AttrType.BOOLEAN
+                    | AttrType.DATE
+                    | AttrType.DATETIME
+                ):
                     line_data.append(str(vval))
 
                 case AttrType.OBJECT | AttrType.GROUP | AttrType.ROLE:
