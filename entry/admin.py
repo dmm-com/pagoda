@@ -5,7 +5,7 @@ from import_export.instance_loaders import CachedInstanceLoader
 
 from acl.models import ACLBase
 from airone.lib.resources import AironeModelResource
-from airone.lib.types import AttrTypeValue
+from airone.lib.types import AttrType
 from entity.models import Entity, EntityAttr
 from user.models import User
 
@@ -80,9 +80,9 @@ class AttrValueResource(AironeModelResource):
             instance.data_type = attr.schema.type
 
             if not attr.values.filter(id=instance.id).exists() and (
-                not attr.schema.type & AttrTypeValue["array"]
+                not attr.schema.type & AttrType._ARRAY
                 or (
-                    attr.schema.type & AttrTypeValue["array"]
+                    attr.schema.type & AttrType._ARRAY
                     and instance.get_status(AttributeValue.STATUS_DATA_ARRAY_PARENT)
                 )
             ):
@@ -92,7 +92,7 @@ class AttrValueResource(AironeModelResource):
                 attr.unset_latest_flag(exclude_id=instance.id)
 
             # the case of leaf AttributeValue
-            elif attr.schema.type & AttrTypeValue["array"] and not instance.get_status(
+            elif attr.schema.type & AttrType._ARRAY and not instance.get_status(
                 AttributeValue.STATUS_DATA_ARRAY_PARENT
             ):
                 # For a leaf AttributeValue, 'is_latest' flag will not be set.

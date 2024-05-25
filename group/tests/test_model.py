@@ -1,7 +1,7 @@
 from django.conf import settings
 
 from airone.lib.test import AironeTestCase
-from airone.lib.types import AttrTypeValue
+from airone.lib.types import AttrType
 from entry.models import Entry
 from group.models import Group
 from user.models import User
@@ -62,7 +62,7 @@ class ModelTest(AironeTestCase):
                 **{
                     "user": self.user1,
                     "name": "Entity%d" % index,
-                    "attrs": [{"name": "group", "type": AttrTypeValue["group"]}],
+                    "attrs": [{"name": "group", "type": AttrType.GROUP}],
                 }
             )
             self.add_entry(
@@ -96,7 +96,7 @@ class ModelTest(AironeTestCase):
                 **{
                     "user": self.user1,
                     "name": "Entity%d" % index,
-                    "attrs": [{"name": "groups", "type": AttrTypeValue["array_group"]}],
+                    "attrs": [{"name": "groups", "type": AttrType.ARRAY_GROUP}],
                 }
             )
             self.add_entry(

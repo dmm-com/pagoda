@@ -3,7 +3,7 @@ from unittest.mock import Mock, patch
 
 from airone.lib.log import Logger
 from airone.lib.test import AironeTestCase
-from airone.lib.types import AttrTypeValue
+from airone.lib.types import AttrType
 from entity.models import Entity, EntityAttr
 from entry.models import Entry
 from entry.tasks import update_es_documents
@@ -25,7 +25,7 @@ class UpdateESDocuemntlTest(AironeTestCase):
             EntityAttr.objects.create(
                 **{
                     "name": "attr",
-                    "type": AttrTypeValue["string"],
+                    "type": AttrType.STRING,
                     "created_user": self.user,
                     "parent_entity": self.entity1,
                 }

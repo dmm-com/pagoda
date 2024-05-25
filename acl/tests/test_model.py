@@ -5,7 +5,7 @@ from django.test import TestCase
 
 from acl.models import ACLBase
 from airone.lib.acl import ACLType
-from airone.lib.types import AttrTypeValue
+from airone.lib.types import AttrType
 from group.models import Group
 from role.models import Role
 from user.models import User
@@ -94,7 +94,7 @@ class ModelTest(TestCase):
             "created_user": self.user,
         }
         entity_attr_kwargs = {
-            "type": AttrTypeValue["object"],
+            "type": AttrType.OBJECT,
         }
 
         entity = model_entity.Entity.objects.create(**kwargs)

@@ -11,7 +11,7 @@ from rest_framework.response import Response
 
 from airone.lib.acl import ACLType
 from airone.lib.test import AironeViewTest
-from airone.lib.types import AttrTypeValue
+from airone.lib.types import AttrType
 from entity.models import Entity, EntityAttr
 from entry import tasks
 from entry.models import Attribute, AttributeValue, Entry
@@ -55,7 +55,7 @@ class APITest(AironeViewTest):
 
         params = self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY.copy()
         for param in params:
-            if param["type"] & AttrTypeValue["object"]:
+            if param["type"] & AttrType.OBJECT:
                 param["ref"] = ref_entity
 
         entity = self.create_entity(
@@ -256,7 +256,7 @@ class APITest(AironeViewTest):
             EntityAttr.objects.create(
                 **{
                     "name": "ref",
-                    "type": AttrTypeValue["object"],
+                    "type": AttrType.OBJECT,
                     "created_user": user,
                     "parent_entity": entity,
                 }
@@ -351,8 +351,8 @@ class APITest(AironeViewTest):
 
         entity = Entity.objects.create(name="Entity", created_user=admin)
         attr_params = [
-            {"name": "val", "type": AttrTypeValue["string"], "required": True},
-            {"name": "ref", "type": AttrTypeValue["object"], "ref": ref_entity},
+            {"name": "val", "type": AttrType.STRING, "required": True},
+            {"name": "ref", "type": AttrType.OBJECT, "ref": ref_entity},
         ]
         for attr_info in attr_params:
             entity_attr = EntityAttr.objects.create(
@@ -473,8 +473,8 @@ class APITest(AironeViewTest):
 
         entity = Entity.objects.create(name="Entity", created_user=admin, is_public=False)
         attr_params = [
-            {"name": "attr1", "type": AttrTypeValue["string"], "is_public": True},
-            {"name": "attr2", "type": AttrTypeValue["string"], "is_public": False},
+            {"name": "attr1", "type": AttrType.STRING, "is_public": True},
+            {"name": "attr2", "type": AttrType.STRING, "is_public": False},
         ]
         for attr_info in attr_params:
             entity.attrs.add(
@@ -566,7 +566,7 @@ class APITest(AironeViewTest):
                 "user": admin,
                 "name": "Entity",
                 "attrs": [
-                    {"name": "string", "type": AttrTypeValue["string"]},
+                    {"name": "string", "type": AttrType.STRING},
                 ],
             }
         )
@@ -605,7 +605,7 @@ class APITest(AironeViewTest):
             EntityAttr.objects.create(
                 **{
                     "name": "attr",
-                    "type": AttrTypeValue["string"],
+                    "type": AttrType.STRING,
                     "created_user": admin,
                     "parent_entity": entity,
                 }
@@ -698,15 +698,15 @@ class APITest(AironeViewTest):
         for entity_name in ["hoge", "fuga"]:
             entity = Entity.objects.create(name=entity_name, created_user=user)
             attr_info = {
-                "str": {"type": AttrTypeValue["string"], "value": "foo"},
+                "str": {"type": AttrType.STRING, "value": "foo"},
                 "ref": {
-                    "type": AttrTypeValue["object"],
+                    "type": AttrType.STRING,
                     "value": ref_entry,
                     "referral": ref_entity,
                 },
-                "no_str": {"type": AttrTypeValue["string"]},
-                "group": {"type": AttrTypeValue["group"], "value": test_groups[0]},
-                "groups": {"type": AttrTypeValue["array_group"], "value": test_groups},
+                "no_str": {"type": AttrType.STRING},
+                "group": {"type": AttrType.GROUP, "value": test_groups[0]},
+                "groups": {"type": AttrType.ARRAY_GROUP, "value": test_groups},
             }
             for name, info in attr_info.items():
                 attr = EntityAttr.objects.create(
@@ -873,7 +873,7 @@ class APITest(AironeViewTest):
         entity.attrs.add(
             EntityAttr.objects.create(
                 name="attr",
-                type=AttrTypeValue["string"],
+                type=AttrType.STRING,
                 parent_entity=entity,
                 created_user=user,
             )
@@ -1061,7 +1061,7 @@ class APITest(AironeViewTest):
         entity.attrs.add(
             EntityAttr.objects.create(
                 name="attr",
-                type=AttrTypeValue["string"],
+                type=AttrType.STRING,
                 parent_entity=entity,
                 created_user=user,
             )
@@ -1110,7 +1110,7 @@ class APITest(AironeViewTest):
         entity_attr = EntityAttr.objects.create(
             **{
                 "name": "attr",
-                "type": AttrTypeValue["string"],
+                "type": AttrType.STRING,
                 "created_user": users["_u1"],
                 "parent_entity": entity,
                 "is_public": False,
@@ -1270,7 +1270,7 @@ class APITest(AironeViewTest):
         entity = Entity.objects.create(name="Entity", created_user=user)
         attr_params = {
             "name": "attr",
-            "type": AttrTypeValue["string"],
+            "type": AttrType.STRING,
             "created_user": user,
             "parent_entity": entity,
         }
@@ -1304,7 +1304,7 @@ class APITest(AironeViewTest):
         ref_entry = Entry.objects.create(name="ref0", schema=ref_entity, created_user=user)
         params = self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY.copy()
         for param in params:
-            if param["type"] & AttrTypeValue["object"]:
+            if param["type"] & AttrType.OBJECT:
                 param["ref"] = ref_entity
 
         entity = self.create_entity(**{"user": user, "name": "Entity", "attrs": params})

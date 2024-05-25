@@ -1,5 +1,5 @@
 from airone.lib.test import AironeViewTest
-from airone.lib.types import AttrTypeValue
+from airone.lib.types import AttrType
 from entity.models import Entity, EntityAttr
 
 
@@ -18,7 +18,7 @@ class APITest(AironeViewTest):
                 entity.attrs.add(
                     EntityAttr.objects.create(
                         name=attrname,
-                        type=AttrTypeValue["string"],
+                        type=AttrType.STRING,
                         created_user=user,
                         parent_entity=entity,
                     )

@@ -9,6 +9,7 @@ from django.urls import reverse
 
 from airone.lib.test import AironeViewTest
 from airone.lib.types import (
+    AttrType,
     AttrTypeArrNamedObj,
     AttrTypeArrObj,
     AttrTypeArrStr,
@@ -16,7 +17,6 @@ from airone.lib.types import (
     AttrTypeObj,
     AttrTypeStr,
     AttrTypeText,
-    AttrTypeValue,
 )
 from dashboard import tasks as dashboard_tasks
 from dashboard.settings import CONFIG
@@ -148,7 +148,7 @@ class ViewTest(AironeViewTest):
             EntityAttr.objects.create(
                 **{
                     "name": "attr-1-1",
-                    "type": AttrTypeValue["string"],
+                    "type": AttrType.STRING,
                     "created_user": self.admin,
                     "parent_entity": entity1,
                 }
@@ -181,7 +181,7 @@ class ViewTest(AironeViewTest):
                 EntityAttr.objects.create(
                     **{
                         "name": "attr",
-                        "type": AttrTypeValue["string"],
+                        "type": AttrType.STRING,
                         "created_user": self.admin,
                         "parent_entity": entity,
                     }
@@ -620,23 +620,23 @@ class ViewTest(AironeViewTest):
         grp_entry = Group.objects.create(name="group_entry")
         role_entry = Role.objects.create(name="role_entry")
         attr_info = {
-            "str": {"type": AttrTypeValue["string"], "value": "foo"},
-            "text": {"type": AttrTypeValue["text"], "value": "foo"},
-            "bool": {"type": AttrTypeValue["boolean"], "value": True},
-            "date": {"type": AttrTypeValue["date"], "value": "2020-01-01"},
-            "obj": {"type": AttrTypeValue["object"], "value": ref_entry},
-            "grp": {"type": AttrTypeValue["group"], "value": grp_entry},
-            "role": {"type": AttrTypeValue["role"], "value": role_entry},
+            "str": {"type": AttrType.STRING, "value": "foo"},
+            "text": {"type": AttrType.TEXT, "value": "foo"},
+            "bool": {"type": AttrType.BOOLEAN, "value": True},
+            "date": {"type": AttrType.DATE, "value": "2020-01-01"},
+            "obj": {"type": AttrType.OBJECT, "value": ref_entry},
+            "grp": {"type": AttrType.GROUP, "value": grp_entry},
+            "role": {"type": AttrType.ROLE, "value": role_entry},
             "name": {
-                "type": AttrTypeValue["named_object"],
+                "type": AttrType.NAMED_OBJECT,
                 "value": {"name": "bar", "id": ref_entry.id},
             },
-            "arr_str": {"type": AttrTypeValue["array_string"], "value": ["foo"]},
-            "arr_obj": {"type": AttrTypeValue["array_object"], "value": [ref_entry]},
-            "arr_grp": {"type": AttrTypeValue["array_group"], "value": [grp_entry]},
-            "arr_role": {"type": AttrTypeValue["array_role"], "value": [role_entry]},
+            "arr_str": {"type": AttrType.ARRAY_STRING, "value": ["foo"]},
+            "arr_obj": {"type": AttrType.ARRAY_OBJECT, "value": [ref_entry]},
+            "arr_grp": {"type": AttrType.ARRAY_GROUP, "value": [grp_entry]},
+            "arr_role": {"type": AttrType.ARRAY_ROLE, "value": [role_entry]},
             "arr_name": {
-                "type": AttrTypeValue["array_named_object"],
+                "type": AttrType.ARRAY_NAMED_OBJECT,
                 "value": [{"name": "hoge", "id": ref_entry.id}],
             },
         }
@@ -1001,7 +1001,7 @@ class ViewTest(AironeViewTest):
         entity = Entity.objects.create(name="entity", created_user=user)
         entity_attr = EntityAttr.objects.create(
             name="attr_ref",
-            type=AttrTypeValue["object"],
+            type=AttrType.OBJECT,
             created_user=user,
             parent_entity=entity,
         )
@@ -1140,7 +1140,7 @@ class ViewTest(AironeViewTest):
 
             test_val = None
 
-            if case[0].TYPE & AttrTypeValue["array"] == 0:
+            if case[0].TYPE & AttrType._ARRAY == 0:
                 if case[0] == AttrTypeStr:
                     test_val = AttributeValue.create(user=user, attr=test_attr, value=case[1])
                 elif case[0] == AttrTypeObj:
@@ -1212,48 +1212,48 @@ class ViewTest(AironeViewTest):
 
         attr_info = {
             "str": {
-                "type": AttrTypeValue["string"],
+                "type": AttrType.STRING,
                 "value": "foo",
                 "invalid_values": [123, entry_ref, True],
             },
-            "obj": {"type": AttrTypeValue["object"], "value": str(entry_ref.id)},
+            "obj": {"type": AttrType.OBJECT, "value": str(entry_ref.id)},
             "name": {
-                "type": AttrTypeValue["named_object"],
+                "type": AttrType.NAMED_OBJECT,
                 "value": {"name": "bar", "id": str(entry_ref.id)},
             },
-            "bool": {"type": AttrTypeValue["boolean"], "value": False},
+            "bool": {"type": AttrType.BOOLEAN, "value": False},
             "arr_str": {
-                "type": AttrTypeValue["array_string"],
+                "type": AttrType.ARRAY_STRING,
                 "value": ["foo", "bar", "baz"],
             },
             "arr_obj": {
-                "type": AttrTypeValue["array_object"],
+                "type": AttrType.ARRAY_OBJECT,
                 "value": [str(entry_ref.id)],
             },
             "arr_name": {
-                "type": AttrTypeValue["array_named_object"],
+                "type": AttrType.ARRAY_NAMED_OBJECT,
                 "value": [
                     {"name": "hoge", "id": str(entry_ref.id)},
                     {"name": "fuga", "boolean": False},  # specify boolean parameter
                 ],
             },
             "group": {
-                "type": AttrTypeValue["group"],
+                "type": AttrType.GROUP,
                 "value": str(entry_group.id),
             },
             "arr_group": {
-                "type": AttrTypeValue["array_group"],
+                "type": AttrType.ARRAY_GROUP,
                 "value": [str(entry_group.id)],
             },
             "role": {
-                "type": AttrTypeValue["role"],
+                "type": AttrType.ROLE,
                 "value": str(entry_role.id),
             },
             "arr_role": {
-                "type": AttrTypeValue["array_role"],
+                "type": AttrType.ARRAY_ROLE,
                 "value": [str(entry_role.id)],
             },
-            "date": {"type": AttrTypeValue["date"], "value": date(2020, 1, 1)},
+            "date": {"type": AttrType.DATE, "value": date(2020, 1, 1)},
         }
         entities = []
         for index in range(2):
@@ -1266,7 +1266,7 @@ class ViewTest(AironeViewTest):
                     parent_entity=entity,
                 )
 
-                if info["type"] & AttrTypeValue["object"]:
+                if info["type"] & AttrType.OBJECT:
                     attr.referral.add(entity_ref)
 
                 entity.attrs.add(attr)
@@ -1498,7 +1498,7 @@ class ViewTest(AironeViewTest):
         entity = Entity.objects.create(name="entity", created_user=user)
         entity_attr = EntityAttr.objects.create(
             name="attr_ref",
-            type=AttrTypeValue["object"],
+            type=AttrType.OBJECT,
             created_user=user,
             parent_entity=entity,
         )

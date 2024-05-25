@@ -12,7 +12,7 @@ from acl.models import ACLBase
 from airone.lib.acl import ACLType
 from airone.lib.elasticsearch import prepend_escape_character
 from airone.lib.http import http_get, http_post
-from airone.lib.types import AttrTypeValue
+from airone.lib.types import AttrType
 from entity.models import Entity, EntityAttr
 from entry.models import Attribute, Entry
 from entry.settings import CONFIG
@@ -98,8 +98,8 @@ def search_entries(request, entity_ids, recv_data):
 
         for attr in attrs:
             # The case specified condition doesn't match with attribute type
-            if (cond["type"] == "text" and not attr.schema.type & AttrTypeValue["string"]) or (
-                cond["type"] == "entry" and not attr.schema.type & AttrTypeValue["object"]
+            if (cond["type"] == "text" and not attr.schema.type & AttrType.STRING) or (
+                cond["type"] == "entry" and not attr.schema.type & AttrType.OBJECT
             ):
                 continue
 
@@ -108,7 +108,7 @@ def search_entries(request, entity_ids, recv_data):
             if not attrv:
                 continue
 
-            if attr.schema.type & AttrTypeValue["array"]:
+            if attr.schema.type & AttrType._ARRAY:
                 ret = any([_is_match_value(x, cond) for x in attrv.data_array.all()])
             else:
                 ret = _is_match_value(attrv, cond)
@@ -229,11 +229,11 @@ def get_attr_referrals(request, attr_id):
     else:
         attr = EntityAttr.objects.get(id=attr_id)
 
-    if attr.type & AttrTypeValue["object"]:
+    if attr.type & AttrType.OBJECT:
         results = _get_referral_entries(attr)
-    elif attr.type & AttrTypeValue["group"]:
+    elif attr.type & AttrType.GROUP:
         results = _get_referral_groups(attr)
-    elif attr.type & AttrTypeValue["role"]:
+    elif attr.type & AttrType.ROLE:
         results = _get_referral_roles(attr)
     else:
         return HttpResponse("Target Attribute does not referring type", status=400)

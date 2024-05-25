@@ -4,7 +4,7 @@ from rest_framework.authtoken.models import Token
 from social_django.models import UserSocialAuth
 
 from airone.lib.acl import ACLType
-from airone.lib.types import AttrTypeValue
+from airone.lib.types import AttrType
 from entity.models import Entity, EntityAttr
 from entry.models import Entry
 from group.models import Group
@@ -64,7 +64,7 @@ class ModelTest(TestCase):
         entity = Entity.objects.create(name="test-entity", created_user=self.user)
         attr = EntityAttr.objects.create(
             name="test-attr",
-            type=AttrTypeValue["object"],
+            type=AttrType.OBJECT,
             created_user=self.user,
             parent_entity=entity,
         )

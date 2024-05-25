@@ -5,7 +5,7 @@ from django.urls import reverse
 from acl.models import ACLBase
 from airone.lib.acl import ACLType
 from airone.lib.test import AironeViewTest
-from airone.lib.types import AttrTypeValue
+from airone.lib.types import AttrType
 from entity.models import Entity, EntityAttr
 from entry.models import Attribute, Entry
 from role.models import Role
@@ -113,7 +113,7 @@ class ViewTest(AironeViewTest):
 
         entity = Entity.objects.create(name="entity", created_user=user)
         attrbase = EntityAttr.objects.create(
-            name="hoge", type=AttrTypeValue["object"], created_user=user, parent_entity=entity
+            name="hoge", type=AttrType.OBJECT, created_user=user, parent_entity=entity
         )
         resp = self.send_set_request(attrbase, self._role)
 
@@ -139,7 +139,7 @@ class ViewTest(AironeViewTest):
         entity = Entity.objects.create(name="hoge", created_user=user)
         entry = Entry.objects.create(name="hoge", created_user=user, schema=entity)
         attrbase = EntityAttr.objects.create(
-            name="hoge", type=AttrTypeValue["object"], created_user=user, parent_entity=entity
+            name="hoge", type=AttrType.OBJECT, created_user=user, parent_entity=entity
         )
         entity.attrs.add(attrbase)
         attr = entry.add_attribute_from_base(attrbase, user)
@@ -289,7 +289,7 @@ class ViewTest(AironeViewTest):
 
         entity = Entity.objects.create(name="hoge", created_user=user)
         attrbase = EntityAttr.objects.create(
-            name="attr1", type=AttrTypeValue["object"], created_user=user, parent_entity=entity
+            name="attr1", type=AttrType.OBJECT, created_user=user, parent_entity=entity
         )
 
         entry = Entry.objects.create(name="fuga", created_user=user, schema=entity)

@@ -1,7 +1,7 @@
 import json
 
 from airone.lib.test import AironeViewTest
-from airone.lib.types import AttrTypeValue
+from airone.lib.types import AttrType
 from trigger.models import (
     TriggerAction,
     TriggerActionValue,
@@ -22,28 +22,28 @@ class APITest(AironeViewTest):
             self.user,
             "people",
             attrs=[
-                {"name": "address", "type": AttrTypeValue["string"]},
-                {"name": "is_orphan", "type": AttrTypeValue["boolean"]},
+                {"name": "address", "type": AttrType.STRING},
+                {"name": "is_orphan", "type": AttrType.BOOLEAN},
             ],
         )
         self.entity_book = self.create_entity(
             self.user,
             "book",
             attrs=[
-                {"name": "title", "type": AttrTypeValue["string"]},
-                {"name": "borrowed_by", "type": AttrTypeValue["object"]},
-                {"name": "isbn", "type": AttrTypeValue["string"]},
-                {"name": "is_overdue", "type": AttrTypeValue["boolean"]},
-                {"name": "in_preparation", "type": AttrTypeValue["boolean"]},
-                {"name": "memo", "type": AttrTypeValue["string"]},
-                {"name": "authors", "type": AttrTypeValue["array_string"]},
-                {"name": "recommended_by", "type": AttrTypeValue["array_object"]},
+                {"name": "title", "type": AttrType.STRING},
+                {"name": "borrowed_by", "type": AttrType.OBJECT},
+                {"name": "isbn", "type": AttrType.STRING},
+                {"name": "is_overdue", "type": AttrType.BOOLEAN},
+                {"name": "in_preparation", "type": AttrType.BOOLEAN},
+                {"name": "memo", "type": AttrType.STRING},
+                {"name": "authors", "type": AttrType.ARRAY_STRING},
+                {"name": "recommended_by", "type": AttrType.ARRAY_OBJECT},
                 {
                     "name": "price",
-                    "type": AttrTypeValue["named_object"],
+                    "type": AttrType.NAMED_OBJECT,
                     "ref": self.entity_currency,
                 },
-                {"name": "history", "type": AttrTypeValue["array_named_object"]},
+                {"name": "history", "type": AttrType.ARRAY_NAMED_OBJECT},
             ],
         )
 

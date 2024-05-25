@@ -2,7 +2,7 @@ import json
 from datetime import date
 
 from airone.lib.test import AironeViewTest
-from airone.lib.types import AttrTypeValue
+from airone.lib.types import AttrType, AttrTypeValue
 from entity.models import Entity, EntityAttr
 from entry.models import Entry
 from entry.settings import CONFIG
@@ -206,7 +206,7 @@ class ViewTest(AironeViewTest):
             EntityAttr.objects.create(
                 **{
                     "name": "Refer",
-                    "type": AttrTypeValue["object"],
+                    "type": AttrType.OBJECT,
                     "created_user": admin,
                     "parent_entity": entity,
                 }
@@ -305,7 +305,7 @@ class ViewTest(AironeViewTest):
         entity_attr = EntityAttr.objects.create(
             **{
                 "name": "Refer",
-                "type": AttrTypeValue["object"],
+                "type": AttrType.OBJECT,
                 "created_user": admin,
                 "parent_entity": entity,
             }
@@ -391,7 +391,7 @@ class ViewTest(AironeViewTest):
         entity_attr = EntityAttr.objects.create(
             **{
                 "name": "Refer",
-                "type": AttrTypeValue["named_object"],
+                "type": AttrType.NAMED_OBJECT,
                 "created_user": admin,
                 "parent_entity": entity,
             }
@@ -418,8 +418,8 @@ class ViewTest(AironeViewTest):
             Entry.objects.create(name="r-%s" % index, schema=ref_entity, created_user=admin)
 
         attr_infos = [
-            {"name": "attr_ref", "type": AttrTypeValue["object"], "ref": ref_entity},
-            {"name": "attr_val", "type": AttrTypeValue["string"]},
+            {"name": "attr_ref", "type": AttrType.OBJECT, "ref": ref_entity},
+            {"name": "attr_val", "type": AttrType.STRING},
         ]
         entity = Entity.objects.create(name="Entity", created_user=admin)
 
@@ -443,10 +443,10 @@ class ViewTest(AironeViewTest):
             for attr_name in ["attr_ref", "attr_val"]:
                 attr = entry.attrs.get(name=attr_name)
 
-                if attr.schema.type & AttrTypeValue["string"]:
+                if attr.schema.type & AttrType.STRING:
                     attr.add_value(admin, str(index))
 
-                elif attr.schema.type & AttrTypeValue["object"]:
+                elif attr.schema.type & AttrType.OBJECT:
                     attr.add_value(admin, Entry.objects.get(name="r-%d" % index))
 
         # checks the the API request to get entries with 'or' cond_link parameter
@@ -577,7 +577,7 @@ class ViewTest(AironeViewTest):
 
     def test_get_entry_history(self):
         def _get_exp_value(attr, attr_value):
-            if attr.schema.type & AttrTypeValue["named"]:
+            if attr.schema.type & AttrType._NAMED:
                 return {
                     "value": attr_value["name"],
                     "referral": {
@@ -586,12 +586,12 @@ class ViewTest(AironeViewTest):
                     },
                 }
             elif (
-                attr.schema.type & AttrTypeValue["object"]
-                or attr.schema.type & AttrTypeValue["group"]
-                or attr.schema.type & AttrTypeValue["role"]
+                attr.schema.type & AttrType.OBJECT
+                or attr.schema.type & AttrType.GROUP
+                or attr.schema.type & AttrType.ROLE
             ):
                 return {"id": attr_value.id, "name": attr_value.name}
-            elif attr.schema.type & AttrTypeValue["date"]:
+            elif attr.schema.type & AttrType.DATE:
                 return str(attr_value)
             else:
                 return attr_value
@@ -660,7 +660,7 @@ class ViewTest(AironeViewTest):
             attr = entry.attrs.get(schema__name=attrname)
             attr_value_history = [x for x in resp_data if x["attr_name"] == attrname]
 
-            if attr.schema.type & AttrTypeValue["array"]:
+            if attr.schema.type & AttrType._ARRAY:
                 exp_curr_value = [_get_exp_value(attr, x) for x in info["values"][1]]
                 exp_prev_value = [_get_exp_value(attr, x) for x in info["values"][0]]
             else:
@@ -672,7 +672,7 @@ class ViewTest(AironeViewTest):
             # check order of former value and previous value
             for index, history_value in enumerate(attr_value_history):
                 if (
-                    attr.schema.type & AttrTypeValue["array"]
+                    attr.schema.type & AttrType._ARRAY
                     and not history_value["curr"]["value"]
                     and not history_value["prev"]
                 ):
@@ -681,7 +681,7 @@ class ViewTest(AironeViewTest):
                 if not history_value["prev"] or not history_value["prev"]["value"]:
                     # The oldest update history
                     self.assertEqual(history_value["curr"]["value"], exp_prev_value)
-                    if attr.schema.type & AttrTypeValue["array"]:
+                    if attr.schema.type & AttrType._ARRAY:
                         self.assertEqual(history_value["prev"]["value"], [])
                     else:
                         self.assertEqual(history_value["prev"], None)
@@ -699,7 +699,7 @@ class ViewTest(AironeViewTest):
         entity_attr = EntityAttr.objects.create(
             **{
                 "name": "attr",
-                "type": AttrTypeValue["string"],
+                "type": AttrType.STRING,
                 "created_user": user,
                 "parent_entity": entity,
             }
@@ -737,7 +737,7 @@ class ViewTest(AironeViewTest):
         entity_attr = EntityAttr.objects.create(
             **{
                 "name": "attr",
-                "type": AttrTypeValue["string"],
+                "type": AttrType.STRING,
                 "created_user": user,
                 "parent_entity": entity,
             }

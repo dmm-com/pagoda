@@ -7,7 +7,7 @@ from django.contrib.auth.models import Group as DjangoGroup
 from django.db import models
 from django.db.models import Q
 
-from airone.lib.types import AttrTypeValue
+from airone.lib.types import AttrType
 
 
 class Group(DjangoGroup):
@@ -66,11 +66,11 @@ class Group(DjangoGroup):
         query = Q(
             Q(
                 is_latest=True,
-                parent_attr__schema__type=AttrTypeValue["group"],
+                parent_attr__schema__type=AttrType.GROUP,
             )
             | Q(
                 parent_attrv__is_latest=True,
-                parent_attr__schema__type=AttrTypeValue["array_group"],
+                parent_attr__schema__type=AttrType.ARRAY_GROUP,
             ),
             value=str(self.id),
             parent_attr__parent_entry__is_active=True,

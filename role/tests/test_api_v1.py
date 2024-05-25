@@ -3,7 +3,7 @@ from unittest import mock
 
 from django.urls import reverse
 
-from airone.lib.types import AttrTypeValue
+from airone.lib.types import AttrType
 from entry.models import Entry
 from role import tasks
 
@@ -61,7 +61,7 @@ class ModelTest(RoleTestBase):
             **{
                 "user": user,
                 "name": "Entity",
-                "attrs": [{"name": "role", "type": AttrTypeValue["role"]}],
+                "attrs": [{"name": "role", "type": AttrType.ROLE}],
             }
         )
 

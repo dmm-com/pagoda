@@ -3,7 +3,7 @@ from django.test import TestCase
 
 from acl.models import ACLBase
 from airone.lib.acl import ACLType
-from airone.lib.types import AttrTypeValue
+from airone.lib.types import AttrType
 from entity.models import Entity, EntityAttr
 from entry.models import Attribute, Entry
 from user.models import User
@@ -51,7 +51,7 @@ class SignalTest(TestCase):
         entity = Entity.objects.create(name="object", created_user=self.user)
         obj = EntityAttr.objects.create(
             name="object",
-            type=AttrTypeValue["object"],
+            type=AttrType.OBJECT,
             created_user=self.user,
             parent_entity=entity,
         )
@@ -77,7 +77,7 @@ class SignalTest(TestCase):
         entity_attr = EntityAttr.objects.create(
             name="object",
             created_user=self.user,
-            type=AttrTypeValue["object"],
+            type=AttrType.OBJECT,
             parent_entity=entity,
         )
         entry = Entry.objects.create(name="object", created_user=self.user, schema=entity)

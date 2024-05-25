@@ -10,7 +10,7 @@ from django.db.models import Q
 from simple_history.models import HistoricalRecords
 
 from airone.lib.acl import ACLType
-from airone.lib.types import AttrTypeValue
+from airone.lib.types import AttrType
 
 
 class Role(models.Model):
@@ -124,11 +124,11 @@ class Role(models.Model):
         query = Q(
             Q(
                 is_latest=True,
-                parent_attr__schema__type=AttrTypeValue["role"],
+                parent_attr__schema__type=AttrType.ROLE,
             )
             | Q(
                 parent_attrv__is_latest=True,
-                parent_attr__schema__type=AttrTypeValue["array_role"],
+                parent_attr__schema__type=AttrType.ARRAY_ROLE,
             ),
             value=str(self.id),
             parent_attr__parent_entry__is_active=True,
