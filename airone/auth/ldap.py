@@ -8,12 +8,6 @@ from user.models import User
 class LDAPBackend(object):
     # This method is called by Django to authenticate user by specified username and password.
     def authenticate(self, request, username=None, password=None):
-        # If the HTTP method is GET or HEAD, use the slave DB by the django_replicated.
-        # Return None because session information cannot be written to SlaveDB.
-        if request and request.method in ["GET", "HEAD"]:
-            Logger.info("Failed to authenticate because of GET or HEAD method")
-            return None
-
         # check authentication with local database at first.
         user = User.objects.filter(
             username=username,
@@ -37,16 +31,29 @@ class LDAPBackend(object):
             # This creates LDAP-authenticated user if necessary. Those of them who
             # authenticated by LDAP are distinguished by 'authenticate_type' parameter
             # of User object.
-            (user, _) = User.objects.get_or_create(
-                **{
-                    "username": username,
-                    "authenticate_type": User.AuthenticateType.AUTH_TYPE_LDAP,
-                }
+            user = User.objects.filter(
+                username=username,
+                authenticate_type=User.AuthenticateType.AUTH_TYPE_LDAP,
+                is_active=True,
+            ).first()
+
+            if user:
+                return user
+
+            # If the HTTP method is GET or HEAD, use the slave DB by the django_replicated.
+            # Return None because session information cannot be written to SlaveDB.
+            if request and request.method in ["GET", "HEAD"]:
+                Logger.info("Failed to authenticate because of GET or HEAD method")
+                return None
+
+            user = User.objects.create(
+                username=username,
+                authenticate_type=User.AuthenticateType.AUTH_TYPE_LDAP,
             )
+            return user
         else:
             Logger.info("Failed to authenticate user(%s) in LDAP" % username)
-
-        return user
+            return None
 
     # This method is necessary because this called by Django to identify user object from id.
     def get_user(self, user_id):
