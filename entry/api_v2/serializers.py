@@ -1,3 +1,4 @@
+from datetime import date
 from typing import Any, Literal
 
 from django.db.models import Prefetch
@@ -38,7 +39,8 @@ class ExportedEntryAttributeValueObject(BaseModel):
 
 
 ExportedEntryAttributePrimitiveValue = (
-    str  # includes text, string, date, group, role
+    str  # includes text, string, group, role
+    | date
     | bool
     | ExportedEntryAttributeValueObject
     | dict[str, ExportedEntryAttributeValueObject]  # named entry for yaml export
