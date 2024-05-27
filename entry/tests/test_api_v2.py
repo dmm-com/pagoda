@@ -2244,6 +2244,8 @@ class ViewTest(BaseViewTest):
         self.assertEqual(
             obj[0]["entries"][0]["attrs"],
             [
+                {"name": "val", "value": "hoge"},
+                {"name": "vals", "value": ["foo", "bar"]},
                 {"name": "ref", "value": {"entity": "ref_entity", "name": "r-0"}},
                 {"name": "refs", "value": [{"entity": "ref_entity", "name": "r-0"}]},
                 {"name": "name", "value": {"hoge": {"entity": "ref_entity", "name": "r-0"}}},
@@ -2261,8 +2263,6 @@ class ViewTest(BaseViewTest):
                 {"name": "date", "value": datetime.date(2018, 12, 31)},
                 {"name": "role", "value": "role0"},
                 {"name": "roles", "value": ["role0"]},
-                {"name": "val", "value": "hoge"},
-                {"name": "vals", "value": ["foo", "bar"]},
             ],
         )
 
