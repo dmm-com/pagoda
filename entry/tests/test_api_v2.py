@@ -2208,6 +2208,65 @@ class ViewTest(BaseViewTest):
         self.assertEqual(resp.status_code, 200)
 
     @patch("entry.tasks.export_entries_v2.delay", Mock(side_effect=tasks.export_entries_v2))
+    def test_post_export_with_all_attribute(self):
+        self.add_entry(
+            self.user,
+            "Entry",
+            self.entity,
+            values={
+                "val": "hoge",
+                "ref": self.ref_entry.id,
+                "name": {"name": "hoge", "id": self.ref_entry.id},
+                "bool": False,
+                "date": "2018-12-31",
+                "group": self.group.id,
+                "groups": [self.group.id],
+                "text": "fuga",
+                "vals": ["foo", "bar"],
+                "refs": [self.ref_entry.id],
+                "names": [
+                    {"name": "foo", "id": self.ref_entry.id},
+                    {"name": "bar", "id": self.ref_entry.id},
+                ],
+                "role": self.role.id,
+                "roles": [self.role.id],
+            },
+        )
+
+        resp = self.client.post(
+            "/entry/api/v2/%d/export/" % self.entity.id,
+            json.dumps({}),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 200)
+        job = Job.objects.filter(target=self.entity).last()
+        obj = yaml.load(job.get_cache(), Loader=yaml.SafeLoader)
+        self.assertEqual(
+            obj[0]["entries"][0]["attrs"],
+            [
+                {"name": "ref", "value": {"entity": "ref_entity", "name": "r-0"}},
+                {"name": "refs", "value": [{"entity": "ref_entity", "name": "r-0"}]},
+                {"name": "name", "value": {"hoge": {"entity": "ref_entity", "name": "r-0"}}},
+                {
+                    "name": "names",
+                    "value": [
+                        {"foo": {"entity": "ref_entity", "name": "r-0"}},
+                        {"bar": {"entity": "ref_entity", "name": "r-0"}},
+                    ],
+                },
+                {"name": "group", "value": "group0"},
+                {"name": "groups", "value": ["group0"]},
+                {"name": "bool", "value": False},
+                {"name": "text", "value": "fuga"},
+                {"name": "date", "value": datetime.date(2018, 12, 31)},
+                {"name": "role", "value": "role0"},
+                {"name": "roles", "value": ["role0"]},
+                {"name": "val", "value": "hoge"},
+                {"name": "vals", "value": ["foo", "bar"]},
+            ],
+        )
+
+    @patch("entry.tasks.export_entries_v2.delay", Mock(side_effect=tasks.export_entries_v2))
     def test_get_export_csv_escape(self):
         user = self.admin_login()
 
