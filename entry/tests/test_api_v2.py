@@ -13,6 +13,7 @@ from rest_framework.exceptions import ValidationError
 from airone.lib.log import Logger
 from airone.lib.test import AironeViewTest
 from airone.lib.types import (
+    AttrType,
     AttrTypeArrNamedObj,
     AttrTypeArrObj,
     AttrTypeArrStr,
@@ -48,7 +49,7 @@ class BaseViewTest(AironeViewTest):
             attrs=self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY,
         )
         for attr in self.ref_entity.attrs.all():
-            if attr.type & AttrTypeValue["object"]:
+            if attr.type & AttrType.OBJECT:
                 attr.referral.add(self.ref_entity)
 
         self.ref_entry: Entry = self.add_entry(self.user, "r-0", self.ref_entity)
@@ -57,7 +58,7 @@ class BaseViewTest(AironeViewTest):
 
         attrs = []
         for attr_info in self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY:
-            if attr_info["type"] & AttrTypeValue["object"]:
+            if attr_info["type"] & AttrType.OBJECT:
                 attr_info["ref"] = self.ref_entity
             attrs.append(attr_info)
         self.entity: Entity = self.create_entity(
@@ -116,7 +117,7 @@ class ViewTest(BaseViewTest):
         optional_attr = EntityAttr.objects.create(
             **{
                 "name": "opt",
-                "type": AttrTypeValue["string"],
+                "type": AttrType.STRING,
                 "is_mandatory": False,
                 "parent_entity": self.entity,
                 "created_user": self.user,
@@ -138,7 +139,7 @@ class ViewTest(BaseViewTest):
         self.assertEqual(
             next(filter(lambda x: x["schema"]["name"] == "val", resp_data["attrs"])),
             {
-                "type": AttrTypeValue["string"],
+                "type": AttrType.STRING,
                 "value": {"as_string": "hoge"},
                 "id": entry.attrs.get(schema__name="val").id,
                 "is_mandatory": False,
@@ -152,7 +153,7 @@ class ViewTest(BaseViewTest):
         self.assertEqual(
             next(filter(lambda x: x["schema"]["name"] == "ref", resp_data["attrs"])),
             {
-                "type": AttrTypeValue["object"],
+                "type": AttrType.OBJECT,
                 "value": {
                     "as_object": {
                         "id": self.ref_entry.id,
@@ -175,7 +176,7 @@ class ViewTest(BaseViewTest):
         self.assertEqual(
             next(filter(lambda x: x["schema"]["name"] == "name", resp_data["attrs"])),
             {
-                "type": AttrTypeValue["named_object"],
+                "type": AttrType.NAMED_OBJECT,
                 "value": {
                     "as_named_object": {
                         "name": "hoge",
@@ -201,7 +202,7 @@ class ViewTest(BaseViewTest):
         self.assertEqual(
             next(filter(lambda x: x["schema"]["name"] == "bool", resp_data["attrs"])),
             {
-                "type": AttrTypeValue["boolean"],
+                "type": AttrType.BOOLEAN,
                 "value": {"as_boolean": False},
                 "id": entry.attrs.get(schema__name="bool").id,
                 "is_mandatory": False,
@@ -215,7 +216,7 @@ class ViewTest(BaseViewTest):
         self.assertEqual(
             next(filter(lambda x: x["schema"]["name"] == "date", resp_data["attrs"])),
             {
-                "type": AttrTypeValue["date"],
+                "type": AttrType.DATE,
                 "value": {"as_string": "2018-12-31"},
                 "id": entry.attrs.get(schema__name="date").id,
                 "is_mandatory": False,
@@ -229,7 +230,7 @@ class ViewTest(BaseViewTest):
         self.assertEqual(
             next(filter(lambda x: x["schema"]["name"] == "group", resp_data["attrs"])),
             {
-                "type": AttrTypeValue["group"],
+                "type": AttrType.GROUP,
                 "value": {
                     "as_group": {
                         "id": self.group.id,
@@ -248,7 +249,7 @@ class ViewTest(BaseViewTest):
         self.assertEqual(
             next(filter(lambda x: x["schema"]["name"] == "groups", resp_data["attrs"])),
             {
-                "type": AttrTypeValue["array_group"],
+                "type": AttrType.ARRAY_GROUP,
                 "value": {
                     "as_array_group": [
                         {
@@ -269,7 +270,7 @@ class ViewTest(BaseViewTest):
         self.assertEqual(
             next(filter(lambda x: x["schema"]["name"] == "role", resp_data["attrs"])),
             {
-                "type": AttrTypeValue["role"],
+                "type": AttrType.ROLE,
                 "value": {
                     "as_role": {
                         "id": self.role.id,
@@ -288,7 +289,7 @@ class ViewTest(BaseViewTest):
         self.assertEqual(
             next(filter(lambda x: x["schema"]["name"] == "roles", resp_data["attrs"])),
             {
-                "type": AttrTypeValue["array_role"],
+                "type": AttrType.ARRAY_ROLE,
                 "value": {
                     "as_array_role": [
                         {
@@ -309,7 +310,7 @@ class ViewTest(BaseViewTest):
         self.assertEqual(
             next(filter(lambda x: x["schema"]["name"] == "text", resp_data["attrs"])),
             {
-                "type": AttrTypeValue["text"],
+                "type": AttrType.TEXT,
                 "value": {"as_string": "fuga"},
                 "id": entry.attrs.get(schema__name="text").id,
                 "is_mandatory": False,
@@ -323,7 +324,7 @@ class ViewTest(BaseViewTest):
         self.assertEqual(
             next(filter(lambda x: x["schema"]["name"] == "vals", resp_data["attrs"])),
             {
-                "type": AttrTypeValue["array_string"],
+                "type": AttrType.ARRAY_STRING,
                 "value": {"as_array_string": ["foo", "bar"]},
                 "id": entry.attrs.get(schema__name="vals").id,
                 "is_mandatory": False,
@@ -337,7 +338,7 @@ class ViewTest(BaseViewTest):
         self.assertEqual(
             next(filter(lambda x: x["schema"]["name"] == "refs", resp_data["attrs"])),
             {
-                "type": AttrTypeValue["array_object"],
+                "type": AttrType.ARRAY_OBJECT,
                 "value": {
                     "as_array_object": [
                         {
@@ -362,7 +363,7 @@ class ViewTest(BaseViewTest):
         self.assertEqual(
             next(filter(lambda x: x["schema"]["name"] == "names", resp_data["attrs"])),
             {
-                "type": AttrTypeValue["array_named_object"],
+                "type": AttrType.ARRAY_NAMED_OBJECT,
                 "value": {
                     "as_array_named_object": [
                         {
@@ -401,7 +402,7 @@ class ViewTest(BaseViewTest):
         self.assertEqual(
             next(filter(lambda x: x["schema"]["name"] == "opt", resp_data["attrs"])),
             {
-                "type": AttrTypeValue["string"],
+                "type": AttrType.STRING,
                 "value": {"as_string": AttrTypeStr.DEFAULT_VALUE},
                 "id": None,
                 "is_mandatory": False,
@@ -462,7 +463,7 @@ class ViewTest(BaseViewTest):
         self.assertEqual(
             next(filter(lambda x: x["schema"]["name"] == "val", resp.json()["attrs"])),
             {
-                "type": AttrTypeValue["string"],
+                "type": AttrType.STRING,
                 "value": {"as_string": ""},
                 "id": entry.attrs.get(schema__name="val").id,
                 "is_mandatory": False,
@@ -481,7 +482,7 @@ class ViewTest(BaseViewTest):
         self.assertEqual(
             next(filter(lambda x: x["schema"]["name"] == "val", resp.json()["attrs"])),
             {
-                "type": AttrTypeValue["string"],
+                "type": AttrType.STRING,
                 "value": {"as_string": ""},
                 "id": entry.attrs.get(schema__name="val").id,
                 "is_mandatory": False,
@@ -502,7 +503,7 @@ class ViewTest(BaseViewTest):
         self.assertEqual(
             next(filter(lambda x: x["schema"]["name"] == "val", resp.json()["attrs"])),
             {
-                "type": AttrTypeValue["string"],
+                "type": AttrType.STRING,
                 "value": {"as_string": ""},
                 "id": entry.attrs.get(schema__name="val").id,
                 "is_mandatory": False,
@@ -521,7 +522,7 @@ class ViewTest(BaseViewTest):
         self.assertEqual(
             next(filter(lambda x: x["schema"]["name"] == "val", resp.json()["attrs"])),
             {
-                "type": AttrTypeValue["string"],
+                "type": AttrType.STRING,
                 "value": {"as_string": ""},
                 "id": entry.attrs.get(schema__name="val").id,
                 "is_mandatory": False,
@@ -557,7 +558,7 @@ class ViewTest(BaseViewTest):
             entry_attrs.append(
                 {
                     "id": 0,
-                    "type": AttrTypeValue["string"],
+                    "type": AttrType.STRING,
                     "value": "hoge",
                     "schema": {
                         "id": 0,
@@ -581,7 +582,7 @@ class ViewTest(BaseViewTest):
             resp.json()["attrs"][-1],
             {
                 "id": 0,
-                "type": AttrTypeValue["string"],
+                "type": AttrType.STRING,
                 "value": "hoge",
                 "schema": {
                     "id": 0,
@@ -622,7 +623,7 @@ class ViewTest(BaseViewTest):
         self.assertEqual(
             next(filter(lambda x: x["schema"]["name"] == "ref", resp_data["attrs"])),
             {
-                "type": AttrTypeValue["object"],
+                "type": AttrType.OBJECT,
                 "value": {
                     "as_object": None,
                 },
@@ -638,7 +639,7 @@ class ViewTest(BaseViewTest):
         self.assertEqual(
             next(filter(lambda x: x["schema"]["name"] == "name", resp_data["attrs"])),
             {
-                "type": AttrTypeValue["named_object"],
+                "type": AttrType.NAMED_OBJECT,
                 "value": {
                     "as_named_object": {
                         "name": "hoge",
@@ -657,7 +658,7 @@ class ViewTest(BaseViewTest):
         self.assertEqual(
             next(filter(lambda x: x["schema"]["name"] == "refs", resp_data["attrs"])),
             {
-                "type": AttrTypeValue["array_object"],
+                "type": AttrType.ARRAY_OBJECT,
                 "value": {"as_array_object": []},
                 "id": entry.attrs.get(schema__name="refs").id,
                 "is_mandatory": False,
@@ -671,7 +672,7 @@ class ViewTest(BaseViewTest):
         self.assertEqual(
             next(filter(lambda x: x["schema"]["name"] == "names", resp_data["attrs"])),
             {
-                "type": AttrTypeValue["array_named_object"],
+                "type": AttrType.ARRAY_NAMED_OBJECT,
                 "value": {"as_array_named_object": []},
                 "id": entry.attrs.get(schema__name="names").id,
                 "is_mandatory": False,
@@ -1970,7 +1971,7 @@ class ViewTest(BaseViewTest):
                 EntityAttr.objects.create(
                     **{
                         "name": name,
-                        "type": AttrTypeValue["string"],
+                        "type": AttrType.STRING,
                         "created_user": user,
                         "parent_entity": entity,
                     }
@@ -2027,7 +2028,7 @@ class ViewTest(BaseViewTest):
             EntityAttr.objects.create(
                 **{
                     "name": "new_attr",
-                    "type": AttrTypeValue["string"],
+                    "type": AttrType.STRING,
                     "created_user": user,
                     "parent_entity": entity,
                     "is_public": False,
@@ -2085,7 +2086,7 @@ class ViewTest(BaseViewTest):
         entity_attr_object = EntityAttr.objects.create(
             **{
                 "name": "object",
-                "type": AttrTypeValue["object"],
+                "type": AttrType.OBJECT,
                 "created_user": user,
                 "parent_entity": entity,
             }
@@ -2095,7 +2096,7 @@ class ViewTest(BaseViewTest):
         entity_attr_array_object = EntityAttr.objects.create(
             **{
                 "name": "array_object",
-                "type": AttrTypeValue["array_object"],
+                "type": AttrType.ARRAY_OBJECT,
                 "created_user": user,
                 "parent_entity": entity,
             }
@@ -2105,7 +2106,7 @@ class ViewTest(BaseViewTest):
         entity_attr_named_object = EntityAttr.objects.create(
             **{
                 "name": "named_object",
-                "type": AttrTypeValue["named_object"],
+                "type": AttrType.NAMED_OBJECT,
                 "created_user": user,
                 "parent_entity": entity,
             }
@@ -2115,7 +2116,7 @@ class ViewTest(BaseViewTest):
         entity_attr_named_object_without_key = EntityAttr.objects.create(
             **{
                 "name": "named_object_without_key",
-                "type": AttrTypeValue["named_object"],
+                "type": AttrType.NAMED_OBJECT,
                 "created_user": user,
                 "parent_entity": entity,
             }
@@ -2125,7 +2126,7 @@ class ViewTest(BaseViewTest):
         entity_attr_array_named_object = EntityAttr.objects.create(
             **{
                 "name": "array_named_object",
-                "type": AttrTypeValue["array_named_object"],
+                "type": AttrType.ARRAY_NAMED_OBJECT,
                 "created_user": user,
                 "parent_entity": entity,
             }
@@ -2263,7 +2264,7 @@ class ViewTest(BaseViewTest):
 
             test_val = None
 
-            if case[0].TYPE & AttrTypeValue["array"] == 0:
+            if case[0].TYPE & AttrType._ARRAY == 0:
                 if case[0] == AttrTypeStr:
                     test_val = AttributeValue.create(user=user, attr=test_attr, value=case[1])
                 elif case[0] == AttrTypeObj:
@@ -2316,8 +2317,8 @@ class ViewTest(BaseViewTest):
             self.user,
             "Entity",
             attrs=[
-                {"name": "role", "type": AttrTypeValue["role"]},
-                {"name": "roles", "type": AttrTypeValue["array_role"]},
+                {"name": "role", "type": AttrType.ROLE},
+                {"name": "roles", "type": AttrType.ARRAY_ROLE},
             ],
         )
 
@@ -2387,7 +2388,7 @@ class ViewTest(BaseViewTest):
         entity_attr = EntityAttr.objects.create(
             **{
                 "name": "Refer",
-                "type": AttrTypeValue["object"],
+                "type": AttrType.OBJECT,
                 "created_user": admin,
                 "parent_entity": entity,
             }
@@ -2470,7 +2471,7 @@ class ViewTest(BaseViewTest):
         entity_attr = EntityAttr.objects.create(
             **{
                 "name": "Refer",
-                "type": AttrTypeValue["named_object"],
+                "type": AttrType.NAMED_OBJECT,
                 "created_user": admin,
                 "parent_entity": entity,
             }
@@ -3206,23 +3207,23 @@ class ViewTest(BaseViewTest):
         grp_entry = Group.objects.create(name="group_entry")
         role_entry = Role.objects.create(name="role_entry")
         attr_info = {
-            "str": {"type": AttrTypeValue["string"], "value": "foo"},
-            "text": {"type": AttrTypeValue["text"], "value": "foo"},
-            "bool": {"type": AttrTypeValue["boolean"], "value": True},
-            "date": {"type": AttrTypeValue["date"], "value": "2020-01-01"},
-            "obj": {"type": AttrTypeValue["object"], "value": ref_entry},
-            "grp": {"type": AttrTypeValue["group"], "value": grp_entry},
-            "role": {"type": AttrTypeValue["role"], "value": role_entry},
+            "str": {"type": AttrType.STRING, "value": "foo"},
+            "text": {"type": AttrType.TEXT, "value": "foo"},
+            "bool": {"type": AttrType.BOOLEAN, "value": True},
+            "date": {"type": AttrType.DATE, "value": "2020-01-01"},
+            "obj": {"type": AttrType.OBJECT, "value": ref_entry},
+            "grp": {"type": AttrType.GROUP, "value": grp_entry},
+            "role": {"type": AttrType.ROLE, "value": role_entry},
             "name": {
-                "type": AttrTypeValue["named_object"],
+                "type": AttrType.NAMED_OBJECT,
                 "value": {"name": "bar", "id": ref_entry.id},
             },
-            "arr_str": {"type": AttrTypeValue["array_string"], "value": ["foo"]},
-            "arr_obj": {"type": AttrTypeValue["array_object"], "value": [ref_entry]},
-            "arr_grp": {"type": AttrTypeValue["array_group"], "value": [grp_entry]},
-            "arr_role": {"type": AttrTypeValue["array_role"], "value": [role_entry]},
+            "arr_str": {"type": AttrType.ARRAY_STRING, "value": ["foo"]},
+            "arr_obj": {"type": AttrType.ARRAY_OBJECT, "value": [ref_entry]},
+            "arr_grp": {"type": AttrType.ARRAY_GROUP, "value": [grp_entry]},
+            "arr_role": {"type": AttrType.ARRAY_ROLE, "value": [role_entry]},
             "arr_name": {
-                "type": AttrTypeValue["array_named_object"],
+                "type": AttrType.ARRAY_NAMED_OBJECT,
                 "value": [{"name": "hoge", "id": ref_entry.id}],
             },
         }
@@ -3586,7 +3587,7 @@ class ViewTest(BaseViewTest):
         entity = Entity.objects.create(name="entity", created_user=user)
         entity_attr = EntityAttr.objects.create(
             name="attr_ref",
-            type=AttrTypeValue["object"],
+            type=AttrType.OBJECT,
             created_user=user,
             parent_entity=entity,
         )
@@ -3725,7 +3726,7 @@ class ViewTest(BaseViewTest):
 
             test_val = None
 
-            if case[0].TYPE & AttrTypeValue["array"] == 0:
+            if case[0].TYPE & AttrType._ARRAY == 0:
                 if case[0] == AttrTypeStr:
                     test_val = AttributeValue.create(user=user, attr=test_attr, value=case[1])
                 elif case[0] == AttrTypeObj:
@@ -3796,48 +3797,48 @@ class ViewTest(BaseViewTest):
 
         attr_info = {
             "str": {
-                "type": AttrTypeValue["string"],
+                "type": AttrType.STRING,
                 "value": "foo",
                 "invalid_values": [123, entry_ref, True],
             },
-            "obj": {"type": AttrTypeValue["object"], "value": str(entry_ref.id)},
+            "obj": {"type": AttrType.OBJECT, "value": str(entry_ref.id)},
             "name": {
-                "type": AttrTypeValue["named_object"],
+                "type": AttrType.NAMED_OBJECT,
                 "value": {"name": "bar", "id": str(entry_ref.id)},
             },
-            "bool": {"type": AttrTypeValue["boolean"], "value": False},
+            "bool": {"type": AttrType.BOOLEAN, "value": False},
             "arr_str": {
-                "type": AttrTypeValue["array_string"],
+                "type": AttrType.ARRAY_STRING,
                 "value": ["foo", "bar", "baz"],
             },
             "arr_obj": {
-                "type": AttrTypeValue["array_object"],
+                "type": AttrType.ARRAY_OBJECT,
                 "value": [str(entry_ref.id)],
             },
             "arr_name": {
-                "type": AttrTypeValue["array_named_object"],
+                "type": AttrType.ARRAY_NAMED_OBJECT,
                 "value": [
                     {"name": "hoge", "id": str(entry_ref.id)},
                     {"name": "fuga", "boolean": False},  # specify boolean parameter
                 ],
             },
             "group": {
-                "type": AttrTypeValue["group"],
+                "type": AttrType.GROUP,
                 "value": str(entry_group.id),
             },
             "arr_group": {
-                "type": AttrTypeValue["array_group"],
+                "type": AttrType.ARRAY_GROUP,
                 "value": [str(entry_group.id)],
             },
             "role": {
-                "type": AttrTypeValue["role"],
+                "type": AttrType.ROLE,
                 "value": str(entry_role.id),
             },
             "arr_role": {
-                "type": AttrTypeValue["array_role"],
+                "type": AttrType.ARRAY_ROLE,
                 "value": [str(entry_role.id)],
             },
-            "date": {"type": AttrTypeValue["date"], "value": date(2020, 1, 1)},
+            "date": {"type": AttrType.DATE, "value": date(2020, 1, 1)},
         }
         entities = []
         for index in range(2):
@@ -3850,7 +3851,7 @@ class ViewTest(BaseViewTest):
                     parent_entity=entity,
                 )
 
-                if info["type"] & AttrTypeValue["object"]:
+                if info["type"] & AttrType.OBJECT:
                     attr.referral.add(entity_ref)
 
                 entity.attrs.add(attr)
@@ -4099,7 +4100,7 @@ class ViewTest(BaseViewTest):
         entity = Entity.objects.create(name="entity", created_user=user)
         entity_attr = EntityAttr.objects.create(
             name="attr_ref",
-            type=AttrTypeValue["object"],
+            type=AttrType.OBJECT,
             created_user=user,
             parent_entity=entity,
         )

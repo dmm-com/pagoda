@@ -7,12 +7,12 @@ from django.urls import reverse
 
 from airone.lib.test import AironeViewTest
 from airone.lib.types import (
+    AttrType,
     AttrTypeArrObj,
     AttrTypeArrStr,
     AttrTypeObj,
     AttrTypeStr,
     AttrTypeText,
-    AttrTypeValue,
 )
 from entity import tasks
 from entity.models import Entity, EntityAttr
@@ -139,21 +139,21 @@ class ViewTest(AironeViewTest):
                 },
                 {
                     "name": "attr_bool",
-                    "type": str(AttrTypeValue["boolean"]),
+                    "type": str(AttrType.BOOLEAN),
                     "is_delete_in_chain": False,
                     "is_mandatory": False,
                     "row_index": "4",
                 },
                 {
                     "name": "attr_group",
-                    "type": str(AttrTypeValue["group"]),
+                    "type": str(AttrType.GROUP),
                     "is_delete_in_chain": False,
                     "is_mandatory": False,
                     "row_index": "5",
                 },
                 {
                     "name": "attr_date",
-                    "type": str(AttrTypeValue["date"]),
+                    "type": str(AttrType.DATE),
                     "is_delete_in_chain": False,
                     "is_mandatory": False,
                     "row_index": "6",
@@ -586,8 +586,8 @@ class ViewTest(AironeViewTest):
             user,
             "Old-Entity",
             attrs=[
-                {"name": "puyo", "type": AttrTypeValue["string"]},
-                {"name": "ref", "type": AttrTypeValue["object"], "ref": ref_entity},
+                {"name": "puyo", "type": AttrType.STRING},
+                {"name": "ref", "type": AttrType.OBJECT, "ref": ref_entity},
             ],
         )
 
@@ -911,8 +911,8 @@ class ViewTest(AironeViewTest):
             user,
             "old-Entity",
             attrs=[
-                {"name": "foo", "type": AttrTypeValue["string"]},
-                {"name": "ref", "type": AttrTypeValue["object"], "ref": ref_entity},
+                {"name": "foo", "type": AttrType.STRING},
+                {"name": "ref", "type": AttrType.OBJECT, "ref": ref_entity},
             ],
         )
 
@@ -941,7 +941,7 @@ class ViewTest(AironeViewTest):
             "attrs": [
                 {
                     "name": "foo",
-                    "type": str(AttrTypeValue["string"]),
+                    "type": str(AttrType.STRING),
                     "id": entity.attrs.first().id,
                     "is_delete_in_chain": True,
                     "is_mandatory": False,
@@ -949,7 +949,7 @@ class ViewTest(AironeViewTest):
                 },
                 {
                     "name": attr.name,
-                    "type": str(AttrTypeValue["string"]),
+                    "type": str(AttrType.STRING),
                     "id": entity.attrs.last().id,
                     "is_delete_in_chain": True,
                     "is_mandatory": False,
@@ -1364,7 +1364,7 @@ class ViewTest(AironeViewTest):
                 # change only attribute type
                 {
                     "name": attr2.name,
-                    "type": str(AttrTypeValue["object"]),
+                    "type": str(AttrType.OBJECT),
                     "id": attr2.id,
                     "is_delete_in_chain": True,
                     "is_mandatory": attr2.is_mandatory,
@@ -1388,8 +1388,8 @@ class ViewTest(AironeViewTest):
         # This checks data type of EntityAttr and AttributeValue wouldn't be changed.
         attrv = entry.attrs.get(schema=attr2).get_latest_value()
         self.assertEqual(attrv.value, "fuga")
-        self.assertEqual(attrv.data_type, AttrTypeValue["string"])
-        self.assertEqual(EntityAttr.objects.get(name=attr2.name).type, AttrTypeValue["string"])
+        self.assertEqual(attrv.data_type, AttrType.STRING)
+        self.assertEqual(EntityAttr.objects.get(name=attr2.name).type, AttrType.STRING)
 
     def test_show_dashboard(self):
         user = self.admin_login()
@@ -1415,7 +1415,7 @@ class ViewTest(AironeViewTest):
             created_user=user,
             is_summarized=True,
             parent_entity=entity,
-            type=AttrTypeValue["object"],
+            type=AttrType.OBJECT,
         )
         attr.referral.add(ref_entity)
         entity.attrs.add(attr)
@@ -1500,7 +1500,7 @@ class ViewTest(AironeViewTest):
 
         entity = Entity.objects.create(name="entity", created_user=user)
         attr = EntityAttr.objects.create(
-            name="attr", type=AttrTypeValue["object"], created_user=user, parent_entity=entity
+            name="attr", type=AttrType.OBJECT, created_user=user, parent_entity=entity
         )
         entity.attrs.add(attr)
 

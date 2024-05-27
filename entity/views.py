@@ -17,7 +17,7 @@ from airone.lib.http import (
     http_post,
     render,
 )
-from airone.lib.types import AttrTypes, AttrTypeValue
+from airone.lib.types import AttrType, AttrTypes
 from entry.models import AttributeValue, Entry
 from job.models import Job
 from user.models import History
@@ -156,7 +156,7 @@ def do_edit(request, entity_id, recv_data):
         if "ref_ids" not in attr:
             attr["ref_ids"] = []
 
-        if int(attr["type"]) & AttrTypeValue["object"] and not attr["ref_ids"]:
+        if int(attr["type"]) & AttrType.OBJECT and not attr["ref_ids"]:
             return HttpResponse("Need to specify enabled referral ids", status=400)
 
         if any([not Entity.objects.filter(id=x).exists() for x in attr["ref_ids"]]):
@@ -256,7 +256,7 @@ def do_create(request, recv_data):
         if "ref_ids" not in attr:
             attr["ref_ids"] = []
 
-        if int(attr["type"]) & AttrTypeValue["object"] and not attr["ref_ids"]:
+        if int(attr["type"]) & AttrType.OBJECT and not attr["ref_ids"]:
             return HttpResponse("Need to specify enabled referral ids", status=400)
 
         if any([not Entity.objects.filter(id=x).exists() for x in attr["ref_ids"]]):
@@ -487,7 +487,7 @@ def conf_dashboard(request, entity_id):
     context = {
         "entity": entity,
         "ref_attrs": EntityAttr.objects.filter(
-            parent_entity=entity, type=AttrTypeValue["object"], is_active=True
+            parent_entity=entity, type=AttrType.OBJECT, is_active=True
         ),
         "redirect_url": "/entity/dashboard/config/register/%s" % entity_id,
     }

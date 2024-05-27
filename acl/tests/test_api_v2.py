@@ -5,7 +5,7 @@ from mock import mock
 from acl.models import ACLBase
 from airone.lib.acl import ACLType
 from airone.lib.test import AironeViewTest
-from airone.lib.types import AttrTypeValue
+from airone.lib.types import AttrType
 from entity import tasks
 from entity.models import Entity, EntityAttr
 from role.models import Role
@@ -51,7 +51,7 @@ class ViewTest(AironeViewTest):
             attrs=[
                 {
                     "name": "attr01",
-                    "type": AttrTypeValue["string"],
+                    "type": AttrType.STRING,
                 }
             ],
         )
@@ -98,7 +98,7 @@ class ViewTest(AironeViewTest):
             attrs=[
                 {
                     "name": "attr01",
-                    "type": AttrTypeValue["string"],
+                    "type": AttrType.STRING,
                 }
             ],
         )
@@ -611,7 +611,7 @@ class ViewTest(AironeViewTest):
             "attrs": [
                 {
                     "name": "string",
-                    "type": AttrTypeValue["string"],
+                    "type": AttrType.STRING,
                 }
             ],
         }

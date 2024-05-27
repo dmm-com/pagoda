@@ -3,7 +3,7 @@ import json
 import custom_view
 from airone.celery import app
 from airone.lib.job import may_schedule_until_job_is_ready
-from airone.lib.types import AttrTypeValue
+from airone.lib.types import AttrType
 from entity.api_v2.serializers import EntityCreateSerializer, EntityUpdateSerializer
 from entity.models import Entity, EntityAttr
 from job.models import Job, JobStatus
@@ -40,7 +40,7 @@ def create_entity(self, job: Job) -> JobStatus:
             index=int(attr["row_index"]),
         )
 
-        if int(attr["type"]) & AttrTypeValue["object"]:
+        if int(attr["type"]) & AttrType.OBJECT:
             [attr_base.referral.add(Entity.objects.get(id=x)) for x in attr["ref_ids"]]
 
         # This is neccesary to summarize adding attribute history to one time
@@ -139,7 +139,7 @@ def edit_entity(self, job: Job) -> JobStatus:
 
                 attr_obj.save()
 
-            if (attr_obj.type & AttrTypeValue["object"]) and (
+            if (attr_obj.type & AttrType.OBJECT) and (
                 attr_obj.is_referral_updated([int(x) for x in attr["ref_ids"]])
             ):
                 # the case of an attribute that has referral entry
@@ -159,7 +159,7 @@ def edit_entity(self, job: Job) -> JobStatus:
             )
 
             # append referral objects
-            if int(attr["type"]) & AttrTypeValue["object"]:
+            if int(attr["type"]) & AttrType.OBJECT:
                 [attr_obj.referral.add(Entity.objects.get(id=x)) for x in attr["ref_ids"]]
 
             # add a new attribute on the existed Entries

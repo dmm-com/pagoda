@@ -23,7 +23,7 @@ from airone.lib.drf import (
     RequiredParameterError,
     YAMLParser,
 )
-from airone.lib.types import AttrType, AttrTypeValue
+from airone.lib.types import AttrType
 from api_v1.entry.serializer import EntrySearchChainSerializer
 from entity.models import Entity, EntityAttr
 from entry.api_v2.pagination import EntryReferralPagination
@@ -442,30 +442,30 @@ class AdvancedSearchAPI(generics.GenericAPIView):
             for name, attr in entry["attrs"].items():
 
                 def _get_typed_value(type: int) -> str:
-                    if type & AttrTypeValue["array"]:
-                        if type & AttrTypeValue["string"]:
+                    if type & AttrType._ARRAY:
+                        if type & AttrType.STRING:
                             return "as_array_string"
-                        elif type & AttrTypeValue["named"]:
+                        elif type & AttrType._NAMED:
                             return "as_array_named_object"
-                        elif type & AttrTypeValue["object"]:
+                        elif type & AttrType.OBJECT:
                             return "as_array_object"
-                        elif type & AttrTypeValue["group"]:
+                        elif type & AttrType.GROUP:
                             return "as_array_group"
-                        elif type & AttrTypeValue["role"]:
+                        elif type & AttrType.ROLE:
                             return "as_array_role"
-                    elif type & AttrTypeValue["string"] or type & AttrTypeValue["text"]:
+                    elif type & AttrType.STRING or type & AttrType.TEXT:
                         return "as_string"
-                    elif type & AttrTypeValue["named"]:
+                    elif type & AttrType._NAMED:
                         return "as_named_object"
-                    elif type & AttrTypeValue["object"]:
+                    elif type & AttrType.OBJECT:
                         return "as_object"
-                    elif type & AttrTypeValue["boolean"]:
+                    elif type & AttrType.BOOLEAN:
                         return "as_boolean"
-                    elif type & AttrTypeValue["date"]:
+                    elif type & AttrType.DATE:
                         return "as_string"
-                    elif type & AttrTypeValue["group"]:
+                    elif type & AttrType.GROUP:
                         return "as_group"
-                    elif type & AttrTypeValue["role"]:
+                    elif type & AttrType.ROLE:
                         return "as_role"
                     raise IncorrectTypeError(f"unexpected type: {type}")
 
@@ -667,15 +667,15 @@ class EntryAttrReferralsAPI(viewsets.ReadOnlyModelViewSet):
             conditions["name__icontains"] = keyword
 
         # TODO support natural sort?
-        if entity_attr.type & AttrTypeValue["object"]:
+        if entity_attr.type & AttrType.OBJECT:
             return Entry.objects.filter(
                 **conditions, schema__in=entity_attr.referral.all()
             ).order_by("name")[0 : CONFIG.MAX_LIST_REFERRALS]
-        elif entity_attr.type & AttrTypeValue["group"]:
+        elif entity_attr.type & AttrType.GROUP:
             return Group.objects.filter(**conditions).order_by("name")[
                 0 : CONFIG.MAX_LIST_REFERRALS
             ]
-        elif entity_attr.type & AttrTypeValue["role"]:
+        elif entity_attr.type & AttrType.ROLE:
             return Role.objects.filter(**conditions).order_by("name")[0 : CONFIG.MAX_LIST_REFERRALS]
         else:
             raise IncorrectTypeError(f"unsupported attr type: {entity_attr.type}")

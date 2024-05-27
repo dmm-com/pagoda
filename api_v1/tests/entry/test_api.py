@@ -1,7 +1,7 @@
 import json
 
 from airone.lib.test import AironeViewTest
-from airone.lib.types import AttrTypeValue
+from airone.lib.types import AttrType
 from entity.models import Entity, EntityAttr
 from entry.models import Entry
 
@@ -64,7 +64,7 @@ class APITest(AironeViewTest):
                 EntityAttr.objects.create(
                     **{
                         "name": "attr",
-                        "type": AttrTypeValue["string"],
+                        "type": AttrType.STRING,
                         "created_user": user,
                         "parent_entity": entity,
                     }
@@ -74,7 +74,7 @@ class APITest(AironeViewTest):
             attr_ref = EntityAttr.objects.create(
                 **{
                     "name": "attr_ref",
-                    "type": AttrTypeValue["object"],
+                    "type": AttrType.OBJECT,
                     "created_user": user,
                     "parent_entity": entity,
                 }
@@ -163,10 +163,10 @@ class APITest(AironeViewTest):
 
         # set EntityAttr that refers entity_ref
         attr_info = [
-            {"name": "r0", "type": AttrTypeValue["object"]},
-            {"name": "r1", "type": AttrTypeValue["named_object"]},
-            {"name": "r2", "type": AttrTypeValue["array_object"]},
-            {"name": "r3", "type": AttrTypeValue["array_named_object"]},
+            {"name": "r0", "type": AttrType.OBJECT},
+            {"name": "r1", "type": AttrType.NAMED_OBJECT},
+            {"name": "r2", "type": AttrType.ARRAY_OBJECT},
+            {"name": "r3", "type": AttrType.ARRAY_NAMED_OBJECT},
         ]
         for info in attr_info:
             attr = EntityAttr.objects.create(
@@ -432,7 +432,7 @@ class APITest(AironeViewTest):
         entity_attr1 = EntityAttr.objects.create(
             **{
                 "name": "attr1",
-                "type": AttrTypeValue["string"],
+                "type": AttrType.STRING,
                 "created_user": user,
                 "parent_entity": entity,
             }
@@ -440,7 +440,7 @@ class APITest(AironeViewTest):
         entity_attr2 = EntityAttr.objects.create(
             **{
                 "name": "attr2",
-                "type": AttrTypeValue["string"],
+                "type": AttrType.STRING,
                 "created_user": user,
                 "parent_entity": entity,
             }
@@ -496,7 +496,7 @@ class APITest(AironeViewTest):
             attrs=[
                 {
                     "name": "boolean",
-                    "type": AttrTypeValue["boolean"],
+                    "type": AttrType.BOOLEAN,
                 }
             ],
         )

@@ -1,7 +1,7 @@
 from django.conf import settings
 
 from airone.lib.acl import ACLType
-from airone.lib.types import AttrTypeValue
+from airone.lib.types import AttrType
 from entity.models import Entity
 from group.models import Group
 from role.models import Role
@@ -159,7 +159,7 @@ class ModelTest(RoleTestBase):
                 "attrs": [
                     {
                         "name": "role",
-                        "type": AttrTypeValue["role"],
+                        "type": AttrType.ROLE,
                     }
                 ],
             }
@@ -178,7 +178,7 @@ class ModelTest(RoleTestBase):
                 "attrs": [
                     {
                         "name": "roles",
-                        "type": AttrTypeValue["array_role"],
+                        "type": AttrType.ARRAY_ROLE,
                     }
                 ],
             }

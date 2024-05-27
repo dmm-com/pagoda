@@ -8,7 +8,7 @@ from elasticsearch import Elasticsearch
 
 from airone.lib.acl import ACLType
 from airone.lib.log import Logger
-from airone.lib.types import AttrType, AttrTypeValue
+from airone.lib.types import AttrType
 from entity.models import Entity
 from entry.settings import CONFIG
 from user.models import User
@@ -994,7 +994,7 @@ def make_search_results(
 
             # if target attribute is array type, then values would be stored in array
             if attrinfo["name"] not in ret_info["attrs"]:
-                if attrinfo["type"] & AttrTypeValue["array"]:
+                if attrinfo["type"] & AttrType._ARRAY:
                     ret_info["attrs"][attrinfo["name"]] = {}
                 else:
                     ret_info["attrs"][attrinfo["name"]] = ret_attrinfo

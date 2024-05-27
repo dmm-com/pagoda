@@ -15,7 +15,7 @@ from airone.lib import drf
 from airone.lib.acl import ACLType
 from airone.lib.drf import DuplicatedObjectExistsError, ObjectNotExistsError, RequiredParameterError
 from airone.lib.log import Logger
-from airone.lib.types import AttrTypeValue
+from airone.lib.types import AttrType, AttrTypeValue
 from entity.admin import EntityAttrResource, EntityResource
 from entity.models import Entity, EntityAttr
 from user.models import History, User
@@ -104,7 +104,7 @@ class EntityAttrCreateSerializer(serializers.ModelSerializer):
     def validate(self, attr: dict):
         referral = attr.get("referral", [])
 
-        if attr["type"] & AttrTypeValue["object"] and not len(referral):
+        if attr["type"] & AttrType.OBJECT and not len(referral):
             raise RequiredParameterError("When specified object type, referral field is required")
 
         return attr
@@ -163,7 +163,7 @@ class EntityAttrUpdateSerializer(serializers.ModelSerializer):
                 raise RequiredParameterError("id or (name and type) field is required")
 
             referral = attr.get("referral", [])
-            if attr["type"] & AttrTypeValue["object"] and not len(referral):
+            if attr["type"] & AttrType.OBJECT and not len(referral):
                 raise RequiredParameterError(
                     "When specified object type, referral field is required"
                 )
@@ -241,7 +241,7 @@ class EntitySerializer(serializers.ModelSerializer):
             )
 
             # set referrals if necessary
-            if entity_attr.type & AttrTypeValue["object"]:
+            if entity_attr.type & AttrType.OBJECT:
                 entity_attr.referral_clear()
                 [entity_attr.referral.add(x) for x in attr_referrals]
 

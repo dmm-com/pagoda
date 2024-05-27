@@ -31,7 +31,6 @@ from airone.lib.types import (
     AttrTypeObj,
     AttrTypeStr,
     AttrTypeText,
-    AttrTypeValue,
 )
 from entity.models import Entity, EntityAttr
 from group.models import Group
@@ -184,50 +183,50 @@ class AttributeValue(models.Model):
 
         value = None
         if (
-            self.parent_attr.schema.type == AttrTypeValue["string"]
-            or self.parent_attr.schema.type == AttrTypeValue["text"]
+            self.parent_attr.schema.type == AttrType.STRING
+            or self.parent_attr.schema.type == AttrType.TEXT
         ):
             value = self.value
 
-        elif self.parent_attr.schema.type == AttrTypeValue["boolean"]:
+        elif self.parent_attr.schema.type == AttrType.BOOLEAN:
             value = self.boolean
 
-        elif self.parent_attr.schema.type == AttrTypeValue["date"]:
+        elif self.parent_attr.schema.type == AttrType.DATE:
             if serialize:
                 value = str(self.date)
             else:
                 value = self.date
 
-        elif self.parent_attr.schema.type == AttrTypeValue["object"]:
+        elif self.parent_attr.schema.type == AttrType.OBJECT:
             value = _get_object_value(self, is_active)
 
-        elif self.parent_attr.schema.type == AttrTypeValue["named_object"]:
+        elif self.parent_attr.schema.type == AttrType.NAMED_OBJECT:
             value = _get_named_value(self, is_active)
 
-        elif self.parent_attr.schema.type == AttrTypeValue["group"] and self.value:
+        elif self.parent_attr.schema.type == AttrType.GROUP and self.value:
             value = _get_model_value(self, Group)
 
-        elif self.parent_attr.schema.type == AttrTypeValue["role"] and self.value:
+        elif self.parent_attr.schema.type == AttrType.ROLE and self.value:
             value = _get_model_value(self, Role)
 
         elif self.parent_attr.is_array():
-            if self.parent_attr.schema.type & AttrTypeValue["named"]:
+            if self.parent_attr.schema.type & AttrType._NAMED:
                 value = [_get_named_value(x, is_active) for x in self.data_array.all()]
 
-            elif self.parent_attr.schema.type & AttrTypeValue["string"]:
+            elif self.parent_attr.schema.type & AttrType.STRING:
                 value = [x.value for x in self.data_array.all()]
 
-            elif self.parent_attr.schema.type & AttrTypeValue["object"]:
+            elif self.parent_attr.schema.type & AttrType.OBJECT:
                 value = [
                     _get_object_value(x, is_active) for x in self.data_array.all() if x.referral
                 ]
 
-            elif self.parent_attr.schema.type & AttrTypeValue["group"]:
+            elif self.parent_attr.schema.type & AttrType.GROUP:
                 value = [
                     x for x in [_get_model_value(y, Group) for y in self.data_array.all()] if x
                 ]
 
-            elif self.parent_attr.schema.type & AttrTypeValue["role"]:
+            elif self.parent_attr.schema.type & AttrType.ROLE:
                 value = [x for x in [_get_model_value(y, Role) for y in self.data_array.all()] if x]
 
         if with_metainfo:
@@ -242,22 +241,22 @@ class AttributeValue(models.Model):
         def _get_role_value(attrv):
             return Role.objects.filter(id=attrv.value, is_active=True).first()
 
-        if self.data_type == AttrTypeValue["array_string"]:
+        if self.data_type == AttrType.ARRAY_STRING:
             return [x.value for x in self.data_array.all()]
-        elif self.data_type == AttrTypeValue["array_object"]:
+        elif self.data_type == AttrType.ARRAY_OBJECT:
             return [x.referral for x in self.data_array.all()]
-        elif self.data_type == AttrTypeValue["object"]:
+        elif self.data_type == AttrType.OBJECT:
             return self.referral
-        elif self.data_type == AttrTypeValue["boolean"]:
+        elif self.data_type == AttrType.BOOLEAN:
             return self.boolean
-        elif self.data_type == AttrTypeValue["date"]:
+        elif self.data_type == AttrType.DATE:
             return self.date
-        elif self.data_type == AttrTypeValue["named_object"]:
+        elif self.data_type == AttrType.NAMED_OBJECT:
             return {
                 "value": self.value,
                 "referral": self.referral,
             }
-        elif self.data_type == AttrTypeValue["array_named_object"]:
+        elif self.data_type == AttrType.ARRAY_NAMED_OBJECT:
             return sorted(
                 [
                     {
@@ -269,16 +268,16 @@ class AttributeValue(models.Model):
                 key=lambda x: x["value"],
             )
 
-        elif self.data_type == AttrTypeValue["group"] and self.value:
+        elif self.data_type == AttrType.GROUP and self.value:
             return _get_group_value(self)
 
-        elif self.data_type == AttrTypeValue["array_group"]:
+        elif self.data_type == AttrType.ARRAY_GROUP:
             return [y for y in [_get_group_value(x) for x in self.data_array.all()] if y]
 
-        elif self.data_type == AttrTypeValue["role"] and self.value:
+        elif self.data_type == AttrType.ROLE and self.value:
             return _get_role_value(self)
 
-        elif self.data_type == AttrTypeValue["array_role"]:
+        elif self.data_type == AttrType.ARRAY_ROLE:
             return [y for y in [_get_role_value(x) for x in self.data_array.all()] if y]
 
         else:
@@ -386,11 +385,11 @@ class AttributeValue(models.Model):
                 raise Exception("value(%s) is not int" % value)
 
         def _is_validate_attr(value) -> bool:
-            if type & AttrTypeValue["string"] or type & AttrTypeValue["text"]:
+            if type & AttrType.STRING or type & AttrType.TEXT:
                 return _is_validate_attr_str(value)
 
-            if type & AttrTypeValue["object"]:
-                if type & AttrTypeValue["named"]:
+            if type & AttrType.OBJECT:
+                if type & AttrType._NAMED:
                     if value:
                         if not isinstance(value, dict):
                             raise Exception("value(%s) is not dict" % value)
@@ -409,7 +408,7 @@ class AttributeValue(models.Model):
                     if not _is_validate_attr_object(value):
                         return False
 
-            if type & AttrTypeValue["group"]:
+            if type & AttrType.GROUP:
                 try:
                     if value and not Group.objects.filter(id=value, is_active=True).exists():
                         raise Exception("value(%s) is not group id" % value)
@@ -418,11 +417,11 @@ class AttributeValue(models.Model):
                 except (ValueError, TypeError):
                     raise Exception("value(%s) is not int" % value)
 
-            if type & AttrTypeValue["boolean"]:
+            if type & AttrType.BOOLEAN:
                 if not isinstance(value, bool):
                     raise Exception("value(%s) is not bool" % value)
 
-            if type & AttrTypeValue["date"]:
+            if type & AttrType.DATE:
                 try:
                     if value:
                         datetime.strptime(value, "%Y-%m-%d").date()
@@ -431,7 +430,7 @@ class AttributeValue(models.Model):
                 except (ValueError, TypeError):
                     raise Exception("value(%s) is not format(YYYY-MM-DD)" % value)
 
-            if type & AttrTypeValue["role"]:
+            if type & AttrType.ROLE:
                 try:
                     if value and (
                         (
@@ -453,7 +452,7 @@ class AttributeValue(models.Model):
             return True
 
         try:
-            if type & AttrTypeValue["array"]:
+            if type & AttrType._ARRAY:
                 if not isinstance(input_value, list):
                     raise Exception("value(%s) is not list" % input_value)
                 if is_mandatory and input_value == []:
@@ -493,7 +492,7 @@ class Attribute(ACLBase):
         self.objtype = ACLObjType.EntryAttr
 
     def is_array(self):
-        return self.schema.type & AttrTypeValue["array"]
+        return self.schema.type & AttrType._ARRAY
 
     # This checks whether each specified attribute needs to update
     def is_updated(self, recv_value):
@@ -597,16 +596,16 @@ class Attribute(ACLBase):
                 if not last_value.data_array.filter(referral__id=entry_id).exists():
                     return True
 
-        elif self.schema.type == AttrTypeValue["boolean"]:
+        elif self.schema.type == AttrType.BOOLEAN:
             return last_value.boolean != bool(recv_value)
 
-        elif self.schema.type == AttrTypeValue["group"]:
+        elif self.schema.type == AttrType.GROUP:
             return last_value.value != AttributeValue.uniform_storable(recv_value, Group)
 
-        elif self.schema.type == AttrTypeValue["role"]:
+        elif self.schema.type == AttrType.ROLE:
             return last_value.value != AttributeValue.uniform_storable(recv_value, Role)
 
-        elif self.schema.type == AttrTypeValue["date"]:
+        elif self.schema.type == AttrType.DATE:
             if isinstance(recv_value, str):
                 try:
                     return last_value.date != datetime.strptime(recv_value, "%Y-%m-%d").date()
@@ -615,7 +614,7 @@ class Attribute(ACLBase):
 
             return last_value.date != recv_value
 
-        elif self.schema.type == AttrTypeValue["named_object"]:
+        elif self.schema.type == AttrType.NAMED_OBJECT:
             # the case that specified value is empty or invalid
             if not recv_value:
                 # Value would be changed as empty when there is valid value
@@ -639,7 +638,7 @@ class Attribute(ACLBase):
             ):
                 return True
 
-        elif self.schema.type == AttrTypeValue["array_named_object"]:
+        elif self.schema.type == AttrType.ARRAY_NAMED_OBJECT:
 
             def get_entry_id(value):
                 if not value:
@@ -673,12 +672,12 @@ class Attribute(ACLBase):
             ):
                 return True
 
-        elif self.schema.type == AttrTypeValue["array_group"]:
+        elif self.schema.type == AttrType.ARRAY_GROUP:
             is_updated = _is_updated_for_array_value(last_value, Group)
             if is_updated is not None:
                 return is_updated
 
-        elif self.schema.type == AttrTypeValue["array_role"]:
+        elif self.schema.type == AttrType.ARRAY_ROLE:
             is_updated = _is_updated_for_array_value(last_value, Role)
             if is_updated is not None:
                 return is_updated
@@ -765,7 +764,7 @@ class Attribute(ACLBase):
                     "value": "",
                     "created_user": self.created_user,
                     "parent_attr": self,
-                    "status": 1 if self.schema.type & AttrTypeValue["group"] else 0,
+                    "status": 1 if self.schema.type & AttrType.GROUP else 0,
                     "data_type": self.schema.type,
                 }
             )
@@ -821,12 +820,12 @@ class Attribute(ACLBase):
             if value is None:
                 return True
 
-            if self.schema.type & AttrTypeValue["named"]:
+            if self.schema.type & AttrType._NAMED:
                 return all(
                     [x for x in value if isinstance(x, dict) or isinstance(x, type({}.values()))]
                 )
 
-            if self.schema.type & AttrTypeValue["object"]:
+            if self.schema.type & AttrType.OBJECT:
                 return all(
                     [
                         isinstance(x, str)
@@ -837,22 +836,22 @@ class Attribute(ACLBase):
                     ]
                 )
 
-            if self.schema.type & AttrTypeValue["string"]:
+            if self.schema.type & AttrType.STRING:
                 return True
 
-            if self.schema.type & AttrTypeValue["group"]:
+            if self.schema.type & AttrType.GROUP:
                 return all([_is_group_object(x, Group) for x in value])
 
-            if self.schema.type & AttrTypeValue["role"]:
+            if self.schema.type & AttrType.ROLE:
                 return all([_is_group_object(x, Role) for x in value])
 
-        if self.schema.type & AttrTypeValue["named"]:
+        if self.schema.type & AttrType._NAMED:
             return isinstance(value, dict)
 
-        if self.schema.type & AttrTypeValue["string"] or self.schema.type & AttrTypeValue["text"]:
+        if self.schema.type & AttrType.STRING or self.schema.type & AttrType.TEXT:
             return True
 
-        if self.schema.type & AttrTypeValue["object"]:
+        if self.schema.type & AttrType.OBJECT:
             return (
                 isinstance(value, str)
                 or isinstance(value, int)
@@ -860,10 +859,10 @@ class Attribute(ACLBase):
                 or value is None
             )
 
-        if self.schema.type & AttrTypeValue["boolean"]:
+        if self.schema.type & AttrType.BOOLEAN:
             return isinstance(value, bool)
 
-        if self.schema.type & AttrTypeValue["date"]:
+        if self.schema.type & AttrType.DATE:
             try:
                 return (
                     not value
@@ -876,10 +875,10 @@ class Attribute(ACLBase):
             except ValueError:
                 return False
 
-        if self.schema.type & AttrTypeValue["group"]:
+        if self.schema.type & AttrType.GROUP:
             return _is_group_object(value, Group)
 
-        if self.schema.type & AttrTypeValue["role"]:
+        if self.schema.type & AttrType.ROLE:
             return _is_group_object(value, Role)
 
         return False
@@ -893,25 +892,25 @@ class Attribute(ACLBase):
                 attrv = AttributeValue(**params)
 
             # set attribute value according to the attribute-type
-            if attr_type == AttrTypeValue["string"] or attr_type == AttrTypeValue["text"]:
+            if attr_type == AttrType.STRING or attr_type == AttrType.TEXT:
                 attrv.boolean = boolean
                 attrv.value = str(val)
                 if not attrv.value:
                     return None
 
-            if attr_type == AttrTypeValue["group"]:
+            if attr_type == AttrType.GROUP:
                 attrv.boolean = boolean
                 attrv.value = AttributeValue.uniform_storable(val, Group)
                 if not attrv.value:
                     return None
 
-            if attr_type == AttrTypeValue["role"]:
+            if attr_type == AttrType.ROLE:
                 attrv.boolean = boolean
                 attrv.value = AttributeValue.uniform_storable(val, Role)
                 if not attrv.value:
                     return None
 
-            elif attr_type == AttrTypeValue["object"]:
+            elif attr_type == AttrType.OBJECT:
                 attrv.boolean = boolean
                 # set None if the referral entry is not specified
                 attrv.referral = None
@@ -927,10 +926,10 @@ class Attribute(ACLBase):
                 if not attrv.referral:
                     return
 
-            elif attr_type == AttrTypeValue["boolean"]:
+            elif attr_type == AttrType.BOOLEAN:
                 attrv.boolean = val
 
-            elif attr_type == AttrTypeValue["date"]:
+            elif attr_type == AttrType.DATE:
                 if isinstance(val, str) and val:
                     attrv.date = datetime.strptime(val, "%Y-%m-%d").date()
                 elif isinstance(val, date):
@@ -938,7 +937,7 @@ class Attribute(ACLBase):
 
                 attrv.boolean = boolean
 
-            elif attr_type == AttrTypeValue["named_object"]:
+            elif attr_type == AttrType.NAMED_OBJECT:
                 attrv.value = val["name"] if "name" in val else ""
                 if "boolean" in val:
                     attrv.boolean = val["boolean"]
@@ -993,7 +992,7 @@ class Attribute(ACLBase):
                 for v in value:
                     # set AttributeValue for each values
                     co_attrv = _set_attrv(
-                        (self.schema.type & ~AttrTypeValue["array"]),
+                        (self.schema.type & ~AttrType._ARRAY),
                         v,
                         params=co_attrv_params,
                     )
@@ -1053,10 +1052,10 @@ class Attribute(ACLBase):
 
             return ret_value
 
-        if self.schema.type == AttrTypeValue["string"] or self.schema.type == AttrTypeValue["text"]:
+        if self.schema.type == AttrType.STRING or self.schema.type == AttrType.TEXT:
             return value
 
-        elif self.schema.type == AttrTypeValue["object"]:
+        elif self.schema.type == AttrType.OBJECT:
             if isinstance(value, ACLBase):
                 return value
             elif isinstance(value, str):
@@ -1067,7 +1066,7 @@ class Attribute(ACLBase):
                 if any(entryset):
                     return entryset[0]
 
-        elif self.schema.type == AttrTypeValue["group"]:
+        elif self.schema.type == AttrType.GROUP:
             # This avoids to return 0 when invaild value is specified because
             # uniform_storable() returns 0. By this check processing,
             # this returns None whe it happens.
@@ -1075,18 +1074,18 @@ class Attribute(ACLBase):
             if val:
                 return val
 
-        elif self.schema.type == AttrTypeValue["role"]:
+        elif self.schema.type == AttrType.ROLE:
             val = AttributeValue.uniform_storable(value, Role)
             if val:
                 return val
 
-        elif self.schema.type == AttrTypeValue["boolean"]:
+        elif self.schema.type == AttrType.BOOLEAN:
             return value
 
-        elif self.schema.type == AttrTypeValue["date"]:
+        elif self.schema.type == AttrType.DATE:
             return value
 
-        elif self.schema.type == AttrTypeValue["named_object"]:
+        elif self.schema.type == AttrType.NAMED_OBJECT:
             if not isinstance(value, dict):
                 return None
 
@@ -1096,16 +1095,16 @@ class Attribute(ACLBase):
             if not isinstance(value, list):
                 return None
 
-            if self.schema.type & AttrTypeValue["named"]:
+            if self.schema.type & AttrType._NAMED:
                 if not all([isinstance(x, dict) for x in value]):
                     return None
 
                 return [get_named_object(x) for x in value]
 
-            elif self.schema.type & AttrTypeValue["string"]:
+            elif self.schema.type & AttrType.STRING:
                 return value
 
-            elif self.schema.type & AttrTypeValue["object"]:
+            elif self.schema.type & AttrType.OBJECT:
                 return sum(
                     [
                         [get_entry(r, v) for r in self.schema.referral.all() if is_entry(r, v)]
@@ -1114,10 +1113,10 @@ class Attribute(ACLBase):
                     [],
                 )
 
-            elif self.schema.type & AttrTypeValue["group"]:
+            elif self.schema.type & AttrType.GROUP:
                 return [x for x in [AttributeValue.uniform_storable(y, Group) for y in value] if x]
 
-            elif self.schema.type & AttrTypeValue["role"]:
+            elif self.schema.type & AttrType.ROLE:
                 return [x for x in [AttributeValue.uniform_storable(y, Role) for y in value] if x]
 
         return None
@@ -1145,7 +1144,7 @@ class Attribute(ACLBase):
 
         attrv = self.get_latest_value()
         if self.is_array():
-            if self.schema.type & AttrTypeValue["named"]:
+            if self.schema.type & AttrType._NAMED:
                 if referral is None:
                     return
 
@@ -1158,13 +1157,13 @@ class Attribute(ACLBase):
                     for x in attrv.data_array.exclude(referral=referral, value=value)
                 ]
 
-            elif self.schema.type & AttrTypeValue["string"]:
+            elif self.schema.type & AttrType.STRING:
                 if not value:
                     return
 
                 updated_data = [x.value for x in attrv.data_array.all() if x.value != value]
 
-            elif self.schema.type & AttrTypeValue["object"]:
+            elif self.schema.type & AttrType.OBJECT:
                 if referral is None:
                     return
 
@@ -1174,12 +1173,12 @@ class Attribute(ACLBase):
                     if x.referral and x.referral.id != referral.id
                 ]
 
-            elif self.schema.type & AttrTypeValue["group"]:
+            elif self.schema.type & AttrType.GROUP:
                 updated_data = _remove_specific_object(attrv, value, Group)
                 if updated_data is None:
                     return
 
-            elif self.schema.type & AttrTypeValue["role"]:
+            elif self.schema.type & AttrType.ROLE:
                 updated_data = _remove_specific_object(attrv, value, Role)
                 if updated_data is None:
                     return
@@ -1195,7 +1194,7 @@ class Attribute(ACLBase):
         attrv = self.get_latest_value()
         if self.is_array():
             updated_data = None
-            if self.schema.type & AttrTypeValue["named"]:
+            if self.schema.type & AttrType._NAMED:
                 if value or referral:
                     updated_data = [
                         {
@@ -1206,20 +1205,20 @@ class Attribute(ACLBase):
                         for x in attrv.data_array.all()
                     ] + [{"name": str(value), "boolean": boolean, "id": referral}]
 
-            elif self.schema.type & AttrTypeValue["string"]:
+            elif self.schema.type & AttrType.STRING:
                 if value:
                     updated_data = [x.value for x in attrv.data_array.all()] + [value]
 
-            elif self.schema.type & AttrTypeValue["object"]:
+            elif self.schema.type & AttrType.OBJECT:
                 if referral:
                     updated_data = [x.referral.id for x in attrv.data_array.all()] + [referral]
 
-            elif self.schema.type & AttrTypeValue["group"]:
+            elif self.schema.type & AttrType.GROUP:
                 group_id = AttributeValue.uniform_storable(value, Group)
                 if group_id:
                     updated_data = [x.value for x in attrv.data_array.all()] + [group_id]
 
-            elif self.schema.type & AttrTypeValue["role"]:
+            elif self.schema.type & AttrType.ROLE:
                 role_id = AttributeValue.uniform_storable(value, Role)
                 if role_id:
                     updated_data = [x.value for x in attrv.data_array.all()] + [role_id]
@@ -1245,7 +1244,7 @@ class Attribute(ACLBase):
             entry.delete()
 
         # delete referral object that isn't referred from any objects if it's necessary
-        if self.schema.is_delete_in_chain and self.schema.type & AttrTypeValue["object"]:
+        if self.schema.is_delete_in_chain and self.schema.type & AttrType.OBJECT:
             attrv = self.get_latest_value()
 
             if self.is_array():
@@ -1283,7 +1282,7 @@ class Attribute(ACLBase):
             # It means it's safe to restore this Entry.
             return False
 
-        if self.schema.is_delete_in_chain and self.schema.type & AttrTypeValue["object"]:
+        if self.schema.is_delete_in_chain and self.schema.type & AttrType.OBJECT:
             attrv = self.get_latest_value()
 
             if self.is_array():
@@ -1312,7 +1311,7 @@ class Attribute(ACLBase):
             entry.restore()
 
         # restore referral object that isn't referred from any objects if it's necessary
-        if self.schema.is_delete_in_chain and self.schema.type & AttrTypeValue["object"]:
+        if self.schema.is_delete_in_chain and self.schema.type & AttrType.OBJECT:
             attrv = self.get_latest_value()
 
             if self.is_array():
@@ -1440,7 +1439,7 @@ class Entry(ACLBase):
 
             newattr = self.add_attribute_from_base(entity_attr, user)
 
-            if entity_attr.type & AttrTypeValue["array"]:
+            if entity_attr.type & AttrType._ARRAY:
                 # Create a initial AttributeValue for editing processing
                 attr_value = AttributeValue.objects.create(
                     **{
@@ -1528,20 +1527,20 @@ class Entry(ACLBase):
                     if x.referral and x.referral.is_active
                 ]
 
-            elif last_value.data_type == AttrTypeValue["boolean"]:
+            elif last_value.data_type == AttrType.BOOLEAN:
                 attrinfo["last_value"] = last_value.boolean
 
-            elif last_value.data_type == AttrTypeValue["date"]:
+            elif last_value.data_type == AttrType.DATE:
                 attrinfo["last_value"] = last_value.date
 
-            elif last_value.data_type == AttrTypeValue["named_object"]:
+            elif last_value.data_type == AttrType.NAMED_OBJECT:
                 attrinfo["last_value"] = {"value": last_value.value}
 
                 if last_value.referral and last_value.referral.is_active:
                     attrinfo["last_value"]["id"] = last_value.referral.id
                     attrinfo["last_value"]["name"] = last_value.referral.name
 
-            elif last_value.data_type == AttrTypeValue["array_named_object"]:
+            elif last_value.data_type == AttrType.ARRAY_NAMED_OBJECT:
                 values = []
                 for attrv in last_value.data_array.all():
                     value = {"value": attrv.value}
@@ -1559,12 +1558,12 @@ class Entry(ACLBase):
                     key=lambda x: x["value"],
                 )
 
-            elif last_value.data_type == AttrTypeValue["group"] and last_value.value:
+            elif last_value.data_type == AttrType.GROUP and last_value.value:
                 attrinfo["last_value"] = Group.objects.filter(
                     id=last_value.value, is_active=True
                 ).first()
 
-            elif last_value.data_type == AttrTypeValue["array_group"]:
+            elif last_value.data_type == AttrType.ARRAY_GROUP:
                 attrinfo["last_value"] = [
                     x
                     for x in [
@@ -1574,12 +1573,12 @@ class Entry(ACLBase):
                     if x
                 ]
 
-            elif last_value.data_type == AttrTypeValue["role"] and last_value.value:
+            elif last_value.data_type == AttrType.ROLE and last_value.value:
                 attrinfo["last_value"] = Role.objects.filter(
                     id=last_value.value, is_active=True
                 ).first()
 
-            elif last_value.data_type == AttrTypeValue["array_role"]:
+            elif last_value.data_type == AttrType.ARRAY_ROLE:
                 attrinfo["last_value"] = [
                     x
                     for x in [
@@ -1630,7 +1629,7 @@ class Entry(ACLBase):
             attrv = attr.get_latest_value(is_readonly=True)
             if attrv is None:
                 value = AttributeValue.get_default_value(attr)
-                if attr.schema.type == AttrTypeValue["named_object"]:
+                if attr.schema.type == AttrType.NAMED_OBJECT:
                     value = {"": None}
                 if with_metainfo:
                     value = {"type": attr.schema.type, "value": value}
@@ -1840,7 +1839,7 @@ class Entry(ACLBase):
             }
 
             # default value for boolean attributes is False.
-            if entity_attr.type & AttrTypeValue["boolean"]:
+            if entity_attr.type & AttrType.BOOLEAN:
                 attrinfo["value"] = False
 
             def _set_attrinfo_data(model):
@@ -1855,47 +1854,44 @@ class Entry(ACLBase):
                 # This is the processing to be safe even if the empty AttributeValue was passed.
                 pass
 
-            elif (
-                entity_attr.type & AttrTypeValue["string"]
-                or entity_attr.type & AttrTypeValue["text"]
-            ):
+            elif entity_attr.type & AttrType.STRING or entity_attr.type & AttrType.TEXT:
                 attrinfo["value"] = truncate(attrv.value)
 
-            elif entity_attr.type & AttrTypeValue["boolean"]:
+            elif entity_attr.type & AttrType.BOOLEAN:
                 attrinfo["value"] = attrv.boolean
 
-            elif entity_attr.type & AttrTypeValue["date"]:
+            elif entity_attr.type & AttrType.DATE:
                 attrinfo["date_value"] = attrv.date.strftime("%Y-%m-%d") if attrv.date else None
 
-            elif entity_attr.type & AttrTypeValue["named"]:
+            elif entity_attr.type & AttrType._NAMED:
                 attrinfo["key"] = attrv.value
 
                 if attrv.referral and attrv.referral.is_active:
                     attrinfo["value"] = truncate(attrv.referral.name)
                     attrinfo["referral_id"] = attrv.referral.id
                 elif (
-                    entity_attr.type & AttrTypeValue["array"]
+                    entity_attr.type & AttrType._ARRAY
                     and attrv.referral
                     and not attrv.referral.is_active
                 ):
                     attrinfo["key"] = ""
 
-            elif entity_attr.type & AttrTypeValue["object"]:
+            elif entity_attr.type & AttrType.OBJECT:
                 if attrv.referral and attrv.referral.is_active:
                     attrinfo["value"] = truncate(attrv.referral.name)
                     attrinfo["referral_id"] = attrv.referral.id
 
-            elif entity_attr.type & AttrTypeValue["group"]:
+            elif entity_attr.type & AttrType.GROUP:
                 _set_attrinfo_data(Group)
 
-            elif entity_attr.type & AttrTypeValue["role"]:
+            elif entity_attr.type & AttrType.ROLE:
                 _set_attrinfo_data(Role)
 
             # Basically register attribute information whatever value doesn't exist
-            if not (entity_attr.type & AttrTypeValue["array"] and not is_recursive):
+            if not (entity_attr.type & AttrType._ARRAY and not is_recursive):
                 container.append(attrinfo)
 
-            elif entity_attr.type & AttrTypeValue["array"] and not is_recursive:
+            elif entity_attr.type & AttrType._ARRAY and not is_recursive:
                 if attrv is not None:
                     # Here is the case of parent array, set each child values
                     [
@@ -2388,7 +2384,7 @@ class Entry(ACLBase):
             if isinstance(value, list):
                 return [_get_value(attrname, attrtype, x) for x in value]
 
-            elif attrtype & AttrTypeValue["named"]:
+            elif attrtype & AttrType._NAMED:
                 [name, ref] = list(value.keys()) + list(value.values())
 
                 return {
@@ -2396,7 +2392,7 @@ class Entry(ACLBase):
                     "name": name,
                 }
 
-            elif attrtype & AttrTypeValue["object"]:
+            elif attrtype & AttrType.OBJECT:
                 return value["id"] if value else None
 
             else:

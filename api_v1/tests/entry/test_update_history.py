@@ -4,7 +4,7 @@ import pytz
 from django.conf import settings
 
 from airone.lib.test import AironeViewTest
-from airone.lib.types import AttrTypeValue
+from airone.lib.types import AttrType
 from entity.models import Entity, EntityAttr
 from entry.models import Entry
 from entry.settings import CONFIG as CONFIG_ENTRY
@@ -26,34 +26,34 @@ class APITest(AironeViewTest):
         self.entity = Entity.objects.create(name="entity", created_user=self.user)
         self.test_attrs = {
             "str": {
-                "type": AttrTypeValue["string"],
+                "type": AttrType.STRING,
                 # These values will be saved as each different AttributeValue for checking
                 # result order of update history API response.
                 "set_values": ["1", "2", "3"],
                 "ret_values": ["3", "2", "1"],
             },
             "obj": {
-                "type": AttrTypeValue["object"],
+                "type": AttrType.OBJECT,
                 "set_values": [ref_entry],
                 "ret_values": [{"id": ref_entry.id, "name": ref_entry.name}],
             },
             "map": {
-                "type": AttrTypeValue["named_object"],
+                "type": AttrType.NAMED_OBJECT,
                 "set_values": [{"name": "hoge", "id": ref_entry}],
                 "ret_values": [{"hoge": {"id": ref_entry.id, "name": ref_entry.name}}],
             },
             "arr_str": {
-                "type": AttrTypeValue["array_string"],
+                "type": AttrType.ARRAY_STRING,
                 "set_values": [["foo", "bar"]],
                 "ret_values": [["foo", "bar"], []],
             },
             "arr_obj": {
-                "type": AttrTypeValue["array_object"],
+                "type": AttrType.ARRAY_OBJECT,
                 "set_values": [[ref_entry]],
                 "ret_values": [[{"id": ref_entry.id, "name": ref_entry.name}], []],
             },
             "arr_map": {
-                "type": AttrTypeValue["array_named_object"],
+                "type": AttrType.ARRAY_NAMED_OBJECT,
                 "set_values": [[{"name": "foo", "id": ref_entry}]],
                 "ret_values": [
                     [{"foo": {"id": ref_entry.id, "name": ref_entry.name}}],
@@ -61,22 +61,22 @@ class APITest(AironeViewTest):
                 ],
             },
             "group": {
-                "type": AttrTypeValue["group"],
+                "type": AttrType.GROUP,
                 "set_values": [str(self.group.id)],
                 "ret_values": [{"id": self.group.id, "name": self.group.name}],
             },
             "bool": {
-                "type": AttrTypeValue["boolean"],
+                "type": AttrType.BOOLEAN,
                 "set_values": [True],
                 "ret_values": [True],
             },
             "text": {
-                "type": AttrTypeValue["text"],
+                "type": AttrType.TEXT,
                 "set_values": ["text"],
                 "ret_values": ["text"],
             },
             "date": {
-                "type": AttrTypeValue["date"],
+                "type": AttrType.DATE,
                 "set_values": [date(2020, 1, 1)],
                 "ret_values": ["2020-01-01"],
             },
@@ -91,7 +91,7 @@ class APITest(AironeViewTest):
                 parent_entity=self.entity,
             )
 
-            if info["type"] & AttrTypeValue["object"]:
+            if info["type"] & AttrType.OBJECT:
                 attr.referral.add(ref_entity)
 
             self.entity.attrs.add(attr)
@@ -172,7 +172,7 @@ class APITest(AironeViewTest):
 
             # check values has expected parameters
             attr_history = retdata[0]["attribute"]["history"]
-            if info["type"] & AttrTypeValue["array"]:
+            if info["type"] & AttrType._ARRAY:
                 self.assertEqual(len(attr_history), 1)
                 self.assertEqual(attr_history[0]["value"], [])
                 self.assertEqual(attr_history[0]["updated_username"], self.user.username)
@@ -240,7 +240,7 @@ class APITest(AironeViewTest):
             EntityAttr.objects.create(
                 **{
                     "name": "str",
-                    "type": AttrTypeValue["string"],
+                    "type": AttrType.STRING,
                     "created_user": self.user,
                     "parent_entity": another_entity,
                 }
