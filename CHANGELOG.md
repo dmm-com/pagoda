@@ -5,10 +5,16 @@
 ### Added
 
 ### Changed
-* Updated to delete obsoleted title to new one, which is defined in the Django configuration file.
-  Contributed by @hinashi, @userlocalhost
 
 ### Fixed
+
+## v3.90.0
+
+### Changed
+* Updated to delete obsoleted title to new one, which is defined in the Django configuration file.
+  Contributed by @hinashi, @userlocalhost
+* Migrate to enum based AttrType.
+  Contributed by @syucream
 
 ## v3.89.0
 
