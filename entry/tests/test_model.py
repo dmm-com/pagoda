@@ -1,6 +1,5 @@
-import datetime
 import logging
-from datetime import date, timezone
+from datetime import date, datetime, timezone
 from unittest import skip
 
 from django.conf import settings
@@ -1963,10 +1962,6 @@ class ModelTest(AironeTestCase):
             "group": {"type": AttrType.GROUP, "value": str(ref_group.id)},
             "date": {"type": AttrType.DATE, "value": date(2018, 12, 31)},
             "role": {"type": AttrType.ROLE, "value": str(ref_role.id)},
-            "datetime": {
-                "type": AttrType.DATETIME,
-                "value": date(2018, 12, 31, 12, 34, 56, tzinfo=timezone.utc),
-            },
             "arr_str": {
                 "type": AttrType.ARRAY_STRING,
                 "value": ["foo", "bar", "baz"],
@@ -1981,6 +1976,10 @@ class ModelTest(AironeTestCase):
             },
             "arr_group": {"type": AttrType.ARRAY_GROUP, "value": [ref_group]},
             "arr_role": {"type": AttrType.ARRAY_ROLE, "value": [ref_role]},
+            "datetime": {
+                "type": AttrType.DATETIME,
+                "value": datetime(2018, 12, 31, 12, 34, 56, tzinfo=timezone.utc),
+            },
         }
 
         entity = Entity.objects.create(name="entity", created_user=user)
@@ -2025,12 +2024,12 @@ class ModelTest(AironeTestCase):
                 {"name": "group"},
                 {"name": "date"},
                 {"name": "role"},
-                {"name": "datetime"},
                 {"name": "arr_str"},
                 {"name": "arr_obj"},
                 {"name": "arr_name"},
                 {"name": "arr_group"},
                 {"name": "arr_role"},
+                {"name": "datetime"},
             ],
         )
         self.assertEqual(ret["ret_count"], 11)
@@ -3802,7 +3801,7 @@ class ModelTest(AironeTestCase):
             },
             {
                 "name": "datetime",
-                "value": {"type": AttrType.DATETIME, "value": "2018-12-31T00:00:00Z"},
+                "value": {"type": AttrType.DATETIME, "value": "2018-12-31T12:34:56+00:00"},
             },
         ]
         for info in expected_attrinfos:
@@ -4657,7 +4656,7 @@ class ModelTest(AironeTestCase):
                 "key": [""],
                 "value": [""],
                 "referral_id": [""],
-                "datetime_value": ["2018-12-31T00:00:00Z"],
+                "date_value": ["2018-12-31T12:34:56+00:00"],
             },
         }
         # check all attributes are expected ones
