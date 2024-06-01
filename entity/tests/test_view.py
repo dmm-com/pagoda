@@ -177,12 +177,14 @@ class ViewTest(AironeViewTest):
         self.assertTrue(entity.status & Entity.STATUS_TOP_LEVEL)
 
         # tests for EntityAttribute objects
-        self.assertEqual(len(EntityAttr.objects.all()), 6)
+        self.assertEqual(len(EntityAttr.objects.all()), len(params["attrs"]))
 
         # tests for operation history is registered correctly
-        self.assertEqual(History.objects.count(), 7)
+        self.assertEqual(History.objects.count(), 1 + len(params["attrs"]))
         self.assertEqual(History.objects.filter(operation=History.ADD_ENTITY).count(), 1)
-        self.assertEqual(History.objects.filter(operation=History.ADD_ATTR).count(), 6)
+        self.assertEqual(
+            History.objects.filter(operation=History.ADD_ATTR).count(), len(params["attrs"])
+        )
 
         # tests for historical-record
         self.assertEqual(entity.history.count(), 2)

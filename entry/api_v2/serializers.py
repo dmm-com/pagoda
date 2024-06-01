@@ -708,6 +708,9 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
                 case AttrType.ROLE:
                     return {"as_role": AttrDefaultValue[type]}
 
+                case AttrType.DATETIME:
+                    return {"as_string": AttrDefaultValue[type]}
+
                 case _:
                     raise IncorrectTypeError(f"unexpected type: {type}")
 
@@ -1077,7 +1080,7 @@ class EntryHistoryAttributeValueSerializer(serializers.ModelSerializer):
                     else None
                 }
 
-            case AttrType.DATE:
+            case AttrType.DATETIME:
                 return {"as_string": obj.datetime if obj.datetime else ""}
 
             case _:

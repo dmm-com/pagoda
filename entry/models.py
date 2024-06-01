@@ -210,7 +210,7 @@ class AttributeValue(models.Model):
         elif self.parent_attr.schema.type == AttrType.ROLE and self.value:
             value = _get_model_value(self, Role)
 
-        elif self.parent_attr.schema.type == AttrType.DATETIME and self.value:
+        elif self.parent_attr.schema.type == AttrType.DATETIME:
             if serialize:
                 value = self.datetime.isoformat()
             else:
@@ -248,47 +248,45 @@ class AttributeValue(models.Model):
         def _get_role_value(attrv):
             return Role.objects.filter(id=attrv.value, is_active=True).first()
 
-        if self.data_type == AttrType.ARRAY_STRING:
-            return [x.value for x in self.data_array.all()]
-        elif self.data_type == AttrType.ARRAY_OBJECT:
-            return [x.referral for x in self.data_array.all()]
-        elif self.data_type == AttrType.OBJECT:
-            return self.referral
-        elif self.data_type == AttrType.BOOLEAN:
-            return self.boolean
-        elif self.data_type == AttrType.DATE:
-            return self.date
-        elif self.data_type == AttrType.NAMED_OBJECT:
-            return {
-                "value": self.value,
-                "referral": self.referral,
-            }
-        elif self.data_type == AttrType.ARRAY_NAMED_OBJECT:
-            return sorted(
-                [
-                    {
-                        "value": x.value,
-                        "referral": x.referral,
-                    }
-                    for x in self.data_array.all()
-                ],
-                key=lambda x: x["value"],
-            )
-
-        elif self.data_type == AttrType.GROUP and self.value:
-            return _get_group_value(self)
-
-        elif self.data_type == AttrType.ARRAY_GROUP:
-            return [y for y in [_get_group_value(x) for x in self.data_array.all()] if y]
-
-        elif self.data_type == AttrType.ROLE and self.value:
-            return _get_role_value(self)
-
-        elif self.data_type == AttrType.ARRAY_ROLE:
-            return [y for y in [_get_role_value(x) for x in self.data_array.all()] if y]
-
-        else:
-            return self.value
+        match self.data_type:
+            case AttrType.ARRAY_STRING:
+                return [x.value for x in self.data_array.all()]
+            case AttrType.ARRAY_OBJECT:
+                return [x.referral for x in self.data_array.all()]
+            case AttrType.OBJECT:
+                return self.referral
+            case AttrType.BOOLEAN:
+                return self.boolean
+            case AttrType.DATE:
+                return self.date
+            case AttrType.NAMED_OBJECT:
+                return {
+                    "value": self.value,
+                    "referral": self.referral,
+                }
+            case AttrType.ARRAY_NAMED_OBJECT:
+                return sorted(
+                    [
+                        {
+                            "value": x.value,
+                            "referral": x.referral,
+                        }
+                        for x in self.data_array.all()
+                    ],
+                    key=lambda x: x["value"],
+                )
+            case AttrType.GROUP if self.value:
+                return _get_group_value(self)
+            case AttrType.ARRAY_GROUP:
+                return [y for y in [_get_group_value(x) for x in self.data_array.all()] if y]
+            case AttrType.ROLE if self.value:
+                return _get_role_value(self)
+            case AttrType.ARRAY_ROLE:
+                return [y for y in [_get_role_value(x) for x in self.data_array.all()] if y]
+            case AttrType.DATETIME:
+                return self.datetime
+            case _:
+                return self.value
 
     def get_next_value(self) -> Optional["AttributeValue"]:
         attrv = AttributeValue.objects.filter(
@@ -934,79 +932,79 @@ class Attribute(ACLBase):
             if not attrv:
                 attrv = AttributeValue(**params)
 
-            # set attribute value according to the attribute-type
-            if attr_type == AttrType.STRING or attr_type == AttrType.TEXT:
-                attrv.boolean = boolean
-                attrv.value = str(val)
-                if not attrv.value:
-                    return None
+            match attr_type:
+                case AttrType.STRING | AttrType.TEXT:
+                    attrv.boolean = boolean
+                    attrv.value = str(val)
+                    if not attrv.value:
+                        return None
 
-            if attr_type == AttrType.GROUP:
-                attrv.boolean = boolean
-                attrv.value = AttributeValue.uniform_storable(val, Group)
-                if not attrv.value:
-                    return None
+                case AttrType.GROUP:
+                    attrv.boolean = boolean
+                    attrv.value = AttributeValue.uniform_storable(val, Group)
+                    if not attrv.value:
+                        return None
 
-            if attr_type == AttrType.ROLE:
-                attrv.boolean = boolean
-                attrv.value = AttributeValue.uniform_storable(val, Role)
-                if not attrv.value:
-                    return None
+                case AttrType.ROLE:
+                    attrv.boolean = boolean
+                    attrv.value = AttributeValue.uniform_storable(val, Role)
+                    if not attrv.value:
+                        return None
 
-            elif attr_type == AttrType.OBJECT:
-                attrv.boolean = boolean
-                # set None if the referral entry is not specified
-                attrv.referral = None
-                if not val:
-                    pass
-                elif isinstance(val, Entry):
-                    attrv.referral = val
-                elif isinstance(val, str) or isinstance(val, int):
-                    ref_entry = Entry.objects.filter(id=val, is_active=True).first()
-                    if ref_entry:
-                        attrv.referral = ref_entry
+                case AttrType.OBJECT:
+                    attrv.boolean = boolean
+                    # set None if the referral entry is not specified
+                    attrv.referral = None
+                    if not val:
+                        pass
+                    elif isinstance(val, Entry):
+                        attrv.referral = val
+                    elif isinstance(val, str) or isinstance(val, int):
+                        ref_entry = Entry.objects.filter(id=val, is_active=True).first()
+                        if ref_entry:
+                            attrv.referral = ref_entry
 
-                if not attrv.referral:
-                    return
+                    if not attrv.referral:
+                        return
 
-            elif attr_type == AttrType.BOOLEAN:
-                attrv.boolean = val
+                case AttrType.BOOLEAN:
+                    attrv.boolean = val
 
-            elif attr_type == AttrType.DATE:
-                if isinstance(val, str) and val:
-                    attrv.date = datetime.strptime(val, "%Y-%m-%d").date()
-                elif isinstance(val, date):
-                    attrv.date = val
+                case AttrType.DATE:
+                    if isinstance(val, str) and val:
+                        attrv.date = datetime.strptime(val, "%Y-%m-%d").date()
+                    elif isinstance(val, date):
+                        attrv.date = val
 
-                attrv.boolean = boolean
-
-            elif attr_type == AttrType.NAMED_OBJECT:
-                attrv.value = val["name"] if "name" in val else ""
-                if "boolean" in val:
-                    attrv.boolean = val["boolean"]
-                else:
                     attrv.boolean = boolean
 
-                attrv.referral = None
-                if "id" not in val or not val["id"]:
-                    pass
-                elif isinstance(val["id"], str) or isinstance(val["id"], int):
-                    ref_entry = Entry.objects.filter(id=val["id"], is_active=True).first()
-                    if ref_entry:
-                        attrv.referral = ref_entry
-                elif isinstance(val["id"], Entry):
-                    attrv.referral = val["id"]
-                else:
+                case AttrType.NAMED_OBJECT:
+                    attrv.value = val["name"] if "name" in val else ""
+                    if "boolean" in val:
+                        attrv.boolean = val["boolean"]
+                    else:
+                        attrv.boolean = boolean
+
                     attrv.referral = None
+                    if "id" not in val or not val["id"]:
+                        pass
+                    elif isinstance(val["id"], str) or isinstance(val["id"], int):
+                        ref_entry = Entry.objects.filter(id=val["id"], is_active=True).first()
+                        if ref_entry:
+                            attrv.referral = ref_entry
+                    elif isinstance(val["id"], Entry):
+                        attrv.referral = val["id"]
+                    else:
+                        attrv.referral = None
 
-                if not attrv.referral and not attrv.value:
-                    return
+                    if not attrv.referral and not attrv.value:
+                        return
 
-            elif attr_type == AttrType.DATETIME:
-                if isinstance(val, str) and val:
-                    attrv.datetime = datetime.fromisoformat(val)
-                elif isinstance(val, date):
-                    attrv.datetime = val
+                case AttrType.DATETIME:
+                    if isinstance(val, str) and val:
+                        attrv.datetime = datetime.fromisoformat(val)
+                    elif isinstance(val, date):
+                        attrv.datetime = val
 
             return attrv
 
