@@ -21,7 +21,7 @@ from airone.lib.http import (
     http_post,
     render,
 )
-from airone.lib.types import AttrType, AttrTypeValue
+from airone.lib.types import AttrType
 from entity.models import Entity
 from entry.models import Attribute, AttributeValue, Entry
 from entry.utils import get_sort_order
@@ -70,11 +70,11 @@ def _validate_input(recv_data, obj):
             is_valid = attr_data["value"] and all([_has_data(x) for x in attr_data["value"]])
 
             # This checks whether valid referral parameter is passed
-            if is_valid and attr.type & AttrTypeValue["object"]:
+            if is_valid and attr.type & AttrType.OBJECT:
                 is_valid &= all([_has_referral(x) for x in attr_data["value"]])
 
             # This checks whether valid referral_key parameter is passed
-            if attr.type & AttrTypeValue["named"]:
+            if attr.type & AttrType._NAMED:
                 is_valid |= attr_data["referral_key"] and all(
                     [_has_data(x) for x in attr_data["referral_key"]]
                 )
@@ -92,7 +92,7 @@ def _validate_input(recv_data, obj):
             return HttpResponse("Passed value is exceeded the limit", status=400)
 
         # Check date value format
-        if attr.type & AttrTypeValue["date"]:
+        if attr.type & AttrType.DATE:
             try:
                 [
                     datetime.strptime(str(i["data"]), "%Y-%m-%d")

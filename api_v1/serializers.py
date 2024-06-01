@@ -3,7 +3,7 @@ from datetime import datetime
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
-from airone.lib.types import AttrType, AttrTypeValue
+from airone.lib.types import AttrType
 from entity.models import Entity
 from entry.models import AttributeValue, Entry
 from group.models import Group
@@ -24,11 +24,11 @@ class GetEntrySerializer(serializers.ModelSerializer):
             if not attrv:
                 return ""
 
-            if attr.schema.type & AttrTypeValue["array"]:
-                if attr.schema.type & AttrTypeValue["string"]:
+            if attr.schema.type & AttrType._ARRAY:
+                if attr.schema.type & AttrType.STRING:
                     return [x.value for x in attrv.data_array.all()]
 
-                elif attr.schema.type & AttrTypeValue["named"]:
+                elif attr.schema.type & AttrType._NAMED:
                     return [
                         {
                             "name": x.value,
@@ -38,7 +38,7 @@ class GetEntrySerializer(serializers.ModelSerializer):
                         for x in attrv.data_array.all()
                     ]
 
-                elif attr.schema.type & AttrTypeValue["object"]:
+                elif attr.schema.type & AttrType.OBJECT:
                     return [
                         {
                             "id": x.referral.id if x.referral else None,
@@ -47,32 +47,29 @@ class GetEntrySerializer(serializers.ModelSerializer):
                         for x in attrv.data_array.all()
                     ]
 
-            elif (
-                attr.schema.type & AttrTypeValue["string"]
-                or attr.schema.type & AttrTypeValue["text"]
-            ):
+            elif attr.schema.type & AttrType.STRING or attr.schema.type & AttrType.TEXT:
                 return attrv.value
 
-            elif attr.schema.type & AttrTypeValue["named"]:
+            elif attr.schema.type & AttrType._NAMED:
                 return {
                     "name": attrv.value,
                     "ref_id": attrv.referral.id if attrv.referral else None,
                     "ref_name": attrv.referral.name if attrv.referral else "",
                 }
 
-            elif attr.schema.type & AttrTypeValue["object"]:
+            elif attr.schema.type & AttrType.OBJECT:
                 return {
                     "id": attrv.referral.id if attrv.referral else None,
                     "name": attrv.referral.name if attrv.referral else "",
                 }
 
-            elif attr.schema.type & AttrTypeValue["boolean"]:
+            elif attr.schema.type & AttrType.BOOLEAN:
                 return attrv.boolean
 
-            elif attr.schema.type & AttrTypeValue["date"]:
+            elif attr.schema.type & AttrType.DATE:
                 return attrv.date
 
-            elif attr.schema.type & AttrTypeValue["group"]:
+            elif attr.schema.type & AttrType.GROUP:
                 group = Group.objects.get(id=attrv.value)
                 return {
                     "id": group.id,
@@ -98,7 +95,7 @@ class PostEntrySerializer(serializers.Serializer):
     attrs = serializers.DictField(required=True)
 
     def _validate_attr(self, attr, value):
-        """This method validate and convert attirubte valeu to be acceptable for AirOne"""
+        """This method validate and convert attribute value to be acceptable for AirOne"""
 
         def get_entry(schema, name):
             return Entry.objects.get(is_active=True, schema=schema, name=name)
@@ -119,7 +116,7 @@ class PostEntrySerializer(serializers.Serializer):
                     if is_entry(r, value["id"])
                 ]
 
-                # It means that there is no entry which is matched specified referrence
+                # It means that there is no entry which is matched specified reference
                 if not any(entryset):
                     return None
 
@@ -127,11 +124,11 @@ class PostEntrySerializer(serializers.Serializer):
 
             return value
 
-        if attr.type & AttrTypeValue["array"]:
+        if attr.type & AttrType._ARRAY:
             if not isinstance(value, list):
                 return None
 
-            if attr.type & AttrTypeValue["string"]:
+            if attr.type & AttrType.STRING:
                 if not all(
                     [
                         isinstance(v, str) or isinstance(v, int) or isinstance(v, float)
@@ -141,13 +138,13 @@ class PostEntrySerializer(serializers.Serializer):
                     return None
                 return value
 
-            elif attr.type & AttrTypeValue["named"]:
+            elif attr.type & AttrType._NAMED:
                 if not all([isinstance(v, dict) for v in value]):
                     return None
 
                 return [x for x in [validate_named_attr(v) for v in value] if x]
 
-            elif attr.type & AttrTypeValue["object"]:
+            elif attr.type & AttrType.OBJECT:
                 return sum(
                     [
                         [get_entry(r, v) for r in attr.referral.all() if is_entry(r, v)]
@@ -156,24 +153,24 @@ class PostEntrySerializer(serializers.Serializer):
                     [],
                 )
 
-            elif attr.type & AttrTypeValue["group"]:
+            elif attr.type & AttrType.GROUP:
                 return [x for x in [AttributeValue.uniform_storable(v, Group) for v in value] if x]
 
-            elif attr.type & AttrTypeValue["role"]:
+            elif attr.type & AttrType.ROLE:
                 return [x for x in [AttributeValue.uniform_storable(v, Role) for v in value] if x]
 
-        elif attr.type & AttrTypeValue["string"] or attr.type & AttrTypeValue["text"]:
+        elif attr.type & AttrType.STRING or attr.type & AttrType.TEXT:
             if not (isinstance(value, str) or isinstance(value, int) or isinstance(value, float)):
                 return None
             return value
 
-        elif attr.type & AttrTypeValue["named"]:
+        elif attr.type & AttrType._NAMED:
             if not isinstance(value, dict):
                 return None
 
             return validate_named_attr(value)
 
-        elif attr.type & AttrTypeValue["object"]:
+        elif attr.type & AttrType.OBJECT:
             if not value:
                 # This means not None but empty referral value
                 return 0
@@ -186,12 +183,12 @@ class PostEntrySerializer(serializers.Serializer):
             elif isinstance(value, int):
                 return Entry.objects.filter(id=value, is_active=True).first()
 
-        elif attr.type & AttrTypeValue["boolean"]:
+        elif attr.type & AttrType.BOOLEAN:
             if not isinstance(value, bool):
                 return None
             return value
 
-        elif attr.type & AttrTypeValue["date"]:
+        elif attr.type & AttrType.DATE:
             if isinstance(value, str):
                 try:
                     datetime.strptime(value, "%Y-%m-%d")
@@ -201,10 +198,10 @@ class PostEntrySerializer(serializers.Serializer):
             else:
                 return None
 
-        elif attr.type & AttrTypeValue["group"]:
+        elif attr.type & AttrType.GROUP:
             return AttributeValue.uniform_storable(value, Group)
 
-        elif attr.type & AttrTypeValue["role"]:
+        elif attr.type & AttrType.ROLE:
             return AttributeValue.uniform_storable(value, Role)
 
         elif attr.type & AttrType.DATETIME:

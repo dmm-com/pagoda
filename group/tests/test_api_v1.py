@@ -4,7 +4,7 @@ from unittest import mock
 from django.urls import reverse
 
 from airone.lib.test import AironeViewTest
-from airone.lib.types import AttrTypeValue
+from airone.lib.types import AttrType
 from entry.models import Entry
 from group import tasks
 from group.models import Group
@@ -68,7 +68,7 @@ class APITest(AironeViewTest):
             **{
                 "user": user,
                 "name": "Entity",
-                "attrs": [{"name": "group", "type": AttrTypeValue["group"]}],
+                "attrs": [{"name": "group", "type": AttrType.GROUP}],
             }
         )
 

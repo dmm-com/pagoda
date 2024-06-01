@@ -8,7 +8,7 @@ from acl.models import ACLBase
 from airone.exceptions.trigger import InvalidInputException
 from airone.lib.http import DRFRequest
 from airone.lib.log import Logger
-from airone.lib.types import AttrType, AttrTypeValue
+from airone.lib.types import AttrType
 from entity.models import Entity, EntityAttr
 from entry.api_v2.serializers import EntryUpdateSerializer
 from entry.models import Attribute, Entry
@@ -107,7 +107,7 @@ class InputTriggerAction(object):
             raise InvalidInputException("Specified attr(%s) is invalid" % attr_id)
 
         self.values = []
-        if self.attr.type & AttrTypeValue["array"]:
+        if self.attr.type & AttrType._ARRAY:
             self.values = self.get_value(input.get("values", []))
         else:
             self.values = [self.get_value(input.get("value"))]
@@ -121,11 +121,7 @@ class InputTriggerAction(object):
                     | AttrType.ARRAY_NAMED_OBJECT_BOOLEAN
                     | AttrType.ARRAY_STRING
                 ):
-                    return [
-                        _do_get_value(x, attr_type ^ AttrTypeValue["array"])
-                        for x in input_value
-                        if x
-                    ]
+                    return [_do_get_value(x, attr_type ^ AttrType._ARRAY) for x in input_value if x]
 
                 case AttrType.STRING | AttrType.TEXT:
                     return InputTriggerActionValue(str_cond=input_value)
@@ -290,7 +286,7 @@ class TriggerCondition(models.Model):
             ):
                 # In this case, the recv_value is compatible with APIv1 standard
                 # it's necessary to convert it to APIv2 standard
-                if self.attr.type & AttrTypeValue["array"]:
+                if self.attr.type & AttrType._ARRAY:
                     return [x["data"] for x in recv_value]
                 else:
                     return recv_value[0]["data"]
@@ -512,23 +508,23 @@ class TriggerAction(models.Model):
             attr_type = self.attr.type
 
         value = value or self.values.first()
-        if attr_type & AttrTypeValue["array"]:
+        if attr_type & AttrType._ARRAY:
             return [
-                self.get_serializer_acceptable_value(x, attr_type ^ AttrTypeValue["array"])
+                self.get_serializer_acceptable_value(x, attr_type ^ AttrType._ARRAY)
                 for x in self.values.all()
             ]
-        elif attr_type == AttrTypeValue["boolean"]:
+        elif attr_type == AttrType.BOOLEAN:
             return value.bool_cond
-        elif attr_type == AttrTypeValue["named_object"]:
+        elif attr_type == AttrType.NAMED_OBJECT:
             return {
                 "name": value.str_cond,
                 "id": value.ref_cond.id if isinstance(value.ref_cond, Entry) else None,
             }
-        elif attr_type == AttrTypeValue["string"]:
+        elif attr_type == AttrType.STRING:
             return value.str_cond
-        elif attr_type == AttrTypeValue["text"]:
+        elif attr_type == AttrType.TEXT:
             return value.str_cond
-        elif attr_type == AttrTypeValue["object"]:
+        elif attr_type == AttrType.OBJECT:
             return value.ref_cond.id if isinstance(value.ref_cond, Entry) else None
 
     def run(self, user, entry, call_stacks=[]):

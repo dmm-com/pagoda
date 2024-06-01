@@ -5,7 +5,7 @@ from django.urls import reverse
 
 from airone.lib.acl import ACLType
 from airone.lib.test import AironeViewTest
-from airone.lib.types import AttrTypeArrObj, AttrTypeArrStr, AttrTypeStr, AttrTypeValue
+from airone.lib.types import AttrType, AttrTypeArrObj, AttrTypeArrStr, AttrTypeStr
 from entity import tasks as entity_tasks
 from entity.models import Entity, EntityAttr
 from entry import tasks as entry_tasks
@@ -298,7 +298,7 @@ class ComplexViewTest(AironeViewTest):
             attrs=[
                 {
                     "name": "ref",
-                    "type": AttrTypeValue["object"],
+                    "type": AttrType.OBJECT,
                     "ref": ref_entity,
                 }
             ],
@@ -349,7 +349,7 @@ class ComplexViewTest(AironeViewTest):
         entity.attrs.add(
             EntityAttr.objects.create(
                 name="ref",
-                type=AttrTypeValue["object"],
+                type=AttrType.OBJECT,
                 parent_entity=entity,
                 created_user=user,
             )
@@ -379,7 +379,7 @@ class ComplexViewTest(AironeViewTest):
                 {
                     "id": entity_attr.id,
                     "name": entity_attr.name,
-                    "type": str(AttrTypeValue["string"]),
+                    "type": str(AttrType.STRING),
                     "is_mandatory": entity_attr.is_mandatory,
                     "is_delete_in_chain": False,
                     "row_index": "1",

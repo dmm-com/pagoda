@@ -3,7 +3,7 @@ import json
 import mock
 
 from airone.lib.test import AironeTestCase
-from airone.lib.types import AttrTypeValue
+from airone.lib.types import AttrType
 from entry.models import AttributeValue
 from trigger import tasks as trigger_tasks
 from trigger.models import (
@@ -29,58 +29,58 @@ class ModelTest(AironeTestCase):
             "test_entity",
             attrs=[
                 # These are attributes that are used for trigger
-                {"name": "str_trigger", "type": AttrTypeValue["string"]},
+                {"name": "str_trigger", "type": AttrType.STRING},
                 {
                     "name": "ref_trigger",
-                    "type": AttrTypeValue["object"],
+                    "type": AttrType.OBJECT,
                     "ref": self.entity_ref,
                 },
                 {
                     "name": "named_trigger",
-                    "type": AttrTypeValue["named_object"],
+                    "type": AttrType.NAMED_OBJECT,
                     "ref": self.entity_ref,
                 },
                 {
                     "name": "named_trigger2",
-                    "type": AttrTypeValue["named_object"],
+                    "type": AttrType.NAMED_OBJECT,
                     "ref": self.entity_ref,
                 },
-                {"name": "arr_str_trigger", "type": AttrTypeValue["array_string"]},
+                {"name": "arr_str_trigger", "type": AttrType.ARRAY_STRING},
                 {
                     "name": "arr_ref_trigger",
-                    "type": AttrTypeValue["array_object"],
+                    "type": AttrType.ARRAY_OBJECT,
                     "ref": self.entity_ref,
                 },
                 {
                     "name": "arr_named_trigger",
-                    "type": AttrTypeValue["array_named_object"],
+                    "type": AttrType.ARRAY_NAMED_OBJECT,
                     "ref": self.entity_ref,
                 },
-                {"name": "bool_trigger", "type": AttrTypeValue["boolean"]},
+                {"name": "bool_trigger", "type": AttrType.BOOLEAN},
                 # These are attributes that are used for action
-                {"name": "str_action", "type": AttrTypeValue["string"]},
+                {"name": "str_action", "type": AttrType.STRING},
                 {
                     "name": "ref_action",
-                    "type": AttrTypeValue["object"],
+                    "type": AttrType.OBJECT,
                     "ref": self.entity_ref,
                 },
                 {
                     "name": "named_action",
-                    "type": AttrTypeValue["named_object"],
+                    "type": AttrType.NAMED_OBJECT,
                     "ref": self.entity_ref,
                 },
-                {"name": "arr_str_action", "type": AttrTypeValue["array_string"]},
+                {"name": "arr_str_action", "type": AttrType.ARRAY_STRING},
                 {
                     "name": "arr_ref_action",
-                    "type": AttrTypeValue["array_object"],
+                    "type": AttrType.ARRAY_OBJECT,
                     "ref": self.entity_ref,
                 },
                 {
                     "name": "arr_named_action",
-                    "type": AttrTypeValue["array_named_object"],
+                    "type": AttrType.ARRAY_NAMED_OBJECT,
                     "ref": self.entity_ref,
                 },
-                {"name": "bool_action", "type": AttrTypeValue["boolean"]},
+                {"name": "bool_action", "type": AttrType.BOOLEAN},
             ],
         )
 
@@ -320,7 +320,7 @@ class ModelTest(AironeTestCase):
         self.assertEqual(trigger_actions.count(), len(settingTriggerActions))
 
         for trigger_action in trigger_actions:
-            if trigger_action.attr.type & AttrTypeValue["array"]:
+            if trigger_action.attr.type & AttrType._ARRAY:
                 self.assertEqual(trigger_action.values.count(), 3)
             else:
                 self.assertEqual(trigger_action.values.count(), 1)

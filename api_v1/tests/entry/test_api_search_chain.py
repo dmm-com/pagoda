@@ -3,7 +3,7 @@ import json
 from unittest import mock
 
 from airone.lib.test import AironeViewTest
-from airone.lib.types import AttrTypeValue
+from airone.lib.types import AttrType
 from api_v1.entry import serializer
 from entry.models import Entry
 from entry.settings import CONFIG as ENTRY_CONFIG
@@ -31,14 +31,14 @@ class APITest(AironeViewTest):
             self.user,
             "VLAN",
             attrs=[
-                {"name": "note", "type": AttrTypeValue["string"]},
+                {"name": "note", "type": AttrType.STRING},
             ],
         )
         self.entity_network = self.create_entity(
             self.user,
             "Network",
             attrs=[
-                {"name": "vlan", "type": AttrTypeValue["object"], "ref": self.entity_vlan},
+                {"name": "vlan", "type": AttrType.OBJECT, "ref": self.entity_vlan},
             ],
         )
         self.entity_ipv4 = self.create_entity(
@@ -47,7 +47,7 @@ class APITest(AironeViewTest):
             attrs=[
                 {
                     "name": "network",
-                    "type": AttrTypeValue["named_object"],
+                    "type": AttrType.NAMED_OBJECT,
                     "ref": self.entity_network,
                 },
             ],
@@ -58,7 +58,7 @@ class APITest(AironeViewTest):
             attrs=[
                 {
                     "name": "IP address",
-                    "type": AttrTypeValue["array_object"],
+                    "type": AttrType.ARRAY_OBJECT,
                     "ref": self.entity_ipv4,
                 },
             ],
@@ -70,10 +70,10 @@ class APITest(AironeViewTest):
             attrs=[
                 {
                     "name": "Ports",
-                    "type": AttrTypeValue["array_named_object"],
+                    "type": AttrType.ARRAY_NAMED_OBJECT,
                     "ref": self.entity_nic,
                 },
-                {"name": "Status", "type": AttrTypeValue["object"], "ref": self.entity_status},
+                {"name": "Status", "type": AttrType.OBJECT, "ref": self.entity_status},
             ],
         )
 
@@ -797,7 +797,7 @@ class APITest(AironeViewTest):
             self.user,
             "IPv6 Network",
             attrs=[
-                {"name": "vlan", "type": AttrTypeValue["object"], "ref": self.entity_vlan},
+                {"name": "vlan", "type": AttrType.OBJECT, "ref": self.entity_vlan},
             ],
         )
         entity_ipv6_address = self.create_entity(
@@ -806,7 +806,7 @@ class APITest(AironeViewTest):
             attrs=[
                 {
                     "name": "network",
-                    "type": AttrTypeValue["named_object"],
+                    "type": AttrType.NAMED_OBJECT,
                     "ref": entity_ipv6_network,
                 },
             ],
@@ -817,7 +817,7 @@ class APITest(AironeViewTest):
             attrs=[
                 {
                     "name": "IP addresses",
-                    "type": AttrTypeValue["array_object"],
+                    "type": AttrType.ARRAY_OBJECT,
                     "ref": [
                         self.entity_ipv4,
                         entity_ipv6_address,

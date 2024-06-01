@@ -1,3 +1,4 @@
+from datetime import date
 from typing import Any, Literal
 
 from django.db.models import Prefetch
@@ -20,7 +21,7 @@ from airone.lib.drf import (
 )
 from airone.lib.elasticsearch import FilterKey
 from airone.lib.log import Logger
-from airone.lib.types import AttrDefaultValue, AttrType, AttrTypeValue
+from airone.lib.types import AttrDefaultValue, AttrType
 from entity.api_v2.serializers import EntitySerializer
 from entity.models import Entity, EntityAttr
 from entry.models import Attribute, AttributeValue, Entry
@@ -38,7 +39,8 @@ class ExportedEntryAttributeValueObject(BaseModel):
 
 
 ExportedEntryAttributePrimitiveValue = (
-    str  # includes text, string, date, group, role
+    str  # includes text, string, group, role
+    | date
     | bool
     | ExportedEntryAttributeValueObject
     | dict[str, ExportedEntryAttributeValueObject]  # named entry for yaml export
@@ -840,12 +842,12 @@ class EntryImportEntitySerializer(serializers.Serializer):
                     return ref_group.id if ref_group else 0
                 return None
 
-            if entity_attrs[attr_data["name"]]["type"] & AttrTypeValue["array"]:
+            if entity_attrs[attr_data["name"]]["type"] & AttrType._ARRAY:
                 if not isinstance(attr_data["value"], list):
                     return
                 for i, child_value in enumerate(attr_data["value"]):
-                    if entity_attrs[attr_data["name"]]["type"] & AttrTypeValue["object"]:
-                        if entity_attrs[attr_data["name"]]["type"] & AttrTypeValue["named"]:
+                    if entity_attrs[attr_data["name"]]["type"] & AttrType.OBJECT:
+                        if entity_attrs[attr_data["name"]]["type"] & AttrType._NAMED:
                             if not isinstance(child_value, dict):
                                 return
                             attr_data["value"][i] = {
@@ -859,11 +861,11 @@ class EntryImportEntitySerializer(serializers.Serializer):
                             attr_data["value"][i] = _object(
                                 child_value, entity_attrs[attr_data["name"]]["refs"]
                             )
-                    if entity_attrs[attr_data["name"]]["type"] & AttrTypeValue["group"]:
+                    if entity_attrs[attr_data["name"]]["type"] & AttrType.GROUP:
                         attr_data["value"][i] = _group(child_value)
             else:
-                if entity_attrs[attr_data["name"]]["type"] & AttrTypeValue["object"]:
-                    if entity_attrs[attr_data["name"]]["type"] & AttrTypeValue["named"]:
+                if entity_attrs[attr_data["name"]]["type"] & AttrType.OBJECT:
+                    if entity_attrs[attr_data["name"]]["type"] & AttrType._NAMED:
                         if not isinstance(attr_data["value"], dict):
                             return
                         attr_data["value"] = (
@@ -881,7 +883,7 @@ class EntryImportEntitySerializer(serializers.Serializer):
                         attr_data["value"] = _object(
                             attr_data["value"], entity_attrs[attr_data["name"]]["refs"]
                         )
-                if entity_attrs[attr_data["name"]]["type"] & AttrTypeValue["group"]:
+                if entity_attrs[attr_data["name"]]["type"] & AttrType.GROUP:
                     attr_data["value"] = _group(attr_data["value"])
 
         entity: Entity | None = Entity.objects.filter(name=params["entity"], is_active=True).first()

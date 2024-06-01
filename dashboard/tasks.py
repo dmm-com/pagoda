@@ -9,7 +9,7 @@ from natsort import natsorted
 
 from airone.celery import app
 from airone.lib.job import may_schedule_until_job_is_ready
-from airone.lib.types import AttrType, AttrTypeValue
+from airone.lib.types import AttrType
 from entry.models import Entry
 from job.models import Job
 
@@ -103,8 +103,8 @@ def _yaml_export(job: Job, values, recv_data: dict, has_referral: bool) -> io.St
 
     def _get_attr_value(atype: int, value: dict):
         match atype:
-            case _ if atype & AttrTypeValue["array"]:
-                return [_get_attr_value(atype ^ AttrTypeValue["array"], x) for x in value]
+            case _ if atype & AttrType._ARRAY:
+                return [_get_attr_value(atype ^ AttrType._ARRAY, x) for x in value]
 
             case AttrType.NAMED_OBJECT:
                 [(key, val)] = value.items()

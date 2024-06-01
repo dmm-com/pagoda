@@ -19,7 +19,7 @@ from airone.lib.event_notification import (
 from airone.lib.http import DRFRequest
 from airone.lib.job import may_schedule_until_job_is_ready
 from airone.lib.log import Logger
-from airone.lib.types import AttrType, AttrTypeValue
+from airone.lib.types import AttrType
 from dashboard.tasks import _csv_export
 from entity.models import Entity, EntityAttr
 from entry.api_v2.serializers import (
@@ -79,7 +79,7 @@ def _convert_data_value(attr, info):
         if "value" in info and info["value"]:
             recv_value = [x["data"] for x in info["value"] if "data" in x]
 
-        if attr.schema.type & AttrTypeValue["named"]:
+        if attr.schema.type & AttrType._NAMED:
             return _merge_referrals_by_index(info["value"], info["referral_key"]).values()
         else:
             return recv_value
@@ -280,8 +280,8 @@ def _yaml_export_v2(job: Job, values, recv_data: dict, has_referral: bool) -> io
 
     def _get_attr_value(atype: int, value: dict) -> ExportedEntryAttributeValue:
         match atype:
-            case _ if atype & AttrTypeValue["array"]:
-                return [_get_attr_primitive_value(atype ^ AttrTypeValue["array"], x) for x in value]
+            case _ if atype & AttrType._ARRAY:
+                return [_get_attr_primitive_value(atype ^ AttrType._ARRAY, x) for x in value]
             case _:
                 return _get_attr_primitive_value(atype, value)
 

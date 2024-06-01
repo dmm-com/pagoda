@@ -2,7 +2,7 @@ import json
 from datetime import timedelta
 
 from airone.lib.test import AironeViewTest
-from airone.lib.types import AttrTypeValue
+from airone.lib.types import AttrType
 from entity.models import Entity, EntityAttr
 from entry.models import Entry
 from job.models import Job, JobOperation, JobStatus
@@ -92,7 +92,7 @@ class APITest(AironeViewTest):
         attr = EntityAttr.objects.create(
             name="attr",
             created_user=user,
-            type=AttrTypeValue["string"],
+            type=AttrType.STRING,
             parent_entity=entity,
         )
         entity.attrs.add(attr)

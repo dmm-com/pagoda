@@ -16,6 +16,7 @@ from airone.lib.acl import ACLType
 from airone.lib.log import Logger
 from airone.lib.test import AironeViewTest, DisableStderr
 from airone.lib.types import (
+    AttrType,
     AttrTypeArrNamedObj,
     AttrTypeArrObj,
     AttrTypeArrStr,
@@ -23,7 +24,6 @@ from airone.lib.types import (
     AttrTypeObj,
     AttrTypeStr,
     AttrTypeText,
-    AttrTypeValue,
 )
 from entity.models import Entity, EntityAttr
 from entry import tasks
@@ -387,7 +387,7 @@ class ViewTest(AironeViewTest):
         new_attr = EntityAttr.objects.create(
             name="new_attr",
             created_user=user,
-            type=AttrTypeValue["string"],
+            type=AttrType.STRING,
             parent_entity=self._entity,
             is_mandatory=False,
         )
@@ -813,7 +813,7 @@ class ViewTest(AironeViewTest):
             entity.attrs.add(
                 EntityAttr.objects.create(
                     name=attr_name,
-                    type=AttrTypeValue["string"],
+                    type=AttrType.STRING,
                     created_user=user,
                     parent_entity=entity,
                 )
@@ -1096,9 +1096,7 @@ class ViewTest(AironeViewTest):
         entity = self.create_entity(
             user,
             "Entity",
-            attrs=[
-                {"name": "attr", "type": AttrTypeValue["array_named_object"], "ref": ref_entity}
-            ],
+            attrs=[{"name": "attr", "type": AttrType.ARRAY_NAMED_OBJECT, "ref": ref_entity}],
         )
         entry = self.add_entry(
             user,
@@ -1372,7 +1370,7 @@ class ViewTest(AironeViewTest):
                 EntityAttr.objects.create(
                     **{
                         "name": name,
-                        "type": AttrTypeValue["string"],
+                        "type": AttrType.STRING,
                         "created_user": user,
                         "parent_entity": entity,
                     }
@@ -1424,7 +1422,7 @@ class ViewTest(AironeViewTest):
             EntityAttr.objects.create(
                 **{
                     "name": "new_attr",
-                    "type": AttrTypeValue["string"],
+                    "type": AttrType.STRING,
                     "created_user": user,
                     "parent_entity": entity,
                     "is_public": False,
@@ -1530,7 +1528,7 @@ class ViewTest(AironeViewTest):
 
             test_val = None
 
-            if case[0].TYPE & AttrTypeValue["array"] == 0:
+            if case[0].TYPE & AttrType._ARRAY == 0:
                 if case[0] == AttrTypeStr:
                     test_val = AttributeValue.create(user=user, attr=test_attr, value=case[1])
                 elif case[0] == AttrTypeObj:
@@ -1892,8 +1890,8 @@ class ViewTest(AironeViewTest):
             user,
             "Entity",
             attrs=[
-                {"name": "Role", "type": AttrTypeValue["role"]},
-                {"name": "RoleArray", "type": AttrTypeValue["array_role"]},
+                {"name": "Role", "type": AttrType.ROLE},
+                {"name": "RoleArray", "type": AttrType.ARRAY_ROLE},
             ],
         )
 
@@ -1946,8 +1944,8 @@ class ViewTest(AironeViewTest):
             user,
             "Personal Information",
             attrs=[
-                {"name": "address", "type": AttrTypeValue["named_object"], "ref": entity_pref},
-                {"name": "age", "type": AttrTypeValue["string"]},
+                {"name": "address", "type": AttrType.NAMED_OBJECT, "ref": entity_pref},
+                {"name": "age", "type": AttrType.STRING},
             ],
         )
 
@@ -1984,7 +1982,7 @@ class ViewTest(AironeViewTest):
             "attrs": [
                 {
                     "id": str(entity.attrs.get(name="address").id),
-                    "type": str(AttrTypeValue["string"]),
+                    "type": str(AttrType.STRING),
                     "value": [{"data": "", "index": 0}],
                     "referral_key": [{"data": "unknown", "index": 0}],
                 }
@@ -2018,8 +2016,8 @@ class ViewTest(AironeViewTest):
             user,
             "Entity",
             attrs=[
-                {"name": "Role", "type": AttrTypeValue["role"]},
-                {"name": "RoleArray", "type": AttrTypeValue["array_role"]},
+                {"name": "Role", "type": AttrType.ROLE},
+                {"name": "RoleArray", "type": AttrType.ARRAY_ROLE},
             ],
         )
         entry = self.add_entry(user, "TestEntry", entity)
@@ -2070,8 +2068,8 @@ class ViewTest(AironeViewTest):
             user,
             "Personal Information",
             attrs=[
-                {"name": "address", "type": AttrTypeValue["named_object"], "ref": entity_pref},
-                {"name": "age", "type": AttrTypeValue["string"]},
+                {"name": "address", "type": AttrType.NAMED_OBJECT, "ref": entity_pref},
+                {"name": "age", "type": AttrType.STRING},
             ],
         )
         entry = self.add_entry(user, "Jhon Doe", entity)
@@ -2145,7 +2143,7 @@ class ViewTest(AironeViewTest):
             "attrs": [
                 {
                     "id": str(self._entity_attr.id),
-                    "type": str(AttrTypeValue["string"]),
+                    "type": str(AttrType.STRING),
                     "value": [{"data": "A" * AttributeValue.MAXIMUM_VALUE_SIZE, "index": 0}],
                     "referral_key": [],
                 }
@@ -2181,7 +2179,7 @@ class ViewTest(AironeViewTest):
                 {
                     "entity_attr_id": "",
                     "id": str(attr.id),
-                    "type": str(AttrTypeValue["string"]),
+                    "type": str(AttrType.STRING),
                     "value": [{"data": "A" * AttributeValue.MAXIMUM_VALUE_SIZE, "index": 0}],
                     "referral_key": [],
                 }
@@ -2209,7 +2207,7 @@ class ViewTest(AironeViewTest):
             "attrs": [
                 {
                     "id": str(self._entity_attr.id),
-                    "type": str(AttrTypeValue["string"]),
+                    "type": str(AttrType.STRING),
                     "value": {
                         "data": ["A" * AttributeValue.MAXIMUM_VALUE_SIZE + "A"],
                         "index": 0,
@@ -2240,7 +2238,7 @@ class ViewTest(AironeViewTest):
                 {
                     "entity_attr_id": "",
                     "id": str(attr.id),
-                    "type": str(AttrTypeValue["string"]),
+                    "type": str(AttrType.STRING),
                     "value": [
                         {
                             "data": "A" * AttributeValue.MAXIMUM_VALUE_SIZE + "A",
@@ -2476,7 +2474,7 @@ class ViewTest(AironeViewTest):
         entity = Entity.objects.create(name="entity", created_user=admin)
         entity_attr = EntityAttr.objects.create(
             name="attr_bool",
-            type=AttrTypeValue["boolean"],
+            type=AttrType.BOOLEAN,
             parent_entity=entity,
             created_user=admin,
         )
@@ -2488,7 +2486,7 @@ class ViewTest(AironeViewTest):
             "attrs": [
                 {
                     "id": str(entity_attr.id),
-                    "type": str(AttrTypeValue["boolean"]),
+                    "type": str(AttrType.BOOLEAN),
                     "value": [{"data": True, "index": 0}],
                     "referral_key": [],
                 },
@@ -2516,7 +2514,7 @@ class ViewTest(AironeViewTest):
                 {
                     "entity_attr_id": "",
                     "id": str(entry.attrs.get(name="attr_bool").id),
-                    "type": str(AttrTypeValue["boolean"]),
+                    "type": str(AttrType.BOOLEAN),
                     "value": [{"data": False, "index": 0}],
                     "referral_key": [],
                 },
@@ -2628,14 +2626,14 @@ class ViewTest(AironeViewTest):
         entity = Entity.objects.create(name="entity", created_user=user)
         entity_attr_ref = EntityAttr.objects.create(
             name="ref",
-            type=AttrTypeValue["object"],
+            type=AttrType.OBJECT,
             parent_entity=entity,
             created_user=user,
         )
         entity.attrs.add(entity_attr_ref)
         entity_attr_arr_ref = EntityAttr.objects.create(
             name="arr_ref",
-            type=AttrTypeValue["array_object"],
+            type=AttrType.ARRAY_OBJECT,
             parent_entity=entity,
             created_user=user,
         )
@@ -2649,7 +2647,7 @@ class ViewTest(AironeViewTest):
             "attrs": [
                 {
                     "id": str(entity_attr_ref.id),
-                    "type": str(AttrTypeValue["object"]),
+                    "type": str(AttrType.OBJECT),
                     "value": [
                         {"data": str(ref_entry1.id), "index": 0},
                     ],
@@ -2657,7 +2655,7 @@ class ViewTest(AironeViewTest):
                 },
                 {
                     "id": str(entity_attr_arr_ref.id),
-                    "type": str(AttrTypeValue["array_object"]),
+                    "type": str(AttrType.ARRAY_OBJECT),
                     "value": [
                         {"data": str(ref_entry1.id), "index": 0},
                         {"data": str(ref_entry2.id), "index": 1},
@@ -2690,14 +2688,14 @@ class ViewTest(AironeViewTest):
                 {
                     "entity_attr_id": "",
                     "id": str(entry.attrs.get(name="ref").id),
-                    "type": str(AttrTypeValue["object"]),
+                    "type": str(AttrType.OBJECT),
                     "value": [],
                     "referral_key": [],
                 },
                 {
                     "entity_attr_id": "",
                     "id": str(entry.attrs.get(name="arr_ref").id),
-                    "type": str(AttrTypeValue["array_object"]),
+                    "type": str(AttrType.ARRAY_OBJECT),
                     "value": [],
                     "referral_key": [],
                 },
@@ -2722,7 +2720,7 @@ class ViewTest(AironeViewTest):
                 {
                     "entity_attr_id": "",
                     "id": str(entry.attrs.get(name="ref").id),
-                    "type": str(AttrTypeValue["object"]),
+                    "type": str(AttrType.OBJECT),
                     "value": [
                         {"data": str(ref_entry2.id), "index": 0},
                     ],
@@ -2731,7 +2729,7 @@ class ViewTest(AironeViewTest):
                 {
                     "entity_attr_id": "",
                     "id": str(entry.attrs.get(name="arr_ref").id),
-                    "type": str(AttrTypeValue["array_object"]),
+                    "type": str(AttrType.ARRAY_OBJECT),
                     "value": [
                         {"data": str(ref_entry2.id), "index": 0},
                         {"data": str(ref_entry3.id), "index": 1},
@@ -2795,7 +2793,7 @@ class ViewTest(AironeViewTest):
                 "attrs": [
                     {
                         "id": str(entity.attrs.get(name="ref").id),
-                        "type": str(AttrTypeValue["object"]),
+                        "type": str(AttrType.OBJECT),
                         "value": [
                             {"data": req["value"], "index": 0},
                         ],
@@ -2803,7 +2801,7 @@ class ViewTest(AironeViewTest):
                     },
                     {
                         "id": str(entity.attrs.get(name="arr_ref").id),
-                        "type": str(AttrTypeValue["array_object"]),
+                        "type": str(AttrType.ARRAY_OBJECT),
                         "value": [
                             {"data": req["value"], "index": 0},
                         ],
@@ -2843,7 +2841,7 @@ class ViewTest(AironeViewTest):
         entity = Entity.objects.create(name="entity", created_user=user)
         new_attr_params = {
             "name": "named_ref",
-            "type": AttrTypeValue["named_object"],
+            "type": AttrType.NAMED_OBJECT,
             "created_user": user,
             "parent_entity": entity,
         }
@@ -2858,7 +2856,7 @@ class ViewTest(AironeViewTest):
             "attrs": [
                 {
                     "id": str(attr_base.id),
-                    "type": str(AttrTypeValue["named_object"]),
+                    "type": str(AttrType.NAMED_OBJECT),
                     "referral_key": [],
                     "value": [],
                 }
@@ -2884,7 +2882,7 @@ class ViewTest(AironeViewTest):
             "attrs": [
                 {
                     "id": str(attr_base.id),
-                    "type": str(AttrTypeValue["named_object"]),
+                    "type": str(AttrType.NAMED_OBJECT),
                     "value": [{"data": str(ref_entry.id), "index": 0}],
                     "referral_key": [],
                 }
@@ -2908,7 +2906,7 @@ class ViewTest(AironeViewTest):
             "attrs": [
                 {
                     "id": str(attr_base.id),
-                    "type": str(AttrTypeValue["named_object"]),
+                    "type": str(AttrType.NAMED_OBJECT),
                     "value": [],
                     "referral_key": [{"data": "hoge", "index": 0}],
                 }
@@ -2941,7 +2939,7 @@ class ViewTest(AironeViewTest):
         entity = Entity.objects.create(name="entity", created_user=user)
         new_attr_params = {
             "name": "arr_named_ref",
-            "type": AttrTypeValue["array_named_object"],
+            "type": AttrType.ARRAY_NAMED_OBJECT,
             "created_user": user,
             "parent_entity": entity,
         }
@@ -2955,7 +2953,7 @@ class ViewTest(AironeViewTest):
             "attrs": [
                 {
                     "id": str(attr_base.id),
-                    "type": str(AttrTypeValue["array_named_object"]),
+                    "type": str(AttrType.ARRAY_NAMED_OBJECT),
                     "value": [
                         {"data": str(ref_entry.id), "index": 0},
                         {"data": str(ref_entry.id), "index": 1},
@@ -3005,7 +3003,7 @@ class ViewTest(AironeViewTest):
         attr_base = EntityAttr.objects.create(
             **{
                 "name": "named_ref",
-                "type": AttrTypeValue["named_object"],
+                "type": AttrType.NAMED_OBJECT,
                 "created_user": user,
                 "parent_entity": entity,
             }
@@ -3027,7 +3025,7 @@ class ViewTest(AironeViewTest):
                 {
                     "entity_attr_id": "",
                     "id": str(entry.attrs.get(name="named_ref").id),
-                    "type": str(AttrTypeValue["named_object"]),
+                    "type": str(AttrType.NAMED_OBJECT),
                     "value": [{"data": str(ref_entry.id), "index": 0}],
                     "referral_key": [{"data": "hoge", "index": 0}],
                 }
@@ -3054,7 +3052,7 @@ class ViewTest(AironeViewTest):
                 {
                     "entity_attr_id": "",
                     "id": str(entry.attrs.get(name="named_ref").id),
-                    "type": str(AttrTypeValue["named_object"]),
+                    "type": str(AttrType.NAMED_OBJECT),
                     "value": [{"data": str(ref_entry2.id), "index": 0}],
                     "referral_key": [{"data": "fuga", "index": 0}],
                 }
@@ -3087,7 +3085,7 @@ class ViewTest(AironeViewTest):
         entity = Entity.objects.create(name="entity", created_user=user)
         new_attr_params = {
             "name": "arr_named_ref",
-            "type": AttrTypeValue["array_named_object"],
+            "type": AttrType.ARRAY_NAMED_OBJECT,
             "created_user": user,
             "parent_entity": entity,
         }
@@ -3125,7 +3123,7 @@ class ViewTest(AironeViewTest):
                 {
                     "entity_attr_id": "",
                     "id": str(entry.attrs.get(name="arr_named_ref").id),
-                    "type": str(AttrTypeValue["array_named_object"]),
+                    "type": str(AttrType.ARRAY_NAMED_OBJECT),
                     "value": [{"data": str(r), "index": i} for i, r in enumerate(r_entries)],
                     "referral_key": [{"data": "key_%d" % i, "index": i} for i in range(0, 3)],
                 }
@@ -3152,7 +3150,7 @@ class ViewTest(AironeViewTest):
                 {
                     "entity_attr_id": "",
                     "id": str(entry.attrs.get(name="arr_named_ref").id),
-                    "type": str(AttrTypeValue["array_named_object"]),
+                    "type": str(AttrType.ARRAY_NAMED_OBJECT),
                     "value": [
                         {"data": r_entries[1], "index": 1},
                         {"data": r_entries[2], "index": 2},
@@ -3196,7 +3194,7 @@ class ViewTest(AironeViewTest):
                 {
                     "entity_attr_id": "",
                     "id": str(entry.attrs.get(name="arr_named_ref").id),
-                    "type": str(AttrTypeValue["array_named_object"]),
+                    "type": str(AttrType.ARRAY_NAMED_OBJECT),
                     "value": [
                         {"data": r_entries[2], "index": 2},
                         {"data": r_entries[1], "index": 1},
@@ -3366,7 +3364,7 @@ class ViewTest(AironeViewTest):
             EntityAttr.objects.create(
                 **{
                     "name": "attr_group",
-                    "type": AttrTypeValue["group"],
+                    "type": AttrType.GROUP,
                     "created_user": admin,
                     "parent_entity": entity,
                 }
@@ -3378,7 +3376,7 @@ class ViewTest(AironeViewTest):
             "attrs": [
                 {
                     "id": str(entity.attrs.first().id),
-                    "type": str(AttrTypeValue["group"]),
+                    "type": str(AttrType.GROUP),
                     "value": [{"index": 0, "data": str(group.id)}],
                 }
             ],
@@ -3396,7 +3394,7 @@ class ViewTest(AironeViewTest):
         attrv = entry.attrs.first().get_latest_value()
         self.assertIsNotNone(attrv)
         self.assertEqual(attrv.value, str(group.id))
-        self.assertEqual(attrv.data_type, AttrTypeValue["group"])
+        self.assertEqual(attrv.data_type, AttrType.GROUP)
 
     @patch("entry.tasks.edit_entry_attrs.delay", Mock(side_effect=tasks.edit_entry_attrs))
     def test_edit_entry_with_group_attr(self):
@@ -3411,7 +3409,7 @@ class ViewTest(AironeViewTest):
             EntityAttr.objects.create(
                 **{
                     "name": "attr_group",
-                    "type": AttrTypeValue["group"],
+                    "type": AttrType.GROUP,
                     "created_user": admin,
                     "parent_entity": entity,
                 }
@@ -3432,7 +3430,7 @@ class ViewTest(AironeViewTest):
                 {
                     "entity_attr_id": "",
                     "id": str(attr.id),
-                    "type": str(AttrTypeValue["group"]),
+                    "type": str(AttrType.GROUP),
                     "value": [{"index": 0, "data": str(Group.objects.get(name="group-0").id)}],
                 }
             ],
@@ -3453,7 +3451,7 @@ class ViewTest(AironeViewTest):
                 {
                     "entity_attr_id": "",
                     "id": str(attr.id),
-                    "type": str(AttrTypeValue["group"]),
+                    "type": str(AttrType.GROUP),
                     "value": [{"index": 0, "data": str(Group.objects.get(name="group-1").id)}],
                 }
             ],
@@ -3483,18 +3481,18 @@ class ViewTest(AironeViewTest):
 
         entity = Entity.objects.create(name="Entity", created_user=user)
         attr_info = {
-            "str": {"type": AttrTypeValue["string"]},
-            "obj": {"type": AttrTypeValue["object"]},
-            "grp": {"type": AttrTypeValue["group"]},
-            "role": {"type": AttrTypeValue["role"]},
-            "name": {"type": AttrTypeValue["named_object"]},
-            "bool": {"type": AttrTypeValue["boolean"]},
-            "date": {"type": AttrTypeValue["date"]},
-            "arr1": {"type": AttrTypeValue["array_string"]},
-            "arr2": {"type": AttrTypeValue["array_object"]},
-            "arr3": {"type": AttrTypeValue["array_named_object"]},
-            "arr4": {"type": AttrTypeValue["array_group"]},
-            "arr5": {"type": AttrTypeValue["array_role"]},
+            "str": {"type": AttrType.STRING},
+            "obj": {"type": AttrType.OBJECT},
+            "grp": {"type": AttrType.GROUP},
+            "role": {"type": AttrType.ROLE},
+            "name": {"type": AttrType.NAMED_OBJECT},
+            "bool": {"type": AttrType.BOOLEAN},
+            "date": {"type": AttrType.DATE},
+            "arr1": {"type": AttrType.ARRAY_STRING},
+            "arr2": {"type": AttrType.ARRAY_OBJECT},
+            "arr3": {"type": AttrType.ARRAY_NAMED_OBJECT},
+            "arr4": {"type": AttrType.ARRAY_GROUP},
+            "arr5": {"type": AttrType.ARRAY_ROLE},
         }
         for attr_name, info in attr_info.items():
             attr = EntityAttr.objects.create(
@@ -3504,7 +3502,7 @@ class ViewTest(AironeViewTest):
                 parent_entity=entity,
             )
 
-            if info["type"] & AttrTypeValue["object"]:
+            if info["type"] & AttrType.OBJECT:
                 attr.referral.add(ref_entity)
 
             entity.attrs.add(attr)
@@ -3613,9 +3611,7 @@ class ViewTest(AironeViewTest):
     def test_import_entry_when_trigger_is_set(self):
         user = self.guest_login()
 
-        entity = self.create_entity(
-            user, "Entity", [{"name": "str", "type": AttrTypeValue["string"]}]
-        )
+        entity = self.create_entity(user, "Entity", [{"name": "str", "type": AttrType.STRING}])
 
         TriggerCondition.register(
             entity,
@@ -3776,15 +3772,15 @@ class ViewTest(AironeViewTest):
 
         entity = Entity.objects.create(name="Entity", created_user=user)
         attr_info = {
-            "str (before changing)": {"type": AttrTypeValue["string"]},
-            "obj": {"type": AttrTypeValue["object"]},
-            "grp": {"type": AttrTypeValue["group"]},
-            "name": {"type": AttrTypeValue["named_object"]},
-            "bool": {"type": AttrTypeValue["boolean"]},
-            "date": {"type": AttrTypeValue["date"]},
-            "arr1": {"type": AttrTypeValue["array_string"]},
-            "arr2": {"type": AttrTypeValue["array_object"]},
-            "arr3": {"type": AttrTypeValue["array_named_object"]},
+            "str (before changing)": {"type": AttrType.STRING},
+            "obj": {"type": AttrType.OBJECT},
+            "grp": {"type": AttrType.GROUP},
+            "name": {"type": AttrType.NAMED_OBJECT},
+            "bool": {"type": AttrType.BOOLEAN},
+            "date": {"type": AttrType.DATE},
+            "arr1": {"type": AttrType.ARRAY_STRING},
+            "arr2": {"type": AttrType.ARRAY_OBJECT},
+            "arr3": {"type": AttrType.ARRAY_NAMED_OBJECT},
         }
         for attr_name, info in attr_info.items():
             attr = EntityAttr.objects.create(
@@ -3794,7 +3790,7 @@ class ViewTest(AironeViewTest):
                 parent_entity=entity,
             )
 
-            if info["type"] & AttrTypeValue["object"]:
+            if info["type"] & AttrType.OBJECT:
                 attr.referral.add(ref_entity)
 
             entity.attrs.add(attr)
@@ -3816,7 +3812,7 @@ class ViewTest(AironeViewTest):
 
         # check array_string value is set correctly
         attrv = entry.attrs.get(name="arr1").get_latest_value()
-        self.assertEqual(attrv.data_type, AttrTypeValue["array_string"])
+        self.assertEqual(attrv.data_type, AttrType.ARRAY_STRING)
         self.assertEqual(attrv.data_array.count(), 3)
         self.assertTrue(all([x.parent_attrv == attrv for x in attrv.data_array.all()]))
 
@@ -3836,7 +3832,7 @@ class ViewTest(AironeViewTest):
         entity.attrs.add(
             EntityAttr.objects.create(
                 name="str",
-                type=AttrTypeValue["string"],
+                type=AttrType.STRING,
                 created_user=user,
                 parent_entity=entity,
             )
@@ -3910,7 +3906,7 @@ class ViewTest(AironeViewTest):
         entity = Entity.objects.create(name="entity", created_user=admin)
         entity_attr = EntityAttr.objects.create(
             name="attr_date",
-            type=AttrTypeValue["date"],
+            type=AttrType.DATE,
             parent_entity=entity,
             created_user=admin,
         )
@@ -3922,7 +3918,7 @@ class ViewTest(AironeViewTest):
             "attrs": [
                 {
                     "id": str(entity_attr.id),
-                    "type": str(AttrTypeValue["date"]),
+                    "type": str(AttrType.DATE),
                     "value": [{"data": "2018-12-31", "index": 0}],
                     "referral_key": [],
                 },
@@ -3950,7 +3946,7 @@ class ViewTest(AironeViewTest):
                 {
                     "entity_attr_id": "",
                     "id": str(entry.attrs.get(name="attr_date").id),
-                    "type": str(AttrTypeValue["date"]),
+                    "type": str(AttrType.DATE),
                     "value": [{"data": "2019-1-1", "index": 0}],
                     "referral_key": [],
                 },
@@ -3978,7 +3974,7 @@ class ViewTest(AironeViewTest):
         entity = Entity.objects.create(name="entity", created_user=admin)
         entity_attr = EntityAttr.objects.create(
             name="attr_date",
-            type=AttrTypeValue["date"],
+            type=AttrType.DATE,
             parent_entity=entity,
             created_user=admin,
         )
@@ -3990,7 +3986,7 @@ class ViewTest(AironeViewTest):
             "attrs": [
                 {
                     "id": str(entity_attr.id),
-                    "type": str(AttrTypeValue["date"]),
+                    "type": str(AttrType.DATE),
                     "value": [{"data": "2018-13-30", "index": 0}],
                     "referral_key": [],
                 },
@@ -4013,7 +4009,7 @@ class ViewTest(AironeViewTest):
         entity = Entity.objects.create(name="entity", created_user=admin)
         entity_attr = EntityAttr.objects.create(
             name="attr_date",
-            type=AttrTypeValue["date"],
+            type=AttrType.DATE,
             parent_entity=entity,
             created_user=admin,
         )
@@ -4032,7 +4028,7 @@ class ViewTest(AironeViewTest):
                 {
                     "entity_attr_id": "",
                     "id": str(attr.id),
-                    "type": str(AttrTypeValue["date"]),
+                    "type": str(AttrType.DATE),
                     "value": [{"data": "hoge", "index": 0}],
                     "referral_key": [],
                 },
@@ -4062,7 +4058,7 @@ class ViewTest(AironeViewTest):
         entity = Entity.objects.create(name="entity", created_user=admin)
         entity_attr = EntityAttr.objects.create(
             name="attr_date",
-            type=AttrTypeValue["date"],
+            type=AttrType.DATE,
             parent_entity=entity,
             created_user=admin,
         )
@@ -4074,7 +4070,7 @@ class ViewTest(AironeViewTest):
             "attrs": [
                 {
                     "id": str(entity_attr.id),
-                    "type": str(AttrTypeValue["date"]),
+                    "type": str(AttrType.DATE),
                     "value": [{"data": "", "index": 0}],
                     "referral_key": [],
                 },
@@ -4108,63 +4104,63 @@ class ViewTest(AironeViewTest):
         entity = Entity.objects.create(name="Entity", created_user=user)
         attr_info = {
             "str": {
-                "type": AttrTypeValue["string"],
+                "type": AttrType.STRING,
                 "value": [{"data": "data", "index": 0}],
                 "expect_value": "data",
                 "expect_blank_value": "",
                 "referral_key": [],
             },
             "obj": {
-                "type": AttrTypeValue["object"],
+                "type": AttrType.OBJECT,
                 "value": [{"data": str(ref_entry.id), "index": 0}],
                 "expect_value": "ref",
                 "expect_blank_value": None,
                 "referral_key": [],
             },
             "grp": {
-                "type": AttrTypeValue["group"],
+                "type": AttrType.GROUP,
                 "value": [{"data": str(group.id), "index": 0}],
                 "expect_value": "group",
                 "expect_blank_value": None,
                 "referral_key": [],
             },
             "name": {
-                "type": AttrTypeValue["named_object"],
+                "type": AttrType.NAMED_OBJECT,
                 "value": [{"data": str(ref_entry.id), "index": 0}],
                 "expect_value": {"key": "ref"},
                 "expect_blank_value": {"": None},
                 "referral_key": [{"data": "key", "index": 0}],
             },
             "bool": {
-                "type": AttrTypeValue["boolean"],
+                "type": AttrType.BOOLEAN,
                 "value": [{"data": True, "index": 0}],
                 "expect_value": True,
                 "expect_blank_value": False,
                 "referral_key": [],
             },
             "date": {
-                "type": AttrTypeValue["date"],
+                "type": AttrType.DATE,
                 "value": [{"data": "2018-01-01", "index": 0}],
                 "expect_value": date(2018, 1, 1),
                 "expect_blank_value": None,
                 "referral_key": [],
             },
             "arr1": {
-                "type": AttrTypeValue["array_string"],
+                "type": AttrType.ARRAY_STRING,
                 "value": [{"data": "foo", "index": 0}, {"data": "bar", "index": 1}],
                 "expect_value": ["bar", "foo"],
                 "expect_blank_value": [],
                 "referral_key": [],
             },
             "arr2": {
-                "type": AttrTypeValue["array_object"],
+                "type": AttrType.ARRAY_OBJECT,
                 "value": [{"data": str(ref_entry.id), "index": 0}],
                 "expect_value": ["ref"],
                 "expect_blank_value": [],
                 "referral_key": [],
             },
             "arr3": {
-                "type": AttrTypeValue["array_named_object"],
+                "type": AttrType.ARRAY_NAMED_OBJECT,
                 "value": [{"data": str(ref_entry.id), "index": 0}],
                 "expect_value": [{"foo": "ref"}, {"bar": None}],
                 "expect_blank_value": [],
@@ -4183,7 +4179,7 @@ class ViewTest(AironeViewTest):
             )
 
             info["schema"] = attr
-            if info["type"] & AttrTypeValue["object"]:
+            if info["type"] & AttrType.OBJECT:
                 attr.referral.add(ref_entity)
 
             entity.attrs.add(attr)
@@ -4302,14 +4298,14 @@ class ViewTest(AironeViewTest):
 
         entity = Entity.objects.create(name="Entity", created_user=user)
         attr_info = {
-            "obj": {"type": AttrTypeValue["object"], "checker": checker_obj},
-            "name": {"type": AttrTypeValue["named_object"], "checker": checker_name},
+            "obj": {"type": AttrType.OBJECT, "checker": checker_obj},
+            "name": {"type": AttrType.NAMED_OBJECT, "checker": checker_name},
             "arr_obj": {
-                "type": AttrTypeValue["array_object"],
+                "type": AttrType.ARRAY_OBJECT,
                 "checker": checker_arr_obj,
             },
             "arr_name": {
-                "type": AttrTypeValue["array_named_object"],
+                "type": AttrType.ARRAY_NAMED_OBJECT,
                 "checker": checker_arr_name,
             },
         }
@@ -4333,7 +4329,7 @@ class ViewTest(AironeViewTest):
                         "type": str(x.type),
                         "value": [{"data": value, "index": 0}],
                         "referral_key": [{"data": "foo", "index": 0}]
-                        if x.type & AttrTypeValue["named"]
+                        if x.type & AttrType._NAMED
                         else [],
                     }
                     for x in entity.attrs.all()
@@ -4366,15 +4362,15 @@ class ViewTest(AironeViewTest):
 
         # prepare to Entity and Entries which importing data refers to
         entity_info = {
-            "str": {"type": AttrTypeValue["string"]},
-            "obj": {"type": AttrTypeValue["object"]},
-            "grp": {"type": AttrTypeValue["group"]},
-            "name": {"type": AttrTypeValue["named_object"]},
-            "bool": {"type": AttrTypeValue["boolean"]},
-            "date": {"type": AttrTypeValue["date"]},
-            "arr1": {"type": AttrTypeValue["array_string"]},
-            "arr2": {"type": AttrTypeValue["array_object"]},
-            "arr3": {"type": AttrTypeValue["array_named_object"]},
+            "str": {"type": AttrType.STRING},
+            "obj": {"type": AttrType.OBJECT},
+            "grp": {"type": AttrType.GROUP},
+            "name": {"type": AttrType.NAMED_OBJECT},
+            "bool": {"type": AttrType.BOOLEAN},
+            "date": {"type": AttrType.DATE},
+            "arr1": {"type": AttrType.ARRAY_STRING},
+            "arr2": {"type": AttrType.ARRAY_OBJECT},
+            "arr3": {"type": AttrType.ARRAY_NAMED_OBJECT},
         }
         for name, info in entity_info.items():
             # create entity that only has one attribute of specified type
@@ -4391,7 +4387,7 @@ class ViewTest(AironeViewTest):
 
             # send a request to create entry and expect to be error
             referral_key = []
-            if info["type"] & AttrTypeValue["named"]:
+            if info["type"] & AttrType._NAMED:
                 referral_key = [{"data": "", "index": 0}]
             params = {
                 "entry_name": "entry",
@@ -4413,7 +4409,7 @@ class ViewTest(AironeViewTest):
             self.assertEqual(Entry.objects.filter(schema=entity).count(), 0)
 
             # when a referral_key is specified, named type will be successful to create
-            if info["type"] & AttrTypeValue["named"]:
+            if info["type"] & AttrType._NAMED:
                 referral_key[0]["data"] = "hoge"
                 resp = self.client.post(
                     reverse("entry:do_create", args=[entity.id]),
@@ -4437,10 +4433,10 @@ class ViewTest(AironeViewTest):
         ref_entity = Entity.objects.create(name="ref", created_user=user)
         for index, attr_type in enumerate(
             [
-                AttrTypeValue["object"],
-                AttrTypeValue["named_object"],
-                AttrTypeValue["array_object"],
-                AttrTypeValue["array_named_object"],
+                AttrType.OBJECT,
+                AttrType.NAMED_OBJECT,
+                AttrType.ARRAY_OBJECT,
+                AttrType.ARRAY_NAMED_OBJECT,
             ]
         ):
             # create Entity and Entry which test to create
@@ -4456,7 +4452,7 @@ class ViewTest(AironeViewTest):
             entity.attrs.add(attr)
 
             referral_key = []
-            if attr_type & AttrTypeValue["named"]:
+            if attr_type & AttrType._NAMED:
                 referral_key = [{"data": "", "index": 0}]
 
             # This checks error response would be returned by sending a request
@@ -4561,7 +4557,7 @@ class ViewTest(AironeViewTest):
                     "name": "attr",
                     "created_user": user,
                     "parent_entity": entity,
-                    "type": AttrTypeValue["string"],
+                    "type": AttrType.STRING,
                 }
             )
         )
@@ -4586,7 +4582,7 @@ class ViewTest(AironeViewTest):
             name="attr",
             created_user=user,
             parent_entity=entity,
-            type=AttrTypeValue["string"],
+            type=AttrType.STRING,
         )
         entity.attrs.add(attr)
 
@@ -4679,7 +4675,7 @@ class ViewTest(AironeViewTest):
             EntityAttr.objects.create(
                 **{
                     "name": "attr",
-                    "type": AttrTypeValue["string"],
+                    "type": AttrType.STRING,
                     "created_user": user,
                     "parent_entity": entity,
                 }
@@ -4803,34 +4799,34 @@ class ViewTest(AironeViewTest):
         # 'revert_attrv' handler. So finnaly, this test expects first value is stored
         # in Database and Elasticsearch.
         attr_info = {
-            "str": {"type": AttrTypeValue["string"], "values": ["foo", "bar"]},
+            "str": {"type": AttrType.STRING, "values": ["foo", "bar"]},
             "obj": {
-                "type": AttrTypeValue["object"],
+                "type": AttrType.OBJECT,
                 "values": [ref_entries[0], ref_entries[1]],
             },
-            "grp": {"type": AttrTypeValue["group"], "values": [groups[0], groups[1]]},
+            "grp": {"type": AttrType.GROUP, "values": [groups[0], groups[1]]},
             "name": {
-                "type": AttrTypeValue["named_object"],
+                "type": AttrType.NAMED_OBJECT,
                 "values": [
                     {"name": "foo", "id": ref_entries[0]},
                     {"name": "bar", "id": ref_entries[1]},
                 ],
             },
-            "bool": {"type": AttrTypeValue["boolean"], "values": [False, True]},
+            "bool": {"type": AttrType.BOOLEAN, "values": [False, True]},
             "date": {
-                "type": AttrTypeValue["date"],
+                "type": AttrType.DATE,
                 "values": ["2018-01-01", "2018-02-01"],
             },
             "arr1": {
-                "type": AttrTypeValue["array_string"],
+                "type": AttrType.ARRAY_STRING,
                 "values": [["foo", "bar", "baz"], ["hoge", "fuga", "puyo"]],
             },
             "arr2": {
-                "type": AttrTypeValue["array_object"],
+                "type": AttrType.ARRAY_OBJECT,
                 "values": [[ref_entries[0], ref_entries[1]], [ref_entries[2]]],
             },
             "arr3": {
-                "type": AttrTypeValue["array_named_object"],
+                "type": AttrType.ARRAY_NAMED_OBJECT,
                 "values": [
                     [
                         {"name": "foo", "id": ref_entries[0]},
@@ -4851,7 +4847,7 @@ class ViewTest(AironeViewTest):
                 parent_entity=entity,
             )
 
-            if info["type"] & AttrTypeValue["object"]:
+            if info["type"] & AttrType.OBJECT:
                 attr.referral.add(ref_entity)
 
             entity.attrs.add(attr)
@@ -4886,25 +4882,25 @@ class ViewTest(AironeViewTest):
             self.assertEqual(data["type"], attr_info[attr_name]["type"])
 
             value = attr_info[attr_name]["values"][0]
-            if data["type"] == AttrTypeValue["boolean"]:
+            if data["type"] == AttrType.BOOLEAN:
                 self.assertEqual(data["value"], value)
 
-            elif data["type"] == AttrTypeValue["group"]:
+            elif data["type"] == AttrType.GROUP:
                 self.assertEqual(data["value"], {"name": value.name, "id": value.id})
 
-            elif data["type"] == AttrTypeValue["object"]:
+            elif data["type"] == AttrType.OBJECT:
                 self.assertEqual(data["value"], {"name": value.name, "id": value.id})
 
-            elif data["type"] == AttrTypeValue["array_object"]:
+            elif data["type"] == AttrType.ARRAY_OBJECT:
                 self.assertEqual(data["value"], [{"name": x.name, "id": x.id} for x in value])
 
-            elif data["type"] == AttrTypeValue["named_object"]:
+            elif data["type"] == AttrType.NAMED_OBJECT:
                 self.assertEqual(
                     data["value"],
                     {value["name"]: {"name": value["id"].name, "id": value["id"].id}},
                 )
 
-            elif data["type"] == AttrTypeValue["array_named_object"]:
+            elif data["type"] == AttrType.ARRAY_NAMED_OBJECT:
                 self.assertEqual(
                     data["value"],
                     [{x["name"]: {"name": x["id"].name, "id": x["id"].id}} for x in value],
@@ -4927,9 +4923,9 @@ class ViewTest(AironeViewTest):
             user,
             "Entity",
             [
-                {"name": "cond_str", "type": AttrTypeValue["string"]},
-                {"name": "cond_name", "type": AttrTypeValue["named_object"]},
-                {"name": "action", "type": AttrTypeValue["string"]},
+                {"name": "cond_str", "type": AttrType.STRING},
+                {"name": "cond_name", "type": AttrType.NAMED_OBJECT},
+                {"name": "action", "type": AttrType.STRING},
             ],
         )
 
@@ -4993,7 +4989,7 @@ class ViewTest(AironeViewTest):
                 EntityAttr.objects.create(
                     **{
                         "name": attr_name,
-                        "type": AttrTypeValue["string"],
+                        "type": AttrType.STRING,
                         "created_user": user,
                         "parent_entity": entity,
                     }
@@ -5025,7 +5021,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(attr1.get_latest_value(), attrvs[-1])
 
         # change Attribute type of attr then get latest AttributeValue
-        attr1.schema.type = AttrTypeValue["object"]
+        attr1.schema.type = AttrType.OBJECT
         attr1.schema.save(update_fields=["type"])
 
         self.assertGreater(attr1.get_latest_value().id, attrvs[-1].id)
@@ -5049,7 +5045,7 @@ class ViewTest(AironeViewTest):
             EntityAttr.objects.create(
                 **{
                     "name": "attr",
-                    "type": AttrTypeValue["string"],
+                    "type": AttrType.STRING,
                     "created_user": user,
                     "parent_entity": entity,
                 }
@@ -5088,7 +5084,7 @@ class ViewTest(AironeViewTest):
             EntityAttr.objects.create(
                 **{
                     "name": "attr",
-                    "type": AttrTypeValue["string"],
+                    "type": AttrType.STRING,
                     "created_user": user,
                     "parent_entity": entity,
                 }
@@ -5246,7 +5242,7 @@ class ViewTest(AironeViewTest):
         entity = Entity.objects.create(name="entity", created_user=user)
         entity_attr = EntityAttr.objects.create(
             name="attr",
-            type=AttrTypeValue["string"],
+            type=AttrType.STRING,
             parent_entity=entity,
             created_user=user,
         )
@@ -5359,7 +5355,7 @@ class ViewTest(AironeViewTest):
             **{
                 "name": "ref",
                 "created_user": user,
-                "type": AttrTypeValue["object"],
+                "type": AttrType.OBJECT,
                 "parent_entity": entity,
             }
         )
@@ -5469,7 +5465,7 @@ class ViewTest(AironeViewTest):
             entity = self.create_entity(
                 user,
                 "Test Another Entity %d" % index,
-                attrs=[{"name": "attr", "type": AttrTypeValue["string"]}],
+                attrs=[{"name": "attr", "type": AttrType.STRING}],
                 is_public=False,
                 default_permission=acltype.id,
             )
@@ -5503,7 +5499,7 @@ class ViewTest(AironeViewTest):
                 attrs=[
                     {
                         "name": "attr",
-                        "type": AttrTypeValue["string"],
+                        "type": AttrType.STRING,
                         "is_public": False,
                         "default_permission": acltype.id,
                     }
@@ -5535,7 +5531,7 @@ class ViewTest(AironeViewTest):
             entity = self.create_entity(
                 user,
                 "Test Another Entity %d" % index,
-                attrs=[{"name": "attr", "type": AttrTypeValue["string"], "is_public": True}],
+                attrs=[{"name": "attr", "type": AttrType.STRING, "is_public": True}],
                 is_public=True,
                 default_permission=acltype.id,
             )
@@ -5567,7 +5563,7 @@ class ViewTest(AironeViewTest):
             user,
             "Entity",
             attrs=[
-                {"name": "Attr", "type": AttrTypeValue["string"]},
+                {"name": "Attr", "type": AttrType.STRING},
             ],
         )
         entity_attr = entity.attrs.last()
@@ -5590,7 +5586,7 @@ class ViewTest(AironeViewTest):
                 {
                     "entity_attr_id": "",
                     "id": str(entry.attrs.last().id),
-                    "type": str(AttrTypeValue["string"]),
+                    "type": str(AttrType.STRING),
                     "value": [{"data": "", "index": 0}],
                     "referral_key": [],
                 },

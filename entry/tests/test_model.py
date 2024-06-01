@@ -99,34 +99,34 @@ class ModelTest(AironeTestCase):
         """
         entity = Entity.objects.create(name="all_attr_entity", created_user=user)
         attr_info = {
-            "str": AttrTypeValue["string"],
-            "text": AttrTypeValue["text"],
-            "obj": AttrTypeValue["object"],
-            "name": AttrTypeValue["named_object"],
-            "bool": AttrTypeValue["boolean"],
-            "group": AttrTypeValue["group"],
-            "date": AttrTypeValue["date"],
-            "role": AttrTypeValue["role"],
+            "str": AttrType.STRING,
+            "text": AttrType.TEXT,
+            "obj": AttrType.OBJECT,
+            "name": AttrType.NAMED_OBJECT,
+            "bool": AttrType.BOOLEAN,
+            "group": AttrType.GROUP,
+            "date": AttrType.DATE,
+            "role": AttrType.ROLE,
             "datetime": AttrType.DATETIME,
-            "arr_str": AttrTypeValue["array_string"],
-            "arr_obj": AttrTypeValue["array_object"],
-            "arr_name": AttrTypeValue["array_named_object"],
-            "arr_group": AttrTypeValue["array_group"],
-            "arr_role": AttrTypeValue["array_role"],
+            "arr_str": AttrType.ARRAY_STRING,
+            "arr_obj": AttrType.ARRAY_OBJECT,
+            "arr_name": AttrType.ARRAY_NAMED_OBJECT,
+            "arr_group": AttrType.ARRAY_GROUP,
+            "arr_role": AttrType.ARRAY_ROLE,
         }
         for attr_name, attr_type in attr_info.items():
             attr = EntityAttr.objects.create(
                 name=attr_name, type=attr_type, created_user=user, parent_entity=entity
             )
 
-            if attr_type & AttrTypeValue["object"] and ref_entity:
+            if attr_type & AttrType.OBJECT and ref_entity:
                 attr.referral.add(ref_entity)
 
             entity.attrs.add(attr)
 
         return entity
 
-    def make_attr(self, name, attrtype=AttrTypeValue["string"], user=None, entity=None, entry=None):
+    def make_attr(self, name, attrtype=AttrType.STRING, user=None, entity=None, entry=None):
         entity_attr = EntityAttr.objects.create(
             name=name,
             type=attrtype,
@@ -183,7 +183,7 @@ class ModelTest(AironeTestCase):
 
         entity = Entity.objects.create(name="entity", created_user=user)
         attrbase = EntityAttr.objects.create(
-            name="attr", type=AttrTypeValue["object"], created_user=user, parent_entity=entity
+            name="attr", type=AttrType.OBJECT, created_user=user, parent_entity=entity
         )
 
         # update acl metadata
@@ -208,7 +208,7 @@ class ModelTest(AironeTestCase):
 
         entity = Entity.objects.create(name="entity", created_user=user)
         attrbase = EntityAttr.objects.create(
-            name="attr", type=AttrTypeValue["object"], created_user=user, parent_entity=entity
+            name="attr", type=AttrType.OBJECT, created_user=user, parent_entity=entity
         )
 
         # set a permission to the user
@@ -229,7 +229,7 @@ class ModelTest(AironeTestCase):
 
         attrbase = EntityAttr.objects.create(
             name="attrbase",
-            type=AttrTypeValue["string"],
+            type=AttrType.STRING,
             created_user=user,
             parent_entity=entity,
         )
@@ -283,7 +283,7 @@ class ModelTest(AironeTestCase):
         entity = Entity.objects.create(name="e2", created_user=self._user)
         entry = Entry.objects.create(name="_E", created_user=self._user, schema=entity)
 
-        attr = self.make_attr("attr2", attrtype=AttrTypeValue["object"], entity=entity, entry=entry)
+        attr = self.make_attr("attr2", attrtype=AttrType.OBJECT, entity=entity, entry=entry)
         attr.values.add(
             AttributeValue.objects.create(referral=e1, created_user=self._user, parent_attr=attr)
         )
@@ -299,9 +299,7 @@ class ModelTest(AironeTestCase):
         entity = Entity.objects.create(name="e2", created_user=self._user)
         entry = Entry.objects.create(name="_E", created_user=self._user, schema=entity)
 
-        attr = self.make_attr(
-            "attr2", attrtype=AttrTypeValue["array_string"], entity=entity, entry=entry
-        )
+        attr = self.make_attr("attr2", attrtype=AttrType.ARRAY_STRING, entity=entity, entry=entry)
         attr_value = AttributeValue.objects.create(created_user=self._user, parent_attr=attr)
         attr_value.set_status(AttributeValue.STATUS_DATA_ARRAY_PARENT)
 
@@ -332,9 +330,7 @@ class ModelTest(AironeTestCase):
         entity = Entity.objects.create(name="e2", created_user=self._user)
         entry = Entry.objects.create(name="_E", created_user=self._user, schema=entity)
 
-        attr = self.make_attr(
-            "attr2", attrtype=AttrTypeValue["array_object"], entity=entity, entry=entry
-        )
+        attr = self.make_attr("attr2", attrtype=AttrType.ARRAY_OBJECT, entity=entity, entry=entry)
         attr_value = AttributeValue.objects.create(created_user=self._user, parent_attr=attr)
         attr_value.set_status(AttributeValue.STATUS_DATA_ARRAY_PARENT)
 
@@ -372,9 +368,7 @@ class ModelTest(AironeTestCase):
         entity = Entity.objects.create(name="e2", created_user=self._user)
         entry = Entry.objects.create(name="_E", created_user=self._user, schema=entity)
 
-        attr = self.make_attr(
-            "attr2", attrtype=AttrTypeValue["array_object"], entity=entity, entry=entry
-        )
+        attr = self.make_attr("attr2", attrtype=AttrType.ARRAY_OBJECT, entity=entity, entry=entry)
         attr_value = AttributeValue.objects.create(created_user=self._user, parent_attr=attr)
         attr_value.set_status(AttributeValue.STATUS_DATA_ARRAY_PARENT)
 
@@ -404,7 +398,7 @@ class ModelTest(AironeTestCase):
         entity = Entity.objects.create(name="entity", created_user=self._user)
         new_attr_params = {
             "name": "named_ref",
-            "type": AttrTypeValue["named_object"],
+            "type": AttrType.NAMED_OBJECT,
             "created_user": self._user,
             "parent_entity": entity,
         }
@@ -455,7 +449,7 @@ class ModelTest(AironeTestCase):
         entity = Entity.objects.create(name="entity", created_user=self._user)
         new_attr_params = {
             "name": "arr_named_ref",
-            "type": AttrTypeValue["array_named_object"],
+            "type": AttrType.ARRAY_NAMED_OBJECT,
             "created_user": self._user,
             "parent_entity": entity,
         }
@@ -539,7 +533,7 @@ class ModelTest(AironeTestCase):
         )
 
     def test_for_boolean_attr_and_value(self):
-        attr = self.make_attr("attr_bool", AttrTypeValue["boolean"])
+        attr = self.make_attr("attr_bool", AttrType.BOOLEAN)
 
         # Checks get_latest_value returns empty AttributeValue
         # even if target attribute doesn't have any value
@@ -566,7 +560,7 @@ class ModelTest(AironeTestCase):
         self.assertTrue(attr.is_updated(True))
 
     def test_for_date_attr_and_value(self):
-        attr = self.make_attr("attr_date", AttrTypeValue["date"])
+        attr = self.make_attr("attr_date", AttrType.DATE)
 
         attr.values.add(
             AttributeValue.objects.create(
@@ -599,7 +593,7 @@ class ModelTest(AironeTestCase):
         test_group = Group.objects.create(name="g0")
 
         # create test target Attribute and empty AttributeValue for it
-        attr = self.make_attr("attr_date", AttrTypeValue["group"])
+        attr = self.make_attr("attr_date", AttrType.GROUP)
         attr.add_value(self._user, None)
 
         # The cases when value will be updated
@@ -614,7 +608,7 @@ class ModelTest(AironeTestCase):
         test_groups = [Group.objects.create(name=x) for x in ["g0", "g1"]]
 
         # create test target Attribute and empty AttributeValue for it
-        attr = self.make_attr("attr_date", AttrTypeValue["array_group"])
+        attr = self.make_attr("attr_date", AttrType.ARRAY_GROUP)
         attr.add_value(self._user, None)
 
         # The cases when value will be updated
@@ -636,7 +630,7 @@ class ModelTest(AironeTestCase):
         entity.attrs.add(
             EntityAttr.objects.create(
                 name="attr",
-                type=AttrTypeValue["string"],
+                type=AttrType.STRING,
                 created_user=user,
                 parent_entity=entity,
             )
@@ -661,11 +655,11 @@ class ModelTest(AironeTestCase):
         entry1 = Entry.objects.create(name="r1", created_user=self._user, schema=entity)
         entry2 = Entry.objects.create(name="r2", created_user=self._user, schema=entity)
 
-        attr = self.make_attr("attr_ref", attrtype=AttrTypeValue["object"])
+        attr = self.make_attr("attr_ref", attrtype=AttrType.OBJECT)
 
         # this attribute is needed to check not only get referral from normal object attribute,
         # but also from an attribute that refers array referral objects
-        arr_attr = self.make_attr("attr_arr_ref", attrtype=AttrTypeValue["array_object"])
+        arr_attr = self.make_attr("attr_arr_ref", attrtype=AttrType.ARRAY_OBJECT)
 
         # make multiple value that refer 'entry' object
         [
@@ -708,7 +702,7 @@ class ModelTest(AironeTestCase):
             attrs=[
                 {
                     "name": "ref",
-                    "type": AttrTypeValue["object"],
+                    "type": AttrType.OBJECT,
                 }
             ],
         )
@@ -732,7 +726,7 @@ class ModelTest(AironeTestCase):
 
             attr = self.make_attr(
                 "attr_ref" + str(i),
-                attrtype=AttrTypeValue["object"],
+                attrtype=AttrType.OBJECT,
                 entity=entity,
                 entry=entry,
             )
@@ -762,7 +756,7 @@ class ModelTest(AironeTestCase):
     def test_coordinating_attribute_with_dynamically_added_one(self):
         newattr = EntityAttr.objects.create(
             name="newattr",
-            type=AttrTypeValue["string"],
+            type=AttrType.STRING,
             created_user=self._user,
             parent_entity=self._entity,
         )
@@ -779,7 +773,7 @@ class ModelTest(AironeTestCase):
             EntityAttr.objects.create(
                 **{
                     "name": "attr",
-                    "type": AttrTypeValue["string"],
+                    "type": AttrType.STRING,
                     "created_user": self._user,
                     "parent_entity": self._entity,
                 }
@@ -812,7 +806,7 @@ class ModelTest(AironeTestCase):
         entity = Entity.objects.create(name="ReferredEntity", created_user=self._user)
         entry = Entry.objects.create(name="entry", created_user=self._user, schema=entity)
 
-        attr = self.make_attr("attr_ref", attrtype=AttrTypeValue["object"])
+        attr = self.make_attr("attr_ref", attrtype=AttrType.OBJECT)
 
         self._entry.attrs.add(attr)
 
@@ -859,8 +853,8 @@ class ModelTest(AironeTestCase):
 
         # initialize EntityAttrs
         attr_info = {
-            "obj": {"type": AttrTypeValue["object"], "value": ref_entries[0]},
-            "arr_obj": {"type": AttrTypeValue["array_object"], "value": ref_entries},
+            "obj": {"type": AttrType.OBJECT, "value": ref_entries[0]},
+            "arr_obj": {"type": AttrType.ARRAY_OBJECT, "value": ref_entries},
         }
         for attr_name, info in attr_info.items():
             # create EntityAttr object with is_delete_in_chain object
@@ -872,7 +866,7 @@ class ModelTest(AironeTestCase):
                 parent_entity=self._entity,
             )
 
-            if info["type"] & AttrTypeValue["object"]:
+            if info["type"] & AttrType.OBJECT:
                 attr.referral.add(ref_entity)
 
             self._entity.attrs.add(attr)
@@ -944,7 +938,7 @@ class ModelTest(AironeTestCase):
         entity = Entity.objects.create(name="entity", created_user=self._user)
         new_attr_params = {
             "name": "arr_named_ref",
-            "type": AttrTypeValue["array_named_object"],
+            "type": AttrType.ARRAY_NAMED_OBJECT,
             "created_user": self._user,
             "parent_entity": entity,
         }
@@ -1034,13 +1028,13 @@ class ModelTest(AironeTestCase):
     def test_clone_attribute_without_permission(self):
         unknown_user = User.objects.create(username="unknown")
 
-        attr = self.make_attr(name="attr", attrtype=AttrTypeValue["array_string"])
+        attr = self.make_attr(name="attr", attrtype=AttrType.ARRAY_STRING)
         attr.is_public = False
         attr.save()
         self.assertIsNone(attr.clone(unknown_user))
 
     def test_clone_attribute_typed_string(self):
-        attr = self.make_attr(name="attr", attrtype=AttrTypeValue["string"])
+        attr = self.make_attr(name="attr", attrtype=AttrType.STRING)
         attr.add_value(self._user, "hoge")
         copy_entry = Entry.objects.create(
             schema=self._entity, name="copy_entry", created_user=self._user
@@ -1056,7 +1050,7 @@ class ModelTest(AironeTestCase):
         self.assertNotEqual(cloned_attr.values.last(), attr.values.last())
 
     def test_clone_attribute_typed_array_string(self):
-        attr = self.make_attr(name="attr", attrtype=AttrTypeValue["array_string"])
+        attr = self.make_attr(name="attr", attrtype=AttrType.ARRAY_STRING)
         attr.add_value(self._user, [str(i) for i in range(10)])
         copy_entry = Entry.objects.create(
             schema=self._entity, name="copy_entry", created_user=self._user
@@ -1086,7 +1080,7 @@ class ModelTest(AironeTestCase):
             EntityAttr.objects.create(
                 **{
                     "name": "string",
-                    "type": AttrTypeValue["string"],
+                    "type": AttrType.STRING,
                     "created_user": self._user,
                     "parent_entity": test_entity,
                 }
@@ -1097,7 +1091,7 @@ class ModelTest(AironeTestCase):
             EntityAttr.objects.create(
                 **{
                     "name": "arrobj",
-                    "type": AttrTypeValue["array_object"],
+                    "type": AttrType.ARRAY_OBJECT,
                     "created_user": self._user,
                     "parent_entity": test_entity,
                 }
@@ -1158,7 +1152,7 @@ class ModelTest(AironeTestCase):
             self._entity.attrs.add(
                 EntityAttr.objects.create(
                     **{
-                        "type": AttrTypeValue["string"],
+                        "type": AttrType.STRING,
                         "created_user": self._user,
                         "parent_entity": self._entity,
                         "name": info["name"],
@@ -1275,15 +1269,15 @@ class ModelTest(AironeTestCase):
                 attrinfo[info["name"]] = {}
 
             attrinfo[info["name"]]["attr"] = attr
-            if attr.schema.type == AttrTypeValue["named_object"]:
+            if attr.schema.type == AttrType.NAMED_OBJECT:
                 attrinfo[info["name"]]["exp_val"] = {
                     "value": "bar",
                     "id": aclbase_ref.id,
                     "name": aclbase_ref.name,
                 }
-            elif attr.schema.type == AttrTypeValue["object"]:
+            elif attr.schema.type == AttrType.OBJECT:
                 attrinfo[info["name"]]["exp_val"] = aclbase_ref
-            elif attr.schema.type == AttrTypeValue["array_named_object"]:
+            elif attr.schema.type == AttrType.ARRAY_NAMED_OBJECT:
                 attrinfo[info["name"]]["exp_val"] = [
                     {
                         "value": "hoge",
@@ -1291,11 +1285,11 @@ class ModelTest(AironeTestCase):
                         "name": aclbase_ref.name,
                     }
                 ]
-            elif attr.schema.type == AttrTypeValue["array_object"]:
+            elif attr.schema.type == AttrType.ARRAY_OBJECT:
                 attrinfo[info["name"]]["exp_val"] = [aclbase_ref]
-            elif attr.schema.type == AttrTypeValue["group"]:
+            elif attr.schema.type == AttrType.GROUP:
                 attrinfo[info["name"]]["exp_val"] = test_group
-            elif attr.schema.type == AttrTypeValue["array_group"]:
+            elif attr.schema.type == AttrType.ARRAY_GROUP:
                 attrinfo[info["name"]]["exp_val"] = [test_group]
             else:
                 attrinfo[info["name"]]["exp_val"] = info["exp_val"]
@@ -1337,7 +1331,7 @@ class ModelTest(AironeTestCase):
             EntityAttr.objects.create(
                 **{
                     "name": "attr",
-                    "type": AttrTypeValue["object"],
+                    "type": AttrType.OBJECT,
                     "created_user": user,
                     "parent_entity": entity,
                 }
@@ -1377,7 +1371,7 @@ class ModelTest(AironeTestCase):
             EntityAttr.objects.create(
                 **{
                     "name": "attr",
-                    "type": AttrTypeValue["string"],
+                    "type": AttrType.STRING,
                     "created_user": user,
                     "parent_entity": entity,
                 }
@@ -1398,7 +1392,7 @@ class ModelTest(AironeTestCase):
         results = entry.get_available_attrs(self._user)
         self.assertEqual(len(results), 1)
         self.assertEqual(results[0]["last_value"], "")
-        self.assertEqual(AttributeValue.objects.get(id=attrv.id).data_type, AttrTypeValue["string"])
+        self.assertEqual(AttributeValue.objects.get(id=attrv.id).data_type, AttrType.STRING)
 
     def test_get_deleted_referred_attrs(self):
         user = User.objects.create(username="hoge")
@@ -1408,14 +1402,14 @@ class ModelTest(AironeTestCase):
         ref_entry = Entry.objects.create(name="ReferredEntry", schema=ref_entity, created_user=user)
 
         attr_info = {
-            "obj": {"type": AttrTypeValue["object"], "value": ref_entry},
+            "obj": {"type": AttrType.OBJECT, "value": ref_entry},
             "name": {
-                "type": AttrTypeValue["named_object"],
+                "type": AttrType.NAMED_OBJECT,
                 "value": {"name": "hoge", "id": ref_entry},
             },
-            "arr_obj": {"type": AttrTypeValue["array_object"], "value": [ref_entry]},
+            "arr_obj": {"type": AttrType.ARRAY_OBJECT, "value": [ref_entry]},
             "arr_name": {
-                "type": AttrTypeValue["array_named_object"],
+                "type": AttrType.ARRAY_NAMED_OBJECT,
                 "value": [{"name": "hoge", "id": ref_entry}],
             },
         }
@@ -1476,14 +1470,14 @@ class ModelTest(AironeTestCase):
         ref_entity = Entity.objects.create(name="ReferredEntity", created_user=user)
         entity = Entity.objects.create(name="entity", created_user=user)
         attr_info = {
-            "obj": {"type": AttrTypeValue["object"], "value": None},
+            "obj": {"type": AttrType.OBJECT, "value": None},
             "name": {
-                "type": AttrTypeValue["named_object"],
+                "type": AttrType.NAMED_OBJECT,
                 "value": {"name": "hoge", "id": None},
             },
-            "arr_obj": {"type": AttrTypeValue["array_object"], "value": []},
+            "arr_obj": {"type": AttrType.ARRAY_OBJECT, "value": []},
             "arr_name": {
-                "type": AttrTypeValue["array_named_object"],
+                "type": AttrType.ARRAY_NAMED_OBJECT,
                 "value": [{"name": "hoge", "id": None}],
             },
         }
@@ -1621,22 +1615,22 @@ class ModelTest(AironeTestCase):
             # test return value of get_value method with 'with_metainfo' parameter
             expected_value = {"type": attr.schema.type, "value": info["exp_val"]}
             if attr.is_array():
-                if attr.schema.type & AttrTypeValue["named"]:
+                if attr.schema.type & AttrType._NAMED:
                     expected_value["value"] = [{"hoge": {"id": test_ref.id, "name": test_ref.name}}]
-                elif attr.schema.type & AttrTypeValue["object"]:
+                elif attr.schema.type & AttrType.OBJECT:
                     expected_value["value"] = [{"id": test_ref.id, "name": test_ref.name}]
-                elif attr.schema.type & AttrTypeValue["group"]:
+                elif attr.schema.type & AttrType.GROUP:
                     expected_value["value"] = [{"id": test_grp.id, "name": test_grp.name}]
-                elif attr.schema.type & AttrTypeValue["role"]:
+                elif attr.schema.type & AttrType.ROLE:
                     expected_value["value"] = [{"id": test_role.id, "name": test_role.name}]
 
-            elif attr.schema.type & AttrTypeValue["named"]:
+            elif attr.schema.type & AttrType._NAMED:
                 expected_value["value"] = {"bar": {"id": test_ref.id, "name": test_ref.name}}
-            elif attr.schema.type & AttrTypeValue["object"]:
+            elif attr.schema.type & AttrType.OBJECT:
                 expected_value["value"] = {"id": test_ref.id, "name": test_ref.name}
-            elif attr.schema.type & AttrTypeValue["group"]:
+            elif attr.schema.type & AttrType.GROUP:
                 expected_value["value"] = {"id": test_grp.id, "name": test_grp.name}
-            elif attr.schema.type & AttrTypeValue["role"]:
+            elif attr.schema.type & AttrType.ROLE:
                 expected_value["value"] = {"id": test_role.id, "name": test_role.name}
 
             self.assertEqual(attrv.get_value(with_metainfo=True), expected_value)
@@ -1644,7 +1638,7 @@ class ModelTest(AironeTestCase):
     def test_get_value_with_serialize_parameter(self):
         # Craete Attribute instance and set test Date value
         date_value = date(2021, 6, 8)
-        attr_date = self.make_attr("date", attrtype=AttrTypeValue["date"])
+        attr_date = self.make_attr("date", attrtype=AttrType.DATE)
         attr_date.add_value(self._user, date_value)
 
         # test retrieved value by get_value method with serialize parameter is expected
@@ -1814,10 +1808,10 @@ class ModelTest(AironeTestCase):
 
         ref_entity = Entity.objects.create(name="Referred Entity", created_user=user)
         attr_info = {
-            "str1": {"type": AttrTypeValue["string"], "is_public": True},
-            "str2": {"type": AttrTypeValue["string"], "is_public": True},
-            "obj": {"type": AttrTypeValue["object"], "is_public": True},
-            "invisible": {"type": AttrTypeValue["string"], "is_public": False},
+            "str1": {"type": AttrType.STRING, "is_public": True},
+            "str2": {"type": AttrType.STRING, "is_public": True},
+            "obj": {"type": AttrType.OBJECT, "is_public": True},
+            "invisible": {"type": AttrType.STRING, "is_public": False},
         }
 
         entity = Entity.objects.create(name="entity", created_user=user)
@@ -1830,7 +1824,7 @@ class ModelTest(AironeTestCase):
                 is_public=info["is_public"],
             )
 
-            if info["type"] & AttrTypeValue["object"]:
+            if info["type"] & AttrType.OBJECT:
                 attr.referral.add(ref_entity)
 
             entity.attrs.add(attr)
@@ -1869,7 +1863,7 @@ class ModelTest(AironeTestCase):
             EntityAttr.objects.create(
                 **{
                     "name": "new_attr",
-                    "type": AttrTypeValue["string"],
+                    "type": AttrType.STRING,
                     "created_user": user,
                     "parent_entity": entity,
                 }
@@ -1883,10 +1877,10 @@ class ModelTest(AironeTestCase):
 
         ref_entity = Entity.objects.create(name="Referred Entity", created_user=user)
         attr_info = {
-            "str1": {"type": AttrTypeValue["string"], "is_public": True},
-            "str2": {"type": AttrTypeValue["string"], "is_public": True},
-            "obj": {"type": AttrTypeValue["object"], "is_public": True},
-            "invisible": {"type": AttrTypeValue["string"], "is_public": False},
+            "str1": {"type": AttrType.STRING, "is_public": True},
+            "str2": {"type": AttrType.STRING, "is_public": True},
+            "obj": {"type": AttrType.OBJECT, "is_public": True},
+            "invisible": {"type": AttrType.STRING, "is_public": False},
         }
 
         entity = Entity.objects.create(name="entity", created_user=user)
@@ -1899,7 +1893,7 @@ class ModelTest(AironeTestCase):
                 is_public=info["is_public"],
             )
 
-            if info["type"] & AttrTypeValue["object"]:
+            if info["type"] & AttrType.OBJECT:
                 attr.referral.add(ref_entity)
 
             entity.attrs.add(attr)
@@ -1937,7 +1931,7 @@ class ModelTest(AironeTestCase):
             EntityAttr.objects.create(
                 **{
                     "name": "new_attr",
-                    "type": AttrTypeValue["string"],
+                    "type": AttrType.STRING,
                     "created_user": user,
                     "parent_entity": entity,
                 }
@@ -1958,35 +1952,35 @@ class ModelTest(AironeTestCase):
         ref_role = Role.objects.create(name="role")
 
         attr_info = {
-            "str": {"type": AttrTypeValue["string"], "value": "foo-%d"},
-            "str2": {"type": AttrTypeValue["string"], "value": "foo-%d"},
-            "obj": {"type": AttrTypeValue["object"], "value": str(ref_entry.id)},
+            "str": {"type": AttrType.STRING, "value": "foo-%d"},
+            "str2": {"type": AttrType.STRING, "value": "foo-%d"},
+            "obj": {"type": AttrType.OBJECT, "value": str(ref_entry.id)},
             "name": {
-                "type": AttrTypeValue["named_object"],
+                "type": AttrType.NAMED_OBJECT,
                 "value": {"name": "bar", "id": str(ref_entry.id)},
             },
-            "bool": {"type": AttrTypeValue["boolean"], "value": True},
-            "group": {"type": AttrTypeValue["group"], "value": str(ref_group.id)},
-            "date": {"type": AttrTypeValue["date"], "value": date(2018, 12, 31)},
-            "role": {"type": AttrTypeValue["role"], "value": str(ref_role.id)},
+            "bool": {"type": AttrType.BOOLEAN, "value": True},
+            "group": {"type": AttrType.GROUP, "value": str(ref_group.id)},
+            "date": {"type": AttrType.DATE, "value": date(2018, 12, 31)},
+            "role": {"type": AttrType.ROLE, "value": str(ref_role.id)},
             "datetime": {
                 "type": AttrType.DATETIME,
                 "value": date(2018, 12, 31, 12, 34, 56, tzinfo=timezone.utc),
             },
             "arr_str": {
-                "type": AttrTypeValue["array_string"],
+                "type": AttrType.ARRAY_STRING,
                 "value": ["foo", "bar", "baz"],
             },
             "arr_obj": {
-                "type": AttrTypeValue["array_object"],
+                "type": AttrType.ARRAY_OBJECT,
                 "value": [str(x.id) for x in Entry.objects.filter(schema=ref_entity)],
             },
             "arr_name": {
-                "type": AttrTypeValue["array_named_object"],
+                "type": AttrType.ARRAY_NAMED_OBJECT,
                 "value": [{"name": "hoge", "id": str(ref_entry.id)}],
             },
-            "arr_group": {"type": AttrTypeValue["array_group"], "value": [ref_group]},
-            "arr_role": {"type": AttrTypeValue["array_role"], "value": [ref_role]},
+            "arr_group": {"type": AttrType.ARRAY_GROUP, "value": [ref_group]},
+            "arr_role": {"type": AttrType.ARRAY_ROLE, "value": [ref_role]},
         }
 
         entity = Entity.objects.create(name="entity", created_user=user)
@@ -1998,7 +1992,7 @@ class ModelTest(AironeTestCase):
                 parent_entity=entity,
             )
 
-            if info["type"] & AttrTypeValue["object"]:
+            if info["type"] & AttrType.OBJECT:
                 attr.referral.add(ref_entity)
 
             entity.attrs.add(attr)
@@ -2189,7 +2183,7 @@ class ModelTest(AironeTestCase):
         self.assertEqual(ret["ret_values"][0]["entry"]["name"], "e-10")
 
         def _assert_result_full(attr, result):
-            if attr.type != AttrTypeValue["boolean"]:
+            if attr.type != AttrType.BOOLEAN:
                 # confirm "entry-black" Entry, which doesn't have any substantial Attribute values,
                 # doesn't exist on the result.
                 isin_entry_blank = any(
@@ -2251,7 +2245,7 @@ class ModelTest(AironeTestCase):
                     }
                 ],
             )
-            if attr.type == AttrTypeValue["boolean"]:
+            if attr.type == AttrType.BOOLEAN:
                 self.assertEqual(result["ret_count"], 0)
             else:
                 self.assertEqual(result["ret_count"], 1)
@@ -2354,7 +2348,7 @@ class ModelTest(AironeTestCase):
             attrs=[
                 {
                     "name": "ref",
-                    "type": AttrTypeValue["object"],
+                    "type": AttrType.OBJECT,
                 }
             ],
         )
@@ -2379,7 +2373,7 @@ class ModelTest(AironeTestCase):
         entity = Entity.objects.create(name="Entity", created_user=user)
         entity_attr = EntityAttr.objects.create(
             name="attr_ref",
-            type=AttrTypeValue["object"],
+            type=AttrType.OBJECT,
             created_user=user,
             parent_entity=entity,
         )
@@ -2439,8 +2433,8 @@ class ModelTest(AironeTestCase):
     def test_search_entries_with_exclusive_attrs(self):
         user = User.objects.create(username="hoge")
         entity_info = {
-            "E1": [{"type": AttrTypeValue["string"], "name": "foo"}],
-            "E2": [{"type": AttrTypeValue["string"], "name": "bar"}],
+            "E1": [{"type": AttrType.STRING, "name": "foo"}],
+            "E2": [{"type": AttrType.STRING, "name": "bar"}],
         }
 
         entity_ids = []
@@ -2532,22 +2526,22 @@ class ModelTest(AironeTestCase):
         entity = Entity.objects.create(name="Entity", created_user=self._user)
         ref_info = {
             "ref": {
-                "type": AttrTypeValue["object"],
+                "type": AttrType.OBJECT,
                 "value": ref_entries[0],
                 "expected_value": {"name": "", "id": ""},
             },
             "name": {
-                "type": AttrTypeValue["named_object"],
+                "type": AttrType.NAMED_OBJECT,
                 "value": {"name": "hoge", "id": ref_entries[1]},
                 "expected_value": {"hoge": {"name": "", "id": ""}},
             },
             "arr_ref": {
-                "type": AttrTypeValue["array_object"],
+                "type": AttrType.ARRAY_OBJECT,
                 "value": [ref_entries[2]],
                 "expected_value": [],
             },
             "arr_name": {
-                "type": AttrTypeValue["array_named_object"],
+                "type": AttrType.ARRAY_NAMED_OBJECT,
                 "value": [{"name": "hoge", "id": ref_entries[3]}],
                 "expected_value": [],
             },
@@ -2604,7 +2598,7 @@ class ModelTest(AironeTestCase):
             attrs=[
                 {
                     "name": "ref",
-                    "type": AttrTypeValue["object"],
+                    "type": AttrType.OBJECT,
                 }
             ],
             is_public=False,
@@ -2631,7 +2625,7 @@ class ModelTest(AironeTestCase):
         entity = Entity.objects.create(name="entity", created_user=user)
         attr = EntityAttr.objects.create(
             name="attr",
-            type=AttrTypeValue["string"],
+            type=AttrType.STRING,
             created_user=user,
             parent_entity=entity,
         )
@@ -2666,39 +2660,39 @@ class ModelTest(AironeTestCase):
 
         attr_info = {
             "str": {
-                "type": AttrTypeValue["string"],
+                "type": AttrType.STRING,
                 "value": "foo",
             },
             "obj": {
-                "type": AttrTypeValue["object"],
+                "type": AttrType.OBJECT,
                 "value": str(ref_entry1.id),
             },
             "name": {
-                "type": AttrTypeValue["named_object"],
+                "type": AttrType.NAMED_OBJECT,
                 "value": {"name": "bar", "id": str(ref_entry1.id)},
             },
             "bool": {
-                "type": AttrTypeValue["boolean"],
+                "type": AttrType.BOOLEAN,
                 "value": False,
             },
             "date": {
-                "type": AttrTypeValue["date"],
+                "type": AttrType.DATE,
                 "value": date(2018, 1, 1),
             },
             "group": {
-                "type": AttrTypeValue["group"],
+                "type": AttrType.GROUP,
                 "value": str(ref_group.id),
             },
             "arr_str": {
-                "type": AttrTypeValue["array_string"],
+                "type": AttrType.ARRAY_STRING,
                 "value": ["foo", "bar", "baz"],
             },
             "arr_obj": {
-                "type": AttrTypeValue["array_object"],
+                "type": AttrType.ARRAY_OBJECT,
                 "value": [str(x.id) for x in Entry.objects.filter(schema=ref_entity)],
             },
             "arr_name": {
-                "type": AttrTypeValue["array_named_object"],
+                "type": AttrType.ARRAY_NAMED_OBJECT,
                 "value": [
                     {"name": "hoge", "id": str(x.id)}
                     for x in Entry.objects.filter(schema=ref_entity)
@@ -2715,7 +2709,7 @@ class ModelTest(AironeTestCase):
                 parent_entity=entity,
             )
 
-            if info["type"] & AttrTypeValue["object"]:
+            if info["type"] & AttrType.OBJECT:
                 attr.referral.add(ref_entity)
 
             entity.attrs.add(attr)
@@ -2851,7 +2845,7 @@ class ModelTest(AironeTestCase):
         entity = Entity.objects.create(name="entity", created_user=user)
         entity_attr = EntityAttr.objects.create(
             name="attr",
-            type=AttrTypeValue["string"],
+            type=AttrType.STRING,
             created_user=user,
             parent_entity=entity,
         )
@@ -2892,7 +2886,7 @@ class ModelTest(AironeTestCase):
                 entity.attrs.add(
                     EntityAttr.objects.create(
                         name="attr-%s" % index,
-                        type=AttrTypeValue["string"],
+                        type=AttrType.STRING,
                         created_user=user,
                         parent_entity=entity,
                     )
@@ -2901,7 +2895,7 @@ class ModelTest(AironeTestCase):
             entity.attrs.add(
                 EntityAttr.objects.create(
                     name="ほげ",
-                    type=AttrTypeValue["string"],
+                    type=AttrType.STRING,
                     created_user=user,
                     parent_entity=entity,
                 )
@@ -2910,7 +2904,7 @@ class ModelTest(AironeTestCase):
             entity.attrs.add(
                 EntityAttr.objects.create(
                     name="attr-arr",
-                    type=AttrTypeValue["array_string"],
+                    type=AttrType.ARRAY_STRING,
                     created_user=user,
                     parent_entity=entity,
                 )
@@ -2919,7 +2913,7 @@ class ModelTest(AironeTestCase):
             entity.attrs.add(
                 EntityAttr.objects.create(
                     name="attr-date",
-                    type=AttrTypeValue["date"],
+                    type=AttrType.DATE,
                     created_user=user,
                     parent_entity=entity,
                 )
@@ -3053,7 +3047,7 @@ class ModelTest(AironeTestCase):
         for name in ["foo", "bar"]:
             attr = EntityAttr.objects.create(
                 name=name,
-                type=AttrTypeValue["object"],
+                type=AttrType.OBJECT,
                 created_user=user,
                 parent_entity=entity,
             )
@@ -3089,7 +3083,7 @@ class ModelTest(AironeTestCase):
                 entity.attrs.add(
                     EntityAttr.objects.create(
                         name=attrname,
-                        type=AttrTypeValue["string"],
+                        type=AttrType.STRING,
                         created_user=user,
                         parent_entity=entity,
                     )
@@ -3144,7 +3138,7 @@ class ModelTest(AironeTestCase):
         entity.attrs.add(
             EntityAttr.objects.create(
                 name="date",
-                type=AttrTypeValue["date"],
+                type=AttrType.DATE,
                 created_user=user,
                 parent_entity=entity,
             )
@@ -3209,7 +3203,7 @@ class ModelTest(AironeTestCase):
             entity.attrs.add(
                 EntityAttr.objects.create(
                     name=name,
-                    type=AttrTypeValue["string"],
+                    type=AttrType.STRING,
                     created_user=user,
                     parent_entity=entity,
                 )
@@ -3313,13 +3307,13 @@ class ModelTest(AironeTestCase):
             # test return value of get_value method with 'with_metainfo' parameter
             expected_value = {"type": attr.schema.type, "value": info["exp_val"]}
             if attr.is_array():
-                if attr.schema.type & AttrTypeValue["named"]:
+                if attr.schema.type & AttrType._NAMED:
                     expected_value["value"] = [{"hoge": {"id": test_ref.id, "name": test_ref.name}}]
-                elif attr.schema.type & AttrTypeValue["object"]:
+                elif attr.schema.type & AttrType.OBJECT:
                     expected_value["value"] = [{"id": test_ref.id, "name": test_ref.name}]
-            elif attr.schema.type & AttrTypeValue["named"]:
+            elif attr.schema.type & AttrType._NAMED:
                 expected_value["value"] = {"bar": {"id": test_ref.id, "name": test_ref.name}}
-            elif attr.schema.type & AttrTypeValue["object"]:
+            elif attr.schema.type & AttrType.OBJECT:
                 expected_value["value"] = {"id": test_ref.id, "name": test_ref.name}
 
             self.assertEqual(attrv.get_value(with_metainfo=True, is_active=False), expected_value)
@@ -3373,13 +3367,13 @@ class ModelTest(AironeTestCase):
 
             expected_value = {"type": attr.schema.type, "value": info["exp_val"]}
             if attr.is_array():
-                if attr.schema.type & AttrTypeValue["named"]:
+                if attr.schema.type & AttrType._NAMED:
                     expected_value["value"] = [{"hoge": {"id": test_ref.id, "name": test_ref.name}}]
-                elif attr.schema.type & AttrTypeValue["object"]:
+                elif attr.schema.type & AttrType.OBJECT:
                     expected_value["value"] = [{"id": test_ref.id, "name": test_ref.name}]
-            elif attr.schema.type & AttrTypeValue["named"]:
+            elif attr.schema.type & AttrType._NAMED:
                 expected_value["value"] = {"bar": {"id": test_ref.id, "name": test_ref.name}}
-            elif attr.schema.type & AttrTypeValue["object"]:
+            elif attr.schema.type & AttrType.OBJECT:
                 expected_value["value"] = {"id": test_ref.id, "name": test_ref.name}
 
             self.assertEqual(attrv.get_value(with_metainfo=True, is_active=False), expected_value)
@@ -3633,9 +3627,9 @@ class ModelTest(AironeTestCase):
 
         # initialize EntityAttrs
         attr_info = {
-            "obj": {"type": AttrTypeValue["object"], "value": ref_entries[0]},
+            "obj": {"type": AttrType.OBJECT, "value": ref_entries[0]},
             "arr_obj": {
-                "type": AttrTypeValue["array_object"],
+                "type": AttrType.ARRAY_OBJECT,
                 "value": ref_entries[1:],
             },
         }
@@ -3649,7 +3643,7 @@ class ModelTest(AironeTestCase):
                 parent_entity=self._entity,
             )
 
-            if info["type"] & AttrTypeValue["object"]:
+            if info["type"] & AttrType.OBJECT:
                 attr.referral.add(ref_entity)
 
             self._entity.attrs.add(attr)
@@ -3733,76 +3727,76 @@ class ModelTest(AironeTestCase):
         # This checks all attribute values which are generated by entry.to_dict method
         ret_dict = entry.to_dict(user, with_metainfo=True)
         expected_attrinfos = [
-            {"name": "str", "value": {"type": AttrTypeValue["string"], "value": "foo"}},
-            {"name": "text", "value": {"type": AttrTypeValue["text"], "value": "bar"}},
+            {"name": "str", "value": {"type": AttrType.STRING, "value": "foo"}},
+            {"name": "text", "value": {"type": AttrType.TEXT, "value": "bar"}},
             {
                 "name": "bool",
-                "value": {"type": AttrTypeValue["boolean"], "value": False},
+                "value": {"type": AttrType.BOOLEAN, "value": False},
             },
             {
                 "name": "date",
-                "value": {"type": AttrTypeValue["date"], "value": "2018-12-31"},
+                "value": {"type": AttrType.DATE, "value": "2018-12-31"},
             },
             {
                 "name": "arr_str",
                 "value": {
-                    "type": AttrTypeValue["array_string"],
+                    "type": AttrType.ARRAY_STRING,
                     "value": ["foo", "bar", "baz"],
                 },
             },
             {
                 "name": "obj",
                 "value": {
-                    "type": AttrTypeValue["object"],
+                    "type": AttrType.OBJECT,
                     "value": {"id": ref_entry.id, "name": ref_entry.name},
                 },
             },
             {
                 "name": "name",
                 "value": {
-                    "type": AttrTypeValue["named_object"],
+                    "type": AttrType.NAMED_OBJECT,
                     "value": {"bar": {"id": ref_entry.id, "name": ref_entry.name}},
                 },
             },
             {
                 "name": "arr_obj",
                 "value": {
-                    "type": AttrTypeValue["array_object"],
+                    "type": AttrType.ARRAY_OBJECT,
                     "value": [{"id": ref_entry.id, "name": ref_entry.name}],
                 },
             },
             {
                 "name": "arr_name",
                 "value": {
-                    "type": AttrTypeValue["array_named_object"],
+                    "type": AttrType.ARRAY_NAMED_OBJECT,
                     "value": [{"hoge": {"id": ref_entry.id, "name": ref_entry.name}}],
                 },
             },
             {
                 "name": "group",
                 "value": {
-                    "type": AttrTypeValue["group"],
+                    "type": AttrType.GROUP,
                     "value": {"id": test_group.id, "name": test_group.name},
                 },
             },
             {
                 "name": "arr_group",
                 "value": {
-                    "type": AttrTypeValue["array_group"],
+                    "type": AttrType.ARRAY_GROUP,
                     "value": [{"id": test_group.id, "name": test_group.name}],
                 },
             },
             {
                 "name": "role",
                 "value": {
-                    "type": AttrTypeValue["role"],
+                    "type": AttrType.ROLE,
                     "value": {"id": test_role.id, "name": test_role.name},
                 },
             },
             {
                 "name": "arr_role",
                 "value": {
-                    "type": AttrTypeValue["array_role"],
+                    "type": AttrType.ARRAY_ROLE,
                     "value": [{"id": test_role.id, "name": test_role.name}],
                 },
             },
@@ -3824,76 +3818,76 @@ class ModelTest(AironeTestCase):
 
         ret_dict = entry.to_dict(user, with_metainfo=True)
         expected_attrinfos = [
-            {"name": "str", "value": {"type": AttrTypeValue["string"], "value": ""}},
-            {"name": "text", "value": {"type": AttrTypeValue["text"], "value": ""}},
+            {"name": "str", "value": {"type": AttrType.STRING, "value": ""}},
+            {"name": "text", "value": {"type": AttrType.TEXT, "value": ""}},
             {
                 "name": "bool",
-                "value": {"type": AttrTypeValue["boolean"], "value": False},
+                "value": {"type": AttrType.BOOLEAN, "value": False},
             },
             {
                 "name": "date",
-                "value": {"type": AttrTypeValue["date"], "value": None},
+                "value": {"type": AttrType.DATE, "value": None},
             },
             {
                 "name": "arr_str",
                 "value": {
-                    "type": AttrTypeValue["array_string"],
+                    "type": AttrType.ARRAY_STRING,
                     "value": [],
                 },
             },
             {
                 "name": "obj",
                 "value": {
-                    "type": AttrTypeValue["object"],
+                    "type": AttrType.OBJECT,
                     "value": None,
                 },
             },
             {
                 "name": "name",
                 "value": {
-                    "type": AttrTypeValue["named_object"],
+                    "type": AttrType.NAMED_OBJECT,
                     "value": {"": None},
                 },
             },
             {
                 "name": "arr_obj",
                 "value": {
-                    "type": AttrTypeValue["array_object"],
+                    "type": AttrType.ARRAY_OBJECT,
                     "value": [],
                 },
             },
             {
                 "name": "arr_name",
                 "value": {
-                    "type": AttrTypeValue["array_named_object"],
+                    "type": AttrType.ARRAY_NAMED_OBJECT,
                     "value": [],
                 },
             },
             {
                 "name": "group",
                 "value": {
-                    "type": AttrTypeValue["group"],
+                    "type": AttrType.GROUP,
                     "value": None,
                 },
             },
             {
                 "name": "arr_group",
                 "value": {
-                    "type": AttrTypeValue["array_group"],
+                    "type": AttrType.ARRAY_GROUP,
                     "value": [],
                 },
             },
             {
                 "name": "role",
                 "value": {
-                    "type": AttrTypeValue["role"],
+                    "type": AttrType.ROLE,
                     "value": None,
                 },
             },
             {
                 "name": "arr_role",
                 "value": {
-                    "type": AttrTypeValue["array_role"],
+                    "type": AttrType.ARRAY_ROLE,
                     "value": [],
                 },
             },
@@ -3926,7 +3920,7 @@ class ModelTest(AironeTestCase):
                 e.attrs.add(
                     EntityAttr.objects.create(
                         **{
-                            "type": AttrTypeValue["string"],
+                            "type": AttrType.STRING,
                             "created_user": self._user,
                             "parent_entity": self._entity,
                             "name": info["name"],
@@ -3981,26 +3975,26 @@ class ModelTest(AironeTestCase):
         ref_group = Group.objects.create(name="group")
 
         attr_info = {
-            "str": {"type": AttrTypeValue["string"], "value": "foo-%d"},
-            "str2": {"type": AttrTypeValue["string"], "value": "foo-%d"},
-            "obj": {"type": AttrTypeValue["object"], "value": str(ref_entry.id)},
+            "str": {"type": AttrType.STRING, "value": "foo-%d"},
+            "str2": {"type": AttrType.STRING, "value": "foo-%d"},
+            "obj": {"type": AttrType.OBJECT, "value": str(ref_entry.id)},
             "name": {
-                "type": AttrTypeValue["named_object"],
+                "type": AttrType.NAMED_OBJECT,
                 "value": {"name": "bar", "id": str(ref_entry.id)},
             },
-            "bool": {"type": AttrTypeValue["boolean"], "value": False},
-            "group": {"type": AttrTypeValue["group"], "value": str(ref_group.id)},
-            "date": {"type": AttrTypeValue["date"], "value": date(2018, 12, 31)},
+            "bool": {"type": AttrType.BOOLEAN, "value": False},
+            "group": {"type": AttrType.GROUP, "value": str(ref_group.id)},
+            "date": {"type": AttrType.DATE, "value": date(2018, 12, 31)},
             "arr_str": {
-                "type": AttrTypeValue["array_string"],
+                "type": AttrType.ARRAY_STRING,
                 "value": ["foo", "bar", "baz"],
             },
             "arr_obj": {
-                "type": AttrTypeValue["array_object"],
+                "type": AttrType.ARRAY_OBJECT,
                 "value": [str(x.id) for x in Entry.objects.filter(schema=ref_entity)],
             },
             "arr_name": {
-                "type": AttrTypeValue["array_named_object"],
+                "type": AttrType.ARRAY_NAMED_OBJECT,
                 "value": [{"name": "hoge", "id": str(ref_entry.id)}],
             },
         }
@@ -4014,7 +4008,7 @@ class ModelTest(AironeTestCase):
                 parent_entity=entity,
             )
 
-            if info["type"] & AttrTypeValue["object"]:
+            if info["type"] & AttrType.OBJECT:
                 attr.referral.add(ref_entity)
 
             entity.attrs.add(attr)
@@ -4053,31 +4047,31 @@ class ModelTest(AironeTestCase):
         # search entries with back slash
         attr_info = {
             "str": {
-                "type": AttrTypeValue["string"],
+                "type": AttrType.STRING,
                 "value": CONFIG.EMPTY_SEARCH_CHARACTER,
             },
             "str2": {
-                "type": AttrTypeValue["string"],
+                "type": AttrType.STRING,
                 "value": CONFIG.EMPTY_SEARCH_CHARACTER,
             },
-            "obj": {"type": AttrTypeValue["object"], "value": str(ref_entry.id)},
+            "obj": {"type": AttrType.OBJECT, "value": str(ref_entry.id)},
             "name": {
-                "type": AttrTypeValue["named_object"],
+                "type": AttrType.NAMED_OBJECT,
                 "value": {"name": "bar", "id": str(ref_entry.id)},
             },
-            "bool": {"type": AttrTypeValue["boolean"], "value": False},
-            "group": {"type": AttrTypeValue["group"], "value": str(ref_group.id)},
-            "date": {"type": AttrTypeValue["date"], "value": date(2018, 12, 31)},
+            "bool": {"type": AttrType.BOOLEAN, "value": False},
+            "group": {"type": AttrType.GROUP, "value": str(ref_group.id)},
+            "date": {"type": AttrType.DATE, "value": date(2018, 12, 31)},
             "arr_str": {
-                "type": AttrTypeValue["array_string"],
+                "type": AttrType.ARRAY_STRING,
                 "value": [CONFIG.EMPTY_SEARCH_CHARACTER],
             },
             "arr_obj": {
-                "type": AttrTypeValue["array_object"],
+                "type": AttrType.ARRAY_OBJECT,
                 "value": [str(x.id) for x in Entry.objects.filter(schema=ref_entity)],
             },
             "arr_name": {
-                "type": AttrTypeValue["array_named_object"],
+                "type": AttrType.ARRAY_NAMED_OBJECT,
                 "value": [{"name": "hoge", "id": str(ref_entry.id)}],
             },
         }
@@ -4140,30 +4134,30 @@ class ModelTest(AironeTestCase):
         """
         attr_info.append(
             {
-                "str1": {"type": AttrTypeValue["string"], "value": "foo"},
-                "str2": {"type": AttrTypeValue["string"], "value": ""},
-                "str3": {"type": AttrTypeValue["string"], "value": ""},
-                "arr_str": {"type": AttrTypeValue["array_string"], "value": ["hoge"]},
+                "str1": {"type": AttrType.STRING, "value": "foo"},
+                "str2": {"type": AttrType.STRING, "value": ""},
+                "str3": {"type": AttrType.STRING, "value": ""},
+                "arr_str": {"type": AttrType.ARRAY_STRING, "value": ["hoge"]},
             }
         )
         attr_info.append(
             {
-                "str1": {"type": AttrTypeValue["string"], "value": "foo"},
-                "str2": {"type": AttrTypeValue["string"], "value": "bar"},
-                "str3": {"type": AttrTypeValue["string"], "value": ""},
+                "str1": {"type": AttrType.STRING, "value": "foo"},
+                "str2": {"type": AttrType.STRING, "value": "bar"},
+                "str3": {"type": AttrType.STRING, "value": ""},
                 "arr_str": {
-                    "type": AttrTypeValue["array_string"],
+                    "type": AttrType.ARRAY_STRING,
                     "value": ["hoge", "fuga"],
                 },
             }
         )
         attr_info.append(
             {
-                "str1": {"type": AttrTypeValue["string"], "value": "foo"},
-                "str2": {"type": AttrTypeValue["string"], "value": "bar"},
-                "str3": {"type": AttrTypeValue["string"], "value": "baz"},
+                "str1": {"type": AttrType.STRING, "value": "foo"},
+                "str2": {"type": AttrType.STRING, "value": "bar"},
+                "str3": {"type": AttrType.STRING, "value": "baz"},
                 "arr_str": {
-                    "type": AttrTypeValue["array_string"],
+                    "type": AttrType.ARRAY_STRING,
                     "value": ["hoge", "fuga", "piyo"],
                 },
             }
@@ -4450,7 +4444,7 @@ class ModelTest(AironeTestCase):
                 [
                     {
                         "name": "test",
-                        "type": AttrTypeValue["string"],
+                        "type": AttrType.STRING,
                     }
                 ],
             )
@@ -4701,57 +4695,57 @@ class ModelTest(AironeTestCase):
                 "entry": {"id": entry.id, "name": "entry"},
                 "is_readable": True,
                 "attrs": {
-                    "bool": {"is_readable": True, "type": AttrTypeValue["boolean"], "value": False},
+                    "bool": {"is_readable": True, "type": AttrType.BOOLEAN, "value": False},
                     "date": {
                         "is_readable": True,
-                        "type": AttrTypeValue["date"],
+                        "type": AttrType.DATE,
                         "value": None,
                     },
                     "group": {
                         "is_readable": True,
-                        "type": AttrTypeValue["group"],
+                        "type": AttrType.GROUP,
                         "value": {"id": "", "name": ""},
                     },
                     "role": {
                         "is_readable": True,
-                        "type": AttrTypeValue["role"],
+                        "type": AttrType.ROLE,
                         "value": {"id": "", "name": ""},
                     },
                     "name": {
                         "is_readable": True,
-                        "type": AttrTypeValue["named_object"],
+                        "type": AttrType.NAMED_OBJECT,
                         "value": {"": {"id": "", "name": ""}},
                     },
                     "obj": {
                         "is_readable": True,
-                        "type": AttrTypeValue["object"],
+                        "type": AttrType.OBJECT,
                         "value": {"id": "", "name": ""},
                     },
-                    "str": {"is_readable": True, "type": AttrTypeValue["string"], "value": ""},
-                    "text": {"is_readable": True, "type": AttrTypeValue["text"], "value": ""},
+                    "str": {"is_readable": True, "type": AttrType.STRING, "value": ""},
+                    "text": {"is_readable": True, "type": AttrType.TEXT, "value": ""},
                     "arr_str": {
                         "is_readable": True,
-                        "type": AttrTypeValue["array_string"],
+                        "type": AttrType.ARRAY_STRING,
                         "value": [],
                     },
                     "arr_obj": {
                         "is_readable": True,
-                        "type": AttrTypeValue["array_object"],
+                        "type": AttrType.ARRAY_OBJECT,
                         "value": [],
                     },
                     "arr_name": {
                         "is_readable": True,
-                        "type": AttrTypeValue["array_named_object"],
+                        "type": AttrType.ARRAY_NAMED_OBJECT,
                         "value": [],
                     },
                     "arr_group": {
                         "is_readable": True,
-                        "type": AttrTypeValue["array_group"],
+                        "type": AttrType.ARRAY_GROUP,
                         "value": [],
                     },
                     "arr_role": {
                         "is_readable": True,
-                        "type": AttrTypeValue["array_role"],
+                        "type": AttrType.ARRAY_ROLE,
                         "value": [],
                     },
                     "datetime": {
@@ -4789,7 +4783,7 @@ class ModelTest(AironeTestCase):
         ref_attr = EntityAttr.objects.create(
             **{
                 "name": "ref",
-                "type": AttrTypeValue["object"],
+                "type": AttrType.OBJECT,
                 "created_user": self._user,
                 "parent_entity": ref_entity,
             }
@@ -4846,7 +4840,7 @@ class ModelTest(AironeTestCase):
         ref_attr2 = EntityAttr.objects.create(
             **{
                 "name": "ref_array_named_object",
-                "type": AttrTypeValue["array_named_object"],
+                "type": AttrType.ARRAY_NAMED_OBJECT,
                 "created_user": self._user,
                 "parent_entity": ref_entity2,
             }
@@ -4921,7 +4915,7 @@ class ModelTest(AironeTestCase):
             entity.attrs.add(
                 EntityAttr.objects.create(
                     name=attrname,
-                    type=AttrTypeValue["string"],
+                    type=AttrType.STRING,
                     created_user=user,
                     parent_entity=entity,
                 )
@@ -4955,7 +4949,7 @@ class ModelTest(AironeTestCase):
         entity = self.create_entity(
             self._user,
             "Test Entity",
-            attrs=[{"name": "attr", "type": AttrTypeValue["string"]}],
+            attrs=[{"name": "attr", "type": AttrType.STRING}],
         )
         entry = self.add_entry(
             self._user, "Test Entry", entity, is_public=False, values={"attr": "value"}
@@ -4981,7 +4975,7 @@ class ModelTest(AironeTestCase):
         entity = Entity.objects.create(name="entity", created_user=user1)
         entity_attr = EntityAttr.objects.create(
             name="attr",
-            type=AttrTypeValue["string"],
+            type=AttrType.STRING,
             created_user=user1,
             parent_entity=entity,
             is_public=False,
@@ -5169,71 +5163,71 @@ class ModelTest(AironeTestCase):
                 )
 
         self.assertEqual(
-            AttributeValue.validate_attr_value(AttrTypeValue["object"], self._entry.id, False),
+            AttributeValue.validate_attr_value(AttrType.OBJECT, self._entry.id, False),
             (True, None),
         )
         self.assertEqual(
-            AttributeValue.validate_attr_value(AttrTypeValue["object"], None, False),
+            AttributeValue.validate_attr_value(AttrType.OBJECT, None, False),
             (True, None),
         )
         self.assertEqual(
-            AttributeValue.validate_attr_value(AttrTypeValue["object"], "", False),
+            AttributeValue.validate_attr_value(AttrType.OBJECT, "", False),
             (True, None),
         )
         self.assertEqual(
-            AttributeValue.validate_attr_value(AttrTypeValue["object"], "hoge", False),
+            AttributeValue.validate_attr_value(AttrType.OBJECT, "hoge", False),
             (False, "value(hoge) is not int"),
         )
         self.assertEqual(
-            AttributeValue.validate_attr_value(AttrTypeValue["object"], 9999, False),
+            AttributeValue.validate_attr_value(AttrType.OBJECT, 9999, False),
             (False, "value(9999) is not entry id"),
         )
 
         self.assertEqual(
             AttributeValue.validate_attr_value(
-                AttrTypeValue["named_object"], {"name": "hoge", "id": self._entry.id}, False
+                AttrType.NAMED_OBJECT, {"name": "hoge", "id": self._entry.id}, False
             ),
             (True, None),
         )
         self.assertEqual(
             AttributeValue.validate_attr_value(
-                AttrTypeValue["named_object"], {"name": "", "id": self._entry.id}, False
+                AttrType.NAMED_OBJECT, {"name": "", "id": self._entry.id}, False
             ),
             (True, None),
         )
         self.assertEqual(
             AttributeValue.validate_attr_value(
-                AttrTypeValue["named_object"], {"name": "hoge", "id": ""}, False
+                AttrType.NAMED_OBJECT, {"name": "hoge", "id": ""}, False
             ),
             (True, None),
         )
         self.assertEqual(
             AttributeValue.validate_attr_value(
-                AttrTypeValue["named_object"], {"name": "hoge", "id": None}, False
+                AttrType.NAMED_OBJECT, {"name": "hoge", "id": None}, False
             ),
             (True, None),
         )
         self.assertEqual(
             AttributeValue.validate_attr_value(
-                AttrTypeValue["named_object"], {"name": "", "id": ""}, False
+                AttrType.NAMED_OBJECT, {"name": "", "id": ""}, False
             ),
             (True, None),
         )
         self.assertEqual(
             AttributeValue.validate_attr_value(
-                AttrTypeValue["named_object"], {"name": "", "id": None}, False
+                AttrType.NAMED_OBJECT, {"name": "", "id": None}, False
             ),
             (True, None),
         )
         self.assertEqual(
             AttributeValue.validate_attr_value(
-                AttrTypeValue["named_object"], {"name": ["hoge"], "id": self._entry.id}, False
+                AttrType.NAMED_OBJECT, {"name": ["hoge"], "id": self._entry.id}, False
             ),
             (False, "value(['hoge']) is not str"),
         )
         self.assertEqual(
             AttributeValue.validate_attr_value(
-                AttrTypeValue["named_object"],
+                AttrType.NAMED_OBJECT,
                 {"name": "a" * AttributeValue.MAXIMUM_VALUE_SIZE, "id": self._entry.id},
                 False,
             ),
@@ -5241,156 +5235,146 @@ class ModelTest(AironeTestCase):
         )
         with self.assertRaises(ExceedLimitError):
             AttributeValue.validate_attr_value(
-                AttrTypeValue["named_object"],
+                AttrType.NAMED_OBJECT,
                 {"name": "a" * (AttributeValue.MAXIMUM_VALUE_SIZE + 1), "id": self._entry.id},
                 False,
             )
         self.assertEqual(
             AttributeValue.validate_attr_value(
-                AttrTypeValue["named_object"], {"name": "hoge", "id": "hoge"}, False
+                AttrType.NAMED_OBJECT, {"name": "hoge", "id": "hoge"}, False
             ),
             (False, "value(hoge) is not int"),
         )
         self.assertEqual(
             AttributeValue.validate_attr_value(
-                AttrTypeValue["named_object"], {"name": "hoge", "id": 9999}, False
+                AttrType.NAMED_OBJECT, {"name": "hoge", "id": 9999}, False
             ),
             (False, "value(9999) is not entry id"),
         )
         self.assertEqual(
-            AttributeValue.validate_attr_value(AttrTypeValue["named_object"], "hoge", False),
+            AttributeValue.validate_attr_value(AttrType.NAMED_OBJECT, "hoge", False),
             (False, "value(hoge) is not dict"),
         )
         self.assertEqual(
-            AttributeValue.validate_attr_value(
-                AttrTypeValue["named_object"], {"a": 1, "b": 2}, False
-            ),
+            AttributeValue.validate_attr_value(AttrType.NAMED_OBJECT, {"a": 1, "b": 2}, False),
             (False, "value({'a': 1, 'b': 2}) is not key('name', 'id')"),
         )
 
         group: Group = Group.objects.create(name="group0")
         self.assertEqual(
-            AttributeValue.validate_attr_value(AttrTypeValue["group"], group.id, False),
+            AttributeValue.validate_attr_value(AttrType.GROUP, group.id, False),
             (True, None),
         )
         self.assertEqual(
-            AttributeValue.validate_attr_value(AttrTypeValue["group"], None, False),
+            AttributeValue.validate_attr_value(AttrType.GROUP, None, False),
             (True, None),
         )
         self.assertEqual(
-            AttributeValue.validate_attr_value(AttrTypeValue["group"], "", False),
+            AttributeValue.validate_attr_value(AttrType.GROUP, "", False),
             (True, None),
         )
         self.assertEqual(
-            AttributeValue.validate_attr_value(AttrTypeValue["group"], "hoge", False),
+            AttributeValue.validate_attr_value(AttrType.GROUP, "hoge", False),
             (False, "value(hoge) is not int"),
         )
         self.assertEqual(
-            AttributeValue.validate_attr_value(AttrTypeValue["group"], 9999, False),
+            AttributeValue.validate_attr_value(AttrType.GROUP, 9999, False),
             (False, "value(9999) is not group id"),
         )
 
         self.assertEqual(
-            AttributeValue.validate_attr_value(AttrTypeValue["boolean"], True, False), (True, None)
+            AttributeValue.validate_attr_value(AttrType.BOOLEAN, True, False), (True, None)
         )
         self.assertEqual(
-            AttributeValue.validate_attr_value(AttrTypeValue["boolean"], False, False), (True, None)
+            AttributeValue.validate_attr_value(AttrType.BOOLEAN, False, False), (True, None)
         )
         self.assertEqual(
-            AttributeValue.validate_attr_value(AttrTypeValue["boolean"], "hoge", False),
+            AttributeValue.validate_attr_value(AttrType.BOOLEAN, "hoge", False),
             (False, "value(hoge) is not bool"),
         )
 
         self.assertEqual(
-            AttributeValue.validate_attr_value(AttrTypeValue["date"], "2020-01-01", False),
+            AttributeValue.validate_attr_value(AttrType.DATE, "2020-01-01", False),
             (True, None),
         )
         self.assertEqual(
-            AttributeValue.validate_attr_value(AttrTypeValue["date"], "", False),
+            AttributeValue.validate_attr_value(AttrType.DATE, "", False),
             (True, None),
         )
         self.assertEqual(
-            AttributeValue.validate_attr_value(AttrTypeValue["date"], "01-01", False),
+            AttributeValue.validate_attr_value(AttrType.DATE, "01-01", False),
             (False, "value(01-01) is not format(YYYY-MM-DD)"),
         )
         self.assertEqual(
-            AttributeValue.validate_attr_value(AttrTypeValue["date"], "hoge", False),
+            AttributeValue.validate_attr_value(AttrType.DATE, "hoge", False),
             (False, "value(hoge) is not format(YYYY-MM-DD)"),
         )
 
         self.assertEqual(
-            AttributeValue.validate_attr_value(
-                AttrTypeValue["array_string"], ["hoge", "fuga"], False
-            ),
+            AttributeValue.validate_attr_value(AttrType.ARRAY_STRING, ["hoge", "fuga"], False),
             (True, None),
         )
         self.assertEqual(
-            AttributeValue.validate_attr_value(AttrTypeValue["array_string"], [], False),
+            AttributeValue.validate_attr_value(AttrType.ARRAY_STRING, [], False),
             (True, None),
         )
         self.assertEqual(
-            AttributeValue.validate_attr_value(AttrTypeValue["array_string"], ["hoge", ""], False),
+            AttributeValue.validate_attr_value(AttrType.ARRAY_STRING, ["hoge", ""], False),
             (True, None),
         )
         self.assertEqual(
-            AttributeValue.validate_attr_value(AttrTypeValue["array_string"], "hoge", False),
+            AttributeValue.validate_attr_value(AttrType.ARRAY_STRING, "hoge", False),
             (False, "value(hoge) is not list"),
         )
 
         self.assertEqual(
-            AttributeValue.validate_attr_value(
-                AttrTypeValue["array_object"], [self._entry.id], False
-            ),
+            AttributeValue.validate_attr_value(AttrType.ARRAY_OBJECT, [self._entry.id], False),
             (True, None),
         )
         self.assertEqual(
-            AttributeValue.validate_attr_value(AttrTypeValue["array_object"], [], False),
+            AttributeValue.validate_attr_value(AttrType.ARRAY_OBJECT, [], False),
             (True, None),
         )
         self.assertEqual(
-            AttributeValue.validate_attr_value(
-                AttrTypeValue["array_object"], [self._entry.id, ""], False
-            ),
+            AttributeValue.validate_attr_value(AttrType.ARRAY_OBJECT, [self._entry.id, ""], False),
             (True, None),
         )
         self.assertEqual(
             AttributeValue.validate_attr_value(
-                AttrTypeValue["array_object"], [self._entry.id, None], False
+                AttrType.ARRAY_OBJECT, [self._entry.id, None], False
             ),
             (True, None),
         )
         self.assertEqual(
-            AttributeValue.validate_attr_value(
-                AttrTypeValue["array_object"], self._entry.id, False
-            ),
+            AttributeValue.validate_attr_value(AttrType.ARRAY_OBJECT, self._entry.id, False),
             (False, "value(%s) is not list" % self._entry.id),
         )
 
         self.assertEqual(
             AttributeValue.validate_attr_value(
-                AttrTypeValue["array_named_object"], [{"name": "hoge", "id": self._entry.id}], False
+                AttrType.ARRAY_NAMED_OBJECT, [{"name": "hoge", "id": self._entry.id}], False
             ),
             (True, None),
         )
         self.assertEqual(
-            AttributeValue.validate_attr_value(AttrTypeValue["array_named_object"], [], False),
+            AttributeValue.validate_attr_value(AttrType.ARRAY_NAMED_OBJECT, [], False),
             (True, None),
         )
         self.assertEqual(
             AttributeValue.validate_attr_value(
-                AttrTypeValue["array_named_object"], [{"name": "", "id": ""}], False
-            ),
-            (True, None),
-        )
-        self.assertEqual(
-            AttributeValue.validate_attr_value(
-                AttrTypeValue["array_named_object"], [{"name": "", "id": None}], False
+                AttrType.ARRAY_NAMED_OBJECT, [{"name": "", "id": ""}], False
             ),
             (True, None),
         )
         self.assertEqual(
             AttributeValue.validate_attr_value(
-                AttrTypeValue["array_named_object"],
+                AttrType.ARRAY_NAMED_OBJECT, [{"name": "", "id": None}], False
+            ),
+            (True, None),
+        )
+        self.assertEqual(
+            AttributeValue.validate_attr_value(
+                AttrType.ARRAY_NAMED_OBJECT,
                 [{"name": "hoge", "id": self._entry.id}, {"name": "", "id": ""}],
                 False,
             ),
@@ -5398,7 +5382,7 @@ class ModelTest(AironeTestCase):
         )
         self.assertEqual(
             AttributeValue.validate_attr_value(
-                AttrTypeValue["array_named_object"],
+                AttrType.ARRAY_NAMED_OBJECT,
                 [{"name": "hoge", "id": self._entry.id}, {"name": "", "id": None}],
                 False,
             ),
@@ -5406,31 +5390,29 @@ class ModelTest(AironeTestCase):
         )
         self.assertEqual(
             AttributeValue.validate_attr_value(
-                AttrTypeValue["array_named_object"], {"name": "hoge", "id": self._entry.id}, False
+                AttrType.ARRAY_NAMED_OBJECT, {"name": "hoge", "id": self._entry.id}, False
             ),
             (False, "value({'name': 'hoge', 'id': %s}) is not list" % self._entry.id),
         )
 
         self.assertEqual(
-            AttributeValue.validate_attr_value(AttrTypeValue["array_group"], [group.id], False),
+            AttributeValue.validate_attr_value(AttrType.ARRAY_GROUP, [group.id], False),
             (True, None),
         )
         self.assertEqual(
-            AttributeValue.validate_attr_value(AttrTypeValue["array_group"], [], False),
+            AttributeValue.validate_attr_value(AttrType.ARRAY_GROUP, [], False),
             (True, None),
         )
         self.assertEqual(
-            AttributeValue.validate_attr_value(AttrTypeValue["array_group"], [group.id, ""], False),
+            AttributeValue.validate_attr_value(AttrType.ARRAY_GROUP, [group.id, ""], False),
             (True, None),
         )
         self.assertEqual(
-            AttributeValue.validate_attr_value(
-                AttrTypeValue["array_group"], [group.id, None], False
-            ),
+            AttributeValue.validate_attr_value(AttrType.ARRAY_GROUP, [group.id, None], False),
             (True, None),
         )
         self.assertEqual(
-            AttributeValue.validate_attr_value(AttrTypeValue["array_group"], group.id, False),
+            AttributeValue.validate_attr_value(AttrType.ARRAY_GROUP, group.id, False),
             (False, "value(%s) is not list" % group.id),
         )
 
@@ -5442,112 +5424,106 @@ class ModelTest(AironeTestCase):
             )
 
         self.assertEqual(
-            AttributeValue.validate_attr_value(AttrTypeValue["object"], None, True),
+            AttributeValue.validate_attr_value(AttrType.OBJECT, None, True),
             (False, "mandatory attrs value is not specified"),
         )
         self.assertEqual(
-            AttributeValue.validate_attr_value(AttrTypeValue["object"], "", True),
+            AttributeValue.validate_attr_value(AttrType.OBJECT, "", True),
             (False, "mandatory attrs value is not specified"),
         )
 
         self.assertEqual(
             AttributeValue.validate_attr_value(
-                AttrTypeValue["named_object"], {"name": "", "id": self._entry.id}, True
+                AttrType.NAMED_OBJECT, {"name": "", "id": self._entry.id}, True
             ),
             (True, None),
         )
         self.assertEqual(
             AttributeValue.validate_attr_value(
-                AttrTypeValue["named_object"], {"name": "hoge", "id": ""}, True
+                AttrType.NAMED_OBJECT, {"name": "hoge", "id": ""}, True
             ),
             (True, None),
         )
         self.assertEqual(
             AttributeValue.validate_attr_value(
-                AttrTypeValue["named_object"], {"name": "hoge", "id": None}, True
+                AttrType.NAMED_OBJECT, {"name": "hoge", "id": None}, True
             ),
             (True, None),
         )
         self.assertEqual(
-            AttributeValue.validate_attr_value(
-                AttrTypeValue["named_object"], {"name": "", "id": ""}, True
-            ),
+            AttributeValue.validate_attr_value(AttrType.NAMED_OBJECT, {"name": "", "id": ""}, True),
             (False, "mandatory attrs value is not specified"),
         )
         self.assertEqual(
             AttributeValue.validate_attr_value(
-                AttrTypeValue["named_object"], {"name": "", "id": None}, True
+                AttrType.NAMED_OBJECT, {"name": "", "id": None}, True
             ),
             (False, "mandatory attrs value is not specified"),
         )
 
         group: Group = Group.objects.create(name="group0")
         self.assertEqual(
-            AttributeValue.validate_attr_value(AttrTypeValue["group"], None, True),
+            AttributeValue.validate_attr_value(AttrType.GROUP, None, True),
             (False, "mandatory attrs value is not specified"),
         )
         self.assertEqual(
-            AttributeValue.validate_attr_value(AttrTypeValue["group"], "", True),
-            (False, "mandatory attrs value is not specified"),
-        )
-
-        self.assertEqual(
-            AttributeValue.validate_attr_value(AttrTypeValue["boolean"], True, True), (True, None)
-        )
-        self.assertEqual(
-            AttributeValue.validate_attr_value(AttrTypeValue["boolean"], False, True), (True, None)
-        )
-
-        self.assertEqual(
-            AttributeValue.validate_attr_value(AttrTypeValue["date"], "", True),
+            AttributeValue.validate_attr_value(AttrType.GROUP, "", True),
             (False, "mandatory attrs value is not specified"),
         )
 
         self.assertEqual(
-            AttributeValue.validate_attr_value(AttrTypeValue["array_string"], [], True),
+            AttributeValue.validate_attr_value(AttrType.BOOLEAN, True, True), (True, None)
+        )
+        self.assertEqual(
+            AttributeValue.validate_attr_value(AttrType.BOOLEAN, False, True), (True, None)
+        )
+
+        self.assertEqual(
+            AttributeValue.validate_attr_value(AttrType.DATE, "", True),
+            (False, "mandatory attrs value is not specified"),
+        )
+
+        self.assertEqual(
+            AttributeValue.validate_attr_value(AttrType.ARRAY_STRING, [], True),
             (False, "mandatory attrs value is not specified"),
         )
         self.assertEqual(
-            AttributeValue.validate_attr_value(AttrTypeValue["array_string"], ["hoge", ""], True),
+            AttributeValue.validate_attr_value(AttrType.ARRAY_STRING, ["hoge", ""], True),
             (True, None),
         )
 
         self.assertEqual(
-            AttributeValue.validate_attr_value(AttrTypeValue["array_object"], [], True),
+            AttributeValue.validate_attr_value(AttrType.ARRAY_OBJECT, [], True),
             (False, "mandatory attrs value is not specified"),
         )
         self.assertEqual(
-            AttributeValue.validate_attr_value(
-                AttrTypeValue["array_object"], [self._entry.id, ""], True
-            ),
+            AttributeValue.validate_attr_value(AttrType.ARRAY_OBJECT, [self._entry.id, ""], True),
             (True, None),
         )
         self.assertEqual(
-            AttributeValue.validate_attr_value(
-                AttrTypeValue["array_object"], [self._entry.id, None], True
-            ),
+            AttributeValue.validate_attr_value(AttrType.ARRAY_OBJECT, [self._entry.id, None], True),
             (True, None),
         )
 
         self.assertEqual(
-            AttributeValue.validate_attr_value(AttrTypeValue["array_named_object"], [], True),
+            AttributeValue.validate_attr_value(AttrType.ARRAY_NAMED_OBJECT, [], True),
             (False, "mandatory attrs value is not specified"),
         )
         self.assertEqual(
             AttributeValue.validate_attr_value(
-                AttrTypeValue["array_named_object"], [{"name": "", "id": ""}], True
+                AttrType.ARRAY_NAMED_OBJECT, [{"name": "", "id": ""}], True
             ),
             (False, "mandatory attrs value is not specified"),
         )
         self.assertEqual(
             AttributeValue.validate_attr_value(
-                AttrTypeValue["array_named_object"], [{"name": "", "id": None}], True
+                AttrType.ARRAY_NAMED_OBJECT, [{"name": "", "id": None}], True
             ),
             (False, "mandatory attrs value is not specified"),
         )
         self.assertEqual(
             AttributeValue.validate_attr_value(
-                AttrTypeValue["array_named_object"],
+                AttrType.ARRAY_NAMED_OBJECT,
                 [{"name": "hoge", "id": self._entry.id}, {"name": "", "id": ""}],
                 True,
             ),
@@ -5555,7 +5531,7 @@ class ModelTest(AironeTestCase):
         )
         self.assertEqual(
             AttributeValue.validate_attr_value(
-                AttrTypeValue["array_named_object"],
+                AttrType.ARRAY_NAMED_OBJECT,
                 [{"name": "hoge", "id": self._entry.id}, {"name": "", "id": None}],
                 True,
             ),
@@ -5563,17 +5539,15 @@ class ModelTest(AironeTestCase):
         )
 
         self.assertEqual(
-            AttributeValue.validate_attr_value(AttrTypeValue["array_group"], [], True),
+            AttributeValue.validate_attr_value(AttrType.ARRAY_GROUP, [], True),
             (False, "mandatory attrs value is not specified"),
         )
         self.assertEqual(
-            AttributeValue.validate_attr_value(AttrTypeValue["array_group"], [group.id, ""], True),
+            AttributeValue.validate_attr_value(AttrType.ARRAY_GROUP, [group.id, ""], True),
             (True, None),
         )
         self.assertEqual(
-            AttributeValue.validate_attr_value(
-                AttrTypeValue["array_group"], [group.id, None], True
-            ),
+            AttributeValue.validate_attr_value(AttrType.ARRAY_GROUP, [group.id, None], True),
             (True, None),
         )
 
@@ -5590,9 +5564,9 @@ class ModelTest(AironeTestCase):
 
         # initialize EntityAttrs
         attr_info = {
-            "obj": {"type": AttrTypeValue["object"], "value": ref_entries[0]},
+            "obj": {"type": AttrType.OBJECT, "value": ref_entries[0]},
             "arr_obj": {
-                "type": AttrTypeValue["array_object"],
+                "type": AttrType.ARRAY_OBJECT,
                 "value": ref_entries[1:],
             },
         }
@@ -5606,7 +5580,7 @@ class ModelTest(AironeTestCase):
                 parent_entity=self._entity,
             )
 
-            if info["type"] & AttrTypeValue["object"]:
+            if info["type"] & AttrType.OBJECT:
                 attr.referral.add(ref_entity)
 
             self._entity.attrs.add(attr)
@@ -5647,16 +5621,16 @@ class ModelTest(AironeTestCase):
 
         # initialize EntityAttrs
         attr_info = {
-            "obj": {"type": AttrTypeValue["object"], "value": ref_entries[0]},
+            "obj": {"type": AttrType.OBJECT, "value": ref_entries[0]},
             "arr_obj": {
-                "type": AttrTypeValue["array_object"],
+                "type": AttrType.ARRAY_OBJECT,
                 "value": ref_entries[1:],
             },
         }
         attr_info_2 = {
-            "obj": {"type": AttrTypeValue["object"], "value": ref_entries_2[0]},
+            "obj": {"type": AttrType.OBJECT, "value": ref_entries_2[0]},
             "arr_obj": {
-                "type": AttrTypeValue["array_object"],
+                "type": AttrType.ARRAY_OBJECT,
                 "value": ref_entries_2[1:],
             },
         }
@@ -5670,7 +5644,7 @@ class ModelTest(AironeTestCase):
                 parent_entity=self._entity,
             )
 
-            if info["type"] & AttrTypeValue["object"]:
+            if info["type"] & AttrType.OBJECT:
                 attr.referral.add(ref_entity)
 
             self._entity.attrs.add(attr)
@@ -5685,7 +5659,7 @@ class ModelTest(AironeTestCase):
                 parent_entity=ref_entity,
             )
 
-            if info["type"] & AttrTypeValue["object"]:
+            if info["type"] & AttrType.OBJECT:
                 attr.referral.add(ref_entity_2)
 
             ref_entity.attrs.add(attr)
@@ -5730,7 +5704,7 @@ class ModelTest(AironeTestCase):
 
         # initialize EntityAttrs
         attr_info = {
-            "obj": {"type": AttrTypeValue["object"], "value": ref_entry},
+            "obj": {"type": AttrType.OBJECT, "value": ref_entry},
         }
         for attr_name, info in attr_info.items():
             # create EntityAttr object with is_delete_in_chain object
@@ -5742,7 +5716,7 @@ class ModelTest(AironeTestCase):
                 parent_entity=self._entity,
             )
 
-            if info["type"] & AttrTypeValue["object"]:
+            if info["type"] & AttrType.OBJECT:
                 attr.referral.add(ref_entity)
 
             self._entity.attrs.add(attr)
@@ -5831,7 +5805,7 @@ class ModelTest(AironeTestCase):
         entity = self.create_entity(
             user,
             "Entity",
-            attrs=[{"name": "attr", "type": AttrTypeValue["object"], "ref": ref_entity}],
+            attrs=[{"name": "attr", "type": AttrType.OBJECT, "ref": ref_entity}],
         )
         entry = self.add_entry(user, "entry", entity, values={"attr": e0})
         attr = entry.attrs.get(schema__name="attr", is_active=True)
@@ -5860,7 +5834,7 @@ class ModelTest(AironeTestCase):
         entity = self.create_entity(
             user,
             "Entity",
-            attrs=[{"name": "attr", "type": AttrTypeValue["array_object"], "ref": ref_entity}],
+            attrs=[{"name": "attr", "type": AttrType.ARRAY_OBJECT, "ref": ref_entity}],
         )
         entry = self.add_entry(user, "entry", entity, values={"attr": [e0, e1]})
         attr = entry.attrs.get(schema__name="attr", is_active=True)
@@ -5883,7 +5857,7 @@ class ModelTest(AironeTestCase):
         entity = self.create_entity(
             self._user,
             "Test Another Entity",
-            attrs=[{"name": "attr", "type": AttrTypeValue["string"]}],
+            attrs=[{"name": "attr", "type": AttrType.STRING}],
         )
         entry = self.add_entry(
             self._user, "Test Entry", entity, is_public=False, values={"attr": "value"}
@@ -5907,7 +5881,7 @@ class ModelTest(AironeTestCase):
 
     def test_get_preview_next_value(self):
         # case not array
-        attr = self.make_attr("test", AttrTypeValue["string"])
+        attr = self.make_attr("test", AttrType.STRING)
         attrv1 = attr.add_value(self._user, "hoge1")
         attrv2 = attr.add_value(self._user, "hoge2")
         attrv3 = attr.add_value(self._user, "hoge3")
@@ -5922,7 +5896,7 @@ class ModelTest(AironeTestCase):
         self.assertIsNone(attrv3.get_next_value())
 
         # case array
-        array_attr = self.make_attr("array", AttrTypeValue["array_string"])
+        array_attr = self.make_attr("array", AttrType.ARRAY_STRING)
         array_attrv1 = array_attr.add_value(self._user, ["hoge1", "fuga1"])
         array_attrv2 = array_attr.add_value(self._user, ["hoge2", "fuga2"])
         array_attrv3 = array_attr.add_value(self._user, ["hoge3", "fuga3"])

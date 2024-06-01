@@ -1,7 +1,7 @@
 from airone.lib.acl import ACLType
 from airone.lib.http import DRFRequest
 from airone.lib.test import AironeViewTest
-from airone.lib.types import AttrTypeValue
+from airone.lib.types import AttrType
 from entry.api_v2.serializers import (
     PrivilegedEntryCreateSerializer,
     PrivilegedEntryUpdateSerializer,
@@ -20,7 +20,7 @@ class ViewTest(AironeViewTest):
             user,
             "Entity",
             attrs=[
-                {"name": "secret", "type": AttrTypeValue["string"]},
+                {"name": "secret", "type": AttrType.STRING},
             ],
         )
         attr = self.schema.attrs.last()

@@ -3,7 +3,7 @@ from copy import copy
 from django.conf import settings
 from django.test import TestCase
 
-from airone.lib.types import AttrTypeValue
+from airone.lib.types import AttrType
 from entity.admin import EntityAttrResource, EntityResource
 from entity.models import Entity, EntityAttr
 from user.models import User
@@ -20,7 +20,7 @@ class ModelTest(TestCase):
 
         attr_base = EntityAttr(
             name="hoge",
-            type=AttrTypeValue["object"],
+            type=AttrType.OBJECT,
             created_user=self._test_user,
             parent_entity=entity,
         )
@@ -44,7 +44,7 @@ class ModelTest(TestCase):
 
         attr_base = EntityAttr(
             name="hoge",
-            type=AttrTypeValue["object"],
+            type=AttrType.OBJECT,
             created_user=self._test_user,
             parent_entity=entity,
         )
@@ -166,7 +166,7 @@ class ModelTest(TestCase):
         entity_attr = EntityAttr.objects.create(
             **{
                 "name": "attr",
-                "type": AttrTypeValue["string"],
+                "type": AttrType.STRING,
                 "created_user": user,
                 "parent_entity": entity,
             }
@@ -177,7 +177,7 @@ class ModelTest(TestCase):
             {
                 "id": entity_attr.id,
                 "name": "changed-attr",
-                "type": AttrTypeValue["array_string"],
+                "type": AttrType.ARRAY_STRING,
                 "entity": entity.name,
                 "created_user": user.username,
             },
@@ -186,7 +186,7 @@ class ModelTest(TestCase):
 
         entity_attr.refresh_from_db()
         self.assertEqual(entity_attr.name, "changed-attr")
-        self.assertEqual(entity_attr.type, AttrTypeValue["string"])
+        self.assertEqual(entity_attr.type, AttrType.STRING)
 
     def test_import_entity_attr_without_specifying_type(self):
         """
@@ -197,7 +197,7 @@ class ModelTest(TestCase):
         entity_attr = EntityAttr.objects.create(
             **{
                 "name": "attr",
-                "type": AttrTypeValue["string"],
+                "type": AttrType.STRING,
                 "created_user": user,
                 "parent_entity": entity,
             }
@@ -216,7 +216,7 @@ class ModelTest(TestCase):
 
         entity_attr.refresh_from_db()
         self.assertEqual(entity_attr.name, "changed-attr")
-        self.assertEqual(entity_attr.type, AttrTypeValue["string"])
+        self.assertEqual(entity_attr.type, AttrType.STRING)
 
     def test_import_entity_attr_without_specifying_id(self):
         """
@@ -228,7 +228,7 @@ class ModelTest(TestCase):
         EntityAttrResource.import_data_from_request(
             {
                 "name": "attr",
-                "type": AttrTypeValue["array_string"],
+                "type": AttrType.ARRAY_STRING,
                 "entity": entity.name,
                 "created_user": user.username,
             },
@@ -238,7 +238,7 @@ class ModelTest(TestCase):
         entity.refresh_from_db()
         self.assertEqual(
             [(x.name, x.type) for x in entity.attrs.all()],
-            [("attr", AttrTypeValue["array_string"])],
+            [("attr", AttrType.ARRAY_STRING)],
         )
 
     def test_import_entity_attr_without_specifying_id_and_type(self):
@@ -272,7 +272,7 @@ class ModelTest(TestCase):
         entity = Entity.objects.create(name="entity", created_user=user)
         attr = EntityAttr.objects.create(
             name="attr",
-            type=AttrTypeValue["object"],
+            type=AttrType.OBJECT,
             created_user=user,
             parent_entity=entity,
         )
@@ -323,7 +323,7 @@ class ModelTest(TestCase):
         entity = Entity.objects.create(name="entity", created_user=self._test_user)
         attr = EntityAttr.objects.create(
             name="attr",
-            type=AttrTypeValue["object"],
+            type=AttrType.OBJECT,
             created_user=self._test_user,
             parent_entity=entity,
         )
@@ -380,7 +380,7 @@ class ModelTest(TestCase):
         for i in range(max_attributes_per_entity):
             EntityAttr.objects.create(
                 name="entity_attr-%d" % i,
-                type=AttrTypeValue["string"],
+                type=AttrType.STRING,
                 created_user=self._test_user,
                 parent_entity=entity,
             )
@@ -390,7 +390,7 @@ class ModelTest(TestCase):
         with self.assertRaises(RuntimeError):
             EntityAttr.objects.create(
                 name="entity_attr-%d" % max_attributes_per_entity,
-                type=AttrTypeValue["string"],
+                type=AttrType.STRING,
                 created_user=self._test_user,
                 parent_entity=entity,
             )
@@ -399,7 +399,7 @@ class ModelTest(TestCase):
         settings.MAX_ATTRIBUTES_PER_ENTITY = None
         EntityAttr.objects.create(
             name="entity_attr-%d" % max_attributes_per_entity,
-            type=AttrTypeValue["string"],
+            type=AttrType.STRING,
             created_user=self._test_user,
             parent_entity=entity,
         )

@@ -14,7 +14,7 @@ from acl.models import ACLBase
 from airone.lib import types as atype
 from airone.lib.log import Logger
 from airone.lib.test import AironeViewTest
-from airone.lib.types import AttrType, AttrTypeArrStr, AttrTypeStr, AttrTypeText, AttrTypeValue
+from airone.lib.types import AttrType, AttrTypeArrStr, AttrTypeStr, AttrTypeText
 from entity import tasks
 from entity.models import Entity, EntityAttr
 from entry.models import Entry
@@ -91,7 +91,7 @@ class ViewTest(AironeViewTest):
                     "is_writable": True,
                     "name": "val",
                     "referral": [],
-                    "type": AttrTypeValue["string"],
+                    "type": AttrType.STRING,
                     "note": "",
                 },
                 {
@@ -102,7 +102,7 @@ class ViewTest(AironeViewTest):
                     "is_writable": True,
                     "name": "vals",
                     "referral": [],
-                    "type": AttrTypeValue["array_string"],
+                    "type": AttrType.ARRAY_STRING,
                     "note": "",
                 },
                 {
@@ -113,7 +113,7 @@ class ViewTest(AironeViewTest):
                     "is_writable": True,
                     "name": "ref",
                     "referral": [],
-                    "type": AttrTypeValue["object"],
+                    "type": AttrType.OBJECT,
                     "note": "",
                 },
                 {
@@ -124,7 +124,7 @@ class ViewTest(AironeViewTest):
                     "is_writable": True,
                     "name": "refs",
                     "referral": [],
-                    "type": AttrTypeValue["array_object"],
+                    "type": AttrType.ARRAY_OBJECT,
                     "note": "",
                 },
                 {
@@ -135,7 +135,7 @@ class ViewTest(AironeViewTest):
                     "is_writable": True,
                     "name": "name",
                     "referral": [],
-                    "type": AttrTypeValue["named_object"],
+                    "type": AttrType.NAMED_OBJECT,
                     "note": "",
                 },
                 {
@@ -146,7 +146,7 @@ class ViewTest(AironeViewTest):
                     "is_writable": True,
                     "name": "names",
                     "referral": [],
-                    "type": AttrTypeValue["array_named_object"],
+                    "type": AttrType.ARRAY_NAMED_OBJECT,
                     "note": "",
                 },
                 {
@@ -157,7 +157,7 @@ class ViewTest(AironeViewTest):
                     "is_writable": True,
                     "name": "group",
                     "referral": [],
-                    "type": AttrTypeValue["group"],
+                    "type": AttrType.GROUP,
                     "note": "",
                 },
                 {
@@ -168,7 +168,7 @@ class ViewTest(AironeViewTest):
                     "is_writable": True,
                     "name": "groups",
                     "referral": [],
-                    "type": AttrTypeValue["array_group"],
+                    "type": AttrType.ARRAY_GROUP,
                     "note": "",
                 },
                 {
@@ -179,7 +179,7 @@ class ViewTest(AironeViewTest):
                     "is_writable": True,
                     "name": "bool",
                     "referral": [],
-                    "type": AttrTypeValue["boolean"],
+                    "type": AttrType.BOOLEAN,
                     "note": "",
                 },
                 {
@@ -190,7 +190,7 @@ class ViewTest(AironeViewTest):
                     "is_writable": True,
                     "name": "text",
                     "referral": [],
-                    "type": AttrTypeValue["text"],
+                    "type": AttrType.TEXT,
                     "note": "",
                 },
                 {
@@ -201,7 +201,7 @@ class ViewTest(AironeViewTest):
                     "is_writable": True,
                     "name": "date",
                     "referral": [],
-                    "type": AttrTypeValue["date"],
+                    "type": AttrType.DATE,
                     "note": "",
                 },
                 {
@@ -212,7 +212,7 @@ class ViewTest(AironeViewTest):
                     "is_writable": True,
                     "name": "role",
                     "referral": [],
-                    "type": AttrTypeValue["role"],
+                    "type": AttrType.ROLE,
                     "note": "",
                 },
                 {
@@ -223,7 +223,7 @@ class ViewTest(AironeViewTest):
                     "is_writable": True,
                     "name": "roles",
                     "referral": [],
-                    "type": AttrTypeValue["array_role"],
+                    "type": AttrType.ARRAY_ROLE,
                     "note": "",
                 },
                 {
@@ -263,7 +263,7 @@ class ViewTest(AironeViewTest):
                         "name": "ref_entity",
                     }
                 ],
-                "type": AttrTypeValue["array_object"],
+                "type": AttrType.ARRAY_OBJECT,
                 "note": "",
             },
         )
@@ -389,7 +389,7 @@ class ViewTest(AironeViewTest):
                     "id": 0,
                     "name": "hoge",
                     "index": 11,
-                    "type": AttrTypeValue["string"],
+                    "type": AttrType.STRING,
                     "is_mandatory": False,
                     "is_delete_in_chain": False,
                     "referral": [],
@@ -412,7 +412,7 @@ class ViewTest(AironeViewTest):
                 "id": 0,
                 "name": "hoge",
                 "index": 11,
-                "type": AttrTypeValue["string"],
+                "type": AttrType.STRING,
                 "is_mandatory": False,
                 "is_delete_in_chain": False,
                 "referral": [],
@@ -498,7 +498,7 @@ class ViewTest(AironeViewTest):
                 {
                     "name": "attr1",
                     "index": 1,
-                    "type": AttrTypeValue["object"],
+                    "type": AttrType.OBJECT,
                     "referral": [self.ref_entity.id],
                     "is_mandatory": True,
                     "is_delete_in_chain": True,
@@ -529,7 +529,7 @@ class ViewTest(AironeViewTest):
         entity_attr: EntityAttr = entity.attrs.first()
         self.assertEqual(entity_attr.name, "attr1")
         self.assertEqual(entity_attr.index, 1)
-        self.assertEqual(entity_attr.type, AttrTypeValue["object"])
+        self.assertEqual(entity_attr.type, AttrType.OBJECT)
         self.assertEqual(entity_attr.referral.count(), 1)
         self.assertEqual(entity_attr.referral.first().id, self.ref_entity.id)
         self.assertEqual(entity_attr.is_mandatory, True)
@@ -702,7 +702,7 @@ class ViewTest(AironeViewTest):
         # name param
         params = {
             "name": "hoge",
-            "attrs": [{"name": ["hoge"], "type": AttrTypeValue["string"]}],
+            "attrs": [{"name": ["hoge"], "type": AttrType.STRING}],
         }
         resp = self.client.post("/entity/api/v2/", json.dumps(params), "application/json")
         self.assertEqual(resp.status_code, 400)
@@ -716,7 +716,7 @@ class ViewTest(AironeViewTest):
             "attrs": [
                 {
                     "name": "a" * (EntityAttr._meta.get_field("name").max_length + 1),
-                    "type": AttrTypeValue["string"],
+                    "type": AttrType.STRING,
                 }
             ],
         }
@@ -743,11 +743,11 @@ class ViewTest(AironeViewTest):
             "attrs": [
                 {
                     "name": "hoge",
-                    "type": AttrTypeValue["string"],
+                    "type": AttrType.STRING,
                 },
                 {
                     "name": "hoge",
-                    "type": AttrTypeValue["string"],
+                    "type": AttrType.STRING,
                 },
             ],
         }
@@ -812,7 +812,7 @@ class ViewTest(AironeViewTest):
         # index param
         params = {
             "name": "hoge",
-            "attrs": [{"name": "hoge", "type": AttrTypeValue["object"], "index": "hoge"}],
+            "attrs": [{"name": "hoge", "type": AttrType.OBJECT, "index": "hoge"}],
         }
         resp = self.client.post("/entity/api/v2/", json.dumps(params), "application/json")
         self.assertEqual(resp.status_code, 400)
@@ -832,7 +832,7 @@ class ViewTest(AironeViewTest):
             "attrs": [
                 {
                     "name": "hoge",
-                    "type": AttrTypeValue["object"],
+                    "type": AttrType.OBJECT,
                     "index": 2**32,
                 }
             ],
@@ -862,7 +862,7 @@ class ViewTest(AironeViewTest):
                 "attrs": [
                     {
                         "name": "hoge",
-                        "type": AttrTypeValue["object"],
+                        "type": AttrType.OBJECT,
                         param: "hoge",
                     }
                 ],
@@ -884,7 +884,7 @@ class ViewTest(AironeViewTest):
             "attrs": [
                 {
                     "name": "hoge",
-                    "type": AttrTypeValue["object"],
+                    "type": AttrType.OBJECT,
                     "referral": "hoge",
                 }
             ],
@@ -912,7 +912,7 @@ class ViewTest(AironeViewTest):
             "attrs": [
                 {
                     "name": "hoge",
-                    "type": AttrTypeValue["object"],
+                    "type": AttrType.OBJECT,
                     "referral": ["hoge"],
                 }
             ],
@@ -940,7 +940,7 @@ class ViewTest(AironeViewTest):
             "attrs": [
                 {
                     "name": "hoge",
-                    "type": AttrTypeValue["object"],
+                    "type": AttrType.OBJECT,
                     "referral": [9999],
                 }
             ],
@@ -977,7 +977,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 400)
         attrs = {}
         for index, all_attr in enumerate(self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY):
-            if all_attr["type"] & AttrTypeValue["object"]:
+            if all_attr["type"] & AttrType.OBJECT:
                 attrs[str(index)] = {
                     "non_field_errors": [
                         {
@@ -1006,7 +1006,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 400)
         attrs = {}
         for index, all_attr in enumerate(self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY):
-            if all_attr["type"] & AttrTypeValue["object"]:
+            if all_attr["type"] & AttrType.OBJECT:
                 attrs[str(index)] = {
                     "non_field_errors": [
                         {
@@ -1285,7 +1285,7 @@ class ViewTest(AironeViewTest):
 
         entity: Entity = Entity.objects.get(name=params["name"])
         for entity_attr in entity.attrs.all():
-            if entity_attr.type & AttrTypeValue["object"]:
+            if entity_attr.type & AttrType.OBJECT:
                 self.assertEqual([x.id for x in entity_attr.referral.all()], [self.ref_entity.id])
             else:
                 self.assertEqual([x.id for x in entity_attr.referral.all()], [])
@@ -1380,7 +1380,7 @@ class ViewTest(AironeViewTest):
                 "attrs": [
                     {
                         "name": "attr1",
-                        "type": AttrTypeValue["object"],
+                        "type": AttrType.OBJECT,
                     }
                 ],
                 "webhooks": [
@@ -1402,7 +1402,7 @@ class ViewTest(AironeViewTest):
                     "id": entity_attr.id,
                     "name": "change-attr1",
                     "index": 1,
-                    "type": AttrTypeValue["object"],
+                    "type": AttrType.OBJECT,
                     "referral": [self.ref_entity.id],
                     "is_mandatory": True,
                     "is_delete_in_chain": True,
@@ -1436,7 +1436,7 @@ class ViewTest(AironeViewTest):
         entity_attr.refresh_from_db()
         self.assertEqual(entity_attr.name, "change-attr1")
         self.assertEqual(entity_attr.index, 1)
-        self.assertEqual(entity_attr.type, AttrTypeValue["object"])
+        self.assertEqual(entity_attr.type, AttrType.OBJECT)
         self.assertEqual(entity_attr.referral.count(), 1)
         self.assertEqual(entity_attr.referral.first().id, self.ref_entity.id)
         self.assertEqual(entity_attr.is_mandatory, True)
@@ -1720,7 +1720,7 @@ class ViewTest(AironeViewTest):
 
         # name param
         params = {
-            "attrs": [{"name": ["hoge"], "type": AttrTypeValue["string"]}],
+            "attrs": [{"name": ["hoge"], "type": AttrType.STRING}],
         }
         resp = self.client.put(
             "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
@@ -1735,7 +1735,7 @@ class ViewTest(AironeViewTest):
             "attrs": [
                 {
                     "name": "a" * (EntityAttr._meta.get_field("name").max_length + 1),
-                    "type": AttrTypeValue["string"],
+                    "type": AttrType.STRING,
                 }
             ],
         }
@@ -1763,11 +1763,11 @@ class ViewTest(AironeViewTest):
             "attrs": [
                 {
                     "name": "hoge",
-                    "type": AttrTypeValue["string"],
+                    "type": AttrType.STRING,
                 },
                 {
                     "name": "hoge",
-                    "type": AttrTypeValue["string"],
+                    "type": AttrType.STRING,
                 },
             ],
         }
@@ -1788,7 +1788,7 @@ class ViewTest(AironeViewTest):
             "attrs": [
                 {
                     "name": "val",
-                    "type": AttrTypeValue["string"],
+                    "type": AttrType.STRING,
                 },
             ],
         }
@@ -1855,7 +1855,7 @@ class ViewTest(AironeViewTest):
         )
 
         params = {
-            "attrs": [{"id": entity_attr.id, "type": AttrTypeValue["array_string"]}],
+            "attrs": [{"id": entity_attr.id, "type": AttrType.ARRAY_STRING}],
         }
         resp = self.client.put(
             "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
@@ -1876,7 +1876,7 @@ class ViewTest(AironeViewTest):
 
         # index param
         params = {
-            "attrs": [{"name": "hoge", "type": AttrTypeValue["object"], "index": "hoge"}],
+            "attrs": [{"name": "hoge", "type": AttrType.OBJECT, "index": "hoge"}],
         }
         resp = self.client.put(
             "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
@@ -1897,7 +1897,7 @@ class ViewTest(AironeViewTest):
             "attrs": [
                 {
                     "name": "hoge",
-                    "type": AttrTypeValue["object"],
+                    "type": AttrType.OBJECT,
                     "index": 2**32,
                 }
             ],
@@ -1928,7 +1928,7 @@ class ViewTest(AironeViewTest):
                 "attrs": [
                     {
                         "name": "hoge",
-                        "type": AttrTypeValue["object"],
+                        "type": AttrType.OBJECT,
                         param: "hoge",
                     }
                 ],
@@ -1951,7 +1951,7 @@ class ViewTest(AironeViewTest):
             "attrs": [
                 {
                     "name": "hoge",
-                    "type": AttrTypeValue["object"],
+                    "type": AttrType.OBJECT,
                     "referral": "hoge",
                 }
             ],
@@ -1980,7 +1980,7 @@ class ViewTest(AironeViewTest):
             "attrs": [
                 {
                     "name": "hoge",
-                    "type": AttrTypeValue["object"],
+                    "type": AttrType.OBJECT,
                     "referral": ["hoge"],
                 }
             ],
@@ -2009,7 +2009,7 @@ class ViewTest(AironeViewTest):
             "attrs": [
                 {
                     "name": "hoge",
-                    "type": AttrTypeValue["object"],
+                    "type": AttrType.OBJECT,
                     "referral": [9999],
                 }
             ],
@@ -2049,7 +2049,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 400)
         attrs = {}
         for index, all_attr in enumerate(self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY):
-            if all_attr["type"] & AttrTypeValue["object"]:
+            if all_attr["type"] & AttrType.OBJECT:
                 attrs[str(index)] = {
                     "non_field_errors": [
                         {
@@ -2079,7 +2079,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 400)
         attrs = {}
         for index, all_attr in enumerate(self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY):
-            if all_attr["type"] & AttrTypeValue["object"]:
+            if all_attr["type"] & AttrType.OBJECT:
                 attrs[str(index)] = {
                     "non_field_errors": [
                         {
@@ -2099,7 +2099,7 @@ class ViewTest(AironeViewTest):
             "attrs": [
                 {
                     "name": "hoge",
-                    "type": AttrTypeValue["string"],
+                    "type": AttrType.STRING,
                     "is_deleted": True,
                 }
             ],
@@ -2145,7 +2145,7 @@ class ViewTest(AironeViewTest):
                 },
                 {
                     "name": entity_attr.name,
-                    "type": AttrTypeValue["string"],
+                    "type": AttrType.STRING,
                 },
             ],
         }
@@ -2469,7 +2469,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
 
         for entity_attr in self.entity.attrs.all():
-            if entity_attr.type & AttrTypeValue["object"]:
+            if entity_attr.type & AttrType.OBJECT:
                 self.assertEqual([x.id for x in entity_attr.referral.all()], [self.ref_entity.id])
             else:
                 self.assertEqual([x.id for x in entity_attr.referral.all()], [])
@@ -3321,21 +3321,21 @@ class ViewTest(AironeViewTest):
                 },
                 {
                     "name": "attr_bool",
-                    "type": str(AttrTypeValue["boolean"]),
+                    "type": str(AttrType.BOOLEAN),
                     "is_delete_in_chain": False,
                     "is_mandatory": False,
                     "row_index": "4",
                 },
                 {
                     "name": "attr_group",
-                    "type": str(AttrTypeValue["group"]),
+                    "type": str(AttrType.GROUP),
                     "is_delete_in_chain": False,
                     "is_mandatory": False,
                     "row_index": "5",
                 },
                 {
                     "name": "attr_date",
-                    "type": str(AttrTypeValue["date"]),
+                    "type": str(AttrType.DATE),
                     "is_delete_in_chain": False,
                     "is_mandatory": False,
                     "row_index": "6",
@@ -3529,7 +3529,7 @@ class ViewTest(AironeViewTest):
             [
                 {
                     "name": "puyo",
-                    "type": AttrTypeValue["object"],
+                    "type": AttrType.OBJECT,
                     "ref": entities.first(),
                 }
             ],

@@ -7,7 +7,7 @@ from django.test import Client, TestCase, override_settings
 from pytz import timezone
 
 from airone.lib.acl import ACLType
-from airone.lib.types import AttrType, AttrTypeValue
+from airone.lib.types import AttrType
 from entity.models import Entity, EntityAttr
 from entry.models import Entry
 from user.models import User
@@ -18,19 +18,19 @@ from .elasticsearch import ESS
 
 class AironeTestCase(TestCase):
     ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY = [
-        {"name": "val", "type": AttrTypeValue["string"]},
-        {"name": "vals", "type": AttrTypeValue["array_string"]},
-        {"name": "ref", "type": AttrTypeValue["object"]},
-        {"name": "refs", "type": AttrTypeValue["array_object"]},
-        {"name": "name", "type": AttrTypeValue["named_object"]},
-        {"name": "names", "type": AttrTypeValue["array_named_object"]},
-        {"name": "group", "type": AttrTypeValue["group"]},
-        {"name": "groups", "type": AttrTypeValue["array_group"]},
-        {"name": "bool", "type": AttrTypeValue["boolean"]},
-        {"name": "text", "type": AttrTypeValue["text"]},
-        {"name": "date", "type": AttrTypeValue["date"]},
-        {"name": "role", "type": AttrTypeValue["role"]},
-        {"name": "roles", "type": AttrTypeValue["array_role"]},
+        {"name": "val", "type": AttrType.STRING},
+        {"name": "vals", "type": AttrType.ARRAY_STRING},
+        {"name": "ref", "type": AttrType.OBJECT},
+        {"name": "refs", "type": AttrType.ARRAY_OBJECT},
+        {"name": "name", "type": AttrType.NAMED_OBJECT},
+        {"name": "names", "type": AttrType.ARRAY_NAMED_OBJECT},
+        {"name": "group", "type": AttrType.GROUP},
+        {"name": "groups", "type": AttrType.ARRAY_GROUP},
+        {"name": "bool", "type": AttrType.BOOLEAN},
+        {"name": "text", "type": AttrType.TEXT},
+        {"name": "date", "type": AttrType.DATE},
+        {"name": "role", "type": AttrType.ROLE},
+        {"name": "roles", "type": AttrType.ARRAY_ROLE},
         {"name": "datetime", "type": AttrType.DATETIME},
     ]
 
@@ -106,7 +106,7 @@ class AironeTestCase(TestCase):
                 **{
                     "index": index,
                     "name": attr_info["name"],
-                    "type": attr_info.get("type", AttrTypeValue["string"]),
+                    "type": attr_info.get("type", AttrType.STRING),
                     "is_mandatory": attr_info.get("is_mandatory", False),
                     "is_public": attr_info.get("is_public", True),
                     "default_permission": attr_info.get("default_permission", ACLType.Nothing.id),
