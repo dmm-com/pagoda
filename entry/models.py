@@ -183,58 +183,61 @@ class AttributeValue(models.Model):
                 return instance.name
 
         value = None
-        if (
-            self.parent_attr.schema.type == AttrType.STRING
-            or self.parent_attr.schema.type == AttrType.TEXT
-        ):
-            value = self.value
+        match self.parent_attr.schema.type:
+            case AttrType.STRING | AttrType.TEXT:
+                value = self.value
 
-        elif self.parent_attr.schema.type == AttrType.BOOLEAN:
-            value = self.boolean
+            case AttrType.BOOLEAN:
+                value = self.boolean
 
-        elif self.parent_attr.schema.type == AttrType.DATE:
-            if serialize:
-                value = str(self.date)
-            else:
-                value = self.date
+            case AttrType.DATE:
+                if serialize:
+                    value = str(self.date)
+                else:
+                    value = self.date
 
-        elif self.parent_attr.schema.type == AttrType.OBJECT:
-            value = _get_object_value(self, is_active)
+            case AttrType.OBJECT:
+                value = _get_object_value(self, is_active)
 
-        elif self.parent_attr.schema.type == AttrType.NAMED_OBJECT:
-            value = _get_named_value(self, is_active)
+            case AttrType.NAMED_OBJECT:
+                value = _get_named_value(self, is_active)
 
-        elif self.parent_attr.schema.type == AttrType.GROUP and self.value:
-            value = _get_model_value(self, Group)
+            case AttrType.GROUP if self.value:
+                value = _get_model_value(self, Group)
 
-        elif self.parent_attr.schema.type == AttrType.ROLE and self.value:
-            value = _get_model_value(self, Role)
+            case AttrType.ROLE if self.value:
+                value = _get_model_value(self, Role)
 
-        elif self.parent_attr.schema.type == AttrType.DATETIME:
-            if serialize:
-                value = self.datetime.isoformat()
-            else:
-                value = self.datetime
+            case AttrType.DATETIME:
+                if serialize:
+                    if self.datetime:
+                        value = self.datetime.isoformat()
+                    else:
+                        value = None
+                else:
+                    value = self.datetime
 
-        elif self.parent_attr.is_array():
-            if self.parent_attr.schema.type & AttrType._NAMED:
-                value = [_get_named_value(x, is_active) for x in self.data_array.all()]
+            case _ if self.parent_attr.is_array():
+                if self.parent_attr.schema.type & AttrType._NAMED:
+                    value = [_get_named_value(x, is_active) for x in self.data_array.all()]
 
-            elif self.parent_attr.schema.type & AttrType.STRING:
-                value = [x.value for x in self.data_array.all()]
+                elif self.parent_attr.schema.type & AttrType.STRING:
+                    value = [x.value for x in self.data_array.all()]
 
-            elif self.parent_attr.schema.type & AttrType.OBJECT:
-                value = [
-                    _get_object_value(x, is_active) for x in self.data_array.all() if x.referral
-                ]
+                elif self.parent_attr.schema.type & AttrType.OBJECT:
+                    value = [
+                        _get_object_value(x, is_active) for x in self.data_array.all() if x.referral
+                    ]
 
-            elif self.parent_attr.schema.type & AttrType.GROUP:
-                value = [
-                    x for x in [_get_model_value(y, Group) for y in self.data_array.all()] if x
-                ]
+                elif self.parent_attr.schema.type & AttrType.GROUP:
+                    value = [
+                        x for x in [_get_model_value(y, Group) for y in self.data_array.all()] if x
+                    ]
 
-            elif self.parent_attr.schema.type & AttrType.ROLE:
-                value = [x for x in [_get_model_value(y, Role) for y in self.data_array.all()] if x]
+                elif self.parent_attr.schema.type & AttrType.ROLE:
+                    value = [
+                        x for x in [_get_model_value(y, Role) for y in self.data_array.all()] if x
+                    ]
 
         if with_metainfo:
             value = {"type": self.parent_attr.schema.type, "value": value}
