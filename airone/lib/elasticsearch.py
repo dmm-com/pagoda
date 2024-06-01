@@ -1032,6 +1032,9 @@ def make_search_results(
                 case AttrType.DATE:
                     ret_attrinfo["value"] = attrinfo["date_value"]
 
+                case AttrType.DATETIME:
+                    ret_attrinfo["value"] = attrinfo["datetime_value"]
+
                 case AttrType.OBJECT | AttrType.GROUP | AttrType.ROLE:
                     ret_attrinfo["value"] = {
                         "id": attrinfo["referral_id"],

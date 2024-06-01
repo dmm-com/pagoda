@@ -1,7 +1,6 @@
-import datetime
 import errno
 import json
-from datetime import date
+from datetime import date, datetime, timezone
 from unittest.mock import Mock, patch
 
 import mock
@@ -673,7 +672,7 @@ class ViewTest(AironeViewTest):
             {"name": "obj", "value": "ref_entry"},
             {"name": "grp", "value": "group_entry"},
             {"name": "role", "value": "role_entry"},
-            {"name": "datetime", "value": "2020-01-01T00:00:00Z"},
+            {"name": "datetime", "value": "2020-01-01T00:00:00+00:00"},
             {"name": "name", "value": "bar: ref_entry"},
             {"name": "arr_str", "value": "foo"},
             {"name": "arr_obj", "value": "ref_entry"},
@@ -1259,7 +1258,7 @@ class ViewTest(AironeViewTest):
             "date": {"type": AttrType.DATE, "value": date(2020, 1, 1)},
             "datetime": {
                 "type": AttrType.DATETIME,
-                "value": date(2020, 1, 1, 0, 0, 0, datetime.UTC),
+                "value": datetime(2020, 1, 1, 0, 0, 0, tzinfo=timezone.utc),
             },
         }
         entities = []
@@ -1336,7 +1335,7 @@ class ViewTest(AironeViewTest):
                 "role": "role",
                 "arr_role": ["role"],
                 "date": "2020-01-01",
-                "datetime": "2020-01-01T00:00:00Z",
+                "datetime": "2020-01-01T00:00:00+00:00",
             },
         )
 
@@ -1359,7 +1358,7 @@ class ViewTest(AironeViewTest):
             "role": "new_role",
             "arr_role": ["new_role"],
             "date": "1999-01-01",
-            "datetime": "1999-01-01T00:00:00Z",
+            "datetime": "1999-01-01T00:00:00+00:00",
         }
         resp_data["Entity-1"][0]["attrs"] = new_attr_values
 
@@ -1424,7 +1423,7 @@ class ViewTest(AironeViewTest):
             elif attr_name == "date":
                 self.assertEqual(attrv.date, date(1999, 1, 1))
             elif attr_name == "datetime":
-                self.assertEqual(attrv.date, date(1999, 1, 1, 0, 0, 0, datetime.UTC))
+                self.assertEqual(attrv.datetime, datetime(1999, 1, 1, 0, 0, 0, tzinfo=timezone.utc))
 
     @patch(
         "dashboard.tasks.export_search_result.delay",
