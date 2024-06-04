@@ -14,6 +14,14 @@ from django.db import models
 from acl.models import ACLBase
 from airone.lib import auto_complement
 from airone.lib.log import Logger
+from custom_view.lib.task import (
+    CUSTOM_CANCELABLE_OPERATIONS,
+    CUSTOM_DOWNLOADABLE_OPERATIONS,
+    CUSTOM_HIDDEN_OPERATIONS,
+    CUSTOM_PARALLELIZABLE_OPERATIONS,
+    CUSTOM_TASKS,
+    JobOperationCustom,
+)
 from entity.models import Entity
 from entry.models import Entry
 from job.settings import CONFIG as JOB_CONFIG
@@ -98,21 +106,21 @@ class Job(models.Model):
     _TASK_MODULE: dict[str, Any] = {}
 
     # This hash table describes operation status value and operation processing
-    _METHOD_TABLE: dict[JobOperation, Any] = {}
+    _METHOD_TABLE: dict[JobOperation | JobOperationCustom, Any] = {}
 
     # In some jobs sholdn't make user aware of existence because of user experience
     # (e.g. re-registrating elasticsearch data of entries which refer to changed name entry).
     # These are the jobs that should be proceeded transparently.
-    HIDDEN_OPERATIONS: list[JobOperation] = [
+    HIDDEN_OPERATIONS: list[JobOperation | JobOperationCustom] = [
         JobOperation.REGISTER_REFERRALS,
         JobOperation.NOTIFY_CREATE_ENTRY,
         JobOperation.NOTIFY_UPDATE_ENTRY,
         JobOperation.NOTIFY_DELETE_ENTRY,
         JobOperation.UPDATE_DOCUMENT,
         JobOperation.MAY_INVOKE_TRIGGER,
-    ]
+    ] + CUSTOM_HIDDEN_OPERATIONS
 
-    CANCELABLE_OPERATIONS: list[JobOperation] = [
+    CANCELABLE_OPERATIONS: list[JobOperation | JobOperationCustom] = [
         JobOperation.CREATE_ENTRY,
         JobOperation.COPY_ENTRY,
         JobOperation.IMPORT_ENTRY,
@@ -122,9 +130,9 @@ class Job(models.Model):
         JobOperation.REGISTER_REFERRALS,
         JobOperation.EXPORT_SEARCH_RESULT,
         JobOperation.EXPORT_SEARCH_RESULT_V2,
-    ]
+    ] + CUSTOM_CANCELABLE_OPERATIONS
 
-    PARALLELIZABLE_OPERATIONS: list[JobOperation] = [
+    PARALLELIZABLE_OPERATIONS: list[JobOperation | JobOperationCustom] = [
         JobOperation.NOTIFY_CREATE_ENTRY,
         JobOperation.NOTIFY_UPDATE_ENTRY,
         JobOperation.NOTIFY_DELETE_ENTRY,
@@ -133,14 +141,14 @@ class Job(models.Model):
         JobOperation.IMPORT_ENTRY,
         JobOperation.EXPORT_ENTRY,
         JobOperation.UPDATE_DOCUMENT,
-    ]
+    ] + CUSTOM_PARALLELIZABLE_OPERATIONS
 
-    DOWNLOADABLE_OPERATIONS: list[JobOperation] = [
+    DOWNLOADABLE_OPERATIONS: list[JobOperation | JobOperationCustom] = [
         JobOperation.EXPORT_ENTRY,
         JobOperation.EXPORT_ENTRY_V2,
         JobOperation.EXPORT_SEARCH_RESULT,
         JobOperation.EXPORT_SEARCH_RESULT_V2,
-    ]
+    ] + CUSTOM_DOWNLOADABLE_OPERATIONS
 
     user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -338,6 +346,7 @@ class Job(models.Model):
             group_task = kls.get_task_module("group.tasks")
             role_task = kls.get_task_module("role.tasks")
             trigger_task = kls.get_task_module("trigger.tasks")
+            custom_task = kls.get_task_module("custom_view.tasks")
 
             kls._METHOD_TABLE = {
                 JobOperation.CREATE_ENTRY: entry_task.create_entry_attrs,
@@ -370,11 +379,13 @@ class Job(models.Model):
                 JobOperation.EDIT_ENTRY_V2: entry_task.edit_entry_v2,
                 JobOperation.DELETE_ENTRY_V2: entry_task.delete_entry_v2,
             }
+            for operation_num, task in CUSTOM_TASKS.items():
+                kls._METHOD_TABLE |= {operation_num: getattr(custom_task, task)}
 
         return kls._METHOD_TABLE
 
     @classmethod
-    def register_method_table(kls, operation: JobOperation, method):
+    def register_method_table(kls, operation: JobOperation | JobOperationCustom, method):
         if operation not in kls.method_table():
             kls._METHOD_TABLE[operation] = method
 

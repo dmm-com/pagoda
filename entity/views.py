@@ -8,7 +8,7 @@ from django.db.models import Q
 from django.http import HttpResponse
 from django.http.response import JsonResponse
 
-import custom_view
+from airone.lib import custom_view
 from airone.lib.acl import ACLType, get_permitted_objects
 from airone.lib.http import (
     get_download_response,

@@ -10,8 +10,7 @@ from requests.exceptions import ConnectionError
 from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied, ValidationError
 
-import custom_view
-from airone.lib import drf
+from airone.lib import custom_view, drf
 from airone.lib.acl import ACLType
 from airone.lib.drf import DuplicatedObjectExistsError, ObjectNotExistsError, RequiredParameterError
 from airone.lib.log import Logger

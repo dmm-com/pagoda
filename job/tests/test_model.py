@@ -5,6 +5,7 @@ from django.conf import settings
 
 from airone.celery import app
 from airone.lib.test import AironeTestCase
+from custom_view.lib.task import JobOperationCustom
 from entity.models import Entity
 from entry.models import Entry
 from job.models import Job, JobOperation, JobStatus, JobTarget
@@ -258,10 +259,15 @@ class ModelTest(AironeTestCase):
         method_table = Job.method_table()
 
         # This confirms the number of JobOperation and method_table count is same
-        self.assertEqual(len(method_table), len(JobOperation))
+        self.assertEqual(len(method_table), len(JobOperation) + len(JobOperationCustom))
 
         # This confirms all operations of JobOperation are registered
-        self.assertTrue(all([x.value in method_table for x in JobOperation]))
+        self.assertTrue(
+            all(
+                [x.value in method_table for x in JobOperation]
+                + [x.value in method_table for x in JobOperationCustom]
+            )
+        )
 
     def test_register_method_table(self):
         @app.task(bind=True)

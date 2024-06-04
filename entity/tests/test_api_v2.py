@@ -362,8 +362,8 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 200)
         self.assertTrue(resp.json()["attrs"][0]["is_writable"])
 
-    @mock.patch("custom_view.is_custom", mock.Mock(return_value=True))
-    @mock.patch("custom_view.call_custom")
+    @mock.patch("airone.lib.custom_view.is_custom", mock.Mock(return_value=True))
+    @mock.patch("airone.lib.custom_view.call_custom")
     def test_retrieve_entity_with_customview(self, mock_call_custom):
         def side_effect(handler_name, entity_name, entity, entity_attrs):
             self.assertEqual(handler_name, "get_entity_attr")
@@ -1294,8 +1294,8 @@ class ViewTest(AironeViewTest):
     @mock.patch(
         "entity.tasks.create_entity_v2.delay", mock.Mock(side_effect=tasks.create_entity_v2)
     )
-    @mock.patch("custom_view.is_custom", mock.Mock(return_value=True))
-    @mock.patch("custom_view.call_custom")
+    @mock.patch("airone.lib.custom_view.is_custom", mock.Mock(return_value=True))
+    @mock.patch("airone.lib.custom_view.call_custom")
     def test_create_entity_with_customview(self, mock_call_custom):
         params = {"name": "hoge"}
 
@@ -2477,8 +2477,8 @@ class ViewTest(AironeViewTest):
         self.assertEqual([x.is_verified for x in self.entity.webhooks.all()], [True, False])
 
     @mock.patch("entity.tasks.edit_entity_v2.delay", mock.Mock(side_effect=tasks.edit_entity_v2))
-    @mock.patch("custom_view.is_custom", mock.Mock(return_value=True))
-    @mock.patch("custom_view.call_custom")
+    @mock.patch("airone.lib.custom_view.is_custom", mock.Mock(return_value=True))
+    @mock.patch("airone.lib.custom_view.call_custom")
     def test_update_entity_with_customview(self, mock_call_custom):
         params = {"name": "hoge"}
 
@@ -2713,8 +2713,8 @@ class ViewTest(AironeViewTest):
     @mock.patch(
         "entity.tasks.delete_entity_v2.delay", mock.Mock(side_effect=tasks.delete_entity_v2)
     )
-    @mock.patch("custom_view.is_custom", mock.Mock(return_value=True))
-    @mock.patch("custom_view.call_custom")
+    @mock.patch("airone.lib.custom_view.is_custom", mock.Mock(return_value=True))
+    @mock.patch("airone.lib.custom_view.call_custom")
     def test_delete_entity_with_customview(self, mock_call_custom):
         def side_effect(handler_name, entity_name, user, entity):
             raise ValidationError("delete error")
@@ -3232,8 +3232,8 @@ class ViewTest(AironeViewTest):
         self.assertTrue(mock_task.called)
 
     @mock.patch("entry.tasks.create_entry_v2.delay", mock.Mock(side_effect=create_entry_v2))
-    @mock.patch("custom_view.is_custom", mock.Mock(return_value=True))
-    @mock.patch("custom_view.call_custom")
+    @mock.patch("airone.lib.custom_view.is_custom", mock.Mock(return_value=True))
+    @mock.patch("airone.lib.custom_view.call_custom")
     def test_create_entry_with_customview(self, mock_call_custom):
         attr = {}
         for attr_name in [x["name"] for x in self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY]:

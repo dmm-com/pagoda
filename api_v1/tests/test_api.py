@@ -970,8 +970,8 @@ class APITest(AironeViewTest):
         mock.Mock(side_effect=tasks.notify_delete_entry),
     )
     @mock.patch("entry.tasks.delete_entry.delay", mock.Mock(side_effect=tasks.delete_entry))
-    @mock.patch("custom_view.is_custom", mock.Mock(return_value=True))
-    @mock.patch("custom_view.call_custom")
+    @mock.patch("airone.lib.custom_view.is_custom", mock.Mock(return_value=True))
+    @mock.patch("airone.lib.custom_view.call_custom")
     def test_delete_entry_with_customview(self, mock_call_custom):
         admin = self.admin_login()
         self.entity = Entity.objects.create(name="Entity", created_user=admin)

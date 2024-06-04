@@ -8,10 +8,10 @@ from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from typing_extensions import TypedDict
 
-import custom_view
 from acl.models import ACLBase
 from airone.lib import drf
 from airone.lib.acl import ACLType
+from airone.lib.custom_view import call_custom, is_custom
 from airone.lib.drf import (
     DuplicatedObjectExistsError,
     IncorrectTypeError,
@@ -334,8 +334,8 @@ class EntryCreateSerializer(EntryBaseSerializer):
             raise RequiredParameterError("user is required")
 
         entity_name = validated_data["schema"].name
-        if custom_view.is_custom("before_create_entry_v2", entity_name):
-            validated_data = custom_view.call_custom(
+        if is_custom("before_create_entry_v2", entity_name):
+            validated_data = call_custom(
                 "before_create_entry_v2", entity_name, user, validated_data
             )
 
@@ -360,8 +360,8 @@ class EntryCreateSerializer(EntryBaseSerializer):
                 continue
             attr.add_value(user, attr_data[0]["value"])
 
-        if custom_view.is_custom("after_create_entry_v2", entity_name):
-            custom_view.call_custom("after_create_entry_v2", entity_name, user, entry)
+        if is_custom("after_create_entry_v2", entity_name):
+            call_custom("after_create_entry_v2", entity_name, user, entry)
 
         # register entry information to Elasticsearch
         entry.register_es()
@@ -425,8 +425,8 @@ class EntryUpdateSerializer(EntryBaseSerializer):
         entry._history_user = user
 
         entity_name = entry.schema.name
-        if custom_view.is_custom("before_update_entry_v2", entity_name):
-            validated_data = custom_view.call_custom(
+        if is_custom("before_update_entry_v2", entity_name):
+            validated_data = call_custom(
                 "before_update_entry_v2", entity_name, user, validated_data, entry
             )
 
@@ -463,8 +463,8 @@ class EntryUpdateSerializer(EntryBaseSerializer):
             attr.add_value(user, attr_data[0]["value"])
             is_updated = True
 
-        if custom_view.is_custom("after_update_entry_v2", entity_name):
-            custom_view.call_custom("after_update_entry_v2", entity_name, user, entry)
+        if is_custom("after_update_entry_v2", entity_name):
+            call_custom("after_update_entry_v2", entity_name, user, entry)
 
         # update entry information to Elasticsearch
         if is_updated:
@@ -748,10 +748,8 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
             )
 
         # add and remove attributes depending on entity
-        if custom_view.is_custom("get_entry_attr", obj.schema.name):
-            attrinfo = custom_view.call_custom(
-                "get_entry_attr", obj.schema.name, obj, attrinfo, True
-            )
+        if is_custom("get_entry_attr", obj.schema.name):
+            attrinfo = call_custom("get_entry_attr", obj.schema.name, obj, attrinfo, True)
 
         return attrinfo
 

@@ -1535,8 +1535,8 @@ class ViewTest(AironeViewTest):
             0,
         )
 
-    @mock.patch("custom_view.is_custom", mock.Mock(return_value=True))
-    @mock.patch("custom_view.call_custom")
+    @mock.patch("airone.lib.custom_view.is_custom", mock.Mock(return_value=True))
+    @mock.patch("airone.lib.custom_view.call_custom")
     def test_create_entity_with_customview(self, mock_call_custom):
         self.guest_login()
 
@@ -1571,8 +1571,8 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 200)
         self.assertTrue(self._test_data["is_call_custom_called"])
 
-    @mock.patch("custom_view.is_custom", mock.Mock(return_value=True))
-    @mock.patch("custom_view.call_custom")
+    @mock.patch("airone.lib.custom_view.is_custom", mock.Mock(return_value=True))
+    @mock.patch("airone.lib.custom_view.call_custom")
     def test_edit_entity_with_customview(self, mock_call_custom):
         user = self.guest_login()
 
@@ -1604,8 +1604,8 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 200)
         self.assertTrue(self._test_data["is_call_custom_called"])
 
-    @mock.patch("custom_view.is_custom", mock.Mock(return_value=True))
-    @mock.patch("custom_view.call_custom")
+    @mock.patch("airone.lib.custom_view.is_custom", mock.Mock(return_value=True))
+    @mock.patch("airone.lib.custom_view.call_custom")
     def test_delete_entity_with_customview(self, mock_call_custom):
         user = self.guest_login()
 

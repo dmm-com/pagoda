@@ -2,7 +2,7 @@ import os
 
 from django.urls import reverse
 
-import custom_view
+from airone.lib import custom_view
 from airone.lib.test import AironeViewTest
 from entity.models import Entity
 

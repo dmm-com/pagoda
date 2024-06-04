@@ -8,8 +8,8 @@ import yaml
 from django.conf import settings
 from rest_framework.exceptions import ValidationError
 
-import custom_view
 from airone.celery import app
+from airone.lib import custom_view
 from airone.lib.acl import ACLType
 from airone.lib.event_notification import (
     notify_entry_create,

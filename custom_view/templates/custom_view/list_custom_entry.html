@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block title %}List Entries{% endblock %}
+
+{% block nav_sub_header %}
+{% with "index_entry" as path %}
+{% include 'navigation.html' %}
+{% endwith %}
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    {% include 'entity_navigation.html' with tab='list' %}
+
+    <hr />
+
+    {% include 'entity_tab.html' with tab='list' %}
+
+    <a>{{ entity.name }}</a>
+</div>
+{% endblock %}

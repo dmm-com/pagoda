@@ -544,8 +544,8 @@ class ViewTest(BaseViewTest):
             resp.json(), {"code": "AE-230000", "message": "No Entry matches the given query."}
         )
 
-    @mock.patch("custom_view.is_custom", mock.Mock(return_value=True))
-    @mock.patch("custom_view.call_custom")
+    @mock.patch("airone.lib.custom_view.is_custom", mock.Mock(return_value=True))
+    @mock.patch("airone.lib.custom_view.call_custom")
     def test_retrieve_entry_with_customview(self, mock_call_custom):
         def side_effect(handler_name, entity_name, entry, entry_attrs, is_v2):
             self.assertEqual(handler_name, "get_entry_attr")
@@ -1046,8 +1046,8 @@ class ViewTest(BaseViewTest):
         self.assertTrue(mock_task.called)
 
     @patch("entry.tasks.edit_entry_v2.delay", Mock(side_effect=tasks.edit_entry_v2))
-    @mock.patch("custom_view.is_custom", mock.Mock(return_value=True))
-    @mock.patch("custom_view.call_custom")
+    @mock.patch("airone.lib.custom_view.is_custom", mock.Mock(return_value=True))
+    @mock.patch("airone.lib.custom_view.call_custom")
     def test_update_entry_with_customview(self, mock_call_custom):
         entry: Entry = self.add_entry(self.user, "entry", self.entity)
         attr = {}
@@ -1290,8 +1290,8 @@ class ViewTest(BaseViewTest):
         )
 
     @patch("entry.tasks.delete_entry_v2.delay", Mock(side_effect=tasks.delete_entry_v2))
-    @mock.patch("custom_view.is_custom", mock.Mock(return_value=True))
-    @mock.patch("custom_view.call_custom")
+    @mock.patch("airone.lib.custom_view.is_custom", mock.Mock(return_value=True))
+    @mock.patch("airone.lib.custom_view.call_custom")
     def test_destroy_entry_with_custom_view(self, mock_call_custom):
         entry: Entry = self.add_entry(self.user, "entry", self.entity)
 
@@ -1429,8 +1429,8 @@ class ViewTest(BaseViewTest):
             [{"code": "AE-220000", "message": "specified entry has already exist other"}],
         )
 
-    @mock.patch("custom_view.is_custom", mock.Mock(return_value=True))
-    @mock.patch("custom_view.call_custom")
+    @mock.patch("airone.lib.custom_view.is_custom", mock.Mock(return_value=True))
+    @mock.patch("airone.lib.custom_view.call_custom")
     def test_restore_entry_with_custom_view(self, mock_call_custom):
         entry: Entry = self.add_entry(self.user, "entry", self.entity)
         entry.delete()
@@ -4709,8 +4709,8 @@ class ViewTest(BaseViewTest):
         self.assertEqual(resp.status_code, 404)
 
     @patch("entry.tasks.delete_entry_v2.delay", Mock(side_effect=tasks.delete_entry_v2))
-    @mock.patch("custom_view.is_custom", mock.Mock(return_value=True))
-    @mock.patch("custom_view.call_custom")
+    @mock.patch("airone.lib.custom_view.is_custom", mock.Mock(return_value=True))
+    @mock.patch("airone.lib.custom_view.call_custom")
     def test_destroy_entries_with_custom_view(self, mock_call_custom):
         entry: Entry = self.add_entry(self.user, "entry", self.entity)
 

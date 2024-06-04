@@ -145,10 +145,8 @@ tags
 *.sql
 
 # ignores customviews
-custom_view/*
-custom_view/__init__.py
-!custom_view/background
-templates/custom_view
+custom_view/
+frontend/src/customview
 
 # ignores screenlogs
 screenlog*
