@@ -1,5 +1,6 @@
 import enum
 import json
+import os
 import pickle
 import time
 from datetime import date, datetime, timedelta
@@ -14,18 +15,29 @@ from django.db import models
 from acl.models import ACLBase
 from airone.lib import auto_complement
 from airone.lib.log import Logger
-from custom_view.lib.task import (
-    CUSTOM_CANCELABLE_OPERATIONS,
-    CUSTOM_DOWNLOADABLE_OPERATIONS,
-    CUSTOM_HIDDEN_OPERATIONS,
-    CUSTOM_PARALLELIZABLE_OPERATIONS,
-    CUSTOM_TASKS,
-    JobOperationCustom,
-)
 from entity.models import Entity
 from entry.models import Entry
 from job.settings import CONFIG as JOB_CONFIG
 from user.models import User
+
+if os.path.exists(settings.BASE_DIR + "/custom_view"):
+    from custom_view.lib.task import (
+        CUSTOM_CANCELABLE_OPERATIONS,
+        CUSTOM_DOWNLOADABLE_OPERATIONS,
+        CUSTOM_HIDDEN_OPERATIONS,
+        CUSTOM_PARALLELIZABLE_OPERATIONS,
+        CUSTOM_TASKS,
+        JobOperationCustom,
+    )
+else:
+    CUSTOM_CANCELABLE_OPERATIONS = []
+    CUSTOM_DOWNLOADABLE_OPERATIONS = []
+    CUSTOM_HIDDEN_OPERATIONS = []
+    CUSTOM_PARALLELIZABLE_OPERATIONS = []
+    CUSTOM_TASKS = {}
+
+    class JobOperationCustom(enum.IntEnum):  # type: ignore
+        pass
 
 
 def _support_time_default(o):
@@ -346,7 +358,6 @@ class Job(models.Model):
             group_task = kls.get_task_module("group.tasks")
             role_task = kls.get_task_module("role.tasks")
             trigger_task = kls.get_task_module("trigger.tasks")
-            custom_task = kls.get_task_module("custom_view.tasks")
 
             kls._METHOD_TABLE = {
                 JobOperation.CREATE_ENTRY: entry_task.create_entry_attrs,
@@ -380,6 +391,7 @@ class Job(models.Model):
                 JobOperation.DELETE_ENTRY_V2: entry_task.delete_entry_v2,
             }
             for operation_num, task in CUSTOM_TASKS.items():
+                custom_task = kls.get_task_module("custom_view.tasks")
                 kls._METHOD_TABLE |= {operation_num: getattr(custom_task, task)}
 
         return kls._METHOD_TABLE

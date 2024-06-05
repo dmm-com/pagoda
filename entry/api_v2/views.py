@@ -13,8 +13,8 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 
 from airone.exceptions import ElasticsearchException
+from airone.lib import custom_view
 from airone.lib.acl import ACLType
-from airone.lib.custom_view import call_custom, is_custom
 from airone.lib.drf import (
     DuplicatedObjectExistsError,
     FrequentImportError,
@@ -124,16 +124,16 @@ class EntryAPI(viewsets.ModelViewSet):
 
         user: User = request.user
 
-        if is_custom("before_restore_entry_v2", entry.schema.name):
-            call_custom("before_restore_entry_v2", entry.schema.name, user, entry)
+        if custom_view.is_custom("before_restore_entry_v2", entry.schema.name):
+            custom_view.call_custom("before_restore_entry_v2", entry.schema.name, user, entry)
 
         entry.set_status(Entry.STATUS_CREATING)
 
         # restore entry
         entry.restore()
 
-        if is_custom("after_restore_entry_v2", entry.schema.name):
-            call_custom("after_restore_entry_v2", entry.schema.name, user, entry)
+        if custom_view.is_custom("after_restore_entry_v2", entry.schema.name):
+            custom_view.call_custom("after_restore_entry_v2", entry.schema.name, user, entry)
 
         # remove status flag which is set before calling this
         entry.del_status(Entry.STATUS_CREATING)

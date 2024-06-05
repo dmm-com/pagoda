@@ -5138,7 +5138,7 @@ class ViewTest(AironeViewTest):
 
     @patch("airone.lib.custom_view.is_custom", Mock(return_value=True))
     @patch(
-        "custom_view.call_custom",
+        "airone.lib.custom_view.call_custom",
         Mock(
             return_value=JsonResponse(
                 {

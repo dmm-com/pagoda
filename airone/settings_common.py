@@ -10,9 +10,8 @@ from configurations import Configuration
 from ddtrace import config, patch_all, tracer
 from django_replicated import settings
 
-BASE_DIR = environ.Path(__file__) - 2
 env = environ.Env()
-env.read_env(os.path.join(BASE_DIR, ".env"))
+env.read_env(os.path.join(environ.Path(__file__) - 2, ".env"))
 
 
 class Common(Configuration):
@@ -59,7 +58,6 @@ class Common(Configuration):
         "import_export",
         "rest_framework",
         "rest_framework.authtoken",
-        "custom_view",
         "drf_spectacular",
         "django_filters",
         "social_django",
@@ -67,6 +65,9 @@ class Common(Configuration):
         "storages",
         "trigger",
     ]
+
+    if os.path.exists(BASE_DIR + "/custom_view"):
+        INSTALLED_APPS.append("custom_view")
 
     MIDDLEWARE = [
         "django.middleware.security.SecurityMiddleware",

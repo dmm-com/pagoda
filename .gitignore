@@ -145,8 +145,8 @@ tags
 *.sql
 
 # ignores customviews
-custom_view/
-frontend/src/customview
+/custom_view
+/frontend/src/customview
 
 # ignores screenlogs
 screenlog*
