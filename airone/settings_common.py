@@ -421,7 +421,6 @@ class Common(Configuration):
     REST_FRAMEWORK = {
         "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
         "DEFAULT_AUTHENTICATION_CLASSES": [
-            "api_v1.auth.LoggingBasicAuthentication",
             "rest_framework.authentication.SessionAuthentication",
             "api_v1.auth.AironeTokenAuth",
         ],

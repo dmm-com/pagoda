@@ -667,7 +667,7 @@ class APITest(AironeViewTest):
     def test_failed_to_get_entry(self):
         # send request without login
         resp = self.client.get("/api/v1/entry")
-        self.assertEqual(resp.status_code, 401)
+        self.assertEqual(resp.status_code, 403)
 
         user = self.guest_login()
 
@@ -1039,7 +1039,8 @@ class APITest(AironeViewTest):
                 "HTTP_AUTHORIZATION": "Token %s" % str(user.token),
             },
         )
-        self.assertEqual(resp.status_code, 401)
+        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(resp.json(), {"code": "AE-000000", "message": "Token lifetime is expired"})
 
         # Once setting 0 at token_lifetime, access token will never be expired
         user.token_lifetime = 0
