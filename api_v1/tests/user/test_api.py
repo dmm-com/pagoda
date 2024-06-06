@@ -57,39 +57,3 @@ class APITest(AironeViewTest):
             },
         )
         self.assertEqual(resp.status_code, status.HTTP_401_UNAUTHORIZED)
-
-    def test_get_token_with_password(self):
-        user = User.objects.create(username="test-user")
-        user.set_password("password")
-        user.save()
-
-        auth_byte = ("%s:%s" % ("test-user", "password")).encode(HTTP_HEADER_ENCODING)
-        auth_info = base64.b64encode(auth_byte).decode(HTTP_HEADER_ENCODING)
-
-        with self.assertLogs(logger=Logger, level=logging.WARNING) as warning_log:
-            resp = self.client.get(
-                "/api/v1/user/access_token",
-                **{
-                    "HTTP_AUTHORIZATION": "Basic %s" % auth_info,
-                },
-            )
-            self.assertEqual(resp.status_code, status.HTTP_200_OK)
-            self.assertEqual(
-                warning_log.output, ["WARNING:airone:User(test-user) used BASIC authentication"]
-            )
-
-    def test_get_token_with_invalid_password(self):
-        user = User.objects.create(username="test-user")
-        user.set_password("password")
-        user.save()
-
-        auth_byte = ("%s:%s" % ("test-user", "invalid-password")).encode(HTTP_HEADER_ENCODING)
-        auth_info = base64.b64encode(auth_byte).decode(HTTP_HEADER_ENCODING)
-
-        resp = self.client.get(
-            "/api/v1/user/access_token",
-            **{
-                "HTTP_AUTHORIZATION": "Basic %s" % auth_info,
-            },
-        )
-        self.assertEqual(resp.status_code, status.HTTP_401_UNAUTHORIZED)
