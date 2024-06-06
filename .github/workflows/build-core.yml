@@ -87,7 +87,6 @@ jobs:
           --health-retries=3
     steps:
       - uses: actions/checkout@v3
-      - run: echo '${{ needs.setup_python311.outputs.targets }}'
       - name: Install poetry
         run: pipx install poetry
       - uses: actions/setup-python@v4
