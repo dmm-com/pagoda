@@ -1,10 +1,6 @@
-import base64
-import logging
-
-from rest_framework import HTTP_HEADER_ENCODING, status
+from rest_framework import status
 from rest_framework.authtoken.models import Token
 
-from airone.lib.log import Logger
 from airone.lib.test import AironeViewTest
 from user.models import User
 
@@ -56,4 +52,5 @@ class APITest(AironeViewTest):
                 "HTTP_AUTHORIZATION": "Token %s" % "invlaid-token",
             },
         )
-        self.assertEqual(resp.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(resp.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(resp.json(), {"code": "AE-000000", "message": "Invalid token."})
