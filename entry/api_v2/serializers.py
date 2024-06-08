@@ -1103,7 +1103,7 @@ class EntryAttributeValueRestoreSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         raise ValidationError("unsupported")
 
-    def update(self, instance: AttributeValue, validated_data):
+    def update(self, instance: AttributeValue, validated_data) -> AttributeValue:
         if not self.partial:
             raise ValidationError("only partial update is supported")
 
@@ -1168,12 +1168,12 @@ class AdvancedSearchSerializer(serializers.Serializer):
     entry_limit = serializers.IntegerField(default=CONFIG_ENTRY.MAX_LIST_ENTRIES)
     entry_offset = serializers.IntegerField(default=0)
 
-    def validate_entry_name(self, entry_name: str):
+    def validate_entry_name(self, entry_name: str) -> str:
         if len(entry_name) > CONFIG_ENTRY.MAX_QUERY_SIZE:
             raise ValidationError("entry_name is too long")
         return entry_name
 
-    def validate_attrs(self, attrs: list[dict[str, str]]):
+    def validate_attrs(self, attrs: list[dict[str, str]]) -> list[dict[str, str]]:
         if any([len(attr.get("keyword", "")) > CONFIG_ENTRY.MAX_QUERY_SIZE for attr in attrs]):
             raise ValidationError("keyword(s) in attrs are too large")
         return attrs
@@ -1226,12 +1226,12 @@ class AdvancedSearchResultExportSerializer(serializers.Serializer):
     is_all_entities = serializers.BooleanField(default=False)
     export_style = serializers.CharField()
 
-    def validate_entities(self, entities: list[int]):
+    def validate_entities(self, entities: list[int]) -> list[int]:
         if Entity.objects.filter(id__in=entities).count() != len(entities):
             raise ValidationError("any entity_id(s) refers to an invalid entity")
         return entities
 
-    def validate_export_style(self, export_style: str):
+    def validate_export_style(self, export_style: str) -> str:
         if export_style != "yaml" and export_style != "csv":
             raise ValidationError("format must be yaml or csv")
         return export_style

@@ -123,16 +123,18 @@ class AttributeValue(models.Model):
 
     def get_value(
         self,
-        with_metainfo=False,
+        with_metainfo: bool = False,
         with_entity: bool = False,
-        serialize=False,
-        is_active=True,
+        serialize: bool = False,
+        is_active: bool = True,
     ):
         """
         This returns registered value according to the type of Attribute
         """
 
-        def _get_named_value(attrv, is_active=True):
+        def _get_named_value(
+            attrv: "AttributeValue", is_active: bool = True
+        ) -> dict[str, dict[str, int | str] | None]:
             if attrv.referral and (attrv.referral.is_active or not is_active):
                 if with_metainfo:
                     return {
@@ -156,7 +158,9 @@ class AttributeValue(models.Model):
             else:
                 return {attrv.value: None}
 
-        def _get_object_value(attrv, is_active=True):
+        def _get_object_value(
+            attrv: "AttributeValue", is_active: bool = True
+        ) -> dict[str, str] | None:
             if attrv.referral and (attrv.referral.is_active or not is_active):
                 if with_metainfo:
                     return {"id": attrv.referral.id, "name": attrv.referral.name}
@@ -170,8 +174,9 @@ class AttributeValue(models.Model):
                     }
                 else:
                     return attrv.referral.name
+            return None
 
-        def _get_model_value(attrv, model):
+        def _get_model_value(attrv: "AttributeValue", model):
             instance = model.objects.filter(id=attrv.value, is_active=True).first()
             if not instance:
                 return None
@@ -235,10 +240,10 @@ class AttributeValue(models.Model):
         return value
 
     def format_for_history(self):
-        def _get_group_value(attrv):
+        def _get_group_value(attrv: "AttributeValue") -> Group | None:
             return Group.objects.filter(id=attrv.value, is_active=True).first()
 
-        def _get_role_value(attrv):
+        def _get_role_value(attrv: "AttributeValue") -> Role | None:
             return Role.objects.filter(id=attrv.value, is_active=True).first()
 
         if self.data_type == AttrType.ARRAY_STRING:
@@ -296,7 +301,7 @@ class AttributeValue(models.Model):
         return attrv.filter(created_time__lt=self.created_time).order_by("created_time").last()
 
     @classmethod
-    def search(kls, query):
+    def search(kls, query: str) -> list[dict[str, Any]]:
         results = []
         for obj in kls.objects.filter(value__icontains=query):
             attr = obj.parent_attr
@@ -491,7 +496,7 @@ class Attribute(ACLBase):
         super(Attribute, self).__init__(*args, **kwargs)
         self.objtype = ACLObjType.EntryAttr
 
-    def is_array(self):
+    def is_array(self) -> bool:
         return self.schema.type & AttrType._ARRAY
 
     # This checks whether each specified attribute needs to update
@@ -685,7 +690,7 @@ class Attribute(ACLBase):
         return False
 
     # These are helper funcitons to get differental AttributeValue(s) by an update request.
-    def _validate_attr_values_of_array(self):
+    def _validate_attr_values_of_array(self) -> bool:
         if not self.is_array():
             return False
         return True
@@ -706,8 +711,8 @@ class Attribute(ACLBase):
         }
         return self.get_values(**params)
 
-    def get_latest_value(self, is_readonly=False):
-        def _create_new_value():
+    def get_latest_value(self, is_readonly: bool = False):
+        def _create_new_value() -> AttributeValue:
             params = {
                 "value": "",
                 "created_user": self.created_user,
@@ -756,7 +761,7 @@ class Attribute(ACLBase):
             else:
                 return _create_new_value()
 
-    def get_last_value(self):
+    def get_last_value(self) -> AttributeValue:
         attrv = self.values.last()
         if not attrv:
             attrv = AttributeValue.objects.create(
@@ -773,7 +778,7 @@ class Attribute(ACLBase):
         return attrv
 
     # NOTE: Type-Write
-    def clone(self, user, **extra_params):
+    def clone(self, user, **extra_params) -> Optional["Attribute"]:
         if not user.has_permission(self, ACLType.Readable) or not user.has_permission(
             self.schema, ACLType.Readable
         ):
@@ -806,13 +811,13 @@ class Attribute(ACLBase):
 
         return cloned_attr
 
-    def unset_latest_flag(self, exclude_id=None):
+    def unset_latest_flag(self, exclude_id: int | None = None):
         exclude = Q()
         if exclude_id:
             exclude = Q(id=exclude_id)
         self.values.filter(is_latest=True).exclude(exclude).update(is_latest=False)
 
-    def _validate_value(self, value):
+    def _validate_value(self, value) -> bool:
         def _is_group_object(val, model) -> bool:
             return isinstance(val, model) or isinstance(val, int) or isinstance(val, str) or not val
 
@@ -883,11 +888,13 @@ class Attribute(ACLBase):
 
         return False
 
-    def add_value(self, user, value, boolean=False):
+    def add_value(self, user, value, boolean: bool = False) -> AttributeValue:
         """This method make AttributeValue and set it as the latest one"""
 
         # This is a helper method to set AttributeType
-        def _set_attrv(attr_type, val, attrv=None, params={}):
+        def _set_attrv(
+            attr_type: int, val, attrv: AttributeValue | None = None, params={}
+        ) -> AttributeValue | None:
             if not attrv:
                 attrv = AttributeValue(**params)
 
@@ -924,7 +931,7 @@ class Attribute(ACLBase):
                         attrv.referral = ref_entry
 
                 if not attrv.referral:
-                    return
+                    return None
 
             elif attr_type == AttrType.BOOLEAN:
                 attrv.boolean = val
@@ -957,7 +964,7 @@ class Attribute(ACLBase):
                     attrv.referral = None
 
                 if not attrv.referral and not attrv.value:
-                    return
+                    return None
 
             return attrv
 
@@ -1027,13 +1034,13 @@ class Attribute(ACLBase):
         This absorbs difference values according to the type of Attributes
         """
 
-        def get_entry(schema, name):
+        def get_entry(schema: Entity, name: str):
             return Entry.objects.get(is_active=True, schema=schema, name=name)
 
-        def is_entry(schema, name):
+        def is_entry(schema: Entity, name: str):
             return Entry.objects.filter(is_active=True, schema=schema, name=name)
 
-        def get_named_object(data):
+        def get_named_object(data) -> dict:
             (key, value) = list(data.items())[0]
 
             ret_value = {"name": key, "id": None}
@@ -1129,7 +1136,7 @@ class Attribute(ACLBase):
 
         # This helper methods is implemented for Group or Role. The model parameter
         # should be set Group or Role.
-        def _remove_specific_object(attrv, value, model):
+        def _remove_specific_object(attrv: AttributeValue, value, model):
             if not value:
                 return
 
@@ -1227,7 +1234,7 @@ class Attribute(ACLBase):
                 self.add_value(user, updated_data, boolean=attrv.boolean)
 
     def may_remove_referral(self) -> None:
-        def _may_remove_referral(referral: ACLBase):
+        def _may_remove_referral(referral: ACLBase | None):
             if not referral:
                 # the case this refers no entry, do nothing
                 return
@@ -1298,7 +1305,7 @@ class Attribute(ACLBase):
     def restore(self):
         super(Attribute, self).restore()
 
-        def _may_restore_referral(referral):
+        def _may_restore_referral(referral: ACLBase | None):
             if not referral:
                 # the case this refers no entry, do nothing
                 return
@@ -1357,7 +1364,7 @@ class Entry(ACLBase):
             self.attrs.add(attr)
         return attr
 
-    def get_prev_refers_objects(self):
+    def get_prev_refers_objects(self) -> QuerySet:
         """
         This returns objects to which this Entry referred just one before.
         """
@@ -1389,7 +1396,7 @@ class Entry(ACLBase):
 
         return Entry.objects.filter(id__in=entry_ids)
 
-    def get_refers_objects(self):
+    def get_refers_objects(self) -> QuerySet:
         """
         This returns all objects that this Entry refers to just by about twice SQL call.
         """
@@ -1477,15 +1484,16 @@ class Entry(ACLBase):
             .prefetch_related(attr_prefetch)
             .order_by("index")
         ):
-            attrinfo: dict[str, Any] = {}
-            attrinfo["id"] = ""
-            attrinfo["entity_attr_id"] = entity_attr.id
-            attrinfo["name"] = entity_attr.name
-            attrinfo["type"] = entity_attr.type
-            attrinfo["is_mandatory"] = entity_attr.is_mandatory
-            attrinfo["index"] = entity_attr.index
-            attrinfo["is_readable"] = True
-            attrinfo["last_value"] = AttrDefaultValue[entity_attr.type]
+            attrinfo: dict[str, Any] = {
+                "id": "",
+                "entity_attr_id": entity_attr.id,
+                "name": entity_attr.name,
+                "type": entity_attr.type,
+                "is_mandatory": entity_attr.is_mandatory,
+                "index": entity_attr.index,
+                "is_readable": True,
+                "last_value": AttrDefaultValue[entity_attr.type],
+            }
 
             # check that attribute exists
             attr = entity_attr.attr_list[0] if entity_attr.attr_list else None
@@ -1593,7 +1601,7 @@ class Entry(ACLBase):
         return ret_attrs
 
     # NOTE: Type-Read
-    def to_dict(self, user: User, with_metainfo=False):
+    def to_dict(self, user: User, with_metainfo: bool = False) -> dict[str, Any] | None:
         # check permissions for each entry, entity and attrs
         if not user.has_permission(self.schema, ACLType.Readable) or not user.has_permission(
             self, ACLType.Readable
@@ -1685,7 +1693,7 @@ class Entry(ACLBase):
             self.unregister_es()
 
     # implementation for Entry
-    def check_duplication_entry_at_restoring(self, entry_chain=[]):
+    def check_duplication_entry_at_restoring(self, entry_chain=[]) -> bool:
         """This method returns true when this Entry has referral that is
            same name with other entry at restoring Entry.
         - case True: there is an Entry(at least) that is same name with same Entity.
@@ -1752,7 +1760,7 @@ class Entry(ACLBase):
         return cloned_entry
 
     # NOTE: Type-Write
-    def export(self, user):
+    def export(self, user: User) -> dict[str, Any]:
         attrinfo = {}
 
         # This calling of complement_attrs is needed to take into account the case of the Attributes
@@ -1771,7 +1779,7 @@ class Entry(ACLBase):
 
         return {"name": self.name, "attrs": attrinfo}
 
-    def export_v2(self, user, with_entity: bool = False) -> dict:
+    def export_v2(self, user: User, with_entity: bool = False) -> dict:
         attrinfo = []
 
         # This calling of complement_attrs is needed to take into account the case of the Attributes
@@ -1836,7 +1844,7 @@ class Entry(ACLBase):
                 "date_value": None,
                 "referral_id": "",
                 "is_readable": True
-                if (not attr or attr.is_public or attr.default_permission >= ACLType.Readable.id)
+                if (not attr or attr.is_public or attr.default_permission >= ACLType.Readable)
                 else False,
             }
 
@@ -2027,7 +2035,7 @@ class Entry(ACLBase):
         es.refresh(ignore=[404])
 
     def get_value_history(self, user: User, count=CONFIG.MAX_HISTORY_COUNT, index=0) -> list[dict]:
-        def _get_values(attrv):
+        def _get_values(attrv: AttributeValue) -> dict[str, Any]:
             return {
                 "attrv_id": attrv.id,
                 "value": attrv.format_for_history(),
@@ -2192,9 +2200,9 @@ class Entry(ACLBase):
     @classmethod
     def search_entries_for_simple(
         kls,
-        hint_attr_value,
-        hint_entity_name=None,
-        exclude_entity_names=[],
+        hint_attr_value: str,
+        hint_entity_name: str | None = None,
+        exclude_entity_names: list[str] = [],
         limit: int = CONFIG.MAX_LIST_ENTRIES,
         offset: int = 0,
     ) -> dict[str, Any]:
@@ -2365,7 +2373,7 @@ class Entry(ACLBase):
 
         return True
 
-    def get_attrv(self, attr_name: str):
+    def get_attrv(self, attr_name: str) -> AttributeValue | None:
         """This returns specified attribute's value without permission check. Because
         this prioritizes performance (less frequency of sending query to Database) over
         authorization safety.
@@ -2382,7 +2390,7 @@ class Entry(ACLBase):
     def get_trigger_params(self, user, attrnames):
         entry_dict = self.to_dict(user, with_metainfo=True)
 
-        def _get_value(attrname, attrtype, value):
+        def _get_value(attrname: str, attrtype: int, value):
             if isinstance(value, list):
                 return [_get_value(attrname, attrtype, x) for x in value]
 
