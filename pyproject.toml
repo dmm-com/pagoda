@@ -9,11 +9,11 @@ ignore_missing_imports = true
 
 [tool.ruff]
 # Pyflakes (F), pycodestyle (E, W), isort (I)
-select = ["E", "F", "I", "W"]
+lint.select = ["E", "F", "I", "W"]
 line-length = 100
 extend-exclude = ["./*/migrations", "manage.py", "./node_modules"]
 
-[tool.ruff.per-file-ignores]
+[tool.ruff.lint.per-file-ignores]
 "./airone/tests/test_elasticsearch.py" = ["E501"]
 
 [tool.poetry]
@@ -62,14 +62,12 @@ pydantic = "^2.6.4"
 
 [tool.poetry.group.dev.dependencies]
 coverage = "^7.3.0"
-mypy = "^1.5.1"
+mypy = "^1.10.0"
 requests-html = "0.10.0"
-types-six = "^1.16.21.9"
 types-requests = "^2.31.0.2"
 types-pyyaml = "^6.0.12.11"
 types-pytz = "^2023.3.0.1"
 types-mock = "^5.1.0.1"
-ruff = "^0.1.7"
-tox = "^4.11.4"
+ruff = "^0.4.8"
 tblib = "^3.0.0"
 lxml-html-clean = "^0.1.1"
