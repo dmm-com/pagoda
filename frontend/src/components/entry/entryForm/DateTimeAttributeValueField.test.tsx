@@ -32,7 +32,7 @@ describe("DateAttributeValueField", () => {
           name: "datetime",
         },
         value: {
-          asString: "2020-01-01T00:00:00+09:00",
+          asString: "2020-01-01T00:00:00+00:00",
         },
       },
     },
@@ -64,7 +64,7 @@ describe("DateAttributeValueField", () => {
 
     expect(screen.getByRole("textbox")).toHaveValue("2020/01/01 00:00:00");
     expect(getValues("attrs.0.value.asString")).toEqual(
-      "2020-01-01T00:00:00+09:00"
+      "2020-01-01T00:00:00+00:00"
     );
 
     // Open the date picker
@@ -78,7 +78,7 @@ describe("DateAttributeValueField", () => {
 
     expect(screen.getByRole("textbox")).toHaveValue("2020/01/02 00:00:00");
     expect(getValues("attrs.0.value.asString")).toEqual(
-      "2020-01-01T15:00:00.000Z"
+      "2020-01-02T00:00:00.000Z"
     );
   });
 });
