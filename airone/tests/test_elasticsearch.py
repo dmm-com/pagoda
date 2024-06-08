@@ -1,7 +1,7 @@
 from django.test import TestCase
 
 from airone.lib import elasticsearch
-from airone.lib.types import AttrTypeStr
+from airone.lib.types import AttrType
 from entity.models import Entity, EntityAttr
 from entry.models import Attribute, AttributeValue, Entry
 from user.models import User
@@ -17,7 +17,7 @@ class ElasticSearchTest(TestCase):
 
         self._entity_attr = EntityAttr(
             name="test",
-            type=AttrTypeStr,
+            type=AttrType.STRING,
             is_mandatory=True,
             created_user=self._user,
             parent_entity=self._entity,

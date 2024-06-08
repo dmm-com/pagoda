@@ -8,11 +8,6 @@ from django.urls import reverse
 from airone.lib.test import AironeViewTest
 from airone.lib.types import (
     AttrType,
-    AttrTypeArrObj,
-    AttrTypeArrStr,
-    AttrTypeObj,
-    AttrTypeStr,
-    AttrTypeText,
 )
 from entity import tasks
 from entity.models import Entity, EntityAttr
@@ -118,21 +113,21 @@ class ViewTest(AironeViewTest):
             "attrs": [
                 {
                     "name": "foo",
-                    "type": str(AttrTypeStr),
+                    "type": str(AttrType.STRING),
                     "is_delete_in_chain": False,
                     "is_mandatory": True,
                     "row_index": "1",
                 },
                 {
                     "name": "bar",
-                    "type": str(AttrTypeText),
+                    "type": str(AttrType.TEXT),
                     "is_delete_in_chain": False,
                     "is_mandatory": True,
                     "row_index": "2",
                 },
                 {
                     "name": "baz",
-                    "type": str(AttrTypeArrStr),
+                    "type": str(AttrType.ARRAY_STRING),
                     "is_delete_in_chain": False,
                     "is_mandatory": False,
                     "row_index": "3",
@@ -189,14 +184,14 @@ class ViewTest(AironeViewTest):
             "attrs": [
                 {
                     "name": "foo",
-                    "type": str(AttrTypeStr),
+                    "type": str(AttrType.STRING),
                     "is_delete_in_chain": False,
                     "is_mandatory": True,
                     "row_index": "1",
                 },
                 {
                     "name": "bar",
-                    "type": str(AttrTypeStr),
+                    "type": str(AttrType.STRING),
                     "is_delete_in_chain": False,
                     "is_mandatory": False,
                     "row_index": "2",
@@ -216,14 +211,14 @@ class ViewTest(AironeViewTest):
             "attrs": [
                 {
                     "name": "foo",
-                    "type": str(AttrTypeStr),
+                    "type": str(AttrType.STRING),
                     "is_delete_in_chain": False,
                     "is_mandatory": True,
                     "row_index": "1",
                 },
                 {
                     "name": "bar",
-                    "type": str(AttrTypeStr),
+                    "type": str(AttrType.STRING),
                     "is_delete_in_chain": False,
                     "is_mandatory": False,
                     "row_index": "2",
@@ -242,14 +237,14 @@ class ViewTest(AironeViewTest):
             "attrs": [
                 {
                     "name": "foo",
-                    "type": str(AttrTypeStr),
+                    "type": str(AttrType.STRING),
                     "is_delete_in_chain": False,
                     "is_mandatory": True,
                     "row_index": "1",
                 },
                 {
                     "name": "foo",
-                    "type": str(AttrTypeStr),
+                    "type": str(AttrType.STRING),
                     "is_delete_in_chain": False,
                     "is_mandatory": False,
                     "row_index": "2",
@@ -271,7 +266,7 @@ class ViewTest(AironeViewTest):
             "attrs": [
                 {
                     "name": "",
-                    "type": str(AttrTypeStr),
+                    "type": str(AttrType.STRING),
                     "is_delete_in_chain": False,
                     "is_mandatory": True,
                     "row_index": "1",
@@ -289,7 +284,7 @@ class ViewTest(AironeViewTest):
             "attrs": [
                 {
                     "name": "foo",
-                    "type": str(AttrTypeStr),
+                    "type": str(AttrType.STRING),
                     "is_delete_in_chain": False,
                     "is_mandatory": True,
                     "row_index": "abcd",
@@ -309,7 +304,7 @@ class ViewTest(AironeViewTest):
             "attrs": [
                 {
                     "name": "a" * (EntityAttr._meta.get_field("name").max_length + 1),
-                    "type": str(AttrTypeStr),
+                    "type": str(AttrType.STRING),
                     "is_delete_in_chain": False,
                     "is_mandatory": True,
                     "row_index": "1",
@@ -367,7 +362,7 @@ class ViewTest(AironeViewTest):
             "attrs": [
                 {
                     "name": "foo",
-                    "type": str(AttrTypeStr),
+                    "type": str(AttrType.STRING),
                     "is_delete_in_chain": False,
                     "is_mandatory": True,
                     "row_index": "1",
@@ -391,7 +386,7 @@ class ViewTest(AironeViewTest):
             "attrs": [
                 {
                     "name": "foo",
-                    "type": str(AttrTypeStr),
+                    "type": str(AttrType.STRING),
                     "is_delete_in_chain": False,
                     "is_mandatory": True,
                     "row_index": "1",
@@ -413,7 +408,7 @@ class ViewTest(AironeViewTest):
             "attrs": [
                 {
                     "name": "a" * (EntityAttr._meta.get_field("name").max_length + 1),
-                    "type": str(AttrTypeStr),
+                    "type": str(AttrType.STRING),
                     "is_delete_in_chain": False,
                     "is_mandatory": True,
                     "row_index": "1",
@@ -435,14 +430,14 @@ class ViewTest(AironeViewTest):
             "attrs": [
                 {
                     "name": "foo",
-                    "type": str(AttrTypeStr),
+                    "type": str(AttrType.STRING),
                     "is_delete_in_chain": False,
                     "is_mandatory": True,
                     "row_index": "1",
                 },
                 {
                     "name": "foo",
-                    "type": str(AttrTypeStr),
+                    "type": str(AttrType.STRING),
                     "is_delete_in_chain": False,
                     "is_mandatory": True,
                     "row_index": "2",
@@ -464,7 +459,7 @@ class ViewTest(AironeViewTest):
             name="puyo",
             created_user=user,
             is_mandatory=True,
-            type=AttrTypeStr,
+            type=AttrType.STRING,
             parent_entity=entity,
         )
         entity.attrs.add(attr)
@@ -490,7 +485,7 @@ class ViewTest(AironeViewTest):
             "attrs": [
                 {
                     "name": "foo",
-                    "type": str(AttrTypeStr),
+                    "type": str(AttrType.STRING),
                     "is_delete_in_chain": False,
                     "is_mandatory": False,
                     "id": attr.id,
@@ -498,14 +493,14 @@ class ViewTest(AironeViewTest):
                 },
                 {
                     "name": "bar",
-                    "type": str(AttrTypeStr),
+                    "type": str(AttrType.STRING),
                     "is_delete_in_chain": False,
                     "is_mandatory": True,
                     "row_index": "2",
                 },
                 {
                     "name": "baz",
-                    "type": str(AttrTypeStr),
+                    "type": str(AttrType.STRING),
                     "is_delete_in_chain": False,
                     "is_mandatory": True,
                     "row_index": "3",
@@ -609,7 +604,7 @@ class ViewTest(AironeViewTest):
             "attrs": [
                 {
                     "name": "foo",
-                    "type": str(AttrTypeStr),
+                    "type": str(AttrType.STRING),
                     "is_delete_in_chain": False,
                     "is_mandatory": True,
                     "id": entity.attrs.get(name="puyo", is_active=True).id,
@@ -617,7 +612,7 @@ class ViewTest(AironeViewTest):
                 },
                 {
                     "name": "bar",
-                    "type": str(AttrTypeStr),
+                    "type": str(AttrType.STRING),
                     "is_delete_in_chain": False,
                     "is_mandatory": True,
                     "row_index": "2",
@@ -650,7 +645,7 @@ class ViewTest(AironeViewTest):
 
         entity = Entity.objects.create(name="hoge", note="fuga", created_user=user)
         attr = EntityAttr.objects.create(
-            name="puyo", type=AttrTypeStr, created_user=user, parent_entity=entity
+            name="puyo", type=AttrType.STRING, created_user=user, parent_entity=entity
         )
         entity.attrs.add(attr)
 
@@ -661,7 +656,7 @@ class ViewTest(AironeViewTest):
             "attrs": [
                 {
                     "name": "baz",
-                    "type": str(AttrTypeObj),
+                    "type": str(AttrType.OBJECT),
                     "ref_ids": [entity.id],
                     "is_mandatory": True,
                     "is_delete_in_chain": False,
@@ -677,7 +672,7 @@ class ViewTest(AironeViewTest):
         )
 
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(EntityAttr.objects.get(id=attr.id).type, AttrTypeStr)
+        self.assertEqual(EntityAttr.objects.get(id=attr.id).type, AttrType.STRING)
         self.assertEqual(EntityAttr.objects.get(id=attr.id).referral.count(), 0)
 
     @mock.patch("entity.tasks.edit_entity.delay", mock.Mock(side_effect=tasks.edit_entity))
@@ -686,7 +681,7 @@ class ViewTest(AironeViewTest):
 
         entity = Entity.objects.create(name="hoge", note="fuga", created_user=user)
         attrbase = EntityAttr.objects.create(
-            name="puyo", type=AttrTypeObj, created_user=user, parent_entity=entity
+            name="puyo", type=AttrType.OBJECT, created_user=user, parent_entity=entity
         )
         entity.attrs.add(attrbase)
 
@@ -707,7 +702,7 @@ class ViewTest(AironeViewTest):
             "attrs": [
                 {
                     "name": "baz",
-                    "type": str(AttrTypeStr),
+                    "type": str(AttrType.STRING),
                     "ref_ids": [entity.id],
                     "is_mandatory": True,
                     "is_delete_in_chain": True,
@@ -726,7 +721,7 @@ class ViewTest(AironeViewTest):
 
         # This checks attribute type is not changed to specified Type, but
         # attribute referrals are changed to specified one in the request.
-        self.assertEqual(EntityAttr.objects.get(id=attrbase.id).type, AttrTypeObj)
+        self.assertEqual(EntityAttr.objects.get(id=attrbase.id).type, AttrType.OBJECT)
         self.assertEqual(
             [x.id for x in EntityAttr.objects.get(id=attrbase.id).referral.all()],
             [entity.id],
@@ -735,7 +730,7 @@ class ViewTest(AironeViewTest):
         # checks that the related Attribute is also changed
         self.assertEqual(Attribute.objects.get(id=attr.id).schema, attrbase)
         self.assertEqual(Attribute.objects.get(id=attr.id).schema.name, "baz")
-        self.assertEqual(Attribute.objects.get(id=attr.id).schema.type, AttrTypeObj)
+        self.assertEqual(Attribute.objects.get(id=attr.id).schema.type, AttrType.OBJECT)
         self.assertTrue(Attribute.objects.get(id=attr.id).schema.is_mandatory)
         self.assertTrue(Attribute.objects.get(id=attr.id).schema.is_delete_in_chain)
         self.assertEqual(
@@ -756,7 +751,7 @@ class ViewTest(AironeViewTest):
 
         entity = Entity.objects.create(name="hoge", note="fuga", created_user=user)
         attr = EntityAttr.objects.create(
-            name="puyo", type=AttrTypeStr, created_user=user, parent_entity=entity
+            name="puyo", type=AttrType.STRING, created_user=user, parent_entity=entity
         )
         entity.attrs.add(attr)
 
@@ -767,7 +762,7 @@ class ViewTest(AironeViewTest):
             "attrs": [
                 {
                     "name": "baz",
-                    "type": str(AttrTypeArrObj),
+                    "type": str(AttrType.ARRAY_OBJECT),
                     "ref_ids": [entity.id],
                     "is_mandatory": True,
                     "is_delete_in_chain": False,
@@ -783,7 +778,7 @@ class ViewTest(AironeViewTest):
         )
 
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(EntityAttr.objects.get(id=attr.id).type, AttrTypeStr)
+        self.assertEqual(EntityAttr.objects.get(id=attr.id).type, AttrType.STRING)
         self.assertEqual(EntityAttr.objects.get(id=attr.id).referral.count(), 0)
 
     @mock.patch("entity.tasks.edit_entity.delay", mock.Mock())
@@ -795,7 +790,7 @@ class ViewTest(AironeViewTest):
             name="puyo",
             created_user=user,
             is_mandatory=True,
-            type=AttrTypeStr,
+            type=AttrType.STRING,
             parent_entity=entity,
         )
         entity.attrs.add(attr)
@@ -807,7 +802,7 @@ class ViewTest(AironeViewTest):
             "attrs": [
                 {
                     "name": "foo",
-                    "type": str(AttrTypeStr),
+                    "type": str(AttrType.STRING),
                     "is_delete_in_chain": False,
                     "is_mandatory": False,
                     "id": attr.id,
@@ -815,7 +810,7 @@ class ViewTest(AironeViewTest):
                 },
                 {
                     "name": "bar",
-                    "type": str(AttrTypeStr),
+                    "type": str(AttrType.STRING),
                     "is_delete_in_chain": False,
                     "is_mandatory": True,
                     "row_index": "2",
@@ -849,7 +844,7 @@ class ViewTest(AironeViewTest):
             "attrs": [
                 {
                     "name": "a",
-                    "type": str(AttrTypeObj),
+                    "type": str(AttrType.OBJECT),
                     "is_delete_in_chain": False,
                     "is_mandatory": False,
                     "row_index": "1",
@@ -874,7 +869,7 @@ class ViewTest(AironeViewTest):
             "attrs": [
                 {
                     "name": "a",
-                    "type": str(AttrTypeObj),
+                    "type": str(AttrType.OBJECT),
                     "ref_ids": [entity.id],
                     "is_delete_in_chain": True,
                     "is_mandatory": False,
@@ -882,7 +877,7 @@ class ViewTest(AironeViewTest):
                 },
                 {
                     "name": "b",
-                    "type": str(AttrTypeArrObj),
+                    "type": str(AttrType.ARRAY_OBJECT),
                     "ref_ids": [entity.id],
                     "is_delete_in_chain": True,
                     "is_mandatory": False,
@@ -997,7 +992,7 @@ class ViewTest(AironeViewTest):
             entity1.attrs.add(
                 EntityAttr.objects.create(
                     name=name,
-                    type=AttrTypeStr,
+                    type=AttrType.STRING,
                     created_user=user,
                     parent_entity=entity1,
                 )
@@ -1005,7 +1000,7 @@ class ViewTest(AironeViewTest):
 
         entity2 = Entity.objects.create(name="entity2", created_user=user)
         attr = EntityAttr.objects.create(
-            name="attr", type=AttrTypeObj, created_user=user, parent_entity=entity2
+            name="attr", type=AttrType.OBJECT, created_user=user, parent_entity=entity2
         )
         attr.referral.add(entity1)
         entity2.attrs.add(attr)
@@ -1026,7 +1021,7 @@ class ViewTest(AironeViewTest):
                     lambda x: (
                         x["name"] == "foo"
                         and x["entity"] == "entity1"
-                        and x["type"] == AttrTypeStr
+                        and x["type"] == AttrType.STRING
                         and x["refer"] == ""
                     ),
                     obj["EntityAttr"],
@@ -1039,7 +1034,7 @@ class ViewTest(AironeViewTest):
                     lambda x: (
                         x["name"] == "attr"
                         and x["entity"] == "entity2"
-                        and x["type"] == AttrTypeObj
+                        and x["type"] == AttrType.OBJECT
                         and x["refer"] == "entity1"
                     ),
                     obj["EntityAttr"],
@@ -1067,7 +1062,7 @@ class ViewTest(AironeViewTest):
         entity1 = Entity.objects.create(name="entity1", created_user=user)
         entity1.attrs.add(
             EntityAttr.objects.create(
-                name="attr1", type=AttrTypeStr, created_user=user, parent_entity=entity1
+                name="attr1", type=AttrType.STRING, created_user=user, parent_entity=entity1
             )
         )
 
@@ -1076,7 +1071,7 @@ class ViewTest(AironeViewTest):
         entity2.attrs.add(
             EntityAttr.objects.create(
                 name="attr2",
-                type=AttrTypeStr,
+                type=AttrType.STRING,
                 created_user=user2,
                 parent_entity=entity1,
             )
@@ -1088,7 +1083,7 @@ class ViewTest(AironeViewTest):
             e.attrs.add(
                 EntityAttr.objects.create(
                     name="private_attr",
-                    type=AttrTypeStr,
+                    type=AttrType.STRING,
                     created_user=user2,
                     parent_entity=e,
                     is_public=False,
@@ -1111,7 +1106,7 @@ class ViewTest(AironeViewTest):
         entity1 = Entity.objects.create(name="entity1", created_user=user)
         entity1.attrs.add(
             EntityAttr.objects.create(
-                name="attr1", type=AttrTypeStr, created_user=user, parent_entity=entity1
+                name="attr1", type=AttrType.STRING, created_user=user, parent_entity=entity1
             )
         )
 
@@ -1134,7 +1129,7 @@ class ViewTest(AironeViewTest):
             name="attr-test",
             created_user=user1,
             is_mandatory=True,
-            type=AttrTypeStr,
+            type=AttrType.STRING,
             parent_entity=entity1,
         )
         entity1.attrs.add(attr)
@@ -1214,7 +1209,7 @@ class ViewTest(AironeViewTest):
             name="puyo",
             created_user=user,
             is_mandatory=True,
-            type=AttrTypeStr,
+            type=AttrType.STRING,
             parent_entity=entity,
         )
         entity.attrs.add(attrbase)
@@ -1255,7 +1250,7 @@ class ViewTest(AironeViewTest):
             name="attr-test",
             created_user=user1,
             is_mandatory=True,
-            type=AttrTypeStr,
+            type=AttrType.STRING,
             parent_entity=entity1,
         )
         entity1.attrs.add(attr)
@@ -1306,7 +1301,7 @@ class ViewTest(AironeViewTest):
             "attrs": [
                 {
                     "name": "attr",
-                    "type": str(AttrTypeObj),
+                    "type": str(AttrType.OBJECT),
                     "ref_ids": [r_entity1.id, r_entity2.id],
                     "is_mandatory": False,
                     "is_delete_in_chain": False,
@@ -1333,7 +1328,7 @@ class ViewTest(AironeViewTest):
         entity = Entity.objects.create(name="entity", created_user=user)
         for name in ["foo", "bar"]:
             attr = EntityAttr.objects.create(
-                name=name, type=AttrTypeStr, created_user=user, parent_entity=entity
+                name=name, type=AttrType.STRING, created_user=user, parent_entity=entity
             )
             entity.attrs.add(attr)
 
@@ -1558,7 +1553,7 @@ class ViewTest(AironeViewTest):
             "attrs": [
                 {
                     "name": "foo",
-                    "type": str(AttrTypeStr),
+                    "type": str(AttrType.STRING),
                     "is_delete_in_chain": False,
                     "is_mandatory": True,
                     "row_index": "1",

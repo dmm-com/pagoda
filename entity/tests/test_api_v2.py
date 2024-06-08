@@ -10,10 +10,9 @@ from rest_framework import status
 from rest_framework.exceptions import ValidationError
 
 from acl.models import ACLBase
-from airone.lib import types as atype
 from airone.lib.log import Logger
 from airone.lib.test import AironeViewTest
-from airone.lib.types import AttrType, AttrTypeArrStr, AttrTypeStr, AttrTypeText
+from airone.lib.types import AttrType
 from entity import tasks
 from entity.models import Entity, EntityAttr
 from entry.models import Entry
@@ -3286,21 +3285,21 @@ class ViewTest(AironeViewTest):
             "attrs": [
                 {
                     "name": "foo",
-                    "type": str(AttrTypeStr),
+                    "type": str(AttrType.STRING),
                     "is_delete_in_chain": False,
                     "is_mandatory": True,
                     "row_index": "1",
                 },
                 {
                     "name": "bar",
-                    "type": str(AttrTypeText),
+                    "type": str(AttrType.TEXT),
                     "is_delete_in_chain": False,
                     "is_mandatory": True,
                     "row_index": "2",
                 },
                 {
                     "name": "baz",
-                    "type": str(AttrTypeArrStr),
+                    "type": str(AttrType.ARRAY_STRING),
                     "is_delete_in_chain": False,
                     "is_mandatory": False,
                     "row_index": "3",
@@ -3373,10 +3372,10 @@ class ViewTest(AironeViewTest):
 
         # checks contains required attributes (for EntityAttr)
         self.assertEqual(entity.attrs.count(), 4)
-        self.assertEqual(entity.attrs.get(name="attr-str").type, atype.AttrTypeStr)
-        self.assertEqual(entity.attrs.get(name="attr-obj").type, atype.AttrTypeObj)
-        self.assertEqual(entity.attrs.get(name="attr-arr-str").type, atype.AttrTypeArrStr)
-        self.assertEqual(entity.attrs.get(name="attr-arr-obj").type, atype.AttrTypeArrObj)
+        self.assertEqual(entity.attrs.get(name="attr-str").type, AttrType.STRING)
+        self.assertEqual(entity.attrs.get(name="attr-obj").type, AttrType.OBJECT)
+        self.assertEqual(entity.attrs.get(name="attr-arr-str").type, AttrType.ARRAY_STRING)
+        self.assertEqual(entity.attrs.get(name="attr-arr-obj").type, AttrType.ARRAY_OBJECT)
         self.assertFalse(entity.attrs.get(name="attr-str").is_mandatory)
         self.assertTrue(entity.attrs.get(name="attr-obj").is_mandatory)
         self.assertEqual(entity.attrs.get(name="attr-obj").referral.count(), 1)

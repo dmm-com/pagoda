@@ -10,7 +10,7 @@ from airone.lib.drf import ExceedLimitError
 from airone.lib.elasticsearch import FilterKey
 from airone.lib.log import Logger
 from airone.lib.test import AironeTestCase
-from airone.lib.types import AttrType, AttrTypeValue
+from airone.lib.types import AttrType
 from entity.models import Entity, EntityAttr
 from entry.models import Attribute, AttributeValue, Entry
 from entry.settings import CONFIG
@@ -5095,26 +5095,22 @@ class ModelTest(AironeTestCase):
                 self.assertEqual(default_values[attr.name], AttributeValue.get_default_value(attr))
 
     def test_validate_attr_value(self):
-        for type in ["string", "text"]:
+        for type in [AttrType.STRING, AttrType.TEXT]:
+            self.assertEqual(AttributeValue.validate_attr_value(type, "hoge", False), (True, None))
+            self.assertEqual(AttributeValue.validate_attr_value(type, "", False), (True, None))
             self.assertEqual(
-                AttributeValue.validate_attr_value(AttrTypeValue[type], "hoge", False), (True, None)
-            )
-            self.assertEqual(
-                AttributeValue.validate_attr_value(AttrTypeValue[type], "", False), (True, None)
-            )
-            self.assertEqual(
-                AttributeValue.validate_attr_value(AttrTypeValue[type], ["hoge"], False),
+                AttributeValue.validate_attr_value(type, ["hoge"], False),
                 (False, "value(['hoge']) is not str"),
             )
             self.assertEqual(
                 AttributeValue.validate_attr_value(
-                    AttrTypeValue[type], "a" * AttributeValue.MAXIMUM_VALUE_SIZE, False
+                    type, "a" * AttributeValue.MAXIMUM_VALUE_SIZE, False
                 ),
                 (True, None),
             )
             with self.assertRaises(ExceedLimitError):
                 AttributeValue.validate_attr_value(
-                    AttrTypeValue[type], "a" * (AttributeValue.MAXIMUM_VALUE_SIZE + 1), False
+                    type, "a" * (AttributeValue.MAXIMUM_VALUE_SIZE + 1), False
                 )
 
         self.assertEqual(
@@ -5372,9 +5368,9 @@ class ModelTest(AironeTestCase):
         )
 
     def test_validate_attr_value_is_mandatory(self):
-        for type in ["string", "text"]:
+        for type in [AttrType.STRING, AttrType.TEXT]:
             self.assertEqual(
-                AttributeValue.validate_attr_value(AttrTypeValue[type], "", True),
+                AttributeValue.validate_attr_value(type, "", True),
                 (False, "mandatory attrs value is not specified"),
             )
 

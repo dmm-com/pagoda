@@ -26,11 +26,6 @@ from airone.lib.log import Logger
 from airone.lib.types import (
     AttrDefaultValue,
     AttrType,
-    AttrTypeArrObj,
-    AttrTypeArrStr,
-    AttrTypeObj,
-    AttrTypeStr,
-    AttrTypeText,
 )
 from entity.models import Entity, EntityAttr
 from group.models import Group
@@ -527,160 +522,163 @@ class Attribute(ACLBase):
                 return recv_value
 
         last_value = self.values.last()
-        if self.schema.type == AttrTypeStr or self.schema.type == AttrTypeText:
-            # the case that specified value is empty or invalid
-            if not recv_value:
-                # Value would be changed as empty when there is valid value
-                # in the latest AttributeValue
-                return last_value.value
-            else:
-                return last_value.value != recv_value
-
-        elif self.schema.type == AttrTypeObj:
-            # formalize recv_value type
-            if isinstance(recv_value, Entry):
-                recv_value = recv_value.id
-            elif recv_value and isinstance(recv_value, str):
-                recv_value = int(recv_value)
-
-            if not last_value.referral and not recv_value:
-                return False
-            elif last_value.referral and not recv_value:
-                return True
-            elif not last_value.referral and recv_value:
-                return True
-            elif last_value.referral.id != recv_value:
-                return True
-
-        elif self.schema.type == AttrTypeArrStr:
-            # the case that specified value is empty or invalid
-            if not recv_value:
-                # Value would be changed as empty when there are any values
-                # in the latest AttributeValue
-                return last_value.data_array.count() > 0
-
-            # the case of changing value
-            if last_value.data_array.count() != len(recv_value):
-                return True
-            # the case of appending or deleting
-            for value in recv_value:
-                if not last_value.data_array.filter(value=value).exists():
-                    return True
-
-        elif self.schema.type == AttrTypeArrObj:
-            # the case that specified value is empty or invalid
-            if not recv_value:
-                # Value would be changed as empty when there are any values
-                # in the latest AttributeValue
-                return last_value.data_array.count() > 0
-
-            # the case of changing value
-            if last_value.data_array.count() != len(recv_value):
-                return True
-
-            # the case of appending or deleting
-            for value in recv_value:
-                # formalize value type
-                try:
-                    if isinstance(value, Entry):
-                        entry_id = value.id
-                    elif not value:
-                        entry_id = 0
-                    else:
-                        entry_id = int(value)
-
-                except ValueError:
-                    # When user specify an invalid value (e.g. ""), ValueError will be occcured
-                    entry_id = 0
-
-                if not last_value.data_array.filter(referral__id=entry_id).exists():
-                    return True
-
-        elif self.schema.type == AttrType.BOOLEAN:
-            return last_value.boolean != bool(recv_value)
-
-        elif self.schema.type == AttrType.GROUP:
-            return last_value.value != AttributeValue.uniform_storable(recv_value, Group)
-
-        elif self.schema.type == AttrType.ROLE:
-            return last_value.value != AttributeValue.uniform_storable(recv_value, Role)
-
-        elif self.schema.type == AttrType.DATE:
-            if isinstance(recv_value, str):
-                try:
-                    return last_value.date != datetime.strptime(recv_value, "%Y-%m-%d").date()
-                except ValueError:
-                    return last_value.date is not None
-
-            return last_value.date != recv_value
-
-        elif self.schema.type == AttrType.NAMED_OBJECT:
-            # the case that specified value is empty or invalid
-            if not recv_value:
-                # Value would be changed as empty when there is valid value
-                # in the latest AttributeValue
-                return last_value.value or (last_value.referral and last_value.referral.is_active)
-
-            if last_value.value != recv_value["name"]:
-                return True
-
-            # formalize recv_value['id'] type
-            if isinstance(recv_value["id"], Entry):
-                recv_value["id"] = recv_value["id"].id
-
-            if not last_value.referral and recv_value["id"]:
-                return True
-
-            if (
-                last_value.referral
-                and recv_value["id"]
-                and last_value.referral.id != int(recv_value["id"])
-            ):
-                return True
-
-        elif self.schema.type == AttrType.ARRAY_NAMED_OBJECT:
-
-            def get_entry_id(value):
-                if not value:
-                    return None
-                if isinstance(value, Entry):
-                    return value.id
-                elif isinstance(value, str):
-                    return int(value)
+        match self.schema.type:
+            case AttrType.STRING | AttrType.TEXT:
+                # the case that specified value is empty or invalid
+                if not recv_value:
+                    # Value would be changed as empty when there is valid value
+                    # in the latest AttributeValue
+                    return last_value.value
                 else:
-                    return value
+                    return last_value.value != recv_value
 
-            # the case that specified value is empty or invalid
-            if not recv_value:
-                # Value would be changed as empty
-                # when there are any values in the latest AttributeValue
-                return last_value.data_array.count() > 0
+            case AttrType.OBJECT:
+                # formalize recv_value type
+                if isinstance(recv_value, Entry):
+                    recv_value = recv_value.id
+                elif recv_value and isinstance(recv_value, str):
+                    recv_value = int(recv_value)
 
-            cmp_curr = last_value.data_array.values("value", "referral_id", "boolean")
+                if not last_value.referral and not recv_value:
+                    return False
+                elif last_value.referral and not recv_value:
+                    return True
+                elif not last_value.referral and recv_value:
+                    return True
+                elif last_value.referral.id != recv_value:
+                    return True
 
-            cmp_recv = [
-                {
-                    "value": info.get("name", ""),
-                    "referral_id": get_entry_id(info.get("id")),
-                    "boolean": info.get("boolean", False),
-                }
-                for info in recv_value
-            ]
+            case AttrType.ARRAY_STRING:
+                # the case that specified value is empty or invalid
+                if not recv_value:
+                    # Value would be changed as empty when there are any values
+                    # in the latest AttributeValue
+                    return last_value.data_array.count() > 0
 
-            if sorted(cmp_curr, key=lambda x: x["value"]) != sorted(
-                cmp_recv, key=lambda x: x["value"]
-            ):
-                return True
+                # the case of changing value
+                if last_value.data_array.count() != len(recv_value):
+                    return True
+                # the case of appending or deleting
+                for value in recv_value:
+                    if not last_value.data_array.filter(value=value).exists():
+                        return True
 
-        elif self.schema.type == AttrType.ARRAY_GROUP:
-            is_updated = _is_updated_for_array_value(last_value, Group)
-            if is_updated is not None:
-                return is_updated
+            case AttrType.ARRAY_OBJECT:
+                # the case that specified value is empty or invalid
+                if not recv_value:
+                    # Value would be changed as empty when there are any values
+                    # in the latest AttributeValue
+                    return last_value.data_array.count() > 0
 
-        elif self.schema.type == AttrType.ARRAY_ROLE:
-            is_updated = _is_updated_for_array_value(last_value, Role)
-            if is_updated is not None:
-                return is_updated
+                # the case of changing value
+                if last_value.data_array.count() != len(recv_value):
+                    return True
+
+                # the case of appending or deleting
+                for value in recv_value:
+                    # formalize value type
+                    try:
+                        if isinstance(value, Entry):
+                            entry_id = value.id
+                        elif not value:
+                            entry_id = 0
+                        else:
+                            entry_id = int(value)
+
+                    except ValueError:
+                        # When user specify an invalid value (e.g. ""), ValueError will be occcured
+                        entry_id = 0
+
+                    if not last_value.data_array.filter(referral__id=entry_id).exists():
+                        return True
+
+            case AttrType.BOOLEAN:
+                return last_value.boolean != bool(recv_value)
+
+            case AttrType.GROUP:
+                return last_value.value != AttributeValue.uniform_storable(recv_value, Group)
+
+            case AttrType.ROLE:
+                return last_value.value != AttributeValue.uniform_storable(recv_value, Role)
+
+            case AttrType.DATE:
+                if isinstance(recv_value, str):
+                    try:
+                        return last_value.date != datetime.strptime(recv_value, "%Y-%m-%d").date()
+                    except ValueError:
+                        return last_value.date is not None
+
+                return last_value.date != recv_value
+
+            case AttrType.NAMED_OBJECT:
+                # the case that specified value is empty or invalid
+                if not recv_value:
+                    # Value would be changed as empty when there is valid value
+                    # in the latest AttributeValue
+                    return last_value.value or (
+                        last_value.referral and last_value.referral.is_active
+                    )
+
+                if last_value.value != recv_value["name"]:
+                    return True
+
+                # formalize recv_value['id'] type
+                if isinstance(recv_value["id"], Entry):
+                    recv_value["id"] = recv_value["id"].id
+
+                if not last_value.referral and recv_value["id"]:
+                    return True
+
+                if (
+                    last_value.referral
+                    and recv_value["id"]
+                    and last_value.referral.id != int(recv_value["id"])
+                ):
+                    return True
+
+            case AttrType.ARRAY_NAMED_OBJECT:
+
+                def get_entry_id(value):
+                    if not value:
+                        return None
+                    if isinstance(value, Entry):
+                        return value.id
+                    elif isinstance(value, str):
+                        return int(value)
+                    else:
+                        return value
+
+                # the case that specified value is empty or invalid
+                if not recv_value:
+                    # Value would be changed as empty
+                    # when there are any values in the latest AttributeValue
+                    return last_value.data_array.count() > 0
+
+                cmp_curr = last_value.data_array.values("value", "referral_id", "boolean")
+
+                cmp_recv = [
+                    {
+                        "value": info.get("name", ""),
+                        "referral_id": get_entry_id(info.get("id")),
+                        "boolean": info.get("boolean", False),
+                    }
+                    for info in recv_value
+                ]
+
+                if sorted(cmp_curr, key=lambda x: x["value"]) != sorted(
+                    cmp_recv, key=lambda x: x["value"]
+                ):
+                    return True
+
+            case AttrType.ARRAY_GROUP:
+                is_updated = _is_updated_for_array_value(last_value, Group)
+                if is_updated is not None:
+                    return is_updated
+
+            case AttrType.ARRAY_ROLE:
+                is_updated = _is_updated_for_array_value(last_value, Role)
+                if is_updated is not None:
+                    return is_updated
 
         return False
 
@@ -1507,86 +1505,87 @@ class Entry(ACLBase):
                 ret_attrs.append(attrinfo)
                 continue
 
-            if last_value.data_type == AttrTypeStr or last_value.data_type == AttrTypeText:
-                attrinfo["last_value"] = last_value.value
+            match last_value.data_type:
+                case AttrType.STRING | AttrType.TEXT:
+                    attrinfo["last_value"] = last_value.value
 
-            elif last_value.data_type == AttrTypeObj:
-                if last_value.referral and last_value.referral.is_active:
-                    attrinfo["last_value"] = last_value.referral
-                else:
-                    attrinfo["last_value"] = None
+                case AttrType.OBJECT:
+                    if last_value.referral and last_value.referral.is_active:
+                        attrinfo["last_value"] = last_value.referral
+                    else:
+                        attrinfo["last_value"] = None
 
-            elif last_value.data_type == AttrTypeArrStr:
-                # this dict-key 'last_value' is uniformed with all array types
-                attrinfo["last_value"] = [x.value for x in last_value.data_array.all()]
+                case AttrType.ARRAY_STRING:
+                    # this dict-key 'last_value' is uniformed with all array types
+                    attrinfo["last_value"] = [x.value for x in last_value.data_array.all()]
 
-            elif last_value.data_type == AttrTypeArrObj:
-                attrinfo["last_value"] = [
-                    x.referral
-                    for x in last_value.data_array.all()
-                    if x.referral and x.referral.is_active
-                ]
-
-            elif last_value.data_type == AttrType.BOOLEAN:
-                attrinfo["last_value"] = last_value.boolean
-
-            elif last_value.data_type == AttrType.DATE:
-                attrinfo["last_value"] = last_value.date
-
-            elif last_value.data_type == AttrType.NAMED_OBJECT:
-                attrinfo["last_value"] = {"value": last_value.value}
-
-                if last_value.referral and last_value.referral.is_active:
-                    attrinfo["last_value"]["id"] = last_value.referral.id
-                    attrinfo["last_value"]["name"] = last_value.referral.name
-
-            elif last_value.data_type == AttrType.ARRAY_NAMED_OBJECT:
-                values = []
-                for attrv in last_value.data_array.all():
-                    value = {"value": attrv.value}
-                    if attrv.referral and not attrv.referral.is_active:
-                        # not to show value when target referral Entry is deleted
-                        continue
-
-                    elif attrv.referral and attrv.referral.is_active:
-                        value["id"] = attrv.referral.id
-                        value["name"] = attrv.referral.name
-                    values.append(value)
-
-                attrinfo["last_value"] = sorted(
-                    values,
-                    key=lambda x: x["value"],
-                )
-
-            elif last_value.data_type == AttrType.GROUP and last_value.value:
-                attrinfo["last_value"] = Group.objects.filter(
-                    id=last_value.value, is_active=True
-                ).first()
-
-            elif last_value.data_type == AttrType.ARRAY_GROUP:
-                attrinfo["last_value"] = [
-                    x
-                    for x in [
-                        Group.objects.filter(id=v.value, is_active=True).first()
-                        for v in last_value.data_array.all()
+                case AttrType.ARRAY_OBJECT:
+                    attrinfo["last_value"] = [
+                        x.referral
+                        for x in last_value.data_array.all()
+                        if x.referral and x.referral.is_active
                     ]
-                    if x
-                ]
 
-            elif last_value.data_type == AttrType.ROLE and last_value.value:
-                attrinfo["last_value"] = Role.objects.filter(
-                    id=last_value.value, is_active=True
-                ).first()
+                case AttrType.BOOLEAN:
+                    attrinfo["last_value"] = last_value.boolean
 
-            elif last_value.data_type == AttrType.ARRAY_ROLE:
-                attrinfo["last_value"] = [
-                    x
-                    for x in [
-                        Role.objects.filter(id=v.value, is_active=True).first()
-                        for v in last_value.data_array.all()
+                case AttrType.DATE:
+                    attrinfo["last_value"] = last_value.date
+
+                case AttrType.NAMED_OBJECT:
+                    attrinfo["last_value"] = {"value": last_value.value}
+
+                    if last_value.referral and last_value.referral.is_active:
+                        attrinfo["last_value"]["id"] = last_value.referral.id
+                        attrinfo["last_value"]["name"] = last_value.referral.name
+
+                case AttrType.ARRAY_NAMED_OBJECT:
+                    values = []
+                    for attrv in last_value.data_array.all():
+                        value = {"value": attrv.value}
+                        if attrv.referral and not attrv.referral.is_active:
+                            # not to show value when target referral Entry is deleted
+                            continue
+
+                        elif attrv.referral and attrv.referral.is_active:
+                            value["id"] = attrv.referral.id
+                            value["name"] = attrv.referral.name
+                        values.append(value)
+
+                    attrinfo["last_value"] = sorted(
+                        values,
+                        key=lambda x: x["value"],
+                    )
+
+                case AttrType.GROUP if last_value.value:
+                    attrinfo["last_value"] = Group.objects.filter(
+                        id=last_value.value, is_active=True
+                    ).first()
+
+                case AttrType.ARRAY_GROUP:
+                    attrinfo["last_value"] = [
+                        x
+                        for x in [
+                            Group.objects.filter(id=v.value, is_active=True).first()
+                            for v in last_value.data_array.all()
+                        ]
+                        if x
                     ]
-                    if x
-                ]
+
+                case AttrType.ROLE if last_value.value:
+                    attrinfo["last_value"] = Role.objects.filter(
+                        id=last_value.value, is_active=True
+                    ).first()
+
+                case AttrType.ARRAY_ROLE:
+                    attrinfo["last_value"] = [
+                        x
+                        for x in [
+                            Role.objects.filter(id=v.value, is_active=True).first()
+                            for v in last_value.data_array.all()
+                        ]
+                        if x
+                    ]
 
             ret_attrs.append(attrinfo)
 

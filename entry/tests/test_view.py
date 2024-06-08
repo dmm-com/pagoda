@@ -17,13 +17,6 @@ from airone.lib.log import Logger
 from airone.lib.test import AironeViewTest, DisableStderr
 from airone.lib.types import (
     AttrType,
-    AttrTypeArrNamedObj,
-    AttrTypeArrObj,
-    AttrTypeArrStr,
-    AttrTypeNamedObj,
-    AttrTypeObj,
-    AttrTypeStr,
-    AttrTypeText,
 )
 from entity.models import Entity, EntityAttr
 from entry import tasks
@@ -54,7 +47,7 @@ class ViewTest(AironeViewTest):
         # set EntityAttr for the test Entity object
         self._entity_attr = EntityAttr(
             name="test",
-            type=AttrTypeStr,
+            type=AttrType.STRING,
             is_mandatory=True,
             created_user=user,
             parent_entity=self._entity,
@@ -67,7 +60,7 @@ class ViewTest(AironeViewTest):
     def make_attr(
         self,
         name,
-        attrtype=AttrTypeStr,
+        attrtype=AttrType.STRING,
         created_user=None,
         parent_entity=None,
         parent_entry=None,
@@ -315,7 +308,7 @@ class ViewTest(AironeViewTest):
             "attrs": [
                 {
                     "id": str(self._entity_attr.id),
-                    "type": str(AttrTypeArrStr),
+                    "type": str(AttrType.ARRAY_STRING),
                     "value": [{"data": "hoge", "index": "0"}],
                     "referral_key": [],
                 },
@@ -427,7 +420,7 @@ class ViewTest(AironeViewTest):
         entity = Entity.objects.create(name="hoge", is_public=False, created_user=another_user)
         attr_base = EntityAttr.objects.create(
             name="test",
-            type=AttrTypeStr,
+            type=AttrType.STRING,
             is_mandatory=True,
             parent_entity=entity,
             created_user=another_user,
@@ -465,7 +458,7 @@ class ViewTest(AironeViewTest):
         # add an optional EntityAttr to the test Entity object
         self._entity_attr_optional = EntityAttr(
             name="test-optional",
-            type=AttrTypeStr,
+            type=AttrType.STRING,
             is_mandatory=False,
             created_user=user,
             parent_entity=self._entity,
@@ -478,13 +471,13 @@ class ViewTest(AironeViewTest):
             "attrs": [
                 {
                     "id": str(self._entity_attr.id),
-                    "type": str(AttrTypeStr),
+                    "type": str(AttrType.STRING),
                     "value": [{"data": "hoge", "index": 0}],
                     "referral_key": [],
                 },
                 {
                     "id": str(self._entity_attr_optional.id),
-                    "type": str(AttrTypeStr),
+                    "type": str(AttrType.STRING),
                     "value": [],
                     "referral_key": [],
                 },
@@ -547,7 +540,7 @@ class ViewTest(AironeViewTest):
         attr_base = EntityAttr.objects.create(
             name="attr_with_referral",
             created_user=user,
-            type=AttrTypeObj,
+            type=AttrType.OBJECT,
             parent_entity=self._entity,
             is_mandatory=False,
         )
@@ -561,13 +554,13 @@ class ViewTest(AironeViewTest):
             "attrs": [
                 {
                     "id": str(self._entity_attr.id),
-                    "type": str(AttrTypeObj),
+                    "type": str(AttrType.OBJECT),
                     "value": [{"data": "hoge", "index": 0}],
                     "referral_key": [],
                 },
                 {
                     "id": str(attr_base.id),
-                    "type": str(AttrTypeObj),
+                    "type": str(AttrType.OBJECT),
                     "value": [{"data": str(entry.id), "index": 0}],
                     "referral_key": [],
                 },
@@ -582,7 +575,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(Entry.objects.count(), 2)
         self.assertEqual(Entry.objects.last().name, "new_entry")
-        self.assertEqual(Entry.objects.last().attrs.last().schema.type, AttrTypeObj)
+        self.assertEqual(Entry.objects.last().attrs.last().schema.type, AttrType.OBJECT)
         self.assertEqual(Entry.objects.last().attrs.last().values.count(), 1)
         self.assertEqual(Entry.objects.last().attrs.last().values.last().value, "")
         self.assertEqual(Entry.objects.last().attrs.last().values.last().referral.id, entry.id)
@@ -638,7 +631,7 @@ class ViewTest(AironeViewTest):
         attr_base = EntityAttr.objects.create(
             name="ref_attr",
             created_user=user,
-            type=AttrTypeObj,
+            type=AttrType.OBJECT,
             parent_entity=self._entity,
             is_mandatory=False,
         )
@@ -650,13 +643,13 @@ class ViewTest(AironeViewTest):
             "attrs": [
                 {
                     "id": str(self._entity_attr.id),
-                    "type": str(AttrTypeObj),
+                    "type": str(AttrType.OBJECT),
                     "value": [{"data": "hoge", "index": 0}],
                     "referral_key": [],
                 },
                 {
                     "id": str(attr_base.id),
-                    "type": str(AttrTypeObj),
+                    "type": str(AttrType.OBJECT),
                     "value": [{"data": "0", "index": 0}],
                     "referral_key": [],
                 },
@@ -844,14 +837,14 @@ class ViewTest(AironeViewTest):
                 {
                     "entity_attr_id": "",
                     "id": str(Attribute.objects.get(name="foo").id),
-                    "type": str(AttrTypeArrStr),
+                    "type": str(AttrType.ARRAY_STRING),
                     "value": [{"data": "hoge", "index": 0}],
                     "referral_key": [],
                 },
                 {
                     "entity_attr_id": "",
                     "id": str(Attribute.objects.get(name="bar").id),
-                    "type": str(AttrTypeArrStr),
+                    "type": str(AttrType.ARRAY_STRING),
                     "value": [{"data": "fuga", "index": 0}],
                     "referral_key": [],
                 },
@@ -970,21 +963,21 @@ class ViewTest(AironeViewTest):
                 {
                     "entity_attr_id": "",
                     "id": str(Attribute.objects.get(name="foo").id),
-                    "type": str(AttrTypeArrStr),
+                    "type": str(AttrType.ARRAY_STRING),
                     "value": [{"data": "", "index": 0}],
                     "referral_key": [],
                 },
                 {
                     "entity_attr_id": "",
                     "id": str(Attribute.objects.get(name="bar").id),
-                    "type": str(AttrTypeArrStr),
+                    "type": str(AttrType.ARRAY_STRING),
                     "value": [{"data": "fuga", "index": 0}],
                     "referral_key": [],
                 },
                 {
                     "entity_attr_id": "",
                     "id": str(Attribute.objects.get(name="baz").id),
-                    "type": str(AttrTypeArrStr),
+                    "type": str(AttrType.ARRAY_STRING),
                     "value": [{"data": "0", "index": 0}],
                     "referral_key": [],
                 },
@@ -1014,7 +1007,7 @@ class ViewTest(AironeViewTest):
             EntityAttr.objects.create(
                 **{
                     "name": "attr",
-                    "type": AttrTypeArrStr,
+                    "type": AttrType.ARRAY_STRING,
                     "created_user": user,
                     "parent_entity": entity,
                 }
@@ -1130,7 +1123,7 @@ class ViewTest(AironeViewTest):
                 {
                     "entity_attr_id": "",
                     "id": str(attr.id),
-                    "type": str(AttrTypeArrObj),
+                    "type": str(AttrType.ARRAY_OBJECT),
                     "value": [
                         {"data": ref_entries[1].id, "index": 0},
                         {"data": ref_entries[2].id, "index": 1},
@@ -1233,7 +1226,7 @@ class ViewTest(AironeViewTest):
         attr_base = EntityAttr.objects.create(
             name="attr_with_referral",
             created_user=user,
-            type=AttrTypeObj,
+            type=AttrType.OBJECT,
             parent_entity=self._entity,
             is_mandatory=False,
         )
@@ -1256,7 +1249,7 @@ class ViewTest(AironeViewTest):
                 {
                     "entity_attr_id": "",
                     "id": str(attr.id),
-                    "type": str(AttrTypeObj),
+                    "type": str(AttrType.OBJECT),
                     "value": [{"data": str(new_entry.id), "index": 0}],
                     "referral_key": [],
                 }
@@ -1282,7 +1275,7 @@ class ViewTest(AironeViewTest):
         attr_base = EntityAttr.objects.create(
             name="attr_with_referral",
             created_user=user,
-            type=AttrTypeObj,
+            type=AttrType.OBJECT,
             parent_entity=self._entity,
             is_mandatory=False,
         )
@@ -1303,7 +1296,7 @@ class ViewTest(AironeViewTest):
                 {
                     "entity_attr_id": "",
                     "id": str(attr.id),
-                    "type": str(AttrTypeObj),
+                    "type": str(AttrType.OBJECT),
                     "value": [{"data": "0", "index": 0}],
                     "referral_key": [],
                 },
@@ -1326,7 +1319,7 @@ class ViewTest(AironeViewTest):
         entry = Entry.objects.create(name="entry", schema=self._entity, created_user=user)
 
         attr = self.make_attr(
-            name="attr", attrtype=AttrTypeObj, created_user=user, parent_entry=entry
+            name="attr", attrtype=AttrType.OBJECT, created_user=user, parent_entry=entry
         )
         self._entity.attrs.add(attr.schema)
         entry.attrs.add(attr)
@@ -1343,7 +1336,7 @@ class ViewTest(AironeViewTest):
                 {
                     "entity_attr_id": "",
                     "id": str(attr.id),
-                    "type": str(AttrTypeObj),
+                    "type": str(AttrType.OBJECT),
                     "value": [],
                     "referral_key": [],
                 },
@@ -1481,28 +1474,28 @@ class ViewTest(AironeViewTest):
         dummy_entry.save()
 
         CASES = [
-            [AttrTypeStr, 'raison,de"tre', '"raison,de""tre"'],
-            [AttrTypeObj, dummy_entry, '"D,U""MM""Y"'],
-            [AttrTypeText, "1st line\r\n2nd line", '"1st line' + "\r\n" + '2nd line"'],
-            [AttrTypeNamedObj, {"key": dummy_entry}, '"{\'key\': \'D,U""MM""Y\'}"'],
-            [AttrTypeArrStr, ["one", "two", "three"], "\"['one', 'two', 'three']\""],
-            [AttrTypeArrObj, [dummy_entry], '"[\'D,U""MM""Y\']"'],
+            [AttrType.STRING, 'raison,de"tre', '"raison,de""tre"'],
+            [AttrType.OBJECT, dummy_entry, '"D,U""MM""Y"'],
+            [AttrType.TEXT, "1st line\r\n2nd line", '"1st line' + "\r\n" + '2nd line"'],
+            [AttrType.NAMED_OBJECT, {"key": dummy_entry}, '"{\'key\': \'D,U""MM""Y\'}"'],
+            [AttrType.ARRAY_STRING, ["one", "two", "three"], "\"['one', 'two', 'three']\""],
+            [AttrType.ARRAY_OBJECT, [dummy_entry], '"[\'D,U""MM""Y\']"'],
             [
-                AttrTypeArrNamedObj,
+                AttrType.ARRAY_NAMED_OBJECT,
                 [{"key1": dummy_entry}],
                 '"[{\'key1\': \'D,U""MM""Y\'}]"',
             ],
         ]
 
-        for case in CASES:
-            type_name = case[0].__name__  # AttrTypeStr -> 'AttrTypeStr'
+        for type, value, expected in CASES:
+            type_name = type.name
             attr_name = type_name + ',"ATTR"'
 
             test_entity = Entity.objects.create(name="TestEntity_" + type_name, created_user=user)
 
             test_entity_attr = EntityAttr.objects.create(
                 name=attr_name,
-                type=case[0],
+                type=type,
                 created_user=user,
                 parent_entity=test_entity,
             )
@@ -1528,34 +1521,38 @@ class ViewTest(AironeViewTest):
 
             test_val = None
 
-            if case[0].TYPE & AttrType._ARRAY == 0:
-                if case[0] == AttrTypeStr:
-                    test_val = AttributeValue.create(user=user, attr=test_attr, value=case[1])
-                elif case[0] == AttrTypeObj:
-                    test_val = AttributeValue.create(user=user, attr=test_attr, referral=case[1])
-                elif case[0] == AttrTypeText:
-                    test_val = AttributeValue.create(user=user, attr=test_attr, value=case[1])
-                elif case[0] == AttrTypeNamedObj:
-                    [(k, v)] = case[1].items()
-                    test_val = AttributeValue.create(user=user, attr=test_attr, value=k, referral=v)
+            if type & AttrType._ARRAY == 0:
+                match type:
+                    case AttrType.STRING:
+                        test_val = AttributeValue.create(user=user, attr=test_attr, value=value)
+                    case AttrType.OBJECT:
+                        test_val = AttributeValue.create(user=user, attr=test_attr, referral=value)
+                    case AttrType.TEXT:
+                        test_val = AttributeValue.create(user=user, attr=test_attr, value=value)
+                    case AttrType.NAMED_OBJECT:
+                        [(k, v)] = value.items()
+                        test_val = AttributeValue.create(
+                            user=user, attr=test_attr, value=k, referral=v
+                        )
             else:
                 test_val = AttributeValue.create(user=user, attr=test_attr)
                 test_val.set_status(AttributeValue.STATUS_DATA_ARRAY_PARENT)
-                for child in case[1]:
+                for child in value:
                     test_val_child = None
-                    if case[0] == AttrTypeArrStr:
-                        test_val_child = AttributeValue.create(
-                            user=user, attr=test_attr, value=child
-                        )
-                    elif case[0] == AttrTypeArrObj:
-                        test_val_child = AttributeValue.create(
-                            user=user, attr=test_attr, referral=child
-                        )
-                    elif case[0] == AttrTypeArrNamedObj:
-                        [(k, v)] = child.items()
-                        test_val_child = AttributeValue.create(
-                            user=user, attr=test_attr, value=k, referral=v
-                        )
+                    match type:
+                        case AttrType.ARRAY_STRING:
+                            test_val_child = AttributeValue.create(
+                                user=user, attr=test_attr, value=child
+                            )
+                        case AttrType.ARRAY_OBJECT:
+                            test_val_child = AttributeValue.create(
+                                user=user, attr=test_attr, referral=child
+                            )
+                        case AttrType.ARRAY_NAMED_OBJECT:
+                            [(k, v)] = child.items()
+                            test_val_child = AttributeValue.create(
+                                user=user, attr=test_attr, value=k, referral=v
+                            )
                     test_val.data_array.add(test_val_child)
 
             test_val.save()
@@ -1574,7 +1571,7 @@ class ViewTest(AironeViewTest):
             self.assertEqual(header, 'Name,"%s,""ATTR"""' % type_name)
 
             data = content.replace(header, "", 1).strip()
-            self.assertEqual(data, '"%s,""ENTRY""",' % type_name + case[2])
+            self.assertEqual(data, '"%s,""ENTRY""",' % type_name + expected)
 
     @patch("entry.tasks.delete_entry.delay", Mock(side_effect=tasks.delete_entry))
     @patch(
@@ -1710,7 +1707,7 @@ class ViewTest(AironeViewTest):
 
         attr_base = EntityAttr.objects.create(
             name="attr-test",
-            type=AttrTypeArrStr,
+            type=AttrType.ARRAY_STRING,
             is_mandatory=False,
             created_user=user,
             parent_entity=self._entity,
@@ -1722,7 +1719,7 @@ class ViewTest(AironeViewTest):
             "attrs": [
                 {
                     "id": str(attr_base.id),
-                    "type": str(AttrTypeArrStr),
+                    "type": str(AttrType.ARRAY_STRING),
                     "value": [
                         {"data": "hoge", "index": 0},
                         {"data": "fuga", "index": 1},
@@ -1775,7 +1772,7 @@ class ViewTest(AironeViewTest):
         attr_base = EntityAttr.objects.create(
             name="attr-ref-test",
             created_user=user,
-            type=AttrTypeArrObj,
+            type=AttrType.ARRAY_OBJECT,
             parent_entity=self._entity,
             is_mandatory=False,
         )
@@ -1789,7 +1786,7 @@ class ViewTest(AironeViewTest):
             "attrs": [
                 {
                     "id": str(attr_base.id),
-                    "type": str(AttrTypeArrObj),
+                    "type": str(AttrType.ARRAY_OBJECT),
                     "value": [
                         {"data": str(referral.id), "index": 0},
                         {"data": str(referral.id), "index": 1},
@@ -1832,7 +1829,7 @@ class ViewTest(AironeViewTest):
 
         textattr = EntityAttr.objects.create(
             name="attr-text",
-            type=AttrTypeText,
+            type=AttrType.TEXT,
             created_user=user,
             parent_entity=self._entity,
         )
@@ -1843,13 +1840,13 @@ class ViewTest(AironeViewTest):
             "attrs": [
                 {
                     "id": str(self._entity_attr.id),
-                    "type": str(AttrTypeText),
+                    "type": str(AttrType.TEXT),
                     "value": [{"data": "hoge", "index": 0}],
                     "referral_key": [],
                 },
                 {
                     "id": str(textattr.id),
-                    "type": str(AttrTypeText),
+                    "type": str(AttrType.TEXT),
                     "value": [{"data": "fuga", "index": 0}],
                     "referral_key": [],
                 },
@@ -2273,7 +2270,7 @@ class ViewTest(AironeViewTest):
             "attrs": [
                 {
                     "id": str(self._entity_attr.id),
-                    "type": str(AttrTypeStr),
+                    "type": str(AttrType.STRING),
                     "value": [{"data": "hoge", "index": 0}],
                     "referral_key": [],
                 },
@@ -2330,7 +2327,7 @@ class ViewTest(AironeViewTest):
         # update ACL of EntityAttr
         attr = EntityAttr.objects.create(
             name="newattr",
-            type=AttrTypeStr,
+            type=AttrType.STRING,
             created_user=user,
             parent_entity=self._entity,
         )
@@ -2348,13 +2345,13 @@ class ViewTest(AironeViewTest):
             "attrs": [
                 {
                     "id": str(self._entity_attr.id),
-                    "type": str(AttrTypeStr),
+                    "type": str(AttrType.STRING),
                     "value": [{"data": "hoge", "index": 0}],
                     "referral_key": [],
                 },
                 {
                     "id": str(attr.id),
-                    "type": str(AttrTypeStr),
+                    "type": str(AttrType.STRING),
                     "value": [{"data": "fuga", "index": 0}],
                     "referral_key": [],
                 },
@@ -2390,7 +2387,7 @@ class ViewTest(AironeViewTest):
         for index, permission in enumerate([ACLType.Readable, ACLType.Writable]):
             attr = EntityAttr.objects.create(
                 name="attr%d" % index,
-                type=AttrTypeStr,
+                type=AttrType.STRING,
                 created_user=admin,
                 parent_entity=entity,
                 is_public=False,
@@ -2405,13 +2402,13 @@ class ViewTest(AironeViewTest):
             "attrs": [
                 {
                     "id": str(attrs[0].id),
-                    "type": str(AttrTypeStr),
+                    "type": str(AttrType.STRING),
                     "value": [{"data": "hoge", "index": 0}],
                     "referral_key": [],
                 },
                 {
                     "id": str(attrs[1].id),
-                    "type": str(AttrTypeStr),
+                    "type": str(AttrType.STRING),
                     "value": [{"data": "fuga", "index": 1}],
                     "referral_key": [],
                 },
@@ -2538,7 +2535,7 @@ class ViewTest(AironeViewTest):
         entity = Entity.objects.create(name="Entity", is_public=False, created_user=user)
         attr_base = EntityAttr.objects.create(
             name="attr",
-            type=AttrTypeStr,
+            type=AttrType.STRING,
             is_mandatory=True,
             parent_entity=entity,
             created_user=user,
@@ -2550,7 +2547,7 @@ class ViewTest(AironeViewTest):
             "attrs": [
                 {
                     "id": str(attr_base.id),
-                    "type": str(AttrTypeStr),
+                    "type": str(AttrType.STRING),
                     "value": [],
                     "referral_key": [],
                 },
@@ -2573,7 +2570,7 @@ class ViewTest(AironeViewTest):
         entity = Entity.objects.create(name="Entity", is_public=False, created_user=user)
         attr_base = EntityAttr.objects.create(
             name="attr",
-            type=AttrTypeStr,
+            type=AttrType.STRING,
             is_mandatory=True,
             parent_entity=entity,
             created_user=user,
@@ -2589,7 +2586,7 @@ class ViewTest(AironeViewTest):
                 {
                     "entity_attr_id": "",
                     "id": str(entry.attrs.get(name="attr").id),
-                    "type": str(AttrTypeStr),
+                    "type": str(AttrType.STRING),
                     "value": [],
                     "referral_key": [],
                 },
@@ -5119,7 +5116,7 @@ class ViewTest(AironeViewTest):
             "attrs": [
                 {
                     "id": str(self._entity_attr.id),
-                    "type": str(AttrTypeArrStr),
+                    "type": str(AttrType.ARRAY_STRING),
                     "value": [{"data": "hoge", "index": "0"}],
                     "referral_key": [],
                 },
@@ -5154,7 +5151,7 @@ class ViewTest(AironeViewTest):
             "attrs": [
                 {
                     "id": str(self._entity_attr.id),
-                    "type": str(AttrTypeArrStr),
+                    "type": str(AttrType.ARRAY_STRING),
                     "value": [{"data": "hoge", "index": "0"}],
                     "referral_key": [],
                 },
