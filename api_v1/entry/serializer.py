@@ -17,7 +17,7 @@ class ReferSerializer(serializers.Serializer):
     attrs = serializers.ListField(required=False)
     refers = serializers.ListField(required=False)
 
-    def validate_entity(self, entity_name):
+    def validate_entity(self, entity_name: str) -> str:
         if not Entity.objects.filter(name=entity_name, is_active=True).exists():
             raise ValidationError("There is no specified Entity (%s)" % entity_name)
 
@@ -36,7 +36,7 @@ class AttrSerializer(serializers.Serializer):
     attrs = serializers.ListField(required=False)
     refers = serializers.ListField(required=False)
 
-    def validate_name(self, name):
+    def validate_name(self, name: str) -> str:
         if not EntityAttr.objects.filter(name=name, is_active=True).exists():
             raise ValidationError("There is no specified Attribute (%s)" % name)
 
@@ -55,7 +55,7 @@ class EntrySearchChainSerializer(serializers.Serializer):
     def validate_is_any(self, value):
         return value
 
-    def validate_entities(self, entities):
+    def validate_entities(self, entities: list[int | str]) -> list[int]:
         ret_data = []
         for id_or_name in entities:
             if isinstance(id_or_name, int):
@@ -79,7 +79,7 @@ class EntrySearchChainSerializer(serializers.Serializer):
         # adds "entities" parameter for each Attribute conditions. That is an internal
         # one to indicate Entity for searching Entries at Attribute conditions using
         # Entry.search_entries() method.
-        def _validate_attribute(attrname, entities):
+        def _validate_attribute(attrname: str, entities: list[Entity]):
             # This validates whethere it is possible that Entity has specified Attribute
             if not any(
                 [
@@ -89,7 +89,7 @@ class EntrySearchChainSerializer(serializers.Serializer):
             ):
                 raise ValidationError("Invalid Attribute name (%s) was specified" % str(attrname))
 
-        def _complement_entities(condition, entities):
+        def _complement_entities(condition: dict, entities: list[Entity]):
             if "name" in condition:
                 # This Attributes must be existed because existance check has already been done
                 entity_ids = []
@@ -112,7 +112,9 @@ class EntrySearchChainSerializer(serializers.Serializer):
             else:
                 return AttrSerializer
 
-        def _may_validate_and_complement_condition(condition, entities, serializer_class):
+        def _may_validate_and_complement_condition(
+            condition, entities: list[Entity] | None, serializer_class
+        ):
             serializer = serializer_class(data=condition)
             if not serializer.is_valid():
                 raise ValidationError("Invalid condition(%s) was specified" % str(condition))
@@ -165,7 +167,7 @@ class EntrySearchChainSerializer(serializers.Serializer):
 
         return data
 
-    def merge_search_result(self, stored_list, result_data, is_any):
+    def merge_search_result(self, stored_list, result_data, is_any: bool):
         def _deduplication(item_list):
             """
             This removes duplication items, that have same Entry-ID with other ones,from item_list

@@ -330,7 +330,7 @@ def make_query(
 
 
 def make_query_for_simple(
-    hint_string: str, hint_entity_name: str, exclude_entity_names: list[str], offset: int
+    hint_string: str, hint_entity_name: str | None, exclude_entity_names: list[str], offset: int
 ) -> dict[str, str]:
     """Create a search query for Elasticsearch.
 
