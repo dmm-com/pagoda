@@ -257,12 +257,12 @@ class ViewTest(AironeViewTest):
         # initialize instances to be used in this test case
         groups = [Group.objects.create(name=x) for x in ["g-foo", "g-bar", "g-baz"]]
         entity = Entity.objects.create(name="Entity", created_user=user)
-        for name, type_index in [("grp", "group"), ("arr_group", "array_group")]:
+        for name, type in [("grp", AttrType.GROUP), ("arr_group", AttrType.ARRAY_GROUP)]:
             entity.attrs.add(
                 EntityAttr.objects.create(
                     **{
                         "name": name,
-                        "type": AttrTypeValue[type_index],
+                        "type": type,
                         "created_user": user,
                         "parent_entity": entity,
                     }

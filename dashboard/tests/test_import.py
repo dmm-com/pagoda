@@ -5,9 +5,9 @@ import mock
 from django.urls import reverse
 
 from acl.models import ACLBase
-from airone.lib import types as atype
 from airone.lib.log import Logger
 from airone.lib.test import AironeViewTest
+from airone.lib.types import AttrType
 from entity.models import Entity, EntityAttr
 from entry.models import Attribute, AttributeValue, Entry
 from user.models import User
@@ -44,10 +44,10 @@ class ImportTest(AironeViewTest):
 
         # checks contains required attributes (for EntityAttr)
         self.assertEqual(entity.attrs.count(), 4)
-        self.assertEqual(entity.attrs.get(name="attr-str").type, atype.AttrTypeStr)
-        self.assertEqual(entity.attrs.get(name="attr-obj").type, atype.AttrTypeObj)
-        self.assertEqual(entity.attrs.get(name="attr-arr-str").type, atype.AttrTypeArrStr)
-        self.assertEqual(entity.attrs.get(name="attr-arr-obj").type, atype.AttrTypeArrObj)
+        self.assertEqual(entity.attrs.get(name="attr-str").type, AttrType.STRING)
+        self.assertEqual(entity.attrs.get(name="attr-obj").type, AttrType.OBJECT)
+        self.assertEqual(entity.attrs.get(name="attr-arr-str").type, AttrType.ARRAY_STRING)
+        self.assertEqual(entity.attrs.get(name="attr-arr-obj").type, AttrType.ARRAY_OBJECT)
         self.assertFalse(entity.attrs.get(name="attr-str").is_mandatory)
         self.assertTrue(entity.attrs.get(name="attr-obj").is_mandatory)
         self.assertEqual(entity.attrs.get(name="attr-obj").referral.count(), 1)
@@ -141,10 +141,10 @@ class ImportTest(AironeViewTest):
         # checks that after_save_instance processing was normally worked
         entry = Entry.objects.get(name="srv001")
         self.assertEqual(entry.attrs.count(), 4)
-        self.assertEqual(entry.attrs.get(name="attr-str").schema.type, atype.AttrTypeStr)
-        self.assertEqual(entry.attrs.get(name="attr-obj").schema.type, atype.AttrTypeObj)
-        self.assertEqual(entry.attrs.get(name="attr-arr-str").schema.type, atype.AttrTypeArrStr)
-        self.assertEqual(entry.attrs.get(name="attr-arr-obj").schema.type, atype.AttrTypeArrObj)
+        self.assertEqual(entry.attrs.get(name="attr-str").schema.type, AttrType.STRING)
+        self.assertEqual(entry.attrs.get(name="attr-obj").schema.type, AttrType.OBJECT)
+        self.assertEqual(entry.attrs.get(name="attr-arr-str").schema.type, AttrType.ARRAY_STRING)
+        self.assertEqual(entry.attrs.get(name="attr-arr-obj").schema.type, AttrType.ARRAY_OBJECT)
 
         # checks that attr has corrected referral
         self.assertEqual(Attribute.objects.get(name="attr-str").schema.referral.count(), 0)
