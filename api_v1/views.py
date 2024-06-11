@@ -5,7 +5,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-import custom_view
+from airone.lib import custom_view
 from airone.lib.acl import ACLType
 from entity.models import Entity
 from entry.models import Entry

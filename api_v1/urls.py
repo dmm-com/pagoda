@@ -26,6 +26,6 @@ except ImportError:
 try:
     from custom_view.api_v1 import views as custom_views
 
-    urlpatterns.append(re_path(r"^entry$", custom_views.CustomEntryAPI.as_view()))
-except ImportError:
+    urlpatterns.append(re_path(r"^entry$", custom_views.CustomEntryAPI.as_view()))  # type: ignore
+except (ImportError, AttributeError):
     urlpatterns.append(re_path(r"^entry$", views.EntryAPI.as_view()))

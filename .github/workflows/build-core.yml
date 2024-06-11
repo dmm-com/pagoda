@@ -31,6 +31,7 @@ jobs:
           poetry install --no-ansi
       - name: staticchecks
         run: |
+          mv custom_view_sample custom_view
           poetry run mypy ./
           poetry run ruff check --output-format=github .
           poetry run ruff format --check .
@@ -44,6 +45,7 @@ jobs:
       - uses: actions/checkout@v3
       - id: modules
         run: |
+          mv custom_view_sample custom_view
           modules=$(ls -d */tests/ | sed 's/\/tests\///' | jq -Rsc 'split("\n")[:-1]')
           echo "targets=$modules" >> $GITHUB_OUTPUT
 
@@ -106,6 +108,7 @@ jobs:
           poetry install --no-ansi
       - name: test
         run: |
+          mv custom_view_sample custom_view
           poetry run python manage.py makemigrations
           poetry run python manage.py migrate
           poetry run python manage.py collectstatic

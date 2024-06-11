@@ -8,9 +8,8 @@ from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from typing_extensions import TypedDict
 
-import custom_view
 from acl.models import ACLBase
-from airone.lib import drf
+from airone.lib import custom_view, drf
 from airone.lib.acl import ACLType
 from airone.lib.drf import (
     DuplicatedObjectExistsError,

@@ -3716,8 +3716,8 @@ class ViewTest(AironeViewTest):
         fp.close()
         self.assertEqual(resp.status_code, 303)
 
-    @patch("custom_view.is_custom", Mock(return_value=True))
-    @patch("custom_view.call_custom")
+    @patch("airone.lib.custom_view.is_custom", Mock(return_value=True))
+    @patch("airone.lib.custom_view.call_custom")
     def test_import_entry_with_custom_view(self, mock_call_custom):
         user: User = self.guest_login()
         entity: Entity = Entity.objects.create(name="Entity", created_user=user)
@@ -3749,8 +3749,8 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 303)
         self.assertTrue(mock_call_custom.called)
 
-    @patch("custom_view.is_custom", Mock(return_value=True))
-    @patch("custom_view.call_custom", Mock(return_value=(None, "error message")))
+    @patch("airone.lib.custom_view.is_custom", Mock(return_value=True))
+    @patch("airone.lib.custom_view.call_custom", Mock(return_value=(None, "error message")))
     def test_import_entry_with_custom_view_error(self):
         user: User = self.guest_login()
         entity: Entity = Entity.objects.create(name="Entity", created_user=user)
@@ -5034,8 +5034,8 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(resp.content, b"Specified AttributeValue-id is invalid")
 
-    @patch("custom_view.is_custom", Mock(return_value=True))
-    @patch("custom_view.call_custom", Mock(return_value=HttpResponse("success")))
+    @patch("airone.lib.custom_view.is_custom", Mock(return_value=True))
+    @patch("airone.lib.custom_view.call_custom", Mock(return_value=HttpResponse("success")))
     def test_revert_attrv_with_custom_view(self):
         user = self.guest_login()
 
@@ -5073,8 +5073,8 @@ class ViewTest(AironeViewTest):
         self.assertEqual(attr.get_latest_value().value, attrv1.value)
         self.assertNotEqual(attr.get_latest_value().id, attrv1.id)
 
-    @patch("custom_view.is_custom", Mock(return_value=True))
-    @patch("custom_view.call_custom", Mock(return_value=HttpResponse("success")))
+    @patch("airone.lib.custom_view.is_custom", Mock(return_value=True))
+    @patch("airone.lib.custom_view.call_custom", Mock(return_value=HttpResponse("success")))
     def test_revert_attrv_with_custom_view_by_latest_value(self):
         user = self.guest_login()
 
@@ -5109,8 +5109,10 @@ class ViewTest(AironeViewTest):
         self.assertEqual(attr.values.count(), number_of_attrvalue)
         self.assertEqual(attr.get_latest_value(), attrv)
 
-    @patch("custom_view.is_custom", Mock(return_value=True))
-    @patch("custom_view.call_custom", Mock(return_value=HttpResponse("test", status=400)))
+    @patch("airone.lib.custom_view.is_custom", Mock(return_value=True))
+    @patch(
+        "airone.lib.custom_view.call_custom", Mock(return_value=HttpResponse("test", status=400))
+    )
     def test_call_custom_do_create_entry_return_int(self):
         self.admin_login()
 
@@ -5134,9 +5136,9 @@ class ViewTest(AironeViewTest):
 
         self.assertEqual(resp.status_code, 400)
 
-    @patch("custom_view.is_custom", Mock(return_value=True))
+    @patch("airone.lib.custom_view.is_custom", Mock(return_value=True))
     @patch(
-        "custom_view.call_custom",
+        "airone.lib.custom_view.call_custom",
         Mock(
             return_value=JsonResponse(
                 {

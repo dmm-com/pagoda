@@ -1,7 +1,7 @@
 import json
 
-import custom_view
 from airone.celery import app
+from airone.lib import custom_view
 from airone.lib.job import may_schedule_until_job_is_ready
 from airone.lib.types import AttrType
 from entity.api_v2.serializers import EntityCreateSerializer, EntityUpdateSerializer
