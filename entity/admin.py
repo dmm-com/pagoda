@@ -1,7 +1,7 @@
 from django.contrib import admin
 from import_export import fields, widgets
 
-import custom_view
+from airone.lib import custom_view
 from airone.lib.resources import AironeModelResource
 from user.models import User
 

@@ -10,9 +10,8 @@ from configurations import Configuration
 from ddtrace import config, patch_all, tracer
 from django_replicated import settings
 
-BASE_DIR = environ.Path(__file__) - 2
 env = environ.Env()
-env.read_env(os.path.join(BASE_DIR, ".env"))
+env.read_env(os.path.join(environ.Path(__file__) - 2, ".env"))
 
 
 class Common(Configuration):
@@ -59,8 +58,6 @@ class Common(Configuration):
         "import_export",
         "rest_framework",
         "rest_framework.authtoken",
-        "custom_view.background",
-        "custom_view",
         "drf_spectacular",
         "django_filters",
         "social_django",
@@ -68,6 +65,9 @@ class Common(Configuration):
         "storages",
         "trigger",
     ]
+
+    if os.path.exists(BASE_DIR + "/custom_view"):
+        INSTALLED_APPS.append("custom_view")
 
     MIDDLEWARE = [
         "django.middleware.security.SecurityMiddleware",
@@ -97,9 +97,7 @@ class Common(Configuration):
     TEMPLATES = [
         {
             "BACKEND": "django.template.backends.django.DjangoTemplates",
-            "DIRS": [
-                PROJECT_PATH + "/../templates/",
-            ],
+            "DIRS": [PROJECT_PATH + "/../templates/", PROJECT_PATH + "/../custom_view/templates/"],
             "APP_DIRS": True,
             "OPTIONS": {
                 "context_processors": [
@@ -194,7 +192,10 @@ class Common(Configuration):
     # http://whitenoise.evans.io/en/stable/django.html
 
     STATIC_URL = "/static/"
-    STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
+    STATICFILES_DIRS = [
+        os.path.join(BASE_DIR, "static"),
+        os.path.join(BASE_DIR, "custom_view/static"),
+    ]
     STATIC_ROOT = os.path.join(BASE_DIR, "static_root")
     MEDIA_ROOT = env.str("AIRONE_FILE_STORE_PATH", "/tmp/airone_app")
 
