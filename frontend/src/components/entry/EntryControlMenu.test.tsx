@@ -26,3 +26,23 @@ test("should render a component with essential props", function () {
     )
   ).not.toThrow();
 });
+
+test("should render a component with optional props", function () {
+  const anchorElem = document.createElement("button");
+  const handleClose = () => undefined;
+
+  expect(() =>
+    render(
+      <EntryControlMenu
+        entityId={0}
+        entryId={0}
+        anchorElem={anchorElem}
+        handleClose={handleClose}
+        disableChangeHistory={true}
+      />,
+      {
+        wrapper: TestWrapper,
+      }
+    )
+  ).not.toThrow();
+});

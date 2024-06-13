@@ -30,6 +30,7 @@ interface EntryControlProps {
   anchorElem: HTMLButtonElement | null;
   handleClose: (entryId: number) => void;
   setToggle?: () => void;
+  disableChangeHistory?: boolean;
 }
 
 export const EntryControlMenu: FC<EntryControlProps> = ({
@@ -38,6 +39,7 @@ export const EntryControlMenu: FC<EntryControlProps> = ({
   anchorElem,
   handleClose,
   setToggle,
+  disableChangeHistory = false,
 }) => {
   const { enqueueSnackbar } = useSnackbar();
   const history = useHistory();
@@ -86,7 +88,7 @@ export const EntryControlMenu: FC<EntryControlProps> = ({
         <MenuItem component={Link} to={aclPath(entryId)}>
           <Typography>ACL 設定</Typography>
         </MenuItem>
-        <MenuItem component={Link} to={showEntryHistoryPath(entityId, entryId)}>
+        <MenuItem component={Link} to={showEntryHistoryPath(entityId, entryId)} disabled={disableChangeHistory}>
           <Typography>変更履歴</Typography>
         </MenuItem>
         <MenuItem component={Link} to={aclHistoryPath(entryId)}>
