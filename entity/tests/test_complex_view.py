@@ -5,7 +5,7 @@ from django.urls import reverse
 
 from airone.lib.acl import ACLType
 from airone.lib.test import AironeViewTest
-from airone.lib.types import AttrType, AttrTypeArrObj, AttrTypeArrStr, AttrTypeStr
+from airone.lib.types import AttrType
 from entity import tasks as entity_tasks
 from entity.models import Entity, EntityAttr
 from entry import tasks as entry_tasks
@@ -49,7 +49,7 @@ class ComplexViewTest(AironeViewTest):
             "attrs": [
                 {
                     "name": "attr",
-                    "type": str(AttrTypeStr),
+                    "type": str(AttrType.STRING),
                     "is_delete_in_chain": True,
                     "is_mandatory": False,
                     "row_index": "1",
@@ -69,7 +69,7 @@ class ComplexViewTest(AironeViewTest):
             "attrs": [
                 {
                     "id": str(attr.id),
-                    "type": str(AttrTypeStr),
+                    "type": str(AttrType.STRING),
                     "value": [{"data": "attr-value", "index": 0}],
                     "referral_key": [],
                 },
@@ -103,14 +103,14 @@ class ComplexViewTest(AironeViewTest):
                 },
                 {
                     "name": "arr-str",
-                    "type": str(AttrTypeArrStr),
+                    "type": str(AttrType.ARRAY_STRING),
                     "is_mandatory": True,
                     "is_delete_in_chain": False,
                     "row_index": "2",
                 },
                 {
                     "name": "arr-obj",
-                    "type": str(AttrTypeArrObj),
+                    "type": str(AttrType.ARRAY_OBJECT),
                     "ref_ids": [refer_entity.id],
                     "is_mandatory": True,
                     "is_delete_in_chain": False,
@@ -155,7 +155,7 @@ class ComplexViewTest(AironeViewTest):
                 {
                     "entity_attr_id": str(entity_attr_arr_str.id),
                     "id": "",
-                    "type": str(AttrTypeArrStr),
+                    "type": str(AttrType.ARRAY_STRING),
                     "value": [
                         {"data": "foo", "index": 0},
                         {"data": "bar", "index": 1},
@@ -165,7 +165,7 @@ class ComplexViewTest(AironeViewTest):
                 {
                     "entity_attr_id": str(entity_attr_arr_obj.id),
                     "id": "",
-                    "type": str(AttrTypeArrObj),
+                    "type": str(AttrType.ARRAY_OBJECT),
                     "value": [{"data": refer_entry.id, "index": 0}],
                     "referral_key": [],
                 },
@@ -212,7 +212,7 @@ class ComplexViewTest(AironeViewTest):
             "attrs": [
                 {
                     "name": "attr",
-                    "type": str(AttrTypeStr),
+                    "type": str(AttrType.STRING),
                     "is_delete_in_chain": False,
                     "is_mandatory": False,
                     "row_index": "1",

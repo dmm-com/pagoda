@@ -1,13 +1,12 @@
 import importlib.util
-import os
 from pathlib import Path
 
+from django.conf import settings
 from django.http import HttpResponse
-
-BASE_DIR = os.path.dirname(os.path.realpath(__file__))
 
 # to cache custom view
 CUSTOM_VIEW = {}
+BASE_DIR = settings.PROJECT_PATH + "/../custom_view"
 
 
 def _isin_cache(filepath, method_name):

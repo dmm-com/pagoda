@@ -14,13 +14,7 @@ from airone.lib.log import Logger
 from airone.lib.test import AironeViewTest
 from airone.lib.types import (
     AttrType,
-    AttrTypeArrNamedObj,
-    AttrTypeArrObj,
-    AttrTypeArrStr,
-    AttrTypeNamedObj,
-    AttrTypeObj,
     AttrTypeStr,
-    AttrTypeText,
     AttrTypeValue,
 )
 from entity.models import Entity, EntityAttr
@@ -543,8 +537,8 @@ class ViewTest(BaseViewTest):
             resp.json(), {"code": "AE-230000", "message": "No Entry matches the given query."}
         )
 
-    @mock.patch("custom_view.is_custom", mock.Mock(return_value=True))
-    @mock.patch("custom_view.call_custom")
+    @mock.patch("airone.lib.custom_view.is_custom", mock.Mock(return_value=True))
+    @mock.patch("airone.lib.custom_view.call_custom")
     def test_retrieve_entry_with_customview(self, mock_call_custom):
         def side_effect(handler_name, entity_name, entry, entry_attrs, is_v2):
             self.assertEqual(handler_name, "get_entry_attr")
@@ -1047,8 +1041,8 @@ class ViewTest(BaseViewTest):
         self.assertTrue(mock_task.called)
 
     @patch("entry.tasks.edit_entry_v2.delay", Mock(side_effect=tasks.edit_entry_v2))
-    @mock.patch("custom_view.is_custom", mock.Mock(return_value=True))
-    @mock.patch("custom_view.call_custom")
+    @mock.patch("airone.lib.custom_view.is_custom", mock.Mock(return_value=True))
+    @mock.patch("airone.lib.custom_view.call_custom")
     def test_update_entry_with_customview(self, mock_call_custom):
         entry: Entry = self.add_entry(self.user, "entry", self.entity)
         attr = {}
@@ -1291,8 +1285,8 @@ class ViewTest(BaseViewTest):
         )
 
     @patch("entry.tasks.delete_entry_v2.delay", Mock(side_effect=tasks.delete_entry_v2))
-    @mock.patch("custom_view.is_custom", mock.Mock(return_value=True))
-    @mock.patch("custom_view.call_custom")
+    @mock.patch("airone.lib.custom_view.is_custom", mock.Mock(return_value=True))
+    @mock.patch("airone.lib.custom_view.call_custom")
     def test_destroy_entry_with_custom_view(self, mock_call_custom):
         entry: Entry = self.add_entry(self.user, "entry", self.entity)
 
@@ -1430,8 +1424,8 @@ class ViewTest(BaseViewTest):
             [{"code": "AE-220000", "message": "specified entry has already exist other"}],
         )
 
-    @mock.patch("custom_view.is_custom", mock.Mock(return_value=True))
-    @mock.patch("custom_view.call_custom")
+    @mock.patch("airone.lib.custom_view.is_custom", mock.Mock(return_value=True))
+    @mock.patch("airone.lib.custom_view.call_custom")
     def test_restore_entry_with_custom_view(self, mock_call_custom):
         entry: Entry = self.add_entry(self.user, "entry", self.entity)
         entry.delete()
@@ -2283,28 +2277,28 @@ class ViewTest(BaseViewTest):
         dummy_entry.save()
 
         CASES = [
-            [AttrTypeStr, 'raison,de"tre', '"raison,de""tre"'],
-            [AttrTypeObj, dummy_entry, '"D,U""MM""Y"'],
-            [AttrTypeText, "1st line\r\n2nd line", '"1st line' + "\r\n" + '2nd line"'],
-            [AttrTypeNamedObj, {"key": dummy_entry}, '"{\'key\': \'D,U""MM""Y\'}"'],
-            [AttrTypeArrStr, ["one", "two", "three"], "\"['one', 'two', 'three']\""],
-            [AttrTypeArrObj, [dummy_entry], '"[\'D,U""MM""Y\']"'],
+            [AttrType.STRING, 'raison,de"tre', '"raison,de""tre"'],
+            [AttrType.OBJECT, dummy_entry, '"D,U""MM""Y"'],
+            [AttrType.TEXT, "1st line\r\n2nd line", '"1st line' + "\r\n" + '2nd line"'],
+            [AttrType.NAMED_OBJECT, {"key": dummy_entry}, '"{\'key\': \'D,U""MM""Y\'}"'],
+            [AttrType.ARRAY_STRING, ["one", "two", "three"], "\"['one', 'two', 'three']\""],
+            [AttrType.ARRAY_OBJECT, [dummy_entry], '"[\'D,U""MM""Y\']"'],
             [
-                AttrTypeArrNamedObj,
+                AttrType.ARRAY_NAMED_OBJECT,
                 [{"key1": dummy_entry}],
                 '"[{\'key1\': \'D,U""MM""Y\'}]"',
             ],
         ]
 
-        for case in CASES:
-            type_name = case[0].__name__  # AttrTypeStr -> 'AttrTypeStr'
+        for type, value, expected in CASES:
+            type_name = type.name
             attr_name = type_name + ',"ATTR"'
 
             test_entity = Entity.objects.create(name="TestEntity_" + type_name, created_user=user)
 
             test_entity_attr = EntityAttr.objects.create(
                 name=attr_name,
-                type=case[0],
+                type=type,
                 created_user=user,
                 parent_entity=test_entity,
             )
@@ -2330,34 +2324,38 @@ class ViewTest(BaseViewTest):
 
             test_val = None
 
-            if case[0].TYPE & AttrType._ARRAY == 0:
-                if case[0] == AttrTypeStr:
-                    test_val = AttributeValue.create(user=user, attr=test_attr, value=case[1])
-                elif case[0] == AttrTypeObj:
-                    test_val = AttributeValue.create(user=user, attr=test_attr, referral=case[1])
-                elif case[0] == AttrTypeText:
-                    test_val = AttributeValue.create(user=user, attr=test_attr, value=case[1])
-                elif case[0] == AttrTypeNamedObj:
-                    [(k, v)] = case[1].items()
-                    test_val = AttributeValue.create(user=user, attr=test_attr, value=k, referral=v)
+            if type & AttrType._ARRAY == 0:
+                match type:
+                    case AttrType.STRING:
+                        test_val = AttributeValue.create(user=user, attr=test_attr, value=value)
+                    case AttrType.OBJECT:
+                        test_val = AttributeValue.create(user=user, attr=test_attr, referral=value)
+                    case AttrType.TEXT:
+                        test_val = AttributeValue.create(user=user, attr=test_attr, value=value)
+                    case AttrType.NAMED_OBJECT:
+                        [(k, v)] = value.items()
+                        test_val = AttributeValue.create(
+                            user=user, attr=test_attr, value=k, referral=v
+                        )
             else:
                 test_val = AttributeValue.create(user=user, attr=test_attr)
                 test_val.set_status(AttributeValue.STATUS_DATA_ARRAY_PARENT)
-                for child in case[1]:
+                for child in value:
                     test_val_child = None
-                    if case[0] == AttrTypeArrStr:
-                        test_val_child = AttributeValue.create(
-                            user=user, attr=test_attr, value=child
-                        )
-                    elif case[0] == AttrTypeArrObj:
-                        test_val_child = AttributeValue.create(
-                            user=user, attr=test_attr, referral=child
-                        )
-                    elif case[0] == AttrTypeArrNamedObj:
-                        [(k, v)] = child.items()
-                        test_val_child = AttributeValue.create(
-                            user=user, attr=test_attr, value=k, referral=v
-                        )
+                    match type:
+                        case AttrType.ARRAY_STRING:
+                            test_val_child = AttributeValue.create(
+                                user=user, attr=test_attr, value=child
+                            )
+                        case AttrType.ARRAY_OBJECT:
+                            test_val_child = AttributeValue.create(
+                                user=user, attr=test_attr, referral=child
+                            )
+                        case AttrType.ARRAY_NAMED_OBJECT:
+                            [(k, v)] = child.items()
+                            test_val_child = AttributeValue.create(
+                                user=user, attr=test_attr, value=k, referral=v
+                            )
                     test_val.data_array.add(test_val_child)
 
             test_val.save()
@@ -2376,7 +2374,7 @@ class ViewTest(BaseViewTest):
             self.assertEqual(header, 'Name,"%s,""ATTR"""' % type_name)
 
             data = content.replace(header, "", 1).strip()
-            self.assertEqual(data, '"%s,""ENTRY""",' % type_name + case[2])
+            self.assertEqual(data, '"%s,""ENTRY""",' % type_name + expected)
 
     def test_get_attr_referrals_of_role(self):
         entity = self.create_entity(
@@ -3763,25 +3761,25 @@ class ViewTest(BaseViewTest):
         dummy_entry.save()
 
         CASES = [
-            [AttrTypeStr, 'raison,de"tre', '"raison,de""tre"'],
-            [AttrTypeObj, dummy_entry, '"D,U""MM""Y"'],
-            [AttrTypeText, "1st line\r\n2nd line", '"1st line' + "\r\n" + '2nd line"'],
-            [AttrTypeNamedObj, {"key": dummy_entry}, '"key: D,U""MM""Y"'],
-            [AttrTypeArrStr, ["one", "two", "three"], '"one\nthree\ntwo"'],
-            [AttrTypeArrObj, [dummy_entry], '"D,U""MM""Y"'],
-            [AttrTypeArrNamedObj, [{"key1": dummy_entry}], '"key1: D,U""MM""Y"'],
+            [AttrType.STRING, 'raison,de"tre', '"raison,de""tre"'],
+            [AttrType.OBJECT, dummy_entry, '"D,U""MM""Y"'],
+            [AttrType.TEXT, "1st line\r\n2nd line", '"1st line' + "\r\n" + '2nd line"'],
+            [AttrType.NAMED_OBJECT, {"key": dummy_entry}, '"key: D,U""MM""Y"'],
+            [AttrType.ARRAY_STRING, ["one", "two", "three"], '"one\nthree\ntwo"'],
+            [AttrType.ARRAY_OBJECT, [dummy_entry], '"D,U""MM""Y"'],
+            [AttrType.ARRAY_NAMED_OBJECT, [{"key1": dummy_entry}], '"key1: D,U""MM""Y"'],
         ]
 
-        for case in CASES:
+        for type, value, expected in CASES:
             # setup data
-            type_name = case[0].__name__  # AttrTypeStr -> 'AttrTypeStr'
+            type_name = type.name
             attr_name = type_name + ',"ATTR"'
 
             test_entity = Entity.objects.create(name="TestEntity_" + type_name, created_user=user)
 
             test_entity_attr = EntityAttr.objects.create(
                 name=attr_name,
-                type=case[0],
+                type=type,
                 created_user=user,
                 parent_entity=test_entity,
             )
@@ -3807,34 +3805,40 @@ class ViewTest(BaseViewTest):
 
             test_val = None
 
-            if case[0].TYPE & AttrType._ARRAY == 0:
-                if case[0] == AttrTypeStr:
-                    test_val = AttributeValue.create(user=user, attr=test_attr, value=case[1])
-                elif case[0] == AttrTypeObj:
-                    test_val = AttributeValue.create(user=user, attr=test_attr, referral=case[1])
-                elif case[0] == AttrTypeText:
-                    test_val = AttributeValue.create(user=user, attr=test_attr, value=case[1])
-                elif case[0] == AttrTypeNamedObj:
-                    [(k, v)] = case[1].items()
-                    test_val = AttributeValue.create(user=user, attr=test_attr, value=k, referral=v)
+            if type & AttrType._ARRAY == 0:
+                match type:
+                    case AttrType.STRING:
+                        test_val = AttributeValue.create(user=user, attr=test_attr, value=value)
+                    case AttrType.OBJECT:
+                        test_val = AttributeValue.create(user=user, attr=test_attr, referral=value)
+                    case AttrType.TEXT:
+                        test_val = AttributeValue.create(user=user, attr=test_attr, value=value)
+                    case AttrType.NAMED_OBJECT:
+                        [(k, v)] = value.items()
+                        test_val = AttributeValue.create(
+                            user=user, attr=test_attr, value=k, referral=v
+                        )
             else:
                 test_val = AttributeValue.create(user=user, attr=test_attr)
                 test_val.set_status(AttributeValue.STATUS_DATA_ARRAY_PARENT)
-                for child in case[1]:
+                for child in value:
                     test_val_child = None
-                    if case[0] == AttrTypeArrStr:
-                        test_val_child = AttributeValue.create(
-                            user=user, attr=test_attr, value=child
-                        )
-                    elif case[0] == AttrTypeArrObj:
-                        test_val_child = AttributeValue.create(
-                            user=user, attr=test_attr, referral=child
-                        )
-                    elif case[0] == AttrTypeArrNamedObj:
-                        [(k, v)] = child.items()
-                        test_val_child = AttributeValue.create(
-                            user=user, attr=test_attr, value=k, referral=v
-                        )
+
+                    match type:
+                        case AttrType.ARRAY_STRING:
+                            test_val_child = AttributeValue.create(
+                                user=user, attr=test_attr, value=child
+                            )
+                        case AttrType.ARRAY_OBJECT:
+                            test_val_child = AttributeValue.create(
+                                user=user, attr=test_attr, referral=child
+                            )
+                        case AttrType.ARRAY_NAMED_OBJECT:
+                            [(k, v)] = child.items()
+                            test_val_child = AttributeValue.create(
+                                user=user, attr=test_attr, value=k, referral=v
+                            )
+
                     test_val.data_array.add(test_val_child)
 
             test_val.save()
@@ -3861,7 +3865,7 @@ class ViewTest(BaseViewTest):
             self.assertEqual(header, 'Name,Entity,"%s,""ATTR"""' % type_name)
 
             data = content.replace(header, "", 1).strip()
-            self.assertEqual(data, '"%s,""ENTRY""",%s,%s' % (type_name, test_entity.name, case[2]))
+            self.assertEqual(data, '"%s,""ENTRY""",%s,%s' % (type_name, test_entity.name, expected))
 
     @patch("entry.tasks.import_entries_v2.delay", Mock(side_effect=tasks.import_entries_v2))
     @patch(
@@ -4736,8 +4740,8 @@ class ViewTest(BaseViewTest):
         self.assertEqual(resp.status_code, 404)
 
     @patch("entry.tasks.delete_entry_v2.delay", Mock(side_effect=tasks.delete_entry_v2))
-    @mock.patch("custom_view.is_custom", mock.Mock(return_value=True))
-    @mock.patch("custom_view.call_custom")
+    @mock.patch("airone.lib.custom_view.is_custom", mock.Mock(return_value=True))
+    @mock.patch("airone.lib.custom_view.call_custom")
     def test_destroy_entries_with_custom_view(self, mock_call_custom):
         entry: Entry = self.add_entry(self.user, "entry", self.entity)
 

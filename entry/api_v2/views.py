@@ -12,8 +12,8 @@ from rest_framework.permissions import BasePermission, IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-import custom_view
 from airone.exceptions import ElasticsearchException
+from airone.lib import custom_view
 from airone.lib.acl import ACLType
 from airone.lib.drf import (
     DuplicatedObjectExistsError,

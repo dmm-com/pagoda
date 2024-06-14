@@ -10,7 +10,7 @@ from django.http.response import JsonResponse
 from django.shortcuts import redirect
 from django.urls import reverse
 
-import custom_view
+from airone.lib import custom_view
 from airone.lib.acl import ACLType
 from airone.lib.elasticsearch import prepend_escape_character
 from airone.lib.http import (

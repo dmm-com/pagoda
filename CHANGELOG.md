@@ -5,10 +5,18 @@
 ### Added
 
 ### Changed
-* Updated to delete obsoleted title to new one, which is defined in the Django configuration file.
-  Contributed by @hinashi, @userlocalhost
+* Added an option to be able to disable showing history page of Item from entry details page
+  Contributed by @userlocalhost
 
 ### Fixed
+
+## v3.90.0
+
+### Changed
+* Updated to delete obsoleted title to new one, which is defined in the Django configuration file.
+  Contributed by @hinashi, @userlocalhost
+* Migrate to enum based AttrType.
+  Contributed by @syucream
 
 ## v3.89.0
 

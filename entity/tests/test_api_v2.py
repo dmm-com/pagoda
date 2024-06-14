@@ -11,10 +11,9 @@ from rest_framework import status
 from rest_framework.exceptions import ValidationError
 
 from acl.models import ACLBase
-from airone.lib import types as atype
 from airone.lib.log import Logger
 from airone.lib.test import AironeViewTest
-from airone.lib.types import AttrType, AttrTypeArrStr, AttrTypeStr, AttrTypeText
+from airone.lib.types import AttrType
 from entity import tasks
 from entity.models import Entity, EntityAttr
 from entry.models import Entry
@@ -374,8 +373,8 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 200)
         self.assertTrue(resp.json()["attrs"][0]["is_writable"])
 
-    @mock.patch("custom_view.is_custom", mock.Mock(return_value=True))
-    @mock.patch("custom_view.call_custom")
+    @mock.patch("airone.lib.custom_view.is_custom", mock.Mock(return_value=True))
+    @mock.patch("airone.lib.custom_view.call_custom")
     def test_retrieve_entity_with_customview(self, mock_call_custom):
         def side_effect(handler_name, entity_name, entity, entity_attrs):
             self.assertEqual(handler_name, "get_entity_attr")
@@ -1306,8 +1305,8 @@ class ViewTest(AironeViewTest):
     @mock.patch(
         "entity.tasks.create_entity_v2.delay", mock.Mock(side_effect=tasks.create_entity_v2)
     )
-    @mock.patch("custom_view.is_custom", mock.Mock(return_value=True))
-    @mock.patch("custom_view.call_custom")
+    @mock.patch("airone.lib.custom_view.is_custom", mock.Mock(return_value=True))
+    @mock.patch("airone.lib.custom_view.call_custom")
     def test_create_entity_with_customview(self, mock_call_custom):
         params = {"name": "hoge"}
 
@@ -2489,8 +2488,8 @@ class ViewTest(AironeViewTest):
         self.assertEqual([x.is_verified for x in self.entity.webhooks.all()], [True, False])
 
     @mock.patch("entity.tasks.edit_entity_v2.delay", mock.Mock(side_effect=tasks.edit_entity_v2))
-    @mock.patch("custom_view.is_custom", mock.Mock(return_value=True))
-    @mock.patch("custom_view.call_custom")
+    @mock.patch("airone.lib.custom_view.is_custom", mock.Mock(return_value=True))
+    @mock.patch("airone.lib.custom_view.call_custom")
     def test_update_entity_with_customview(self, mock_call_custom):
         params = {"name": "hoge"}
 
@@ -2725,8 +2724,8 @@ class ViewTest(AironeViewTest):
     @mock.patch(
         "entity.tasks.delete_entity_v2.delay", mock.Mock(side_effect=tasks.delete_entity_v2)
     )
-    @mock.patch("custom_view.is_custom", mock.Mock(return_value=True))
-    @mock.patch("custom_view.call_custom")
+    @mock.patch("airone.lib.custom_view.is_custom", mock.Mock(return_value=True))
+    @mock.patch("airone.lib.custom_view.call_custom")
     def test_delete_entity_with_customview(self, mock_call_custom):
         def side_effect(handler_name, entity_name, user, entity):
             raise ValidationError("delete error")
@@ -3246,8 +3245,8 @@ class ViewTest(AironeViewTest):
         self.assertTrue(mock_task.called)
 
     @mock.patch("entry.tasks.create_entry_v2.delay", mock.Mock(side_effect=create_entry_v2))
-    @mock.patch("custom_view.is_custom", mock.Mock(return_value=True))
-    @mock.patch("custom_view.call_custom")
+    @mock.patch("airone.lib.custom_view.is_custom", mock.Mock(return_value=True))
+    @mock.patch("airone.lib.custom_view.call_custom")
     def test_create_entry_with_customview(self, mock_call_custom):
         attr = {}
         for attr_name in [x["name"] for x in self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY]:
@@ -3300,21 +3299,21 @@ class ViewTest(AironeViewTest):
             "attrs": [
                 {
                     "name": "foo",
-                    "type": str(AttrTypeStr),
+                    "type": str(AttrType.STRING),
                     "is_delete_in_chain": False,
                     "is_mandatory": True,
                     "row_index": "1",
                 },
                 {
                     "name": "bar",
-                    "type": str(AttrTypeText),
+                    "type": str(AttrType.TEXT),
                     "is_delete_in_chain": False,
                     "is_mandatory": True,
                     "row_index": "2",
                 },
                 {
                     "name": "baz",
-                    "type": str(AttrTypeArrStr),
+                    "type": str(AttrType.ARRAY_STRING),
                     "is_delete_in_chain": False,
                     "is_mandatory": False,
                     "row_index": "3",
@@ -3394,10 +3393,10 @@ class ViewTest(AironeViewTest):
 
         # checks contains required attributes (for EntityAttr)
         self.assertEqual(entity.attrs.count(), 4)
-        self.assertEqual(entity.attrs.get(name="attr-str").type, atype.AttrTypeStr)
-        self.assertEqual(entity.attrs.get(name="attr-obj").type, atype.AttrTypeObj)
-        self.assertEqual(entity.attrs.get(name="attr-arr-str").type, atype.AttrTypeArrStr)
-        self.assertEqual(entity.attrs.get(name="attr-arr-obj").type, atype.AttrTypeArrObj)
+        self.assertEqual(entity.attrs.get(name="attr-str").type, AttrType.STRING)
+        self.assertEqual(entity.attrs.get(name="attr-obj").type, AttrType.OBJECT)
+        self.assertEqual(entity.attrs.get(name="attr-arr-str").type, AttrType.ARRAY_STRING)
+        self.assertEqual(entity.attrs.get(name="attr-arr-obj").type, AttrType.ARRAY_OBJECT)
         self.assertFalse(entity.attrs.get(name="attr-str").is_mandatory)
         self.assertTrue(entity.attrs.get(name="attr-obj").is_mandatory)
         self.assertEqual(entity.attrs.get(name="attr-obj").referral.count(), 1)

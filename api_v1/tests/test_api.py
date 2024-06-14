@@ -674,7 +674,7 @@ class APITest(AironeViewTest):
     def test_failed_to_get_entry(self):
         # send request without login
         resp = self.client.get("/api/v1/entry")
-        self.assertEqual(resp.status_code, 401)
+        self.assertEqual(resp.status_code, 403)
 
         user = self.guest_login()
 
@@ -977,8 +977,8 @@ class APITest(AironeViewTest):
         mock.Mock(side_effect=tasks.notify_delete_entry),
     )
     @mock.patch("entry.tasks.delete_entry.delay", mock.Mock(side_effect=tasks.delete_entry))
-    @mock.patch("custom_view.is_custom", mock.Mock(return_value=True))
-    @mock.patch("custom_view.call_custom")
+    @mock.patch("airone.lib.custom_view.is_custom", mock.Mock(return_value=True))
+    @mock.patch("airone.lib.custom_view.call_custom")
     def test_delete_entry_with_customview(self, mock_call_custom):
         admin = self.admin_login()
         self.entity = Entity.objects.create(name="Entity", created_user=admin)
@@ -1046,7 +1046,8 @@ class APITest(AironeViewTest):
                 "HTTP_AUTHORIZATION": "Token %s" % str(user.token),
             },
         )
-        self.assertEqual(resp.status_code, 401)
+        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(resp.json(), {"code": "AE-000000", "message": "Token lifetime is expired"})
 
         # Once setting 0 at token_lifetime, access token will never be expired
         user.token_lifetime = 0
