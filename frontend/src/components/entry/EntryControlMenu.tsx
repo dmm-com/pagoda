@@ -88,7 +88,11 @@ export const EntryControlMenu: FC<EntryControlProps> = ({
         <MenuItem component={Link} to={aclPath(entryId)}>
           <Typography>ACL 設定</Typography>
         </MenuItem>
-        <MenuItem component={Link} to={showEntryHistoryPath(entityId, entryId)} disabled={disableChangeHistory}>
+        <MenuItem
+          component={Link}
+          to={showEntryHistoryPath(entityId, entryId)}
+          disabled={disableChangeHistory}
+        >
           <Typography>変更履歴</Typography>
         </MenuItem>
         <MenuItem component={Link} to={aclHistoryPath(entryId)}>

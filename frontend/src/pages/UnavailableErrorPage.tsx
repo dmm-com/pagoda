@@ -47,4 +47,3 @@ export const UnavailableErrorPage: FC = () => {
     </Box>
   );
 };
-
