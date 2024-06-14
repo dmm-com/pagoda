@@ -5,6 +5,8 @@
 ### Added
 
 ### Changed
+* Added an option to be able to disable showing history page of Item from entry details page
+  Contributed by @userlocalhost
 
 ### Fixed
 
