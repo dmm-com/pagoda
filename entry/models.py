@@ -2124,10 +2124,10 @@ class Entry(ACLBase):
         if not hint_attrs:
             hint_attrs = []
 
-        results: AdvancedSearchResults = {
-            "ret_count": 0,
-            "ret_values": [],
-        }
+        results = AdvancedSearchResults(
+            ret_count=0,
+            ret_values=[],
+        )
         for hint_entity_id in hint_entity_ids:
             # Check for has permission to Entity
             entity = Entity.objects.filter(id=hint_entity_id, is_active=True).first()
@@ -2136,13 +2136,11 @@ class Entry(ACLBase):
 
             # Check for has permission to EntityAttr
             for hint_attr in hint_attrs:
-                if "name" not in hint_attr:
+                if hint_attr.name:
                     continue
 
-                hint_entity_attr = entity.attrs.filter(
-                    name=hint_attr["name"], is_active=True
-                ).first()
-                hint_attr["is_readable"] = (
+                hint_entity_attr = entity.attrs.filter(name=hint_attr.name, is_active=True).first()
+                hint_attr.is_readable = (
                     True
                     if (
                         user is None
@@ -2168,31 +2166,31 @@ class Entry(ACLBase):
             # Check for has permission to EntityAttr, when is_output_all flag
             if is_output_all:
                 for entity_attr in entity.attrs.filter(is_active=True):
-                    if entity_attr.name not in [x["name"] for x in hint_attrs if "name" in x]:
+                    if entity_attr.name not in [x.name for x in hint_attrs if x.name]:
                         hint_attrs.append(
-                            {
-                                "name": entity_attr.name,
-                                "is_readable": True
+                            AttrHint(
+                                name=entity_attr.name,
+                                is_readable=True
                                 if (
                                     user is None
                                     or user.has_permission(entity_attr, ACLType.Readable)
                                 )
                                 else False,
-                            }
+                            )
                         )
 
             # retrieve data from database on the basis of the result of elasticsearch
-            search_result: AdvancedSearchResults = make_search_results(
+            search_result = make_search_results(
                 user,
                 resp,
                 hint_attrs,
                 hint_referral,
                 limit,
             )
-            results["ret_count"] += search_result["ret_count"]
-            results["ret_values"].extend(search_result["ret_values"])
-            limit -= len(search_result["ret_values"])
-            offset = max(0, offset - search_result["ret_count"])
+            results.ret_count += search_result.ret_count
+            results.ret_values.extend(search_result.ret_values)
+            limit -= len(search_result.ret_values)
+            offset = max(0, offset - search_result.ret_count)
 
         return results
 

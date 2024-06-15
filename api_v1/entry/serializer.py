@@ -1,11 +1,15 @@
+from typing import Any
+
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
 from airone.exceptions import ElasticsearchException
+from airone.lib.elasticsearch import AttrHint
 from airone.lib.log import Logger
 from entity.models import Entity, EntityAttr
 from entry.models import Entry
 from entry.settings import CONFIG
+from user.models import User
 
 SEARCH_ENTRY_LIMIT = 200
 
@@ -167,12 +171,12 @@ class EntrySearchChainSerializer(serializers.Serializer):
 
         return data
 
-    def merge_search_result(self, stored_list, result_data, is_any: bool):
-        def _deduplication(item_list):
+    def merge_search_result(self, stored_list, result_data, is_any: bool) -> list[Any]:
+        def _deduplication(item_list: list[Any]) -> list[Any]:
             """
             This removes duplication items, that have same Entry-ID with other ones,from item_list
             """
-            returned_items = []
+            returned_items: list[Any] = []
             for item in item_list:
                 if item["id"] not in [x["id"] for x in returned_items]:
                     returned_items.append(item)
@@ -232,11 +236,11 @@ class EntrySearchChainSerializer(serializers.Serializer):
                 Logger.warning("Search Chain API error:%s" % e)
                 raise ElasticsearchException()
 
-            if search_result["ret_count"] > CONFIG.SEARCH_CHAIN_ACCEPTABLE_RESULT_COUNT:
+            if search_result.ret_count > CONFIG.SEARCH_CHAIN_ACCEPTABLE_RESULT_COUNT:
                 Logger.warning("Search Chain API error: SEARCH_CHAIN_ACCEPTABLE_RESULT_COUNT")
                 raise ElasticsearchException()
 
-            return [x["entry"] for x in search_result["ret_values"]]
+            return [x.entry for x in search_result.ret_values]
 
         # This expects only AttrSerialized sub-query
         for sub_query in queries:
@@ -276,9 +280,9 @@ class EntrySearchChainSerializer(serializers.Serializer):
         # The first return value (False) describe this result returned by NO-leaf-node
         return (False, accumulated_result)
 
-    def forward_search_entries(self, user, queries, entity_id_list, is_any):
+    def forward_search_entries(self, user: User, queries, entity_id_list, is_any: bool):
         # digging into the condition tree to get to leaf condition by depth-first search
-        accumulated_result = []
+        accumulated_result: list[Any] = []
 
         def _do_forward_search(sub_query, sub_query_result):
             # make query to search Entries using Entry.search_entries()
@@ -293,10 +297,11 @@ class EntrySearchChainSerializer(serializers.Serializer):
 
             # Query for forward search
             hint_attrs = [
-                {
-                    "name": sub_query["name"],
-                    "keyword": search_keyword,
-                }
+                AttrHint(
+                    name=sub_query["name"],
+                    is_readable=True,
+                    keyword=search_keyword,
+                )
             ]
 
             # get Entry informations from result
@@ -306,11 +311,11 @@ class EntrySearchChainSerializer(serializers.Serializer):
                 Logger.warning("Search Chain API error:%s" % e)
                 raise ElasticsearchException()
 
-            if search_result["ret_count"] > CONFIG.SEARCH_CHAIN_ACCEPTABLE_RESULT_COUNT:
+            if search_result.ret_count > CONFIG.SEARCH_CHAIN_ACCEPTABLE_RESULT_COUNT:
                 Logger.warning("Search Chain API error: SEARCH_CHAIN_ACCEPTABLE_RESULT_COUNT")
                 raise ElasticsearchException()
 
-            return [x["entry"] for x in search_result["ret_values"]]
+            return [x.entry for x in search_result.ret_values]
 
         # This expects only AttrSerialized sub-query
         for sub_query in queries:
@@ -350,11 +355,11 @@ class EntrySearchChainSerializer(serializers.Serializer):
         # The first return value (False) describe this result returned by NO-leaf-node
         return (False, accumulated_result)
 
-    def search_entries(self, user, query=None):
+    def search_entries(self, user: User, query=None) -> tuple[bool, list[Any]]:
         if query is None:
             query = self.validated_data
 
-        accumulated_result = []
+        accumulated_result: list[Any] = []
         is_leaf = True
         if len(query.get("attrs", [])) > 0:
             is_leaf = False
@@ -394,13 +399,13 @@ class EntrySearchChainSerializer(serializers.Serializer):
         #     to find out any data, which user wants to
         return (is_leaf, accumulated_result)
 
-    def is_attr_chained(self, entry, attrs=None, is_any=False):
+    def is_attr_chained(self, entry: Entry, attrs=None, is_any: bool = False):
         if not attrs:
             attrs = self.validated_data["attrs"]
             is_any = self.validated_data["is_any"]
 
         # This is a helper method to check referral entry meets chaining conditions.
-        def _is_attrv_referral_chained(attrv, info):
+        def _is_attrv_referral_chained(attrv, info) -> bool:
             if attrv.referral is None or not attrv.referral.is_active:
                 if info.get("value") == "":
                     # The case when Attribute value doesn't refer Entry and query expects it is

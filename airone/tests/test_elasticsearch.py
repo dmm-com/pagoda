@@ -1,6 +1,7 @@
 from django.test import TestCase
 
 from airone.lib import elasticsearch
+from airone.lib.elasticsearch import AdvancedSearchResultValue, AttrHint
 from airone.lib.types import AttrType
 from entity.models import Entity, EntityAttr
 from entry.models import Attribute, AttributeValue, Entry
@@ -41,8 +42,8 @@ class ElasticSearchTest(TestCase):
         query = elasticsearch.make_query(
             hint_entity=self._entity,
             hint_attrs=[
-                {"name": "a1", "keyword": "hoge|fu&ga"},
-                {"name": "a2", "keyword": ""},
+                AttrHint(name="a1", is_readable=False, keyword="hoge|fu&ga"),
+                AttrHint(name="a2", is_readable=False, keyword=""),
             ],
             entry_name="entry1",
         )
@@ -358,36 +359,36 @@ class ElasticSearchTest(TestCase):
             }
         }
 
-        hint_attrs = [{"name": "test_attr", "keyword": "", "is_readable": True}]
+        hint_attrs = [AttrHint(name="test_attr", keyword="", is_readable=True)]
         hint_referral = ""
         results = elasticsearch.make_search_results(self._user, res, hint_attrs, hint_referral, 100)
 
-        self.assertEqual(results["ret_count"], 1)
+        self.assertEqual(results.ret_count, 1)
         self.assertEqual(
-            results["ret_values"],
+            results.ret_values,
             [
-                {
-                    "entity": {
+                AdvancedSearchResultValue(
+                    entity={
                         "id": self._entity.id,
                         "name": self._entity.name,
                     },
-                    "entry": {"id": entry.id, "name": entry.name},
-                    "attrs": {
+                    entry={"id": entry.id, "name": entry.name},
+                    attrs={
                         attr.name: {
                             "type": attr.schema.type,
                             "value": attr_value.value,
                             "is_readable": True,
                         }
                     },
-                    "is_readable": True,
-                    "referrals": [],
-                }
+                    is_readable=True,
+                    referrals=[],
+                ),
             ],
         )
 
         hint_referral = None
         results = elasticsearch.make_search_results(self._user, res, hint_attrs, hint_referral, 100)
-        self.assertFalse("referrals" in results["ret_values"])
+        self.assertFalse("referrals" in results.ret_values)
 
     def test_make_search_results_for_simple(self):
         entry = Entry.objects.create(
@@ -485,23 +486,23 @@ class ElasticSearchTest(TestCase):
 
         # 1 to 10
         results = elasticsearch.make_search_results(self._user, res, [], "", limit=10)
-        self.assertEqual(results["ret_count"], len(entries))
+        self.assertEqual(results.ret_count, len(entries))
         self.assertEqual(
-            sorted(results["ret_values"], key=lambda x: x["entry"]["id"]),
+            sorted(results.ret_values, key=lambda x: x.entry["id"]),
             sorted(
                 [
-                    {
-                        "entity": {
+                    AdvancedSearchResultValue(
+                        entity={
                             "id": self._entity.id,
                             "name": self._entity.name,
                         },
-                        "entry": {"id": entry.id, "name": entry.name},
-                        "attrs": {},
-                        "is_readable": True,
-                        "referrals": [],
-                    }
+                        entry={"id": entry.id, "name": entry.name},
+                        attrs={},
+                        is_readable=True,
+                        referrals=[],
+                    )
                     for entry in entries[0:10]
                 ],
-                key=lambda x: x["entry"]["id"],
+                key=lambda x: x.entry["id"],
             ),
         )

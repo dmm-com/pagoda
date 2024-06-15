@@ -774,10 +774,10 @@ def export_search_result_v2(self, job: Job):
 
     output: io.StringIO | None = None
     if params["export_style"] == "yaml":
-        output = _yaml_export_v2(job, resp["ret_values"], params, has_referral)
+        output = _yaml_export_v2(job, resp.ret_values, params, has_referral)
     elif params["export_style"] == "csv":
         # NOTE reuse v1 internal export logic, but better to have a duplicated logic for v2
-        output = _csv_export(job, resp["ret_values"], params, has_referral)
+        output = _csv_export(job, resp.ret_values, params, has_referral)
 
     if output:
         job.set_cache(output.getvalue())

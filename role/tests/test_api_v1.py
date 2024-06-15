@@ -3,6 +3,7 @@ from unittest import mock
 
 from django.urls import reverse
 
+from airone.lib.elasticsearch import AttrHint
 from airone.lib.types import AttrType
 from entry.models import Entry
 from role import tasks
@@ -73,8 +74,8 @@ class ModelTest(RoleTestBase):
         )
 
         entry.register_es()
-        resp1 = Entry.search_entries(user, [entity.id], [{"name": "role"}])
-        self.assertEqual(resp1["ret_values"][0]["attrs"]["role"]["value"]["name"], "test_role")
+        resp1 = Entry.search_entries(user, [entity.id], [AttrHint(name="role", is_readable=True)])
+        self.assertEqual(resp1.ret_values[0].attrs["role"]["value"]["name"], "test_role")
 
         params = dict(
             self._BASE_UPDATE_PARAMS,
@@ -87,7 +88,5 @@ class ModelTest(RoleTestBase):
             json.dumps(params),
             "application/json",
         )
-        resp2 = Entry.search_entries(user, [entity.id], [{"name": "role"}])
-        self.assertEqual(
-            resp2["ret_values"][0]["attrs"]["role"]["value"]["name"], "test_role_update"
-        )
+        resp2 = Entry.search_entries(user, [entity.id], [AttrHint(name="role", is_readable=True)])
+        self.assertEqual(resp2.ret_values[0].attrs["role"]["value"]["name"], "test_role_update")

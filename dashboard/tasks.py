@@ -172,9 +172,9 @@ def export_search_result(self, job: Job):
 
     io_stream: io.StringIO | None = None
     if recv_data["export_style"] == "yaml":
-        io_stream = _yaml_export(job, resp["ret_values"], recv_data, has_referral)
+        io_stream = _yaml_export(job, resp.ret_values, recv_data, has_referral)
     elif recv_data["export_style"] == "csv":
-        io_stream = _csv_export(job, resp["ret_values"], recv_data, has_referral)
+        io_stream = _csv_export(job, resp.ret_values, recv_data, has_referral)
 
     if io_stream:
         job.set_cache(io_stream.getvalue())

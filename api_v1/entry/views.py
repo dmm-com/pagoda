@@ -9,6 +9,7 @@ from rest_framework.views import APIView
 
 from airone.exceptions import ElasticsearchException
 from airone.lib.acl import ACLType
+from airone.lib.elasticsearch import AttrHint
 from api_v1.entry.serializer import EntrySearchChainSerializer
 from entity.models import Entity
 from entry.models import Entry
@@ -45,7 +46,7 @@ class EntrySearchChainAPI(APIView):
                     entry_name="|".join(["^%s$" % x["name"] for x in ret_data[i : i + 100]]),
                     is_output_all=True,
                 )
-                result["ret_values"].extend(entry_info["ret_values"])
+                result["ret_values"].extend([x.dict() for x in entry_info.ret_values])
             return Response(result, status=status.HTTP_200_OK)
 
         else:
@@ -117,14 +118,14 @@ class EntrySearchAPI(APIView):
         resp = Entry.search_entries(
             request.user,
             hint_entity_ids,
-            hint_attrs,
+            [AttrHint.parse_obj(x) for x in hint_attrs],
             entry_limit,
             hint_entry_name,
             hint_referral,
             is_output_all,
         )
 
-        return Response({"result": resp})
+        return Response({"result": resp.dict()})
 
 
 class EntryReferredAPI(APIView):
