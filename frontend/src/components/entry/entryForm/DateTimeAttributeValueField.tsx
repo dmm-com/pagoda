@@ -42,10 +42,15 @@ export const DateTimeAttributeValueField: FC<Props> = ({
             <DateTimePicker
               inputFormat="yyyy/MM/dd HH:mm:ss"
               value={field.value}
-              onChange={(date: Date | null) => {
+              onChange={(
+                date: Date | null,
+                keyboardInputValue?: string | undefined
+              ) => {
                 setValue(
                   `attrs.${attrId}.value.asString`,
-                  date?.toISOString(),
+                  date != null && !isNaN(date.getTime()) // if the date is valid
+                    ? date.toISOString()
+                    : keyboardInputValue,
                   {
                     shouldDirty: true,
                     shouldValidate: true,
