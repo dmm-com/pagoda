@@ -11,6 +11,7 @@ from rest_framework.exceptions import ValidationError
 from airone.celery import app
 from airone.lib import custom_view
 from airone.lib.acl import ACLType
+from airone.lib.elasticsearch import AdvancedSearchResultValue
 from airone.lib.event_notification import (
     notify_entry_create,
     notify_entry_delete,
@@ -214,7 +215,9 @@ def _do_import_entries(job: Job):
     job.update(status=JobStatus.DONE, text="")
 
 
-def _yaml_export_v2(job: Job, values, recv_data: dict, has_referral: bool) -> io.StringIO | None:
+def _yaml_export_v2(
+    job: Job, values: list[AdvancedSearchResultValue], recv_data: dict, has_referral: bool
+) -> io.StringIO | None:
     def _get_attr_primitive_value(atype: int, value: dict) -> ExportedEntryAttributePrimitiveValue:
         match atype:
             case AttrType.NAMED_OBJECT:
@@ -283,7 +286,7 @@ def _yaml_export_v2(job: Job, values, recv_data: dict, has_referral: bool) -> io
     resp_data: List[ExportedEntityEntries] = []
     for index, entry_info in enumerate(values):
         data = ExportedEntry(
-            name=entry_info["entry"]["name"],
+            name=entry_info.entry["name"],
             attrs=[],
         )
 
@@ -292,8 +295,8 @@ def _yaml_export_v2(job: Job, values, recv_data: dict, has_referral: bool) -> io
             return None
 
         for attrinfo in recv_data["attrinfo"]:
-            if attrinfo["name"] in entry_info["attrs"]:
-                _adata = entry_info["attrs"][attrinfo["name"]]
+            if attrinfo["name"] in entry_info.attrs:
+                _adata = entry_info.attrs[attrinfo["name"]]
                 if "value" not in _adata:
                     continue
 
@@ -310,16 +313,16 @@ def _yaml_export_v2(job: Job, values, recv_data: dict, has_referral: bool) -> io
                     entity=x["schema"]["name"],
                     entry=x["name"],
                 )
-                for x in entry_info["referrals"]
+                for x in entry_info.referrals or []
             ]
 
-        found = next(filter(lambda x: x.entity == entry_info["entity"]["name"], resp_data), None)
+        found = next(filter(lambda x: x.entity == entry_info.entity["name"], resp_data), None)
         if found:
             found.entries.append(data)
         else:
             resp_data.append(
                 ExportedEntityEntries(
-                    entity=entry_info["entity"]["name"],
+                    entity=entry_info.entity["name"],
                     entries=[data],
                 )
             )
@@ -773,11 +776,12 @@ def export_search_result_v2(self, job: Job):
     )
 
     output: io.StringIO | None = None
-    if params["export_style"] == "yaml":
-        output = _yaml_export_v2(job, resp["ret_values"], params, has_referral)
-    elif params["export_style"] == "csv":
-        # NOTE reuse v1 internal export logic, but better to have a duplicated logic for v2
-        output = _csv_export(job, resp["ret_values"], params, has_referral)
+    match params["export_style"]:
+        case "yaml":
+            output = _yaml_export_v2(job, resp.ret_values, params, has_referral)
+        case "csv":
+            # NOTE reuse v1 internal export logic, but better to have a duplicated logic for v2
+            output = _csv_export(job, resp.ret_values, params, has_referral)
 
     if output:
         job.set_cache(output.getvalue())
