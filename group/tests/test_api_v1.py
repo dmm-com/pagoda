@@ -82,7 +82,7 @@ class APITest(AironeViewTest):
         )
         entry.register_es()
         resp1 = Entry.search_entries(user, [entity.id], [{"name": "group"}])
-        self.assertEqual(resp1["ret_values"][0]["attrs"]["group"]["value"]["name"], "testg")
+        self.assertEqual(resp1.ret_values[0].attrs["group"]["value"]["name"], "testg")
 
         params = {
             "name": "testg-update",
@@ -94,4 +94,4 @@ class APITest(AironeViewTest):
             "application/json",
         )
         resp2 = Entry.search_entries(user, [entity.id], [{"name": "group"}])
-        self.assertEqual(resp2["ret_values"][0]["attrs"]["group"]["value"]["name"], "testg-update")
+        self.assertEqual(resp2.ret_values[0].attrs["group"]["value"]["name"], "testg-update")

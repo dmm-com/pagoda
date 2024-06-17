@@ -1,7 +1,7 @@
 import re
 from collections.abc import Iterable
 from datetime import date, datetime
-from typing import Any, List, Optional
+from typing import Any, List, Optional, Type
 
 from django.conf import settings
 from django.db import models
@@ -1825,16 +1825,22 @@ class Entry(ACLBase):
         return {"name": self.name, "attrs": attrinfo}
 
     # NOTE: Type-Write
-    def get_es_document(self, es=None, entity_attrs=None):
+    def get_es_document(self, entity_attrs=None):
         """This processing registers entry information to Elasticsearch"""
 
-        # This innner method truncates value in taking multi-byte in account
-        def truncate(value):
+        # This inner method truncates value in taking multi-byte in account
+        def truncate(value: str) -> str:
             while len(value.encode("utf-8")) > ESS.MAX_TERM_SIZE:
                 value = value[:-1]
             return value
 
-        def _set_attrinfo(entity_attr, attr, attrv, container, is_recursive=False):
+        def _set_attrinfo(
+            entity_attr: EntityAttr,
+            attr: Attribute,
+            attrv: AttributeValue,
+            container: list[dict],
+            is_recursive: bool = False,
+        ):
             attrinfo = {
                 "name": entity_attr.name,
                 "type": entity_attr.type,
@@ -1851,7 +1857,7 @@ class Entry(ACLBase):
             if entity_attr.type & AttrType.BOOLEAN:
                 attrinfo["value"] = False
 
-            def _set_attrinfo_data(model):
+            def _set_attrinfo_data(model: Type[Group | Role]):
                 if attrv.value:
                     obj = model.objects.filter(id=attrv.value, is_active=True).first()
                     if obj:
@@ -1978,7 +1984,7 @@ class Entry(ACLBase):
         if not es:
             es = ESS()
 
-        es.index(id=self.id, body=self.get_es_document(es))
+        es.index(id=self.id, body=self.get_es_document())
         es.refresh()
 
         if recursive_call_stack:
@@ -2124,10 +2130,10 @@ class Entry(ACLBase):
         if not hint_attrs:
             hint_attrs = []
 
-        results: AdvancedSearchResults = {
-            "ret_count": 0,
-            "ret_values": [],
-        }
+        results = AdvancedSearchResults(
+            ret_count=0,
+            ret_values=[],
+        )
         for hint_entity_id in hint_entity_ids:
             # Check for has permission to Entity
             entity = Entity.objects.filter(id=hint_entity_id, is_active=True).first()
@@ -2182,17 +2188,17 @@ class Entry(ACLBase):
                         )
 
             # retrieve data from database on the basis of the result of elasticsearch
-            search_result: AdvancedSearchResults = make_search_results(
+            search_result = make_search_results(
                 user,
                 resp,
                 hint_attrs,
                 hint_referral,
                 limit,
             )
-            results["ret_count"] += search_result["ret_count"]
-            results["ret_values"].extend(search_result["ret_values"])
-            limit -= len(search_result["ret_values"])
-            offset = max(0, offset - search_result["ret_count"])
+            results.ret_count += search_result.ret_count
+            results.ret_values.extend(search_result.ret_values)
+            limit -= len(search_result.ret_values)
+            offset = max(0, offset - search_result.ret_count)
 
         return results
 
