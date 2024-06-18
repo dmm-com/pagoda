@@ -82,6 +82,7 @@ class APITest(AironeViewTest):
                 "vals": ["foo", "bar"],
                 "refs": ["r-2", "r-3"],
                 "names": [{"name": "foo", "id": "r-4"}, {"name": "bar", "id": "r-5"}],
+                "datetime": "2018-12-31T12:34:56Z",
             },
         }
         resp = self.client.post("/api/v1/entry", json.dumps(params), "application/json")
@@ -192,6 +193,12 @@ class APITest(AironeViewTest):
             {
                 "name": "names",
                 "check": lambda v: self.assertEqual(v.data_array.last().value, "bar"),
+            },
+            {
+                "name": "datetime",
+                "check": lambda v: self.assertEqual(
+                    v.datetime, datetime(2018, 12, 31, 12, 34, 56, tzinfo=pytz.utc)
+                ),
             },
         ]
         for info in checklist:

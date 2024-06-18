@@ -701,6 +701,7 @@ class ViewTest(BaseViewTest):
                 {"id": attr["date"].id, "value": "2018-12-31"},
                 {"id": attr["role"].id, "value": self.role.id},
                 {"id": attr["roles"].id, "value": [self.role.id]},
+                {"id": attr["datetime"].id, "value": "2018-12-31T00:00:00+00:00"},
             ],
         }
         resp = self.client.put(
@@ -728,6 +729,7 @@ class ViewTest(BaseViewTest):
                 "vals": ["hoge", "fuga"],
                 "role": "role0",
                 "roles": ["role0"],
+                "datetime": datetime.datetime(2018, 12, 31, 0, 0, 0, tzinfo=datetime.timezone.utc),
             },
         )
         search_result = self._es.search(body={"query": {"term": {"name": "entry-change"}}})
@@ -1901,6 +1903,7 @@ class ViewTest(BaseViewTest):
                     "name",
                     "bool",
                     "date",
+                    "datetime",
                     "group",
                     "groups",
                     "text",
@@ -2213,6 +2216,7 @@ class ViewTest(BaseViewTest):
                 "name": {"name": "hoge", "id": self.ref_entry.id},
                 "bool": False,
                 "date": "2018-12-31",
+                "datetime": "2018-12-31T00:00:00+00:00",
                 "group": self.group.id,
                 "groups": [self.group.id],
                 "text": "fuga",
@@ -2257,6 +2261,10 @@ class ViewTest(BaseViewTest):
                 {"name": "date", "value": datetime.date(2018, 12, 31)},
                 {"name": "role", "value": "role0"},
                 {"name": "roles", "value": ["role0"]},
+                {
+                    "name": "datetime",
+                    "value": datetime.datetime(2018, 12, 31, 0, 0, 0, tzinfo=datetime.timezone.utc),
+                },
             ],
         )
 
@@ -2572,6 +2580,7 @@ class ViewTest(BaseViewTest):
         attrs = {
             "bool": True,
             "date": "2018-12-31",
+            "datetime": "2018-12-31T00:00:00+00:00",
             "group": {"id": self.group.id, "name": "group0"},
             "groups": [{"id": self.group.id, "name": "group0"}],
             "name": {"foo": {"id": self.ref_entry.id, "name": "r-0"}},
@@ -2620,6 +2629,7 @@ class ViewTest(BaseViewTest):
             "date": "2018-12-31",
             "role": {"id": self.role.id, "name": "role0"},
             "roles": [{"id": self.role.id, "name": "role0"}],
+            "datetime": "2018-12-31T00:00:00+00:00",
         }
         for attr_name in result.ret_values[0].attrs:
             self.assertEqual(result.ret_values[0].attrs[attr_name]["value"], attrs[attr_name])
@@ -2665,6 +2675,7 @@ class ViewTest(BaseViewTest):
             "date": None,
             "role": {"id": "", "name": ""},
             "roles": [],
+            "datetime": None,
         }
         for attr_name in result.ret_values[0].attrs:
             if "value" in result.ret_values[0].attrs[attr_name]:
@@ -2743,6 +2754,7 @@ class ViewTest(BaseViewTest):
             "vals": ["foo"],
             "role": {"id": self.role.id, "name": "role0"},
             "roles": [{"id": self.role.id, "name": "role0"}],
+            "datetime": "2018-12-31T00:00:00+00:00",
         }
         for attr_name in result.ret_values[0].attrs:
             self.assertEqual(result.ret_values[0].attrs[attr_name]["value"], attrs[attr_name])
@@ -3023,6 +3035,7 @@ class ViewTest(BaseViewTest):
                 ],
                 "role": self.role.id,
                 "roles": [self.role.id],
+                "datetime": "2018-12-31T00:00:00+00:00",
             },
         )
 
@@ -3136,6 +3149,11 @@ class ViewTest(BaseViewTest):
                                 "type": 1088,
                                 "value": {"as_array_role": [{"id": self.role.id, "name": "role0"}]},
                             },
+                            "datetime": {
+                                "is_readable": True,
+                                "type": AttrType.DATETIME,
+                                "value": {"as_string": "2018-12-31T00:00:00+00:00"},
+                            },
                         },
                         "is_readable": True,
                         "referrals": None,
@@ -3205,6 +3223,11 @@ class ViewTest(BaseViewTest):
                                 "is_readable": True,
                                 "type": 1088,
                                 "value": {"as_array_role": []},
+                            },
+                            "datetime": {
+                                "is_readable": True,
+                                "type": AttrType.DATETIME,
+                                "value": {"as_string": ""},
                             },
                         },
                         "is_readable": True,
@@ -4231,6 +4254,7 @@ class ViewTest(BaseViewTest):
             {"column": "date", "csv": "", "yaml": None},
             {"column": "role", "csv": "", "yaml": None},
             {"column": "roles", "csv": "", "yaml": []},
+            {"column": "datetime", "csv": "", "yaml": None},
         ]
 
         # send request to export data
@@ -4528,25 +4552,29 @@ class ViewTest(BaseViewTest):
             "text": {"value": "fuga", "result": {"as_string": "fuga"}},
             "bool": {"value": False, "result": {"as_boolean": False}},
             "date": {"value": "2018-12-31", "result": {"as_string": "2018-12-31"}},
+            "datetime": {
+                "value": "2018-12-31T00:00:00+00:00",
+                "result": {"as_string": "2018-12-31T00:00:00Z"},
+            },
         }
         entry = self.add_entry(
             self.user, "Entry", self.entity, values={x: values[x]["value"] for x in values.keys()}
         )
         resp = self.client.get("/entry/api/v2/%s/histories/" % entry.id)
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(resp.json()["count"], 18)
-        attrv = entry.get_attrv("date")
+        self.assertEqual(resp.json()["count"], 19)
+        attrv = entry.get_attrv("datetime")
         self.assertEqual(
             resp.json()["results"][0],
             {
                 "created_time": attrv.created_time.astimezone(self.TZ_INFO).isoformat(),
                 "created_user": "guest",
-                "curr_value": {"as_string": "2018-12-31"},
+                "curr_value": {"as_string": "2018-12-31T00:00:00Z"},
                 "id": attrv.id,
-                "parent_attr": {"id": attrv.parent_attr.id, "name": "date"},
+                "parent_attr": {"id": attrv.parent_attr.id, "name": "datetime"},
                 "prev_id": None,
                 "prev_value": None,
-                "type": AttrType.DATE,
+                "type": AttrType.DATETIME,
             },
         )
 
@@ -4564,7 +4592,7 @@ class ViewTest(BaseViewTest):
 
         resp = self.client.get("/entry/api/v2/%s/histories/" % entry.id)
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(resp.json()["count"], 19)
+        self.assertEqual(resp.json()["count"], 20)
         self.assertEqual(resp.json()["results"][0]["parent_attr"]["name"], "vals")
         self.assertEqual(
             resp.json()["results"][0]["curr_value"]["as_array_string"], ["hoge", "fuga"]

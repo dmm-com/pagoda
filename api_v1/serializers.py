@@ -76,6 +76,9 @@ class GetEntrySerializer(serializers.ModelSerializer):
                     "name": group.name,
                 }
 
+            elif attr.schema.type & AttrType.DATETIME:
+                return attrv.datetime
+
         return [
             {
                 "name": x.schema.name,
@@ -200,6 +203,16 @@ class PostEntrySerializer(serializers.Serializer):
 
         elif attr.type & AttrType.ROLE:
             return AttributeValue.uniform_storable(value, Role)
+
+        elif attr.type & AttrType.DATETIME:
+            if isinstance(value, str):
+                try:
+                    datetime.fromisoformat(value)
+                except ValueError:
+                    raise ValueError("Incorrect data format, should be ISO8601 format")
+                return datetime.fromisoformat(value)
+            else:
+                return None
 
         return None
 

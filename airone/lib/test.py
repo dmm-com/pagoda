@@ -31,6 +31,7 @@ class AironeTestCase(TestCase):
         {"name": "date", "type": AttrType.DATE},
         {"name": "role", "type": AttrType.ROLE},
         {"name": "roles", "type": AttrType.ARRAY_ROLE},
+        {"name": "datetime", "type": AttrType.DATETIME},
     ]
 
     TZ_INFO = timezone(settings.TIME_ZONE)

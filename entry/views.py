@@ -102,6 +102,13 @@ def _validate_input(recv_data, obj):
             except ValueError:
                 return HttpResponse("Incorrect data format in date", status=400)
 
+        # Check date value format
+        if attr.type & AttrType.DATETIME:
+            try:
+                [datetime.fromisoformat(i["data"]) for i in attr_data["value"] if i["data"]]
+            except ValueError:
+                return HttpResponse("Incorrect datatime ISO8601 format in datetime", status=400)
+
 
 @http_get
 def index(request, entity_id):
@@ -802,6 +809,7 @@ def revert_attrv(request, recv_data):
                 "status": attrv.status,
                 "boolean": attrv.boolean,
                 "date": attrv.date,
+                "datetime": attrv.datetime,
                 "data_type": attrv.data_type,
                 "created_user": request.user,
                 "parent_attr": attr,
@@ -821,6 +829,7 @@ def revert_attrv(request, recv_data):
                         "status": v.status,
                         "boolean": v.boolean,
                         "date": v.date,
+                        "datetime": v.datetime,
                         "data_type": v.data_type,
                         "is_latest": False,
                         "parent_attrv": new_attrv,

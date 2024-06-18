@@ -11,6 +11,7 @@ class AttrType(enum.IntEnum):
     GROUP = 1 << 4
     DATE = 1 << 5
     ROLE = 1 << 6
+    DATETIME = 1 << 7
     _ARRAY = 1 << 10
     _NAMED = 1 << 11
     NAMED_OBJECT = _NAMED | OBJECT
@@ -120,6 +121,12 @@ class AttrTypeArrRole(metaclass=MetaAttrType):
     DEFAULT_VALUE = []
 
 
+class AttrTypeDatetime(metaclass=MetaAttrType):
+    NAME = "datetime"
+    TYPE = AttrType.DATETIME
+    DEFAULT_VALUE = None
+
+
 AttrTypes = [
     AttrTypeStr,
     AttrTypeObj,
@@ -134,6 +141,7 @@ AttrTypes = [
     AttrTypeDate,
     AttrTypeRole,
     AttrTypeArrRole,
+    AttrTypeDatetime,
 ]
 AttrTypeValue = {
     "object": AttrType.OBJECT,
@@ -151,6 +159,7 @@ AttrTypeValue = {
     "group": AttrType.GROUP,
     "date": AttrType.DATE,
     "role": AttrType.ROLE,
+    "datetime": AttrType.DATETIME,
 }
 AttrDefaultValue: dict[int, Any] = {
     AttrType.OBJECT: None,
@@ -166,4 +175,5 @@ AttrDefaultValue: dict[int, Any] = {
     AttrType.GROUP: None,
     AttrType.DATE: None,
     AttrType.ROLE: None,
+    AttrType.DATETIME: None,
 }

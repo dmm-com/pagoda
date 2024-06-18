@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 from typing import Any, Literal
 
 from django.db.models import Prefetch
@@ -40,6 +40,7 @@ class ExportedEntryAttributeValueObject(BaseModel):
 ExportedEntryAttributePrimitiveValue = (
     str  # includes text, string, group, role
     | date
+    | datetime
     | bool
     | ExportedEntryAttributeValueObject
     | dict[str, ExportedEntryAttributeValueObject]  # named entry for yaml export
@@ -656,6 +657,9 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
                         }
                     }
 
+                case AttrType.DATETIME:
+                    return {"as_string": attrv.datetime if attrv.datetime else ""}
+
                 case _:
                     return {}
 
@@ -703,6 +707,9 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
 
                 case AttrType.ROLE:
                     return {"as_role": AttrDefaultValue[type]}
+
+                case AttrType.DATETIME:
+                    return {"as_string": AttrDefaultValue[type]}
 
                 case _:
                     raise IncorrectTypeError(f"unexpected type: {type}")
@@ -1072,6 +1079,9 @@ class EntryHistoryAttributeValueSerializer(serializers.ModelSerializer):
                     if role
                     else None
                 }
+
+            case AttrType.DATETIME:
+                return {"as_string": obj.datetime if obj.datetime else ""}
 
             case _:
                 return {}

@@ -61,7 +61,13 @@ def _csv_export(
                 continue
 
             match vtype:
-                case AttrType.STRING | AttrType.TEXT | AttrType.BOOLEAN | AttrType.DATE:
+                case (
+                    AttrType.STRING
+                    | AttrType.TEXT
+                    | AttrType.BOOLEAN
+                    | AttrType.DATE
+                    | AttrType.DATETIME
+                ):
                     line_data.append(str(vval))
 
                 case AttrType.OBJECT | AttrType.GROUP | AttrType.ROLE:

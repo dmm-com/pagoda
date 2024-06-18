@@ -131,6 +131,7 @@ export const schema = schemaForType<EditableEntry>()(
                 case AttributeTypes.string.type:
                 case AttributeTypes.text.type:
                 case AttributeTypes.date.type:
+                case AttributeTypes.datetime.type:
                   return value.value.asString !== "";
                 case AttributeTypes.array_string.type:
                   return (
@@ -173,6 +174,18 @@ export const schema = schemaForType<EditableEntry>()(
             // TODO specify path to feedback users error cause
             "必須項目です"
           )
+          .refine(({ value, type }) => {
+            switch (type) {
+              case AttributeTypes.date.type:
+              case AttributeTypes.datetime.type:
+                return (
+                  // check if the non-empty value is a valid date
+                  (value.asString ?? "") == "" ||
+                  !isNaN(new Date(value.asString ?? "").getTime())
+                );
+            }
+            return true;
+          }, "値が不正です")
       )
       .default({}),
   })
