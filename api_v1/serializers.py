@@ -190,10 +190,9 @@ class PostEntrySerializer(serializers.Serializer):
                 date_formats = ["%Y-%m-%d", "%Y/%m/%d"]  # List of acceptable date formats
                 for date_format in date_formats:
                     try:
-                        parsed_date = datetime.strptime(value, date_format)
-                        return parsed_date
+                        return datetime.strptime(value, date_format)
                     except ValueError:
-                        continue # Try the next format
+                        continue  # Try the next format
                 # If all formats failed, raise an error
                 raise ValidationError("Incorrect data format, should be YYYY-MM-DD or YYYY/MM/DD")
             else:
