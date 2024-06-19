@@ -1405,3 +1405,43 @@ class APITest(AironeViewTest):
         self.assertEqual(
             [x.value for x in entry.get_attrv("vals").data_array.all()], ["fuga", "piyo"]
         )
+
+    def test_entry_date_validation(self):
+        admin = self.admin_login()
+        ref_entity = Entity.objects.create(name="Referred Entity", created_user=admin)
+        ref_e = []
+        for index in range(0, 10):
+            ref_e.append(
+                Entry.objects.create(name="r-%d" % index, schema=ref_entity, created_user=admin)
+            )
+
+        params = self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY.copy()
+        for param in params:
+            if param["type"] & AttrType.OBJECT:
+                param["ref"] = ref_entity
+        entity = self.create_entity(
+            **{
+                "user": admin,
+                "name": "Entity",
+                "attrs": self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY,
+            }
+        )
+        params = {
+            "name": "entry1",
+            "entity": entity.name,
+            "attrs": {
+                "date": "2018/12/31",
+            },
+        }
+        resp = self.client.post("/api/v1/entry", json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, 200)
+
+        # Test for date formatted as YYYY-MM-DD
+        params["attrs"]["date"] = "2018-12-31"
+        resp = self.client.post("/api/v1/entry", json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, 200)
+
+        # Test for invalid date formatted as YYYY/1/31
+        params["attrs"]["date"] = "201/12/31"
+        resp = self.client.post("/api/v1/entry", json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, 400)

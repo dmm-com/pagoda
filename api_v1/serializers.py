@@ -190,11 +190,14 @@ class PostEntrySerializer(serializers.Serializer):
 
         elif attr.type & AttrType.DATE:
             if isinstance(value, str):
-                try:
-                    datetime.strptime(value, "%Y-%m-%d")
-                except ValueError:
-                    raise ValueError("Incorrect data format, should be YYYY-MM-DD")
-                return datetime.strptime(value, "%Y-%m-%d")
+                date_formats = ["%Y-%m-%d", "%Y/%m/%d"]  # List of acceptable date formats
+                for date_format in date_formats:
+                    try:
+                        return datetime.strptime(value, date_format)
+                    except ValueError:
+                        continue  # Try the next format
+                # If all formats failed, raise an error
+                raise ValidationError("Incorrect data format, should be YYYY-MM-DD or YYYY/MM/DD")
             else:
                 return None
 
