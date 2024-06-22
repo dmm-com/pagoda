@@ -117,7 +117,7 @@ class Role(models.Model):
         if permissions:
             return permissions[0].get_aclid()
         else:
-            return ACLType.Nothing().id
+            return ACLType.Nothing.id
 
     def get_referred_entries(self, entity_name: str | None = None):
         # make query to identify AttributeValue that specify this Role instance
