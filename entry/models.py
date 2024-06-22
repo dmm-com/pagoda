@@ -16,6 +16,10 @@ from airone.lib.elasticsearch import (
     ESS,
     AdvancedSearchResults,
     AttrHint,
+    AttributeDocument,
+    EntityDocument,
+    EntryDocument,
+    ReferralDocument,
     execute_query,
     make_query,
     make_query_for_simple,
@@ -1881,7 +1885,7 @@ class Entry(ACLBase):
         return {"name": self.name, "attrs": attrinfo}
 
     # NOTE: Type-Write
-    def get_es_document(self, entity_attrs=None):
+    def get_es_document(self, entity_attrs: list[EntityAttr] | None = None) -> EntryDocument:
         """This processing registers entry information to Elasticsearch"""
 
         # This inner method truncates value in taking multi-byte in account
@@ -1894,31 +1898,31 @@ class Entry(ACLBase):
             entity_attr: EntityAttr,
             attr: Attribute,
             attrv: AttributeValue,
-            container: list[dict],
+            container: list[AttributeDocument],
             is_recursive: bool = False,
         ):
-            attrinfo = {
-                "name": entity_attr.name,
-                "type": entity_attr.type,
-                "key": "",
-                "value": "",
-                "date_value": None,
-                "referral_id": "",
-                "is_readable": True
+            attrinfo = AttributeDocument(
+                name=entity_attr.name,
+                type=entity_attr.type,
+                key="",
+                value="",
+                date_value=None,
+                referral_id="",
+                is_readable=True
                 if (not attr or attr.is_public or attr.default_permission >= ACLType.Readable)
                 else False,
-            }
+            )
 
             # default value for boolean attributes is False.
             if entity_attr.type & AttrType.BOOLEAN:
-                attrinfo["value"] = False
+                attrinfo.value = False
 
             def _set_attrinfo_data(model: Type[Group | Role]):
                 if attrv.value:
                     obj = model.objects.filter(id=attrv.value, is_active=True).first()
                     if obj:
-                        attrinfo["value"] = truncate(obj.name)
-                        attrinfo["referral_id"] = obj.id
+                        attrinfo.value = truncate(obj.name)
+                        attrinfo.referral_id = obj.id
 
             # Convert data format for mapping of Elasticsearch according to the data type
             if attrv is None:
@@ -1926,34 +1930,34 @@ class Entry(ACLBase):
                 pass
 
             elif entity_attr.type & AttrType.STRING or entity_attr.type & AttrType.TEXT:
-                attrinfo["value"] = truncate(attrv.value)
+                attrinfo.value = truncate(attrv.value)
 
             elif entity_attr.type & AttrType.BOOLEAN:
-                attrinfo["value"] = attrv.boolean
+                attrinfo.value = attrv.boolean
 
             elif entity_attr.type & AttrType.DATE:
-                attrinfo["date_value"] = attrv.date.strftime("%Y-%m-%d") if attrv.date else None
+                attrinfo.date_value = attrv.date.strftime("%Y-%m-%d") if attrv.date else None
 
             elif entity_attr.type & AttrType.DATETIME:
-                attrinfo["date_value"] = attrv.datetime.isoformat() if attrv.datetime else None
+                attrinfo.date_value = attrv.datetime.isoformat() if attrv.datetime else None
 
             elif entity_attr.type & AttrType._NAMED:
-                attrinfo["key"] = attrv.value
+                attrinfo.key = attrv.value
 
                 if attrv.referral and attrv.referral.is_active:
-                    attrinfo["value"] = truncate(attrv.referral.name)
-                    attrinfo["referral_id"] = attrv.referral.id
+                    attrinfo.value = truncate(attrv.referral.name)
+                    attrinfo.referral_id = attrv.referral.id
                 elif (
                     entity_attr.type & AttrType._ARRAY
                     and attrv.referral
                     and not attrv.referral.is_active
                 ):
-                    attrinfo["key"] = ""
+                    attrinfo.key = ""
 
             elif entity_attr.type & AttrType.OBJECT:
                 if attrv.referral and attrv.referral.is_active:
-                    attrinfo["value"] = truncate(attrv.referral.name)
-                    attrinfo["referral_id"] = attrv.referral.id
+                    attrinfo.value = truncate(attrv.referral.name)
+                    attrinfo.referral_id = attrv.referral.id
 
             elif entity_attr.type & AttrType.GROUP:
                 _set_attrinfo_data(Group)
@@ -1975,25 +1979,25 @@ class Entry(ACLBase):
 
                 # If there is no value in container,
                 # this set blank value for maching blank search request
-                if not [x for x in container if x["name"] == entity_attr.name]:
+                if not [x for x in container if x.name == entity_attr.name]:
                     container.append(attrinfo)
 
-        document = {
-            "entity": {"id": self.schema.id, "name": self.schema.name},
-            "name": self.name,
-            "attr": [],
-            "referrals": [
-                {
-                    "id": x.id,
-                    "name": x.name,
-                    "schema": {"id": x.schema.id, "name": x.schema.name},
-                }
+        document = EntryDocument(
+            entity=EntityDocument(id=self.schema.id, name=self.schema.name),
+            name=self.name,
+            attr=[],
+            referrals=[
+                ReferralDocument(
+                    id=x.id,
+                    name=x.name,
+                    schema=EntityDocument(id=x.schema.id, name=x.schema.name),
+                )
                 for x in self.get_referred_objects().select_related("schema")
             ],
-            "is_readable": True
-            if (self.is_public or self.default_permission >= ACLType.Readable.id)
+            is_readable=True
+            if (self.is_public or self.default_permission >= ACLType.Readable.id)  # type: ignore
             else False,
-        }
+        )
 
         # The reason why this is a beat around the bush processing is for the case that Attibutes
         # objects are not existed in attr parameter because of delay processing. If this entry
@@ -2003,7 +2007,7 @@ class Entry(ACLBase):
             entity_attrs = self.schema.attrs.filter(is_active=True)
 
         for entity_attr in entity_attrs:
-            attrv = None
+            attrv: AttributeValue | None = None
 
             # Use it when exists prefetch for faster
             if getattr(self, "prefetch_attrs", None):
@@ -2011,19 +2015,21 @@ class Entry(ACLBase):
             else:
                 entry_attrs = self.attrs.filter(schema=entity_attr, is_active=True)
 
-            entry_attr = None
+            entry_attr: Attribute | None = None
             for attr in entry_attrs:
                 if attr.schema == entity_attr:
                     entry_attr = attr
                     break
 
             # Use it when exists prefetch for faster
-            if getattr(entry_attr, "prefetch_values", None):
-                attrv = entry_attr.prefetch_values[-1]
-            elif entry_attr:
-                attrv = entry_attr.get_latest_value()
+            if entry_attr:
+                if getattr(entry_attr, "prefetch_values", None):
+                    attrv = entry_attr.prefetch_values[-1]
+                else:
+                    attrv = entry_attr.get_latest_value()
 
-            _set_attrinfo(entity_attr, entry_attr, attrv, document["attr"])
+            if entry_attr and attrv:
+                _set_attrinfo(entity_attr, entry_attr, attrv, document.attr)
 
         return document
 
@@ -2043,7 +2049,7 @@ class Entry(ACLBase):
         if not es:
             es = ESS()
 
-        es.index(id=self.id, body=self.get_es_document())
+        es.index(id=self.id, body=self.get_es_document().dict())
         es.refresh()
 
         if recursive_call_stack:
@@ -2376,7 +2382,7 @@ class Entry(ACLBase):
             register_docs = []
             for entry in entry_list[start_pos : start_pos + 1000]:
                 exists = True
-                es_doc = entry.get_es_document(entity_attrs=entity_attrs)
+                es_doc = entry.get_es_document(entity_attrs=entity_attrs).dict()
                 if es_doc not in results_from_es:
                     if not is_update:
                         Logger.warning("Update elasticsearch document (entry_id: %s)" % entry.id)

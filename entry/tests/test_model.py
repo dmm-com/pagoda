@@ -7,7 +7,7 @@ from django.conf import settings
 from acl.models import ACLBase
 from airone.lib.acl import ACLObjType, ACLType
 from airone.lib.drf import ExceedLimitError
-from airone.lib.elasticsearch import AdvancedSearchResultValue, FilterKey
+from airone.lib.elasticsearch import AdvancedSearchResultValue, AttributeDocument, FilterKey
 from airone.lib.log import Logger
 from airone.lib.test import AironeTestCase
 from airone.lib.types import AttrType
@@ -4657,21 +4657,21 @@ class ModelTest(AironeTestCase):
         }
         # check all attributes are expected ones
         self.assertEqual(
-            set([x["name"] for x in es_registering_value["attr"]]),
+            set([x.name for x in es_registering_value.attr]),
             set(expected_values.keys()),
         )
 
         # check all attribute contexts are expected ones
         for attrname, attrinfo in expected_values.items():
             attr = entry.attrs.get(schema__name=attrname)
-            set_attrs = [x for x in es_registering_value["attr"] if x["name"] == attrname]
+            set_attrs = [x for x in es_registering_value.attr if x.name == attrname]
 
-            self.assertTrue(all([x["type"] == attr.schema.type for x in set_attrs]))
-            self.assertTrue(all([x["is_readable"] is True for x in set_attrs]))
+            self.assertTrue(all([x.type == attr.schema.type for x in set_attrs]))
+            self.assertTrue(all([x.is_readable is True for x in set_attrs]))
             for param_name in ["key", "value", "referral_id", "date_value"]:
                 if param_name in attrinfo:
                     self.assertEqual(
-                        sorted([x[param_name] for x in set_attrs]),
+                        sorted([x.dict()[param_name] for x in set_attrs]),
                         sorted(attrinfo[param_name]),
                     )
 
@@ -4758,17 +4758,17 @@ class ModelTest(AironeTestCase):
 
         result = self._entry.get_es_document()
         self.assertEqual(
-            result["attr"],
+            result.attr,
             [
-                {
-                    "name": self._attr.name,
-                    "type": self._attr.schema.type,
-                    "key": "",
-                    "value": "",
-                    "date_value": None,
-                    "referral_id": "",
-                    "is_readable": True,
-                }
+                AttributeDocument(
+                    name=self._attr.name,
+                    type=self._attr.schema.type,
+                    key="",
+                    value="",
+                    date_value=None,
+                    referral_id=None,
+                    is_readable=True,
+                )
             ],
         )
 
@@ -4792,19 +4792,19 @@ class ModelTest(AironeTestCase):
         ref_entry.attrs.first().add_value(self._user, self._entry)
 
         result = ref_entry.get_es_document()
-        self.assertEqual(result["name"], ref_entry.name)
+        self.assertEqual(result.name, ref_entry.name)
         self.assertEqual(
-            result["attr"],
+            result.attr,
             [
-                {
-                    "name": ref_attr.name,
-                    "type": ref_attr.type,
-                    "key": "",
-                    "value": self._entry.name,
-                    "date_value": None,
-                    "referral_id": self._entry.id,
-                    "is_readable": True,
-                }
+                AttributeDocument(
+                    name=ref_attr.name,
+                    type=ref_attr.type,
+                    key="",
+                    value=self._entry.name,
+                    date_value=None,
+                    referral_id=self._entry.id,
+                    is_readable=True,
+                )
             ],
         )
 
@@ -4813,19 +4813,19 @@ class ModelTest(AironeTestCase):
 
         # Check result of query of ref_entry after referring entry is deleted.
         result = ref_entry.get_es_document()
-        self.assertEqual(result["name"], ref_entry.name)
+        self.assertEqual(result.name, ref_entry.name)
         self.assertEqual(
-            result["attr"],
+            result.attr,
             [
-                {
-                    "name": ref_attr.name,
-                    "type": ref_attr.type,
-                    "key": "",
-                    "value": "",  # expected not to have information about deleted entry
-                    "date_value": None,
-                    "referral_id": "",  # expected not to have information about deleted entry
-                    "is_readable": True,
-                }
+                AttributeDocument(
+                    name=ref_attr.name,
+                    type=ref_attr.type,
+                    key="",
+                    value="",  # expected not to have information about deleted entry
+                    date_value=None,
+                    referral_id="",  # expected not to have information about deleted entry
+                    is_readable=True,
+                )
             ],
         )
 
@@ -4852,52 +4852,52 @@ class ModelTest(AironeTestCase):
 
         result = ref_entry2.get_es_document()
         self.assertEqual(
-            result["attr"],
+            result.attr,
             [
-                {
-                    "name": ref_attr2.name,
-                    "type": ref_attr2.type,
-                    "key": "hoge",
-                    "value": self._entry.name,
-                    "date_value": None,
-                    "referral_id": self._entry.id,
-                    "is_readable": True,
-                },
-                {
-                    "name": ref_attr2.name,
-                    "type": ref_attr2.type,
-                    "key": "fuga",
-                    "value": "",
-                    "date_value": None,
-                    "referral_id": "",
-                    "is_readable": True,
-                },
+                AttributeDocument(
+                    name=ref_attr2.name,
+                    type=ref_attr2.type,
+                    key="hoge",
+                    value=self._entry.name,
+                    date_value=None,
+                    referral_id=self._entry.id,
+                    is_readable=True,
+                ),
+                AttributeDocument(
+                    name=ref_attr2.name,
+                    type=ref_attr2.type,
+                    key="fuga",
+                    value="",
+                    date_value=None,
+                    referral_id="",
+                    is_readable=True,
+                ),
             ],
         )
 
         self._entry.delete()
         result = ref_entry2.get_es_document()
         self.assertEqual(
-            result["attr"],
+            result.attr,
             [
-                {
-                    "name": ref_attr2.name,
-                    "type": ref_attr2.type,
-                    "key": "",
-                    "value": "",
-                    "date_value": None,
-                    "referral_id": "",
-                    "is_readable": True,
-                },
-                {
-                    "name": ref_attr2.name,
-                    "type": ref_attr2.type,
-                    "key": "fuga",
-                    "value": "",
-                    "date_value": None,
-                    "referral_id": "",
-                    "is_readable": True,
-                },
+                AttributeDocument(
+                    name=ref_attr2.name,
+                    type=ref_attr2.type,
+                    key="",
+                    value="",
+                    date_value=None,
+                    referral_id="",
+                    is_readable=True,
+                ),
+                AttributeDocument(
+                    name=ref_attr2.name,
+                    type=ref_attr2.type,
+                    key="fuga",
+                    value="",
+                    date_value=None,
+                    referral_id="",
+                    is_readable=True,
+                ),
             ],
         )
 

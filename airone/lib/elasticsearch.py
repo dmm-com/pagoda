@@ -5,7 +5,7 @@ from typing import Any, NotRequired
 
 from django.conf import settings
 from elasticsearch import Elasticsearch
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing_extensions import TypedDict
 
 from airone.lib.acl import ACLType
@@ -57,6 +57,38 @@ class AttrHint(TypedDict):
     filter_key: NotRequired[FilterKey]
     keyword: NotRequired[str]
     exact_match: NotRequired[bool]
+
+
+class EntityDocument(BaseModel):
+    id: int
+    name: str
+
+
+class AttributeDocument(BaseModel):
+    id: int | str = ""
+    name: str
+    type: int
+    key: str | None
+    date_value: str | None
+    value: str | bool
+    referral_id: int | str = ""
+    is_readable: bool
+
+
+class ReferralDocument(BaseModel):
+    id: int
+    name: str
+    schema_: EntityDocument = Field(
+        alias="schema"
+    )  # NOTE schema looks a reserved field in pydantic
+
+
+class EntryDocument(BaseModel):
+    entity: EntityDocument
+    name: str
+    attr: list[AttributeDocument]
+    referrals: list[ReferralDocument]
+    is_readable: bool
 
 
 class ESS(Elasticsearch):
