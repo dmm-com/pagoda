@@ -446,7 +446,7 @@ class TriggerCondition(models.Model):
                     if entity_attr is None and data["entity_attr_id"]:
                         entity_attr = EntityAttr.objects.filter(id=data["entity_attr_id"]).first()
 
-                if entity_attr.type & AttrType.NAMED_OBJECT.value:
+                if entity_attr.type & AttrType._NAMED and entity_attr.type & AttrType.OBJECT:
                     # merge name and id value to the data parameter to be compatible with APIv2
                     # for naemd_object typed Attribute
                     v = [
