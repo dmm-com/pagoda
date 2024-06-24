@@ -8,6 +8,16 @@
 
 ### Fixed
 
+## v3.93.0
+
+### Added
+* Support datetime attribute type.
+  Contributed by @syucream
+
+### Changed
+* Enhanced date validation to support both YYYY-MM-DD and YYYY/MM/DD formats.
+  Contributed by @tsunoda-takahiro
+
 ## v3.92.0
 
 ### Changed
