@@ -1,10 +1,12 @@
 import enum
 import re
 from datetime import datetime
-from typing import Any, NotRequired, TypedDict
+from typing import Any, NotRequired
 
 from django.conf import settings
 from elasticsearch import Elasticsearch
+from pydantic import BaseModel
+from typing_extensions import TypedDict
 
 from airone.lib.acl import ACLType
 from airone.lib.log import Logger
@@ -17,6 +19,7 @@ from user.models import User
 class AdvancedSearchResultValueIdNamePair(TypedDict):
     id: int
     name: str
+    schema: NotRequired["AdvancedSearchResultValueIdNamePair"]
 
 
 class AdvancedSearchResultValueAttrValue(TypedDict, total=False):
@@ -25,15 +28,15 @@ class AdvancedSearchResultValueAttrValue(TypedDict, total=False):
     is_readable: bool
 
 
-class AdvancedSearchResultValue(TypedDict):
+class AdvancedSearchResultValue(BaseModel):
     entity: AdvancedSearchResultValueIdNamePair
     entry: AdvancedSearchResultValueIdNamePair
     attrs: dict[str, AdvancedSearchResultValueAttrValue]
     is_readable: bool
-    referrals: NotRequired[list[AdvancedSearchResultValueIdNamePair]]
+    referrals: list[AdvancedSearchResultValueIdNamePair] | None = None
 
 
-class AdvancedSearchResults(TypedDict):
+class AdvancedSearchResults(BaseModel):
     ret_count: int
     ret_values: list[AdvancedSearchResultValue]
 
@@ -50,7 +53,7 @@ class FilterKey(enum.IntEnum):
 
 class AttrHint(TypedDict):
     name: str
-    is_readable: bool
+    is_readable: NotRequired[bool]
     filter_key: NotRequired[FilterKey]
     keyword: NotRequired[str]
     exact_match: NotRequired[bool]
@@ -939,10 +942,10 @@ def make_search_results(
     from entry.models import Entry
 
     # set numbers of found entries
-    results: AdvancedSearchResults = {
-        "ret_count": res["hits"]["total"]["value"],
-        "ret_values": [],
-    }
+    results = AdvancedSearchResults(
+        ret_count=res["hits"]["total"]["value"],
+        ret_values=[],
+    )
 
     # get django objects from the hit information from Elasticsearch
     hit_entry_ids = [x["_id"] for x in res["hits"]["hits"]]
@@ -955,15 +958,15 @@ def make_search_results(
         ]
 
     for entry, entry_info in sorted(hit_infos.items(), key=lambda x: x[0].name):
-        ret_info: AdvancedSearchResultValue = {
-            "entity": {"id": entry.schema.id, "name": entry.schema.name},
-            "entry": {"id": entry.id, "name": entry.name},
-            "attrs": {},
-            "is_readable": False,
-        }
+        ret_info = AdvancedSearchResultValue(
+            entity={"id": entry.schema.id, "name": entry.schema.name},
+            entry={"id": entry.id, "name": entry.name},
+            attrs={},
+            is_readable=False,
+        )
 
         if hint_referral is not None:
-            ret_info["referrals"] = entry_info.get("referrals", [])
+            ret_info.referrals = entry_info.get("referrals", [])
 
         # Check for has permission to Entry. But it will be omitted when user is None.
         if (
@@ -971,10 +974,10 @@ def make_search_results(
             or user is None
             or user.has_permission(entry, ACLType.Readable)
         ):
-            ret_info["is_readable"] = True
+            ret_info.is_readable = True
         else:
-            ret_info["is_readable"] = False
-            results["ret_values"].append(ret_info)
+            ret_info.is_readable = False
+            results.ret_values.append(ret_info)
             continue
 
         # formalize attribute values according to the type
@@ -984,20 +987,20 @@ def make_search_results(
                 continue
 
             ret_attrinfo: AdvancedSearchResultValueAttrValue = {}
-            if attrinfo["name"] in ret_info["attrs"]:
-                ret_attrinfo = ret_info["attrs"][attrinfo["name"]]
+            if attrinfo["name"] in ret_info.attrs:
+                ret_attrinfo = ret_info.attrs[attrinfo["name"]]
             else:
-                ret_attrinfo = ret_info["attrs"][attrinfo["name"]] = {}
+                ret_attrinfo = ret_info.attrs[attrinfo["name"]] = {}
 
             ret_attrinfo["is_readable"] = True
             ret_attrinfo["type"] = attrinfo["type"]
 
             # if target attribute is array type, then values would be stored in array
-            if attrinfo["name"] not in ret_info["attrs"]:
+            if attrinfo["name"] not in ret_info.attrs:
                 if attrinfo["type"] & AttrType._ARRAY:
-                    ret_info["attrs"][attrinfo["name"]] = {}
+                    ret_info.attrs[attrinfo["name"]] = {}
                 else:
-                    ret_info["attrs"][attrinfo["name"]] = ret_attrinfo
+                    ret_info.attrs[attrinfo["name"]] = ret_attrinfo
 
             # Check for has permission to EntityAttr
             if attrinfo["name"] not in [x["name"] for x in hint_attrs if x["is_readable"]]:
@@ -1029,7 +1032,7 @@ def make_search_results(
                 case AttrType.STRING | AttrType.TEXT | AttrType.BOOLEAN:
                     ret_attrinfo["value"] = attrinfo["value"]
 
-                case AttrType.DATE:
+                case AttrType.DATE | AttrType.DATETIME:
                     ret_attrinfo["value"] = attrinfo["date_value"]
 
                 case AttrType.OBJECT | AttrType.GROUP | AttrType.ROLE:
@@ -1080,7 +1083,7 @@ def make_search_results(
                                 {"id": attrinfo["referral_id"], "name": attrinfo["value"]}
                             )
 
-        results["ret_values"].append(ret_info)
+        results.ret_values.append(ret_info)
 
     return results
 

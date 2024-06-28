@@ -6,7 +6,7 @@ from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
 from rest_framework.authtoken.models import Token
 
-from airone.lib.acl import ACLType, ACLTypeBase
+from airone.lib.acl import ACLType
 from group.models import Group
 from role.models import Role
 
@@ -83,7 +83,7 @@ class User(AbstractUser):
         # This try-catch syntax is needed because the 'issubclass' may occur a
         # TypeError exception when permission_level is not object.
         try:
-            if not issubclass(permission_level, ACLTypeBase):
+            if not isinstance(permission_level, ACLType):
                 return False
         except TypeError:
             return False

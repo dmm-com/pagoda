@@ -8,6 +8,30 @@
 
 ### Fixed
 
+## v3.93.0
+
+### Added
+* Support datetime attribute type.
+  Contributed by @syucream
+
+### Changed
+* Enhanced date validation to support both YYYY-MM-DD and YYYY/MM/DD formats.
+  Contributed by @tsunoda-takahiro
+
+## v3.92.0
+
+### Changed
+* Added an option to be able to disable showing history page of Item from entry details page
+  Contributed by @userlocalhost
+* Changed the location of custom view library.
+  Contributed by @hinashi
+
+## v3.91.0
+
+### Changed
+* Removed Basic Auth support.
+  Contributed by @hinashi
+
 ## v3.90.0
 
 ### Changed

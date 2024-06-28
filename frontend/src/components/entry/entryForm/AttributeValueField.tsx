@@ -5,6 +5,7 @@ import { UseFormSetValue } from "react-hook-form/dist/types/form";
 
 import { BooleanAttributeValueField } from "./BooleanAttributeValueField";
 import { DateAttributeValueField } from "./DateAttributeValueField";
+import { DateTimeAttributeValueField } from "./DateTimeAttributeValueField";
 import { Schema } from "./EntryFormSchema";
 import { GroupAttributeValueField } from "./GroupAttributeValueField";
 import {
@@ -47,6 +48,15 @@ export const AttributeValueField: FC<Props> = ({
     case EntryAttributeTypeTypeEnum.DATE:
       return (
         <DateAttributeValueField
+          attrId={schemaId}
+          control={control}
+          setValue={setValue}
+        />
+      );
+
+    case EntryAttributeTypeTypeEnum.DATETIME:
+      return (
+        <DateTimeAttributeValueField
           attrId={schemaId}
           control={control}
           setValue={setValue}

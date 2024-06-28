@@ -23,6 +23,7 @@ from airone.lib.drf import (
     RequiredParameterError,
     YAMLParser,
 )
+from airone.lib.elasticsearch import AdvancedSearchResultValue, AttrHint
 from airone.lib.types import AttrType
 from api_v1.entry.serializer import EntrySearchChainSerializer
 from entity.models import Entity, EntityAttr
@@ -234,7 +235,9 @@ class AdvancedSearchAPI(generics.GenericAPIView):
         entry_offset = serializer.validated_data["entry_offset"]
         join_attrs = serializer.validated_data.get("join_attrs", [])
 
-        def _get_joined_resp(prev_results, join_attr):
+        def _get_joined_resp(
+            prev_results: list[AdvancedSearchResultValue], join_attr: dict
+        ) -> tuple[bool, dict]:
             """
             This is a helper method for join_attrs that will get specified attr values
             that prev_result's ones refer to.
@@ -244,7 +247,7 @@ class AdvancedSearchAPI(generics.GenericAPIView):
             item_names = []
             hint_entity_ids = []
             for result in prev_results:
-                entity = Entity.objects.filter(id=result["entity"]["id"]).last()
+                entity = Entity.objects.filter(id=result.entity["id"]).last()
                 if entity is None:
                     continue
 
@@ -257,7 +260,7 @@ class AdvancedSearchAPI(generics.GenericAPIView):
                     hint_entity_ids += [x.id for x in attr.referral.filter(is_active=True)]
 
                     # set Item name
-                    attrinfo = result["attrs"][join_attr["name"]]
+                    attrinfo = result.attrs[join_attr["name"]]
 
                     if attr.type == AttrType.OBJECT and attrinfo["value"]["name"] not in item_names:
                         item_names.append(attrinfo["value"]["name"])
@@ -277,13 +280,13 @@ class AdvancedSearchAPI(generics.GenericAPIView):
                             item_names.append(co_info["name"])
 
             # set parameters to filter joining search results
-            hint_attrs = []
-            for attrinfo in join_attr.get("attrinfo", []):
+            hint_attrs: list[AttrHint] = []
+            for info in join_attr.get("attrinfo", []):
                 hint_attrs.append(
                     {
-                        "name": attrinfo["name"],
-                        "keyword": attrinfo.get("keyword"),
-                        "filter_key": attrinfo.get("filter_key"),
+                        "name": info["name"],
+                        "keyword": info.get("keyword"),
+                        "filter_key": info.get("filter_key"),
                     }
                 )
 
@@ -306,7 +309,7 @@ class AdvancedSearchAPI(generics.GenericAPIView):
                     is_output_all=is_output_all,
                     hint_referral_entity_id=None,
                     offset=join_attr.get("offset", 0),
-                ),
+                ).dict(),
             )
 
         # === End of Function: _get_joined_resp() ===
@@ -374,12 +377,10 @@ class AdvancedSearchAPI(generics.GenericAPIView):
             offset=entry_offset,
         )
         # save total population number
-        total_count = deepcopy(resp["ret_count"])
+        total_count = deepcopy(resp.ret_count)
 
         for join_attr in join_attrs:
-            (will_filter_by_joined_attr, joined_resp) = _get_joined_resp(
-                resp["ret_values"], join_attr
-            )
+            (will_filter_by_joined_attr, joined_resp) = _get_joined_resp(resp.ret_values, join_attr)
             # This is needed to set result as blank value
             blank_joining_info = {
                 "%s.%s" % (join_attr["name"], k["name"]): {
@@ -403,16 +404,16 @@ class AdvancedSearchAPI(generics.GenericAPIView):
             # this inserts result to previous search result
             new_ret_values = []
             joined_ret_values = []
-            for resp_result in resp["ret_values"]:
+            for resp_result in resp.ret_values:
                 # joining search result to original one
-                ref_info = resp_result["attrs"].get(join_attr["name"])
+                ref_info = resp_result.attrs.get(join_attr["name"])
 
                 # This get referral Item-ID from joined search result
                 ref_list = _get_ref_id_from_es_result(ref_info)
                 for ref_id in ref_list:
                     if ref_id and ref_id in joined_resp_info:  # type: ignore
                         # join valid value
-                        resp_result["attrs"] |= joined_resp_info[ref_id]
+                        resp_result.attrs |= joined_resp_info[ref_id]
 
                         # collect only the result that matches with keyword of joined_attr parameter
                         copied_result = deepcopy(resp_result)
@@ -421,25 +422,25 @@ class AdvancedSearchAPI(generics.GenericAPIView):
 
                     else:
                         # join EMPTY value
-                        resp_result["attrs"] |= blank_joining_info  # type: ignore
+                        resp_result.attrs |= blank_joining_info  # type: ignore
                         joined_ret_values.append(deepcopy(resp_result))
 
                 if len(ref_list) == 0:
                     # join EMPTY value
-                    resp_result["attrs"] |= blank_joining_info  # type: ignore
+                    resp_result.attrs |= blank_joining_info  # type: ignore
                     joined_ret_values.append(deepcopy(resp_result))
 
             if will_filter_by_joined_attr:
-                resp["ret_values"] = new_ret_values
-                resp["ret_count"] = len(new_ret_values)
+                resp.ret_values = new_ret_values
+                resp.ret_count = len(new_ret_values)
             else:
-                resp["ret_values"] = joined_ret_values
-                resp["ret_count"] = len(joined_ret_values)
+                resp.ret_values = joined_ret_values
+                resp.ret_count = len(joined_ret_values)
 
         # convert field values to fit entry retrieve API data type, as a workaround.
         # FIXME should be replaced with DRF serializer etc
-        for entry in resp["ret_values"]:
-            for name, attr in entry["attrs"].items():
+        for entry in resp.ret_values:
+            for name, attr in entry.attrs.items():
 
                 def _get_typed_value(type: int) -> str:
                     if type & AttrType._ARRAY:
@@ -467,9 +468,11 @@ class AdvancedSearchAPI(generics.GenericAPIView):
                         return "as_group"
                     elif type & AttrType.ROLE:
                         return "as_role"
+                    elif type & AttrType.DATETIME:
+                        return "as_string"
                     raise IncorrectTypeError(f"unexpected type: {type}")
 
-                entry["attrs"][name] = {
+                entry.attrs[name] = {
                     "is_readable": attr["is_readable"],
                     "type": attr["type"],
                     "value": {
@@ -480,21 +483,21 @@ class AdvancedSearchAPI(generics.GenericAPIView):
                 # "asString" is a string type and does not allow None
                 if (
                     _get_typed_value(attr["type"]) == "as_string"
-                    and entry["attrs"][name]["value"]["as_string"] is None
+                    and entry.attrs[name]["value"]["as_string"] is None
                 ):
-                    entry["attrs"][name]["value"]["as_string"] = ""
+                    entry.attrs[name]["value"]["as_string"] = ""
 
                 # "asNamedObject", "as_array_named_object" converts types
                 if _get_typed_value(attr["type"]) == "as_named_object":
-                    value = entry["attrs"][name]["value"]["as_named_object"]
-                    entry["attrs"][name]["value"]["as_named_object"] = {
+                    value = entry.attrs[name]["value"]["as_named_object"]
+                    entry.attrs[name]["value"]["as_named_object"] = {
                         "name": list(value.keys())[0],
                         "object": list(value.values())[0],
                     }
 
                 if _get_typed_value(attr["type"]) == "as_array_named_object":
-                    values = entry["attrs"][name]["value"]["as_array_named_object"]
-                    entry["attrs"][name]["value"]["as_array_named_object"] = [
+                    values = entry.attrs[name]["value"]["as_array_named_object"]
+                    entry.attrs[name]["value"]["as_array_named_object"] = [
                         {
                             "name": list(value.keys())[0],
                             "object": list(value.values())[0],
@@ -504,8 +507,8 @@ class AdvancedSearchAPI(generics.GenericAPIView):
 
         serializer = AdvancedSearchResultSerializer(
             data={
-                "count": resp["ret_count"],
-                "values": resp["ret_values"],
+                "count": resp.ret_count,
+                "values": [x.dict() for x in resp.ret_values],
                 "total_count": total_count,
             }
         )

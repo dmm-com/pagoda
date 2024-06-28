@@ -76,6 +76,9 @@ class GetEntrySerializer(serializers.ModelSerializer):
                     "name": group.name,
                 }
 
+            elif attr.schema.type & AttrType.DATETIME:
+                return attrv.datetime
+
         return [
             {
                 "name": x.schema.name,
@@ -187,11 +190,14 @@ class PostEntrySerializer(serializers.Serializer):
 
         elif attr.type & AttrType.DATE:
             if isinstance(value, str):
-                try:
-                    datetime.strptime(value, "%Y-%m-%d")
-                except ValueError:
-                    raise ValueError("Incorrect data format, should be YYYY-MM-DD")
-                return datetime.strptime(value, "%Y-%m-%d")
+                date_formats = ["%Y-%m-%d", "%Y/%m/%d"]  # List of acceptable date formats
+                for date_format in date_formats:
+                    try:
+                        return datetime.strptime(value, date_format)
+                    except ValueError:
+                        continue  # Try the next format
+                # If all formats failed, raise an error
+                raise ValidationError("Incorrect data format, should be YYYY-MM-DD or YYYY/MM/DD")
             else:
                 return None
 
@@ -200,6 +206,16 @@ class PostEntrySerializer(serializers.Serializer):
 
         elif attr.type & AttrType.ROLE:
             return AttributeValue.uniform_storable(value, Role)
+
+        elif attr.type & AttrType.DATETIME:
+            if isinstance(value, str):
+                try:
+                    datetime.fromisoformat(value)
+                except ValueError:
+                    raise ValueError("Incorrect data format, should be ISO8601 format")
+                return datetime.fromisoformat(value)
+            else:
+                return None
 
         return None
 

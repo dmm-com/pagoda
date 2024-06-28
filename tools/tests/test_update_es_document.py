@@ -52,25 +52,25 @@ class UpdateESDocuemntlTest(AironeTestCase):
     @patch("entry.tasks.update_es_documents.delay", Mock(side_effect=update_es_documents))
     def test_initialize_entries(self):
         ret = Entry.search_entries(self.user, [self.entity1.id, self.entity2.id])
-        self.assertEqual(ret["ret_count"], 0)
+        self.assertEqual(ret.ret_count, 0)
 
         initialize_es_document([])
 
         ret = Entry.search_entries(self.user, [self.entity1.id])
-        self.assertEqual(ret["ret_count"], 3)
-        self.assertTrue(all([x["entity"]["id"] == self.entity1.id for x in ret["ret_values"]]))
+        self.assertEqual(ret.ret_count, 3)
+        self.assertTrue(all([x.entity["id"] == self.entity1.id for x in ret.ret_values]))
         self.assertTrue(
-            all([x["entry"]["id"] in [y.id for y in self.entries] for x in ret["ret_values"]])
+            all([x.entry["id"] in [y.id for y in self.entries] for x in ret.ret_values])
         )
         ret = Entry.search_entries(self.user, [self.entity2.id])
-        self.assertEqual(ret["ret_count"], 1)
-        self.assertEqual(ret["ret_values"][0]["entity"]["id"], self.entity2.id)
-        self.assertEqual(ret["ret_values"][0]["entry"]["id"], self.entry2.id)
+        self.assertEqual(ret.ret_count, 1)
+        self.assertEqual(ret.ret_values[0].entity["id"], self.entity2.id)
+        self.assertEqual(ret.ret_values[0].entry["id"], self.entry2.id)
 
         # recreate index, specified entity
         initialize_es_document([self.entity2.name])
         ret = Entry.search_entries(self.user, [self.entity1.id, self.entity2.id])
-        self.assertEqual(ret["ret_count"], 1)
+        self.assertEqual(ret.ret_count, 1)
 
     @patch("entry.tasks.update_es_documents.delay", Mock(side_effect=update_es_documents))
     def test_update_entry(self):
@@ -85,10 +85,10 @@ class UpdateESDocuemntlTest(AironeTestCase):
         update_es_document([self.entity2.name])
 
         ret = Entry.search_entries(self.user, [self.entity1.id], [{"name": "attr"}])
-        self.assertEqual(ret["ret_count"], 3)
+        self.assertEqual(ret.ret_count, 3)
 
-        entry_info = [x for x in ret["ret_values"] if x["entry"]["id"] == entry.id][0]
-        self.assertEqual(entry_info["attrs"]["attr"]["value"], "value-0")
+        entry_info = [x for x in ret.ret_values if x.entry["id"] == entry.id][0]
+        self.assertEqual(entry_info.attrs["attr"]["value"], "value-0")
 
         with self.assertLogs(logger=Logger, level=logging.WARNING) as warning_log:
             # update es document
@@ -99,10 +99,10 @@ class UpdateESDocuemntlTest(AironeTestCase):
             )
 
         ret = Entry.search_entries(self.user, [self.entity1.id], [{"name": "attr"}])
-        self.assertEqual(ret["ret_count"], 3)
+        self.assertEqual(ret.ret_count, 3)
 
-        entry_info = [x for x in ret["ret_values"] if x["entry"]["id"] == entry.id][0]
-        self.assertEqual(entry_info["attrs"]["attr"]["value"], "new-attr-value")
+        entry_info = [x for x in ret.ret_values if x.entry["id"] == entry.id][0]
+        self.assertEqual(entry_info.attrs["attr"]["value"], "new-attr-value")
 
     @patch("entry.tasks.update_es_documents.delay", Mock(side_effect=update_es_documents))
     def test_delete_entry(self):
@@ -117,7 +117,7 @@ class UpdateESDocuemntlTest(AironeTestCase):
         update_es_document([self.entity2.name])
         ret = Entry.search_entries(self.user, [self.entity1.id])
 
-        self.assertEqual(ret["ret_count"], 3)
+        self.assertEqual(ret.ret_count, 3)
 
         with self.assertLogs(logger=Logger, level=logging.WARNING) as warning_log:
             # update es document
@@ -129,4 +129,4 @@ class UpdateESDocuemntlTest(AironeTestCase):
 
         ret = Entry.search_entries(self.user, [self.entity1.id])
 
-        self.assertEqual(ret["ret_count"], 2)
+        self.assertEqual(ret.ret_count, 2)

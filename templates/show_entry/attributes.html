@@ -11,7 +11,7 @@
           <span class='url_conv'>{{ attr.last_value }}</span>
         {% elif attr.type == attr_type.textarea %}
           <span class='url_conv textarea'>{{ attr.last_value }}</span>
-        {% elif attr.type == attr_type.date %}
+        {% elif attr.type == attr_type.date or attr.type == attr_type.datetime %}
           <span>{{ attr.last_value|date:"Y-m-d" }}</span>
         {% elif attr.type == attr_type.entry and attr.last_value %}
           <a href='/entry/show/{{ attr.last_value.id }}/'>{{ attr.last_value.name }}</a>{% if attr.last_value.deleted %}(deleted){% endif %}
