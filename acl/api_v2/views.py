@@ -1,5 +1,3 @@
-import itertools
-
 from django.db.models import Q
 from django.http import Http404
 from drf_spectacular.types import OpenApiTypes
@@ -67,7 +65,9 @@ class ACLHistoryAPI(generics.ListAPIView):
         if instance.objtype == ACLObjType.Entity:
             attrs = instance.attrs.filter(is_active=True)
             acl_history = acl_history + list(
-                itertools.chain.from_iterable([attr.history.all() for attr in attrs])
+                EntityAttr.history.filter(aclbase_ptr_id__in=[a.id for a in attrs]).order_by(
+                    "-history_date", "-history_id"
+                )
             )
             for attr in attrs:
                 codename_query |= (
@@ -78,7 +78,9 @@ class ACLHistoryAPI(generics.ListAPIView):
 
         permissions = HistoricalPermission.objects.filter(codename_query)
         permission_history = list(
-            itertools.chain.from_iterable([p.history.all() for p in permissions])
+            HistoricalPermission.history.filter(
+                permission_ptr_id__in=[p.id for p in permissions]
+            ).order_by("-history_date", "-history_id")
         )
 
         serializer = ACLHistorySerializer(data=acl_history + permission_history, many=True)
