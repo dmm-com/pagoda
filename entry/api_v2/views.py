@@ -370,8 +370,14 @@ class AdvancedSearchAPI(generics.GenericAPIView):
         # XXX experimental advanced search
         start_time = time.perf_counter()
         advancedsearch.query(
-            hint_entity_ids,
-            hint_attrs,
+            user=request.user,
+            entities=hint_entity_ids,
+            attr_hints=hint_attrs,
+            entry_name=hint_entry_name,
+            hint_referral=hint_referral,
+            is_output_all=is_output_all,
+            limit=entry_limit,
+            offset=entry_offset,
         )
         end_time = time.perf_counter()
         print(f"[Experimental Advanced Search] 処理時間: {(end_time - start_time):.6f} 秒")
