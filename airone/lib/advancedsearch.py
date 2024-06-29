@@ -3,7 +3,10 @@ XXX A super experimental advanced search module,
 as an alternative for elasticsearch based current advanced search.
 """
 
-from django.db.models import Prefetch
+import operator
+from functools import reduce
+
+from django.db.models import Prefetch, Q
 
 from airone.lib.elasticsearch import AdvancedSearchResults, AdvancedSearchResultValue, AttrHint
 from airone.lib.log import Logger
@@ -102,6 +105,20 @@ def search_entries(
     # FIXME fetch if entities is not empty
 
     attr_names = [attr_hint["name"] for attr_hint in attr_hints]
+    # FIXME it supports only limited hints, implement more
+    attrv_conditions = reduce(
+        operator.or_,
+        [
+            Q(
+                parent_attr__schema__name=attr_hint["name"],
+                value__icontains=attr_hint["keyword"],
+                is_latest=True,
+            )
+            if len(attr_hint["keyword"]) > 0
+            else Q(parent_attr__schema__name=attr_hint["name"], is_latest=True)
+            for attr_hint in attr_hints
+        ],
+    )
 
     attrs_prefetch = Prefetch(
         "attrs",
@@ -109,13 +126,14 @@ def search_entries(
         .prefetch_related(
             Prefetch(
                 "values",
-                queryset=AttributeValue.objects.filter(is_latest=True).select_related("referral"),
+                queryset=AttributeValue.objects.filter(attrv_conditions).select_related("referral"),
                 to_attr="prefetched_values",
             )
         )
         .select_related("schema"),
         to_attr="prefetched_attrs",
     )
+    # FIXME get total count
     entries = (
         Entry.objects.filter(schema__id__in=entities)
         .select_related("schema")
@@ -133,6 +151,7 @@ def search_entries(
                     "is_readable": True,
                 }
                 for a in e.prefetched_attrs
+                if len(a.prefetched_values) > 0
             },
             # dummy
             is_readable=True,
@@ -140,27 +159,6 @@ def search_entries(
         )
         for e in entries
     ]
-
-    # NOTE without prefetch; will cause N+1, for benchmarking
-    # entries = Entry.objects.filter(schema__id__in=entities)
-    # values = [
-    #     AdvancedSearchResultValue(
-    #         entity={"id": e.schema.id, "name": e.schema.name},
-    #         entry={"id": e.id, "name": e.name},
-    #         attrs={
-    #             a.name: {
-    #                 "type": a.schema.type,
-    #                 "value": a.values.filter(is_latest=True),
-    #                 "is_readable": True,
-    #             }
-    #             for a in e.attrs.filter(name__in=attr_names)
-    #         },
-    #         # dummy
-    #         is_readable=True,
-    #         referrals=[],
-    #     )
-    #     for e in entries
-    # ]
 
     return AdvancedSearchResults(
         ret_count=len(values),

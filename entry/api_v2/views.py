@@ -383,7 +383,7 @@ class AdvancedSearchAPI(generics.GenericAPIView):
         print(f"[Experimental Advanced Search] processing time: {(end_time - start_time):.6f} sec")
 
         start_time = time.perf_counter()
-        resp = Entry.search_entries(
+        Entry.search_entries(
             request.user,
             hint_entity_ids,
             hint_attrs,
