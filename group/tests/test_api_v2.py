@@ -1,4 +1,7 @@
+import json
+
 import yaml
+from rest_framework import status
 
 from airone.lib.test import AironeViewTest
 from group.models import Group
@@ -40,6 +43,29 @@ class ViewTest(AironeViewTest):
         self.assertEqual(body["id"], group.id)
         self.assertEqual(len(body["members"]), 1)
         self.assertEqual(body["members"][0]["id"], user.id)
+
+    def test_update_group(self):
+        self.admin_login()
+
+        users = [self._create_user(x) for x in ["userA", "userB", "userC"]]
+        group = self._create_group("hoge")
+        users[0].groups.add(group)
+
+        update_params = {
+            "name": "fuga",
+            "members": [str(users[1].id), int(users[2].id)],
+        }
+        resp = self.client.put(
+            "/group/api/v2/groups/%s" % group.id, json.dumps(update_params), "application/json"
+        )
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+
+        # These statements checks whether "group" was updated expectedly
+        group.refresh_from_db()
+        self.assertEqual(group.name, "fuga")
+        self.assertEqual([x.id for x in users[0].groups.all()], [])
+        self.assertEqual([x.id for x in users[1].groups.all()], [group.id])
+        self.assertEqual([x.id for x in users[2].groups.all()], [group.id])
 
     def test_import(self):
         self.admin_login()
