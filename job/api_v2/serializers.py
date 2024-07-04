@@ -5,6 +5,7 @@ from typing import TypedDict
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
+from airone.lib.acl import ACLObjType
 from entry.models import Entry
 from job.models import Job
 
@@ -34,8 +35,8 @@ class JobSerializers(serializers.ModelSerializer):
     @extend_schema_field(JobTargetSerializer())
     def get_target(self, obj: Job) -> JobTarget | None:
         if obj.target is not None:
-            sub = obj.target.get_subclass_object()
-            if isinstance(sub, Entry):
+            if obj.target.objtype == ACLObjType.Entry:
+                sub = Entry.objects.filter(id=obj.target.id).select_related("schema").first()
                 return {
                     "id": sub.id,
                     "name": sub.name,
@@ -53,7 +54,7 @@ class JobSerializers(serializers.ModelSerializer):
             return None
 
     def get_passed_time(self, obj: Job) -> int:
-        if obj.is_finished():
+        if obj.is_finished(with_refresh=False):
             return math.floor((obj.updated_at - obj.created_at).total_seconds())
         else:
             return math.floor((datetime.now(timezone.utc) - obj.created_at).total_seconds())
