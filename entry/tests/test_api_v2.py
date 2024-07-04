@@ -1063,7 +1063,7 @@ class ViewTest(BaseViewTest):
         resp = self.client.put(
             "/entry/api/v2/%s/" % entry.id, json.dumps(params), "application/json"
         )
-        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
+        self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertTrue(mock_call_custom.called)
 
         def side_effect(handler_name, entity_name, user, *args):
@@ -1071,6 +1071,10 @@ class ViewTest(BaseViewTest):
             self.assertEqual(user, self.user)
 
             # Check specified parameters are expected
+            if handler_name == "validate_entry":
+                self.assertEqual(args[0], params["name"])
+                self.assertEqual(args[1], params["attrs"])
+
             if handler_name == "before_update_entry_v2":
                 self.assertEqual(args[0], params)
                 return args[0]
