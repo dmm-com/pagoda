@@ -292,7 +292,7 @@ class EntryBaseSerializer(serializers.ModelSerializer):
 
         # check custom validate
         if custom_view.is_custom("validate_entry", schema.name):
-            custom_view.call_custom("validate_entry", schema.name, user, name, attrs)
+            custom_view.call_custom("validate_entry", schema.name, user, schema.name, name, attrs)
 
 
 @extend_schema_field({})
