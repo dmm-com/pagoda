@@ -3265,13 +3265,18 @@ class ViewTest(AironeViewTest):
         resp = self.client.post(
             "/entity/api/v2/%s/entries/" % self.entity.id, json.dumps(params), "application/json"
         )
-        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
+        self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertTrue(mock_call_custom.called)
 
         def side_effect(handler_name, entity_name, user, *args):
             # Check specified parameters are expected
             self.assertEqual(entity_name, self.entity.name)
             self.assertEqual(user, self.user)
+
+            if handler_name == "validate_entry":
+                self.assertEqual(args[0], self.entity.name)
+                self.assertEqual(args[1], params["name"])
+                self.assertEqual(args[2], params["attrs"])
 
             if handler_name == "before_create_entry_v2":
                 self.assertEqual(

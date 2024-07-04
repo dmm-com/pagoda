@@ -253,14 +253,15 @@ class EntryBaseSerializer(serializers.ModelSerializer):
             raise InvalidValueError("Names containing tab characters cannot be specified.")
         return name
 
-    def _validate(self, schema: Entity, attrs: list[dict[str, Any]]):
+    def _validate(self, schema: Entity, name: str, attrs: list[dict[str, Any]]):
+        user: User | None = None
+        if "request" in self.context:
+            user = self.context["request"].user
+        if "_user" in self.context:
+            user = self.context["_user"]
+
         # In create case, check attrs mandatory attribute
         if not self.instance:
-            user: User | None = None
-            if "request" in self.context:
-                user = self.context["request"].user
-            if "_user" in self.context:
-                user = self.context["_user"]
             if user is None:
                 raise RequiredParameterError("user is required")
 
@@ -288,6 +289,10 @@ class EntryBaseSerializer(serializers.ModelSerializer):
             )
             if not is_valid:
                 raise IncorrectTypeError("attrs id(%s) - %s" % (attr["id"], msg))
+
+        # check custom validate
+        if custom_view.is_custom("validate_entry", schema.name):
+            custom_view.call_custom("validate_entry", schema.name, user, schema.name, name, attrs)
 
 
 @extend_schema_field({})
@@ -321,7 +326,7 @@ class EntryCreateSerializer(EntryBaseSerializer):
         fields = ["id", "name", "schema", "attrs", "created_user"]
 
     def validate(self, params):
-        self._validate(params["schema"], params.get("attrs", []))
+        self._validate(params["schema"], params["name"], params.get("attrs", []))
         return params
 
     def create(self, validated_data: EntryCreateData):
@@ -407,7 +412,9 @@ class EntryUpdateSerializer(EntryBaseSerializer):
         }
 
     def validate(self, params):
-        self._validate(self.instance.schema, params.get("attrs", []))
+        self._validate(
+            self.instance.schema, params.get("name", self.instance.name), params.get("attrs", [])
+        )
         return params
 
     def update(self, entry: Entry, validated_data: EntryUpdateData):
