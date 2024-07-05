@@ -8,6 +8,12 @@
 
 ### Fixed
 
+## v3.95.0
+
+### Fixed
+* Fixed some N+1 query.
+  Contributed by @syucream
+
 ## v3.94.0
 
 ## Changed
