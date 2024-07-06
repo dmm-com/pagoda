@@ -2193,10 +2193,18 @@ class Entry(ACLBase):
             ret_count=0,
             ret_values=[],
         )
-        for hint_entity_id in hint_entity_ids:
+        entities = Entity.objects.filter(id__in=hint_entity_ids, is_active=True).prefetch_related(
+            Prefetch(
+                "attrs",
+                queryset=EntityAttr.objects.filter(
+                    name__in=[h["name"] for h in hint_attrs], is_active=True
+                ),
+                to_attr="prefetch_attrs",
+            )
+        )
+        for entity in entities:
             # Check for has permission to Entity
-            entity = Entity.objects.filter(id=hint_entity_id, is_active=True).first()
-            if user and not (entity and user.has_permission(entity, ACLType.Readable)):
+            if user and not user.has_permission(entity, ACLType.Readable):
                 continue
 
             # Check for has permission to EntityAttr
@@ -2204,9 +2212,9 @@ class Entry(ACLBase):
                 if "name" not in hint_attr:
                     continue
 
-                hint_entity_attr = entity.attrs.filter(
-                    name=hint_attr["name"], is_active=True
-                ).first()
+                hint_entity_attr = next(
+                    filter(lambda x: x.name == hint_attr["name"], entity.prefetch_attrs), None
+                )
                 hint_attr["is_readable"] = (
                     True
                     if (
