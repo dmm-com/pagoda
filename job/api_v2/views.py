@@ -108,7 +108,7 @@ class JobListAPI(viewsets.ModelViewSet):
         if created_after:
             query &= Q(created_at__gte=created_after)
 
-        return Job.objects.filter(query).order_by("-created_at")
+        return Job.objects.filter(query).select_related("target").order_by("-created_at")
 
 
 class JobRerunAPI(generics.UpdateAPIView):

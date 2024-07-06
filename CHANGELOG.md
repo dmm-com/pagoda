@@ -8,6 +8,12 @@
 
 ### Fixed
 
+## v3.94.0
+
+## Changed
+* Migrate to enum based ACLType.
+  Contributed by @syucream
+
 ## v3.93.0
 
 ### Added
