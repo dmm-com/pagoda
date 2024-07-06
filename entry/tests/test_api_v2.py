@@ -1659,7 +1659,7 @@ class ViewTest(BaseViewTest):
             resp.json(),
             {
                 "copy_entry_names": [
-                    {"code": "AE-220000", "message": "specified name(entry) already exists"}
+                    {"code": "AE-220000", "message": "specified names(entry) already exists"}
                 ]
             },
         )
