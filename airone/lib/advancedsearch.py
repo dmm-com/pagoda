@@ -13,9 +13,12 @@ from airone.lib.log import Logger
 from airone.lib.types import AttrType
 from entry.models import Attribute, AttributeValue, Entry
 from entry.settings import CONFIG
+from group.models import Group
+from role.models import Role
 from user.models import User
 
 
+# NOTE fetching Group and Role, and data_array will cause N+1
 def _render_attribute_value(
     type: int, values: list[AttributeValue]
 ) -> str | bool | dict | list | None:
@@ -26,30 +29,55 @@ def _render_attribute_value(
         Logger.error("Invalid attribute type: %s" % type)
         return None
 
+    try:
+        attrv = values[0]
+    except IndexError:
+        return None
+
     match attr_type:
         case AttrType.STRING | AttrType.TEXT:
-            return values[0].value
+            return attrv.value
 
         case AttrType.BOOLEAN:
-            return values[0].boolean
+            return attrv.boolean
 
         case AttrType.DATE:
-            return values[0].date
+            return attrv.date
 
         case AttrType.DATETIME:
-            return values[0].datetime
+            return attrv.datetime
 
-        case AttrType.OBJECT | AttrType.GROUP | AttrType.ROLE:
+        case AttrType.OBJECT:
             return {
-                "id": values[0].referral.id,
-                "name": values[0].referral.name,
+                "id": attrv.referral.id,
+                "name": attrv.referral.name,
             }
+
+        case AttrType.GROUP:
+            group = Group.objects.get(id=attrv.value)
+            if group:
+                return {
+                    "id": group.id,
+                    "name": group.name,
+                }
+            else:
+                return None
+
+        case AttrType.ROLE:
+            role = Role.objects.get(id=attrv.value)
+            if role:
+                return {
+                    "id": role.id,
+                    "name": role.name,
+                }
+            else:
+                return None
 
         case AttrType.NAMED_OBJECT:
             return {
                 values[0].key: {
-                    "id": values[0].referral.id,
-                    "name": values[0].referral.name,
+                    "id": attrv.referral.id,
+                    "name": attrv.referral.name,
                 }
             }
 
@@ -61,8 +89,7 @@ def _render_attribute_value(
             | AttrType.ARRAY_GROUP
             | AttrType.ARRAY_ROLE
         ):
-            if len([v.value for v in values if v.value]) == 0:
-                return []
+            values = attrv.data_array.all()
 
             match attr_type:
                 case AttrType.ARRAY_NAMED_OBJECT:
@@ -80,12 +107,20 @@ def _render_attribute_value(
                 case AttrType.ARRAY_STRING:
                     return [v.value for v in values if v.value]
 
-                case AttrType.ARRAY_OBJECT | AttrType.ARRAY_GROUP | AttrType.ARRAY_ROLE:
+                case AttrType.ARRAY_OBJECT:
                     return [
-                        {"id": v.referral.id, "name": v.value}
+                        {"id": v.referral.id, "name": v.referral.name}
                         for v in values
                         if v.referral.id and v.referral.name
                     ]
+
+                case AttrType.ARRAY_GROUP:
+                    groups = Group.objects.filter(id__in=[v.value for v in values if v])
+                    return [{"id": g.id, "name": g.name} for g in groups]
+
+                case AttrType.ARRAY_ROLE:
+                    roles = Role.objects.filter(id__in=[v.value for v in values if v])
+                    return [{"id": r.id, "name": r.name} for r in roles]
 
     raise ValueError("Invalid attribute type: %s" % type)
 
@@ -120,16 +155,21 @@ def search_entries(
         ],
     )
 
+    # TODO flexible query builder based on entity attrs
+    # data_array_prefetch = Prefetch(
+    #     "data_array",
+    #     queryset=AttributeValue.objects.all(),
+    #     to_attr="prefetched_data_array",
+    # )
+    attrv_prefetch = Prefetch(
+        "values",
+        queryset=AttributeValue.objects.filter(attrv_conditions).select_related("referral"),
+        to_attr="prefetched_values",
+    )
     attrs_prefetch = Prefetch(
         "attrs",
         queryset=Attribute.objects.filter(schema__name__in=attr_names)
-        .prefetch_related(
-            Prefetch(
-                "values",
-                queryset=AttributeValue.objects.filter(attrv_conditions).select_related("referral"),
-                to_attr="prefetched_values",
-            )
-        )
+        .prefetch_related(attrv_prefetch)
         .select_related("schema"),
         to_attr="prefetched_attrs",
     )
