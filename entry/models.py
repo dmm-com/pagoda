@@ -56,6 +56,18 @@ class AttributeValue(models.Model):
     boolean = models.BooleanField(default=False)
     date = models.DateField(null=True)
     datetime = models.DateTimeField(null=True)
+    group = models.ForeignKey(
+        Group,
+        null=True,
+        related_name="referred_attr_value",
+        on_delete=models.SET_NULL,
+    )
+    role = models.ForeignKey(
+        Role,
+        null=True,
+        related_name="referred_attr_value",
+        on_delete=models.SET_NULL,
+    )
 
     # This parameter means that target AttributeValue is the latest one. This is usefull to
     # find out enabled AttributeValues by Attribute or EntityAttr object. And separating this
@@ -173,9 +185,14 @@ class AttributeValue(models.Model):
             return None
 
         def _get_model_value(attrv: "AttributeValue", model):
-            instance = model.objects.filter(id=attrv.value, is_active=True).first()
-            if not instance:
-                return None
+            # instance = model.objects.filter(id=attrv.value, is_active=True).first()
+            match attrv.data_type:
+                case AttrType.GROUP if attrv.group:
+                    instance = attrv.group
+                case AttrType.ROLE if attrv.role:
+                    instance = attrv.role
+                case _:
+                    return None
 
             if with_metainfo:
                 return {"id": instance.id, "name": instance.name}
@@ -949,12 +966,22 @@ class Attribute(ACLBase):
 
                 case AttrType.GROUP:
                     attrv.boolean = boolean
+                    if isinstance(val, str) or isinstance(val, int):
+                        ref = Group.objects.filter(id=val, is_active=True).first()
+                        if ref:
+                            attrv.group = ref
+                    # TODO remove storing .value
                     attrv.value = AttributeValue.uniform_storable(val, Group)
                     if not attrv.value:
                         return None
 
                 case AttrType.ROLE:
                     attrv.boolean = boolean
+                    if isinstance(val, str) or isinstance(val, int):
+                        ref = Role.objects.filter(id=val, is_active=True).first()
+                        if ref:
+                            attrv.role = ref
+                    # TODO remove storing .value
                     attrv.value = AttributeValue.uniform_storable(val, Role)
                     if not attrv.value:
                         return None
