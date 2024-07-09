@@ -1,12 +1,12 @@
 dependencies:
 - name: mysql-innodbcluster
   repository: https://mysql.github.io/mysql-operator/
-  version: 2.0.14
+  version: 2.0.15
 - name: elasticsearch
   repository: https://helm.elastic.co
   version: 7.17.3
 - name: rabbitmq
   repository: https://charts.bitnami.com/bitnami
   version: 11.1.1
-digest: sha256:4da180bb402a256e6f06d79a36d41275577048f333ad585d0c270b4c1fc9112d
-generated: "2024-05-02T13:55:23.573003364+09:00"
+digest: sha256:9bee081752b5ddb1c12fea602a059bef41995eca0b6cd1b5bfa90aa0b0e79d71
+generated: "2024-07-09T13:02:44.908321083+09:00"
