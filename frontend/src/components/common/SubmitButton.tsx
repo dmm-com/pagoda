@@ -16,7 +16,7 @@ interface Props {
   disabled: boolean;
   isSubmitting: boolean;
   handleSubmit: React.MouseEventHandler<HTMLButtonElement>;
-  handleCancel: React.MouseEventHandler<HTMLButtonElement>;
+  handleCancel?: React.MouseEventHandler<HTMLButtonElement>;
 }
 
 export const SubmitButton: FC<Props> = ({
@@ -37,9 +37,11 @@ export const SubmitButton: FC<Props> = ({
         {name}
         {isSubmitting && <CircularProgress size="20px" />}
       </StyledButton>
-      <StyledButton variant="contained" color="info" onClick={handleCancel}>
-        キャンセル
-      </StyledButton>
+      {handleCancel && (
+        <StyledButton variant="contained" color="info" onClick={handleCancel}>
+          キャンセル
+        </StyledButton>
+      )}
     </StyledBox>
   );
 };
