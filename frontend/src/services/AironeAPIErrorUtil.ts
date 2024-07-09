@@ -119,7 +119,10 @@ export const extractAPIException = async <T>(
     const message = details.map((e) => extractErrorDetail(e)).join(", ");
 
     // This convert snake_case to camelCase (e.g. "nw_addr" -> "nwAddr")
-    const snakeToCamel = (x: string) => (x.toLowerCase().replace(/(_\w)/g, (m: string) => m.toUpperCase().substr(1)));
+    const snakeToCamel = (x: string) =>
+      x
+        .toLowerCase()
+        .replace(/(_\w)/g, (m: string) => m.toUpperCase().substr(1));
 
     // It's necessary to convert fieldName from snake case to cammel case because
     // server-side response its name as snake case but zod expect it as camel case.
