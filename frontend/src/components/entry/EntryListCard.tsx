@@ -5,6 +5,7 @@ import {
   CardActionArea,
   CardHeader,
   IconButton,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
@@ -12,6 +13,7 @@ import React, { FC, useState } from "react";
 import { Link } from "react-router-dom";
 
 import { entryDetailsPath } from "Routes";
+import { ClipboardCopyButton } from "components/common/ClipboardCopyButton";
 import { EntryControlMenu } from "components/entry/EntryControlMenu";
 
 const StyledCard = styled(Card)(({}) => ({
@@ -51,13 +53,17 @@ export const EntryListCard: FC<Props> = ({ entityId, entry, setToggle }) => {
             component={Link}
             to={entryDetailsPath(entityId, entry.id)}
           >
-            <EntryName variant="h6">{entry.name}</EntryName>
+            <Tooltip title={entry.name} placement="bottom-start">
+              <EntryName variant="h6">{entry.name}</EntryName>
+            </Tooltip>
           </CardActionArea>
         }
         action={
           <>
+            <ClipboardCopyButton name={entry.name} />
+
             <IconButton onClick={(e) => setAnchorElem(e.currentTarget)}>
-              <MoreVertIcon />
+              <MoreVertIcon fontSize="small" />
             </IconButton>
             <EntryControlMenu
               entityId={entityId}

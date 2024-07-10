@@ -106,8 +106,8 @@ describe("UserList", () => {
 
     act(() => {
       // open a menu for user1
-      // NOTE there are 2 buttons (user1 menu, user2 menu)
-      screen.getAllByRole("button")[0].click();
+      // NOTE there are 4 buttons (user1 copy, user1 menu, user2 copy, user2 menu)
+      screen.getAllByRole("button")[1].click();
     });
     act(() => {
       screen.getByRole("menuitem", { name: "削除" }).click();

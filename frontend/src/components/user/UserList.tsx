@@ -8,24 +8,42 @@ import {
   CardHeader,
   Grid,
   IconButton,
+  Tooltip,
   Typography,
 } from "@mui/material";
+import { styled } from "@mui/material/styles";
 import React, { FC, useMemo, useState } from "react";
 import { Link, useHistory, useLocation } from "react-router-dom";
-
-import { useAsyncWithThrow } from "../../hooks/useAsyncWithThrow";
 
 import { UserControlMenu } from "./UserControlMenu";
 
 import { newUserPath, userPath } from "Routes";
+import { ClipboardCopyButton } from "components/common/ClipboardCopyButton";
 import { Loading } from "components/common/Loading";
 import { PaginationFooter } from "components/common/PaginationFooter";
 import { SearchBox } from "components/common/SearchBox";
+import { useAsyncWithThrow } from "hooks/useAsyncWithThrow";
 import { usePage } from "hooks/usePage";
 import { aironeApiClient } from "repository/AironeApiClient";
 import { UserList as ConstUserList } from "services/Constants";
 import { ServerContext } from "services/ServerContext";
 import { normalizeToMatch } from "services/StringUtil";
+
+const StyledCardHeader = styled(CardHeader)(({}) => ({
+  p: "0px",
+  mt: "24px",
+  mx: "16px",
+  mb: "16px",
+  ".MuiCardHeader-content": {
+    width: "80%",
+  },
+}));
+
+const UserName = styled(Typography)(({}) => ({
+  textOverflow: "ellipsis",
+  overflow: "hidden",
+  whiteSpace: "nowrap",
+}));
 
 export const UserList: FC = ({}) => {
   const location = useLocation();
@@ -97,32 +115,18 @@ export const UserList: FC = ({}) => {
             return (
               <Grid item xs={4} key={user.id}>
                 <Card sx={{ height: "100%" }}>
-                  <CardHeader
-                    sx={{
-                      p: "0px",
-                      mt: "24px",
-                      mx: "16px",
-                      mb: "16px",
-                      ".MuiCardHeader-content": {
-                        width: "80%",
-                      },
-                    }}
+                  <StyledCardHeader
                     title={
                       <CardActionArea component={Link} to={userPath(user.id)}>
-                        <Typography
-                          variant="h6"
-                          sx={{
-                            textOverflow: "ellipsis",
-                            overflow: "hidden",
-                            whiteSpace: "nowrap",
-                          }}
-                        >
-                          {user.username}
-                        </Typography>
+                        <Tooltip title={user.username} placement="bottom-start">
+                          <UserName>{user.username}</UserName>
+                        </Tooltip>
                       </CardActionArea>
                     }
                     action={
                       <>
+                        <ClipboardCopyButton name={user.username} />
+
                         <IconButton
                           onClick={(e) => {
                             setUserAnchorEls({
@@ -131,7 +135,7 @@ export const UserList: FC = ({}) => {
                             });
                           }}
                         >
-                          <MoreVertIcon />
+                          <MoreVertIcon fontSize="small" />
                         </IconButton>
                         <UserControlMenu
                           user={user}

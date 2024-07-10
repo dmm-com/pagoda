@@ -6,6 +6,7 @@ import {
   CardContent,
   CardHeader,
   IconButton,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
@@ -15,6 +16,7 @@ import { Link } from "react-router-dom";
 import { EntityControlMenu } from "./EntityControlMenu";
 
 import { entityEntriesPath } from "Routes";
+import { ClipboardCopyButton } from "components/common/ClipboardCopyButton";
 import { EntryImportModal } from "components/entry/EntryImportModal";
 
 const EntityNote = styled(Typography)(({ theme }) => ({
@@ -67,17 +69,21 @@ export const EntityListCard: FC<Props> = ({ entity, setToggle }) => {
       <StyledCardHeader
         title={
           <CardActionArea component={Link} to={entityEntriesPath(entity.id)}>
-            <EntityName variant="h6">{entity.name}</EntityName>
+            <Tooltip title={entity.name} placement="bottom-start">
+              <EntityName variant="h6">{entity.name}</EntityName>
+            </Tooltip>
           </CardActionArea>
         }
         action={
           <>
+            <ClipboardCopyButton name={entity.name} />
+
             <IconButton
               onClick={(e) => {
                 setAnchorElem(e.currentTarget);
               }}
             >
-              <MoreVertIcon />
+              <MoreVertIcon fontSize="small" />
             </IconButton>
             <EntityControlMenu
               entityId={entity.id}
