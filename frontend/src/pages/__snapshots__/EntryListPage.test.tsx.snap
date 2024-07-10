@@ -252,7 +252,9 @@ exports[`should match snapshot 1`] = `
                           tabindex="0"
                         >
                           <h6
-                            class="MuiTypography-root MuiTypography-h6 css-1o3f16q-MuiTypography-root"
+                            aria-label="aaa"
+                            class="MuiTypography-root MuiTypography-h6  css-1o3f16q-MuiTypography-root"
+                            data-mui-internal-clone-element="true"
                           >
                             aaa
                           </h6>
@@ -266,13 +268,32 @@ exports[`should match snapshot 1`] = `
                       class="MuiCardHeader-action css-sgoict-MuiCardHeader-action"
                     >
                       <button
+                        aria-label="名前をコピーしました"
+                        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-78trlr-MuiButtonBase-root-MuiIconButton-root"
+                        data-mui-internal-clone-element="true"
+                        tabindex="0"
+                        type="button"
+                      >
+                        <svg
+                          aria-hidden="true"
+                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-ptiqhd-MuiSvgIcon-root"
+                          data-testid="ContentCopyIcon"
+                          focusable="false"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"
+                          />
+                        </svg>
+                      </button>
+                      <button
                         class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-78trlr-MuiButtonBase-root-MuiIconButton-root"
                         tabindex="0"
                         type="button"
                       >
                         <svg
                           aria-hidden="true"
-                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-ptiqhd-MuiSvgIcon-root"
                           data-testid="MoreVertIcon"
                           focusable="false"
                           viewBox="0 0 24 24"
@@ -307,7 +328,9 @@ exports[`should match snapshot 1`] = `
                           tabindex="0"
                         >
                           <h6
-                            class="MuiTypography-root MuiTypography-h6 css-1o3f16q-MuiTypography-root"
+                            aria-label="aaaaa"
+                            class="MuiTypography-root MuiTypography-h6  css-1o3f16q-MuiTypography-root"
+                            data-mui-internal-clone-element="true"
                           >
                             aaaaa
                           </h6>
@@ -321,13 +344,32 @@ exports[`should match snapshot 1`] = `
                       class="MuiCardHeader-action css-sgoict-MuiCardHeader-action"
                     >
                       <button
+                        aria-label="名前をコピーしました"
+                        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-78trlr-MuiButtonBase-root-MuiIconButton-root"
+                        data-mui-internal-clone-element="true"
+                        tabindex="0"
+                        type="button"
+                      >
+                        <svg
+                          aria-hidden="true"
+                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-ptiqhd-MuiSvgIcon-root"
+                          data-testid="ContentCopyIcon"
+                          focusable="false"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"
+                          />
+                        </svg>
+                      </button>
+                      <button
                         class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-78trlr-MuiButtonBase-root-MuiIconButton-root"
                         tabindex="0"
                         type="button"
                       >
                         <svg
                           aria-hidden="true"
-                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-ptiqhd-MuiSvgIcon-root"
                           data-testid="MoreVertIcon"
                           focusable="false"
                           viewBox="0 0 24 24"
@@ -362,7 +404,9 @@ exports[`should match snapshot 1`] = `
                           tabindex="0"
                         >
                           <h6
-                            class="MuiTypography-root MuiTypography-h6 css-1o3f16q-MuiTypography-root"
+                            aria-label="bbbbb"
+                            class="MuiTypography-root MuiTypography-h6  css-1o3f16q-MuiTypography-root"
+                            data-mui-internal-clone-element="true"
                           >
                             bbbbb
                           </h6>
@@ -376,13 +420,32 @@ exports[`should match snapshot 1`] = `
                       class="MuiCardHeader-action css-sgoict-MuiCardHeader-action"
                     >
                       <button
+                        aria-label="名前をコピーしました"
+                        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-78trlr-MuiButtonBase-root-MuiIconButton-root"
+                        data-mui-internal-clone-element="true"
+                        tabindex="0"
+                        type="button"
+                      >
+                        <svg
+                          aria-hidden="true"
+                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-ptiqhd-MuiSvgIcon-root"
+                          data-testid="ContentCopyIcon"
+                          focusable="false"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"
+                          />
+                        </svg>
+                      </button>
+                      <button
                         class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-78trlr-MuiButtonBase-root-MuiIconButton-root"
                         tabindex="0"
                         type="button"
                       >
                         <svg
                           aria-hidden="true"
-                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-ptiqhd-MuiSvgIcon-root"
                           data-testid="MoreVertIcon"
                           focusable="false"
                           viewBox="0 0 24 24"
@@ -715,7 +778,9 @@ exports[`should match snapshot 1`] = `
                         tabindex="0"
                       >
                         <h6
-                          class="MuiTypography-root MuiTypography-h6 css-1o3f16q-MuiTypography-root"
+                          aria-label="aaa"
+                          class="MuiTypography-root MuiTypography-h6  css-1o3f16q-MuiTypography-root"
+                          data-mui-internal-clone-element="true"
                         >
                           aaa
                         </h6>
@@ -729,13 +794,32 @@ exports[`should match snapshot 1`] = `
                     class="MuiCardHeader-action css-sgoict-MuiCardHeader-action"
                   >
                     <button
+                      aria-label="名前をコピーしました"
+                      class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-78trlr-MuiButtonBase-root-MuiIconButton-root"
+                      data-mui-internal-clone-element="true"
+                      tabindex="0"
+                      type="button"
+                    >
+                      <svg
+                        aria-hidden="true"
+                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-ptiqhd-MuiSvgIcon-root"
+                        data-testid="ContentCopyIcon"
+                        focusable="false"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"
+                        />
+                      </svg>
+                    </button>
+                    <button
                       class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-78trlr-MuiButtonBase-root-MuiIconButton-root"
                       tabindex="0"
                       type="button"
                     >
                       <svg
                         aria-hidden="true"
-                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-ptiqhd-MuiSvgIcon-root"
                         data-testid="MoreVertIcon"
                         focusable="false"
                         viewBox="0 0 24 24"
@@ -770,7 +854,9 @@ exports[`should match snapshot 1`] = `
                         tabindex="0"
                       >
                         <h6
-                          class="MuiTypography-root MuiTypography-h6 css-1o3f16q-MuiTypography-root"
+                          aria-label="aaaaa"
+                          class="MuiTypography-root MuiTypography-h6  css-1o3f16q-MuiTypography-root"
+                          data-mui-internal-clone-element="true"
                         >
                           aaaaa
                         </h6>
@@ -784,13 +870,32 @@ exports[`should match snapshot 1`] = `
                     class="MuiCardHeader-action css-sgoict-MuiCardHeader-action"
                   >
                     <button
+                      aria-label="名前をコピーしました"
+                      class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-78trlr-MuiButtonBase-root-MuiIconButton-root"
+                      data-mui-internal-clone-element="true"
+                      tabindex="0"
+                      type="button"
+                    >
+                      <svg
+                        aria-hidden="true"
+                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-ptiqhd-MuiSvgIcon-root"
+                        data-testid="ContentCopyIcon"
+                        focusable="false"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"
+                        />
+                      </svg>
+                    </button>
+                    <button
                       class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-78trlr-MuiButtonBase-root-MuiIconButton-root"
                       tabindex="0"
                       type="button"
                     >
                       <svg
                         aria-hidden="true"
-                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-ptiqhd-MuiSvgIcon-root"
                         data-testid="MoreVertIcon"
                         focusable="false"
                         viewBox="0 0 24 24"
@@ -825,7 +930,9 @@ exports[`should match snapshot 1`] = `
                         tabindex="0"
                       >
                         <h6
-                          class="MuiTypography-root MuiTypography-h6 css-1o3f16q-MuiTypography-root"
+                          aria-label="bbbbb"
+                          class="MuiTypography-root MuiTypography-h6  css-1o3f16q-MuiTypography-root"
+                          data-mui-internal-clone-element="true"
                         >
                           bbbbb
                         </h6>
@@ -839,13 +946,32 @@ exports[`should match snapshot 1`] = `
                     class="MuiCardHeader-action css-sgoict-MuiCardHeader-action"
                   >
                     <button
+                      aria-label="名前をコピーしました"
+                      class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-78trlr-MuiButtonBase-root-MuiIconButton-root"
+                      data-mui-internal-clone-element="true"
+                      tabindex="0"
+                      type="button"
+                    >
+                      <svg
+                        aria-hidden="true"
+                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-ptiqhd-MuiSvgIcon-root"
+                        data-testid="ContentCopyIcon"
+                        focusable="false"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"
+                        />
+                      </svg>
+                    </button>
+                    <button
                       class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-78trlr-MuiButtonBase-root-MuiIconButton-root"
                       tabindex="0"
                       type="button"
                     >
                       <svg
                         aria-hidden="true"
-                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-ptiqhd-MuiSvgIcon-root"
                         data-testid="MoreVertIcon"
                         focusable="false"
                         viewBox="0 0 24 24"
