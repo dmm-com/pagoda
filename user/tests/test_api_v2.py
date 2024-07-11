@@ -8,7 +8,7 @@ from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from rest_framework.authtoken.models import Token
 
-from airone.lib.test import AironeViewTest
+from airone.lib.test import AironeViewTest, with_airone_settings
 from group.models import Group
 from user.models import User
 
@@ -312,6 +312,33 @@ class ViewTest(AironeViewTest):
         updated_user = User.objects.filter(id=user.id).first()
         self.assertIsNotNone(updated_user)
         self.assertTrue(updated_user.check_password(new_passwd))
+
+    @with_airone_settings(
+        {
+            "PASSWORD_RESET_DISABLED": True,
+        }
+    )
+    def test_patch_user_password_when_PASSWORD_RESET_DISABLED_is_set(self):
+        user = self.guest_login()
+        old_passwd = user.username
+        new_passwd = "new-passwd"
+
+        params = {
+            "old_passwd": old_passwd,
+            "new_passwd": new_passwd,
+            "chk_passwd": new_passwd,
+        }
+        resp = self.client.patch(
+            "/user/api/v2/%d/edit_passwd" % user.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 403)
+
+        # check password wasn't changed
+        self.assertEqual(
+            resp.json(), {"message": "It is not allowed to change password", "code": "AE-210000"}
+        )
+        self.assertFalse(user.check_password(new_passwd))
+        self.assertTrue(user.check_password(old_passwd))
 
     def test_patch_user_password_with_invalid_params(self):
         user = self.guest_login()
