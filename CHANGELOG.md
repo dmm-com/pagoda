@@ -8,6 +8,18 @@
 
 ### Fixed
 
+## v3.96.0
+
+## Added
+* Added tooltip for long entry name.
+  Contributed by @hinashi
+* Added safety processing to prevent changing user password when PASSWORD_RESET_DISABLED is set.
+  Contributed by @userlocalhost
+
+### Fixed
+* Fixed some N+1 query.
+  Contributed by @syucream
+
 ## v3.95.0
 
 ### Fixed
