@@ -2,7 +2,7 @@ from django.core import mail
 from django.test import RequestFactory
 from mock import Mock
 
-from airone.lib.log import LoggingRequestMiddleware
+from airone.middleware.log import LoggingRequestMiddleware
 from airone.lib.test import AironeViewTest
 
 
