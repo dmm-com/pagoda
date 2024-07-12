@@ -1,7 +1,6 @@
 import re
 
 from django.conf import settings
-from django.shortcuts import redirect
 from django.http import Http404
 
 
@@ -10,6 +9,7 @@ class URLGateKeeper:
     This middleware will be activated when LEGACY_UI_DISABLED and never guide
     legacy page even through user intentionally send it.
     """
+
     VEILED_URL_PATTERNS = [
         ## Advanced Search
         r"^/dashboard/import$",
@@ -17,22 +17,17 @@ class URLGateKeeper:
         r"^/dashboard/advanced_search$",
         r"^/dashboard/advanced_search_result$",
         r"^/dashboard/advanced_search_export$",
-
         ## User
         r"^/user/reset.*$",
         r"^/user/password_reset/$",
         r"^/user/change_ldap_auth/$",
         r"^/user/do_.*$",
-
         ## group:
         r"^/group/do_.*$",
-
         ## role:
         r"^/role/do_.*$",
-
         ## Model
         r"^/entity/do_.*$",
-
         ## Item
         r"^/entry/do_.*$",
         r"^/entry/import/.*$",
@@ -40,6 +35,7 @@ class URLGateKeeper:
         ## APIv1
         r"^/api/v1/.*$",
     ]
+
     def __init__(self, get_response):
         self.get_response = get_response
 

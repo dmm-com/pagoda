@@ -1,7 +1,6 @@
 import re
 
 from django.conf import settings
-from django.shortcuts import redirect
 from django.http import Http404
 
 
@@ -11,6 +10,7 @@ class URLRouteGuider:
     legacy page even through user intentionally send it. When this middleware
     accept those requests, this redirect to collect URL.
     """
+
     VEILED_URL_PATTERNS = [
         ## Advanced Search
         r"^/dashboard/import$",
@@ -18,30 +18,25 @@ class URLRouteGuider:
         r"^/dashboard/advanced_search$",
         r"^/dashboard/advanced_search_result$",
         r"^/dashboard/advanced_search_export$",
-
         ## User
         r"^/user/reset.*$",
         r"^/user/password_reset/$",
         r"^/user/change_ldap_auth/$",
         r"^/user/do_.*$",
-
         ## group:
         r"^/group/do_.*$",
-
         ## role:
         r"^/role/do_.*$",
-
         ## Model(Entity)
         r"^/entity/do_.*$",
-
         ## Item(Entry)
         r"^/entry/do_.*$",
         r"^/entry/import/.*$",
         r"^/entry/api/v1/.*$",
-
         ## APIv1
         r"^/api/v1/.*$",
     ]
+
     def __init__(self, get_response):
         self.get_response = get_response
 
