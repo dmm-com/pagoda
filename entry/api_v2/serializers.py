@@ -27,6 +27,7 @@ from entry.models import Attribute, AttributeValue, Entry
 from entry.settings import CONFIG as CONFIG_ENTRY
 from group.models import Group
 from job.models import Job, JobStatus
+from role.models import Role
 from user.api_v2.serializers import UserBaseSerializer
 from user.models import User
 
@@ -844,10 +845,16 @@ class EntryImportEntitySerializer(serializers.Serializer):
                         return ref_entry.id if ref_entry else 0
                 return None
 
-            def _group(val) -> int | None:
+            def _group(val: str) -> int | None:
                 if val:
                     ref_group: Group | None = Group.objects.filter(name=val).first()
                     return ref_group.id if ref_group else 0
+                return None
+
+            def _role(val: str) -> int | None:
+                if val:
+                    ref_role: Role | None = Role.objects.filter(name=val).first()
+                    return ref_role.id if ref_role else 0
                 return None
 
             if entity_attrs[attr_data["name"]]["type"] & AttrType._ARRAY:
@@ -871,6 +878,9 @@ class EntryImportEntitySerializer(serializers.Serializer):
                             )
                     if entity_attrs[attr_data["name"]]["type"] & AttrType.GROUP:
                         attr_data["value"][i] = _group(child_value)
+
+                    if entity_attrs[attr_data["name"]]["type"] & AttrType.ROLE:
+                        attr_data["value"][i] = _role(child_value)
             else:
                 if entity_attrs[attr_data["name"]]["type"] & AttrType.OBJECT:
                     if entity_attrs[attr_data["name"]]["type"] & AttrType._NAMED:
@@ -893,6 +903,8 @@ class EntryImportEntitySerializer(serializers.Serializer):
                         )
                 if entity_attrs[attr_data["name"]]["type"] & AttrType.GROUP:
                     attr_data["value"] = _group(attr_data["value"])
+                if entity_attrs[attr_data["name"]]["type"] & AttrType.ROLE:
+                    attr_data["value"] = _role(attr_data["value"])
 
         entity: Entity | None = Entity.objects.filter(name=params["entity"], is_active=True).first()
         if not entity:

@@ -1,7 +1,7 @@
 import re
 from collections.abc import Iterable
 from datetime import date, datetime
-from typing import Any, List, Optional, Type
+from typing import Any, List, Optional
 
 from django.conf import settings
 from django.db import models
@@ -1966,13 +1966,6 @@ class Entry(ACLBase):
             if entity_attr.type & AttrType.BOOLEAN:
                 attrinfo["value"] = False
 
-            def _set_attrinfo_data(model: Type[Group | Role]):
-                if attrv.value:
-                    obj = model.objects.filter(id=attrv.value, is_active=True).first()
-                    if obj:
-                        attrinfo["value"] = truncate(obj.name)
-                        attrinfo["referral_id"] = obj.id
-
             # Convert data format for mapping of Elasticsearch according to the data type
             if attrv is None:
                 # This is the processing to be safe even if the empty AttributeValue was passed.
@@ -2009,10 +2002,16 @@ class Entry(ACLBase):
                     attrinfo["referral_id"] = attrv.referral.id
 
             elif entity_attr.type & AttrType.GROUP:
-                _set_attrinfo_data(Group)
+                group = attrv.group
+                if group:
+                    attrinfo["value"] = truncate(group.name)
+                    attrinfo["referral_id"] = group.id
 
             elif entity_attr.type & AttrType.ROLE:
-                _set_attrinfo_data(Role)
+                role = attrv.role
+                if role:
+                    attrinfo["value"] = truncate(role.name)
+                    attrinfo["referral_id"] = role.id
 
             # Basically register attribute information whatever value doesn't exist
             if not (entity_attr.type & AttrType._ARRAY and not is_recursive):
