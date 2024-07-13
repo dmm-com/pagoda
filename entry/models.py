@@ -185,7 +185,6 @@ class AttributeValue(models.Model):
             return None
 
         def _get_model_value(attrv: "AttributeValue", model):
-            # instance = model.objects.filter(id=attrv.value, is_active=True).first()
             match attrv.data_type:
                 case AttrType.GROUP | AttrType.ARRAY_GROUP if attrv.group and attrv.group.is_active:
                     instance = attrv.group
@@ -988,10 +987,6 @@ class Attribute(ACLBase):
                             return None
                     if ref:
                         attrv.group = ref
-                    # TODO remove storing .value
-                    attrv.value = AttributeValue.uniform_storable(val, Group)
-                    if not attrv.value:
-                        return None
 
                 case AttrType.ROLE:
                     attrv.boolean = boolean
@@ -1007,10 +1002,6 @@ class Attribute(ACLBase):
                             return None
                     if ref:
                         attrv.role = ref
-                    # TODO remove storing .value
-                    attrv.value = AttributeValue.uniform_storable(val, Role)
-                    if not attrv.value:
-                        return None
 
                 case AttrType.OBJECT:
                     attrv.boolean = boolean
