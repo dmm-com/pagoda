@@ -187,9 +187,9 @@ class AttributeValue(models.Model):
         def _get_model_value(attrv: "AttributeValue", model):
             # instance = model.objects.filter(id=attrv.value, is_active=True).first()
             match attrv.data_type:
-                case AttrType.GROUP if attrv.group:
+                case AttrType.GROUP | AttrType.ARRAY_GROUP if attrv.group:
                     instance = attrv.group
-                case AttrType.ROLE if attrv.role:
+                case AttrType.ROLE | AttrType.ARRAY_ROLE if attrv.role:
                     instance = attrv.role
                 case _:
                     return None
@@ -248,12 +248,22 @@ class AttributeValue(models.Model):
 
                 elif self.parent_attr.schema.type & AttrType.GROUP:
                     value = [
-                        x for x in [_get_model_value(y, Group) for y in self.data_array.all()] if x
+                        x
+                        for x in [
+                            _get_model_value(y, Group)
+                            for y in self.data_array.all().select_related("group")
+                        ]
+                        if x
                     ]
 
                 elif self.parent_attr.schema.type & AttrType.ROLE:
                     value = [
-                        x for x in [_get_model_value(y, Role) for y in self.data_array.all()] if x
+                        x
+                        for x in [
+                            _get_model_value(y, Role)
+                            for y in self.data_array.all().select_related("role")
+                        ]
+                        if x
                     ]
 
         if with_metainfo:
@@ -966,10 +976,18 @@ class Attribute(ACLBase):
 
                 case AttrType.GROUP:
                     attrv.boolean = boolean
-                    if isinstance(val, str) or isinstance(val, int):
-                        ref = Group.objects.filter(id=val, is_active=True).first()
-                        if ref:
-                            attrv.group = ref
+                    ref = None
+                    match val:
+                        case Group() if val.is_active:
+                            ref = val
+                        case int():
+                            ref = Group.objects.filter(id=val, is_active=True).first()
+                        case str() if val.isdigit():
+                            ref = Group.objects.filter(id=val, is_active=True).first()
+                        case _:
+                            return None
+                    if ref:
+                        attrv.group = ref
                     # TODO remove storing .value
                     attrv.value = AttributeValue.uniform_storable(val, Group)
                     if not attrv.value:
@@ -977,10 +995,18 @@ class Attribute(ACLBase):
 
                 case AttrType.ROLE:
                     attrv.boolean = boolean
-                    if isinstance(val, str) or isinstance(val, int):
-                        ref = Role.objects.filter(id=val, is_active=True).first()
-                        if ref:
-                            attrv.role = ref
+                    ref = None
+                    match val:
+                        case Role() if val.is_active:
+                            ref = val
+                        case int():
+                            ref = Role.objects.filter(id=val, is_active=True).first()
+                        case str() if val.isdigit():
+                            ref = Role.objects.filter(id=val, is_active=True).first()
+                        case _:
+                            return None
+                    if ref:
+                        attrv.role = ref
                     # TODO remove storing .value
                     attrv.value = AttributeValue.uniform_storable(val, Role)
                     if not attrv.value:

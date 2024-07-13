@@ -583,8 +583,6 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
                     return {"as_array_named_object": array_named_object}
 
                 case AttrType.ARRAY_GROUP:
-                    # groups = Group.objects.filter(
-                    # id__in=[x.value for x in attrv.data_array.all()])
                     groups = [v.group for v in attrv.data_array.all().select_related("group")]
                     return {
                         "as_array_group": [
@@ -597,7 +595,6 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
                     }
 
                 case AttrType.ARRAY_ROLE:
-                    # roles = Role.objects.filter(id__in=[x.value for x in attrv.data_array.all()])
                     roles = [v.role for v in attrv.data_array.all().select_related("role")]
                     return {
                         "as_array_role": [
@@ -1004,7 +1001,6 @@ class EntryHistoryAttributeValueSerializer(serializers.ModelSerializer):
                 return {"as_array_named_object": array_named_object}
 
             case AttrType.ARRAY_GROUP:
-                # groups = Group.objects.filter(id__in=[x.value for x in obj.data_array.all()])
                 groups = [v.group for v in obj.data_array.all().select_related("group")]
                 return {
                     "as_array_group": [
@@ -1017,7 +1013,6 @@ class EntryHistoryAttributeValueSerializer(serializers.ModelSerializer):
                 }
 
             case AttrType.ARRAY_ROLE:
-                # roles = Role.objects.filter(id__in=[x.value for x in obj.data_array.all()])
                 roles = [v.role for v in obj.data_array.all().select_related("role")]
                 return {
                     "as_array_role": [
@@ -1069,7 +1064,6 @@ class EntryHistoryAttributeValueSerializer(serializers.ModelSerializer):
                 return {"as_named_object": named}
 
             case AttrType.GROUP:
-                # group = Group.objects.get(id=obj.value) if obj.value else None
                 group = obj.group
                 return {
                     "as_group": {
@@ -1081,7 +1075,6 @@ class EntryHistoryAttributeValueSerializer(serializers.ModelSerializer):
                 }
 
             case AttrType.ROLE:
-                # role = Role.objects.get(id=obj.value) if obj.value else None
                 role = obj.role
                 return {
                     "as_role": {

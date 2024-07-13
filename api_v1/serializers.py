@@ -70,7 +70,7 @@ class GetEntrySerializer(serializers.ModelSerializer):
                 return attrv.date
 
             elif attr.schema.type & AttrType.GROUP:
-                group = Group.objects.get(id=attrv.value)
+                group = attrv.group
                 return {
                     "id": group.id,
                     "name": group.name,
