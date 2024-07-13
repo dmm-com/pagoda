@@ -72,7 +72,7 @@ class Group(DjangoGroup):
                 parent_attrv__is_latest=True,
                 parent_attr__schema__type=AttrType.ARRAY_GROUP,
             ),
-            value=str(self.id),
+            group=self,
             parent_attr__parent_entry__is_active=True,
             parent_attr__parent_entry__schema__is_active=True,
         )

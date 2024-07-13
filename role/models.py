@@ -130,7 +130,7 @@ class Role(models.Model):
                 parent_attrv__is_latest=True,
                 parent_attr__schema__type=AttrType.ARRAY_ROLE,
             ),
-            value=str(self.id),
+            role=self,
             parent_attr__parent_entry__is_active=True,
             parent_attr__parent_entry__schema__is_active=True,
         )

@@ -4091,18 +4091,18 @@ class ViewTest(BaseViewTest):
                     sorted([list([xx["name"] for xx in x.values()])[0] for x in value_info]),
                 )
             elif attr_name == "group":
-                self.assertEqual(int(attrv.value), new_group.id)
+                self.assertEqual(attrv.group, new_group)
             elif attr_name == "arr_group":
                 self.assertEqual(
-                    [int(x.value) for x in attrv.data_array.all()],
-                    [new_group.id],
+                    [x.group for x in attrv.data_array.all().select_related("group")],
+                    [new_group],
                 )
             elif attr_name == "role":
-                self.assertEqual(int(attrv.value), new_role.id)
+                self.assertEqual(attrv.role, new_role)
             elif attr_name == "arr_role":
                 self.assertEqual(
-                    [int(x.value) for x in attrv.data_array.all()],
-                    [new_role.id],
+                    [x.role for x in attrv.data_array.all().select_related("role")],
+                    [new_role],
                 )
             elif attr_name == "date":
                 self.assertEqual(attrv.date, date(1999, 1, 1))
