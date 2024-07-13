@@ -782,13 +782,14 @@ class EntryCopySerializer(serializers.Serializer):
 
     def validate_copy_entry_names(self, copy_entry_names: list[str]):
         entry: Entry = self.instance
-        for copy_entry_name in copy_entry_names:
-            if Entry.objects.filter(
-                name=copy_entry_name, schema=entry.schema, is_active=True
-            ).exists():
-                raise DuplicatedObjectExistsError(
-                    "specified name(%s) already exists" % copy_entry_name
-                )
+        duplicated_entries = Entry.objects.filter(
+            name__in=copy_entry_names, schema=entry.schema, is_active=True
+        )
+        if duplicated_entries.exists():
+            raise DuplicatedObjectExistsError(
+                "specified names(%s) already exists"
+                % ",".join([e.name for e in duplicated_entries])
+            )
 
 
 class EntryExportSerializer(serializers.Serializer):
