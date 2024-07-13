@@ -187,9 +187,9 @@ class AttributeValue(models.Model):
         def _get_model_value(attrv: "AttributeValue", model):
             # instance = model.objects.filter(id=attrv.value, is_active=True).first()
             match attrv.data_type:
-                case AttrType.GROUP | AttrType.ARRAY_GROUP if attrv.group:
+                case AttrType.GROUP | AttrType.ARRAY_GROUP if attrv.group and attrv.group.is_active:
                     instance = attrv.group
-                case AttrType.ROLE | AttrType.ARRAY_ROLE if attrv.role:
+                case AttrType.ROLE | AttrType.ARRAY_ROLE if attrv.role and attrv.role.is_active:
                     instance = attrv.role
                 case _:
                     return None
