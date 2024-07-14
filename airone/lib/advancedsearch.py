@@ -52,12 +52,15 @@ def _make_query(
     # TODO flexible query builder based on entity attrs (necessary?)
     data_array_prefetch = Prefetch(
         "data_array",
-        queryset=AttributeValue.objects.all().select_related("referral"),
+        queryset=AttributeValue.objects.all()
+        .only("value", "boolean", "referral")
+        .select_related("referral"),
         to_attr="prefetched_data_array",
     )
     attrv_prefetch = Prefetch(
         "values",
         queryset=AttributeValue.objects.filter(attrv_conditions)
+        .only("value", "boolean", "date", "datetime", "referral")
         .select_related("referral")
         .prefetch_related(data_array_prefetch),
         to_attr="prefetched_values",
@@ -65,14 +68,16 @@ def _make_query(
     attrs_prefetch = Prefetch(
         "attrs",
         queryset=Attribute.objects.filter(schema__name__in=attr_names)
-        .prefetch_related(attrv_prefetch)
-        .select_related("schema"),
+        .only("schema")
+        .select_related("schema")
+        .prefetch_related(attrv_prefetch),
         to_attr="prefetched_attrs",
     )
 
     # FIXME get total count
     return (
         Entry.objects.filter(schema__id__in=entities)
+        .only("id", "name", "schema")
         .select_related("schema")
         .prefetch_related(attrs_prefetch)
     )[offset:limit]
@@ -102,10 +107,10 @@ def _render_attribute_value(
             return attrv.boolean
 
         case AttrType.DATE:
-            return attrv.date
+            return attrv.date.strftime("%Y-%m-%d") if attrv.date else None
 
         case AttrType.DATETIME:
-            return attrv.datetime
+            return attrv.datetime.isoformat() if attrv.datetime else None
 
         case AttrType.OBJECT:
             return {

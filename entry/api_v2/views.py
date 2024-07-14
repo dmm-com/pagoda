@@ -528,7 +528,7 @@ class AdvancedSearchAPI(generics.GenericAPIView):
         serializer = AdvancedSearchResultSerializer(
             data={
                 "count": resp.ret_count,
-                "values": [x.dict() for x in resp.ret_values],
+                "values": [x.model_dump() for x in resp.ret_values],
                 "total_count": total_count,
             }
         )
