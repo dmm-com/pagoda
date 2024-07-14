@@ -4,6 +4,7 @@ as an alternative for elasticsearch based current advanced search.
 """
 
 import operator
+from collections import defaultdict
 from functools import reduce
 
 from django.db.models import Prefetch, Q
@@ -226,6 +227,85 @@ def search_entries(
                 }
                 for a in e.prefetched_attrs
                 if len(a.prefetched_values) > 0
+            },
+            # dummy
+            is_readable=True,
+            referrals=[],
+        )
+        for e in entries
+    ]
+
+    return AdvancedSearchResults(
+        ret_count=len(values),
+        ret_values=values,
+    )
+
+
+def search_entries_with_wide_scan(
+    user: User,
+    entities: list[int],
+    attr_hints: list[AttrHint],
+    # FIXME later
+    entry_name: str | None = None,
+    hint_referral: str | None = None,
+    hint_referral_entity_id: int | None = None,
+    is_output_all: bool = False,
+    limit: int = CONFIG.MAX_LIST_ENTRIES,
+    offset: int = 0,
+) -> AdvancedSearchResults:
+    """
+    Simulate advanced search with widely scaning attribute values.
+    It will generate high load queries, but the query is so simple so possibly fast.
+    """
+
+    attr_names = [attr_hint["name"] for attr_hint in attr_hints]
+
+    attrs_prefetch = Prefetch(
+        "attrs",
+        queryset=Attribute.objects.filter(schema__name__in=attr_names)
+        .only("schema")
+        .select_related("schema"),
+        to_attr="prefetched_attrs",
+    )
+    entries = (
+        Entry.objects.filter(schema__id__in=entities)
+        .only("id", "name", "schema")
+        .select_related("schema")
+        .prefetch_related(attrs_prefetch)[offset:limit]
+    )
+
+    # needs an index on name
+    attr_values = (
+        AttributeValue.objects.filter(parent_attr__schema__name__in=attr_names, is_latest=True)
+        .select_related("referral")
+        .values("id", "value", "boolean", "date", "datetime", "parent_attr", "referral")
+    )
+    attr_values_by_attr = {attrv["parent_attr"]: attrv for attrv in attr_values}
+
+    attr_values_children = (
+        AttributeValue.objects.filter(
+            parent_attr__schema__name__in=attr_names, is_latest=True, parent_attrv__isnull=False
+        )
+        .select_related("referral")
+        .values("value", "boolean", "parent_attrv", "referral")
+    )
+    result = defaultdict(list)
+    for child in attr_values_children:
+        result[child["parent_attrv"]].append(child)
+
+    values = [
+        AdvancedSearchResultValue(
+            entity={"id": e.schema.id, "name": e.schema.name},
+            entry={"id": e.id, "name": e.name},
+            attrs={
+                a.schema.name: {
+                    "type": a.schema.type,
+                    # "value": _render_attribute_value(a.schema.type, a.prefetched_values),
+                    "value": None,
+                    "is_readable": True,
+                }
+                for a in e.prefetched_attrs
+                if len(attr_values_by_attr[a.id]) > 0
             },
             # dummy
             is_readable=True,
