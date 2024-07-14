@@ -56,6 +56,18 @@ class AttributeValue(models.Model):
     boolean = models.BooleanField(default=False)
     date = models.DateField(null=True)
     datetime = models.DateTimeField(null=True)
+    group = models.ForeignKey(
+        Group,
+        null=True,
+        related_name="referred_attr_value",
+        on_delete=models.SET_NULL,
+    )
+    role = models.ForeignKey(
+        Role,
+        null=True,
+        related_name="referred_attr_value",
+        on_delete=models.SET_NULL,
+    )
 
     # This parameter means that target AttributeValue is the latest one. This is usefull to
     # find out enabled AttributeValues by Attribute or EntityAttr object. And separating this
@@ -949,12 +961,34 @@ class Attribute(ACLBase):
 
                 case AttrType.GROUP:
                     attrv.boolean = boolean
+                    ref = None
+                    match val:
+                        case Group() if val.is_active:
+                            ref = val
+                        case int():
+                            ref = Group.objects.filter(id=val, is_active=True).first()
+                        case str() if val.isdigit():
+                            ref = Group.objects.filter(id=val, is_active=True).first()
+                    if ref:
+                        attrv.group = ref
+                    # TODO remove storing .value after logic/data migration
                     attrv.value = AttributeValue.uniform_storable(val, Group)
                     if not attrv.value:
                         return None
 
                 case AttrType.ROLE:
                     attrv.boolean = boolean
+                    ref = None
+                    match val:
+                        case Role() if val.is_active:
+                            ref = val
+                        case int():
+                            ref = Role.objects.filter(id=val, is_active=True).first()
+                        case str() if val.isdigit():
+                            ref = Role.objects.filter(id=val, is_active=True).first()
+                    if ref:
+                        attrv.role = ref
+                    # TODO remove storing .value after logic/data migration
                     attrv.value = AttributeValue.uniform_storable(val, Role)
                     if not attrv.value:
                         return None
