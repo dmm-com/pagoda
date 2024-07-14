@@ -1,6 +1,7 @@
 from datetime import timedelta
 from typing import Dict, TypedDict
 
+from django.conf import settings
 from django.contrib.auth import password_validation
 from django.contrib.auth.tokens import default_token_generator
 from django.core.exceptions import ValidationError as DjangoCoreValidationError
@@ -8,7 +9,7 @@ from django.utils.http import urlsafe_base64_decode
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 from rest_framework.authtoken.models import Token
-from rest_framework.exceptions import ValidationError
+from rest_framework.exceptions import PermissionDenied, ValidationError
 
 from airone.auth.ldap import LDAPBackend
 from user.models import User
@@ -162,6 +163,11 @@ class UserPasswordSerializer(serializers.Serializer):
     def validate(self, attrs: Dict):
         request = self.context["request"]
         user = self.context["user"]
+
+        # When PASSWORD_RESET_DISABLED is set in the settings.AIRONE
+        # request shouldn't be accepted.
+        if settings.AIRONE.get("PASSWORD_RESET_DISABLED"):
+            raise PermissionDenied("It is not allowed to change password")
 
         # Identification
         if int(request.user.id) != int(user.id):

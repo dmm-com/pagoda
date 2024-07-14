@@ -949,7 +949,9 @@ def make_search_results(
 
     # get django objects from the hit information from Elasticsearch
     hit_entry_ids = [x["_id"] for x in res["hits"]["hits"]]
-    hit_entries = Entry.objects.filter(id__in=hit_entry_ids, is_active=True)
+    hit_entries = Entry.objects.filter(id__in=hit_entry_ids, is_active=True).select_related(
+        "schema"
+    )
 
     hit_infos: dict = {}
     for entry in hit_entries[:limit]:
