@@ -1,5 +1,8 @@
 import functools
+import traceback
 from typing import Any, Callable
+
+from django.core.mail import mail_admins
 
 from acl.models import ACLBase
 from airone.lib.log import Logger
@@ -23,6 +26,20 @@ def may_schedule_until_job_is_ready(
             ret: JobStatus | tuple[JobStatus, str, ACLBase | None] | None = func(kls, job)
         except Exception as e:
             Logger.error(f"An error occurred while processing Job(id={job.id}): {str(e)}")
+            # reporting by email when an exception error in celery
+
+            subject = "ERROR Celery Task"
+            message = f"""
+Job ID: {job.id}
+Job Target ID: {job.target_id}
+Job Target Type: {job.target_type}
+Job Operaion ID: {job.operation}
+Job Params: {job.params}
+
+raised exception:
+{traceback.format_exc()}
+"""
+            mail_admins(subject, message)
             ret = JobStatus.ERROR
 
         # update Job status after finishing Job processing
