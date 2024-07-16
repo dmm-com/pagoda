@@ -33,8 +33,10 @@ export const LoginPage: FC = () => {
 
   const [showPassword, setShowPassword] = useState(false);
   const [isAlert, setIsAlert] = useState(false);
-  const [showAlertForTermsOfService, setShowAlertForTermsOfService] = useState(false);
-  const [agreeWithServiceContract, setAgreeWithServiceContract] = useState(false);
+  const [showAlertForTermsOfService, setShowAlertForTermsOfService] =
+    useState(false);
+  const [agreeWithServiceContract, setAgreeWithServiceContract] =
+    useState(false);
   const [openPasswordResetModal, setOpenPasswordResetModal] = useState(false);
   const [uidb64, setUidb64] = useState<string>("");
   const [token, setToken] = useState<string>("");
@@ -77,7 +79,10 @@ export const LoginPage: FC = () => {
 
     // set AGREE_TERM_OF_SERVICE when user indicates to agree with Pagoda's service contract
     if (agreeWithServiceContract === true) {
-      data.append("extra_param", JSON.stringify({ AGREE_TERM_OF_SERVICE: true }));
+      data.append(
+        "extra_param",
+        JSON.stringify({ AGREE_TERM_OF_SERVICE: true })
+      );
     } else {
       // abort login process when user does not agree with Pagoda's service contract
       setShowAlertForTermsOfService(true);
@@ -132,13 +137,17 @@ export const LoginPage: FC = () => {
         <Box width={500}>
           <FormControl>
             <FormGroup>
-              <FormControlLabel control={
-                <Checkbox
-                  onChange={(e) => {
-                    setAgreeWithServiceContract(e.target.checked);
-                    setShowAlertForTermsOfService(false);
-                  }} />}
-                label="私は、Pagoda サービス規約に同意します。" />
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    onChange={(e) => {
+                      setAgreeWithServiceContract(e.target.checked);
+                      setShowAlertForTermsOfService(false);
+                    }}
+                  />
+                }
+                label="私は、Pagoda サービス規約に同意します。"
+              />
             </FormGroup>
             <FormHelperText>
               {showAlertForTermsOfService && (
@@ -287,6 +296,6 @@ export const LoginPage: FC = () => {
         uidb64={uidb64}
         token={token}
       />
-    </Box >
+    </Box>
   );
 };

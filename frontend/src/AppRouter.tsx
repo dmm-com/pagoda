@@ -2,7 +2,6 @@ import React, { FC } from "react";
 import { RouteComponentProps } from "react-router";
 import { Route, BrowserRouter as Router, Switch } from "react-router-dom";
 
-import { CheckTermsService } from "CheckTermsService";
 import { ErrorHandler } from "./ErrorHandler";
 import { ACLHistoryPage } from "./pages/ACLHistoryPage";
 import { EntryCopyPage } from "./pages/EntryCopyPage";
@@ -12,6 +11,7 @@ import { NotFoundErrorPage } from "./pages/NotFoundErrorPage";
 import { RoleEditPage } from "./pages/RoleEditPage";
 import { RoleListPage } from "./pages/RoleListPage";
 
+import { CheckTermsService } from "CheckTermsService";
 import {
   aclHistoryPath,
   aclPath,

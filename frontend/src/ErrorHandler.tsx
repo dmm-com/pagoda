@@ -13,10 +13,14 @@ import { useHistory } from "react-router-dom";
 import { useError } from "react-use";
 
 import { ForbiddenErrorPage } from "./pages/ForbiddenErrorPage";
-import { NotFoundErrorPage } from "./pages/NotFoundErrorPage";
 import { NonTermsServiceAgreementPage } from "./pages/NonTermsServiceAgreement";
+import { NotFoundErrorPage } from "./pages/NotFoundErrorPage";
 import { toError } from "./services/AironeAPIErrorUtil";
-import { ForbiddenError, NotFoundError, NonTermsServiceAgreement } from "./services/Exceptions";
+import {
+  ForbiddenError,
+  NotFoundError,
+  NonTermsServiceAgreement,
+} from "./services/Exceptions";
 
 import { topPath } from "Routes";
 

@@ -1,8 +1,9 @@
 import { Box, Button, Typography } from "@mui/material";
-import React, { FC, useCallback } from "react";
-import { aironeApiClient } from "repository/AironeApiClient";
+import React, { FC } from "react";
 
 import { loginPath } from "../Routes";
+
+import { aironeApiClient } from "repository/AironeApiClient";
 
 export const NonTermsServiceAgreementPage: FC = () => {
   const handleLogout = async () => {
