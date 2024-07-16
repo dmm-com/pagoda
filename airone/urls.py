@@ -21,7 +21,7 @@ urlpatterns = [
     re_path(r"^auth/sso/", include("social_django.urls", namespace="social")),
     re_path(
         r"^auth/login/",
-        auth_views.LoginView.as_view(
+        auth_view.PagodaLoginView.as_view(
             redirect_authenticated_user=True,
             extra_context={
                 "title": settings.AIRONE["TITLE"],
