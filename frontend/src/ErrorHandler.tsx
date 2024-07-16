@@ -14,8 +14,9 @@ import { useError } from "react-use";
 
 import { ForbiddenErrorPage } from "./pages/ForbiddenErrorPage";
 import { NotFoundErrorPage } from "./pages/NotFoundErrorPage";
+import { NonTermsServiceAgreementPage } from "./pages/NonTermsServiceAgreement";
 import { toError } from "./services/AironeAPIErrorUtil";
-import { ForbiddenError, NotFoundError } from "./services/Exceptions";
+import { ForbiddenError, NotFoundError, NonTermsServiceAgreement } from "./services/Exceptions";
 
 import { topPath } from "Routes";
 
@@ -102,6 +103,8 @@ const ErrorFallback: FC<FallbackProps> = ({ error, resetErrorBoundary }) => {
       return <ForbiddenErrorPage />;
     case NotFoundError.errorName:
       return <NotFoundErrorPage />;
+    case NonTermsServiceAgreement.errorName:
+      return <NonTermsServiceAgreementPage />;
     default:
       return <GenericError>{error.toString()}</GenericError>;
   }
