@@ -3,6 +3,9 @@
 ## In development
 
 ### Added
+* Added processing to check whether user agrees with the Terms of Service when
+  settings.AIRONE["CHECK_TERM_SERVICE"] is activated.
+  Contributed by @userlocalhost, @hinashi
 
 ### Changed
 
