@@ -16,24 +16,6 @@ class ViewTest(AironeViewTest):
         self.guest = self._create_user("guest", "guest@example.com")
         self.admin = self._create_user("admin", "admin@example.com", True)
 
-    def _create_user(
-        self,
-        name,
-        email="email",
-        is_superuser=False,
-        authenticate_type=User.AuthenticateType.AUTH_TYPE_LOCAL,
-    ):
-        user = User(
-            username=name,
-            email=email,
-            is_superuser=is_superuser,
-            authenticate_type=authenticate_type,
-        )
-        user.set_password(name)
-        user.save()
-
-        return user
-
     def _admin_login(self):
         self.client.login(username="admin", password="admin")
 
