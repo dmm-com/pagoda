@@ -8,7 +8,7 @@ from django.http.response import JsonResponse
 from django.urls import reverse_lazy
 
 from airone.auth.ldap import LDAPBackend
-from airone.lib.http import HttpResponseSeeOther, check_superuser, http_get, http_post, render
+from airone.lib.http import check_superuser, http_get, http_post, render
 from user.forms import UsernameBasedPasswordResetForm
 
 from .models import User
@@ -16,9 +16,6 @@ from .models import User
 
 @http_get
 def index(request):
-    if not request.user.is_authenticated:
-        return HttpResponseSeeOther("/auth/login")
-
     context = {"users": [request.user]}
     if request.user.is_superuser:
         context = {

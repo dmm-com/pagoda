@@ -34,7 +34,7 @@ def http_get(func):
 
         if not request.user.is_authenticated:
             return HttpResponseSeeOther(
-                "/auth/login?next=%s?%s" % (request.path, quote(request.GET.urlencode()))
+                "/auth/login/?next=%s?%s" % (request.path, quote(request.GET.urlencode()))
             )
 
         return func(*args, **kwargs)
@@ -63,7 +63,7 @@ def check_superuser(func):
         request = args[0]
 
         if not request.user.is_authenticated:
-            return HttpResponseSeeOther("/auth/login")
+            return HttpResponseSeeOther("/auth/login/")
 
         if not request.user.is_superuser:
             return HttpResponse("This page needs administrative permission to access", status=400)

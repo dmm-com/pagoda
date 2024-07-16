@@ -43,6 +43,8 @@ urlpatterns = [
     re_path(r"^trigger/", include(("trigger.urls", "trigger"))),
 ]
 
+handler404 = "dashboard.views_for_ui.error404"
+
 if settings.DEBUG:
     urlpatterns.append(re_path(r"^__debug__/", include("debug_toolbar.urls")))
 
