@@ -33,6 +33,7 @@ urlpatterns = [
                 if hasattr(settings, "SOCIAL_AUTH_SAML_ENABLED_IDPS")
                 else None,
                 "password_reset_disabled": settings.AIRONE["PASSWORD_RESET_DISABLED"],
+                "check_term_service": settings.AIRONE["CHECK_TERM_SERVICE"],
             },
         ),
         name="login",
