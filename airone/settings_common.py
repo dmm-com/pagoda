@@ -358,6 +358,9 @@ class Common(Configuration):
             "social_core.pipeline.user.user_details",
         )
 
+    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+    ADMINS = [("Admin", "localhost@localdomain")]
+
     # email
     if env.bool("AIRONE_EMAIL_ENABLE", False):
         EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"

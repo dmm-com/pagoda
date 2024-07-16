@@ -509,6 +509,167 @@ class ModelTest(AironeTestCase):
             else:
                 self.assertEqual(len(actions), 0)
 
+    def test_condition_can_be_invoked_for_each_attribute_types_with_oldui(self):
+        self.add_entry(self.user, "test_entry", self.entity)
+
+        # register TriggerCondition and its Actions
+        settingTriggerAction = self.FULL_ACTION_CONFIGURATION_PARAMETERS.copy()[0]
+
+        for cond_param in self.FULL_CONDITION_CONFIGURATION_PARAMETERS:
+            TriggerCondition.register(self.entity, [cond_param], [settingTriggerAction])
+
+        # These are testing parameters whether specifying "vlaue" could invoke TriggerCondition
+        # for each typed Attributes.
+        test_input_params = [
+            {
+                "attrname": "str_trigger",
+                "value": [{"data": ""}],
+                "referral_key": [],
+                "will_invoke": False,
+            },
+            {
+                "attrname": "str_trigger",
+                "value": [{"data": "Open Sesame"}],
+                "referral_key": [],
+                "will_invoke": False,
+            },
+            {
+                "attrname": "str_trigger",
+                "value": [{"data": FAT_LADY_PASSWDS[0]}],
+                "referral_key": [],
+                "will_invoke": True,
+            },
+            {
+                "attrname": "ref_trigger",
+                "value": [{"data": None, "index": "0"}],
+                "referral_key": [],
+                "will_invoke": False,
+            },
+            {
+                "attrname": "ref_trigger",
+                "value": [{"data": self.entry_refs[0].id, "index": "0"}],
+                "referral_key": [],
+                "will_invoke": False,
+            },
+            {
+                "attrname": "ref_trigger",
+                "value": [{"data": self.entry_refs[2].id, "index": "0"}],
+                "referral_key": [],
+                "will_invoke": True,
+            },
+            {
+                "attrname": "named_trigger",
+                "value": [{"data": self.entry_refs[0].id, "index": "0"}],
+                "referral_key": [{"data": "Open Sesame", "index": "0"}],
+                "will_invoke": False,
+            },
+            {
+                "attrname": "named_trigger",
+                "value": [{"data": self.entry_refs[0].id, "index": "0"}],
+                "referral_key": [{"data": "", "index": "0"}],
+                "will_invoke": False,
+            },
+            {
+                "attrname": "named_trigger",
+                "value": [{"data": None, "index": "0"}],
+                "referral_key": [{"data": "Unexpected words", "index": "0 "}],
+                "will_invoke": False,
+            },
+            {
+                "attrname": "named_trigger",
+                "value": [{"data": None, "index": "0"}],
+                "referral_key": [{"data": FAT_LADY_PASSWDS[0], "index": "0"}],
+                "will_invoke": True,
+            },
+            {
+                "attrname": "named_trigger",
+                "value": [{"data": self.entry_refs[2].id, "index": "0"}],
+                "referral_key": [{"data": "", "index": "0"}],
+                "will_invoke": True,
+            },
+            {
+                "attrname": "named_trigger",
+                "value": [{"data": self.entry_refs[2].id, "index": "0"}],
+                "referral_key": [{"data": FAT_LADY_PASSWDS[0], "index": "0"}],
+                "will_invoke": True,
+            },
+            {
+                "attrname": "arr_str_trigger",
+                "value": [{"data": "", "index": "0"}],
+                "referral_key": [],
+                "will_invoke": False,
+            },
+            {
+                "attrname": "arr_str_trigger",
+                "value": [{"data": "Open Sesame", "index": "0"}],
+                "referral_key": [],
+                "will_invoke": False,
+            },
+            {
+                "attrname": "arr_str_trigger",
+                "value": [
+                    {"data": "Open Sesame", "index": "0"},
+                    {"data": FAT_LADY_PASSWDS[0], "index": "1"},
+                ],
+                "referral_key": [],
+                "will_invoke": True,
+            },
+            {"attrname": "arr_ref_trigger", "value": [], "referral_key": [], "will_invoke": False},
+            {
+                "attrname": "arr_ref_trigger",
+                "value": [
+                    {"data": self.entry_refs[0].id, "index": "0"},
+                    {"data": self.entry_refs[1].id, "index": "1"},
+                ],
+                "referral_key": [],
+                "will_invoke": False,
+            },
+            {
+                "attrname": "arr_ref_trigger",
+                "value": [
+                    {"data": self.entry_refs[0].id, "index": "0"},
+                    {"data": self.entry_refs[1].id, "index": "1"},
+                    {"data": self.entry_refs[2].id, "index": "2"},
+                ],
+                "referral_key": [],
+                "will_invoke": True,
+            },
+            {
+                "attrname": "arr_named_trigger",
+                "value": [{"data": self.entry_refs[0].id, "index": "0"}],
+                "referral_key": [{"data": "Open Sesame", "index": "0"}],
+                "will_invoke": False,
+            },
+            {
+                "attrname": "arr_named_trigger",
+                "value": [
+                    {"data": self.entry_refs[0].id, "index": "0"},
+                    {"data": self.entry_refs[2].id, "index": "1"},
+                ],
+                "referral_key": [
+                    {"data": "Open Sesame", "index": "0"},
+                    {"data": FAT_LADY_PASSWDS[0], "index": "1"},
+                ],
+                "will_invoke": True,
+            },
+        ]
+        for test_input_param in test_input_params:
+            attr = self.entity.attrs.get(name=test_input_param["attrname"])
+            actions = TriggerCondition.get_invoked_actions(
+                self.entity,
+                [
+                    {
+                        "entity_attr_id": attr.id,
+                        "value": test_input_param["value"],
+                        "referral_key": test_input_param["referral_key"],
+                    }
+                ],
+            )
+            if test_input_param["will_invoke"]:
+                self.assertGreaterEqual(len(actions), 1)
+            else:
+                self.assertEqual(len(actions), 0)
+
     def test_register_conditions_with_blank_values(self):
         # register TriggerCondition and its Actions
         settingTriggerAction = self.FULL_ACTION_CONFIGURATION_PARAMETERS.copy()[0]
