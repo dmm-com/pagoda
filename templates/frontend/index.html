@@ -32,6 +32,7 @@
               isSuperuser: {{user.is_superuser|yesno:"true,false"}},
           },
           legacyUiDisabled: {{airone.LEGACY_UI_DISABLED|yesno:"true,false"}},
+          checkTermService: {{airone.CHECK_TERM_SERVICE|yesno:"true,false"}},
           extendedHeaderMenus: {{ airone.EXTENDED_HEADER_MENUS|safe }},
           flags: {
               webhook: {{ airone_flags.WEBHOOK|yesno:"true,false" }},

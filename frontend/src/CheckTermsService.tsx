@@ -10,7 +10,7 @@ export const CheckTermsService: FC<{ children: React.ReactNode }> = ({
   console.log(document.cookie);
 
   return (
-    <>hoge
+    <>{children}
     </>
   )
 }

@@ -51,7 +51,7 @@ export class ServerContext {
     this.singleSignOnLoginUrl = context.singleSignOnLoginUrl;
     this.legacyUiDisabled = context.legacyUiDisabled;
     this.passwordResetDisabled = context.password_reset_disabled;
-    this.checkTermService = context.check_term_service;
+    this.checkTermService = context.checkTermService;
     this.extendedHeaderMenus = context.extendedHeaderMenus;
     this.flags = context.flags ?? { webhook: true };
   }
