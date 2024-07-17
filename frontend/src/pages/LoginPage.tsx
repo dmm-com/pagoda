@@ -138,40 +138,40 @@ export const LoginPage: FC = () => {
         <Typography variant="subtitle2" mt={2}>
           {serverContext?.subTitle}
         </Typography>
-        {
-          serverContext?.checkTermService && (
-            <Box width={500}>
-              <FormControl>
-                <FormGroup>
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        onChange={(e) => {
-                          setAgreeWithServiceContract(e.target.checked);
-                          setShowAlertForTermsOfService(false);
-                        }}
-                      />
-                    }
-                    label="以下の規約に合意する。"
-                  />
-                  <Link href={serverContext?.termsOfServiceUrl}>Pagoda サービス規約</Link>
-                </FormGroup>
-                <FormHelperText>
-                  {showAlertForTermsOfService && (
-                    <Alert
-                      severity="error"
-                      onClose={() => {
+        {serverContext?.checkTermService && (
+          <Box width={500}>
+            <FormControl>
+              <FormGroup>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      onChange={(e) => {
+                        setAgreeWithServiceContract(e.target.checked);
                         setShowAlertForTermsOfService(false);
                       }}
-                    >
-                      ご利用には、サービス規約への合意が必要です。
-                    </Alert>
-                  )}
-                </FormHelperText>
-              </FormControl>
-            </Box>
-          )
-        }
+                    />
+                  }
+                  label="以下の規約に合意する。"
+                />
+                <Link href={serverContext?.termsOfServiceUrl}>
+                  Pagoda サービス規約
+                </Link>
+              </FormGroup>
+              <FormHelperText>
+                {showAlertForTermsOfService && (
+                  <Alert
+                    severity="error"
+                    onClose={() => {
+                      setShowAlertForTermsOfService(false);
+                    }}
+                  >
+                    ご利用には、サービス規約への合意が必要です。
+                  </Alert>
+                )}
+              </FormHelperText>
+            </FormControl>
+          </Box>
+        )}
         <Box width={500} height={50} mt={2}>
           {isAlert ? (
             <Alert
