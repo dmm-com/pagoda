@@ -6,6 +6,9 @@
 * Added processing to check whether user agrees with the Terms of Service when
   settings.AIRONE["CHECK_TERM_SERVICE"] is activated.
   Contributed by @userlocalhost, @hinashi
+* Added new middleware to prevent to exposing old URL when
+  LEGACY_UI_DISABLED parameter is set in the settings.AIRONE
+  Contributed by @userlocalhost
 
 ### Changed
 
