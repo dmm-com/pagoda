@@ -72,7 +72,7 @@ class Common(Configuration):
     MIDDLEWARE = [
         "django.middleware.security.SecurityMiddleware",
         "whitenoise.middleware.WhiteNoiseMiddleware",
-        "airone.lib.log.LoggingRequestMiddleware",
+        "airone.middleware.log.LoggingRequestMiddleware",
         "django.contrib.sessions.middleware.SessionMiddleware",
         "django.middleware.common.CommonMiddleware",
         "django.middleware.csrf.CsrfViewMiddleware",
@@ -80,7 +80,8 @@ class Common(Configuration):
         "django.contrib.messages.middleware.MessageMiddleware",
         "django.middleware.clickjacking.XFrameOptionsMiddleware",
         "social_django.middleware.SocialAuthExceptionMiddleware",
-        "airone.lib.db.AirOneReplicationMiddleware",
+        "airone.middleware.db.AirOneReplicationMiddleware",
+        "airone.middleware.gate_keeper.URLGateKeeper",
         "simple_history.middleware.HistoryRequestMiddleware",
     ] + env.list("AIRONE_MIDDLEWARE", None, [])
 

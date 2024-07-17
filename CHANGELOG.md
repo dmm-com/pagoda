@@ -3,6 +3,9 @@
 ## In development
 
 ### Added
+* Added new middleware to prevent to exposing old URL when
+  LEGACY_UI_DISABLED parameter is set in the settings.AIRONE
+  Contributed by @userlocalhost
 
 ### Changed
 
