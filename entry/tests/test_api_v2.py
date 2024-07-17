@@ -1075,6 +1075,7 @@ class ViewTest(BaseViewTest):
                 self.assertEqual(args[0], self.entity.name)
                 self.assertEqual(args[1], params["name"])
                 self.assertEqual(args[2], params["attrs"])
+                self.assertEqual(args[3], entry)
 
             if handler_name == "before_update_entry_v2":
                 self.assertEqual(args[0], params)
