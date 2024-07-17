@@ -27,13 +27,7 @@ class PagodaLoginView(django_auth_views.LoginView):
             return response
 
         try:
-            print(
-                "[onix/PagodaLoginView.form_valid(10)] POST.extra_param: %s"
-                % str(self.request.POST.get("extra_param"))
-            )
             extra_param = json.loads(self.request.POST.get("extra_param"))
-            print("[onix/PagodaLoginView.form_valid(11)] json(extra_param): %s" % str(extra_param))
-
             if extra_param.get("AGREE_TERM_OF_SERVICE"):
                 response.set_cookie("AGREE_TERM_OF_SERVICE", True)
             else:
@@ -41,12 +35,11 @@ class PagodaLoginView(django_auth_views.LoginView):
                     {"error": "You have to agree to the Terms of Service to use Pagoda"}, status=400
                 )
 
-        except (json.JSONDecodeError, TypeError) as e:
+        except (json.JSONDecodeError, TypeError):
             Logger.warning(
                 "Unexpected extra_param was specified from client (%s)"
                 % (str(self.request.POST.get("extra_param", "")))
             )
-            print("[onix/PagodaLoginView.form_valid(E0)] %s" % str(e))
 
             return JsonResponse(
                 {"error": "You have to agree to the Terms of Service to use Pagoda"}, status=400
