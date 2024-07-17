@@ -112,7 +112,6 @@ export const LoginPage: FC = () => {
     setOpenPasswordResetConfirmModal(false);
   }, [setOpenPasswordResetConfirmModal]);
 
-  console.log("[onix(50)] serverContext: ", serverContext);
   return (
     <Box
       display="flex"
@@ -153,7 +152,7 @@ export const LoginPage: FC = () => {
                   }
                   label="以下の規約に合意する。"
                 />
-                <Link href={serverContext?.termsOfServiceUrl}>
+                <Link href={serverContext?.termsOfServiceUrl} target="_blank">
                   Pagoda サービス規約
                 </Link>
               </FormGroup>
