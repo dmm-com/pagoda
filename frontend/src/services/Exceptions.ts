@@ -23,3 +23,12 @@ export class UnknownError extends Error {
     this.name = UnknownError.errorName;
   }
 }
+
+export class NonTermsServiceAgreement extends Error {
+  static errorName = "NonTermsServiceAgreement";
+
+  constructor(message?: string) {
+    super(message);
+    this.name = NonTermsServiceAgreement.errorName;
+  }
+}

@@ -233,6 +233,8 @@ class Common(Configuration):
         "SSO_DESC": env.str("AIRONE_SSO_DESC", "SSO"),
         "LEGACY_UI_DISABLED": env.bool("AIRONE_LEGACY_UI_DISABLED", False),
         "PASSWORD_RESET_DISABLED": env.bool("AIRONE_PASSWORD_RESET_DISABLED", False),
+        "CHECK_TERM_SERVICE": env.bool("AIRONE_CHECK_TERM_SERVICE", False),
+        "TERMS_OF_SERVICE_URL": env.bool("AIRONE_TERMS_OF_SERVICE_URL", "#"),
         "EXTENDED_HEADER_MENUS": json.loads(
             env.str(
                 "EXTENDED_HEADER_MENUS",
