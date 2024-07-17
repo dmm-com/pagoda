@@ -167,24 +167,6 @@ class AironeViewTest(AironeTestCase):
 
         return user
 
-    def _create_user(
-        self,
-        name,
-        email="email",
-        is_superuser=False,
-        authenticate_type=User.AuthenticateType.AUTH_TYPE_LOCAL,
-    ):
-        user = User(
-            username=name,
-            email=email,
-            is_superuser=is_superuser,
-            authenticate_type=authenticate_type,
-        )
-        user.set_password(name)
-        user.save()
-
-        return user
-
     def admin_login(self) -> User:
         return self._do_login("admin", True)
 

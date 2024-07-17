@@ -11,7 +11,7 @@ class ViewTest(AironeViewTest):
     def test_vail_page_access_when_route_guide_activated(self):
         self.client.login(username="admin", password="admin")
 
-        user = self._create_user("test-user")
+        user = User.objects.create(username="test-user")
         active_user_count = User.objects.filter(is_active=True).count()
 
         resp = self.client.post(
