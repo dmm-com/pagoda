@@ -32,6 +32,7 @@ export class ServerContext {
   legacyUiDisabled?: boolean;
   passwordResetDisabled?: boolean;
   checkTermService?: boolean;
+  termsOfServiceUrl?: string;
   extendedHeaderMenus: {
     name: string;
     children: { name: string; url: string }[];
@@ -52,6 +53,7 @@ export class ServerContext {
     this.legacyUiDisabled = context.legacyUiDisabled;
     this.passwordResetDisabled = context.password_reset_disabled;
     this.checkTermService = context.checkTermService;
+    this.termsOfServiceUrl = context.termsOfServiceUrl;
     this.extendedHeaderMenus = context.extendedHeaderMenus;
     this.flags = context.flags ?? { webhook: true };
   }

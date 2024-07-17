@@ -33,6 +33,7 @@ urlpatterns = [
                 else None,
                 "password_reset_disabled": settings.AIRONE["PASSWORD_RESET_DISABLED"],
                 "check_term_service": settings.AIRONE["CHECK_TERM_SERVICE"],
+                "terms_of_service_url": settings.AIRONE["TERMS_OF_SERVICE_URL"],
             },
         ),
         name="login",
