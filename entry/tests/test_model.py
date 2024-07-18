@@ -4430,6 +4430,23 @@ class ModelTest(AironeTestCase):
         )
         self.assertEqual(ret.ret_count, 0)
 
+        # multi entity case
+        test_entity = self.create_entity(
+            self._user, "test_entity", [{"name": "attr", "type": AttrType.STRING}]
+        )
+        self.add_entry(self._user, "test_entry", test_entity, {"attr": "fuga"})
+        ret = Entry.search_entries(
+            self._user, [self._entity.id, test_entity.id], is_output_all=True
+        )
+        self.assertEqual(
+            ret.ret_values[0].attrs,
+            {"attr": {"value": "hoge", "is_readable": True, "type": 2}},
+        )
+        self.assertEqual(
+            ret.ret_values[1].attrs,
+            {"attr": {"value": "fuga", "is_readable": True, "type": 2}},
+        )
+
     def test_search_entries_with_offset(self):
         entities = []
         for i in range(3):
