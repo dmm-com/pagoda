@@ -1075,6 +1075,7 @@ class ViewTest(BaseViewTest):
                 self.assertEqual(args[0], self.entity.name)
                 self.assertEqual(args[1], params["name"])
                 self.assertEqual(args[2], params["attrs"])
+                self.assertEqual(args[3], entry)
 
             if handler_name == "before_update_entry_v2":
                 self.assertEqual(args[0], params)
@@ -1663,6 +1664,46 @@ class ViewTest(BaseViewTest):
                 ]
             },
         )
+
+    @patch("entry.tasks.copy_entry.delay", Mock(side_effect=tasks.copy_entry))
+    @mock.patch("airone.lib.custom_view.is_custom", mock.Mock(return_value=True))
+    @mock.patch("airone.lib.custom_view.call_custom")
+    def test_copy_entry_with_customview(self, mock_call_custom):
+        entry: Entry = self.add_entry(self.user, "entry", self.entity)
+        params = {"copy_entry_names": ["copy1", "copy2"]}
+
+        def side_effect(handler_name, entity_name, user, *args):
+            raise ValidationError("copy error")
+
+        mock_call_custom.side_effect = side_effect
+        resp = self.client.post(
+            "/entry/api/v2/%s/copy/" % entry.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertTrue(mock_call_custom.called)
+
+        def side_effect(handler_name, entity_name, user, *args):
+            self.assertEqual(entity_name, self.entity.name)
+            self.assertEqual(user, self.user)
+
+            # Check specified parameters are expected
+            if handler_name == "validate_entry":
+                self.assertEqual(args[0], self.entity.name)
+                self.assertIn(args[1], params["copy_entry_names"])
+                self.assertEqual(args[2], [])
+                self.assertIsNone(args[3])
+
+            if handler_name == "after_copy_entry":
+                self.assertEqual(args[0], entry)
+                self.assertIn(args[1].name, params["copy_entry_names"])
+                self.assertEqual(args[2], params)
+
+        mock_call_custom.side_effect = side_effect
+        resp = self.client.post(
+            "/entry/api/v2/%s/copy/" % entry.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        self.assertTrue(mock_call_custom.called)
 
     def test_serach_entry(self):
         ref_entry4 = self.add_entry(self.user, "hoge4", self.ref_entity)

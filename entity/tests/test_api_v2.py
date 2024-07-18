@@ -3277,6 +3277,7 @@ class ViewTest(AironeViewTest):
                 self.assertEqual(args[0], self.entity.name)
                 self.assertEqual(args[1], params["name"])
                 self.assertEqual(args[2], params["attrs"])
+                self.assertIsNone(args[3])
 
             if handler_name == "before_create_entry_v2":
                 self.assertEqual(
