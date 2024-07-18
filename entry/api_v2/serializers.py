@@ -793,16 +793,11 @@ class EntryCopySerializer(serializers.Serializer):
                 % ",".join([e.name for e in duplicated_entries])
             )
         # check custom validate
+        user = self.context["request"].user
         if custom_view.is_custom("validate_entry", entry.schema.name):
-            for copy_entry_name in copy_entry_names:
+            for name in copy_entry_names:
                 custom_view.call_custom(
-                    "validate_entry",
-                    entry.schema.name,
-                    self.context["request"].user,
-                    entry.schema.name,
-                    copy_entry_name,
-                    [],
-                    None,
+                    "validate_entry", entry.schema.name, user, entry.schema.name, name, [], None
                 )
 
 
