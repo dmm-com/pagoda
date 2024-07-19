@@ -1464,21 +1464,7 @@ class Entry(ACLBase):
     def get_referred_objects(
         self, filter_entities: list[str] = [], exclude_entities: list[str] = []
     ) -> QuerySet:
-        """
-        This returns objects that refer current Entry in the AttributeValue
-        """
-        ids = AttributeValue.objects.filter(
-            Q(referral=self, is_latest=True) | Q(referral=self, parent_attrv__is_latest=True),
-            parent_attr__is_active=True,
-            parent_attr__schema__is_active=True,
-        ).values_list("parent_attr__parent_entry", flat=True)
-
-        # if entity_name param exists, add schema name to reduce filter execution time
-        query = Q(pk__in=ids, is_active=True)
-        if filter_entities:
-            query &= Q(schema__name__in=filter_entities)
-
-        return Entry.objects.filter(query).exclude(schema__name__in=exclude_entities).order_by("id")
+        return Entry.get_referred_entries([self.id], filter_entities, exclude_entities)
 
     def complement_attrs(self, user: User):
         """
@@ -2444,6 +2430,28 @@ class Entry(ACLBase):
                 return False
 
         return True
+
+    @classmethod
+    def get_referred_entries(
+        kls, id_list: list[int], filter_entities: list[str] = [], exclude_entities: list[str] = []
+    ):
+        """
+        This returns objects that refer Entries, which is specifeied in the kd_list,
+        in the AttributeValue.
+        """
+        ids = AttributeValue.objects.filter(
+            Q(referral__in=id_list, is_latest=True)
+            | Q(referral__in=id_list, parent_attrv__is_latest=True),
+            parent_attr__is_active=True,
+            parent_attr__schema__is_active=True,
+        ).values_list("parent_attr__parent_entry", flat=True)
+
+        # if entity_name param exists, add schema name to reduce filter execution time
+        query = Q(pk__in=ids, is_active=True)
+        if filter_entities:
+            query &= Q(schema__name__in=filter_entities)
+
+        return Entry.objects.filter(query).exclude(schema__name__in=exclude_entities).order_by("id")
 
     def get_attrv(self, attr_name: str) -> AttributeValue | None:
         """This returns specified attribute's value without permission check. Because
