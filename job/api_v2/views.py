@@ -9,8 +9,10 @@ from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.request import Request
 from rest_framework.response import Response
 
+from airone.lib.acl import ACLObjType
 from airone.lib.drf import FileIsNotExistsError, InvalidValueError, JobIsNotDoneError
 from airone.lib.http import get_download_response
+from entry.models import Entry
 from job.api_v2.serializers import JobSerializers
 from job.models import Job, JobOperation, JobStatus
 
@@ -109,6 +111,21 @@ class JobListAPI(viewsets.ModelViewSet):
             query &= Q(created_at__gte=created_after)
 
         return Job.objects.filter(query).select_related("target").order_by("-created_at")
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+
+        # prefetch target entries, then pass it via context manually to avoid N+1 in serializer
+        qs = self.paginate_queryset(self.get_queryset().values("target__id", "target__objtype"))
+        target_ids = [int(r["target__id"]) for r in qs if r["target__objtype"] == ACLObjType.Entry]
+        entries = (
+            Entry.objects.filter(id__in=target_ids)
+            .select_related("schema")
+            .values("id", "name", "schema__id", "schema__name")
+        )
+        context[JobSerializers.PREFETCHED_ENTRIES_KEY] = {e["id"]: e for e in entries}
+
+        return context
 
 
 class JobRerunAPI(generics.UpdateAPIView):
