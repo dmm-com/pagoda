@@ -369,7 +369,7 @@ class AdvancedSearchAPI(generics.GenericAPIView):
 
         # XXX experimental advanced search
         start_time = time.perf_counter()
-        resp = advancedsearch.search_entries(
+        resp = advancedsearch.search_entries_with_wide_scan(
             user=request.user,
             entities=hint_entity_ids,
             attr_hints=hint_attrs,

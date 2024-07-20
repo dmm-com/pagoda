@@ -6,6 +6,7 @@ as an alternative for elasticsearch based current advanced search.
 import operator
 from collections import defaultdict
 from functools import reduce
+from typing import Any
 
 from django.db.models import Prefetch, Q
 from django.db.models.manager import BaseManager
@@ -241,6 +242,113 @@ def search_entries(
     )
 
 
+#
+# for experimental
+#
+
+
+# NOTE fetching Group and Role, and data_array will cause N+1
+def _render_attribute_value_from_dict(
+    type: int, attrv: dict[str, Any], children: list[dict[str, Any]]
+) -> Any | None:
+    try:
+        attr_type = AttrType(type)
+    except ValueError:
+        # For compatibility; continue that, and record the error
+        Logger.error("Invalid attribute type: %s" % type)
+        return None
+
+    match attr_type:
+        case AttrType.STRING | AttrType.TEXT:
+            return attrv["value"]
+
+        case AttrType.BOOLEAN:
+            return attrv["boolean"]
+
+        case AttrType.DATE:
+            d = attrv.get("date", None)
+            return d.strftime("%Y-%m-%d") if d else None
+
+        case AttrType.DATETIME:
+            dt = attrv.get("datetime", None)
+            return dt.isoformat() if dt else None
+
+        case AttrType.OBJECT:
+            return {
+                "id": attrv["referral__id"],
+                "name": attrv["referral__name"],
+            }
+
+        case AttrType.GROUP:
+            group = Group.objects.get(id=attrv["value"])
+            if group:
+                return {
+                    "id": group.id,
+                    "name": group.name,
+                }
+            else:
+                return None
+
+        case AttrType.ROLE:
+            role = Role.objects.get(id=attrv["value"])
+            if role:
+                return {
+                    "id": role.id,
+                    "name": role.name,
+                }
+            else:
+                return None
+
+        case AttrType.NAMED_OBJECT:
+            return {
+                attrv["value"]: {
+                    "id": attrv["referral__id"],
+                    "name": attrv["referral__name"],
+                }
+            }
+
+        case (
+            AttrType.ARRAY_OBJECT
+            | AttrType.ARRAY_STRING
+            | AttrType.ARRAY_NAMED_OBJECT
+            | AttrType.ARRAY_NAMED_OBJECT_BOOLEAN
+            | AttrType.ARRAY_GROUP
+            | AttrType.ARRAY_ROLE
+        ):
+            match attr_type:
+                case AttrType.ARRAY_NAMED_OBJECT:
+                    return [
+                        {
+                            v["value"]: {
+                                "id": v["referral__id"],
+                                "name": v["referral__name"],
+                            }
+                        }
+                        for v in children
+                        if v.get("value") and v.get("referral__id") and v.get("referral__name")
+                    ]
+
+                case AttrType.ARRAY_STRING:
+                    return [v["value"] for v in children if v.get("value")]
+
+                case AttrType.ARRAY_OBJECT:
+                    return [
+                        {"id": v["referral__id"], "name": v["referral__name"]}
+                        for v in children
+                        if v.get("referral__id") and v.get("referral__name")
+                    ]
+
+                case AttrType.ARRAY_GROUP:
+                    groups = Group.objects.filter(id__in=[v["value"] for v in children if v])
+                    return [{"id": g.id, "name": g.name} for g in groups]
+
+                case AttrType.ARRAY_ROLE:
+                    roles = Role.objects.filter(id__in=[v["value"] for v in children if v])
+                    return [{"id": r.id, "name": r.name} for r in roles]
+
+    raise ValueError("Invalid attribute type: %s" % type)
+
+
 def search_entries_with_wide_scan(
     user: User,
     entities: list[int],
@@ -258,7 +366,7 @@ def search_entries_with_wide_scan(
     It will generate high load queries, but the query is so simple so possibly fast.
     """
 
-    attr_names = [attr_hint["name"] for attr_hint in attr_hints]
+    attr_names: list[str] = [attr_hint["name"] for attr_hint in attr_hints]
 
     attrs_prefetch = Prefetch(
         "attrs",
@@ -278,20 +386,31 @@ def search_entries_with_wide_scan(
     attr_values = (
         AttributeValue.objects.filter(parent_attr__schema__name__in=attr_names, is_latest=True)
         .select_related("referral")
-        .values("id", "value", "boolean", "date", "datetime", "parent_attr", "referral")
+        .values(
+            "id",
+            "value",
+            "boolean",
+            "date",
+            "datetime",
+            "parent_attr",
+            "referral__id",
+            "referral__name",
+        )
     )
-    attr_values_by_attr = {attrv["parent_attr"]: attrv for attrv in attr_values}
+    attr_values_by_attr: dict[int, dict[str, Any]] = {
+        attrv["parent_attr"]: attrv for attrv in attr_values
+    }
 
     attr_values_children = (
         AttributeValue.objects.filter(
-            parent_attr__schema__name__in=attr_names, is_latest=True, parent_attrv__isnull=False
+            parent_attr__schema__name__in=attr_names, parent_attrv__isnull=False
         )
         .select_related("referral")
-        .values("value", "boolean", "parent_attrv", "referral")
+        .values("value", "boolean", "parent_attrv", "referral__id", "referral__name")
     )
-    result = defaultdict(list)
+    attr_values_children_by_parent: dict[int, list[dict[str, Any]]] = defaultdict(list)
     for child in attr_values_children:
-        result[child["parent_attrv"]].append(child)
+        attr_values_children_by_parent[child["parent_attrv"]].append(child)
 
     values = [
         AdvancedSearchResultValue(
@@ -300,12 +419,15 @@ def search_entries_with_wide_scan(
             attrs={
                 a.schema.name: {
                     "type": a.schema.type,
-                    # "value": _render_attribute_value(a.schema.type, a.prefetched_values),
-                    "value": None,
+                    "value": _render_attribute_value_from_dict(
+                        a.schema.type,
+                        attr_values_by_attr[a.id],
+                        attr_values_children_by_parent.get(attr_values_by_attr[a.id]["id"], []),
+                    ),
                     "is_readable": True,
                 }
                 for a in e.prefetched_attrs
-                if len(attr_values_by_attr[a.id]) > 0
+                if attr_values_by_attr.get(a.id)
             },
             # dummy
             is_readable=True,
