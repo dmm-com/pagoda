@@ -5,6 +5,7 @@ as an alternative for elasticsearch based current advanced search.
 
 import operator
 from collections import defaultdict
+from concurrent.futures import ThreadPoolExecutor
 from functools import reduce
 from typing import Any
 
@@ -382,38 +383,54 @@ def search_entries_with_wide_scan(
         .prefetch_related(attrs_prefetch)[offset:limit]
     )
 
-    # TODO better to have indexed fields in AttributeValue
-    attr_values = (
-        AttributeValue.objects.filter(
-            parent_attrv__isnull=True, is_latest=True, parent_attr__schema__name__in=attr_names
+    def _fetch_attrv() -> dict[int, dict[str, Any]]:
+        # TODO better to have indexed fields in AttributeValue
+        attr_values = (
+            AttributeValue.objects.filter(
+                parent_attrv__isnull=True, is_latest=True, parent_attr__schema__name__in=attr_names
+            )
+            .select_related("referral")
+            .values(
+                "id",
+                "value",
+                "boolean",
+                "date",
+                "datetime",
+                "parent_attr",
+                "referral__id",
+                "referral__name",
+            )
         )
-        .select_related("referral")
-        .values(
-            "id",
-            "value",
-            "boolean",
-            "date",
-            "datetime",
-            "parent_attr",
-            "referral__id",
-            "referral__name",
-        )
-    )
-    attr_values_by_attr: dict[int, dict[str, Any]] = {
-        attrv["parent_attr"]: attrv for attrv in attr_values
-    }
+        return {attrv["parent_attr"]: attrv for attrv in attr_values}
 
-    # TODO better to have indexed fields in AttributeValue
-    attr_values_children = (
-        AttributeValue.objects.filter(
-            parent_attrv__isnull=False, parent_attr__schema__name__in=attr_names
+    def _fetch_attrv_children() -> dict[int, list[dict[str, Any]]]:
+        # TODO better to have indexed fields in AttributeValue
+        attr_values_children = (
+            AttributeValue.objects.filter(
+                parent_attrv__isnull=False, parent_attr__schema__name__in=attr_names
+            )
+            .select_related("referral")
+            .values("value", "boolean", "parent_attrv", "referral__id", "referral__name")
         )
-        .select_related("referral")
-        .values("value", "boolean", "parent_attrv", "referral__id", "referral__name")
-    )
+        attr_values_children_by_parent: dict[int, list[dict[str, Any]]] = defaultdict(list)
+        for child in attr_values_children:
+            attr_values_children_by_parent[child["parent_attrv"]].append(child)
+        return attr_values_children_by_parent
+
+    # in sequential
+    # attr_values_by_attr: dict[int, dict[str, Any]] = _fetch_attrv()
+    # attr_values_children_by_parent: dict[int, list[dict[str, Any]]] = _fetch_attrv_children()
+
+    # in concurrent
+    # NOTE django-debug-toolbar doesn't work SQL analytics with concurrent execution
+    attr_values_by_attr: dict[int, dict[str, Any]] = {}
     attr_values_children_by_parent: dict[int, list[dict[str, Any]]] = defaultdict(list)
-    for child in attr_values_children:
-        attr_values_children_by_parent[child["parent_attrv"]].append(child)
+    with ThreadPoolExecutor() as executor:
+        f1 = executor.submit(_fetch_attrv)
+        f2 = executor.submit(_fetch_attrv_children)
+
+        attr_values_by_attr = f1.result()
+        attr_values_children_by_parent = f2.result()
 
     values = [
         AdvancedSearchResultValue(
