@@ -477,3 +477,6 @@ class Common(Configuration):
     MAX_USERS: int | None = env.int("AIRONE_MAX_USERS", None)
     MAX_GROUPS: int | None = env.int("AIRONE_MAX_GROUPS", None)
     MAX_ROLES: int | None = env.int("AIRONE_MAX_ROLES", None)
+
+    # FIXME enable experimental ES-less advanced search; TODO it must be removed
+    ENABLE_ESLESS_ADVANCED_SEARCH: bool = env.bool("AIRONE_ENABLE_ESLESS_ADVANCED_SEARCH", False)

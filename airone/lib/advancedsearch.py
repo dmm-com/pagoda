@@ -177,7 +177,7 @@ def search_entries(
                 parent_attrv__isnull=False, parent_attr__schema__name__in=attr_names
             )
             .select_related("referral")
-            .values("value", "boolean", "parent_attrv", "referral__id", "referral__name")
+            .values("value", "parent_attrv", "referral__id", "referral__name")
         )
         attr_values_children_by_parent: dict[int, list[dict[str, Any]]] = defaultdict(list)
         for child in attr_values_children:
