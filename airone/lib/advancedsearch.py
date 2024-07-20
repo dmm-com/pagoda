@@ -20,6 +20,10 @@ from group.models import Group
 from role.models import Role
 from user.models import User
 
+#
+# with basic prefetching
+#
+
 
 def _make_query(
     user: User,
@@ -243,7 +247,7 @@ def search_entries(
 
 
 #
-# for experimental
+# wide scan experiment
 #
 
 
@@ -352,6 +356,7 @@ def _render_attribute_value_from_dict(
 def search_entries_with_wide_scan(
     user: User,
     entities: list[int],
+    # NOTE only 'name' is supported; FIXME support other hints
     attr_hints: list[AttrHint],
     # FIXME later
     entry_name: str | None = None,
@@ -361,11 +366,6 @@ def search_entries_with_wide_scan(
     limit: int = CONFIG.MAX_LIST_ENTRIES,
     offset: int = 0,
 ) -> AdvancedSearchResults:
-    """
-    Simulate advanced search with widely scaning attribute values.
-    It will generate high load queries, but the query is so simple so possibly fast.
-    """
-
     attr_names: list[str] = [attr_hint["name"] for attr_hint in attr_hints]
 
     attrs_prefetch = Prefetch(
@@ -382,9 +382,11 @@ def search_entries_with_wide_scan(
         .prefetch_related(attrs_prefetch)[offset:limit]
     )
 
-    # needs an index on name
+    # TODO better to have indexed fields in AttributeValue
     attr_values = (
-        AttributeValue.objects.filter(parent_attr__schema__name__in=attr_names, is_latest=True)
+        AttributeValue.objects.filter(
+            parent_attrv__isnull=True, is_latest=True, parent_attr__schema__name__in=attr_names
+        )
         .select_related("referral")
         .values(
             "id",
@@ -401,9 +403,10 @@ def search_entries_with_wide_scan(
         attrv["parent_attr"]: attrv for attrv in attr_values
     }
 
+    # TODO better to have indexed fields in AttributeValue
     attr_values_children = (
         AttributeValue.objects.filter(
-            parent_attr__schema__name__in=attr_names, parent_attrv__isnull=False
+            parent_attrv__isnull=False, parent_attr__schema__name__in=attr_names
         )
         .select_related("referral")
         .values("value", "boolean", "parent_attrv", "referral__id", "referral__name")
