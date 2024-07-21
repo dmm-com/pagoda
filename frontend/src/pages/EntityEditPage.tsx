@@ -199,6 +199,7 @@ export const EntityEditPage: FC = () => {
           entity?.value != null ? entity.value.name : "新規エンティティの作成"
         }
         description={entity?.value && "エンティテイティ詳細 / 編集"}
+        targetId={entity.value?.id}
         hasOngoingProcess={entity?.value?.hasOngoingChanges}
       >
         <SubmitButton

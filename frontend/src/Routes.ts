@@ -5,7 +5,8 @@ export const topPath = () => basePath;
 export const advancedSearchPath = () => basePath + "advanced_search";
 export const advancedSearchResultPath = () =>
   basePath + "advanced_search_result";
-export const jobsPath = () => basePath + "jobs";
+export const jobsPath = (targetId?: number) =>
+  basePath + "jobs" + (targetId ? `?target_id=${targetId}` : "");
 export const aclPath = (objectId: number | string) =>
   basePath + `acl/${objectId}`;
 export const aclHistoryPath = (objectId: number | string) =>

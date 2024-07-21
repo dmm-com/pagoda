@@ -74,6 +74,7 @@ class JobAPI(viewsets.ModelViewSet):
 @extend_schema(
     parameters=[
         OpenApiParameter("created_after", OpenApiTypes.DATETIME, OpenApiParameter.QUERY),
+        OpenApiParameter("target_id", OpenApiTypes.INT, OpenApiParameter.QUERY),
     ],
 )
 class JobListAPI(viewsets.ModelViewSet):
@@ -82,7 +83,8 @@ class JobListAPI(viewsets.ModelViewSet):
 
     def get_queryset(self) -> QuerySet:
         user = self.request.user
-        created_after = self.request.query_params.get("created_after", None)
+        created_after: str | None = self.request.query_params.get("created_after", None)
+        target_id: str | None = self.request.query_params.get("target_id", None)
 
         export_operations: list[JobOperation] = [
             JobOperation.EXPORT_ENTRY,
@@ -107,6 +109,8 @@ class JobListAPI(viewsets.ModelViewSet):
 
         if created_after:
             query &= Q(created_at__gte=created_after)
+        if target_id:
+            query &= Q(target=target_id)
 
         return Job.objects.filter(query).select_related("target").order_by("-created_at")
 
