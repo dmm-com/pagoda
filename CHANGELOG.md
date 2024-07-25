@@ -3,6 +3,8 @@
 ## In development
 
 ### Added
+* Added helper class tmethod Entry.get_referred_entries() to get referral Entries from multiple referred Entries.
+  Contributed by @userlocalhost
 
 ### Changed
 

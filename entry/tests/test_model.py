@@ -689,6 +689,27 @@ class ModelTest(AironeTestCase):
             self.assertEqual(referred_entries.count(), 1)
             self.assertEqual(list(referred_entries), [self._entry])
 
+    def test_get_referred_entries_classmethod(self):
+        user = User.objects.create(username="hoge")
+
+        # Initialize Entities and Entries which will be used in this test
+        model_nw = self.create_entity(
+            user, "NW", attrs=[{"name": "parent", "type": AttrType.OBJECT}]
+        )
+        nw0 = self.add_entry(user, "10.0.0.0/16", model_nw)
+        nw1 = self.add_entry(user, "10.0.1.0/24", model_nw, values={"parent": nw0})
+        nw2 = self.add_entry(user, "10.0.2.0/24", model_nw, values={"parent": nw0})
+
+        model_ip = self.create_entity(
+            user, "IPaddr", attrs=[{"name": "nw", "type": AttrType.OBJECT}]
+        )
+        for name, nw in [("10.0.1.1", nw1), ("10.0.1.2", nw1), ("10.0.2.1", nw2)]:
+            self.add_entry(user, name, model_ip, values={"nw": nw})
+
+        # get Entries that refer ne0 ~ nw1
+        entries = Entry.get_referred_entries([nw0.id, nw1.id, nw2.id], filter_entities=["IPaddr"])
+        self.assertEqual([x.name for x in entries.all()], ["10.0.1.1", "10.0.1.2", "10.0.2.1"])
+
     def test_get_referred_objects_after_deleting_entity_attr(self):
         user = User.objects.create(username="hoge")
 
