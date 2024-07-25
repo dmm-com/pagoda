@@ -1,5 +1,6 @@
 import re
 from collections.abc import Iterable
+from copy import deepcopy
 from datetime import date, datetime
 from typing import Any, List, Optional, Type
 
@@ -2238,11 +2239,12 @@ class Entry(ACLBase):
             if "status" in resp and resp["status"] == 404:
                 continue
 
+            tmp_hint_attrs = deepcopy(hint_attrs)
             # Check for has permission to EntityAttr, when is_output_all flag
             if is_output_all:
                 for entity_attr in entity.attrs.filter(is_active=True):
-                    if entity_attr.name not in [x["name"] for x in hint_attrs if "name" in x]:
-                        hint_attrs.append(
+                    if entity_attr.name not in [x["name"] for x in tmp_hint_attrs if "name" in x]:
+                        tmp_hint_attrs.append(
                             {
                                 "name": entity_attr.name,
                                 "is_readable": True
@@ -2258,7 +2260,7 @@ class Entry(ACLBase):
             search_result = make_search_results(
                 user,
                 resp,
-                hint_attrs,
+                tmp_hint_attrs,
                 hint_referral,
                 limit,
             )
