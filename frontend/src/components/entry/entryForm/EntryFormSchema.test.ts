@@ -208,7 +208,7 @@ describe("schema", () => {
     expect(() => schema.parse(value)).toThrow();
   });
 
-  test("validation fails if string attr value is mandatory and empty", () => {
+  test("validation fails if string-like attr value is mandatory and empty", () => {
     const value = {
       ...baseValue,
       attrs: {
@@ -222,7 +222,14 @@ describe("schema", () => {
       },
     };
 
-    expect(() => schema.parse(value)).toThrow();
+    [
+      EntryAttributeTypeTypeEnum.STRING,
+      EntryAttributeTypeTypeEnum.TEXT,
+      EntryAttributeTypeTypeEnum.DATE,
+      EntryAttributeTypeTypeEnum.DATETIME,
+    ].forEach((type) => {
+      expect(() => schema.parse({ ...value, type })).toThrow();
+    });
   });
 
   test("validation fails if string attr value is too large", () => {
@@ -408,5 +415,28 @@ describe("schema", () => {
     };
 
     expect(() => schema.parse(value)).toThrow();
+  });
+
+  test("validation fails if date/datetime attr value is non-empty and invalid", () => {
+    const value = {
+      ...baseValue,
+      attrs: {
+        string: {
+          ...baseValue.attrs.string,
+          type: EntryAttributeTypeTypeEnum.DATETIME,
+          isMandatory: true,
+          value: {
+            asString: "invalid date",
+          },
+        },
+      },
+    };
+
+    [
+      EntryAttributeTypeTypeEnum.DATE,
+      EntryAttributeTypeTypeEnum.DATETIME,
+    ].forEach((type) => {
+      expect(() => schema.parse({ ...value, type })).toThrow();
+    });
   });
 });

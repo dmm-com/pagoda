@@ -206,9 +206,10 @@ class Job(models.Model):
 
         return datetime.now(pytz.timezone(settings.TIME_ZONE)) > task_expiry
 
-    def is_finished(self) -> bool:
-        # Sync status flag information with the data which is stored in database
-        self.refresh_from_db(fields=["status"])
+    def is_finished(self, with_refresh: bool = True) -> bool:
+        if with_refresh:
+            # Sync status flag information with the data which is stored in database
+            self.refresh_from_db(fields=["status"])
 
         # This value indicates that there is no more processing for a job
         finished_status: list[JobStatus] = [

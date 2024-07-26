@@ -99,6 +99,7 @@ export function convertAttrsFormatCtoS(
         case EntryAttributeTypeTypeEnum.STRING:
         case EntryAttributeTypeTypeEnum.TEXT:
         case EntryAttributeTypeTypeEnum.DATE:
+        case EntryAttributeTypeTypeEnum.DATETIME:
           return attrValue.asString;
 
         case EntryAttributeTypeTypeEnum.BOOLEAN:

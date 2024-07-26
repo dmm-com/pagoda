@@ -918,10 +918,14 @@ class AironeApiClient {
     );
   }
 
-  async getJobs(page = 1): Promise<PaginatedJobSerializersList> {
+  async getJobs(
+    page: number = 1,
+    targetId?: number
+  ): Promise<PaginatedJobSerializersList> {
     return await this.job.jobApiV2JobsList({
       offset: (page - 1) * JobList.MAX_ROW_COUNT,
       limit: JobList.MAX_ROW_COUNT,
+      targetId,
     });
   }
 

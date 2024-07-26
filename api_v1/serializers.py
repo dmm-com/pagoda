@@ -3,6 +3,7 @@ from datetime import datetime
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
+from airone.lib import custom_view
 from airone.lib.types import AttrType
 from entity.models import Entity
 from entry.models import AttributeValue, Entry
@@ -75,6 +76,9 @@ class GetEntrySerializer(serializers.ModelSerializer):
                     "id": group.id,
                     "name": group.name,
                 }
+
+            elif attr.schema.type & AttrType.DATETIME:
+                return attrv.datetime
 
         return [
             {
@@ -187,11 +191,14 @@ class PostEntrySerializer(serializers.Serializer):
 
         elif attr.type & AttrType.DATE:
             if isinstance(value, str):
-                try:
-                    datetime.strptime(value, "%Y-%m-%d")
-                except ValueError:
-                    raise ValueError("Incorrect data format, should be YYYY-MM-DD")
-                return datetime.strptime(value, "%Y-%m-%d")
+                date_formats = ["%Y-%m-%d", "%Y/%m/%d"]  # List of acceptable date formats
+                for date_format in date_formats:
+                    try:
+                        return datetime.strptime(value, date_format)
+                    except ValueError:
+                        continue  # Try the next format
+                # If all formats failed, raise an error
+                raise ValidationError("Incorrect data format, should be YYYY-MM-DD or YYYY/MM/DD")
             else:
                 return None
 
@@ -200,6 +207,16 @@ class PostEntrySerializer(serializers.Serializer):
 
         elif attr.type & AttrType.ROLE:
             return AttributeValue.uniform_storable(value, Role)
+
+        elif attr.type & AttrType.DATETIME:
+            if isinstance(value, str):
+                try:
+                    datetime.fromisoformat(value)
+                except ValueError:
+                    raise ValueError("Incorrect data format, should be ISO8601 format")
+                return datetime.fromisoformat(value)
+            else:
+                return None
 
         return None
 
@@ -241,5 +258,12 @@ class PostEntrySerializer(serializers.Serializer):
                 raise ValidationError("Invalid attribute value(%s) is specified" % (attr_name))
 
             data["attrs"][attr_name] = validated_value
+
+        # check custom validate
+        user = self.context["_user"]
+        if custom_view.is_custom("validate_entry", entity.name):
+            custom_view.call_custom(
+                "validate_entry", entity.name, user, entity.name, data["name"], data["attrs"], entry
+            )
 
         return data

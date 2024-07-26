@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 from typing import Any, Literal
 
 from django.db.models import Prefetch
@@ -40,6 +40,7 @@ class ExportedEntryAttributeValueObject(BaseModel):
 ExportedEntryAttributePrimitiveValue = (
     str  # includes text, string, group, role
     | date
+    | datetime
     | bool
     | ExportedEntryAttributeValueObject
     | dict[str, ExportedEntryAttributeValueObject]  # named entry for yaml export
@@ -252,14 +253,15 @@ class EntryBaseSerializer(serializers.ModelSerializer):
             raise InvalidValueError("Names containing tab characters cannot be specified.")
         return name
 
-    def _validate(self, schema: Entity, attrs: list[dict[str, Any]]):
+    def _validate(self, schema: Entity, name: str, attrs: list[dict[str, Any]]):
+        user: User | None = None
+        if "request" in self.context:
+            user = self.context["request"].user
+        if "_user" in self.context:
+            user = self.context["_user"]
+
         # In create case, check attrs mandatory attribute
         if not self.instance:
-            user: User | None = None
-            if "request" in self.context:
-                user = self.context["request"].user
-            if "_user" in self.context:
-                user = self.context["_user"]
             if user is None:
                 raise RequiredParameterError("user is required")
 
@@ -287,6 +289,12 @@ class EntryBaseSerializer(serializers.ModelSerializer):
             )
             if not is_valid:
                 raise IncorrectTypeError("attrs id(%s) - %s" % (attr["id"], msg))
+
+        # check custom validate
+        if custom_view.is_custom("validate_entry", schema.name):
+            custom_view.call_custom(
+                "validate_entry", schema.name, user, schema.name, name, attrs, self.instance
+            )
 
 
 @extend_schema_field({})
@@ -320,7 +328,7 @@ class EntryCreateSerializer(EntryBaseSerializer):
         fields = ["id", "name", "schema", "attrs", "created_user"]
 
     def validate(self, params):
-        self._validate(params["schema"], params.get("attrs", []))
+        self._validate(params["schema"], params["name"], params.get("attrs", []))
         return params
 
     def create(self, validated_data: EntryCreateData):
@@ -406,7 +414,9 @@ class EntryUpdateSerializer(EntryBaseSerializer):
         }
 
     def validate(self, params):
-        self._validate(self.instance.schema, params.get("attrs", []))
+        self._validate(
+            self.instance.schema, params.get("name", self.instance.name), params.get("attrs", [])
+        )
         return params
 
     def update(self, entry: Entry, validated_data: EntryUpdateData):
@@ -656,6 +666,9 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
                         }
                     }
 
+                case AttrType.DATETIME:
+                    return {"as_string": attrv.datetime if attrv.datetime else ""}
+
                 case _:
                     return {}
 
@@ -703,6 +716,9 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
 
                 case AttrType.ROLE:
                     return {"as_role": AttrDefaultValue[type]}
+
+                case AttrType.DATETIME:
+                    return {"as_string": AttrDefaultValue[type]}
 
                 case _:
                     raise IncorrectTypeError(f"unexpected type: {type}")
@@ -768,12 +784,20 @@ class EntryCopySerializer(serializers.Serializer):
 
     def validate_copy_entry_names(self, copy_entry_names: list[str]):
         entry: Entry = self.instance
-        for copy_entry_name in copy_entry_names:
-            if Entry.objects.filter(
-                name=copy_entry_name, schema=entry.schema, is_active=True
-            ).exists():
-                raise DuplicatedObjectExistsError(
-                    "specified name(%s) already exists" % copy_entry_name
+        duplicated_entries = Entry.objects.filter(
+            name__in=copy_entry_names, schema=entry.schema, is_active=True
+        )
+        if duplicated_entries.exists():
+            raise DuplicatedObjectExistsError(
+                "specified names(%s) already exists"
+                % ",".join([e.name for e in duplicated_entries])
+            )
+        # check custom validate
+        user = self.context["request"].user
+        if custom_view.is_custom("validate_entry", entry.schema.name):
+            for name in copy_entry_names:
+                custom_view.call_custom(
+                    "validate_entry", entry.schema.name, user, entry.schema.name, name, [], None
                 )
 
 
@@ -1072,6 +1096,9 @@ class EntryHistoryAttributeValueSerializer(serializers.ModelSerializer):
                     if role
                     else None
                 }
+
+            case AttrType.DATETIME:
+                return {"as_string": obj.datetime if obj.datetime else ""}
 
             case _:
                 return {}

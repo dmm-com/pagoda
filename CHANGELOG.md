@@ -3,12 +3,74 @@
 ## In development
 
 ### Added
+* Added helper class tmethod Entry.get_referred_entries() to get referral Entries from multiple referred Entries.
+  Contributed by @userlocalhost
+
+### Changed
+
+### Fixed
+
+## v3.97.0
+
+### Added
+* Added processing to check whether user agrees with the Terms of Service when
+  settings.AIRONE["CHECK_TERM_SERVICE"] is activated.
+  Contributed by @userlocalhost, @hinashi
+* Added new middleware to prevent to exposing old URL when
+  LEGACY_UI_DISABLED parameter is set in the settings.AIRONE
+  Contributed by @userlocalhost
+
+### Fixed
+* Fixed failed invoke trigger for oldUI.
+  Contributed by @hinashi
+
+## v3.96.0
+
+## Added
+* Added tooltip for long entry name.
+  Contributed by @hinashi
+* Added safety processing to prevent changing user password when PASSWORD_RESET_DISABLED is set.
+  Contributed by @userlocalhost
+
+### Fixed
+* Fixed some N+1 query.
+  Contributed by @syucream
+
+## v3.95.0
+
+### Fixed
+* Fixed some N+1 query.
+  Contributed by @syucream
+
+## v3.94.0
+
+## Changed
+* Migrate to enum based ACLType.
+  Contributed by @syucream
+
+## v3.93.0
+
+### Added
+* Support datetime attribute type.
+  Contributed by @syucream
+
+### Changed
+* Enhanced date validation to support both YYYY-MM-DD and YYYY/MM/DD formats.
+  Contributed by @tsunoda-takahiro
+
+## v3.92.0
 
 ### Changed
 * Added an option to be able to disable showing history page of Item from entry details page
   Contributed by @userlocalhost
+* Changed the location of custom view library.
+  Contributed by @hinashi
 
-### Fixed
+## v3.91.0
+
+### Changed
+* Removed Basic Auth support.
+  Contributed by @hinashi
 
 ## v3.90.0
 

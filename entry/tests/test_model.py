@@ -1,5 +1,5 @@
 import logging
-from datetime import date
+from datetime import date, datetime, timezone
 from unittest import skip
 
 from django.conf import settings
@@ -7,7 +7,7 @@ from django.conf import settings
 from acl.models import ACLBase
 from airone.lib.acl import ACLObjType, ACLType
 from airone.lib.drf import ExceedLimitError
-from airone.lib.elasticsearch import FilterKey
+from airone.lib.elasticsearch import AdvancedSearchResultValue, FilterKey
 from airone.lib.log import Logger
 from airone.lib.test import AironeTestCase
 from airone.lib.types import AttrType
@@ -59,6 +59,11 @@ class ModelTest(AironeTestCase):
                 "set_val": date(2018, 12, 31),
                 "exp_val": date(2018, 12, 31),
             },
+            {
+                "name": "datetime",
+                "set_val": datetime(2018, 12, 31, 12, 34, 56, tzinfo=timezone.utc),
+                "exp_val": datetime(2018, 12, 31, 12, 34, 56, tzinfo=timezone.utc),
+            },
         ]
         if ref:
             attrinfo.append({"name": "obj", "set_val": ref, "exp_val": ref.name})
@@ -101,6 +106,7 @@ class ModelTest(AironeTestCase):
             "group": AttrType.GROUP,
             "date": AttrType.DATE,
             "role": AttrType.ROLE,
+            "datetime": AttrType.DATETIME,
             "arr_str": AttrType.ARRAY_STRING,
             "arr_obj": AttrType.ARRAY_OBJECT,
             "arr_name": AttrType.ARRAY_NAMED_OBJECT,
@@ -682,6 +688,27 @@ class ModelTest(AironeTestCase):
             referred_entries = entry.get_referred_objects()
             self.assertEqual(referred_entries.count(), 1)
             self.assertEqual(list(referred_entries), [self._entry])
+
+    def test_get_referred_entries_classmethod(self):
+        user = User.objects.create(username="hoge")
+
+        # Initialize Entities and Entries which will be used in this test
+        model_nw = self.create_entity(
+            user, "NW", attrs=[{"name": "parent", "type": AttrType.OBJECT}]
+        )
+        nw0 = self.add_entry(user, "10.0.0.0/16", model_nw)
+        nw1 = self.add_entry(user, "10.0.1.0/24", model_nw, values={"parent": nw0})
+        nw2 = self.add_entry(user, "10.0.2.0/24", model_nw, values={"parent": nw0})
+
+        model_ip = self.create_entity(
+            user, "IPaddr", attrs=[{"name": "nw", "type": AttrType.OBJECT}]
+        )
+        for name, nw in [("10.0.1.1", nw1), ("10.0.1.2", nw1), ("10.0.2.1", nw2)]:
+            self.add_entry(user, name, model_ip, values={"nw": nw})
+
+        # get Entries that refer ne0 ~ nw1
+        entries = Entry.get_referred_entries([nw0.id, nw1.id, nw2.id], filter_entities=["IPaddr"])
+        self.assertEqual([x.name for x in entries.all()], ["10.0.1.1", "10.0.1.2", "10.0.2.1"])
 
     def test_get_referred_objects_after_deleting_entity_attr(self):
         user = User.objects.create(username="hoge")
@@ -1591,6 +1618,11 @@ class ModelTest(AironeTestCase):
             },
             {"name": "arr_role", "set_val": [test_role.id], "exp_val": [test_role.name]},
             {"name": "arr_role", "set_val": [test_role], "exp_val": [test_role.name]},
+            {
+                "name": "datetime",
+                "set_val": datetime(2018, 12, 31, 12, 34, 56, tzinfo=timezone.utc),
+                "exp_val": datetime(2018, 12, 31, 12, 34, 56, tzinfo=timezone.utc),
+            },
         ]
         for info in attr_info:
             attr = entry.attrs.get(name=info["name"])
@@ -1965,6 +1997,10 @@ class ModelTest(AironeTestCase):
             },
             "arr_group": {"type": AttrType.ARRAY_GROUP, "value": [ref_group]},
             "arr_role": {"type": AttrType.ARRAY_ROLE, "value": [ref_role]},
+            "datetime": {
+                "type": AttrType.DATETIME,
+                "value": datetime(2018, 12, 31, 12, 34, 56, tzinfo=timezone.utc),
+            },
         }
 
         entity = Entity.objects.create(name="entity", created_user=user)
@@ -2014,19 +2050,20 @@ class ModelTest(AironeTestCase):
                 {"name": "arr_name"},
                 {"name": "arr_group"},
                 {"name": "arr_role"},
+                {"name": "datetime"},
             ],
         )
-        self.assertEqual(ret["ret_count"], 11)
-        self.assertEqual(len(ret["ret_values"]), 11)
+        self.assertEqual(ret.ret_count, 11)
+        self.assertEqual(len(ret.ret_values), 11)
 
         # check returned contents is corrected
-        for v in ret["ret_values"]:
-            self.assertEqual(v["entity"]["id"], entity.id)
-            self.assertEqual(len(v["attrs"]), len(attr_info))
+        for v in ret.ret_values:
+            self.assertEqual(v.entity["id"], entity.id)
+            self.assertEqual(len(v.attrs), len(attr_info))
 
-            entry = Entry.objects.get(id=v["entry"]["id"])
+            entry = Entry.objects.get(id=v.entry["id"])
 
-            for attrname, attrinfo in v["attrs"].items():
+            for attrname, attrinfo in v.attrs.items():
                 attr = entry.attrs.get(schema__name=attrname)
                 attrv = attr.get_latest_value()
 
@@ -2097,18 +2134,21 @@ class ModelTest(AironeTestCase):
                         [{"id": ref_role.id, "name": ref_role.name}],
                     )
 
+                elif attrname == "datetime":
+                    self.assertEqual(attrinfo["value"], attrv.datetime.isoformat())
+
                 else:
                     raise "Invalid result was happend (attrname: %s)" % attrname
 
         # search entries with maximum entries to get
         ret = Entry.search_entries(user, [entity.id], [{"name": "str"}], 5)
-        self.assertEqual(ret["ret_count"], 11)
-        self.assertEqual(len(ret["ret_values"]), 5)
+        self.assertEqual(ret.ret_count, 11)
+        self.assertEqual(len(ret.ret_values), 5)
 
         # search entries with keyword
         ret = Entry.search_entries(user, [entity.id], [{"name": "str", "keyword": "foo-5"}])
-        self.assertEqual(ret["ret_count"], 1)
-        self.assertEqual(ret["ret_values"][0]["entry"]["name"], "e-5")
+        self.assertEqual(ret.ret_count, 1)
+        self.assertEqual(ret.ret_values[0].entry["name"], "e-5")
 
         # search entries with keyword for Role Attribute
         for role_attrname in ["role", "arr_role"]:
@@ -2116,14 +2156,14 @@ class ModelTest(AironeTestCase):
             self.assertEqual(
                 Entry.search_entries(
                     user, [entity.id], [{"name": "role", "keyword": "invalid-keyword"}]
-                ).get("ret_count"),
+                ).ret_count,
                 0,
             )
             # call Entry.search_entries with valid keyword
             self.assertEqual(
-                Entry.search_entries(user, [entity.id], [{"name": "role", "keyword": "rol"}]).get(
-                    "ret_count"
-                ),
+                Entry.search_entries(
+                    user, [entity.id], [{"name": "role", "keyword": "rol"}]
+                ).ret_count,
                 11,
             )
 
@@ -2134,49 +2174,49 @@ class ModelTest(AironeTestCase):
 
         for attrname in attr_info.keys():
             ret = Entry.search_entries(user, [entity.id], [{"name": attrname}])
-            self.assertEqual(len([x for x in ret["ret_values"] if x["entry"]["id"] == entry.id]), 1)
+            self.assertEqual(len([x for x in ret.ret_values if x.entry["id"] == entry.id]), 1)
 
         # check functionallity of the 'exact_match' parameter
         ret = Entry.search_entries(user, [entity.id], [{"name": "str", "keyword": "foo-1"}])
-        self.assertEqual(ret["ret_count"], 2)
+        self.assertEqual(ret.ret_count, 2)
         ret = Entry.search_entries(
             user,
             [entity.id],
             [{"name": "str", "keyword": "foo-1", "exact_match": True}],
         )
-        self.assertEqual(ret["ret_count"], 1)
-        self.assertEqual(ret["ret_values"][0]["entry"]["name"], "e-1")
+        self.assertEqual(ret.ret_count, 1)
+        self.assertEqual(ret.ret_values[0].entry["name"], "e-1")
 
         # check functionallity of the 'entry_name' parameter
         ret = Entry.search_entries(user, [entity.id], entry_name="e-1")
-        self.assertEqual(ret["ret_count"], 2)
+        self.assertEqual(ret.ret_count, 2)
 
         # check combination of 'entry_name' and 'hint_attrs' parameter
         ret = Entry.search_entries(
             user, [entity.id], [{"name": "str", "keyword": "foo-10"}], entry_name="e-1"
         )
-        self.assertEqual(ret["ret_count"], 1)
+        self.assertEqual(ret.ret_count, 1)
 
         # check whether keyword would be insensitive case
         ret = Entry.search_entries(user, [entity.id], [{"name": "str", "keyword": "FOO-10"}])
-        self.assertEqual(ret["ret_count"], 1)
-        self.assertEqual(ret["ret_values"][0]["entry"]["name"], "e-10")
+        self.assertEqual(ret.ret_count, 1)
+        self.assertEqual(ret.ret_values[0].entry["name"], "e-10")
 
         def _assert_result_full(attr, result):
             if attr.type != AttrType.BOOLEAN:
                 # confirm "entry-black" Entry, which doesn't have any substantial Attribute values,
                 # doesn't exist on the result.
                 isin_entry_blank = any(
-                    [x["entry"]["name"] == "entry-blank" for x in result["ret_values"]]
+                    [x.entry["name"] == "entry-blank" for x in result.ret_values]
                 )
                 self.assertFalse(isin_entry_blank)
 
                 # confirm Entries, which have substantial Attribute values, are returned
-                self.assertEqual(result["ret_count"], 11)
+                self.assertEqual(result.ret_count, 11)
 
             else:
                 # both True and False value will be matched for boolean type Attribute
-                self.assertEqual(result["ret_count"], 12)
+                self.assertEqual(result.ret_count, 12)
 
         # check to get Entries that only have substantial Attribute values
         for attr in entity.attrs.filter(is_active=True):
@@ -2226,10 +2266,10 @@ class ModelTest(AironeTestCase):
                 ],
             )
             if attr.type == AttrType.BOOLEAN:
-                self.assertEqual(result["ret_count"], 0)
+                self.assertEqual(result.ret_count, 0)
             else:
-                self.assertEqual(result["ret_count"], 1)
-                self.assertEqual(result["ret_values"][0]["entry"]["name"], "entry-blank")
+                self.assertEqual(result.ret_count, 1)
+                self.assertEqual(result.ret_values[0].entry["name"], "entry-blank")
 
         # check to get Entries with the "CLEARED" filter_key and keyword
         for attr in entity.attrs.filter(is_active=True):
@@ -2247,7 +2287,7 @@ class ModelTest(AironeTestCase):
 
             # This expect to match anything
             self.assertEqual(
-                result["ret_count"], Entry.objects.filter(schema=entity, is_active=True).count()
+                result.ret_count, Entry.objects.filter(schema=entity, is_active=True).count()
             )
 
     def test_search_entries_with_duplicated_filter_key(self):
@@ -2279,9 +2319,9 @@ class ModelTest(AironeTestCase):
                 },
             ],
         )
-        self.assertEqual(result["ret_count"], 4)
+        self.assertEqual(result.ret_count, 4)
         self.assertEqual(
-            [x["entry"]["name"] for x in result["ret_values"]], ["dup-%s" % i for i in range(4)]
+            [x.entry["name"] for x in result.ret_values], ["dup-%s" % i for i in range(4)]
         )
 
     def test_search_entries_with_text_not_contained_filter_key(self):
@@ -2311,9 +2351,9 @@ class ModelTest(AironeTestCase):
         )
 
         # check the result contains only entries don't have "hoge"
-        self.assertEqual(result["ret_count"], 2)
+        self.assertEqual(result.ret_count, 2)
         self.assertEqual(
-            [x["entry"]["name"] for x in result["ret_values"]], ["fuga-%s" % i for i in range(2)]
+            [x.entry["name"] for x in result.ret_values], ["fuga-%s" % i for i in range(2)]
         )
 
     def test_search_entries_with_hint_referral_entity(self):
@@ -2340,8 +2380,8 @@ class ModelTest(AironeTestCase):
             [x.id for x in Entity.objects.filter(is_active=True)],
             hint_referral_entity_id=entity.id,
         )
-        self.assertEqual(result["ret_count"], 1)
-        self.assertEqual(result["ret_values"][0]["entry"]["id"], ref_entry.id)
+        self.assertEqual(result.ret_count, 1)
+        self.assertEqual(result.ret_values[0].entry["id"], ref_entry.id)
 
     def test_search_entries_with_hint_referral(self):
         user = User.objects.create(username="hoge")
@@ -2378,37 +2418,37 @@ class ModelTest(AironeTestCase):
         # call search_entries with 'hint_referral' parameter,
         # then checks that result includes referral entries
         ret = Entry.search_entries(user, [ref_entity.id], [], hint_referral="")
-        self.assertEqual(ret["ret_count"], 3)
+        self.assertEqual(ret.ret_count, 3)
         self.assertEqual(
-            sorted([x["id"] for x in ret["ret_values"][0]["referrals"]]),
+            sorted([x["id"] for x in ret.ret_values[0].referrals]),
             sorted([x.id for x in ref_entries[0].get_referred_objects()]),
         )
 
         # call search_entries with 'hint_referral',
         ret = Entry.search_entries(user, [ref_entity.id], [], hint_referral="e-")
-        self.assertEqual(ret["ret_count"], 2)
+        self.assertEqual(ret.ret_count, 2)
 
         # call search_entries with 'hint_referral' parameter as string,
         # then checks that result includes referral entries that match specified referral name
         ret = Entry.search_entries(user, [ref_entity.id], [], hint_referral="e-1")
-        self.assertEqual(ret["ret_count"], 1)
-        self.assertEqual([x["entry"]["name"] for x in ret["ret_values"]], ["ref1"])
+        self.assertEqual(ret.ret_count, 1)
+        self.assertEqual([x.entry["name"] for x in ret.ret_values], ["ref1"])
 
         # call search_entries with 'hint_referral' parameter as name of entry
         # which is not referred from any entries.
         ret = Entry.search_entries(user, [ref_entity.id], [], hint_referral="hogefuga")
-        self.assertEqual(ret["ret_count"], 0)
+        self.assertEqual(ret.ret_count, 0)
 
         # call search_entries with 'backslash' in the 'hint_referral' parameter as entry of name
         ret = Entry.search_entries(
             user, [ref_entity.id], [], hint_referral=CONFIG.EMPTY_SEARCH_CHARACTER
         )
-        self.assertEqual(ret["ret_count"], 1)
-        self.assertEqual([x["entry"]["name"] for x in ret["ret_values"]], ["ref2"])
+        self.assertEqual(ret.ret_count, 1)
+        self.assertEqual([x.entry["name"] for x in ret.ret_values], ["ref2"])
 
         # call search_entries with 'asterisk' in the 'hint_referral' parameter as entry of name
         ret = Entry.search_entries(user, [ref_entity.id], [], hint_referral=CONFIG.EXSIT_CHARACTER)
-        self.assertEqual(ret["ret_count"], 2)
+        self.assertEqual(ret.ret_count, 2)
 
     def test_search_entries_with_exclusive_attrs(self):
         user = User.objects.create(username="hoge")
@@ -2452,9 +2492,9 @@ class ModelTest(AironeTestCase):
             entity_ids,
             [{"name": "foo", "keyword": ""}, {"name": "bar", "keyword": ""}],
         )
-        self.assertEqual(ret["ret_count"], 10)
+        self.assertEqual(ret.ret_count, 10)
         self.assertEqual(
-            sorted([x["entry"]["name"] for x in ret["ret_values"]]),
+            sorted([x.entry["name"] for x in ret.ret_values]),
             sorted(["E1-%d" % i for i in range(5)] + ["E2-%d" % i for i in range(5)]),
         )
 
@@ -2465,8 +2505,8 @@ class ModelTest(AironeTestCase):
             entity_ids,
             [{"name": "foo", "keyword": "3"}, {"name": "bar", "keyword": ""}],
         )
-        self.assertEqual(ret["ret_count"], 1)
-        self.assertEqual(sorted([x["entry"]["name"] for x in ret["ret_values"]]), sorted(["E1-3"]))
+        self.assertEqual(ret.ret_count, 1)
+        self.assertEqual(sorted([x.entry["name"] for x in ret.ret_values]), sorted(["E1-3"]))
 
         # search entries by only attribute name and keyword without entity
         # with exclusive hint attrs and keywords
@@ -2475,7 +2515,7 @@ class ModelTest(AironeTestCase):
             entity_ids,
             [{"name": "foo", "keyword": "3"}, {"name": "bar", "keyword": "3"}],
         )
-        self.assertEqual(ret["ret_count"], 0)
+        self.assertEqual(ret.ret_count, 0)
 
     def test_search_entries_about_insensitive_case(self):
         user = User.objects.create(username="hoge")
@@ -2487,8 +2527,8 @@ class ModelTest(AironeTestCase):
         # This checks entry_name parameter would be insensitive case
         for name in ["foo", "fOO", "OO", "f"]:
             resp = Entry.search_entries(user, [entity.id], entry_name=name)
-            self.assertEqual(resp["ret_count"], 1)
-            self.assertEqual(resp["ret_values"][0]["entry"]["id"], entry.id)
+            self.assertEqual(resp.ret_count, 1)
+            self.assertEqual(resp.ret_values[0].entry["id"], entry.id)
 
     def test_search_entries_with_deleted_hint(self):
         # This call search_entries with hint_attrs that contains values which specify
@@ -2555,17 +2595,17 @@ class ModelTest(AironeTestCase):
             # Check search result without keyword of hint_attrs
             hint_attr = {"name": attr_name, "keyword": ""}
             ret = Entry.search_entries(self._user, [entity.id], hint_attrs=[hint_attr])
-            self.assertEqual(ret["ret_count"], 1)
-            self.assertEqual(len(ret["ret_values"][0]["attrs"]), 1)
+            self.assertEqual(ret.ret_count, 1)
+            self.assertEqual(len(ret.ret_values[0].attrs), 1)
 
-            for _name, _info in ret["ret_values"][0]["attrs"].items():
+            for _name, _info in ret.ret_values[0].attrs.items():
                 self.assertTrue(_name in ref_info)
                 self.assertEqual(_info["value"], ref_info[_name]["expected_value"])
 
             hint_attr = {"name": attr_name, "keyword": "ref"}
             ret = Entry.search_entries(self._user, [entity.id], hint_attrs=[hint_attr])
-            self.assertEqual(ret["ret_count"], 0)
-            self.assertEqual(ret["ret_values"], [])
+            self.assertEqual(ret.ret_count, 0)
+            self.assertEqual(ret.ret_values, [])
 
     def test_search_entries_for_priviledged_ones(self):
         user = User.objects.create(username="test-user")
@@ -2586,13 +2626,13 @@ class ModelTest(AironeTestCase):
         entry = self.add_entry(user, "Entry", entity, values={"ref": ref_entry})
 
         ret = Entry.search_entries(user, [entity.id])
-        self.assertEqual(ret["ret_count"], 0)
-        self.assertEqual(ret["ret_values"], [])
+        self.assertEqual(ret.ret_count, 0)
+        self.assertEqual(ret.ret_values, [])
 
         ret = Entry.search_entries(None, [entity.id])
-        self.assertEqual(ret["ret_count"], 1)
+        self.assertEqual(ret.ret_count, 1)
         self.assertEqual(
-            ret["ret_values"][0]["entry"],
+            ret.ret_values[0].entry,
             {
                 "name": entry.name,
                 "id": entry.id,
@@ -2618,11 +2658,11 @@ class ModelTest(AironeTestCase):
             entry.register_es()
 
         resp = Entry.search_entries(user, [entity.id], [{"name": attr.name, "keyword": "^10"}])
-        self.assertEqual(resp["ret_count"], 2)
+        self.assertEqual(resp.ret_count, 2)
         resp = Entry.search_entries(user, [entity.id], [{"name": attr.name, "keyword": "00$"}])
-        self.assertEqual(resp["ret_count"], 2)
+        self.assertEqual(resp.ret_count, 2)
         resp = Entry.search_entries(user, [entity.id], [{"name": attr.name, "keyword": "^100$"}])
-        self.assertEqual(resp["ret_count"], 1)
+        self.assertEqual(resp.ret_count, 1)
 
     def test_register_entry_to_elasticsearch(self):
         ENTRY_COUNTS = 10
@@ -2806,9 +2846,9 @@ class ModelTest(AironeTestCase):
         entry.register_es()
 
         ret = Entry.search_entries(user, [entity.id], [])
-        self.assertEqual(ret["ret_count"], 1)
+        self.assertEqual(ret.ret_count, 1)
         self.assertEqual(
-            [x["entry"] for x in ret["ret_values"]],
+            [x.entry for x in ret.ret_values],
             [{"name": entry.name, "id": entry.id}],
         )
 
@@ -2816,8 +2856,8 @@ class ModelTest(AironeTestCase):
         entry.unregister_es()
 
         ret = Entry.search_entries(user, [entity.id], [])
-        self.assertEqual(ret["ret_count"], 0)
-        self.assertEqual(ret["ret_values"], [])
+        self.assertEqual(ret.ret_count, 0)
+        self.assertEqual(ret.ret_values, [])
 
     def test_update_elasticsearch_field(self):
         user = User.objects.create(username="hoge")
@@ -2936,32 +2976,28 @@ class ModelTest(AironeTestCase):
         # search entries of entity1 from Elasticsearch and checks that the entreis of non entity1
         # are not returned.
         resp = Entry.search_entries(user, [entities[0].id], [{"name": "attr-0"}])
-        self.assertEqual(resp["ret_count"], 3)
-        self.assertTrue(all([x["entity"]["id"] == entities[0].id for x in resp["ret_values"]]))
+        self.assertEqual(resp.ret_count, 3)
+        self.assertTrue(all([x.entity["id"] == entities[0].id for x in resp.ret_values]))
 
         # checks the value which is non date but date format was registered correctly
         self.assertEqual(
             [entry_info["entry3"]["attr-0"]],
-            [
-                x["attrs"]["attr-0"]["value"]
-                for x in resp["ret_values"]
-                if x["entry"]["name"] == "entry3"
-            ],
+            [x.attrs["attr-0"]["value"] for x in resp.ret_values if x.entry["name"] == "entry3"],
         )
 
         # checks ret_count counts number of entries whatever attribute contidion was changed
         resp = Entry.search_entries(
             user, [entities[0].id], [{"name": "attr-0"}, {"name": "attr-1"}]
         )
-        self.assertEqual(resp["ret_count"], 3)
+        self.assertEqual(resp.ret_count, 3)
         resp = Entry.search_entries(user, [entities[0].id, entities[1].id], [{"name": "attr-0"}])
-        self.assertEqual(resp["ret_count"], 6)
+        self.assertEqual(resp.ret_count, 6)
 
         # checks results that contain multi-byte values could be got
         resp = Entry.search_entries(user, [entities[0].id], [{"name": "ほげ", "keyword": "ふが"}])
-        self.assertEqual(resp["ret_count"], 2)
+        self.assertEqual(resp.ret_count, 2)
         self.assertEqual(
-            sorted([x["entry"]["name"] for x in resp["ret_values"]]),
+            sorted([x.entry["name"] for x in resp.ret_values]),
             sorted(["entry1", "entry2"]),
         )
 
@@ -2969,40 +3005,40 @@ class ModelTest(AironeTestCase):
         resp = Entry.search_entries(
             user, [entities[0].id], [{"name": "attr-0", "keyword": "2018/01/01"}]
         )
-        self.assertEqual(resp["ret_count"], 1)
-        self.assertEqual(resp["ret_values"][0]["entry"]["name"], "entry1")
-        self.assertEqual(resp["ret_values"][0]["attrs"]["attr-0"]["value"], "2018/01/01")
+        self.assertEqual(resp.ret_count, 1)
+        self.assertEqual(resp.ret_values[0].entry["name"], "entry1")
+        self.assertEqual(resp.ret_values[0].attrs["attr-0"]["value"], "2018/01/01")
 
         # search entries with date keyword parameter in date type from Elasticsearch
         for x in ["2018-01-02", "2018/01/02", "2018-1-2", "2018-01-2", "2018-1-02"]:
             resp = Entry.search_entries(
                 user, [entities[0].id], [{"name": "attr-date", "keyword": x}]
             )
-            self.assertEqual(resp["ret_count"], 1)
-            self.assertEqual(resp["ret_values"][0]["entry"]["name"], "entry1")
-            self.assertEqual(resp["ret_values"][0]["attrs"]["attr-date"]["value"], "2018-01-02")
+            self.assertEqual(resp.ret_count, 1)
+            self.assertEqual(resp.ret_values[0].entry["name"], "entry1")
+            self.assertEqual(resp.ret_values[0].attrs["attr-date"]["value"], "2018-01-02")
 
         # search entries with date keyword parameter in string array type from Elasticsearch
         resp = Entry.search_entries(
             user, [entities[0].id], [{"name": "attr-arr", "keyword": "2018/01/01"}]
         )
-        self.assertEqual(resp["ret_count"], 1)
-        self.assertEqual(resp["ret_values"][0]["entry"]["name"], "entry2")
-        self.assertEqual(resp["ret_values"][0]["attrs"]["attr-arr"]["value"], ["2018/01/01"])
+        self.assertEqual(resp.ret_count, 1)
+        self.assertEqual(resp.ret_values[0].entry["name"], "entry2")
+        self.assertEqual(resp.ret_values[0].attrs["attr-arr"]["value"], ["2018/01/01"])
 
         # search entries with keyword parameter that other entry has same value in untarget attr
         resp = Entry.search_entries(user, [entities[0].id], [{"name": "attr-0", "keyword": "hoge"}])
-        self.assertEqual(resp["ret_count"], 1)
-        self.assertEqual(resp["ret_values"][0]["entry"]["name"], "entry2")
+        self.assertEqual(resp.ret_count, 1)
+        self.assertEqual(resp.ret_values[0].entry["name"], "entry2")
 
         # search entries with keyword parameter which is array type
         resp = Entry.search_entries(
             user, [entities[0].id], [{"name": "attr-arr", "keyword": "hoge"}]
         )
-        self.assertEqual(resp["ret_count"], 1)
-        self.assertEqual(resp["ret_values"][0]["entry"]["name"], "entry1")
+        self.assertEqual(resp.ret_count, 1)
+        self.assertEqual(resp.ret_values[0].entry["name"], "entry1")
         self.assertEqual(
-            sorted(resp["ret_values"][0]["attrs"]["attr-arr"]["value"]),
+            sorted(resp.ret_values[0].attrs["attr-arr"]["value"]),
             sorted(["hoge", "fuga"]),
         )
 
@@ -3012,7 +3048,7 @@ class ModelTest(AironeTestCase):
             resp = Entry.search_entries(
                 user, [entities[0].id], [{"name": "attr-date", "keyword": x}]
             )
-            self.assertEqual(resp["ret_count"], 0)
+            self.assertEqual(resp.ret_count, 0)
 
     def test_search_result_count(self):
         """
@@ -3046,8 +3082,8 @@ class ModelTest(AironeTestCase):
             entry.register_es()
 
         resp = Entry.search_entries(user, [entity.id], [{"name": "foo", "keyword": "ref"}], limit=5)
-        self.assertEqual(resp["ret_count"], 10)
-        self.assertEqual(len(resp["ret_values"]), 5)
+        self.assertEqual(resp.ret_count, 10)
+        self.assertEqual(len(resp.ret_values), 5)
 
     def test_search_entities_have_individual_attrs(self):
         user = User.objects.create(username="hoge")
@@ -3075,15 +3111,15 @@ class ModelTest(AironeTestCase):
                 e.register_es()
 
         resp = Entry.search_entries(user, entities, [{"name": "foo"}])
-        self.assertEqual(resp["ret_count"], 5)
+        self.assertEqual(resp.ret_count, 5)
 
         resp = Entry.search_entries(user, entities, [{"name": x} for x in ["foo", "hoge"]])
-        self.assertEqual(resp["ret_count"], 10)
+        self.assertEqual(resp.ret_count, 10)
 
         resp = Entry.search_entries(user, entities, [{"name": x} for x in ["bar"]])
-        self.assertEqual(resp["ret_count"], 10)
+        self.assertEqual(resp.ret_count, 10)
         for name in entity_info.keys():
-            self.assertEqual(len([x for x in resp["ret_values"] if x["entity"]["name"] == name]), 5)
+            self.assertEqual(len([x for x in resp.ret_values if x.entity["name"] == name]), 5)
 
     def test_search_entries_sorted_result(self):
         user = User.objects.create(username="hoge")
@@ -3105,10 +3141,10 @@ class ModelTest(AironeTestCase):
         resp = Entry.search_entries(user, [entity.id], entry_name="AAA")
 
         # 6 results should be returned
-        self.assertEqual(resp["ret_count"], 6)
+        self.assertEqual(resp.ret_count, 6)
         # 6 results should be sorted
         for i in range(6):
-            self.assertEqual(resp["ret_values"][i]["entry"]["name"], "AAA%d" % i)
+            self.assertEqual(resp.ret_values[i].entry["name"], "AAA%d" % i)
 
     def test_search_entries_with_date(self):
         user = User.objects.create(username="hoge")
@@ -3140,24 +3176,24 @@ class ModelTest(AironeTestCase):
 
         # search entry that have AttributeValue exact matches with specified date.
         ret = Entry.search_entries(user, [entity.id], [{"name": "date", "keyword": "2018/01/01"}])
-        self.assertEqual(len(ret["ret_values"]), 1)
-        self.assertEqual(ret["ret_values"][0]["entry"]["name"], "entry-1")
+        self.assertEqual(len(ret.ret_values), 1)
+        self.assertEqual(ret.ret_values[0].entry["name"], "entry-1")
 
         # The case of using condition 'less thatn',
         # this expects that entry-2 and entry-3 are matched
         ret = Entry.search_entries(user, [entity.id], [{"name": "date", "keyword": ">2018-01-01"}])
-        self.assertEqual(len(ret["ret_values"]), 2)
+        self.assertEqual(len(ret.ret_values), 2)
         self.assertEqual(
-            sorted([x["entry"]["name"] for x in ret["ret_values"]]),
+            sorted([x.entry["name"] for x in ret.ret_values]),
             ["entry-2", "entry-3"],
         )
 
         # The case of using condition 'greater thatn',
         # this expects that entry-1 and entry-2 are matched
         ret = Entry.search_entries(user, [entity.id], [{"name": "date", "keyword": "<2018-03-01"}])
-        self.assertEqual(len(ret["ret_values"]), 2)
+        self.assertEqual(len(ret.ret_values), 2)
         self.assertEqual(
-            sorted([x["entry"]["name"] for x in ret["ret_values"]]),
+            sorted([x.entry["name"] for x in ret.ret_values]),
             ["entry-1", "entry-2"],
         )
 
@@ -3165,15 +3201,15 @@ class ModelTest(AironeTestCase):
         ret = Entry.search_entries(
             user, [entity.id], [{"name": "date", "keyword": "<2018-03-01 >2018-01-01"}]
         )
-        self.assertEqual(len(ret["ret_values"]), 1)
-        self.assertEqual(ret["ret_values"][0]["entry"]["name"], "entry-2")
+        self.assertEqual(len(ret.ret_values), 1)
+        self.assertEqual(ret.ret_values[0].entry["name"], "entry-2")
 
         # The same case of before one, but date format of keyward was changed
         ret = Entry.search_entries(
             user, [entity.id], [{"name": "date", "keyword": "<2018/03/01 >2018/01/01"}]
         )
-        self.assertEqual(len(ret["ret_values"]), 1)
-        self.assertEqual(ret["ret_values"][0]["entry"]["name"], "entry-2")
+        self.assertEqual(len(ret.ret_values), 1)
+        self.assertEqual(ret.ret_values[0].entry["name"], "entry-2")
 
     def test_get_last_value(self):
         user = User.objects.create(username="hoge")
@@ -3592,9 +3628,9 @@ class ModelTest(AironeTestCase):
         self.assertTrue(all([attr.is_active for attr in ref_entry.attrs.all()]))
 
         ret = Entry.search_entries(self._user, [entity.id], [{"name": "obj"}])
-        self.assertEqual(ret["ret_values"][0]["entry"]["name"], "entry")
-        self.assertEqual(ret["ret_values"][0]["attrs"]["obj"]["value"]["name"], "ref_entry")
-        self.assertEqual(ret["ret_values"][1]["entry"]["name"], "ref_entry")
+        self.assertEqual(ret.ret_values[0].entry["name"], "entry")
+        self.assertEqual(ret.ret_values[0].attrs["obj"]["value"]["name"], "ref_entry")
+        self.assertEqual(ret.ret_values[1].entry["name"], "ref_entry")
 
     def test_restore_entry_in_chain(self):
         # initilaize referral Entries for checking processing caused
@@ -3780,6 +3816,10 @@ class ModelTest(AironeTestCase):
                     "value": [{"id": test_role.id, "name": test_role.name}],
                 },
             },
+            {
+                "name": "datetime",
+                "value": {"type": AttrType.DATETIME, "value": "2018-12-31T12:34:56+00:00"},
+            },
         ]
         for info in expected_attrinfos:
             ret_attr_infos = [x for x in ret_dict["attrs"] if x["name"] == info["name"]]
@@ -3866,6 +3906,10 @@ class ModelTest(AironeTestCase):
                     "type": AttrType.ARRAY_ROLE,
                     "value": [],
                 },
+            },
+            {
+                "name": "datetime",
+                "value": {"type": AttrType.DATETIME, "value": None},
             },
         ]
         for info in expected_attrinfos:
@@ -4062,9 +4106,9 @@ class ModelTest(AironeTestCase):
                 [{"name": attr_name, "keyword": CONFIG.EMPTY_SEARCH_CHARACTER}],
             )
             if attr_name != "bool":
-                self.assertEqual(ret["ret_count"], 1)
+                self.assertEqual(ret.ret_count, 1)
             else:
-                self.assertEqual(ret["ret_count"], 0)
+                self.assertEqual(ret.ret_count, 0)
 
         # search entries with double_empty_search_character
         double_empty_search_character = (
@@ -4077,14 +4121,14 @@ class ModelTest(AironeTestCase):
                 [entity.id],
                 [{"name": attr_name, "keyword": double_empty_search_character}],
             )
-            self.assertEqual(ret["ret_count"], 0)
+            self.assertEqual(ret.ret_count, 0)
 
         # check functionallity of the 'entry_name' parameter
         ret = Entry.search_entries(user, [entity.id], entry_name=CONFIG.EMPTY_SEARCH_CHARACTER)
-        self.assertEqual(ret["ret_count"], 1)
+        self.assertEqual(ret.ret_count, 1)
 
         ret = Entry.search_entries(user, [entity.id], entry_name=double_empty_search_character)
-        self.assertEqual(ret["ret_count"], 0)
+        self.assertEqual(ret.ret_count, 0)
 
         # check combination of 'entry_name' and 'hint_attrs' parameter
         ret = Entry.search_entries(
@@ -4093,7 +4137,7 @@ class ModelTest(AironeTestCase):
             [{"name": "str", "keyword": CONFIG.EMPTY_SEARCH_CHARACTER}],
             entry_name=CONFIG.EMPTY_SEARCH_CHARACTER,
         )
-        self.assertEqual(ret["ret_count"], 1)
+        self.assertEqual(ret.ret_count, 1)
 
     def test_search_entries_includes_and_or(self):
         user = User.objects.create(username="hoge")
@@ -4317,7 +4361,7 @@ class ModelTest(AironeTestCase):
         for x in test_suites:
             for test_suite in x:
                 ret = Entry.search_entries(user, [entity.id], test_suite["search_word"])
-                self.assertEqual(ret["ret_count"], test_suite["ret_cnt"])
+                self.assertEqual(ret.ret_count, test_suite["ret_cnt"])
 
     def test_search_entries_entry_name(self):
         user = User.objects.create(username="hoge")
@@ -4335,7 +4379,7 @@ class ModelTest(AironeTestCase):
         search_words = {"foo": 1, "bar&baz": 1, "foo|bar": 3, "foo|bar&baz": 2}
         for word, count in search_words.items():
             ret = Entry.search_entries(user, [entity.id], entry_name=word)
-            self.assertEqual(ret["ret_count"], count)
+            self.assertEqual(ret.ret_count, count)
 
     def test_search_entries_get_regex_pattern(self):
         user = User.objects.create(username="hoge")
@@ -4385,8 +4429,8 @@ class ModelTest(AironeTestCase):
 
         for test_suite in test_suites:
             ret = Entry.search_entries(user, [entity.id], entry_name=test_suite["search_word"])
-            self.assertEqual(ret["ret_count"], test_suite["ret_cnt"])
-            self.assertEqual(ret["ret_values"][0]["entry"]["name"], test_suite["ret_entry_name"])
+            self.assertEqual(ret.ret_count, test_suite["ret_cnt"])
+            self.assertEqual(ret.ret_values[0].entry["name"], test_suite["ret_entry_name"])
 
     def test_search_entries_with_is_output_all(self):
         self._entity.attrs.add(self._attr.schema)
@@ -4395,7 +4439,7 @@ class ModelTest(AironeTestCase):
         self._entry.register_es()
         ret = Entry.search_entries(self._user, [self._entity.id], is_output_all=True)
         self.assertEqual(
-            ret["ret_values"][0]["attrs"],
+            ret.ret_values[0].attrs,
             {"attr": {"value": "hoge", "is_readable": True, "type": 2}},
         )
 
@@ -4405,7 +4449,24 @@ class ModelTest(AironeTestCase):
             [{"name": "attr", "keyword": "^ge"}],
             is_output_all=True,
         )
-        self.assertEqual(ret["ret_count"], 0)
+        self.assertEqual(ret.ret_count, 0)
+
+        # multi entity case
+        test_entity = self.create_entity(
+            self._user, "test_entity", [{"name": "attr", "type": AttrType.STRING}]
+        )
+        self.add_entry(self._user, "test_entry", test_entity, {"attr": "fuga"})
+        ret = Entry.search_entries(
+            self._user, [self._entity.id, test_entity.id], is_output_all=True
+        )
+        self.assertEqual(
+            ret.ret_values[0].attrs,
+            {"attr": {"value": "hoge", "is_readable": True, "type": 2}},
+        )
+        self.assertEqual(
+            ret.ret_values[1].attrs,
+            {"attr": {"value": "fuga", "is_readable": True, "type": 2}},
+        )
 
     def test_search_entries_with_offset(self):
         entities = []
@@ -4425,16 +4486,16 @@ class ModelTest(AironeTestCase):
                 self.add_entry(self._user, "Entry%d" % num, entity)
 
         ret = Entry.search_entries(self._user, [entities[0]], [{"name": "test"}], limit=2, offset=2)
-        self.assertEqual(ret["ret_count"], 5)
+        self.assertEqual(ret.ret_count, 5)
         self.assertEqual(
-            [{x["entity"]["name"]: x["entry"]["name"]} for x in ret["ret_values"]],
+            [{x.entity["name"]: x.entry["name"]} for x in ret.ret_values],
             [{"Entity0": "Entry2"}, {"Entity0": "Entry3"}],
         )
 
         ret = Entry.search_entries(self._user, entities, [{"name": "test"}], limit=2, offset=4)
-        self.assertEqual(ret["ret_count"], 15)
+        self.assertEqual(ret.ret_count, 15)
         self.assertEqual(
-            [{x["entity"]["name"]: x["entry"]["name"]} for x in ret["ret_values"]],
+            [{x.entity["name"]: x.entry["name"]} for x in ret.ret_values],
             [{"Entity0": "Entry4"}, {"Entity1": "Entry0"}],
         )
 
@@ -4625,6 +4686,12 @@ class ModelTest(AironeTestCase):
                 "value": [test_role.name],
                 "referral_id": [test_role.id],
             },
+            "datetime": {
+                "key": [""],
+                "value": [""],
+                "referral_id": [""],
+                "date_value": ["2018-12-31T12:34:56+00:00"],
+            },
         }
         # check all attributes are expected ones
         self.assertEqual(
@@ -4655,12 +4722,12 @@ class ModelTest(AironeTestCase):
             self._user, [entity.id], entry_name="entry", is_output_all=True
         )
         self.assertEqual(
-            result["ret_values"][0],
-            {
-                "entity": {"id": entity.id, "name": "all_attr_entity"},
-                "entry": {"id": entry.id, "name": "entry"},
-                "is_readable": True,
-                "attrs": {
+            result.ret_values[0],
+            AdvancedSearchResultValue(
+                entity={"id": entity.id, "name": "all_attr_entity"},
+                entry={"id": entry.id, "name": "entry"},
+                is_readable=True,
+                attrs={
                     "bool": {"is_readable": True, "type": AttrType.BOOLEAN, "value": False},
                     "date": {
                         "is_readable": True,
@@ -4714,8 +4781,13 @@ class ModelTest(AironeTestCase):
                         "type": AttrType.ARRAY_ROLE,
                         "value": [],
                     },
+                    "datetime": {
+                        "is_readable": True,
+                        "type": AttrType.DATETIME,
+                        "value": None,
+                    },
                 },
-            },
+            ),
         )
 
         # If the AttributeValue does not exist, permission returns the default
@@ -5057,6 +5129,11 @@ class ModelTest(AironeTestCase):
             {"name": "arr_group", "set_val": [test_grp.id], "exp_val": [test_grp]},
             {"name": "arr_group", "set_val": [test_grp], "exp_val": [test_grp]},
             {"name": "arr_group", "set_val": ["abcd"], "exp_val": []},
+            {
+                "name": "datetime",
+                "set_val": datetime(2018, 12, 31, 0, 0, 0, tzinfo=timezone.utc),
+                "exp_val": datetime(2018, 12, 31, 0, 0, 0, tzinfo=timezone.utc),
+            },
         ]
         for info in attr_info:
             attr = entry.attrs.get(name=info["name"])
@@ -5084,6 +5161,7 @@ class ModelTest(AironeTestCase):
             "arr_group": [],
             "role": None,
             "arr_role": [],
+            "datetime": None,
         }
         for attr in entry.attrs.all():
             if attr.name == "arr_name":
@@ -5704,19 +5782,19 @@ class ModelTest(AironeTestCase):
         )
 
         res = Entry.search_entries(self._user, [all_attr_entity.id], is_output_all=True)
-        self.assertEqual(res["ret_count"], 1)
+        self.assertEqual(res.ret_count, 1)
         self.assertEqual(
-            [x for x in res["ret_values"][0]["attrs"].keys()],
+            [x for x in res.ret_values[0].attrs.keys()],
             [x.name for x in all_attr_entity.attrs.all()],
         )
 
         res = Entry.search_entries(self._user, [self._entity.id])
-        self.assertEqual(res["ret_count"], 0)
+        self.assertEqual(res.ret_count, 0)
 
         Entry.update_documents(self._entity, True)
 
         res = Entry.search_entries(self._user, [self._entity.id])
-        self.assertEqual(res["ret_count"], 1)
+        self.assertEqual(res.ret_count, 1)
 
         #  update
         entry2 = Entry.objects.create(name="entry2", created_user=self._user, schema=self._entity)
@@ -5729,7 +5807,7 @@ class ModelTest(AironeTestCase):
         )
 
         res = Entry.search_entries(self._user, [self._entity.id])
-        self.assertEqual(res["ret_count"], 2)
+        self.assertEqual(res.ret_count, 2)
 
         entry2.is_active = False
         entry2.save()
@@ -5744,7 +5822,7 @@ class ModelTest(AironeTestCase):
         )
 
         res = Entry.search_entries(self._user, [self._entity.id])
-        self.assertEqual(res["ret_count"], 1)
+        self.assertEqual(res.ret_count, 1)
 
     def test_get_prev_refers_objects_for_object_attr(self):
         user = User.objects.create(username="test-user")
@@ -5864,7 +5942,7 @@ class ModelTest(AironeTestCase):
     def test_search_entries_with_limit(self):
         self._entry.register_es()
         ret = Entry.search_entries(self._user, [self._entity.id], [], 99999999)
-        self.assertEqual(ret["ret_count"], 1)
+        self.assertEqual(ret.ret_count, 1)
 
     def test_max_entries(self):
         max_entries = 10

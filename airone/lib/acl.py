@@ -3,11 +3,6 @@ import enum
 __all__ = ["ACLType", "ACLObjType"]
 
 
-class Iteratable(object):
-    def __iter__(self):
-        return self._types.__iter__()
-
-
 @enum.unique
 class ACLObjType(enum.IntEnum):
     Entity = 1 << 0
@@ -16,54 +11,35 @@ class ACLObjType(enum.IntEnum):
     EntryAttr = 1 << 3
 
 
-class MetaACLType(type):
-    def __eq__(cls, comp):
-        if isinstance(comp, int):
-            return cls.id == comp
-        elif isinstance(comp, str):
-            return cls.name == comp
-        elif issubclass(comp, ACLTypeBase):
-            return cls.id == comp.id
-        else:
-            return False
+class ACLType(enum.IntEnum):
+    Nothing = 1 << 0
+    Readable = 1 << 1
+    Writable = 1 << 2
+    Full = 1 << 3
 
-    def __ne__(cls, comp):
-        return not cls == comp
+    @property
+    def id(self):
+        return self.value
 
-    def __le__(cls, comp):
-        if isinstance(comp, int):
-            return cls.id <= comp
-        elif issubclass(comp, ACLTypeBase):
-            return cls.id <= comp.id
-        else:
-            return False
+    @property
+    def name(self):
+        names = {
+            self.Nothing: "nothing",
+            self.Readable: "readable",
+            self.Writable: "writable",
+            self.Full: "full",
+        }
+        return names[self.value]
 
-
-class ACLTypeBase(metaclass=MetaACLType):
-    pass
-
-
-class ACLType(Iteratable):
-    Nothing = type(
-        "ACLTypeNone",
-        (ACLTypeBase,),
-        {"id": (1 << 0), "name": "nothing", "label": "Nothing"},
-    )
-    Readable = type(
-        "ACLTypeReadable",
-        (ACLTypeBase,),
-        {"id": (1 << 1), "name": "readable", "label": "Readable"},
-    )
-    Writable = type(
-        "ACLTypeWritable",
-        (ACLTypeBase,),
-        {"id": (1 << 2), "name": "writable", "label": "Writable"},
-    )
-    Full = type(
-        "ACLTypeFull",
-        (ACLTypeBase,),
-        {"id": (1 << 3), "name": "full", "label": "Full Controllable"},
-    )
+    @property
+    def label(self):
+        labels = {
+            self.Nothing: "Nothing",
+            self.Readable: "Readable",
+            self.Writable: "Writable",
+            self.Full: "Full Controllable",
+        }
+        return labels[self.value]
 
     @classmethod
     def all(cls):

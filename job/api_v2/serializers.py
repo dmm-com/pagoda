@@ -5,6 +5,7 @@ from typing import TypedDict
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
+from airone.lib.acl import ACLObjType
 from entry.models import Entry
 from job.models import Job
 
@@ -27,6 +28,8 @@ class JobSerializers(serializers.ModelSerializer):
     target = serializers.SerializerMethodField(method_name="get_target")
     passed_time = serializers.SerializerMethodField(method_name="get_passed_time")
 
+    PREFETCHED_ENTRIES_KEY = "__prefetched_entries"
+
     class Meta:
         model = Job
         fields = ["id", "text", "status", "operation", "created_at", "target", "passed_time"]
@@ -34,13 +37,20 @@ class JobSerializers(serializers.ModelSerializer):
     @extend_schema_field(JobTargetSerializer())
     def get_target(self, obj: Job) -> JobTarget | None:
         if obj.target is not None:
-            sub = obj.target.get_subclass_object()
-            if isinstance(sub, Entry):
+            if obj.target.objtype == ACLObjType.Entry:
+                sub: dict = self.context.get(self.PREFETCHED_ENTRIES_KEY, {}).get(obj.target.id)
+                if not sub:
+                    sub = (
+                        Entry.objects.filter(id=obj.target.id)
+                        .select_related("schema")
+                        .values("id", "name", "schema__id", "schema__name")
+                        .first()
+                    )
                 return {
-                    "id": sub.id,
-                    "name": sub.name,
-                    "schema_id": sub.schema.id,
-                    "schema_name": sub.schema.name,
+                    "id": sub["id"],
+                    "name": sub["name"],
+                    "schema_id": sub["schema__id"],
+                    "schema_name": sub["schema__name"],
                 }
             else:
                 return {
@@ -53,7 +63,7 @@ class JobSerializers(serializers.ModelSerializer):
             return None
 
     def get_passed_time(self, obj: Job) -> int:
-        if obj.is_finished():
+        if obj.is_finished(with_refresh=False):
             return math.floor((obj.updated_at - obj.created_at).total_seconds())
         else:
             return math.floor((datetime.now(timezone.utc) - obj.created_at).total_seconds())

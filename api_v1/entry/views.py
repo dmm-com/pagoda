@@ -45,7 +45,7 @@ class EntrySearchChainAPI(APIView):
                     entry_name="|".join(["^%s$" % x["name"] for x in ret_data[i : i + 100]]),
                     is_output_all=True,
                 )
-                result["ret_values"].extend(entry_info["ret_values"])
+                result["ret_values"].extend([x.dict() for x in entry_info.ret_values])
             return Response(result, status=status.HTTP_200_OK)
 
         else:
@@ -124,7 +124,7 @@ class EntrySearchAPI(APIView):
             is_output_all,
         )
 
-        return Response({"result": resp})
+        return Response({"result": resp.dict()})
 
 
 class EntryReferredAPI(APIView):

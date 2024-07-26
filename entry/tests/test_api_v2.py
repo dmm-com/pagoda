@@ -701,6 +701,7 @@ class ViewTest(BaseViewTest):
                 {"id": attr["date"].id, "value": "2018-12-31"},
                 {"id": attr["role"].id, "value": self.role.id},
                 {"id": attr["roles"].id, "value": [self.role.id]},
+                {"id": attr["datetime"].id, "value": "2018-12-31T00:00:00+00:00"},
             ],
         }
         resp = self.client.put(
@@ -728,6 +729,7 @@ class ViewTest(BaseViewTest):
                 "vals": ["hoge", "fuga"],
                 "role": "role0",
                 "roles": ["role0"],
+                "datetime": datetime.datetime(2018, 12, 31, 0, 0, 0, tzinfo=datetime.timezone.utc),
             },
         )
         search_result = self._es.search(body={"query": {"term": {"name": "entry-change"}}})
@@ -1061,7 +1063,7 @@ class ViewTest(BaseViewTest):
         resp = self.client.put(
             "/entry/api/v2/%s/" % entry.id, json.dumps(params), "application/json"
         )
-        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
+        self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertTrue(mock_call_custom.called)
 
         def side_effect(handler_name, entity_name, user, *args):
@@ -1069,6 +1071,12 @@ class ViewTest(BaseViewTest):
             self.assertEqual(user, self.user)
 
             # Check specified parameters are expected
+            if handler_name == "validate_entry":
+                self.assertEqual(args[0], self.entity.name)
+                self.assertEqual(args[1], params["name"])
+                self.assertEqual(args[2], params["attrs"])
+                self.assertEqual(args[3], entry)
+
             if handler_name == "before_update_entry_v2":
                 self.assertEqual(args[0], params)
                 return args[0]
@@ -1135,9 +1143,9 @@ class ViewTest(BaseViewTest):
         )
 
         ret = Entry.search_entries(self.user, [self.entity.id], [{"name": "ref"}])
-        self.assertEqual(ret["ret_count"], 1)
-        self.assertEqual(ret["ret_values"][0]["entry"]["name"], "Entry")
-        self.assertEqual(ret["ret_values"][0]["attrs"]["ref"]["value"]["name"], "ref-change")
+        self.assertEqual(ret.ret_count, 1)
+        self.assertEqual(ret.ret_values[0].entry["name"], "Entry")
+        self.assertEqual(ret.ret_values[0].attrs["ref"]["value"]["name"], "ref-change")
 
     def test_update_entry_without_attrs(self):
         resp = self.client.put(
@@ -1652,10 +1660,50 @@ class ViewTest(BaseViewTest):
             resp.json(),
             {
                 "copy_entry_names": [
-                    {"code": "AE-220000", "message": "specified name(entry) already exists"}
+                    {"code": "AE-220000", "message": "specified names(entry) already exists"}
                 ]
             },
         )
+
+    @patch("entry.tasks.copy_entry.delay", Mock(side_effect=tasks.copy_entry))
+    @mock.patch("airone.lib.custom_view.is_custom", mock.Mock(return_value=True))
+    @mock.patch("airone.lib.custom_view.call_custom")
+    def test_copy_entry_with_customview(self, mock_call_custom):
+        entry: Entry = self.add_entry(self.user, "entry", self.entity)
+        params = {"copy_entry_names": ["copy1", "copy2"]}
+
+        def side_effect(handler_name, entity_name, user, *args):
+            raise ValidationError("copy error")
+
+        mock_call_custom.side_effect = side_effect
+        resp = self.client.post(
+            "/entry/api/v2/%s/copy/" % entry.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertTrue(mock_call_custom.called)
+
+        def side_effect(handler_name, entity_name, user, *args):
+            self.assertEqual(entity_name, self.entity.name)
+            self.assertEqual(user, self.user)
+
+            # Check specified parameters are expected
+            if handler_name == "validate_entry":
+                self.assertEqual(args[0], self.entity.name)
+                self.assertIn(args[1], params["copy_entry_names"])
+                self.assertEqual(args[2], [])
+                self.assertIsNone(args[3])
+
+            if handler_name == "after_copy_entry":
+                self.assertEqual(args[0], entry)
+                self.assertIn(args[1].name, params["copy_entry_names"])
+                self.assertEqual(args[2], params)
+
+        mock_call_custom.side_effect = side_effect
+        resp = self.client.post(
+            "/entry/api/v2/%s/copy/" % entry.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        self.assertTrue(mock_call_custom.called)
 
     def test_serach_entry(self):
         ref_entry4 = self.add_entry(self.user, "hoge4", self.ref_entity)
@@ -1901,6 +1949,7 @@ class ViewTest(BaseViewTest):
                     "name",
                     "bool",
                     "date",
+                    "datetime",
                     "group",
                     "groups",
                     "text",
@@ -2213,6 +2262,7 @@ class ViewTest(BaseViewTest):
                 "name": {"name": "hoge", "id": self.ref_entry.id},
                 "bool": False,
                 "date": "2018-12-31",
+                "datetime": "2018-12-31T00:00:00+00:00",
                 "group": self.group.id,
                 "groups": [self.group.id],
                 "text": "fuga",
@@ -2257,6 +2307,10 @@ class ViewTest(BaseViewTest):
                 {"name": "date", "value": datetime.date(2018, 12, 31)},
                 {"name": "role", "value": "role0"},
                 {"name": "roles", "value": ["role0"]},
+                {
+                    "name": "datetime",
+                    "value": datetime.datetime(2018, 12, 31, 0, 0, 0, tzinfo=datetime.timezone.utc),
+                },
             ],
         )
 
@@ -2566,12 +2620,13 @@ class ViewTest(BaseViewTest):
         )
 
         result = Entry.search_entries(self.user, [self.entity.id], is_output_all=True)
-        self.assertEqual(result["ret_count"], 1)
-        self.assertEqual(result["ret_values"][0]["entry"]["name"], "test-entry")
-        self.assertEqual(result["ret_values"][0]["entity"]["name"], "test-entity")
+        self.assertEqual(result.ret_count, 1)
+        self.assertEqual(result.ret_values[0].entry["name"], "test-entry")
+        self.assertEqual(result.ret_values[0].entity["name"], "test-entity")
         attrs = {
             "bool": True,
             "date": "2018-12-31",
+            "datetime": "2018-12-31T00:00:00+00:00",
             "group": {"id": self.group.id, "name": "group0"},
             "groups": [{"id": self.group.id, "name": "group0"}],
             "name": {"foo": {"id": self.ref_entry.id, "name": "r-0"}},
@@ -2584,8 +2639,8 @@ class ViewTest(BaseViewTest):
             "role": {"id": self.role.id, "name": "role0"},
             "roles": [{"id": self.role.id, "name": "role0"}],
         }
-        for attr_name in result["ret_values"][0]["attrs"]:
-            self.assertEqual(result["ret_values"][0]["attrs"][attr_name]["value"], attrs[attr_name])
+        for attr_name in result.ret_values[0].attrs:
+            self.assertEqual(result.ret_values[0].attrs[attr_name]["value"], attrs[attr_name])
 
         entry = Entry.objects.get(name="test-entry")
         job_notify = Job.objects.get(target=entry, operation=JobOperation.NOTIFY_CREATE_ENTRY)
@@ -2604,8 +2659,8 @@ class ViewTest(BaseViewTest):
         self.assertEqual(job.status, JobStatus.DONE)
 
         result = Entry.search_entries(self.user, [self.entity.id], is_output_all=True)
-        self.assertEqual(result["ret_count"], 1)
-        self.assertEqual(result["ret_values"][0]["entry"], {"id": entry.id, "name": "test-entry"})
+        self.assertEqual(result.ret_count, 1)
+        self.assertEqual(result.ret_values[0].entry, {"id": entry.id, "name": "test-entry"})
         attrs = {
             "val": "foo",
             "vals": ["foo"],
@@ -2620,9 +2675,10 @@ class ViewTest(BaseViewTest):
             "date": "2018-12-31",
             "role": {"id": self.role.id, "name": "role0"},
             "roles": [{"id": self.role.id, "name": "role0"}],
+            "datetime": "2018-12-31T00:00:00+00:00",
         }
-        for attr_name in result["ret_values"][0]["attrs"]:
-            self.assertEqual(result["ret_values"][0]["attrs"][attr_name]["value"], attrs[attr_name])
+        for attr_name in result.ret_values[0].attrs:
+            self.assertEqual(result.ret_values[0].attrs[attr_name]["value"], attrs[attr_name])
 
         job_notify = Job.objects.get(target=entry, operation=JobOperation.NOTIFY_UPDATE_ENTRY)
         self.assertEqual(job_notify.status, JobStatus.DONE)
@@ -2638,8 +2694,8 @@ class ViewTest(BaseViewTest):
 
         result = Entry.search_entries(self.user, [self.entity.id], is_output_all=True)
         attrs["val"] = "bar"
-        for attr_name in result["ret_values"][0]["attrs"]:
-            self.assertEqual(result["ret_values"][0]["attrs"][attr_name]["value"], attrs[attr_name])
+        for attr_name in result.ret_values[0].attrs:
+            self.assertEqual(result.ret_values[0].attrs[attr_name]["value"], attrs[attr_name])
 
         # Update remove attribute value
         fp = self.open_fixture_file("import_data_v2_update_remove.yaml")
@@ -2665,12 +2721,11 @@ class ViewTest(BaseViewTest):
             "date": None,
             "role": {"id": "", "name": ""},
             "roles": [],
+            "datetime": None,
         }
-        for attr_name in result["ret_values"][0]["attrs"]:
-            if "value" in result["ret_values"][0]["attrs"][attr_name]:
-                self.assertEqual(
-                    result["ret_values"][0]["attrs"][attr_name]["value"], attrs[attr_name]
-                )
+        for attr_name in result.ret_values[0].attrs:
+            if "value" in result.ret_values[0].attrs[attr_name]:
+                self.assertEqual(result.ret_values[0].attrs[attr_name]["value"], attrs[attr_name])
 
     @patch("entry.tasks.import_entries_v2.delay", Mock(side_effect=tasks.import_entries_v2))
     def test_import_multi_entity(self):
@@ -2696,11 +2751,11 @@ class ViewTest(BaseViewTest):
         )
 
         result = Entry.search_entries(self.user, [entity1.id, entity2.id])
-        self.assertEqual(result["ret_count"], 2)
-        self.assertEqual(result["ret_values"][0]["entry"]["name"], "test-entry1")
-        self.assertEqual(result["ret_values"][0]["entity"]["name"], "test-entity1")
-        self.assertEqual(result["ret_values"][1]["entry"]["name"], "test-entry2")
-        self.assertEqual(result["ret_values"][1]["entity"]["name"], "test-entity2")
+        self.assertEqual(result.ret_count, 2)
+        self.assertEqual(result.ret_values[0].entry["name"], "test-entry1")
+        self.assertEqual(result.ret_values[0].entity["name"], "test-entity1")
+        self.assertEqual(result.ret_values[1].entry["name"], "test-entry2")
+        self.assertEqual(result.ret_values[1].entity["name"], "test-entity2")
 
     @patch("entry.tasks.notify_create_entry.delay", Mock(side_effect=tasks.notify_create_entry))
     @patch("entry.tasks.import_entries_v2.delay", Mock(side_effect=tasks.import_entries_v2))
@@ -2728,9 +2783,9 @@ class ViewTest(BaseViewTest):
         )
 
         result = Entry.search_entries(self.user, [self.entity.id], is_output_all=True)
-        self.assertEqual(result["ret_count"], 1)
-        self.assertEqual(result["ret_values"][0]["entry"]["name"], "test-entry")
-        self.assertEqual(result["ret_values"][0]["entity"]["name"], "test-entity")
+        self.assertEqual(result.ret_count, 1)
+        self.assertEqual(result.ret_values[0].entry["name"], "test-entry")
+        self.assertEqual(result.ret_values[0].entity["name"], "test-entity")
         attrs = {
             "bool": True,
             "date": "2018-12-31",
@@ -2745,9 +2800,10 @@ class ViewTest(BaseViewTest):
             "vals": ["foo"],
             "role": {"id": self.role.id, "name": "role0"},
             "roles": [{"id": self.role.id, "name": "role0"}],
+            "datetime": "2018-12-31T00:00:00+00:00",
         }
-        for attr_name in result["ret_values"][0]["attrs"]:
-            self.assertEqual(result["ret_values"][0]["attrs"][attr_name]["value"], attrs[attr_name])
+        for attr_name in result.ret_values[0].attrs:
+            self.assertEqual(result.ret_values[0].attrs[attr_name]["value"], attrs[attr_name])
 
         entry = Entry.objects.get(name="test-entry")
         job_notify = Job.objects.get(target=entry, operation=JobOperation.NOTIFY_CREATE_ENTRY)
@@ -3025,6 +3081,7 @@ class ViewTest(BaseViewTest):
                 ],
                 "role": self.role.id,
                 "roles": [self.role.id],
+                "datetime": "2018-12-31T00:00:00+00:00",
             },
         )
 
@@ -3138,8 +3195,14 @@ class ViewTest(BaseViewTest):
                                 "type": 1088,
                                 "value": {"as_array_role": [{"id": self.role.id, "name": "role0"}]},
                             },
+                            "datetime": {
+                                "is_readable": True,
+                                "type": AttrType.DATETIME,
+                                "value": {"as_string": "2018-12-31T00:00:00+00:00"},
+                            },
                         },
                         "is_readable": True,
+                        "referrals": None,
                     },
                     {
                         "entity": {"id": self.entity.id, "name": "test-entity"},
@@ -3207,8 +3270,14 @@ class ViewTest(BaseViewTest):
                                 "type": 1088,
                                 "value": {"as_array_role": []},
                             },
+                            "datetime": {
+                                "is_readable": True,
+                                "type": AttrType.DATETIME,
+                                "value": {"as_string": ""},
+                            },
                         },
                         "is_readable": True,
+                        "referrals": None,
                     },
                 ],
             },
@@ -4231,6 +4300,7 @@ class ViewTest(BaseViewTest):
             {"column": "date", "csv": "", "yaml": None},
             {"column": "role", "csv": "", "yaml": None},
             {"column": "roles", "csv": "", "yaml": []},
+            {"column": "datetime", "csv": "", "yaml": None},
         ]
 
         # send request to export data
@@ -4528,25 +4598,29 @@ class ViewTest(BaseViewTest):
             "text": {"value": "fuga", "result": {"as_string": "fuga"}},
             "bool": {"value": False, "result": {"as_boolean": False}},
             "date": {"value": "2018-12-31", "result": {"as_string": "2018-12-31"}},
+            "datetime": {
+                "value": "2018-12-31T00:00:00+00:00",
+                "result": {"as_string": "2018-12-31T00:00:00Z"},
+            },
         }
         entry = self.add_entry(
             self.user, "Entry", self.entity, values={x: values[x]["value"] for x in values.keys()}
         )
         resp = self.client.get("/entry/api/v2/%s/histories/" % entry.id)
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(resp.json()["count"], 18)
-        attrv = entry.get_attrv("date")
+        self.assertEqual(resp.json()["count"], 19)
+        attrv = entry.get_attrv("datetime")
         self.assertEqual(
             resp.json()["results"][0],
             {
                 "created_time": attrv.created_time.astimezone(self.TZ_INFO).isoformat(),
                 "created_user": "guest",
-                "curr_value": {"as_string": "2018-12-31"},
+                "curr_value": {"as_string": "2018-12-31T00:00:00Z"},
                 "id": attrv.id,
-                "parent_attr": {"id": attrv.parent_attr.id, "name": "date"},
+                "parent_attr": {"id": attrv.parent_attr.id, "name": "datetime"},
                 "prev_id": None,
                 "prev_value": None,
-                "type": AttrType.DATE,
+                "type": AttrType.DATETIME,
             },
         )
 
@@ -4564,7 +4638,7 @@ class ViewTest(BaseViewTest):
 
         resp = self.client.get("/entry/api/v2/%s/histories/" % entry.id)
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(resp.json()["count"], 19)
+        self.assertEqual(resp.json()["count"], 20)
         self.assertEqual(resp.json()["results"][0]["parent_attr"]["name"], "vals")
         self.assertEqual(
             resp.json()["results"][0]["curr_value"]["as_array_string"], ["hoge", "fuga"]

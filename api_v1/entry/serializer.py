@@ -232,11 +232,11 @@ class EntrySearchChainSerializer(serializers.Serializer):
                 Logger.warning("Search Chain API error:%s" % e)
                 raise ElasticsearchException()
 
-            if search_result["ret_count"] > CONFIG.SEARCH_CHAIN_ACCEPTABLE_RESULT_COUNT:
+            if search_result.ret_count > CONFIG.SEARCH_CHAIN_ACCEPTABLE_RESULT_COUNT:
                 Logger.warning("Search Chain API error: SEARCH_CHAIN_ACCEPTABLE_RESULT_COUNT")
                 raise ElasticsearchException()
 
-            return [x["entry"] for x in search_result["ret_values"]]
+            return [x.entry for x in search_result.ret_values]
 
         # This expects only AttrSerialized sub-query
         for sub_query in queries:
@@ -306,11 +306,11 @@ class EntrySearchChainSerializer(serializers.Serializer):
                 Logger.warning("Search Chain API error:%s" % e)
                 raise ElasticsearchException()
 
-            if search_result["ret_count"] > CONFIG.SEARCH_CHAIN_ACCEPTABLE_RESULT_COUNT:
+            if search_result.ret_count > CONFIG.SEARCH_CHAIN_ACCEPTABLE_RESULT_COUNT:
                 Logger.warning("Search Chain API error: SEARCH_CHAIN_ACCEPTABLE_RESULT_COUNT")
                 raise ElasticsearchException()
 
-            return [x["entry"] for x in search_result["ret_values"]]
+            return [x.entry for x in search_result.ret_values]
 
         # This expects only AttrSerialized sub-query
         for sub_query in queries:

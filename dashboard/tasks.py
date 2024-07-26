@@ -8,13 +8,16 @@ from django.conf import settings
 from natsort import natsorted
 
 from airone.celery import app
+from airone.lib.elasticsearch import AdvancedSearchResultValue
 from airone.lib.job import may_schedule_until_job_is_ready
 from airone.lib.types import AttrType
 from entry.models import Entry
 from job.models import Job
 
 
-def _csv_export(job: Job, values, recv_data: dict, has_referral: bool) -> io.StringIO | None:
+def _csv_export(
+    job: Job, values: list[AdvancedSearchResultValue], recv_data: dict, has_referral: bool
+) -> io.StringIO | None:
     output = io.StringIO(newline="")
     writer = csv.writer(output)
 
@@ -27,23 +30,23 @@ def _csv_export(job: Job, values, recv_data: dict, has_referral: bool) -> io.Str
         writer.writerow(["Name"] + ["Entity"] + [x["name"] for x in recv_data["attrinfo"]])
 
     for index, entry_info in enumerate(values):
-        line_data = [entry_info["entry"]["name"]]
+        line_data = [entry_info.entry["name"]]
 
         # Abort processing when job is canceled
         if index % Job.STATUS_CHECK_FREQUENCY == 0 and job.is_canceled():
             return None
 
         # Append the data which specifies Entity name to which target Entry belongs
-        line_data.append(entry_info["entity"]["name"])
+        line_data.append(entry_info.entity["name"])
 
         for attrinfo in recv_data["attrinfo"]:
             # This condition eliminates the possibility that an attribute
             # which target entry doens't have is specified in attrinfo variable.
-            if attrinfo["name"] not in entry_info["attrs"]:
+            if attrinfo["name"] not in entry_info.attrs:
                 line_data.append("")
                 continue
 
-            value = entry_info["attrs"][attrinfo["name"]]
+            value = entry_info.attrs[attrinfo["name"]]
 
             vtype = None
             if (value is not None) and ("type" in value):
@@ -58,7 +61,13 @@ def _csv_export(job: Job, values, recv_data: dict, has_referral: bool) -> io.Str
                 continue
 
             match vtype:
-                case AttrType.STRING | AttrType.TEXT | AttrType.BOOLEAN | AttrType.DATE:
+                case (
+                    AttrType.STRING
+                    | AttrType.TEXT
+                    | AttrType.BOOLEAN
+                    | AttrType.DATE
+                    | AttrType.DATETIME
+                ):
                     line_data.append(str(vval))
 
                 case AttrType.OBJECT | AttrType.GROUP | AttrType.ROLE:
@@ -84,7 +93,12 @@ def _csv_export(job: Job, values, recv_data: dict, has_referral: bool) -> io.Str
 
         if has_referral is not False:
             line_data.append(
-                str(["%s / %s" % (x["name"], x["schema"]["name"]) for x in entry_info["referrals"]])
+                str(
+                    [
+                        "%s / %s" % (x["name"], x["schema"]["name"])
+                        for x in entry_info.referrals or []
+                    ]
+                )
             )
 
         writer.writerow(line_data)
@@ -92,7 +106,9 @@ def _csv_export(job: Job, values, recv_data: dict, has_referral: bool) -> io.Str
     return output
 
 
-def _yaml_export(job: Job, values, recv_data: dict, has_referral: bool) -> io.StringIO | None:
+def _yaml_export(
+    job: Job, values: list[AdvancedSearchResultValue], recv_data: dict, has_referral: bool
+) -> io.StringIO | None:
     output = io.StringIO()
 
     def _get_attr_value(atype: int, value: dict):
@@ -113,7 +129,7 @@ def _yaml_export(job: Job, values, recv_data: dict, has_referral: bool) -> io.St
     resp_data: dict = {}
     for index, entry_info in enumerate(values):
         data: dict = {
-            "name": entry_info["entry"]["name"],
+            "name": entry_info.entry["name"],
             "attrs": {},
         }
 
@@ -122,8 +138,8 @@ def _yaml_export(job: Job, values, recv_data: dict, has_referral: bool) -> io.St
             return None
 
         for attrinfo in recv_data["attrinfo"]:
-            if attrinfo["name"] in entry_info["attrs"]:
-                _adata = entry_info["attrs"][attrinfo["name"]]
+            if attrinfo["name"] in entry_info.attrs:
+                _adata = entry_info.attrs[attrinfo["name"]]
                 if "value" not in _adata:
                     continue
 
@@ -135,13 +151,13 @@ def _yaml_export(job: Job, values, recv_data: dict, has_referral: bool) -> io.St
                     "entity": x["schema"]["name"],
                     "entry": x["name"],
                 }
-                for x in entry_info["referrals"]
+                for x in entry_info.referrals or []
             ]
 
-        if entry_info["entity"]["name"] in resp_data:
-            resp_data[entry_info["entity"]["name"]].append(data)
+        if entry_info.entity["name"] in resp_data:
+            resp_data[entry_info.entity["name"]].append(data)
         else:
-            resp_data[entry_info["entity"]["name"]] = [data]
+            resp_data[entry_info.entity["name"]] = [data]
 
     output.write(yaml.dump(resp_data, default_flow_style=False, allow_unicode=True))
 
@@ -171,10 +187,11 @@ def export_search_result(self, job: Job):
     )
 
     io_stream: io.StringIO | None = None
-    if recv_data["export_style"] == "yaml":
-        io_stream = _yaml_export(job, resp["ret_values"], recv_data, has_referral)
-    elif recv_data["export_style"] == "csv":
-        io_stream = _csv_export(job, resp["ret_values"], recv_data, has_referral)
+    match recv_data["export_style"]:
+        case "yaml":
+            io_stream = _yaml_export(job, resp.ret_values, recv_data, has_referral)
+        case "csv":
+            io_stream = _csv_export(job, resp.ret_values, recv_data, has_referral)
 
     if io_stream:
         job.set_cache(io_stream.getvalue())

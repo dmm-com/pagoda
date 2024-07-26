@@ -1,3 +1,4 @@
+import functools
 import inspect
 import os
 import sys
@@ -31,6 +32,7 @@ class AironeTestCase(TestCase):
         {"name": "date", "type": AttrType.DATE},
         {"name": "role", "type": AttrType.ROLE},
         {"name": "roles", "type": AttrType.ARRAY_ROLE},
+        {"name": "datetime", "type": AttrType.DATETIME},
     ]
 
     TZ_INFO = timezone(settings.TIME_ZONE)
@@ -187,3 +189,31 @@ class DisableStderr(object):
     def __exit__(self, *arg, **kwargs):
         sys.stderr = self.tmp_stderr
         self.f.close()
+
+
+def with_airone_settings(info={}):
+    """
+    This update AIRONE.settings parameter duing running test and retrieve it
+    after running test.
+    """
+
+    def _with_settings(method):
+        @functools.wraps(method)
+        def wrapper(*args, **kwargs):
+            # This evacuates original values in settings.AIRONE and set specified one
+            evacuation_place = {}
+            for k, v in info.items():
+                evacuation_place[k] = settings.AIRONE.get(k)
+                settings.AIRONE[k] = v
+
+            # Run test case
+            method(*args, **kwargs)
+
+            # Revert original configuration that were set in the settings.AIRONE
+            for k, v in evacuation_place.items():
+                if v:
+                    settings.AIRONE[k] = v
+
+        return wrapper
+
+    return _with_settings

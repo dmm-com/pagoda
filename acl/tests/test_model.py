@@ -135,11 +135,9 @@ class ModelTest(TestCase):
 
         self.assertTrue(type_readable == ACLType.Readable)
         self.assertTrue(type_readable == ACLType.Readable.id)
-        self.assertTrue(type_readable == ACLType.Readable.name)
 
         self.assertFalse(type_readable != ACLType.Readable)
         self.assertFalse(type_readable != ACLType.Readable.id)
-        self.assertFalse(type_readable != ACLType.Readable.name)
         self.assertTrue(type_readable != ACLType.Writable)
 
         self.assertTrue(type_readable <= ACLType.Writable)

@@ -7,6 +7,7 @@ import pytz
 from django.conf import settings
 from rest_framework import status
 from rest_framework.authtoken.models import Token
+from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 
 from airone.lib.acl import ACLType
@@ -82,6 +83,7 @@ class APITest(AironeViewTest):
                 "vals": ["foo", "bar"],
                 "refs": ["r-2", "r-3"],
                 "names": [{"name": "foo", "id": "r-4"}, {"name": "bar", "id": "r-5"}],
+                "datetime": "2018-12-31T12:34:56Z",
             },
         }
         resp = self.client.post("/api/v1/entry", json.dumps(params), "application/json")
@@ -192,6 +194,12 @@ class APITest(AironeViewTest):
             {
                 "name": "names",
                 "check": lambda v: self.assertEqual(v.data_array.last().value, "bar"),
+            },
+            {
+                "name": "datetime",
+                "check": lambda v: self.assertEqual(
+                    v.datetime, datetime(2018, 12, 31, 12, 34, 56, tzinfo=pytz.utc)
+                ),
             },
         ]
         for info in checklist:
@@ -658,6 +666,77 @@ class APITest(AironeViewTest):
         resp = self.client.post("/api/v1/entry", json.dumps(params), "application/json")
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(AttributeValue.objects.count(), attr_value_count)
+
+    @mock.patch("airone.lib.custom_view.is_custom", mock.Mock(return_value=True))
+    @mock.patch("airone.lib.custom_view.call_custom")
+    def test_api_entry_with_customview(self, mock_call_custom):
+        admin = self.admin_login()
+        entity = self.create_entity(
+            **{
+                "user": admin,
+                "name": "Entity",
+                "attrs": self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY,
+            }
+        )
+        params = {
+            "name": "entry1",
+            "entity": entity.name,
+            "attrs": {
+                "val": "hoge",
+            },
+        }
+
+        def side_effect(handler_name, entity_name, user, *args):
+            raise ValidationError("api error")
+
+        mock_call_custom.side_effect = side_effect
+        resp = self.client.post("/api/v1/entry", json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, 400)
+        self.assertTrue(mock_call_custom.called)
+
+        # create
+        def side_effect(handler_name, entity_name, user, *args):
+            self.assertEqual(entity_name, entity.name)
+            self.assertEqual(user, admin)
+
+            # Check specified parameters are expected
+            if handler_name == "validate_entry":
+                self.assertEqual(args[0], entity.name)
+                self.assertEqual(args[1], "entry1")
+                self.assertEqual(args[2], params["attrs"])
+                self.assertIsNone(args[3])
+
+        mock_call_custom.side_effect = side_effect
+        resp = self.client.post("/api/v1/entry", json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, 200)
+        self.assertTrue(mock_call_custom.called)
+
+        # edit
+        entry = Entry.objects.get(name="entry1", schema=entity)
+        params = {
+            "id": entry.id,
+            "name": "entry2",
+            "entity": entity.name,
+            "attrs": {
+                "val": "hoge",
+            },
+        }
+
+        def side_effect(handler_name, entity_name, user, *args):
+            self.assertEqual(entity_name, entity.name)
+            self.assertEqual(user, admin)
+
+            # Check specified parameters are expected
+            if handler_name == "validate_entry":
+                self.assertEqual(args[0], entity.name)
+                self.assertEqual(args[1], "entry2")
+                self.assertEqual(args[2], params["attrs"])
+                self.assertEqual(args[3], entry)
+
+        mock_call_custom.side_effect = side_effect
+        resp = self.client.post("/api/v1/entry", json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, 200)
+        self.assertTrue(mock_call_custom.called)
 
     def test_refresh_token(self):
         self.admin_login()
@@ -1398,3 +1477,43 @@ class APITest(AironeViewTest):
         self.assertEqual(
             [x.value for x in entry.get_attrv("vals").data_array.all()], ["fuga", "piyo"]
         )
+
+    def test_entry_date_validation(self):
+        admin = self.admin_login()
+        ref_entity = Entity.objects.create(name="Referred Entity", created_user=admin)
+        ref_e = []
+        for index in range(0, 10):
+            ref_e.append(
+                Entry.objects.create(name="r-%d" % index, schema=ref_entity, created_user=admin)
+            )
+
+        params = self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY.copy()
+        for param in params:
+            if param["type"] & AttrType.OBJECT:
+                param["ref"] = ref_entity
+        entity = self.create_entity(
+            **{
+                "user": admin,
+                "name": "Entity",
+                "attrs": self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY,
+            }
+        )
+        params = {
+            "name": "entry1",
+            "entity": entity.name,
+            "attrs": {
+                "date": "2018/12/31",
+            },
+        }
+        resp = self.client.post("/api/v1/entry", json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, 200)
+
+        # Test for date formatted as YYYY-MM-DD
+        params["attrs"]["date"] = "2018-12-31"
+        resp = self.client.post("/api/v1/entry", json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, 200)
+
+        # Test for invalid date formatted as YYYY/1/31
+        params["attrs"]["date"] = "201/12/31"
+        resp = self.client.post("/api/v1/entry", json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, 400)

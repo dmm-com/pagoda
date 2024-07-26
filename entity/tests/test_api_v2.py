@@ -1,6 +1,7 @@
 import datetime
 import json
 import logging
+from datetime import timezone
 from unittest import mock
 
 import yaml
@@ -225,11 +226,22 @@ class ViewTest(AironeViewTest):
                     "type": AttrType.ARRAY_ROLE,
                     "note": "",
                 },
+                {
+                    "id": self.entity.attrs.get(name="datetime").id,
+                    "index": 13,
+                    "is_delete_in_chain": False,
+                    "is_mandatory": False,
+                    "is_writable": True,
+                    "name": "datetime",
+                    "referral": [],
+                    "type": AttrType.DATETIME,
+                    "note": "",
+                },
             ],
         )
 
         entity_attr: EntityAttr = self.entity.attrs.get(name="refs")
-        entity_attr.index = 13
+        entity_attr.index = 14
         entity_attr.is_delete_in_chain = True
         entity_attr.is_mandatory = True
         entity_attr.referral.add(self.ref_entity)
@@ -240,7 +252,7 @@ class ViewTest(AironeViewTest):
             resp.json()["attrs"][-1],
             {
                 "id": entity_attr.id,
-                "index": 13,
+                "index": 14,
                 "is_delete_in_chain": True,
                 "is_mandatory": True,
                 "is_writable": True,
@@ -2891,6 +2903,7 @@ class ViewTest(AironeViewTest):
                 {"id": attr["date"].id, "value": "2018-12-31"},
                 {"id": attr["role"].id, "value": self.role.id},
                 {"id": attr["roles"].id, "value": [self.role.id]},
+                {"id": attr["datetime"].id, "value": "2018-12-31T00:00Z"},
             ],
         }
         resp = self.client.post(
@@ -2921,6 +2934,7 @@ class ViewTest(AironeViewTest):
                 "vals": ["hoge", "fuga"],
                 "role": "role0",
                 "roles": ["role0"],
+                "datetime": datetime.datetime(2018, 12, 31, 0, 0, tzinfo=timezone.utc),
             },
         )
         search_result = self._es.search(body={"query": {"term": {"name": entry.name}}})
@@ -3252,13 +3266,19 @@ class ViewTest(AironeViewTest):
         resp = self.client.post(
             "/entity/api/v2/%s/entries/" % self.entity.id, json.dumps(params), "application/json"
         )
-        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
+        self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertTrue(mock_call_custom.called)
 
         def side_effect(handler_name, entity_name, user, *args):
             # Check specified parameters are expected
             self.assertEqual(entity_name, self.entity.name)
             self.assertEqual(user, self.user)
+
+            if handler_name == "validate_entry":
+                self.assertEqual(args[0], self.entity.name)
+                self.assertEqual(args[1], params["name"])
+                self.assertEqual(args[2], params["attrs"])
+                self.assertIsNone(args[3])
 
             if handler_name == "before_create_entry_v2":
                 self.assertEqual(
@@ -3326,6 +3346,13 @@ class ViewTest(AironeViewTest):
                     "is_mandatory": False,
                     "row_index": "6",
                 },
+                {
+                    "name": "attr_datetime",
+                    "type": str(AttrType.DATETIME),
+                    "is_delete_in_chain": False,
+                    "is_mandatory": False,
+                    "row_index": "7",
+                },
             ],
         }
         resp = self.client.post(reverse("entity:do_create"), json.dumps(params), "application/json")
@@ -3337,7 +3364,7 @@ class ViewTest(AironeViewTest):
 
         histories = resp.json()
         self.assertEqual(len(histories), 1)
-        self.assertEqual(len(histories[0]["details"]), 6)
+        self.assertEqual(len(histories[0]["details"]), 7)
 
     def test_import(self):
         self.admin_login()

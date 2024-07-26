@@ -250,7 +250,7 @@ def advanced_search_result(request):
                 CONFIG.MAXIMUM_SEARCH_RESULTS,
                 entry_name,
                 referral_name,
-            ),
+            ).dict(),
             "max_num": CONFIG.MAXIMUM_SEARCH_RESULTS,
             "entities": ",".join([str(x) for x in hint_entity_ids]),
             "has_referral": has_referral,

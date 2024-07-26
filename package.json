@@ -80,7 +80,7 @@
     "zod": "^3.22.4"
   },
   "dependencies": {
-    "@dmm-com/airone-apiclient-typescript-fetch": "^0.0.17",
+    "@dmm-com/airone-apiclient-typescript-fetch": "^0.0.19",
     "@emotion/react": "^11.10.5",
     "@emotion/styled": "^11.10.5",
     "@jest/globals": "^27.0.6",
@@ -90,6 +90,7 @@
     "@types/react-router-dom": "^5.3.3",
     "@typescript-eslint/eslint-plugin": "^6.19.0",
     "@typescript-eslint/parser": "^6.19.0",
+    "ip-cidr": "^4.0.0",
     "ip-num": "^1.4.0",
     "js-cookie": "^2.2.1",
     "js-file-download": "^0.4.12",

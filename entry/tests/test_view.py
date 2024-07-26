@@ -884,9 +884,9 @@ class ViewTest(AironeViewTest):
 
         # checks that we can search updated entry using updated value
         resp = Entry.search_entries(user, [entity.id], [{"name": "bar", "keyword": "fuga"}])
-        self.assertEqual(resp["ret_count"], 1)
-        self.assertEqual(resp["ret_values"][0]["entity"]["id"], entity.id)
-        self.assertEqual(resp["ret_values"][0]["entry"]["id"], entry.id)
+        self.assertEqual(resp.ret_count, 1)
+        self.assertEqual(resp.ret_values[0].entity["id"], entity.id)
+        self.assertEqual(resp.ret_values[0].entry["id"], entry.id)
 
         # checks created jobs and its params are as expected
         jobs = Job.objects.filter(user=user, target=entry)
@@ -1145,15 +1145,13 @@ class ViewTest(AironeViewTest):
             [ref_entity.id],
             hint_referral="",
         )
-        self.assertEqual(ret["ret_count"], 3)
-        for info in ret["ret_values"]:
-            if info["entry"]["id"] == ref_entries[0].id:
-                self.assertEqual(info["referrals"], [])
-            elif (
-                info["entry"]["id"] == ref_entries[1].id or info["entry"]["id"] == ref_entries[2].id
-            ):
+        self.assertEqual(ret.ret_count, 3)
+        for info in ret.ret_values:
+            if info.entry["id"] == ref_entries[0].id:
+                self.assertEqual(info.referrals, [])
+            elif info.entry["id"] == ref_entries[1].id or info.entry["id"] == ref_entries[2].id:
                 self.assertEqual(
-                    info["referrals"],
+                    info.referrals,
                     [
                         {
                             "id": entry.id,
@@ -1978,6 +1976,7 @@ class ViewTest(AironeViewTest):
             "entry_name": "Jhon Doe",
             "attrs": [
                 {
+                    "entity_attr_id": str(entity.attrs.get(name="address").id),
                     "id": str(entity.attrs.get(name="address").id),
                     "type": str(AttrType.STRING),
                     "value": [{"data": "", "index": 0}],
@@ -2103,7 +2102,7 @@ class ViewTest(AironeViewTest):
             "entry_name": "entry",
             "attrs": [
                 {
-                    "entity_attr_id": "",
+                    "entity_attr_id": str(entity.attrs.get(name="address").id),
                     "id": str(entry.attrs.get(schema__name="address").id),
                     "value": [{"data": "", "index": 0}],
                     "referral_key": [{"data": "unknown", "index": 0}],
@@ -3859,9 +3858,9 @@ class ViewTest(AironeViewTest):
         self.assertTrue(Job.objects.filter(operation=JobOperation.NOTIFY_CREATE_ENTRY).exists())
 
         ret = Entry.search_entries(user, [self._entity.id], [{"name": "test"}])
-        self.assertEqual(ret["ret_count"], 1)
-        self.assertEqual(ret["ret_values"][0]["entry"]["name"], "entry")
-        self.assertEqual(ret["ret_values"][0]["attrs"]["test"]["value"], "fuga")
+        self.assertEqual(ret.ret_count, 1)
+        self.assertEqual(ret.ret_values[0].entry["name"], "entry")
+        self.assertEqual(ret.ret_values[0].attrs["test"]["value"], "fuga")
 
         Job.objects.all().delete()
 
@@ -3888,9 +3887,9 @@ class ViewTest(AironeViewTest):
         self.assertTrue(Job.objects.filter(operation=JobOperation.NOTIFY_UPDATE_ENTRY).exists())
 
         ret = Entry.search_entries(user, [self._entity.id], [{"name": "test"}])
-        self.assertEqual(ret["ret_count"], 1)
-        self.assertEqual(ret["ret_values"][0]["entry"]["name"], "entry")
-        self.assertEqual(ret["ret_values"][0]["attrs"]["test"]["value"], "piyo")
+        self.assertEqual(ret.ret_count, 1)
+        self.assertEqual(ret.ret_values[0].entry["name"], "entry")
+        self.assertEqual(ret.ret_values[0].attrs["test"]["value"], "piyo")
 
     @patch(
         "entry.tasks.create_entry_attrs.delay",
@@ -4746,9 +4745,9 @@ class ViewTest(AironeViewTest):
 
         # check that index information of restored entry in Elasticsearch is also restored
         resp = Entry.search_entries(user, [entity.id])
-        self.assertEqual(resp["ret_count"], 1)
-        self.assertEqual(resp["ret_values"][0]["entry"]["id"], entry.id)
-        self.assertEqual(resp["ret_values"][0]["entry"]["name"], entry.name)
+        self.assertEqual(resp.ret_count, 1)
+        self.assertEqual(resp.ret_values[0].entry["id"], entry.id)
+        self.assertEqual(resp.ret_values[0].entry["name"], entry.name)
 
         self.assertTrue(mock_task.called)
 
@@ -4874,8 +4873,8 @@ class ViewTest(AironeViewTest):
             self.assertEqual(attrv1.get_value(), attr.get_latest_value().get_value())
 
         resp = Entry.search_entries(user, [entity.id], [], is_output_all=True)
-        self.assertEqual(resp["ret_count"], 1)
-        for attr_name, data in resp["ret_values"][0]["attrs"].items():
+        self.assertEqual(resp.ret_count, 1)
+        for attr_name, data in resp.ret_values[0].attrs.items():
             self.assertEqual(data["type"], attr_info[attr_name]["type"])
 
             value = attr_info[attr_name]["values"][0]
@@ -5381,9 +5380,9 @@ class ViewTest(AironeViewTest):
 
         # check entry changing reflects to the ElasticSearch
         ret = Entry.search_entries(user, [entity.id], [{"name": "ref"}])
-        self.assertEqual(ret["ret_count"], 1)
-        self.assertEqual(ret["ret_values"][0]["entry"]["name"], "entry")
-        self.assertEqual(ret["ret_values"][0]["attrs"]["ref"]["value"]["name"], "changed_name")
+        self.assertEqual(ret.ret_count, 1)
+        self.assertEqual(ret.ret_values[0].entry["name"], "entry")
+        self.assertEqual(ret.ret_values[0].attrs["ref"]["value"]["name"], "changed_name")
 
     @patch(
         "entry.tasks.create_entry_attrs.delay",

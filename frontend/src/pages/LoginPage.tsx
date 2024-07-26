@@ -6,6 +6,11 @@ import {
   Alert,
   Box,
   Button,
+  Checkbox,
+  FormControl,
+  FormControlLabel,
+  FormGroup,
+  FormHelperText,
   IconButton,
   Input,
   InputAdornment,
@@ -28,6 +33,10 @@ export const LoginPage: FC = () => {
 
   const [showPassword, setShowPassword] = useState(false);
   const [isAlert, setIsAlert] = useState(false);
+  const [showAlertForTermsOfService, setShowAlertForTermsOfService] =
+    useState(false);
+  const [agreeWithServiceContract, setAgreeWithServiceContract] =
+    useState(false);
   const [openPasswordResetModal, setOpenPasswordResetModal] = useState(false);
   const [uidb64, setUidb64] = useState<string>("");
   const [token, setToken] = useState<string>("");
@@ -67,6 +76,22 @@ export const LoginPage: FC = () => {
     setIsAlert(false);
 
     const data = new FormData(event.currentTarget);
+
+    // set AGREE_TERM_OF_SERVICE when user indicates to agree with Pagoda's service contract
+    // when serverContext.checkTermService is true.
+    if (serverContext?.checkTermService) {
+      if (agreeWithServiceContract === true) {
+        data.append(
+          "extra_param",
+          JSON.stringify({ AGREE_TERM_OF_SERVICE: true })
+        );
+      } else {
+        // abort login process when user does not agree with Pagoda's service contract
+        setShowAlertForTermsOfService(true);
+        return;
+      }
+    }
+
     const resp = await aironeApiClient.postLogin(data);
     if (resp.type === "opaqueredirect") {
       window.location.href = serverContext?.loginNext ?? "";
@@ -112,6 +137,40 @@ export const LoginPage: FC = () => {
         <Typography variant="subtitle2" mt={2}>
           {serverContext?.subTitle}
         </Typography>
+        {serverContext?.checkTermService && (
+          <Box width={500}>
+            <FormControl>
+              <FormGroup>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      onChange={(e) => {
+                        setAgreeWithServiceContract(e.target.checked);
+                        setShowAlertForTermsOfService(false);
+                      }}
+                    />
+                  }
+                  label="以下の規約に合意する。"
+                />
+                <Link href={serverContext?.termsOfServiceUrl} target="_blank">
+                  Pagoda サービス規約
+                </Link>
+              </FormGroup>
+              <FormHelperText>
+                {showAlertForTermsOfService && (
+                  <Alert
+                    severity="error"
+                    onClose={() => {
+                      setShowAlertForTermsOfService(false);
+                    }}
+                  >
+                    ご利用には、サービス規約への合意が必要です。
+                  </Alert>
+                )}
+              </FormHelperText>
+            </FormControl>
+          </Box>
+        )}
         <Box width={500} height={50} mt={2}>
           {isAlert ? (
             <Alert

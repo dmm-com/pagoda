@@ -134,6 +134,7 @@ export const AttributeValue: FC<Props> = ({ attrInfo }) => {
     case EntryAttributeTypeTypeEnum.STRING:
     case EntryAttributeTypeTypeEnum.TEXT:
     case EntryAttributeTypeTypeEnum.DATE:
+    case EntryAttributeTypeTypeEnum.DATETIME:
       return (
         <StyledList>
           <StyledListItem>

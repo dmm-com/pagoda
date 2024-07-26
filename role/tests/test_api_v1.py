@@ -74,7 +74,7 @@ class ModelTest(RoleTestBase):
 
         entry.register_es()
         resp1 = Entry.search_entries(user, [entity.id], [{"name": "role"}])
-        self.assertEqual(resp1["ret_values"][0]["attrs"]["role"]["value"]["name"], "test_role")
+        self.assertEqual(resp1.ret_values[0].attrs["role"]["value"]["name"], "test_role")
 
         params = dict(
             self._BASE_UPDATE_PARAMS,
@@ -88,6 +88,4 @@ class ModelTest(RoleTestBase):
             "application/json",
         )
         resp2 = Entry.search_entries(user, [entity.id], [{"name": "role"}])
-        self.assertEqual(
-            resp2["ret_values"][0]["attrs"]["role"]["value"]["name"], "test_role_update"
-        )
+        self.assertEqual(resp2.ret_values[0].attrs["role"]["value"]["name"], "test_role_update")
