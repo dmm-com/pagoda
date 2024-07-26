@@ -1222,6 +1222,7 @@ class ModelTest(AironeTestCase):
     def test_set_value_method(self):
         user = User.objects.create(username="hoge")
         test_groups = [Group.objects.create(name=x) for x in ["g1", "g2"]]
+        test_roles = [Role.objects.create(name=x) for x in ["r1", "r2"]]
 
         # create referred Entity and Entries
         ref_entity = Entity.objects.create(name="Referred Entity", created_user=user)
@@ -1238,6 +1239,7 @@ class ModelTest(AironeTestCase):
             {"name": "arr_obj", "val": [ref_entry]},
             {"name": "arr_name", "val": [{"name": "new_value", "id": ref_entry}]},
             {"name": "arr_group", "val": test_groups},
+            {"name": "arr_role", "val": test_roles},
         ]
         for info in attr_info:
             attr = entry.attrs.get(schema__name=info["name"])
@@ -1263,6 +1265,20 @@ class ModelTest(AironeTestCase):
         self.assertEqual(
             [int(x.value) for x in latest_value.data_array.all()],
             [x.id for x in test_groups],
+        )
+        self.assertEqual(
+            [x.group for x in latest_value.data_array.all().select_related("group")],
+            test_groups,
+        )
+
+        latest_value = entry.attrs.get(name="arr_role").get_latest_value()
+        self.assertEqual(
+            [int(x.value) for x in latest_value.data_array.all()],
+            [x.id for x in test_roles],
+        )
+        self.assertEqual(
+            [x.role for x in latest_value.data_array.all().select_related("role")],
+            test_roles,
         )
 
     def test_get_available_attrs(self):
