@@ -254,6 +254,11 @@ def edit_entity_v2(self, job: Job) -> JobStatus:
 
     serializer.update_remaining(entity, serializer.validated_data)
 
+    jp_update_es_document = {
+        "is_updated": True,
+    }
+    Job.new_update_documents(entity, "", jp_update_es_document).run()
+
     return JobStatus.DONE
 
 
