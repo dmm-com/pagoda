@@ -1,5 +1,6 @@
 import re
 from collections.abc import Iterable
+from copy import deepcopy
 from datetime import date, datetime
 from typing import Any, List, Optional
 
@@ -1528,21 +1529,7 @@ class Entry(ACLBase):
     def get_referred_objects(
         self, filter_entities: list[str] = [], exclude_entities: list[str] = []
     ) -> QuerySet:
-        """
-        This returns objects that refer current Entry in the AttributeValue
-        """
-        ids = AttributeValue.objects.filter(
-            Q(referral=self, is_latest=True) | Q(referral=self, parent_attrv__is_latest=True),
-            parent_attr__is_active=True,
-            parent_attr__schema__is_active=True,
-        ).values_list("parent_attr__parent_entry", flat=True)
-
-        # if entity_name param exists, add schema name to reduce filter execution time
-        query = Q(pk__in=ids, is_active=True)
-        if filter_entities:
-            query &= Q(schema__name__in=filter_entities)
-
-        return Entry.objects.filter(query).exclude(schema__name__in=exclude_entities).order_by("id")
+        return Entry.get_referred_entries([self.id], filter_entities, exclude_entities)
 
     def complement_attrs(self, user: User):
         """
@@ -2301,11 +2288,12 @@ class Entry(ACLBase):
             if "status" in resp and resp["status"] == 404:
                 continue
 
+            tmp_hint_attrs = deepcopy(hint_attrs)
             # Check for has permission to EntityAttr, when is_output_all flag
             if is_output_all:
                 for entity_attr in entity.attrs.filter(is_active=True):
-                    if entity_attr.name not in [x["name"] for x in hint_attrs if "name" in x]:
-                        hint_attrs.append(
+                    if entity_attr.name not in [x["name"] for x in tmp_hint_attrs if "name" in x]:
+                        tmp_hint_attrs.append(
                             {
                                 "name": entity_attr.name,
                                 "is_readable": True
@@ -2321,7 +2309,7 @@ class Entry(ACLBase):
             search_result = make_search_results(
                 user,
                 resp,
-                hint_attrs,
+                tmp_hint_attrs,
                 hint_referral,
                 limit,
             )
@@ -2507,6 +2495,28 @@ class Entry(ACLBase):
                 return False
 
         return True
+
+    @classmethod
+    def get_referred_entries(
+        kls, id_list: list[int], filter_entities: list[str] = [], exclude_entities: list[str] = []
+    ):
+        """
+        This returns objects that refer Entries, which is specifeied in the kd_list,
+        in the AttributeValue.
+        """
+        ids = AttributeValue.objects.filter(
+            Q(referral__in=id_list, is_latest=True)
+            | Q(referral__in=id_list, parent_attrv__is_latest=True),
+            parent_attr__is_active=True,
+            parent_attr__schema__is_active=True,
+        ).values_list("parent_attr__parent_entry", flat=True)
+
+        # if entity_name param exists, add schema name to reduce filter execution time
+        query = Q(pk__in=ids, is_active=True)
+        if filter_entities:
+            query &= Q(schema__name__in=filter_entities)
+
+        return Entry.objects.filter(query).exclude(schema__name__in=exclude_entities).order_by("id")
 
     def get_attrv(self, attr_name: str) -> AttributeValue | None:
         """This returns specified attribute's value without permission check. Because

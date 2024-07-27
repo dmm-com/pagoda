@@ -1976,6 +1976,7 @@ class ViewTest(AironeViewTest):
             "entry_name": "Jhon Doe",
             "attrs": [
                 {
+                    "entity_attr_id": str(entity.attrs.get(name="address").id),
                     "id": str(entity.attrs.get(name="address").id),
                     "type": str(AttrType.STRING),
                     "value": [{"data": "", "index": 0}],
@@ -2101,7 +2102,7 @@ class ViewTest(AironeViewTest):
             "entry_name": "entry",
             "attrs": [
                 {
-                    "entity_attr_id": "",
+                    "entity_attr_id": str(entity.attrs.get(name="address").id),
                     "id": str(entry.attrs.get(schema__name="address").id),
                     "value": [{"data": "", "index": 0}],
                     "referral_key": [{"data": "unknown", "index": 0}],

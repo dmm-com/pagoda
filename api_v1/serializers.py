@@ -3,6 +3,7 @@ from datetime import datetime
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
+from airone.lib import custom_view
 from airone.lib.types import AttrType
 from entity.models import Entity
 from entry.models import AttributeValue, Entry
@@ -257,5 +258,12 @@ class PostEntrySerializer(serializers.Serializer):
                 raise ValidationError("Invalid attribute value(%s) is specified" % (attr_name))
 
             data["attrs"][attr_name] = validated_value
+
+        # check custom validate
+        user = self.context["_user"]
+        if custom_view.is_custom("validate_entry", entity.name):
+            custom_view.call_custom(
+                "validate_entry", entity.name, user, entity.name, data["name"], data["attrs"], entry
+            )
 
         return data

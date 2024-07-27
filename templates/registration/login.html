@@ -49,10 +49,12 @@
           subtitle: "{{subtitle}}",
           note_desc: "{{note_desc}}",
           note_link: "{{note_link}}",
+          termsOfServiceUrl: "{{terms_of_service_url}}",
           {% if idp %}
           singleSignOnLoginUrl: "{% url 'social:begin' 'saml' %}?idp={{ idp }}&next={{ next }}",
           {% endif %}
           password_reset_disabled: {{password_reset_disabled|yesno:"true,false"}},
+          checkTermService: {{check_term_service|yesno:"true,false"}},
       };
     </script>
     <script src="/static/js/ui.js"></script>

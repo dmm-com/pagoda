@@ -292,7 +292,9 @@ class EntryBaseSerializer(serializers.ModelSerializer):
 
         # check custom validate
         if custom_view.is_custom("validate_entry", schema.name):
-            custom_view.call_custom("validate_entry", schema.name, user, schema.name, name, attrs)
+            custom_view.call_custom(
+                "validate_entry", schema.name, user, schema.name, name, attrs, self.instance
+            )
 
 
 @extend_schema_field({})
@@ -788,6 +790,13 @@ class EntryCopySerializer(serializers.Serializer):
                 "specified names(%s) already exists"
                 % ",".join([e.name for e in duplicated_entries])
             )
+        # check custom validate
+        user = self.context["request"].user
+        if custom_view.is_custom("validate_entry", entry.schema.name):
+            for name in copy_entry_names:
+                custom_view.call_custom(
+                    "validate_entry", entry.schema.name, user, entry.schema.name, name, [], None
+                )
 
 
 class EntryExportSerializer(serializers.Serializer):

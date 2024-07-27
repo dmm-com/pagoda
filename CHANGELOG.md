@@ -3,10 +3,26 @@
 ## In development
 
 ### Added
+* Added helper class tmethod Entry.get_referred_entries() to get referral Entries from multiple referred Entries.
+  Contributed by @userlocalhost
 
 ### Changed
 
 ### Fixed
+
+## v3.97.0
+
+### Added
+* Added processing to check whether user agrees with the Terms of Service when
+  settings.AIRONE["CHECK_TERM_SERVICE"] is activated.
+  Contributed by @userlocalhost, @hinashi
+* Added new middleware to prevent to exposing old URL when
+  LEGACY_UI_DISABLED parameter is set in the settings.AIRONE
+  Contributed by @userlocalhost
+
+### Fixed
+* Fixed failed invoke trigger for oldUI.
+  Contributed by @hinashi
 
 ## v3.96.0
 
