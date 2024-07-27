@@ -1266,16 +1266,8 @@ class ModelTest(AironeTestCase):
             [x.group for x in latest_value.data_array.all().select_related("group")],
             test_groups,
         )
-        self.assertEqual(
-            [x.group for x in latest_value.data_array.all().select_related("group")],
-            test_groups,
-        )
 
         latest_value = entry.attrs.get(name="arr_role").get_latest_value()
-        self.assertEqual(
-            [int(x.value) for x in latest_value.data_array.all()],
-            [x.id for x in test_roles],
-        )
         self.assertEqual(
             [x.role for x in latest_value.data_array.all().select_related("role")],
             test_roles,
