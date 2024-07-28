@@ -49,7 +49,6 @@ class AttributeValue(models.Model):
         related_name="referred_attr_value",
         on_delete=models.SET_NULL,
     )
-    data_array = models.ManyToManyField("AttributeValue")
     created_time = models.DateTimeField(auto_now_add=True)
     created_user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
     parent_attr = models.ForeignKey("Attribute", on_delete=models.DO_NOTHING)
@@ -89,7 +88,7 @@ class AttributeValue(models.Model):
     # This indicates the parent AttributeValue object, this parameter is usefull to identify
     # leaf AttriuteValue objects.
     parent_attrv = models.ForeignKey(
-        "AttributeValue", null=True, related_name="child", on_delete=models.SET_NULL
+        "AttributeValue", null=True, related_name="data_array", on_delete=models.SET_NULL
     )
 
     @classmethod

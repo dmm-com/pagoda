@@ -29,22 +29,22 @@ Attribute:
 - {created_user: admin, entry_id: 14, id: 18, name: attr-arr-obj, schema_id: 7}
 
 AttributeValue:
-- {attribute_id: 15, created_time: '2017-08-29 03:07:21', created_user: admin, data_arr: '',
+- {attribute_id: 15, created_time: '2017-08-29 03:07:21', created_user: admin, parent_attrv: '',
   id: 101, refer: '', status: 0, value: 'I am srv001'}
-- {attribute_id: 16, created_time: '2017-08-29 03:07:21', created_user: admin, data_arr: '',
+- {attribute_id: 16, created_time: '2017-08-29 03:07:21', created_user: admin, parent_attrv: '',
   id: 102, refer: 8, status: 0, value: ''}
-- {attribute_id: 17, created_time: '2017-08-29 03:07:21', created_user: admin, data_arr: '104,105',
+- {attribute_id: 17, created_time: '2017-08-29 03:07:21', created_user: admin, parent_attrv: '',
   id: 103, refer: '', status: 1, value: ''}
-- {attribute_id: 17, created_time: '2017-08-29 03:07:21', created_user: admin, data_arr: '',
+- {attribute_id: 17, created_time: '2017-08-29 03:07:21', created_user: admin, parent_attrv: '103',
   id: 104, refer: '', status: 0, value: hoge}
-- {attribute_id: 17, created_time: '2017-08-29 03:07:21', created_user: admin, data_arr: '',
+- {attribute_id: 17, created_time: '2017-08-29 03:07:21', created_user: admin, parent_attrv: '103',
   id: 105, refer: '', status: 0, value: fuga}
-- {attribute_id: 18, created_time: '2017-08-29 03:07:22', created_user: admin, data_arr: '107,108',
+- {attribute_id: 18, created_time: '2017-08-29 03:07:22', created_user: admin, parent_attrv: '',
   id: 106, refer: '', status: 1, value: ''}
-- {attribute_id: 18, created_time: '2017-08-29 03:07:22', created_user: admin, data_arr: '',
+- {attribute_id: 18, created_time: '2017-08-29 03:07:22', created_user: admin, parent_attrv: '106',
   id: 107, refer: 11, status: 0, value: ''}
-- {attribute_id: 18, created_time: '2017-08-29 03:07:22', created_user: admin, data_arr: '',
+- {attribute_id: 18, created_time: '2017-08-29 03:07:22', created_user: admin, parent_attrv: '106',
   id: 108, refer: 12, status: 0, value: ''}
 # Create a new AttributeValue for String type Attribute
-- {attribute_id: 15, created_time: '2017-08-29 03:07:28', created_user: admin, data_arr: '',
+- {attribute_id: 15, created_time: '2017-08-29 03:07:28', created_user: admin, parent_attrv: '',
   id: 999, refer: '', status: 0, value: bar}
