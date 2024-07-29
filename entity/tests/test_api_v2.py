@@ -3653,6 +3653,4 @@ class ViewTest(AironeViewTest):
         resp1 = Entry.search_entries(user, [self.entity.id], [{"name": "val"}])
 
         # Validate that the actual value matches the expected value
-        expected_value = ""
-        actual_value = resp1.ret_values[0].attrs["val"]["value"]
-        self.assertEqual(actual_value, expected_value)
+        self.assertEqual(resp1.ret_values[0].attrs["val"]["value"], "")
