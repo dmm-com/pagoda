@@ -1,6 +1,7 @@
 import datetime
 import json
 import logging
+import pprint
 from datetime import timezone
 from unittest import mock
 
@@ -3653,5 +3654,5 @@ class ViewTest(AironeViewTest):
 
         # Validate that the actual value matches the expected value
         expected_value = ""
-        actual_value = resp1["ret_values"][0]["attrs"]["val"]["value"]
+        actual_value = resp1.ret_values[0].attrs["val"]["value"]
         self.assertEqual(actual_value, expected_value)
