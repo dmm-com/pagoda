@@ -1,7 +1,6 @@
 import datetime
 import json
 import logging
-import pprint
 from datetime import timezone
 from unittest import mock
 
