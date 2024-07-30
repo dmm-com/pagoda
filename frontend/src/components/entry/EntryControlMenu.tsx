@@ -47,14 +47,14 @@ export const EntryControlMenu: FC<EntryControlProps> = ({
   const handleDelete = async (entryId: number) => {
     try {
       await aironeApiClient.destroyEntry(entryId);
-      enqueueSnackbar("エントリの削除が完了しました", {
+      enqueueSnackbar("アイテムの削除が完了しました", {
         variant: "success",
       });
       setToggle && setToggle();
       history.replace(topPath());
       history.replace(entityEntriesPath(entityId));
     } catch (e) {
-      enqueueSnackbar("エントリの削除が失敗しました", {
+      enqueueSnackbar("アイテムの削除が失敗しました", {
         variant: "error",
       });
     }

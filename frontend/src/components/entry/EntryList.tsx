@@ -52,7 +52,7 @@ export const EntryList: FC<Props> = ({ entityId, canCreateEntry = true }) => {
       <Box display="flex" justifyContent="space-between" mb="16px">
         <Box width="600px">
           <SearchBox
-            placeholder="エントリを絞り込む"
+            placeholder="アイテムを絞り込む"
             value={keyword}
             onChange={(e) => setKeyword(e.target.value)}
             onKeyPress={(e) => {
@@ -72,7 +72,7 @@ export const EntryList: FC<Props> = ({ entityId, canCreateEntry = true }) => {
           sx={{ borderRadius: "24px" }}
         >
           <AddIcon />
-          新規エントリを作成
+          新規アイテムを作成
         </Button>
       </Box>
 

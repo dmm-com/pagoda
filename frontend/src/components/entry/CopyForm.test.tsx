@@ -36,7 +36,7 @@ describe("CopyForm", () => {
     );
 
     act(() => {
-      fireEvent.change(screen.getByPlaceholderText("コピーするエントリ名"), {
+      fireEvent.change(screen.getByPlaceholderText("コピーするアイテム名"), {
         target: { value: "entry1\nentry2" },
       });
     });

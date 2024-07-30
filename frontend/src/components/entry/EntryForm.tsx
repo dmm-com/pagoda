@@ -94,7 +94,7 @@ export const EntryForm: FC<EntryFormProps> = ({
           component="a"
           href={`#name`}
           icon={<ArrowDropDownIcon />}
-          label="エントリ名"
+          label="アイテム名"
           clickable={true}
           variant="outlined"
         />
@@ -122,7 +122,7 @@ export const EntryForm: FC<EntryFormProps> = ({
           <TableRow>
             <StyledTableCell>
               <TableBox>
-                <StyledTypography id="name">エントリ名</StyledTypography>
+                <StyledTypography id="name">アイテム名</StyledTypography>
                 <RequiredLabel>必須</RequiredLabel>
               </TableBox>
             </StyledTableCell>

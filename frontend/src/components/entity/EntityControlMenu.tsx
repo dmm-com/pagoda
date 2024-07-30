@@ -92,7 +92,7 @@ export const EntityControlMenu: FC<Props> = ({
       }}
     >
       <MenuItem component={Link} to={entityEntriesPath(entityId)}>
-        <Typography>エントリ一覧</Typography>
+        <Typography>アイテム一覧</Typography>
       </MenuItem>
       <MenuItem component={Link} to={editEntityPath(entityId)}>
         <Typography>編集</Typography>
@@ -126,7 +126,7 @@ export const EntityControlMenu: FC<Props> = ({
         <Typography>インポート</Typography>
       </MenuItem>
       <MenuItem component={Link} to={restoreEntryPath(entityId)}>
-        <Typography>削除エントリの復旧</Typography>
+        <Typography>削除アイテムの復旧</Typography>
       </MenuItem>
       <Confirmable
         componentGenerator={(handleOpen) => (

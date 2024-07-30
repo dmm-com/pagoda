@@ -33,7 +33,7 @@ export const EntryListPage: FC<Props> = ({ canCreateEntry = true }) => {
 
       <PageHeader
         title={entity.value?.name ?? ""}
-        description="エントリ一覧"
+        description="アイテム一覧"
         targetId={entity.value?.id}
         hasOngoingProcess={entity.value?.hasOngoingChanges}
       >

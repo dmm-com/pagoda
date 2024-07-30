@@ -78,7 +78,7 @@ export const AdvancedSearchModal: FC<Props> = ({
       />
       <Box display="flex" justifyContent="center">
         <Box>
-          参照エントリも含める
+          参照アイテムも含める
           <Checkbox
             checked={hasReferral}
             onChange={(e) => setHasReferral(e.target.checked)}

@@ -13,8 +13,8 @@ export const schema = schemaForType<EditableEntry>()(
     name: z
       .string()
       .trim()
-      .min(1, "エントリ名は必須です")
-      .max(200, "エントリ名が大きすぎます")
+      .min(1, "アイテム名は必須です")
+      .max(200, "アイテム名が大きすぎます")
       .default(""),
     schema: z.object({
       id: z.number(),
