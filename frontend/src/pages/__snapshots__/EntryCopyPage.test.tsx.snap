@@ -47,7 +47,7 @@ exports[`should match snapshot 1`] = `
                       class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
                       href="/ui/entities"
                     >
-                      エンティティ一覧
+                      モデル一覧
                     </a>
                   </li>
                   <li
@@ -151,7 +151,7 @@ exports[`should match snapshot 1`] = `
                 class="MuiTypography-root MuiTypography-subtitle1 css-10wpov9-MuiTypography-root"
                 id="description"
               >
-                エントリのコピーを作成
+                アイテムのコピーを作成
               </h6>
               <div
                 class="MuiBox-root css-1b3gh38"
@@ -188,7 +188,7 @@ exports[`should match snapshot 1`] = `
           <p
             class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
           >
-            入力した各行ごとに aaa と同じ属性を持つ別のエントリを作成
+            入力した各行ごとに aaa と同じ属性を持つ別のアイテムを作成
           </p>
           <div
             class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-wb57ya-MuiFormControl-root-MuiTextField-root"
@@ -200,7 +200,7 @@ exports[`should match snapshot 1`] = `
                 aria-invalid="false"
                 class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputMultiline css-347vvv-MuiInputBase-input-MuiOutlinedInput-input"
                 id="copy-name"
-                placeholder="コピーするエントリ名"
+                placeholder="コピーするアイテム名"
                 style="height: 0px; overflow: hidden;"
               />
               <textarea
@@ -237,7 +237,7 @@ exports[`should match snapshot 1`] = `
             <p
               class="MuiTypography-root MuiTypography-body1 css-vkc4v8-MuiTypography-root"
             >
-              (Vm0001、vm0002、…vm006の6エントリを作成する場合)
+              (Vm0001、vm0002、…vm006の6アイテムを作成する場合)
             </p>
             <div
               class="MuiFormControl-root MuiTextField-root css-ksw8wi-MuiFormControl-root-MuiTextField-root"
@@ -248,7 +248,7 @@ exports[`should match snapshot 1`] = `
                 for=":r1:"
                 id=":r1:-label"
               >
-                コピーするエントリ名
+                コピーするアイテム名
               </label>
               <div
                 class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary Mui-disabled MuiInputBase-formControl MuiInputBase-multiline css-dpjnhs-MuiInputBase-root-MuiOutlinedInput-root"
@@ -282,7 +282,7 @@ vm0006
                     class="css-14lo706"
                   >
                     <span>
-                      コピーするエントリ名
+                      コピーするアイテム名
                     </span>
                   </legend>
                 </fieldset>
@@ -336,7 +336,7 @@ vm0006
                     class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
                     href="/ui/entities"
                   >
-                    エンティティ一覧
+                    モデル一覧
                   </a>
                 </li>
                 <li
@@ -440,7 +440,7 @@ vm0006
               class="MuiTypography-root MuiTypography-subtitle1 css-10wpov9-MuiTypography-root"
               id="description"
             >
-              エントリのコピーを作成
+              アイテムのコピーを作成
             </h6>
             <div
               class="MuiBox-root css-1b3gh38"
@@ -477,7 +477,7 @@ vm0006
         <p
           class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
         >
-          入力した各行ごとに aaa と同じ属性を持つ別のエントリを作成
+          入力した各行ごとに aaa と同じ属性を持つ別のアイテムを作成
         </p>
         <div
           class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-wb57ya-MuiFormControl-root-MuiTextField-root"
@@ -489,7 +489,7 @@ vm0006
               aria-invalid="false"
               class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputMultiline css-347vvv-MuiInputBase-input-MuiOutlinedInput-input"
               id="copy-name"
-              placeholder="コピーするエントリ名"
+              placeholder="コピーするアイテム名"
               style="height: 0px; overflow: hidden;"
             />
             <textarea
@@ -526,7 +526,7 @@ vm0006
           <p
             class="MuiTypography-root MuiTypography-body1 css-vkc4v8-MuiTypography-root"
           >
-            (Vm0001、vm0002、…vm006の6エントリを作成する場合)
+            (Vm0001、vm0002、…vm006の6アイテムを作成する場合)
           </p>
           <div
             class="MuiFormControl-root MuiTextField-root css-ksw8wi-MuiFormControl-root-MuiTextField-root"
@@ -537,7 +537,7 @@ vm0006
               for=":r1:"
               id=":r1:-label"
             >
-              コピーするエントリ名
+              コピーするアイテム名
             </label>
             <div
               class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary Mui-disabled MuiInputBase-formControl MuiInputBase-multiline css-dpjnhs-MuiInputBase-root-MuiOutlinedInput-root"
@@ -571,7 +571,7 @@ vm0006
                   class="css-14lo706"
                 >
                   <span>
-                    コピーするエントリ名
+                    コピーするアイテム名
                   </span>
                 </legend>
               </fieldset>

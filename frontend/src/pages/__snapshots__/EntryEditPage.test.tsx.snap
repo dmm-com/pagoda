@@ -47,7 +47,7 @@ exports[`EntryEditPage should match snapshot 1`] = `
                       class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
                       href="/ui/entities"
                     >
-                      エンティティ一覧
+                      モデル一覧
                     </a>
                   </li>
                   <li
@@ -151,7 +151,7 @@ exports[`EntryEditPage should match snapshot 1`] = `
                 class="MuiTypography-root MuiTypography-subtitle1 css-10wpov9-MuiTypography-root"
                 id="description"
               >
-                エントリ編集
+                アイテム編集
               </h6>
               <div
                 class="MuiBox-root css-1b3gh38"
@@ -228,7 +228,7 @@ exports[`EntryEditPage should match snapshot 1`] = `
                     class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
                     href="/ui/entities"
                   >
-                    エンティティ一覧
+                    モデル一覧
                   </a>
                 </li>
                 <li
@@ -332,7 +332,7 @@ exports[`EntryEditPage should match snapshot 1`] = `
               class="MuiTypography-root MuiTypography-subtitle1 css-10wpov9-MuiTypography-root"
               id="description"
             >
-              エントリ編集
+              アイテム編集
             </h6>
             <div
               class="MuiBox-root css-1b3gh38"
