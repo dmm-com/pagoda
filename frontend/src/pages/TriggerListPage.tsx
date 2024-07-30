@@ -261,7 +261,7 @@ export const TriggerListPage: FC = () => {
                 <TableHead>
                   <HeaderTableRow>
                     <HeaderTableCell width="200px">
-                      エンティティ
+                      モデル
                     </HeaderTableCell>
                     <HeaderTableCell width="420px">条件</HeaderTableCell>
                     <HeaderTableCell width="420px">アクション</HeaderTableCell>

@@ -55,11 +55,11 @@ describe("EntityList", () => {
 
     // specify keyword
     act(() => {
-      fireEvent.change(screen.getByPlaceholderText("エンティティを絞り込む"), {
+      fireEvent.change(screen.getByPlaceholderText("モデルを絞り込む"), {
         target: { value: "entity" },
       });
       fireEvent.keyPress(
-        screen.getByPlaceholderText("エンティティを絞り込む"),
+        screen.getByPlaceholderText("モデルを絞り込む"),
         {
           key: "Enter",
           code: 13,
@@ -67,7 +67,7 @@ describe("EntityList", () => {
         }
       );
     });
-    expect(screen.getByPlaceholderText("エンティティを絞り込む")).toHaveValue(
+    expect(screen.getByPlaceholderText("モデルを絞り込む")).toHaveValue(
       "entity"
     );
     expect(handleChangeQuery).toBeCalled();

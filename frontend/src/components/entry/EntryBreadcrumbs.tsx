@@ -29,7 +29,7 @@ export const EntryBreadcrumbs: FC<Props> = ({ entry, title }) => {
         Top
       </Typography>
       <Typography component={Link} to={entitiesPath()}>
-        エンティティ一覧
+        モデル一覧
       </Typography>
       {entry && (
         <StyledBox>

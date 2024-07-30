@@ -128,7 +128,7 @@ export const JobList: FC<Props> = ({ jobs }) => {
       <TableHead>
         <AironeTableHeadRow>
           <AironeTableHeadCell sx={{ width: "160px" }}>
-            対象エンティティ
+            対象モデル
           </AironeTableHeadCell>
           <AironeTableHeadCell sx={{ width: "120px" }}>
             状況

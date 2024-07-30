@@ -49,10 +49,10 @@ export const EntityListPage: FC = () => {
         <Typography component={Link} to={topPath()}>
           Top
         </Typography>
-        <Typography color="textPrimary">エンティティ一覧</Typography>
+        <Typography color="textPrimary">モデル一覧</Typography>
       </AironeBreadcrumbs>
 
-      <PageHeader title="エンティティ一覧">
+      <PageHeader title="モデル一覧">
         <Box display="flex" alignItems="center">
           <Button
             variant="contained"

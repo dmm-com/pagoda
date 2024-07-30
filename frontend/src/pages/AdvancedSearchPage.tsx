@@ -133,7 +133,7 @@ export const AdvancedSearchPage: FC = () => {
       <Container>
         <StyledFlexColumnBox>
           <StyledTypography variant="h4">
-            検索対象のエンティティ
+            検索対象のモデル
           </StyledTypography>
 
           <Autocomplete
@@ -150,7 +150,7 @@ export const AdvancedSearchPage: FC = () => {
               <TextField
                 {...params}
                 variant="outlined"
-                placeholder="エンティティを選択"
+                placeholder="モデルを選択"
               />
             )}
             multiple

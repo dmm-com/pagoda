@@ -25,7 +25,7 @@ export const EntityBreadcrumbs: FC<Props> = ({ entity, attr, title }) => {
         Top
       </Typography>
       <Typography component={Link} to={entitiesPath()}>
-        エンティティ一覧
+        モデル一覧
       </Typography>
       {entity && (
         <StyledBox>
