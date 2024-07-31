@@ -58,14 +58,11 @@ describe("EntityList", () => {
       fireEvent.change(screen.getByPlaceholderText("モデルを絞り込む"), {
         target: { value: "entity" },
       });
-      fireEvent.keyPress(
-        screen.getByPlaceholderText("モデルを絞り込む"),
-        {
-          key: "Enter",
-          code: 13,
-          charCode: 13,
-        }
-      );
+      fireEvent.keyPress(screen.getByPlaceholderText("モデルを絞り込む"), {
+        key: "Enter",
+        code: 13,
+        charCode: 13,
+      });
     });
     expect(screen.getByPlaceholderText("モデルを絞り込む")).toHaveValue(
       "entity"

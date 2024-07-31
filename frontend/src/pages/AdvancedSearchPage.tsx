@@ -132,9 +132,7 @@ export const AdvancedSearchPage: FC = () => {
 
       <Container>
         <StyledFlexColumnBox>
-          <StyledTypography variant="h4">
-            検索対象のモデル
-          </StyledTypography>
+          <StyledTypography variant="h4">検索対象のモデル</StyledTypography>
 
           <Autocomplete
             options={entities.value ?? []}

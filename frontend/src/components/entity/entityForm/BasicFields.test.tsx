@@ -54,9 +54,7 @@ describe("BasicFields", () => {
       screen.getByRole("checkbox").click();
     });
 
-    expect(screen.getByPlaceholderText("モデル名")).toHaveValue(
-      "entity name"
-    );
+    expect(screen.getByPlaceholderText("モデル名")).toHaveValue("entity name");
     expect(screen.getByPlaceholderText("備考")).toHaveValue("note");
     expect(screen.getByRole("checkbox")).toBeChecked();
 
