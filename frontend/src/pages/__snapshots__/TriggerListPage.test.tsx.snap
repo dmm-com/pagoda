@@ -125,7 +125,7 @@ exports[`TriggerPage should match snapshot 1`] = `
                     scope="col"
                     width="200px"
                   >
-                    エンティティ
+                    モデル
                   </th>
                   <th
                     class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-flimy0-MuiTableCell-root"
@@ -422,7 +422,7 @@ exports[`TriggerPage should match snapshot 1`] = `
                   scope="col"
                   width="200px"
                 >
-                  エンティティ
+                  モデル
                 </th>
                 <th
                   class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-flimy0-MuiTableCell-root"

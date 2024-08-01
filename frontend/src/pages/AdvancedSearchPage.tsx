@@ -132,9 +132,7 @@ export const AdvancedSearchPage: FC = () => {
 
       <Container>
         <StyledFlexColumnBox>
-          <StyledTypography variant="h4">
-            検索対象のエンティティ
-          </StyledTypography>
+          <StyledTypography variant="h4">検索対象のモデル</StyledTypography>
 
           <Autocomplete
             options={entities.value ?? []}
@@ -150,7 +148,7 @@ export const AdvancedSearchPage: FC = () => {
               <TextField
                 {...params}
                 variant="outlined"
-                placeholder="エンティティを選択"
+                placeholder="モデルを選択"
               />
             )}
             multiple
@@ -190,7 +188,7 @@ export const AdvancedSearchPage: FC = () => {
             />
           )}
           <Box>
-            参照エントリも含める
+            参照アイテムも含める
             <Checkbox
               checked={hasReferral}
               onChange={(e) => setHasReferral(e.target.checked)}

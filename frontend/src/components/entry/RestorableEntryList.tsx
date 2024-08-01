@@ -139,14 +139,14 @@ export const RestorableEntryList: FC<Props> = ({ entityId }) => {
     await aironeApiClient
       .restoreEntry(entryId)
       .then(() => {
-        enqueueSnackbar("エントリの復旧が完了しました", {
+        enqueueSnackbar("アイテムの復旧が完了しました", {
           variant: "success",
         });
         history.replace(topPath());
         history.replace(restoreEntryPath(entityId, keyword));
       })
       .catch(() => {
-        enqueueSnackbar("エントリの復旧が失敗しました", {
+        enqueueSnackbar("アイテムの復旧が失敗しました", {
           variant: "error",
         });
       });
@@ -158,7 +158,7 @@ export const RestorableEntryList: FC<Props> = ({ entityId }) => {
       <Box display="flex" justifyContent="space-between" mb="16px">
         <Box width="600px">
           <SearchBox
-            placeholder="エントリを絞り込む"
+            placeholder="アイテムを絞り込む"
             value={keyword}
             onChange={(e) => setKeyword(e.target.value)}
             onKeyPress={(e) => {

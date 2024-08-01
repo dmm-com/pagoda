@@ -47,7 +47,7 @@ exports[`should match snapshot 1`] = `
                       class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
                       href="/ui/entities"
                     >
-                      エンティティ一覧
+                      モデル一覧
                     </a>
                   </li>
                   <li
@@ -360,7 +360,7 @@ exports[`should match snapshot 1`] = `
                     class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
                     href="/ui/entities"
                   >
-                    エンティティ一覧
+                    モデル一覧
                   </a>
                 </li>
                 <li

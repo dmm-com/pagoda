@@ -59,7 +59,7 @@ afterAll(() => server.close());
 
 describe("AdvancedSearchPage", () => {
   test("no entity is shown by specifying wrong hint", async () => {
-    const elemInputEntity = screen.getByPlaceholderText("エンティティを選択");
+    const elemInputEntity = screen.getByPlaceholderText("モデルを選択");
 
     // set wrong hint that there is no entity that have "hoge"
     fireEvent.change(elemInputEntity, { target: { value: "hoge" } });
@@ -70,7 +70,7 @@ describe("AdvancedSearchPage", () => {
   });
 
   test("part of entities are shown by specifying hint", async () => {
-    const elemInputEntity = screen.getByPlaceholderText("エンティティを選択");
+    const elemInputEntity = screen.getByPlaceholderText("モデルを選択");
 
     // write down text to the input field
     fireEvent.change(elemInputEntity, { target: { value: "2" } });
@@ -83,7 +83,7 @@ describe("AdvancedSearchPage", () => {
   });
 
   test("all entities are shown", async () => {
-    const elemInputEntity = screen.getByPlaceholderText("エンティティを選択");
+    const elemInputEntity = screen.getByPlaceholderText("モデルを選択");
 
     if (elemInputEntity.parentNode) {
       fireEvent.click(elemInputEntity.parentNode);
@@ -98,7 +98,7 @@ describe("AdvancedSearchPage", () => {
   });
 
   test("show all attributes that are related to the entity", async () => {
-    const elemInputEntity = screen.getByPlaceholderText("エンティティを選択");
+    const elemInputEntity = screen.getByPlaceholderText("モデルを選択");
 
     // write down text to the input field
     fireEvent.change(elemInputEntity, { target: { value: "2" } });
@@ -161,7 +161,7 @@ describe("AdvancedSearchPage", () => {
   });
 
   test("select 'Select All' in entity attr element", async () => {
-    const elemInputEntity = screen.getByPlaceholderText("エンティティを選択");
+    const elemInputEntity = screen.getByPlaceholderText("モデルを選択");
     fireEvent.change(elemInputEntity, { target: { value: "2" } });
 
     const optionsEntity = screen.getAllByRole("option");
@@ -200,7 +200,7 @@ describe("AdvancedSearchPage", () => {
   });
 
   test("show part of attributes by specifying hint attrs", async () => {
-    const elemInputEntity = screen.getByPlaceholderText("エンティティを選択");
+    const elemInputEntity = screen.getByPlaceholderText("モデルを選択");
     fireEvent.change(elemInputEntity, { target: { value: "2" } });
 
     const optionsEntity = screen.getAllByRole("option");
@@ -221,7 +221,7 @@ describe("AdvancedSearchPage", () => {
   });
 
   test("show no attribute by specifying wrong hint", async () => {
-    const elemInputEntity = screen.getByPlaceholderText("エンティティを選択");
+    const elemInputEntity = screen.getByPlaceholderText("モデルを選択");
     fireEvent.change(elemInputEntity, { target: { value: "2" } });
 
     const optionsEntity = screen.getAllByRole("option");
@@ -241,7 +241,7 @@ describe("AdvancedSearchPage", () => {
   });
 
   test("submit search button", async () => {
-    const elemInputEntity = screen.getByPlaceholderText("エンティティを選択");
+    const elemInputEntity = screen.getByPlaceholderText("モデルを選択");
     fireEvent.change(elemInputEntity, { target: { value: "2" } });
 
     const optionsEntity = screen.getAllByRole("option");

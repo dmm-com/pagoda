@@ -100,7 +100,7 @@ export const ObjectAttributeValueField: FC<
 
   return (
     <Box>
-      <StyledTypography variant="caption">エントリを選択</StyledTypography>
+      <StyledTypography variant="caption">アイテムを選択</StyledTypography>
       <StyledBox>
         <Controller
           name={
@@ -206,7 +206,7 @@ export const NamedObjectAttributeValueField: FC<
         </BooleanBox>
       )}
       <Box flexGrow={1}>
-        <StyledTypography variant="caption">エントリを選択</StyledTypography>
+        <StyledTypography variant="caption">アイテムを選択</StyledTypography>
         <Controller
           name={
             index != null

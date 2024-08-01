@@ -7,7 +7,7 @@ export const schema = schemaForType<TriggerParent>()(
   z.object({
     id: z.number(), // Add the 'id' property
     entity: z.object({
-      id: z.number().min(1, "エンティティは必須です"),
+      id: z.number().min(1, "モデルは必須です"),
       name: z.string(),
       isPublic: z.boolean().optional(),
     }),

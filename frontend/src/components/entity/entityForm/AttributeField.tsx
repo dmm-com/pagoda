@@ -149,7 +149,7 @@ export const AttributeField: FC<Props> = ({
                     <TextField
                       {...params}
                       variant="outlined"
-                      placeholder="エンティティを選択"
+                      placeholder="モデルを選択"
                       disabled={!isWritable}
                     />
                   )}

@@ -46,7 +46,7 @@ export const EntryEditPage: FC<Props> = ({
   const willCreate = entryId == null;
 
   const history = useHistory();
-  const { enqueueSubmitResult } = useFormNotification("エントリ", willCreate);
+  const { enqueueSubmitResult } = useFormNotification("アイテム", willCreate);
 
   const [initialized, setInitialized] = useState(false);
 
@@ -168,8 +168,8 @@ export const EntryEditPage: FC<Props> = ({
       )}
 
       <PageHeader
-        title={entry?.value != null ? entry.value.name : "新規エントリの作成"}
-        description={entry?.value != null ? "エントリ編集" : undefined}
+        title={entry?.value != null ? entry.value.name : "新規アイテムの作成"}
+        description={entry?.value != null ? "アイテム編集" : undefined}
       >
         <SubmitButton
           name="保存"

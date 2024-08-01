@@ -178,7 +178,7 @@ export const SearchResultsTableHead: FC<Props> = ({
         <TableCell sx={{ witdh: "80px" }} />
         <StyledTableCell sx={{ outline: "1px solid #FFFFFF" }}>
           <HeaderBox>
-            <Typography>エントリ名</Typography>
+            <Typography>アイテム名</Typography>
             <StyledIconButton
               onClick={(e) => {
                 setEntryMenuEls(e.currentTarget);
@@ -260,7 +260,7 @@ export const SearchResultsTableHead: FC<Props> = ({
         {hasReferral && (
           <StyledTableCell sx={{ outline: "1px solid #FFFFFF" }}>
             <HeaderBox>
-              <Typography>参照エントリ</Typography>
+              <Typography>参照アイテム</Typography>
               <StyledIconButton
                 onClick={(e) => {
                   setReferralMenuEls(e.currentTarget);
