@@ -3,12 +3,28 @@
 ## In development
 
 ### Added
-* Added helper class tmethod Entry.get_referred_entries() to get referral Entries from multiple referred Entries.
-  Contributed by @userlocalhost
 
 ### Changed
 
 ### Fixed
+
+## v3.98.0
+
+### Added
+* Added helper class tmethod Entry.get_referred_entries() to get referral Entries from multiple referred Entries.
+  Contributed by @userlocalhost
+* Enable target_id filter on the job list API v2.
+  Contributed by @syucream
+
+### Changed
+* Change エンティティ to モデル, エントリ to アイテム in newUI.
+  Contributed by @userlocalhost
+
+### Fixed
+* Configured Elasticsearch to use a persistent data volume for index retention.
+  Contributed by @tsunoda-takahiro
+* Fix issue where re-added attribute's value appears in advanced search.
+  Contributed by @tsunoda-takahiro
 
 ## v3.97.0
 
