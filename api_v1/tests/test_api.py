@@ -126,28 +126,22 @@ class APITest(AironeViewTest):
             },
             {
                 "name": "group",
-                "check": lambda v: self.assertEqual(
-                    v.value, str(Group.objects.get(name="group1").id)
-                ),
+                "check": lambda v: self.assertEqual(v.group, Group.objects.get(name="group1")),
             },
             {
                 "name": "groups",
                 "check": lambda v: self.assertEqual(
-                    [x.value for x in v.data_array.all()],
-                    [str(x.id) for x in test_groups],
+                    [x.group for x in v.data_array.all().select_related("group")], test_groups
                 ),
             },
             {
                 "name": "role",
-                "check": lambda v: self.assertEqual(
-                    v.value, str(Role.objects.get(name="role1").id)
-                ),
+                "check": lambda v: self.assertEqual(v.role, Role.objects.get(name="role1")),
             },
             {
                 "name": "roles",
                 "check": lambda v: self.assertEqual(
-                    [x.value for x in v.data_array.all()],
-                    [str(x.id) for x in test_roles],
+                    [x.role for x in v.data_array.all().select_related("role")], test_roles
                 ),
             },
             {"name": "text", "check": lambda v: self.assertEqual(v.value, "fuga")},

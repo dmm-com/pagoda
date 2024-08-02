@@ -1263,19 +1263,11 @@ class ModelTest(AironeTestCase):
 
         latest_value = entry.attrs.get(name="arr_group").get_latest_value()
         self.assertEqual(
-            [int(x.value) for x in latest_value.data_array.all()],
-            [x.id for x in test_groups],
-        )
-        self.assertEqual(
             [x.group for x in latest_value.data_array.all().select_related("group")],
             test_groups,
         )
 
         latest_value = entry.attrs.get(name="arr_role").get_latest_value()
-        self.assertEqual(
-            [int(x.value) for x in latest_value.data_array.all()],
-            [x.id for x in test_roles],
-        )
         self.assertEqual(
             [x.role for x in latest_value.data_array.all().select_related("role")],
             test_roles,
@@ -2106,14 +2098,12 @@ class ModelTest(AironeTestCase):
                     self.assertEqual(attrinfo["value"], str(attrv.date))
 
                 elif attrname == "group":
-                    group = Group.objects.get(id=int(attrv.value))
-                    self.assertEqual(attrinfo["value"]["id"], group.id)
-                    self.assertEqual(attrinfo["value"]["name"], group.name)
+                    self.assertEqual(attrinfo["value"]["id"], attrv.group.id)
+                    self.assertEqual(attrinfo["value"]["name"], attrv.group.name)
 
                 elif attrname == "role":
-                    role = Role.objects.get(id=int(attrv.value))
-                    self.assertEqual(attrinfo["value"]["id"], role.id)
-                    self.assertEqual(attrinfo["value"]["name"], role.name)
+                    self.assertEqual(attrinfo["value"]["id"], attrv.role.id)
+                    self.assertEqual(attrinfo["value"]["name"], attrv.role.name)
 
                 elif attrname == "arr_str":
                     self.assertEqual(
@@ -3460,8 +3450,8 @@ class ModelTest(AironeTestCase):
         )
         attrs["arr_group"].add_to_attrv(user, value=test_groups[2])
         self.assertEqual(
-            [x.value for x in attrs["arr_group"].get_latest_value().data_array.all()],
-            [str(test_groups[0].id)],
+            [x.group for x in attrs["arr_group"].get_latest_value().data_array.all()],
+            [test_groups[0]],
         )
 
         # test append attrv
@@ -3490,8 +3480,8 @@ class ModelTest(AironeTestCase):
 
         attrs["arr_group"].add_to_attrv(user, value=test_groups[1])
         self.assertEqual(
-            [x.value for x in attrs["arr_group"].get_latest_value().data_array.all()],
-            [str(test_groups[0].id), str(test_groups[1].id)],
+            [x.group for x in attrs["arr_group"].get_latest_value().data_array.all()],
+            [test_groups[0], test_groups[1]],
         )
 
     def test_remove_from_attrv(self):
@@ -3571,8 +3561,14 @@ class ModelTest(AironeTestCase):
 
         attrs["arr_group"].remove_from_attrv(user, value=None)
         self.assertEqual(
-            [x.value for x in attrs["arr_group"].get_latest_value().data_array.all()],
-            [str(x.id) for x in test_groups],
+            [
+                x.group
+                for x in attrs["arr_group"]
+                .get_latest_value()
+                .data_array.all()
+                .select_related("group")
+            ],
+            test_groups,
         )
 
         # test remove_from_attrv with valid value
@@ -3596,8 +3592,15 @@ class ModelTest(AironeTestCase):
         # This checks that both specified group and invalid groups are removed
         attrs["arr_group"].remove_from_attrv(user, value=test_groups[1])
         self.assertEqual(
-            [x.value for x in attrs["arr_group"].get_latest_value().data_array.all()],
-            [str(test_groups[0].id)],
+            [
+                x.group
+                for x in attrs["arr_group"]
+                .get_latest_value()
+                .data_array.all()
+                .select_related("group")
+                if x.group and x.group.is_active
+            ],
+            [test_groups[0]],
         )
 
     def test_is_importable_data(self):

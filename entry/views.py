@@ -814,6 +814,8 @@ def revert_attrv(request, recv_data):
                 "created_user": request.user,
                 "parent_attr": attr,
                 "is_latest": True,
+                "group": attrv.group,
+                "role": attrv.role,
             }
         )
 
@@ -833,6 +835,8 @@ def revert_attrv(request, recv_data):
                         "data_type": v.data_type,
                         "is_latest": False,
                         "parent_attrv": new_attrv,
+                        "group": v.group,
+                        "role": v.role,
                     }
                 )
                 for v in attrv.data_array.all()
