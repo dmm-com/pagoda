@@ -19,7 +19,7 @@ export const EntryImportModal: FC<Props> = ({
 
   return (
     <AironeModal
-      title={"エントリのインポート"}
+      title={"アイテムのインポート"}
       description={"インポートするファイルを選択してください。"}
       caption={"※CSV形式のファイルは選択できません。"}
       open={openImportModal}

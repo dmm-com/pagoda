@@ -689,6 +689,27 @@ class ModelTest(AironeTestCase):
             self.assertEqual(referred_entries.count(), 1)
             self.assertEqual(list(referred_entries), [self._entry])
 
+    def test_get_referred_entries_classmethod(self):
+        user = User.objects.create(username="hoge")
+
+        # Initialize Entities and Entries which will be used in this test
+        model_nw = self.create_entity(
+            user, "NW", attrs=[{"name": "parent", "type": AttrType.OBJECT}]
+        )
+        nw0 = self.add_entry(user, "10.0.0.0/16", model_nw)
+        nw1 = self.add_entry(user, "10.0.1.0/24", model_nw, values={"parent": nw0})
+        nw2 = self.add_entry(user, "10.0.2.0/24", model_nw, values={"parent": nw0})
+
+        model_ip = self.create_entity(
+            user, "IPaddr", attrs=[{"name": "nw", "type": AttrType.OBJECT}]
+        )
+        for name, nw in [("10.0.1.1", nw1), ("10.0.1.2", nw1), ("10.0.2.1", nw2)]:
+            self.add_entry(user, name, model_ip, values={"nw": nw})
+
+        # get Entries that refer ne0 ~ nw1
+        entries = Entry.get_referred_entries([nw0.id, nw1.id, nw2.id], filter_entities=["IPaddr"])
+        self.assertEqual([x.name for x in entries.all()], ["10.0.1.1", "10.0.1.2", "10.0.2.1"])
+
     def test_get_referred_objects_after_deleting_entity_attr(self):
         user = User.objects.create(username="hoge")
 
@@ -1201,6 +1222,7 @@ class ModelTest(AironeTestCase):
     def test_set_value_method(self):
         user = User.objects.create(username="hoge")
         test_groups = [Group.objects.create(name=x) for x in ["g1", "g2"]]
+        test_roles = [Role.objects.create(name=x) for x in ["r1", "r2"]]
 
         # create referred Entity and Entries
         ref_entity = Entity.objects.create(name="Referred Entity", created_user=user)
@@ -1217,6 +1239,7 @@ class ModelTest(AironeTestCase):
             {"name": "arr_obj", "val": [ref_entry]},
             {"name": "arr_name", "val": [{"name": "new_value", "id": ref_entry}]},
             {"name": "arr_group", "val": test_groups},
+            {"name": "arr_role", "val": test_roles},
         ]
         for info in attr_info:
             attr = entry.attrs.get(schema__name=info["name"])
@@ -1240,8 +1263,14 @@ class ModelTest(AironeTestCase):
 
         latest_value = entry.attrs.get(name="arr_group").get_latest_value()
         self.assertEqual(
-            [int(x.value) for x in latest_value.data_array.all()],
-            [x.id for x in test_groups],
+            [x.group for x in latest_value.data_array.all().select_related("group")],
+            test_groups,
+        )
+
+        latest_value = entry.attrs.get(name="arr_role").get_latest_value()
+        self.assertEqual(
+            [x.role for x in latest_value.data_array.all().select_related("role")],
+            test_roles,
         )
 
     def test_get_available_attrs(self):
@@ -2069,14 +2098,12 @@ class ModelTest(AironeTestCase):
                     self.assertEqual(attrinfo["value"], str(attrv.date))
 
                 elif attrname == "group":
-                    group = Group.objects.get(id=int(attrv.value))
-                    self.assertEqual(attrinfo["value"]["id"], group.id)
-                    self.assertEqual(attrinfo["value"]["name"], group.name)
+                    self.assertEqual(attrinfo["value"]["id"], attrv.group.id)
+                    self.assertEqual(attrinfo["value"]["name"], attrv.group.name)
 
                 elif attrname == "role":
-                    role = Role.objects.get(id=int(attrv.value))
-                    self.assertEqual(attrinfo["value"]["id"], role.id)
-                    self.assertEqual(attrinfo["value"]["name"], role.name)
+                    self.assertEqual(attrinfo["value"]["id"], attrv.role.id)
+                    self.assertEqual(attrinfo["value"]["name"], attrv.role.name)
 
                 elif attrname == "arr_str":
                     self.assertEqual(
@@ -3423,8 +3450,8 @@ class ModelTest(AironeTestCase):
         )
         attrs["arr_group"].add_to_attrv(user, value=test_groups[2])
         self.assertEqual(
-            [x.value for x in attrs["arr_group"].get_latest_value().data_array.all()],
-            [str(test_groups[0].id)],
+            [x.group for x in attrs["arr_group"].get_latest_value().data_array.all()],
+            [test_groups[0]],
         )
 
         # test append attrv
@@ -3453,8 +3480,8 @@ class ModelTest(AironeTestCase):
 
         attrs["arr_group"].add_to_attrv(user, value=test_groups[1])
         self.assertEqual(
-            [x.value for x in attrs["arr_group"].get_latest_value().data_array.all()],
-            [str(test_groups[0].id), str(test_groups[1].id)],
+            [x.group for x in attrs["arr_group"].get_latest_value().data_array.all()],
+            [test_groups[0], test_groups[1]],
         )
 
     def test_remove_from_attrv(self):
@@ -3534,8 +3561,14 @@ class ModelTest(AironeTestCase):
 
         attrs["arr_group"].remove_from_attrv(user, value=None)
         self.assertEqual(
-            [x.value for x in attrs["arr_group"].get_latest_value().data_array.all()],
-            [str(x.id) for x in test_groups],
+            [
+                x.group
+                for x in attrs["arr_group"]
+                .get_latest_value()
+                .data_array.all()
+                .select_related("group")
+            ],
+            test_groups,
         )
 
         # test remove_from_attrv with valid value
@@ -3559,8 +3592,15 @@ class ModelTest(AironeTestCase):
         # This checks that both specified group and invalid groups are removed
         attrs["arr_group"].remove_from_attrv(user, value=test_groups[1])
         self.assertEqual(
-            [x.value for x in attrs["arr_group"].get_latest_value().data_array.all()],
-            [str(test_groups[0].id)],
+            [
+                x.group
+                for x in attrs["arr_group"]
+                .get_latest_value()
+                .data_array.all()
+                .select_related("group")
+                if x.group and x.group.is_active
+            ],
+            [test_groups[0]],
         )
 
     def test_is_importable_data(self):
@@ -4429,6 +4469,23 @@ class ModelTest(AironeTestCase):
             is_output_all=True,
         )
         self.assertEqual(ret.ret_count, 0)
+
+        # multi entity case
+        test_entity = self.create_entity(
+            self._user, "test_entity", [{"name": "attr", "type": AttrType.STRING}]
+        )
+        self.add_entry(self._user, "test_entry", test_entity, {"attr": "fuga"})
+        ret = Entry.search_entries(
+            self._user, [self._entity.id, test_entity.id], is_output_all=True
+        )
+        self.assertEqual(
+            ret.ret_values[0].attrs,
+            {"attr": {"value": "hoge", "is_readable": True, "type": 2}},
+        )
+        self.assertEqual(
+            ret.ret_values[1].attrs,
+            {"attr": {"value": "fuga", "is_readable": True, "type": 2}},
+        )
 
     def test_search_entries_with_offset(self):
         entities = []

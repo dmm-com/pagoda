@@ -318,7 +318,7 @@ export const TriggerEditPage: FC = () => {
 
       <Container>
         <StyledFlexColumnBox>
-          <Typography variant="h4">設定対象のエンティティ</Typography>
+          <Typography variant="h4">設定対象のモデル</Typography>
 
           <Controller
             name={`entity`}
@@ -350,7 +350,7 @@ export const TriggerEditPage: FC = () => {
                   <TextField
                     {...params}
                     variant="outlined"
-                    placeholder="エンティティを選択"
+                    placeholder="モデルを選択"
                   />
                 )}
                 fullWidth

@@ -26,6 +26,8 @@ services:
         hard: -1
     ports:
       - 9200:9200
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data
 
   rabbitmq:
     image: rabbitmq:3.8.19-management
@@ -40,3 +42,6 @@ services:
 volumes:
   mysql:
     driver: local
+  elasticsearch-data:
+    driver: local
+

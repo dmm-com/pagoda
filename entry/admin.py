@@ -26,7 +26,7 @@ class AttrValueResource(AironeModelResource):
             "created_time",
             "created_user",
             "status",
-            "data_arr",
+            "parent_attrv",
         ],
         "mandatory_keys": ["id", "attribute_id", "created_user", "status"],
         "resource_module": "entry.admin",
@@ -57,10 +57,10 @@ class AttrValueResource(AironeModelResource):
         attribute="created_user",
         widget=widgets.ForeignKeyWidget(User, "username"),
     )
-    data_arr = fields.Field(
-        column_name="data_arr",
-        attribute="data_array",
-        widget=widgets.ManyToManyWidget(model=AttributeValue, field="id"),
+    parent_attrv = fields.Field(
+        column_name="parent_attrv",
+        attribute="parent_attrv",
+        widget=widgets.ForeignKeyWidget(AttributeValue, "id"),
     )
 
     class Meta:
@@ -114,14 +114,6 @@ class AttrValueResource(AironeModelResource):
             if x["data"]["status"] & AttributeValue.STATUS_DATA_ARRAY_PARENT
         ]:
             attr_value = AttributeValue.objects.get(id=data["id"])
-            for child_id in [int(x) for x in data["data_arr"].split(",")]:
-                if (
-                    AttributeValue.objects.filter(id=child_id).exists()
-                    and not attr_value.data_array.filter(id=child_id).exists()
-                ):
-                    # append related AttributeValue if it's not existed
-                    attr_value.data_array.add(AttributeValue.objects.get(id=child_id))
-
             attr_value.parent_attr.parent_entry.register_es()
 
 

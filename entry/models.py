@@ -1,7 +1,8 @@
 import re
 from collections.abc import Iterable
+from copy import deepcopy
 from datetime import date, datetime
-from typing import Any, List, Optional, Type
+from typing import Any, List, Optional
 
 from django.conf import settings
 from django.db import models
@@ -48,7 +49,6 @@ class AttributeValue(models.Model):
         related_name="referred_attr_value",
         on_delete=models.SET_NULL,
     )
-    data_array = models.ManyToManyField("AttributeValue")
     created_time = models.DateTimeField(auto_now_add=True)
     created_user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
     parent_attr = models.ForeignKey("Attribute", on_delete=models.DO_NOTHING)
@@ -56,6 +56,18 @@ class AttributeValue(models.Model):
     boolean = models.BooleanField(default=False)
     date = models.DateField(null=True)
     datetime = models.DateTimeField(null=True)
+    group = models.ForeignKey(
+        Group,
+        null=True,
+        related_name="referred_attr_value",
+        on_delete=models.SET_NULL,
+    )
+    role = models.ForeignKey(
+        Role,
+        null=True,
+        related_name="referred_attr_value",
+        on_delete=models.SET_NULL,
+    )
 
     # This parameter means that target AttributeValue is the latest one. This is usefull to
     # find out enabled AttributeValues by Attribute or EntityAttr object. And separating this
@@ -76,7 +88,7 @@ class AttributeValue(models.Model):
     # This indicates the parent AttributeValue object, this parameter is usefull to identify
     # leaf AttriuteValue objects.
     parent_attrv = models.ForeignKey(
-        "AttributeValue", null=True, related_name="child", on_delete=models.SET_NULL
+        "AttributeValue", null=True, related_name="data_array", on_delete=models.SET_NULL
     )
 
     @classmethod
@@ -173,9 +185,13 @@ class AttributeValue(models.Model):
             return None
 
         def _get_model_value(attrv: "AttributeValue", model):
-            instance = model.objects.filter(id=attrv.value, is_active=True).first()
-            if not instance:
-                return None
+            match attrv.data_type:
+                case AttrType.GROUP | AttrType.ARRAY_GROUP if attrv.group and attrv.group.is_active:
+                    instance = attrv.group
+                case AttrType.ROLE | AttrType.ARRAY_ROLE if attrv.role and attrv.role.is_active:
+                    instance = attrv.role
+                case _:
+                    return None
 
             if with_metainfo:
                 return {"id": instance.id, "name": instance.name}
@@ -202,10 +218,10 @@ class AttributeValue(models.Model):
             case AttrType.NAMED_OBJECT:
                 value = _get_named_value(self, is_active)
 
-            case AttrType.GROUP if self.value:
+            case AttrType.GROUP if self.group:
                 value = _get_model_value(self, Group)
 
-            case AttrType.ROLE if self.value:
+            case AttrType.ROLE if self.role:
                 value = _get_model_value(self, Role)
 
             case AttrType.DATETIME:
@@ -231,12 +247,22 @@ class AttributeValue(models.Model):
 
                 elif self.parent_attr.schema.type & AttrType.GROUP:
                     value = [
-                        x for x in [_get_model_value(y, Group) for y in self.data_array.all()] if x
+                        x
+                        for x in [
+                            _get_model_value(y, Group)
+                            for y in self.data_array.all().select_related("group")
+                        ]
+                        if x
                     ]
 
                 elif self.parent_attr.schema.type & AttrType.ROLE:
                     value = [
-                        x for x in [_get_model_value(y, Role) for y in self.data_array.all()] if x
+                        x
+                        for x in [
+                            _get_model_value(y, Role)
+                            for y in self.data_array.all().select_related("role")
+                        ]
+                        if x
                     ]
 
         if with_metainfo:
@@ -245,12 +271,6 @@ class AttributeValue(models.Model):
         return value
 
     def format_for_history(self):
-        def _get_group_value(attrv: "AttributeValue") -> Group | None:
-            return Group.objects.filter(id=attrv.value, is_active=True).first()
-
-        def _get_role_value(attrv: "AttributeValue") -> Role | None:
-            return Role.objects.filter(id=attrv.value, is_active=True).first()
-
         match self.data_type:
             case AttrType.ARRAY_STRING:
                 return [x.value for x in self.data_array.all()]
@@ -278,14 +298,18 @@ class AttributeValue(models.Model):
                     ],
                     key=lambda x: x["value"],
                 )
-            case AttrType.GROUP if self.value:
-                return _get_group_value(self)
+            case AttrType.GROUP if self.group:
+                return self.group
             case AttrType.ARRAY_GROUP:
-                return [y for y in [_get_group_value(x) for x in self.data_array.all()] if y]
-            case AttrType.ROLE if self.value:
-                return _get_role_value(self)
+                return [
+                    y for y in [x.group for x in self.data_array.all().select_related("group")] if y
+                ]
+            case AttrType.ROLE if self.role:
+                return self.role
             case AttrType.ARRAY_ROLE:
-                return [y for y in [_get_role_value(x) for x in self.data_array.all()] if y]
+                return [
+                    y for y in [x.role for x in self.data_array.all().select_related("role")] if y
+                ]
             case AttrType.DATETIME:
                 return self.datetime
             case _:
@@ -513,27 +537,6 @@ class Attribute(ACLBase):
 
     # This checks whether each specified attribute needs to update
     def is_updated(self, recv_value):
-        def _is_updated_for_array_value(last_value, model):
-            # This is the case when input value is None, this returns True when
-            # any available values are already exists.
-            if not recv_value:
-                return any(
-                    [
-                        model.objects.filter(id=x.value, is_active=True).exists()
-                        for x in last_value.data_array.all()
-                    ]
-                )
-
-            return sorted(
-                [AttributeValue.uniform_storable(v, model) for v in recv_value if v]
-            ) != sorted(
-                [
-                    x.value
-                    for x in last_value.data_array.all()
-                    if model.objects.filter(id=x.value, is_active=True).exists()
-                ]
-            )
-
         # the case new attribute-value is specified
         if not self.values.exists():
             # the result depends on the specified value
@@ -618,10 +621,12 @@ class Attribute(ACLBase):
                 return last_value.boolean != bool(recv_value)
 
             case AttrType.GROUP:
-                return last_value.value != AttributeValue.uniform_storable(recv_value, Group)
+                last_group_id = str(last_value.group.id) if last_value.group else ""
+                return last_group_id != AttributeValue.uniform_storable(recv_value, Group)
 
             case AttrType.ROLE:
-                return last_value.value != AttributeValue.uniform_storable(recv_value, Role)
+                last_role_id = str(last_value.role.id) if last_value.role else ""
+                return last_role_id != AttributeValue.uniform_storable(recv_value, Role)
 
             case AttrType.DATE:
                 if isinstance(recv_value, str):
@@ -702,14 +707,46 @@ class Attribute(ACLBase):
                     return True
 
             case AttrType.ARRAY_GROUP:
-                is_updated = _is_updated_for_array_value(last_value, Group)
-                if is_updated is not None:
-                    return is_updated
+                # This is the case when input value is None, this returns True when
+                # any available values are already exists.
+                if not recv_value:
+                    return any(
+                        [
+                            x.group and x.group.is_active
+                            for x in last_value.data_array.all().select_related("group")
+                        ]
+                    )
+
+                return sorted(
+                    [AttributeValue.uniform_storable(v, Group) for v in recv_value if v]
+                ) != sorted(
+                    [
+                        str(x.group.id)
+                        for x in last_value.data_array.all().select_related("group")
+                        if x.group and x.group.is_active
+                    ]
+                )
 
             case AttrType.ARRAY_ROLE:
-                is_updated = _is_updated_for_array_value(last_value, Role)
-                if is_updated is not None:
-                    return is_updated
+                # This is the case when input value is None, this returns True when
+                # any available values are already exists.
+                if not recv_value:
+                    return any(
+                        [
+                            x.role and x.role.is_active
+                            for x in last_value.data_array.all().select_related("role")
+                        ]
+                    )
+
+                return sorted(
+                    [AttributeValue.uniform_storable(v, Role) for v in recv_value if v]
+                ) != sorted(
+                    [
+                        str(x.role.id)
+                        for x in last_value.data_array.all().select_related("role")
+                        if x.role and x.role.is_active
+                    ]
+                )
 
         return False
 
@@ -949,15 +986,33 @@ class Attribute(ACLBase):
 
                 case AttrType.GROUP:
                     attrv.boolean = boolean
-                    attrv.value = AttributeValue.uniform_storable(val, Group)
-                    if not attrv.value:
-                        return None
+                    ref = None
+                    match val:
+                        case Group() if val.is_active:
+                            ref = val
+                        case int():
+                            ref = Group.objects.filter(id=val, is_active=True).first()
+                        case str() if val.isdigit():
+                            ref = Group.objects.filter(id=val, is_active=True).first()
+                        case _:
+                            return None
+                    if ref:
+                        attrv.group = ref
 
                 case AttrType.ROLE:
                     attrv.boolean = boolean
-                    attrv.value = AttributeValue.uniform_storable(val, Role)
-                    if not attrv.value:
-                        return None
+                    ref = None
+                    match val:
+                        case Role() if val.is_active:
+                            ref = val
+                        case int():
+                            ref = Role.objects.filter(id=val, is_active=True).first()
+                        case str() if val.isdigit():
+                            ref = Role.objects.filter(id=val, is_active=True).first()
+                        case _:
+                            return None
+                    if ref:
+                        attrv.role = ref
 
                 case AttrType.OBJECT:
                     attrv.boolean = boolean
@@ -1185,21 +1240,6 @@ class Attribute(ACLBase):
         This method removes target entry from specified attribute
         """
 
-        # This helper methods is implemented for Group or Role. The model parameter
-        # should be set Group or Role.
-        def _remove_specific_object(attrv: AttributeValue, value, model):
-            if not value:
-                return
-
-            return [
-                x.value
-                for x in attrv.data_array.all()
-                if (
-                    x.value != AttributeValue.uniform_storable(value, model)
-                    and model.objects.filter(id=x.value, is_active=True).exists()
-                )
-            ]
-
         attrv = self.get_latest_value()
         if self.is_array():
             if self.schema.type & AttrType._NAMED:
@@ -1232,14 +1272,32 @@ class Attribute(ACLBase):
                 ]
 
             elif self.schema.type & AttrType.GROUP:
-                updated_data = _remove_specific_object(attrv, value, Group)
-                if updated_data is None:
+                if not value:
                     return
 
+                updated_data = [
+                    x.group.id
+                    for x in attrv.data_array.all().select_related("group")
+                    if (
+                        x.group
+                        and x.group.is_active
+                        and str(x.group.id) != AttributeValue.uniform_storable(value, Group)
+                    )
+                ]
+
             elif self.schema.type & AttrType.ROLE:
-                updated_data = _remove_specific_object(attrv, value, Role)
-                if updated_data is None:
+                if not value:
                     return
+
+                updated_data = [
+                    x.role.id
+                    for x in attrv.data_array.all().select_related("role")
+                    if (
+                        x.role
+                        and x.role.is_active
+                        and str(x.role.id) != AttributeValue.uniform_storable(value, Role)
+                    )
+                ]
 
             if self.is_updated(updated_data):
                 self.add_value(user, updated_data, boolean=attrv.boolean)
@@ -1274,12 +1332,18 @@ class Attribute(ACLBase):
             elif self.schema.type & AttrType.GROUP:
                 group_id = AttributeValue.uniform_storable(value, Group)
                 if group_id:
-                    updated_data = [x.value for x in attrv.data_array.all()] + [group_id]
+                    updated_data = [
+                        x.group.id
+                        for x in attrv.data_array.all().select_related("group")
+                        if x.group
+                    ] + [group_id]
 
             elif self.schema.type & AttrType.ROLE:
                 role_id = AttributeValue.uniform_storable(value, Role)
                 if role_id:
-                    updated_data = [x.value for x in attrv.data_array.all()] + [role_id]
+                    updated_data = [
+                        x.role.id for x in attrv.data_array.all().select_related("role") if x.role
+                    ] + [role_id]
 
             if updated_data and self.is_updated(updated_data):
                 self.add_value(user, updated_data, boolean=attrv.boolean)
@@ -1464,21 +1528,7 @@ class Entry(ACLBase):
     def get_referred_objects(
         self, filter_entities: list[str] = [], exclude_entities: list[str] = []
     ) -> QuerySet:
-        """
-        This returns objects that refer current Entry in the AttributeValue
-        """
-        ids = AttributeValue.objects.filter(
-            Q(referral=self, is_latest=True) | Q(referral=self, parent_attrv__is_latest=True),
-            parent_attr__is_active=True,
-            parent_attr__schema__is_active=True,
-        ).values_list("parent_attr__parent_entry", flat=True)
-
-        # if entity_name param exists, add schema name to reduce filter execution time
-        query = Q(pk__in=ids, is_active=True)
-        if filter_entities:
-            query &= Q(schema__name__in=filter_entities)
-
-        return Entry.objects.filter(query).exclude(schema__name__in=exclude_entities).order_by("id")
+        return Entry.get_referred_entries([self.id], filter_entities, exclude_entities)
 
     def complement_attrs(self, user: User):
         """
@@ -1618,32 +1668,32 @@ class Entry(ACLBase):
                         key=lambda x: x["value"],
                     )
 
-                case AttrType.GROUP if last_value.value:
-                    attrinfo["last_value"] = Group.objects.filter(
-                        id=last_value.value, is_active=True
-                    ).first()
+                case AttrType.GROUP if last_value.group:
+                    if last_value.group.is_active:
+                        attrinfo["last_value"] = last_value.group
+                    else:
+                        attrinfo["last_value"] = None
 
                 case AttrType.ARRAY_GROUP:
                     attrinfo["last_value"] = [
                         x
                         for x in [
-                            Group.objects.filter(id=v.value, is_active=True).first()
-                            for v in last_value.data_array.all()
+                            v.group for v in last_value.data_array.all().select_related("group")
                         ]
                         if x
                     ]
 
-                case AttrType.ROLE if last_value.value:
-                    attrinfo["last_value"] = Role.objects.filter(
-                        id=last_value.value, is_active=True
-                    ).first()
+                case AttrType.ROLE if last_value.role:
+                    if last_value.role.is_active:
+                        attrinfo["last_value"] = last_value.role
+                    else:
+                        attrinfo["last_value"] = None
 
                 case AttrType.ARRAY_ROLE:
                     attrinfo["last_value"] = [
                         x
                         for x in [
-                            Role.objects.filter(id=v.value, is_active=True).first()
-                            for v in last_value.data_array.all()
+                            v.role for v in last_value.data_array.all().select_related("role")
                         ]
                         if x
                     ]
@@ -1913,13 +1963,6 @@ class Entry(ACLBase):
             if entity_attr.type & AttrType.BOOLEAN:
                 attrinfo["value"] = False
 
-            def _set_attrinfo_data(model: Type[Group | Role]):
-                if attrv.value:
-                    obj = model.objects.filter(id=attrv.value, is_active=True).first()
-                    if obj:
-                        attrinfo["value"] = truncate(obj.name)
-                        attrinfo["referral_id"] = obj.id
-
             # Convert data format for mapping of Elasticsearch according to the data type
             if attrv is None:
                 # This is the processing to be safe even if the empty AttributeValue was passed.
@@ -1956,10 +1999,16 @@ class Entry(ACLBase):
                     attrinfo["referral_id"] = attrv.referral.id
 
             elif entity_attr.type & AttrType.GROUP:
-                _set_attrinfo_data(Group)
+                group = attrv.group
+                if group:
+                    attrinfo["value"] = truncate(group.name)
+                    attrinfo["referral_id"] = group.id
 
             elif entity_attr.type & AttrType.ROLE:
-                _set_attrinfo_data(Role)
+                role = attrv.role
+                if role:
+                    attrinfo["value"] = truncate(role.name)
+                    attrinfo["referral_id"] = role.id
 
             # Basically register attribute information whatever value doesn't exist
             if not (entity_attr.type & AttrType._ARRAY and not is_recursive):
@@ -2238,11 +2287,12 @@ class Entry(ACLBase):
             if "status" in resp and resp["status"] == 404:
                 continue
 
+            tmp_hint_attrs = deepcopy(hint_attrs)
             # Check for has permission to EntityAttr, when is_output_all flag
             if is_output_all:
                 for entity_attr in entity.attrs.filter(is_active=True):
-                    if entity_attr.name not in [x["name"] for x in hint_attrs if "name" in x]:
-                        hint_attrs.append(
+                    if entity_attr.name not in [x["name"] for x in tmp_hint_attrs if "name" in x]:
+                        tmp_hint_attrs.append(
                             {
                                 "name": entity_attr.name,
                                 "is_readable": True
@@ -2258,7 +2308,7 @@ class Entry(ACLBase):
             search_result = make_search_results(
                 user,
                 resp,
-                hint_attrs,
+                tmp_hint_attrs,
                 hint_referral,
                 limit,
             )
@@ -2444,6 +2494,28 @@ class Entry(ACLBase):
                 return False
 
         return True
+
+    @classmethod
+    def get_referred_entries(
+        kls, id_list: list[int], filter_entities: list[str] = [], exclude_entities: list[str] = []
+    ):
+        """
+        This returns objects that refer Entries, which is specifeied in the kd_list,
+        in the AttributeValue.
+        """
+        ids = AttributeValue.objects.filter(
+            Q(referral__in=id_list, is_latest=True)
+            | Q(referral__in=id_list, parent_attrv__is_latest=True),
+            parent_attr__is_active=True,
+            parent_attr__schema__is_active=True,
+        ).values_list("parent_attr__parent_entry", flat=True)
+
+        # if entity_name param exists, add schema name to reduce filter execution time
+        query = Q(pk__in=ids, is_active=True)
+        if filter_entities:
+            query &= Q(schema__name__in=filter_entities)
+
+        return Entry.objects.filter(query).exclude(schema__name__in=exclude_entities).order_by("id")
 
     def get_attrv(self, attr_name: str) -> AttributeValue | None:
         """This returns specified attribute's value without permission check. Because

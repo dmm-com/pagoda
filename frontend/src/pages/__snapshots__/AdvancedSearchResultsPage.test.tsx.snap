@@ -221,7 +221,7 @@ exports[`should match snapshot 1`] = `
                           <p
                             class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
                           >
-                            エントリ名
+                            アイテム名
                           </p>
                           <button
                             class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-tzk60-MuiButtonBase-root-MuiIconButton-root"
@@ -587,7 +587,7 @@ exports[`should match snapshot 1`] = `
                         <p
                           class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
                         >
-                          エントリ名
+                          アイテム名
                         </p>
                         <button
                           class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-tzk60-MuiButtonBase-root-MuiIconButton-root"

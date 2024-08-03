@@ -20,7 +20,7 @@ export const EntityImportModal: FC<Props> = ({
 
   return (
     <AironeModal
-      title={"エンティティのインポート"}
+      title={"モデルのインポート"}
       description={"インポートするファイルを選択してください。"}
       caption={"※CSV形式のファイルは選択できません。"}
       open={openImportModal}

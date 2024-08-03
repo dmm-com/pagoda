@@ -189,13 +189,13 @@ export const AdvancedSearchResultsPage: FC = () => {
   const handleBulkDelete = async () => {
     try {
       await aironeApiClient.destroyEntries(bulkOperationEntryIds);
-      enqueueSnackbar("複数エントリの削除に成功しました", {
+      enqueueSnackbar("複数アイテムの削除に成功しました", {
         variant: "success",
       });
       setBulkOperationEntryIds([]);
       setToggle(!toggle);
     } catch (e) {
-      enqueueSnackbar("複数エントリの削除に失敗しました", {
+      enqueueSnackbar("複数アイテムの削除に失敗しました", {
         variant: "error",
       });
     }

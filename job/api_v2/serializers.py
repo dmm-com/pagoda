@@ -28,6 +28,8 @@ class JobSerializers(serializers.ModelSerializer):
     target = serializers.SerializerMethodField(method_name="get_target")
     passed_time = serializers.SerializerMethodField(method_name="get_passed_time")
 
+    PREFETCHED_ENTRIES_KEY = "__prefetched_entries"
+
     class Meta:
         model = Job
         fields = ["id", "text", "status", "operation", "created_at", "target", "passed_time"]
@@ -36,12 +38,19 @@ class JobSerializers(serializers.ModelSerializer):
     def get_target(self, obj: Job) -> JobTarget | None:
         if obj.target is not None:
             if obj.target.objtype == ACLObjType.Entry:
-                sub = Entry.objects.filter(id=obj.target.id).select_related("schema").first()
+                sub: dict = self.context.get(self.PREFETCHED_ENTRIES_KEY, {}).get(obj.target.id)
+                if not sub:
+                    sub = (
+                        Entry.objects.filter(id=obj.target.id)
+                        .select_related("schema")
+                        .values("id", "name", "schema__id", "schema__name")
+                        .first()
+                    )
                 return {
-                    "id": sub.id,
-                    "name": sub.name,
-                    "schema_id": sub.schema.id,
-                    "schema_name": sub.schema.name,
+                    "id": sub["id"],
+                    "name": sub["name"],
+                    "schema_id": sub["schema__id"],
+                    "schema_name": sub["schema__name"],
                 }
             else:
                 return {

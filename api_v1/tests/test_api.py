@@ -7,6 +7,7 @@ import pytz
 from django.conf import settings
 from rest_framework import status
 from rest_framework.authtoken.models import Token
+from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 
 from airone.lib.acl import ACLType
@@ -125,28 +126,22 @@ class APITest(AironeViewTest):
             },
             {
                 "name": "group",
-                "check": lambda v: self.assertEqual(
-                    v.value, str(Group.objects.get(name="group1").id)
-                ),
+                "check": lambda v: self.assertEqual(v.group, Group.objects.get(name="group1")),
             },
             {
                 "name": "groups",
                 "check": lambda v: self.assertEqual(
-                    [x.value for x in v.data_array.all()],
-                    [str(x.id) for x in test_groups],
+                    [x.group for x in v.data_array.all().select_related("group")], test_groups
                 ),
             },
             {
                 "name": "role",
-                "check": lambda v: self.assertEqual(
-                    v.value, str(Role.objects.get(name="role1").id)
-                ),
+                "check": lambda v: self.assertEqual(v.role, Role.objects.get(name="role1")),
             },
             {
                 "name": "roles",
                 "check": lambda v: self.assertEqual(
-                    [x.value for x in v.data_array.all()],
-                    [str(x.id) for x in test_roles],
+                    [x.role for x in v.data_array.all().select_related("role")], test_roles
                 ),
             },
             {"name": "text", "check": lambda v: self.assertEqual(v.value, "fuga")},
@@ -665,6 +660,77 @@ class APITest(AironeViewTest):
         resp = self.client.post("/api/v1/entry", json.dumps(params), "application/json")
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(AttributeValue.objects.count(), attr_value_count)
+
+    @mock.patch("airone.lib.custom_view.is_custom", mock.Mock(return_value=True))
+    @mock.patch("airone.lib.custom_view.call_custom")
+    def test_api_entry_with_customview(self, mock_call_custom):
+        admin = self.admin_login()
+        entity = self.create_entity(
+            **{
+                "user": admin,
+                "name": "Entity",
+                "attrs": self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY,
+            }
+        )
+        params = {
+            "name": "entry1",
+            "entity": entity.name,
+            "attrs": {
+                "val": "hoge",
+            },
+        }
+
+        def side_effect(handler_name, entity_name, user, *args):
+            raise ValidationError("api error")
+
+        mock_call_custom.side_effect = side_effect
+        resp = self.client.post("/api/v1/entry", json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, 400)
+        self.assertTrue(mock_call_custom.called)
+
+        # create
+        def side_effect(handler_name, entity_name, user, *args):
+            self.assertEqual(entity_name, entity.name)
+            self.assertEqual(user, admin)
+
+            # Check specified parameters are expected
+            if handler_name == "validate_entry":
+                self.assertEqual(args[0], entity.name)
+                self.assertEqual(args[1], "entry1")
+                self.assertEqual(args[2], params["attrs"])
+                self.assertIsNone(args[3])
+
+        mock_call_custom.side_effect = side_effect
+        resp = self.client.post("/api/v1/entry", json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, 200)
+        self.assertTrue(mock_call_custom.called)
+
+        # edit
+        entry = Entry.objects.get(name="entry1", schema=entity)
+        params = {
+            "id": entry.id,
+            "name": "entry2",
+            "entity": entity.name,
+            "attrs": {
+                "val": "hoge",
+            },
+        }
+
+        def side_effect(handler_name, entity_name, user, *args):
+            self.assertEqual(entity_name, entity.name)
+            self.assertEqual(user, admin)
+
+            # Check specified parameters are expected
+            if handler_name == "validate_entry":
+                self.assertEqual(args[0], entity.name)
+                self.assertEqual(args[1], "entry2")
+                self.assertEqual(args[2], params["attrs"])
+                self.assertEqual(args[3], entry)
+
+        mock_call_custom.side_effect = side_effect
+        resp = self.client.post("/api/v1/entry", json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, 200)
+        self.assertTrue(mock_call_custom.called)
 
     def test_refresh_token(self):
         self.admin_login()

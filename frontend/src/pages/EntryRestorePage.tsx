@@ -29,7 +29,7 @@ export const EntryRestorePage: FC = () => {
 
       <PageHeader
         title={entity.value?.name ?? ""}
-        description="削除エントリの復旧"
+        description="削除アイテムの復旧"
       >
         <Box width="50px">
           <IconButton

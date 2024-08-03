@@ -47,7 +47,7 @@ exports[`should match snapshot 1`] = `
                       class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
                       href="/ui/entities"
                     >
-                      エンティティ一覧
+                      モデル一覧
                     </a>
                   </li>
                   <li
@@ -120,7 +120,7 @@ exports[`should match snapshot 1`] = `
                 class="MuiTypography-root MuiTypography-subtitle1 css-10wpov9-MuiTypography-root"
                 id="description"
               >
-                削除エントリの復旧
+                削除アイテムの復旧
               </h6>
               <div
                 class="MuiBox-root css-1b3gh38"
@@ -199,7 +199,7 @@ exports[`should match snapshot 1`] = `
                       aria-invalid="false"
                       class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputAdornedStart css-1o9s3wi-MuiInputBase-input-MuiOutlinedInput-input"
                       id=":r0:"
-                      placeholder="エントリを絞り込む"
+                      placeholder="アイテムを絞り込む"
                       type="text"
                       value=""
                     />
@@ -516,7 +516,7 @@ exports[`should match snapshot 1`] = `
                     class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
                     href="/ui/entities"
                   >
-                    エンティティ一覧
+                    モデル一覧
                   </a>
                 </li>
                 <li
@@ -589,7 +589,7 @@ exports[`should match snapshot 1`] = `
               class="MuiTypography-root MuiTypography-subtitle1 css-10wpov9-MuiTypography-root"
               id="description"
             >
-              削除エントリの復旧
+              削除アイテムの復旧
             </h6>
             <div
               class="MuiBox-root css-1b3gh38"
@@ -668,7 +668,7 @@ exports[`should match snapshot 1`] = `
                     aria-invalid="false"
                     class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputAdornedStart css-1o9s3wi-MuiInputBase-input-MuiOutlinedInput-input"
                     id=":r0:"
-                    placeholder="エントリを絞り込む"
+                    placeholder="アイテムを絞り込む"
                     type="text"
                     value=""
                   />

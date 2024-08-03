@@ -130,7 +130,7 @@ exports[`EditTriggerPage should match snapshot 1`] = `
             <h4
               class="MuiTypography-root MuiTypography-h4 css-5lbw0b-MuiTypography-root"
             >
-              設定対象のエンティティ
+              設定対象のモデル
             </h4>
             <div
               class="MuiAutocomplete-root MuiAutocomplete-fullWidth MuiAutocomplete-hasPopupIcon css-1kkal6p-MuiAutocomplete-root"
@@ -150,7 +150,7 @@ exports[`EditTriggerPage should match snapshot 1`] = `
                     class="MuiInputBase-input MuiOutlinedInput-input Mui-disabled MuiInputBase-inputAdornedEnd MuiAutocomplete-input MuiAutocomplete-inputFocused css-nxo287-MuiInputBase-input-MuiOutlinedInput-input"
                     disabled=""
                     id=":r0:"
-                    placeholder="エンティティを選択"
+                    placeholder="モデルを選択"
                     role="combobox"
                     spellcheck="false"
                     type="text"
@@ -328,7 +328,7 @@ exports[`EditTriggerPage should match snapshot 1`] = `
           <h4
             class="MuiTypography-root MuiTypography-h4 css-5lbw0b-MuiTypography-root"
           >
-            設定対象のエンティティ
+            設定対象のモデル
           </h4>
           <div
             class="MuiAutocomplete-root MuiAutocomplete-fullWidth MuiAutocomplete-hasPopupIcon css-1kkal6p-MuiAutocomplete-root"
@@ -348,7 +348,7 @@ exports[`EditTriggerPage should match snapshot 1`] = `
                   class="MuiInputBase-input MuiOutlinedInput-input Mui-disabled MuiInputBase-inputAdornedEnd MuiAutocomplete-input MuiAutocomplete-inputFocused css-nxo287-MuiInputBase-input-MuiOutlinedInput-input"
                   disabled=""
                   id=":r0:"
-                  placeholder="エンティティを選択"
+                  placeholder="モデルを選択"
                   role="combobox"
                   spellcheck="false"
                   type="text"

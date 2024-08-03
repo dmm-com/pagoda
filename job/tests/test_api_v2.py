@@ -108,6 +108,31 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.json()["count"], 0)
 
+    def test_get_jobs_with_target_id(self):
+        user = self.guest_login()
+
+        entity = Entity.objects.create(name="entity", created_user=user)
+        entry1 = Entry.objects.create(name="entry1", created_user=user, schema=entity)
+        entry2 = Entry.objects.create(name="entry2", created_user=user, schema=entity)
+
+        # create three jobs for entry1
+        [Job.new_create(user, entry1) for _ in range(0, _TEST_MAX_LIST_VIEW)]
+        self.assertEqual(Job.objects.filter(user=user).count(), _TEST_MAX_LIST_VIEW)
+        # create one job for entry2
+        Job.new_create(user, entry2)
+
+        # checks number of the returned objects are for entry1
+        resp = self.client.get(
+            f"/job/api/v2/jobs?limit={_TEST_MAX_LIST_VIEW + 100}&offset=0&target_id={entry1.id}"
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json()["count"], _TEST_MAX_LIST_VIEW)
+
+        # checks number of the returned objects are for both entry1 and entry2
+        resp = self.client.get(f"/job/api/v2/jobs?limit={_TEST_MAX_LIST_VIEW + 100}&offset=0")
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json()["count"], _TEST_MAX_LIST_VIEW + 1)
+
     def test_get_job(self):
         user = self.guest_login()
 

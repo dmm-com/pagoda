@@ -49,7 +49,7 @@ export const EntityControlMenu: FC<Props> = ({
     await aironeApiClient
       .deleteEntity(entityId)
       .then(() => {
-        enqueueSnackbar("エンティティの削除が完了しました", {
+        enqueueSnackbar("モデルの削除が完了しました", {
           variant: "success",
         });
         // A magic to reload the entity list with keeping snackbar
@@ -58,7 +58,7 @@ export const EntityControlMenu: FC<Props> = ({
         setToggle && setToggle();
       })
       .catch(() => {
-        enqueueSnackbar("エンティティの削除が失敗しました", {
+        enqueueSnackbar("モデルの削除が失敗しました", {
           variant: "error",
         });
       });
@@ -66,11 +66,11 @@ export const EntityControlMenu: FC<Props> = ({
   const handleExport = async (entityId: number, format: ExportFormatType) => {
     try {
       await aironeApiClient.exportEntries(entityId, format);
-      enqueueSnackbar("エンティティのエクスポートのジョブ登録が成功しました", {
+      enqueueSnackbar("モデルのエクスポートのジョブ登録が成功しました", {
         variant: "success",
       });
     } catch (e) {
-      enqueueSnackbar("エンティティのエクスポートのジョブ登録が失敗しました", {
+      enqueueSnackbar("モデルのエクスポートのジョブ登録が失敗しました", {
         variant: "error",
       });
     }
@@ -92,7 +92,7 @@ export const EntityControlMenu: FC<Props> = ({
       }}
     >
       <MenuItem component={Link} to={entityEntriesPath(entityId)}>
-        <Typography>エントリ一覧</Typography>
+        <Typography>アイテム一覧</Typography>
       </MenuItem>
       <MenuItem component={Link} to={editEntityPath(entityId)}>
         <Typography>編集</Typography>
@@ -126,7 +126,7 @@ export const EntityControlMenu: FC<Props> = ({
         <Typography>インポート</Typography>
       </MenuItem>
       <MenuItem component={Link} to={restoreEntryPath(entityId)}>
-        <Typography>削除エントリの復旧</Typography>
+        <Typography>削除アイテムの復旧</Typography>
       </MenuItem>
       <Confirmable
         componentGenerator={(handleOpen) => (

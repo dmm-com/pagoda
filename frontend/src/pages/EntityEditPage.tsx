@@ -28,10 +28,7 @@ export const EntityEditPage: FC = () => {
   const willCreate = entityId === undefined;
 
   const history = useHistory();
-  const { enqueueSubmitResult } = useFormNotification(
-    "エンティティ",
-    willCreate
-  );
+  const { enqueueSubmitResult } = useFormNotification("モデル", willCreate);
 
   const {
     formState: { isValid, isDirty, isSubmitting, isSubmitSuccessful },
@@ -195,10 +192,9 @@ export const EntityEditPage: FC = () => {
       )}
 
       <PageHeader
-        title={
-          entity?.value != null ? entity.value.name : "新規エンティティの作成"
-        }
+        title={entity?.value != null ? entity.value.name : "新規モデルの作成"}
         description={entity?.value && "エンティテイティ詳細 / 編集"}
+        targetId={entity.value?.id}
         hasOngoingProcess={entity?.value?.hasOngoingChanges}
       >
         <SubmitButton

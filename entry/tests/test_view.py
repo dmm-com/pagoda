@@ -1976,6 +1976,7 @@ class ViewTest(AironeViewTest):
             "entry_name": "Jhon Doe",
             "attrs": [
                 {
+                    "entity_attr_id": str(entity.attrs.get(name="address").id),
                     "id": str(entity.attrs.get(name="address").id),
                     "type": str(AttrType.STRING),
                     "value": [{"data": "", "index": 0}],
@@ -2101,7 +2102,7 @@ class ViewTest(AironeViewTest):
             "entry_name": "entry",
             "attrs": [
                 {
-                    "entity_attr_id": "",
+                    "entity_attr_id": str(entity.attrs.get(name="address").id),
                     "id": str(entry.attrs.get(schema__name="address").id),
                     "value": [{"data": "", "index": 0}],
                     "referral_key": [{"data": "unknown", "index": 0}],
@@ -3388,7 +3389,7 @@ class ViewTest(AironeViewTest):
 
         attrv = entry.attrs.first().get_latest_value()
         self.assertIsNotNone(attrv)
-        self.assertEqual(attrv.value, str(group.id))
+        self.assertEqual(attrv.group, group)
         self.assertEqual(attrv.data_type, AttrType.GROUP)
 
     @patch("entry.tasks.edit_entry_attrs.delay", Mock(side_effect=tasks.edit_entry_attrs))
@@ -3462,7 +3463,7 @@ class ViewTest(AironeViewTest):
 
         attrv = attr.get_latest_value()
         self.assertIsNotNone(attrv)
-        self.assertEqual(attrv.value, str(Group.objects.get(name="group-1").id))
+        self.assertEqual(attrv.group, Group.objects.get(name="group-1"))
 
     @patch("entry.tasks.import_entries.delay", Mock(side_effect=tasks.import_entries))
     def test_import_entry(self):
@@ -3538,8 +3539,8 @@ class ViewTest(AironeViewTest):
         checklist = [
             {"attr": "str", "checker": lambda x: x.value == "foo"},
             {"attr": "obj", "checker": lambda x: x.referral.id == ref_entry.id},
-            {"attr": "grp", "checker": lambda x: x.value == str(group.id)},
-            {"attr": "role", "checker": lambda x: x.value == str(role.id)},
+            {"attr": "grp", "checker": lambda x: x.group == group},
+            {"attr": "role", "checker": lambda x: x.role == role},
             {
                 "attr": "name",
                 "checker": lambda x: x.value == "foo" and x.referral.id == ref_entry.id,
@@ -3560,12 +3561,12 @@ class ViewTest(AironeViewTest):
             {
                 "attr": "arr4",
                 "checker": lambda x: x.data_array.count() == 1
-                and x.data_array.first().value == str(group.id),
+                and x.data_array.first().group == group,
             },
             {
                 "attr": "arr5",
                 "checker": lambda x: x.data_array.count() == 1
-                and x.data_array.first().value == str(role.id),
+                and x.data_array.first().role == role,
             },
         ]
         for info in checklist:

@@ -53,14 +53,14 @@ export const EntryCopyPage: FC<Props> = ({ CopyForm = DefaultCopyForm }) => {
     try {
       await aironeApiClient.copyEntry(entryId, entries.split("\n"));
       setSubmitted(true);
-      enqueueSnackbar("エントリコピーのジョブ登録が成功しました", {
+      enqueueSnackbar("アイテムコピーのジョブ登録が成功しました", {
         variant: "success",
       });
       setTimeout(() => {
         history.replace(entityEntriesPath(entityId));
       }, 0.1);
     } catch {
-      enqueueSnackbar("エントリコピーのジョブ登録が失敗しました", {
+      enqueueSnackbar("アイテムコピーのジョブ登録が失敗しました", {
         variant: "error",
       });
     }
@@ -78,7 +78,7 @@ export const EntryCopyPage: FC<Props> = ({ CopyForm = DefaultCopyForm }) => {
 
       <PageHeader
         title={entry.value?.name ?? ""}
-        description="エントリのコピーを作成"
+        description="アイテムのコピーを作成"
       >
         <SubmitButton
           name="コピーを作成"

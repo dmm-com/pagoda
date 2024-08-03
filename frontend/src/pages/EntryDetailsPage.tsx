@@ -102,7 +102,7 @@ export const EntryDetailsPage: FC<Props> = ({
     <FlexBox>
       <EntryBreadcrumbs entry={entry.value} />
 
-      <PageHeader title={entry.value?.name ?? ""} description="エントリ詳細">
+      <PageHeader title={entry.value?.name ?? ""} description="アイテム詳細">
         <ChipBox>
           <Stack direction="row" spacing={1}>
             {[
