@@ -485,4 +485,4 @@ class Common(Configuration):
     MAX_ROLES: int | None = env.int("AIRONE_MAX_ROLES", None)
 
     # FIXME enable experimental ES-less advanced search; TODO it must be removed
-    ENABLE_ESLESS_ADVANCED_SEARCH: bool = env.bool("AIRONE_ENABLE_ESLESS_ADVANCED_SEARCH", False)
+    ENABLE_ESLESS_ADVANCED_SEARCH: bool = env.bool("AIRONE_ENABLE_ESLESS_ADVANCED_SEARCH", True)

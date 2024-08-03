@@ -14,8 +14,6 @@ from airone.lib.log import Logger
 from airone.lib.types import AttrType
 from entry.models import Attribute, AttributeValue, Entry
 from entry.settings import CONFIG
-from group.models import Group
-from role.models import Role
 from user.models import User
 
 
@@ -46,27 +44,28 @@ def _render_attribute_value(
             return dt.isoformat() if dt else None
 
         case AttrType.OBJECT:
-            return {
-                "id": attrv["referral__id"],
-                "name": attrv["referral__name"],
-            }
+            if attrv.get("referral__id"):
+                return {
+                    "id": attrv["referral__id"],
+                    "name": attrv["referral__name"],
+                }
+            else:
+                return None
 
         case AttrType.GROUP:
-            group = Group.objects.get(id=attrv["value"])
-            if group:
+            if attrv.get("group__id"):
                 return {
-                    "id": group.id,
-                    "name": group.name,
+                    "id": attrv["group__id"],
+                    "name": attrv["group__name"],
                 }
             else:
                 return None
 
         case AttrType.ROLE:
-            role = Role.objects.get(id=attrv["value"])
-            if role:
+            if attrv.get("role__id"):
                 return {
-                    "id": role.id,
-                    "name": role.name,
+                    "id": attrv["role__id"],
+                    "name": attrv["role__name"],
                 }
             else:
                 return None
@@ -111,12 +110,18 @@ def _render_attribute_value(
                     ]
 
                 case AttrType.ARRAY_GROUP:
-                    groups = Group.objects.filter(id__in=[v["value"] for v in children if v])
-                    return [{"id": g.id, "name": g.name} for g in groups]
+                    return [
+                        {"id": v["group__id"], "name": v["group__name"]}
+                        for v in children
+                        if v.get("group__id") and v.get("group__name")
+                    ]
 
                 case AttrType.ARRAY_ROLE:
-                    roles = Role.objects.filter(id__in=[v["value"] for v in children if v])
-                    return [{"id": r.id, "name": r.name} for r in roles]
+                    return [
+                        {"id": v["role__id"], "name": v["role__name"]}
+                        for v in children
+                        if v.get("role__id") and v.get("role__name")
+                    ]
 
     raise ValueError("Invalid attribute type: %s" % type)
 
@@ -150,49 +155,60 @@ def search_entries(
         .prefetch_related(attrs_prefetch)[offset:limit]
     )
 
-    def _fetch_attrv() -> dict[int, dict[str, Any]]:
-        # TODO better to have indexed fields in AttributeValue
-        attr_values = (
-            AttributeValue.objects.filter(
-                parent_attrv__isnull=True, is_latest=True, parent_attr__schema__name__in=attr_names
-            )
-            .select_related("referral")
-            .values(
-                "id",
-                "value",
-                "boolean",
-                "date",
-                "datetime",
-                "parent_attr",
-                "referral__id",
-                "referral__name",
-            )
-        )
-        return {attrv["parent_attr"]: attrv for attrv in attr_values}
-
-    def _fetch_attrv_children() -> dict[int, list[dict[str, Any]]]:
-        # TODO better to have indexed fields in AttributeValue
-        attr_values_children = (
-            AttributeValue.objects.filter(
-                parent_attrv__isnull=False, parent_attr__schema__name__in=attr_names
-            )
-            .select_related("referral")
-            .values("value", "parent_attrv", "referral__id", "referral__name")
-        )
-        attr_values_children_by_parent: dict[int, list[dict[str, Any]]] = defaultdict(list)
-        for child in attr_values_children:
-            attr_values_children_by_parent[child["parent_attrv"]].append(child)
-        return attr_values_children_by_parent
-
-    # in sequential
-    # attr_values_by_attr: dict[int, dict[str, Any]] = _fetch_attrv()
-    # attr_values_children_by_parent: dict[int, list[dict[str, Any]]] = _fetch_attrv_children()
-
-    # in concurrent
     # NOTE django-debug-toolbar doesn't work SQL analytics with concurrent execution
     attr_values_by_attr: dict[int, dict[str, Any]] = {}
     attr_values_children_by_parent: dict[int, list[dict[str, Any]]] = defaultdict(list)
     with ThreadPoolExecutor() as executor:
+
+        def _fetch_attrv() -> dict[int, dict[str, Any]]:
+            # TODO better to have indexed fields in AttributeValue
+            attr_values = (
+                AttributeValue.objects.filter(
+                    parent_attrv__isnull=True,
+                    is_latest=True,
+                    parent_attr__schema__name__in=attr_names,
+                )
+                .select_related("referral", "group", "role")
+                .values(
+                    "id",
+                    "value",
+                    "boolean",
+                    "date",
+                    "datetime",
+                    "parent_attr",
+                    "referral__id",
+                    "referral__name",
+                    "group__id",
+                    "group__name",
+                    "role__id",
+                    "role__name",
+                )
+            )
+            return {attrv["parent_attr"]: attrv for attrv in attr_values}
+
+        def _fetch_attrv_children() -> dict[int, list[dict[str, Any]]]:
+            # TODO better to have indexed fields in AttributeValue
+            attr_values_children = (
+                AttributeValue.objects.filter(
+                    parent_attrv__isnull=False, parent_attr__schema__name__in=attr_names
+                )
+                .select_related("referral", "group", "role")
+                .values(
+                    "value",
+                    "parent_attrv",
+                    "referral__id",
+                    "referral__name",
+                    "group__id",
+                    "group__name",
+                    "role__id",
+                    "role__name",
+                )
+            )
+            attr_values_children_by_parent: dict[int, list[dict[str, Any]]] = defaultdict(list)
+            for child in attr_values_children:
+                attr_values_children_by_parent[child["parent_attrv"]].append(child)
+            return attr_values_children_by_parent
+
         f1 = executor.submit(_fetch_attrv)
         f2 = executor.submit(_fetch_attrv_children)
 
