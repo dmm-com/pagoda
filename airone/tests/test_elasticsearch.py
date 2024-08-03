@@ -403,7 +403,6 @@ class ElasticSearchTest(TestCase):
         attr_value = AttributeValue.objects.create(
             value="test_attr_value", created_user=self._user, parent_attr=attr
         )
-        entry.attrs.add(attr)
         attr.values.add(attr_value)
         attr.save()
 

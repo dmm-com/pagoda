@@ -1130,10 +1130,6 @@ class ViewTest(AironeViewTest):
                 parent_entry=test_entry,
             )
 
-            test_attr.save()
-            test_entry.attrs.add(test_attr)
-            test_entry.save()
-
             test_val = None
 
             if type & AttrType._ARRAY == 0:

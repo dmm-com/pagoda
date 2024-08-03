@@ -2364,10 +2364,6 @@ class ViewTest(BaseViewTest):
                 parent_entry=test_entry,
             )
 
-            test_attr.save()
-            test_entry.attrs.add(test_attr)
-            test_entry.save()
-
             test_val = None
 
             if type & AttrType._ARRAY == 0:
@@ -3844,10 +3840,6 @@ class ViewTest(BaseViewTest):
                 created_user=user,
                 parent_entry=test_entry,
             )
-
-            test_attr.save()
-            test_entry.attrs.add(test_attr)
-            test_entry.save()
 
             test_val = None
 

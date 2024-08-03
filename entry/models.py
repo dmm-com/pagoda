@@ -521,7 +521,7 @@ class Attribute(ACLBase):
 
     # This parameter is needed to make a relationship with corresponding EntityAttr
     schema = models.ForeignKey(EntityAttr, on_delete=models.DO_NOTHING)
-    parent_entry = models.ForeignKey("Entry", on_delete=models.DO_NOTHING)
+    parent_entry = models.ForeignKey("Entry", related_name="attrs", on_delete=models.DO_NOTHING)
 
     class Meta:
         constraints = [
@@ -1448,7 +1448,6 @@ class Entry(ACLBase):
     STATUS_EDITING = 1 << 1
     STATUS_COMPLEMENTING_ATTRS = 1 << 2
 
-    attrs = models.ManyToManyField(Attribute)
     schema = models.ForeignKey(Entity, on_delete=models.DO_NOTHING)
 
     history = HistoricalRecords(excluded_fields=["status", "updated_time"])
@@ -1475,8 +1474,6 @@ class Entry(ACLBase):
                 "created_user": request_user,
             },
         )
-        if is_created:
-            self.attrs.add(attr)
         return attr
 
     def get_prev_refers_objects(self) -> QuerySet:
@@ -1856,10 +1853,7 @@ class Entry(ACLBase):
         cloned_entry.save()
 
         for attr in self.attrs.filter(is_active=True):
-            cloned_attr = attr.clone(user, parent_entry=cloned_entry)
-
-            if cloned_attr:
-                cloned_entry.attrs.add(cloned_attr)
+            attr.clone(user, parent_entry=cloned_entry)
 
         cloned_entry.del_status(Entry.STATUS_CREATING)
         return cloned_entry

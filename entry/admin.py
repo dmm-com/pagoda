@@ -156,7 +156,6 @@ class AttrResource(AironeModelResource):
             entry = instance.parent_entry
 
             if not entry.attrs.filter(id=instance.id).exists():
-                entry.attrs.add(instance)
                 entry.register_es()
 
 
