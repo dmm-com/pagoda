@@ -1536,22 +1536,24 @@ class ViewTest(AironeViewTest):
                 test_val = AttributeValue.create(user=user, attr=test_attr)
                 test_val.set_status(AttributeValue.STATUS_DATA_ARRAY_PARENT)
                 for child in value:
-                    test_val_child = None
                     match type:
                         case AttrType.ARRAY_STRING:
-                            test_val_child = AttributeValue.create(
-                                user=user, attr=test_attr, value=child
+                            AttributeValue.create(
+                                user=user, attr=test_attr, value=child, parent_attrv=test_val
                             )
                         case AttrType.ARRAY_OBJECT:
-                            test_val_child = AttributeValue.create(
-                                user=user, attr=test_attr, referral=child
+                            AttributeValue.create(
+                                user=user, attr=test_attr, referral=child, parent_attrv=test_val
                             )
                         case AttrType.ARRAY_NAMED_OBJECT:
                             [(k, v)] = child.items()
-                            test_val_child = AttributeValue.create(
-                                user=user, attr=test_attr, value=k, referral=v
+                            AttributeValue.create(
+                                user=user,
+                                attr=test_attr,
+                                value=k,
+                                referral=v,
+                                parent_attrv=test_val,
                             )
-                    test_val.data_array.add(test_val_child)
 
             test_val.save()
             test_attr.values.add(test_val)

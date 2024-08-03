@@ -302,12 +302,11 @@ class ModelTest(AironeTestCase):
         attr_value = AttributeValue.objects.create(created_user=self._user, parent_attr=attr)
         attr_value.set_status(AttributeValue.STATUS_DATA_ARRAY_PARENT)
 
-        attr_value.data_array.add(
-            AttributeValue.objects.create(value="hoge", created_user=self._user, parent_attr=attr)
+        AttributeValue.objects.create(
+            value="hoge", created_user=self._user, parent_attr=attr, parent_attrv=attr_value
         )
-
-        attr_value.data_array.add(
-            AttributeValue.objects.create(value="fuga", created_user=self._user, parent_attr=attr)
+        AttributeValue.objects.create(
+            value="fuga", created_user=self._user, parent_attr=attr, parent_attrv=attr_value
         )
 
         attr.values.add(attr_value)
@@ -333,12 +332,11 @@ class ModelTest(AironeTestCase):
         attr_value = AttributeValue.objects.create(created_user=self._user, parent_attr=attr)
         attr_value.set_status(AttributeValue.STATUS_DATA_ARRAY_PARENT)
 
-        attr_value.data_array.add(
-            AttributeValue.objects.create(referral=e1, created_user=self._user, parent_attr=attr)
+        AttributeValue.objects.create(
+            referral=e1, created_user=self._user, parent_attr=attr, parent_attrv=attr_value
         )
-
-        attr_value.data_array.add(
-            AttributeValue.objects.create(referral=e2, created_user=self._user, parent_attr=attr)
+        AttributeValue.objects.create(
+            referral=e2, created_user=self._user, parent_attr=attr, parent_attrv=attr_value
         )
 
         attr.values.add(attr_value)
@@ -371,12 +369,11 @@ class ModelTest(AironeTestCase):
         attr_value = AttributeValue.objects.create(created_user=self._user, parent_attr=attr)
         attr_value.set_status(AttributeValue.STATUS_DATA_ARRAY_PARENT)
 
-        attr_value.data_array.add(
-            AttributeValue.objects.create(referral=e1, created_user=self._user, parent_attr=attr)
+        AttributeValue.objects.create(
+            referral=e1, created_user=self._user, parent_attr=attr, parent_attrv=attr_value
         )
-
-        attr_value.data_array.add(
-            AttributeValue.objects.create(referral=e2, created_user=self._user, parent_attr=attr)
+        AttributeValue.objects.create(
+            referral=e2, created_user=self._user, parent_attr=attr, parent_attrv=attr_value
         )
 
         attr.values.add(attr_value)
@@ -1030,7 +1027,7 @@ class ModelTest(AironeTestCase):
         attrv = AttributeValue.objects.create(value="hoge", **basic_params)
 
         for i in range(0, 10):
-            attrv.data_array.add(AttributeValue.objects.create(value=str(i), **basic_params))
+            AttributeValue.objects.create(value=str(i), parent_attrv=attrv, **basic_params)
 
         clone = attrv.clone(self._user)
 
