@@ -357,13 +357,12 @@ class ComplexViewTest(AironeViewTest):
         entry = Entry.objects.create(name="entry", schema=entity, created_user=user)
         entry.complement_attrs(user)
 
-        attrv_params = {
-            "value": "",
-            "created_user": user,
-            "parent_attr": entry.attrs.get(name="ref"),
-            "referral": ref_entry,
-        }
-        entry.attrs.get(name="ref").values.add(AttributeValue.objects.create(**attrv_params))
+        AttributeValue.objects.create(
+            value="",
+            created_user=user,
+            parent_attr=entry.attrs.get(name="ref"),
+            referral=ref_entry,
+        )
 
         # make referred entry cache
         ref_entries = ref_entry.get_referred_objects()
