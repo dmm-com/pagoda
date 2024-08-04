@@ -110,7 +110,7 @@ class AttributeValue(models.Model):
     def get_status(self, val: int):
         return self.status & val
 
-    def clone(self, user, **extra_params):
+    def clone(self, user: User, **extra_params) -> "AttributeValue":
         cloned_value = AttributeValue.objects.get(id=self.id)
 
         # By removing the primary key, we can clone a django model instance
@@ -354,7 +354,7 @@ class AttributeValue(models.Model):
     # data type (e.g. case group type, this allows Group instance and int and str
     # value that indicate specific group instance, and it returns id of its instance)
     @classmethod
-    def uniform_storable(kls, val, model):
+    def uniform_storable(kls, val: Group | Role | str | int, model):
         """
         This converts input to group id value(str) to be able to store at AttributeValue.
         And this expects input value as Group type instance, int value that indicate
@@ -390,7 +390,7 @@ class AttributeValue(models.Model):
             msg(str): error message(Optional)
         """
 
-        def _is_validate_attr_str(value) -> bool:
+        def _is_validate_attr_str(value: str) -> bool:
             if not isinstance(value, str):
                 raise Exception("value(%s) is not str" % value)
             if len(str(value).encode("utf-8")) > AttributeValue.MAXIMUM_VALUE_SIZE:
@@ -399,7 +399,7 @@ class AttributeValue(models.Model):
                 return False
             return True
 
-        def _is_validate_attr_object(value) -> bool:
+        def _is_validate_attr_object(value: int | str) -> bool:
             try:
                 if isinstance(value, Entry) and value.is_active:
                     return True
@@ -536,7 +536,7 @@ class Attribute(ACLBase):
         return self.schema.type & AttrType._ARRAY
 
     # This checks whether each specified attribute needs to update
-    def is_updated(self, recv_value):
+    def is_updated(self, recv_value) -> bool:
         # the case new attribute-value is specified
         if not self.values.exists():
             # the result depends on the specified value
@@ -674,7 +674,7 @@ class Attribute(ACLBase):
 
             case AttrType.ARRAY_NAMED_OBJECT:
 
-                def get_entry_id(value):
+                def get_entry_id(value: int | str | Entry) -> int | None:
                     if not value:
                         return None
                     if isinstance(value, Entry):
@@ -756,7 +756,7 @@ class Attribute(ACLBase):
             return False
         return True
 
-    def get_values(self, where_extra=[]):
+    def get_values(self, where_extra: list[str] = []):
         where_cond = [] + where_extra
 
         if self.is_array():
@@ -772,7 +772,7 @@ class Attribute(ACLBase):
         }
         return self.get_values(**params)
 
-    def get_latest_value(self, is_readonly: bool = False):
+    def get_latest_value(self, is_readonly: bool = False) -> AttributeValue | None:
         def _create_new_value() -> AttributeValue:
             params = {
                 "value": "",
@@ -872,7 +872,7 @@ class Attribute(ACLBase):
 
         return cloned_attr
 
-    def unset_latest_flag(self, exclude_id: int | None = None):
+    def unset_latest_flag(self, exclude_id: int | None = None) -> None:
         exclude = Q()
         if exclude_id:
             exclude = Q(id=exclude_id)
@@ -1137,13 +1137,13 @@ class Attribute(ACLBase):
         This absorbs difference values according to the type of Attributes
         """
 
-        def get_entry(schema: Entity, name: str):
+        def get_entry(schema: Entity, name: str) -> Entry:
             return Entry.objects.get(is_active=True, schema=schema, name=name)
 
-        def is_entry(schema: Entity, name: str):
-            return Entry.objects.filter(is_active=True, schema=schema, name=name)
+        def is_entry(schema: Entity, name: str) -> bool:
+            return Entry.objects.filter(is_active=True, schema=schema, name=name).exists()
 
-        def get_named_object(data) -> dict:
+        def get_named_object(data: dict) -> dict:
             (key, value) = list(data.items())[0]
 
             ret_value = {"name": key, "id": None}
@@ -1235,13 +1235,13 @@ class Attribute(ACLBase):
         return None
 
     # NOTE: Type-Write
-    def remove_from_attrv(self, user: User, referral=None, value=""):
+    def remove_from_attrv(self, user: User, referral: ACLBase | None = None, value: str = ""):
         """
         This method removes target entry from specified attribute
         """
 
         attrv = self.get_latest_value()
-        if self.is_array():
+        if self.is_array() and attrv:
             if self.schema.type & AttrType._NAMED:
                 if referral is None:
                     return
@@ -1303,12 +1303,14 @@ class Attribute(ACLBase):
                 self.add_value(user, updated_data, boolean=attrv.boolean)
 
     # NOTE: Type-Write
-    def add_to_attrv(self, user: User, referral=None, value="", boolean=False):
+    def add_to_attrv(
+        self, user: User, referral: ACLBase | None = None, value: str = "", boolean: bool = False
+    ):
         """
         This method adds target entry to specified attribute with referral_key
         """
         attrv = self.get_latest_value()
-        if self.is_array():
+        if self.is_array() and attrv:
             updated_data = None
             if self.schema.type & AttrType._NAMED:
                 if value or referral:
@@ -1369,10 +1371,11 @@ class Attribute(ACLBase):
         if self.schema.is_delete_in_chain and self.schema.type & AttrType.OBJECT:
             attrv = self.get_latest_value()
 
-            if self.is_array():
-                [_may_remove_referral(x.referral) for x in attrv.data_array.all()]
-            else:
-                _may_remove_referral(attrv.referral)
+            if attrv:
+                if self.is_array():
+                    [_may_remove_referral(x.referral) for x in attrv.data_array.all()]
+                else:
+                    _may_remove_referral(attrv.referral)
 
     # NOTE: Type-Write
     def delete(self):
@@ -1381,8 +1384,8 @@ class Attribute(ACLBase):
         self.may_remove_referral()
 
     # implementation for Attribute
-    def check_duplication_entry_at_restoring(self, entry_chain):
-        def _check(referral):
+    def check_duplication_entry_at_restoring(self, entry_chain: list["Entry"]) -> bool:
+        def _check(referral: ACLBase | None):
             if referral and not referral.is_active:
                 entry = Entry.objects.filter(id=referral.id, is_active=False).first()
                 if entry:
@@ -1407,14 +1410,17 @@ class Attribute(ACLBase):
         if self.schema.is_delete_in_chain and self.schema.type & AttrType.OBJECT:
             attrv = self.get_latest_value()
 
-            if self.is_array():
-                ret = [_check(x.referral) for x in attrv.data_array.all()]
-                if True in ret:
-                    return True
+            if attrv:
+                if self.is_array():
+                    ret = [_check(x.referral) for x in attrv.data_array.all()]
+                    if True in ret:
+                        return True
+                    else:
+                        return False
                 else:
-                    return False
-            else:
-                return _check(attrv.referral)
+                    return _check(attrv.referral)
+
+        return False
 
     # NOTE: Type-Write
     def restore(self):
@@ -1457,7 +1463,7 @@ class Entry(ACLBase):
         super(Entry, self).__init__(*args, **kwargs)
         self.objtype = ACLObjType.Entry
 
-    def add_attribute_from_base(self, base, request_user):
+    def add_attribute_from_base(self, base: EntityAttr, request_user: User):
         if not isinstance(base, EntityAttr):
             raise TypeError('Variable "base" is incorrect type')
 
@@ -1828,7 +1834,7 @@ class Entry(ACLBase):
         # update entry information to Elasticsearch
         self.register_es()
 
-    def clone(self, user, **extra_params):
+    def clone(self, user: User, **extra_params) -> "Entry" | None:
         if not user.has_permission(self, ACLType.Readable) or not user.has_permission(
             self.schema, ACLType.Readable
         ):
@@ -2147,7 +2153,9 @@ class Entry(ACLBase):
         es.delete(id=self.id, ignore=[404])
         es.refresh(ignore=[404])
 
-    def get_value_history(self, user: User, count=CONFIG.MAX_HISTORY_COUNT, index=0) -> list[dict]:
+    def get_value_history(
+        self, user: User, count: int = CONFIG.MAX_HISTORY_COUNT, index: int = 0
+    ) -> list[dict]:
         def _get_values(attrv: AttributeValue) -> dict[str, Any]:
             return {
                 "attrv_id": attrv.id,
@@ -2531,8 +2539,8 @@ class Entry(ACLBase):
             parent_attr__parent_entry=self,
         ).last()
 
-    def get_trigger_params(self, user, attrnames):
-        entry_dict = self.to_dict(user, with_metainfo=True)
+    def get_trigger_params(self, user: User, attrnames: list[str]) -> list[dict]:
+        entry_dict = self.to_dict(user, with_metainfo=True) or {}
 
         def _get_value(attrname: str, attrtype: int, value):
             if isinstance(value, list):
