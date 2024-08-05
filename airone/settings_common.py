@@ -341,7 +341,7 @@ class Common(Configuration):
                 "url": env.str("AIRONE_SSO_LOGIN_URL", ""),
                 "x509cert": env.str("AIRONE_SSO_X509_CERT", "", True),
                 "attr_user_permanent_id": env.str("AIRONE_SSO_USER_ID", ""),
-                "attr_name": env.str("AIRONE_SSO_USER_ID", ""),
+                "attr_username": env.str("AIRONE_SSO_USER_ID", ""),
                 "attr_email": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress",
             }
         }
