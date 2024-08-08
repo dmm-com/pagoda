@@ -345,7 +345,7 @@ class AttributeValue(models.Model):
         return results
 
     @classmethod
-    def create(kls, user, attr, **params):
+    def create(kls, user, attr: "AttributeValue", **params):
         return kls.objects.create(
             created_user=user, parent_attr=attr, data_type=attr.schema.type, **params
         )
@@ -863,10 +863,7 @@ class Attribute(ACLBase):
             # When the Attribute is array, this method also clone co-AttributeValues
             if self.is_array():
                 for co_attrv in attrv.data_array.all():
-                    new_co_attrv = co_attrv.clone(
-                        user, parent_attr=cloned_attr, parent_attrv=new_attrv
-                    )
-                    new_attrv.data_array.add(new_co_attrv)
+                    co_attrv.clone(user, parent_attr=cloned_attr, parent_attrv=new_attrv)
 
             cloned_attr.values.add(new_attrv)
 
@@ -1113,10 +1110,6 @@ class Attribute(ACLBase):
                 # This processing send only one query to the DB
                 # for making all AttributeValue objects.
                 AttributeValue.objects.bulk_create(attrv_bulk)
-
-                # set created leaf AttribueValues to the data_array parameter of
-                # parent AttributeValue
-                attr_value.data_array.add(*AttributeValue.objects.filter(parent_attrv=attr_value))
 
         else:
             _set_attrv(self.schema.type, value, attrv=attr_value)
