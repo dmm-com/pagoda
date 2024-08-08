@@ -164,7 +164,6 @@ class ModelTest(AironeTestCase):
         entry.save()
 
         attr = self.make_attr("attr", entry=entry)
-        entry.attrs.add(attr)
 
         self.assertEqual(Entry.objects.count(), 2)
         self.assertEqual(Entry.objects.last().created_user, self._user)
@@ -676,9 +675,6 @@ class ModelTest(AironeTestCase):
         # set another referral value to the 'attr_arr_ref' attr
         arr_attr.add_value(self._user, [entry1, entry2])
 
-        self._entry.attrs.add(attr)
-        self._entry.attrs.add(arr_attr)
-
         # This function checks that this get_referred_objects method only get
         # unique reference objects except for the self referred object.
         for entry in [entry1, entry2]:
@@ -755,8 +751,6 @@ class ModelTest(AironeTestCase):
                 )
             )
 
-            entry.attrs.add(attr)
-
         # This function checks that this get_referred_objects method only get
         # unique reference objects except for the self referred object.
         referred_entries = self._entry.get_referred_objects()
@@ -782,7 +776,7 @@ class ModelTest(AironeTestCase):
         # create new attributes which are appended after creation of Entity
         self._entry.complement_attrs(self._user)
 
-        self.assertEqual(self._entry.attrs.count(), 1)
+        self.assertEqual(self._entry.attrs.count(), 2)
         self.assertEqual(self._entry.attrs.last().schema, newattr)
 
     def test_get_value_history(self):
@@ -824,8 +818,6 @@ class ModelTest(AironeTestCase):
         entry = Entry.objects.create(name="entry", created_user=self._user, schema=entity)
 
         attr = self.make_attr("attr_ref", attrtype=AttrType.OBJECT)
-
-        self._entry.attrs.add(attr)
 
         # make a self reference value
         attr.values.add(
@@ -1333,7 +1325,6 @@ class ModelTest(AironeTestCase):
 
     def test_get_available_attrs_with_multi_attribute_value(self):
         self._entity.attrs.add(self._attr.schema)
-        self._entry.attrs.add(self._attr)
 
         attr = self._entry.attrs.filter(schema=self._attr.schema, is_active=True).first()
         attr.add_value(self._user, "hoge")
@@ -4450,7 +4441,6 @@ class ModelTest(AironeTestCase):
 
     def test_search_entries_with_is_output_all(self):
         self._entity.attrs.add(self._attr.schema)
-        self._entry.attrs.add(self._attr)
         self._entry.attrs.first().add_value(self._user, "hoge")
         self._entry.register_es()
         ret = Entry.search_entries(self._user, [self._entity.id], is_output_all=True)
@@ -4517,7 +4507,6 @@ class ModelTest(AironeTestCase):
 
     def test_search_entries_for_simple(self):
         self._entity.attrs.add(self._attr.schema)
-        self._entry.attrs.add(self._attr)
         self._entry.attrs.first().add_value(self._user, "hoge")
         self._entry.register_es()
 
@@ -4808,7 +4797,6 @@ class ModelTest(AironeTestCase):
 
         # If the AttributeValue does not exist, permission returns the default
         self._entity.attrs.add(self._attr.schema)
-        self._entry.attrs.add(self._attr)
 
         result = self._entry.get_es_document()
         self.assertEqual(

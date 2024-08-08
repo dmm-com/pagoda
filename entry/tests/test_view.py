@@ -698,8 +698,6 @@ class ViewTest(AironeViewTest):
 
                 attr.values.add(attr_value)
 
-            entry.attrs.add(attr)
-
         # with invalid entry-id
         resp = self.client.get(reverse("entry:edit", args=[entry.id]))
         self.assertEqual(resp.status_code, 200)
@@ -711,8 +709,7 @@ class ViewTest(AironeViewTest):
         entry = Entry(name="fuga", schema=self._entity, created_user=user)
         entry.save()
 
-        attr = self.make_attr(name="attr", created_user=user, parent_entry=entry)
-        entry.attrs.add(attr)
+        self.make_attr(name="attr", created_user=user, parent_entry=entry)
 
         # with invalid entry-id
         resp = self.client.get(reverse("entry:edit", args=[entry.id]))
@@ -954,7 +951,6 @@ class ViewTest(AironeViewTest):
         for attr_name in ["foo", "bar", "baz"]:
             attr = self.make_attr(name=attr_name, created_user=user, parent_entry=entry)
             self._entity.attrs.add(attr.schema)
-            entry.attrs.add(attr)
 
         params = {
             "entry_name": entry.name,
@@ -1212,8 +1208,6 @@ class ViewTest(AironeViewTest):
 
                 attr.values.add(attr_value)
 
-            entry.attrs.add(attr)
-
         resp = self.client.get(reverse("entry:show", args=[entry.id]))
         self.assertEqual(resp.status_code, 200)
 
@@ -1320,7 +1314,6 @@ class ViewTest(AironeViewTest):
             name="attr", attrtype=AttrType.OBJECT, created_user=user, parent_entry=entry
         )
         self._entity.attrs.add(attr.schema)
-        entry.attrs.add(attr)
 
         attr_value = AttributeValue.objects.create(
             referral=entry, created_user=user, parent_attr=attr
@@ -1513,10 +1506,6 @@ class ViewTest(AironeViewTest):
                 parent_entry=test_entry,
             )
 
-            test_attr.save()
-            test_entry.attrs.add(test_attr)
-            test_entry.save()
-
             test_val = None
 
             if type & AttrType._ARRAY == 0:
@@ -1583,7 +1572,7 @@ class ViewTest(AironeViewTest):
         user = self.admin_login()
 
         entry = Entry.objects.create(name="fuga", schema=self._entity, created_user=user)
-        entry.attrs.add(self.make_attr(name="attr-test", parent_entry=entry, created_user=user))
+        self.make_attr(name="attr-test", parent_entry=entry, created_user=user)
 
         entry_count = Entry.objects.count()
 
@@ -5183,7 +5172,7 @@ class ViewTest(AironeViewTest):
         entry.complement_attrs(user)
 
         # Added another Attribute to entry to test to be able to detect this abnormal situation
-        entry.attrs.add(self.make_attr("test", parent_entry=entry, created_user=user))
+        self.make_attr("test", parent_entry=entry, created_user=user)
 
         # Send a request to import entry
         with self.assertLogs(logger=Logger, level=logging.ERROR) as cm:
