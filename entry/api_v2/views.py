@@ -1,7 +1,9 @@
 import re
+import time
 from copy import deepcopy
 from datetime import datetime, timedelta
 
+from django.conf import settings
 from django.db.models import Q
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, extend_schema
@@ -13,7 +15,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 
 from airone.exceptions import ElasticsearchException
-from airone.lib import custom_view
+from airone.lib import advancedsearch, custom_view
 from airone.lib.acl import ACLType
 from airone.lib.drf import (
     DuplicatedObjectExistsError,
@@ -366,16 +368,38 @@ class AdvancedSearchAPI(generics.GenericAPIView):
             if entity and request.user.has_permission(entity, ACLType.Readable):
                 hint_entity_ids.append(entity.id)
 
-        resp = Entry.search_entries(
-            request.user,
-            hint_entity_ids,
-            hint_attrs,
-            entry_limit,
-            hint_entry_name,
-            hint_referral,
-            is_output_all,
-            offset=entry_offset,
-        )
+        if settings.ENABLE_ESLESS_ADVANCED_SEARCH:
+            # XXX experimental advanced search
+            start_time = time.perf_counter()
+            resp = advancedsearch.search_entries(
+                user=request.user,
+                entities=hint_entity_ids,
+                attr_hints=hint_attrs,
+                entry_name=hint_entry_name,
+                hint_referral=hint_referral,
+                is_output_all=is_output_all,
+                limit=entry_limit,
+                offset=entry_offset,
+            )
+            end_time = time.perf_counter()
+            print(
+                f"[Experimental Advanced Search] processing time: {(end_time - start_time):.6f} sec"
+            )
+        else:
+            start_time = time.perf_counter()
+            resp = Entry.search_entries(
+                request.user,
+                hint_entity_ids,
+                hint_attrs,
+                entry_limit,
+                hint_entry_name,
+                hint_referral,
+                is_output_all,
+                offset=entry_offset,
+            )
+            end_time = time.perf_counter()
+            print(f"[Current Advanced Search] processing time: {(end_time - start_time):.6f} sec")
+
         # save total population number
         total_count = deepcopy(resp.ret_count)
 
@@ -508,7 +532,7 @@ class AdvancedSearchAPI(generics.GenericAPIView):
         serializer = AdvancedSearchResultSerializer(
             data={
                 "count": resp.ret_count,
-                "values": [x.dict() for x in resp.ret_values],
+                "values": [x.model_dump() for x in resp.ret_values],
                 "total_count": total_count,
             }
         )
