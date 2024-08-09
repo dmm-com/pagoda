@@ -1834,7 +1834,7 @@ class Entry(ACLBase):
         # update entry information to Elasticsearch
         self.register_es()
 
-    def clone(self, user: User, **extra_params) -> "Entry" | None:
+    def clone(self, user: User, **extra_params) -> Optional["Entry"]:
         if not user.has_permission(self, ACLType.Readable) or not user.has_permission(
             self.schema, ACLType.Readable
         ):
