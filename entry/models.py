@@ -51,7 +51,7 @@ class AttributeValue(models.Model):
     )
     created_time = models.DateTimeField(auto_now_add=True)
     created_user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
-    parent_attr = models.ForeignKey("Attribute", on_delete=models.DO_NOTHING)
+    parent_attr = models.ForeignKey("Attribute", related_name="values", on_delete=models.DO_NOTHING)
     status = models.IntegerField(default=0)
     boolean = models.BooleanField(default=False)
     date = models.DateField(null=True)
@@ -517,8 +517,6 @@ class AttributeValue(models.Model):
 
 
 class Attribute(ACLBase):
-    values = models.ManyToManyField(AttributeValue)
-
     # This parameter is needed to make a relationship with corresponding EntityAttr
     schema = models.ForeignKey(EntityAttr, on_delete=models.DO_NOTHING)
     parent_entry = models.ForeignKey("Entry", related_name="attrs", on_delete=models.DO_NOTHING)
@@ -785,7 +783,6 @@ class Attribute(ACLBase):
                 params["status"] |= AttributeValue.STATUS_DATA_ARRAY_PARENT
 
             attrv = AttributeValue.objects.create(**params)
-            self.values.add(attrv)
 
             return attrv
 
@@ -834,7 +831,6 @@ class Attribute(ACLBase):
                     "data_type": self.schema.type,
                 }
             )
-            self.values.add(attrv)
 
         return attrv
 
@@ -864,8 +860,6 @@ class Attribute(ACLBase):
             if self.is_array():
                 for co_attrv in attrv.data_array.all():
                     co_attrv.clone(user, parent_attr=cloned_attr, parent_attrv=new_attrv)
-
-            cloned_attr.values.add(new_attrv)
 
         return cloned_attr
 
@@ -1115,9 +1109,6 @@ class Attribute(ACLBase):
             _set_attrv(self.schema.type, value, attrv=attr_value)
 
         attr_value.save()
-
-        # append new AttributeValue
-        self.values.add(attr_value)
 
         # Clear the flag that means target AttrValues are latet from the Values
         # that are already created.
@@ -1549,8 +1540,6 @@ class Entry(ACLBase):
 
                 # Set status of parent data_array
                 attr_value.set_status(AttributeValue.STATUS_DATA_ARRAY_PARENT)
-
-                newattr.values.add(attr_value)
 
     # NOTE: Type-Read
     def get_available_attrs(self, user: User, permission=ACLType.Readable) -> list[dict[str, Any]]:

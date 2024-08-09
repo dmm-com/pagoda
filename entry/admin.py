@@ -69,7 +69,7 @@ class AttrValueResource(AironeModelResource):
         skip_unchanged = True
         instance_loader_class = CachedInstanceLoader
 
-    def after_save_instance(self, instance, using_transactions, dry_run):
+    def after_save_instance(self, instance: AttributeValue, using_transactions, dry_run):
         # If a new AttributeValue object is created,
         # this processing append it to the associated Entity object.
         self._saved_instance = None
@@ -88,7 +88,6 @@ class AttrValueResource(AironeModelResource):
             ):
                 # clear is_latest flag of old attrs and set it to new one.
                 instance.is_latest = True
-                attr.values.add(instance)
                 attr.unset_latest_flag(exclude_id=instance.id)
 
             # the case of leaf AttributeValue

@@ -152,8 +152,6 @@ class ModelTest(AironeTestCase):
         value = AttributeValue(value="hoge", created_user=self._user, parent_attr=self._attr)
         value.save()
 
-        self._attr.values.add(value)
-
         self.assertEqual(Attribute.objects.count(), 1)
         self.assertEqual(Attribute.objects.last().objtype, ACLObjType.EntryAttr)
         self.assertEqual(Attribute.objects.last().values.count(), 1)
@@ -259,16 +257,8 @@ class ModelTest(AironeTestCase):
     def test_attr_helper_of_attribute_with_string_values(self):
         self.assertTrue(self._attr.is_updated("hoge"))
 
-        self._attr.values.add(
-            AttributeValue.objects.create(
-                value="hoge", created_user=self._user, parent_attr=self._attr
-            )
-        )
-        self._attr.values.add(
-            AttributeValue.objects.create(
-                value="fuga", created_user=self._user, parent_attr=self._attr
-            )
-        )
+        AttributeValue.objects.create(value="hoge", created_user=self._user, parent_attr=self._attr)
+        AttributeValue.objects.create(value="fuga", created_user=self._user, parent_attr=self._attr)
 
         self.assertFalse(self._attr.is_updated("fuga"))
         self.assertTrue(self._attr.is_updated("hgoe"))
@@ -282,9 +272,7 @@ class ModelTest(AironeTestCase):
         entry = Entry.objects.create(name="_E", created_user=self._user, schema=entity)
 
         attr = self.make_attr("attr2", attrtype=AttrType.OBJECT, entity=entity, entry=entry)
-        attr.values.add(
-            AttributeValue.objects.create(referral=e1, created_user=self._user, parent_attr=attr)
-        )
+        AttributeValue.objects.create(referral=e1, created_user=self._user, parent_attr=attr)
 
         self.assertFalse(attr.is_updated(e1.id))
         self.assertTrue(attr.is_updated(e2.id))
@@ -307,8 +295,6 @@ class ModelTest(AironeTestCase):
         AttributeValue.objects.create(
             value="fuga", created_user=self._user, parent_attr=attr, parent_attrv=attr_value
         )
-
-        attr.values.add(attr_value)
 
         self.assertFalse(attr.is_updated(["hoge", "fuga"]))
         self.assertFalse(attr.is_updated(["fuga", "hoge"]))
@@ -337,8 +323,6 @@ class ModelTest(AironeTestCase):
         AttributeValue.objects.create(
             referral=e2, created_user=self._user, parent_attr=attr, parent_attrv=attr_value
         )
-
-        attr.values.add(attr_value)
 
         self.assertFalse(attr.is_updated([e1.id, e2.id]))
         self.assertFalse(attr.is_updated([e2.id, e1.id]))
@@ -375,8 +359,6 @@ class ModelTest(AironeTestCase):
             referral=e2, created_user=self._user, parent_attr=attr, parent_attrv=attr_value
         )
 
-        attr.values.add(attr_value)
-
         self.assertFalse(attr.is_updated([e1.id, e2.id]))
         e2.delete()
         self.assertTrue(attr.is_updated([e1.id, ""]))  # value=""
@@ -411,13 +393,11 @@ class ModelTest(AironeTestCase):
         # Check user id
         self.assertEqual(attr.created_user_id, self._complement_user.id)
 
-        attr.values.add(
-            AttributeValue.objects.create(
-                created_user=self._user,
-                parent_attr=attr,
-                value="hoge",
-                referral=ref_entry1,
-            )
+        AttributeValue.objects.create(
+            created_user=self._user,
+            parent_attr=attr,
+            value="hoge",
+            referral=ref_entry1,
         )
 
         self.assertFalse(attr.is_updated({"id": ref_entry1.id, "name": "hoge"}))
@@ -537,13 +517,11 @@ class ModelTest(AironeTestCase):
         self.assertIsNone(attrv.referral)
         self.assertIsNone(attrv.date)
 
-        attr.values.add(
-            AttributeValue.objects.create(
-                **{
-                    "created_user": self._user,
-                    "parent_attr": attr,
-                }
-            )
+        AttributeValue.objects.create(
+            **{
+                "created_user": self._user,
+                "parent_attr": attr,
+            }
         )
 
         # Checks default value
@@ -557,13 +535,11 @@ class ModelTest(AironeTestCase):
     def test_for_date_attr_and_value(self):
         attr = self.make_attr("attr_date", AttrType.DATE)
 
-        attr.values.add(
-            AttributeValue.objects.create(
-                **{
-                    "created_user": self._user,
-                    "parent_attr": attr,
-                }
-            )
+        AttributeValue.objects.create(
+            **{
+                "created_user": self._user,
+                "parent_attr": attr,
+            }
         )
 
         # Checks default value
@@ -658,18 +634,14 @@ class ModelTest(AironeTestCase):
 
         # make multiple value that refer 'entry' object
         [
-            attr.values.add(
-                AttributeValue.objects.create(
-                    created_user=self._user, parent_attr=attr, referral=entry1
-                )
+            AttributeValue.objects.create(
+                created_user=self._user, parent_attr=attr, referral=entry1
             )
             for _ in range(0, 10)
         ]
         # make a self reference value
-        attr.values.add(
-            AttributeValue.objects.create(
-                created_user=self._user, parent_attr=attr, referral=self._entry
-            )
+        AttributeValue.objects.create(
+            created_user=self._user, parent_attr=attr, referral=self._entry
         )
 
         # set another referral value to the 'attr_arr_ref' attr
@@ -745,10 +717,8 @@ class ModelTest(AironeTestCase):
             )
 
             # make a reference 'entry' object
-            attr.values.add(
-                AttributeValue.objects.create(
-                    created_user=self._user, parent_attr=attr, referral=self._entry
-                )
+            AttributeValue.objects.create(
+                created_user=self._user, parent_attr=attr, referral=self._entry
             )
 
         # This function checks that this get_referred_objects method only get
@@ -820,9 +790,7 @@ class ModelTest(AironeTestCase):
         attr = self.make_attr("attr_ref", attrtype=AttrType.OBJECT)
 
         # make a self reference value
-        attr.values.add(
-            AttributeValue.objects.create(created_user=self._user, parent_attr=attr, referral=entry)
-        )
+        AttributeValue.objects.create(created_user=self._user, parent_attr=attr, referral=entry)
 
         # set referral cache
         self.assertEqual(list(entry.get_referred_objects()), [self._entry])

@@ -2406,7 +2406,6 @@ class ViewTest(BaseViewTest):
                             )
 
             test_val.save()
-            test_attr.values.add(test_val)
             test_attr.save()
 
             resp = self.client.post(
@@ -3891,7 +3890,6 @@ class ViewTest(BaseViewTest):
                             )
 
             test_val.save()
-            test_attr.values.add(test_val)
             test_attr.save()
 
             test_entry.register_es()

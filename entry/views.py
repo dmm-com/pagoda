@@ -839,9 +839,6 @@ def revert_attrv(request, recv_data):
                 }
             )
 
-        # append cloned value to Attribute
-        attr.values.add(new_attrv)
-
         # clear all exsts latest flag
         attr.unset_latest_flag(exclude_id=new_attrv.id)
 

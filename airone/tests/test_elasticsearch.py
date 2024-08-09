@@ -328,8 +328,6 @@ class ElasticSearchTest(TestCase):
         attr_value = AttributeValue.objects.create(
             value="test_attr_value", created_user=self._user, parent_attr=attr
         )
-        attr.values.add(attr_value)
-        attr.save()
 
         res = {
             "hits": {
@@ -400,11 +398,9 @@ class ElasticSearchTest(TestCase):
             created_user=self._user,
             parent_entry=entry,
         )
-        attr_value = AttributeValue.objects.create(
+        AttributeValue.objects.create(
             value="test_attr_value", created_user=self._user, parent_attr=attr
         )
-        attr.values.add(attr_value)
-        attr.save()
 
         res = {
             "hits": {

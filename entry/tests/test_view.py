@@ -693,10 +693,7 @@ class ViewTest(AironeViewTest):
             attr = self.make_attr(name=attr_name, parent_entry=entry, created_user=user)
 
             for value in ["hoge", "fuga"]:
-                attr_value = AttributeValue(value=value, created_user=user, parent_attr=attr)
-                attr_value.save()
-
-                attr.values.add(attr_value)
+                AttributeValue.objects.create(value=value, created_user=user, parent_attr=attr)
 
         # with invalid entry-id
         resp = self.client.get(reverse("entry:edit", args=[entry.id]))
@@ -1203,10 +1200,7 @@ class ViewTest(AironeViewTest):
             attr = self.make_attr(name=attr_name, created_user=user, parent_entry=entry)
 
             for value in ["hoge", "fuga"]:
-                attr_value = AttributeValue(value=value, created_user=user, parent_attr=attr)
-                attr_value.save()
-
-                attr.values.add(attr_value)
+                AttributeValue.objects.create(value=value, created_user=user, parent_attr=attr)
 
         resp = self.client.get(reverse("entry:show", args=[entry.id]))
         self.assertEqual(resp.status_code, 200)
@@ -1228,10 +1222,7 @@ class ViewTest(AironeViewTest):
         entry = Entry.objects.create(name="old_entry", schema=self._entity, created_user=user)
 
         attr = entry.add_attribute_from_base(attr_base, user)
-        attr_value = AttributeValue.objects.create(
-            referral=entry, created_user=user, parent_attr=attr
-        )
-        attr.values.add(attr_value)
+        AttributeValue.objects.create(referral=entry, created_user=user, parent_attr=attr)
 
         new_entry = Entry.objects.create(name="new_entry", schema=self._entity, created_user=user)
 
@@ -1277,10 +1268,7 @@ class ViewTest(AironeViewTest):
         entry = Entry.objects.create(name="entry", schema=self._entity, created_user=user)
 
         attr = entry.add_attribute_from_base(attr_base, user)
-        attr_value = AttributeValue.objects.create(
-            referral=entry, created_user=user, parent_attr=attr
-        )
-        attr.values.add(attr_value)
+        AttributeValue.objects.create(referral=entry, created_user=user, parent_attr=attr)
 
         params = {
             "entry_name": "entry",
@@ -1318,7 +1306,6 @@ class ViewTest(AironeViewTest):
         attr_value = AttributeValue.objects.create(
             referral=entry, created_user=user, parent_attr=attr
         )
-        attr.values.add(attr_value)
 
         params = {
             "entry_name": entry.name,
@@ -1545,7 +1532,6 @@ class ViewTest(AironeViewTest):
                             )
 
             test_val.save()
-            test_attr.values.add(test_val)
             test_attr.save()
 
             resp = self.client.post(
