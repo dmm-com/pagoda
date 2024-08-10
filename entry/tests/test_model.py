@@ -3,6 +3,7 @@ from datetime import date, datetime, timezone
 from unittest import skip
 
 from django.conf import settings
+from django.db.models import Q
 
 from acl.models import ACLBase
 from airone.lib.acl import ACLObjType, ACLType
@@ -1158,23 +1159,21 @@ class ModelTest(AironeTestCase):
             {"name": "attr3", "is_public": False},
         ]
         for info in attr_infos:
-            self._entity.attrs.add(
-                EntityAttr.objects.create(
-                    **{
-                        "type": AttrType.STRING,
-                        "created_user": self._user,
-                        "parent_entity": self._entity,
-                        "name": info["name"],
-                        "is_public": info["is_public"],
-                    }
-                )
+            EntityAttr.objects.create(
+                **{
+                    "type": AttrType.STRING,
+                    "created_user": self._user,
+                    "parent_entity": self._entity,
+                    "name": info["name"],
+                    "is_public": info["is_public"],
+                }
             )
 
         entry = Entry.objects.create(name="entry", schema=self._entity, created_user=self._user)
         entry.complement_attrs(self._user)
 
-        # set Attribute attr2 is not public
-        entry.attrs.filter(schema__name="attr2").update(is_public=False)
+        # set Attribute's is not public except attr1
+        entry.attrs.filter(~Q(schema__name="attr1")).update(is_public=False)
 
         # checks that cloned entry doesn't have non-permitted attributes
         cloned_entry = entry.clone(self._user)

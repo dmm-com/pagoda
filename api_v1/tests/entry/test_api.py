@@ -178,8 +178,15 @@ class APITest(AironeViewTest):
                 }
             )
             attr.referral.add(entity_ref)
-            entity.attrs.add(attr)
-            entity2.attrs.add(attr)
+            attr2 = EntityAttr.objects.create(
+                **{
+                    "name": info["name"],
+                    "type": info["type"],
+                    "created_user": user,
+                    "parent_entity": entity2,
+                }
+            )
+            attr2.referral.add(entity_ref)
 
         # create referred entries
         refs = [
