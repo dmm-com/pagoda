@@ -4,7 +4,7 @@ from unittest import mock
 from django.urls import reverse
 
 from airone.lib.types import AttrType
-from entry.models import Entry
+from entry.services import AdvancedSearchService
 from role import tasks
 
 from .base import RoleTestBase
@@ -73,7 +73,7 @@ class ModelTest(RoleTestBase):
         )
 
         entry.register_es()
-        resp1 = Entry.search_entries(user, [entity.id], [{"name": "role"}])
+        resp1 = AdvancedSearchService.search_entries(user, [entity.id], [{"name": "role"}])
         self.assertEqual(resp1.ret_values[0].attrs["role"]["value"]["name"], "test_role")
 
         params = dict(
@@ -87,5 +87,5 @@ class ModelTest(RoleTestBase):
             json.dumps(params),
             "application/json",
         )
-        resp2 = Entry.search_entries(user, [entity.id], [{"name": "role"}])
+        resp2 = AdvancedSearchService.search_entries(user, [entity.id], [{"name": "role"}])
         self.assertEqual(resp2.ret_values[0].attrs["role"]["value"]["name"], "test_role_update")

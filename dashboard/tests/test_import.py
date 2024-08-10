@@ -10,6 +10,7 @@ from airone.lib.test import AironeViewTest
 from airone.lib.types import AttrType
 from entity.models import Entity, EntityAttr
 from entry.models import Attribute, AttributeValue, Entry
+from entry.services import AdvancedSearchService
 from user.models import User
 
 
@@ -180,7 +181,7 @@ class ImportTest(AironeViewTest):
         self.assertEqual(AttributeValue.objects.filter(is_latest=True).count(), 1 + 1 + 1 + 1)
 
         # checks that imported Entries were registered to the Elasticsearch
-        res = Entry.get_all_es_docs()
+        res = AdvancedSearchService.get_all_es_docs()
         self.assertEqual(res["hits"]["total"]["value"], Entry.objects.count())
 
     def test_import_entry_without_mandatory_values(self):

@@ -13,6 +13,7 @@ from entity.admin import EntityAttrResource, EntityResource
 from entity.models import Entity, EntityAttr
 from entry.admin import AttrResource, AttrValueResource, EntryResource
 from entry.models import AttributeValue, Entry
+from entry.services import AdvancedSearchService
 from entry.settings import CONFIG as CONFIG_ENTRY
 from job.models import Job, JobStatus
 
@@ -92,7 +93,7 @@ def do_import_data(request, context):
 
 def _search_by_keyword(query, entity_name, per_page, page_num):
     # correct entries that contans query at EntryName or AttributeValue
-    search_result = Entry.search_entries_for_simple(
+    search_result = AdvancedSearchService.search_entries_for_simple(
         query, entity_name, [], per_page, (page_num - 1) * per_page
     )
 
@@ -243,7 +244,7 @@ def advanced_search_result(request):
         "advanced_search_result.html",
         {
             "hint_attrs": hint_attrs,
-            "results": Entry.search_entries(
+            "results": AdvancedSearchService.search_entries(
                 request.user,
                 hint_entity_ids,
                 hint_attrs,

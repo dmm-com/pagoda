@@ -291,14 +291,14 @@ class AdvancedSearchServiceTest(AironeTestCase):
 
         # search entries with keyword for Role Attribute
         for role_attrname in ["role", "arr_role"]:
-            # call Entry.search_entries with invalid keyword
+            # call AdvancedSearchService.search_entries with invalid keyword
             self.assertEqual(
                 AdvancedSearchService.search_entries(
                     user, [entity.id], [{"name": "role", "keyword": "invalid-keyword"}]
                 ).ret_count,
                 0,
             )
-            # call Entry.search_entries with valid keyword
+            # call AdvancedSearchService.search_entries with valid keyword
             self.assertEqual(
                 AdvancedSearchService.search_entries(
                     user, [entity.id], [{"name": "role", "keyword": "rol"}]
@@ -316,7 +316,11 @@ class AdvancedSearchServiceTest(AironeTestCase):
             self.assertEqual(len([x for x in ret.ret_values if x.entry["id"] == entry.id]), 1)
 
         # check functionallity of the 'exact_match' parameter
-        ret = Entry.search_entries(user, [entity.id], [{"name": "str", "keyword": "foo-1"}])
+        ret = AdvancedSearchService.search_entries(
+            user,
+            [entity.id],
+            [{"name": "str", "keyword": "foo-1"}],
+        )
         self.assertEqual(ret.ret_count, 2)
         ret = AdvancedSearchService.search_entries(
             user,

@@ -1,4 +1,3 @@
-import logging
 from datetime import date, datetime, timezone
 from unittest import skip
 
@@ -7,12 +6,12 @@ from django.conf import settings
 from acl.models import ACLBase
 from airone.lib.acl import ACLObjType, ACLType
 from airone.lib.drf import ExceedLimitError
-from airone.lib.elasticsearch import AdvancedSearchResultValue, FilterKey
-from airone.lib.log import Logger
+from airone.lib.elasticsearch import AdvancedSearchResultValue
 from airone.lib.test import AironeTestCase
 from airone.lib.types import AttrType
 from entity.models import Entity, EntityAttr
 from entry.models import Attribute, AttributeValue, Entry
+from entry.services import AdvancedSearchService
 from entry.settings import CONFIG
 from group.models import Group
 from role.models import Role
@@ -1956,708 +1955,6 @@ class ModelTest(AironeTestCase):
         exported_data = entry.export_v2(user)
         self.assertIn({"name": "new_attr", "value": ""}, exported_data["attrs"])
 
-    def test_search_entries(self):
-        user = User.objects.create(username="hoge")
-
-        # create referred Entity and Entries
-        ref_entity = Entity.objects.create(name="Referred Entity", created_user=user)
-        ref_entry = Entry.objects.create(
-            name="referred_entry", schema=ref_entity, created_user=user
-        )
-        ref_group = Group.objects.create(name="group")
-        ref_role = Role.objects.create(name="role")
-
-        attr_info = {
-            "str": {"type": AttrType.STRING, "value": "foo-%d"},
-            "str2": {"type": AttrType.STRING, "value": "foo-%d"},
-            "obj": {"type": AttrType.OBJECT, "value": str(ref_entry.id)},
-            "name": {
-                "type": AttrType.NAMED_OBJECT,
-                "value": {"name": "bar", "id": str(ref_entry.id)},
-            },
-            "bool": {"type": AttrType.BOOLEAN, "value": True},
-            "group": {"type": AttrType.GROUP, "value": str(ref_group.id)},
-            "date": {"type": AttrType.DATE, "value": date(2018, 12, 31)},
-            "role": {"type": AttrType.ROLE, "value": str(ref_role.id)},
-            "arr_str": {
-                "type": AttrType.ARRAY_STRING,
-                "value": ["foo", "bar", "baz"],
-            },
-            "arr_obj": {
-                "type": AttrType.ARRAY_OBJECT,
-                "value": [str(x.id) for x in Entry.objects.filter(schema=ref_entity)],
-            },
-            "arr_name": {
-                "type": AttrType.ARRAY_NAMED_OBJECT,
-                "value": [{"name": "hoge", "id": str(ref_entry.id)}],
-            },
-            "arr_group": {"type": AttrType.ARRAY_GROUP, "value": [ref_group]},
-            "arr_role": {"type": AttrType.ARRAY_ROLE, "value": [ref_role]},
-            "datetime": {
-                "type": AttrType.DATETIME,
-                "value": datetime(2018, 12, 31, 12, 34, 56, tzinfo=timezone.utc),
-            },
-        }
-
-        entity = Entity.objects.create(name="entity", created_user=user)
-        for attr_name, info in attr_info.items():
-            attr = EntityAttr.objects.create(
-                name=attr_name,
-                type=info["type"],
-                created_user=user,
-                parent_entity=entity,
-            )
-
-            if info["type"] & AttrType.OBJECT:
-                attr.referral.add(ref_entity)
-
-            entity.attrs.add(attr)
-
-        for index in range(0, 11):
-            entry = Entry.objects.create(name="e-%d" % index, schema=entity, created_user=user)
-            entry.complement_attrs(user)
-
-            for attr_name, info in attr_info.items():
-                attr = entry.attrs.get(name=attr_name)
-                if attr_name == "str":
-                    attr.add_value(user, info["value"] % index)
-                elif attr_name == "str2":
-                    attr.add_value(user, info["value"] % (index + 100))
-                else:
-                    attr.add_value(user, info["value"])
-
-            entry.register_es()
-
-        # search entries
-        ret = Entry.search_entries(
-            user,
-            [entity.id],
-            [
-                {"name": "str"},
-                {"name": "str2"},
-                {"name": "obj"},
-                {"name": "name"},
-                {"name": "bool"},
-                {"name": "group"},
-                {"name": "date"},
-                {"name": "role"},
-                {"name": "arr_str"},
-                {"name": "arr_obj"},
-                {"name": "arr_name"},
-                {"name": "arr_group"},
-                {"name": "arr_role"},
-                {"name": "datetime"},
-            ],
-        )
-        self.assertEqual(ret.ret_count, 11)
-        self.assertEqual(len(ret.ret_values), 11)
-
-        # check returned contents is corrected
-        for v in ret.ret_values:
-            self.assertEqual(v.entity["id"], entity.id)
-            self.assertEqual(len(v.attrs), len(attr_info))
-
-            entry = Entry.objects.get(id=v.entry["id"])
-
-            for attrname, attrinfo in v.attrs.items():
-                attr = entry.attrs.get(schema__name=attrname)
-                attrv = attr.get_latest_value()
-
-                # checks accurate type parameters are stored
-                self.assertEqual(attrinfo["type"], attrv.data_type)
-
-                # checks accurate values are stored
-                if attrname == "str" or attrname == "str2":
-                    self.assertEqual(attrinfo["value"], attrv.value)
-
-                elif attrname == "obj":
-                    self.assertEqual(attrinfo["value"]["id"], attrv.referral.id)
-                    self.assertEqual(attrinfo["value"]["name"], attrv.referral.name)
-
-                elif attrname == "name":
-                    key = attrv.value
-                    self.assertEqual(attrinfo["value"][key]["id"], attrv.referral.id)
-                    self.assertEqual(attrinfo["value"][key]["name"], attrv.referral.name)
-
-                elif attrname == "bool":
-                    self.assertEqual(attrinfo["value"], attrv.boolean)
-
-                elif attrname == "date":
-                    self.assertEqual(attrinfo["value"], str(attrv.date))
-
-                elif attrname == "group":
-                    self.assertEqual(attrinfo["value"]["id"], attrv.group.id)
-                    self.assertEqual(attrinfo["value"]["name"], attrv.group.name)
-
-                elif attrname == "role":
-                    self.assertEqual(attrinfo["value"]["id"], attrv.role.id)
-                    self.assertEqual(attrinfo["value"]["name"], attrv.role.name)
-
-                elif attrname == "arr_str":
-                    self.assertEqual(
-                        sorted([x for x in attrinfo["value"]]),
-                        sorted([x.value for x in attrv.data_array.all()]),
-                    )
-
-                elif attrname == "arr_obj":
-                    self.assertEqual(
-                        [x["id"] for x in attrinfo["value"]],
-                        [x.referral.id for x in attrv.data_array.all()],
-                    )
-                    self.assertEqual(
-                        [x["name"] for x in attrinfo["value"]],
-                        [x.referral.name for x in attrv.data_array.all()],
-                    )
-
-                elif attrname == "arr_name":
-                    for co_attrv in attrv.data_array.all():
-                        _co_v = [x[co_attrv.value] for x in attrinfo["value"]]
-                        self.assertTrue(_co_v)
-                        self.assertEqual(_co_v[0]["id"], co_attrv.referral.id)
-                        self.assertEqual(_co_v[0]["name"], co_attrv.referral.name)
-
-                elif attrname == "arr_group":
-                    self.assertEqual(
-                        attrinfo["value"],
-                        [{"id": ref_group.id, "name": ref_group.name}],
-                    )
-
-                elif attrname == "arr_role":
-                    self.assertEqual(
-                        attrinfo["value"],
-                        [{"id": ref_role.id, "name": ref_role.name}],
-                    )
-
-                elif attrname == "datetime":
-                    self.assertEqual(attrinfo["value"], attrv.datetime.isoformat())
-
-                else:
-                    raise "Invalid result was happend (attrname: %s)" % attrname
-
-        # search entries with maximum entries to get
-        ret = Entry.search_entries(user, [entity.id], [{"name": "str"}], 5)
-        self.assertEqual(ret.ret_count, 11)
-        self.assertEqual(len(ret.ret_values), 5)
-
-        # search entries with keyword
-        ret = Entry.search_entries(user, [entity.id], [{"name": "str", "keyword": "foo-5"}])
-        self.assertEqual(ret.ret_count, 1)
-        self.assertEqual(ret.ret_values[0].entry["name"], "e-5")
-
-        # search entries with keyword for Role Attribute
-        for role_attrname in ["role", "arr_role"]:
-            # call Entry.search_entries with invalid keyword
-            self.assertEqual(
-                Entry.search_entries(
-                    user, [entity.id], [{"name": "role", "keyword": "invalid-keyword"}]
-                ).ret_count,
-                0,
-            )
-            # call Entry.search_entries with valid keyword
-            self.assertEqual(
-                Entry.search_entries(
-                    user, [entity.id], [{"name": "role", "keyword": "rol"}]
-                ).ret_count,
-                11,
-            )
-
-        # search entries with blank values
-        entry = Entry.objects.create(name="entry-blank", schema=entity, created_user=user)
-        entry.complement_attrs(user)
-        entry.register_es()
-
-        for attrname in attr_info.keys():
-            ret = Entry.search_entries(user, [entity.id], [{"name": attrname}])
-            self.assertEqual(len([x for x in ret.ret_values if x.entry["id"] == entry.id]), 1)
-
-        # check functionallity of the 'exact_match' parameter
-        ret = Entry.search_entries(user, [entity.id], [{"name": "str", "keyword": "foo-1"}])
-        self.assertEqual(ret.ret_count, 2)
-        ret = Entry.search_entries(
-            user,
-            [entity.id],
-            [{"name": "str", "keyword": "foo-1", "exact_match": True}],
-        )
-        self.assertEqual(ret.ret_count, 1)
-        self.assertEqual(ret.ret_values[0].entry["name"], "e-1")
-
-        # check functionallity of the 'entry_name' parameter
-        ret = Entry.search_entries(user, [entity.id], entry_name="e-1")
-        self.assertEqual(ret.ret_count, 2)
-
-        # check combination of 'entry_name' and 'hint_attrs' parameter
-        ret = Entry.search_entries(
-            user, [entity.id], [{"name": "str", "keyword": "foo-10"}], entry_name="e-1"
-        )
-        self.assertEqual(ret.ret_count, 1)
-
-        # check whether keyword would be insensitive case
-        ret = Entry.search_entries(user, [entity.id], [{"name": "str", "keyword": "FOO-10"}])
-        self.assertEqual(ret.ret_count, 1)
-        self.assertEqual(ret.ret_values[0].entry["name"], "e-10")
-
-        def _assert_result_full(attr, result):
-            if attr.type != AttrType.BOOLEAN:
-                # confirm "entry-black" Entry, which doesn't have any substantial Attribute values,
-                # doesn't exist on the result.
-                isin_entry_blank = any(
-                    [x.entry["name"] == "entry-blank" for x in result.ret_values]
-                )
-                self.assertFalse(isin_entry_blank)
-
-                # confirm Entries, which have substantial Attribute values, are returned
-                self.assertEqual(result.ret_count, 11)
-
-            else:
-                # both True and False value will be matched for boolean type Attribute
-                self.assertEqual(result.ret_count, 12)
-
-        # check to get Entries that only have substantial Attribute values
-        for attr in entity.attrs.filter(is_active=True):
-            result = Entry.search_entries(user, [entity.id], [{"name": attr.name, "keyword": "*"}])
-            _assert_result_full(attr, result)
-
-        # check to get Entries that only have substantial Attribute values with filter_key
-        for attr in entity.attrs.filter(is_active=True):
-            result = Entry.search_entries(
-                user,
-                [entity.id],
-                [
-                    {
-                        "name": attr.name,
-                        "keyword": "*",
-                        "filter_key": FilterKey.TEXT_CONTAINED,
-                    }
-                ],
-            )
-            _assert_result_full(attr, result)
-
-        # check to get Entries that only have substantial Attribute values
-        # with filter_key instead of keyword
-        for attr in entity.attrs.filter(is_active=True):
-            result = Entry.search_entries(
-                user,
-                [entity.id],
-                [
-                    {
-                        "name": attr.name,
-                        "filter_key": FilterKey.NON_EMPTY,
-                    }
-                ],
-            )
-            _assert_result_full(attr, result)
-
-        # check to get Entries that have empty Attribute values with filter_key instead of keyword
-        for attr in entity.attrs.filter(is_active=True):
-            result = Entry.search_entries(
-                user,
-                [entity.id],
-                [
-                    {
-                        "name": attr.name,
-                        "filter_key": FilterKey.EMPTY,
-                    }
-                ],
-            )
-            if attr.type == AttrType.BOOLEAN:
-                self.assertEqual(result.ret_count, 0)
-            else:
-                self.assertEqual(result.ret_count, 1)
-                self.assertEqual(result.ret_values[0].entry["name"], "entry-blank")
-
-        # check to get Entries with the "CLEARED" filter_key and keyword
-        for attr in entity.attrs.filter(is_active=True):
-            result = Entry.search_entries(
-                user,
-                [entity.id],
-                [
-                    {
-                        "name": attr.name,
-                        "keyword": "DO MATCH NOTHING",
-                        "filter_key": FilterKey.CLEARED,
-                    }
-                ],
-            )
-
-            # This expect to match anything
-            self.assertEqual(
-                result.ret_count, Entry.objects.filter(schema=entity, is_active=True).count()
-            )
-
-    def test_search_entries_with_duplicated_filter_key(self):
-        entity = self.create_entity_with_all_type_attributes(self._user)
-
-        # create Entries that have duplicated value at "str" attribute
-        [self.add_entry(self._user, "dup-%s" % i, entity, values={"str": "hoge"}) for i in range(2)]
-        [
-            self.add_entry(self._user, "dup-%s" % i, entity, values={"str": "fuga"})
-            for i in range(2, 4)
-        ]
-
-        # create Entries that don't have duplicated value at "str" attribute
-        [
-            self.add_entry(self._user, "non-dup-%d" % i, entity, values={"str": "fuga-%d" % i})
-            for i in range(2)
-        ]
-
-        # create Entries that have empty value
-        [self.add_entry(self._user, "empty-%d" % i, entity, values={"str": ""}) for i in range(2)]
-
-        result = Entry.search_entries(
-            self._user,
-            [entity.id],
-            [
-                {
-                    "name": "str",
-                    "filter_key": FilterKey.DUPLICATED,
-                },
-            ],
-        )
-        self.assertEqual(result.ret_count, 4)
-        self.assertEqual(
-            [x.entry["name"] for x in result.ret_values], ["dup-%s" % i for i in range(4)]
-        )
-
-    def test_search_entries_with_text_not_contained_filter_key(self):
-        entity = self.create_entity_with_all_type_attributes(self._user)
-
-        # some entries have "hoge" or "fuga" attribute value
-        [
-            self.add_entry(self._user, "hoge-%s" % i, entity, values={"str": "hoge"})
-            for i in range(3)
-        ]
-        [
-            self.add_entry(self._user, "fuga-%s" % i, entity, values={"str": "fuga"})
-            for i in range(2)
-        ]
-
-        # filter entries have "hoge"
-        result = Entry.search_entries(
-            self._user,
-            [entity.id],
-            [
-                {
-                    "name": "str",
-                    "keyword": "hoge",
-                    "filter_key": FilterKey.TEXT_NOT_CONTAINED,
-                },
-            ],
-        )
-
-        # check the result contains only entries don't have "hoge"
-        self.assertEqual(result.ret_count, 2)
-        self.assertEqual(
-            [x.entry["name"] for x in result.ret_values], ["fuga-%s" % i for i in range(2)]
-        )
-
-    def test_search_entries_with_hint_referral_entity(self):
-        user = User.objects.create(username="hoge")
-
-        # Initialize Entities and Entries which will be used in this test
-        ref_entity = self.create_entity(user, "Ref Entity")
-        ref_entry = self.add_entry(user, "Ref", ref_entity)
-        entity = self.create_entity(
-            user,
-            "Entity",
-            attrs=[
-                {
-                    "name": "ref",
-                    "type": AttrType.OBJECT,
-                }
-            ],
-        )
-        self.add_entry(user, "Entry", entity, values={"ref": ref_entry})
-
-        # get Entries that refer Entry which belongs to specified Entity
-        result = Entry.search_entries(
-            user,
-            [x.id for x in Entity.objects.filter(is_active=True)],
-            hint_referral_entity_id=entity.id,
-        )
-        self.assertEqual(result.ret_count, 1)
-        self.assertEqual(result.ret_values[0].entry["id"], ref_entry.id)
-
-    def test_search_entries_with_hint_referral(self):
-        user = User.objects.create(username="hoge")
-
-        # Initialize entities -- there are 2 entities as below
-        # * ReferredEntity - has no attribute
-        # * Entity - has an attribute that refers ReferredEntity
-        ref_entity = Entity.objects.create(name="Referred Entity", created_user=user)
-        entity = Entity.objects.create(name="Entity", created_user=user)
-        entity_attr = EntityAttr.objects.create(
-            name="attr_ref",
-            type=AttrType.OBJECT,
-            created_user=user,
-            parent_entity=entity,
-        )
-        entity_attr.referral.add(ref_entity)
-        entity.attrs.add(entity_attr)
-
-        # Initialize entries as below
-        ref_entries = [
-            Entry.objects.create(name="ref%d" % i, schema=ref_entity, created_user=user)
-            for i in range(3)
-        ]
-        for index in range(10):
-            entry = Entry.objects.create(name="e-%d" % index, schema=entity, created_user=user)
-            entry.complement_attrs(user)
-
-            # set referral entry (ref0, ref1) alternately
-            entry.attrs.first().add_value(user, ref_entries[index % 2])
-
-        for ref_entry in ref_entries:
-            ref_entry.register_es()
-
-        # call search_entries with 'hint_referral' parameter,
-        # then checks that result includes referral entries
-        ret = Entry.search_entries(user, [ref_entity.id], [], hint_referral="")
-        self.assertEqual(ret.ret_count, 3)
-        self.assertEqual(
-            sorted([x["id"] for x in ret.ret_values[0].referrals]),
-            sorted([x.id for x in ref_entries[0].get_referred_objects()]),
-        )
-
-        # call search_entries with 'hint_referral',
-        ret = Entry.search_entries(user, [ref_entity.id], [], hint_referral="e-")
-        self.assertEqual(ret.ret_count, 2)
-
-        # call search_entries with 'hint_referral' parameter as string,
-        # then checks that result includes referral entries that match specified referral name
-        ret = Entry.search_entries(user, [ref_entity.id], [], hint_referral="e-1")
-        self.assertEqual(ret.ret_count, 1)
-        self.assertEqual([x.entry["name"] for x in ret.ret_values], ["ref1"])
-
-        # call search_entries with 'hint_referral' parameter as name of entry
-        # which is not referred from any entries.
-        ret = Entry.search_entries(user, [ref_entity.id], [], hint_referral="hogefuga")
-        self.assertEqual(ret.ret_count, 0)
-
-        # call search_entries with 'backslash' in the 'hint_referral' parameter as entry of name
-        ret = Entry.search_entries(
-            user, [ref_entity.id], [], hint_referral=CONFIG.EMPTY_SEARCH_CHARACTER
-        )
-        self.assertEqual(ret.ret_count, 1)
-        self.assertEqual([x.entry["name"] for x in ret.ret_values], ["ref2"])
-
-        # call search_entries with 'asterisk' in the 'hint_referral' parameter as entry of name
-        ret = Entry.search_entries(user, [ref_entity.id], [], hint_referral=CONFIG.EXSIT_CHARACTER)
-        self.assertEqual(ret.ret_count, 2)
-
-    def test_search_entries_with_exclusive_attrs(self):
-        user = User.objects.create(username="hoge")
-        entity_info = {
-            "E1": [{"type": AttrType.STRING, "name": "foo"}],
-            "E2": [{"type": AttrType.STRING, "name": "bar"}],
-        }
-
-        entity_ids = []
-        for name, attrinfos in entity_info.items():
-            entity = Entity.objects.create(name=name, created_user=user)
-            entity_ids.append(entity.id)
-
-            for attrinfo in attrinfos:
-                entity.attrs.add(
-                    EntityAttr.objects.create(
-                        **{
-                            "name": attrinfo["name"],
-                            "type": attrinfo["type"],
-                            "created_user": user,
-                            "parent_entity": entity,
-                        }
-                    )
-                )
-
-            for i in [x for x in range(0, 5)]:
-                entry = Entry.objects.create(
-                    name="%s-%d" % (entity.name, i), schema=entity, created_user=user
-                )
-                entry.complement_attrs(user)
-
-                for attrinfo in attrinfos:
-                    attr = entry.attrs.get(schema__name=attrinfo["name"])
-                    attr.add_value(user, str(i))
-
-                entry.register_es()
-
-        # search entries by only attribute name and keyword without entity with exclusive attrs
-        ret = Entry.search_entries(
-            user,
-            entity_ids,
-            [{"name": "foo", "keyword": ""}, {"name": "bar", "keyword": ""}],
-        )
-        self.assertEqual(ret.ret_count, 10)
-        self.assertEqual(
-            sorted([x.entry["name"] for x in ret.ret_values]),
-            sorted(["E1-%d" % i for i in range(5)] + ["E2-%d" % i for i in range(5)]),
-        )
-
-        # search entries by only attribute name and keyword without entity
-        # with exclusive attrs and one keyword
-        ret = Entry.search_entries(
-            user,
-            entity_ids,
-            [{"name": "foo", "keyword": "3"}, {"name": "bar", "keyword": ""}],
-        )
-        self.assertEqual(ret.ret_count, 1)
-        self.assertEqual(sorted([x.entry["name"] for x in ret.ret_values]), sorted(["E1-3"]))
-
-        # search entries by only attribute name and keyword without entity
-        # with exclusive hint attrs and keywords
-        ret = Entry.search_entries(
-            user,
-            entity_ids,
-            [{"name": "foo", "keyword": "3"}, {"name": "bar", "keyword": "3"}],
-        )
-        self.assertEqual(ret.ret_count, 0)
-
-    def test_search_entries_about_insensitive_case(self):
-        user = User.objects.create(username="hoge")
-
-        entity = Entity.objects.create(name="Entity", created_user=user)
-        entry = Entry.objects.create(name="Foo", schema=entity, created_user=user)
-        entry.register_es()
-
-        # This checks entry_name parameter would be insensitive case
-        for name in ["foo", "fOO", "OO", "f"]:
-            resp = Entry.search_entries(user, [entity.id], entry_name=name)
-            self.assertEqual(resp.ret_count, 1)
-            self.assertEqual(resp.ret_values[0].entry["id"], entry.id)
-
-    def test_search_entries_with_deleted_hint(self):
-        # This call search_entries with hint_attrs that contains values which specify
-        # entry name that has already deleted.
-
-        # Initialize entities -- there are 2 entities as below
-        # * ReferredEntity - has no attribute
-        # * Entity - has an attribute that refers ReferredEntity
-        ref_entity = Entity.objects.create(name="ReferredEntity", created_user=self._user)
-        ref_entries = [
-            Entry.objects.create(name="ref-%d" % i, schema=ref_entity, created_user=self._user)
-            for i in range(4)
-        ]
-
-        entity = Entity.objects.create(name="Entity", created_user=self._user)
-        ref_info = {
-            "ref": {
-                "type": AttrType.OBJECT,
-                "value": ref_entries[0],
-                "expected_value": {"name": "", "id": ""},
-            },
-            "name": {
-                "type": AttrType.NAMED_OBJECT,
-                "value": {"name": "hoge", "id": ref_entries[1]},
-                "expected_value": {"hoge": {"name": "", "id": ""}},
-            },
-            "arr_ref": {
-                "type": AttrType.ARRAY_OBJECT,
-                "value": [ref_entries[2]],
-                "expected_value": [],
-            },
-            "arr_name": {
-                "type": AttrType.ARRAY_NAMED_OBJECT,
-                "value": [{"name": "hoge", "id": ref_entries[3]}],
-                "expected_value": [],
-            },
-        }
-        for attr_name, info in ref_info.items():
-            entity_attr = EntityAttr.objects.create(
-                name=attr_name,
-                type=info["type"],
-                created_user=self._user,
-                parent_entity=entity,
-            )
-            entity_attr.referral.add(ref_entity)
-            entity.attrs.add(entity_attr)
-
-        # Initialize an entry that refers 'ref' entry which will be deleted later
-        entry = Entry.objects.create(name="ent", schema=entity, created_user=self._user)
-        entry.complement_attrs(self._user)
-        for attr_name, info in ref_info.items():
-            attr = entry.attrs.get(name=attr_name)
-            attr.add_value(self._user, info["value"])
-
-        # Finally, register this created entry to Elasticsearch
-        entry.register_es()
-
-        # delete each referred entries from 'ent' entry
-        for ent in ref_entries:
-            ent.delete()
-
-        # Check search result when each referred entries which is specified in the hint still exist
-        for attr_name in ref_info.keys():
-            # Check search result without keyword of hint_attrs
-            hint_attr = {"name": attr_name, "keyword": ""}
-            ret = Entry.search_entries(self._user, [entity.id], hint_attrs=[hint_attr])
-            self.assertEqual(ret.ret_count, 1)
-            self.assertEqual(len(ret.ret_values[0].attrs), 1)
-
-            for _name, _info in ret.ret_values[0].attrs.items():
-                self.assertTrue(_name in ref_info)
-                self.assertEqual(_info["value"], ref_info[_name]["expected_value"])
-
-            hint_attr = {"name": attr_name, "keyword": "ref"}
-            ret = Entry.search_entries(self._user, [entity.id], hint_attrs=[hint_attr])
-            self.assertEqual(ret.ret_count, 0)
-            self.assertEqual(ret.ret_values, [])
-
-    def test_search_entries_for_priviledged_ones(self):
-        user = User.objects.create(username="test-user")
-
-        ref_entity = self.create_entity(user, "Ref Entity", is_public=False)
-        ref_entry = self.add_entry(user, "Ref", ref_entity)
-        entity = self.create_entity(
-            user,
-            "Entity",
-            attrs=[
-                {
-                    "name": "ref",
-                    "type": AttrType.OBJECT,
-                }
-            ],
-            is_public=False,
-        )
-        entry = self.add_entry(user, "Entry", entity, values={"ref": ref_entry})
-
-        ret = Entry.search_entries(user, [entity.id])
-        self.assertEqual(ret.ret_count, 0)
-        self.assertEqual(ret.ret_values, [])
-
-        ret = Entry.search_entries(None, [entity.id])
-        self.assertEqual(ret.ret_count, 1)
-        self.assertEqual(
-            ret.ret_values[0].entry,
-            {
-                "name": entry.name,
-                "id": entry.id,
-            },
-        )
-
-    def test_search_entries_with_regex_hint_attrs(self):
-        user = User.objects.create(username="hoge")
-
-        entity = Entity.objects.create(name="entity", created_user=user)
-        attr = EntityAttr.objects.create(
-            name="attr",
-            type=AttrType.STRING,
-            created_user=user,
-            parent_entity=entity,
-        )
-        entity.attrs.add(attr)
-
-        for value in ["100", "101", "200"]:
-            entry = Entry.objects.create(name=value, schema=entity, created_user=user)
-            entry.complement_attrs(user)
-            entry.attrs.get(schema=attr).add_value(user, value)
-            entry.register_es()
-
-        resp = Entry.search_entries(user, [entity.id], [{"name": attr.name, "keyword": "^10"}])
-        self.assertEqual(resp.ret_count, 2)
-        resp = Entry.search_entries(user, [entity.id], [{"name": attr.name, "keyword": "00$"}])
-        self.assertEqual(resp.ret_count, 2)
-        resp = Entry.search_entries(user, [entity.id], [{"name": attr.name, "keyword": "^100$"}])
-        self.assertEqual(resp.ret_count, 1)
-
     def test_register_entry_to_elasticsearch(self):
         ENTRY_COUNTS = 10
         user = User.objects.create(username="hoge")
@@ -2739,7 +2036,7 @@ class ModelTest(AironeTestCase):
             entry.register_es()
 
         # checks that all entries are registered to the ElasticSearch.
-        res = Entry.get_all_es_docs()
+        res = AdvancedSearchService.get_all_es_docs()
         self.assertEqual(res["hits"]["total"]["value"], ENTRY_COUNTS + 2)
 
         # checks that all registered entries can be got from Elasticsearch
@@ -2820,7 +2117,7 @@ class ModelTest(AironeTestCase):
         entry.delete()
 
         # Total count is one less than initial value.
-        res = Entry.get_all_es_docs()
+        res = AdvancedSearchService.get_all_es_docs()
         self.assertEqual(res["hits"]["total"]["value"], ENTRY_COUNTS + 1)
         res = self._es.get(
             index=settings.ES_CONFIG["INDEX_NAME"],
@@ -2839,7 +2136,7 @@ class ModelTest(AironeTestCase):
         # register entry information to the Elasticsearch
         entry.register_es()
 
-        ret = Entry.search_entries(user, [entity.id], [])
+        ret = AdvancedSearchService.search_entries(user, [entity.id], [])
         self.assertEqual(ret.ret_count, 1)
         self.assertEqual(
             [x.entry for x in ret.ret_values],
@@ -2849,7 +2146,7 @@ class ModelTest(AironeTestCase):
         # unregister entry information from the Elasticsearch
         entry.unregister_es()
 
-        ret = Entry.search_entries(user, [entity.id], [])
+        ret = AdvancedSearchService.search_entries(user, [entity.id], [])
         self.assertEqual(ret.ret_count, 0)
         self.assertEqual(ret.ret_values, [])
 
@@ -2969,7 +2266,7 @@ class ModelTest(AironeTestCase):
 
         # search entries of entity1 from Elasticsearch and checks that the entreis of non entity1
         # are not returned.
-        resp = Entry.search_entries(user, [entities[0].id], [{"name": "attr-0"}])
+        resp = AdvancedSearchService.search_entries(user, [entities[0].id], [{"name": "attr-0"}])
         self.assertEqual(resp.ret_count, 3)
         self.assertTrue(all([x.entity["id"] == entities[0].id for x in resp.ret_values]))
 
@@ -2980,15 +2277,19 @@ class ModelTest(AironeTestCase):
         )
 
         # checks ret_count counts number of entries whatever attribute contidion was changed
-        resp = Entry.search_entries(
+        resp = AdvancedSearchService.search_entries(
             user, [entities[0].id], [{"name": "attr-0"}, {"name": "attr-1"}]
         )
         self.assertEqual(resp.ret_count, 3)
-        resp = Entry.search_entries(user, [entities[0].id, entities[1].id], [{"name": "attr-0"}])
+        resp = AdvancedSearchService.search_entries(
+            user, [entities[0].id, entities[1].id], [{"name": "attr-0"}]
+        )
         self.assertEqual(resp.ret_count, 6)
 
         # checks results that contain multi-byte values could be got
-        resp = Entry.search_entries(user, [entities[0].id], [{"name": "ほげ", "keyword": "ふが"}])
+        resp = AdvancedSearchService.search_entries(
+            user, [entities[0].id], [{"name": "ほげ", "keyword": "ふが"}]
+        )
         self.assertEqual(resp.ret_count, 2)
         self.assertEqual(
             sorted([x.entry["name"] for x in resp.ret_values]),
@@ -2996,7 +2297,7 @@ class ModelTest(AironeTestCase):
         )
 
         # search entries with date keyword parameter in string type from Elasticsearch
-        resp = Entry.search_entries(
+        resp = AdvancedSearchService.search_entries(
             user, [entities[0].id], [{"name": "attr-0", "keyword": "2018/01/01"}]
         )
         self.assertEqual(resp.ret_count, 1)
@@ -3005,7 +2306,7 @@ class ModelTest(AironeTestCase):
 
         # search entries with date keyword parameter in date type from Elasticsearch
         for x in ["2018-01-02", "2018/01/02", "2018-1-2", "2018-01-2", "2018-1-02"]:
-            resp = Entry.search_entries(
+            resp = AdvancedSearchService.search_entries(
                 user, [entities[0].id], [{"name": "attr-date", "keyword": x}]
             )
             self.assertEqual(resp.ret_count, 1)
@@ -3013,7 +2314,7 @@ class ModelTest(AironeTestCase):
             self.assertEqual(resp.ret_values[0].attrs["attr-date"]["value"], "2018-01-02")
 
         # search entries with date keyword parameter in string array type from Elasticsearch
-        resp = Entry.search_entries(
+        resp = AdvancedSearchService.search_entries(
             user, [entities[0].id], [{"name": "attr-arr", "keyword": "2018/01/01"}]
         )
         self.assertEqual(resp.ret_count, 1)
@@ -3021,12 +2322,14 @@ class ModelTest(AironeTestCase):
         self.assertEqual(resp.ret_values[0].attrs["attr-arr"]["value"], ["2018/01/01"])
 
         # search entries with keyword parameter that other entry has same value in untarget attr
-        resp = Entry.search_entries(user, [entities[0].id], [{"name": "attr-0", "keyword": "hoge"}])
+        resp = AdvancedSearchService.search_entries(
+            user, [entities[0].id], [{"name": "attr-0", "keyword": "hoge"}]
+        )
         self.assertEqual(resp.ret_count, 1)
         self.assertEqual(resp.ret_values[0].entry["name"], "entry2")
 
         # search entries with keyword parameter which is array type
-        resp = Entry.search_entries(
+        resp = AdvancedSearchService.search_entries(
             user, [entities[0].id], [{"name": "attr-arr", "keyword": "hoge"}]
         )
         self.assertEqual(resp.ret_count, 1)
@@ -3039,7 +2342,7 @@ class ModelTest(AironeTestCase):
         # search entries with an invalid or unmatch date keyword parameter in date type
         # from Elasticsearch
         for x in ["2018/02/01", "hoge"]:
-            resp = Entry.search_entries(
+            resp = AdvancedSearchService.search_entries(
                 user, [entities[0].id], [{"name": "attr-date", "keyword": x}]
             )
             self.assertEqual(resp.ret_count, 0)
@@ -3075,7 +2378,9 @@ class ModelTest(AironeTestCase):
 
             entry.register_es()
 
-        resp = Entry.search_entries(user, [entity.id], [{"name": "foo", "keyword": "ref"}], limit=5)
+        resp = AdvancedSearchService.search_entries(
+            user, [entity.id], [{"name": "foo", "keyword": "ref"}], limit=5
+        )
         self.assertEqual(resp.ret_count, 10)
         self.assertEqual(len(resp.ret_values), 5)
 
@@ -3104,13 +2409,15 @@ class ModelTest(AironeTestCase):
                 e = Entry.objects.create(name="entry-%d" % i, created_user=user, schema=entity)
                 e.register_es()
 
-        resp = Entry.search_entries(user, entities, [{"name": "foo"}])
+        resp = AdvancedSearchService.search_entries(user, entities, [{"name": "foo"}])
         self.assertEqual(resp.ret_count, 5)
 
-        resp = Entry.search_entries(user, entities, [{"name": x} for x in ["foo", "hoge"]])
+        resp = AdvancedSearchService.search_entries(
+            user, entities, [{"name": x} for x in ["foo", "hoge"]]
+        )
         self.assertEqual(resp.ret_count, 10)
 
-        resp = Entry.search_entries(user, entities, [{"name": x} for x in ["bar"]])
+        resp = AdvancedSearchService.search_entries(user, entities, [{"name": x} for x in ["bar"]])
         self.assertEqual(resp.ret_count, 10)
         for name in entity_info.keys():
             self.assertEqual(len([x for x in resp.ret_values if x.entity["name"] == name]), 5)
@@ -3132,7 +2439,7 @@ class ModelTest(AironeTestCase):
             e2.register_es()
 
         # search
-        resp = Entry.search_entries(user, [entity.id], entry_name="AAA")
+        resp = AdvancedSearchService.search_entries(user, [entity.id], entry_name="AAA")
 
         # 6 results should be returned
         self.assertEqual(resp.ret_count, 6)
@@ -3169,13 +2476,17 @@ class ModelTest(AironeTestCase):
             entry.register_es()
 
         # search entry that have AttributeValue exact matches with specified date.
-        ret = Entry.search_entries(user, [entity.id], [{"name": "date", "keyword": "2018/01/01"}])
+        ret = AdvancedSearchService.search_entries(
+            user, [entity.id], [{"name": "date", "keyword": "2018/01/01"}]
+        )
         self.assertEqual(len(ret.ret_values), 1)
         self.assertEqual(ret.ret_values[0].entry["name"], "entry-1")
 
         # The case of using condition 'less thatn',
         # this expects that entry-2 and entry-3 are matched
-        ret = Entry.search_entries(user, [entity.id], [{"name": "date", "keyword": ">2018-01-01"}])
+        ret = AdvancedSearchService.search_entries(
+            user, [entity.id], [{"name": "date", "keyword": ">2018-01-01"}]
+        )
         self.assertEqual(len(ret.ret_values), 2)
         self.assertEqual(
             sorted([x.entry["name"] for x in ret.ret_values]),
@@ -3184,7 +2495,9 @@ class ModelTest(AironeTestCase):
 
         # The case of using condition 'greater thatn',
         # this expects that entry-1 and entry-2 are matched
-        ret = Entry.search_entries(user, [entity.id], [{"name": "date", "keyword": "<2018-03-01"}])
+        ret = AdvancedSearchService.search_entries(
+            user, [entity.id], [{"name": "date", "keyword": "<2018-03-01"}]
+        )
         self.assertEqual(len(ret.ret_values), 2)
         self.assertEqual(
             sorted([x.entry["name"] for x in ret.ret_values]),
@@ -3192,14 +2505,14 @@ class ModelTest(AironeTestCase):
         )
 
         # The case of using both conditions, this expects that only entry-2 is matched
-        ret = Entry.search_entries(
+        ret = AdvancedSearchService.search_entries(
             user, [entity.id], [{"name": "date", "keyword": "<2018-03-01 >2018-01-01"}]
         )
         self.assertEqual(len(ret.ret_values), 1)
         self.assertEqual(ret.ret_values[0].entry["name"], "entry-2")
 
         # The same case of before one, but date format of keyward was changed
-        ret = Entry.search_entries(
+        ret = AdvancedSearchService.search_entries(
             user, [entity.id], [{"name": "date", "keyword": "<2018/03/01 >2018/01/01"}]
         )
         self.assertEqual(len(ret.ret_values), 1)
@@ -3634,7 +2947,7 @@ class ModelTest(AironeTestCase):
         self.assertEqual(ref_entry.name, "ref_entry")
         self.assertTrue(all([attr.is_active for attr in ref_entry.attrs.all()]))
 
-        ret = Entry.search_entries(self._user, [entity.id], [{"name": "obj"}])
+        ret = AdvancedSearchService.search_entries(self._user, [entity.id], [{"name": "obj"}])
         self.assertEqual(ret.ret_values[0].entry["name"], "entry")
         self.assertEqual(ret.ret_values[0].attrs["obj"]["value"]["name"], "ref_entry")
         self.assertEqual(ret.ret_values[1].entry["name"], "ref_entry")
@@ -4107,7 +3420,7 @@ class ModelTest(AironeTestCase):
 
         # search entries with empty_search_character
         for attr_name, info in attr_info.items():
-            ret = Entry.search_entries(
+            ret = AdvancedSearchService.search_entries(
                 user,
                 [entity.id],
                 [{"name": attr_name, "keyword": CONFIG.EMPTY_SEARCH_CHARACTER}],
@@ -4123,7 +3436,7 @@ class ModelTest(AironeTestCase):
         )
 
         for attr_name, info in attr_info.items():
-            ret = Entry.search_entries(
+            ret = AdvancedSearchService.search_entries(
                 user,
                 [entity.id],
                 [{"name": attr_name, "keyword": double_empty_search_character}],
@@ -4131,14 +3444,18 @@ class ModelTest(AironeTestCase):
             self.assertEqual(ret.ret_count, 0)
 
         # check functionallity of the 'entry_name' parameter
-        ret = Entry.search_entries(user, [entity.id], entry_name=CONFIG.EMPTY_SEARCH_CHARACTER)
+        ret = AdvancedSearchService.search_entries(
+            user, [entity.id], entry_name=CONFIG.EMPTY_SEARCH_CHARACTER
+        )
         self.assertEqual(ret.ret_count, 1)
 
-        ret = Entry.search_entries(user, [entity.id], entry_name=double_empty_search_character)
+        ret = AdvancedSearchService.search_entries(
+            user, [entity.id], entry_name=double_empty_search_character
+        )
         self.assertEqual(ret.ret_count, 0)
 
         # check combination of 'entry_name' and 'hint_attrs' parameter
-        ret = Entry.search_entries(
+        ret = AdvancedSearchService.search_entries(
             user,
             [entity.id],
             [{"name": "str", "keyword": CONFIG.EMPTY_SEARCH_CHARACTER}],
@@ -4367,7 +3684,9 @@ class ModelTest(AironeTestCase):
 
         for x in test_suites:
             for test_suite in x:
-                ret = Entry.search_entries(user, [entity.id], test_suite["search_word"])
+                ret = AdvancedSearchService.search_entries(
+                    user, [entity.id], test_suite["search_word"]
+                )
                 self.assertEqual(ret.ret_count, test_suite["ret_cnt"])
 
     def test_search_entries_entry_name(self):
@@ -4385,7 +3704,7 @@ class ModelTest(AironeTestCase):
 
         search_words = {"foo": 1, "bar&baz": 1, "foo|bar": 3, "foo|bar&baz": 2}
         for word, count in search_words.items():
-            ret = Entry.search_entries(user, [entity.id], entry_name=word)
+            ret = AdvancedSearchService.search_entries(user, [entity.id], entry_name=word)
             self.assertEqual(ret.ret_count, count)
 
     def test_search_entries_get_regex_pattern(self):
@@ -4435,7 +3754,9 @@ class ModelTest(AironeTestCase):
             )
 
         for test_suite in test_suites:
-            ret = Entry.search_entries(user, [entity.id], entry_name=test_suite["search_word"])
+            ret = AdvancedSearchService.search_entries(
+                user, [entity.id], entry_name=test_suite["search_word"]
+            )
             self.assertEqual(ret.ret_count, test_suite["ret_cnt"])
             self.assertEqual(ret.ret_values[0].entry["name"], test_suite["ret_entry_name"])
 
@@ -4443,13 +3764,15 @@ class ModelTest(AironeTestCase):
         self._entity.attrs.add(self._attr.schema)
         self._entry.attrs.first().add_value(self._user, "hoge")
         self._entry.register_es()
-        ret = Entry.search_entries(self._user, [self._entity.id], is_output_all=True)
+        ret = AdvancedSearchService.search_entries(
+            self._user, [self._entity.id], is_output_all=True
+        )
         self.assertEqual(
             ret.ret_values[0].attrs,
             {"attr": {"value": "hoge", "is_readable": True, "type": 2}},
         )
 
-        ret = Entry.search_entries(
+        ret = AdvancedSearchService.search_entries(
             self._user,
             [self._entity.id],
             [{"name": "attr", "keyword": "^ge"}],
@@ -4462,7 +3785,7 @@ class ModelTest(AironeTestCase):
             self._user, "test_entity", [{"name": "attr", "type": AttrType.STRING}]
         )
         self.add_entry(self._user, "test_entry", test_entity, {"attr": "fuga"})
-        ret = Entry.search_entries(
+        ret = AdvancedSearchService.search_entries(
             self._user, [self._entity.id, test_entity.id], is_output_all=True
         )
         self.assertEqual(
@@ -4491,129 +3814,22 @@ class ModelTest(AironeTestCase):
             for num in range(5):
                 self.add_entry(self._user, "Entry%d" % num, entity)
 
-        ret = Entry.search_entries(self._user, [entities[0]], [{"name": "test"}], limit=2, offset=2)
+        ret = AdvancedSearchService.search_entries(
+            self._user, [entities[0]], [{"name": "test"}], limit=2, offset=2
+        )
         self.assertEqual(ret.ret_count, 5)
         self.assertEqual(
             [{x.entity["name"]: x.entry["name"]} for x in ret.ret_values],
             [{"Entity0": "Entry2"}, {"Entity0": "Entry3"}],
         )
 
-        ret = Entry.search_entries(self._user, entities, [{"name": "test"}], limit=2, offset=4)
+        ret = AdvancedSearchService.search_entries(
+            self._user, entities, [{"name": "test"}], limit=2, offset=4
+        )
         self.assertEqual(ret.ret_count, 15)
         self.assertEqual(
             [{x.entity["name"]: x.entry["name"]} for x in ret.ret_values],
             [{"Entity0": "Entry4"}, {"Entity1": "Entry0"}],
-        )
-
-    def test_search_entries_for_simple(self):
-        self._entity.attrs.add(self._attr.schema)
-        self._entry.attrs.first().add_value(self._user, "hoge")
-        self._entry.register_es()
-
-        # search by Entry name
-        ret = Entry.search_entries_for_simple("entry")
-        self.assertEqual(ret["ret_count"], 1)
-        self.assertEqual(
-            ret["ret_values"][0],
-            {
-                "id": str(self._entry.id),
-                "name": self._entry.name,
-                "schema": {"id": self._entry.schema.id, "name": self._entry.schema.name},
-            },
-        )
-
-        # search by AttributeValue
-        ret = Entry.search_entries_for_simple("hoge")
-        self.assertEqual(ret["ret_count"], 1)
-        self.assertEqual(
-            ret["ret_values"][0],
-            {
-                "id": str(self._entry.id),
-                "name": self._entry.name,
-                "schema": {"id": self._entry.schema.id, "name": self._entry.schema.name},
-                "attr": self._attr.schema.name,
-            },
-        )
-
-    def test_search_entries_for_simple_with_special_characters(self):
-        ret = Entry.search_entries_for_simple("&")
-        self.assertEqual(ret["ret_count"], 0)
-
-    def test_search_entries_for_simple_with_hint_entity_name(self):
-        self._entry.register_es()
-        entity = Entity.objects.create(name="entity2", created_user=self._user)
-        entry = Entry.objects.create(name="entry2", schema=entity, created_user=self._user)
-        entry.register_es()
-
-        ret = Entry.search_entries_for_simple("entry")
-        self.assertEqual(ret["ret_count"], 2)
-        self.assertEqual([x["name"] for x in ret["ret_values"]], ["entry", "entry2"])
-
-        ret = Entry.search_entries_for_simple("entry", "entity")
-        self.assertEqual(ret["ret_count"], 1)
-        self.assertEqual([x["name"] for x in ret["ret_values"]], ["entry"])
-
-    def test_search_entries_for_simple_with_exclude_entity_names(self):
-        self._entry.register_es()
-        entity = Entity.objects.create(name="entity2", created_user=self._user)
-        entry = Entry.objects.create(name="entry2", schema=entity, created_user=self._user)
-        entry.register_es()
-
-        ret = Entry.search_entries_for_simple("entry")
-        self.assertEqual(ret["ret_count"], 2)
-        self.assertEqual([x["name"] for x in ret["ret_values"]], ["entry", "entry2"])
-
-        ret = Entry.search_entries_for_simple("entry", exclude_entity_names=["entity"])
-        self.assertEqual(ret["ret_count"], 1)
-        self.assertEqual([x["name"] for x in ret["ret_values"]], ["entry2"])
-
-    def test_search_entries_for_simple_with_limit_offset(self):
-        for i in range(0, 10):
-            entry = Entry.objects.create(
-                name="e-%s" % i, schema=self._entity, created_user=self._user
-            )
-            entry.register_es()
-
-        ret = Entry.search_entries_for_simple("e-", limit=5)
-        self.assertEqual(ret["ret_count"], 10)
-        self.assertEqual([x["name"] for x in ret["ret_values"]], ["e-%s" % x for x in range(0, 5)])
-
-        ret = Entry.search_entries_for_simple("e-", offset=5)
-        self.assertEqual(ret["ret_count"], 10)
-        self.assertEqual([x["name"] for x in ret["ret_values"]], ["e-%s" % x for x in range(5, 10)])
-
-        # param larger than max_result_window
-        ret = Entry.search_entries_for_simple("e-", limit=500001)
-        self.assertEqual(ret["ret_count"], 0)
-        self.assertEqual(ret["ret_values"], [])
-
-        ret = Entry.search_entries_for_simple("e-", offset=500001)
-        self.assertEqual(ret["ret_count"], 0)
-        self.assertEqual(ret["ret_values"], [])
-
-    def test_search_entries_for_simple_with_sort(self):
-        entry = Entry.objects.create(name="[entry]", schema=self._entity, created_user=self._user)
-        entry.register_es()
-        self._entry.register_es()
-
-        ret = Entry.search_entries_for_simple("entry")
-        self.assertEqual(
-            ret,
-            {
-                "ret_count": 2,
-                "ret_values": [
-                    {
-                        "id": str(self._entry.id),
-                        "name": "entry",
-                        "schema": {"id": self._entity.id, "name": "entity"},
-                    },
-                    {
-                        "id": str(entry.id),
-                        "name": "[entry]",
-                        "schema": {"id": self._entity.id, "name": "entity"},
-                    },
-                ],
-            },
         )
 
     def test_get_es_document(self):
@@ -4723,7 +3939,7 @@ class ModelTest(AironeTestCase):
         entry = Entry.objects.create(name="entry", schema=entity, created_user=self._user)
 
         entry.register_es()
-        result = Entry.search_entries(
+        result = AdvancedSearchService.search_entries(
             self._user, [entity.id], entry_name="entry", is_output_all=True
         )
         self.assertEqual(
@@ -5769,94 +4985,6 @@ class ModelTest(AironeTestCase):
         ret = entry.check_duplication_entry_at_restoring(entry_chain=[])
         self.assertFalse(ret)
 
-    def test_update_documents(self):
-        all_attr_entity = self.create_entity_with_all_type_attributes(self._user)
-        all_attr_entry = Entry.objects.create(
-            name="all_attr_entry", created_user=self._user, schema=all_attr_entity
-        )
-        all_attr_entry.complement_attrs(self._user)
-
-        # register
-        with self.assertLogs(logger=Logger, level=logging.WARNING) as warning_log:
-            Entry.update_documents(all_attr_entity)
-
-        self.assertTrue(
-            warning_log.output[0],
-            "WARNING:airone:Update elasticsearch document (entry_id: %s)" % all_attr_entry.id,
-        )
-
-        res = Entry.search_entries(self._user, [all_attr_entity.id], is_output_all=True)
-        self.assertEqual(res.ret_count, 1)
-        self.assertEqual(
-            [x for x in res.ret_values[0].attrs.keys()],
-            [x.name for x in all_attr_entity.attrs.all()],
-        )
-
-        res = Entry.search_entries(self._user, [self._entity.id])
-        self.assertEqual(res.ret_count, 0)
-
-        Entry.update_documents(self._entity, True)
-
-        res = Entry.search_entries(self._user, [self._entity.id])
-        self.assertEqual(res.ret_count, 1)
-
-        #  update
-        entry2 = Entry.objects.create(name="entry2", created_user=self._user, schema=self._entity)
-        with self.assertLogs(logger=Logger, level=logging.WARNING) as warning_log:
-            Entry.update_documents(self._entity)
-
-        self.assertTrue(
-            warning_log.output[0],
-            "WARNING:airone:Update elasticsearch document (entry_id: %s)" % entry2.id,
-        )
-
-        res = Entry.search_entries(self._user, [self._entity.id])
-        self.assertEqual(res.ret_count, 2)
-
-        entry2.is_active = False
-        entry2.save()
-
-        # delete
-        with self.assertLogs(logger=Logger, level=logging.WARNING) as warning_log:
-            Entry.update_documents(self._entity)
-
-        self.assertTrue(
-            warning_log.output[0],
-            "WARNING:airone:Delete elasticsearch document (entry_id: %s)" % entry2.id,
-        )
-
-        res = Entry.search_entries(self._user, [self._entity.id])
-        self.assertEqual(res.ret_count, 1)
-
-    def test_get_prev_refers_objects_for_object_attr(self):
-        user = User.objects.create(username="test-user")
-
-        # Initiate Entities and Entries for this test
-        ref_entity = self.create_entity(user, "RefEntity")
-        (e0, e1, e2) = [self.add_entry(user, "e%s" % i, ref_entity) for i in range(3)]
-
-        entity = self.create_entity(
-            user,
-            "Entity",
-            attrs=[{"name": "attr", "type": AttrType.OBJECT, "ref": ref_entity}],
-        )
-        entry = self.add_entry(user, "entry", entity, values={"attr": e0})
-        attr = entry.attrs.get(schema__name="attr", is_active=True)
-
-        # check initial referring Entries and last referring ones.
-        self.assertEqual(list(entry.get_refers_objects()), [e0])
-        self.assertEqual(list(entry.get_prev_refers_objects()), [])
-
-        # update referring Entry and check them
-        attr.add_value(user, e1)
-        self.assertEqual(list(entry.get_refers_objects()), [e1])
-        self.assertEqual(list(entry.get_prev_refers_objects()), [e0])
-
-        # update referring Entry and check them
-        attr.add_value(user, e2)
-        self.assertEqual(list(entry.get_refers_objects()), [e2])
-        self.assertEqual(list(entry.get_prev_refers_objects()), [e1])
-
     def test_get_prev_refers_objects_for_array_object_attr(self):
         user = User.objects.create(username="test-user")
 
@@ -5901,15 +5029,16 @@ class ModelTest(AironeTestCase):
         entry.full.roles.add(role)
         role.users.add(self._user)
 
-        # Check the result of Entry.search_entries() when the 1st argument of user is None,
+        # Check the result of AdvancedSearchService.search_entries()
+        # when the 1st argument of user is None,
         # that returns all data regardless of the permission settings.
         search_params = {
             "hint_entity_ids": [entity.id],
             "hint_attrs": [{"name": "attr", "keyword": ""}],
         }
         self.assertEqual(
-            Entry.search_entries(self._user, **search_params),
-            Entry.search_entries(None, **search_params),
+            AdvancedSearchService.search_entries(self._user, **search_params),
+            AdvancedSearchService.search_entries(None, **search_params),
         )
 
     def test_get_preview_next_value(self):
@@ -5945,7 +5074,7 @@ class ModelTest(AironeTestCase):
 
     def test_search_entries_with_limit(self):
         self._entry.register_es()
-        ret = Entry.search_entries(self._user, [self._entity.id], [], 99999999)
+        ret = AdvancedSearchService.search_entries(self._user, [self._entity.id], [], 99999999)
         self.assertEqual(ret.ret_count, 1)
 
     def test_max_entries(self):

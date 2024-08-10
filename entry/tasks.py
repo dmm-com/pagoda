@@ -824,7 +824,7 @@ def update_es_documents(self, job_id: int):
     params = json.loads(job.params)
 
     entity = Entity.objects.get(id=job.target.id)
-    Entry.update_documents(entity, params.get("is_update", False))
+    AdvancedSearchService.update_documents(entity, params.get("is_update", False))
 
     job.delete()
 

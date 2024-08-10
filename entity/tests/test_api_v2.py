@@ -18,6 +18,7 @@ from entity import tasks
 from entity.models import Entity, EntityAttr
 from entry import tasks as entry_tasks
 from entry.models import Entry
+from entry.services import AdvancedSearchService
 from entry.tasks import create_entry_v2
 from group.models import Group
 from role.models import Role
@@ -3614,7 +3615,7 @@ class ViewTest(AironeViewTest):
     )
     def test_attr_add_remove_bug(self):
         user = self.admin_login()
-        Entry = self.add_entry(
+        self.add_entry(
             self.user,
             "test_Entry",
             self.entity,
@@ -3649,7 +3650,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
 
         # Perform a search for entries to verify the state of attributes
-        resp1 = Entry.search_entries(user, [self.entity.id], [{"name": "val"}])
+        resp1 = AdvancedSearchService.search_entries(user, [self.entity.id], [{"name": "val"}])
 
         # Validate that the actual value matches the expected value
         self.assertEqual(resp1.ret_values[0].attrs["val"]["value"], "")

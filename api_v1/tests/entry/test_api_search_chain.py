@@ -5,7 +5,7 @@ from unittest import mock
 from airone.lib.test import AironeViewTest
 from airone.lib.types import AttrType
 from api_v1.entry import serializer
-from entry.models import Entry
+from entry.services import AdvancedSearchService
 from entry.settings import CONFIG as ENTRY_CONFIG
 
 
@@ -15,7 +15,7 @@ class APITest(AironeViewTest):
 
         # restore originl configuration data and method
         ENTRY_CONFIG.conf = self._orig_entry_config
-        Entry.search_entries = self._entry_search_entries
+        AdvancedSearchService.search_entries = self._entry_search_entries
 
     def setUp(self):
         super(APITest, self).setUp()
@@ -24,7 +24,7 @@ class APITest(AironeViewTest):
 
         # dump originl configuration data and emthod
         self._orig_entry_config = copy.copy(ENTRY_CONFIG.conf)
-        self._entry_search_entries = Entry.search_entries
+        self._entry_search_entries = AdvancedSearchService.search_entries
 
         # create Entities that have all referral Attribute types
         self.entity_vlan = self.create_entity(
@@ -1362,7 +1362,7 @@ class APITest(AironeViewTest):
             raise RuntimeError("Dummy Exception of Elasticsearch")
 
         mock_method = mock.Mock(side_effect=side_effect)
-        Entry.search_entries = mock_method
+        AdvancedSearchService.search_entries = mock_method
 
         # create query to search chained query
         params = {"entities": ["VM"], "attrs": [{"name": "Status", "value": "Service-In"}]}
