@@ -38,6 +38,7 @@ from entry.api_v2.serializers import (
     ReferralEntry,
 )
 from entry.models import Attribute, Entry
+from entry.services import AdvancedSearchService
 from group.models import Group
 from job.models import Job, JobStatus
 from role.models import Role
@@ -771,7 +772,7 @@ def export_search_result_v2(self, job: Job):
     if has_referral and referral_name is None:
         referral_name = ""
 
-    resp = Entry.search_entries(
+    resp = AdvancedSearchService.search_entries(
         user,
         params["entities"],
         params["attrinfo"],

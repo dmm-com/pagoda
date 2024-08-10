@@ -43,6 +43,7 @@ from entry.api_v2.serializers import (
     GetEntryAttrReferralSerializer,
 )
 from entry.models import Attribute, AttributeValue, Entry
+from entry.services import AdvancedSearchService
 from entry.settings import CONFIG
 from entry.settings import CONFIG as ENTRY_CONFIG
 from entry.tasks import ExportTaskParams
@@ -205,7 +206,9 @@ class searchAPI(viewsets.ReadOnlyModelViewSet):
         if not query:
             return queryset
 
-        results = Entry.search_entries_for_simple(query, limit=ENTRY_CONFIG.MAX_SEARCH_ENTRIES)
+        results = AdvancedSearchService.search_entries_for_simple(
+            query, limit=ENTRY_CONFIG.MAX_SEARCH_ENTRIES
+        )
         return results["ret_values"]
 
 
@@ -299,7 +302,7 @@ class AdvancedSearchAPI(generics.GenericAPIView):
                         for x in join_attr.get("attrinfo", [])
                     ]
                 ),
-                Entry.search_entries(
+                AdvancedSearchService.search_entries(
                     request.user,
                     hint_entity_ids=list(set(hint_entity_ids)),  # this removes depulicated IDs
                     hint_attrs=hint_attrs,
@@ -366,7 +369,7 @@ class AdvancedSearchAPI(generics.GenericAPIView):
             if entity and request.user.has_permission(entity, ACLType.Readable):
                 hint_entity_ids.append(entity.id)
 
-        resp = Entry.search_entries(
+        resp = AdvancedSearchService.search_entries(
             request.user,
             hint_entity_ids,
             hint_attrs,
