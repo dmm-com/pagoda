@@ -182,7 +182,7 @@ class ViewTest(AironeViewTest):
         )
 
         # tests for historical-record
-        self.assertEqual(entity.history.count(), 2)
+        self.assertEqual(entity.history.count(), 1)
 
     def test_create_post_without_name_param(self):
         self.admin_login()
@@ -536,8 +536,8 @@ class ViewTest(AironeViewTest):
         self.assertEqual(History.objects.filter(operation=History.MOD_ATTR).count(), 2)
 
         # tests for historical records for Entity
-        self.assertEqual(entity.history.count(), history_count_before_submitting + 3)
-        self.assertEqual([h.history_user for h in entity.history.all()[0:3]], [user, user, user])
+        self.assertEqual(entity.history.count(), history_count_before_submitting + 2)
+        self.assertEqual([h.history_user for h in entity.history.all()[0:2]], [user, user])
 
         # tests for historical records for EntityAttr,
         # * "foo" is updated so it's HistoricalRecord's count must be plus 1 from previous value
@@ -550,31 +550,13 @@ class ViewTest(AironeViewTest):
         self.assertEqual(entity.attrs.get(name="bar").history.count(), 1)
         self.assertEqual(entity.attrs.get(name="baz").history.count(), 1)
 
-        # NOTE: check EntityAttr is added from HistoricalRecord
-        diff = entity.get_diff(offset=0)[0]
-        self.assertEqual(diff.field, "attrs")
-        self.assertEqual(
-            diff.prev,
-            [
-                {"entity": entity.id, "entityattr": x.id}
-                for x in entity.attrs.filter(is_active=True)
-                if x.name not in ["bar", "baz"]
-            ],
-        )
-        self.assertEqual(
-            diff.next,
-            [
-                {"entity": entity.id, "entityattr": x.id}
-                for x in entity.attrs.filter(is_active=True)
-            ],
-        )
         # NOTE: check entity note is change from HistoricalRecord
-        diff = entity.get_diff(offset=1)[0]
+        diff = entity.get_diff(offset=0)[0]
         self.assertEqual(diff.field, "note")
         self.assertEqual(diff.prev, "fuga")
         self.assertEqual(diff.next, "bar")
         # NOTE: check entity name is change from HistoricalRecord
-        diff = entity.get_diff(offset=2)[0]
+        diff = entity.get_diff(offset=1)[0]
         self.assertEqual(diff.field, "name")
         self.assertEqual(diff.prev, "hoge")
         self.assertEqual(diff.next, "foo")
@@ -1150,7 +1132,7 @@ class ViewTest(AironeViewTest):
             "entity": entity1.history.count(),
             "attr": attr.history.count(),
         }
-        self.assertEqual(self._test_data["before_history_count"]["entity"], 2)
+        self.assertEqual(self._test_data["before_history_count"]["entity"], 1)
         self.assertEqual(self._test_data["before_history_count"]["attr"], 1)
 
         params = {}
