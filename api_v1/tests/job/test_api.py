@@ -95,7 +95,6 @@ class APITest(AironeViewTest):
             type=AttrType.STRING,
             parent_entity=entity,
         )
-        entity.attrs.add(attr)
 
         # make a job to create an entry
         entry = Entry.objects.create(name="entry", schema=entity, created_user=user)

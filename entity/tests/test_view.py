@@ -471,7 +471,6 @@ class ViewTest(AironeViewTest):
             type=AttrType.STRING,
             parent_entity=entity,
         )
-        entity.attrs.add(attr)
 
         # Before submitting request, this save historical count for test
         history_count_before_submitting = entity.history.count()
@@ -638,7 +637,6 @@ class ViewTest(AironeViewTest):
         attr = EntityAttr.objects.create(
             name="puyo", type=AttrType.STRING, created_user=user, parent_entity=entity
         )
-        entity.attrs.add(attr)
 
         params = {
             "name": "foo",
@@ -674,7 +672,6 @@ class ViewTest(AironeViewTest):
         attrbase = EntityAttr.objects.create(
             name="puyo", type=AttrType.OBJECT, created_user=user, parent_entity=entity
         )
-        entity.attrs.add(attrbase)
 
         entry = Entry.objects.create(name="entry", schema=entity, created_user=user)
         attr = entry.add_attribute_from_base(attrbase, user)
@@ -744,7 +741,6 @@ class ViewTest(AironeViewTest):
         attr = EntityAttr.objects.create(
             name="puyo", type=AttrType.STRING, created_user=user, parent_entity=entity
         )
-        entity.attrs.add(attr)
 
         params = {
             "name": "foo",
@@ -784,7 +780,6 @@ class ViewTest(AironeViewTest):
             type=AttrType.STRING,
             parent_entity=entity,
         )
-        entity.attrs.add(attr)
 
         params = {
             "name": "foo",
@@ -980,13 +975,11 @@ class ViewTest(AironeViewTest):
 
         entity1 = Entity.objects.create(name="entity1", note="hoge", created_user=user)
         for name in ["foo", "bar"]:
-            entity1.attrs.add(
-                EntityAttr.objects.create(
-                    name=name,
-                    type=AttrType.STRING,
-                    created_user=user,
-                    parent_entity=entity1,
-                )
+            EntityAttr.objects.create(
+                name=name,
+                type=AttrType.STRING,
+                created_user=user,
+                parent_entity=entity1,
             )
 
         entity2 = Entity.objects.create(name="entity2", created_user=user)
@@ -994,8 +987,6 @@ class ViewTest(AironeViewTest):
             name="attr", type=AttrType.OBJECT, created_user=user, parent_entity=entity2
         )
         attr.referral.add(entity1)
-        entity2.attrs.add(attr)
-        entity2.save()
 
         resp = self.client.get(reverse("entity:export"))
         self.assertEqual(resp.status_code, 200)
@@ -1051,34 +1042,28 @@ class ViewTest(AironeViewTest):
 
         # create an entity object which is created by logined-user
         entity1 = Entity.objects.create(name="entity1", created_user=user)
-        entity1.attrs.add(
-            EntityAttr.objects.create(
-                name="attr1", type=AttrType.STRING, created_user=user, parent_entity=entity1
-            )
+        EntityAttr.objects.create(
+            name="attr1", type=AttrType.STRING, created_user=user, parent_entity=entity1
         )
 
         # create a public object which is created by the another_user
         entity2 = Entity.objects.create(name="entity2", created_user=user2)
-        entity2.attrs.add(
-            EntityAttr.objects.create(
-                name="attr2",
-                type=AttrType.STRING,
-                created_user=user2,
-                parent_entity=entity1,
-            )
+        EntityAttr.objects.create(
+            name="attr2",
+            type=AttrType.STRING,
+            created_user=user2,
+            parent_entity=entity2,
         )
 
         # create private objects which is created by the another_user
         for name in ["foo", "bar"]:
             e = Entity.objects.create(name=name, created_user=user2, is_public=False)
-            e.attrs.add(
-                EntityAttr.objects.create(
-                    name="private_attr",
-                    type=AttrType.STRING,
-                    created_user=user2,
-                    parent_entity=e,
-                    is_public=False,
-                )
+            EntityAttr.objects.create(
+                name="private_attr",
+                type=AttrType.STRING,
+                created_user=user2,
+                parent_entity=e,
+                is_public=False,
             )
 
         resp = self.client.get(reverse("entity:export"))
@@ -1095,10 +1080,8 @@ class ViewTest(AironeViewTest):
         user = self.admin_login()
 
         entity1 = Entity.objects.create(name="entity1", created_user=user)
-        entity1.attrs.add(
-            EntityAttr.objects.create(
-                name="attr1", type=AttrType.STRING, created_user=user, parent_entity=entity1
-            )
+        EntityAttr.objects.create(
+            name="attr1", type=AttrType.STRING, created_user=user, parent_entity=entity1
         )
 
         # This Entity object won't be exported because this is logically deleted
@@ -1123,7 +1106,6 @@ class ViewTest(AironeViewTest):
             type=AttrType.STRING,
             parent_entity=entity1,
         )
-        entity1.attrs.add(attr)
 
         entity_count = Entity.objects.all().count()
 
@@ -1203,7 +1185,6 @@ class ViewTest(AironeViewTest):
             type=AttrType.STRING,
             parent_entity=entity,
         )
-        entity.attrs.add(attrbase)
 
         entry = Entry.objects.create(name="entry1", schema=entity, created_user=user)
         entry.add_attribute_from_base(attrbase, user)
@@ -1237,14 +1218,13 @@ class ViewTest(AironeViewTest):
         entity1 = Entity.objects.create(name="entity1", created_user=user1)
         entity1.save()
 
-        attr = EntityAttr.objects.create(
+        EntityAttr.objects.create(
             name="attr-test",
             created_user=user1,
             is_mandatory=True,
             type=AttrType.STRING,
             parent_entity=entity1,
         )
-        entity1.attrs.add(attr)
 
         params = {}
 
@@ -1318,10 +1298,9 @@ class ViewTest(AironeViewTest):
 
         entity = Entity.objects.create(name="entity", created_user=user)
         for name in ["foo", "bar"]:
-            attr = EntityAttr.objects.create(
+            EntityAttr.objects.create(
                 name=name, type=AttrType.STRING, created_user=user, parent_entity=entity
             )
-            entity.attrs.add(attr)
 
         (attr1, attr2) = entity.attrs.all()
 
@@ -1404,7 +1383,6 @@ class ViewTest(AironeViewTest):
             type=AttrType.OBJECT,
         )
         attr.referral.add(ref_entity)
-        entity.attrs.add(attr)
 
         # create entries
         for i in range(0, CONFIG.DASHBOARD_NUM_ITEMS + 2):
@@ -1488,7 +1466,6 @@ class ViewTest(AironeViewTest):
         attr = EntityAttr.objects.create(
             name="attr", type=AttrType.OBJECT, created_user=user, parent_entity=entity
         )
-        entity.attrs.add(attr)
 
         # send post request with parameters which contain an invalid EntityAttr-ID
         resp = self.client.post(

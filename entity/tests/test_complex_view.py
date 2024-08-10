@@ -346,13 +346,11 @@ class ComplexViewTest(AironeViewTest):
         ref_entry = Entry.objects.create(name="ref_entry", schema=ref_entity, created_user=user)
 
         entity = Entity.objects.create(name="entity", created_user=user)
-        entity.attrs.add(
-            EntityAttr.objects.create(
-                name="ref",
-                type=AttrType.OBJECT,
-                parent_entity=entity,
-                created_user=user,
-            )
+        EntityAttr.objects.create(
+            name="ref",
+            type=AttrType.OBJECT,
+            parent_entity=entity,
+            created_user=user,
         )
         entry = Entry.objects.create(name="entry", schema=entity, created_user=user)
         entry.complement_attrs(user)
