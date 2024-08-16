@@ -341,7 +341,7 @@ $('button[name=add_attr]').on('click', function() {
 
 // Initiate array values
 {% for attr in attributes %}
-  {% if attr.type|bitwise_and:attr_type_value.array %}
+  {% if attr.type|bitwise_and:attr_type_value_array %}
     var container = $('.array_element[entity_attr_id="{{ attr.entity_attr_id }}"]');
     var template = $('#template-{{ attr.entity_attr_id }}');
     var value_setter = undefined;

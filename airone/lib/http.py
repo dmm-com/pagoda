@@ -184,9 +184,8 @@ def render(request, template, context={}):
     context["attr_type"] = {}
     for name, type in AttrTypeValue.items():
         context["attr_type"][name] = type
-    context["attr_type_value"] = AttrTypeValue
-    context["attr_type_value"]["named"] = AttrType._NAMED
-    context["attr_type_value"]["array"] = AttrType._ARRAY
+    context["attr_type_value_named"] = AttrType._NAMED
+    context["attr_type_value_array"] = AttrType._ARRAY
 
     # set Construct for Entity status
     context["STATUS_ENTITY"] = {}

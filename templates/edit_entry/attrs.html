@@ -8,7 +8,7 @@
   {% if not attr.is_readable %}
     <span>Permission denied.</span>  
   {% else %}
-    {% if attr.type|bitwise_and:attr_type_value.array %}
+    {% if attr.type|bitwise_and:attr_type_value_array %}
       <div>
         <button type="button" class="btn btn-primary btn-sm" name='add_attr' attr_id="{{ attr.id }}" entity_attr_id="{{ attr.entity_attr_id }}">add row</button>
         <div class='array_element' attr_id="{{ attr.id }}" entity_attr_id="{{ attr.entity_attr_id }}" {%if attr.is_mandatory%}mandatory="true"{%endif%}>
@@ -17,7 +17,7 @@
       <!-- template of attribute value column -->
       <div style="display:none" class='attr_value_template' id='template-{{ attr.entity_attr_id }}'>
 
-      {% if attr.type|bitwise_and:attr_type_value.named %}
+      {% if attr.type|bitwise_and:attr_type_value_named %}
         <div class='col-3'>
           <input type='text' class='form-control referral_key' attr_id="{{ attr.id }}" entity_attr_id="{{ attr.entity_attr_id }}"></input>
         </div>
@@ -94,7 +94,7 @@
       {% elif attr.type|bitwise_and:attr_type.object %}
       <div class='row attr_referral' {% if attr.is_mandatory %}mandatory="true"{% endif %}>
 
-        {% if attr.type|bitwise_and:attr_type_value.named %}
+        {% if attr.type|bitwise_and:attr_type_value_named %}
           <div class='col-3'>
             <input type='text' class='form-control referral_key' attr_id="{{ attr.id }}" entity_attr_id="{{ attr.entity_attr_id }}" value="{{ attr.last_value.value }}" enabled="True" index="0"></input>
           </div>

@@ -610,7 +610,7 @@ class ViewTest(AironeViewTest):
                 ]
             },
             "array_group": {"values": [[groups[0]], [groups[1]]]},
-            "text": {"values": ["hoge", "fuga"]},
+            "textarea": {"values": ["hoge", "fuga"]},
             "boolean": {"values": [True, False]},
             "group": {"values": [groups[0], groups[1]]},
             "date": {"values": [date(2020, 1, 1), date(2021, 1, 1)]},
