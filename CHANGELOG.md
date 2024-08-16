@@ -8,6 +8,12 @@
 
 ### Fixed
 
+## v3.100.0
+
+### Changed
+* Simplify Entity - EntityAttr relation 1:N.
+  Contributed by @syucream
+
 ## v3.99.0
 
 ### Changed
