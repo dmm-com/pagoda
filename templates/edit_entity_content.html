@@ -41,8 +41,8 @@
               <div class='row'>
                 <div class='col-4'>
                   <select class="attr_type" disabled="true">
-                    {% for type in attr_types %}
-                    <option value="{{ type.TYPE }}" {% if attr.type == type.TYPE %}selected="selected"{% endif %}>{{ type.NAME }}</option>
+                    {% for name, type in attr_types.items %}
+                    <option value="{{ type }}" {% if attr.type == type %}selected="selected"{% endif %}>{{ name }}</option>
                     {% endfor %}
                   </select>
                 </div>
@@ -116,8 +116,8 @@
                 <div class='col-4'>
 
               <select class="attr_type">
-                {% for type in attr_types %}
-                <option value="{{ type.TYPE }}">{{ type.NAME }}</option>
+                {% for name, type in attr_types.items %}
+                <option value="{{ type }}">{{ name }}</option>
                 {% endfor %}
               </select>
 

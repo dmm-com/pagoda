@@ -137,15 +137,13 @@ class ViewTest(AironeViewTest):
     def test_show_advanced_search(self):
         # create entity which has attr
         entity1 = Entity.objects.create(name="entity-1", created_user=self.admin)
-        entity1.attrs.add(
-            EntityAttr.objects.create(
-                **{
-                    "name": "attr-1-1",
-                    "type": AttrType.STRING,
-                    "created_user": self.admin,
-                    "parent_entity": entity1,
-                }
-            )
+        EntityAttr.objects.create(
+            **{
+                "name": "attr-1-1",
+                "type": AttrType.STRING,
+                "created_user": self.admin,
+                "parent_entity": entity1,
+            }
         )
         entity1.save()
 
@@ -170,15 +168,13 @@ class ViewTest(AironeViewTest):
     def test_show_advanced_search_results(self):
         for entity_index in range(0, 2):
             entity = Entity.objects.create(name="entity-%d" % entity_index, created_user=self.admin)
-            entity.attrs.add(
-                EntityAttr.objects.create(
-                    **{
-                        "name": "attr",
-                        "type": AttrType.STRING,
-                        "created_user": self.admin,
-                        "parent_entity": entity,
-                    }
-                )
+            EntityAttr.objects.create(
+                **{
+                    "name": "attr",
+                    "type": AttrType.STRING,
+                    "created_user": self.admin,
+                    "parent_entity": entity,
+                }
             )
 
             for entry_index in range(0, 10):
@@ -638,15 +634,13 @@ class ViewTest(AironeViewTest):
 
         entity = Entity.objects.create(name="Entity", created_user=user)
         for attr_name, info in attr_info.items():
-            entity.attrs.add(
-                EntityAttr.objects.create(
-                    **{
-                        "name": attr_name,
-                        "type": info["type"],
-                        "created_user": user,
-                        "parent_entity": entity,
-                    }
-                )
+            EntityAttr.objects.create(
+                **{
+                    "name": attr_name,
+                    "type": info["type"],
+                    "created_user": user,
+                    "parent_entity": entity,
+                }
             )
 
         entry = Entry.objects.create(name="entry", schema=entity, created_user=user)
@@ -1002,7 +996,6 @@ class ViewTest(AironeViewTest):
             parent_entity=entity,
         )
         entity_attr.referral.add(ref_entity)
-        entity.attrs.add(entity_attr)
 
         # initialize Entries
         ref_entry = Entry.objects.create(name="ref", schema=ref_entity, created_user=user)
@@ -1114,9 +1107,6 @@ class ViewTest(AironeViewTest):
                 created_user=user,
                 parent_entity=test_entity,
             )
-
-            test_entity.attrs.add(test_entity_attr)
-            test_entity.save()
 
             test_entry = Entry.objects.create(
                 name=type_name + ',"ENTRY"', schema=test_entity, created_user=user
@@ -1276,8 +1266,6 @@ class ViewTest(AironeViewTest):
 
                 if info["type"] & AttrType.OBJECT:
                     attr.referral.add(entity_ref)
-
-                entity.attrs.add(attr)
 
             # create an entry of Entity
             for e_index in range(2):
@@ -1515,7 +1503,6 @@ class ViewTest(AironeViewTest):
             parent_entity=entity,
         )
         entity_attr.referral.add(ref_entity)
-        entity.attrs.add(entity_attr)
 
         # initialize Entries
         ref_entry = Entry.objects.create(name="ref", schema=ref_entity, created_user=user)

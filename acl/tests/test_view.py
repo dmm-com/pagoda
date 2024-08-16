@@ -141,7 +141,6 @@ class ViewTest(AironeViewTest):
         attrbase = EntityAttr.objects.create(
             name="hoge", type=AttrType.OBJECT, created_user=user, parent_entity=entity
         )
-        entity.attrs.add(attrbase)
         attr = entry.add_attribute_from_base(attrbase, user)
 
         resp = self.send_set_request(attr, self._role)

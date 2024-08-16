@@ -2,6 +2,7 @@ from datetime import date, datetime, timezone
 from unittest import skip
 
 from django.conf import settings
+from django.db.models import Q
 
 from acl.models import ACLBase
 from airone.lib.acl import ACLObjType, ACLType
@@ -119,8 +120,6 @@ class ModelTest(AironeTestCase):
 
             if attr_type & AttrType.OBJECT and ref_entity:
                 attr.referral.add(ref_entity)
-
-            entity.attrs.add(attr)
 
         return entity
 
@@ -399,8 +398,6 @@ class ModelTest(AironeTestCase):
         attr_base = EntityAttr.objects.create(**new_attr_params)
         attr_base.referral.add(ref_entity)
 
-        entity.attrs.add(attr_base)
-
         entry = Entry.objects.create(name="entry", created_user=self._user, schema=entity)
         entry.complement_attrs(self._user)
 
@@ -449,8 +446,6 @@ class ModelTest(AironeTestCase):
         }
         attr_base = EntityAttr.objects.create(**new_attr_params)
         attr_base.referral.add(ref_entity)
-
-        entity.attrs.add(attr_base)
 
         # create an Entry associated to the 'entity'
         entry = Entry.objects.create(name="entry", created_user=self._user, schema=entity)
@@ -621,13 +616,11 @@ class ModelTest(AironeTestCase):
         user = User.objects.create(username="hoge")
 
         entity = Entity.objects.create(name="entity", created_user=user)
-        entity.attrs.add(
-            EntityAttr.objects.create(
-                name="attr",
-                type=AttrType.STRING,
-                created_user=user,
-                parent_entity=entity,
-            )
+        EntityAttr.objects.create(
+            name="attr",
+            type=AttrType.STRING,
+            created_user=user,
+            parent_entity=entity,
         )
 
         entry = Entry.objects.create(name="entry", schema=entity, created_user=user)
@@ -770,7 +763,6 @@ class ModelTest(AironeTestCase):
             created_user=self._user,
             parent_entity=self._entity,
         )
-        self._entity.attrs.add(newattr)
 
         # create new attributes which are appended after creation of Entity
         self._entry.complement_attrs(self._user)
@@ -779,15 +771,13 @@ class ModelTest(AironeTestCase):
         self.assertEqual(self._entry.attrs.last().schema, newattr)
 
     def test_get_value_history(self):
-        self._entity.attrs.add(
-            EntityAttr.objects.create(
-                **{
-                    "name": "attr",
-                    "type": AttrType.STRING,
-                    "created_user": self._user,
-                    "parent_entity": self._entity,
-                }
-            )
+        EntityAttr.objects.create(
+            **{
+                "name": "attr",
+                "type": AttrType.STRING,
+                "created_user": self._user,
+                "parent_entity": self._entity,
+            }
         )
         entry = Entry.objects.create(name="entry", schema=self._entity, created_user=self._user)
         entry.complement_attrs(self._user)
@@ -877,8 +867,6 @@ class ModelTest(AironeTestCase):
             if info["type"] & AttrType.OBJECT:
                 attr.referral.add(ref_entity)
 
-            self._entity.attrs.add(attr)
-
         # create and initialize Entries
         entries = []
         for index in range(2):
@@ -952,8 +940,6 @@ class ModelTest(AironeTestCase):
         }
         attr_base = EntityAttr.objects.create(**new_attr_params)
         attr_base.referral.add(ref_entity)
-
-        entity.attrs.add(attr_base)
 
         # create an Entry associated to the 'entity'
         entry = Entry.objects.create(name="entry", created_user=self._user, schema=entity)
@@ -1084,26 +1070,22 @@ class ModelTest(AironeTestCase):
 
     def test_clone_entry(self):
         test_entity = Entity.objects.create(name="E0", created_user=self._user)
-        test_entity.attrs.add(
-            EntityAttr.objects.create(
-                **{
-                    "name": "string",
-                    "type": AttrType.STRING,
-                    "created_user": self._user,
-                    "parent_entity": test_entity,
-                }
-            )
+        EntityAttr.objects.create(
+            **{
+                "name": "string",
+                "type": AttrType.STRING,
+                "created_user": self._user,
+                "parent_entity": test_entity,
+            }
         )
 
-        test_entity.attrs.add(
-            EntityAttr.objects.create(
-                **{
-                    "name": "arrobj",
-                    "type": AttrType.ARRAY_OBJECT,
-                    "created_user": self._user,
-                    "parent_entity": test_entity,
-                }
-            )
+        EntityAttr.objects.create(
+            **{
+                "name": "arrobj",
+                "type": AttrType.ARRAY_OBJECT,
+                "created_user": self._user,
+                "parent_entity": test_entity,
+            }
         )
 
         entry = Entry.objects.create(name="entry", schema=test_entity, created_user=self._user)
@@ -1157,23 +1139,21 @@ class ModelTest(AironeTestCase):
             {"name": "attr3", "is_public": False},
         ]
         for info in attr_infos:
-            self._entity.attrs.add(
-                EntityAttr.objects.create(
-                    **{
-                        "type": AttrType.STRING,
-                        "created_user": self._user,
-                        "parent_entity": self._entity,
-                        "name": info["name"],
-                        "is_public": info["is_public"],
-                    }
-                )
+            EntityAttr.objects.create(
+                **{
+                    "type": AttrType.STRING,
+                    "created_user": self._user,
+                    "parent_entity": self._entity,
+                    "name": info["name"],
+                    "is_public": info["is_public"],
+                }
             )
 
         entry = Entry.objects.create(name="entry", schema=self._entity, created_user=self._user)
         entry.complement_attrs(self._user)
 
-        # set Attribute attr2 is not public
-        entry.attrs.filter(schema__name="attr2").update(is_public=False)
+        # set Attribute's is not public except attr1
+        entry.attrs.filter(~Q(schema__name="attr1")).update(is_public=False)
 
         # checks that cloned entry doesn't have non-permitted attributes
         cloned_entry = entry.clone(self._user)
@@ -1323,8 +1303,6 @@ class ModelTest(AironeTestCase):
             self.assertEqual(result["last_value"], attrinfo[attr.name]["exp_val"])
 
     def test_get_available_attrs_with_multi_attribute_value(self):
-        self._entity.attrs.add(self._attr.schema)
-
         attr = self._entry.attrs.filter(schema=self._attr.schema, is_active=True).first()
         attr.add_value(self._user, "hoge")
         attr.add_value(self._user, "fuga")
@@ -1342,15 +1320,13 @@ class ModelTest(AironeTestCase):
         user = User.objects.create(username="hoge")
 
         entity = Entity.objects.create(name="entity", created_user=user)
-        entity.attrs.add(
-            EntityAttr.objects.create(
-                **{
-                    "name": "attr",
-                    "type": AttrType.OBJECT,
-                    "created_user": user,
-                    "parent_entity": entity,
-                }
-            )
+        EntityAttr.objects.create(
+            **{
+                "name": "attr",
+                "type": AttrType.OBJECT,
+                "created_user": user,
+                "parent_entity": entity,
+            }
         )
 
         entry = Entry.objects.create(name="entry", schema=entity, created_user=user)
@@ -1382,15 +1358,13 @@ class ModelTest(AironeTestCase):
         user = User.objects.create(username="hoge")
 
         entity = Entity.objects.create(name="entity", created_user=user)
-        entity.attrs.add(
-            EntityAttr.objects.create(
-                **{
-                    "name": "attr",
-                    "type": AttrType.STRING,
-                    "created_user": user,
-                    "parent_entity": entity,
-                }
-            )
+        EntityAttr.objects.create(
+            **{
+                "name": "attr",
+                "type": AttrType.STRING,
+                "created_user": user,
+                "parent_entity": entity,
+            }
         )
 
         entry = Entry.objects.create(name="entry", schema=entity, created_user=user)
@@ -1439,7 +1413,6 @@ class ModelTest(AironeTestCase):
             )
 
             attr.referral.add(ref_entity)
-            entity.attrs.add(attr)
 
         entry = Entry.objects.create(name="entry", schema=entity, created_user=user)
         entry.complement_attrs(user)
@@ -1507,7 +1480,6 @@ class ModelTest(AironeTestCase):
             )
 
             attr.referral.add(ref_entity)
-            entity.attrs.add(attr)
 
         entry = Entry.objects.create(name="entry", schema=entity, created_user=user)
         entry.complement_attrs(user)
@@ -1842,8 +1814,6 @@ class ModelTest(AironeTestCase):
             if info["type"] & AttrType.OBJECT:
                 attr.referral.add(ref_entity)
 
-            entity.attrs.add(attr)
-
         entry = Entry.objects.create(name="entry", schema=entity, created_user=user)
         entry.complement_attrs(user)
         entry.attrs.get(name="str1").add_value(user, "hoge")
@@ -1874,15 +1844,13 @@ class ModelTest(AironeTestCase):
         self.assertEqual(exported_data["attrs"][NEW_ATTR_NAME], "hoge")
 
         # Add an Attribute after creating entry
-        entity.attrs.add(
-            EntityAttr.objects.create(
-                **{
-                    "name": "new_attr",
-                    "type": AttrType.STRING,
-                    "created_user": user,
-                    "parent_entity": entity,
-                }
-            )
+        EntityAttr.objects.create(
+            **{
+                "name": "new_attr",
+                "type": AttrType.STRING,
+                "created_user": user,
+                "parent_entity": entity,
+            }
         )
         exported_data = entry.export(user)
         self.assertTrue("new_attr" in exported_data["attrs"])
@@ -1910,8 +1878,6 @@ class ModelTest(AironeTestCase):
 
             if info["type"] & AttrType.OBJECT:
                 attr.referral.add(ref_entity)
-
-            entity.attrs.add(attr)
 
         entry = Entry.objects.create(name="entry", schema=entity, created_user=user)
         entry.complement_attrs(user)
@@ -1942,15 +1908,13 @@ class ModelTest(AironeTestCase):
         self.assertNotIn({"name": "str1", "value": "hoge"}, exported_data["attrs"])
 
         # Add an Attribute after creating entry
-        entity.attrs.add(
-            EntityAttr.objects.create(
-                **{
-                    "name": "new_attr",
-                    "type": AttrType.STRING,
-                    "created_user": user,
-                    "parent_entity": entity,
-                }
-            )
+        EntityAttr.objects.create(
+            **{
+                "name": "new_attr",
+                "type": AttrType.STRING,
+                "created_user": user,
+                "parent_entity": entity,
+            }
         )
         exported_data = entry.export_v2(user)
         self.assertIn({"name": "new_attr", "value": ""}, exported_data["attrs"])
@@ -2022,8 +1986,6 @@ class ModelTest(AironeTestCase):
 
             if info["type"] & AttrType.OBJECT:
                 attr.referral.add(ref_entity)
-
-            entity.attrs.add(attr)
 
         for index in range(0, ENTRY_COUNTS):
             entry = Entry.objects.create(name="e-%d" % index, schema=entity, created_user=user)
@@ -2160,7 +2122,6 @@ class ModelTest(AironeTestCase):
             created_user=user,
             parent_entity=entity,
         )
-        entity.attrs.add(entity_attr)
 
         entry = Entry.objects.create(name="entry", schema=entity, created_user=user)
         entry.complement_attrs(user)
@@ -2194,40 +2155,32 @@ class ModelTest(AironeTestCase):
 
             entities.append(entity)
             for index in range(0, 2):
-                entity.attrs.add(
-                    EntityAttr.objects.create(
-                        name="attr-%s" % index,
-                        type=AttrType.STRING,
-                        created_user=user,
-                        parent_entity=entity,
-                    )
-                )
-
-            entity.attrs.add(
                 EntityAttr.objects.create(
-                    name="ほげ",
+                    name="attr-%s" % index,
                     type=AttrType.STRING,
                     created_user=user,
                     parent_entity=entity,
                 )
+
+            EntityAttr.objects.create(
+                name="ほげ",
+                type=AttrType.STRING,
+                created_user=user,
+                parent_entity=entity,
             )
 
-            entity.attrs.add(
-                EntityAttr.objects.create(
-                    name="attr-arr",
-                    type=AttrType.ARRAY_STRING,
-                    created_user=user,
-                    parent_entity=entity,
-                )
+            EntityAttr.objects.create(
+                name="attr-arr",
+                type=AttrType.ARRAY_STRING,
+                created_user=user,
+                parent_entity=entity,
             )
 
-            entity.attrs.add(
-                EntityAttr.objects.create(
-                    name="attr-date",
-                    type=AttrType.DATE,
-                    created_user=user,
-                    parent_entity=entity,
-                )
+            EntityAttr.objects.create(
+                name="attr-date",
+                type=AttrType.DATE,
+                created_user=user,
+                parent_entity=entity,
             )
 
         entry_info = {
@@ -2365,7 +2318,6 @@ class ModelTest(AironeTestCase):
                 parent_entity=entity,
             )
             attr.referral.add(ref_entity)
-            entity.attrs.add(attr)
 
         for i in range(0, 20):
             entry = Entry.objects.create(name="e%3d" % i, schema=entity, created_user=user)
@@ -2395,13 +2347,11 @@ class ModelTest(AironeTestCase):
             entities.append(entity.id)
 
             for attrname in attrnames:
-                entity.attrs.add(
-                    EntityAttr.objects.create(
-                        name=attrname,
-                        type=AttrType.STRING,
-                        created_user=user,
-                        parent_entity=entity,
-                    )
+                EntityAttr.objects.create(
+                    name=attrname,
+                    type=AttrType.STRING,
+                    created_user=user,
+                    parent_entity=entity,
                 )
 
             # create entries for this entity
@@ -2452,13 +2402,11 @@ class ModelTest(AironeTestCase):
 
         # initialize Entity
         entity = Entity.objects.create(name="entity", created_user=user)
-        entity.attrs.add(
-            EntityAttr.objects.create(
-                name="date",
-                type=AttrType.DATE,
-                created_user=user,
-                parent_entity=entity,
-            )
+        EntityAttr.objects.create(
+            name="date",
+            type=AttrType.DATE,
+            created_user=user,
+            parent_entity=entity,
         )
 
         # Initialize to create following Entries
@@ -2523,13 +2471,11 @@ class ModelTest(AironeTestCase):
 
         entity = Entity.objects.create(name="entity", created_user=user)
         for name in ["foo", "bar"]:
-            entity.attrs.add(
-                EntityAttr.objects.create(
-                    name=name,
-                    type=AttrType.STRING,
-                    created_user=user,
-                    parent_entity=entity,
-                )
+            EntityAttr.objects.create(
+                name=name,
+                type=AttrType.STRING,
+                created_user=user,
+                parent_entity=entity,
             )
 
         entry = Entry.objects.create(name="entry", schema=entity, created_user=user)
@@ -2982,8 +2928,6 @@ class ModelTest(AironeTestCase):
             if info["type"] & AttrType.OBJECT:
                 attr.referral.add(ref_entity)
 
-            self._entity.attrs.add(attr)
-
         # initialize target entry
         entry = Entry.objects.create(name="entry", schema=self._entity, created_user=self._user)
         entry.complement_attrs(self._user)
@@ -3253,16 +3197,14 @@ class ModelTest(AironeTestCase):
         ]
         for info in attr_info:
             [
-                e.attrs.add(
-                    EntityAttr.objects.create(
-                        **{
-                            "type": AttrType.STRING,
-                            "created_user": self._user,
-                            "parent_entity": self._entity,
-                            "name": info["name"],
-                            "is_public": info["is_public"],
-                        }
-                    )
+                EntityAttr.objects.create(
+                    **{
+                        "type": AttrType.STRING,
+                        "created_user": self._user,
+                        "parent_entity": e,
+                        "name": info["name"],
+                        "is_public": info["is_public"],
+                    }
                 )
                 for e in [private_entity, public_entity]
             ]
@@ -3346,8 +3288,6 @@ class ModelTest(AironeTestCase):
 
             if info["type"] & AttrType.OBJECT:
                 attr.referral.add(ref_entity)
-
-            entity.attrs.add(attr)
 
         for index in range(0, 11):
             entry = Entry.objects.create(name="e-%d" % index, schema=entity, created_user=user)
@@ -3505,13 +3445,12 @@ class ModelTest(AironeTestCase):
 
         entity = Entity.objects.create(name="entity", created_user=user)
         for attr_name, info in attr_info[0].items():
-            attr = EntityAttr.objects.create(
+            EntityAttr.objects.create(
                 name=attr_name,
                 type=info["type"],
                 created_user=user,
                 parent_entity=entity,
             )
-            entity.attrs.add(attr)
 
         for i, x in enumerate(attr_info):
             entry = Entry.objects.create(name="e-%s" % i, schema=entity, created_user=user)
@@ -3761,7 +3700,6 @@ class ModelTest(AironeTestCase):
             self.assertEqual(ret.ret_values[0].entry["name"], test_suite["ret_entry_name"])
 
     def test_search_entries_with_is_output_all(self):
-        self._entity.attrs.add(self._attr.schema)
         self._entry.attrs.first().add_value(self._user, "hoge")
         self._entry.register_es()
         ret = AdvancedSearchService.search_entries(
@@ -4011,9 +3949,6 @@ class ModelTest(AironeTestCase):
             ),
         )
 
-        # If the AttributeValue does not exist, permission returns the default
-        self._entity.attrs.add(self._attr.schema)
-
         result = self._entry.get_es_document()
         self.assertEqual(
             result["attr"],
@@ -4042,7 +3977,6 @@ class ModelTest(AironeTestCase):
             }
         )
         ref_attr.referral.add(self._entity)
-        ref_entity.attrs.add(ref_attr)
 
         ref_entry = Entry.objects.create(name="ref", schema=ref_entity, created_user=self._user)
         ref_entry.complement_attrs(self._user)
@@ -4099,7 +4033,6 @@ class ModelTest(AironeTestCase):
             }
         )
         ref_attr2.referral.add(self._entity)
-        ref_entity2.attrs.add(ref_attr2)
 
         ref_entry2 = Entry.objects.create(name="ref2", schema=ref_entity2, created_user=self._user)
         ref_entry2.complement_attrs(self._user)
@@ -4165,13 +4098,11 @@ class ModelTest(AironeTestCase):
         entity = Entity.objects.create(name="entity", created_user=user)
 
         for attrname in ["attr", "attr-deleted"]:
-            entity.attrs.add(
-                EntityAttr.objects.create(
-                    name=attrname,
-                    type=AttrType.STRING,
-                    created_user=user,
-                    parent_entity=entity,
-                )
+            EntityAttr.objects.create(
+                name=attrname,
+                type=AttrType.STRING,
+                created_user=user,
+                parent_entity=entity,
             )
 
         entry = Entry.objects.create(name="entry", schema=entity, created_user=user)
@@ -4236,8 +4167,6 @@ class ModelTest(AironeTestCase):
 
         # set permission for test Role instance
         entity_attr.full.roles.add(role)
-
-        entity.attrs.add(entity_attr)
 
         entry = Entry.objects.create(name="entry", schema=entity, created_user=user1)
         entry.complement_attrs(user1)
@@ -4832,8 +4761,6 @@ class ModelTest(AironeTestCase):
             if info["type"] & AttrType.OBJECT:
                 attr.referral.add(ref_entity)
 
-            self._entity.attrs.add(attr)
-
         # initialize target entry
         entry = Entry.objects.create(name="entry", schema=self._entity, created_user=self._user)
         entry.complement_attrs(self._user)
@@ -4896,8 +4823,6 @@ class ModelTest(AironeTestCase):
             if info["type"] & AttrType.OBJECT:
                 attr.referral.add(ref_entity)
 
-            self._entity.attrs.add(attr)
-
         for attr_name, info in attr_info_2.items():
             # create EntityAttr object with is_delete_in_chain object
             attr = EntityAttr.objects.create(
@@ -4910,8 +4835,6 @@ class ModelTest(AironeTestCase):
 
             if info["type"] & AttrType.OBJECT:
                 attr.referral.add(ref_entity_2)
-
-            ref_entity.attrs.add(attr)
 
         # initialize target entry
         entry = Entry.objects.create(name="entry", schema=self._entity, created_user=self._user)
@@ -4967,8 +4890,6 @@ class ModelTest(AironeTestCase):
 
             if info["type"] & AttrType.OBJECT:
                 attr.referral.add(ref_entity)
-
-            self._entity.attrs.add(attr)
 
         entry.complement_attrs(self._user)
         for attr_name, info in attr_info.items():

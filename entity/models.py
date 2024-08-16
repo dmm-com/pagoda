@@ -9,7 +9,7 @@ from webhook.models import Webhook
 
 class EntityAttr(ACLBase):
     # This parameter is needed to make a relationship to the corresponding Entity at importing
-    parent_entity = models.ForeignKey("Entity", on_delete=models.DO_NOTHING)
+    parent_entity = models.ForeignKey("Entity", related_name="attrs", on_delete=models.DO_NOTHING)
 
     type = models.IntegerField()
     is_mandatory = models.BooleanField(default=False)
@@ -92,12 +92,11 @@ class Entity(ACLBase):
     STATUS_EDITING = 1 << 2
 
     note = models.CharField(max_length=200, blank=True)
-    attrs = models.ManyToManyField(EntityAttr)
 
     # This indicates informatoin where to send request for notification
     webhooks = models.ManyToManyField(Webhook, default=[], related_name="registered_entity")
 
-    history = HistoricalRecords(m2m_fields=[attrs], excluded_fields=["status", "updated_time"])
+    history = HistoricalRecords(excluded_fields=["status", "updated_time"])
 
     def __init__(self, *args, **kwargs):
         super(Entity, self).__init__(*args, **kwargs)

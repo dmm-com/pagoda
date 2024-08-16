@@ -54,7 +54,6 @@ class ViewTest(AironeViewTest):
             parent_entity=self._entity,
         )
         self._entity_attr.save()
-        self._entity.attrs.add(self._entity_attr)
 
         return user
 
@@ -385,7 +384,6 @@ class ViewTest(AironeViewTest):
             parent_entity=self._entity,
             is_mandatory=False,
         )
-        self._entity.attrs.add(new_attr)
         params["entry_name"] = "new_entry"
         params["attrs"] = [{"id": str(new_attr.id), "value": [{"data": "foo", "index": "0"}]}]
 
@@ -426,7 +424,6 @@ class ViewTest(AironeViewTest):
             parent_entity=entity,
             created_user=another_user,
         )
-        entity.attrs.add(attr_base)
 
         params = {
             "entry_name": "entry",
@@ -465,7 +462,6 @@ class ViewTest(AironeViewTest):
             parent_entity=self._entity,
         )
         self._entity_attr_optional.save()
-        self._entity.attrs.add(self._entity_attr_optional)
 
         params = {
             "entry_name": "hoge",
@@ -546,7 +542,6 @@ class ViewTest(AironeViewTest):
             is_mandatory=False,
         )
         attr_base.referral.add(self._entity)
-        self._entity.attrs.add(attr_base)
 
         entry = Entry.objects.create(name="entry", schema=self._entity, created_user=user)
 
@@ -637,7 +632,6 @@ class ViewTest(AironeViewTest):
             is_mandatory=False,
         )
         attr_base.referral.add(self._entity)
-        self._entity.attrs.add(attr_base)
 
         params = {
             "entry_name": "new_entry",
@@ -801,13 +795,11 @@ class ViewTest(AironeViewTest):
 
         entity = Entity.objects.create(name="entity", created_user=user)
         for attr_name in ["foo", "bar"]:
-            entity.attrs.add(
-                EntityAttr.objects.create(
-                    name=attr_name,
-                    type=AttrType.STRING,
-                    created_user=user,
-                    parent_entity=entity,
-                )
+            EntityAttr.objects.create(
+                name=attr_name,
+                type=AttrType.STRING,
+                created_user=user,
+                parent_entity=entity,
             )
 
         # making test Entry set
@@ -952,8 +944,7 @@ class ViewTest(AironeViewTest):
         entry.save()
 
         for attr_name in ["foo", "bar", "baz"]:
-            attr = self.make_attr(name=attr_name, created_user=user, parent_entry=entry)
-            self._entity.attrs.add(attr.schema)
+            self.make_attr(name=attr_name, created_user=user, parent_entry=entry)
 
         params = {
             "entry_name": entry.name,
@@ -1002,15 +993,13 @@ class ViewTest(AironeViewTest):
         user = self.admin_login()
 
         entity = Entity.objects.create(name="entity", created_user=user)
-        entity.attrs.add(
-            EntityAttr.objects.create(
-                **{
-                    "name": "attr",
-                    "type": AttrType.ARRAY_STRING,
-                    "created_user": user,
-                    "parent_entity": entity,
-                }
-            )
+        EntityAttr.objects.create(
+            **{
+                "name": "attr",
+                "type": AttrType.ARRAY_STRING,
+                "created_user": user,
+                "parent_entity": entity,
+            }
         )
 
         entry = Entry.objects.create(name="entry", created_user=user, schema=entity)
@@ -1226,7 +1215,6 @@ class ViewTest(AironeViewTest):
             is_mandatory=False,
         )
         attr_base.referral.add(self._entity)
-        self._entity.attrs.add(attr_base)
 
         entry = Entry.objects.create(name="old_entry", schema=self._entity, created_user=user)
 
@@ -1275,7 +1263,6 @@ class ViewTest(AironeViewTest):
             is_mandatory=False,
         )
         attr_base.referral.add(self._entity)
-        self._entity.attrs.add(attr_base)
 
         entry = Entry.objects.create(name="entry", schema=self._entity, created_user=user)
 
@@ -1316,7 +1303,6 @@ class ViewTest(AironeViewTest):
         attr = self.make_attr(
             name="attr", attrtype=AttrType.OBJECT, created_user=user, parent_entry=entry
         )
-        self._entity.attrs.add(attr.schema)
 
         attr_value = AttributeValue.objects.create(
             referral=entry, created_user=user, parent_attr=attr
@@ -1353,15 +1339,13 @@ class ViewTest(AironeViewTest):
 
         entity = Entity.objects.create(name="ほげ", created_user=user)
         for name in ["foo", "bar"]:
-            entity.attrs.add(
-                EntityAttr.objects.create(
-                    **{
-                        "name": name,
-                        "type": AttrType.STRING,
-                        "created_user": user,
-                        "parent_entity": entity,
-                    }
-                )
+            EntityAttr.objects.create(
+                **{
+                    "name": name,
+                    "type": AttrType.STRING,
+                    "created_user": user,
+                    "parent_entity": entity,
+                }
             )
 
         entry = Entry.objects.create(name="fuga", schema=entity, created_user=user)
@@ -1405,16 +1389,14 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 200)
 
         # append an unpermitted Attribute
-        entity.attrs.add(
-            EntityAttr.objects.create(
-                **{
-                    "name": "new_attr",
-                    "type": AttrType.STRING,
-                    "created_user": user,
-                    "parent_entity": entity,
-                    "is_public": False,
-                }
-            )
+        EntityAttr.objects.create(
+            **{
+                "name": "new_attr",
+                "type": AttrType.STRING,
+                "created_user": user,
+                "parent_entity": entity,
+                "is_public": False,
+            }
         )
 
         # re-login with guest user
@@ -1493,9 +1475,6 @@ class ViewTest(AironeViewTest):
                 created_user=user,
                 parent_entity=test_entity,
             )
-
-            test_entity.attrs.add(test_entity_attr)
-            test_entity.save()
 
             test_entry = Entry.objects.create(
                 name=type_name + ',"ENTRY"', schema=test_entity, created_user=user
@@ -1702,9 +1681,8 @@ class ViewTest(AironeViewTest):
             type=AttrType.ARRAY_STRING,
             is_mandatory=False,
             created_user=user,
-            parent_entity=self._entity,
+            parent_entity=entity,
         )
-        entity.attrs.add(attr_base)
 
         params = {
             "entry_name": "entry-test",
@@ -1765,11 +1743,10 @@ class ViewTest(AironeViewTest):
             name="attr-ref-test",
             created_user=user,
             type=AttrType.ARRAY_OBJECT,
-            parent_entity=self._entity,
+            parent_entity=entity,
             is_mandatory=False,
         )
         attr_base.referral.add(self._entity)
-        entity.attrs.add(attr_base)
 
         referral = Entry.objects.create(name="entry0", schema=self._entity, created_user=user)
 
@@ -1825,7 +1802,6 @@ class ViewTest(AironeViewTest):
             created_user=user,
             parent_entity=self._entity,
         )
-        self._entity.attrs.add(textattr)
 
         params = {
             "entry_name": "entry",
@@ -2324,7 +2300,6 @@ class ViewTest(AironeViewTest):
             created_user=user,
             parent_entity=self._entity,
         )
-        self._entity.attrs.add(attr)
 
         self._entity_attr.is_mandatory = False
         self._entity_attr.is_public = False
@@ -2387,7 +2362,6 @@ class ViewTest(AironeViewTest):
                 index=index,
                 default_permission=permission.id,
             )
-            entity.attrs.add(attr)
             attrs.append(attr)
 
         params = {
@@ -2468,7 +2442,6 @@ class ViewTest(AironeViewTest):
             parent_entity=entity,
             created_user=admin,
         )
-        entity.attrs.add(entity_attr)
 
         # creates entry that has a parameter which is typed boolean
         params = {
@@ -2533,7 +2506,6 @@ class ViewTest(AironeViewTest):
             parent_entity=entity,
             created_user=user,
         )
-        entity.attrs.add(attr_base)
 
         params = {
             "entry_name": "entry",
@@ -2561,14 +2533,13 @@ class ViewTest(AironeViewTest):
         user = self.admin_login()
 
         entity = Entity.objects.create(name="Entity", is_public=False, created_user=user)
-        attr_base = EntityAttr.objects.create(
+        EntityAttr.objects.create(
             name="attr",
             type=AttrType.STRING,
             is_mandatory=True,
             parent_entity=entity,
             created_user=user,
         )
-        entity.attrs.add(attr_base)
 
         entry = Entry.objects.create(name="Entry", schema=entity, created_user=user)
         entry.complement_attrs(user)
@@ -2620,14 +2591,12 @@ class ViewTest(AironeViewTest):
             parent_entity=entity,
             created_user=user,
         )
-        entity.attrs.add(entity_attr_ref)
         entity_attr_arr_ref = EntityAttr.objects.create(
             name="arr_ref",
             type=AttrType.ARRAY_OBJECT,
             parent_entity=entity,
             created_user=user,
         )
-        entity.attrs.add(entity_attr_arr_ref)
 
         # set entity that target each attributes refer to
         [x.referral.add(ref_entity) for x in entity.attrs.all()]
@@ -2838,8 +2807,6 @@ class ViewTest(AironeViewTest):
         attr_base = EntityAttr.objects.create(**new_attr_params)
         attr_base.referral.add(ref_entity)
 
-        entity.attrs.add(attr_base)
-
         # try to create with empty params
         params = {
             "entry_name": "new_entry1",
@@ -2936,8 +2903,6 @@ class ViewTest(AironeViewTest):
         attr_base = EntityAttr.objects.create(**new_attr_params)
         attr_base.referral.add(ref_entity)
 
-        entity.attrs.add(attr_base)
-
         params = {
             "entry_name": "new_entry",
             "attrs": [
@@ -2999,8 +2964,6 @@ class ViewTest(AironeViewTest):
             }
         )
         attr_base.referral.add(ref_entity)
-
-        entity.attrs.add(attr_base)
 
         entry = Entry.objects.create(name="entry", created_user=user, schema=entity)
         entry.complement_attrs(user)
@@ -3081,8 +3044,6 @@ class ViewTest(AironeViewTest):
         }
         attr_base = EntityAttr.objects.create(**new_attr_params)
         attr_base.referral.add(ref_entity)
-
-        entity.attrs.add(attr_base)
 
         # create an Entry associated to the 'entity'
         entry = Entry.objects.create(name="entry", created_user=user, schema=entity)
@@ -3350,15 +3311,13 @@ class ViewTest(AironeViewTest):
         admin.groups.add(group)
 
         entity = Entity.objects.create(name="entity", created_user=admin)
-        entity.attrs.add(
-            EntityAttr.objects.create(
-                **{
-                    "name": "attr_group",
-                    "type": AttrType.GROUP,
-                    "created_user": admin,
-                    "parent_entity": entity,
-                }
-            )
+        EntityAttr.objects.create(
+            **{
+                "name": "attr_group",
+                "type": AttrType.GROUP,
+                "created_user": admin,
+                "parent_entity": entity,
+            }
         )
 
         params = {
@@ -3395,15 +3354,13 @@ class ViewTest(AironeViewTest):
             admin.groups.add(group)
 
         entity = Entity.objects.create(name="entity", created_user=admin)
-        entity.attrs.add(
-            EntityAttr.objects.create(
-                **{
-                    "name": "attr_group",
-                    "type": AttrType.GROUP,
-                    "created_user": admin,
-                    "parent_entity": entity,
-                }
-            )
+        EntityAttr.objects.create(
+            **{
+                "name": "attr_group",
+                "type": AttrType.GROUP,
+                "created_user": admin,
+                "parent_entity": entity,
+            }
         )
 
         entry = Entry.objects.create(name="entry", schema=entity, created_user=admin)
@@ -3494,8 +3451,6 @@ class ViewTest(AironeViewTest):
 
             if info["type"] & AttrType.OBJECT:
                 attr.referral.add(ref_entity)
-
-            entity.attrs.add(attr)
 
         # try to import data which has invalid data structure
         for index in range(3):
@@ -3783,8 +3738,6 @@ class ViewTest(AironeViewTest):
             if info["type"] & AttrType.OBJECT:
                 attr.referral.add(ref_entity)
 
-            entity.attrs.add(attr)
-
         # Change a name of EntityAttr 'str (before changing)' to 'str'
         entity_attr = EntityAttr.objects.get(name="str (before changing)", parent_entity=entity)
         entity_attr.name = "str"
@@ -3819,13 +3772,11 @@ class ViewTest(AironeViewTest):
         user = self.admin_login()
 
         entity = Entity.objects.create(name="Entity", created_user=user)
-        entity.attrs.add(
-            EntityAttr.objects.create(
-                name="str",
-                type=AttrType.STRING,
-                created_user=user,
-                parent_entity=entity,
-            )
+        EntityAttr.objects.create(
+            name="str",
+            type=AttrType.STRING,
+            created_user=user,
+            parent_entity=entity,
         )
 
         for encoding in ["UTF-8", "Shift-JIS", "EUC-JP"]:
@@ -3900,7 +3851,6 @@ class ViewTest(AironeViewTest):
             parent_entity=entity,
             created_user=admin,
         )
-        entity.attrs.add(entity_attr)
 
         # creates entry that has a parameter which is typed date
         params = {
@@ -3968,7 +3918,6 @@ class ViewTest(AironeViewTest):
             parent_entity=entity,
             created_user=admin,
         )
-        entity.attrs.add(entity_attr)
 
         # creates entry that has a invalid format parameter which is typed date
         params = {
@@ -3997,13 +3946,12 @@ class ViewTest(AironeViewTest):
         admin = self.admin_login()
 
         entity = Entity.objects.create(name="entity", created_user=admin)
-        entity_attr = EntityAttr.objects.create(
+        EntityAttr.objects.create(
             name="attr_date",
             type=AttrType.DATE,
             parent_entity=entity,
             created_user=admin,
         )
-        entity.attrs.add(entity_attr)
 
         entry = Entry.objects.create(name="entry", schema=entity, created_user=admin)
         entry.complement_attrs(admin)
@@ -4052,7 +4000,6 @@ class ViewTest(AironeViewTest):
             parent_entity=entity,
             created_user=admin,
         )
-        entity.attrs.add(entity_attr)
 
         # creates entry that has a empty parameter which is typed date
         params = {
@@ -4171,8 +4118,6 @@ class ViewTest(AironeViewTest):
             info["schema"] = attr
             if info["type"] & AttrType.OBJECT:
                 attr.referral.add(ref_entity)
-
-            entity.attrs.add(attr)
 
         entry = Entry.objects.create(name="entry", schema=entity, created_user=user)
         entry.complement_attrs(user)
@@ -4300,13 +4245,11 @@ class ViewTest(AironeViewTest):
             },
         }
         for attr_name, info in attr_info.items():
-            entity.attrs.add(
-                EntityAttr.objects.create(
-                    name=attr_name,
-                    type=info["type"],
-                    created_user=user,
-                    parent_entity=entity,
-                )
+            EntityAttr.objects.create(
+                name=attr_name,
+                type=info["type"],
+                created_user=user,
+                parent_entity=entity,
             )
 
         for i, value in enumerate(["", "0", 0, "9999", None]):
@@ -4373,8 +4316,6 @@ class ViewTest(AironeViewTest):
                 parent_entity=entity,
             )
 
-            entity.attrs.add(attr)
-
             # send a request to create entry and expect to be error
             referral_key = []
             if info["type"] & AttrType._NAMED:
@@ -4439,7 +4380,6 @@ class ViewTest(AironeViewTest):
                 parent_entity=entity,
             )
             attr.referral.add(ref_entity)
-            entity.attrs.add(attr)
 
             referral_key = []
             if attr_type & AttrType._NAMED:
@@ -4541,15 +4481,13 @@ class ViewTest(AironeViewTest):
     def test_show_entry_history(self):
         user = self.guest_login()
         entity = Entity.objects.create(name="entity", created_user=user)
-        entity.attrs.add(
-            EntityAttr.objects.create(
-                **{
-                    "name": "attr",
-                    "created_user": user,
-                    "parent_entity": entity,
-                    "type": AttrType.STRING,
-                }
-            )
+        EntityAttr.objects.create(
+            **{
+                "name": "attr",
+                "created_user": user,
+                "parent_entity": entity,
+                "type": AttrType.STRING,
+            }
         )
 
         # create and add values
@@ -4574,7 +4512,6 @@ class ViewTest(AironeViewTest):
             parent_entity=entity,
             type=AttrType.STRING,
         )
-        entity.attrs.add(attr)
 
         # create without type parameter
         params = {
@@ -4661,15 +4598,13 @@ class ViewTest(AironeViewTest):
         role: Role = Role.objects.create(name="Role")
         role.users.add(user)
         entity = Entity.objects.create(name="entity", created_user=user)
-        entity.attrs.add(
-            EntityAttr.objects.create(
-                **{
-                    "name": "attr",
-                    "type": AttrType.STRING,
-                    "created_user": user,
-                    "parent_entity": entity,
-                }
-            )
+        EntityAttr.objects.create(
+            **{
+                "name": "attr",
+                "type": AttrType.STRING,
+                "created_user": user,
+                "parent_entity": entity,
+            }
         )
 
         entry = Entry.objects.create(name="entry", schema=entity, created_user=user)
@@ -4840,8 +4775,6 @@ class ViewTest(AironeViewTest):
             if info["type"] & AttrType.OBJECT:
                 attr.referral.add(ref_entity)
 
-            entity.attrs.add(attr)
-
         # initialize each AttributeValues
         entry = Entry.objects.create(name="Entry", schema=entity, created_user=user)
         entry.complement_attrs(user)
@@ -4975,15 +4908,13 @@ class ViewTest(AironeViewTest):
         # initialize Entity and Entry
         entity = Entity.objects.create(name="Entity", created_user=user)
         [
-            entity.attrs.add(
-                EntityAttr.objects.create(
-                    **{
-                        "name": attr_name,
-                        "type": AttrType.STRING,
-                        "created_user": user,
-                        "parent_entity": entity,
-                    }
-                )
+            EntityAttr.objects.create(
+                **{
+                    "name": attr_name,
+                    "type": AttrType.STRING,
+                    "created_user": user,
+                    "parent_entity": entity,
+                }
             )
             for attr_name in ["attr1", "attr2"]
         ]
@@ -5031,15 +4962,13 @@ class ViewTest(AironeViewTest):
 
         # initialize Entity and Entry
         entity = Entity.objects.create(name="Entity", created_user=user)
-        entity.attrs.add(
-            EntityAttr.objects.create(
-                **{
-                    "name": "attr",
-                    "type": AttrType.STRING,
-                    "created_user": user,
-                    "parent_entity": entity,
-                }
-            )
+        EntityAttr.objects.create(
+            **{
+                "name": "attr",
+                "type": AttrType.STRING,
+                "created_user": user,
+                "parent_entity": entity,
+            }
         )
 
         entry = Entry.objects.create(name="Entry", schema=entity, created_user=user)
@@ -5070,15 +4999,13 @@ class ViewTest(AironeViewTest):
 
         # initialize Entity and Entry
         entity = Entity.objects.create(name="Entity", created_user=user)
-        entity.attrs.add(
-            EntityAttr.objects.create(
-                **{
-                    "name": "attr",
-                    "type": AttrType.STRING,
-                    "created_user": user,
-                    "parent_entity": entity,
-                }
-            )
+        EntityAttr.objects.create(
+            **{
+                "name": "attr",
+                "type": AttrType.STRING,
+                "created_user": user,
+                "parent_entity": entity,
+            }
         )
 
         entry = Entry.objects.create(name="Entry", schema=entity, created_user=user)
@@ -5238,7 +5165,6 @@ class ViewTest(AironeViewTest):
             parent_entity=entity,
             created_user=user,
         )
-        entity.attrs.add(entity_attr)
 
         # creates entry that has a parameter which is typed boolean
         params = {
@@ -5343,7 +5269,7 @@ class ViewTest(AironeViewTest):
         ref_entry = Entry.objects.create(name="before_change", created_user=user, schema=ref_entity)
 
         entity = Entity.objects.create(name="entity", created_user=user)
-        entity_attr = EntityAttr.objects.create(
+        EntityAttr.objects.create(
             **{
                 "name": "ref",
                 "created_user": user,
@@ -5351,7 +5277,6 @@ class ViewTest(AironeViewTest):
                 "parent_entity": entity,
             }
         )
-        entity.attrs.add(entity_attr)
         entry = Entry.objects.create(name="entry", schema=entity, created_user=user)
         entry.complement_attrs(user)
         entry.attrs.first().add_value(user, ref_entry)

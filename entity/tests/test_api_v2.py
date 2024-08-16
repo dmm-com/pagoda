@@ -3526,8 +3526,6 @@ class ViewTest(AironeViewTest):
                 if is_object:
                     attr.referral.add(entity)
 
-                entity.attrs.add(attr)
-
         entities = Entity.objects.filter(name__contains="test_entity")
 
         entity3 = self.create_entity(
