@@ -107,7 +107,7 @@ class ViewTest(BaseViewTest):
             },
         )
         # add an optional attribute after creating entry
-        optional_attr = EntityAttr.objects.create(
+        EntityAttr.objects.create(
             **{
                 "name": "opt",
                 "type": AttrType.STRING,
@@ -116,7 +116,6 @@ class ViewTest(BaseViewTest):
                 "created_user": self.user,
             }
         )
-        self.entity.attrs.add(optional_attr)
 
         resp = self.client.get("/entry/api/v2/%d/" % entry.id)
         self.assertEqual(resp.status_code, 200)
@@ -2009,15 +2008,13 @@ class ViewTest(BaseViewTest):
 
         entity = Entity.objects.create(name="ほげ", created_user=user)
         for name in ["foo", "bar"]:
-            entity.attrs.add(
-                EntityAttr.objects.create(
-                    **{
-                        "name": name,
-                        "type": AttrType.STRING,
-                        "created_user": user,
-                        "parent_entity": entity,
-                    }
-                )
+            EntityAttr.objects.create(
+                **{
+                    "name": name,
+                    "type": AttrType.STRING,
+                    "created_user": user,
+                    "parent_entity": entity,
+                }
             )
 
         entry = Entry.objects.create(name="fuga", schema=entity, created_user=user)
@@ -2066,16 +2063,14 @@ class ViewTest(BaseViewTest):
         self.assertEqual(resp.status_code, 200)
 
         # append an unpermitted Attribute
-        entity.attrs.add(
-            EntityAttr.objects.create(
-                **{
-                    "name": "new_attr",
-                    "type": AttrType.STRING,
-                    "created_user": user,
-                    "parent_entity": entity,
-                    "is_public": False,
-                }
-            )
+        EntityAttr.objects.create(
+            **{
+                "name": "new_attr",
+                "type": AttrType.STRING,
+                "created_user": user,
+                "parent_entity": entity,
+                "is_public": False,
+            }
         )
 
         # re-login with guest user
@@ -2134,7 +2129,6 @@ class ViewTest(BaseViewTest):
             }
         )
         entity_attr_object.referral.add(self.ref_entity)
-        entity.attrs.add(entity_attr_object)
         entity_attr_array_object = EntityAttr.objects.create(
             **{
                 "name": "array_object",
@@ -2144,7 +2138,6 @@ class ViewTest(BaseViewTest):
             }
         )
         entity_attr_array_object.referral.add(self.ref_entity)
-        entity.attrs.add(entity_attr_array_object)
         entity_attr_named_object = EntityAttr.objects.create(
             **{
                 "name": "named_object",
@@ -2154,7 +2147,6 @@ class ViewTest(BaseViewTest):
             }
         )
         entity_attr_named_object.referral.add(self.ref_entity)
-        entity.attrs.add(entity_attr_named_object)
         entity_attr_named_object_without_key = EntityAttr.objects.create(
             **{
                 "name": "named_object_without_key",
@@ -2164,7 +2156,6 @@ class ViewTest(BaseViewTest):
             }
         )
         entity_attr_named_object_without_key.referral.add(self.ref_entity)
-        entity.attrs.add(entity_attr_named_object_without_key)
         entity_attr_array_named_object = EntityAttr.objects.create(
             **{
                 "name": "array_named_object",
@@ -2174,7 +2165,6 @@ class ViewTest(BaseViewTest):
             }
         )
         entity_attr_array_named_object.referral.add(self.ref_entity)
-        entity.attrs.add(entity_attr_array_named_object)
 
         entry = Entry.objects.create(name="entry", schema=entity, created_user=user)
         entry.complement_attrs(user)
@@ -2349,9 +2339,6 @@ class ViewTest(BaseViewTest):
                 parent_entity=test_entity,
             )
 
-            test_entity.attrs.add(test_entity_attr)
-            test_entity.save()
-
             test_entry = Entry.objects.create(
                 name=type_name + ',"ENTRY"', schema=test_entity, created_user=user
             )
@@ -2454,15 +2441,13 @@ class ViewTest(BaseViewTest):
         groups = [Group.objects.create(name=x) for x in ["g-foo", "g-bar", "g-baz"]]
         entity = Entity.objects.create(name="Entity", created_user=user)
         for name, type_index in [("grp", "group"), ("arr_group", "array_group")]:
-            entity.attrs.add(
-                EntityAttr.objects.create(
-                    **{
-                        "name": name,
-                        "type": AttrTypeValue[type_index],
-                        "created_user": user,
-                        "parent_entity": entity,
-                    }
-                )
+            EntityAttr.objects.create(
+                **{
+                    "name": name,
+                    "type": AttrTypeValue[type_index],
+                    "created_user": user,
+                    "parent_entity": entity,
+                }
             )
 
         # test to get groups through API calling of get_attr_referrals
@@ -2506,7 +2491,6 @@ class ViewTest(BaseViewTest):
         )
 
         entity_attr.referral.add(ref_entity)
-        entity.attrs.add(entity_attr)
 
         for index in range(CONFIG.MAX_LIST_REFERRALS, -1, -1):
             Entry.objects.create(name="e-%s" % index, schema=ref_entity, created_user=admin)
@@ -2588,7 +2572,6 @@ class ViewTest(BaseViewTest):
             }
         )
         entity_attr.referral.add(ref_entity)
-        entity.attrs.add(entity_attr)
 
         resp = self.client.get(
             "/entry/api/v2/%d/attr_referrals/" % entity_attr.id, {"keyword": "e-1"}
@@ -3356,15 +3339,13 @@ class ViewTest(BaseViewTest):
 
         entity = Entity.objects.create(name="Entity", created_user=user)
         for attr_name, info in attr_info.items():
-            entity.attrs.add(
-                EntityAttr.objects.create(
-                    **{
-                        "name": attr_name,
-                        "type": info["type"],
-                        "created_user": user,
-                        "parent_entity": entity,
-                    }
-                )
+            EntityAttr.objects.create(
+                **{
+                    "name": attr_name,
+                    "type": info["type"],
+                    "created_user": user,
+                    "parent_entity": entity,
+                }
             )
 
         entry = Entry.objects.create(name="entry", schema=entity, created_user=user)
@@ -3718,7 +3699,6 @@ class ViewTest(BaseViewTest):
             parent_entity=entity,
         )
         entity_attr.referral.add(ref_entity)
-        entity.attrs.add(entity_attr)
 
         # initialize Entries
         ref_entry = Entry.objects.create(name="ref", schema=ref_entity, created_user=user)
@@ -3830,9 +3810,6 @@ class ViewTest(BaseViewTest):
                 created_user=user,
                 parent_entity=test_entity,
             )
-
-            test_entity.attrs.add(test_entity_attr)
-            test_entity.save()
 
             test_entry = Entry.objects.create(
                 name=type_name + ',"ENTRY"', schema=test_entity, created_user=user
@@ -3987,8 +3964,6 @@ class ViewTest(BaseViewTest):
 
                 if info["type"] & AttrType.OBJECT:
                     attr.referral.add(entity_ref)
-
-                entity.attrs.add(attr)
 
             # create an entry of Entity
             for e_index in range(2):
@@ -4239,7 +4214,6 @@ class ViewTest(BaseViewTest):
             parent_entity=entity,
         )
         entity_attr.referral.add(ref_entity)
-        entity.attrs.add(entity_attr)
 
         # initialize Entries
         ref_entry = Entry.objects.create(name="ref", schema=ref_entity, created_user=user)

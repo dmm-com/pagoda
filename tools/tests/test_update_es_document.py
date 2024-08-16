@@ -21,15 +21,13 @@ class UpdateESDocuemntlTest(AironeTestCase):
 
         # create entity
         self.entity1 = Entity.objects.create(name="Entity1", created_user=self.user)
-        self.entity1.attrs.add(
-            EntityAttr.objects.create(
-                **{
-                    "name": "attr",
-                    "type": AttrType.STRING,
-                    "created_user": self.user,
-                    "parent_entity": self.entity1,
-                }
-            )
+        EntityAttr.objects.create(
+            **{
+                "name": "attr",
+                "type": AttrType.STRING,
+                "created_user": self.user,
+                "parent_entity": self.entity1,
+            }
         )
         self.entity2 = Entity.objects.create(name="Entity2", created_user=self.user)
 

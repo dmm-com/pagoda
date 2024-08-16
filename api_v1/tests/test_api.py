@@ -254,15 +254,13 @@ class APITest(AironeViewTest):
 
         entity_ref = Entity.objects.create(name="Ref", created_user=user)
         entity = Entity.objects.create(name="Entity", created_user=user)
-        entity.attrs.add(
-            EntityAttr.objects.create(
-                **{
-                    "name": "ref",
-                    "type": AttrType.OBJECT,
-                    "created_user": user,
-                    "parent_entity": entity,
-                }
-            )
+        EntityAttr.objects.create(
+            **{
+                "name": "ref",
+                "type": AttrType.OBJECT,
+                "created_user": user,
+                "parent_entity": entity,
+            }
         )
 
         entry_ref = Entry.objects.create(name="r1", schema=entity_ref, created_user=user)
@@ -368,8 +366,6 @@ class APITest(AironeViewTest):
             )
             if "ref" in attr_info:
                 entity_attr.referral.add(attr_info["ref"])
-
-            entity.attrs.add(entity_attr)
 
         # send request without essential params
         params = {"name": "invalid-entry", "entity": entity.name, "attrs": {}}
@@ -479,16 +475,14 @@ class APITest(AironeViewTest):
             {"name": "attr2", "type": AttrType.STRING, "is_public": False},
         ]
         for attr_info in attr_params:
-            entity.attrs.add(
-                EntityAttr.objects.create(
-                    **{
-                        "name": attr_info["name"],
-                        "type": attr_info["type"],
-                        "is_public": attr_info["is_public"],
-                        "created_user": admin,
-                        "parent_entity": entity,
-                    }
-                )
+            EntityAttr.objects.create(
+                **{
+                    "name": attr_info["name"],
+                    "type": attr_info["type"],
+                    "is_public": attr_info["is_public"],
+                    "created_user": admin,
+                    "parent_entity": entity,
+                }
             )
 
         # re-login as guest
@@ -603,15 +597,13 @@ class APITest(AironeViewTest):
         admin = self.admin_login()
 
         entity = Entity.objects.create(name="Entity", created_user=admin, is_public=False)
-        entity.attrs.add(
-            EntityAttr.objects.create(
-                **{
-                    "name": "attr",
-                    "type": AttrType.STRING,
-                    "created_user": admin,
-                    "parent_entity": entity,
-                }
-            )
+        EntityAttr.objects.create(
+            **{
+                "name": "attr",
+                "type": AttrType.STRING,
+                "created_user": admin,
+                "parent_entity": entity,
+            }
         )
 
         entry = Entry.objects.create(name="entry", schema=entity, created_user=admin)
@@ -791,8 +783,6 @@ class APITest(AironeViewTest):
                 if "referral" in info:
                     attr.referral.add(info["referral"])
 
-                entity.attrs.add(attr)
-
             for i in range(0, 10):
                 entry = Entry.objects.create(name="entry-%d" % i, schema=entity, created_user=user)
                 entry.complement_attrs(user)
@@ -943,13 +933,11 @@ class APITest(AironeViewTest):
 
         # Initialize Entity and Entries to use in this test
         entity = Entity.objects.create(name="Entity", created_user=user)
-        entity.attrs.add(
-            EntityAttr.objects.create(
-                name="attr",
-                type=AttrType.STRING,
-                parent_entity=entity,
-                created_user=user,
-            )
+        EntityAttr.objects.create(
+            name="attr",
+            type=AttrType.STRING,
+            parent_entity=entity,
+            created_user=user,
         )
 
         entry = Entry.objects.create(name="entry", schema=entity, created_user=user)
@@ -1132,13 +1120,11 @@ class APITest(AironeViewTest):
 
         # Initialize Entity and Entries to use in this test
         entity = Entity.objects.create(name="Entity", created_user=user)
-        entity.attrs.add(
-            EntityAttr.objects.create(
-                name="attr",
-                type=AttrType.STRING,
-                parent_entity=entity,
-                created_user=user,
-            )
+        EntityAttr.objects.create(
+            name="attr",
+            type=AttrType.STRING,
+            parent_entity=entity,
+            created_user=user,
         )
 
         entry = Entry.objects.create(name="entry", schema=entity, created_user=user)
@@ -1190,7 +1176,6 @@ class APITest(AironeViewTest):
                 "is_public": False,
             }
         )
-        entity.attrs.add(entity_attr)
 
         # There was a bug(#28) when there are multiple users, individual attribute authorization
         # would not be inherited from EntityAttr to Attribute. To confirm that the bug is corrected,
@@ -1348,13 +1333,13 @@ class APITest(AironeViewTest):
             "created_user": user,
             "parent_entity": entity,
         }
-        entity.attrs.add(EntityAttr.objects.create(**attr_params))
+        EntityAttr.objects.create(**attr_params)
         entry = Entry.objects.create(name="entry", schema=entity, created_user=user)
         entry.complement_attrs(user)
 
         # delete and create EntityAttr, then complement Entry Attribute
         entity.attrs.get(name="attr").delete()
-        entity.attrs.add(EntityAttr.objects.create(**attr_params))
+        EntityAttr.objects.create(**attr_params)
         entry.complement_attrs(user)
 
         params = {

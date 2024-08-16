@@ -94,8 +94,6 @@ class APITest(AironeViewTest):
             if info["type"] & AttrType.OBJECT:
                 attr.referral.add(ref_entity)
 
-            self.entity.attrs.add(attr)
-
     def test_with_fully_set_value(self):
         # create test entry and set each values
         entry = Entry.objects.create(name="entry", schema=self.entity, created_user=self.user)
@@ -236,15 +234,13 @@ class APITest(AironeViewTest):
         # which is created in setUp method. And this test will create same name entry with
         # 'entry' which is created before.
         another_entity = Entity.objects.create(name="AnotherEntity", created_user=self.user)
-        another_entity.attrs.add(
-            EntityAttr.objects.create(
-                **{
-                    "name": "str",
-                    "type": AttrType.STRING,
-                    "created_user": self.user,
-                    "parent_entity": another_entity,
-                }
-            )
+        EntityAttr.objects.create(
+            **{
+                "name": "str",
+                "type": AttrType.STRING,
+                "created_user": self.user,
+                "parent_entity": another_entity,
+            }
         )
         another_entry = Entry.objects.create(
             name="entry", schema=another_entity, created_user=self.user

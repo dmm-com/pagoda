@@ -174,7 +174,6 @@ def generate_testdata(num_entities: int, num_entries: int, suffix: str):
                 AttrType.ARRAY_NAMED_OBJECT,
             ]:
                 entity_attr.referral.add(ref_entity)
-            entity.attrs.add(entity_attr)
 
     with ThreadPoolExecutor() as executor:
         futures: list[Future] = []

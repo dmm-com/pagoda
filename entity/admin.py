@@ -94,15 +94,6 @@ class EntityAttrResource(AironeModelResource):
         model = EntityAttr
         fields = ("id", "name", "type", "is_mandatory")
 
-    def after_save_instance(self, instance, using_transactions, dry_run):
-        # If a new EntityAttr object is created,
-        # this processing append it to the associated Entity object.
-        if not dry_run:
-            entity = instance.parent_entity
-
-            if not entity.attrs.filter(id=instance.id).exists():
-                entity.attrs.add(instance)
-
     def import_obj(self, instance, data, dry_run, **kwargs):
         if not Entity.objects.filter(name=data["entity"]).exists():
             raise RuntimeError("failed to identify entity object")

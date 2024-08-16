@@ -15,13 +15,11 @@ class APITest(AironeViewTest):
             entity = Entity.objects.create(name=entity_name, created_user=user)
 
             for attrname in attrnames:
-                entity.attrs.add(
-                    EntityAttr.objects.create(
-                        name=attrname,
-                        type=AttrType.STRING,
-                        created_user=user,
-                        parent_entity=entity,
-                    )
+                EntityAttr.objects.create(
+                    name=attrname,
+                    type=AttrType.STRING,
+                    created_user=user,
+                    parent_entity=entity,
                 )
 
     def test_get_entity_attrs_with_invalid_entity_id(self):
