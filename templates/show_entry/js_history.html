@@ -46,21 +46,7 @@ function prep_renew_modal(e) {
 
 var history_count = {{ history_count }};
 var history_index = {{ history_count }};
-var attr_type = {
-  'entry': {{ attr_type.entry }},
-  'string': {{ attr_type.string }},
-  'textarea': {{ attr_type.textarea }},
-  'named_entry': {{ attr_type.named_entry }},
-  'boolean': {{ attr_type.boolean }},
-  'group': {{ attr_type.group }},
-  'date': {{ attr_type.date }},
-  'array_entry': {{ attr_type.array_entry }},
-  'array_string': {{ attr_type.array_string }},
-  'array_named_entry': {{ attr_type.array_named_entry }},
-  'array_group': {{ attr_type.array_group }},
-  'role': {{ attr_type.role }},
-  'array_role': {{ attr_type.array_role }},
-};
+
 function show_old_history(e) {
   MessageBox.clear();
 
@@ -101,23 +87,23 @@ function make_element_value_text(a_type, attrv) {
     return '';
   }
 
-  if (a_type == attr_type.entry) {
+  if (a_type == {{ attr_type.object }}) {
     return `<a href='/entry/show/${ attrv.value.id }/'>${ attrv.value.name }</a>`;
 
-  } else if (a_type == attr_type.string) {
+  } else if (a_type == {{ attr_type.string }}) {
     return `<span class='url_conv'>${ attrv.value }</span>`;
 
-  } else if (a_type == attr_type.textarea) {
+  } else if (a_type == {{ attr_type.textarea }}) {
     return `<span class='url_conv textarea'>${ attrv.value }</span>`;
 
-  } else if (a_type == attr_type.boolean) {
+  } else if (a_type == {{ attr_type.boolean }} ) {
     if(attrv.value) {
       return "<input type='checkbox' disabled='True' checked='True'/>";
     } else {
       return "<input type='checkbox' disabled='True'/>";
     }
 
-  } else if (a_type == attr_type.named_entry) {
+  } else if (a_type == {{ attr_type.named_object }}) {
     let ref_value = '';
     if(attrv.value.referral != null) {
       ref_value = `<a href='/entry/show/${ attrv.value.referral.id }/'>${ attrv.value.referral.name }</a>`;
@@ -128,16 +114,16 @@ function make_element_value_text(a_type, attrv) {
              `<div class='col-9 attrv_referral'>${ ref_value }</div>` +
            `</div>`;
 
-  } else if (a_type == attr_type.group) {
+  } else if (a_type == {{ attr_type.group }}) {
     return `<a href='/group/edit/${ attrv.value.id }'>${ attrv.value.name }</a>`;
 
-  } else if (a_type == attr_type.role) {
+  } else if (a_type == {{ attr_type.role }}) {
     return `<a href='/role/edit/${ attrv.value.id }'>${ attrv.value.name }</a>`;
 
-  } else if (a_type == attr_type.date) {
+  } else if (a_type == {{ attr_type.date }}) {
     return `<span>${ attrv.value }</span>`;
 
-  } else if (a_type == attr_type.array_entry) {
+  } else if (a_type == {{ attr_type.array_object }}) {
     let result = "<ul class='list-group'>";
     for (let co_info of attrv.value) {
       result += `<li class='list-group-item'>` +
@@ -147,7 +133,7 @@ function make_element_value_text(a_type, attrv) {
     result += '</ul>';
     return result;
 
-  } else if (a_type == attr_type.array_string) {
+  } else if (a_type == {{ attr_type.array_string }}) {
     let result = "<ul class='list-group'>";
     for (let co_info of attrv.value) {
       result += `<li class='list-group-item'>${ co_info }</li>`;
@@ -155,7 +141,7 @@ function make_element_value_text(a_type, attrv) {
     result += '</ul>';
     return result;
 
-  } else if (a_type == attr_type.array_named_entry) {
+  } else if (a_type == {{ attr_type.array_named_object }}) {
     let result = "<ul class='list-group'>";
     for (let co_info of attrv.value) {
       let ref_value = '';
@@ -172,7 +158,7 @@ function make_element_value_text(a_type, attrv) {
     result += '</ul>';
     return result;
 
-  } else if (a_type == attr_type.array_group) {
+  } else if (a_type == {{ attr_type.array_group }}) {
     let result = "<ul class='list-group'>";
     for (let co_info of attrv.value) {
       result += `<li class='list-group-item'>` +
@@ -182,7 +168,7 @@ function make_element_value_text(a_type, attrv) {
     result += '</ul>';
     return result;
 
-  } else if (a_type == attr_type.array_role) {
+  } else if (a_type == {{ attr_type.array_role }}) {
     let result = "<ul class='list-group'>";
     for (let co_info of attrv.value) {
       result += `<li class='list-group-item'>` +

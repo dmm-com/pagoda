@@ -26,7 +26,7 @@
         <div class='col-10'>
       {% endif %}
 
-      {% if attr.type|bitwise_and:attr_type.entry %}
+      {% if attr.type|bitwise_and:attr_type.object %}
 
         <ul class='list-group'>
           <li class='list-group-item list-group-item-info airone-selected-items' attr_id="{{ attr.id }}" entity_attr_id="{{ attr.entity_attr_id }}" style="height: 30px; padding: 5px 15px;">{{ attr.last_value.name }}</li>
@@ -91,7 +91,7 @@
         </div>
       </div>
 
-      {% elif attr.type|bitwise_and:attr_type.entry %}
+      {% elif attr.type|bitwise_and:attr_type.object %}
       <div class='row attr_referral' {% if attr.is_mandatory %}mandatory="true"{% endif %}>
 
         {% if attr.type|bitwise_and:attr_type_value.named %}

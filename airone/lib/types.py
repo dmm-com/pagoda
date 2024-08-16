@@ -32,7 +32,7 @@ AttrTypeValue = {
     "array_named_object": AttrType.ARRAY_NAMED_OBJECT,
     "array_group": AttrType.ARRAY_GROUP,
     "array_role": AttrType.ARRAY_ROLE,
-    "text": AttrType.TEXT,
+    "textarea": AttrType.TEXT,
     "boolean": AttrType.BOOLEAN,
     "group": AttrType.GROUP,
     "date": AttrType.DATE,

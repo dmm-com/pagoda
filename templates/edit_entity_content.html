@@ -57,7 +57,7 @@
                   </ul>
 
                   <select class="attr_referral" size="3" multiple="True"
-                    {% if not attr.type|bitwise_and:attr_type.entry %}
+                    {% if not attr.type|bitwise_and:attr_type.object %}
                       style="display:none; width:100%"
                     {% else %}
                       style="width:100%"
@@ -69,7 +69,7 @@
                   </select>
 
                   <input type="text" class="narrow_down_referral" placeholder="絞り込み"
-                    {% if not attr.type|bitwise_and:attr_type.entry %}
+                    {% if not attr.type|bitwise_and:attr_type.object %}
                       style="display:none; width:100%"
                     {% else %}
                       style="width:100%"

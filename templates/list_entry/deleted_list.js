@@ -151,12 +151,12 @@ function reconstruct_modal_body_for_entry(data) {
     if(attr.type == {{ attr_type.string }}) {
       elem_td.append($(`<span class='url_conv'>${ attr.value }</span>`));
 
-    } else if(attr.type == {{ attr_type.entry }}) {
+    } else if(attr.type == {{ attr_type.object }}) {
       if( attr.value ) {
         elem_td.append($(`<a href='/entry/show/${ attr.value.id }'>${ attr.value.name }</a>`));
       }
 
-    } else if(attr.type == {{ attr_type.named_entry }}) {
+    } else if(attr.type == {{ attr_type.named_object }}) {
       for(var key in attr.value ) {
 
         referral_info = '';
@@ -174,7 +174,7 @@ function reconstruct_modal_body_for_entry(data) {
         `));
       }
 
-    } else if(attr.type == {{ attr_type.array_entry }}) {
+    } else if(attr.type == {{ attr_type.array_object }}) {
       let elem_ul = $("<ul class='list-group'>");
 
       for(var info of attr.value ) {
@@ -192,7 +192,7 @@ function reconstruct_modal_body_for_entry(data) {
       }
       elem_td.append(elem_ul);
 
-    } else if(attr.type == {{ attr_type.array_named_entry }}) {
+    } else if(attr.type == {{ attr_type.array_named_object }}) {
       let elem_ul = $("<ul class='list-group'>");
 
       for(var value of attr.value ) {
