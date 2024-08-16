@@ -13,8 +13,8 @@ from rest_framework.exceptions import ValidationError
 from airone.lib.log import Logger
 from airone.lib.test import AironeViewTest
 from airone.lib.types import (
+    AttrDefaultValue,
     AttrType,
-    AttrTypeStr,
     AttrTypeValue,
 )
 from entity.models import Entity, EntityAttr
@@ -396,7 +396,7 @@ class ViewTest(BaseViewTest):
             next(filter(lambda x: x["schema"]["name"] == "opt", resp_data["attrs"])),
             {
                 "type": AttrType.STRING,
-                "value": {"as_string": AttrTypeStr.DEFAULT_VALUE},
+                "value": {"as_string": AttrDefaultValue[AttrType.STRING]},
                 "id": None,
                 "is_mandatory": False,
                 "is_readable": True,

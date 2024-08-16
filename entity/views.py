@@ -17,7 +17,7 @@ from airone.lib.http import (
     http_post,
     render,
 )
-from airone.lib.types import AttrType, AttrTypes
+from airone.lib.types import AttrType, AttrTypeValue
 from entry.models import AttributeValue, Entry
 from job.models import Job
 from user.models import History
@@ -70,7 +70,7 @@ def create(request):
             for x in Entity.objects.filter(is_active=True)
             if request.user.has_permission(x, ACLType.Readable)
         ],
-        "attr_types": AttrTypes,
+        "attr_types": AttrTypeValue,
     }
     return render(request, "create_entity.html", context)
 
@@ -88,7 +88,7 @@ def edit(request, entity_id):
     # - current value of any attributes even if the entity has been deleted
     context = {
         "entity": entity,
-        "attr_types": AttrTypes,
+        "attr_types": AttrTypeValue,
         "attributes": [
             {
                 "id": x.id,
@@ -132,7 +132,9 @@ def edit(request, entity_id):
                 {
                     "name": "type",
                     "type": str,
-                    "checker": lambda x: (any([y == int(x["type"]) for y in AttrTypes])),
+                    "checker": lambda x: (
+                        any([y == int(x["type"]) for y in AttrTypeValue.values()])
+                    ),
                 },
                 {"name": "is_mandatory", "type": bool},
                 {"name": "is_delete_in_chain", "type": bool},
@@ -236,7 +238,9 @@ def do_edit(request, entity_id, recv_data):
                 {
                     "name": "type",
                     "type": str,
-                    "checker": lambda x: (any([y == int(x["type"]) for y in AttrTypes])),
+                    "checker": lambda x: (
+                        any([y == int(x["type"]) for y in AttrTypeValue.values()])
+                    ),
                 },
                 {"name": "is_mandatory", "type": bool},
                 {"name": "is_delete_in_chain", "type": bool},
