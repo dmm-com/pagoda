@@ -11,7 +11,7 @@ from airone.celery import app
 from airone.lib.elasticsearch import AdvancedSearchResultValue
 from airone.lib.job import may_schedule_until_job_is_ready
 from airone.lib.types import AttrType
-from entry.models import Entry
+from entry.services import AdvancedSearchService
 from job.models import Job
 
 
@@ -177,7 +177,7 @@ def export_search_result(self, job: Job):
     if has_referral and referral_name is None:
         referral_name = ""
 
-    resp = Entry.search_entries(
+    resp = AdvancedSearchService.search_entries(
         user,
         recv_data["entities"],
         recv_data["attrinfo"],

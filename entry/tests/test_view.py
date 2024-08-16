@@ -21,6 +21,7 @@ from airone.lib.types import (
 from entity.models import Entity, EntityAttr
 from entry import tasks
 from entry.models import Attribute, AttributeValue, Entry
+from entry.services import AdvancedSearchService
 from entry.settings import CONFIG as ENTRY_CONFIG
 from group.models import Group
 from job.models import Job, JobOperation, JobStatus, JobTarget
@@ -872,7 +873,9 @@ class ViewTest(AironeViewTest):
         self.assertTrue(bar_value_last.is_latest)
 
         # checks that we can search updated entry using updated value
-        resp = Entry.search_entries(user, [entity.id], [{"name": "bar", "keyword": "fuga"}])
+        resp = AdvancedSearchService.search_entries(
+            user, [entity.id], [{"name": "bar", "keyword": "fuga"}]
+        )
         self.assertEqual(resp.ret_count, 1)
         self.assertEqual(resp.ret_values[0].entity["id"], entity.id)
         self.assertEqual(resp.ret_values[0].entry["id"], entry.id)
@@ -1125,7 +1128,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 200)
 
         # check es-documents of both e0 (was referred before) and e2 (is referred now)
-        ret = Entry.search_entries(
+        ret = AdvancedSearchService.search_entries(
             user,
             [ref_entity.id],
             hint_referral="",
@@ -3270,7 +3273,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(len([x for x in results if x["status"] == "success"]), 3)
 
         # checks copied entries were registered to the Elasticsearch
-        res = Entry.get_all_es_docs()
+        res = AdvancedSearchService.get_all_es_docs()
         self.assertEqual(res["hits"]["total"]["value"], 3)
 
         # checks jobs were created as expected
@@ -3757,7 +3760,7 @@ class ViewTest(AironeViewTest):
         self.assertTrue(all([x.parent_attrv == attrv for x in attrv.data_array.all()]))
 
         # check imported data was registered to the ElasticSearch
-        res = Entry.get_all_es_docs()
+        res = AdvancedSearchService.get_all_es_docs()
         self.assertEqual(res["hits"]["total"]["value"], 2)
 
         for e in [entry, ref_entry]:
@@ -3799,7 +3802,7 @@ class ViewTest(AironeViewTest):
 
         self.assertTrue(Job.objects.filter(operation=JobOperation.NOTIFY_CREATE_ENTRY).exists())
 
-        ret = Entry.search_entries(user, [self._entity.id], [{"name": "test"}])
+        ret = AdvancedSearchService.search_entries(user, [self._entity.id], [{"name": "test"}])
         self.assertEqual(ret.ret_count, 1)
         self.assertEqual(ret.ret_values[0].entry["name"], "entry")
         self.assertEqual(ret.ret_values[0].attrs["test"]["value"], "fuga")
@@ -3828,7 +3831,7 @@ class ViewTest(AironeViewTest):
 
         self.assertTrue(Job.objects.filter(operation=JobOperation.NOTIFY_UPDATE_ENTRY).exists())
 
-        ret = Entry.search_entries(user, [self._entity.id], [{"name": "test"}])
+        ret = AdvancedSearchService.search_entries(user, [self._entity.id], [{"name": "test"}])
         self.assertEqual(ret.ret_count, 1)
         self.assertEqual(ret.ret_values[0].entry["name"], "entry")
         self.assertEqual(ret.ret_values[0].attrs["test"]["value"], "piyo")
@@ -4670,7 +4673,7 @@ class ViewTest(AironeViewTest):
         self.assertTrue(all([x.is_active for x in entry.attrs.all()]))
 
         # check that index information of restored entry in Elasticsearch is also restored
-        resp = Entry.search_entries(user, [entity.id])
+        resp = AdvancedSearchService.search_entries(user, [entity.id])
         self.assertEqual(resp.ret_count, 1)
         self.assertEqual(resp.ret_values[0].entry["id"], entry.id)
         self.assertEqual(resp.ret_values[0].entry["name"], entry.name)
@@ -4796,7 +4799,7 @@ class ViewTest(AironeViewTest):
             self.assertEqual(resp.status_code, 200)
             self.assertEqual(attrv1.get_value(), attr.get_latest_value().get_value())
 
-        resp = Entry.search_entries(user, [entity.id], [], is_output_all=True)
+        resp = AdvancedSearchService.search_entries(user, [entity.id], [], is_output_all=True)
         self.assertEqual(resp.ret_count, 1)
         for attr_name, data in resp.ret_values[0].attrs.items():
             self.assertEqual(data["type"], attr_info[attr_name]["type"])
@@ -5295,7 +5298,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(ref_entry.name, "changed_name")
 
         # check entry changing reflects to the ElasticSearch
-        ret = Entry.search_entries(user, [entity.id], [{"name": "ref"}])
+        ret = AdvancedSearchService.search_entries(user, [entity.id], [{"name": "ref"}])
         self.assertEqual(ret.ret_count, 1)
         self.assertEqual(ret.ret_values[0].entry["name"], "entry")
         self.assertEqual(ret.ret_values[0].attrs["ref"]["value"]["name"], "changed_name")

@@ -5,7 +5,7 @@ from django.urls import reverse
 
 from airone.lib.test import AironeViewTest
 from airone.lib.types import AttrType
-from entry.models import Entry
+from entry.services import AdvancedSearchService
 from group import tasks
 from group.models import Group
 from user.models import User
@@ -81,7 +81,7 @@ class APITest(AironeViewTest):
             values={"group": group},
         )
         entry.register_es()
-        resp1 = Entry.search_entries(user, [entity.id], [{"name": "group"}])
+        resp1 = AdvancedSearchService.search_entries(user, [entity.id], [{"name": "group"}])
         self.assertEqual(resp1.ret_values[0].attrs["group"]["value"]["name"], "testg")
 
         params = {
@@ -93,5 +93,5 @@ class APITest(AironeViewTest):
             json.dumps(params),
             "application/json",
         )
-        resp2 = Entry.search_entries(user, [entity.id], [{"name": "group"}])
+        resp2 = AdvancedSearchService.search_entries(user, [entity.id], [{"name": "group"}])
         self.assertEqual(resp2.ret_values[0].attrs["group"]["value"]["name"], "testg-update")

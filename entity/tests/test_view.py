@@ -13,6 +13,7 @@ from entity import tasks
 from entity.models import Entity, EntityAttr
 from entity.settings import CONFIG
 from entry.models import Attribute, Entry
+from entry.services import AdvancedSearchService
 from entry.tasks import update_es_documents
 from user.models import History, User
 
@@ -619,14 +620,16 @@ class ViewTest(AironeViewTest):
         self.assertEqual(entity.attrs.count(), 3)
         self.assertEqual(entry.attrs.count(), 2)
 
-        res = Entry.search_entries(user, [entity.id], is_output_all=True)
+        res = AdvancedSearchService.search_entries(user, [entity.id], is_output_all=True)
         self.assertEqual(
             sorted([x for x in res.ret_values[0].attrs.keys()]), sorted(["foo", "bar", "ref"])
         )
 
         # Check the elasticsearch data is also changed when
         # referred Entity name is changed.
-        res = Entry.search_entries(user, [ref_entity.id], hint_referral="", is_output_all=True)
+        res = AdvancedSearchService.search_entries(
+            user, [ref_entity.id], hint_referral="", is_output_all=True
+        )
         self.assertEqual(res.ret_count, 1)
         self.assertEqual(res.ret_values[0].referrals[0]["schema"]["name"], "Changed-Entity")
 
@@ -961,7 +964,9 @@ class ViewTest(AironeViewTest):
 
         # Check the elasticsearch data (the referrals parameter) is also removed when
         # referring EntityAttr is deleted.
-        res = Entry.search_entries(user, [ref_entity.id], hint_referral="", is_output_all=True)
+        res = AdvancedSearchService.search_entries(
+            user, [ref_entity.id], hint_referral="", is_output_all=True
+        )
         self.assertEqual(res.ret_count, 1)
         self.assertEqual(res.ret_values[0].entry["id"], ref_entry.id)
         self.assertEqual(res.ret_values[0].referrals, [])

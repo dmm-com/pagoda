@@ -6,6 +6,7 @@ from airone.lib.test import AironeTestCase
 from airone.lib.types import AttrType
 from entity.models import Entity, EntityAttr
 from entry.models import Entry
+from entry.services import AdvancedSearchService
 from entry.tasks import update_es_documents
 from tools.initialize_es_document import initialize_es_document
 from tools.update_es_document import update_es_document
@@ -49,25 +50,25 @@ class UpdateESDocuemntlTest(AironeTestCase):
 
     @patch("entry.tasks.update_es_documents.delay", Mock(side_effect=update_es_documents))
     def test_initialize_entries(self):
-        ret = Entry.search_entries(self.user, [self.entity1.id, self.entity2.id])
+        ret = AdvancedSearchService.search_entries(self.user, [self.entity1.id, self.entity2.id])
         self.assertEqual(ret.ret_count, 0)
 
         initialize_es_document([])
 
-        ret = Entry.search_entries(self.user, [self.entity1.id])
+        ret = AdvancedSearchService.search_entries(self.user, [self.entity1.id])
         self.assertEqual(ret.ret_count, 3)
         self.assertTrue(all([x.entity["id"] == self.entity1.id for x in ret.ret_values]))
         self.assertTrue(
             all([x.entry["id"] in [y.id for y in self.entries] for x in ret.ret_values])
         )
-        ret = Entry.search_entries(self.user, [self.entity2.id])
+        ret = AdvancedSearchService.search_entries(self.user, [self.entity2.id])
         self.assertEqual(ret.ret_count, 1)
         self.assertEqual(ret.ret_values[0].entity["id"], self.entity2.id)
         self.assertEqual(ret.ret_values[0].entry["id"], self.entry2.id)
 
         # recreate index, specified entity
         initialize_es_document([self.entity2.name])
-        ret = Entry.search_entries(self.user, [self.entity1.id, self.entity2.id])
+        ret = AdvancedSearchService.search_entries(self.user, [self.entity1.id, self.entity2.id])
         self.assertEqual(ret.ret_count, 1)
 
     @patch("entry.tasks.update_es_documents.delay", Mock(side_effect=update_es_documents))
@@ -82,7 +83,7 @@ class UpdateESDocuemntlTest(AironeTestCase):
         # specified other entity, no update
         update_es_document([self.entity2.name])
 
-        ret = Entry.search_entries(self.user, [self.entity1.id], [{"name": "attr"}])
+        ret = AdvancedSearchService.search_entries(self.user, [self.entity1.id], [{"name": "attr"}])
         self.assertEqual(ret.ret_count, 3)
 
         entry_info = [x for x in ret.ret_values if x.entry["id"] == entry.id][0]
@@ -96,7 +97,7 @@ class UpdateESDocuemntlTest(AironeTestCase):
                 "WARNING:airone:Update elasticsearch document (entry_id: %s)" % entry.id,
             )
 
-        ret = Entry.search_entries(self.user, [self.entity1.id], [{"name": "attr"}])
+        ret = AdvancedSearchService.search_entries(self.user, [self.entity1.id], [{"name": "attr"}])
         self.assertEqual(ret.ret_count, 3)
 
         entry_info = [x for x in ret.ret_values if x.entry["id"] == entry.id][0]
@@ -113,7 +114,7 @@ class UpdateESDocuemntlTest(AironeTestCase):
 
         # specified other entity, no update
         update_es_document([self.entity2.name])
-        ret = Entry.search_entries(self.user, [self.entity1.id])
+        ret = AdvancedSearchService.search_entries(self.user, [self.entity1.id])
 
         self.assertEqual(ret.ret_count, 3)
 
@@ -125,6 +126,6 @@ class UpdateESDocuemntlTest(AironeTestCase):
                 "WARNING:airone:Delete elasticsearch document (entry_id: %s)" % entry.id,
             )
 
-        ret = Entry.search_entries(self.user, [self.entity1.id])
+        ret = AdvancedSearchService.search_entries(self.user, [self.entity1.id])
 
         self.assertEqual(ret.ret_count, 2)

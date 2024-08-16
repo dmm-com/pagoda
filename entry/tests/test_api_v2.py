@@ -20,6 +20,7 @@ from airone.lib.types import (
 from entity.models import Entity, EntityAttr
 from entry import tasks
 from entry.models import Attribute, AttributeValue, Entry
+from entry.services import AdvancedSearchService
 from entry.settings import CONFIG
 from group.models import Group
 from job.models import Job, JobOperation, JobStatus
@@ -1141,7 +1142,7 @@ class ViewTest(BaseViewTest):
             "/entry/api/v2/%s/" % self.ref_entry.id, json.dumps(params), "application/json"
         )
 
-        ret = Entry.search_entries(self.user, [self.entity.id], [{"name": "ref"}])
+        ret = AdvancedSearchService.search_entries(self.user, [self.entity.id], [{"name": "ref"}])
         self.assertEqual(ret.ret_count, 1)
         self.assertEqual(ret.ret_values[0].entry["name"], "Entry")
         self.assertEqual(ret.ret_values[0].attrs["ref"]["value"]["name"], "ref-change")
@@ -2603,7 +2604,9 @@ class ViewTest(BaseViewTest):
             },
         )
 
-        result = Entry.search_entries(self.user, [self.entity.id], is_output_all=True)
+        result = AdvancedSearchService.search_entries(
+            self.user, [self.entity.id], is_output_all=True
+        )
         self.assertEqual(result.ret_count, 1)
         self.assertEqual(result.ret_values[0].entry["name"], "test-entry")
         self.assertEqual(result.ret_values[0].entity["name"], "test-entity")
@@ -2642,7 +2645,9 @@ class ViewTest(BaseViewTest):
         job = Job.objects.get(operation=JobOperation.IMPORT_ENTRY_V2)
         self.assertEqual(job.status, JobStatus.DONE)
 
-        result = Entry.search_entries(self.user, [self.entity.id], is_output_all=True)
+        result = AdvancedSearchService.search_entries(
+            self.user, [self.entity.id], is_output_all=True
+        )
         self.assertEqual(result.ret_count, 1)
         self.assertEqual(result.ret_values[0].entry, {"id": entry.id, "name": "test-entry"})
         attrs = {
@@ -2676,7 +2681,9 @@ class ViewTest(BaseViewTest):
         job = Job.objects.filter(operation=JobOperation.IMPORT_ENTRY_V2).last()
         self.assertEqual(job.status, JobStatus.DONE)
 
-        result = Entry.search_entries(self.user, [self.entity.id], is_output_all=True)
+        result = AdvancedSearchService.search_entries(
+            self.user, [self.entity.id], is_output_all=True
+        )
         attrs["val"] = "bar"
         for attr_name in result.ret_values[0].attrs:
             self.assertEqual(result.ret_values[0].attrs[attr_name]["value"], attrs[attr_name])
@@ -2690,7 +2697,9 @@ class ViewTest(BaseViewTest):
         job = Job.objects.filter(operation=JobOperation.IMPORT_ENTRY_V2).last()
         self.assertEqual(job.status, JobStatus.DONE)
 
-        result = Entry.search_entries(self.user, [self.entity.id], is_output_all=True)
+        result = AdvancedSearchService.search_entries(
+            self.user, [self.entity.id], is_output_all=True
+        )
         attrs = {
             "val": "",
             "vals": [],
@@ -2734,7 +2743,7 @@ class ViewTest(BaseViewTest):
             },
         )
 
-        result = Entry.search_entries(self.user, [entity1.id, entity2.id])
+        result = AdvancedSearchService.search_entries(self.user, [entity1.id, entity2.id])
         self.assertEqual(result.ret_count, 2)
         self.assertEqual(result.ret_values[0].entry["name"], "test-entry1")
         self.assertEqual(result.ret_values[0].entity["name"], "test-entity1")
@@ -2766,7 +2775,9 @@ class ViewTest(BaseViewTest):
             },
         )
 
-        result = Entry.search_entries(self.user, [self.entity.id], is_output_all=True)
+        result = AdvancedSearchService.search_entries(
+            self.user, [self.entity.id], is_output_all=True
+        )
         self.assertEqual(result.ret_count, 1)
         self.assertEqual(result.ret_values[0].entry["name"], "test-entry")
         self.assertEqual(result.ret_values[0].entity["name"], "test-entity")

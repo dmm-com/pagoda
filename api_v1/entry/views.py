@@ -12,6 +12,7 @@ from airone.lib.acl import ACLType
 from api_v1.entry.serializer import EntrySearchChainSerializer
 from entity.models import Entity
 from entry.models import Entry
+from entry.services import AdvancedSearchService
 from entry.settings import CONFIG as CONFIG_ENTRY
 
 
@@ -35,11 +36,11 @@ class EntrySearchChainAPI(APIView):
 
         if ret_data:
             # output all Attributes of returned Entries. This divides input entry names for
-            # search processing into 100 pieces to prevent hung-up while Entry.search_entries()
-            # because of big input data.
+            # search processing into 100 pieces to prevent hung-up
+            # while AdvancedSearchService.search_entries() because of big input data.
             result = {"ret_count": len(ret_data), "ret_values": []}
             for i in range(0, len(ret_data), 100):
-                entry_info = Entry.search_entries(
+                entry_info = AdvancedSearchService.search_entries(
                     request.user,
                     serializer.validated_data["entities"],
                     entry_name="|".join(["^%s$" % x["name"] for x in ret_data[i : i + 100]]),
@@ -114,7 +115,7 @@ class EntrySearchAPI(APIView):
             if entity and request.user.has_permission(entity, ACLType.Readable):
                 hint_entity_ids.append(entity.id)
 
-        resp = Entry.search_entries(
+        resp = AdvancedSearchService.search_entries(
             request.user,
             hint_entity_ids,
             hint_attrs,

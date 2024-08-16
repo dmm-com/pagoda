@@ -5,6 +5,7 @@ from airone.exceptions import ElasticsearchException
 from airone.lib.log import Logger
 from entity.models import Entity, EntityAttr
 from entry.models import Entry
+from entry.services import AdvancedSearchService
 from entry.settings import CONFIG
 
 SEARCH_ENTRY_LIMIT = 200
@@ -78,7 +79,7 @@ class EntrySearchChainSerializer(serializers.Serializer):
         # This validates and complements conditions contexts, expecially this method
         # adds "entities" parameter for each Attribute conditions. That is an internal
         # one to indicate Entity for searching Entries at Attribute conditions using
-        # Entry.search_entries() method.
+        # AdvancedSearchService.search_entries() method.
         def _validate_attribute(attrname: str, entities: list[Entity]):
             # This validates whethere it is possible that Entity has specified Attribute
             if not any(
@@ -200,7 +201,7 @@ class EntrySearchChainSerializer(serializers.Serializer):
         accumulated_result = []
 
         def _do_backward_search(sub_query, sub_query_result):
-            # make query to search Entries using Entry.search_entries()
+            # make query to search Entries using AdvancedSearchService.search_entries()
             search_keyword = CONFIG.OR_SEARCH_CHARACTER.join(
                 ["^%s$" % x["name"] for x in sub_query_result]
             )
@@ -227,7 +228,7 @@ class EntrySearchChainSerializer(serializers.Serializer):
 
             # get Entry informations from result
             try:
-                search_result = Entry.search_entries(**query_params)
+                search_result = AdvancedSearchService.search_entries(**query_params)
             except Exception as e:
                 Logger.warning("Search Chain API error:%s" % e)
                 raise ElasticsearchException()
@@ -281,7 +282,7 @@ class EntrySearchChainSerializer(serializers.Serializer):
         accumulated_result = []
 
         def _do_forward_search(sub_query, sub_query_result):
-            # make query to search Entries using Entry.search_entries()
+            # make query to search Entries using AdvancedSearchService.search_entries()
             search_keyword = "|".join(["^%s$" % x["name"] for x in sub_query_result])
             if isinstance(sub_query.get("value"), str) and len(sub_query["value"]) > 0:
                 search_keyword = sub_query.get("value")
@@ -301,7 +302,9 @@ class EntrySearchChainSerializer(serializers.Serializer):
 
             # get Entry informations from result
             try:
-                search_result = Entry.search_entries(user, entity_id_list, hint_attrs, limit=99999)
+                search_result = AdvancedSearchService.search_entries(
+                    user, entity_id_list, hint_attrs, limit=99999
+                )
             except Exception as e:
                 Logger.warning("Search Chain API error:%s" % e)
                 raise ElasticsearchException()
