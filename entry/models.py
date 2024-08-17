@@ -14,6 +14,8 @@ from airone.lib.acl import ACLObjType, ACLType
 from airone.lib.drf import ExceedLimitError
 from airone.lib.elasticsearch import (
     ESS,
+    AttributeDocument,
+    EntryDocument,
 )
 from airone.lib.types import (
     AttrDefaultValue,
@@ -1915,7 +1917,7 @@ class Entry(ACLBase):
         return {"name": self.name, "attrs": attrinfo}
 
     # NOTE: Type-Write
-    def get_es_document(self, entity_attrs=None):
+    def get_es_document(self, entity_attrs=None) -> EntryDocument:
         """This processing registers entry information to Elasticsearch"""
 
         # This inner method truncates value in taking multi-byte in account
@@ -1927,11 +1929,11 @@ class Entry(ACLBase):
         def _set_attrinfo(
             entity_attr: EntityAttr,
             attr: Attribute,
-            attrv: AttributeValue,
-            container: list[dict],
+            attrv: AttributeValue | None,
+            container: list[AttributeDocument],
             is_recursive: bool = False,
         ):
-            attrinfo = {
+            attrinfo: AttributeDocument = {
                 "name": entity_attr.name,
                 "type": entity_attr.type,
                 "key": "",
@@ -2011,7 +2013,7 @@ class Entry(ACLBase):
                 if not [x for x in container if x["name"] == entity_attr.name]:
                     container.append(attrinfo)
 
-        document = {
+        document: EntryDocument = {
             "entity": {"id": self.schema.id, "name": self.schema.name},
             "name": self.name,
             "attr": [],
@@ -2036,7 +2038,7 @@ class Entry(ACLBase):
             entity_attrs = self.schema.attrs.filter(is_active=True)
 
         for entity_attr in entity_attrs:
-            attrv = None
+            attrv: AttributeValue | None = None
 
             # Use it when exists prefetch for faster
             if getattr(self, "prefetch_attrs", None):
@@ -2051,10 +2053,11 @@ class Entry(ACLBase):
                     break
 
             # Use it when exists prefetch for faster
-            if getattr(entry_attr, "prefetch_values", None):
-                attrv = entry_attr.prefetch_values[-1]
-            elif entry_attr:
-                attrv = entry_attr.get_latest_value()
+            if entry_attr:
+                if getattr(entry_attr, "prefetch_values", None):
+                    attrv = entry_attr.prefetch_values[-1]
+                else:
+                    attrv = entry_attr.get_latest_value()
 
             _set_attrinfo(entity_attr, entry_attr, attrv, document["attr"])
 

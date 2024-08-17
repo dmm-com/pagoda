@@ -1,7 +1,7 @@
 from django.test import TestCase
 
 from airone.lib import elasticsearch
-from airone.lib.elasticsearch import AdvancedSearchResultValue
+from airone.lib.elasticsearch import AdvancedSearchResultRecord
 from airone.lib.types import AttrType
 from entity.models import Entity, EntityAttr
 from entry.models import Attribute, AttributeValue, Entry
@@ -367,7 +367,7 @@ class ElasticSearchTest(TestCase):
         self.assertEqual(
             results.ret_values,
             [
-                AdvancedSearchResultValue(
+                AdvancedSearchResultRecord(
                     entity={
                         "id": self._entity.id,
                         "name": self._entity.name,
@@ -490,7 +490,7 @@ class ElasticSearchTest(TestCase):
             sorted(results.ret_values, key=lambda x: x.entry["id"]),
             sorted(
                 [
-                    AdvancedSearchResultValue(
+                    AdvancedSearchResultRecord(
                         entity={
                             "id": self._entity.id,
                             "name": self._entity.name,

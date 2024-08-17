@@ -11,7 +11,7 @@ from rest_framework.exceptions import ValidationError
 from airone.celery import app
 from airone.lib import custom_view
 from airone.lib.acl import ACLType
-from airone.lib.elasticsearch import AdvancedSearchResultValue
+from airone.lib.elasticsearch import AdvancedSearchResultRecord
 from airone.lib.event_notification import (
     notify_entry_create,
     notify_entry_delete,
@@ -222,7 +222,7 @@ def _do_import_entries(job: Job):
 
 
 def _yaml_export_v2(
-    job: Job, values: list[AdvancedSearchResultValue], recv_data: dict, has_referral: bool
+    job: Job, values: list[AdvancedSearchResultRecord], recv_data: dict, has_referral: bool
 ) -> io.StringIO | None:
     def _get_attr_primitive_value(atype: int, value: dict) -> ExportedEntryAttributePrimitiveValue:
         match atype:

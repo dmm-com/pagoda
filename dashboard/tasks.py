@@ -8,7 +8,7 @@ from django.conf import settings
 from natsort import natsorted
 
 from airone.celery import app
-from airone.lib.elasticsearch import AdvancedSearchResultValue
+from airone.lib.elasticsearch import AdvancedSearchResultRecord
 from airone.lib.job import may_schedule_until_job_is_ready
 from airone.lib.types import AttrType
 from entry.services import AdvancedSearchService
@@ -16,7 +16,7 @@ from job.models import Job
 
 
 def _csv_export(
-    job: Job, values: list[AdvancedSearchResultValue], recv_data: dict, has_referral: bool
+    job: Job, values: list[AdvancedSearchResultRecord], recv_data: dict, has_referral: bool
 ) -> io.StringIO | None:
     output = io.StringIO(newline="")
     writer = csv.writer(output)
@@ -107,7 +107,7 @@ def _csv_export(
 
 
 def _yaml_export(
-    job: Job, values: list[AdvancedSearchResultValue], recv_data: dict, has_referral: bool
+    job: Job, values: list[AdvancedSearchResultRecord], recv_data: dict, has_referral: bool
 ) -> io.StringIO | None:
     output = io.StringIO()
 

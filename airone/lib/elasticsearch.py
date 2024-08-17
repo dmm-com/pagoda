@@ -16,29 +16,29 @@ from entry.settings import CONFIG
 from user.models import User
 
 
-class AdvancedSearchResultValueIdNamePair(TypedDict):
+class AdvancedSearchResultRecordIdNamePair(TypedDict):
     id: int
     name: str
-    schema: NotRequired["AdvancedSearchResultValueIdNamePair"]
+    schema: NotRequired["AdvancedSearchResultRecordIdNamePair"]
 
 
-class AdvancedSearchResultValueAttrValue(TypedDict, total=False):
+class AdvancedSearchResultRecordAttr(TypedDict, total=False):
     type: int
     value: Any
     is_readable: bool
 
 
-class AdvancedSearchResultValue(BaseModel):
-    entity: AdvancedSearchResultValueIdNamePair
-    entry: AdvancedSearchResultValueIdNamePair
-    attrs: dict[str, AdvancedSearchResultValueAttrValue]
+class AdvancedSearchResultRecord(BaseModel):
+    entity: AdvancedSearchResultRecordIdNamePair
+    entry: AdvancedSearchResultRecordIdNamePair
+    attrs: dict[str, AdvancedSearchResultRecordAttr]
     is_readable: bool
-    referrals: list[AdvancedSearchResultValueIdNamePair] | None = None
+    referrals: list[AdvancedSearchResultRecordIdNamePair] | None = None
 
 
 class AdvancedSearchResults(BaseModel):
     ret_count: int
-    ret_values: list[AdvancedSearchResultValue]
+    ret_values: list[AdvancedSearchResultRecord]
 
 
 @enum.unique
@@ -57,6 +57,24 @@ class AttrHint(TypedDict):
     filter_key: NotRequired[FilterKey]
     keyword: NotRequired[str]
     exact_match: NotRequired[bool]
+
+
+class AttributeDocument(TypedDict):
+    name: str
+    type: int
+    key: str
+    value: str | bool
+    date_value: str | None
+    referral_id: str
+    is_readable: bool
+
+
+class EntryDocument(TypedDict):
+    entity: dict[str, str | int]
+    name: str
+    attr: list[AttributeDocument]
+    referrals: list[dict[str, str | int | dict[str, str | int]]]
+    is_readable: bool
 
 
 class ESS(Elasticsearch):
@@ -222,7 +240,7 @@ def make_query(
     entry_name: str | None,
     hint_referral: str | None = None,
     hint_referral_entity_id: int | None = None,
-) -> dict[str, str]:
+) -> dict[str, Any]:
     """Create a search query for Elasticsearch.
 
     Do the following:
@@ -243,7 +261,7 @@ def make_query(
               specified Entity.
 
     Returns:
-        dict[str, str]: The created search query is returned.
+        dict[str, Any]: The created search query is returned.
 
     """
 
@@ -270,7 +288,7 @@ def make_query(
                 )
 
     # Making a query to send ElasticSearch by the specified parameters
-    query: dict = {
+    query: dict[str, Any] = {
         "query": {
             "bool": {
                 "filter": [],
@@ -316,12 +334,11 @@ def make_query(
             }
         )
 
-    attr_query: dict = {}
+    attr_query: dict[str, dict] = {}
 
     # filter attribute by keywords
-    for hint in [x for x in hint_attrs if "name" in x]:
-        if hint.get("keyword"):
-            _parse_or_search(hint, attr_query)
+    for hint in [hint for hint in hint_attrs if "name" in hint and hint.get("keyword")]:
+        attr_query.update(_parse_or_search(hint))
 
     # Build queries along keywords
     if attr_query:
@@ -334,7 +351,7 @@ def make_query(
 
 def make_query_for_simple(
     hint_string: str, hint_entity_name: str | None, exclude_entity_names: list[str], offset: int
-) -> dict[str, str]:
+) -> dict[str, Any]:
     """Create a search query for Elasticsearch.
 
     Do the following:
@@ -347,10 +364,10 @@ def make_query_for_simple(
         offset (int): Offset number
 
     Returns:
-        dict[str, str]: The created search query is returned.
+        dict[str, Any]: The created search query is returned.
 
     """
-    query: dict = {
+    query: dict[str, Any] = {
         "query": {"bool": {"must": []}},
         "_source": ["name", "entity"],
         "sort": [{"_score": {"order": "desc"}, "name.keyword": {"order": "asc"}}],
@@ -614,7 +631,7 @@ def _make_attr_query_for_simple(hint_string: str) -> dict[str, dict]:
     return attr_query
 
 
-def _parse_or_search(hint: AttrHint, attr_query: dict[str, str]) -> dict[str, str]:
+def _parse_or_search(hint: AttrHint) -> dict[str, dict]:
     """Performs keyword analysis processing.
 
     The search keyword is separated by OR and passed to the next process.
@@ -628,11 +645,13 @@ def _parse_or_search(hint: AttrHint, attr_query: dict[str, str]) -> dict[str, st
             by 'OR' and return.
 
     """
+    attr_query: dict[str, dict] = {}
     duplicate_keys: list = []
 
     # Split and process keywords with 'or'
     for keyword_divided_or in hint["keyword"].split(CONFIG.OR_SEARCH_CHARACTER):
-        _parse_and_search(hint, keyword_divided_or, attr_query, duplicate_keys)
+        parsed_query = _parse_and_search(hint, keyword_divided_or, duplicate_keys)
+        attr_query.update(parsed_query)
 
     return attr_query
 
@@ -640,9 +659,8 @@ def _parse_or_search(hint: AttrHint, attr_query: dict[str, str]) -> dict[str, st
 def _parse_and_search(
     hint: AttrHint,
     keyword_divided_or: str,
-    attr_query: dict[str, Any],
     duplicate_keys: list[str],
-) -> dict[str, str]:
+) -> dict[str, dict]:
     """Analyze the keywords separated by `OR`
 
     Keywords separated by OR are separated by AND.
@@ -670,14 +688,15 @@ def _parse_and_search(
             If the target string is already included in the list, processing is skipped.
 
     Returns:
-        dict[str, str]: The analysis result is added to 'attr_query' for the keywords separated
+        dict[str, dict]: The analysis result is added to 'attr_query' for the keywords separated
             by 'AND' and returned.
 
     """
+    attr_query: dict[str, dict] = {}
 
     # Keyword divided by 'or' is processed by dividing by 'and'
     for keyword in keyword_divided_or.split(CONFIG.AND_SEARCH_CHARACTER):
-        key = keyword + "_" + hint["name"]
+        key = f"{keyword}_{hint['name']}"
 
         # Skip if keywords overlap
         if key in duplicate_keys:
@@ -692,8 +711,8 @@ def _parse_and_search(
 
 def _build_queries_along_keywords(
     hint_attrs: list[AttrHint],
-    attr_query: dict[str, str],
-) -> dict[str, str]:
+    attr_query: dict[str, dict],
+) -> dict[str, dict]:
     """Build queries along search terms.
 
     Do the following:
@@ -714,11 +733,11 @@ def _build_queries_along_keywords(
 
     Args:
         hint_attrs (list(AttrHint)): A list of search strings and attribute sets
-        attr_query (dict[str, str]): A query that summarizes attributes
+        attr_query (dict[str, dict]): A query that summarizes attributes
             by the smallest unit of a search keyword
 
     Returns:
-        dict[str, str]: Assemble and return the attribute value part of the search query.
+        dict[str, dict]: Assemble and return the attribute value part of the search query.
 
     """
 
@@ -866,12 +885,12 @@ def _make_an_attribute_filter(hint: AttrHint, keyword: str) -> dict[str, dict]:
 
 
 def execute_query(
-    query: dict[str, str], size: int | None = None, offset: int | None = None
+    query: dict[str, Any], size: int | None = None, offset: int | None = None
 ) -> dict[str, Any]:
     """Run a search query.
 
     Args:
-        query (dict[str, str]): Search query
+        query (dict[str, dict]): Search query
         size (int | None): Size of search query results
         offset (int | None): Offset of search query results
 
@@ -960,7 +979,7 @@ def make_search_results(
         ]
 
     for entry, entry_info in sorted(hit_infos.items(), key=lambda x: x[0].name):
-        ret_info = AdvancedSearchResultValue(
+        record = AdvancedSearchResultRecord(
             entity={"id": entry.schema.id, "name": entry.schema.name},
             entry={"id": entry.id, "name": entry.name},
             attrs={},
@@ -968,7 +987,7 @@ def make_search_results(
         )
 
         if hint_referral is not None:
-            ret_info.referrals = entry_info.get("referrals", [])
+            record.referrals = entry_info.get("referrals", [])
 
         # Check for has permission to Entry. But it will be omitted when user is None.
         if (
@@ -976,10 +995,10 @@ def make_search_results(
             or user is None
             or user.has_permission(entry, ACLType.Readable)
         ):
-            ret_info.is_readable = True
+            record.is_readable = True
         else:
-            ret_info.is_readable = False
-            results.ret_values.append(ret_info)
+            record.is_readable = False
+            results.ret_values.append(record)
             continue
 
         # formalize attribute values according to the type
@@ -988,21 +1007,21 @@ def make_search_results(
             if attrinfo["name"] not in [x["name"] for x in hint_attrs]:
                 continue
 
-            ret_attrinfo: AdvancedSearchResultValueAttrValue = {}
-            if attrinfo["name"] in ret_info.attrs:
-                ret_attrinfo = ret_info.attrs[attrinfo["name"]]
+            ret_attrinfo: AdvancedSearchResultRecordAttr = {}
+            if attrinfo["name"] in record.attrs:
+                ret_attrinfo = record.attrs[attrinfo["name"]]
             else:
-                ret_attrinfo = ret_info.attrs[attrinfo["name"]] = {}
+                ret_attrinfo = record.attrs[attrinfo["name"]] = {}
 
             ret_attrinfo["is_readable"] = True
             ret_attrinfo["type"] = attrinfo["type"]
 
             # if target attribute is array type, then values would be stored in array
-            if attrinfo["name"] not in ret_info.attrs:
+            if attrinfo["name"] not in record.attrs:
                 if attrinfo["type"] & AttrType._ARRAY:
-                    ret_info.attrs[attrinfo["name"]] = {}
+                    record.attrs[attrinfo["name"]] = {}
                 else:
-                    ret_info.attrs[attrinfo["name"]] = ret_attrinfo
+                    record.attrs[attrinfo["name"]] = ret_attrinfo
 
             # Check for has permission to EntityAttr
             if attrinfo["name"] not in [x["name"] for x in hint_attrs if x["is_readable"]]:
@@ -1085,7 +1104,7 @@ def make_search_results(
                                 {"id": attrinfo["referral_id"], "name": attrinfo["value"]}
                             )
 
-        results.ret_values.append(ret_info)
+        results.ret_values.append(record)
 
     return results
 
