@@ -359,7 +359,6 @@ class ViewTest(AironeViewTest):
         )
 
     def test_deleted_users_are_not_displayed(self):
-        admin = self.admin_login()
         user = User.objects.create(username="test_user")
         role = Role.objects.create(name="test-role")
 
