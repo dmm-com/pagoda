@@ -357,3 +357,21 @@ class ViewTest(AironeViewTest):
                 }
             ],
         )
+
+    def test_deleted_users_are_not_displayed(self):
+        self.admin_login()
+        user = User.objects.create(username="test_user")
+        role = Role.objects.create(name="test-role")
+
+        # Associate user with the role
+        role.users.set([user.id])
+
+        # Delete the user
+        user.delete()
+
+        # Retrieve the role after the user is deleted
+        role_get_response = self.client.get(f"/role/api/v2/{role.id}")
+        role_data = role_get_response.json()
+
+        # Assert that the users list is empty
+        self.assertEqual(role_data["users"], [])
