@@ -18,7 +18,10 @@ from airone.lib.event_notification import (
     notify_entry_update,
 )
 from airone.lib.http import DRFRequest
-from airone.lib.job import may_schedule_until_job_is_ready
+from airone.lib.job import (
+    may_schedule_until_job_is_ready,
+    may_schedule_until_job_is_ready_with_handlers,
+)
 from airone.lib.log import Logger
 from airone.lib.types import AttrType
 from dashboard.tasks import _csv_export
@@ -346,82 +349,74 @@ def _yaml_export_v2(
 
 
 @app.task(bind=True)
-def create_entry_attrs(self, job_id: int):
-    job = Job.objects.get(id=job_id)
+@may_schedule_until_job_is_ready_with_handlers(
+    on_cancelled=lambda job: Entry.objects.filter(id=job.target.id, is_active=True).first().delete()
+    if Entry.objects.filter(id=job.target.id, is_active=True).exists()
+    else None
+)
+def create_entry_attrs(self, job: Job) -> JobStatus | None:
+    user = User.objects.filter(id=job.user.id).first()
+    entry = Entry.objects.filter(id=job.target.id, is_active=True).first()
 
-    if job.proceed_if_ready():
-        # At the first time, update job status to prevent executing this job duplicately
-        job.update(JobStatus.PROCESSING)
+    # for history record
+    entry._history_user = user
 
-        user = User.objects.filter(id=job.user.id).first()
-        entry = Entry.objects.filter(id=job.target.id, is_active=True).first()
+    if not entry or not user:
+        # Abort when specified entry doesn't exist
+        return JobStatus.CANCELED
 
-        # for history record
-        entry._history_user = user
+    recv_data = json.loads(job.params)
+    # Create new Attributes objects based on the specified value
+    for entity_attr in entry.schema.attrs.filter(is_active=True):
+        # This creates Attibute object that contains AttributeValues.
+        # But the add_attribute_from_base may return None when target Attribute instance
+        # has already been created or is creating by other process. In that case, this job
+        # do nothing about that Attribute instance.
+        attr = entry.add_attribute_from_base(entity_attr, user)
 
-        if not entry or not user:
-            # Abort when specified entry doesn't exist
-            job.update(JobStatus.CANCELED)
-            return
+        # skip for unpermitted attributes
+        if not user.has_permission(entity_attr, ACLType.Writable):
+            continue
 
-        recv_data = json.loads(job.params)
-        # Create new Attributes objects based on the specified value
-        for entity_attr in entry.schema.attrs.filter(is_active=True):
-            # This creates Attibute object that contains AttributeValues.
-            # But the add_attribute_from_base may return None when target Attribute instance
-            # has already been created or is creating by other process. In that case, this job
-            # do nothing about that Attribute instance.
-            attr = entry.add_attribute_from_base(entity_attr, user)
-
-            # skip for unpermitted attributes
-            if not user.has_permission(entity_attr, ACLType.Writable):
-                continue
-
-            # When job is canceled during this processing, abort it after deleting the created entry
-            if job.is_canceled():
-                entry.delete()
-                return
-
-            # make an initial AttributeValue object if the initial value is specified
-            attr_data = [x for x in recv_data["attrs"] if int(x["id"]) == entity_attr.id]
-
-            if not attr or not attr_data:
-                continue
-
-            # register new AttributeValue to the "attr"
-            try:
-                attr.add_value(user, _convert_data_value(attr, attr_data[0]))
-            except ValueError as e:
-                Logger.warning("(%s) attr_data: %s" % (e, str(attr_data[0])))
-
-        # Delete duplicate attrs because this processing may execute concurrently
-        for entity_attr in entry.schema.attrs.filter(is_active=True):
-            if entry.attrs.filter(schema=entity_attr, is_active=True).count() > 1:
-                query = entry.attrs.filter(schema=entity_attr, is_active=True)
-                query.exclude(id=query.first().id).delete()
-
-        if custom_view.is_custom("after_create_entry", entry.schema.name):
-            custom_view.call_custom("after_create_entry", entry.schema.name, recv_data, user, entry)
-
-        # register entry information to Elasticsearch
-        entry.register_es()
-
-        # clear flag to specify this entry has been completed to ndcreate
-        entry.del_status(Entry.STATUS_CREATING)
-
-        # update job status and save it except for the case that target job is canceled.
-        if not job.is_canceled():
-            job.update(JobStatus.DONE)
-
-            # Send notification to the webhook URL
-            job_notify_event = Job.new_notify_create_entry(user, entry)
-            job_notify_event.run()
-
-    elif job.is_canceled():
-        # When job is canceled before starting, created entry should be deleted.
-        entry = Entry.objects.filter(id=job.target.id, is_active=True).first()
-        if entry:
+        # When job is canceled during this processing, abort it after deleting the created entry
+        if job.is_canceled():
             entry.delete()
+            return None
+
+        # make an initial AttributeValue object if the initial value is specified
+        attr_data = [x for x in recv_data["attrs"] if int(x["id"]) == entity_attr.id]
+
+        if not attr or not attr_data:
+            continue
+
+        # register new AttributeValue to the "attr"
+        try:
+            attr.add_value(user, _convert_data_value(attr, attr_data[0]))
+        except ValueError as e:
+            Logger.warning("(%s) attr_data: %s" % (e, str(attr_data[0])))
+
+    # Delete duplicate attrs because this processing may execute concurrently
+    for entity_attr in entry.schema.attrs.filter(is_active=True):
+        if entry.attrs.filter(schema=entity_attr, is_active=True).count() > 1:
+            query = entry.attrs.filter(schema=entity_attr, is_active=True)
+            query.exclude(id=query.first().id).delete()
+
+    if custom_view.is_custom("after_create_entry", entry.schema.name):
+        custom_view.call_custom("after_create_entry", entry.schema.name, recv_data, user, entry)
+
+    # register entry information to Elasticsearch
+    entry.register_es()
+
+    # clear flag to specify this entry has been completed to ndcreate
+    entry.del_status(Entry.STATUS_CREATING)
+
+    # update job status and save it except for the case that target job is canceled.
+    if not job.is_canceled():
+        # Send notification to the webhook URL
+        job_notify_event = Job.new_notify_create_entry(user, entry)
+        job_notify_event.run()
+
+    return JobStatus.DONE
 
 
 @app.task(bind=True)
@@ -817,16 +812,14 @@ def _notify_event(
 
 
 @app.task(bind=True)
-def update_es_documents(self, job_id: int):
-    job = Job.objects.get(id=job_id)
-    job.update(JobStatus.PROCESSING)
-
+@may_schedule_until_job_is_ready
+def update_es_documents(self, job: Job) -> JobStatus:
     params = json.loads(job.params)
 
     entity = Entity.objects.get(id=job.target.id)
     AdvancedSearchService.update_documents(entity, params.get("is_update", False))
 
-    job.delete()
+    return JobStatus.DONE
 
 
 @app.task(bind=True)
