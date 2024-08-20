@@ -23,7 +23,7 @@ from airone.lib.drf import (
     RequiredParameterError,
     YAMLParser,
 )
-from airone.lib.elasticsearch import AdvancedSearchResultValue, AttrHint
+from airone.lib.elasticsearch import AdvancedSearchResultRecord, AttrHint
 from airone.lib.types import AttrType
 from api_v1.entry.serializer import EntrySearchChainSerializer
 from entity.models import Entity, EntityAttr
@@ -239,7 +239,7 @@ class AdvancedSearchAPI(generics.GenericAPIView):
         join_attrs = serializer.validated_data.get("join_attrs", [])
 
         def _get_joined_resp(
-            prev_results: list[AdvancedSearchResultValue], join_attr: dict
+            prev_results: list[AdvancedSearchResultRecord], join_attr: dict
         ) -> tuple[bool, dict]:
             """
             This is a helper method for join_attrs that will get specified attr values

@@ -7,7 +7,7 @@ from django.db.models import Q
 from acl.models import ACLBase
 from airone.lib.acl import ACLObjType, ACLType
 from airone.lib.drf import ExceedLimitError
-from airone.lib.elasticsearch import AdvancedSearchResultValue
+from airone.lib.elasticsearch import AdvancedSearchResultRecord
 from airone.lib.test import AironeTestCase
 from airone.lib.types import AttrType
 from entity.models import Entity, EntityAttr
@@ -3882,7 +3882,7 @@ class ModelTest(AironeTestCase):
         )
         self.assertEqual(
             result.ret_values[0],
-            AdvancedSearchResultValue(
+            AdvancedSearchResultRecord(
                 entity={"id": entity.id, "name": "all_attr_entity"},
                 entry={"id": entry.id, "name": "entry"},
                 is_readable=True,
