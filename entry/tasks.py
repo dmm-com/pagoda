@@ -48,39 +48,42 @@ from role.models import Role
 from user.models import User
 
 
-def _merge_referrals_by_index(ref_list, name_list):
+def _merge_referrals_by_index(
+    ref_list: list[dict], name_list: list[dict]
+) -> dict[int, dict[str, Any]]:
     """This is a helper function to set array_named_object value.
     This re-formats data construction with index parameter of argument.
     """
 
     # pad None to align the length of each lists
-    def be_aligned(list1, list2):
+    def be_aligned(list1: list[Any], list2: list[Any]) -> None:
         padding_length = len(list2) - len(list1)
         if padding_length > 0:
-            for i in range(0, padding_length):
-                list1.append(None)
+            list1.extend([None] * padding_length)
 
     for args in [(ref_list, name_list), (name_list, ref_list)]:
         be_aligned(*args)
 
-    result = {}
+    result: dict[int, dict[str, Any]] = {}
     for ref_info, name_info in zip(ref_list, name_list):
         if ref_info:
-            if ref_info["index"] not in result:
-                result[ref_info["index"]] = {}
-            result[ref_info["index"]]["id"] = ref_info["data"]
+            index = ref_info["index"]
+            if index not in result:
+                result[index] = {}
+            result[index]["id"] = ref_info["data"]
 
         if name_info:
-            if name_info["index"] not in result:
-                result[name_info["index"]] = {}
-            result[name_info["index"]]["name"] = name_info["data"]
+            index = name_info["index"]
+            if index not in result:
+                result[index] = {}
+            result[index]["name"] = name_info["data"]
 
     return result
 
 
-def _convert_data_value(attr, info):
+def _convert_data_value(attr: Attribute, info: dict):
     if attr.is_array():
-        recv_value = []
+        recv_value: Any = []
         if "value" in info and info["value"]:
             recv_value = [x["data"] for x in info["value"] if "data" in x]
 
