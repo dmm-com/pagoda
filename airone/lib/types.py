@@ -24,19 +24,19 @@ class AttrType(enum.IntEnum):
 
 
 AttrTypeValue = {
-    "object": AttrType.OBJECT,
     "string": AttrType.STRING,
+    "object": AttrType.OBJECT,
     "named_object": AttrType.NAMED_OBJECT,
-    "array_object": AttrType.ARRAY_OBJECT,
+    "group": AttrType.GROUP,
+    "role": AttrType.ROLE,
     "array_string": AttrType.ARRAY_STRING,
+    "array_object": AttrType.ARRAY_OBJECT,
     "array_named_object": AttrType.ARRAY_NAMED_OBJECT,
     "array_group": AttrType.ARRAY_GROUP,
     "array_role": AttrType.ARRAY_ROLE,
-    "text": AttrType.TEXT,
+    "textarea": AttrType.TEXT,
     "boolean": AttrType.BOOLEAN,
-    "group": AttrType.GROUP,
     "date": AttrType.DATE,
-    "role": AttrType.ROLE,
     "datetime": AttrType.DATETIME,
 }
 AttrDefaultValue: dict[int, Any] = {

@@ -10,7 +10,7 @@ from django.shortcuts import render as django_render
 from django.utils.encoding import smart_str
 
 from airone.lib.acl import ACLObjType
-from airone.lib.types import AttrTypeValue
+from airone.lib.types import AttrType, AttrTypeValue
 from entity import models as entity_models
 from entry import models as entry_models
 from job.models import JobOperation, JobStatus
@@ -184,7 +184,8 @@ def render(request, template, context={}):
     context["attr_type"] = {}
     for name, type in AttrTypeValue.items():
         context["attr_type"][name] = type
-    context["attr_type_value"] = AttrTypeValue
+    context["attr_type_value_named"] = AttrType._NAMED
+    context["attr_type_value_array"] = AttrType._ARRAY
 
     # set Construct for Entity status
     context["STATUS_ENTITY"] = {}
