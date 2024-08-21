@@ -28,9 +28,9 @@ class RoleGroupSerializer(serializers.ModelSerializer):
 
 class RoleSerializer(serializers.ModelSerializer):
     users = serializers.SerializerMethodField()
-    groups = RoleGroupSerializer(many=True)
+    groups = serializers.SerializerMethodField()
     admin_users = serializers.SerializerMethodField()
-    admin_groups = RoleGroupSerializer(many=True)
+    admin_groups = serializers.SerializerMethodField()
     is_editable = serializers.SerializerMethodField(method_name="get_is_editable", read_only=True)
 
     class Meta:
@@ -47,11 +47,20 @@ class RoleSerializer(serializers.ModelSerializer):
             "is_editable",
         ]
 
+    def get_filtered_data(self, obj, attribute, serializer):
+        return serializer(getattr(obj, attribute).filter(is_active=True), many=True).data
+
     def get_users(self, obj):
-        return RoleUserSerializer(obj.users.filter(is_active=True), many=True).data
+        return self.get_filtered_data(obj, "users", RoleUserSerializer)
 
     def get_admin_users(self, obj):
-        return RoleUserSerializer(obj.admin_users.filter(is_active=True), many=True).data
+        return self.get_filtered_data(obj, "admin_users", RoleUserSerializer)
+
+    def get_groups(self, obj):
+        return self.get_filtered_data(obj, "groups", RoleGroupSerializer)
+
+    def get_admin_groups(self, obj):
+        return self.get_filtered_data(obj, "admin_groups", RoleGroupSerializer)
 
     def get_is_editable(self, obj: Role) -> bool:
         current_user: User = self.context["request"].user
