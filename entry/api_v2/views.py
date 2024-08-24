@@ -369,7 +369,7 @@ class AdvancedSearchAPI(generics.GenericAPIView):
             if entity and request.user.has_permission(entity, ACLType.Readable):
                 hint_entity_ids.append(entity.id)
 
-        resp = AdvancedSearchService.search_entries(
+        resp = AdvancedSearchService.search_entries_v2(
             request.user,
             hint_entity_ids,
             hint_attrs,

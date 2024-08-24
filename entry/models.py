@@ -2287,3 +2287,129 @@ class Entry(ACLBase):
             )
 
         return trigger_params
+
+
+class AdvancedSearchAttributeIndex(models.Model):
+    entity = models.ForeignKey(Entity, on_delete=models.CASCADE)
+    entity_attr = models.ForeignKey(EntityAttr, on_delete=models.CASCADE)
+    entry = models.ForeignKey(Entry, on_delete=models.CASCADE)
+    attr = models.ForeignKey(Attribute, on_delete=models.CASCADE)
+
+    type = models.IntegerField()
+    entry_name = models.CharField(max_length=200)
+    key = models.CharField(max_length=1024, null=True)
+    raw_value = models.JSONField(null=True)
+
+    # TODO probably should have entry name
+
+    class Meta:
+        indexes = [
+            models.Index(fields=["key"]),
+        ]
+
+    @classmethod
+    def create_instance(
+        cls, entry: Entry, attr: Attribute, attrv: AttributeValue | None
+    ) -> "AdvancedSearchAttributeIndex":
+        key: str | None = None
+        value: dict[str, Any] | list[Any] | None = None
+
+        if attrv:
+            match attr.schema.type:
+                case AttrType.STRING | AttrType.TEXT:
+                    key = attrv.value
+                case AttrType.BOOLEAN:
+                    key = "true" if attrv.boolean else "false"
+                case AttrType.DATE:
+                    key = attrv.date.isoformat()
+                case AttrType.DATETIME:
+                    key = attrv.datetime.isoformat()
+                case AttrType.OBJECT:
+                    key = attrv.referral.name
+                    value = {"id": attrv.referral.id, "name": attrv.referral.name}
+                case AttrType.NAMED_OBJECT:
+                    key = attrv.value
+                    value = {
+                        str(key): {
+                            "id": attrv.referral.id,
+                            "name": attrv.referral.name,
+                        }
+                    }
+                case AttrType.GROUP:
+                    key = attrv.group.name
+                    value = {"id": attrv.group.id, "name": attrv.group.name}
+                case AttrType.ROLE:
+                    key = attrv.role.name
+                    value = {"id": attrv.role.id, "name": attrv.role.name}
+                case AttrType.ARRAY_STRING:
+                    value = [v.value for v in attrv.data_array.all()]
+                    key = ",".join(value)
+                case AttrType.ARRAY_OBJECT:
+                    value = [
+                        {"id": v.referral.id, "name": v.referral.name}
+                        for v in attrv.data_array.all()
+                        if v.referral
+                    ]
+                    key = ",".join([v["name"] for v in value])
+                case AttrType.ARRAY_NAMED_OBJECT:
+                    value = [
+                        {v.value: {"id": v.referral.id, "name": v.referral.name}}
+                        for v in attrv.data_array.all()
+                        if v.referral
+                    ]
+                    key = ",".join(next(iter(v)) for v in value)
+                case AttrType.ARRAY_GROUP:
+                    value = [
+                        {"id": v.group.id, "name": v.group.name}
+                        for v in attrv.data_array.all()
+                        if v.group
+                    ]
+                    key = ",".join([v["name"] for v in value])
+                case AttrType.ARRAY_ROLE:
+                    value = [
+                        {"id": v.role.id, "name": v.role.name}
+                        for v in attrv.data_array.all()
+                        if v.role
+                    ]
+                    key = ",".join([v["name"] for v in value])
+                case _:
+                    print("TODO implement it")
+
+        return AdvancedSearchAttributeIndex(
+            entity=entry.schema,
+            entity_attr=attr.schema,
+            entry=entry,
+            attr=attr,
+            type=attr.schema.type,
+            entry_name=entry.name,
+            key=key,
+            raw_value=value,
+        )
+
+    @property
+    def value(self):
+        match self.type:
+            case (
+                AttrType.STRING
+                | AttrType.TEXT
+                | AttrType.BOOLEAN
+                | AttrType.DATE
+                | AttrType.DATETIME
+            ):
+                return self.key
+            case AttrType.BOOLEAN:
+                return self.key == "true"
+            case (
+                AttrType.OBJECT
+                | AttrType.NAMED_OBJECT
+                | AttrType.GROUP
+                | AttrType.ROLE
+                | AttrType.ARRAY_STRING
+                | AttrType.ARRAY_OBJECT
+                | AttrType.ARRAY_NAMED_OBJECT
+                | AttrType.ARRAY_GROUP
+                | AttrType.ARRAY_ROLE
+            ):
+                return self.raw_value
+            case _:
+                print("TODO implement it")
