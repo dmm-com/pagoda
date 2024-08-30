@@ -1,10 +1,10 @@
-import { Box, Pagination, Stack, Typography } from "@mui/material";
+import { Pagination, Stack, Typography } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import React, { FC } from "react";
 
-const StyledBox = styled(Box)(({}) => ({
-  display: "flex",
-  justifyContent: "center",
+import { CenterAlignedBox } from "components/common/FlexBox";
+
+const StyledBox = styled(CenterAlignedBox)(({}) => ({
   alignItems: "center",
   margin: "30px 0",
 }));
