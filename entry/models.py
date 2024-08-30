@@ -2293,14 +2293,12 @@ class AdvancedSearchAttributeIndex(models.Model):
     entity = models.ForeignKey(Entity, on_delete=models.CASCADE)
     entity_attr = models.ForeignKey(EntityAttr, on_delete=models.CASCADE)
     entry = models.ForeignKey(Entry, on_delete=models.CASCADE)
-    attr = models.ForeignKey(Attribute, on_delete=models.CASCADE)
+    attr = models.ForeignKey(Attribute, on_delete=models.CASCADE, null=True)
 
     type = models.IntegerField()
     entry_name = models.CharField(max_length=200)
     key = models.CharField(max_length=1024, null=True)
     raw_value = models.JSONField(null=True)
-
-    # TODO probably should have entry name
 
     class Meta:
         indexes = [
@@ -2309,13 +2307,13 @@ class AdvancedSearchAttributeIndex(models.Model):
 
     @classmethod
     def create_instance(
-        cls, entry: Entry, attr: Attribute, attrv: AttributeValue | None
+        cls, entry: Entry, entity_attr: EntityAttr, attrv: AttributeValue | None
     ) -> "AdvancedSearchAttributeIndex":
         key: str | None = None
         value: dict[str, Any] | list[Any] | None = None
 
         if attrv:
-            match attr.schema.type:
+            match entity_attr.type:
                 case AttrType.STRING | AttrType.TEXT:
                     key = attrv.value
                 case AttrType.BOOLEAN:
@@ -2377,10 +2375,10 @@ class AdvancedSearchAttributeIndex(models.Model):
 
         return AdvancedSearchAttributeIndex(
             entity=entry.schema,
-            entity_attr=attr.schema,
+            entity_attr=entity_attr,
             entry=entry,
-            attr=attr,
-            type=attr.schema.type,
+            attr=attrv.parent_attr if attrv else None,
+            type=entity_attr.type,
             entry_name=entry.name,
             key=key,
             raw_value=value,

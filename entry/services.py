@@ -249,9 +249,9 @@ class AdvancedSearchService:
         )
         attr_prefetch = Prefetch(
             "attrs",
-            queryset=Attribute.objects.filter(
-                schema__in=entity_attrs, is_active=True
-            ).prefetch_related("schema", value_prefetch),
+            queryset=Attribute.objects.filter(schema__in=entity_attrs, is_active=True)
+            .select_related("schema")
+            .prefetch_related(value_prefetch),
             to_attr="prefetch_attrs",
         )
 
@@ -304,9 +304,14 @@ class AdvancedSearchService:
         AdvancedSearchAttributeIndex.objects.filter(entity_attr__in=entity_attrs).delete()
         indexes: list[AdvancedSearchAttributeIndex] = []
         for entry in entry_list:
-            for attr in entry.prefetch_attrs:
-                attrv: AttributeValue | None = next(iter(attr.prefetch_values), None)
-                indexes.append(AdvancedSearchAttributeIndex.create_instance(entry, attr, attrv))
+            for entity_attr in entity_attrs:
+                attr = next((a for a in entry.prefetched_attrs if a.schema == entity_attr), None)
+                attrv: AttributeValue | None = None
+                if attr:
+                    attrv = next(iter(attr.prefetch_values), None)
+                indexes.append(
+                    AdvancedSearchAttributeIndex.create_instance(entry, entity_attr, attrv)
+                )
         AdvancedSearchAttributeIndex.objects.bulk_create(indexes)
 
     @classmethod
@@ -322,7 +327,6 @@ class AdvancedSearchService:
         hint_referral_entity_id: int | None = None,
         offset: int = 0,
     ) -> AdvancedSearchResults:
-        print(hint_attrs)
         names: list[str] = [attr_hint["name"] for attr_hint in hint_attrs]
 
         entity_attrs = EntityAttr.objects.filter(parent_entity__in=hint_entity_ids, name__in=names)
@@ -363,8 +367,9 @@ class AdvancedSearchService:
             .values_list("entry_id", flat=True)
         )
 
-        total = matched.count()
-        entry_ids = list(matched.values_list("entry_id", flat=True)[offset : offset + limit])
+        total_entry_ids = list(matched)
+        total = len(total_entry_ids)
+        entry_ids = total_entry_ids[offset : offset + limit]
 
         results = AdvancedSearchAttributeIndex.objects.filter(
             entity_attr__in=entity_attrs, entry_id__in=entry_ids
