@@ -121,6 +121,9 @@ export const AdvancedSearchResultsPage: FC = () => {
       );
     };
 
+    // show loading indicator
+    setSearchResults({ ...searchResults, isInProcessing: true });
+
     // pagination processing is prioritize than others
     if (page !== searchResults.page) {
       sendSearchRequest(0).then((results) => {
@@ -138,25 +141,21 @@ export const AdvancedSearchResultsPage: FC = () => {
           totalCount: results.totalCount,
         });
       });
-    }
-
-    // abort when isInProcessing is false
-    if (!searchResults.isInProcessing) {
-      return;
-    }
-
-    sendSearchRequest(searchResults.offset).then((results) => {
-      setSearchResults({
-        ...searchResults,
-        count: searchResults.count + results.count,
-        values: searchResults.values.concat(results.values),
-        offset: searchResults.offset + AdvancedSerarchResultList.MAX_ROW_COUNT,
-        isInProcessing: false,
-        isJoinSearching: searchResults.isJoinSearching,
-        totalCount: results.totalCount,
+    } else {
+      sendSearchRequest(searchResults.offset).then((results) => {
+        setSearchResults({
+          ...searchResults,
+          count: searchResults.count + results.count,
+          values: searchResults.values.concat(results.values),
+          offset:
+            searchResults.offset + AdvancedSerarchResultList.MAX_ROW_COUNT,
+          isInProcessing: false,
+          isJoinSearching: searchResults.isJoinSearching,
+          totalCount: results.totalCount,
+        });
       });
-    });
-  }, [page, toggle, location.search, searchResults]);
+    }
+  }, [page, toggle, location.search, searchResults.isJoinSearching]);
 
   const handleExport = async (exportStyle: "yaml" | "csv") => {
     try {
@@ -280,7 +279,7 @@ export const AdvancedSearchResultsPage: FC = () => {
         </Box>
       </PageHeader>
 
-      {searchResults.count === 0 && searchResults.isInProcessing ? (
+      {joinAttrs.length === 0 && searchResults.isInProcessing ? (
         <Loading />
       ) : (
         <Box>
@@ -350,9 +349,7 @@ export const AdvancedSearchResultsPage: FC = () => {
                 searchResults.isInProcessing ||
                 searchResults.count >= searchResults.totalCount
               }
-              onClick={() =>
-                setSearchResults({ ...searchResults, isInProcessing: true })
-              }
+              onClick={() => setToggle(!toggle)}
             >
               <ArrowDropDownIcon />
             </FullWidthIconBox>
