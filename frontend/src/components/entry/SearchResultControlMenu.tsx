@@ -167,8 +167,9 @@ export const SearchResultControlMenu: FC<Props> = ({
         <Typography>重複</Typography>
       </MenuItem>
 
-      {/* date-type specific text selector */}
-      {attrType === EntryAttributeTypeTypeEnum.DATE && (
+      {/* date-like-type specific text selector */}
+      {(attrType === EntryAttributeTypeTypeEnum.DATE ||
+        attrType === EntryAttributeTypeTypeEnum.DATETIME) && (
         <Box>
           <StyledBox display="flex" flexDirection="column">
             <StyledTypography variant="caption">次を含む日付</StyledTypography>
@@ -283,7 +284,8 @@ export const SearchResultControlMenu: FC<Props> = ({
 
       {/* default text selector */}
       {attrType !== EntryAttributeTypeTypeEnum.DATE &&
-        attrType !== EntryAttributeTypeTypeEnum.BOOLEAN && (
+        attrType !== EntryAttributeTypeTypeEnum.BOOLEAN &&
+        attrType !== EntryAttributeTypeTypeEnum.DATETIME && (
           <Box>
             <Box>
               <StyledTextField
