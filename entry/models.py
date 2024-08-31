@@ -2297,7 +2297,7 @@ class AdvancedSearchAttributeIndex(models.Model):
 
     type = models.IntegerField()
     entry_name = models.CharField(max_length=200)
-    key = models.CharField(max_length=1024, null=True)
+    key = models.CharField(max_length=512, null=True)
     raw_value = models.JSONField(null=True)
 
     class Meta:

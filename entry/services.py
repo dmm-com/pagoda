@@ -306,7 +306,7 @@ class AdvancedSearchService:
         indexes: list[AdvancedSearchAttributeIndex] = []
         for entry in entry_list:
             for entity_attr in entity_attrs:
-                attr = next((a for a in entry.prefetched_attrs if a.schema == entity_attr), None)
+                attr = next((a for a in entry.prefetch_attrs if a.schema == entity_attr), None)
                 attrv: AttributeValue | None = None
                 if attr:
                     attrv = next(iter(attr.prefetch_values), None)
