@@ -300,7 +300,8 @@ class AdvancedSearchService:
 
         es.indices.refresh()
 
-        # for experimental, index in MySQL
+        # for experimental, a new advanced search index in MySQL
+        # NOTE currently it makes indexes in both ES and MySQL for safety
         AdvancedSearchAttributeIndex.objects.filter(entity_attr__in=entity_attrs).delete()
         indexes: list[AdvancedSearchAttributeIndex] = []
         for entry in entry_list:
@@ -346,6 +347,7 @@ class AdvancedSearchService:
                     conditions |= Q(entity_attr__in=_entity_attrs, key__isnull=True)
                 case (FilterKey.NON_EMPTY, _, _):
                     conditions |= Q(entity_attr__in=_entity_attrs, key__isnull=False)
+                # TODO support array types in exact match
                 case (FilterKey.TEXT_CONTAINED, True, keyword):
                     conditions |= Q(entity_attr__in=_entity_attrs, key=keyword)
                 case (FilterKey.TEXT_CONTAINED, False, keyword):
@@ -357,6 +359,9 @@ class AdvancedSearchService:
                 # TODO Support DUPLICATED
                 case _:
                     conditions |= Q(entity_attr__in=_entity_attrs)
+
+        if entry_name:
+            conditions &= Q(entry_name__icontains=entry_name)
 
         matched = (
             AdvancedSearchAttributeIndex.objects.filter(conditions)
