@@ -1,11 +1,8 @@
-import { Box, Button, CircularProgress } from "@mui/material";
+import { Button, CircularProgress } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import React, { FC } from "react";
 
-const StyledBox = styled(Box)({
-  display: "flex",
-  justifyContent: "center",
-});
+import { CenterAlignedBox } from "components/common/FlexBox";
 
 const StyledButton = styled(Button)({
   margin: "0 4px",
@@ -27,7 +24,7 @@ export const SubmitButton: FC<Props> = ({
   handleCancel,
 }) => {
   return (
-    <StyledBox>
+    <CenterAlignedBox>
       <StyledButton
         variant="contained"
         color="secondary"
@@ -42,6 +39,6 @@ export const SubmitButton: FC<Props> = ({
           キャンセル
         </StyledButton>
       )}
-    </StyledBox>
+    </CenterAlignedBox>
   );
 };
