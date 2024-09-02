@@ -8,6 +8,16 @@
 
 ### Fixed
 
+## v3.101.0
+
+### Changed
+* Wrap all the tasks with the decorators.
+  Contributed by @syucream
+
+### Fixed
+* bugfix deleted objects are not displayed in role list page.
+  Contributed by @tsunoda-takahiro
+
 ## v3.100.0
 
 ### Changed
