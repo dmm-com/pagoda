@@ -8,6 +8,14 @@
 
 ### Fixed
 
+## v3.102.0
+
+### Changed
+* Separate loading stype between normal and join_attr.
+  Contributed by @syucream
+* Use datepicker in datetime type too.
+  Contributed by @syucream
+
 ## v3.101.0
 
 ### Changed
