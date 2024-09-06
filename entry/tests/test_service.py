@@ -8,7 +8,7 @@ from airone.lib.log import Logger
 from airone.lib.test import AironeTestCase
 from airone.lib.types import AttrType
 from entity.models import Entity, EntityAttr
-from entry.models import Attribute, Entry
+from entry.models import AdvancedSearchAttributeIndex, Attribute, AttributeValue, Entry
 from entry.services import AdvancedSearchService
 from entry.settings import CONFIG
 from group.models import Group
@@ -998,3 +998,84 @@ class AdvancedSearchServiceTest(AironeTestCase):
 
         res = AdvancedSearchService.search_entries(self._user, [self._entity.id])
         self.assertEqual(res.ret_count, 1)
+
+    def test_search_entries_v2(self):
+        entity = Entity.objects.create(name="TestEntity", created_user=self._user)
+        entity_attr = EntityAttr.objects.create(
+            name="test_attr", type=AttrType.STRING, created_user=self._user, parent_entity=entity
+        )
+
+        entry1 = Entry.objects.create(name="entry1", created_user=self._user, schema=entity)
+        attr1 = entry1.add_attribute_from_base(entity_attr, self._user)
+        attr1.add_value(self._user, "value1")
+
+        entry2 = Entry.objects.create(name="entry2", created_user=self._user, schema=entity)
+        attr2 = entry2.add_attribute_from_base(entity_attr, self._user)
+        attr2.add_value(self._user, "value2")
+
+        entry3 = Entry.objects.create(
+            name="entry3", created_user=self._user, schema=entity, is_active=False
+        )
+        attr3 = entry3.add_attribute_from_base(entity_attr, self._user)
+        attr3.add_value(self._user, "value3")
+
+        # Create AdvancedSearchAttributeIndex entries directly
+        indexes = []
+        for entry in [entry1, entry2, entry3]:
+            for attr in entity.attrs.all():
+                attr = next((a for a in entry.attrs.all() if a.schema == entity_attr), None)
+                attrv: AttributeValue | None = None
+                if attr:
+                    attrv = next(iter(attr.values.all()), None)
+                indexes.append(
+                    AdvancedSearchAttributeIndex.create_instance(entry, entity_attr, attrv)
+                )
+        AdvancedSearchAttributeIndex.objects.bulk_create(indexes)
+
+        # Test basic search
+        hint_attrs = [{"name": entity_attr.name}]
+        res = AdvancedSearchService.search_entries_v2(
+            self._user, [entity.id], hint_attrs=hint_attrs
+        )
+        self.assertEqual(res.ret_count, 3)
+        self.assertEqual(len(res.ret_values), 3)
+        self.assertEqual([entry1.id, entry2.id, entry3.id], [v.entry["id"] for v in res.ret_values])
+
+        # Test search with limit
+        res = AdvancedSearchService.search_entries_v2(
+            self._user, [entity.id], hint_attrs=hint_attrs, limit=1
+        )
+        self.assertEqual(res.ret_count, 3)
+        self.assertEqual(len(res.ret_values), 1)
+
+        # Test search with offset
+        res = AdvancedSearchService.search_entries_v2(
+            self._user, [entity.id], hint_attrs=hint_attrs, offset=1
+        )
+        self.assertEqual(res.ret_count, 3)
+        self.assertEqual(len(res.ret_values), 2)
+
+        # Test search with limit/offset
+        res = AdvancedSearchService.search_entries_v2(
+            self._user, [entity.id], hint_attrs=hint_attrs, limit=1, offset=1
+        )
+        self.assertEqual(res.ret_count, 3)
+        self.assertEqual(len(res.ret_values), 1)
+
+        # Test search with keyword
+        hint_attrs_with_keyword = [
+            {"name": entity_attr.name, "keyword": "value1", "filter_key": FilterKey.TEXT_CONTAINED}
+        ]
+        res = AdvancedSearchService.search_entries_v2(
+            self._user, [entity.id], hint_attrs=hint_attrs_with_keyword
+        )
+        self.assertEqual(res.ret_count, 1)
+        self.assertEqual(res.ret_values[0].entry["id"], entry1.id)
+
+        # Test search with non-existent entity
+        non_existent_entity_id = max(Entity.objects.all().values_list("id", flat=True)) + 1
+        res = AdvancedSearchService.search_entries_v2(
+            self._user, [non_existent_entity_id], hint_attrs=hint_attrs
+        )
+        self.assertEqual(res.ret_count, 0)
+        self.assertEqual(len(res.ret_values), 0)
