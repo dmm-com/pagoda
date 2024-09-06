@@ -2319,12 +2319,16 @@ class AdvancedSearchAttributeIndex(models.Model):
                 case AttrType.BOOLEAN:
                     key = "true" if attrv.boolean else "false"
                 case AttrType.DATE:
-                    key = attrv.date.isoformat()
+                    key = attrv.date.isoformat() if attrv.date else None
                 case AttrType.DATETIME:
-                    key = attrv.datetime.isoformat()
+                    key = attrv.datetime.isoformat() if attrv.datetime else None
                 case AttrType.OBJECT:
-                    key = attrv.referral.name
-                    value = {"id": attrv.referral.id, "name": attrv.referral.name}
+                    key = attrv.referral.name if attrv.referral else None
+                    value = (
+                        {"id": attrv.referral.id, "name": attrv.referral.name}
+                        if attrv.referral
+                        else None
+                    )
                 case AttrType.NAMED_OBJECT:
                     key = attrv.value
                     value = {
@@ -2332,13 +2336,17 @@ class AdvancedSearchAttributeIndex(models.Model):
                             "id": attrv.referral.id,
                             "name": attrv.referral.name,
                         }
+                        if attrv.referral
+                        else None
                     }
                 case AttrType.GROUP:
-                    key = attrv.group.name
-                    value = {"id": attrv.group.id, "name": attrv.group.name}
+                    key = attrv.group.name if attrv.group else None
+                    value = (
+                        {"id": attrv.group.id, "name": attrv.group.name} if attrv.group else None
+                    )
                 case AttrType.ROLE:
-                    key = attrv.role.name
-                    value = {"id": attrv.role.id, "name": attrv.role.name}
+                    key = attrv.role.name if attrv.role else None
+                    value = {"id": attrv.role.id, "name": attrv.role.name} if attrv.role else None
                 case AttrType.ARRAY_STRING:
                     value = [v.value for v in attrv.data_array.all()]
                     key = ",".join(value)
