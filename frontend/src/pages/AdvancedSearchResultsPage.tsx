@@ -47,11 +47,8 @@ const FullWidthIconBox = styled(IconButton)(({}) => ({
 }));
 
 export interface AirOneAdvancedSearchResult extends AdvancedSearchResult {
-  offset: number;
   page: number;
   isInProcessing: boolean;
-  isJoinSearching: boolean;
-  totalCount: number;
 }
 
 export const AdvancedSearchResultsPage: FC = () => {
@@ -82,10 +79,8 @@ export const AdvancedSearchResultsPage: FC = () => {
     useState<AirOneAdvancedSearchResult>({
       count: 0,
       values: [],
-      offset: 0,
       page: page,
       isInProcessing: true,
-      isJoinSearching: joinAttrs.length > 0,
       totalCount: 0,
     });
 
@@ -93,20 +88,19 @@ export const AdvancedSearchResultsPage: FC = () => {
     return await aironeApiClient.getEntityAttrs(entityIds, searchAllEntities);
   });
 
-  const handleSetResults = (isJoinSearching: boolean = false) => {
+  const handleSetResults = () => {
     setSearchResults({
       count: 0,
       values: [],
-      offset: 0,
       page: page,
       isInProcessing: true,
-      isJoinSearching: isJoinSearching,
       totalCount: searchResults.totalCount,
     });
+    setToggle(!toggle);
   };
 
   useEffect(() => {
-    const sendSearchRequest = function (offset: number) {
+    const sendSearchRequest = () => {
       return aironeApiClient.advancedSearch(
         entityIds,
         entryName,
@@ -117,7 +111,7 @@ export const AdvancedSearchResultsPage: FC = () => {
         searchAllEntities,
         page,
         AdvancedSerarchResultList.MAX_ROW_COUNT,
-        offset
+        (page - 1) * AdvancedSerarchResultList.MAX_ROW_COUNT
       );
     };
 
@@ -126,36 +120,27 @@ export const AdvancedSearchResultsPage: FC = () => {
 
     // pagination processing is prioritize than others
     if (page !== searchResults.page) {
-      sendSearchRequest(0).then((results) => {
+      sendSearchRequest().then((results) => {
         setSearchResults({
           count: results.count,
           values: results.values,
-          offset: page * AdvancedSerarchResultList.MAX_ROW_COUNT,
           page: page,
           isInProcessing: false,
-          isJoinSearching: joinAttrs.some((x) => {
-            return x.attrinfo.some((y) => {
-              return getIsFiltered(y.filterKey, y.keyword);
-            });
-          }),
           totalCount: results.totalCount,
         });
       });
     } else {
-      sendSearchRequest(searchResults.offset).then((results) => {
+      sendSearchRequest().then((results) => {
         setSearchResults({
           ...searchResults,
           count: searchResults.count + results.count,
           values: searchResults.values.concat(results.values),
-          offset:
-            searchResults.offset + AdvancedSerarchResultList.MAX_ROW_COUNT,
           isInProcessing: false,
-          isJoinSearching: searchResults.isJoinSearching,
           totalCount: results.totalCount,
         });
       });
     }
-  }, [page, toggle, location.search, searchResults.isJoinSearching]);
+  }, [page, toggle, location.search]);
 
   const handleExport = async (exportStyle: "yaml" | "csv") => {
     try {

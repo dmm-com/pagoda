@@ -53,7 +53,7 @@ interface Props {
   entityIds: number[];
   searchAllEntities: boolean;
   joinAttrs: AdvancedSearchJoinAttrInfo[];
-  setSearchResults: (isJoinSearching: boolean) => void;
+  refreshSearchResults: () => void;
 }
 
 export const SearchResultsTableHead: FC<Props> = ({
@@ -65,7 +65,7 @@ export const SearchResultsTableHead: FC<Props> = ({
   entityIds,
   searchAllEntities,
   joinAttrs,
-  setSearchResults,
+  refreshSearchResults,
 }) => {
   const location = useLocation();
   const history = useHistory();
@@ -154,9 +154,10 @@ export const SearchResultsTableHead: FC<Props> = ({
           .filter((v, i, a) => a.findIndex((t) => t.name === v.name) === i),
       });
 
-      setSearchResults(
-        getIsFiltered(attrFilter?.filterKey, attrFilter?.keyword)
-      );
+      if (getIsFiltered(attrFilter?.filterKey, attrFilter?.keyword)) {
+        refreshSearchResults();
+      }
+
       // simply reload with the new params
       history.push({
         pathname: location.pathname,
@@ -214,14 +215,7 @@ export const SearchResultsTableHead: FC<Props> = ({
                   targetAttrname={joinAttrName}
                   joinAttrs={joinAttrs}
                   handleClose={() => setJoinAttrname("")}
-                  setSearchResults={() =>
-                    setSearchResults(
-                      getIsFiltered(
-                        attrsFilter[attrName].filterKey,
-                        attrsFilter[attrName].keyword
-                      )
-                    )
-                  }
+                  refreshSearchResults={refreshSearchResults}
                 />
               )}
               <StyledIconButton
