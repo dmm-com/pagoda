@@ -532,7 +532,7 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
     @extend_schema_field(serializers.ListField(child=EntryAttributeTypeSerializer()))
     def get_attrs(self, obj: Entry) -> list[EntryAttributeType]:
         def get_attr_value(attr: Attribute) -> EntryAttributeValue:
-            attrv = attr.get_latest_value(is_readonly=True)
+            attrv = attr.attrv_list[0] if len(attr.attrv_list) > 0 else None
 
             if not attrv:
                 return {}
@@ -560,7 +560,7 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
                                     "name": x.referral.entry.schema.name,
                                 },
                             }
-                            for x in attrv.data_array.all()
+                            for x in attrv.data_array.all().select_related("referral")
                             if x.referral and x.referral.is_active
                         ]
                     }
@@ -580,7 +580,7 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
                             if x.referral and x.referral.is_active
                             else None,
                         }
-                        for x in attrv.data_array.all()
+                        for x in attrv.data_array.all().select_related("referral")
                         if not (x.referral and not x.referral.is_active)
                     ]
                     return {"as_array_named_object": array_named_object}
@@ -721,9 +721,16 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
                 case _:
                     raise IncorrectTypeError(f"unexpected type: {type}")
 
+        attrv_prefetch = Prefetch(
+            "values",
+            queryset=AttributeValue.objects.filter(is_latest=True).select_related(
+                "referral", "group", "role"
+            ),
+            to_attr="attrv_list",
+        )
         attr_prefetch = Prefetch(
             "attribute_set",
-            queryset=Attribute.objects.filter(parent_entry=obj),
+            queryset=Attribute.objects.filter(parent_entry=obj).prefetch_related(attrv_prefetch),
             to_attr="attr_list",
         )
         entity_attrs = (
