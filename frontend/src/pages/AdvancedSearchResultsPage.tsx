@@ -344,15 +344,18 @@ export const AdvancedSearchResultsPage: FC = () => {
 
           {/* show button to show continuous search results manually when joinAttrs are specified */}
           {joinAttrs.length > 0 && (
-            <FullWidthIconBox
-              disabled={
-                searchResults.isInProcessing ||
-                searchResults.count >= searchResults.totalCount
-              }
-              onClick={() => setToggle(!toggle)}
-            >
-              <ArrowDropDownIcon />
-            </FullWidthIconBox>
+            <>
+              {searchResults.isInProcessing ? (
+                <Loading />
+              ) : (
+                <FullWidthIconBox
+                  disabled={searchResults.count >= searchResults.totalCount}
+                  onClick={() => setToggle(!toggle)}
+                >
+                  <ArrowDropDownIcon />
+                </FullWidthIconBox>
+              )}
+            </>
           )}
         </Box>
       )}
