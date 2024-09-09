@@ -87,7 +87,7 @@ export const AppRouter: FC<Props> = ({ customRoutes }) => {
               <Switch>
                 {customRoutes &&
                   customRoutes.map((r) => (
-                    <Route key={r.path} path={r.path}>
+                    <Route key={r.path} path={r.path} exact>
                       <Switch>
                         <Route
                           path={r.routePath}
@@ -165,7 +165,7 @@ export const AppRouter: FC<Props> = ({ customRoutes }) => {
                 <Route path={newRolePath()} component={RoleEditPage} />
                 <Route path={rolePath(":roleId")} component={RoleEditPage} />
                 <Route path={rolesPath()} component={RoleListPage} />
-                <Route exact path={topPath()} component={DashboardPage} />
+                <Route path={topPath()} component={DashboardPage} exact />
                 <Route component={NotFoundErrorPage} />
               </Switch>
             </Route>

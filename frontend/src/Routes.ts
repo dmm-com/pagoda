@@ -13,7 +13,7 @@ export const aclHistoryPath = (objectId: number | string) =>
   basePath + `acl/${objectId}/history`;
 export const searchPath = () => basePath + "search";
 
-// entris
+// entries
 export const newEntryPath = (entityId: number | string) =>
   basePath + `entities/${entityId}/entries/new`;
 export const copyEntryPath = (
