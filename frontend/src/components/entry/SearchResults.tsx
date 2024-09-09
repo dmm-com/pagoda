@@ -108,7 +108,7 @@ export const SearchResults: FC<Props> = ({
               entityIds={entityIds}
               searchAllEntities={searchAllEntities}
               joinAttrs={joinAttrs}
-              setSearchResults={setSearchResults}
+              refreshSearchResults={setSearchResults}
             />
             <TableBody>
               {results.values?.map((result) => (
