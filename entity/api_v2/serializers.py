@@ -550,7 +550,7 @@ class EntityDetailSerializer(EntityListSerializer):
                 ],
                 "note": x.note,
             }
-            for x in obj.attrs.filter(is_active=True).order_by("index")
+            for x in obj.attrs.filter(is_active=True).prefetch_related("referral").order_by("index")
         ]
 
         # add and remove attributes depending on entity
