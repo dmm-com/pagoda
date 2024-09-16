@@ -1,13 +1,14 @@
 ---
-title: AirOne
+title: Pagoda
 ---
 
-<span class="badge-placeholder">[![CircleCI](https://circleci.com/gh/dmm-com/airone.svg?style=svg&circle-token=2e12c068b0ed1bab9d0c2d72529d5ee1da9b53b4)](https://circleci.com/gh/dmm-com/airone)</span>
+<span class="badge-placeholder">[![Build core (Python / Django)](https://github.com/dmm-com/pagoda/actions/workflows/build-core.yml/badge.svg)](https://github.com/dmm-com/pagoda/actions/workflows/build-core.yml)</span>
+<span class="badge-placeholder">[![Build frontend](https://github.com/dmm-com/pagoda/actions/workflows/build-frontend.yml/badge.svg)](https://github.com/dmm-com/pagoda/actions/workflows/build-frontend.yml)</span>
 <span class="badge-placeholder">[![License: MIT](https://img.shields.io/github/license/dmm-com/airone)](https://github.com/dmm-com/airone/blob/master/LICENSE)</span>
 
-AirOne is a Web Application which is developed by the infrastructure division of DMM.com LLC on the purpose of managing information which is associated with on-premise equipments. This aims to be versatile and flexible for doing it.
+Pagoda is a Web Application which is developed by the infrastructure division of DMM.com LLC on the purpose of managing information which is associated with on-premise equipments. This aims to be versatile and flexible for doing it.
 
-In regard to the DMM.com, AirOne is responsible for managing all phisical (e.g. where a Server is equipped on), logical (e.g. which IPv4/v6 addresses are binded to), managemental (e.g. accounting details for equipments), operational (e.g. who and how uses it) information. And this meets demands of individual departs departments that handle each different information and have own work styles.
+In regard to the DMM.com, Pagoda is responsible for managing all phisical (e.g. where a Server is equipped on), logical (e.g. which IPv4/v6 addresses are binded to), managemental (e.g. accounting details for equipments), operational (e.g. who and how uses it) information. And this meets demands of individual departs departments that handle each different information and have own work styles.
 
 We had managed those information by using a DCIM (a.k.a. Data Center Information Management) system and many spreadsheets which are related to it until then. Basic physical and logical information was managed in the DCIM. And other spreadsheets had related managemental and operational information. Sadly, there were many different similer spreadsheets that have same information. 
 
