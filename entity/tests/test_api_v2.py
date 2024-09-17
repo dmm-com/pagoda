@@ -4,6 +4,7 @@ import logging
 from datetime import timezone
 from unittest import mock
 
+import requests
 import yaml
 from django.conf import settings
 from django.urls import reverse
@@ -1294,7 +1295,17 @@ class ViewTest(AironeViewTest):
     @mock.patch(
         "entity.tasks.create_entity_v2.delay", mock.Mock(side_effect=tasks.create_entity_v2)
     )
-    def test_create_entity_with_webhook_is_verified(self):
+    @mock.patch("requests.post")
+    def test_create_entity_with_webhook_is_verified(self, mock_post):
+        def mock_post_side_effect(url, *args, **kwargs):
+            if url == "http://example.net/":
+                mock_response = mock.Mock()
+                mock_response.status_code = 200
+                return mock_response
+            return requests.post(url, *args, **kwargs)
+
+        mock_post.side_effect = mock_post_side_effect
+
         params = {
             "name": "entity1",
             "webhooks": [{"url": "http://example.net/"}, {"url": "http://hoge.hoge/"}],
@@ -2476,7 +2487,17 @@ class ViewTest(AironeViewTest):
                 self.assertEqual([x.id for x in entity_attr.referral.all()], [])
 
     @mock.patch("entity.tasks.edit_entity_v2.delay", mock.Mock(side_effect=tasks.edit_entity_v2))
-    def test_update_entity_with_webhook_is_verified(self):
+    @mock.patch("requests.post")
+    def test_update_entity_with_webhook_is_verified(self, mock_post):
+        def mock_post_side_effect(url, *args, **kwargs):
+            if url == "http://example.net/":
+                mock_response = mock.Mock()
+                mock_response.status_code = 200
+                return mock_response
+            return requests.post(url, *args, **kwargs)
+
+        mock_post.side_effect = mock_post_side_effect
+
         self.entity.webhooks.all().delete()
         params = {
             "name": "entity1",
