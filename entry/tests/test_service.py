@@ -1080,6 +1080,101 @@ class AdvancedSearchServiceTest(AironeTestCase):
         self.assertEqual(res.ret_count, 0)
         self.assertEqual(len(res.ret_values), 0)
 
+    def test_search_entries_v2_with_all_attribute_types(self):
+        """
+        This tests all typed attribute values are retrieved by search_entries_v2
+        """
+        entity = self.create_entity_with_all_type_attributes(self._user)
+        ref_entries = [self.add_entry(self._user, "Ref%s" % i, entity) for i in range(3)]
+        ref_groups = [Group.objects.create(name="TestGroup%s" % x) for x in range(2)]
+        ref_roles = [Role.objects.create(name="TestRole%s" % x) for x in range(2)]
+
+        setting_value = {
+            "str": "foo",
+            "text": "bar",
+            "obj": ref_entries[0],
+            "name": {"name": "hoge", "id": ref_entries[1]},
+            "bool": True,
+            "group": ref_groups[0],
+            "date": date.today(),
+            "role": ref_roles[0],
+            "datetime": datetime.now(timezone.utc),
+            "arr_str": ["tmp01", "tmp02", "tmp03"],
+            "arr_obj": ref_entries,
+            "arr_name": [
+                {"name": "hoge", "id": ref_entries[1]},
+                {"name": "fuga", "id": ref_entries[2]},
+            ],
+            "arr_group": ref_groups[:2],
+            "arr_role": ref_roles[:2],
+        }
+
+        entry = self.add_entry(self._user, "Entry", entity, values=setting_value)
+        # register Entry to AdvancedSearchAttributeIndex
+        indexes = []
+        for attr in entity.attrs.all():
+            attrv = entry.get_attrv(attr.name)
+            indexes.append(AdvancedSearchAttributeIndex.create_instance(entry, attr, attrv))
+        AdvancedSearchAttributeIndex.objects.bulk_create(indexes)
+
+        # check expected keys are registered at each AdvancedSearchAttributeIndexes
+        expected_keys = [
+            ("str", "foo"),
+            ("text", "bar"),
+            ("obj", "Ref0"),
+            ("name", "Ref1"),
+            ("bool", "true"),
+            ("group", "TestGroup0"),
+            ("date", str(setting_value["date"])),
+            ("role", "TestRole0"),
+            ("datetime", setting_value["datetime"].isoformat()),
+            ("arr_str", "tmp01,tmp02,tmp03"),
+            ("arr_obj", "Ref0,Ref1,Ref2"),
+            ("arr_name", "Ref1,Ref2"),
+            ("arr_group", "TestGroup0,TestGroup1"),
+            ("arr_role", "TestRole0,TestRole1"),
+        ]
+        for attrname, expected_key in expected_keys:
+            idx = AdvancedSearchAttributeIndex.objects.get(entry=entry, entity_attr__name=attrname)
+            self.assertEqual(idx.key, expected_key)
+
+        # send request of advanced-search
+        res = AdvancedSearchService.search_entries_v2(
+            self._user, [entity.id], hint_attrs=[{"name": x.name} for x in entity.attrs.all()]
+        )
+
+        # check result record has expected values
+        self.assertEqual(res.ret_count, 1)
+
+        record = res.ret_values[0]
+        self.assertEqual(record.entity["id"], entity.id)
+        self.assertEqual(record.entry["id"], entry.id)
+        self.assertEqual(
+            [(k, v["value"]) for (k, v) in record.attrs.items()],
+            [
+                ("str", "foo"),
+                ("text", "bar"),
+                ("obj", {"id": ref_entries[0].id, "name": ref_entries[0].name}),
+                ("name", {"hoge": {"id": ref_entries[1].id, "name": ref_entries[1].name}}),
+                ("bool", "true"),
+                ("group", {"id": ref_groups[0].id, "name": ref_groups[0].name}),
+                ("date", str(setting_value["date"])),
+                ("role", {"id": ref_roles[0].id, "name": ref_roles[0].name}),
+                ("datetime", setting_value["datetime"].isoformat()),
+                ("arr_str", setting_value["arr_str"]),
+                ("arr_obj", [{"id": x.id, "name": x.name} for x in setting_value["arr_obj"]]),
+                (
+                    "arr_name",
+                    [
+                        {"hoge": {"id": ref_entries[1].id, "name": ref_entries[1].name}},
+                        {"fuga": {"id": ref_entries[2].id, "name": ref_entries[2].name}},
+                    ],
+                ),
+                ("arr_group", [{"id": x.id, "name": x.name} for x in setting_value["arr_group"]]),
+                ("arr_role", [{"id": x.id, "name": x.name} for x in setting_value["arr_role"]]),
+            ],
+        )
+
     def test_search_entries_v2_with_referrals(self):
         # Create a referral entity and some entries
         ref_entity = Entity.objects.create(name="ReferralEntity", created_user=self._user)

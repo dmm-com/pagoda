@@ -2330,9 +2330,9 @@ class AdvancedSearchAttributeIndex(models.Model):
                         else None
                     )
                 case AttrType.NAMED_OBJECT:
-                    key = attrv.value
+                    key = attrv.referral.name if attrv.referral else None
                     value = {
-                        str(key): {
+                        str(attrv.value): {
                             "id": attrv.referral.id,
                             "name": attrv.referral.name,
                         }
@@ -2363,7 +2363,7 @@ class AdvancedSearchAttributeIndex(models.Model):
                         for v in attrv.data_array.all()
                         if v.referral
                     ]
-                    key = ",".join(next(iter(v)) for v in value)
+                    key = ",".join([v.referral.name for v in attrv.data_array.all() if v.referral])
                 case AttrType.ARRAY_GROUP:
                     value = [
                         {"id": v.group.id, "name": v.group.name}
