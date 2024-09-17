@@ -9,6 +9,7 @@ from airone.lib.acl import ACLType
 from airone.lib.elasticsearch import (
     ESS,
     AdvancedSearchResultRecord,
+    AdvancedSearchResultRecordIdNamePair,
     AdvancedSearchResults,
     AttrHint,
     FilterKey,
@@ -384,6 +385,31 @@ class AdvancedSearchService:
         for result in results:
             results_by_entry[result.entry].append(result)
 
+        # TODO now it does't support filtering entries by referrals, just hide the values
+        referrals_by_entry: dict[int, list[AdvancedSearchResultRecordIdNamePair]] = {}
+        if hint_referral is not None:
+            referrings = [e for e in results_by_entry.keys()]
+            ref_values = AttributeValue.objects.filter(is_latest=True, referral__in=referrings)
+            if len(hint_referral) > 0:
+                ref_values = ref_values.filter(
+                    parent_attr__parent_entry__name__icontains=hint_referral
+                )
+            if hint_referral_entity_id is not None:
+                ref_values = ref_values.filter(
+                    parent_attr__parent_entry__schema__id=hint_referral_entity_id
+                )
+
+            for ref_value in ref_values.select_related("referral", "parent_attr__parent_entry"):
+                referring_entry = ref_value.referral
+                referred_entry = ref_value.parent_attr.parent_entry
+                if referring_entry.id not in referrals_by_entry:
+                    referrals_by_entry[referring_entry.id] = []
+                referrals_by_entry[referring_entry.id].append(
+                    AdvancedSearchResultRecordIdNamePair(
+                        id=referred_entry.id, name=referred_entry.name
+                    )
+                )
+
         values = [
             AdvancedSearchResultRecord(
                 entity={
@@ -405,7 +431,7 @@ class AdvancedSearchService:
                 },
                 # FIXME dummy
                 is_readable=True,
-                referrals=[],
+                referrals=referrals_by_entry.get(entry.id, []),
             )
             for entry, results in results_by_entry.items()
         ]

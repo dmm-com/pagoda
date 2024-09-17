@@ -1079,3 +1079,99 @@ class AdvancedSearchServiceTest(AironeTestCase):
         )
         self.assertEqual(res.ret_count, 0)
         self.assertEqual(len(res.ret_values), 0)
+
+    def test_search_entries_v2_with_referrals(self):
+        # Create a referral entity and some entries
+        ref_entity = Entity.objects.create(name="ReferralEntity", created_user=self._user)
+        ref_entity_attr = EntityAttr.objects.create(
+            name="ref_attr",
+            type=AttrType.STRING,
+            created_user=self._user,
+            parent_entity=ref_entity,
+        )
+        ref_entry1 = Entry.objects.create(
+            name="ref_entry1", created_user=self._user, schema=ref_entity
+        )
+        ref_entry1.add_attribute_from_base(ref_entity_attr, self._user)
+        ref_entry2 = Entry.objects.create(
+            name="ref_entry2", created_user=self._user, schema=ref_entity
+        )
+        ref_entry2.add_attribute_from_base(ref_entity_attr, self._user)
+
+        # Create main entity with a referral attribute
+        entity = Entity.objects.create(name="TestEntity", created_user=self._user)
+        entity_attr = EntityAttr.objects.create(
+            name="ref_attr",
+            type=AttrType.OBJECT,
+            created_user=self._user,
+            parent_entity=entity,
+        )
+        entity_attr.add_referral(ref_entity)
+
+        # Create entries with referrals
+        entry1 = Entry.objects.create(name="entry1", created_user=self._user, schema=entity)
+        attr1 = entry1.add_attribute_from_base(entity_attr, self._user)
+        attr1.add_value(self._user, str(ref_entry1.id))
+
+        entry2 = Entry.objects.create(name="entry2", created_user=self._user, schema=entity)
+        attr2 = entry2.add_attribute_from_base(entity_attr, self._user)
+        attr2.add_value(self._user, str(ref_entry2.id))
+
+        # Create AdvancedSearchAttributeIndex entries
+        indexes = []
+        for entry in [ref_entry1, ref_entry2]:
+            attr = next((a for a in entry.attrs.all() if a.schema == ref_entity_attr), None)
+            indexes.append(
+                AdvancedSearchAttributeIndex.create_instance(entry, ref_entity_attr, None)
+            )
+        for entry in [entry1, entry2]:
+            attr = next((a for a in entry.attrs.all() if a.schema == entity_attr), None)
+            attrv = next(iter(attr.values.all()), None) if attr else None
+            indexes.append(AdvancedSearchAttributeIndex.create_instance(entry, entity_attr, attrv))
+        AdvancedSearchAttributeIndex.objects.bulk_create(indexes)
+
+        hint_attrs = [{"name": ref_entity_attr.name}]
+
+        # Test search without referral
+        res = AdvancedSearchService.search_entries_v2(
+            self._user,
+            [ref_entity.id],
+            hint_attrs=hint_attrs,
+        )
+        self.assertEqual(res.ret_count, 2)
+        self.assertEqual(res.ret_values[0].referrals, [])
+
+        # Test search with referral
+        # NOTE it doesn't support filtering entries by referrals, just hide the values
+        res = AdvancedSearchService.search_entries_v2(
+            self._user, [ref_entity.id], hint_attrs=hint_attrs, hint_referral=entry1.name
+        )
+        self.assertEqual(res.ret_count, 2)
+        self.assertEqual(set([r["id"] for r in res.ret_values[0].referrals]), set([entry1.id]))
+        self.assertEqual(set([r["id"] for r in res.ret_values[1].referrals]), set([]))
+
+        # Test search with referral entity hint
+        # NOTE it doesn't support filtering entries by referrals, just hide the values
+        res = AdvancedSearchService.search_entries_v2(
+            self._user,
+            [ref_entity.id],
+            hint_attrs=hint_attrs,
+            hint_referral="",
+            hint_referral_entity_id=entity.id,
+        )
+        self.assertEqual(res.ret_count, 2)
+        self.assertEqual(set([r["id"] for r in res.ret_values[0].referrals]), set([entry1.id]))
+        self.assertEqual(set([r["id"] for r in res.ret_values[1].referrals]), set([entry2.id]))
+
+        # Test search with both referral and referral entity hints
+        # NOTE it doesn't support filtering entries by referrals, just hide the values
+        res = AdvancedSearchService.search_entries_v2(
+            self._user,
+            [ref_entity.id],
+            hint_attrs=hint_attrs,
+            hint_referral=entry1.name,
+            hint_referral_entity_id=entity.id,
+        )
+        self.assertEqual(res.ret_count, 2)
+        self.assertEqual(set([r["id"] for r in res.ret_values[0].referrals]), set([entry1.id]))
+        self.assertEqual(set([r["id"] for r in res.ret_values[1].referrals]), set([]))
