@@ -156,6 +156,9 @@ export const JobList: FC<Props> = ({ jobs }) => {
                   case JobOperations.DELETE_ENTITY:
                   case JobOperations.IMPORT_ENTRY:
                   case JobOperations.EXPORT_ENTRY:
+                  case JobOperations.CREATE_ENTITY_V2:
+                  case JobOperations.EDIT_ENTITY_V2:
+                  case JobOperations.DELETE_ENTITY_V2:
                   case JobOperations.IMPORT_ENTRY_V2:
                   case JobOperations.EXPORT_ENTRY_V2:
                     return (
@@ -175,6 +178,9 @@ export const JobList: FC<Props> = ({ jobs }) => {
                   case JobOperations.NOTIFY_UPDATE_ENTRY:
                   case JobOperations.NOTIFY_DELETE_ENTRY:
                   case JobOperations.DO_COPY_ENTRY:
+                  case JobOperations.CREATE_ENTRY_V2:
+                  case JobOperations.EDIT_ENTRY_V2:
+                  case JobOperations.DELETE_ENTRY_V2:
                     return (
                       <Typography
                         component={Link}

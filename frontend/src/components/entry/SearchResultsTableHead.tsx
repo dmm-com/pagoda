@@ -14,7 +14,14 @@ import {
   Typography,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import React, { ChangeEvent, FC, useMemo, useReducer, useState } from "react";
+import React, {
+  ChangeEvent,
+  FC,
+  useEffect,
+  useMemo,
+  useReducer,
+  useState,
+} from "react";
 import { useHistory, useLocation } from "react-router-dom";
 
 import { AdvancedSearchJoinModal } from "./AdvancedSearchJoinModal";
@@ -116,6 +123,10 @@ export const SearchResultsTableHead: FC<Props> = ({
     [defaultAttrsFilter]
   );
 
+  useEffect(() => {
+    setAttrsFilter(defaultAttrsFilter ?? {});
+  }, [defaultAttrsFilter]);
+
   const handleSelectFilterConditions =
     (attrName?: string) =>
     (
@@ -130,13 +141,13 @@ export const SearchResultsTableHead: FC<Props> = ({
 
       const newParams = formatAdvancedSearchParams({
         attrsFilter: Object.keys(_attrsFilter)
-          .filter((k) => _attrsFilter[k].joinedAttrname === undefined)
+          .filter((k) => _attrsFilter[k]?.joinedAttrname === undefined)
           .reduce((a, k) => ({ ...a, [k]: _attrsFilter[k] }), {}),
         entryName: overwriteEntryName ?? entryFilter,
         referralName: overwriteReferral ?? referralFilter,
         baseParams: new URLSearchParams(location.search),
         joinAttrs: Object.keys(_attrsFilter)
-          .filter((k) => _attrsFilter[k].joinedAttrname !== undefined)
+          .filter((k) => _attrsFilter[k]?.joinedAttrname !== undefined)
           .map((k) => ({
             name: _attrsFilter[k]?.baseAttrname ?? "",
             attrinfo: Object.keys(_attrsFilter)
@@ -203,7 +214,7 @@ export const SearchResultsTableHead: FC<Props> = ({
               <Typography>{attrName}</Typography>
 
               {(attrTypes[attrName] & EntryAttributeTypeTypeEnum.OBJECT) > 0 &&
-                attrsFilter[attrName].joinedAttrname === undefined && (
+                attrsFilter[attrName]?.joinedAttrname === undefined && (
                   <StyledIconButton onClick={() => setJoinAttrname(attrName)}>
                     <AddIcon />
                   </StyledIconButton>

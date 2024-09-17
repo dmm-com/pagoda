@@ -6,8 +6,7 @@ import {
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import SettingsIcon from "@mui/icons-material/Settings";
-import { IconButton, Box, Button, Typography } from "@mui/material";
-import { styled } from "@mui/material/styles";
+import { Box, Button, IconButton, Typography } from "@mui/material";
 import { useSnackbar } from "notistack";
 import React, { FC, useEffect, useMemo, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
@@ -17,6 +16,7 @@ import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
 import { advancedSearchPath, topPath } from "Routes";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { Confirmable } from "components/common/Confirmable";
+import { CenterAlignedBox } from "components/common/FlexBox";
 import { Loading } from "components/common/Loading";
 import { PageHeader } from "components/common/PageHeader";
 import { RateLimitedClickable } from "components/common/RateLimitedClickable";
@@ -41,10 +41,6 @@ export const getIsFiltered = (filterKey?: number, keyword?: string) => {
 
   return false;
 };
-
-const FullWidthIconBox = styled(IconButton)(({}) => ({
-  width: "100%",
-}));
 
 export interface AirOneAdvancedSearchResult extends AdvancedSearchResult {
   page: number;
@@ -94,7 +90,7 @@ export const AdvancedSearchResultsPage: FC = () => {
       values: [],
       page: page,
       isInProcessing: true,
-      totalCount: searchResults.totalCount,
+      totalCount: 0,
     });
     setToggle(!toggle);
   };
@@ -110,36 +106,37 @@ export const AdvancedSearchResultsPage: FC = () => {
         referralName,
         searchAllEntities,
         page,
-        AdvancedSerarchResultList.MAX_ROW_COUNT,
-        (page - 1) * AdvancedSerarchResultList.MAX_ROW_COUNT
+        AdvancedSerarchResultList.MAX_ROW_COUNT
       );
     };
 
     // show loading indicator
     setSearchResults({ ...searchResults, isInProcessing: true });
 
-    // pagination processing is prioritize than others
-    if (page !== searchResults.page) {
-      sendSearchRequest().then((results) => {
-        setSearchResults({
-          count: results.count,
-          values: results.values,
-          page: page,
-          isInProcessing: false,
-          totalCount: results.totalCount,
-        });
-      });
-    } else {
-      sendSearchRequest().then((results) => {
+    sendSearchRequest().then((results) => {
+      if (joinAttrs.length > 0) {
+        if (results.count === 0) {
+          changePage(page + 1);
+          return;
+        }
         setSearchResults({
           ...searchResults,
           count: searchResults.count + results.count,
           values: searchResults.values.concat(results.values),
-          isInProcessing: false,
+          page: page,
           totalCount: results.totalCount,
+          isInProcessing: false,
         });
-      });
-    }
+      } else {
+        setSearchResults({
+          count: results.count,
+          values: results.values,
+          page: page,
+          totalCount: results.totalCount,
+          isInProcessing: false,
+        });
+      }
+    });
   }, [page, toggle, location.search]);
 
   const handleExport = async (exportStyle: "yaml" | "csv") => {
@@ -333,12 +330,18 @@ export const AdvancedSearchResultsPage: FC = () => {
               {searchResults.isInProcessing ? (
                 <Loading />
               ) : (
-                <FullWidthIconBox
-                  disabled={searchResults.count >= searchResults.totalCount}
-                  onClick={() => setToggle(!toggle)}
-                >
-                  <ArrowDropDownIcon />
-                </FullWidthIconBox>
+                <CenterAlignedBox alignItems="center">
+                  <IconButton
+                    disabled={searchResults.count >= searchResults.totalCount}
+                    onClick={() => changePage(searchResults.page + 1)}
+                  >
+                    <ArrowDropDownIcon />
+                  </IconButton>
+                  <Typography>
+                    {page * AdvancedSerarchResultList.MAX_ROW_COUNT} /{" "}
+                    {searchResults.totalCount} 件
+                  </Typography>
+                </CenterAlignedBox>
               )}
             </>
           )}
