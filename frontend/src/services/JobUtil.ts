@@ -30,19 +30,26 @@ export const jobOperationLabel = (jobOperation: number | undefined): string => {
   switch (jobOperation) {
     case JobOperations.CREATE_ENTRY:
     case JobOperations.CREATE_ENTITY:
+    case JobOperations.CREATE_ENTITY_V2:
+    case JobOperations.CREATE_ENTRY_V2:
       return "作成";
     case JobOperations.EDIT_ENTRY:
     case JobOperations.EDIT_ENTITY:
+    case JobOperations.EDIT_ENTITY_V2:
+    case JobOperations.EDIT_ENTRY_V2:
       return "編集";
     case JobOperations.DELETE_ENTITY:
     case JobOperations.DELETE_ENTRY:
+    case JobOperations.DELETE_ENTITY_V2:
+    case JobOperations.DELETE_ENTRY_V2:
       return "削除";
     case JobOperations.IMPORT_ENTRY:
     case JobOperations.IMPORT_ENTRY_V2:
       return "インポート";
     case JobOperations.EXPORT_ENTRY:
-    case JobOperations.EXPORT_ENTRY_V2:
     case JobOperations.EXPORT_SEARCH_RESULT:
+    case JobOperations.EXPORT_ENTRY_V2:
+    case JobOperations.EXPORT_SEARCH_RESULT_V2:
       return "エクスポート";
     case JobOperations.COPY_ENTRY:
     case JobOperations.DO_COPY_ENTRY:
