@@ -5,6 +5,8 @@
 ### Added
 
 ### Changed
+* Change key of AdvancedSearchAttributeIndex for NAMED_* attributes from "name" parameter to referral Entry's name.
+  Contributed by @userlocalhost, @hinashi
 
 ### Fixed
 
