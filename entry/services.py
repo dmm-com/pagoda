@@ -314,7 +314,10 @@ class AdvancedSearchService:
                 indexes.append(
                     AdvancedSearchAttributeIndex.create_instance(entry, entity_attr, attrv)
                 )
-        AdvancedSearchAttributeIndex.objects.bulk_create(indexes)
+        try:
+            AdvancedSearchAttributeIndex.objects.bulk_create(indexes)
+        except Exception as e:
+            Logger.warning("Failed to create AdvancedSearchAttributeIndex: %s" % e)
 
     @classmethod
     def search_entries_v2(
