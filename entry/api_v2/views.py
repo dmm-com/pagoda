@@ -186,7 +186,7 @@ class EntryAPI(viewsets.ModelViewSet):
                 parent_attrv__isnull=True,
             )
             .order_by("-created_time")
-            .select_related("parent_attr")
+            .select_related("parent_attr__schema", "created_user")
         )
 
         return super(EntryAPI, self).list(request, *args, **kwargs)
