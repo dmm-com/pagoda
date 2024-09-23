@@ -8,7 +8,13 @@ import {
   FilterOptionsState,
 } from "@mui/material";
 import { AutocompleteProps } from "@mui/material/Autocomplete/Autocomplete";
-import React, { HTMLAttributes, SyntheticEvent, useMemo, useRef } from "react";
+import React, {
+  HTMLAttributes,
+  SyntheticEvent,
+  useEffect,
+  useMemo,
+  useRef,
+} from "react";
 
 type SelectorOption = "select-all" | "remove-all";
 
@@ -49,6 +55,7 @@ export const AutocompleteWithAllSelector = <
   const {
     options,
     value,
+    disabled,
     onChange,
   }: AutocompleteProps<T | SelectorOption, true, DisableClearable, FreeSolo> =
     autocompleteProps;
@@ -65,6 +72,19 @@ export const AutocompleteWithAllSelector = <
   const filter = useMemo(() => {
     return createFilterOptions<T | SelectorOption>();
   }, []);
+
+  useEffect(() => {
+    // reset on re-enable
+    if (!disabled) {
+      if (onChange != null) {
+        onChange({} as SyntheticEvent, [], "clear");
+      }
+      filterOptionResult.current = {
+        query: "",
+        results: options as Array<T | SelectorOption>,
+      };
+    }
+  }, [disabled]);
 
   const handleChange = (
     event: SyntheticEvent,

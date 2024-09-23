@@ -167,26 +167,25 @@ export const AdvancedSearchPage: FC = () => {
         <StyledFlexColumnBox>
           <StyledTypography variant="h4">属性</StyledTypography>
 
-          {!attrs.loading && (
-            <AutocompleteWithAllSelector
-              selectAllLabel="すべて選択"
-              options={attrs.value ?? []}
-              value={selectedAttrs}
-              inputValue={attrName}
-              onChange={(_, value: Array<string>) => setSelectedAttrs(value)}
-              onInputChange={handleChangeInputAttrName}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  variant="outlined"
-                  placeholder="属性を選択"
-                />
-              )}
-              multiple
-              disableCloseOnSelect
-              fullWidth
-            />
-          )}
+          <AutocompleteWithAllSelector
+            selectAllLabel="すべて選択"
+            options={attrs.value ?? []}
+            value={selectedAttrs}
+            inputValue={attrName}
+            disabled={attrs.loading}
+            onChange={(_, value: Array<string>) => setSelectedAttrs(value)}
+            onInputChange={handleChangeInputAttrName}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                variant="outlined"
+                placeholder="属性を選択"
+              />
+            )}
+            multiple
+            disableCloseOnSelect
+            fullWidth
+          />
           <Box>
             参照アイテムも含める
             <Checkbox
