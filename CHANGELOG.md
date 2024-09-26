@@ -5,10 +5,20 @@
 ### Added
 
 ### Changed
-* Change key of AdvancedSearchAttributeIndex for NAMED_* attributes from "name" parameter to referral Entry's name.
-  Contributed by @userlocalhost, @hinashi
 
 ### Fixed
+
+## v3.104.0
+
+### Fixed
+* Enable to import sjis encoded files.
+  Contributed by @syucream
+
+## v3.103.0
+
+### Changed
+* Change key of AdvancedSearchAttributeIndex for NAMED_* attributes from "name" parameter to referral Entry's name.
+  Contributed by @userlocalhost, @hinashi
 
 ## v3.102.0
 
