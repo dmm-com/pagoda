@@ -560,7 +560,9 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
                                     "name": x.referral.entry.schema.name,
                                 },
                             }
-                            for x in attrv.data_array.all().select_related("referral")
+                            for x in attrv.data_array.all().select_related(
+                                "referral__entry__schema"
+                            )
                             if x.referral and x.referral.is_active
                         ]
                     }
@@ -580,7 +582,7 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
                             if x.referral and x.referral.is_active
                             else None,
                         }
-                        for x in attrv.data_array.all().select_related("referral")
+                        for x in attrv.data_array.all().select_related("referral__entry__schema")
                         if not (x.referral and not x.referral.is_active)
                     ]
                     return {"as_array_named_object": array_named_object}
@@ -724,7 +726,7 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
         attrv_prefetch = Prefetch(
             "values",
             queryset=AttributeValue.objects.filter(is_latest=True).select_related(
-                "referral", "group", "role"
+                "referral__entry__schema", "group", "role"
             ),
             to_attr="attrv_list",
         )
