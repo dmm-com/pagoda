@@ -1007,7 +1007,9 @@ class EntryHistoryAttributeValueSerializer(serializers.ModelSerializer):
                         }
                         if x.referral and x.referral.is_active
                         else None
-                        for x in obj.data_array.all()
+                        for x in obj.data_array.all().select_related(
+                            "referral", "referral__entry__schema"
+                        )
                     ]
                 }
 
@@ -1026,7 +1028,9 @@ class EntryHistoryAttributeValueSerializer(serializers.ModelSerializer):
                         if x.referral and x.referral.is_active
                         else None,
                     }
-                    for x in obj.data_array.all()
+                    for x in obj.data_array.all().select_related(
+                        "referral", "referral__entry__schema"
+                    )
                 ]
                 return {"as_array_named_object": array_named_object}
 
