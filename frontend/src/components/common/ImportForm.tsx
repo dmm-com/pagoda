@@ -1,4 +1,5 @@
 import { Box, Button, Input, Typography } from "@mui/material";
+import Encoding from "encoding-japanese";
 import { useSnackbar } from "notistack";
 import React, { ChangeEvent, FC, useState } from "react";
 import { useHistory } from "react-router-dom";
@@ -25,8 +26,15 @@ export const ImportForm: FC<Props> = ({ handleImport, handleCancel }) => {
 
   const onClick = async () => {
     if (file) {
+      // TODO its better to avoid reading file twice
+      const arrayBuffer = await file.arrayBuffer();
+      const bytes = new Uint8Array(arrayBuffer);
+      const encodingDetection = Encoding.detect(bytes);
+      const encoding =
+        typeof encodingDetection === "string" ? encodingDetection : "UNICODE";
+
       const fileReader = new FileReader();
-      fileReader.readAsText(file);
+      fileReader.readAsText(file, encoding);
 
       fileReader.onload = async () => {
         if (fileReader.result == null) {
