@@ -3,7 +3,7 @@ from copy import deepcopy
 from datetime import datetime, timedelta
 
 from django.conf import settings
-from django.db.models import Q
+from django.db.models import Prefetch, Q
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import generics, serializers, status, viewsets
@@ -250,18 +250,35 @@ class AdvancedSearchAPI(generics.GenericAPIView):
             # that specified attribute refers
             item_names = []
             hint_entity_ids = []
+
+            entities = Entity.objects.filter(
+                id__in=[result.entity["id"] for result in prev_results]
+            ).prefetch_related(
+                Prefetch(
+                    "attrs",
+                    queryset=EntityAttr.objects.filter(
+                        name=join_attr["name"], is_active=True
+                    ).prefetch_related(
+                        Prefetch(
+                            "referral", queryset=Entity.objects.filter(is_active=True).only("id")
+                        )
+                    ),
+                )
+            )
+            entity_dict = {entity.id: entity for entity in entities}
+
             for result in prev_results:
-                entity = Entity.objects.filter(id=result.entity["id"]).last()
+                entity = entity_dict.get(result.entity["id"])
                 if entity is None:
                     continue
 
-                attr = entity.attrs.filter(name=join_attr["name"], is_active=True).last()
+                attr = next((a for a in entity.attrs.all() if a.name == join_attr["name"]), None)
                 if attr is None:
                     continue
 
                 if attr.type & AttrType.OBJECT:
                     # set hint Model ID
-                    hint_entity_ids += [x.id for x in attr.referral.filter(is_active=True)]
+                    hint_entity_ids.extend([x.id for x in attr.referral.all()])
 
                     # set Item name
                     attrinfo = result.attrs[join_attr["name"]]
@@ -276,12 +293,14 @@ class AdvancedSearchAPI(generics.GenericAPIView):
 
                     if attr.type == AttrType.ARRAY_OBJECT:
                         for r in attrinfo["value"]:
-                            item_names.append(r["name"])
+                            if r["name"] not in item_names:
+                                item_names.append(r["name"])
 
                     if attr.type == AttrType.ARRAY_NAMED_OBJECT:
                         for r in attrinfo["value"]:
                             [co_info] = r.values()
-                            item_names.append(co_info["name"])
+                            if co_info["name"] not in item_names:
+                                item_names.append(co_info["name"])
 
             # set parameters to filter joining search results
             hint_attrs: list[AttrHint] = []
