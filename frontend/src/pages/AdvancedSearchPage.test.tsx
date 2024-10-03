@@ -132,13 +132,17 @@ describe("AdvancedSearchPage", () => {
     // This is a thip to close options of Entities that are shown above.
     // make an event to press Escape key using fireEvent
     // fireEvent.click(document.body);   // this doesn't work :(
-    fireEvent.keyDown(elemInputEntity, { key: "Escape" });
+    await act(async () => {
+      fireEvent.keyDown(elemInputEntity, { key: "Escape" });
+    });
 
-    if (elemInputEntityAttr.parentNode) {
-      fireEvent.click(elemInputEntityAttr.parentNode);
-    } else {
-      throw new Error("Parent node not found");
-    }
+    await act(async () => {
+      if (elemInputEntityAttr.parentNode) {
+        fireEvent.click(elemInputEntityAttr.parentNode);
+      } else {
+        throw new Error("Parent node not found");
+      }
+    });
 
     const options = screen.getAllByRole("option");
 
@@ -162,21 +166,27 @@ describe("AdvancedSearchPage", () => {
 
   test("select 'Select All' in entity attr element", async () => {
     const elemInputEntity = screen.getByPlaceholderText("モデルを選択");
-    fireEvent.change(elemInputEntity, { target: { value: "2" } });
+    await act(async () => {
+      fireEvent.change(elemInputEntity, { target: { value: "2" } });
+    });
 
     const optionsEntity = screen.getAllByRole("option");
-    fireEvent.click(optionsEntity[0]);
-    fireEvent.keyDown(elemInputEntity, { key: "Escape" });
+    await act(async () => {
+      fireEvent.click(optionsEntity[0]);
+      fireEvent.keyDown(elemInputEntity, { key: "Escape" });
+    });
 
     const elemInputEntityAttr = await screen.findByPlaceholderText(
       "属性を選択"
     );
 
-    if (elemInputEntityAttr.parentNode) {
-      fireEvent.click(elemInputEntityAttr.parentNode);
-    } else {
-      throw new Error("Parent node not found");
-    }
+    await act(async () => {
+      if (elemInputEntityAttr.parentNode) {
+        fireEvent.click(elemInputEntityAttr.parentNode);
+      } else {
+        throw new Error("Parent node not found");
+      }
+    });
 
     const options = screen.getAllByRole("option");
 
@@ -185,7 +195,10 @@ describe("AdvancedSearchPage", () => {
     expect(options[1]).toHaveTextContent("str");
     expect(options[2]).toHaveTextContent("obj");
 
-    fireEvent.click(options[0]);
+    await act(async () => {
+      fireEvent.click(options[0]);
+    });
+
     if (elemInputEntityAttr.parentNode instanceof HTMLElement) {
       const selectedEntity = within(
         elemInputEntityAttr.parentNode
@@ -211,7 +224,9 @@ describe("AdvancedSearchPage", () => {
       "属性を選択"
     );
 
-    fireEvent.change(elemInputEntityAttr, { target: { value: "str" } });
+    await act(async () => {
+      fireEvent.change(elemInputEntityAttr, { target: { value: "str" } });
+    });
 
     const options = screen.getAllByRole("option");
 
@@ -232,7 +247,9 @@ describe("AdvancedSearchPage", () => {
       "属性を選択"
     );
 
-    fireEvent.change(elemInputEntityAttr, { target: { value: "hoge" } });
+    await act(async () => {
+      fireEvent.change(elemInputEntityAttr, { target: { value: "hoge" } });
+    });
 
     const options = screen.getAllByRole("option");
 
@@ -245,24 +262,29 @@ describe("AdvancedSearchPage", () => {
     fireEvent.change(elemInputEntity, { target: { value: "2" } });
 
     const optionsEntity = screen.getAllByRole("option");
-    fireEvent.click(optionsEntity[0]);
-    fireEvent.keyDown(elemInputEntity, { key: "Escape" });
+    await act(async () => {
+      fireEvent.click(optionsEntity[0]);
+      fireEvent.keyDown(elemInputEntity, { key: "Escape" });
+    });
 
     const elemInputEntityAttr = await screen.findByPlaceholderText(
       "属性を選択"
     );
 
-    fireEvent.change(elemInputEntityAttr, { target: { value: "str" } });
+    await act(async () => {
+      fireEvent.change(elemInputEntityAttr, { target: { value: "str" } });
+    });
 
     const optionsEntityAttr = screen.getAllByRole("option");
-    fireEvent.click(optionsEntityAttr[0]);
-    fireEvent.keyDown(elemInputEntityAttr, { key: "Escape" });
+    await act(async () => {
+      fireEvent.click(optionsEntityAttr[0]);
+      fireEvent.keyDown(elemInputEntityAttr, { key: "Escape" });
+    });
 
     const elemSubmitButton = screen.getByText("検索");
     // check href attribute of the button
     // URL decode the href string
     const parameter = decodeURI(elemSubmitButton.getAttribute("href") ?? "");
-    console.log(parameter);
     expect(parameter).toBe(
       "/ui/advanced_search_result" +
         "?entity=2" +
