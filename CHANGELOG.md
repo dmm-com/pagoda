@@ -8,6 +8,12 @@
 
 ### Fixed
 
+## v3.105.0
+
+### Fixed
+* Reduce N+1 on join attrs.
+  Contributed by @syucream
+
 ## v3.104.0
 
 ### Fixed
