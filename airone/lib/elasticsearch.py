@@ -51,12 +51,12 @@ class FilterKey(enum.IntEnum):
     DUPLICATED = 5
 
 
-class AttrHint(TypedDict):
+class AttrHint(BaseModel):
     name: str
-    is_readable: NotRequired[bool]
-    filter_key: NotRequired[FilterKey]
-    keyword: NotRequired[str]
-    exact_match: NotRequired[bool]
+    is_readable: bool | None = None
+    filter_key: FilterKey | None = None
+    keyword: str | None = None
+    exact_match: bool | None = None
 
 
 class AttributeDocument(TypedDict):
@@ -267,23 +267,23 @@ def make_query(
 
     # Conversion processing from "filter_key" to "keyword" for each hint_attrs
     for hint_attr in hint_attrs:
-        match hint_attr.get("filter_key", None):
+        match hint_attr.filter_key:
             case FilterKey.CLEARED:
                 # remove "keyword" parameter
-                hint_attr.pop("keyword", None)
+                hint_attr.keyword = None
             case FilterKey.EMPTY:
-                hint_attr["keyword"] = "\\"
+                hint_attr.keyword = "\\"
             case FilterKey.NON_EMPTY:
-                hint_attr["keyword"] = "*"
+                hint_attr.keyword = "*"
             case FilterKey.DUPLICATED:
-                aggs_query = _make_aggs_query(hint_attr["name"])
+                aggs_query = _make_aggs_query(hint_attr.name)
                 # TODO Set to 1 for convenience
                 resp = execute_query(aggs_query, 1)
                 keyword_infos = resp["aggregations"]["attr_aggs"]["attr_name_aggs"][
                     "attr_value_aggs"
                 ]["buckets"]
                 keyword_list = [x["key"] for x in keyword_infos]
-                hint_attr["keyword"] = CONFIG.OR_SEARCH_CHARACTER.join(
+                hint_attr.keyword = CONFIG.OR_SEARCH_CHARACTER.join(
                     ["^" + x + "$" for x in keyword_list]
                 )
 
@@ -324,9 +324,7 @@ def make_query(
                     "query": {
                         "bool": {
                             "should": [
-                                {"term": {"attr.name": x["name"]}}
-                                for x in hint_attrs
-                                if "name" in x
+                                {"term": {"attr.name": x.name}} for x in hint_attrs if x.name
                             ]
                         }
                     },
@@ -337,7 +335,7 @@ def make_query(
     attr_query: dict[str, dict] = {}
 
     # filter attribute by keywords
-    for hint in [hint for hint in hint_attrs if "name" in hint and hint.get("keyword")]:
+    for hint in [hint for hint in hint_attrs if hint.name and hint.keyword]:
         attr_query.update(_parse_or_search(hint))
 
     # Build queries along keywords
@@ -649,7 +647,7 @@ def _parse_or_search(hint: AttrHint) -> dict[str, dict]:
     duplicate_keys: list = []
 
     # Split and process keywords with 'or'
-    for keyword_divided_or in hint["keyword"].split(CONFIG.OR_SEARCH_CHARACTER):
+    for keyword_divided_or in (hint.keyword or "").split(CONFIG.OR_SEARCH_CHARACTER):
         parsed_query = _parse_and_search(hint, keyword_divided_or, duplicate_keys)
         attr_query.update(parsed_query)
 
@@ -696,7 +694,7 @@ def _parse_and_search(
 
     # Keyword divided by 'or' is processed by dividing by 'and'
     for keyword in keyword_divided_or.split(CONFIG.AND_SEARCH_CHARACTER):
-        key = f"{keyword}_{hint['name']}"
+        key = f"{keyword}_{hint.name}"
 
         # Skip if keywords overlap
         if key in duplicate_keys:
@@ -742,7 +740,7 @@ def _build_queries_along_keywords(
     """
 
     # Get the keyword.
-    hints = [x for x in hint_attrs if "keyword" in x and x["keyword"]]
+    hints = [x for x in hint_attrs if x.keyword]
     res_query: dict[str, Any] = {}
 
     for hint in hints:
@@ -750,7 +748,7 @@ def _build_queries_along_keywords(
         or_query: dict[str, Any] = {}
 
         # Split keyword by 'or'
-        for keyword_divided_or in hint["keyword"].split(CONFIG.OR_SEARCH_CHARACTER):
+        for keyword_divided_or in (hint.keyword or "").split(CONFIG.OR_SEARCH_CHARACTER):
             if CONFIG.AND_SEARCH_CHARACTER in keyword_divided_or:
                 # If 'AND' is included in the keyword divided by 'OR', add it to 'filter'
                 for keyword in keyword_divided_or.split(CONFIG.AND_SEARCH_CHARACTER):
@@ -758,13 +756,13 @@ def _build_queries_along_keywords(
                         and_query[keyword_divided_or] = {"bool": {"filter": []}}
 
                     and_query[keyword_divided_or]["bool"]["filter"].append(
-                        attr_query[keyword + "_" + hint["name"]]
+                        attr_query[keyword + "_" + hint.name]
                     )
 
             else:
-                and_query[keyword_divided_or] = attr_query[keyword_divided_or + "_" + hint["name"]]
+                and_query[keyword_divided_or] = attr_query[keyword_divided_or + "_" + hint.name]
 
-            if CONFIG.OR_SEARCH_CHARACTER in hint["keyword"]:
+            if CONFIG.OR_SEARCH_CHARACTER in (hint.keyword or ""):
                 # If the keyword contains 'or', concatenate with 'should'
                 if not or_query:
                     or_query = {"bool": {"should": []}}
@@ -817,7 +815,7 @@ def _make_an_attribute_filter(hint: AttrHint, keyword: str) -> dict[str, dict]:
         dict[str, str]: Created attribute filter
 
     """
-    cond_attr: list[dict] = [{"term": {"attr.name": hint["name"]}}]
+    cond_attr: list[dict] = [{"term": {"attr.name": hint.name}}]
 
     date_results = _is_date(keyword)
     if date_results:
@@ -840,7 +838,7 @@ def _make_an_attribute_filter(hint: AttrHint, keyword: str) -> dict[str, dict]:
 
         str_cond = {"regexp": {"attr.value": _get_regex_pattern(keyword)}}
 
-        if hint.get("filter_key") == FilterKey.TEXT_NOT_CONTAINED:
+        if hint.filter_key == FilterKey.TEXT_NOT_CONTAINED:
             cond_attr.append({"bool": {"must_not": [date_cond, str_cond]}})
         else:
             cond_attr.append({"bool": {"should": [date_cond, str_cond]}})
@@ -866,10 +864,10 @@ def _make_an_attribute_filter(hint: AttrHint, keyword: str) -> dict[str, dict]:
             )
 
         elif hint_keyword_val:
-            if "exact_match" not in hint:
+            if hint.exact_match is None:
                 cond_val.append({"regexp": {"attr.value": _get_regex_pattern(hint_keyword_val)}})
 
-            if hint.get("filter_key") == FilterKey.TEXT_NOT_CONTAINED:
+            if hint.filter_key == FilterKey.TEXT_NOT_CONTAINED:
                 cond_attr.append({"bool": {"must_not": cond_val}})
             else:
                 cond_attr.append({"bool": {"should": cond_val}})
@@ -1004,7 +1002,7 @@ def make_search_results(
         # formalize attribute values according to the type
         for attrinfo in entry_info["attr"]:
             # Skip other than the target Attribute
-            if attrinfo["name"] not in [x["name"] for x in hint_attrs]:
+            if attrinfo["name"] not in [x.name for x in hint_attrs]:
                 continue
 
             ret_attrinfo: AdvancedSearchResultRecordAttr = {}
@@ -1024,7 +1022,7 @@ def make_search_results(
                     record.attrs[attrinfo["name"]] = ret_attrinfo
 
             # Check for has permission to EntityAttr
-            if attrinfo["name"] not in [x["name"] for x in hint_attrs if x["is_readable"]]:
+            if attrinfo["name"] not in [x.name for x in hint_attrs if x.is_readable]:
                 ret_attrinfo["is_readable"] = False
                 continue
 
