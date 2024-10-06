@@ -12,6 +12,7 @@ from rest_framework import status
 from rest_framework.exceptions import ValidationError
 
 from acl.models import ACLBase
+from airone.lib.elasticsearch import AttrHint
 from airone.lib.log import Logger
 from airone.lib.test import AironeViewTest
 from airone.lib.types import AttrType
@@ -3669,7 +3670,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
 
         # Perform a search for entries to verify the state of attributes
-        resp1 = AdvancedSearchService.search_entries(user, [self.entity.id], [{"name": "val"}])
+        resp1 = AdvancedSearchService.search_entries(user, [self.entity.id], [AttrHint(name="val")])
 
         # Validate that the actual value matches the expected value
         self.assertEqual(resp1.ret_values[0].attrs["val"]["value"], "")

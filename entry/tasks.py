@@ -11,7 +11,7 @@ from rest_framework.exceptions import ValidationError
 from airone.celery import app
 from airone.lib import custom_view
 from airone.lib.acl import ACLType
-from airone.lib.elasticsearch import AdvancedSearchResultRecord
+from airone.lib.elasticsearch import AdvancedSearchResultRecord, AttrHint
 from airone.lib.event_notification import (
     notify_entry_create,
     notify_entry_delete,
@@ -770,10 +770,18 @@ def export_search_result_v2(self, job: Job):
     if has_referral and referral_name is None:
         referral_name = ""
 
+    if not isinstance(params["attrinfo"], list):
+        return JobStatus.ERROR, "Invalid attrinfo"
+
+    try:
+        hint_attrs = [AttrHint.model_validate(x) for x in params["attrinfo"]]
+    except ValidationError:
+        return JobStatus.ERROR, "Invalid attrinfo"
+
     resp = AdvancedSearchService.search_entries(
         user,
         params["entities"],
-        params["attrinfo"],
+        hint_attrs,
         settings.ES_CONFIG["MAXIMUM_RESULTS_NUM"],
         entry_name,
         referral_name,

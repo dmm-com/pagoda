@@ -3,12 +3,14 @@ from datetime import datetime
 import pytz
 from django.conf import settings
 from django.db.models import Q
+from pydantic import ValidationError
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from airone.exceptions import ElasticsearchException
 from airone.lib.acl import ACLType
+from airone.lib.elasticsearch import AttrHint
 from api_v1.entry.serializer import EntrySearchChainSerializer
 from entity.models import Entity
 from entry.models import Entry
@@ -62,15 +64,15 @@ class EntrySearchAPI(APIView):
 
         hint_entities = request.data.get("entities")
         hint_entry_name = request.data.get("entry_name", "")
-        hint_attrs = request.data.get("attrinfo")
         hint_referral = request.data.get("referral")
+        attrinfo = request.data.get("attrinfo", [])
         is_output_all = request.data.get("is_output_all", True)
         entry_limit = request.data.get("entry_limit", CONFIG_ENTRY.MAX_LIST_ENTRIES)
 
         if (
             not isinstance(hint_entities, list)
             or not isinstance(hint_entry_name, str)
-            or not isinstance(hint_attrs, list)
+            or not isinstance(attrinfo, list)
             or not isinstance(is_output_all, bool)
             or (hint_referral and not isinstance(hint_referral, str))
             or not isinstance(entry_limit, int)
@@ -79,21 +81,31 @@ class EntrySearchAPI(APIView):
                 "The type of parameter is incorrect", status=status.HTTP_400_BAD_REQUEST
             )
 
+        try:
+            hint_attrs = [
+                AttrHint(
+                    name=x.get("name"),
+                    keyword=x.get("keyword"),
+                    filter_key=x.get("filter_key"),
+                    exact_match=x.get("exact_match"),
+                )
+                for x in attrinfo
+            ]
+        except (TypeError, ValidationError):
+            return Response(
+                "The type of parameter 'attrinfo' is incorrect",
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         # forbid to input large size request
         if len(hint_entry_name) > CONFIG_ENTRY.MAX_QUERY_SIZE:
             return Response("Sending parameter is too large", status=400)
 
         # check attribute params
         for hint_attr in hint_attrs:
-            if "name" not in hint_attr:
-                return Response("The name key is required for attrinfo parameter", status=400)
-            if not isinstance(hint_attr["name"], str):
-                return Response("Invalid value for attrinfo parameter", status=400)
-            if hint_attr.get("keyword"):
-                if not isinstance(hint_attr["keyword"], str):
-                    return Response("Invalid value for attrinfo parameter", status=400)
+            if hint_attr.keyword:
                 # forbid to input large size request
-                if len(hint_attr["keyword"]) > CONFIG_ENTRY.MAX_QUERY_SIZE:
+                if len(hint_attr.keyword) > CONFIG_ENTRY.MAX_QUERY_SIZE:
                     return Response("Sending parameter is too large", status=400)
 
         # check entities params

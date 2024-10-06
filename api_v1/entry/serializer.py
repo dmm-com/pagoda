@@ -2,6 +2,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
 from airone.exceptions import ElasticsearchException
+from airone.lib.elasticsearch import AttrHint
 from airone.lib.log import Logger
 from entity.models import Entity, EntityAttr
 from entry.models import Entry
@@ -294,10 +295,10 @@ class EntrySearchChainSerializer(serializers.Serializer):
 
             # Query for forward search
             hint_attrs = [
-                {
-                    "name": sub_query["name"],
-                    "keyword": search_keyword,
-                }
+                AttrHint(
+                    name=sub_query["name"],
+                    keyword=search_keyword,
+                )
             ]
 
             # get Entry informations from result

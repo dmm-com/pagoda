@@ -10,6 +10,7 @@ import yaml
 from rest_framework import status
 from rest_framework.exceptions import ValidationError
 
+from airone.lib.elasticsearch import AttrHint
 from airone.lib.log import Logger
 from airone.lib.test import AironeViewTest
 from airone.lib.types import (
@@ -1142,7 +1143,9 @@ class ViewTest(BaseViewTest):
             "/entry/api/v2/%s/" % self.ref_entry.id, json.dumps(params), "application/json"
         )
 
-        ret = AdvancedSearchService.search_entries(self.user, [self.entity.id], [{"name": "ref"}])
+        ret = AdvancedSearchService.search_entries(
+            self.user, [self.entity.id], [AttrHint(name="ref")]
+        )
         self.assertEqual(ret.ret_count, 1)
         self.assertEqual(ret.ret_values[0].entry["name"], "Entry")
         self.assertEqual(ret.ret_values[0].attrs["ref"]["value"]["name"], "ref-change")

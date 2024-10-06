@@ -7,7 +7,7 @@ from django.db.models import Q
 from acl.models import ACLBase
 from airone.lib.acl import ACLObjType, ACLType
 from airone.lib.drf import ExceedLimitError
-from airone.lib.elasticsearch import AdvancedSearchResultRecord
+from airone.lib.elasticsearch import AdvancedSearchResultRecord, AttrHint
 from airone.lib.test import AironeTestCase
 from airone.lib.types import AttrType
 from entity.models import Entity, EntityAttr
@@ -2219,7 +2219,9 @@ class ModelTest(AironeTestCase):
 
         # search entries of entity1 from Elasticsearch and checks that the entreis of non entity1
         # are not returned.
-        resp = AdvancedSearchService.search_entries(user, [entities[0].id], [{"name": "attr-0"}])
+        resp = AdvancedSearchService.search_entries(
+            user, [entities[0].id], [AttrHint(name="attr-0")]
+        )
         self.assertEqual(resp.ret_count, 3)
         self.assertTrue(all([x.entity["id"] == entities[0].id for x in resp.ret_values]))
 
@@ -2231,17 +2233,17 @@ class ModelTest(AironeTestCase):
 
         # checks ret_count counts number of entries whatever attribute contidion was changed
         resp = AdvancedSearchService.search_entries(
-            user, [entities[0].id], [{"name": "attr-0"}, {"name": "attr-1"}]
+            user, [entities[0].id], [AttrHint(name="attr-0"), AttrHint(name="attr-1")]
         )
         self.assertEqual(resp.ret_count, 3)
         resp = AdvancedSearchService.search_entries(
-            user, [entities[0].id, entities[1].id], [{"name": "attr-0"}]
+            user, [entities[0].id, entities[1].id], [AttrHint(name="attr-0")]
         )
         self.assertEqual(resp.ret_count, 6)
 
         # checks results that contain multi-byte values could be got
         resp = AdvancedSearchService.search_entries(
-            user, [entities[0].id], [{"name": "ほげ", "keyword": "ふが"}]
+            user, [entities[0].id], [AttrHint(name="ほげ", keyword="ふが")]
         )
         self.assertEqual(resp.ret_count, 2)
         self.assertEqual(
@@ -2251,7 +2253,7 @@ class ModelTest(AironeTestCase):
 
         # search entries with date keyword parameter in string type from Elasticsearch
         resp = AdvancedSearchService.search_entries(
-            user, [entities[0].id], [{"name": "attr-0", "keyword": "2018/01/01"}]
+            user, [entities[0].id], [AttrHint(name="attr-0", keyword="2018/01/01")]
         )
         self.assertEqual(resp.ret_count, 1)
         self.assertEqual(resp.ret_values[0].entry["name"], "entry1")
@@ -2260,7 +2262,7 @@ class ModelTest(AironeTestCase):
         # search entries with date keyword parameter in date type from Elasticsearch
         for x in ["2018-01-02", "2018/01/02", "2018-1-2", "2018-01-2", "2018-1-02"]:
             resp = AdvancedSearchService.search_entries(
-                user, [entities[0].id], [{"name": "attr-date", "keyword": x}]
+                user, [entities[0].id], [AttrHint(name="attr-date", keyword=x)]
             )
             self.assertEqual(resp.ret_count, 1)
             self.assertEqual(resp.ret_values[0].entry["name"], "entry1")
@@ -2268,7 +2270,7 @@ class ModelTest(AironeTestCase):
 
         # search entries with date keyword parameter in string array type from Elasticsearch
         resp = AdvancedSearchService.search_entries(
-            user, [entities[0].id], [{"name": "attr-arr", "keyword": "2018/01/01"}]
+            user, [entities[0].id], [AttrHint(name="attr-arr", keyword="2018/01/01")]
         )
         self.assertEqual(resp.ret_count, 1)
         self.assertEqual(resp.ret_values[0].entry["name"], "entry2")
@@ -2276,14 +2278,14 @@ class ModelTest(AironeTestCase):
 
         # search entries with keyword parameter that other entry has same value in untarget attr
         resp = AdvancedSearchService.search_entries(
-            user, [entities[0].id], [{"name": "attr-0", "keyword": "hoge"}]
+            user, [entities[0].id], [AttrHint(name="attr-0", keyword="hoge")]
         )
         self.assertEqual(resp.ret_count, 1)
         self.assertEqual(resp.ret_values[0].entry["name"], "entry2")
 
         # search entries with keyword parameter which is array type
         resp = AdvancedSearchService.search_entries(
-            user, [entities[0].id], [{"name": "attr-arr", "keyword": "hoge"}]
+            user, [entities[0].id], [AttrHint(name="attr-arr", keyword="hoge")]
         )
         self.assertEqual(resp.ret_count, 1)
         self.assertEqual(resp.ret_values[0].entry["name"], "entry1")
@@ -2296,7 +2298,7 @@ class ModelTest(AironeTestCase):
         # from Elasticsearch
         for x in ["2018/02/01", "hoge"]:
             resp = AdvancedSearchService.search_entries(
-                user, [entities[0].id], [{"name": "attr-date", "keyword": x}]
+                user, [entities[0].id], [AttrHint(name="attr-date", keyword=x)]
             )
             self.assertEqual(resp.ret_count, 0)
 
@@ -2331,7 +2333,7 @@ class ModelTest(AironeTestCase):
             entry.register_es()
 
         resp = AdvancedSearchService.search_entries(
-            user, [entity.id], [{"name": "foo", "keyword": "ref"}], limit=5
+            user, [entity.id], [AttrHint(name="foo", keyword="ref")], limit=5
         )
         self.assertEqual(resp.ret_count, 10)
         self.assertEqual(len(resp.ret_values), 5)
@@ -2359,15 +2361,17 @@ class ModelTest(AironeTestCase):
                 e = Entry.objects.create(name="entry-%d" % i, created_user=user, schema=entity)
                 e.register_es()
 
-        resp = AdvancedSearchService.search_entries(user, entities, [{"name": "foo"}])
+        resp = AdvancedSearchService.search_entries(user, entities, [AttrHint(name="foo")])
         self.assertEqual(resp.ret_count, 5)
 
         resp = AdvancedSearchService.search_entries(
-            user, entities, [{"name": x} for x in ["foo", "hoge"]]
+            user, entities, [AttrHint(name=x) for x in ["foo", "hoge"]]
         )
         self.assertEqual(resp.ret_count, 10)
 
-        resp = AdvancedSearchService.search_entries(user, entities, [{"name": x} for x in ["bar"]])
+        resp = AdvancedSearchService.search_entries(
+            user, entities, [AttrHint(name=x) for x in ["bar"]]
+        )
         self.assertEqual(resp.ret_count, 10)
         for name in entity_info.keys():
             self.assertEqual(len([x for x in resp.ret_values if x.entity["name"] == name]), 5)
@@ -2425,7 +2429,7 @@ class ModelTest(AironeTestCase):
 
         # search entry that have AttributeValue exact matches with specified date.
         ret = AdvancedSearchService.search_entries(
-            user, [entity.id], [{"name": "date", "keyword": "2018/01/01"}]
+            user, [entity.id], [AttrHint(name="date", keyword="2018/01/01")]
         )
         self.assertEqual(len(ret.ret_values), 1)
         self.assertEqual(ret.ret_values[0].entry["name"], "entry-1")
@@ -2433,7 +2437,7 @@ class ModelTest(AironeTestCase):
         # The case of using condition 'less thatn',
         # this expects that entry-2 and entry-3 are matched
         ret = AdvancedSearchService.search_entries(
-            user, [entity.id], [{"name": "date", "keyword": ">2018-01-01"}]
+            user, [entity.id], [AttrHint(name="date", keyword=">2018-01-01")]
         )
         self.assertEqual(len(ret.ret_values), 2)
         self.assertEqual(
@@ -2444,7 +2448,7 @@ class ModelTest(AironeTestCase):
         # The case of using condition 'greater thatn',
         # this expects that entry-1 and entry-2 are matched
         ret = AdvancedSearchService.search_entries(
-            user, [entity.id], [{"name": "date", "keyword": "<2018-03-01"}]
+            user, [entity.id], [AttrHint(name="date", keyword="<2018-03-01")]
         )
         self.assertEqual(len(ret.ret_values), 2)
         self.assertEqual(
@@ -2454,14 +2458,14 @@ class ModelTest(AironeTestCase):
 
         # The case of using both conditions, this expects that only entry-2 is matched
         ret = AdvancedSearchService.search_entries(
-            user, [entity.id], [{"name": "date", "keyword": "<2018-03-01 >2018-01-01"}]
+            user, [entity.id], [AttrHint(name="date", keyword="<2018-03-01 >2018-01-01")]
         )
         self.assertEqual(len(ret.ret_values), 1)
         self.assertEqual(ret.ret_values[0].entry["name"], "entry-2")
 
         # The same case of before one, but date format of keyward was changed
         ret = AdvancedSearchService.search_entries(
-            user, [entity.id], [{"name": "date", "keyword": "<2018/03/01 >2018/01/01"}]
+            user, [entity.id], [AttrHint(name="date", keyword="<2018/03/01 >2018/01/01")]
         )
         self.assertEqual(len(ret.ret_values), 1)
         self.assertEqual(ret.ret_values[0].entry["name"], "entry-2")
@@ -2893,7 +2897,7 @@ class ModelTest(AironeTestCase):
         self.assertEqual(ref_entry.name, "ref_entry")
         self.assertTrue(all([attr.is_active for attr in ref_entry.attrs.all()]))
 
-        ret = AdvancedSearchService.search_entries(self._user, [entity.id], [{"name": "obj"}])
+        ret = AdvancedSearchService.search_entries(self._user, [entity.id], [AttrHint(name="obj")])
         self.assertEqual(ret.ret_values[0].entry["name"], "entry")
         self.assertEqual(ret.ret_values[0].attrs["obj"]["value"]["name"], "ref_entry")
         self.assertEqual(ret.ret_values[1].entry["name"], "ref_entry")
@@ -3363,7 +3367,7 @@ class ModelTest(AironeTestCase):
             ret = AdvancedSearchService.search_entries(
                 user,
                 [entity.id],
-                [{"name": attr_name, "keyword": CONFIG.EMPTY_SEARCH_CHARACTER}],
+                [AttrHint(name=attr_name, keyword=CONFIG.EMPTY_SEARCH_CHARACTER)],
             )
             if attr_name != "bool":
                 self.assertEqual(ret.ret_count, 1)
@@ -3379,7 +3383,7 @@ class ModelTest(AironeTestCase):
             ret = AdvancedSearchService.search_entries(
                 user,
                 [entity.id],
-                [{"name": attr_name, "keyword": double_empty_search_character}],
+                [AttrHint(name=attr_name, keyword=double_empty_search_character)],
             )
             self.assertEqual(ret.ret_count, 0)
 
@@ -3398,7 +3402,7 @@ class ModelTest(AironeTestCase):
         ret = AdvancedSearchService.search_entries(
             user,
             [entity.id],
-            [{"name": "str", "keyword": CONFIG.EMPTY_SEARCH_CHARACTER}],
+            [AttrHint(name="str", keyword=CONFIG.EMPTY_SEARCH_CHARACTER)],
             entry_name=CONFIG.EMPTY_SEARCH_CHARACTER,
         )
         self.assertEqual(ret.ret_count, 1)
@@ -3468,55 +3472,55 @@ class ModelTest(AironeTestCase):
         test_suites = []
         test_suites.append(
             [
-                {"ret_cnt": 3, "search_word": [{"name": "str1", "keyword": "foo"}]},
+                {"ret_cnt": 3, "search_word": [AttrHint(name="str1", keyword="foo")]},
                 {
                     "ret_cnt": 0,
                     "search_word": [
-                        {"name": "str1", "keyword": "foo&bar"},
-                        {"name": "str2", "keyword": "foo&bar"},
+                        AttrHint(name="str1", keyword="foo&bar"),
+                        AttrHint(name="str2", keyword="foo&bar"),
                     ],
                 },
                 {
                     "ret_cnt": 0,
                     "search_word": [
-                        {"name": "str1", "keyword": "foo&bar&baz"},
-                        {"name": "str2", "keyword": "foo&bar&baz"},
-                        {"name": "str3", "keyword": "foo&bar&baz"},
+                        AttrHint(name="str1", keyword="foo&bar&baz"),
+                        AttrHint(name="str2", keyword="foo&bar&baz"),
+                        AttrHint(name="str3", keyword="foo&bar&baz"),
                     ],
                 },
                 {
                     "ret_cnt": 3,
-                    "search_word": [{"name": "arr_str", "keyword": "hoge"}],
+                    "search_word": [AttrHint(name="arr_str", keyword="hoge")],
                 },
                 {
                     "ret_cnt": 2,
-                    "search_word": [{"name": "arr_str", "keyword": "hoge&fuga"}],
+                    "search_word": [AttrHint(name="arr_str", keyword="hoge&fuga")],
                 },
                 {
                     "ret_cnt": 1,
-                    "search_word": [{"name": "arr_str", "keyword": "hoge&fuga&piyo"}],
+                    "search_word": [AttrHint(name="arr_str", keyword="hoge&fuga&piyo")],
                 },
                 {
                     "ret_cnt": 3,
                     "search_word": [
-                        {"name": "str1", "keyword": "foo"},
-                        {"name": "arr_str", "keyword": "hoge"},
+                        AttrHint(name="str1", keyword="foo"),
+                        AttrHint(name="arr_str", keyword="hoge"),
                     ],
                 },
                 {
                     "ret_cnt": 2,
                     "search_word": [
-                        {"name": "str1", "keyword": "foo"},
-                        {"name": "str2", "keyword": "bar"},
-                        {"name": "arr_str", "keyword": "hoge&fuga"},
+                        AttrHint(name="str1", keyword="foo"),
+                        AttrHint(name="str2", keyword="bar"),
+                        AttrHint(name="arr_str", keyword="hoge&fuga"),
                     ],
                 },
                 {
                     "ret_cnt": 1,
                     "search_word": [
-                        {"name": "str1", "keyword": "foo"},
-                        {"name": "str2", "keyword": "bar"},
-                        {"name": "arr_str", "keyword": "hoge&fuga&piyo"},
+                        AttrHint(name="str1", keyword="foo"),
+                        AttrHint(name="str2", keyword="bar"),
+                        AttrHint(name="arr_str", keyword="hoge&fuga&piyo"),
                     ],
                 },
             ]
@@ -3527,54 +3531,54 @@ class ModelTest(AironeTestCase):
         """
         test_suites.append(
             [
-                {"ret_cnt": 3, "search_word": [{"name": "str1", "keyword": "foo|bar"}]},
+                {"ret_cnt": 3, "search_word": [AttrHint(name="str1", keyword="foo|bar")]},
                 {
                     "ret_cnt": 1,
                     "search_word": [
-                        {"name": "str2", "keyword": "bar|baz"},
-                        {"name": "str3", "keyword": "bar|baz"},
+                        AttrHint(name="str2", keyword="bar|baz"),
+                        AttrHint(name="str3", keyword="bar|baz"),
                     ],
                 },
                 {
                     "ret_cnt": 1,
                     "search_word": [
-                        {"name": "str1", "keyword": "foo|bar|baz"},
-                        {"name": "str2", "keyword": "foo|bar|baz"},
-                        {"name": "str3", "keyword": "foo|bar|baz"},
+                        AttrHint(name="str1", keyword="foo|bar|baz"),
+                        AttrHint(name="str2", keyword="foo|bar|baz"),
+                        AttrHint(name="str3", keyword="foo|bar|baz"),
                     ],
                 },
                 {
                     "ret_cnt": 3,
-                    "search_word": [{"name": "arr_str", "keyword": "hoge|fuga"}],
+                    "search_word": [AttrHint(name="arr_str", keyword="hoge|fuga")],
                 },
                 {
                     "ret_cnt": 2,
-                    "search_word": [{"name": "arr_str", "keyword": "fuga|piyo"}],
+                    "search_word": [AttrHint(name="arr_str", keyword="fuga|piyo")],
                 },
                 {
                     "ret_cnt": 3,
-                    "search_word": [{"name": "arr_str", "keyword": "hoge|fuga|piyo"}],
+                    "search_word": [AttrHint(name="arr_str", keyword="hoge|fuga|piyo")],
                 },
                 {
                     "ret_cnt": 2,
                     "search_word": [
-                        {"name": "str2", "keyword": "foo|bar"},
-                        {"name": "arr_str", "keyword": "hoge"},
+                        AttrHint(name="str2", keyword="foo|bar"),
+                        AttrHint(name="arr_str", keyword="hoge"),
                     ],
                 },
                 {
                     "ret_cnt": 1,
                     "search_word": [
-                        {"name": "str2", "keyword": "foo|bar"},
-                        {"name": "str3", "keyword": "bar|baz"},
-                        {"name": "arr_str", "keyword": "hoge|fuga"},
+                        AttrHint(name="str2", keyword="foo|bar"),
+                        AttrHint(name="str3", keyword="bar|baz"),
+                        AttrHint(name="arr_str", keyword="hoge|fuga"),
                     ],
                 },
                 {
                     "ret_cnt": 1,
                     "search_word": [
-                        {"name": "str3", "keyword": "foo|baz"},
-                        {"name": "arr_str", "keyword": "hoge|fuga|piyo"},
+                        AttrHint(name="str3", keyword="foo|baz"),
+                        AttrHint(name="arr_str", keyword="hoge|fuga|piyo"),
                     ],
                 },
             ]
@@ -3585,37 +3589,37 @@ class ModelTest(AironeTestCase):
         """
         test_suites.append(
             [
-                {"ret_cnt": 3, "search_word": [{"name": "str1", "keyword": "foo|bar"}]},
+                {"ret_cnt": 3, "search_word": [AttrHint(name="str1", keyword="foo|bar")]},
                 {
                     "ret_cnt": 0,
                     "search_word": [
-                        {"name": "str1", "keyword": "foo&baz|bar"},
-                        {"name": "str2", "keyword": "foo&baz|bar"},
-                        {"name": "str3", "keyword": "foo&baz|bar"},
+                        AttrHint(name="str1", keyword="foo&baz|bar"),
+                        AttrHint(name="str2", keyword="foo&baz|bar"),
+                        AttrHint(name="str3", keyword="foo&baz|bar"),
                     ],
                 },
                 {
                     "ret_cnt": 0,
                     "search_word": [
-                        {"name": "str1", "keyword": "foo|bar&baz"},
-                        {"name": "str2", "keyword": "foo|bar&baz"},
-                        {"name": "str3", "keyword": "foo|bar&baz"},
+                        AttrHint(name="str1", keyword="foo|bar&baz"),
+                        AttrHint(name="str2", keyword="foo|bar&baz"),
+                        AttrHint(name="str3", keyword="foo|bar&baz"),
                     ],
                 },
                 {
                     "ret_cnt": 2,
-                    "search_word": [{"name": "arr_str", "keyword": "hoge&piyo|fuga"}],
+                    "search_word": [AttrHint(name="arr_str", keyword="hoge&piyo|fuga")],
                 },
                 {
                     "ret_cnt": 2,
-                    "search_word": [{"name": "arr_str", "keyword": "piyo|hoge&fuga"}],
+                    "search_word": [AttrHint(name="arr_str", keyword="piyo|hoge&fuga")],
                 },
                 {
                     "ret_cnt": 2,
                     "search_word": [
-                        {"name": "str1", "keyword": "foo"},
-                        {"name": "str2", "keyword": "bar|baz"},
-                        {"name": "arr_str", "keyword": "hoge&piyo|fuga"},
+                        AttrHint(name="str1", keyword="foo"),
+                        AttrHint(name="str2", keyword="bar|baz"),
+                        AttrHint(name="arr_str", keyword="hoge&piyo|fuga"),
                     ],
                 },
             ]
@@ -3713,7 +3717,7 @@ class ModelTest(AironeTestCase):
         ret = AdvancedSearchService.search_entries(
             self._user,
             [self._entity.id],
-            [{"name": "attr", "keyword": "^ge"}],
+            [AttrHint(name="attr", keyword="^ge")],
             is_output_all=True,
         )
         self.assertEqual(ret.ret_count, 0)
@@ -3753,7 +3757,7 @@ class ModelTest(AironeTestCase):
                 self.add_entry(self._user, "Entry%d" % num, entity)
 
         ret = AdvancedSearchService.search_entries(
-            self._user, [entities[0]], [{"name": "test"}], limit=2, offset=2
+            self._user, [entities[0]], [AttrHint(name="test")], limit=2, offset=2
         )
         self.assertEqual(ret.ret_count, 5)
         self.assertEqual(
@@ -3762,7 +3766,7 @@ class ModelTest(AironeTestCase):
         )
 
         ret = AdvancedSearchService.search_entries(
-            self._user, entities, [{"name": "test"}], limit=2, offset=4
+            self._user, entities, [AttrHint(name="test")], limit=2, offset=4
         )
         self.assertEqual(ret.ret_count, 15)
         self.assertEqual(
@@ -4955,7 +4959,7 @@ class ModelTest(AironeTestCase):
         # that returns all data regardless of the permission settings.
         search_params = {
             "hint_entity_ids": [entity.id],
-            "hint_attrs": [{"name": "attr", "keyword": ""}],
+            "hint_attrs": [AttrHint(name="attr", keyword="")],
         }
         self.assertEqual(
             AdvancedSearchService.search_entries(self._user, **search_params),

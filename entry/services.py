@@ -1,5 +1,4 @@
 from collections import defaultdict
-from copy import deepcopy
 from typing import Any, DefaultDict
 
 from django.conf import settings
@@ -83,7 +82,7 @@ class AdvancedSearchService:
             Prefetch(
                 "attrs",
                 queryset=EntityAttr.objects.filter(
-                    name__in=[h["name"] for h in hint_attrs], is_active=True
+                    name__in=[h.name for h in hint_attrs], is_active=True
                 ),
                 to_attr="prefetch_attrs",
             )
@@ -95,13 +94,11 @@ class AdvancedSearchService:
 
             # Check for has permission to EntityAttr
             for hint_attr in hint_attrs:
-                if "name" not in hint_attr:
-                    continue
-
                 hint_entity_attr = next(
-                    filter(lambda x: x.name == hint_attr["name"], entity.prefetch_attrs), None
+                    filter(lambda x: x.name == hint_attr.name, entity.prefetch_attrs), None
                 )
-                hint_attr["is_readable"] = (
+                # NOTE modify is_readable as a side-effect, will be expected by other logics
+                hint_attr.is_readable = (
                     True
                     if (
                         user is None
@@ -124,21 +121,21 @@ class AdvancedSearchService:
             if "status" in resp and resp["status"] == 404:
                 continue
 
-            tmp_hint_attrs = deepcopy(hint_attrs)
+            tmp_hint_attrs = [attr.model_copy(deep=True) for attr in hint_attrs]
             # Check for has permission to EntityAttr, when is_output_all flag
             if is_output_all:
                 for entity_attr in entity.attrs.filter(is_active=True):
-                    if entity_attr.name not in [x["name"] for x in tmp_hint_attrs if "name" in x]:
+                    if entity_attr.name not in [x.name for x in tmp_hint_attrs if x.name]:
                         tmp_hint_attrs.append(
-                            {
-                                "name": entity_attr.name,
-                                "is_readable": True
+                            AttrHint(
+                                name=entity_attr.name,
+                                is_readable=True
                                 if (
                                     user is None
                                     or user.has_permission(entity_attr, ACLType.Readable)
                                 )
                                 else False,
-                            }
+                            )
                         )
 
             # retrieve data from database on the basis of the result of elasticsearch
@@ -332,7 +329,7 @@ class AdvancedSearchService:
         hint_referral_entity_id: int | None = None,
         offset: int = 0,
     ) -> AdvancedSearchResults:
-        names: list[str] = [attr_hint["name"] for attr_hint in hint_attrs]
+        names: list[str] = [attr_hint.name for attr_hint in hint_attrs]
 
         entity_attrs = EntityAttr.objects.filter(parent_entity__in=hint_entity_ids, name__in=names)
 
@@ -342,11 +339,9 @@ class AdvancedSearchService:
 
         conditions = Q()
         for attr_hint in hint_attrs:
-            _entity_attrs = entity_attr_map[attr_hint["name"]]
-            filter_key = attr_hint.get("filter_key", FilterKey.CLEARED)
-            keyword = attr_hint.get("keyword")
-            exact_match = attr_hint.get("exact_match", False)
-            match (filter_key, exact_match, keyword):
+            _entity_attrs = entity_attr_map[attr_hint.name]
+            keyword = attr_hint.keyword
+            match (attr_hint.filter_key, attr_hint.exact_match or False, keyword):
                 case (FilterKey.EMPTY, _, _):
                     conditions |= Q(entity_attr__in=_entity_attrs, key__isnull=True)
                 case (FilterKey.NON_EMPTY, _, _):

@@ -8,7 +8,7 @@ from django.conf import settings
 from natsort import natsorted
 
 from airone.celery import app
-from airone.lib.elasticsearch import AdvancedSearchResultRecord
+from airone.lib.elasticsearch import AdvancedSearchResultRecord, AttrHint
 from airone.lib.job import may_schedule_until_job_is_ready
 from airone.lib.types import AttrType
 from entry.services import AdvancedSearchService
@@ -174,13 +174,14 @@ def export_search_result(self, job: Job):
     has_referral: bool = recv_data.get("has_referral", False)
     referral_name: str | None = recv_data.get("referral_name")
     entry_name: str | None = recv_data.get("entry_name")
+    hint_attrs = [AttrHint.model_validate(attr) for attr in recv_data["attrinfo"]]
     if has_referral and referral_name is None:
         referral_name = ""
 
     resp = AdvancedSearchService.search_entries(
         user,
         recv_data["entities"],
-        recv_data["attrinfo"],
+        hint_attrs,
         settings.ES_CONFIG["MAXIMUM_RESULTS_NUM"],
         entry_name,
         referral_name,

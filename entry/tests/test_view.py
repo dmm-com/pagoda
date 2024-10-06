@@ -13,6 +13,7 @@ from django.http.response import JsonResponse
 from django.urls import reverse
 
 from airone.lib.acl import ACLType
+from airone.lib.elasticsearch import AttrHint
 from airone.lib.log import Logger
 from airone.lib.test import AironeViewTest, DisableStderr
 from airone.lib.types import (
@@ -874,7 +875,7 @@ class ViewTest(AironeViewTest):
 
         # checks that we can search updated entry using updated value
         resp = AdvancedSearchService.search_entries(
-            user, [entity.id], [{"name": "bar", "keyword": "fuga"}]
+            user, [entity.id], [AttrHint(name="bar", keyword="fuga")]
         )
         self.assertEqual(resp.ret_count, 1)
         self.assertEqual(resp.ret_values[0].entity["id"], entity.id)
@@ -3802,7 +3803,7 @@ class ViewTest(AironeViewTest):
 
         self.assertTrue(Job.objects.filter(operation=JobOperation.NOTIFY_CREATE_ENTRY).exists())
 
-        ret = AdvancedSearchService.search_entries(user, [self._entity.id], [{"name": "test"}])
+        ret = AdvancedSearchService.search_entries(user, [self._entity.id], [AttrHint(name="test")])
         self.assertEqual(ret.ret_count, 1)
         self.assertEqual(ret.ret_values[0].entry["name"], "entry")
         self.assertEqual(ret.ret_values[0].attrs["test"]["value"], "fuga")
@@ -3831,7 +3832,7 @@ class ViewTest(AironeViewTest):
 
         self.assertTrue(Job.objects.filter(operation=JobOperation.NOTIFY_UPDATE_ENTRY).exists())
 
-        ret = AdvancedSearchService.search_entries(user, [self._entity.id], [{"name": "test"}])
+        ret = AdvancedSearchService.search_entries(user, [self._entity.id], [AttrHint(name="test")])
         self.assertEqual(ret.ret_count, 1)
         self.assertEqual(ret.ret_values[0].entry["name"], "entry")
         self.assertEqual(ret.ret_values[0].attrs["test"]["value"], "piyo")
@@ -5298,7 +5299,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(ref_entry.name, "changed_name")
 
         # check entry changing reflects to the ElasticSearch
-        ret = AdvancedSearchService.search_entries(user, [entity.id], [{"name": "ref"}])
+        ret = AdvancedSearchService.search_entries(user, [entity.id], [AttrHint(name="ref")])
         self.assertEqual(ret.ret_count, 1)
         self.assertEqual(ret.ret_values[0].entry["name"], "entry")
         self.assertEqual(ret.ret_values[0].attrs["ref"]["value"]["name"], "changed_name")
