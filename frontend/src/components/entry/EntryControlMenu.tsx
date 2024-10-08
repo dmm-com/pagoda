@@ -88,26 +88,57 @@ export const EntryControlMenu: FC<EntryControlProps> = ({
       }}
     >
       <Box sx={{ width: 150 }}>
-        <MenuItem component={Link} to={customDetailPath ? customDetailPath : entryDetailsPath(entityId, entryId)}>
+        <MenuItem
+          component={Link}
+          to={
+            customDetailPath
+              ? customDetailPath
+              : entryDetailsPath(entityId, entryId)
+          }
+        >
           <Typography>詳細</Typography>
         </MenuItem>
-        <MenuItem component={Link} to={customEditPath ? customEditPath : entryEditPath(entityId, entryId)}>
+        <MenuItem
+          component={Link}
+          to={
+            customEditPath ? customEditPath : entryEditPath(entityId, entryId)
+          }
+        >
           <Typography>編集</Typography>
         </MenuItem>
-        <MenuItem component={Link} to={customCopyPath ? customCopyPath : copyEntryPath(entityId, entryId)}>
+        <MenuItem
+          component={Link}
+          to={
+            customCopyPath ? customCopyPath : copyEntryPath(entityId, entryId)
+          }
+        >
           <Typography>コピー</Typography>
         </MenuItem>
-        <MenuItem component={Link} to={customACLPath ? customACLPath : aclPath(entryId)}>
+        <MenuItem
+          component={Link}
+          to={customACLPath ? customACLPath : aclPath(entryId)}
+        >
           <Typography>ACL 設定</Typography>
         </MenuItem>
         <MenuItem
           component={Link}
-          to={customHistoryPath ? customHistoryPath : showEntryHistoryPath(entityId, entryId)}
+          to={
+            customHistoryPath
+              ? customHistoryPath
+              : showEntryHistoryPath(entityId, entryId)
+          }
           disabled={disableChangeHistory}
         >
           <Typography>変更履歴</Typography>
         </MenuItem>
-        <MenuItem component={Link} to={customACLHistoryPath ? customACLHistoryPath : aclHistoryPath(entryId)}>
+        <MenuItem
+          component={Link}
+          to={
+            customACLHistoryPath
+              ? customACLHistoryPath
+              : aclHistoryPath(entryId)
+          }
+        >
           <Typography>ACL 変更履歴</Typography>
         </MenuItem>
         <Confirmable
