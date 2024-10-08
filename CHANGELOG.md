@@ -8,6 +8,14 @@
 
 ### Fixed
 
+## v3.106.0
+
+### Changed
+* small opmitization on entity/entry list API.
+  Contributed by @syucream
+* Update openapi-generator from v6.6.0 to v7.8.0
+  Contributed by @syucream
+
 ## v3.105.0
 
 ### Fixed
