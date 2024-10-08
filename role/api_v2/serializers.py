@@ -1,6 +1,5 @@
 from collections import OrderedDict
 
-from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 from airone.lib.drf import RequiredParameterError
@@ -51,19 +50,15 @@ class RoleSerializer(serializers.ModelSerializer):
     def get_filtered_data(self, obj, attribute, serializer):
         return serializer(getattr(obj, attribute).filter(is_active=True), many=True).data
 
-    @extend_schema_field(RoleUserSerializer(many=True))
     def get_users(self, obj):
         return self.get_filtered_data(obj, "users", RoleUserSerializer)
 
-    @extend_schema_field(RoleUserSerializer(many=True))
     def get_admin_users(self, obj):
         return self.get_filtered_data(obj, "admin_users", RoleUserSerializer)
 
-    @extend_schema_field(RoleGroupSerializer(many=True))
     def get_groups(self, obj):
         return self.get_filtered_data(obj, "groups", RoleGroupSerializer)
 
-    @extend_schema_field(RoleGroupSerializer(many=True))
     def get_admin_groups(self, obj):
         return self.get_filtered_data(obj, "admin_groups", RoleGroupSerializer)
 

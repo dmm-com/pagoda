@@ -181,10 +181,15 @@ class AironeApiClient {
       {
         id,
         aCL: {
+          id: id,
           isPublic: isPublic,
           defaultPermission: defaultPermission,
+          objtype: objectType,
           aclSettings: aclSettings,
+          // readonly
+          name: "",
           parent: null,
+          roles: [],
         },
       },
       {
@@ -238,6 +243,7 @@ class AironeApiClient {
     await this.entity.entityApiV2Create(
       {
         entityCreate: {
+          id: -1,
           name: name,
           note: note,
           isToplevel: isToplevel,
@@ -266,6 +272,7 @@ class AironeApiClient {
       {
         id: id,
         entityUpdate: {
+          id: id,
           name: name,
           note: note,
           isToplevel: isToplevel,
@@ -357,7 +364,7 @@ class AironeApiClient {
     attrs: AttributeData[]
   ): Promise<void> {
     await this.entity.entityApiV2EntriesCreate(
-      { entityId, entryCreate: { name, attrs } },
+      { entityId, entryCreate: { id: -1, name, attrs } },
       {
         headers: {
           "Content-Type": "application/json;charset=utf-8",
@@ -373,7 +380,7 @@ class AironeApiClient {
     attrs: AttributeData[]
   ): Promise<void> {
     await this.entry.entryApiV2Update(
-      { id, entryUpdate: { name, attrs } },
+      { id, entryUpdate: { id: id, name, attrs } },
       {
         headers: {
           "Content-Type": "application/json;charset=utf-8",
