@@ -89,6 +89,7 @@
     "@jest/globals": "^27.0.6",
     "@mui/icons-material": "^5.2.1",
     "@mui/material": "^5.11.3",
+    "@react-oauth/google": "^0.12.1",
     "@types/encoding-japanese": "^2.2.1",
     "@types/react-beautiful-dnd": "^13.1.4",
     "@types/react-router-dom": "^5.3.3",
