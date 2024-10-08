@@ -68,28 +68,44 @@ def history(request, pk: int) -> HttpResponse:
 
 class EntityPermission(BasePermission):
     def has_permission(self, request: Request, view) -> bool:
-        permisson = {
+        permissions = {
             "list": ACLType.Readable,
             "create": ACLType.Writable,
         }
 
-        entity = Entity.objects.filter(id=view.kwargs.get("entity_id"), is_active=True).first()
+        permission = permissions.get(view.action)
+        if not permission:
+            return True
 
-        if entity and not request.user.has_permission(entity, permisson.get(view.action)):
+        entity_id = view.kwargs.get("pk") or view.kwargs.get("entity_id")
+        if not entity_id:
+            return True
+
+        if not hasattr(view, "_pagoda_context"):
+            view._pagoda_context = {}
+
+        entity: Entity | None = view._pagoda_context.get("entity")
+        if not entity or entity.id != entity_id:
+            entity = Entity.objects.filter(id=entity_id, is_active=True).first()
+            view._pagoda_context["entity"] = entity
+
+        if entity and not request.user.has_permission(entity, permission):
             return False
 
-        view.entity = entity
         return True
 
     def has_object_permission(self, request: Request, view, obj) -> bool:
-        user: User = request.user
-        permisson = {
+        permissions = {
             "retrieve": ACLType.Readable,
             "update": ACLType.Writable,
             "destroy": ACLType.Full,
         }
 
-        if not user.has_permission(obj, permisson.get(view.action)):
+        permission = permissions.get(view.action)
+        if not permission:
+            return True
+
+        if not request.user.has_permission(obj, permission):
             return False
 
         return True
