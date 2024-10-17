@@ -47,7 +47,7 @@ export const BaseAttributeTypes = {
 
 export const AttributeTypes: Record<string, { name: string; type: number }> = {
   object: {
-    name: "entry",
+    name: "object",
     type: BaseAttributeTypes.object,
   },
   string: {
@@ -55,11 +55,11 @@ export const AttributeTypes: Record<string, { name: string; type: number }> = {
     type: BaseAttributeTypes.string,
   },
   named_object: {
-    name: "named_entry",
+    name: "named_object",
     type: BaseAttributeTypes.object | BaseAttributeTypes.named,
   },
   array_object: {
-    name: "array_entry",
+    name: "array_object",
     type: BaseAttributeTypes.object | BaseAttributeTypes.array,
   },
   array_string: {
@@ -67,7 +67,7 @@ export const AttributeTypes: Record<string, { name: string; type: number }> = {
     type: BaseAttributeTypes.string | BaseAttributeTypes.array,
   },
   array_named_object: {
-    name: "array_named_entry",
+    name: "array_named_object",
     type:
       BaseAttributeTypes.object |
       BaseAttributeTypes.named |
