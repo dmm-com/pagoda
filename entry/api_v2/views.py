@@ -230,7 +230,15 @@ class AdvancedSearchAPI(generics.GenericAPIView):
 
         hint_entities = serializer.validated_data["entities"]
         hint_entry_name = serializer.validated_data["entry_name"]
-        hint_attrs = serializer.validated_data["attrinfo"]
+        hint_attrs = [
+            AttrHint(
+                name=x["name"],
+                keyword=x.get("keyword"),
+                filter_key=x.get("filter_key"),
+                exact_match=x.get("exact_match"),
+            )
+            for x in serializer.validated_data["attrinfo"]
+        ]
         hint_referral = serializer.validated_data.get("referral_name")
         has_referral = serializer.validated_data["has_referral"]
         is_output_all = serializer.validated_data["is_output_all"]
@@ -306,11 +314,11 @@ class AdvancedSearchAPI(generics.GenericAPIView):
             hint_attrs: list[AttrHint] = []
             for info in join_attr.get("attrinfo", []):
                 hint_attrs.append(
-                    {
-                        "name": info["name"],
-                        "keyword": info.get("keyword"),
-                        "filter_key": info.get("filter_key"),
-                    }
+                    AttrHint(
+                        name=info["name"],
+                        keyword=info.get("keyword"),
+                        filter_key=info.get("filter_key"),
+                    )
                 )
 
             # search Items from elasticsearch to join
@@ -361,7 +369,7 @@ class AdvancedSearchAPI(generics.GenericAPIView):
             hint_referral = None
 
         if is_all_entities:
-            attr_names = [x["name"] for x in hint_attrs]
+            attr_names = [x.name for x in hint_attrs]
             hint_entities = list(
                 EntityAttr.objects.filter(
                     name__in=attr_names, is_active=True, parent_entity__is_active=True

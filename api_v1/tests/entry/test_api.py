@@ -29,17 +29,16 @@ class APITest(AironeViewTest):
             params = {**valid_params, **invalid_param}
             resp = self.client.post("/api/v1/entry/search", json.dumps(params), "application/json")
             self.assertEqual(resp.status_code, 400)
-            self.assertEqual(resp.content, b'"The type of parameter is incorrect"')
 
         params = {**valid_params, **{"attrinfo": [{"hoge": "value"}]}}
         resp = self.client.post("/api/v1/entry/search", json.dumps(params), "application/json")
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(resp.content, b'"The name key is required for attrinfo parameter"')
+        self.assertEqual(resp.content, b"\"The type of parameter 'attrinfo' is incorrect\"")
 
         params = {**valid_params, **{"attrinfo": [{"name": ["hoge"]}]}}
         resp = self.client.post("/api/v1/entry/search", json.dumps(params), "application/json")
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(resp.content, b'"Invalid value for attrinfo parameter"')
+        self.assertEqual(resp.content, b"\"The type of parameter 'attrinfo' is incorrect\"")
 
         params = {
             **valid_params,
@@ -47,7 +46,7 @@ class APITest(AironeViewTest):
         }
         resp = self.client.post("/api/v1/entry/search", json.dumps(params), "application/json")
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(resp.content, b'"Invalid value for attrinfo parameter"')
+        self.assertEqual(resp.content, b"\"The type of parameter 'attrinfo' is incorrect\"")
 
     def test_narrow_down_advanced_search_results(self):
         user = self.admin_login()

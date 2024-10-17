@@ -3,7 +3,7 @@ from datetime import date, datetime, timezone
 
 from django.conf import settings
 
-from airone.lib.elasticsearch import FilterKey
+from airone.lib.elasticsearch import AttrHint, FilterKey
 from airone.lib.log import Logger
 from airone.lib.test import AironeTestCase
 from airone.lib.types import AttrType
@@ -176,20 +176,20 @@ class AdvancedSearchServiceTest(AironeTestCase):
             user,
             [entity.id],
             [
-                {"name": "str"},
-                {"name": "str2"},
-                {"name": "obj"},
-                {"name": "name"},
-                {"name": "bool"},
-                {"name": "group"},
-                {"name": "date"},
-                {"name": "role"},
-                {"name": "arr_str"},
-                {"name": "arr_obj"},
-                {"name": "arr_name"},
-                {"name": "arr_group"},
-                {"name": "arr_role"},
-                {"name": "datetime"},
+                AttrHint(name="str"),
+                AttrHint(name="str2"),
+                AttrHint(name="obj"),
+                AttrHint(name="name"),
+                AttrHint(name="bool"),
+                AttrHint(name="group"),
+                AttrHint(name="date"),
+                AttrHint(name="role"),
+                AttrHint(name="arr_str"),
+                AttrHint(name="arr_obj"),
+                AttrHint(name="arr_name"),
+                AttrHint(name="arr_group"),
+                AttrHint(name="arr_role"),
+                AttrHint(name="datetime"),
             ],
         )
         self.assertEqual(ret.ret_count, 11)
@@ -278,13 +278,13 @@ class AdvancedSearchServiceTest(AironeTestCase):
                     raise "Invalid result was happend (attrname: %s)" % attrname
 
         # search entries with maximum entries to get
-        ret = AdvancedSearchService.search_entries(user, [entity.id], [{"name": "str"}], 5)
+        ret = AdvancedSearchService.search_entries(user, [entity.id], [AttrHint(name="str")], 5)
         self.assertEqual(ret.ret_count, 11)
         self.assertEqual(len(ret.ret_values), 5)
 
         # search entries with keyword
         ret = AdvancedSearchService.search_entries(
-            user, [entity.id], [{"name": "str", "keyword": "foo-5"}]
+            user, [entity.id], [AttrHint(name="str", keyword="foo-5")]
         )
         self.assertEqual(ret.ret_count, 1)
         self.assertEqual(ret.ret_values[0].entry["name"], "e-5")
@@ -294,14 +294,14 @@ class AdvancedSearchServiceTest(AironeTestCase):
             # call AdvancedSearchService.search_entries with invalid keyword
             self.assertEqual(
                 AdvancedSearchService.search_entries(
-                    user, [entity.id], [{"name": "role", "keyword": "invalid-keyword"}]
+                    user, [entity.id], [AttrHint(name="role", keyword="invalid-keyword")]
                 ).ret_count,
                 0,
             )
             # call AdvancedSearchService.search_entries with valid keyword
             self.assertEqual(
                 AdvancedSearchService.search_entries(
-                    user, [entity.id], [{"name": "role", "keyword": "rol"}]
+                    user, [entity.id], [AttrHint(name="role", keyword="role")]
                 ).ret_count,
                 11,
             )
@@ -312,20 +312,20 @@ class AdvancedSearchServiceTest(AironeTestCase):
         entry.register_es()
 
         for attrname in attr_info.keys():
-            ret = AdvancedSearchService.search_entries(user, [entity.id], [{"name": attrname}])
+            ret = AdvancedSearchService.search_entries(user, [entity.id], [AttrHint(name=attrname)])
             self.assertEqual(len([x for x in ret.ret_values if x.entry["id"] == entry.id]), 1)
 
         # check functionallity of the 'exact_match' parameter
         ret = AdvancedSearchService.search_entries(
             user,
             [entity.id],
-            [{"name": "str", "keyword": "foo-1"}],
+            [AttrHint(name="str", keyword="foo-1")],
         )
         self.assertEqual(ret.ret_count, 2)
         ret = AdvancedSearchService.search_entries(
             user,
             [entity.id],
-            [{"name": "str", "keyword": "foo-1", "exact_match": True}],
+            [AttrHint(name="str", keyword="foo-1", exact_match=True)],
         )
         self.assertEqual(ret.ret_count, 1)
         self.assertEqual(ret.ret_values[0].entry["name"], "e-1")
@@ -336,13 +336,13 @@ class AdvancedSearchServiceTest(AironeTestCase):
 
         # check combination of 'entry_name' and 'hint_attrs' parameter
         ret = AdvancedSearchService.search_entries(
-            user, [entity.id], [{"name": "str", "keyword": "foo-10"}], entry_name="e-1"
+            user, [entity.id], [AttrHint(name="str", keyword="foo-10")], entry_name="e-1"
         )
         self.assertEqual(ret.ret_count, 1)
 
         # check whether keyword would be insensitive case
         ret = AdvancedSearchService.search_entries(
-            user, [entity.id], [{"name": "str", "keyword": "FOO-10"}]
+            user, [entity.id], [AttrHint(name="str", keyword="FOO-10")]
         )
         self.assertEqual(ret.ret_count, 1)
         self.assertEqual(ret.ret_values[0].entry["name"], "e-10")
@@ -366,7 +366,7 @@ class AdvancedSearchServiceTest(AironeTestCase):
         # check to get Entries that only have substantial Attribute values
         for attr in entity.attrs.filter(is_active=True):
             result = AdvancedSearchService.search_entries(
-                user, [entity.id], [{"name": attr.name, "keyword": "*"}]
+                user, [entity.id], [AttrHint(name=attr.name, keyword="*")]
             )
             _assert_result_full(attr, result)
 
@@ -376,11 +376,11 @@ class AdvancedSearchServiceTest(AironeTestCase):
                 user,
                 [entity.id],
                 [
-                    {
-                        "name": attr.name,
-                        "keyword": "*",
-                        "filter_key": FilterKey.TEXT_CONTAINED,
-                    }
+                    AttrHint(
+                        name=attr.name,
+                        keyword="*",
+                        filter_key=FilterKey.TEXT_CONTAINED,
+                    )
                 ],
             )
             _assert_result_full(attr, result)
@@ -391,12 +391,7 @@ class AdvancedSearchServiceTest(AironeTestCase):
             result = AdvancedSearchService.search_entries(
                 user,
                 [entity.id],
-                [
-                    {
-                        "name": attr.name,
-                        "filter_key": FilterKey.NON_EMPTY,
-                    }
-                ],
+                [AttrHint(name=attr.name, filter_key=FilterKey.NON_EMPTY)],
             )
             _assert_result_full(attr, result)
 
@@ -405,12 +400,7 @@ class AdvancedSearchServiceTest(AironeTestCase):
             result = AdvancedSearchService.search_entries(
                 user,
                 [entity.id],
-                [
-                    {
-                        "name": attr.name,
-                        "filter_key": FilterKey.EMPTY,
-                    }
-                ],
+                [AttrHint(name=attr.name, filter_key=FilterKey.EMPTY)],
             )
             if attr.type == AttrType.BOOLEAN:
                 self.assertEqual(result.ret_count, 0)
@@ -424,11 +414,9 @@ class AdvancedSearchServiceTest(AironeTestCase):
                 user,
                 [entity.id],
                 [
-                    {
-                        "name": attr.name,
-                        "keyword": "DO MATCH NOTHING",
-                        "filter_key": FilterKey.CLEARED,
-                    }
+                    AttrHint(
+                        name=attr.name, keyword="DO MATCH NOTHING", filter_key=FilterKey.CLEARED
+                    )
                 ],
             )
 
@@ -460,10 +448,10 @@ class AdvancedSearchServiceTest(AironeTestCase):
             self._user,
             [entity.id],
             [
-                {
-                    "name": "str",
-                    "filter_key": FilterKey.DUPLICATED,
-                },
+                AttrHint(
+                    name="str",
+                    filter_key=FilterKey.DUPLICATED,
+                )
             ],
         )
         self.assertEqual(result.ret_count, 4)
@@ -489,11 +477,11 @@ class AdvancedSearchServiceTest(AironeTestCase):
             self._user,
             [entity.id],
             [
-                {
-                    "name": "str",
-                    "keyword": "hoge",
-                    "filter_key": FilterKey.TEXT_NOT_CONTAINED,
-                },
+                AttrHint(
+                    name="str",
+                    keyword="hoge",
+                    filter_key=FilterKey.TEXT_NOT_CONTAINED,
+                )
             ],
         )
 
@@ -641,7 +629,7 @@ class AdvancedSearchServiceTest(AironeTestCase):
         ret = AdvancedSearchService.search_entries(
             user,
             entity_ids,
-            [{"name": "foo", "keyword": ""}, {"name": "bar", "keyword": ""}],
+            [AttrHint(name="foo", keyword=""), AttrHint(name="bar", keyword="")],
         )
         self.assertEqual(ret.ret_count, 10)
         self.assertEqual(
@@ -654,7 +642,7 @@ class AdvancedSearchServiceTest(AironeTestCase):
         ret = AdvancedSearchService.search_entries(
             user,
             entity_ids,
-            [{"name": "foo", "keyword": "3"}, {"name": "bar", "keyword": ""}],
+            [AttrHint(name="foo", keyword="3"), AttrHint(name="bar", keyword="")],
         )
         self.assertEqual(ret.ret_count, 1)
         self.assertEqual(sorted([x.entry["name"] for x in ret.ret_values]), sorted(["E1-3"]))
@@ -664,7 +652,7 @@ class AdvancedSearchServiceTest(AironeTestCase):
         ret = AdvancedSearchService.search_entries(
             user,
             entity_ids,
-            [{"name": "foo", "keyword": "3"}, {"name": "bar", "keyword": "3"}],
+            [AttrHint(name="foo", keyword="3"), AttrHint(name="bar", keyword="3")],
         )
         self.assertEqual(ret.ret_count, 0)
 
@@ -744,7 +732,7 @@ class AdvancedSearchServiceTest(AironeTestCase):
         # Check search result when each referred entries which is specified in the hint still exist
         for attr_name in ref_info.keys():
             # Check search result without keyword of hint_attrs
-            hint_attr = {"name": attr_name, "keyword": ""}
+            hint_attr = AttrHint(name=attr_name, keyword="")
             ret = AdvancedSearchService.search_entries(
                 self._user, [entity.id], hint_attrs=[hint_attr]
             )
@@ -755,7 +743,7 @@ class AdvancedSearchServiceTest(AironeTestCase):
                 self.assertTrue(_name in ref_info)
                 self.assertEqual(_info["value"], ref_info[_name]["expected_value"])
 
-            hint_attr = {"name": attr_name, "keyword": "ref"}
+            hint_attr = AttrHint(name=attr_name, keyword="ref")
             ret = AdvancedSearchService.search_entries(
                 self._user, [entity.id], hint_attrs=[hint_attr]
             )
@@ -813,15 +801,15 @@ class AdvancedSearchServiceTest(AironeTestCase):
             entry.register_es()
 
         resp = AdvancedSearchService.search_entries(
-            user, [entity.id], [{"name": attr.name, "keyword": "^10"}]
+            user, [entity.id], [AttrHint(name=attr.name, keyword="^10")]
         )
         self.assertEqual(resp.ret_count, 2)
         resp = AdvancedSearchService.search_entries(
-            user, [entity.id], [{"name": attr.name, "keyword": "00$"}]
+            user, [entity.id], [AttrHint(name=attr.name, keyword="00$")]
         )
         self.assertEqual(resp.ret_count, 2)
         resp = AdvancedSearchService.search_entries(
-            user, [entity.id], [{"name": attr.name, "keyword": "^100$"}]
+            user, [entity.id], [AttrHint(name=attr.name, keyword="^100$")]
         )
         self.assertEqual(resp.ret_count, 1)
 
@@ -1033,7 +1021,7 @@ class AdvancedSearchServiceTest(AironeTestCase):
         AdvancedSearchAttributeIndex.objects.bulk_create(indexes)
 
         # Test basic search
-        hint_attrs = [{"name": entity_attr.name}]
+        hint_attrs = [AttrHint(name=entity_attr.name)]
         res = AdvancedSearchService.search_entries_v2(
             self._user, [entity.id], hint_attrs=hint_attrs
         )
@@ -1064,11 +1052,12 @@ class AdvancedSearchServiceTest(AironeTestCase):
 
         # Test search with keyword
         hint_attrs_with_keyword = [
-            {"name": entity_attr.name, "keyword": "value1", "filter_key": FilterKey.TEXT_CONTAINED}
+            AttrHint(name=entity_attr.name, keyword="value1", filter_key=FilterKey.TEXT_CONTAINED)
         ]
         res = AdvancedSearchService.search_entries_v2(
             self._user, [entity.id], hint_attrs=hint_attrs_with_keyword
         )
+        print(res)
         self.assertEqual(res.ret_count, 1)
         self.assertEqual(res.ret_values[0].entry["id"], entry1.id)
 
@@ -1140,7 +1129,7 @@ class AdvancedSearchServiceTest(AironeTestCase):
 
         # send request of advanced-search
         res = AdvancedSearchService.search_entries_v2(
-            self._user, [entity.id], hint_attrs=[{"name": x.name} for x in entity.attrs.all()]
+            self._user, [entity.id], hint_attrs=[AttrHint(name=x.name) for x in entity.attrs.all()]
         )
 
         # check result record has expected values
@@ -1225,7 +1214,7 @@ class AdvancedSearchServiceTest(AironeTestCase):
             indexes.append(AdvancedSearchAttributeIndex.create_instance(entry, entity_attr, attrv))
         AdvancedSearchAttributeIndex.objects.bulk_create(indexes)
 
-        hint_attrs = [{"name": ref_entity_attr.name}]
+        hint_attrs = [AttrHint(name=ref_entity_attr.name)]
 
         # Test search without referral
         res = AdvancedSearchService.search_entries_v2(

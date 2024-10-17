@@ -1,6 +1,7 @@
 import logging
 from unittest.mock import Mock, patch
 
+from airone.lib.elasticsearch import AttrHint
 from airone.lib.log import Logger
 from airone.lib.test import AironeTestCase
 from airone.lib.types import AttrType
@@ -83,7 +84,9 @@ class UpdateESDocuemntlTest(AironeTestCase):
         # specified other entity, no update
         update_es_document([self.entity2.name])
 
-        ret = AdvancedSearchService.search_entries(self.user, [self.entity1.id], [{"name": "attr"}])
+        ret = AdvancedSearchService.search_entries(
+            self.user, [self.entity1.id], [AttrHint(name="attr")]
+        )
         self.assertEqual(ret.ret_count, 3)
 
         entry_info = [x for x in ret.ret_values if x.entry["id"] == entry.id][0]
@@ -97,7 +100,9 @@ class UpdateESDocuemntlTest(AironeTestCase):
                 "WARNING:airone:Update elasticsearch document (entry_id: %s)" % entry.id,
             )
 
-        ret = AdvancedSearchService.search_entries(self.user, [self.entity1.id], [{"name": "attr"}])
+        ret = AdvancedSearchService.search_entries(
+            self.user, [self.entity1.id], [AttrHint(name="attr")]
+        )
         self.assertEqual(ret.ret_count, 3)
 
         entry_info = [x for x in ret.ret_values if x.entry["id"] == entry.id][0]

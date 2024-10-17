@@ -5,8 +5,10 @@ from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.http import HttpResponse
 from django.http.response import JsonResponse
 from django.shortcuts import redirect
+from pydantic import ValidationError
 
 from airone.lib.acl import ACLType
+from airone.lib.elasticsearch import AttrHint
 from airone.lib.http import HttpResponseSeeOther, http_file_upload, http_get, http_post, render
 from airone.lib.log import Logger
 from entity.admin import EntityAttrResource, EntityResource
@@ -192,28 +194,24 @@ def advanced_search_result(request):
     # that has same purpose that indicates which attributes to search,
     # And "attrinfo" is prioritize than "attr".
     # TODO deprecate attr[]
-    hint_attrs = [{"name": x} for x in recv_attr]
+    hint_attrs = [AttrHint(name=x) for x in recv_attr]
     if attrinfo:
         try:
             # build hint attrs from JSON encoded params
-            hint_attrs = json.loads(attrinfo)
+            hint_attrs = [AttrHint.model_validate(x) for x in json.loads(attrinfo)]
         except json.JSONDecodeError:
             return HttpResponse("The attrinfo parameter is not JSON", status=400)
+        except ValidationError:
+            return HttpResponse("Invalid value for attrinfo parameter", status=400)
 
         for hint_attr in hint_attrs:
-            if "name" not in hint_attr:
-                return HttpResponse("The name key is required for attrinfo parameter", status=400)
-            if not isinstance(hint_attr["name"], str):
-                return HttpResponse("Invalid value for attrinfo parameter", status=400)
-            if "keyword" in hint_attr:
-                if not isinstance(hint_attr["keyword"], str):
-                    return HttpResponse("Invalid value for attrinfo parameter", status=400)
-                if len(hint_attr["keyword"]) > CONFIG_ENTRY.MAX_QUERY_SIZE:
+            if hint_attr.keyword:
+                if len(hint_attr.keyword) > CONFIG_ENTRY.MAX_QUERY_SIZE:
                     return HttpResponse("Sending parameter is too large", status=400)
 
     # check entity params
     if is_all_entities:
-        attr_names = [x["name"] for x in hint_attrs]
+        attr_names = [x.name for x in hint_attrs]
         recv_entity = list(
             EntityAttr.objects.filter(
                 name__in=attr_names, is_active=True, parent_entity__is_active=True
@@ -239,19 +237,21 @@ def advanced_search_result(request):
         if request.user.has_permission(entity, ACLType.Readable):
             hint_entity_ids.append(entity.id)
 
+    results = AdvancedSearchService.search_entries(
+        request.user,
+        hint_entity_ids,
+        hint_attrs,
+        CONFIG.MAXIMUM_SEARCH_RESULTS,
+        entry_name,
+        referral_name,
+    ).model_dump()
+
     return render(
         request,
         "advanced_search_result.html",
         {
-            "hint_attrs": hint_attrs,
-            "results": AdvancedSearchService.search_entries(
-                request.user,
-                hint_entity_ids,
-                hint_attrs,
-                CONFIG.MAXIMUM_SEARCH_RESULTS,
-                entry_name,
-                referral_name,
-            ).dict(),
+            "hint_attrs": [x.model_dump() for x in hint_attrs],
+            "results": results,
             "max_num": CONFIG.MAXIMUM_SEARCH_RESULTS,
             "entities": ",".join([str(x) for x in hint_entity_ids]),
             "has_referral": has_referral,

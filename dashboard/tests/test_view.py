@@ -213,7 +213,16 @@ class ViewTest(AironeViewTest):
         attr = entry.attrs.first()
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(
-            resp.context["hint_attrs"], [{"name": "attr", "is_readable": attr.is_public}]
+            resp.context["hint_attrs"],
+            [
+                {
+                    "name": "attr",
+                    "is_readable": attr.is_public,
+                    "filter_key": None,
+                    "keyword": None,
+                    "exact_match": None,
+                }
+            ],
         )
         self.assertEqual(resp.context["results"]["ret_count"], 20)
         self.assertEqual(len(resp.context["results"]["ret_values"]), 20)
@@ -320,7 +329,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(
             resp.content.decode("utf-8"),
-            "The name key is required for attrinfo parameter",
+            "Invalid value for attrinfo parameter",
         )
 
         resp = self.client.get(

@@ -3,6 +3,7 @@ from unittest import mock
 
 from django.urls import reverse
 
+from airone.lib.elasticsearch import AttrHint
 from airone.lib.test import AironeViewTest
 from airone.lib.types import AttrType
 from entry.services import AdvancedSearchService
@@ -81,7 +82,7 @@ class APITest(AironeViewTest):
             values={"group": group},
         )
         entry.register_es()
-        resp1 = AdvancedSearchService.search_entries(user, [entity.id], [{"name": "group"}])
+        resp1 = AdvancedSearchService.search_entries(user, [entity.id], [AttrHint(name="group")])
         self.assertEqual(resp1.ret_values[0].attrs["group"]["value"]["name"], "testg")
 
         params = {
@@ -93,5 +94,5 @@ class APITest(AironeViewTest):
             json.dumps(params),
             "application/json",
         )
-        resp2 = AdvancedSearchService.search_entries(user, [entity.id], [{"name": "group"}])
+        resp2 = AdvancedSearchService.search_entries(user, [entity.id], [AttrHint(name="group")])
         self.assertEqual(resp2.ret_values[0].attrs["group"]["value"]["name"], "testg-update")
