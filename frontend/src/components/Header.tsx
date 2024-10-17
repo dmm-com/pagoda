@@ -160,8 +160,12 @@ export const Header: FC = () => {
 
   return (
     <Frame>
-      <Fixed>
-        <StyledAppBar position="static" elevation={0}>
+      <Fixed style={{ backgroundColor: serverContext?.headerColor }}>
+        <StyledAppBar
+          position="static"
+          elevation={0}
+          style={{ backgroundColor: serverContext?.headerColor }}
+        >
           <StyledToolbar variant="dense">
             <TitleBox>
               <Title fontSize="24px" component={Link} to={topPath()}>

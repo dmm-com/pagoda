@@ -37,6 +37,7 @@ export class ServerContext {
     name: string;
     children: { name: string; url: string }[];
   }[];
+  headerColor?: string;
   flags: Record<FlagKey, boolean>;
 
   private static _instance: ServerContext | undefined;
@@ -55,6 +56,7 @@ export class ServerContext {
     this.checkTermService = context.checkTermService;
     this.termsOfServiceUrl = context.termsOfServiceUrl;
     this.extendedHeaderMenus = context.extendedHeaderMenus;
+    this.headerColor = context.headerColor;
     this.flags = context.flags ?? { webhook: true };
   }
 

@@ -235,6 +235,7 @@ class Common(Configuration):
         "PASSWORD_RESET_DISABLED": env.bool("AIRONE_PASSWORD_RESET_DISABLED", False),
         "CHECK_TERM_SERVICE": env.bool("AIRONE_CHECK_TERM_SERVICE", False),
         "TERMS_OF_SERVICE_URL": env.str("AIRONE_TERMS_OF_SERVICE_URL", "#"),
+        "HEADER_COLOR": env.str("AIRONE_HEADER_COLOR", None),
         "EXTENDED_HEADER_MENUS": json.loads(
             env.str(
                 "EXTENDED_HEADER_MENUS",
