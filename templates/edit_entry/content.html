@@ -9,7 +9,7 @@
         <tr>
           <td>エントリ名</td>
           <td>
-            <input type="text" class="form-control" name="entry_name" pattern="^(?!\s*$).+" title="有効なエントリ名(空白のみは不許可)" value="{{ entry.name }}" required />
+            <input type="text" class="form-control" name="entry_name" pattern="^(?!\s*$).+" title="有効なエントリ名(空白のみは不許可)" value="{{ entry.name }}" required data-1p-ignore />
           {% if entry.is_deleted %}
             [削除済]
           {% elif entry.status|bitwise_and:STATUS_ENTRY.EDITING %}

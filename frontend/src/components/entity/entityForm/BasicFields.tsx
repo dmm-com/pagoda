@@ -66,6 +66,7 @@ export const BasicFields: FC<Props> = ({ control }) => {
                     helperText={error?.message}
                     size="small"
                     fullWidth
+                    inputProps={{ "data-1p-ignore": true }}
                   />
                 )}
               />
