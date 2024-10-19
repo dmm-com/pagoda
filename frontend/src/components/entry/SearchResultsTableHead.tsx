@@ -22,7 +22,7 @@ import React, {
   useReducer,
   useState,
 } from "react";
-import { useHistory, useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 import { AdvancedSearchJoinModal } from "./AdvancedSearchJoinModal";
 import { SearchResultControlMenu } from "./SearchResultControlMenu";
@@ -75,7 +75,7 @@ export const SearchResultsTableHead: FC<Props> = ({
   refreshSearchResults,
 }) => {
   const location = useLocation();
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const [entryFilter, entryFilterDispatcher] = useReducer(
     (
@@ -170,7 +170,7 @@ export const SearchResultsTableHead: FC<Props> = ({
       }
 
       // simply reload with the new params
-      history.push({
+      navigate({
         pathname: location.pathname,
         search: "?" + newParams.toString(),
       });

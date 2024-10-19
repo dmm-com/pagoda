@@ -9,7 +9,7 @@ import {
 import { styled } from "@mui/material/styles";
 import React, { FC, useCallback, useEffect, useState } from "react";
 import { ErrorBoundary, FallbackProps } from "react-error-boundary";
-import { useHistory } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useError } from "react-use";
 
 import { ForbiddenErrorPage } from "./pages/ForbiddenErrorPage";
@@ -46,16 +46,16 @@ interface GenericErrorProps {
 }
 
 const GenericError: FC<GenericErrorProps> = ({ children }) => {
-  const history = useHistory();
+  const navigate = useNavigate();
   const [open, setOpen] = useState(true);
 
   const handleGoToTop = useCallback(() => {
-    history.replace(topPath());
-  }, [history]);
+    navigate(topPath(), { replace: true });
+  }, [navigate]);
 
   const handleReload = useCallback(() => {
-    history.go(0);
-  }, [history]);
+    navigate(0);
+  }, [navigate]);
 
   return (
     <Dialog open={open} onClose={() => setOpen(false)}>
@@ -96,11 +96,11 @@ const GenericError: FC<GenericErrorProps> = ({ children }) => {
 };
 
 const ErrorFallback: FC<FallbackProps> = ({ error, resetErrorBoundary }) => {
-  const history = useHistory();
+  const location = useLocation();
 
-  history.listen(() => {
+  useEffect(() => {
     resetErrorBoundary();
-  });
+  }, [location, resetErrorBoundary]);
 
   switch (error.name) {
     case ForbiddenError.errorName:

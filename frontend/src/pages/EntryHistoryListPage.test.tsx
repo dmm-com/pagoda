@@ -55,7 +55,7 @@ test("should match snapshot", async () => {
     <MemoryRouter initialEntries={[showEntryHistoryPath(2, 1)]}>
       <Route
         path={showEntryHistoryPath(":entityId", ":entryId")}
-        component={EntryHistoryListPage}
+        element={<EntryHistoryListPage />}
       />
     </MemoryRouter>,
     {

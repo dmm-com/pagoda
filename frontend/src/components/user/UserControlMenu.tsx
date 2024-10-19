@@ -10,7 +10,7 @@ import {
 } from "@mui/material";
 import { useSnackbar } from "notistack";
 import React, { FC, useState } from "react";
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import { UserPasswordFormModal } from "./UserPasswordFormModal";
 
@@ -33,7 +33,7 @@ export const UserControlMenu: FC<UserControlProps> = ({
   setToggle,
 }) => {
   const { enqueueSnackbar } = useSnackbar();
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const [openModal, setOpenModal] = useState(false);
 
@@ -51,8 +51,8 @@ export const UserControlMenu: FC<UserControlProps> = ({
       enqueueSnackbar(`ユーザ(${user.username})の削除が完了しました`, {
         variant: "success",
       });
-      history.replace(topPath());
-      history.replace(usersPath());
+      navigate(topPath(), { replace: true });
+      navigate(usersPath(), { replace: true });
       setToggle && setToggle();
     } catch (e) {
       enqueueSnackbar("ユーザの削除が失敗しました", {

@@ -93,7 +93,7 @@ const ElemGroup: FC<{ attrValue: EntryAttributeValueGroup | undefined }> = ({
   attrValue,
 }) => {
   return attrValue ? (
-    <Box component={Link} to={groupsPath}>
+    <Box component={Link} to={groupsPath()}>
       {attrValue.name}
     </Box>
   ) : (

@@ -13,7 +13,7 @@ import {
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import React, { FC, useState } from "react";
-import { Link, useHistory } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 import { entityEntriesPath } from "../../Routes";
 import { aironeApiClient } from "../../repository/AironeApiClient";
@@ -107,7 +107,7 @@ interface Props {
 }
 
 export const JobList: FC<Props> = ({ jobs }) => {
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const [encodes, setEncodes] = useState<{
     [key: number]: string;
@@ -115,12 +115,12 @@ export const JobList: FC<Props> = ({ jobs }) => {
 
   const handleRerun = async (jobId: number) => {
     await aironeApiClient.rerunJob(jobId);
-    history.go(0);
+    navigate(0);
   };
 
   const handleCancel = async (jobId: number) => {
     await aironeApiClient.cancelJob(jobId);
-    history.go(0);
+    navigate(0);
   };
 
   return (

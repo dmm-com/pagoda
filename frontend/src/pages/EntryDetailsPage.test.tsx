@@ -64,7 +64,7 @@ test("should match snapshot", async () => {
     <MemoryRouter initialEntries={["/ui/entities/2/entries/1/details"]}>
       <Route
         path={entryDetailsPath(":entityId", ":entryId")}
-        component={EntryDetailsPage}
+        element={<EntryDetailsPage />}
       />
     </MemoryRouter>,
     {

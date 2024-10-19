@@ -10,9 +10,8 @@ import {
   waitFor,
   waitForElementToBeRemoved,
 } from "@testing-library/react";
-import { createMemoryHistory } from "history";
 import React from "react";
-import { Router } from "react-router-dom";
+import { createMemoryRouter, RouterProvider } from "react-router-dom";
 
 import { TestWrapper, TestWrapperWithoutRoutes } from "TestWrapper";
 import { UserList } from "components/user/UserList";
@@ -62,14 +61,16 @@ describe("UserList", () => {
   });
 
   test("should navigate to user create page", async function () {
-    const history = createMemoryHistory();
+    const router = createMemoryRouter([
+      {
+        path: "/",
+        element: <UserList />,
+      },
+    ]);
 
-    render(
-      <Router history={history}>
-        <UserList />
-      </Router>,
-      { wrapper: TestWrapperWithoutRoutes }
-    );
+    render(<RouterProvider router={router} />, {
+      wrapper: TestWrapperWithoutRoutes,
+    });
 
     await waitForElementToBeRemoved(screen.getByTestId("loading"));
 
@@ -77,18 +78,20 @@ describe("UserList", () => {
       screen.getByRole("link", { name: "新規ユーザを登録" }).click();
     });
 
-    expect(history.location.pathname).toBe("/ui/users/new");
+    expect(router.state.location.pathname).toBe("/ui/users/new");
   });
 
   test("should navigate to user details page", async function () {
-    const history = createMemoryHistory();
+    const router = createMemoryRouter([
+      {
+        path: "/",
+        element: <UserList />,
+      },
+    ]);
 
-    render(
-      <Router history={history}>
-        <UserList />
-      </Router>,
-      { wrapper: TestWrapperWithoutRoutes }
-    );
+    render(<RouterProvider router={router} />, {
+      wrapper: TestWrapperWithoutRoutes,
+    });
 
     await waitForElementToBeRemoved(screen.getByTestId("loading"));
 
@@ -96,7 +99,7 @@ describe("UserList", () => {
       screen.getByRole("link", { name: "user1" }).click();
     });
 
-    expect(history.location.pathname).toBe("/ui/users/1");
+    expect(router.state.location.pathname).toBe("/ui/users/1");
   });
 
   test("should delete a user", async function () {

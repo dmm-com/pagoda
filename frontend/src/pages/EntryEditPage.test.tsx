@@ -66,7 +66,7 @@ describe("EntryEditPage", () => {
       <MemoryRouter initialEntries={["/ui/entities/2/entries/1/edit"]}>
         <Route
           path={entryEditPath(":entityId", ":entryId")}
-          component={EntryEditPage}
+          element={<EntryEditPage />}
         />
       </MemoryRouter>,
       {

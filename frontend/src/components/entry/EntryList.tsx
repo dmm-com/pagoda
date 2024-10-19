@@ -1,7 +1,7 @@
 import AddIcon from "@mui/icons-material/Add";
 import { Box, Button, Grid } from "@mui/material";
 import React, { FC, useState } from "react";
-import { Link, useHistory, useLocation } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 
 import { EntryListCard } from "./EntryListCard";
 
@@ -22,7 +22,7 @@ interface Props {
 
 export const EntryList: FC<Props> = ({ entityId, canCreateEntry = true }) => {
   const location = useLocation();
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const [page, changePage] = usePage();
 
@@ -40,7 +40,7 @@ export const EntryList: FC<Props> = ({ entityId, canCreateEntry = true }) => {
     changePage(1);
     setQuery(newQuery ?? "");
 
-    history.push({
+    navigate({
       pathname: location.pathname,
       search: newQuery ? `?query=${newQuery}` : "",
     });

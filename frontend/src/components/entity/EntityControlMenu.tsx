@@ -8,7 +8,7 @@ import {
 } from "@mui/material";
 import { useSnackbar } from "notistack";
 import React, { FC } from "react";
-import { Link, useHistory } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 import { RateLimitedClickable } from "../common/RateLimitedClickable";
 
@@ -43,7 +43,7 @@ export const EntityControlMenu: FC<Props> = ({
   setToggle,
 }) => {
   const { enqueueSnackbar } = useSnackbar();
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const handleDelete = async (entityId: number) => {
     await aironeApiClient
@@ -53,8 +53,8 @@ export const EntityControlMenu: FC<Props> = ({
           variant: "success",
         });
         // A magic to reload the entity list with keeping snackbar
-        history.replace(topPath());
-        history.replace(entitiesPath());
+        navigate(topPath(), { replace: true });
+        navigate(entitiesPath(), { replace: true });
         setToggle && setToggle();
       })
       .catch(() => {

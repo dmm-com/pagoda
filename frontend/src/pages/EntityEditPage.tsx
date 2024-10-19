@@ -3,7 +3,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Box } from "@mui/material";
 import React, { FC, useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { Prompt, useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import { entitiesPath, entityEntriesPath } from "Routes";
 import { Loading } from "components/common/Loading";
@@ -14,6 +14,7 @@ import { EntityForm } from "components/entity/EntityForm";
 import { Schema, schema } from "components/entity/entityForm/EntityFormSchema";
 import { useAsyncWithThrow } from "hooks/useAsyncWithThrow";
 import { useFormNotification } from "hooks/useFormNotification";
+import { usePrompt } from "hooks/usePrompt";
 import { useTypedParams } from "hooks/useTypedParams";
 import { aironeApiClient } from "repository/AironeApiClient";
 import {
@@ -27,7 +28,7 @@ export const EntityEditPage: FC = () => {
 
   const willCreate = entityId === undefined;
 
-  const history = useHistory();
+  const navigate = useNavigate();
   const { enqueueSubmitResult } = useFormNotification("モデル", willCreate);
 
   const {
@@ -41,6 +42,11 @@ export const EntityEditPage: FC = () => {
     resolver: zodResolver(schema),
     mode: "onBlur",
   });
+
+  usePrompt(
+    isDirty && !isSubmitSuccessful,
+    "編集した内容は失われてしまいますが、このページを離れてもよろしいですか？"
+  );
 
   const entity = useAsyncWithThrow(async () => {
     if (entityId !== undefined) {
@@ -57,9 +63,9 @@ export const EntityEditPage: FC = () => {
 
   const handleCancel = () => {
     if (entityId !== undefined) {
-      history.replace(entityEntriesPath(entityId));
+      navigate(entityEntriesPath(entityId));
     } else {
-      history.replace(entitiesPath());
+      navigate(entitiesPath());
     }
   };
 
@@ -172,9 +178,9 @@ export const EntityEditPage: FC = () => {
   useEffect(() => {
     if (isSubmitSuccessful) {
       if (entityId === undefined) {
-        history.replace(entitiesPath());
+        navigate(entitiesPath());
       } else {
-        history.replace(entityEntriesPath(entityId));
+        navigate(entityEntriesPath(entityId));
       }
     }
   }, [isSubmitSuccessful]);
@@ -210,11 +216,6 @@ export const EntityEditPage: FC = () => {
         referralEntities={referralEntities.value}
         control={control}
         setValue={setValue}
-      />
-
-      <Prompt
-        when={isDirty && !isSubmitSuccessful}
-        message="編集した内容は失われてしまいますが、このページを離れてもよろしいですか？"
       />
     </Box>
   );

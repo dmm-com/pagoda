@@ -86,7 +86,7 @@ describe("EditTriggerPage", () => {
       <MemoryRouter initialEntries={["/ui/triggers/1"]}>
         <Route
           path={editTriggerPath(":triggerId")}
-          component={TriggerEditPage}
+          element={<TriggerEditPage />}
         />
       </MemoryRouter>,
       {

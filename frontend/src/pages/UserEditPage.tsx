@@ -3,8 +3,7 @@ import { Box, Typography, Button, Container } from "@mui/material";
 import { useSnackbar } from "notistack";
 import React, { FC, useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
-import { Link, Prompt } from "react-router-dom";
-import { useHistory } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useToggle } from "react-use";
 
 import { topPath, usersPath } from "Routes";
@@ -17,6 +16,7 @@ import { UserPasswordFormModal } from "components/user/UserPasswordFormModal";
 import { schema, Schema } from "components/user/userForm/UserFormSchema";
 import { useAsyncWithThrow } from "hooks/useAsyncWithThrow";
 import { useFormNotification } from "hooks/useFormNotification";
+import { usePrompt } from "hooks/usePrompt";
 import { useTypedParams } from "hooks/useTypedParams";
 import { aironeApiClient } from "repository/AironeApiClient";
 import {
@@ -29,7 +29,7 @@ export const UserEditPage: FC = () => {
   const { userId } = useTypedParams<{ userId?: number }>();
   const willCreate = userId == null;
 
-  const history = useHistory();
+  const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
   const { enqueueSubmitResult } = useFormNotification("ユーザ", willCreate);
   const [shouldRefresh, toggleShouldRefresh] = useToggle(false);
@@ -45,6 +45,11 @@ export const UserEditPage: FC = () => {
     mode: "onBlur",
   });
 
+  usePrompt(
+    isDirty && !isSubmitSuccessful,
+    "編集した内容は失われてしまいますが、このページを離れてもよろしいですか？"
+  );
+
   const user = useAsyncWithThrow(async () => {
     if (userId) {
       return await aironeApiClient.getUser(userId);
@@ -56,7 +61,7 @@ export const UserEditPage: FC = () => {
   }, [user.value]);
 
   useEffect(() => {
-    isSubmitSuccessful && history.push(usersPath());
+    isSubmitSuccessful && navigate(usersPath());
   }, [isSubmitSuccessful]);
 
   // These state variables and handlers are used for password reset feature
@@ -118,7 +123,7 @@ export const UserEditPage: FC = () => {
   };
 
   const handleCancel = () => {
-    history.replace(usersPath());
+    navigate(usersPath());
   };
 
   const handleRefreshToken = async () => {
@@ -208,11 +213,6 @@ export const UserEditPage: FC = () => {
           />
         </Container>
       )}
-
-      <Prompt
-        when={isDirty && !isSubmitSuccessful}
-        message="編集した内容は失われてしまいますが、このページを離れてもよろしいですか？"
-      />
     </Box>
   );
 };

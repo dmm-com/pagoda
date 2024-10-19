@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from "react";
-import { useHistory, useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 import { topPath } from "../Routes";
 
@@ -7,7 +7,7 @@ type Query = string | undefined;
 
 export const useSimpleSearch = (): [Query, (query: Query) => void] => {
   const location = useLocation();
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const query = useMemo(() => {
     const params = new URLSearchParams(location.search);
@@ -16,12 +16,12 @@ export const useSimpleSearch = (): [Query, (query: Query) => void] => {
 
   const submitQuery = useCallback(
     (query: Query) => {
-      history.push({
+      navigate({
         pathname: topPath(),
         search: query != null ? `simple_search_query=${query}` : undefined,
       });
     },
-    [history]
+    [navigate]
   );
 
   return [query, submitQuery];

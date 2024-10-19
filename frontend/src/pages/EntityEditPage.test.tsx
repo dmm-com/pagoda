@@ -87,7 +87,10 @@ describe("EditEntityPage", () => {
     // wait async calls and get rendered fragment
     const result = render(
       <MemoryRouter initialEntries={["/ui/entities/1"]}>
-        <Route path={editEntityPath(":entityId")} component={EntityEditPage} />
+        <Route
+          path={editEntityPath(":entityId")}
+          element={<EntityEditPage />}
+        />
       </MemoryRouter>,
       {
         wrapper: TestWrapperWithoutRoutes,

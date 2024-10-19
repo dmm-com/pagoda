@@ -1,6 +1,6 @@
 import { Box, Button, Container, Typography } from "@mui/material";
 import React, { FC, useCallback, useState } from "react";
-import { Link, useHistory, useLocation } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 
 import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
 
@@ -15,7 +15,7 @@ import { aironeApiClient } from "repository/AironeApiClient";
 
 export const EntityListPage: FC = () => {
   const location = useLocation();
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const [page, changePage] = usePage();
 
@@ -33,7 +33,7 @@ export const EntityListPage: FC = () => {
     changePage(1);
     setQuery(newQuery ?? "");
 
-    history.push({
+    navigate({
       pathname: location.pathname,
       search: newQuery ? `?query=${newQuery}` : "",
     });

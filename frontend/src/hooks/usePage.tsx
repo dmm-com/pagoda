@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { useHistory, useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 /**
  * A hook provides page number to perform pagination.
@@ -7,7 +7,7 @@ import { useHistory, useLocation } from "react-router-dom";
  */
 export const usePage = (): [number, (page: number) => void] => {
   const location = useLocation();
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const [page, setPage] = useState<number>(1);
 
@@ -18,12 +18,12 @@ export const usePage = (): [number, (page: number) => void] => {
       const params = new URLSearchParams(location.search);
       params.set("page", newPage.toString());
 
-      history.push({
+      navigate({
         pathname: location.pathname,
         search: params.toString(),
       });
     },
-    [location.pathname, location.search]
+    [location.pathname, location.search, navigate]
   );
 
   useEffect(() => {

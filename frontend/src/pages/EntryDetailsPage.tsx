@@ -3,7 +3,7 @@ import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import { Box, Chip, Grid, IconButton, Stack, Typography } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import React, { FC, useEffect, useState } from "react";
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
 import { useTypedParams } from "../hooks/useTypedParams";
@@ -74,7 +74,7 @@ export const EntryDetailsPage: FC<Props> = ({
     entityId: number;
     entryId: number;
   }>();
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const [entryAnchorEl, setEntryAnchorEl] = useState<HTMLButtonElement | null>(
     null
@@ -87,12 +87,12 @@ export const EntryDetailsPage: FC<Props> = ({
   useEffect(() => {
     // When user specifies invalid entityId, redirect to the page that is correct entityId
     if (!entry.loading && entry.value?.schema?.id != entityId) {
-      history.replace(entryDetailsPath(entry.value?.schema?.id ?? 0, entryId));
+      navigate(entryDetailsPath(entry.value?.schema?.id ?? 0, entryId));
     }
 
     // If it'd been deleted, show restore-entry page instead
     if (!entry.loading && entry.value?.isActive === false) {
-      history.replace(
+      navigate(
         restoreEntryPath(entry.value?.schema?.id ?? "", entry.value?.name ?? "")
       );
     }
