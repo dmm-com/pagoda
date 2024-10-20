@@ -2,7 +2,7 @@
  * @jest-environment jsdom
  */
 
-import { render } from "@testing-library/react";
+import { act, render, screen } from "@testing-library/react";
 import React from "react";
 import { BrowserRouter } from "react-router-dom";
 
@@ -19,10 +19,10 @@ test("should render a component with essential props", async () => {
   const referredEntries = [
     {
       id: 1,
-      name: "name",
+      name: "entry1",
       schema: {
         id: 2,
-        name: "entity",
+        name: "entity1",
       },
     },
   ];
@@ -41,14 +41,16 @@ test("should render a component with essential props", async () => {
     );
   /* eslint-enable */
 
-  expect(() =>
+  await act(async () => {
     render(
       <BrowserRouter>
         <EntryReferral entryId={entryId} />
       </BrowserRouter>,
       { wrapper: TestWrapper }
-    )
-  ).not.toThrow();
+    );
+  });
+
+  expect(screen.getByText("entry1")).toBeInTheDocument();
 
   jest.clearAllMocks();
 });
