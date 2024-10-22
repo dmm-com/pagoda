@@ -1304,7 +1304,7 @@ class ViewTest(BaseViewTest):
 
         mock_call_custom.side_effect = side_effect
         resp = self.client.delete("/entry/api/v2/%s/" % entry.id, None, "application/json")
-        self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertTrue(mock_call_custom.called)
 
         def side_effect(handler_name, entity_name, user, entry):
@@ -4791,6 +4791,8 @@ class ViewTest(BaseViewTest):
         )
         self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
         self.assertTrue(mock_call_custom.called)
+
+        entry = self.add_entry(self.user, "entry2", self.entity)
 
         def side_effect(handler_name, entity_name, user, entry):
             self.assertTrue(handler_name in ["before_delete_entry_v2", "after_delete_entry_v2"])
