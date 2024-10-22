@@ -210,6 +210,7 @@ exports[`EditEntityPage should match snapshot 1`] = `
                         <input
                           aria-invalid="false"
                           class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputSizeSmall css-1n4twyu-MuiInputBase-input-MuiOutlinedInput-input"
+                          data-1p-ignore="true"
                           id="entity-name"
                           name="name"
                           placeholder="モデル名"
@@ -773,6 +774,7 @@ exports[`EditEntityPage should match snapshot 1`] = `
                       <input
                         aria-invalid="false"
                         class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputSizeSmall css-1n4twyu-MuiInputBase-input-MuiOutlinedInput-input"
+                        data-1p-ignore="true"
                         id="entity-name"
                         name="name"
                         placeholder="モデル名"
