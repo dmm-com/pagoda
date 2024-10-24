@@ -2,7 +2,7 @@
  * @jest-environment jsdom
  */
 
-import { render } from "@testing-library/react";
+import { act, render } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import React from "react";
@@ -33,32 +33,35 @@ const server = setupServer(
   }),
   // getEntities
   http.get("http://localhost/entity/api/v2/", () => {
-    return HttpResponse.json([
-      {
-        id: 1,
-        name: "aaa",
-        note: "",
-        isToplevel: false,
-        attrs: [],
-        webhooks: [],
-      },
-      {
-        id: 2,
-        name: "aaaaa",
-        note: "",
-        isToplevel: false,
-        attrs: [],
-        webhooks: [],
-      },
-      {
-        id: 3,
-        name: "bbbbb",
-        note: "",
-        isToplevel: false,
-        attrs: [],
-        webhooks: [],
-      },
-    ]);
+    return HttpResponse.json({
+      count: 3,
+      results: [
+        {
+          id: 1,
+          name: "aaa",
+          note: "",
+          isToplevel: false,
+          attrs: [],
+          webhooks: [],
+        },
+        {
+          id: 2,
+          name: "aaaaa",
+          note: "",
+          isToplevel: false,
+          attrs: [],
+          webhooks: [],
+        },
+        {
+          id: 3,
+          name: "bbbbb",
+          note: "",
+          isToplevel: false,
+          attrs: [],
+          webhooks: [],
+        },
+      ],
+    });
   }),
   // getEntity
   http.get("http://localhost/entity/api/v2/1/", () => {
@@ -81,18 +84,19 @@ afterAll(() => server.close());
 
 describe("EditTriggerPage", () => {
   test("should match snapshot", async () => {
-    // wait async calls and get rendered fragment
-    const result = render(
-      <MemoryRouter initialEntries={["/ui/triggers/1"]}>
-        <Route
-          path={editTriggerPath(":triggerId")}
-          component={TriggerEditPage}
-        />
-      </MemoryRouter>,
-      {
-        wrapper: TestWrapper,
-      }
-    );
+    const result = await act(async () => {
+      return render(
+        <MemoryRouter initialEntries={["/ui/triggers/1"]}>
+          <Route
+            path={editTriggerPath(":triggerId")}
+            component={TriggerEditPage}
+          />
+        </MemoryRouter>,
+        {
+          wrapper: TestWrapper,
+        }
+      );
+    });
 
     expect(result).toMatchSnapshot();
   });

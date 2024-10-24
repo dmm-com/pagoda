@@ -6,7 +6,7 @@ import {
   EntryAttributeType,
   EntryAttributeTypeTypeEnum,
 } from "@dmm-com/airone-apiclient-typescript-fetch";
-import { render, screen, within } from "@testing-library/react";
+import { act, render, screen, within } from "@testing-library/react";
 import * as React from "react";
 
 import { TestWrapper } from "TestWrapper";
@@ -45,9 +45,11 @@ describe("EntryAttributes", () => {
     },
   ];
 
-  test("should render readable attributes", function () {
-    render(<EntryAttributes attributes={attributes} />, {
-      wrapper: TestWrapper,
+  test("should render readable attributes", async () => {
+    await act(async () => {
+      render(<EntryAttributes attributes={attributes} />, {
+        wrapper: TestWrapper,
+      });
     });
 
     // 0 is header, 1 is body

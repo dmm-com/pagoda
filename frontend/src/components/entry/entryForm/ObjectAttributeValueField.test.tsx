@@ -150,11 +150,11 @@ describe("ObjectAttributeValueField", () => {
     });
 
     // Open the select options
-    act(() => {
+    await act(async () => {
       screen.getByRole("button", { name: "Open" }).click();
     });
     // Select "role2" element
-    act(() => {
+    await act(async () => {
       within(screen.getByRole("presentation")).getByText("entry2").click();
     });
 
@@ -211,11 +211,11 @@ describe("ObjectAttributeValueField", () => {
     ]);
 
     // Open the select options
-    act(() => {
+    await act(async () => {
       screen.getByRole("button", { name: "Open" }).click();
     });
     // Select "role2" element
-    act(() => {
+    await act(async () => {
       within(screen.getByRole("presentation")).getByText("entry2").click();
     });
 
@@ -276,17 +276,17 @@ describe("ObjectAttributeValueField", () => {
     });
 
     // Edit name
-    act(() => {
+    await act(async () => {
       fireEvent.change(screen.getByRole("textbox"), {
         target: { value: "new name" },
       });
     });
     // Open the select options
-    act(() => {
+    await act(async () => {
       screen.getByRole("button", { name: "Open" }).click();
     });
     // Select "role1" element
-    act(() => {
+    await act(async () => {
       within(screen.getByRole("presentation")).getByText("entry2").click();
     });
 
@@ -337,15 +337,15 @@ describe("ObjectAttributeValueField", () => {
     expect(screen.getAllByRole("combobox")[0]).toHaveValue("");
 
     // Edit the first element
-    act(() => {
+    await act(async () => {
       fireEvent.change(screen.getAllByRole("textbox")[0], {
         target: { value: "new name" },
       });
     });
-    act(() => {
+    await act(async () => {
       screen.getAllByRole("button", { name: "Open" })[0].click();
     });
-    act(() => {
+    await act(async () => {
       within(screen.getAllByRole("presentation")[0])
         .getByText("entry1")
         .click();
@@ -361,7 +361,7 @@ describe("ObjectAttributeValueField", () => {
     ]);
 
     // add second element
-    act(() => {
+    await act(async () => {
       // now there is 1 element, and each element has 4 buttons (open-options, delete, add)
       // click the add button of the first element
       screen.getAllByRole("button")[2].click();
@@ -385,7 +385,7 @@ describe("ObjectAttributeValueField", () => {
     ]);
 
     // delete first element
-    act(() => {
+    await act(async () => {
       // now there is 1 element, and each element has 4 buttons (open-options, delete, add)
       // click the add button of the first element
       screen.getAllByRole("button")[1].click();

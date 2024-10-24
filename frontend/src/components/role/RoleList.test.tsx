@@ -3,14 +3,7 @@
  */
 
 import { Role } from "@dmm-com/airone-apiclient-typescript-fetch";
-import {
-  act,
-  render,
-  screen,
-  waitFor,
-  waitForElementToBeRemoved,
-  within,
-} from "@testing-library/react";
+import { act, render, screen, waitFor, within } from "@testing-library/react";
 import React from "react";
 
 import { RoleList } from "./RoleList";
@@ -45,7 +38,7 @@ describe("RoleList", () => {
     },
   ];
 
-  test("should show role list", async function () {
+  test("should show role list", async () => {
     /* eslint-disable */
     jest
       .spyOn(require("repository/AironeApiClient").aironeApiClient, "getRoles")
@@ -58,8 +51,12 @@ describe("RoleList", () => {
       .mockResolvedValue(Promise.resolve());
     /* eslint-enable */
 
-    render(<RoleList />, { wrapper: TestWrapper });
-    await waitForElementToBeRemoved(screen.getByTestId("loading"));
+    await act(async () => {
+      render(<RoleList />, { wrapper: TestWrapper });
+    });
+    await waitFor(() => {
+      expect(screen.queryByTestId("loading")).not.toBeInTheDocument();
+    });
 
     // tr's in the tbody
     expect(
@@ -67,12 +64,12 @@ describe("RoleList", () => {
     ).toHaveLength(2);
 
     // delete first element
-    act(() => {
+    await act(async () => {
       // now there is 2 elements, and each element has 2 buttons (delete, edit)
       // click the delete button of the first element
       screen.getAllByRole("button")[0].click();
     });
-    act(() => {
+    await act(async () => {
       screen.getByRole("button", { name: "Yes" }).click();
     });
 

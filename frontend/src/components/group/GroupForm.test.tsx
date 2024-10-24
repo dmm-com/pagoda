@@ -51,7 +51,7 @@ describe("GroupForm", () => {
     members: [],
   };
 
-  test("should render a component with essential props", function () {
+  test("should render a component with essential props", async () => {
     const {
       result: {
         current: { control, setValue },
@@ -80,7 +80,7 @@ describe("GroupForm", () => {
       wrapper: TestWrapper,
     });
 
-    act(() => {
+    await act(async () => {
       fireEvent.change(screen.getByPlaceholderText("グループ名"), {
         target: { value: "group name" },
       });
