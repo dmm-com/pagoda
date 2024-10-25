@@ -888,9 +888,6 @@ def delete_entry_v2(self, job: Job) -> JobStatus:
     if not entry:
         return JobStatus.ERROR
 
-    if custom_view.is_custom("before_delete_entry_v2", entry.schema.name):
-        custom_view.call_custom("before_delete_entry_v2", entry.schema.name, job.user, entry)
-
     # register operation History for deleting entry
     job.user.seth_entry_del(entry)
     entry.delete(deleted_user=job.user)
