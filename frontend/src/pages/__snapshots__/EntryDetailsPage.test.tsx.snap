@@ -371,6 +371,9 @@ exports[`should match snapshot 1`] = `
                         aaa
                       </span>
                     </div>
+                    <span
+                      class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                    />
                   </a>
                 </li>
               </ul>
@@ -800,6 +803,9 @@ exports[`should match snapshot 1`] = `
                       aaa
                     </span>
                   </div>
+                  <span
+                    class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                  />
                 </a>
               </li>
             </ul>

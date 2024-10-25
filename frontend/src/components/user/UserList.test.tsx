@@ -60,7 +60,7 @@ describe("UserList", () => {
     expect(screen.getAllByRole("link", { name: /user*/i })).toHaveLength(2);
   });
 
-  test("should navigate to user create page", async function () {
+  test("should navigate to user create page", async () => {
     const router = createMemoryRouter([
       {
         path: "/",
@@ -68,13 +68,17 @@ describe("UserList", () => {
       },
     ]);
 
-    render(<RouterProvider router={router} />, {
-      wrapper: TestWrapperWithoutRoutes,
+    await act(async () => {
+      render(<RouterProvider router={router} />, {
+        wrapper: TestWrapperWithoutRoutes,
+      });
     });
 
-    await waitForElementToBeRemoved(screen.getByTestId("loading"));
+    await waitFor(() => {
+      expect(screen.queryByTestId("loading")).not.toBeInTheDocument();
+    });
 
-    act(() => {
+    await act(async () => {
       screen.getByRole("link", { name: "新規ユーザを登録" }).click();
     });
 
@@ -89,13 +93,17 @@ describe("UserList", () => {
       },
     ]);
 
-    render(<RouterProvider router={router} />, {
-      wrapper: TestWrapperWithoutRoutes,
+    await act(async () => {
+      render(<RouterProvider router={router} />, {
+        wrapper: TestWrapperWithoutRoutes,
+      });
     });
 
-    await waitForElementToBeRemoved(screen.getByTestId("loading"));
+    await waitFor(() => {
+      expect(screen.queryByTestId("loading")).not.toBeInTheDocument();
+    });
 
-    act(() => {
+    await act(async () => {
       screen.getByRole("link", { name: "user1" }).click();
     });
 
@@ -103,19 +111,23 @@ describe("UserList", () => {
   });
 
   test("should delete a user", async function () {
-    render(<UserList />, { wrapper: TestWrapper });
+    await act(async () => {
+      render(<UserList />, { wrapper: TestWrapper });
+    });
 
-    await waitForElementToBeRemoved(screen.getByTestId("loading"));
+    await waitFor(() => {
+      expect(screen.queryByTestId("loading")).not.toBeInTheDocument();
+    });
 
-    act(() => {
+    await act(async () => {
       // open a menu for user1
       // NOTE there are 4 buttons (user1 copy, user1 menu, user2 copy, user2 menu)
       screen.getAllByRole("button")[1].click();
     });
-    act(() => {
+    await act(async () => {
       screen.getByRole("menuitem", { name: "削除" }).click();
     });
-    act(() => {
+    await act(async () => {
       screen.getByRole("button", { name: "Yes" }).click();
     });
 

@@ -8,6 +8,12 @@
 
 ### Fixed
 
+## v3.107.0
+
+### Added
+* Allow to change header color to show environment deferences etc.
+  Contributed by @syucream
+
 ## v3.106.0
 
 ### Changed

@@ -173,6 +173,9 @@ exports[`should match snapshot 1`] = `
                     type="button"
                   >
                     キャンセル
+                    <span
+                      class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                    />
                   </button>
                 </div>
               </div>
@@ -462,6 +465,9 @@ vm0006
                   type="button"
                 >
                   キャンセル
+                  <span
+                    class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                  />
                 </button>
               </div>
             </div>

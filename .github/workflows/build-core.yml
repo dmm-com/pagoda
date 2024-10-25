@@ -13,7 +13,7 @@ on:
 
 jobs:
   lint:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v3
       - name: Install poetry
@@ -38,7 +38,7 @@ jobs:
 
   # set modules have python test code outputs.modules
   setup_python311:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       targets: ${{ steps.modules.outputs.targets }}
     steps:
@@ -50,7 +50,7 @@ jobs:
           echo "targets=$modules" >> $GITHUB_OUTPUT
 
   python311:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: setup_python311
     strategy:
       fail-fast: false

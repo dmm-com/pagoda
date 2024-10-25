@@ -161,6 +161,9 @@ exports[`EditUserPage should match snapshot 1`] = `
                   type="button"
                 >
                   キャンセル
+                  <span
+                    class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                  />
                 </button>
               </div>
             </div>
@@ -502,6 +505,9 @@ exports[`EditUserPage should match snapshot 1`] = `
                 type="button"
               >
                 キャンセル
+                <span
+                  class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                />
               </button>
             </div>
           </div>

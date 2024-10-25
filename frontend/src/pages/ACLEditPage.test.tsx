@@ -2,14 +2,11 @@
  * @jest-environment jsdom
  */
 
-import {
-  render,
-  waitForElementToBeRemoved,
-  screen,
-} from "@testing-library/react";
+import { render, screen, act, waitFor } from "@testing-library/react";
 import React from "react";
+import { createMemoryRouter, RouterProvider } from "react-router-dom";
 
-import { TestWrapper } from "TestWrapper";
+import { TestWrapperWithoutRoutes } from "TestWrapper";
 import { ACLEditPage } from "pages/ACLEditPage";
 
 afterEach(() => {
@@ -57,11 +54,20 @@ test("should match snapshot", async () => {
     .mockResolvedValue(Promise.resolve(acl));
   /* eslint-enable */
 
-  // wait async calls and get rendered fragment
-  const result = render(<ACLEditPage />, {
-    wrapper: TestWrapper,
+  const router = createMemoryRouter([
+    {
+      path: "/",
+      element: <ACLEditPage />,
+    },
+  ]);
+  const result = await act(async () => {
+    return render(<RouterProvider router={router} />, {
+      wrapper: TestWrapperWithoutRoutes,
+    });
   });
-  await waitForElementToBeRemoved(screen.getByTestId("loading"));
+  await waitFor(() => {
+    expect(screen.queryByTestId("loading")).not.toBeInTheDocument();
+  });
 
   expect(result).toMatchSnapshot();
 });

@@ -35,7 +35,7 @@ describe("RoleForm", () => {
     adminGroups: [],
   };
 
-  test("should provide role editor", function () {
+  test("should provide role editor", async () => {
     const {
       result: {
         current: { control, setValue },
@@ -57,11 +57,13 @@ describe("RoleForm", () => {
       .mockResolvedValue(Promise.resolve([]));
     /* eslint-enable */
 
-    render(<RoleForm control={control} setValue={setValue} />, {
-      wrapper: TestWrapper,
+    await act(async () => {
+      render(<RoleForm control={control} setValue={setValue} />, {
+        wrapper: TestWrapper,
+      });
     });
 
-    act(() => {
+    await act(async () => {
       fireEvent.change(screen.getByPlaceholderText("ロール名"), {
         target: { value: "new role" },
       });

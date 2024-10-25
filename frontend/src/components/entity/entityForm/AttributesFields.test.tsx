@@ -29,7 +29,7 @@ describe("AttributesFields", () => {
     attrs: [],
   };
 
-  test("should provide attributes fields editor", () => {
+  test("should provide attributes fields editor", async () => {
     const {
       result: {
         current: { control, getValues, setValue },
@@ -54,14 +54,14 @@ describe("AttributesFields", () => {
     expect(screen.queryAllByPlaceholderText("属性名")).toHaveLength(0);
 
     // add first attribute
-    act(() => {
+    await act(async () => {
       screen.getByRole("button").click();
     });
 
     expect(screen.queryAllByPlaceholderText("属性名")).toHaveLength(1);
 
     // edit first attribute
-    act(() => {
+    await act(async () => {
       fireEvent.change(screen.getByPlaceholderText("属性名"), {
         target: { value: "attr1" },
       });
@@ -71,7 +71,7 @@ describe("AttributesFields", () => {
     expect(getValues("attrs.0.name")).toEqual("attr1");
 
     // add second attribute
-    act(() => {
+    await act(async () => {
       // now there is 1 attribute, and each webhook has 6 buttons (note, type, up, down, delete, add)
       // click the add button of the first webhook
       screen.getAllByRole("button")[5].click();
@@ -80,7 +80,7 @@ describe("AttributesFields", () => {
     expect(screen.queryAllByPlaceholderText("属性名")).toHaveLength(2);
 
     // delete first attribute
-    act(() => {
+    await act(async () => {
       // now there is 1 attribute, and each webhook has 6 buttons (note, type, up, down, delete, add)
       // click the add button of the first webhook
       screen.getAllByRole("button")[4].click();
