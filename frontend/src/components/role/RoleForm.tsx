@@ -92,6 +92,7 @@ export const RoleForm: FC<Props> = ({ control, setValue }) => {
                       error={error != null}
                       helperText={error?.message}
                       sx={{ width: "100%" }}
+                      inputProps={{ "data-1p-ignore": true }}
                     />
                   )}
                 />
