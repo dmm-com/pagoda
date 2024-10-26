@@ -71,7 +71,7 @@ interface Props {
   customRoutes?: {
     path: string;
     routePath: string;
-    component?: React.ReactNode;
+    element: React.ReactNode;
   }[];
 }
 
@@ -92,9 +92,7 @@ export const AppRouter: FC<Props> = ({ customRoutes }) => {
           {customRoutes &&
             customRoutes.map((r) => (
               <Route key={r.path} path={r.path}>
-                {r.component && (
-                  <Route path={r.routePath} element={r.component} />
-                )}
+                <Route path={r.routePath} element={r.element} />
               </Route>
             ))}
 
