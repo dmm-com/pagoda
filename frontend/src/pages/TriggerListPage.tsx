@@ -221,8 +221,8 @@ export const TriggerListPage: FC = () => {
       enqueueSnackbar(`トリガーの削除が完了しました`, {
         variant: "success",
       });
-      navigate(topPath());
-      navigate(triggersPath());
+      navigate(topPath(), { replace: true });
+      navigate(triggersPath(), { replace: true });
       setToggle(!toggle);
     } catch (e) {
       enqueueSnackbar("トリガーの削除が失敗しました", {

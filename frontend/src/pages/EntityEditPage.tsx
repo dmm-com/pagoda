@@ -63,9 +63,9 @@ export const EntityEditPage: FC = () => {
 
   const handleCancel = () => {
     if (entityId !== undefined) {
-      navigate(entityEntriesPath(entityId));
+      navigate(entityEntriesPath(entityId), { replace: true });
     } else {
-      navigate(entitiesPath());
+      navigate(entitiesPath(), { replace: true });
     }
   };
 
@@ -178,9 +178,9 @@ export const EntityEditPage: FC = () => {
   useEffect(() => {
     if (isSubmitSuccessful) {
       if (entityId === undefined) {
-        navigate(entitiesPath());
+        navigate(entitiesPath(), { replace: true });
       } else {
-        navigate(entityEntriesPath(entityId));
+        navigate(entityEntriesPath(entityId), { replace: true });
       }
     }
   }, [isSubmitSuccessful]);

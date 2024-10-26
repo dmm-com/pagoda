@@ -88,7 +88,7 @@ export const GroupEditPage: FC = () => {
   };
 
   useEffect(() => {
-    isSubmitSuccessful && navigate(groupsPath());
+    isSubmitSuccessful && navigate(groupsPath(), { replace: true });
   }, [isSubmitSuccessful]);
 
   const handleCancel = async () => {

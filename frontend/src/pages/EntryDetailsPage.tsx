@@ -87,13 +87,19 @@ export const EntryDetailsPage: FC<Props> = ({
   useEffect(() => {
     // When user specifies invalid entityId, redirect to the page that is correct entityId
     if (!entry.loading && entry.value?.schema?.id != entityId) {
-      navigate(entryDetailsPath(entry.value?.schema?.id ?? 0, entryId));
+      navigate(entryDetailsPath(entry.value?.schema?.id ?? 0, entryId), {
+        replace: true,
+      });
     }
 
     // If it'd been deleted, show restore-entry page instead
     if (!entry.loading && entry.value?.isActive === false) {
       navigate(
-        restoreEntryPath(entry.value?.schema?.id ?? "", entry.value?.name ?? "")
+        restoreEntryPath(
+          entry.value?.schema?.id ?? "",
+          entry.value?.name ?? ""
+        ),
+        { replace: true }
       );
     }
   }, [entry.loading]);

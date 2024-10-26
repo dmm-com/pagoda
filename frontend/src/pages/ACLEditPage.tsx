@@ -56,17 +56,19 @@ export const ACLEditPage: FC = () => {
     switch (acl.value?.objtype) {
       case ACLObjtypeEnum.Entity:
         if (entity?.id) {
-          navigate(entityEntriesPath(entity?.id));
+          navigate(entityEntriesPath(entity?.id), { replace: true });
         }
         break;
       case ACLObjtypeEnum.EntityAttr:
         if (entity?.id) {
-          navigate(editEntityPath(entity?.id));
+          navigate(editEntityPath(entity?.id), { replace: true });
         }
         break;
       case ACLObjtypeEnum.Entry:
         if (entry?.id) {
-          navigate(entryDetailsPath(entry?.schema.id, entry?.id));
+          navigate(entryDetailsPath(entry?.schema.id, entry?.id), {
+            replace: true,
+          });
         }
         break;
     }
