@@ -63,7 +63,7 @@ export const EntryCopyPage: FC<Props> = ({ CopyForm = DefaultCopyForm }) => {
         variant: "success",
       });
       setTimeout(() => {
-        navigate(entityEntriesPath(entityId));
+        navigate(entityEntriesPath(entityId), { replace: true });
       }, 0.1);
     } catch {
       enqueueSnackbar("アイテムコピーのジョブ登録が失敗しました", {
@@ -74,7 +74,8 @@ export const EntryCopyPage: FC<Props> = ({ CopyForm = DefaultCopyForm }) => {
 
   const handleCancel = () => {
     navigate(
-      entryDetailsPath(entry.value?.schema?.id ?? 0, entry.value?.id ?? 0)
+      entryDetailsPath(entry.value?.schema?.id ?? 0, entry.value?.id ?? 0),
+      { replace: true }
     );
   };
 

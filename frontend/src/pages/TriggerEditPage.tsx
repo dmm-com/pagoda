@@ -289,7 +289,7 @@ export const TriggerEditPage: FC = () => {
 
   useEffect(() => {
     if (isSubmitSuccessful) {
-      navigate(triggersPath());
+      navigate(triggersPath(), { replace: true });
     }
   }, [isSubmitSuccessful]);
 

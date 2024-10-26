@@ -110,9 +110,9 @@ export const EntryEditPage: FC<Props> = ({
   useEffect(() => {
     if (isSubmitSuccessful) {
       if (willCreate) {
-        navigate(entityEntriesPath(entityId));
+        navigate(entityEntriesPath(entityId), { replace: true });
       } else {
-        navigate(entryDetailsPath(entityId, entryId));
+        navigate(entryDetailsPath(entityId, entryId), { replace: true });
       }
     }
   }, [isSubmitSuccessful]);
@@ -146,9 +146,9 @@ export const EntryEditPage: FC<Props> = ({
 
   const handleCancel = () => {
     if (willCreate) {
-      navigate(entityEntriesPath(entityId));
+      navigate(entityEntriesPath(entityId), { replace: true });
     } else {
-      navigate(entryDetailsPath(entityId, entryId));
+      navigate(entryDetailsPath(entityId, entryId), { replace: true });
     }
   };
 
