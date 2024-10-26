@@ -108,6 +108,9 @@ class EntryAPI(viewsets.ModelViewSet):
 
         user: User = request.user
 
+        if custom_view.is_custom("before_delete_entry_v2", entry.schema.name):
+            custom_view.call_custom("before_delete_entry_v2", entry.schema.name, user, entry)
+
         job: Job = Job.new_delete_entry_v2(user, entry)
         job.run()
 

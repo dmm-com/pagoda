@@ -139,6 +139,7 @@ export const EntryForm: FC<EntryFormProps> = ({
                     error={error != null}
                     helperText={error?.message}
                     fullWidth
+                    inputProps={{ "data-1p-ignore": true }}
                   />
                 )}
               />

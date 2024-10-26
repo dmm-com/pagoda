@@ -96,7 +96,7 @@
 
         {% if attr.type|bitwise_and:attr_type_value_named %}
           <div class='col-3'>
-            <input type='text' class='form-control referral_key' attr_id="{{ attr.id }}" entity_attr_id="{{ attr.entity_attr_id }}" value="{{ attr.last_value.value }}" enabled="True" index="0"></input>
+            <input type='text' class='form-control referral_key' attr_id="{{ attr.id }}" entity_attr_id="{{ attr.entity_attr_id }}" value="{{ attr.last_value.value }}" enabled="True" index="0" data-1p-ignore></input>
           </div>
           <div class='col-9'>
         {% else %}
@@ -183,7 +183,7 @@
     </div>
     {% else %}
 
-      <input type="text" class="form-control attr_value" attr_id="{{ attr.id }}" entity_attr_id="{{ attr.entity_attr_id }}" enabled="True" value="{{ attr.last_value }}" {%if attr.is_mandatory%}mandatory="true"{%endif%}/>
+      <input type="text" class="form-control attr_value" attr_id="{{ attr.id }}" entity_attr_id="{{ attr.entity_attr_id }}" enabled="True" value="{{ attr.last_value }}" {%if attr.is_mandatory%}mandatory="true"{%endif%} data-1p-ignore/>
 
     {% endif %}
   {% endif %}

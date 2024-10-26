@@ -179,6 +179,7 @@ exports[`EditGroupPage should match snapshot 1`] = `
                         <input
                           aria-invalid="false"
                           class="MuiInputBase-input MuiInput-input css-1x51dt5-MuiInputBase-input-MuiInput-input"
+                          data-1p-ignore="true"
                           id=":r0:"
                           name="name"
                           placeholder="グループ名"
@@ -625,6 +626,7 @@ exports[`EditGroupPage should match snapshot 1`] = `
                       <input
                         aria-invalid="false"
                         class="MuiInputBase-input MuiInput-input css-1x51dt5-MuiInputBase-input-MuiInput-input"
+                        data-1p-ignore="true"
                         id=":r0:"
                         name="name"
                         placeholder="グループ名"
