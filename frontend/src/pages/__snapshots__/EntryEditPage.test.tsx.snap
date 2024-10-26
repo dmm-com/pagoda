@@ -279,6 +279,7 @@ exports[`EntryEditPage should match snapshot 1`] = `
                       <input
                         aria-invalid="false"
                         class="MuiInputBase-input MuiInput-input css-1x51dt5-MuiInputBase-input-MuiInput-input"
+                        data-1p-ignore="true"
                         id="entry-name"
                         name="name"
                         type="text"
@@ -594,6 +595,7 @@ exports[`EntryEditPage should match snapshot 1`] = `
                     <input
                       aria-invalid="false"
                       class="MuiInputBase-input MuiInput-input css-1x51dt5-MuiInputBase-input-MuiInput-input"
+                      data-1p-ignore="true"
                       id="entry-name"
                       name="name"
                       type="text"
