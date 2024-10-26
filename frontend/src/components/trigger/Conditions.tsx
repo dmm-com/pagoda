@@ -245,34 +245,32 @@ export const Conditions: FC<Props> = ({ control, entity }) => {
       {fields.map((condField, index) => {
         return (
           <TableRow key={condField.key}>
-            <Controller
-              name={`conditions.${index}.attr.id`}
-              control={control}
-              render={({ field }) => (
-                <>
-                  <TableCell>
-                    <Select {...field} size="small" fullWidth>
-                      <MenuItem key={0} value={0} disabled hidden />
-                      {entity.attrs
-                        .filter((attr) => isSupportedType(attr))
-                        .map((attr) => (
-                          <MenuItem key={attr.id} value={attr.id}>
-                            {attr.name}
-                          </MenuItem>
-                        ))}
-                    </Select>
-                  </TableCell>
-                  <TableCell>
-                    <ConditionValue
-                      index={index}
-                      control={control}
-                      condField={condField}
-                      entity={entity}
-                    />
-                  </TableCell>
-                </>
-              )}
-            />
+            <TableCell>
+              <Controller
+                name={`conditions.${index}.attr.id`}
+                control={control}
+                render={({ field }) => (
+                  <Select {...field} size="small" fullWidth>
+                    <MenuItem key={0} value={0} disabled hidden />
+                    {entity.attrs
+                      .filter((attr) => isSupportedType(attr))
+                      .map((attr) => (
+                        <MenuItem key={attr.id} value={attr.id}>
+                          {attr.name}
+                        </MenuItem>
+                      ))}
+                  </Select>
+                )}
+              />
+            </TableCell>
+            <TableCell>
+              <ConditionValue
+                index={index}
+                control={control}
+                condField={condField}
+                entity={entity}
+              />
+            </TableCell>
             <TableCell>
               {" "}
               <IconButton onClick={() => remove(index)}>
