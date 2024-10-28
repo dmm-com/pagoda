@@ -2,7 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Box } from "@mui/material";
 import React, { FC, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { Prompt, useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
 
@@ -18,6 +18,7 @@ import {
 } from "components/entry/EntryForm";
 import { Schema, schema } from "components/entry/entryForm/EntryFormSchema";
 import { useFormNotification } from "hooks/useFormNotification";
+import { usePrompt } from "hooks/usePrompt";
 import { useTypedParams } from "hooks/useTypedParams";
 import { aironeApiClient } from "repository/AironeApiClient";
 import {
@@ -45,7 +46,7 @@ export const EntryEditPage: FC<Props> = ({
 
   const willCreate = entryId == null;
 
-  const history = useHistory();
+  const navigate = useNavigate();
   const { enqueueSubmitResult } = useFormNotification("アイテム", willCreate);
 
   const [initialized, setInitialized] = useState(false);
@@ -61,6 +62,11 @@ export const EntryEditPage: FC<Props> = ({
     resolver: zodResolver(schema),
     mode: "onBlur",
   });
+
+  usePrompt(
+    isDirty && !isSubmitSuccessful,
+    "編集した内容は失われてしまいますが、このページを離れてもよろしいですか？"
+  );
 
   const entity = useAsyncWithThrow(async () => {
     return await aironeApiClient.getEntity(entityId);
@@ -104,9 +110,9 @@ export const EntryEditPage: FC<Props> = ({
   useEffect(() => {
     if (isSubmitSuccessful) {
       if (willCreate) {
-        history.replace(entityEntriesPath(entityId));
+        navigate(entityEntriesPath(entityId), { replace: true });
       } else {
-        history.replace(entryDetailsPath(entityId, entryId));
+        navigate(entryDetailsPath(entityId, entryId), { replace: true });
       }
     }
   }, [isSubmitSuccessful]);
@@ -140,9 +146,9 @@ export const EntryEditPage: FC<Props> = ({
 
   const handleCancel = () => {
     if (willCreate) {
-      history.replace(entityEntriesPath(entityId));
+      navigate(entityEntriesPath(entityId), { replace: true });
     } else {
-      history.replace(entryDetailsPath(entityId, entryId));
+      navigate(entryDetailsPath(entityId, entryId), { replace: true });
     }
   };
 
@@ -194,11 +200,6 @@ export const EntryEditPage: FC<Props> = ({
           setValue={setValue}
         />
       )}
-
-      <Prompt
-        when={isDirty && !isSubmitSuccessful}
-        message="編集した内容は失われてしまいますが、このページを離れてもよろしいですか？"
-      />
     </Box>
   );
 };

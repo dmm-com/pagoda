@@ -20,7 +20,7 @@ import {
 import { styled } from "@mui/material/styles";
 import { useSnackbar } from "notistack";
 import React, { FC, useState } from "react";
-import { useHistory, useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 import { EntryAttributes } from "./EntryAttributes";
 
@@ -101,7 +101,7 @@ interface Props {
 
 export const RestorableEntryList: FC<Props> = ({ entityId }) => {
   const location = useLocation();
-  const history = useHistory();
+  const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
 
   const [page, changePage] = usePage();
@@ -129,7 +129,7 @@ export const RestorableEntryList: FC<Props> = ({ entityId }) => {
     changePage(1);
     setQuery(newQuery ?? "");
 
-    history.push({
+    navigate({
       pathname: location.pathname,
       search: newQuery ? `?query=${newQuery}` : "",
     });
@@ -142,8 +142,8 @@ export const RestorableEntryList: FC<Props> = ({ entityId }) => {
         enqueueSnackbar("アイテムの復旧が完了しました", {
           variant: "success",
         });
-        history.replace(topPath());
-        history.replace(restoreEntryPath(entityId, keyword));
+        navigate(topPath(), { replace: true });
+        navigate(restoreEntryPath(entityId, keyword), { replace: true });
       })
       .catch(() => {
         enqueueSnackbar("アイテムの復旧が失敗しました", {

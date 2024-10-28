@@ -1,7 +1,7 @@
 import { Box, Container } from "@mui/material";
 import { useSnackbar } from "notistack";
 import React, { FC, useState } from "react";
-import { Prompt, useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
 import { useTypedParams } from "../hooks/useTypedParams";
@@ -15,6 +15,7 @@ import {
   CopyFormProps,
 } from "components/entry/CopyForm";
 import { EntryBreadcrumbs } from "components/entry/EntryBreadcrumbs";
+import { usePrompt } from "hooks/usePrompt";
 import { aironeApiClient } from "repository/AironeApiClient";
 
 interface Props {
@@ -22,7 +23,7 @@ interface Props {
 }
 
 export const EntryCopyPage: FC<Props> = ({ CopyForm = DefaultCopyForm }) => {
-  const history = useHistory();
+  const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
   const { entityId, entryId } = useTypedParams<{
     entityId: number;
@@ -34,6 +35,11 @@ export const EntryCopyPage: FC<Props> = ({ CopyForm = DefaultCopyForm }) => {
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [submitted, setSubmitted] = useState<boolean>(false);
   const [edited, setEdited] = useState<boolean>(false);
+
+  usePrompt(
+    edited && !submitted,
+    "編集した内容は失われてしまいますが、このページを離れてもよろしいですか？"
+  );
 
   const entry = useAsyncWithThrow(async () => {
     return await aironeApiClient.getEntry(entryId);
@@ -57,7 +63,7 @@ export const EntryCopyPage: FC<Props> = ({ CopyForm = DefaultCopyForm }) => {
         variant: "success",
       });
       setTimeout(() => {
-        history.replace(entityEntriesPath(entityId));
+        navigate(entityEntriesPath(entityId), { replace: true });
       }, 0.1);
     } catch {
       enqueueSnackbar("アイテムコピーのジョブ登録が失敗しました", {
@@ -67,8 +73,9 @@ export const EntryCopyPage: FC<Props> = ({ CopyForm = DefaultCopyForm }) => {
   };
 
   const handleCancel = () => {
-    history.replace(
-      entryDetailsPath(entry.value?.schema?.id ?? 0, entry.value?.id ?? 0)
+    navigate(
+      entryDetailsPath(entry.value?.schema?.id ?? 0, entry.value?.id ?? 0),
+      { replace: true }
     );
   };
 
@@ -98,11 +105,6 @@ export const EntryCopyPage: FC<Props> = ({ CopyForm = DefaultCopyForm }) => {
           />
         )}
       </Container>
-
-      <Prompt
-        when={edited && !submitted}
-        message="編集した内容は失われてしまいますが、このページを離れてもよろしいですか？"
-      />
     </Box>
   );
 };

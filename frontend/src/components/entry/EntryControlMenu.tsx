@@ -9,7 +9,7 @@ import {
 } from "@mui/material";
 import { useSnackbar } from "notistack";
 import React, { FC } from "react";
-import { Link, useHistory } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 import {
   entryEditPath,
@@ -54,7 +54,7 @@ export const EntryControlMenu: FC<EntryControlProps> = ({
   customACLHistoryPath,
 }) => {
   const { enqueueSnackbar } = useSnackbar();
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const handleDelete = async (entryId: number) => {
     try {
@@ -63,8 +63,8 @@ export const EntryControlMenu: FC<EntryControlProps> = ({
         variant: "success",
       });
       setToggle && setToggle();
-      history.replace(topPath());
-      history.replace(entityEntriesPath(entityId));
+      navigate(topPath(), { replace: true });
+      navigate(entityEntriesPath(entityId), { replace: true });
     } catch (e) {
       enqueueSnackbar("アイテムの削除が失敗しました", {
         variant: "error",

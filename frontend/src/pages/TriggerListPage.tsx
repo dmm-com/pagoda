@@ -29,7 +29,7 @@ import { OverridableComponent } from "@mui/material/OverridableComponent";
 import { styled } from "@mui/material/styles";
 import { useSnackbar } from "notistack";
 import React, { FC, useState } from "react";
-import { Link, useHistory } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAsync } from "react-use";
 
 import {
@@ -207,7 +207,7 @@ const TriggerAction: FC<{
 };
 
 export const TriggerListPage: FC = () => {
-  const history = useHistory();
+  const navigate = useNavigate();
   const [toggle, setToggle] = useState(false);
   const { enqueueSnackbar } = useSnackbar();
 
@@ -221,8 +221,8 @@ export const TriggerListPage: FC = () => {
       enqueueSnackbar(`トリガーの削除が完了しました`, {
         variant: "success",
       });
-      history.replace(topPath());
-      history.replace(triggersPath());
+      navigate(topPath(), { replace: true });
+      navigate(triggersPath(), { replace: true });
       setToggle(!toggle);
     } catch (e) {
       enqueueSnackbar("トリガーの削除が失敗しました", {

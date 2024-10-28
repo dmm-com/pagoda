@@ -2,7 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod/dist/zod";
 import { Box, Container, Typography } from "@mui/material";
 import React, { FC, useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { Link, Prompt, useHistory } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
 
@@ -13,6 +13,7 @@ import { SubmitButton } from "components/common/SubmitButton";
 import { GroupForm } from "components/group/GroupForm";
 import { schema, Schema } from "components/group/groupForm/GroupFormSchema";
 import { useFormNotification } from "hooks/useFormNotification";
+import { usePrompt } from "hooks/usePrompt";
 import { useTypedParams } from "hooks/useTypedParams";
 import { aironeApiClient } from "repository/AironeApiClient";
 import {
@@ -26,7 +27,7 @@ export const GroupEditPage: FC = () => {
   const { groupId } = useTypedParams<{ groupId?: number }>();
   const willCreate = groupId == null;
 
-  const history = useHistory();
+  const navigate = useNavigate();
   const { enqueueSubmitResult } = useFormNotification("グループ", willCreate);
 
   const {
@@ -40,6 +41,11 @@ export const GroupEditPage: FC = () => {
     resolver: zodResolver(schema),
     mode: "onBlur",
   });
+
+  usePrompt(
+    isDirty && !isSubmitSuccessful,
+    "編集した内容は失われてしまいますが、このページを離れてもよろしいですか？"
+  );
 
   const group = useAsyncWithThrow(async () => {
     return groupId != null
@@ -82,11 +88,11 @@ export const GroupEditPage: FC = () => {
   };
 
   useEffect(() => {
-    isSubmitSuccessful && history.replace(groupsPath());
+    isSubmitSuccessful && navigate(groupsPath(), { replace: true });
   }, [isSubmitSuccessful]);
 
   const handleCancel = async () => {
-    history.goBack();
+    navigate(-1);
   };
 
   if (ServerContext.getInstance()?.user?.isSuperuser !== true) {
@@ -125,11 +131,6 @@ export const GroupEditPage: FC = () => {
           groupId={Number(groupId)}
         />
       </Container>
-
-      <Prompt
-        when={isDirty && !isSubmitSuccessful}
-        message="編集した内容は失われてしまいますが、このページを離れてもよろしいですか？"
-      />
     </Box>
   );
 };

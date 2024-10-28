@@ -19,7 +19,7 @@ import {
   Typography,
 } from "@mui/material";
 import React, { FC, useCallback, useEffect, useState } from "react";
-import { useHistory } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 import { PasswordResetConfirmModal } from "../components/user/PasswordResetConfirmModal";
 import { PasswordResetModal } from "../components/user/PasswordResetModal";
@@ -29,7 +29,8 @@ import { ServerContext } from "services/ServerContext";
 
 export const LoginPage: FC = () => {
   const serverContext = ServerContext.getInstance();
-  const history = useHistory();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const [showPassword, setShowPassword] = useState(false);
   const [isAlert, setIsAlert] = useState(false);
@@ -56,10 +57,13 @@ export const LoginPage: FC = () => {
     if (_token != null) {
       setToken(_token);
       params.delete("token");
-      history.replace({
-        pathname: location.pathname,
-        search: "?" + params.toString(),
-      });
+      navigate(
+        {
+          pathname: location.pathname,
+          search: "?" + params.toString(),
+        },
+        { replace: true }
+      );
     }
 
     if (_uidb64 != null && _token != null) {

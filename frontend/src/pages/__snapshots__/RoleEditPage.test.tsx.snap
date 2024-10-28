@@ -109,6 +109,9 @@ exports[`EditRolePage should match snapshot 1`] = `
                     type="button"
                   >
                     キャンセル
+                    <span
+                      class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                    />
                   </button>
                 </div>
               </div>
@@ -333,6 +336,9 @@ exports[`EditRolePage should match snapshot 1`] = `
                                         d="M7 10l5 5 5-5z"
                                       />
                                     </svg>
+                                    <span
+                                      class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                                    />
                                   </button>
                                 </div>
                                 <fieldset
@@ -413,6 +419,9 @@ exports[`EditRolePage should match snapshot 1`] = `
                                         d="M7 10l5 5 5-5z"
                                       />
                                     </svg>
+                                    <span
+                                      class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                                    />
                                   </button>
                                 </div>
                                 <fieldset
@@ -535,6 +544,9 @@ exports[`EditRolePage should match snapshot 1`] = `
                                         d="M7 10l5 5 5-5z"
                                       />
                                     </svg>
+                                    <span
+                                      class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                                    />
                                   </button>
                                 </div>
                                 <fieldset
@@ -615,6 +627,9 @@ exports[`EditRolePage should match snapshot 1`] = `
                                         d="M7 10l5 5 5-5z"
                                       />
                                     </svg>
+                                    <span
+                                      class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                                    />
                                   </button>
                                 </div>
                                 <fieldset
@@ -751,6 +766,9 @@ exports[`EditRolePage should match snapshot 1`] = `
                   type="button"
                 >
                   キャンセル
+                  <span
+                    class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                  />
                 </button>
               </div>
             </div>
@@ -975,6 +993,9 @@ exports[`EditRolePage should match snapshot 1`] = `
                                       d="M7 10l5 5 5-5z"
                                     />
                                   </svg>
+                                  <span
+                                    class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                                  />
                                 </button>
                               </div>
                               <fieldset
@@ -1055,6 +1076,9 @@ exports[`EditRolePage should match snapshot 1`] = `
                                       d="M7 10l5 5 5-5z"
                                     />
                                   </svg>
+                                  <span
+                                    class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                                  />
                                 </button>
                               </div>
                               <fieldset
@@ -1177,6 +1201,9 @@ exports[`EditRolePage should match snapshot 1`] = `
                                       d="M7 10l5 5 5-5z"
                                     />
                                   </svg>
+                                  <span
+                                    class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                                  />
                                 </button>
                               </div>
                               <fieldset
@@ -1257,6 +1284,9 @@ exports[`EditRolePage should match snapshot 1`] = `
                                       d="M7 10l5 5 5-5z"
                                     />
                                   </svg>
+                                  <span
+                                    class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                                  />
                                 </button>
                               </div>
                               <fieldset

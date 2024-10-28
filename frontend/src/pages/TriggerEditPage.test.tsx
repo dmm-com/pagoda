@@ -2,17 +2,17 @@
  * @jest-environment jsdom
  */
 
-import { act, render } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import React from "react";
-import { MemoryRouter, Route } from "react-router-dom";
+import { createMemoryRouter, RouterProvider } from "react-router-dom";
 
 import { editTriggerPath } from "../Routes";
 
 import { TriggerEditPage } from "./TriggerEditPage";
 
-import { TestWrapper } from "TestWrapper";
+import { TestWrapperWithoutRoutes } from "TestWrapper";
 
 const server = setupServer(
   // getTrigger
@@ -84,18 +84,24 @@ afterAll(() => server.close());
 
 describe("EditTriggerPage", () => {
   test("should match snapshot", async () => {
-    const result = await act(async () => {
-      return render(
-        <MemoryRouter initialEntries={["/ui/triggers/1"]}>
-          <Route
-            path={editTriggerPath(":triggerId")}
-            component={TriggerEditPage}
-          />
-        </MemoryRouter>,
+    const router = createMemoryRouter(
+      [
         {
-          wrapper: TestWrapper,
-        }
-      );
+          path: editTriggerPath(":triggerId"),
+          element: <TriggerEditPage />,
+        },
+      ],
+      {
+        initialEntries: ["/ui/triggers/1"],
+      }
+    );
+    const result = await act(async () => {
+      return render(<RouterProvider router={router} />, {
+        wrapper: TestWrapperWithoutRoutes,
+      });
+    });
+    await waitFor(() => {
+      expect(screen.queryByTestId("loading")).not.toBeInTheDocument();
     });
 
     expect(result).toMatchSnapshot();

@@ -2,11 +2,11 @@
  * @jest-environment jsdom
  */
 
-import { act, render, screen } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import React from "react";
-import { BrowserRouter } from "react-router-dom";
+import { createMemoryRouter, RouterProvider } from "react-router-dom";
 
-import { TestWrapper } from "TestWrapper";
+import { TestWrapperWithoutRoutes } from "TestWrapper";
 import { EntryReferral } from "components/entry/EntryReferral";
 
 afterEach(() => {
@@ -41,13 +41,19 @@ test("should render a component with essential props", async () => {
     );
   /* eslint-enable */
 
+  const router = createMemoryRouter([
+    {
+      path: "/",
+      element: <EntryReferral entryId={entryId} />,
+    },
+  ]);
   await act(async () => {
-    render(
-      <BrowserRouter>
-        <EntryReferral entryId={entryId} />
-      </BrowserRouter>,
-      { wrapper: TestWrapper }
-    );
+    return render(<RouterProvider router={router} />, {
+      wrapper: TestWrapperWithoutRoutes,
+    });
+  });
+  await waitFor(() => {
+    expect(screen.queryByTestId("loading")).not.toBeInTheDocument();
   });
 
   expect(screen.getByText("entry1")).toBeInTheDocument();

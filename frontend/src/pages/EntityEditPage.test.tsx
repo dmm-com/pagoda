@@ -6,15 +6,11 @@ import {
   EntityDetail,
   PaginatedEntityListList,
 } from "@dmm-com/airone-apiclient-typescript-fetch";
-import {
-  render,
-  screen,
-  waitForElementToBeRemoved,
-} from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import { HttpResponse, http } from "msw";
 import { setupServer } from "msw/node";
 import React from "react";
-import { MemoryRouter, Route } from "react-router-dom";
+import { createMemoryRouter, RouterProvider } from "react-router-dom";
 
 import { editEntityPath } from "../Routes";
 
@@ -84,16 +80,25 @@ describe("EditEntityPage", () => {
   });
 
   test("should match snapshot", async () => {
-    // wait async calls and get rendered fragment
-    const result = render(
-      <MemoryRouter initialEntries={["/ui/entities/1"]}>
-        <Route path={editEntityPath(":entityId")} component={EntityEditPage} />
-      </MemoryRouter>,
+    const router = createMemoryRouter(
+      [
+        {
+          path: editEntityPath(":entityId"),
+          element: <EntityEditPage />,
+        },
+      ],
       {
-        wrapper: TestWrapperWithoutRoutes,
+        initialEntries: ["/ui/entities/1"],
       }
     );
-    await waitForElementToBeRemoved(screen.getByTestId("loading"));
+    const result = await act(async () => {
+      return render(<RouterProvider router={router} />, {
+        wrapper: TestWrapperWithoutRoutes,
+      });
+    });
+    await waitFor(() => {
+      expect(screen.queryByTestId("loading")).not.toBeInTheDocument();
+    });
 
     expect(result).toMatchSnapshot();
   });

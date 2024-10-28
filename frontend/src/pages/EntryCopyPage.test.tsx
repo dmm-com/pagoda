@@ -2,16 +2,13 @@
  * @jest-environment jsdom
  */
 
-import {
-  render,
-  waitForElementToBeRemoved,
-  screen,
-} from "@testing-library/react";
+import { render, screen, act, waitFor } from "@testing-library/react";
 import React from "react";
+import { createMemoryRouter, RouterProvider } from "react-router-dom";
 
 import { EntryCopyPage } from "./EntryCopyPage";
 
-import { TestWrapper } from "TestWrapper";
+import { TestWrapperWithoutRoutes } from "TestWrapper";
 
 afterEach(() => {
   jest.clearAllMocks();
@@ -34,11 +31,20 @@ test("should match snapshot", async () => {
     .mockResolvedValue(Promise.resolve(entry));
   /* eslint-enable */
 
-  // wait async calls and get rendered fragment
-  const result = render(<EntryCopyPage />, {
-    wrapper: TestWrapper,
+  const router = createMemoryRouter([
+    {
+      path: "/",
+      element: <EntryCopyPage />,
+    },
+  ]);
+  const result = await act(async () => {
+    return render(<RouterProvider router={router} />, {
+      wrapper: TestWrapperWithoutRoutes,
+    });
   });
-  await waitForElementToBeRemoved(screen.getByTestId("loading"));
+  await waitFor(() => {
+    expect(screen.queryByTestId("loading")).not.toBeInTheDocument();
+  });
 
   expect(result).toMatchSnapshot();
 });

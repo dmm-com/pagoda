@@ -12,7 +12,7 @@ import {
 import { styled } from "@mui/material/styles";
 import { useSnackbar } from "notistack";
 import React, { FC, useCallback } from "react";
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import { AttributeValue } from "./AttributeValue";
 
@@ -56,7 +56,7 @@ export const EntryHistoryList: FC<Props> = ({
   changePage,
 }) => {
   const { enqueueSnackbar } = useSnackbar();
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const handleRestore = useCallback(async (prevAttrValueId: number) => {
     try {
@@ -64,8 +64,8 @@ export const EntryHistoryList: FC<Props> = ({
       enqueueSnackbar(`変更の復旧が完了しました`, {
         variant: "success",
       });
-      history.replace(topPath());
-      history.replace(showEntryHistoryPath(entityId, entryId));
+      navigate(topPath(), { replace: true });
+      navigate(showEntryHistoryPath(entityId, entryId), { replace: true });
     } catch (e) {
       enqueueSnackbar(`変更の復旧が失敗しました`, {
         variant: "error",

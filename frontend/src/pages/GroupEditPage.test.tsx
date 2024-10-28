@@ -2,16 +2,13 @@
  * @jest-environment jsdom
  */
 
-import {
-  render,
-  waitForElementToBeRemoved,
-  screen,
-} from "@testing-library/react";
+import { render, screen, act, waitFor } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import React from "react";
+import { createMemoryRouter, RouterProvider } from "react-router-dom";
 
-import { TestWrapper } from "TestWrapper";
+import { TestWrapperWithoutRoutes } from "TestWrapper";
 import { GroupEditPage } from "pages/GroupEditPage";
 
 const server = setupServer(
@@ -96,11 +93,20 @@ describe("EditGroupPage", () => {
   });
 
   test("should match snapshot", async () => {
-    // wait async calls and get rendered fragment
-    const result = render(<GroupEditPage />, {
-      wrapper: TestWrapper,
+    const router = createMemoryRouter([
+      {
+        path: "/",
+        element: <GroupEditPage />,
+      },
+    ]);
+    const result = await act(async () => {
+      return render(<RouterProvider router={router} />, {
+        wrapper: TestWrapperWithoutRoutes,
+      });
     });
-    await waitForElementToBeRemoved(screen.getByTestId("loading"));
+    await waitFor(() => {
+      expect(screen.queryByTestId("loading")).not.toBeInTheDocument();
+    });
 
     expect(result).toMatchSnapshot();
   });

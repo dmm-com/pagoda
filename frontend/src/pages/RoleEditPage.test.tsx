@@ -2,18 +2,15 @@
  * @jest-environment jsdom
  */
 
-import {
-  render,
-  screen,
-  waitForElementToBeRemoved,
-} from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import React from "react";
+import { createMemoryRouter, RouterProvider } from "react-router-dom";
 
 import { RoleEditPage } from "./RoleEditPage";
 
-import { TestWrapper } from "TestWrapper";
+import { TestWrapperWithoutRoutes } from "TestWrapper";
 
 const server = setupServer(
   // getRole
@@ -93,11 +90,20 @@ afterAll(() => server.close());
 
 describe("EditRolePage", () => {
   test("should match snapshot", async () => {
-    // wait async calls and get rendered fragment
-    const result = render(<RoleEditPage />, {
-      wrapper: TestWrapper,
+    const router = createMemoryRouter([
+      {
+        path: "/",
+        element: <RoleEditPage />,
+      },
+    ]);
+    const result = await act(async () => {
+      return render(<RouterProvider router={router} />, {
+        wrapper: TestWrapperWithoutRoutes,
+      });
     });
-    await waitForElementToBeRemoved(screen.getByTestId("loading"));
+    await waitFor(() => {
+      expect(screen.queryByTestId("loading")).not.toBeInTheDocument();
+    });
 
     expect(result).toMatchSnapshot();
   });
