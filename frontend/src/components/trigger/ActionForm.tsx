@@ -409,45 +409,43 @@ export const ActionForm: FC<Props> = ({
     <>
       {fields.map((actionField, index) => (
         <TableRow key={actionField.key}>
-          <Controller
-            name={`actions.${index}.attr.id`}
-            control={control}
-            defaultValue={actionField.attr.id}
-            render={({ field }) => (
-              <>
-                <TableCell>
-                  <Select
-                    {...field}
-                    size="small"
-                    fullWidth
-                    onChange={(e) => {
-                      field.onChange(e);
+          <TableCell>
+            <Controller
+              name={`actions.${index}.attr.id`}
+              control={control}
+              defaultValue={actionField.attr.id}
+              render={({ field }) => (
+                <Select
+                  {...field}
+                  size="small"
+                  fullWidth
+                  onChange={(e) => {
+                    field.onChange(e);
 
-                      // clear all action values when attribute is changed
-                      resetActionValues(index);
-                    }}
-                  >
-                    <MenuItem key={0} value={0} disabled hidden />
-                    {entity.attrs
-                      .filter((attr) => isSupportedType(attr))
-                      .map((attr) => (
-                        <MenuItem key={attr.id} value={attr.id}>
-                          {attr.name}
-                        </MenuItem>
-                      ))}
-                  </Select>
-                </TableCell>
-                <TableCell>
-                  <ActionValue
-                    indexAction={index}
-                    control={control}
-                    actionField={actionField}
-                    entity={entity}
-                  />
-                </TableCell>
-              </>
-            )}
-          />
+                    // clear all action values when attribute is changed
+                    resetActionValues(index);
+                  }}
+                >
+                  <MenuItem key={0} value={0} disabled hidden />
+                  {entity.attrs
+                    .filter((attr) => isSupportedType(attr))
+                    .map((attr) => (
+                      <MenuItem key={attr.id} value={attr.id}>
+                        {attr.name}
+                      </MenuItem>
+                    ))}
+                </Select>
+              )}
+            />
+          </TableCell>
+          <TableCell>
+            <ActionValue
+              indexAction={index}
+              control={control}
+              actionField={actionField}
+              entity={entity}
+            />
+          </TableCell>
           <TableCell>
             {" "}
             <IconButton onClick={() => remove(index)}>

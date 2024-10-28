@@ -22,7 +22,7 @@ describe("EntryAttributes", () => {
       isReadable: true,
       schema: {
         id: 1,
-        name: "string",
+        name: "string1",
       },
       value: {
         asString: "value1",
@@ -37,7 +37,7 @@ describe("EntryAttributes", () => {
       isReadable: false,
       schema: {
         id: 2,
-        name: "string",
+        name: "string2",
       },
       value: {
         asString: "value2",

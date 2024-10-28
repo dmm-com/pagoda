@@ -34,7 +34,7 @@ describe("EntryHistoryList", () => {
         createdTime: new Date("2020-01-02T00:00:00Z"),
       },
       {
-        id: 1,
+        id: 2,
         type: EntryAttributeTypeTypeEnum.STRING,
         parentAttr: {
           id: 1,
