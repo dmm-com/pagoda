@@ -8,6 +8,14 @@
 
 ### Fixed
 
+## v3.108.0
+
+### Changed
+* Changed the order of before delete custom views.
+  Contributed by @hinashi
+* Changed to disabled 1pw for name-related attributes.
+  Contributed by @syucream
+
 ## v3.107.0
 
 ### Added
