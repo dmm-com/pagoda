@@ -16,6 +16,7 @@ import { EntryBreadcrumbs } from "components/entry/EntryBreadcrumbs";
 import { EntryControlMenu } from "components/entry/EntryControlMenu";
 import { EntryReferral } from "components/entry/EntryReferral";
 import { aironeApiClient } from "repository/AironeApiClient";
+import { getURLParams } from "services/URLUtils";
 
 const FlexBox = styled(Box)(({}) => ({
   display: "flex",
@@ -63,17 +64,31 @@ interface Props {
     content: JSX.Element;
   }[];
   sideContent?: JSX.Element;
+  routePath?: string;
 }
 
 export const EntryDetailsPage: FC<Props> = ({
   excludeAttrs = [],
   additionalContents = [],
   sideContent = <Box />,
+  routePath = "",
 }) => {
-  const { entityId, entryId } = useTypedParams<{
+  let { entityId, entryId } = useTypedParams<{
     entityId: number;
     entryId: number;
   }>();
+
+  const urlParams = getURLParams(routePath);
+  if (! entityId) {
+    entityId = Number(urlParams?.entityId ?? "0");
+  }
+  if (! entryId) {
+    entryId = Number(urlParams?.entryId ?? "0");
+  }
+
+  console.log("[onix/EntryDetaisPath(20)] entityId: ", entityId);
+  console.log("[onix/EntryDetaisPath(20)] entryId: ", entryId);
+
   const navigate = useNavigate();
 
   const [entryAnchorEl, setEntryAnchorEl] = useState<HTMLButtonElement | null>(
