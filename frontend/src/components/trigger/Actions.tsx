@@ -4,7 +4,7 @@ import { IconButton, TableCell, TableRow } from "@mui/material";
 import React, { FC } from "react";
 import { Control, useFieldArray } from "react-hook-form";
 
-import { Condition } from "./Condition";
+import { Action } from "./Action";
 import { Schema } from "./TriggerFormSchema";
 
 interface Props {
@@ -12,36 +12,41 @@ interface Props {
   entity: EntityDetail;
 }
 
-export const Conditions: FC<Props> = ({ control, entity }) => {
+export const Actions: FC<Props> = ({ control, entity }) => {
   const { fields, insert, remove } = useFieldArray({
     control,
-    name: "conditions",
+    name: "actions",
     keyName: "key", // NOTE: attr has 'id' field conflicts default key name
   });
 
-  const handleAppendCondition = (index: number) => {
-    insert(index, {
+  const handleAppendAction = (index: number) => {
+    insert(index + 1, {
       id: 0,
       attr: {
         id: 0,
         name: "",
         type: 0,
       },
-      strCond: "",
-      refCond: null,
-      boolCond: undefined,
+      values: [
+        {
+          id: 0,
+          strCond: "",
+          refCond: null,
+          boolCond: undefined,
+        },
+      ],
     });
   };
 
   return (
     <>
-      {fields.map((condField, index) => (
-        <Condition
-          key={condField.key}
+      {fields.map((actionField, index) => (
+        <Action
           index={index}
+          key={actionField.key}
           control={control}
           remove={remove}
-          handleAppendCondition={handleAppendCondition}
+          handleAppendAction={handleAppendAction}
           entity={entity}
         />
       ))}
@@ -51,7 +56,7 @@ export const Conditions: FC<Props> = ({ control, entity }) => {
           <TableCell />
           <TableCell />
           <TableCell>
-            <IconButton onClick={() => handleAppendCondition(0)}>
+            <IconButton onClick={() => handleAppendAction(0)}>
               <AddIcon />
             </IconButton>
           </TableCell>

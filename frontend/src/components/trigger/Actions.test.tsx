@@ -12,7 +12,7 @@ import { useForm } from "react-hook-form";
 
 import { TestWrapper } from "../../TestWrapper";
 
-import { ActionForm } from "./ActionForm";
+import { Actions } from "./Actions";
 import { Schema } from "./TriggerFormSchema";
 
 describe("ActionForm", () => {
@@ -226,18 +226,11 @@ describe("ActionForm", () => {
   };
 
   test("renders attribute based fields", () => {
-    const resetActionValues = jest.fn();
     const Wrapper: FC = () => {
       const { control } = useForm<Schema>({
         defaultValues,
       });
-      return (
-        <ActionForm
-          control={control}
-          entity={entity}
-          resetActionValues={resetActionValues}
-        />
-      );
+      return <Actions control={control} entity={entity} />;
     };
 
     render(<Wrapper />, {
