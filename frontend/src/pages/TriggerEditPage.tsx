@@ -26,7 +26,7 @@ import { topPath, triggersPath } from "Routes";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { PageHeader } from "components/common/PageHeader";
 import { SubmitButton } from "components/common/SubmitButton";
-import { ActionForm } from "components/trigger/ActionForm";
+import { Actions } from "components/trigger/Actions";
 import { Conditions } from "components/trigger/Conditions";
 import { Schema, schema } from "components/trigger/TriggerFormSchema";
 import { useAsyncWithThrow } from "hooks/useAsyncWithThrow";
@@ -404,26 +404,7 @@ export const TriggerEditPage: FC = () => {
                 </TableHead>
                 <StyledTableBody>
                   {entity.value && (
-                    <ActionForm
-                      control={control}
-                      entity={entity.value}
-                      resetActionValues={(index: number) => {
-                        setValue(
-                          `actions.${index}.values`,
-                          [
-                            {
-                              id: 0,
-                              strCond: "",
-                              refCond: null,
-                            },
-                          ],
-                          {
-                            shouldDirty: true,
-                            shouldValidate: true,
-                          }
-                        );
-                      }}
-                    />
+                    <Actions control={control} entity={entity.value} />
                   )}
                 </StyledTableBody>
               </Table>
