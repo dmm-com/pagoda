@@ -70,7 +70,6 @@ import { UserListPage } from "pages/UserListPage";
 interface Props {
   customRoutes?: {
     path: string;
-    routePath: string;
     element: React.ReactNode;
   }[];
 }
@@ -91,9 +90,7 @@ export const AppRouter: FC<Props> = ({ customRoutes }) => {
         >
           {customRoutes &&
             customRoutes.map((r) => (
-              <Route key={r.path} path={r.path}>
-                <Route path={r.routePath} element={r.element} />
-              </Route>
+              <Route key={r.path} path={r.path} element={r.element} />
             ))}
 
           <Route path={advancedSearchPath()} element={<AdvancedSearchPage />} />
