@@ -25,7 +25,7 @@ import { Link } from "react-router-dom";
 import { AttributeNoteModal } from "./AttributeNoteModal";
 import { Schema } from "./EntityFormSchema";
 
-import { aclPath } from "Routes";
+import { aclPath } from "routes/Routes";
 import { AttributeTypes } from "services/Constants";
 
 const StyledBox = styled(Box)(({ theme }) => ({

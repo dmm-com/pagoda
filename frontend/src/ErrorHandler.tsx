@@ -22,7 +22,7 @@ import {
   NonTermsServiceAgreement,
 } from "./services/Exceptions";
 
-import { topPath } from "Routes";
+import { topPath } from "routes/Routes";
 
 const ErrorDescription = styled(Box)(({ theme }) => ({
   marginTop: theme.spacing(2),

@@ -7,14 +7,33 @@ import {
   RouterProvider,
 } from "react-router-dom";
 
-import { ACLHistoryPage } from "./pages/ACLHistoryPage";
-import { EntryCopyPage } from "./pages/EntryCopyPage";
-import { EntryDetailsPage } from "./pages/EntryDetailsPage";
-import { EntryRestorePage } from "./pages/EntryRestorePage";
-import { NotFoundErrorPage } from "./pages/NotFoundErrorPage";
-import { RoleEditPage } from "./pages/RoleEditPage";
-import { RoleListPage } from "./pages/RoleListPage";
+import { ACLHistoryPage } from "../pages/ACLHistoryPage";
+import { EntryCopyPage } from "../pages/EntryCopyPage";
+import { EntryDetailsPage } from "../pages/EntryDetailsPage";
+import { EntryRestorePage } from "../pages/EntryRestorePage";
+import { NotFoundErrorPage } from "../pages/NotFoundErrorPage";
+import { RoleEditPage } from "../pages/RoleEditPage";
+import { RoleListPage } from "../pages/RoleListPage";
 
+import { Header } from "components/common/Header";
+import { ACLEditPage } from "pages/ACLEditPage";
+import { AdvancedSearchPage } from "pages/AdvancedSearchPage";
+import { AdvancedSearchResultsPage } from "pages/AdvancedSearchResultsPage";
+import { DashboardPage } from "pages/DashboardPage";
+import { EntityEditPage } from "pages/EntityEditPage";
+import { EntityHistoryPage } from "pages/EntityHistoryPage";
+import { EntityListPage } from "pages/EntityListPage";
+import { EntryEditPage } from "pages/EntryEditPage";
+import { EntryHistoryListPage } from "pages/EntryHistoryListPage";
+import { EntryListPage } from "pages/EntryListPage";
+import { GroupEditPage } from "pages/GroupEditPage";
+import { GroupListPage } from "pages/GroupListPage";
+import { JobListPage } from "pages/JobListPage";
+import { LoginPage } from "pages/LoginPage";
+import { TriggerEditPage } from "pages/TriggerEditPage";
+import { TriggerListPage } from "pages/TriggerListPage";
+import { UserEditPage } from "pages/UserEditPage";
+import { UserListPage } from "pages/UserListPage";
 import {
   aclHistoryPath,
   aclPath,
@@ -46,26 +65,7 @@ import {
   triggersPath,
   userPath,
   usersPath,
-} from "Routes";
-import { Header } from "components/Header";
-import { ACLEditPage } from "pages/ACLEditPage";
-import { AdvancedSearchPage } from "pages/AdvancedSearchPage";
-import { AdvancedSearchResultsPage } from "pages/AdvancedSearchResultsPage";
-import { DashboardPage } from "pages/DashboardPage";
-import { EntityEditPage } from "pages/EntityEditPage";
-import { EntityHistoryPage } from "pages/EntityHistoryPage";
-import { EntityListPage } from "pages/EntityListPage";
-import { EntryEditPage } from "pages/EntryEditPage";
-import { EntryHistoryListPage } from "pages/EntryHistoryListPage";
-import { EntryListPage } from "pages/EntryListPage";
-import { GroupEditPage } from "pages/GroupEditPage";
-import { GroupListPage } from "pages/GroupListPage";
-import { JobListPage } from "pages/JobListPage";
-import { LoginPage } from "pages/LoginPage";
-import { TriggerEditPage } from "pages/TriggerEditPage";
-import { TriggerListPage } from "pages/TriggerListPage";
-import { UserEditPage } from "pages/UserEditPage";
-import { UserListPage } from "pages/UserListPage";
+} from "routes/Routes";
 
 interface Props {
   customRoutes?: {
