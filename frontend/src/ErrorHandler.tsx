@@ -9,7 +9,7 @@ import {
 import { styled } from "@mui/material/styles";
 import React, { FC, useCallback, useEffect, useState } from "react";
 import { ErrorBoundary, FallbackProps } from "react-error-boundary";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useError } from "react-use";
 
 import { ForbiddenErrorPage } from "./pages/ForbiddenErrorPage";
@@ -96,11 +96,15 @@ const GenericError: FC<GenericErrorProps> = ({ children }) => {
 };
 
 const ErrorFallback: FC<FallbackProps> = ({ error, resetErrorBoundary }) => {
-  const location = useLocation();
-
   useEffect(() => {
-    resetErrorBoundary();
-  }, [location, resetErrorBoundary]);
+    const handlePopState = () => {
+      resetErrorBoundary();
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, [resetErrorBoundary]);
 
   switch (error.name) {
     case ForbiddenError.errorName:
