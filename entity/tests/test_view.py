@@ -1602,3 +1602,26 @@ class ViewTest(AironeViewTest):
 
         self.assertEqual(resp.status_code, 200)
         self.assertTrue(self._test_data["is_call_custom_called"])
+
+    @mock.patch("entity.tasks.create_entity.delay", mock.Mock(side_effect=tasks.create_entity))
+    def test_try_to_create_duplicate_name_of_entity(self):
+        user = self.admin_login()
+        Entity.objects.create(name="hoge", created_user=user)
+
+        # Set parameters with a duplicate entity name "hoge"
+        params = {
+            "name": "hoge",
+            "note": "",
+            "is_toplevel": False,
+            "attrs": [],
+        }
+
+        resp = self.client.post(
+            reverse("entity:do_create"),
+            json.dumps(params),
+            "application/json",
+        )
+
+        # Check the response is 400 and the content is "Duplicate name entity is existed"
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.content.decode("utf-8"), "Duplicate name entity is existed")

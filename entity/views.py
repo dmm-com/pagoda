@@ -215,9 +215,7 @@ def do_edit(request, entity_id, recv_data):
             "name": "name",
             "type": str,
             "checker": lambda x: (
-                x["name"]
-                and not Entity.objects.filter(name=x["name"]).exists()
-                and len(x["name"]) <= Entity._meta.get_field("name").max_length
+                x["name"] and len(x["name"]) <= Entity._meta.get_field("name").max_length
             ),
         },
         {"name": "note", "type": str},
@@ -276,6 +274,10 @@ def do_create(request, recv_data):
     )
     if len([v for v, count in counter.items() if count > 1]):
         return HttpResponse("Duplicated attribute names are not allowed", status=400)
+
+    # checks that a same name entity corresponding to the entity is existed, or not.
+    if Entity.objects.filter(name=recv_data["name"], is_active=True).exists():
+        return HttpResponse("Duplicate name entity is existed", status=400)
 
     if custom_view.is_custom("create_entity"):
         resp = custom_view.call_custom("create_entity", None, recv_data["name"], recv_data["attrs"])
