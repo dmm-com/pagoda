@@ -215,8 +215,7 @@ def do_edit(request, entity_id, recv_data):
             "name": "name",
             "type": str,
             "checker": lambda x: (
-                x["name"]
-                and len(x["name"]) <= Entity._meta.get_field("name").max_length
+                x["name"] and len(x["name"]) <= Entity._meta.get_field("name").max_length
             ),
         },
         {"name": "note", "type": str},
