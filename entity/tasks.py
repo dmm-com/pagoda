@@ -80,11 +80,6 @@ def edit_entity(self, job: Job) -> JobStatus:
         entity.note = recv_data["note"]
         entity.save(update_fields=["note"])
 
-    # This describes job pamraeters of Job.update_es_docuemnt()
-    jp_update_es_document = {
-        "is_updated": True,
-    }
-
     # update processing for each attrs
     deleted_attr_ids = []
     for attr in recv_data["attrs"]:
@@ -156,27 +151,6 @@ def edit_entity(self, job: Job) -> JobStatus:
             # register History to register adding EntityAttr
             history.add_attr(attr_obj)
 
-    Job.new_update_documents(entity, "", jp_update_es_document).run()
-
-    # This job updates elasticsearch not only Entries that are belonged to
-    # the edited Entity, but also Entrie that are refered by Entry, which is
-    # belonged to this Entity.
-    associated_entity_ids = set()
-    for attr in entity.attrs.filter(is_active=True):
-        associated_entity_ids |= set([x.id for x in attr.referral.filter(is_active=True)])
-
-    # This also update es-documents of Entries that are referred by AttributeValues
-    # that are associated with deleted EntityAttrs.
-    for attr_id in deleted_attr_ids:
-        attr = EntityAttr.objects.filter(id=attr_id).last()
-        if attr:
-            associated_entity_ids |= set([x.id for x in attr.referral.filter(is_active=True)])
-
-    # create job to update es-document that is related with edited Entity
-    for related_entity_id in associated_entity_ids:
-        related_entity = Entity.objects.get(id=related_entity_id)
-        Job.new_update_documents(related_entity, "", jp_update_es_document).run()
-
     # clear flag to specify this entity has been completed to edit
     entity.del_status(Entity.STATUS_EDITING)
 
@@ -238,11 +212,6 @@ def edit_entity_v2(self, job: Job) -> JobStatus:
         return JobStatus.ERROR
 
     serializer.update_remaining(entity, serializer.validated_data)
-
-    jp_update_es_document = {
-        "is_updated": True,
-    }
-    Job.new_update_documents(entity, "", jp_update_es_document).run()
 
     return JobStatus.DONE
 
