@@ -12,15 +12,12 @@ from rest_framework import status
 from rest_framework.exceptions import ValidationError
 
 from acl.models import ACLBase
-from airone.lib.elasticsearch import AttrHint
 from airone.lib.log import Logger
 from airone.lib.test import AironeViewTest
 from airone.lib.types import AttrType
 from entity import tasks
 from entity.models import Entity, EntityAttr
-from entry import tasks as entry_tasks
 from entry.models import Entry
-from entry.services import AdvancedSearchService
 from entry.tasks import create_entry_v2
 from group.models import Group
 from role.models import Role

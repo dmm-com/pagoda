@@ -13,7 +13,6 @@ from entity import tasks
 from entity.models import Entity, EntityAttr
 from entity.settings import CONFIG
 from entry.models import Attribute, Entry
-from entry.services import AdvancedSearchService
 from entry.tasks import update_es_documents
 from user.models import History, User
 
