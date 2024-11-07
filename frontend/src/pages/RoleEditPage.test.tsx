@@ -21,9 +21,9 @@ const server = setupServer(
       description: "role1",
       users: [],
       groups: [],
-      adminUsers: [],
-      adminGroups: [],
-      isEditable: true,
+      admin_users: [],
+      admin_groups: [],
+      is_editable: true,
     });
   }),
   // getGroups
