@@ -8,6 +8,14 @@
 
 ### Fixed
 
+## v3.109.0
+
+### Changed
+* Update duplicate entity name error handling.
+  Contributed by @tsunoda-takahiro
+* Update react-router from v5 to v6.
+  Contributed by @syucream
+
 ## v3.108.0
 
 ### Changed
