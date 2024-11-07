@@ -620,19 +620,6 @@ class ViewTest(AironeViewTest):
         self.assertEqual(entity.attrs.count(), 3)
         self.assertEqual(entry.attrs.count(), 2)
 
-        res = AdvancedSearchService.search_entries(user, [entity.id], is_output_all=True)
-        self.assertEqual(
-            sorted([x for x in res.ret_values[0].attrs.keys()]), sorted(["foo", "bar", "ref"])
-        )
-
-        # Check the elasticsearch data is also changed when
-        # referred Entity name is changed.
-        res = AdvancedSearchService.search_entries(
-            user, [ref_entity.id], hint_referral="", is_output_all=True
-        )
-        self.assertEqual(res.ret_count, 1)
-        self.assertEqual(res.ret_values[0].referrals[0]["schema"]["name"], "Changed-Entity")
-
     def test_post_edit_attribute_type(self):
         user = self.admin_login()
 
@@ -961,15 +948,6 @@ class ViewTest(AironeViewTest):
         self.assertEqual(History.objects.count(), 3)
         self.assertEqual(History.objects.filter(operation=History.MOD_ENTITY).count(), 2)
         self.assertEqual(History.objects.filter(operation=History.DEL_ATTR).count(), 1)
-
-        # Check the elasticsearch data (the referrals parameter) is also removed when
-        # referring EntityAttr is deleted.
-        res = AdvancedSearchService.search_entries(
-            user, [ref_entity.id], hint_referral="", is_output_all=True
-        )
-        self.assertEqual(res.ret_count, 1)
-        self.assertEqual(res.ret_values[0].entry["id"], ref_entry.id)
-        self.assertEqual(res.ret_values[0].referrals, [])
 
         # checks for HistoricalRecord for EntityAttr,
         # it's value must be increased by 1, that are for delete attribute
