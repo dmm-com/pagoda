@@ -1,5 +1,5 @@
 import { ThemeProvider } from "@mui/material/styles";
-import React, { FC } from "react";
+import React, { FC, StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 
 import { AironeSnackbarProvider } from "AironeSnackbarProvider";
@@ -11,15 +11,17 @@ import "i18n/config";
 
 const App: FC = () => {
   return (
-    <ThemeProvider theme={theme}>
-      <AironeSnackbarProvider>
-        <ErrorHandler>
-          <CheckTermsService>
-            <AppRouter />
-          </CheckTermsService>
-        </ErrorHandler>
-      </AironeSnackbarProvider>
-    </ThemeProvider>
+    <StrictMode>
+      <ThemeProvider theme={theme}>
+        <AironeSnackbarProvider>
+          <ErrorHandler>
+            <CheckTermsService>
+              <AppRouter />
+            </CheckTermsService>
+          </ErrorHandler>
+        </AironeSnackbarProvider>
+      </ThemeProvider>
+    </StrictMode>
   );
 };
 
