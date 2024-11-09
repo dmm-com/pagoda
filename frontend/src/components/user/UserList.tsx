@@ -17,7 +17,6 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 
 import { UserControlMenu } from "./UserControlMenu";
 
-import { newUserPath, userPath } from "Routes";
 import { ClipboardCopyButton } from "components/common/ClipboardCopyButton";
 import { Loading } from "components/common/Loading";
 import { PaginationFooter } from "components/common/PaginationFooter";
@@ -25,6 +24,7 @@ import { SearchBox } from "components/common/SearchBox";
 import { useAsyncWithThrow } from "hooks/useAsyncWithThrow";
 import { usePage } from "hooks/usePage";
 import { aironeApiClient } from "repository/AironeApiClient";
+import { newUserPath, userPath } from "routes/Routes";
 import { UserList as ConstUserList } from "services/Constants";
 import { ServerContext } from "services/ServerContext";
 import { normalizeToMatch } from "services/StringUtil";

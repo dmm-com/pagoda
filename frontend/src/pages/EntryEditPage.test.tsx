@@ -10,8 +10,8 @@ import { createMemoryRouter, RouterProvider } from "react-router-dom";
 
 import { EntryEditPage } from "./EntryEditPage";
 
-import { entryEditPath } from "Routes";
 import { TestWrapperWithoutRoutes } from "TestWrapper";
+import { entryEditPath } from "routes/Routes";
 
 const server = setupServer(
   // getEntity

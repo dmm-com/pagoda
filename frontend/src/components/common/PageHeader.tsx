@@ -4,7 +4,7 @@ import { styled } from "@mui/material/styles";
 import React, { FC } from "react";
 import { Link } from "react-router-dom";
 
-import { jobsPath } from "Routes";
+import { jobsPath } from "routes/Routes";
 
 const Frame = styled(Box)({
   width: "100%",

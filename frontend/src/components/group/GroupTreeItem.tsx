@@ -3,8 +3,8 @@ import { Checkbox, IconButton, ListItem, Typography } from "@mui/material";
 import React, { FC } from "react";
 import { Link } from "react-router-dom";
 
-import { groupPath } from "../../Routes";
 import { GroupTree } from "../../repository/AironeApiClient";
+import { groupPath } from "../../routes/Routes";
 import { ServerContext } from "../../services/ServerContext";
 
 const CHILDREN_INDENT_WIDTH = 16;

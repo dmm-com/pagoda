@@ -8,7 +8,7 @@ import { setupServer } from "msw/node";
 import React from "react";
 import { createMemoryRouter, RouterProvider } from "react-router-dom";
 
-import { editTriggerPath } from "../Routes";
+import { editTriggerPath } from "../routes/Routes";
 
 import { TriggerEditPage } from "./TriggerEditPage";
 

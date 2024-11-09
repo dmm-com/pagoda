@@ -4,9 +4,9 @@ import { Typography } from "@mui/material";
 import React, { FC } from "react";
 import { Link } from "react-router-dom";
 
-import { topPath, entitiesPath, entityEntriesPath } from "Routes";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { FlexBox } from "components/common/FlexBox";
+import { topPath, entitiesPath, entityEntriesPath } from "routes/Routes";
 
 interface Props {
   entity?: EntityDetail;

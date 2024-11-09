@@ -24,7 +24,6 @@ import { useNavigate, useLocation } from "react-router-dom";
 
 import { EntryAttributes } from "./EntryAttributes";
 
-import { restoreEntryPath, topPath } from "Routes";
 import { Confirmable } from "components/common/Confirmable";
 import { Loading } from "components/common/Loading";
 import { PaginationFooter } from "components/common/PaginationFooter";
@@ -32,6 +31,7 @@ import { SearchBox } from "components/common/SearchBox";
 import { useAsyncWithThrow } from "hooks/useAsyncWithThrow";
 import { usePage } from "hooks/usePage";
 import { aironeApiClient } from "repository/AironeApiClient";
+import { restoreEntryPath, topPath } from "routes/Routes";
 import { EntryList as ConstEntryList } from "services/Constants";
 import { formatDateTime } from "services/DateUtil";
 import { normalizeToMatch } from "services/StringUtil";

@@ -11,9 +11,9 @@ import { useSnackbar } from "notistack";
 import React, { FC, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
-import { groupPath, groupsPath, topPath } from "Routes";
 import { Confirmable } from "components/common/Confirmable";
 import { aironeApiClient } from "repository/AironeApiClient";
+import { groupPath, groupsPath, topPath } from "routes/Routes";
 
 interface Props {
   groupId: number;

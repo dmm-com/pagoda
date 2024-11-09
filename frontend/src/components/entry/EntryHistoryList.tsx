@@ -16,10 +16,10 @@ import { useNavigate } from "react-router-dom";
 
 import { AttributeValue } from "./AttributeValue";
 
-import { showEntryHistoryPath, topPath } from "Routes";
 import { Confirmable } from "components/common/Confirmable";
 import { PaginationFooter } from "components/common/PaginationFooter";
 import { aironeApiClient } from "repository/AironeApiClient";
+import { showEntryHistoryPath, topPath } from "routes/Routes";
 import { EntryHistoryList as ConstEntryHistoryList } from "services/Constants";
 import { formatDateTime } from "services/DateUtil";
 

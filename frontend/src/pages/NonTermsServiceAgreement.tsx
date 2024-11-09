@@ -1,7 +1,7 @@
 import { Box, Button, Typography } from "@mui/material";
 import React, { FC } from "react";
 
-import { loginPath } from "../Routes";
+import { loginPath } from "../routes/Routes";
 
 import { aironeApiClient } from "repository/AironeApiClient";
 

@@ -6,7 +6,6 @@ import { useNavigate } from "react-router-dom";
 import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
 import { useTypedParams } from "../hooks/useTypedParams";
 
-import { entityEntriesPath, entryDetailsPath } from "Routes";
 import { Loading } from "components/common/Loading";
 import { PageHeader } from "components/common/PageHeader";
 import { SubmitButton } from "components/common/SubmitButton";
@@ -17,6 +16,7 @@ import {
 import { EntryBreadcrumbs } from "components/entry/EntryBreadcrumbs";
 import { usePrompt } from "hooks/usePrompt";
 import { aironeApiClient } from "repository/AironeApiClient";
+import { entityEntriesPath, entryDetailsPath } from "routes/Routes";
 
 interface Props {
   CopyForm?: FC<CopyFormProps>;

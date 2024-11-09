@@ -6,7 +6,6 @@ import { useToggle } from "react-use";
 
 import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
 
-import { topPath } from "Routes";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { Loading } from "components/common/Loading";
 import { PageHeader } from "components/common/PageHeader";
@@ -14,6 +13,7 @@ import { PaginationFooter } from "components/common/PaginationFooter";
 import { JobList } from "components/job/JobList";
 import { usePage } from "hooks/usePage";
 import { aironeApiClient } from "repository/AironeApiClient";
+import { topPath } from "routes/Routes";
 import { JobList as ConstJobList } from "services/Constants";
 
 export const JobListPage: FC = () => {
