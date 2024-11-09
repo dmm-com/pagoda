@@ -2,59 +2,61 @@
  * @jest-environment jsdom
  */
 
-import {
-  render,
-  waitForElementToBeRemoved,
-  screen,
-} from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
+import { http, HttpResponse } from "msw";
+import { setupServer } from "msw/node";
 import React from "react";
 
 import { TestWrapper } from "TestWrapper";
 import { EntityListPage } from "pages/EntityListPage";
 
-afterEach(() => {
-  jest.clearAllMocks();
-});
+const server = setupServer(
+  // getEntities
+  http.get("http://localhost/entity/api/v2/", () => {
+    return HttpResponse.json({
+      count: 3,
+      next: null,
+      previous: null,
+      results: [
+        {
+          id: 1,
+          name: "aaa",
+          note: "",
+          is_toplevel: false,
+          attrs: [],
+        },
+        {
+          id: 2,
+          name: "aaaaa",
+          note: "",
+          is_toplevel: false,
+          attrs: [],
+        },
+        {
+          id: 3,
+          name: "bbbbb",
+          note: "",
+          is_toplevel: false,
+          attrs: [],
+        },
+      ],
+    });
+  })
+);
 
-test("should match snapshot", async () => {
-  const entities = [
-    {
-      id: 1,
-      name: "aaa",
-      note: "",
-      isToplevel: false,
-      attrs: [],
-    },
-    {
-      id: 2,
-      name: "aaaaa",
-      note: "",
-      isToplevel: false,
-      attrs: [],
-    },
-    {
-      id: 3,
-      name: "bbbbb",
-      note: "",
-      isToplevel: false,
-      attrs: [],
-    },
-  ];
+beforeAll(() => server.listen());
+afterEach(() => server.resetHandlers());
+afterAll(() => server.close());
 
-  /* eslint-disable */
-  jest
-    .spyOn(
-      require("../repository/AironeApiClient").aironeApiClient,
-      "getEntities"
-    )
-    .mockResolvedValue(Promise.resolve({ results: entities }));
-  /* eslint-enable */
+describe("EntityListPage", () => {
+  test("should match snapshot", async () => {
+    const result = render(<EntityListPage />, {
+      wrapper: TestWrapper,
+    });
+    await waitFor(() => {
+      expect(screen.queryByTestId("loading")).not.toBeInTheDocument();
+    });
 
-  // wait async calls and get rendered fragment
-  const result = render(<EntityListPage />, {
-    wrapper: TestWrapper,
+    expect(result).toMatchSnapshot();
   });
-  await waitForElementToBeRemoved(screen.getByTestId("loading"));
-
-  expect(result).toMatchSnapshot();
 });

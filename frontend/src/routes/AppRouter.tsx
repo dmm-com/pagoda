@@ -5,6 +5,7 @@ import {
   Outlet,
   Route,
   RouterProvider,
+  useRouteError,
 } from "react-router-dom";
 
 import { ACLHistoryPage } from "../pages/ACLHistoryPage";
@@ -67,6 +68,11 @@ import {
   usersPath,
 } from "routes/Routes";
 
+// re-throw error to be caught by the root error boundary
+const ErrorBridge: FC = () => {
+  throw useRouteError();
+};
+
 interface Props {
   customRoutes?: {
     path: string;
@@ -77,7 +83,7 @@ interface Props {
 export const AppRouter: FC<Props> = ({ customRoutes }) => {
   const router = createBrowserRouter(
     createRoutesFromElements(
-      <Route>
+      <Route errorElement={<ErrorBridge />}>
         <Route path={loginPath()} element={<LoginPage />} />
         <Route
           path="/"
