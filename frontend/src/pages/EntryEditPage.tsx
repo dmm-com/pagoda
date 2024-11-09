@@ -6,7 +6,6 @@ import { useNavigate } from "react-router-dom";
 
 import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
 
-import { entityEntriesPath, entryDetailsPath } from "Routes";
 import { Loading } from "components/common/Loading";
 import { PageHeader } from "components/common/PageHeader";
 import { SubmitButton } from "components/common/SubmitButton";
@@ -21,6 +20,7 @@ import { useFormNotification } from "hooks/useFormNotification";
 import { usePrompt } from "hooks/usePrompt";
 import { useTypedParams } from "hooks/useTypedParams";
 import { aironeApiClient } from "repository/AironeApiClient";
+import { entityEntriesPath, entryDetailsPath } from "routes/Routes";
 import {
   extractAPIException,
   isResponseError,

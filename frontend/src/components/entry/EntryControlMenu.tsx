@@ -11,6 +11,8 @@ import { useSnackbar } from "notistack";
 import React, { FC } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
+import { Confirmable } from "components/common/Confirmable";
+import { aironeApiClient } from "repository/AironeApiClient";
 import {
   entryEditPath,
   aclPath,
@@ -20,9 +22,7 @@ import {
   topPath,
   entryDetailsPath,
   aclHistoryPath,
-} from "Routes";
-import { Confirmable } from "components/common/Confirmable";
-import { aironeApiClient } from "repository/AironeApiClient";
+} from "routes/Routes";
 
 interface EntryControlProps {
   entityId: number;

@@ -6,12 +6,12 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 
 import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
 
-import { entityEntriesPath, entryDetailsPath } from "Routes";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { Loading } from "components/common/Loading";
 import { SearchBox } from "components/common/SearchBox";
 import { useSimpleSearch } from "hooks/useSimpleSearch";
 import { aironeApiClient } from "repository/AironeApiClient";
+import { entityEntriesPath, entryDetailsPath } from "routes/Routes";
 
 const StyledContainer = styled(Container)({
   marginTop: "16px",

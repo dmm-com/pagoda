@@ -1,7 +1,7 @@
 import { Box, Button, Typography } from "@mui/material";
 import React, { FC, useCallback } from "react";
 
-import { topPath } from "../Routes";
+import { topPath } from "../routes/Routes";
 
 export const NotFoundErrorPage: FC = () => {
   const handleClickGoToTop = useCallback(() => {

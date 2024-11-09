@@ -6,7 +6,6 @@ import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
 import { useToggle } from "react-use";
 
-import { topPath, usersPath } from "Routes";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { Confirmable } from "components/common/Confirmable";
 import { Loading } from "components/common/Loading";
@@ -19,6 +18,7 @@ import { useFormNotification } from "hooks/useFormNotification";
 import { usePrompt } from "hooks/usePrompt";
 import { useTypedParams } from "hooks/useTypedParams";
 import { aironeApiClient } from "repository/AironeApiClient";
+import { topPath, usersPath } from "routes/Routes";
 import {
   extractAPIException,
   isResponseError,

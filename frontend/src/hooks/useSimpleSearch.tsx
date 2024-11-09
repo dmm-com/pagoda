@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 
-import { topPath } from "../Routes";
+import { topPath } from "../routes/Routes";
 
 type Query = string | undefined;
 
