@@ -18,8 +18,8 @@ import { aironeApiClient } from "../../repository/AironeApiClient";
 import { EntryReferralList } from "../../services/Constants";
 import { normalizeToMatch } from "../../services/StringUtil";
 
-import { entryDetailsPath } from "Routes";
 import { SearchBox } from "components/common/SearchBox";
+import { entryDetailsPath } from "routes/Routes";
 
 const ReferralCount = styled(Typography)(({}) => ({
   fontSize: "16px",

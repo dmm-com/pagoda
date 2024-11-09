@@ -15,9 +15,9 @@ import { Link } from "react-router-dom";
 
 import { EntityControlMenu } from "./EntityControlMenu";
 
-import { entityEntriesPath } from "Routes";
 import { ClipboardCopyButton } from "components/common/ClipboardCopyButton";
 import { EntryImportModal } from "components/entry/EntryImportModal";
+import { entityEntriesPath } from "routes/Routes";
 
 const EntityNote = styled(Typography)(({ theme }) => ({
   color: theme.palette.text.secondary,

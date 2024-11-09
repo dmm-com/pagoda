@@ -6,9 +6,9 @@ import { render, screen, act, waitFor } from "@testing-library/react";
 import React from "react";
 import { createMemoryRouter, RouterProvider } from "react-router-dom";
 
-import { entryDetailsPath } from "Routes";
 import { TestWrapperWithoutRoutes } from "TestWrapper";
 import { EntryDetailsPage } from "pages/EntryDetailsPage";
+import { entryDetailsPath } from "routes/Routes";
 
 afterEach(() => {
   jest.clearAllMocks();

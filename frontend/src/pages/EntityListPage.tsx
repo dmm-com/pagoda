@@ -4,7 +4,6 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 
 import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
 
-import { topPath } from "Routes";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { Loading } from "components/common/Loading";
 import { PageHeader } from "components/common/PageHeader";
@@ -12,6 +11,7 @@ import { EntityImportModal } from "components/entity/EntityImportModal";
 import { EntityList } from "components/entity/EntityList";
 import { usePage } from "hooks/usePage";
 import { aironeApiClient } from "repository/AironeApiClient";
+import { topPath } from "routes/Routes";
 
 export const EntityListPage: FC = () => {
   const location = useLocation();

@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { aironeApiClient } from "../../repository/AironeApiClient";
 import { AironeModal } from "../common/AironeModal";
 
-import { loginPath, topPath, usersPath } from "Routes";
+import { loginPath, topPath, usersPath } from "routes/Routes";
 import { ServerContext } from "services/ServerContext";
 
 const PasswordField = styled(Box)(({ theme }) => ({

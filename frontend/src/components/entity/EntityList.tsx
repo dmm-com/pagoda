@@ -6,9 +6,9 @@ import { Link } from "react-router-dom";
 
 import { EntityListCard } from "./EntityListCard";
 
-import { newEntityPath } from "Routes";
 import { PaginationFooter } from "components/common/PaginationFooter";
 import { SearchBox } from "components/common/SearchBox";
+import { newEntityPath } from "routes/Routes";
 import { EntityList as ConstEntityList } from "services/Constants";
 import { normalizeToMatch } from "services/StringUtil";
 

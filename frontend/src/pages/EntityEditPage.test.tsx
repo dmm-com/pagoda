@@ -12,7 +12,7 @@ import { setupServer } from "msw/node";
 import React from "react";
 import { createMemoryRouter, RouterProvider } from "react-router-dom";
 
-import { editEntityPath } from "../Routes";
+import { editEntityPath } from "../routes/Routes";
 
 import { EntityEditPage } from "./EntityEditPage";
 
