@@ -131,52 +131,52 @@ export const SearchResultsTableHead: FC<Props> = ({
 
   const handleSelectFilterConditions =
     (attrName?: string) =>
-      (
-        attrFilter?: AttrFilter,
-        overwriteEntryName?: string,
-        overwriteReferral?: string
-      ) => {
-        const _attrsFilter =
-          attrName != null && attrFilter != null
-            ? { ...attrsFilter, [attrName]: attrFilter }
-            : attrsFilter;
+    (
+      attrFilter?: AttrFilter,
+      overwriteEntryName?: string,
+      overwriteReferral?: string
+    ) => {
+      const _attrsFilter =
+        attrName != null && attrFilter != null
+          ? { ...attrsFilter, [attrName]: attrFilter }
+          : attrsFilter;
 
-        const newParams = formatAdvancedSearchParams({
-          attrsFilter: Object.keys(_attrsFilter)
-            .filter((k) => _attrsFilter[k]?.joinedAttrname === undefined)
-            .reduce((a, k) => ({ ...a, [k]: _attrsFilter[k] }), {}),
-          entryName: overwriteEntryName ?? entryFilter,
-          referralName: overwriteReferral ?? referralFilter,
-          baseParams: new URLSearchParams(location.search),
-          joinAttrs: Object.keys(_attrsFilter)
-            .filter((k) => _attrsFilter[k]?.joinedAttrname !== undefined)
-            .map((k) => ({
-              name: _attrsFilter[k]?.baseAttrname ?? "",
-              attrinfo: Object.keys(_attrsFilter)
-                .filter(
-                  (j) =>
-                    _attrsFilter[j].baseAttrname === _attrsFilter[k].baseAttrname
-                )
-                .map((j) => ({
-                  name: _attrsFilter[j]?.joinedAttrname ?? "",
-                  filterKey: _attrsFilter[j].filterKey,
-                  keyword: _attrsFilter[j].keyword,
-                })),
-            }))
-            // This removes duplicates
-            .filter((v, i, a) => a.findIndex((t) => t.name === v.name) === i),
-        });
+      const newParams = formatAdvancedSearchParams({
+        attrsFilter: Object.keys(_attrsFilter)
+          .filter((k) => _attrsFilter[k]?.joinedAttrname === undefined)
+          .reduce((a, k) => ({ ...a, [k]: _attrsFilter[k] }), {}),
+        entryName: overwriteEntryName ?? entryFilter,
+        referralName: overwriteReferral ?? referralFilter,
+        baseParams: new URLSearchParams(location.search),
+        joinAttrs: Object.keys(_attrsFilter)
+          .filter((k) => _attrsFilter[k]?.joinedAttrname !== undefined)
+          .map((k) => ({
+            name: _attrsFilter[k]?.baseAttrname ?? "",
+            attrinfo: Object.keys(_attrsFilter)
+              .filter(
+                (j) =>
+                  _attrsFilter[j].baseAttrname === _attrsFilter[k].baseAttrname
+              )
+              .map((j) => ({
+                name: _attrsFilter[j]?.joinedAttrname ?? "",
+                filterKey: _attrsFilter[j].filterKey,
+                keyword: _attrsFilter[j].keyword,
+              })),
+          }))
+          // This removes duplicates
+          .filter((v, i, a) => a.findIndex((t) => t.name === v.name) === i),
+      });
 
-        if (getIsFiltered(attrFilter?.filterKey, attrFilter?.keyword)) {
-          refreshSearchResults();
-        }
+      if (getIsFiltered(attrFilter?.filterKey, attrFilter?.keyword)) {
+        refreshSearchResults();
+      }
 
-        // simply reload with the new params
-        navigate({
-          pathname: location.pathname,
-          search: "?" + newParams.toString(),
-        });
-      };
+      // simply reload with the new params
+      navigate({
+        pathname: location.pathname,
+        search: "?" + newParams.toString(),
+      });
+    };
 
   const handleUpdateAttrFilter =
     (attrName: string) => (attrFilter: AttrFilter) => {
@@ -190,9 +190,7 @@ export const SearchResultsTableHead: FC<Props> = ({
     <TableHead>
       <TableRow sx={{ backgroundColor: "primary.dark" }}>
         {/* Bulk operation checkbox would be invisible when Readonly mode is true */}
-        {!isReadonly && (
-          <TableCell sx={{ witdh: "80px" }} />
-        )}
+        {!isReadonly && <TableCell sx={{ witdh: "80px" }} />}
         <StyledTableCell sx={{ outline: "1px solid #FFFFFF" }}>
           <HeaderBox>
             <Typography>アイテム名</Typography>
@@ -213,7 +211,9 @@ export const SearchResultsTableHead: FC<Props> = ({
                   handleClose={() => setEntryMenuEls(null)}
                   entryFilterDispatcher={entryFilterDispatcher}
                   handleSelectFilterConditions={handleSelectFilterConditions()}
-                  handleClear={() => handleSelectFilterConditions()(undefined, "")}
+                  handleClear={() =>
+                    handleSelectFilterConditions()(undefined, "")
+                  }
                 />
               </>
             )}
@@ -225,7 +225,8 @@ export const SearchResultsTableHead: FC<Props> = ({
               <Typography>{attrName}</Typography>
 
               {/* Bulk operation checkbox would be invisible when Readonly mode is true */}
-              {(attrTypes[attrName] & EntryAttributeTypeTypeEnum.OBJECT) > 0 && !isReadonly &&
+              {(attrTypes[attrName] & EntryAttributeTypeTypeEnum.OBJECT) > 0 &&
+                !isReadonly &&
                 attrsFilter[attrName]?.joinedAttrname === undefined && (
                   <StyledIconButton onClick={() => setJoinAttrname(attrName)}>
                     <AddIcon />

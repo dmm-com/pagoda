@@ -120,7 +120,9 @@ export const SearchResults: FC<Props> = ({
                   {!isReadonly && (
                     <TableCell sx={{ padding: 0 }}>
                       <Checkbox
-                        checked={bulkOperationEntryIds.includes(result.entry.id)}
+                        checked={bulkOperationEntryIds.includes(
+                          result.entry.id
+                        )}
                         onChange={(e) =>
                           handleChangeBulkOperationEntryId(
                             result.entry.id,
