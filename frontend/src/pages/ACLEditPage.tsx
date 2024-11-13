@@ -12,7 +12,6 @@ import { useNavigate } from "react-router-dom";
 
 import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
 
-import { editEntityPath, entityEntriesPath, entryDetailsPath } from "Routes";
 import { ACLForm } from "components/acl/ACLForm";
 import { Schema, schema } from "components/acl/aclForm/ACLFormSchema";
 import { Loading } from "components/common/Loading";
@@ -23,6 +22,11 @@ import { EntryBreadcrumbs } from "components/entry/EntryBreadcrumbs";
 import { usePrompt } from "hooks/usePrompt";
 import { useTypedParams } from "hooks/useTypedParams";
 import { aironeApiClient } from "repository/AironeApiClient";
+import {
+  editEntityPath,
+  entityEntriesPath,
+  entryDetailsPath,
+} from "routes/Routes";
 
 export const ACLEditPage: FC = () => {
   const navigate = useNavigate();

@@ -21,9 +21,9 @@ import { Link } from "react-router-dom";
 
 import { SearchResultsTableHead } from "./SearchResultsTableHead";
 
-import { entryDetailsPath } from "Routes";
 import { PaginationFooter } from "components/common/PaginationFooter";
 import { AttributeValue } from "components/entry/AttributeValue";
+import { entryDetailsPath } from "routes/Routes";
 import { AdvancedSerarchResultList } from "services/Constants";
 import { AttrsFilter } from "services/entry/AdvancedSearch";
 

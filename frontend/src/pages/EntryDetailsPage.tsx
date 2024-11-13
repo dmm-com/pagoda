@@ -8,7 +8,6 @@ import { useNavigate } from "react-router-dom";
 import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
 import { useTypedParams } from "../hooks/useTypedParams";
 
-import { entryDetailsPath, restoreEntryPath } from "Routes";
 import { Loading } from "components/common/Loading";
 import { PageHeader } from "components/common/PageHeader";
 import { EntryAttributes } from "components/entry/EntryAttributes";
@@ -16,6 +15,7 @@ import { EntryBreadcrumbs } from "components/entry/EntryBreadcrumbs";
 import { EntryControlMenu } from "components/entry/EntryControlMenu";
 import { EntryReferral } from "components/entry/EntryReferral";
 import { aironeApiClient } from "repository/AironeApiClient";
+import { entryDetailsPath, restoreEntryPath } from "routes/Routes";
 
 const FlexBox = styled(Box)(({}) => ({
   display: "flex",

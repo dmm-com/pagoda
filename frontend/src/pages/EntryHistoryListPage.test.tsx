@@ -6,7 +6,7 @@ import { render, screen, act, waitFor } from "@testing-library/react";
 import React from "react";
 import { createMemoryRouter, RouterProvider } from "react-router-dom";
 
-import { showEntryHistoryPath } from "../Routes";
+import { showEntryHistoryPath } from "../routes/Routes";
 
 import { EntryHistoryListPage } from "./EntryHistoryListPage";
 

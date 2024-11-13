@@ -18,11 +18,11 @@ import { GroupImportModal } from "../components/group/GroupImportModal";
 import { GroupTreeRoot } from "../components/group/GroupTreeRoot";
 import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
 
-import { newGroupPath, topPath } from "Routes";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { Loading } from "components/common/Loading";
 import { PageHeader } from "components/common/PageHeader";
 import { aironeApiClient } from "repository/AironeApiClient";
+import { newGroupPath, topPath } from "routes/Routes";
 import { ServerContext } from "services/ServerContext";
 
 const StyledBox = styled(Box)({

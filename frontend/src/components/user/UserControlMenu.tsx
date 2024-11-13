@@ -14,10 +14,10 @@ import { useNavigate } from "react-router-dom";
 
 import { UserPasswordFormModal } from "./UserPasswordFormModal";
 
-import { topPath } from "Routes";
-import { usersPath } from "Routes";
 import { Confirmable } from "components/common/Confirmable";
 import { aironeApiClient } from "repository/AironeApiClient";
+import { topPath } from "routes/Routes";
+import { usersPath } from "routes/Routes";
 
 interface UserControlProps {
   user: UserList;
