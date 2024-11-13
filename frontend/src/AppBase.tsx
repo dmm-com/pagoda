@@ -1,5 +1,5 @@
 import { ThemeProvider } from "@mui/material/styles";
-import React, { FC } from "react";
+import React, { FC, StrictMode } from "react";
 
 import { AironeSnackbarProvider } from "AironeSnackbarProvider";
 import { ErrorHandler } from "ErrorHandler";
@@ -17,14 +17,16 @@ interface Props {
 
 export const AppBase: FC<Props> = ({ customRoutes }) => {
   return (
-    <ThemeProvider theme={theme}>
-      <AironeSnackbarProvider>
-        <ErrorHandler>
-          <CheckTerms>
-            <AppRouter customRoutes={customRoutes} />
-          </CheckTerms>
-        </ErrorHandler>
-      </AironeSnackbarProvider>
-    </ThemeProvider>
+    <StrictMode>
+      <ThemeProvider theme={theme}>
+        <AironeSnackbarProvider>
+          <ErrorHandler>
+            <CheckTerms>
+              <AppRouter customRoutes={customRoutes} />
+            </CheckTerms>
+          </ErrorHandler>
+        </AironeSnackbarProvider>
+      </ThemeProvider>
+    </StrictMode>
   );
 };
