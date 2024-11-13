@@ -7,9 +7,9 @@ import { RoleImportModal } from "../components/role/RoleImportModal";
 import { RoleList } from "../components/role/RoleList";
 import { aironeApiClient } from "../repository/AironeApiClient";
 
-import { newRolePath, topPath } from "Routes";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { PageHeader } from "components/common/PageHeader";
+import { newRolePath, topPath } from "routes/Routes";
 
 export const RoleListPage: FC = () => {
   const [openImportModal, setOpenImportModal] = useState(false);

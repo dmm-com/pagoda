@@ -15,8 +15,8 @@ import { styled } from "@mui/material/styles";
 import React, { FC, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
-import { entityEntriesPath } from "../../Routes";
 import { aironeApiClient } from "../../repository/AironeApiClient";
+import { entityEntriesPath } from "../../routes/Routes";
 import { JobOperations, JobStatuses } from "../../services/Constants";
 import { formatDateTime } from "../../services/DateUtil";
 import { jobOperationLabel, jobStatusLabel } from "../../services/JobUtil";

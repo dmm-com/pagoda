@@ -32,18 +32,18 @@ import React, { FC, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAsync } from "react-use";
 
+import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
+import { Confirmable } from "components/common/Confirmable";
+import { Loading } from "components/common/Loading";
+import { PageHeader } from "components/common/PageHeader";
+import { aironeApiClient } from "repository/AironeApiClient";
 import {
   editTriggerPath,
   entryDetailsPath,
   newTriggerPath,
   topPath,
   triggersPath,
-} from "Routes";
-import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
-import { Confirmable } from "components/common/Confirmable";
-import { Loading } from "components/common/Loading";
-import { PageHeader } from "components/common/PageHeader";
-import { aironeApiClient } from "repository/AironeApiClient";
+} from "routes/Routes";
 
 const StyledList = styled(List)(() => ({
   padding: "0",

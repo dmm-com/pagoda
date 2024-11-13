@@ -8,13 +8,13 @@ import {
   useRouteError,
 } from "react-router-dom";
 
-import { ACLHistoryPage } from "./pages/ACLHistoryPage";
-import { EntryCopyPage } from "./pages/EntryCopyPage";
-import { EntryDetailsPage } from "./pages/EntryDetailsPage";
-import { EntryRestorePage } from "./pages/EntryRestorePage";
-import { NotFoundErrorPage } from "./pages/NotFoundErrorPage";
-import { RoleEditPage } from "./pages/RoleEditPage";
-import { RoleListPage } from "./pages/RoleListPage";
+import { ACLHistoryPage } from "../pages/ACLHistoryPage";
+import { EntryCopyPage } from "../pages/EntryCopyPage";
+import { EntryDetailsPage } from "../pages/EntryDetailsPage";
+import { EntryRestorePage } from "../pages/EntryRestorePage";
+import { NotFoundErrorPage } from "../pages/NotFoundErrorPage";
+import { RoleEditPage } from "../pages/RoleEditPage";
+import { RoleListPage } from "../pages/RoleListPage";
 
 import { Header } from "components/common/Header";
 import { ACLEditPage } from "pages/ACLEditPage";

@@ -25,7 +25,7 @@ import { aironeApiClient } from "../../repository/AironeApiClient";
 import { Confirmable } from "../common/Confirmable";
 import { Loading } from "../common/Loading";
 
-import { rolePath, rolesPath, topPath } from "Routes";
+import { rolePath, rolesPath, topPath } from "routes/Routes";
 
 const StyledList = styled(List)(() => ({
   padding: "0",
