@@ -63,6 +63,7 @@ interface Props {
   joinAttrs: AdvancedSearchJoinAttrInfo[];
   disablePaginationFooter: boolean;
   setSearchResults: () => void;
+  isReadonly?: boolean;
 }
 
 export const SearchResults: FC<Props> = ({
@@ -80,6 +81,7 @@ export const SearchResults: FC<Props> = ({
   joinAttrs,
   disablePaginationFooter,
   setSearchResults,
+  isReadonly = false,
 }) => {
   // NOTE attrTypes are guessed by the first element on the results. So if it has no appropriate attr,
   // the type guess doesn't work well. We should improve attr type API if more accurate type is needed.
@@ -109,21 +111,28 @@ export const SearchResults: FC<Props> = ({
               searchAllEntities={searchAllEntities}
               joinAttrs={joinAttrs}
               refreshSearchResults={setSearchResults}
+              isReadonly={isReadonly}
             />
             <TableBody>
               {results.values?.map((result) => (
                 <StyledTableRow key={result.entry.id}>
-                  <TableCell sx={{ padding: 0 }}>
-                    <Checkbox
-                      checked={bulkOperationEntryIds.includes(result.entry.id)}
-                      onChange={(e) =>
-                        handleChangeBulkOperationEntryId(
-                          result.entry.id,
-                          e.target.checked
-                        )
-                      }
-                    />
-                  </TableCell>
+                  {/* Bulk operation checkbox would be invisible when Readonly mode is true */}
+                  {!isReadonly && (
+                    <TableCell sx={{ padding: 0 }}>
+                      <Checkbox
+                        checked={bulkOperationEntryIds.includes(
+                          result.entry.id
+                        )}
+                        onChange={(e) =>
+                          handleChangeBulkOperationEntryId(
+                            result.entry.id,
+                            e.target.checked
+                          )
+                        }
+                      />
+                    </TableCell>
+                  )}
+
                   <TableCell>
                     <Box
                       component={Link}
