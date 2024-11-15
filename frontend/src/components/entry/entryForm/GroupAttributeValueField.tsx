@@ -23,6 +23,7 @@ interface Props {
   control: Control<Schema>;
   setValue: UseFormSetValue<Schema>;
   multiple?: boolean;
+  isDisabled?: boolean;
 }
 
 export const GroupAttributeValueField: FC<Props> = ({
@@ -30,6 +31,7 @@ export const GroupAttributeValueField: FC<Props> = ({
   attrId,
   control,
   setValue,
+  isDisabled = false,
 }) => {
   const groups = useAsyncWithThrow(async () => {
     const _groups = await aironeApiClient.getGroups();
@@ -90,6 +92,7 @@ export const GroupAttributeValueField: FC<Props> = ({
                   placeholder={multiple ? "" : "-NOT SET-"}
                 />
               )}
+              disabled={isDisabled}
             />
           )}
         />

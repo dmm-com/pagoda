@@ -23,12 +23,14 @@ interface Props {
   attrId: number;
   control: Control<Schema>;
   setValue: UseFormSetValue<Schema>;
+  isDisabled?: boolean;
 }
 
 export const DateTimeAttributeValueField: FC<Props> = ({
   attrId,
   control,
   setValue,
+  isDisabled = false,
 }) => {
   return (
     <StyledBox>
@@ -66,6 +68,7 @@ export const DateTimeAttributeValueField: FC<Props> = ({
                   fullWidth={false}
                 />
               )}
+              disabled={isDisabled}
             />
           </LocalizationProvider>
         )}

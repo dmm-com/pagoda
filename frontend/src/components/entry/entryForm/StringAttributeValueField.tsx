@@ -21,6 +21,7 @@ interface CommonProps {
   attrId: number;
   index?: number;
   control: Control<Schema>;
+  isDisabled?: boolean;
 }
 
 export const StringAttributeValueField: FC<
@@ -36,6 +37,7 @@ export const StringAttributeValueField: FC<
   handleClickDeleteListItem,
   handleClickAddListItem,
   multiline,
+  isDisabled = false,
 }) => {
   return (
     <StyledBox>
@@ -56,6 +58,7 @@ export const StringAttributeValueField: FC<
             fullWidth
             multiline={multiline}
             minRows={multiline === true ? 5 : 1}
+            disabled={isDisabled}
           />
         )}
       />
