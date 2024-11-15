@@ -264,7 +264,7 @@ user@hostname:~/airone$ source virtualenv/bin/activate
 (virtualenv) user@hostname:~/airone$ celery -A airone worker -l info
 ```
 
-## [Experimental] Build the new UI with React
+## Build the new UI with React
 
 `/ui/` serves React-based new UI. Before you try it, you need to build `ui.js`:
 
@@ -365,4 +365,15 @@ user@hostname:~/airone$ npm run test:update
 When you want to run individual test (e.g. frontend/src/components/user/UserList.test.tsx), you can do it by following command.
 ```
 user@hostname:~/airone$ npx jest -u frontend/src/components/user/UserList.test.tsx
+```
+
+## Release pagoda-core package for custom views
+
+We publish the `pagoda-core` package to GitHub npm Registry for custom views.
+When you want to release a new version of the package, create a tag with the format `pagoda-core-x.y.z` (e.g. `pagoda-core-0.0.1`). The GitHub Actions workflow will automatically build and publish the package.
+
+If you hope to try building the module:
+
+```sh
+$ npm run build:lib
 ```
