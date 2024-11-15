@@ -19,6 +19,7 @@ interface Props {
   ) => void;
   multiple?: boolean;
   error?: { message?: string };
+  isDisabled?: boolean;
 }
 
 export const ReferralsAutocomplete: FC<Props> = ({
@@ -27,6 +28,7 @@ export const ReferralsAutocomplete: FC<Props> = ({
   handleChange,
   multiple,
   error,
+  isDisabled = false,
 }) => {
   const [inputValue, setInputValue] = useState<string>(
     !multiple ? (value as GetEntryAttrReferral | null)?.name ?? "" : ""
@@ -95,6 +97,7 @@ export const ReferralsAutocomplete: FC<Props> = ({
           helperText={error?.message}
           size="small"
           placeholder={multiple ? "" : "-NOT SET-"}
+          disabled={isDisabled}
         />
       )}
     />

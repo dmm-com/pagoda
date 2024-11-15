@@ -7,9 +7,14 @@ import { Schema } from "./EntryFormSchema";
 interface Props {
   attrId: number;
   control: Control<Schema>;
+  isDisabled?: boolean;
 }
 
-export const BooleanAttributeValueField: FC<Props> = ({ attrId, control }) => {
+export const BooleanAttributeValueField: FC<Props> = ({
+  attrId,
+  control,
+  isDisabled = false,
+}) => {
   return (
     <Controller
       name={`attrs.${attrId}.value.asBoolean`}
@@ -19,6 +24,7 @@ export const BooleanAttributeValueField: FC<Props> = ({ attrId, control }) => {
         <Checkbox
           checked={field.value}
           onChange={(e) => field.onChange(e.target.checked)}
+          disabled={isDisabled}
         />
       )}
     />
