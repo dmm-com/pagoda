@@ -8,6 +8,16 @@
 
 ### Fixed
 
+## v3.110.0
+
+### Added
+* Introduce isReadonly flag at the AdvancedSearchResult page.
+  Contributed by @userlocalhost
+
+### Changed
+* Changed to not update ElasticSearch when editing entity.
+  Contributed by @hinashi
+
 ## v3.109.0
 
 ### Changed
