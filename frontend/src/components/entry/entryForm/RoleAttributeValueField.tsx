@@ -23,6 +23,7 @@ interface Props {
   control: Control<Schema>;
   setValue: UseFormSetValue<Schema>;
   multiple?: boolean;
+  isDisabled?: boolean;
 }
 
 export const RoleAttributeValueField: FC<Props> = ({
@@ -30,6 +31,7 @@ export const RoleAttributeValueField: FC<Props> = ({
   attrId,
   control,
   setValue,
+  isDisabled = false,
 }) => {
   const roles = useAsyncWithThrow(async () => {
     const _roles = await aironeApiClient.getRoles();
@@ -88,8 +90,10 @@ export const RoleAttributeValueField: FC<Props> = ({
                   helperText={error?.message}
                   size="small"
                   placeholder={multiple ? "" : "-NOT SET-"}
+                  disabled={isDisabled}
                 />
               )}
+              disabled={isDisabled}
             />
           )}
         />

@@ -61,6 +61,7 @@ interface Props {
   searchAllEntities: boolean;
   joinAttrs: AdvancedSearchJoinAttrInfo[];
   refreshSearchResults: () => void;
+  isReadonly?: boolean;
 }
 
 export const SearchResultsTableHead: FC<Props> = ({
@@ -73,6 +74,7 @@ export const SearchResultsTableHead: FC<Props> = ({
   searchAllEntities,
   joinAttrs,
   refreshSearchResults,
+  isReadonly = false,
 }) => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -187,25 +189,34 @@ export const SearchResultsTableHead: FC<Props> = ({
   return (
     <TableHead>
       <TableRow sx={{ backgroundColor: "primary.dark" }}>
-        <TableCell sx={{ witdh: "80px" }} />
+        {/* Bulk operation checkbox would be invisible when Readonly mode is true */}
+        {!isReadonly && <TableCell sx={{ witdh: "80px" }} />}
         <StyledTableCell sx={{ outline: "1px solid #FFFFFF" }}>
           <HeaderBox>
             <Typography>アイテム名</Typography>
-            <StyledIconButton
-              onClick={(e) => {
-                setEntryMenuEls(e.currentTarget);
-              }}
-            >
-              {defaultEntryFilter ? <FilterAltIcon /> : <FilterListIcon />}
-            </StyledIconButton>
-            <SearchResultControlMenuForEntry
-              entryFilter={entryFilter}
-              anchorElem={entryMenuEls}
-              handleClose={() => setEntryMenuEls(null)}
-              entryFilterDispatcher={entryFilterDispatcher}
-              handleSelectFilterConditions={handleSelectFilterConditions()}
-              handleClear={() => handleSelectFilterConditions()(undefined, "")}
-            />
+
+            {/* SearchControlMenu would be invisible when Readonly Mode is True */}
+            {!isReadonly && (
+              <>
+                <StyledIconButton
+                  onClick={(e) => {
+                    setEntryMenuEls(e.currentTarget);
+                  }}
+                >
+                  {defaultEntryFilter ? <FilterAltIcon /> : <FilterListIcon />}
+                </StyledIconButton>
+                <SearchResultControlMenuForEntry
+                  entryFilter={entryFilter}
+                  anchorElem={entryMenuEls}
+                  handleClose={() => setEntryMenuEls(null)}
+                  entryFilterDispatcher={entryFilterDispatcher}
+                  handleSelectFilterConditions={handleSelectFilterConditions()}
+                  handleClear={() =>
+                    handleSelectFilterConditions()(undefined, "")
+                  }
+                />
+              </>
+            )}
           </HeaderBox>
         </StyledTableCell>
         {attrNames.map((attrName) => (
@@ -213,7 +224,9 @@ export const SearchResultsTableHead: FC<Props> = ({
             <HeaderBox>
               <Typography>{attrName}</Typography>
 
+              {/* Bulk operation checkbox would be invisible when Readonly mode is true */}
               {(attrTypes[attrName] & EntryAttributeTypeTypeEnum.OBJECT) > 0 &&
+                !isReadonly &&
                 attrsFilter[attrName]?.joinedAttrname === undefined && (
                   <StyledIconButton onClick={() => setJoinAttrname(attrName)}>
                     <AddIcon />
@@ -229,36 +242,40 @@ export const SearchResultsTableHead: FC<Props> = ({
                   refreshSearchResults={refreshSearchResults}
                 />
               )}
-              <StyledIconButton
-                onClick={(e) => {
-                  setAttributeMenuEls({
-                    ...attributeMenuEls,
-                    [attrName]: e.currentTarget,
-                  });
-                }}
-                sx={{ marginLeft: "auto" }}
-              >
-                {isFiltered[attrName] ?? false ? (
-                  <FilterAltIcon />
-                ) : (
-                  <FilterListIcon />
-                )}
-              </StyledIconButton>
-              <SearchResultControlMenu
-                attrFilter={attrsFilter[attrName]}
-                anchorElem={attributeMenuEls[attrName]}
-                handleClose={() =>
-                  setAttributeMenuEls({
-                    ...attributeMenuEls,
-                    [attrName]: null,
-                  })
-                }
-                handleSelectFilterConditions={handleSelectFilterConditions(
-                  attrName
-                )}
-                handleUpdateAttrFilter={handleUpdateAttrFilter(attrName)}
-                attrType={attrTypes[attrName]}
-              />
+              {!isReadonly && (
+                <>
+                  <StyledIconButton
+                    onClick={(e) => {
+                      setAttributeMenuEls({
+                        ...attributeMenuEls,
+                        [attrName]: e.currentTarget,
+                      });
+                    }}
+                    sx={{ marginLeft: "auto" }}
+                  >
+                    {isFiltered[attrName] ?? false ? (
+                      <FilterAltIcon />
+                    ) : (
+                      <FilterListIcon />
+                    )}
+                  </StyledIconButton>
+                  <SearchResultControlMenu
+                    attrFilter={attrsFilter[attrName]}
+                    anchorElem={attributeMenuEls[attrName]}
+                    handleClose={() =>
+                      setAttributeMenuEls({
+                        ...attributeMenuEls,
+                        [attrName]: null,
+                      })
+                    }
+                    handleSelectFilterConditions={handleSelectFilterConditions(
+                      attrName
+                    )}
+                    handleUpdateAttrFilter={handleUpdateAttrFilter(attrName)}
+                    attrType={attrTypes[attrName]}
+                  />
+                </>
+              )}
             </HeaderBox>
           </StyledTableCell>
         ))}

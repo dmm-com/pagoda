@@ -24,6 +24,7 @@ interface Props {
   setValue: UseFormSetValue<Schema>;
   type: number;
   schemaId: number;
+  isDisabled?: boolean;
 }
 
 export const AttributeValueField: FC<Props> = ({
@@ -31,16 +32,24 @@ export const AttributeValueField: FC<Props> = ({
   setValue,
   type,
   schemaId,
+  isDisabled = false,
 }) => {
   switch (type) {
     case EntryAttributeTypeTypeEnum.STRING:
-      return <StringAttributeValueField control={control} attrId={schemaId} />;
+      return (
+        <StringAttributeValueField
+          control={control}
+          attrId={schemaId}
+          isDisabled={isDisabled}
+        />
+      );
 
     case EntryAttributeTypeTypeEnum.TEXT:
       return (
         <StringAttributeValueField
           control={control}
           attrId={schemaId}
+          isDisabled={isDisabled}
           multiline
         />
       );
@@ -51,6 +60,7 @@ export const AttributeValueField: FC<Props> = ({
           attrId={schemaId}
           control={control}
           setValue={setValue}
+          isDisabled={isDisabled}
         />
       );
 
@@ -60,11 +70,18 @@ export const AttributeValueField: FC<Props> = ({
           attrId={schemaId}
           control={control}
           setValue={setValue}
+          isDisabled={isDisabled}
         />
       );
 
     case EntryAttributeTypeTypeEnum.BOOLEAN:
-      return <BooleanAttributeValueField attrId={schemaId} control={control} />;
+      return (
+        <BooleanAttributeValueField
+          attrId={schemaId}
+          control={control}
+          isDisabled={isDisabled}
+        />
+      );
 
     case EntryAttributeTypeTypeEnum.OBJECT:
       return (
@@ -72,6 +89,7 @@ export const AttributeValueField: FC<Props> = ({
           attrId={schemaId}
           control={control}
           setValue={setValue}
+          isDisabled={isDisabled}
         />
       );
 
@@ -81,6 +99,7 @@ export const AttributeValueField: FC<Props> = ({
           attrId={schemaId}
           control={control}
           setValue={setValue}
+          isDisabled={isDisabled}
         />
       );
 
@@ -90,6 +109,7 @@ export const AttributeValueField: FC<Props> = ({
           attrId={schemaId}
           control={control}
           setValue={setValue}
+          isDisabled={isDisabled}
         />
       );
 
@@ -99,6 +119,7 @@ export const AttributeValueField: FC<Props> = ({
           attrId={schemaId}
           control={control}
           setValue={setValue}
+          isDisabled={isDisabled}
         />
       );
 
@@ -108,6 +129,7 @@ export const AttributeValueField: FC<Props> = ({
           attrId={schemaId}
           control={control}
           setValue={setValue}
+          isDisabled={isDisabled}
           multiple
         />
       );
@@ -118,6 +140,7 @@ export const AttributeValueField: FC<Props> = ({
           attrId={schemaId}
           control={control}
           setValue={setValue}
+          isDisabled={isDisabled}
           multiple
         />
       );
@@ -128,6 +151,7 @@ export const AttributeValueField: FC<Props> = ({
           attrId={schemaId}
           control={control}
           setValue={setValue}
+          isDisabled={isDisabled}
           multiple
         />
       );
@@ -143,6 +167,7 @@ export const AttributeValueField: FC<Props> = ({
           attrId={schemaId}
           control={control}
           setValue={setValue}
+          isDisabled={isDisabled}
         />
       );
 
@@ -152,6 +177,7 @@ export const AttributeValueField: FC<Props> = ({
           attrId={schemaId}
           control={control}
           setValue={setValue}
+          isDisabled={isDisabled}
           withBoolean
         />
       );

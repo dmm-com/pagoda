@@ -57,13 +57,14 @@ interface CommonProps {
   attrId: number;
   control: Control<Schema>;
   setValue: UseFormSetValue<Schema>;
+  isDisabled?: boolean;
 }
 
 export const ObjectAttributeValueField: FC<
   CommonProps & {
     multiple?: boolean;
   }
-> = ({ multiple, attrId, control, setValue }) => {
+> = ({ multiple, attrId, control, setValue, isDisabled = false }) => {
   const handleChange = (
     value: GetEntryAttrReferral | GetEntryAttrReferral[] | null
   ) => {
@@ -116,6 +117,7 @@ export const ObjectAttributeValueField: FC<
               handleChange={handleChange}
               multiple={multiple}
               error={error}
+              isDisabled={isDisabled}
             />
           )}
         />
