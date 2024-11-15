@@ -20,11 +20,10 @@ import {
 import { styled } from "@mui/material/styles";
 import { useSnackbar } from "notistack";
 import React, { FC, useState } from "react";
-import { useHistory, useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 import { EntryAttributes } from "./EntryAttributes";
 
-import { restoreEntryPath, topPath } from "Routes";
 import { Confirmable } from "components/common/Confirmable";
 import { Loading } from "components/common/Loading";
 import { PaginationFooter } from "components/common/PaginationFooter";
@@ -32,6 +31,7 @@ import { SearchBox } from "components/common/SearchBox";
 import { useAsyncWithThrow } from "hooks/useAsyncWithThrow";
 import { usePage } from "hooks/usePage";
 import { aironeApiClient } from "repository/AironeApiClient";
+import { restoreEntryPath, topPath } from "routes/Routes";
 import { EntryList as ConstEntryList } from "services/Constants";
 import { formatDateTime } from "services/DateUtil";
 import { normalizeToMatch } from "services/StringUtil";
@@ -101,7 +101,7 @@ interface Props {
 
 export const RestorableEntryList: FC<Props> = ({ entityId }) => {
   const location = useLocation();
-  const history = useHistory();
+  const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
 
   const [page, changePage] = usePage();
@@ -129,7 +129,7 @@ export const RestorableEntryList: FC<Props> = ({ entityId }) => {
     changePage(1);
     setQuery(newQuery ?? "");
 
-    history.push({
+    navigate({
       pathname: location.pathname,
       search: newQuery ? `?query=${newQuery}` : "",
     });
@@ -139,14 +139,14 @@ export const RestorableEntryList: FC<Props> = ({ entityId }) => {
     await aironeApiClient
       .restoreEntry(entryId)
       .then(() => {
-        enqueueSnackbar("エントリの復旧が完了しました", {
+        enqueueSnackbar("アイテムの復旧が完了しました", {
           variant: "success",
         });
-        history.replace(topPath());
-        history.replace(restoreEntryPath(entityId, keyword));
+        navigate(topPath(), { replace: true });
+        navigate(restoreEntryPath(entityId, keyword), { replace: true });
       })
       .catch(() => {
-        enqueueSnackbar("エントリの復旧が失敗しました", {
+        enqueueSnackbar("アイテムの復旧が失敗しました", {
           variant: "error",
         });
       });
@@ -158,7 +158,7 @@ export const RestorableEntryList: FC<Props> = ({ entityId }) => {
       <Box display="flex" justifyContent="space-between" mb="16px">
         <Box width="600px">
           <SearchBox
-            placeholder="エントリを絞り込む"
+            placeholder="アイテムを絞り込む"
             value={keyword}
             onChange={(e) => setKeyword(e.target.value)}
             onKeyPress={(e) => {

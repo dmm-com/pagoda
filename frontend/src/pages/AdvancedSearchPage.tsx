@@ -22,8 +22,8 @@ import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
 import { aironeApiClient } from "../repository/AironeApiClient";
 import { formatAdvancedSearchParams } from "../services/entry/AdvancedSearch";
 
-import { advancedSearchResultPath, topPath } from "Routes";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
+import { advancedSearchResultPath, topPath } from "routes/Routes";
 
 const StyledFlexBox = styled(Box)({
   display: "flex",
@@ -132,9 +132,7 @@ export const AdvancedSearchPage: FC = () => {
 
       <Container>
         <StyledFlexColumnBox>
-          <StyledTypography variant="h4">
-            検索対象のエンティティ
-          </StyledTypography>
+          <StyledTypography variant="h4">検索対象のモデル</StyledTypography>
 
           <Autocomplete
             options={entities.value ?? []}
@@ -150,7 +148,7 @@ export const AdvancedSearchPage: FC = () => {
               <TextField
                 {...params}
                 variant="outlined"
-                placeholder="エンティティを選択"
+                placeholder="モデルを選択"
               />
             )}
             multiple
@@ -169,28 +167,27 @@ export const AdvancedSearchPage: FC = () => {
         <StyledFlexColumnBox>
           <StyledTypography variant="h4">属性</StyledTypography>
 
-          {!attrs.loading && (
-            <AutocompleteWithAllSelector
-              selectAllLabel="すべて選択"
-              options={attrs.value ?? []}
-              value={selectedAttrs}
-              inputValue={attrName}
-              onChange={(_, value: Array<string>) => setSelectedAttrs(value)}
-              onInputChange={handleChangeInputAttrName}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  variant="outlined"
-                  placeholder="属性を選択"
-                />
-              )}
-              multiple
-              disableCloseOnSelect
-              fullWidth
-            />
-          )}
+          <AutocompleteWithAllSelector
+            selectAllLabel="すべて選択"
+            options={attrs.value ?? []}
+            value={selectedAttrs}
+            inputValue={attrName}
+            disabled={attrs.loading}
+            onChange={(_, value: Array<string>) => setSelectedAttrs(value)}
+            onInputChange={handleChangeInputAttrName}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                variant="outlined"
+                placeholder="属性を選択"
+              />
+            )}
+            multiple
+            disableCloseOnSelect
+            fullWidth
+          />
           <Box>
-            参照エントリも含める
+            参照アイテムも含める
             <Checkbox
               checked={hasReferral}
               onChange={(e) => setHasReferral(e.target.checked)}

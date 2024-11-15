@@ -45,7 +45,7 @@ describe("BasicFields", () => {
     render(<BasicFields control={control} />, { wrapper: TestWrapper });
 
     act(() => {
-      fireEvent.change(screen.getByPlaceholderText("エンティティ名"), {
+      fireEvent.change(screen.getByPlaceholderText("モデル名"), {
         target: { value: "entity name" },
       });
       fireEvent.change(screen.getByPlaceholderText("備考"), {
@@ -54,9 +54,7 @@ describe("BasicFields", () => {
       screen.getByRole("checkbox").click();
     });
 
-    expect(screen.getByPlaceholderText("エンティティ名")).toHaveValue(
-      "entity name"
-    );
+    expect(screen.getByPlaceholderText("モデル名")).toHaveValue("entity name");
     expect(screen.getByPlaceholderText("備考")).toHaveValue("note");
     expect(screen.getByRole("checkbox")).toBeChecked();
 

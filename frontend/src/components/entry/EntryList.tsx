@@ -1,17 +1,17 @@
 import AddIcon from "@mui/icons-material/Add";
 import { Box, Button, Grid } from "@mui/material";
 import React, { FC, useState } from "react";
-import { Link, useHistory, useLocation } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 
 import { EntryListCard } from "./EntryListCard";
 
-import { newEntryPath } from "Routes";
 import { Loading } from "components/common/Loading";
 import { PaginationFooter } from "components/common/PaginationFooter";
 import { SearchBox } from "components/common/SearchBox";
 import { useAsyncWithThrow } from "hooks/useAsyncWithThrow";
 import { usePage } from "hooks/usePage";
 import { aironeApiClient } from "repository/AironeApiClient";
+import { newEntryPath } from "routes/Routes";
 import { EntryList as ConstEntryList } from "services/Constants";
 import { normalizeToMatch } from "services/StringUtil";
 
@@ -22,7 +22,7 @@ interface Props {
 
 export const EntryList: FC<Props> = ({ entityId, canCreateEntry = true }) => {
   const location = useLocation();
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const [page, changePage] = usePage();
 
@@ -40,7 +40,7 @@ export const EntryList: FC<Props> = ({ entityId, canCreateEntry = true }) => {
     changePage(1);
     setQuery(newQuery ?? "");
 
-    history.push({
+    navigate({
       pathname: location.pathname,
       search: newQuery ? `?query=${newQuery}` : "",
     });
@@ -52,7 +52,7 @@ export const EntryList: FC<Props> = ({ entityId, canCreateEntry = true }) => {
       <Box display="flex" justifyContent="space-between" mb="16px">
         <Box width="600px">
           <SearchBox
-            placeholder="エントリを絞り込む"
+            placeholder="アイテムを絞り込む"
             value={keyword}
             onChange={(e) => setKeyword(e.target.value)}
             onKeyPress={(e) => {
@@ -72,7 +72,7 @@ export const EntryList: FC<Props> = ({ entityId, canCreateEntry = true }) => {
           sx={{ borderRadius: "24px" }}
         >
           <AddIcon />
-          新規エントリを作成
+          新規アイテムを作成
         </Button>
       </Box>
 

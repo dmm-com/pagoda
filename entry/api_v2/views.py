@@ -2,7 +2,8 @@ import re
 from copy import deepcopy
 from datetime import datetime, timedelta
 
-from django.db.models import Q
+from django.conf import settings
+from django.db.models import Prefetch, Q
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import generics, serializers, status, viewsets
@@ -23,7 +24,7 @@ from airone.lib.drf import (
     RequiredParameterError,
     YAMLParser,
 )
-from airone.lib.elasticsearch import AdvancedSearchResultValue, AttrHint
+from airone.lib.elasticsearch import AdvancedSearchResultRecord, AttrHint
 from airone.lib.types import AttrType
 from api_v1.entry.serializer import EntrySearchChainSerializer
 from entity.models import Entity, EntityAttr
@@ -43,6 +44,7 @@ from entry.api_v2.serializers import (
     GetEntryAttrReferralSerializer,
 )
 from entry.models import Attribute, AttributeValue, Entry
+from entry.services import AdvancedSearchService
 from entry.settings import CONFIG
 from entry.settings import CONFIG as ENTRY_CONFIG
 from entry.tasks import ExportTaskParams
@@ -105,6 +107,9 @@ class EntryAPI(viewsets.ModelViewSet):
             raise ObjectNotExistsError("specified entry has already been deleted")
 
         user: User = request.user
+
+        if custom_view.is_custom("before_delete_entry_v2", entry.schema.name):
+            custom_view.call_custom("before_delete_entry_v2", entry.schema.name, user, entry)
 
         job: Job = Job.new_delete_entry_v2(user, entry)
         job.run()
@@ -184,7 +189,7 @@ class EntryAPI(viewsets.ModelViewSet):
                 parent_attrv__isnull=True,
             )
             .order_by("-created_time")
-            .select_related("parent_attr")
+            .select_related("parent_attr__schema", "created_user")
         )
 
         return super(EntryAPI, self).list(request, *args, **kwargs)
@@ -205,7 +210,9 @@ class searchAPI(viewsets.ReadOnlyModelViewSet):
         if not query:
             return queryset
 
-        results = Entry.search_entries_for_simple(query, limit=ENTRY_CONFIG.MAX_SEARCH_ENTRIES)
+        results = AdvancedSearchService.search_entries_for_simple(
+            query, limit=ENTRY_CONFIG.MAX_SEARCH_ENTRIES
+        )
         return results["ret_values"]
 
 
@@ -226,7 +233,15 @@ class AdvancedSearchAPI(generics.GenericAPIView):
 
         hint_entities = serializer.validated_data["entities"]
         hint_entry_name = serializer.validated_data["entry_name"]
-        hint_attrs = serializer.validated_data["attrinfo"]
+        hint_attrs = [
+            AttrHint(
+                name=x["name"],
+                keyword=x.get("keyword"),
+                filter_key=x.get("filter_key"),
+                exact_match=x.get("exact_match"),
+            )
+            for x in serializer.validated_data["attrinfo"]
+        ]
         hint_referral = serializer.validated_data.get("referral_name")
         has_referral = serializer.validated_data["has_referral"]
         is_output_all = serializer.validated_data["is_output_all"]
@@ -236,7 +251,7 @@ class AdvancedSearchAPI(generics.GenericAPIView):
         join_attrs = serializer.validated_data.get("join_attrs", [])
 
         def _get_joined_resp(
-            prev_results: list[AdvancedSearchResultValue], join_attr: dict
+            prev_results: list[AdvancedSearchResultRecord], join_attr: dict
         ) -> tuple[bool, dict]:
             """
             This is a helper method for join_attrs that will get specified attr values
@@ -246,18 +261,35 @@ class AdvancedSearchAPI(generics.GenericAPIView):
             # that specified attribute refers
             item_names = []
             hint_entity_ids = []
+
+            entities = Entity.objects.filter(
+                id__in=[result.entity["id"] for result in prev_results]
+            ).prefetch_related(
+                Prefetch(
+                    "attrs",
+                    queryset=EntityAttr.objects.filter(
+                        name=join_attr["name"], is_active=True
+                    ).prefetch_related(
+                        Prefetch(
+                            "referral", queryset=Entity.objects.filter(is_active=True).only("id")
+                        )
+                    ),
+                )
+            )
+            entity_dict = {entity.id: entity for entity in entities}
+
             for result in prev_results:
-                entity = Entity.objects.filter(id=result.entity["id"]).last()
+                entity = entity_dict.get(result.entity["id"])
                 if entity is None:
                     continue
 
-                attr = entity.attrs.filter(name=join_attr["name"], is_active=True).last()
+                attr = next((a for a in entity.attrs.all() if a.name == join_attr["name"]), None)
                 if attr is None:
                     continue
 
                 if attr.type & AttrType.OBJECT:
                     # set hint Model ID
-                    hint_entity_ids += [x.id for x in attr.referral.filter(is_active=True)]
+                    hint_entity_ids.extend([x.id for x in attr.referral.all()])
 
                     # set Item name
                     attrinfo = result.attrs[join_attr["name"]]
@@ -272,22 +304,24 @@ class AdvancedSearchAPI(generics.GenericAPIView):
 
                     if attr.type == AttrType.ARRAY_OBJECT:
                         for r in attrinfo["value"]:
-                            item_names.append(r["name"])
+                            if r["name"] not in item_names:
+                                item_names.append(r["name"])
 
                     if attr.type == AttrType.ARRAY_NAMED_OBJECT:
                         for r in attrinfo["value"]:
                             [co_info] = r.values()
-                            item_names.append(co_info["name"])
+                            if co_info["name"] not in item_names:
+                                item_names.append(co_info["name"])
 
             # set parameters to filter joining search results
             hint_attrs: list[AttrHint] = []
             for info in join_attr.get("attrinfo", []):
                 hint_attrs.append(
-                    {
-                        "name": info["name"],
-                        "keyword": info.get("keyword"),
-                        "filter_key": info.get("filter_key"),
-                    }
+                    AttrHint(
+                        name=info["name"],
+                        keyword=info.get("keyword"),
+                        filter_key=info.get("filter_key"),
+                    )
                 )
 
             # search Items from elasticsearch to join
@@ -299,7 +333,7 @@ class AdvancedSearchAPI(generics.GenericAPIView):
                         for x in join_attr.get("attrinfo", [])
                     ]
                 ),
-                Entry.search_entries(
+                AdvancedSearchService.search_entries(
                     request.user,
                     hint_entity_ids=list(set(hint_entity_ids)),  # this removes depulicated IDs
                     hint_attrs=hint_attrs,
@@ -338,7 +372,7 @@ class AdvancedSearchAPI(generics.GenericAPIView):
             hint_referral = None
 
         if is_all_entities:
-            attr_names = [x["name"] for x in hint_attrs]
+            attr_names = [x.name for x in hint_attrs]
             hint_entities = list(
                 EntityAttr.objects.filter(
                     name__in=attr_names, is_active=True, parent_entity__is_active=True
@@ -366,16 +400,29 @@ class AdvancedSearchAPI(generics.GenericAPIView):
             if entity and request.user.has_permission(entity, ACLType.Readable):
                 hint_entity_ids.append(entity.id)
 
-        resp = Entry.search_entries(
-            request.user,
-            hint_entity_ids,
-            hint_attrs,
-            entry_limit,
-            hint_entry_name,
-            hint_referral,
-            is_output_all,
-            offset=entry_offset,
-        )
+        if settings.ENABLE_ESLESS_ADVANCED_SEARCH:
+            resp = AdvancedSearchService.search_entries_v2(
+                request.user,
+                hint_entity_ids,
+                hint_attrs,
+                entry_limit,
+                hint_entry_name,
+                hint_referral,
+                is_output_all,
+                offset=entry_offset,
+            )
+        else:
+            resp = AdvancedSearchService.search_entries(
+                request.user,
+                hint_entity_ids,
+                hint_attrs,
+                entry_limit,
+                hint_entry_name,
+                hint_referral,
+                is_output_all,
+                offset=entry_offset,
+            )
+
         # save total population number
         total_count = deepcopy(resp.ret_count)
 

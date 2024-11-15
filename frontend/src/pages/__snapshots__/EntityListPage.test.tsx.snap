@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`should match snapshot 1`] = `
+exports[`EntityListPage should match snapshot 1`] = `
 {
   "asFragment": [Function],
   "baseElement": <body>
@@ -46,7 +46,7 @@ exports[`should match snapshot 1`] = `
                     <p
                       class="MuiTypography-root MuiTypography-body1 css-1gqyz35-MuiTypography-root"
                     >
-                      エンティティ一覧
+                      モデル一覧
                     </p>
                   </li>
                 </ol>
@@ -67,7 +67,7 @@ exports[`should match snapshot 1`] = `
                 class="MuiTypography-root MuiTypography-h6 css-178toxd-MuiTypography-root"
                 id="title"
               >
-                エンティティ一覧
+                モデル一覧
               </h6>
               <h6
                 class="MuiTypography-root MuiTypography-subtitle1 css-10wpov9-MuiTypography-root"
@@ -149,7 +149,7 @@ exports[`should match snapshot 1`] = `
                       aria-invalid="false"
                       class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputAdornedStart css-1o9s3wi-MuiInputBase-input-MuiOutlinedInput-input"
                       id=":r0:"
-                      placeholder="エンティティを絞り込む"
+                      placeholder="モデルを絞り込む"
                       type="text"
                       value=""
                     />
@@ -186,7 +186,7 @@ exports[`should match snapshot 1`] = `
                     d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"
                   />
                 </svg>
-                 新規エンティティを作成
+                 新規モデルを作成
               </a>
             </div>
             <div
@@ -450,7 +450,7 @@ exports[`should match snapshot 1`] = `
               <p
                 class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
               >
-                0 - 0 / 0 件
+                1 - 3 / 3 件
               </p>
               <div
                 class="MuiStack-root css-1sazv7p-MuiStack-root"
@@ -481,6 +481,17 @@ exports[`should match snapshot 1`] = `
                             d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"
                           />
                         </svg>
+                      </button>
+                    </li>
+                    <li>
+                      <button
+                        aria-current="true"
+                        aria-label="page 1"
+                        class="MuiButtonBase-root MuiPaginationItem-root MuiPaginationItem-sizeMedium MuiPaginationItem-text MuiPaginationItem-circular MuiPaginationItem-textPrimary Mui-selected MuiPaginationItem-page css-1to7aaw-MuiButtonBase-root-MuiPaginationItem-root"
+                        tabindex="0"
+                        type="button"
+                      >
+                        1
                       </button>
                     </li>
                     <li>
@@ -555,7 +566,7 @@ exports[`should match snapshot 1`] = `
                   <p
                     class="MuiTypography-root MuiTypography-body1 css-1gqyz35-MuiTypography-root"
                   >
-                    エンティティ一覧
+                    モデル一覧
                   </p>
                 </li>
               </ol>
@@ -576,7 +587,7 @@ exports[`should match snapshot 1`] = `
               class="MuiTypography-root MuiTypography-h6 css-178toxd-MuiTypography-root"
               id="title"
             >
-              エンティティ一覧
+              モデル一覧
             </h6>
             <h6
               class="MuiTypography-root MuiTypography-subtitle1 css-10wpov9-MuiTypography-root"
@@ -658,7 +669,7 @@ exports[`should match snapshot 1`] = `
                     aria-invalid="false"
                     class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputAdornedStart css-1o9s3wi-MuiInputBase-input-MuiOutlinedInput-input"
                     id=":r0:"
-                    placeholder="エンティティを絞り込む"
+                    placeholder="モデルを絞り込む"
                     type="text"
                     value=""
                   />
@@ -695,7 +706,7 @@ exports[`should match snapshot 1`] = `
                   d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"
                 />
               </svg>
-               新規エンティティを作成
+               新規モデルを作成
             </a>
           </div>
           <div
@@ -959,7 +970,7 @@ exports[`should match snapshot 1`] = `
             <p
               class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
             >
-              0 - 0 / 0 件
+              1 - 3 / 3 件
             </p>
             <div
               class="MuiStack-root css-1sazv7p-MuiStack-root"
@@ -990,6 +1001,17 @@ exports[`should match snapshot 1`] = `
                           d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"
                         />
                       </svg>
+                    </button>
+                  </li>
+                  <li>
+                    <button
+                      aria-current="true"
+                      aria-label="page 1"
+                      class="MuiButtonBase-root MuiPaginationItem-root MuiPaginationItem-sizeMedium MuiPaginationItem-text MuiPaginationItem-circular MuiPaginationItem-textPrimary Mui-selected MuiPaginationItem-page css-1to7aaw-MuiButtonBase-root-MuiPaginationItem-root"
+                      tabindex="0"
+                      type="button"
+                    >
+                      1
                     </button>
                   </li>
                   <li>

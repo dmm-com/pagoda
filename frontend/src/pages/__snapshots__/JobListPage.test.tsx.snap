@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`should match snapshot 1`] = `
+exports[`JobListPage should match snapshot 1`] = `
 {
   "asFragment": [Function],
   "baseElement": <body>
@@ -120,7 +120,7 @@ exports[`should match snapshot 1`] = `
                   class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-he8p15-MuiTableCell-root"
                   scope="col"
                 >
-                  対象エンティティ
+                  対象モデル
                 </th>
                 <th
                   class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-1fyhwmv-MuiTableCell-root"
@@ -518,7 +518,7 @@ exports[`should match snapshot 1`] = `
                 class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-he8p15-MuiTableCell-root"
                 scope="col"
               >
-                対象エンティティ
+                対象モデル
               </th>
               <th
                 class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-1fyhwmv-MuiTableCell-root"

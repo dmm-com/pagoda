@@ -4,7 +4,7 @@
 {% elif a_type == attr_type.textarea %}
   <span class='url_conv textarea'>{{ attrv.value }}</span>
 
-{% elif a_type == attr_type.entry and attrv.value %}
+{% elif a_type == attr_type.object and attrv.value %}
   <a href='/entry/show/{{ attrv.value.id}}'>{{ attrv.value.name }}</a>
 
 {% elif a_type == attr_type.array_string %}
@@ -14,7 +14,7 @@
   {% endfor %}
   </ul>
 
-{% elif a_type == attr_type.array_entry %}
+{% elif a_type == attr_type.array_object %}
   <ul class='list-group'>
   {% for co_attrv in attrv.value %}
     <li class='list-group-item'>
@@ -35,7 +35,7 @@
 {% elif a_type == attr_type.date %}
   <span>{{ attrv.value|date:"Y-m-d" }}</span>
 
-{% elif a_type == attr_type.named_entry %}
+{% elif a_type == attr_type.named_object %}
   <div class='row'>
     <div class='col-3 attrv_name'>
       {{ attrv.value.value }}
@@ -45,7 +45,7 @@
     </div>
   </div>
 
-{% elif a_type == attr_type.array_named_entry %}
+{% elif a_type == attr_type.array_named_object %}
   <ul class='list-group'>
   {% for co_attrv in attrv.value %}
     <li class='list-group-item'>

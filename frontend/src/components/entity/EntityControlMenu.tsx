@@ -8,10 +8,12 @@ import {
 } from "@mui/material";
 import { useSnackbar } from "notistack";
 import React, { FC } from "react";
-import { Link, useHistory } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 import { RateLimitedClickable } from "../common/RateLimitedClickable";
 
+import { Confirmable } from "components/common/Confirmable";
+import { aironeApiClient } from "repository/AironeApiClient";
 import {
   aclPath,
   entityHistoryPath,
@@ -21,9 +23,7 @@ import {
   topPath,
   entityEntriesPath,
   aclHistoryPath,
-} from "Routes";
-import { Confirmable } from "components/common/Confirmable";
-import { aironeApiClient } from "repository/AironeApiClient";
+} from "routes/Routes";
 
 type ExportFormatType = "YAML" | "CSV";
 
@@ -43,22 +43,22 @@ export const EntityControlMenu: FC<Props> = ({
   setToggle,
 }) => {
   const { enqueueSnackbar } = useSnackbar();
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const handleDelete = async (entityId: number) => {
     await aironeApiClient
       .deleteEntity(entityId)
       .then(() => {
-        enqueueSnackbar("エンティティの削除が完了しました", {
+        enqueueSnackbar("モデルの削除が完了しました", {
           variant: "success",
         });
         // A magic to reload the entity list with keeping snackbar
-        history.replace(topPath());
-        history.replace(entitiesPath());
+        navigate(topPath(), { replace: true });
+        navigate(entitiesPath(), { replace: true });
         setToggle && setToggle();
       })
       .catch(() => {
-        enqueueSnackbar("エンティティの削除が失敗しました", {
+        enqueueSnackbar("モデルの削除が失敗しました", {
           variant: "error",
         });
       });
@@ -66,11 +66,11 @@ export const EntityControlMenu: FC<Props> = ({
   const handleExport = async (entityId: number, format: ExportFormatType) => {
     try {
       await aironeApiClient.exportEntries(entityId, format);
-      enqueueSnackbar("エンティティのエクスポートのジョブ登録が成功しました", {
+      enqueueSnackbar("モデルのエクスポートのジョブ登録が成功しました", {
         variant: "success",
       });
     } catch (e) {
-      enqueueSnackbar("エンティティのエクスポートのジョブ登録が失敗しました", {
+      enqueueSnackbar("モデルのエクスポートのジョブ登録が失敗しました", {
         variant: "error",
       });
     }
@@ -92,7 +92,7 @@ export const EntityControlMenu: FC<Props> = ({
       }}
     >
       <MenuItem component={Link} to={entityEntriesPath(entityId)}>
-        <Typography>エントリ一覧</Typography>
+        <Typography>アイテム一覧</Typography>
       </MenuItem>
       <MenuItem component={Link} to={editEntityPath(entityId)}>
         <Typography>編集</Typography>
@@ -126,7 +126,7 @@ export const EntityControlMenu: FC<Props> = ({
         <Typography>インポート</Typography>
       </MenuItem>
       <MenuItem component={Link} to={restoreEntryPath(entityId)}>
-        <Typography>削除エントリの復旧</Typography>
+        <Typography>削除アイテムの復旧</Typography>
       </MenuItem>
       <Confirmable
         componentGenerator={(handleOpen) => (

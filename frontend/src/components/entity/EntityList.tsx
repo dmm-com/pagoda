@@ -6,9 +6,9 @@ import { Link } from "react-router-dom";
 
 import { EntityListCard } from "./EntityListCard";
 
-import { newEntityPath } from "Routes";
 import { PaginationFooter } from "components/common/PaginationFooter";
 import { SearchBox } from "components/common/SearchBox";
+import { newEntityPath } from "routes/Routes";
 import { EntityList as ConstEntityList } from "services/Constants";
 import { normalizeToMatch } from "services/StringUtil";
 
@@ -37,7 +37,7 @@ export const EntityList: FC<Props> = ({
       <Box display="flex" justifyContent="space-between" mb="16px">
         <Box width="600px">
           <SearchBox
-            placeholder="エンティティを絞り込む"
+            placeholder="モデルを絞り込む"
             value={keyword}
             onChange={(e) => setKeyword(e.target.value)}
             onKeyPress={(e) => {
@@ -55,7 +55,7 @@ export const EntityList: FC<Props> = ({
           to={newEntityPath()}
           sx={{ height: "48px", borderRadius: "24px" }}
         >
-          <AddIcon /> 新規エンティティを作成
+          <AddIcon /> 新規モデルを作成
         </Button>
       </Box>
 

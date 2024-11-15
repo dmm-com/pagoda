@@ -12,7 +12,7 @@ import * as React from "react";
 import { FC } from "react";
 import { Link } from "react-router-dom";
 
-import { groupsPath, rolePath, entryDetailsPath } from "Routes";
+import { groupsPath, rolePath, entryDetailsPath } from "routes/Routes";
 
 const StyledBox = styled(Box)(() => ({
   display: "flex",
@@ -93,7 +93,7 @@ const ElemGroup: FC<{ attrValue: EntryAttributeValueGroup | undefined }> = ({
   attrValue,
 }) => {
   return attrValue ? (
-    <Box component={Link} to={groupsPath}>
+    <Box component={Link} to={groupsPath()}>
       {attrValue.name}
     </Box>
   ) : (

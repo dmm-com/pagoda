@@ -13,10 +13,10 @@ import {
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import React, { FC, useState } from "react";
-import { Link, useHistory } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
-import { entityEntriesPath } from "../../Routes";
 import { aironeApiClient } from "../../repository/AironeApiClient";
+import { entityEntriesPath } from "../../routes/Routes";
 import { JobOperations, JobStatuses } from "../../services/Constants";
 import { formatDateTime } from "../../services/DateUtil";
 import { jobOperationLabel, jobStatusLabel } from "../../services/JobUtil";
@@ -107,7 +107,7 @@ interface Props {
 }
 
 export const JobList: FC<Props> = ({ jobs }) => {
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const [encodes, setEncodes] = useState<{
     [key: number]: string;
@@ -115,12 +115,12 @@ export const JobList: FC<Props> = ({ jobs }) => {
 
   const handleRerun = async (jobId: number) => {
     await aironeApiClient.rerunJob(jobId);
-    history.go(0);
+    navigate(0);
   };
 
   const handleCancel = async (jobId: number) => {
     await aironeApiClient.cancelJob(jobId);
-    history.go(0);
+    navigate(0);
   };
 
   return (
@@ -128,7 +128,7 @@ export const JobList: FC<Props> = ({ jobs }) => {
       <TableHead>
         <AironeTableHeadRow>
           <AironeTableHeadCell sx={{ width: "160px" }}>
-            対象エンティティ
+            対象モデル
           </AironeTableHeadCell>
           <AironeTableHeadCell sx={{ width: "120px" }}>
             状況
@@ -156,6 +156,9 @@ export const JobList: FC<Props> = ({ jobs }) => {
                   case JobOperations.DELETE_ENTITY:
                   case JobOperations.IMPORT_ENTRY:
                   case JobOperations.EXPORT_ENTRY:
+                  case JobOperations.CREATE_ENTITY_V2:
+                  case JobOperations.EDIT_ENTITY_V2:
+                  case JobOperations.DELETE_ENTITY_V2:
                   case JobOperations.IMPORT_ENTRY_V2:
                   case JobOperations.EXPORT_ENTRY_V2:
                     return (
@@ -175,6 +178,9 @@ export const JobList: FC<Props> = ({ jobs }) => {
                   case JobOperations.NOTIFY_UPDATE_ENTRY:
                   case JobOperations.NOTIFY_DELETE_ENTRY:
                   case JobOperations.DO_COPY_ENTRY:
+                  case JobOperations.CREATE_ENTRY_V2:
+                  case JobOperations.EDIT_ENTRY_V2:
+                  case JobOperations.DELETE_ENTRY_V2:
                     return (
                       <Typography
                         component={Link}

@@ -6,17 +6,16 @@ import {
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import SettingsIcon from "@mui/icons-material/Settings";
-import { IconButton, Box, Button, Typography } from "@mui/material";
-import { styled } from "@mui/material/styles";
+import { Box, Button, IconButton, Typography } from "@mui/material";
 import { useSnackbar } from "notistack";
 import React, { FC, useEffect, useMemo, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 
 import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
 
-import { advancedSearchPath, topPath } from "Routes";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { Confirmable } from "components/common/Confirmable";
+import { CenterAlignedBox } from "components/common/FlexBox";
 import { Loading } from "components/common/Loading";
 import { PageHeader } from "components/common/PageHeader";
 import { RateLimitedClickable } from "components/common/RateLimitedClickable";
@@ -24,6 +23,7 @@ import { AdvancedSearchModal } from "components/entry/AdvancedSearchModal";
 import { SearchResults } from "components/entry/SearchResults";
 import { usePage } from "hooks/usePage";
 import { aironeApiClient } from "repository/AironeApiClient";
+import { advancedSearchPath, topPath } from "routes/Routes";
 import { AdvancedSerarchResultList } from "services/Constants";
 import { extractAdvancedSearchParams } from "services/entry/AdvancedSearch";
 
@@ -42,16 +42,9 @@ export const getIsFiltered = (filterKey?: number, keyword?: string) => {
   return false;
 };
 
-const FullWidthIconBox = styled(IconButton)(({}) => ({
-  width: "100%",
-}));
-
 export interface AirOneAdvancedSearchResult extends AdvancedSearchResult {
-  offset: number;
   page: number;
   isInProcessing: boolean;
-  isJoinSearching: boolean;
-  totalCount: number;
 }
 
 export const AdvancedSearchResultsPage: FC = () => {
@@ -82,10 +75,8 @@ export const AdvancedSearchResultsPage: FC = () => {
     useState<AirOneAdvancedSearchResult>({
       count: 0,
       values: [],
-      offset: 0,
       page: page,
       isInProcessing: true,
-      isJoinSearching: joinAttrs.length > 0,
       totalCount: 0,
     });
 
@@ -93,20 +84,19 @@ export const AdvancedSearchResultsPage: FC = () => {
     return await aironeApiClient.getEntityAttrs(entityIds, searchAllEntities);
   });
 
-  const handleSetResults = (isJoinSearching: boolean = false) => {
+  const handleSetResults = () => {
     setSearchResults({
       count: 0,
       values: [],
-      offset: 0,
       page: page,
       isInProcessing: true,
-      isJoinSearching: isJoinSearching,
-      totalCount: searchResults.totalCount,
+      totalCount: 0,
     });
+    setToggle(!toggle);
   };
 
   useEffect(() => {
-    const sendSearchRequest = function (offset: number) {
+    const sendSearchRequest = () => {
       return aironeApiClient.advancedSearch(
         entityIds,
         entryName,
@@ -116,47 +106,38 @@ export const AdvancedSearchResultsPage: FC = () => {
         referralName,
         searchAllEntities,
         page,
-        AdvancedSerarchResultList.MAX_ROW_COUNT,
-        offset
+        AdvancedSerarchResultList.MAX_ROW_COUNT
       );
     };
 
-    // pagination processing is prioritize than others
-    if (page !== searchResults.page) {
-      sendSearchRequest(0).then((results) => {
+    // show loading indicator
+    setSearchResults({ ...searchResults, isInProcessing: true });
+
+    sendSearchRequest().then((results) => {
+      if (joinAttrs.length > 0) {
+        if (results.count === 0) {
+          changePage(page + 1);
+          return;
+        }
+        setSearchResults({
+          ...searchResults,
+          count: searchResults.count + results.count,
+          values: searchResults.values.concat(results.values),
+          page: page,
+          totalCount: results.totalCount,
+          isInProcessing: false,
+        });
+      } else {
         setSearchResults({
           count: results.count,
           values: results.values,
-          offset: page * AdvancedSerarchResultList.MAX_ROW_COUNT,
           page: page,
-          isInProcessing: false,
-          isJoinSearching: joinAttrs.some((x) => {
-            return x.attrinfo.some((y) => {
-              return getIsFiltered(y.filterKey, y.keyword);
-            });
-          }),
           totalCount: results.totalCount,
+          isInProcessing: false,
         });
-      });
-    }
-
-    // abort when isInProcessing is false
-    if (!searchResults.isInProcessing) {
-      return;
-    }
-
-    sendSearchRequest(searchResults.offset).then((results) => {
-      setSearchResults({
-        ...searchResults,
-        count: searchResults.count + results.count,
-        values: searchResults.values.concat(results.values),
-        offset: searchResults.offset + AdvancedSerarchResultList.MAX_ROW_COUNT,
-        isInProcessing: false,
-        isJoinSearching: searchResults.isJoinSearching,
-        totalCount: results.totalCount,
-      });
+      }
     });
-  }, [page, toggle, location.search, searchResults]);
+  }, [page, toggle, location.search]);
 
   const handleExport = async (exportStyle: "yaml" | "csv") => {
     try {
@@ -189,13 +170,13 @@ export const AdvancedSearchResultsPage: FC = () => {
   const handleBulkDelete = async () => {
     try {
       await aironeApiClient.destroyEntries(bulkOperationEntryIds);
-      enqueueSnackbar("複数エントリの削除に成功しました", {
+      enqueueSnackbar("複数アイテムの削除に成功しました", {
         variant: "success",
       });
       setBulkOperationEntryIds([]);
       setToggle(!toggle);
     } catch (e) {
-      enqueueSnackbar("複数エントリの削除に失敗しました", {
+      enqueueSnackbar("複数アイテムの削除に失敗しました", {
         variant: "error",
       });
     }
@@ -280,7 +261,7 @@ export const AdvancedSearchResultsPage: FC = () => {
         </Box>
       </PageHeader>
 
-      {searchResults.count === 0 && searchResults.isInProcessing ? (
+      {joinAttrs.length === 0 && searchResults.isInProcessing ? (
         <Loading />
       ) : (
         <Box>
@@ -345,17 +326,24 @@ export const AdvancedSearchResultsPage: FC = () => {
 
           {/* show button to show continuous search results manually when joinAttrs are specified */}
           {joinAttrs.length > 0 && (
-            <FullWidthIconBox
-              disabled={
-                searchResults.isInProcessing ||
-                searchResults.count >= searchResults.totalCount
-              }
-              onClick={() =>
-                setSearchResults({ ...searchResults, isInProcessing: true })
-              }
-            >
-              <ArrowDropDownIcon />
-            </FullWidthIconBox>
+            <>
+              {searchResults.isInProcessing ? (
+                <Loading />
+              ) : (
+                <CenterAlignedBox alignItems="center">
+                  <IconButton
+                    disabled={searchResults.count >= searchResults.totalCount}
+                    onClick={() => changePage(searchResults.page + 1)}
+                  >
+                    <ArrowDropDownIcon />
+                  </IconButton>
+                  <Typography>
+                    {page * AdvancedSerarchResultList.MAX_ROW_COUNT} /{" "}
+                    {searchResults.totalCount} 件
+                  </Typography>
+                </CenterAlignedBox>
+              )}
+            </>
           )}
         </Box>
       )}

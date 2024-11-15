@@ -244,9 +244,6 @@ class EntitySerializer(serializers.ModelSerializer):
                 entity_attr.referral_clear()
                 [entity_attr.referral.add(x) for x in attr_referrals]
 
-            # make association with Entity and EntityAttrs
-            entity.attrs.add(entity_attr)
-
             # register history to create, update EntityAttr
             if is_created_attr:
                 history.add_attr(entity_attr)
@@ -553,7 +550,7 @@ class EntityDetailSerializer(EntityListSerializer):
                 ],
                 "note": x.note,
             }
-            for x in obj.attrs.filter(is_active=True).order_by("index")
+            for x in obj.attrs.filter(is_active=True).prefetch_related("referral").order_by("index")
         ]
 
         # add and remove attributes depending on entity

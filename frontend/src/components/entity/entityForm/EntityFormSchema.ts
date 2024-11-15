@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const schema = z.object({
-  name: z.string().min(1, "エンティティ名は必須です").default(""),
+  name: z.string().min(1, "モデル名は必須です").default(""),
   note: z.string().default(""),
   isToplevel: z.boolean().default(false),
   webhooks: z

@@ -2,20 +2,16 @@
  * @jest-environment jsdom
  */
 
-import {
-  render,
-  waitForElementToBeRemoved,
-  screen,
-} from "@testing-library/react";
+import { render, screen, act, waitFor } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import React from "react";
-import { MemoryRouter, Route } from "react-router-dom";
+import { createMemoryRouter, RouterProvider } from "react-router-dom";
 
 import { EntryEditPage } from "./EntryEditPage";
 
-import { entryEditPath } from "Routes";
-import { TestWrapper } from "TestWrapper";
+import { TestWrapperWithoutRoutes } from "TestWrapper";
+import { entryEditPath } from "routes/Routes";
 
 const server = setupServer(
   // getEntity
@@ -61,19 +57,25 @@ describe("EntryEditPage", () => {
   });
 
   test("should match snapshot", async () => {
-    // wait async calls and get rendered fragment
-    const result = render(
-      <MemoryRouter initialEntries={["/ui/entities/2/entries/1/edit"]}>
-        <Route
-          path={entryEditPath(":entityId", ":entryId")}
-          component={EntryEditPage}
-        />
-      </MemoryRouter>,
+    const router = createMemoryRouter(
+      [
+        {
+          path: entryEditPath(":entityId", ":entryId"),
+          element: <EntryEditPage />,
+        },
+      ],
       {
-        wrapper: TestWrapper,
+        initialEntries: ["/ui/entities/2/entries/1/edit"],
       }
     );
-    await waitForElementToBeRemoved(screen.getByTestId("loading"));
+    const result = await act(async () => {
+      return render(<RouterProvider router={router} />, {
+        wrapper: TestWrapperWithoutRoutes,
+      });
+    });
+    await waitFor(() => {
+      expect(screen.queryByTestId("loading")).not.toBeInTheDocument();
+    });
 
     expect(result).toMatchSnapshot();
   });

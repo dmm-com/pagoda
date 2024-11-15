@@ -10,16 +10,18 @@ import yaml
 from rest_framework import status
 from rest_framework.exceptions import ValidationError
 
+from airone.lib.elasticsearch import AttrHint
 from airone.lib.log import Logger
 from airone.lib.test import AironeViewTest
 from airone.lib.types import (
+    AttrDefaultValue,
     AttrType,
-    AttrTypeStr,
     AttrTypeValue,
 )
 from entity.models import Entity, EntityAttr
 from entry import tasks
 from entry.models import Attribute, AttributeValue, Entry
+from entry.services import AdvancedSearchService
 from entry.settings import CONFIG
 from group.models import Group
 from job.models import Job, JobOperation, JobStatus
@@ -107,7 +109,7 @@ class ViewTest(BaseViewTest):
             },
         )
         # add an optional attribute after creating entry
-        optional_attr = EntityAttr.objects.create(
+        EntityAttr.objects.create(
             **{
                 "name": "opt",
                 "type": AttrType.STRING,
@@ -116,7 +118,6 @@ class ViewTest(BaseViewTest):
                 "created_user": self.user,
             }
         )
-        self.entity.attrs.add(optional_attr)
 
         resp = self.client.get("/entry/api/v2/%d/" % entry.id)
         self.assertEqual(resp.status_code, 200)
@@ -396,7 +397,7 @@ class ViewTest(BaseViewTest):
             next(filter(lambda x: x["schema"]["name"] == "opt", resp_data["attrs"])),
             {
                 "type": AttrType.STRING,
-                "value": {"as_string": AttrTypeStr.DEFAULT_VALUE},
+                "value": {"as_string": AttrDefaultValue[AttrType.STRING]},
                 "id": None,
                 "is_mandatory": False,
                 "is_readable": True,
@@ -1075,6 +1076,7 @@ class ViewTest(BaseViewTest):
                 self.assertEqual(args[0], self.entity.name)
                 self.assertEqual(args[1], params["name"])
                 self.assertEqual(args[2], params["attrs"])
+                self.assertEqual(args[3], entry)
 
             if handler_name == "before_update_entry_v2":
                 self.assertEqual(args[0], params)
@@ -1141,7 +1143,9 @@ class ViewTest(BaseViewTest):
             "/entry/api/v2/%s/" % self.ref_entry.id, json.dumps(params), "application/json"
         )
 
-        ret = Entry.search_entries(self.user, [self.entity.id], [{"name": "ref"}])
+        ret = AdvancedSearchService.search_entries(
+            self.user, [self.entity.id], [AttrHint(name="ref")]
+        )
         self.assertEqual(ret.ret_count, 1)
         self.assertEqual(ret.ret_values[0].entry["name"], "Entry")
         self.assertEqual(ret.ret_values[0].attrs["ref"]["value"]["name"], "ref-change")
@@ -1300,7 +1304,7 @@ class ViewTest(BaseViewTest):
 
         mock_call_custom.side_effect = side_effect
         resp = self.client.delete("/entry/api/v2/%s/" % entry.id, None, "application/json")
-        self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertTrue(mock_call_custom.called)
 
         def side_effect(handler_name, entity_name, user, entry):
@@ -1664,6 +1668,46 @@ class ViewTest(BaseViewTest):
             },
         )
 
+    @patch("entry.tasks.copy_entry.delay", Mock(side_effect=tasks.copy_entry))
+    @mock.patch("airone.lib.custom_view.is_custom", mock.Mock(return_value=True))
+    @mock.patch("airone.lib.custom_view.call_custom")
+    def test_copy_entry_with_customview(self, mock_call_custom):
+        entry: Entry = self.add_entry(self.user, "entry", self.entity)
+        params = {"copy_entry_names": ["copy1", "copy2"]}
+
+        def side_effect(handler_name, entity_name, user, *args):
+            raise ValidationError("copy error")
+
+        mock_call_custom.side_effect = side_effect
+        resp = self.client.post(
+            "/entry/api/v2/%s/copy/" % entry.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertTrue(mock_call_custom.called)
+
+        def side_effect(handler_name, entity_name, user, *args):
+            self.assertEqual(entity_name, self.entity.name)
+            self.assertEqual(user, self.user)
+
+            # Check specified parameters are expected
+            if handler_name == "validate_entry":
+                self.assertEqual(args[0], self.entity.name)
+                self.assertIn(args[1], params["copy_entry_names"])
+                self.assertEqual(args[2], [])
+                self.assertIsNone(args[3])
+
+            if handler_name == "after_copy_entry":
+                self.assertEqual(args[0], entry)
+                self.assertIn(args[1].name, params["copy_entry_names"])
+                self.assertEqual(args[2], params)
+
+        mock_call_custom.side_effect = side_effect
+        resp = self.client.post(
+            "/entry/api/v2/%s/copy/" % entry.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        self.assertTrue(mock_call_custom.called)
+
     def test_serach_entry(self):
         ref_entry4 = self.add_entry(self.user, "hoge4", self.ref_entity)
         ref_entry5 = self.add_entry(self.user, "hoge5", self.ref_entity)
@@ -1968,15 +2012,13 @@ class ViewTest(BaseViewTest):
 
         entity = Entity.objects.create(name="ほげ", created_user=user)
         for name in ["foo", "bar"]:
-            entity.attrs.add(
-                EntityAttr.objects.create(
-                    **{
-                        "name": name,
-                        "type": AttrType.STRING,
-                        "created_user": user,
-                        "parent_entity": entity,
-                    }
-                )
+            EntityAttr.objects.create(
+                **{
+                    "name": name,
+                    "type": AttrType.STRING,
+                    "created_user": user,
+                    "parent_entity": entity,
+                }
             )
 
         entry = Entry.objects.create(name="fuga", schema=entity, created_user=user)
@@ -2025,16 +2067,14 @@ class ViewTest(BaseViewTest):
         self.assertEqual(resp.status_code, 200)
 
         # append an unpermitted Attribute
-        entity.attrs.add(
-            EntityAttr.objects.create(
-                **{
-                    "name": "new_attr",
-                    "type": AttrType.STRING,
-                    "created_user": user,
-                    "parent_entity": entity,
-                    "is_public": False,
-                }
-            )
+        EntityAttr.objects.create(
+            **{
+                "name": "new_attr",
+                "type": AttrType.STRING,
+                "created_user": user,
+                "parent_entity": entity,
+                "is_public": False,
+            }
         )
 
         # re-login with guest user
@@ -2093,7 +2133,6 @@ class ViewTest(BaseViewTest):
             }
         )
         entity_attr_object.referral.add(self.ref_entity)
-        entity.attrs.add(entity_attr_object)
         entity_attr_array_object = EntityAttr.objects.create(
             **{
                 "name": "array_object",
@@ -2103,7 +2142,6 @@ class ViewTest(BaseViewTest):
             }
         )
         entity_attr_array_object.referral.add(self.ref_entity)
-        entity.attrs.add(entity_attr_array_object)
         entity_attr_named_object = EntityAttr.objects.create(
             **{
                 "name": "named_object",
@@ -2113,7 +2151,6 @@ class ViewTest(BaseViewTest):
             }
         )
         entity_attr_named_object.referral.add(self.ref_entity)
-        entity.attrs.add(entity_attr_named_object)
         entity_attr_named_object_without_key = EntityAttr.objects.create(
             **{
                 "name": "named_object_without_key",
@@ -2123,7 +2160,6 @@ class ViewTest(BaseViewTest):
             }
         )
         entity_attr_named_object_without_key.referral.add(self.ref_entity)
-        entity.attrs.add(entity_attr_named_object_without_key)
         entity_attr_array_named_object = EntityAttr.objects.create(
             **{
                 "name": "array_named_object",
@@ -2133,7 +2169,6 @@ class ViewTest(BaseViewTest):
             }
         )
         entity_attr_array_named_object.referral.add(self.ref_entity)
-        entity.attrs.add(entity_attr_array_named_object)
 
         entry = Entry.objects.create(name="entry", schema=entity, created_user=user)
         entry.complement_attrs(user)
@@ -2308,9 +2343,6 @@ class ViewTest(BaseViewTest):
                 parent_entity=test_entity,
             )
 
-            test_entity.attrs.add(test_entity_attr)
-            test_entity.save()
-
             test_entry = Entry.objects.create(
                 name=type_name + ',"ENTRY"', schema=test_entity, created_user=user
             )
@@ -2322,10 +2354,6 @@ class ViewTest(BaseViewTest):
                 created_user=user,
                 parent_entry=test_entry,
             )
-
-            test_attr.save()
-            test_entry.attrs.add(test_attr)
-            test_entry.save()
 
             test_val = None
 
@@ -2346,22 +2374,27 @@ class ViewTest(BaseViewTest):
                 test_val = AttributeValue.create(user=user, attr=test_attr)
                 test_val.set_status(AttributeValue.STATUS_DATA_ARRAY_PARENT)
                 for child in value:
-                    test_val_child = None
                     match type:
                         case AttrType.ARRAY_STRING:
-                            test_val_child = AttributeValue.create(
-                                user=user, attr=test_attr, value=child
+                            AttributeValue.create(
+                                user=user, attr=test_attr, value=child, parent_attrv=test_val
                             )
                         case AttrType.ARRAY_OBJECT:
-                            test_val_child = AttributeValue.create(
-                                user=user, attr=test_attr, referral=child
+                            AttributeValue.create(
+                                user=user,
+                                attr=test_attr,
+                                referral=child,
+                                parent_attrv=test_val,
                             )
                         case AttrType.ARRAY_NAMED_OBJECT:
                             [(k, v)] = child.items()
-                            test_val_child = AttributeValue.create(
-                                user=user, attr=test_attr, value=k, referral=v
+                            AttributeValue.create(
+                                user=user,
+                                attr=test_attr,
+                                value=k,
+                                referral=v,
+                                parent_attrv=test_val,
                             )
-                    test_val.data_array.add(test_val_child)
 
             test_val.save()
             test_attr.values.add(test_val)
@@ -2412,15 +2445,13 @@ class ViewTest(BaseViewTest):
         groups = [Group.objects.create(name=x) for x in ["g-foo", "g-bar", "g-baz"]]
         entity = Entity.objects.create(name="Entity", created_user=user)
         for name, type_index in [("grp", "group"), ("arr_group", "array_group")]:
-            entity.attrs.add(
-                EntityAttr.objects.create(
-                    **{
-                        "name": name,
-                        "type": AttrTypeValue[type_index],
-                        "created_user": user,
-                        "parent_entity": entity,
-                    }
-                )
+            EntityAttr.objects.create(
+                **{
+                    "name": name,
+                    "type": AttrTypeValue[type_index],
+                    "created_user": user,
+                    "parent_entity": entity,
+                }
             )
 
         # test to get groups through API calling of get_attr_referrals
@@ -2464,7 +2495,6 @@ class ViewTest(BaseViewTest):
         )
 
         entity_attr.referral.add(ref_entity)
-        entity.attrs.add(entity_attr)
 
         for index in range(CONFIG.MAX_LIST_REFERRALS, -1, -1):
             Entry.objects.create(name="e-%s" % index, schema=ref_entity, created_user=admin)
@@ -2546,7 +2576,6 @@ class ViewTest(BaseViewTest):
             }
         )
         entity_attr.referral.add(ref_entity)
-        entity.attrs.add(entity_attr)
 
         resp = self.client.get(
             "/entry/api/v2/%d/attr_referrals/" % entity_attr.id, {"keyword": "e-1"}
@@ -2578,7 +2607,9 @@ class ViewTest(BaseViewTest):
             },
         )
 
-        result = Entry.search_entries(self.user, [self.entity.id], is_output_all=True)
+        result = AdvancedSearchService.search_entries(
+            self.user, [self.entity.id], is_output_all=True
+        )
         self.assertEqual(result.ret_count, 1)
         self.assertEqual(result.ret_values[0].entry["name"], "test-entry")
         self.assertEqual(result.ret_values[0].entity["name"], "test-entity")
@@ -2617,7 +2648,9 @@ class ViewTest(BaseViewTest):
         job = Job.objects.get(operation=JobOperation.IMPORT_ENTRY_V2)
         self.assertEqual(job.status, JobStatus.DONE)
 
-        result = Entry.search_entries(self.user, [self.entity.id], is_output_all=True)
+        result = AdvancedSearchService.search_entries(
+            self.user, [self.entity.id], is_output_all=True
+        )
         self.assertEqual(result.ret_count, 1)
         self.assertEqual(result.ret_values[0].entry, {"id": entry.id, "name": "test-entry"})
         attrs = {
@@ -2651,7 +2684,9 @@ class ViewTest(BaseViewTest):
         job = Job.objects.filter(operation=JobOperation.IMPORT_ENTRY_V2).last()
         self.assertEqual(job.status, JobStatus.DONE)
 
-        result = Entry.search_entries(self.user, [self.entity.id], is_output_all=True)
+        result = AdvancedSearchService.search_entries(
+            self.user, [self.entity.id], is_output_all=True
+        )
         attrs["val"] = "bar"
         for attr_name in result.ret_values[0].attrs:
             self.assertEqual(result.ret_values[0].attrs[attr_name]["value"], attrs[attr_name])
@@ -2665,7 +2700,9 @@ class ViewTest(BaseViewTest):
         job = Job.objects.filter(operation=JobOperation.IMPORT_ENTRY_V2).last()
         self.assertEqual(job.status, JobStatus.DONE)
 
-        result = Entry.search_entries(self.user, [self.entity.id], is_output_all=True)
+        result = AdvancedSearchService.search_entries(
+            self.user, [self.entity.id], is_output_all=True
+        )
         attrs = {
             "val": "",
             "vals": [],
@@ -2709,7 +2746,7 @@ class ViewTest(BaseViewTest):
             },
         )
 
-        result = Entry.search_entries(self.user, [entity1.id, entity2.id])
+        result = AdvancedSearchService.search_entries(self.user, [entity1.id, entity2.id])
         self.assertEqual(result.ret_count, 2)
         self.assertEqual(result.ret_values[0].entry["name"], "test-entry1")
         self.assertEqual(result.ret_values[0].entity["name"], "test-entity1")
@@ -2741,7 +2778,9 @@ class ViewTest(BaseViewTest):
             },
         )
 
-        result = Entry.search_entries(self.user, [self.entity.id], is_output_all=True)
+        result = AdvancedSearchService.search_entries(
+            self.user, [self.entity.id], is_output_all=True
+        )
         self.assertEqual(result.ret_count, 1)
         self.assertEqual(result.ret_values[0].entry["name"], "test-entry")
         self.assertEqual(result.ret_values[0].entity["name"], "test-entity")
@@ -3314,15 +3353,13 @@ class ViewTest(BaseViewTest):
 
         entity = Entity.objects.create(name="Entity", created_user=user)
         for attr_name, info in attr_info.items():
-            entity.attrs.add(
-                EntityAttr.objects.create(
-                    **{
-                        "name": attr_name,
-                        "type": info["type"],
-                        "created_user": user,
-                        "parent_entity": entity,
-                    }
-                )
+            EntityAttr.objects.create(
+                **{
+                    "name": attr_name,
+                    "type": info["type"],
+                    "created_user": user,
+                    "parent_entity": entity,
+                }
             )
 
         entry = Entry.objects.create(name="entry", schema=entity, created_user=user)
@@ -3676,7 +3713,6 @@ class ViewTest(BaseViewTest):
             parent_entity=entity,
         )
         entity_attr.referral.add(ref_entity)
-        entity.attrs.add(entity_attr)
 
         # initialize Entries
         ref_entry = Entry.objects.create(name="ref", schema=ref_entity, created_user=user)
@@ -3789,9 +3825,6 @@ class ViewTest(BaseViewTest):
                 parent_entity=test_entity,
             )
 
-            test_entity.attrs.add(test_entity_attr)
-            test_entity.save()
-
             test_entry = Entry.objects.create(
                 name=type_name + ',"ENTRY"', schema=test_entity, created_user=user
             )
@@ -3803,10 +3836,6 @@ class ViewTest(BaseViewTest):
                 created_user=user,
                 parent_entry=test_entry,
             )
-
-            test_attr.save()
-            test_entry.attrs.add(test_attr)
-            test_entry.save()
 
             test_val = None
 
@@ -3827,24 +3856,30 @@ class ViewTest(BaseViewTest):
                 test_val = AttributeValue.create(user=user, attr=test_attr)
                 test_val.set_status(AttributeValue.STATUS_DATA_ARRAY_PARENT)
                 for child in value:
-                    test_val_child = None
-
                     match type:
                         case AttrType.ARRAY_STRING:
-                            test_val_child = AttributeValue.create(
-                                user=user, attr=test_attr, value=child
+                            AttributeValue.create(
+                                user=user,
+                                attr=test_attr,
+                                value=child,
+                                parent_attrv=test_val,
                             )
                         case AttrType.ARRAY_OBJECT:
-                            test_val_child = AttributeValue.create(
-                                user=user, attr=test_attr, referral=child
+                            AttributeValue.create(
+                                user=user,
+                                attr=test_attr,
+                                referral=child,
+                                parent_attrv=test_val,
                             )
                         case AttrType.ARRAY_NAMED_OBJECT:
                             [(k, v)] = child.items()
-                            test_val_child = AttributeValue.create(
-                                user=user, attr=test_attr, value=k, referral=v
+                            AttributeValue.create(
+                                user=user,
+                                attr=test_attr,
+                                value=k,
+                                referral=v,
+                                parent_attrv=test_val,
                             )
-
-                    test_val.data_array.add(test_val_child)
 
             test_val.save()
             test_attr.values.add(test_val)
@@ -3943,8 +3978,6 @@ class ViewTest(BaseViewTest):
 
                 if info["type"] & AttrType.OBJECT:
                     attr.referral.add(entity_ref)
-
-                entity.attrs.add(attr)
 
             # create an entry of Entity
             for e_index in range(2):
@@ -4091,18 +4124,18 @@ class ViewTest(BaseViewTest):
                     sorted([list([xx["name"] for xx in x.values()])[0] for x in value_info]),
                 )
             elif attr_name == "group":
-                self.assertEqual(int(attrv.value), new_group.id)
+                self.assertEqual(attrv.group, new_group)
             elif attr_name == "arr_group":
                 self.assertEqual(
-                    [int(x.value) for x in attrv.data_array.all()],
-                    [new_group.id],
+                    [x.group for x in attrv.data_array.all().select_related("group")],
+                    [new_group],
                 )
             elif attr_name == "role":
-                self.assertEqual(int(attrv.value), new_role.id)
+                self.assertEqual(attrv.role, new_role)
             elif attr_name == "arr_role":
                 self.assertEqual(
-                    [int(x.value) for x in attrv.data_array.all()],
-                    [new_role.id],
+                    [x.role for x in attrv.data_array.all().select_related("role")],
+                    [new_role],
                 )
             elif attr_name == "date":
                 self.assertEqual(attrv.date, date(1999, 1, 1))
@@ -4195,7 +4228,6 @@ class ViewTest(BaseViewTest):
             parent_entity=entity,
         )
         entity_attr.referral.add(ref_entity)
-        entity.attrs.add(entity_attr)
 
         # initialize Entries
         ref_entry = Entry.objects.create(name="ref", schema=ref_entity, created_user=user)
@@ -4759,6 +4791,8 @@ class ViewTest(BaseViewTest):
         )
         self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
         self.assertTrue(mock_call_custom.called)
+
+        entry = self.add_entry(self.user, "entry2", self.entity)
 
         def side_effect(handler_name, entity_name, user, entry):
             self.assertTrue(handler_name in ["before_delete_entry_v2", "after_delete_entry_v2"])

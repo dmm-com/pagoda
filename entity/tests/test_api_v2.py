@@ -4,6 +4,7 @@ import logging
 from datetime import timezone
 from unittest import mock
 
+import requests
 import yaml
 from django.conf import settings
 from django.urls import reverse
@@ -11,12 +12,15 @@ from rest_framework import status
 from rest_framework.exceptions import ValidationError
 
 from acl.models import ACLBase
+from airone.lib.elasticsearch import AttrHint
 from airone.lib.log import Logger
 from airone.lib.test import AironeViewTest
 from airone.lib.types import AttrType
 from entity import tasks
 from entity.models import Entity, EntityAttr
+from entry import tasks as entry_tasks
 from entry.models import Entry
+from entry.services import AdvancedSearchService
 from entry.tasks import create_entry_v2
 from group.models import Group
 from role.models import Role
@@ -271,6 +275,7 @@ class ViewTest(AironeViewTest):
         webhook: Webhook = self.entity.webhooks.first()
 
         resp = self.client.get("/entity/api/v2/%d/" % self.entity.id)
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
         self.assertEqual(
             resp.json()["webhooks"],
             [
@@ -1292,7 +1297,17 @@ class ViewTest(AironeViewTest):
     @mock.patch(
         "entity.tasks.create_entity_v2.delay", mock.Mock(side_effect=tasks.create_entity_v2)
     )
-    def test_create_entity_with_webhook_is_verified(self):
+    @mock.patch("requests.post")
+    def test_create_entity_with_webhook_is_verified(self, mock_post):
+        def mock_post_side_effect(url, *args, **kwargs):
+            if url == "http://example.net/":
+                mock_response = mock.Mock()
+                mock_response.status_code = 200
+                return mock_response
+            return requests.post(url, *args, **kwargs)
+
+        mock_post.side_effect = mock_post_side_effect
+
         params = {
             "name": "entity1",
             "webhooks": [{"url": "http://example.net/"}, {"url": "http://hoge.hoge/"}],
@@ -2474,7 +2489,17 @@ class ViewTest(AironeViewTest):
                 self.assertEqual([x.id for x in entity_attr.referral.all()], [])
 
     @mock.patch("entity.tasks.edit_entity_v2.delay", mock.Mock(side_effect=tasks.edit_entity_v2))
-    def test_update_entity_with_webhook_is_verified(self):
+    @mock.patch("requests.post")
+    def test_update_entity_with_webhook_is_verified(self, mock_post):
+        def mock_post_side_effect(url, *args, **kwargs):
+            if url == "http://example.net/":
+                mock_response = mock.Mock()
+                mock_response.status_code = 200
+                return mock_response
+            return requests.post(url, *args, **kwargs)
+
+        mock_post.side_effect = mock_post_side_effect
+
         self.entity.webhooks.all().delete()
         params = {
             "name": "entity1",
@@ -3277,6 +3302,7 @@ class ViewTest(AironeViewTest):
                 self.assertEqual(args[0], self.entity.name)
                 self.assertEqual(args[1], params["name"])
                 self.assertEqual(args[2], params["attrs"])
+                self.assertIsNone(args[3])
 
             if handler_name == "before_create_entry_v2":
                 self.assertEqual(
@@ -3523,8 +3549,6 @@ class ViewTest(AironeViewTest):
                 if is_object:
                     attr.referral.add(entity)
 
-                entity.attrs.add(attr)
-
         entities = Entity.objects.filter(name__contains="test_entity")
 
         entity3 = self.create_entity(
@@ -3604,3 +3628,50 @@ class ViewTest(AironeViewTest):
         self.assertEqual(
             [x.value for x in entry.get_attrv("vals").data_array.all()], ["fuga", "piyo"]
         )
+
+    @mock.patch("entity.tasks.edit_entity_v2.delay", mock.Mock(side_effect=tasks.edit_entity_v2))
+    @mock.patch(
+        "entry.tasks.update_es_documents.delay",
+        mock.Mock(side_effect=entry_tasks.update_es_documents),
+    )
+    def test_attr_add_remove_bug(self):
+        user = self.admin_login()
+        self.add_entry(
+            self.user,
+            "test_Entry",
+            self.entity,
+            values={
+                "val": "hoge",
+                "vals": ["hoge"],
+            },
+        )
+        # Get the entity attribute to be deleted
+        entity_attr: EntityAttr = self.entity.attrs.get(name="val", is_active=True)
+        # Prepare parameters to add the attribute back
+        params = {
+            "attrs": [{"id": entity_attr.id, "is_deleted": True}],
+        }
+        # Send a request to delete the specified attribute
+        resp = self.client.put(
+            "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
+
+        params = {
+            "attrs": [
+                {
+                    "name": "val",
+                    "type": AttrType.STRING,
+                },
+            ],
+        }
+        resp = self.client.put(
+            "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
+
+        # Perform a search for entries to verify the state of attributes
+        resp1 = AdvancedSearchService.search_entries(user, [self.entity.id], [AttrHint(name="val")])
+
+        # Validate that the actual value matches the expected value
+        self.assertEqual(resp1.ret_values[0].attrs["val"]["value"], "")

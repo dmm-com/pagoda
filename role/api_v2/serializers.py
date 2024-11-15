@@ -1,5 +1,6 @@
 from collections import OrderedDict
 
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 from airone.lib.drf import RequiredParameterError
@@ -27,10 +28,10 @@ class RoleGroupSerializer(serializers.ModelSerializer):
 
 
 class RoleSerializer(serializers.ModelSerializer):
-    users = RoleUserSerializer(many=True)
-    groups = RoleGroupSerializer(many=True)
-    admin_users = RoleUserSerializer(many=True)
-    admin_groups = RoleGroupSerializer(many=True)
+    users = serializers.SerializerMethodField()
+    groups = serializers.SerializerMethodField()
+    admin_users = serializers.SerializerMethodField()
+    admin_groups = serializers.SerializerMethodField()
     is_editable = serializers.SerializerMethodField(method_name="get_is_editable", read_only=True)
 
     class Meta:
@@ -46,6 +47,25 @@ class RoleSerializer(serializers.ModelSerializer):
             "admin_groups",
             "is_editable",
         ]
+
+    def get_filtered_data(self, obj, attribute, serializer):
+        return serializer(getattr(obj, attribute).filter(is_active=True), many=True).data
+
+    @extend_schema_field(RoleUserSerializer(many=True))
+    def get_users(self, obj):
+        return self.get_filtered_data(obj, "users", RoleUserSerializer)
+
+    @extend_schema_field(RoleUserSerializer(many=True))
+    def get_admin_users(self, obj):
+        return self.get_filtered_data(obj, "admin_users", RoleUserSerializer)
+
+    @extend_schema_field(RoleGroupSerializer(many=True))
+    def get_groups(self, obj):
+        return self.get_filtered_data(obj, "groups", RoleGroupSerializer)
+
+    @extend_schema_field(RoleGroupSerializer(many=True))
+    def get_admin_groups(self, obj):
+        return self.get_filtered_data(obj, "admin_groups", RoleGroupSerializer)
 
     def get_is_editable(self, obj: Role) -> bool:
         current_user: User = self.context["request"].user

@@ -1,5 +1,4 @@
 from django.conf import settings
-from django.contrib.auth import views as auth_views
 from django.urls import include, re_path
 
 from airone import views
@@ -21,7 +20,7 @@ urlpatterns = [
     re_path(r"^auth/sso/", include("social_django.urls", namespace="social")),
     re_path(
         r"^auth/login/",
-        auth_views.LoginView.as_view(
+        auth_view.PagodaLoginView.as_view(
             redirect_authenticated_user=True,
             extra_context={
                 "title": settings.AIRONE["TITLE"],
@@ -33,6 +32,8 @@ urlpatterns = [
                 if hasattr(settings, "SOCIAL_AUTH_SAML_ENABLED_IDPS")
                 else None,
                 "password_reset_disabled": settings.AIRONE["PASSWORD_RESET_DISABLED"],
+                "check_term_service": settings.AIRONE["CHECK_TERM_SERVICE"],
+                "terms_of_service_url": settings.AIRONE["TERMS_OF_SERVICE_URL"],
             },
         ),
         name="login",

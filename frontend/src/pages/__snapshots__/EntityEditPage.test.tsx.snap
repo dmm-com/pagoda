@@ -47,7 +47,7 @@ exports[`EditEntityPage should match snapshot 1`] = `
                       class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
                       href="/ui/entities"
                     >
-                      エンティティ一覧
+                      モデル一覧
                     </a>
                   </li>
                   <li
@@ -142,6 +142,9 @@ exports[`EditEntityPage should match snapshot 1`] = `
                     type="button"
                   >
                     キャンセル
+                    <span
+                      class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                    />
                   </button>
                 </div>
               </div>
@@ -196,7 +199,7 @@ exports[`EditEntityPage should match snapshot 1`] = `
                   <td
                     class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
                   >
-                    エンティティ名
+                    モデル名
                   </td>
                   <td
                     class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
@@ -210,12 +213,13 @@ exports[`EditEntityPage should match snapshot 1`] = `
                         <input
                           aria-invalid="false"
                           class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputSizeSmall css-1n4twyu-MuiInputBase-input-MuiOutlinedInput-input"
+                          data-1p-ignore="true"
                           id="entity-name"
                           name="name"
-                          placeholder="エンティティ名"
+                          placeholder="モデル名"
                           required=""
                           type="text"
-                          value=""
+                          value="test entity"
                         />
                         <fieldset
                           aria-hidden="true"
@@ -311,6 +315,9 @@ exports[`EditEntityPage should match snapshot 1`] = `
                           d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"
                         />
                       </svg>
+                      <span
+                        class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                      />
                     </span>
                   </td>
                 </tr>
@@ -424,6 +431,9 @@ exports[`EditEntityPage should match snapshot 1`] = `
                         d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"
                       />
                     </svg>
+                    <span
+                      class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                    />
                   </button>
                 </td>
               </tr>
@@ -555,6 +565,9 @@ exports[`EditEntityPage should match snapshot 1`] = `
                         d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"
                       />
                     </svg>
+                    <span
+                      class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                    />
                   </button>
                 </td>
                 <td
@@ -610,7 +623,7 @@ exports[`EditEntityPage should match snapshot 1`] = `
                     class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
                     href="/ui/entities"
                   >
-                    エンティティ一覧
+                    モデル一覧
                   </a>
                 </li>
                 <li
@@ -705,6 +718,9 @@ exports[`EditEntityPage should match snapshot 1`] = `
                   type="button"
                 >
                   キャンセル
+                  <span
+                    class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                  />
                 </button>
               </div>
             </div>
@@ -759,7 +775,7 @@ exports[`EditEntityPage should match snapshot 1`] = `
                 <td
                   class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
                 >
-                  エンティティ名
+                  モデル名
                 </td>
                 <td
                   class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
@@ -773,12 +789,13 @@ exports[`EditEntityPage should match snapshot 1`] = `
                       <input
                         aria-invalid="false"
                         class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputSizeSmall css-1n4twyu-MuiInputBase-input-MuiOutlinedInput-input"
+                        data-1p-ignore="true"
                         id="entity-name"
                         name="name"
-                        placeholder="エンティティ名"
+                        placeholder="モデル名"
                         required=""
                         type="text"
-                        value=""
+                        value="test entity"
                       />
                       <fieldset
                         aria-hidden="true"
@@ -874,6 +891,9 @@ exports[`EditEntityPage should match snapshot 1`] = `
                         d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"
                       />
                     </svg>
+                    <span
+                      class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                    />
                   </span>
                 </td>
               </tr>
@@ -987,6 +1007,9 @@ exports[`EditEntityPage should match snapshot 1`] = `
                       d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"
                     />
                   </svg>
+                  <span
+                    class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                  />
                 </button>
               </td>
             </tr>
@@ -1118,6 +1141,9 @@ exports[`EditEntityPage should match snapshot 1`] = `
                       d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"
                     />
                   </svg>
+                  <span
+                    class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                  />
                 </button>
               </td>
               <td

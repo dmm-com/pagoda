@@ -2,6 +2,9 @@ import AutorenewIcon from "@mui/icons-material/Autorenew";
 import { Box, Divider, Tooltip, Typography } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import React, { FC } from "react";
+import { Link } from "react-router-dom";
+
+import { jobsPath } from "routes/Routes";
 
 const Frame = styled(Box)({
   width: "100%",
@@ -41,6 +44,7 @@ const ChildrenBox = styled(Box)({
 interface Props {
   title: string;
   description?: string;
+  targetId?: number;
   hasOngoingProcess?: boolean;
   children?: React.ReactNode;
 }
@@ -48,6 +52,7 @@ interface Props {
 export const PageHeader: FC<Props> = ({
   title,
   description,
+  targetId,
   hasOngoingProcess,
   children,
 }) => {
@@ -63,7 +68,9 @@ export const PageHeader: FC<Props> = ({
           </Typography>
           {hasOngoingProcess && (
             <Tooltip title="未処理の変更があります。現在表示されているデータは最新でない可能性があります。">
-              <AutorenewIcon />
+              <Box component={Link} to={jobsPath(targetId)}>
+                <AutorenewIcon />
+              </Box>
             </Tooltip>
           )}
           <ChildrenBox>{children}</ChildrenBox>

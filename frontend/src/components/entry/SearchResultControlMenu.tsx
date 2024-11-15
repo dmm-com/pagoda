@@ -167,8 +167,9 @@ export const SearchResultControlMenu: FC<Props> = ({
         <Typography>重複</Typography>
       </MenuItem>
 
-      {/* date-type specific text selector */}
-      {attrType === EntryAttributeTypeTypeEnum.DATE && (
+      {/* date-like-type specific text selector */}
+      {(attrType === EntryAttributeTypeTypeEnum.DATE ||
+        attrType === EntryAttributeTypeTypeEnum.DATETIME) && (
         <Box>
           <StyledBox display="flex" flexDirection="column">
             <StyledTypography variant="caption">次を含む日付</StyledTypography>
@@ -182,12 +183,13 @@ export const SearchResultControlMenu: FC<Props> = ({
                     : null
                 }
                 onChange={(date: Date | null) => {
-                  let settingDateValue = "";
-                  if (date !== null) {
-                    settingDateValue = `${date.getFullYear()}-${
-                      date.getMonth() + 1
-                    }-${date.getDate()}`;
-                  }
+                  const settingDateValue = date
+                    ? new Date(
+                        date.getTime() - date.getTimezoneOffset() * 60000
+                      )
+                        .toISOString()
+                        .split("T")[0]
+                    : "";
                   handleSelectFilterConditions({
                     ...attrFilter,
                     filterKey:
@@ -215,12 +217,13 @@ export const SearchResultControlMenu: FC<Props> = ({
                     : null
                 }
                 onChange={(date: Date | null) => {
-                  let settingDateValue = "";
-                  if (date !== null) {
-                    settingDateValue = `${date.getFullYear()}-${
-                      date.getMonth() + 1
-                    }-${date.getDate()}`;
-                  }
+                  const settingDateValue = date
+                    ? new Date(
+                        date.getTime() - date.getTimezoneOffset() * 60000
+                      )
+                        .toISOString()
+                        .split("T")[0]
+                    : "";
                   handleSelectFilterConditions({
                     ...attrFilter,
                     filterKey:
@@ -281,7 +284,8 @@ export const SearchResultControlMenu: FC<Props> = ({
 
       {/* default text selector */}
       {attrType !== EntryAttributeTypeTypeEnum.DATE &&
-        attrType !== EntryAttributeTypeTypeEnum.BOOLEAN && (
+        attrType !== EntryAttributeTypeTypeEnum.BOOLEAN &&
+        attrType !== EntryAttributeTypeTypeEnum.DATETIME && (
           <Box>
             <Box>
               <StyledTextField

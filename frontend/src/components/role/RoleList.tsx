@@ -18,14 +18,14 @@ import { OverridableComponent } from "@mui/material/OverridableComponent";
 import { styled } from "@mui/material/styles";
 import { useSnackbar } from "notistack";
 import React, { FC, useState } from "react";
-import { Link, useHistory } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 import { useAsyncWithThrow } from "../../hooks/useAsyncWithThrow";
 import { aironeApiClient } from "../../repository/AironeApiClient";
 import { Confirmable } from "../common/Confirmable";
 import { Loading } from "../common/Loading";
 
-import { rolePath, rolesPath, topPath } from "Routes";
+import { rolePath, rolesPath, topPath } from "routes/Routes";
 
 const StyledList = styled(List)(() => ({
   padding: "0",
@@ -40,7 +40,7 @@ const StyledIconButton = styled(IconButton)(({ theme }) => ({
 })) as OverridableComponent<ExtendButtonBaseTypeMap<IconButtonTypeMap>>;
 
 export const RoleList: FC = ({}) => {
-  const history = useHistory();
+  const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
   const [toggle, setToggle] = useState(false);
 
@@ -54,8 +54,8 @@ export const RoleList: FC = ({}) => {
       enqueueSnackbar(`ロールの削除が完了しました`, {
         variant: "success",
       });
-      history.replace(topPath());
-      history.replace(rolesPath());
+      navigate(topPath(), { replace: true });
+      navigate(rolesPath(), { replace: true });
       setToggle(!toggle);
     } catch (e) {
       enqueueSnackbar("ロールの削除が失敗しました", {

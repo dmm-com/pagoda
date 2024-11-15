@@ -47,7 +47,7 @@ exports[`should match snapshot 1`] = `
                       class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
                       href="/ui/entities"
                     >
-                      エンティティ一覧
+                      モデル一覧
                     </a>
                   </li>
                   <li
@@ -136,7 +136,7 @@ exports[`should match snapshot 1`] = `
                 class="MuiTypography-root MuiTypography-subtitle1 css-10wpov9-MuiTypography-root"
                 id="description"
               >
-                エントリ詳細
+                アイテム詳細
               </h6>
               <div
                 class="MuiBox-root css-1b3gh38"
@@ -223,7 +223,7 @@ exports[`should match snapshot 1`] = `
                   class="MuiTypography-root MuiTypography-body1 css-9md421-MuiTypography-root"
                   id="ref_count"
                 >
-                  関連づけられたエントリ(計1)
+                  関連づけられたアイテム(計1)
                 </p>
                 <div
                   class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-miwl14-MuiFormControl-root-MuiTextField-root"
@@ -255,7 +255,7 @@ exports[`should match snapshot 1`] = `
                       aria-invalid="false"
                       class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputAdornedStart css-1o9s3wi-MuiInputBase-input-MuiOutlinedInput-input"
                       id=":r0:"
-                      placeholder="エントリを絞り込む"
+                      placeholder="アイテムを絞り込む"
                       type="text"
                       value=""
                     />
@@ -371,6 +371,9 @@ exports[`should match snapshot 1`] = `
                         aaa
                       </span>
                     </div>
+                    <span
+                      class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                    />
                   </a>
                 </li>
               </ul>
@@ -393,7 +396,6 @@ exports[`should match snapshot 1`] = `
               >
                 <table
                   class="MuiTable-root css-rqglhn-MuiTable-root"
-                  id="table_attr_list"
                 >
                   <thead
                     class="MuiTableHead-root css-15n4dzy-MuiTableHead-root"
@@ -476,7 +478,7 @@ exports[`should match snapshot 1`] = `
                     class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
                     href="/ui/entities"
                   >
-                    エンティティ一覧
+                    モデル一覧
                   </a>
                 </li>
                 <li
@@ -565,7 +567,7 @@ exports[`should match snapshot 1`] = `
               class="MuiTypography-root MuiTypography-subtitle1 css-10wpov9-MuiTypography-root"
               id="description"
             >
-              エントリ詳細
+              アイテム詳細
             </h6>
             <div
               class="MuiBox-root css-1b3gh38"
@@ -652,7 +654,7 @@ exports[`should match snapshot 1`] = `
                 class="MuiTypography-root MuiTypography-body1 css-9md421-MuiTypography-root"
                 id="ref_count"
               >
-                関連づけられたエントリ(計1)
+                関連づけられたアイテム(計1)
               </p>
               <div
                 class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-miwl14-MuiFormControl-root-MuiTextField-root"
@@ -684,7 +686,7 @@ exports[`should match snapshot 1`] = `
                     aria-invalid="false"
                     class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputAdornedStart css-1o9s3wi-MuiInputBase-input-MuiOutlinedInput-input"
                     id=":r0:"
-                    placeholder="エントリを絞り込む"
+                    placeholder="アイテムを絞り込む"
                     type="text"
                     value=""
                   />
@@ -800,6 +802,9 @@ exports[`should match snapshot 1`] = `
                       aaa
                     </span>
                   </div>
+                  <span
+                    class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                  />
                 </a>
               </li>
             </ul>
@@ -822,7 +827,6 @@ exports[`should match snapshot 1`] = `
             >
               <table
                 class="MuiTable-root css-rqglhn-MuiTable-root"
-                id="table_attr_list"
               >
                 <thead
                   class="MuiTableHead-root css-15n4dzy-MuiTableHead-root"

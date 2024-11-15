@@ -9,11 +9,11 @@ import {
 } from "@mui/material";
 import { useSnackbar } from "notistack";
 import React, { FC, useCallback } from "react";
-import { Link, useHistory } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
-import { groupPath, groupsPath, topPath } from "Routes";
 import { Confirmable } from "components/common/Confirmable";
 import { aironeApiClient } from "repository/AironeApiClient";
+import { groupPath, groupsPath, topPath } from "routes/Routes";
 
 interface Props {
   groupId: number;
@@ -29,7 +29,7 @@ export const GroupControlMenu: FC<Props> = ({
   setToggle,
 }) => {
   const { enqueueSnackbar } = useSnackbar();
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const handleDelete = useCallback(async () => {
     try {
@@ -37,15 +37,15 @@ export const GroupControlMenu: FC<Props> = ({
       enqueueSnackbar(`グループの削除が完了しました`, {
         variant: "success",
       });
-      history.replace(topPath());
-      history.replace(groupsPath());
+      navigate(topPath(), { replace: true });
+      navigate(groupsPath(), { replace: true });
       setToggle && setToggle();
     } catch (e) {
       enqueueSnackbar("グループの削除が失敗しました", {
         variant: "error",
       });
     }
-  }, [history, enqueueSnackbar, groupId]);
+  }, [navigate, enqueueSnackbar, groupId]);
 
   return (
     <Menu

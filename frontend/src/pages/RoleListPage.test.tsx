@@ -2,47 +2,49 @@
  * @jest-environment jsdom
  */
 
-import { Role } from "@dmm-com/airone-apiclient-typescript-fetch";
-import {
-  render,
-  waitForElementToBeRemoved,
-  screen,
-} from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
+import { http, HttpResponse } from "msw";
+import { setupServer } from "msw/node";
 import React from "react";
 
 import { RoleListPage } from "./RoleListPage";
 
 import { TestWrapper } from "TestWrapper";
 
-afterEach(() => {
-  jest.clearAllMocks();
-});
+const server = setupServer(
+  // getRoles
+  http.get("http://localhost/role/api/v2/", () => {
+    return HttpResponse.json([
+      {
+        id: 1,
+        name: "role1",
+        description: "role1",
+        users: [],
+        groups: [],
+        admin_users: [],
+        admin_groups: [],
+        is_editable: true,
+      },
+    ]);
+  })
+);
 
-test("should match snapshot", async () => {
-  const roles: Role[] = [
-    {
-      id: 0,
-      name: "",
-      description: "",
-      users: [],
-      groups: [],
-      adminUsers: [],
-      adminGroups: [],
-      isEditable: true,
-    },
-  ];
+beforeAll(() => server.listen());
 
-  /* eslint-disable */
-  jest
-    .spyOn(require("../repository/AironeApiClient").aironeApiClient, "getRoles")
-    .mockResolvedValue(Promise.resolve(roles));
-  /* eslint-enable */
+afterEach(() => server.resetHandlers());
 
-  // wait async calls and get rendered fragment
-  const result = render(<RoleListPage />, {
-    wrapper: TestWrapper,
+afterAll(() => server.close());
+
+describe("RoleListPage", () => {
+  test("should match snapshot", async () => {
+    // wait async calls and get rendered fragment
+    const result = render(<RoleListPage />, {
+      wrapper: TestWrapper,
+    });
+    await waitFor(() => {
+      expect(screen.queryByTestId("loading")).not.toBeInTheDocument();
+    });
+
+    expect(result).toMatchSnapshot();
   });
-  await waitForElementToBeRemoved(screen.getByTestId("loading"));
-
-  expect(result).toMatchSnapshot();
 });

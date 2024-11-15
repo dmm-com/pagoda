@@ -29,21 +29,21 @@ import { OverridableComponent } from "@mui/material/OverridableComponent";
 import { styled } from "@mui/material/styles";
 import { useSnackbar } from "notistack";
 import React, { FC, useState } from "react";
-import { Link, useHistory } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAsync } from "react-use";
 
+import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
+import { Confirmable } from "components/common/Confirmable";
+import { Loading } from "components/common/Loading";
+import { PageHeader } from "components/common/PageHeader";
+import { aironeApiClient } from "repository/AironeApiClient";
 import {
   editTriggerPath,
   entryDetailsPath,
   newTriggerPath,
   topPath,
   triggersPath,
-} from "Routes";
-import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
-import { Confirmable } from "components/common/Confirmable";
-import { Loading } from "components/common/Loading";
-import { PageHeader } from "components/common/PageHeader";
-import { aironeApiClient } from "repository/AironeApiClient";
+} from "routes/Routes";
 
 const StyledList = styled(List)(() => ({
   padding: "0",
@@ -207,7 +207,7 @@ const TriggerAction: FC<{
 };
 
 export const TriggerListPage: FC = () => {
-  const history = useHistory();
+  const navigate = useNavigate();
   const [toggle, setToggle] = useState(false);
   const { enqueueSnackbar } = useSnackbar();
 
@@ -221,8 +221,8 @@ export const TriggerListPage: FC = () => {
       enqueueSnackbar(`トリガーの削除が完了しました`, {
         variant: "success",
       });
-      history.replace(topPath());
-      history.replace(triggersPath());
+      navigate(topPath(), { replace: true });
+      navigate(triggersPath(), { replace: true });
       setToggle(!toggle);
     } catch (e) {
       enqueueSnackbar("トリガーの削除が失敗しました", {
@@ -260,9 +260,7 @@ export const TriggerListPage: FC = () => {
               <Table data-testid="TriggerList">
                 <TableHead>
                   <HeaderTableRow>
-                    <HeaderTableCell width="200px">
-                      エンティティ
-                    </HeaderTableCell>
+                    <HeaderTableCell width="200px">モデル</HeaderTableCell>
                     <HeaderTableCell width="420px">条件</HeaderTableCell>
                     <HeaderTableCell width="420px">アクション</HeaderTableCell>
                     <HeaderTableCell width="20px"></HeaderTableCell>

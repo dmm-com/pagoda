@@ -29,17 +29,16 @@ class APITest(AironeViewTest):
             params = {**valid_params, **invalid_param}
             resp = self.client.post("/api/v1/entry/search", json.dumps(params), "application/json")
             self.assertEqual(resp.status_code, 400)
-            self.assertEqual(resp.content, b'"The type of parameter is incorrect"')
 
         params = {**valid_params, **{"attrinfo": [{"hoge": "value"}]}}
         resp = self.client.post("/api/v1/entry/search", json.dumps(params), "application/json")
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(resp.content, b'"The name key is required for attrinfo parameter"')
+        self.assertEqual(resp.content, b"\"The type of parameter 'attrinfo' is incorrect\"")
 
         params = {**valid_params, **{"attrinfo": [{"name": ["hoge"]}]}}
         resp = self.client.post("/api/v1/entry/search", json.dumps(params), "application/json")
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(resp.content, b'"Invalid value for attrinfo parameter"')
+        self.assertEqual(resp.content, b"\"The type of parameter 'attrinfo' is incorrect\"")
 
         params = {
             **valid_params,
@@ -47,7 +46,7 @@ class APITest(AironeViewTest):
         }
         resp = self.client.post("/api/v1/entry/search", json.dumps(params), "application/json")
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(resp.content, b'"Invalid value for attrinfo parameter"')
+        self.assertEqual(resp.content, b"\"The type of parameter 'attrinfo' is incorrect\"")
 
     def test_narrow_down_advanced_search_results(self):
         user = self.admin_login()
@@ -60,15 +59,13 @@ class APITest(AironeViewTest):
 
         for entity_index in range(0, 2):
             entity = Entity.objects.create(name="entity-%d" % entity_index, created_user=user)
-            entity.attrs.add(
-                EntityAttr.objects.create(
-                    **{
-                        "name": "attr",
-                        "type": AttrType.STRING,
-                        "created_user": user,
-                        "parent_entity": entity,
-                    }
-                )
+            EntityAttr.objects.create(
+                **{
+                    "name": "attr",
+                    "type": AttrType.STRING,
+                    "created_user": user,
+                    "parent_entity": entity,
+                }
             )
 
             attr_ref = EntityAttr.objects.create(
@@ -80,7 +77,6 @@ class APITest(AironeViewTest):
                 }
             )
             attr_ref.referral.add(ref_entry)
-            entity.attrs.add(attr_ref)
 
             for entry_index in range(0, 10):
                 entry = Entry.objects.create(
@@ -178,8 +174,15 @@ class APITest(AironeViewTest):
                 }
             )
             attr.referral.add(entity_ref)
-            entity.attrs.add(attr)
-            entity2.attrs.add(attr)
+            attr2 = EntityAttr.objects.create(
+                **{
+                    "name": info["name"],
+                    "type": info["type"],
+                    "created_user": user,
+                    "parent_entity": entity2,
+                }
+            )
+            attr2.referral.add(entity_ref)
 
         # create referred entries
         refs = [
@@ -429,7 +432,7 @@ class APITest(AironeViewTest):
     def test_search_without_is_output_all(self):
         user = self.guest_login()
         entity = Entity.objects.create(name="entity", created_user=user)
-        entity_attr1 = EntityAttr.objects.create(
+        EntityAttr.objects.create(
             **{
                 "name": "attr1",
                 "type": AttrType.STRING,
@@ -437,7 +440,7 @@ class APITest(AironeViewTest):
                 "parent_entity": entity,
             }
         )
-        entity_attr2 = EntityAttr.objects.create(
+        EntityAttr.objects.create(
             **{
                 "name": "attr2",
                 "type": AttrType.STRING,
@@ -445,8 +448,6 @@ class APITest(AironeViewTest):
                 "parent_entity": entity,
             }
         )
-        entity.attrs.add(entity_attr1)
-        entity.attrs.add(entity_attr2)
         entry = Entry.objects.create(name="entry", schema=entity, created_user=user)
         entry.complement_attrs(user)
         entry.attrs.get(schema__name="attr1").add_value(user, "value1")

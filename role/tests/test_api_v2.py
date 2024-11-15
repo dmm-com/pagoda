@@ -357,3 +357,25 @@ class ViewTest(AironeViewTest):
                 }
             ],
         )
+
+    def test_deleted_objects_are_not_displayed(self):
+        self.admin_login()
+        user = User.objects.create(username="test_user")
+        group = Group.objects.create(name="test_group")
+        role = Role.objects.create(name="test-role")
+
+        # Associate user and group with the role
+        role.users.set([user.id])
+        role.groups.set([group.id])
+
+        # Delete the user and group
+        user.delete()
+        group.delete()
+
+        # Retrieve the role after the user and group are deleted
+        role_get_response = self.client.get(f"/role/api/v2/{role.id}")
+        role_data = role_get_response.json()
+
+        # Assert that the users and groups lists are empty
+        self.assertEqual(role_data["users"], [])
+        self.assertEqual(role_data["groups"], [])

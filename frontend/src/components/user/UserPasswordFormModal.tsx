@@ -2,12 +2,12 @@ import { Box, Button, TextField } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { useSnackbar } from "notistack";
 import React, { FC, useMemo, useState } from "react";
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import { aironeApiClient } from "../../repository/AironeApiClient";
 import { AironeModal } from "../common/AironeModal";
 
-import { loginPath, topPath, usersPath } from "Routes";
+import { loginPath, topPath, usersPath } from "routes/Routes";
 import { ServerContext } from "services/ServerContext";
 
 const PasswordField = styled(Box)(({ theme }) => ({
@@ -42,7 +42,7 @@ export const UserPasswordFormModal: FC<Props> = ({
   onClose,
 }) => {
   const { enqueueSnackbar } = useSnackbar();
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -77,10 +77,10 @@ export const UserPasswordFormModal: FC<Props> = ({
       }
 
       if (ServerContext.getInstance()?.user?.id == userId) {
-        history.replace(loginPath());
+        navigate(loginPath(), { replace: true });
       } else {
-        history.replace(topPath());
-        history.replace(usersPath());
+        navigate(topPath(), { replace: true });
+        navigate(usersPath(), { replace: true });
       }
     } catch (e) {
       enqueueSnackbar(

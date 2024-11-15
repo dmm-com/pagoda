@@ -60,7 +60,7 @@ const resources = toResource({
   },
   ja: {
     translation: {
-      entities: "エンティティ一覧",
+      entities: "モデル一覧",
       advancedSearch: "高度な検索",
       management: "管理機能",
       manageUsers: "ユーザ管理",

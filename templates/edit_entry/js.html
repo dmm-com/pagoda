@@ -341,7 +341,7 @@ $('button[name=add_attr]').on('click', function() {
 
 // Initiate array values
 {% for attr in attributes %}
-  {% if attr.type|bitwise_and:attr_type_value.array %}
+  {% if attr.type|bitwise_and:attr_type_value_array %}
     var container = $('.array_element[entity_attr_id="{{ attr.entity_attr_id }}"]');
     var template = $('#template-{{ attr.entity_attr_id }}');
     var value_setter = undefined;
@@ -353,7 +353,7 @@ $('button[name=add_attr]').on('click', function() {
           new_column.find('.attr_value').attr('enabled', 'True');
         };
 
-      {% elif attr.type == attr_type.array_entry or attr.type == attr_type.array_group or attr.type == attr_type.array_role %}
+      {% elif attr.type == attr_type.array_object or attr.type == attr_type.array_group or attr.type == attr_type.array_role %}
         value_setter = function(new_column) {
           elem_select = new_column.find('select');
 
@@ -378,7 +378,7 @@ $('button[name=add_attr]').on('click', function() {
           new_column.find('li').text(unescapeHtml('{{ value.name|truncatechars:config.entry.MAX_LABEL_STRING|escapejs }}'));
         }
 
-      {% elif attr.type == attr_type.array_named_entry %}
+      {% elif attr.type == attr_type.array_named_object %}
         value_setter = function(new_column) {
           var elem_referral_key = new_column.find('.referral_key')
           var elem_select = new_column.find('select');

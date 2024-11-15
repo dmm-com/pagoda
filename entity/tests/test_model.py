@@ -171,7 +171,6 @@ class ModelTest(TestCase):
                 "parent_entity": entity,
             }
         )
-        entity.attrs.add(entity_attr)
 
         EntityAttrResource.import_data_from_request(
             {
@@ -202,7 +201,6 @@ class ModelTest(TestCase):
                 "parent_entity": entity,
             }
         )
-        entity.attrs.add(entity_attr)
 
         EntityAttrResource.import_data_from_request(
             {

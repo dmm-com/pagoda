@@ -11,14 +11,17 @@ from rest_framework.exceptions import ValidationError
 from airone.celery import app
 from airone.lib import custom_view
 from airone.lib.acl import ACLType
-from airone.lib.elasticsearch import AdvancedSearchResultValue
+from airone.lib.elasticsearch import AdvancedSearchResultRecord, AttrHint
 from airone.lib.event_notification import (
     notify_entry_create,
     notify_entry_delete,
     notify_entry_update,
 )
 from airone.lib.http import DRFRequest
-from airone.lib.job import may_schedule_until_job_is_ready
+from airone.lib.job import (
+    may_schedule_until_job_is_ready,
+    may_schedule_until_job_is_ready_with_handlers,
+)
 from airone.lib.log import Logger
 from airone.lib.types import AttrType
 from dashboard.tasks import _csv_export
@@ -38,45 +41,49 @@ from entry.api_v2.serializers import (
     ReferralEntry,
 )
 from entry.models import Attribute, Entry
+from entry.services import AdvancedSearchService
 from group.models import Group
 from job.models import Job, JobStatus
 from role.models import Role
 from user.models import User
 
 
-def _merge_referrals_by_index(ref_list, name_list):
+def _merge_referrals_by_index(
+    ref_list: list[dict], name_list: list[dict]
+) -> dict[int, dict[str, Any]]:
     """This is a helper function to set array_named_object value.
     This re-formats data construction with index parameter of argument.
     """
 
     # pad None to align the length of each lists
-    def be_aligned(list1, list2):
+    def be_aligned(list1: list[Any], list2: list[Any]) -> None:
         padding_length = len(list2) - len(list1)
         if padding_length > 0:
-            for i in range(0, padding_length):
-                list1.append(None)
+            list1.extend([None] * padding_length)
 
     for args in [(ref_list, name_list), (name_list, ref_list)]:
         be_aligned(*args)
 
-    result = {}
+    result: dict[int, dict[str, Any]] = {}
     for ref_info, name_info in zip(ref_list, name_list):
         if ref_info:
-            if ref_info["index"] not in result:
-                result[ref_info["index"]] = {}
-            result[ref_info["index"]]["id"] = ref_info["data"]
+            index = ref_info["index"]
+            if index not in result:
+                result[index] = {}
+            result[index]["id"] = ref_info["data"]
 
         if name_info:
-            if name_info["index"] not in result:
-                result[name_info["index"]] = {}
-            result[name_info["index"]]["name"] = name_info["data"]
+            index = name_info["index"]
+            if index not in result:
+                result[index] = {}
+            result[index]["name"] = name_info["data"]
 
     return result
 
 
-def _convert_data_value(attr, info):
+def _convert_data_value(attr: Attribute, info: dict):
     if attr.is_array():
-        recv_value = []
+        recv_value: Any = []
         if "value" in info and info["value"]:
             recv_value = [x["data"] for x in info["value"] if "data" in x]
 
@@ -221,7 +228,7 @@ def _do_import_entries(job: Job):
 
 
 def _yaml_export_v2(
-    job: Job, values: list[AdvancedSearchResultValue], recv_data: dict, has_referral: bool
+    job: Job, values: list[AdvancedSearchResultRecord], recv_data: dict, has_referral: bool
 ) -> io.StringIO | None:
     def _get_attr_primitive_value(atype: int, value: dict) -> ExportedEntryAttributePrimitiveValue:
         match atype:
@@ -345,82 +352,74 @@ def _yaml_export_v2(
 
 
 @app.task(bind=True)
-def create_entry_attrs(self, job_id: int):
-    job = Job.objects.get(id=job_id)
+@may_schedule_until_job_is_ready_with_handlers(
+    on_cancelled=lambda job: Entry.objects.filter(id=job.target.id, is_active=True).first().delete()
+    if Entry.objects.filter(id=job.target.id, is_active=True).exists()
+    else None
+)
+def create_entry_attrs(self, job: Job) -> JobStatus | None:
+    user = User.objects.filter(id=job.user.id).first()
+    entry = Entry.objects.filter(id=job.target.id, is_active=True).first()
 
-    if job.proceed_if_ready():
-        # At the first time, update job status to prevent executing this job duplicately
-        job.update(JobStatus.PROCESSING)
+    # for history record
+    entry._history_user = user
 
-        user = User.objects.filter(id=job.user.id).first()
-        entry = Entry.objects.filter(id=job.target.id, is_active=True).first()
+    if not entry or not user:
+        # Abort when specified entry doesn't exist
+        return JobStatus.CANCELED
 
-        # for history record
-        entry._history_user = user
+    recv_data = json.loads(job.params)
+    # Create new Attributes objects based on the specified value
+    for entity_attr in entry.schema.attrs.filter(is_active=True):
+        # This creates Attibute object that contains AttributeValues.
+        # But the add_attribute_from_base may return None when target Attribute instance
+        # has already been created or is creating by other process. In that case, this job
+        # do nothing about that Attribute instance.
+        attr = entry.add_attribute_from_base(entity_attr, user)
 
-        if not entry or not user:
-            # Abort when specified entry doesn't exist
-            job.update(JobStatus.CANCELED)
-            return
+        # skip for unpermitted attributes
+        if not user.has_permission(entity_attr, ACLType.Writable):
+            continue
 
-        recv_data = json.loads(job.params)
-        # Create new Attributes objects based on the specified value
-        for entity_attr in entry.schema.attrs.filter(is_active=True):
-            # This creates Attibute object that contains AttributeValues.
-            # But the add_attribute_from_base may return None when target Attribute instance
-            # has already been created or is creating by other process. In that case, this job
-            # do nothing about that Attribute instance.
-            attr = entry.add_attribute_from_base(entity_attr, user)
-
-            # skip for unpermitted attributes
-            if not user.has_permission(entity_attr, ACLType.Writable):
-                continue
-
-            # When job is canceled during this processing, abort it after deleting the created entry
-            if job.is_canceled():
-                entry.delete()
-                return
-
-            # make an initial AttributeValue object if the initial value is specified
-            attr_data = [x for x in recv_data["attrs"] if int(x["id"]) == entity_attr.id]
-
-            if not attr or not attr_data:
-                continue
-
-            # register new AttributeValue to the "attr"
-            try:
-                attr.add_value(user, _convert_data_value(attr, attr_data[0]))
-            except ValueError as e:
-                Logger.warning("(%s) attr_data: %s" % (e, str(attr_data[0])))
-
-        # Delete duplicate attrs because this processing may execute concurrently
-        for entity_attr in entry.schema.attrs.filter(is_active=True):
-            if entry.attrs.filter(schema=entity_attr, is_active=True).count() > 1:
-                query = entry.attrs.filter(schema=entity_attr, is_active=True)
-                query.exclude(id=query.first().id).delete()
-
-        if custom_view.is_custom("after_create_entry", entry.schema.name):
-            custom_view.call_custom("after_create_entry", entry.schema.name, recv_data, user, entry)
-
-        # register entry information to Elasticsearch
-        entry.register_es()
-
-        # clear flag to specify this entry has been completed to ndcreate
-        entry.del_status(Entry.STATUS_CREATING)
-
-        # update job status and save it except for the case that target job is canceled.
-        if not job.is_canceled():
-            job.update(JobStatus.DONE)
-
-            # Send notification to the webhook URL
-            job_notify_event = Job.new_notify_create_entry(user, entry)
-            job_notify_event.run()
-
-    elif job.is_canceled():
-        # When job is canceled before starting, created entry should be deleted.
-        entry = Entry.objects.filter(id=job.target.id, is_active=True).first()
-        if entry:
+        # When job is canceled during this processing, abort it after deleting the created entry
+        if job.is_canceled():
             entry.delete()
+            return None
+
+        # make an initial AttributeValue object if the initial value is specified
+        attr_data = [x for x in recv_data["attrs"] if int(x["id"]) == entity_attr.id]
+
+        if not attr or not attr_data:
+            continue
+
+        # register new AttributeValue to the "attr"
+        try:
+            attr.add_value(user, _convert_data_value(attr, attr_data[0]))
+        except ValueError as e:
+            Logger.warning("(%s) attr_data: %s" % (e, str(attr_data[0])))
+
+    # Delete duplicate attrs because this processing may execute concurrently
+    for entity_attr in entry.schema.attrs.filter(is_active=True):
+        if entry.attrs.filter(schema=entity_attr, is_active=True).count() > 1:
+            query = entry.attrs.filter(schema=entity_attr, is_active=True)
+            query.exclude(id=query.first().id).delete()
+
+    if custom_view.is_custom("after_create_entry", entry.schema.name):
+        custom_view.call_custom("after_create_entry", entry.schema.name, recv_data, user, entry)
+
+    # register entry information to Elasticsearch
+    entry.register_es()
+
+    # clear flag to specify this entry has been completed to ndcreate
+    entry.del_status(Entry.STATUS_CREATING)
+
+    # update job status and save it except for the case that target job is canceled.
+    if not job.is_canceled():
+        # Send notification to the webhook URL
+        job_notify_event = Job.new_notify_create_entry(user, entry)
+        job_notify_event.run()
+
+    return JobStatus.DONE
 
 
 @app.task(bind=True)
@@ -771,10 +770,18 @@ def export_search_result_v2(self, job: Job):
     if has_referral and referral_name is None:
         referral_name = ""
 
-    resp = Entry.search_entries(
+    if not isinstance(params["attrinfo"], list):
+        return JobStatus.ERROR, "Invalid attrinfo"
+
+    try:
+        hint_attrs = [AttrHint.model_validate(x) for x in params["attrinfo"]]
+    except ValidationError:
+        return JobStatus.ERROR, "Invalid attrinfo"
+
+    resp = AdvancedSearchService.search_entries(
         user,
         params["entities"],
-        params["attrinfo"],
+        hint_attrs,
         settings.ES_CONFIG["MAXIMUM_RESULTS_NUM"],
         entry_name,
         referral_name,
@@ -816,16 +823,14 @@ def _notify_event(
 
 
 @app.task(bind=True)
-def update_es_documents(self, job_id: int):
-    job = Job.objects.get(id=job_id)
-    job.update(JobStatus.PROCESSING)
-
+@may_schedule_until_job_is_ready
+def update_es_documents(self, job: Job) -> JobStatus:
     params = json.loads(job.params)
 
     entity = Entity.objects.get(id=job.target.id)
-    Entry.update_documents(entity, params.get("is_update", False))
+    AdvancedSearchService.update_documents(entity, params.get("is_update", False))
 
-    job.delete()
+    return JobStatus.DONE
 
 
 @app.task(bind=True)
@@ -882,9 +887,6 @@ def delete_entry_v2(self, job: Job) -> JobStatus:
     entry: Entry | None = Entry.objects.filter(id=job.target.id, is_active=True).first()
     if not entry:
         return JobStatus.ERROR
-
-    if custom_view.is_custom("before_delete_entry_v2", entry.schema.name):
-        custom_view.call_custom("before_delete_entry_v2", entry.schema.name, job.user, entry)
 
     # register operation History for deleting entry
     job.user.seth_entry_del(entry)

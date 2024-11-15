@@ -4,7 +4,7 @@ import {
 } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { Autocomplete, Box, Button, TextField } from "@mui/material";
 import React, { FC, useState } from "react";
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import { AironeModal } from "components/common/AironeModal";
 import { useAsyncWithThrow } from "hooks/useAsyncWithThrow";
@@ -17,7 +17,7 @@ interface Props {
   targetAttrname: string;
   joinAttrs: AdvancedSearchJoinAttrInfo[];
   handleClose: () => void;
-  setSearchResults: (isJoinSearching: boolean) => void;
+  refreshSearchResults: () => void;
 }
 
 export const AdvancedSearchJoinModal: FC<Props> = ({
@@ -26,9 +26,9 @@ export const AdvancedSearchJoinModal: FC<Props> = ({
   targetAttrname,
   joinAttrs,
   handleClose,
-  setSearchResults,
+  refreshSearchResults,
 }) => {
-  const history = useHistory();
+  const navigate = useNavigate();
   // This is join attributes that have been already been selected before.
   const currentAttrInfo: AdvancedSearchJoinAttrInfo | undefined =
     joinAttrs.find((attr) => attr.name === targetAttrname);
@@ -70,13 +70,15 @@ export const AdvancedSearchJoinModal: FC<Props> = ({
     });
 
     // update page by changing joined Attribute filter condition
-    setSearchResults(true);
+    refreshSearchResults();
 
     // Update Page URL parameters
-    history.push({
+    navigate({
       pathname: location.pathname,
       search: "?" + params.toString(),
     });
+
+    handleClose();
   };
 
   return (

@@ -10,13 +10,14 @@ import { Schema } from "./aclForm/ACLFormSchema";
 
 import { TestWrapper } from "TestWrapper";
 import { ACLForm } from "components/acl/ACLForm";
+import { ACLType } from "services/Constants";
 
 test("should render a component with essential props", function () {
   const Wrapper: FC = () => {
     const { control, watch } = useForm<Schema>({
       defaultValues: {
         isPublic: true,
-        defaultPermission: 0,
+        defaultPermission: ACLType.Nothing,
         roles: [],
       },
     });

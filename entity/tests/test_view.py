@@ -13,6 +13,7 @@ from entity import tasks
 from entity.models import Entity, EntityAttr
 from entity.settings import CONFIG
 from entry.models import Attribute, Entry
+from entry.services import AdvancedSearchService
 from entry.tasks import update_es_documents
 from user.models import History, User
 
@@ -182,7 +183,7 @@ class ViewTest(AironeViewTest):
         )
 
         # tests for historical-record
-        self.assertEqual(entity.history.count(), 2)
+        self.assertEqual(entity.history.count(), 1)
 
     def test_create_post_without_name_param(self):
         self.admin_login()
@@ -471,7 +472,6 @@ class ViewTest(AironeViewTest):
             type=AttrType.STRING,
             parent_entity=entity,
         )
-        entity.attrs.add(attr)
 
         # Before submitting request, this save historical count for test
         history_count_before_submitting = entity.history.count()
@@ -536,8 +536,8 @@ class ViewTest(AironeViewTest):
         self.assertEqual(History.objects.filter(operation=History.MOD_ATTR).count(), 2)
 
         # tests for historical records for Entity
-        self.assertEqual(entity.history.count(), history_count_before_submitting + 3)
-        self.assertEqual([h.history_user for h in entity.history.all()[0:3]], [user, user, user])
+        self.assertEqual(entity.history.count(), history_count_before_submitting + 2)
+        self.assertEqual([h.history_user for h in entity.history.all()[0:2]], [user, user])
 
         # tests for historical records for EntityAttr,
         # * "foo" is updated so it's HistoricalRecord's count must be plus 1 from previous value
@@ -550,31 +550,13 @@ class ViewTest(AironeViewTest):
         self.assertEqual(entity.attrs.get(name="bar").history.count(), 1)
         self.assertEqual(entity.attrs.get(name="baz").history.count(), 1)
 
-        # NOTE: check EntityAttr is added from HistoricalRecord
-        diff = entity.get_diff(offset=0)[0]
-        self.assertEqual(diff.field, "attrs")
-        self.assertEqual(
-            diff.prev,
-            [
-                {"entity": entity.id, "entityattr": x.id}
-                for x in entity.attrs.filter(is_active=True)
-                if x.name not in ["bar", "baz"]
-            ],
-        )
-        self.assertEqual(
-            diff.next,
-            [
-                {"entity": entity.id, "entityattr": x.id}
-                for x in entity.attrs.filter(is_active=True)
-            ],
-        )
         # NOTE: check entity note is change from HistoricalRecord
-        diff = entity.get_diff(offset=1)[0]
+        diff = entity.get_diff(offset=0)[0]
         self.assertEqual(diff.field, "note")
         self.assertEqual(diff.prev, "fuga")
         self.assertEqual(diff.next, "bar")
         # NOTE: check entity name is change from HistoricalRecord
-        diff = entity.get_diff(offset=2)[0]
+        diff = entity.get_diff(offset=1)[0]
         self.assertEqual(diff.field, "name")
         self.assertEqual(diff.prev, "hoge")
         self.assertEqual(diff.next, "foo")
@@ -638,14 +620,16 @@ class ViewTest(AironeViewTest):
         self.assertEqual(entity.attrs.count(), 3)
         self.assertEqual(entry.attrs.count(), 2)
 
-        res = Entry.search_entries(user, [entity.id], is_output_all=True)
+        res = AdvancedSearchService.search_entries(user, [entity.id], is_output_all=True)
         self.assertEqual(
             sorted([x for x in res.ret_values[0].attrs.keys()]), sorted(["foo", "bar", "ref"])
         )
 
         # Check the elasticsearch data is also changed when
         # referred Entity name is changed.
-        res = Entry.search_entries(user, [ref_entity.id], hint_referral="", is_output_all=True)
+        res = AdvancedSearchService.search_entries(
+            user, [ref_entity.id], hint_referral="", is_output_all=True
+        )
         self.assertEqual(res.ret_count, 1)
         self.assertEqual(res.ret_values[0].referrals[0]["schema"]["name"], "Changed-Entity")
 
@@ -656,7 +640,6 @@ class ViewTest(AironeViewTest):
         attr = EntityAttr.objects.create(
             name="puyo", type=AttrType.STRING, created_user=user, parent_entity=entity
         )
-        entity.attrs.add(attr)
 
         params = {
             "name": "foo",
@@ -692,7 +675,6 @@ class ViewTest(AironeViewTest):
         attrbase = EntityAttr.objects.create(
             name="puyo", type=AttrType.OBJECT, created_user=user, parent_entity=entity
         )
-        entity.attrs.add(attrbase)
 
         entry = Entry.objects.create(name="entry", schema=entity, created_user=user)
         attr = entry.add_attribute_from_base(attrbase, user)
@@ -762,7 +744,6 @@ class ViewTest(AironeViewTest):
         attr = EntityAttr.objects.create(
             name="puyo", type=AttrType.STRING, created_user=user, parent_entity=entity
         )
-        entity.attrs.add(attr)
 
         params = {
             "name": "foo",
@@ -802,7 +783,6 @@ class ViewTest(AironeViewTest):
             type=AttrType.STRING,
             parent_entity=entity,
         )
-        entity.attrs.add(attr)
 
         params = {
             "name": "foo",
@@ -984,7 +964,9 @@ class ViewTest(AironeViewTest):
 
         # Check the elasticsearch data (the referrals parameter) is also removed when
         # referring EntityAttr is deleted.
-        res = Entry.search_entries(user, [ref_entity.id], hint_referral="", is_output_all=True)
+        res = AdvancedSearchService.search_entries(
+            user, [ref_entity.id], hint_referral="", is_output_all=True
+        )
         self.assertEqual(res.ret_count, 1)
         self.assertEqual(res.ret_values[0].entry["id"], ref_entry.id)
         self.assertEqual(res.ret_values[0].referrals, [])
@@ -998,13 +980,11 @@ class ViewTest(AironeViewTest):
 
         entity1 = Entity.objects.create(name="entity1", note="hoge", created_user=user)
         for name in ["foo", "bar"]:
-            entity1.attrs.add(
-                EntityAttr.objects.create(
-                    name=name,
-                    type=AttrType.STRING,
-                    created_user=user,
-                    parent_entity=entity1,
-                )
+            EntityAttr.objects.create(
+                name=name,
+                type=AttrType.STRING,
+                created_user=user,
+                parent_entity=entity1,
             )
 
         entity2 = Entity.objects.create(name="entity2", created_user=user)
@@ -1012,8 +992,6 @@ class ViewTest(AironeViewTest):
             name="attr", type=AttrType.OBJECT, created_user=user, parent_entity=entity2
         )
         attr.referral.add(entity1)
-        entity2.attrs.add(attr)
-        entity2.save()
 
         resp = self.client.get(reverse("entity:export"))
         self.assertEqual(resp.status_code, 200)
@@ -1069,34 +1047,28 @@ class ViewTest(AironeViewTest):
 
         # create an entity object which is created by logined-user
         entity1 = Entity.objects.create(name="entity1", created_user=user)
-        entity1.attrs.add(
-            EntityAttr.objects.create(
-                name="attr1", type=AttrType.STRING, created_user=user, parent_entity=entity1
-            )
+        EntityAttr.objects.create(
+            name="attr1", type=AttrType.STRING, created_user=user, parent_entity=entity1
         )
 
         # create a public object which is created by the another_user
         entity2 = Entity.objects.create(name="entity2", created_user=user2)
-        entity2.attrs.add(
-            EntityAttr.objects.create(
-                name="attr2",
-                type=AttrType.STRING,
-                created_user=user2,
-                parent_entity=entity1,
-            )
+        EntityAttr.objects.create(
+            name="attr2",
+            type=AttrType.STRING,
+            created_user=user2,
+            parent_entity=entity2,
         )
 
         # create private objects which is created by the another_user
         for name in ["foo", "bar"]:
             e = Entity.objects.create(name=name, created_user=user2, is_public=False)
-            e.attrs.add(
-                EntityAttr.objects.create(
-                    name="private_attr",
-                    type=AttrType.STRING,
-                    created_user=user2,
-                    parent_entity=e,
-                    is_public=False,
-                )
+            EntityAttr.objects.create(
+                name="private_attr",
+                type=AttrType.STRING,
+                created_user=user2,
+                parent_entity=e,
+                is_public=False,
             )
 
         resp = self.client.get(reverse("entity:export"))
@@ -1113,10 +1085,8 @@ class ViewTest(AironeViewTest):
         user = self.admin_login()
 
         entity1 = Entity.objects.create(name="entity1", created_user=user)
-        entity1.attrs.add(
-            EntityAttr.objects.create(
-                name="attr1", type=AttrType.STRING, created_user=user, parent_entity=entity1
-            )
+        EntityAttr.objects.create(
+            name="attr1", type=AttrType.STRING, created_user=user, parent_entity=entity1
         )
 
         # This Entity object won't be exported because this is logically deleted
@@ -1141,7 +1111,6 @@ class ViewTest(AironeViewTest):
             type=AttrType.STRING,
             parent_entity=entity1,
         )
-        entity1.attrs.add(attr)
 
         entity_count = Entity.objects.all().count()
 
@@ -1150,7 +1119,7 @@ class ViewTest(AironeViewTest):
             "entity": entity1.history.count(),
             "attr": attr.history.count(),
         }
-        self.assertEqual(self._test_data["before_history_count"]["entity"], 2)
+        self.assertEqual(self._test_data["before_history_count"]["entity"], 1)
         self.assertEqual(self._test_data["before_history_count"]["attr"], 1)
 
         params = {}
@@ -1221,7 +1190,6 @@ class ViewTest(AironeViewTest):
             type=AttrType.STRING,
             parent_entity=entity,
         )
-        entity.attrs.add(attrbase)
 
         entry = Entry.objects.create(name="entry1", schema=entity, created_user=user)
         entry.add_attribute_from_base(attrbase, user)
@@ -1255,14 +1223,13 @@ class ViewTest(AironeViewTest):
         entity1 = Entity.objects.create(name="entity1", created_user=user1)
         entity1.save()
 
-        attr = EntityAttr.objects.create(
+        EntityAttr.objects.create(
             name="attr-test",
             created_user=user1,
             is_mandatory=True,
             type=AttrType.STRING,
             parent_entity=entity1,
         )
-        entity1.attrs.add(attr)
 
         params = {}
 
@@ -1336,10 +1303,9 @@ class ViewTest(AironeViewTest):
 
         entity = Entity.objects.create(name="entity", created_user=user)
         for name in ["foo", "bar"]:
-            attr = EntityAttr.objects.create(
+            EntityAttr.objects.create(
                 name=name, type=AttrType.STRING, created_user=user, parent_entity=entity
             )
-            entity.attrs.add(attr)
 
         (attr1, attr2) = entity.attrs.all()
 
@@ -1422,7 +1388,6 @@ class ViewTest(AironeViewTest):
             type=AttrType.OBJECT,
         )
         attr.referral.add(ref_entity)
-        entity.attrs.add(attr)
 
         # create entries
         for i in range(0, CONFIG.DASHBOARD_NUM_ITEMS + 2):
@@ -1506,7 +1471,6 @@ class ViewTest(AironeViewTest):
         attr = EntityAttr.objects.create(
             name="attr", type=AttrType.OBJECT, created_user=user, parent_entity=entity
         )
-        entity.attrs.add(attr)
 
         # send post request with parameters which contain an invalid EntityAttr-ID
         resp = self.client.post(
@@ -1638,3 +1602,26 @@ class ViewTest(AironeViewTest):
 
         self.assertEqual(resp.status_code, 200)
         self.assertTrue(self._test_data["is_call_custom_called"])
+
+    @mock.patch("entity.tasks.create_entity.delay", mock.Mock(side_effect=tasks.create_entity))
+    def test_try_to_create_duplicate_name_of_entity(self):
+        user = self.admin_login()
+        Entity.objects.create(name="hoge", created_user=user)
+
+        # Set parameters with a duplicate entity name "hoge"
+        params = {
+            "name": "hoge",
+            "note": "",
+            "is_toplevel": False,
+            "attrs": [],
+        }
+
+        resp = self.client.post(
+            reverse("entity:do_create"),
+            json.dumps(params),
+            "application/json",
+        )
+
+        # Check the response is 400 and the content is "Duplicate name entity is existed"
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.content.decode("utf-8"), "Duplicate name entity is existed")

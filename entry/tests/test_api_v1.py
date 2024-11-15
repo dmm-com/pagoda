@@ -202,15 +202,13 @@ class ViewTest(AironeViewTest):
         )
 
         entity = Entity.objects.create(name="Entity", created_user=admin)
-        entity.attrs.add(
-            EntityAttr.objects.create(
-                **{
-                    "name": "Refer",
-                    "type": AttrType.OBJECT,
-                    "created_user": admin,
-                    "parent_entity": entity,
-                }
-            )
+        EntityAttr.objects.create(
+            **{
+                "name": "Refer",
+                "type": AttrType.OBJECT,
+                "created_user": admin,
+                "parent_entity": entity,
+            }
         )
 
         for index in range(0, CONFIG.MAX_LIST_REFERRALS + 1):
@@ -258,15 +256,13 @@ class ViewTest(AironeViewTest):
         groups = [Group.objects.create(name=x) for x in ["g-foo", "g-bar", "g-baz"]]
         entity = Entity.objects.create(name="Entity", created_user=user)
         for name, type in [("grp", AttrType.GROUP), ("arr_group", AttrType.ARRAY_GROUP)]:
-            entity.attrs.add(
-                EntityAttr.objects.create(
-                    **{
-                        "name": name,
-                        "type": type,
-                        "created_user": user,
-                        "parent_entity": entity,
-                    }
-                )
+            EntityAttr.objects.create(
+                **{
+                    "name": name,
+                    "type": type,
+                    "created_user": user,
+                    "parent_entity": entity,
+                }
             )
 
         # test to get groups through API calling of get_attr_referrals
@@ -312,7 +308,6 @@ class ViewTest(AironeViewTest):
         )
 
         entity_attr.referral.add(ref_entity)
-        entity.attrs.add(entity_attr)
 
         for index in range(CONFIG.MAX_LIST_REFERRALS, -1, -1):
             Entry.objects.create(name="e-%s" % index, schema=ref_entity, created_user=admin)
@@ -397,7 +392,6 @@ class ViewTest(AironeViewTest):
             }
         )
         entity_attr.referral.add(ref_entity)
-        entity.attrs.add(entity_attr)
 
         resp = self.client.get(
             "/entry/api/v1/get_attr_referrals/%s/" % entity_attr.id, {"keyword": "e-1"}
@@ -434,8 +428,6 @@ class ViewTest(AironeViewTest):
             )
             if "ref" in attr_info:
                 entity_attr.referral.add(attr_info["ref"])
-
-            entity.attrs.add(entity_attr)
 
         for index in range(0, 20):
             entry = Entry.objects.create(name="e-%d" % index, schema=entity, created_user=admin)
@@ -618,7 +610,7 @@ class ViewTest(AironeViewTest):
                 ]
             },
             "array_group": {"values": [[groups[0]], [groups[1]]]},
-            "text": {"values": ["hoge", "fuga"]},
+            "textarea": {"values": ["hoge", "fuga"]},
             "boolean": {"values": [True, False]},
             "group": {"values": [groups[0], groups[1]]},
             "date": {"values": [date(2020, 1, 1), date(2021, 1, 1)]},
@@ -627,15 +619,13 @@ class ViewTest(AironeViewTest):
         }
         entity = Entity.objects.create(name="Entity", created_user=user)
         for name in attrinfo.keys():
-            entity.attrs.add(
-                EntityAttr.objects.create(
-                    **{
-                        "name": name,
-                        "type": AttrTypeValue[name],
-                        "created_user": user,
-                        "parent_entity": entity,
-                    }
-                )
+            EntityAttr.objects.create(
+                **{
+                    "name": name,
+                    "type": AttrTypeValue[name],
+                    "created_user": user,
+                    "parent_entity": entity,
+                }
             )
 
         entry = Entry.objects.create(name="Entry", schema=entity, created_user=user)
@@ -704,7 +694,6 @@ class ViewTest(AironeViewTest):
                 "parent_entity": entity,
             }
         )
-        entity.attrs.add(entity_attr)
 
         entry = Entry.objects.create(name="Entry", schema=entity, created_user=user)
         entry.complement_attrs(user)
@@ -742,7 +731,6 @@ class ViewTest(AironeViewTest):
                 "parent_entity": entity,
             }
         )
-        entity.attrs.add(entity_attr)
         entry = Entry.objects.create(name="Entry", schema=entity, created_user=user)
 
         # Attribute does not exist

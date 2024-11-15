@@ -31,10 +31,13 @@ export class ServerContext {
   singleSignOnLoginUrl?: string;
   legacyUiDisabled?: boolean;
   passwordResetDisabled?: boolean;
+  checkTermService?: boolean;
+  termsOfServiceUrl?: string;
   extendedHeaderMenus: {
     name: string;
     children: { name: string; url: string }[];
   }[];
+  headerColor?: string;
   flags: Record<FlagKey, boolean>;
 
   private static _instance: ServerContext | undefined;
@@ -50,7 +53,10 @@ export class ServerContext {
     this.singleSignOnLoginUrl = context.singleSignOnLoginUrl;
     this.legacyUiDisabled = context.legacyUiDisabled;
     this.passwordResetDisabled = context.password_reset_disabled;
+    this.checkTermService = context.checkTermService;
+    this.termsOfServiceUrl = context.termsOfServiceUrl;
     this.extendedHeaderMenus = context.extendedHeaderMenus;
+    this.headerColor = context.headerColor;
     this.flags = context.flags ?? { webhook: true };
   }
 

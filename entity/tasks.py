@@ -28,7 +28,6 @@ def create_entity(self, job: Job) -> JobStatus:
     # register history to modify Entity
     history = user.seth_entity_add(entity)
 
-    adding_attrs = []
     for attr in recv_data["attrs"]:
         attr_base = EntityAttr.objects.create(
             name=attr["name"],
@@ -43,15 +42,8 @@ def create_entity(self, job: Job) -> JobStatus:
         if int(attr["type"]) & AttrType.OBJECT:
             [attr_base.referral.add(Entity.objects.get(id=x)) for x in attr["ref_ids"]]
 
-        # This is neccesary to summarize adding attribute history to one time
-        adding_attrs.append(attr_base)
-
         # register history to modify Entity
         history.add_attr(attr_base)
-
-    if adding_attrs:
-        # save history for adding attributes if it's necessary
-        entity.attrs.add(*adding_attrs)
 
     # clear flag to specify this entity has been completed to create
     entity.del_status(Entity.STATUS_CREATING)
@@ -95,7 +87,6 @@ def edit_entity(self, job: Job) -> JobStatus:
 
     # update processing for each attrs
     deleted_attr_ids = []
-    adding_attrs = []
     for attr in recv_data["attrs"]:
         if "deleted" in attr:
             # In case of deleting attribute which has been already existed
@@ -162,14 +153,8 @@ def edit_entity(self, job: Job) -> JobStatus:
             if int(attr["type"]) & AttrType.OBJECT:
                 [attr_obj.referral.add(Entity.objects.get(id=x)) for x in attr["ref_ids"]]
 
-            # add a new attribute on the existed Entries
-            adding_attrs.append(attr_obj)
-
             # register History to register adding EntityAttr
             history.add_attr(attr_obj)
-
-    if adding_attrs:
-        entity.attrs.add(*adding_attrs)
 
     Job.new_update_documents(entity, "", jp_update_es_document).run()
 
@@ -253,6 +238,11 @@ def edit_entity_v2(self, job: Job) -> JobStatus:
         return JobStatus.ERROR
 
     serializer.update_remaining(entity, serializer.validated_data)
+
+    jp_update_es_document = {
+        "is_updated": True,
+    }
+    Job.new_update_documents(entity, "", jp_update_es_document).run()
 
     return JobStatus.DONE
 

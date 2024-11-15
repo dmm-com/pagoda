@@ -2,16 +2,16 @@ import { Box, Container, Typography, TypographyTypeMap } from "@mui/material";
 import { OverridableComponent } from "@mui/material/OverridableComponent";
 import { styled } from "@mui/material/styles";
 import React, { FC } from "react";
-import { Link, useHistory, useLocation } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 
 import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
 
-import { entityEntriesPath, entryDetailsPath } from "Routes";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { Loading } from "components/common/Loading";
 import { SearchBox } from "components/common/SearchBox";
 import { useSimpleSearch } from "hooks/useSimpleSearch";
 import { aironeApiClient } from "repository/AironeApiClient";
+import { entityEntriesPath, entryDetailsPath } from "routes/Routes";
 
 const StyledContainer = styled(Container)({
   marginTop: "16px",
@@ -38,7 +38,7 @@ const ResultEntityForEntry = styled(Typography)(({}) => ({
 }));
 
 export const DashboardPage: FC = () => {
-  const history = useHistory();
+  const navigate = useNavigate();
   const location = useLocation();
 
   const [query, submitQuery] = useSimpleSearch();
@@ -55,7 +55,7 @@ export const DashboardPage: FC = () => {
 
   // If there is only one search result, move to entry details page.
   if (!entries.loading && entries.value?.length === 1) {
-    history.push(
+    navigate(
       entryDetailsPath(entries.value[0].schema?.id ?? 0, entries.value[0].id)
     );
   }

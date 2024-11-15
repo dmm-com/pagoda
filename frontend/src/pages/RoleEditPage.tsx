@@ -3,11 +3,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Box, Container, Typography } from "@mui/material";
 import React, { FC, useCallback, useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { Link, Prompt, useHistory } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
 
-import { rolesPath, topPath } from "Routes";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { Loading } from "components/common/Loading";
 import { PageHeader } from "components/common/PageHeader";
@@ -15,8 +14,10 @@ import { SubmitButton } from "components/common/SubmitButton";
 import { RoleForm } from "components/role/RoleForm";
 import { Schema, schema } from "components/role/roleForm/RoleFormSchema";
 import { useFormNotification } from "hooks/useFormNotification";
+import { usePrompt } from "hooks/usePrompt";
 import { useTypedParams } from "hooks/useTypedParams";
 import { aironeApiClient } from "repository/AironeApiClient";
+import { rolesPath, topPath } from "routes/Routes";
 import {
   extractAPIException,
   isResponseError,
@@ -26,7 +27,7 @@ export const RoleEditPage: FC = () => {
   const { roleId } = useTypedParams<{ roleId?: number }>();
   const willCreate = roleId == null;
 
-  const history = useHistory();
+  const navigate = useNavigate();
   const { enqueueSubmitResult } = useFormNotification("ロール", willCreate);
 
   const {
@@ -41,6 +42,11 @@ export const RoleEditPage: FC = () => {
     mode: "onBlur",
   });
 
+  usePrompt(
+    isDirty && !isSubmitSuccessful,
+    "編集した内容は失われてしまいますが、このページを離れてもよろしいですか？"
+  );
+
   const role = useAsyncWithThrow(async () => {
     return roleId != null ? await aironeApiClient.getRole(roleId) : undefined;
   }, [roleId]);
@@ -50,7 +56,7 @@ export const RoleEditPage: FC = () => {
   }, [role.loading]);
 
   useEffect(() => {
-    isSubmitSuccessful && history.push(rolesPath());
+    isSubmitSuccessful && navigate(rolesPath());
   }, [isSubmitSuccessful]);
 
   const handleSubmitOnValid = useCallback(
@@ -89,7 +95,7 @@ export const RoleEditPage: FC = () => {
   );
 
   const handleCancel = async () => {
-    history.goBack();
+    navigate(-1);
   };
 
   if (role.loading) {
@@ -130,11 +136,6 @@ export const RoleEditPage: FC = () => {
       <Container>
         <RoleForm control={control} setValue={setValue} />
       </Container>
-
-      <Prompt
-        when={isDirty && !isSubmitSuccessful}
-        message="編集した内容は失われてしまいますが、このページを離れてもよろしいですか？"
-      />
     </Box>
   );
 };

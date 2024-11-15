@@ -814,30 +814,30 @@ def revert_attrv(request, recv_data):
                 "created_user": request.user,
                 "parent_attr": attr,
                 "is_latest": True,
+                "group": attrv.group,
+                "role": attrv.role,
             }
         )
 
         # This also copies child attribute values and append new one
-        new_attrv.data_array.add(
-            *[
-                AttributeValue.objects.create(
-                    **{
-                        "value": v.value,
-                        "referral": v.referral,
-                        "created_user": request.user,
-                        "parent_attr": attr,
-                        "status": v.status,
-                        "boolean": v.boolean,
-                        "date": v.date,
-                        "datetime": v.datetime,
-                        "data_type": v.data_type,
-                        "is_latest": False,
-                        "parent_attrv": new_attrv,
-                    }
-                )
-                for v in attrv.data_array.all()
-            ]
-        )
+        for v in attrv.data_array.all():
+            AttributeValue.objects.create(
+                **{
+                    "value": v.value,
+                    "referral": v.referral,
+                    "created_user": request.user,
+                    "parent_attr": attr,
+                    "status": v.status,
+                    "boolean": v.boolean,
+                    "date": v.date,
+                    "datetime": v.datetime,
+                    "data_type": v.data_type,
+                    "is_latest": False,
+                    "parent_attrv": new_attrv,
+                    "group": v.group,
+                    "role": v.role,
+                }
+            )
 
         # append cloned value to Attribute
         attr.values.add(new_attrv)

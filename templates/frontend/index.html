@@ -32,7 +32,9 @@
               isSuperuser: {{user.is_superuser|yesno:"true,false"}},
           },
           legacyUiDisabled: {{airone.LEGACY_UI_DISABLED|yesno:"true,false"}},
+          checkTermService: {{airone.CHECK_TERM_SERVICE|yesno:"true,false"}},
           extendedHeaderMenus: {{ airone.EXTENDED_HEADER_MENUS|safe }},
+          headerColor: {% if airone.HEADER_COLOR %}"{{ airone.HEADER_COLOR|safe }}"{% else %}null{% endif %},
           flags: {
               webhook: {{ airone_flags.WEBHOOK|yesno:"true,false" }},
           },

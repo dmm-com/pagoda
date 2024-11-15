@@ -8,6 +8,116 @@
 
 ### Fixed
 
+## v3.109.0
+
+### Changed
+* Update duplicate entity name error handling.
+  Contributed by @tsunoda-takahiro
+* Update react-router from v5 to v6.
+  Contributed by @syucream
+
+## v3.108.0
+
+### Changed
+* Changed the order of before delete custom views.
+  Contributed by @hinashi
+* Changed to disabled 1pw for name-related attributes.
+  Contributed by @syucream
+
+## v3.107.0
+
+### Added
+* Allow to change header color to show environment deferences etc.
+  Contributed by @syucream
+
+## v3.106.0
+
+### Changed
+* small opmitization on entity/entry list API.
+  Contributed by @syucream
+* Update openapi-generator from v6.6.0 to v7.8.0
+  Contributed by @syucream
+
+## v3.105.0
+
+### Fixed
+* Reduce N+1 on join attrs.
+  Contributed by @syucream
+
+## v3.104.0
+
+### Fixed
+* Enable to import sjis encoded files.
+  Contributed by @syucream
+
+## v3.103.0
+
+### Changed
+* Change key of AdvancedSearchAttributeIndex for NAMED_* attributes from "name" parameter to referral Entry's name.
+  Contributed by @userlocalhost, @hinashi
+
+## v3.102.0
+
+### Changed
+* Separate loading stype between normal and join_attr.
+  Contributed by @syucream
+* Use datepicker in datetime type too.
+  Contributed by @syucream
+
+## v3.101.0
+
+### Changed
+* Wrap all the tasks with the decorators.
+  Contributed by @syucream
+
+### Fixed
+* bugfix deleted objects are not displayed in role list page.
+  Contributed by @tsunoda-takahiro
+
+## v3.100.0
+
+### Changed
+* Simplify Entity - EntityAttr relation 1:N.
+  Contributed by @syucream
+
+## v3.99.0
+
+### Changed
+* Simplify Entry - Attribute relation 1:N.
+  Contributed by @syucream
+
+## v3.98.0
+
+### Added
+* Added helper class tmethod Entry.get_referred_entries() to get referral Entries from multiple referred Entries.
+  Contributed by @userlocalhost
+* Enable target_id filter on the job list API v2.
+  Contributed by @syucream
+
+### Changed
+* Change エンティティ to モデル, エントリ to アイテム in newUI.
+  Contributed by @userlocalhost
+
+### Fixed
+* Configured Elasticsearch to use a persistent data volume for index retention.
+  Contributed by @tsunoda-takahiro
+* Fix issue where re-added attribute's value appears in advanced search.
+  Contributed by @tsunoda-takahiro
+
+## v3.97.0
+
+### Added
+* Added processing to check whether user agrees with the Terms of Service when
+  settings.AIRONE["CHECK_TERM_SERVICE"] is activated.
+  Contributed by @userlocalhost, @hinashi
+* Added new middleware to prevent to exposing old URL when
+  LEGACY_UI_DISABLED parameter is set in the settings.AIRONE
+  Contributed by @userlocalhost
+
+### Fixed
+* Fixed failed invoke trigger for oldUI.
+  Contributed by @hinashi
+
 ## v3.96.0
 
 ## Added

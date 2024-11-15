@@ -4,7 +4,7 @@ import {
 } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { Box, Autocomplete, Checkbox, TextField, Button } from "@mui/material";
 import React, { Dispatch, FC, useState, SetStateAction } from "react";
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import { formatAdvancedSearchParams } from "../../services/entry/AdvancedSearch";
 import { AironeModal } from "../common/AironeModal";
@@ -24,7 +24,7 @@ export const AdvancedSearchModal: FC<Props> = ({
   initialAttrNames,
   attrInfos,
 }) => {
-  const history = useHistory();
+  const navigate = useNavigate();
   const params = new URLSearchParams(location.search);
 
   const [selectedAttrNames, setSelectedAttrNames] = useState(initialAttrNames);
@@ -53,11 +53,11 @@ export const AdvancedSearchModal: FC<Props> = ({
     });
 
     // Update Page URL parameters
-    history.push({
+    navigate({
       pathname: location.pathname,
       search: "?" + params.toString(),
     });
-    history.go(0);
+    navigate(0);
   };
 
   return (
@@ -78,7 +78,7 @@ export const AdvancedSearchModal: FC<Props> = ({
       />
       <Box display="flex" justifyContent="center">
         <Box>
-          参照エントリも含める
+          参照アイテムも含める
           <Checkbox
             checked={hasReferral}
             onChange={(e) => setHasReferral(e.target.checked)}

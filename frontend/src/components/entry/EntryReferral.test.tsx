@@ -2,11 +2,11 @@
  * @jest-environment jsdom
  */
 
-import { render } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import React from "react";
-import { BrowserRouter } from "react-router-dom";
+import { createMemoryRouter, RouterProvider } from "react-router-dom";
 
-import { TestWrapper } from "TestWrapper";
+import { TestWrapperWithoutRoutes } from "TestWrapper";
 import { EntryReferral } from "components/entry/EntryReferral";
 
 afterEach(() => {
@@ -19,10 +19,10 @@ test("should render a component with essential props", async () => {
   const referredEntries = [
     {
       id: 1,
-      name: "name",
+      name: "entry1",
       schema: {
         id: 2,
-        name: "entity",
+        name: "entity1",
       },
     },
   ];
@@ -41,14 +41,22 @@ test("should render a component with essential props", async () => {
     );
   /* eslint-enable */
 
-  expect(() =>
-    render(
-      <BrowserRouter>
-        <EntryReferral entryId={entryId} />
-      </BrowserRouter>,
-      { wrapper: TestWrapper }
-    )
-  ).not.toThrow();
+  const router = createMemoryRouter([
+    {
+      path: "/",
+      element: <EntryReferral entryId={entryId} />,
+    },
+  ]);
+  await act(async () => {
+    return render(<RouterProvider router={router} />, {
+      wrapper: TestWrapperWithoutRoutes,
+    });
+  });
+  await waitFor(() => {
+    expect(screen.queryByTestId("loading")).not.toBeInTheDocument();
+  });
+
+  expect(screen.getByText("entry1")).toBeInTheDocument();
 
   jest.clearAllMocks();
 });

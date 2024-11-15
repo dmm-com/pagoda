@@ -18,8 +18,8 @@ import { aironeApiClient } from "../../repository/AironeApiClient";
 import { EntryReferralList } from "../../services/Constants";
 import { normalizeToMatch } from "../../services/StringUtil";
 
-import { entryDetailsPath } from "Routes";
 import { SearchBox } from "components/common/SearchBox";
+import { entryDetailsPath } from "routes/Routes";
 
 const ReferralCount = styled(Typography)(({}) => ({
   fontSize: "16px",
@@ -69,10 +69,10 @@ export const EntryReferral: FC<Props> = ({ entryId }) => {
     <Box>
       <Box px="16px">
         <ReferralCount id="ref_count">
-          {"関連づけられたエントリ(計" + count + ")"}
+          {"関連づけられたアイテム(計" + count + ")"}
         </ReferralCount>
         <SearchBox
-          placeholder="エントリを絞り込む"
+          placeholder="アイテムを絞り込む"
           value={keyword}
           onChange={(e) => {
             setKeyword(e.target.value);

@@ -9,8 +9,10 @@ from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.request import Request
 from rest_framework.response import Response
 
+from airone.lib.acl import ACLObjType
 from airone.lib.drf import FileIsNotExistsError, InvalidValueError, JobIsNotDoneError
 from airone.lib.http import get_download_response
+from entry.models import Entry
 from job.api_v2.serializers import JobSerializers
 from job.models import Job, JobOperation, JobStatus
 
@@ -74,6 +76,7 @@ class JobAPI(viewsets.ModelViewSet):
 @extend_schema(
     parameters=[
         OpenApiParameter("created_after", OpenApiTypes.DATETIME, OpenApiParameter.QUERY),
+        OpenApiParameter("target_id", OpenApiTypes.INT, OpenApiParameter.QUERY),
     ],
 )
 class JobListAPI(viewsets.ModelViewSet):
@@ -82,7 +85,8 @@ class JobListAPI(viewsets.ModelViewSet):
 
     def get_queryset(self) -> QuerySet:
         user = self.request.user
-        created_after = self.request.query_params.get("created_after", None)
+        created_after: str | None = self.request.query_params.get("created_after", None)
+        target_id: str | None = self.request.query_params.get("target_id", None)
 
         export_operations: list[JobOperation] = [
             JobOperation.EXPORT_ENTRY,
@@ -107,8 +111,25 @@ class JobListAPI(viewsets.ModelViewSet):
 
         if created_after:
             query &= Q(created_at__gte=created_after)
+        if target_id:
+            query &= Q(target=target_id)
 
         return Job.objects.filter(query).select_related("target").order_by("-created_at")
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+
+        # prefetch target entries, then pass it via context manually to avoid N+1 in serializer
+        qs = self.paginate_queryset(self.get_queryset().values("target__id", "target__objtype"))
+        target_ids = [int(r["target__id"]) for r in qs if r["target__objtype"] == ACLObjType.Entry]
+        entries = (
+            Entry.objects.filter(id__in=target_ids)
+            .select_related("schema")
+            .values("id", "name", "schema__id", "schema__name")
+        )
+        context[JobSerializers.PREFETCHED_ENTRIES_KEY] = {e["id"]: e for e in entries}
+
+        return context
 
 
 class JobRerunAPI(generics.UpdateAPIView):

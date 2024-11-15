@@ -14,8 +14,15 @@ import {
   Typography,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import React, { ChangeEvent, FC, useMemo, useReducer, useState } from "react";
-import { useHistory, useLocation } from "react-router-dom";
+import React, {
+  ChangeEvent,
+  FC,
+  useEffect,
+  useMemo,
+  useReducer,
+  useState,
+} from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 
 import { AdvancedSearchJoinModal } from "./AdvancedSearchJoinModal";
 import { SearchResultControlMenu } from "./SearchResultControlMenu";
@@ -53,7 +60,8 @@ interface Props {
   entityIds: number[];
   searchAllEntities: boolean;
   joinAttrs: AdvancedSearchJoinAttrInfo[];
-  setSearchResults: (isJoinSearching: boolean) => void;
+  refreshSearchResults: () => void;
+  isReadonly?: boolean;
 }
 
 export const SearchResultsTableHead: FC<Props> = ({
@@ -65,10 +73,11 @@ export const SearchResultsTableHead: FC<Props> = ({
   entityIds,
   searchAllEntities,
   joinAttrs,
-  setSearchResults,
+  refreshSearchResults,
+  isReadonly = false,
 }) => {
   const location = useLocation();
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const [entryFilter, entryFilterDispatcher] = useReducer(
     (
@@ -116,6 +125,10 @@ export const SearchResultsTableHead: FC<Props> = ({
     [defaultAttrsFilter]
   );
 
+  useEffect(() => {
+    setAttrsFilter(defaultAttrsFilter ?? {});
+  }, [defaultAttrsFilter]);
+
   const handleSelectFilterConditions =
     (attrName?: string) =>
     (
@@ -130,13 +143,13 @@ export const SearchResultsTableHead: FC<Props> = ({
 
       const newParams = formatAdvancedSearchParams({
         attrsFilter: Object.keys(_attrsFilter)
-          .filter((k) => _attrsFilter[k].joinedAttrname === undefined)
+          .filter((k) => _attrsFilter[k]?.joinedAttrname === undefined)
           .reduce((a, k) => ({ ...a, [k]: _attrsFilter[k] }), {}),
         entryName: overwriteEntryName ?? entryFilter,
         referralName: overwriteReferral ?? referralFilter,
         baseParams: new URLSearchParams(location.search),
         joinAttrs: Object.keys(_attrsFilter)
-          .filter((k) => _attrsFilter[k].joinedAttrname !== undefined)
+          .filter((k) => _attrsFilter[k]?.joinedAttrname !== undefined)
           .map((k) => ({
             name: _attrsFilter[k]?.baseAttrname ?? "",
             attrinfo: Object.keys(_attrsFilter)
@@ -154,11 +167,12 @@ export const SearchResultsTableHead: FC<Props> = ({
           .filter((v, i, a) => a.findIndex((t) => t.name === v.name) === i),
       });
 
-      setSearchResults(
-        getIsFiltered(attrFilter?.filterKey, attrFilter?.keyword)
-      );
+      if (getIsFiltered(attrFilter?.filterKey, attrFilter?.keyword)) {
+        refreshSearchResults();
+      }
+
       // simply reload with the new params
-      history.push({
+      navigate({
         pathname: location.pathname,
         search: "?" + newParams.toString(),
       });
@@ -175,25 +189,34 @@ export const SearchResultsTableHead: FC<Props> = ({
   return (
     <TableHead>
       <TableRow sx={{ backgroundColor: "primary.dark" }}>
-        <TableCell sx={{ witdh: "80px" }} />
+        {/* Bulk operation checkbox would be invisible when Readonly mode is true */}
+        {!isReadonly && <TableCell sx={{ witdh: "80px" }} />}
         <StyledTableCell sx={{ outline: "1px solid #FFFFFF" }}>
           <HeaderBox>
-            <Typography>エントリ名</Typography>
-            <StyledIconButton
-              onClick={(e) => {
-                setEntryMenuEls(e.currentTarget);
-              }}
-            >
-              {defaultEntryFilter ? <FilterAltIcon /> : <FilterListIcon />}
-            </StyledIconButton>
-            <SearchResultControlMenuForEntry
-              entryFilter={entryFilter}
-              anchorElem={entryMenuEls}
-              handleClose={() => setEntryMenuEls(null)}
-              entryFilterDispatcher={entryFilterDispatcher}
-              handleSelectFilterConditions={handleSelectFilterConditions()}
-              handleClear={() => handleSelectFilterConditions()(undefined, "")}
-            />
+            <Typography>アイテム名</Typography>
+
+            {/* SearchControlMenu would be invisible when Readonly Mode is True */}
+            {!isReadonly && (
+              <>
+                <StyledIconButton
+                  onClick={(e) => {
+                    setEntryMenuEls(e.currentTarget);
+                  }}
+                >
+                  {defaultEntryFilter ? <FilterAltIcon /> : <FilterListIcon />}
+                </StyledIconButton>
+                <SearchResultControlMenuForEntry
+                  entryFilter={entryFilter}
+                  anchorElem={entryMenuEls}
+                  handleClose={() => setEntryMenuEls(null)}
+                  entryFilterDispatcher={entryFilterDispatcher}
+                  handleSelectFilterConditions={handleSelectFilterConditions()}
+                  handleClear={() =>
+                    handleSelectFilterConditions()(undefined, "")
+                  }
+                />
+              </>
+            )}
           </HeaderBox>
         </StyledTableCell>
         {attrNames.map((attrName) => (
@@ -201,8 +224,10 @@ export const SearchResultsTableHead: FC<Props> = ({
             <HeaderBox>
               <Typography>{attrName}</Typography>
 
+              {/* Bulk operation checkbox would be invisible when Readonly mode is true */}
               {(attrTypes[attrName] & EntryAttributeTypeTypeEnum.OBJECT) > 0 &&
-                attrsFilter[attrName].joinedAttrname === undefined && (
+                !isReadonly &&
+                attrsFilter[attrName]?.joinedAttrname === undefined && (
                   <StyledIconButton onClick={() => setJoinAttrname(attrName)}>
                     <AddIcon />
                   </StyledIconButton>
@@ -214,53 +239,50 @@ export const SearchResultsTableHead: FC<Props> = ({
                   targetAttrname={joinAttrName}
                   joinAttrs={joinAttrs}
                   handleClose={() => setJoinAttrname("")}
-                  setSearchResults={() =>
-                    setSearchResults(
-                      getIsFiltered(
-                        attrsFilter[attrName].filterKey,
-                        attrsFilter[attrName].keyword
-                      )
-                    )
-                  }
+                  refreshSearchResults={refreshSearchResults}
                 />
               )}
-              <StyledIconButton
-                onClick={(e) => {
-                  setAttributeMenuEls({
-                    ...attributeMenuEls,
-                    [attrName]: e.currentTarget,
-                  });
-                }}
-                sx={{ marginLeft: "auto" }}
-              >
-                {isFiltered[attrName] ?? false ? (
-                  <FilterAltIcon />
-                ) : (
-                  <FilterListIcon />
-                )}
-              </StyledIconButton>
-              <SearchResultControlMenu
-                attrFilter={attrsFilter[attrName]}
-                anchorElem={attributeMenuEls[attrName]}
-                handleClose={() =>
-                  setAttributeMenuEls({
-                    ...attributeMenuEls,
-                    [attrName]: null,
-                  })
-                }
-                handleSelectFilterConditions={handleSelectFilterConditions(
-                  attrName
-                )}
-                handleUpdateAttrFilter={handleUpdateAttrFilter(attrName)}
-                attrType={attrTypes[attrName]}
-              />
+              {!isReadonly && (
+                <>
+                  <StyledIconButton
+                    onClick={(e) => {
+                      setAttributeMenuEls({
+                        ...attributeMenuEls,
+                        [attrName]: e.currentTarget,
+                      });
+                    }}
+                    sx={{ marginLeft: "auto" }}
+                  >
+                    {isFiltered[attrName] ?? false ? (
+                      <FilterAltIcon />
+                    ) : (
+                      <FilterListIcon />
+                    )}
+                  </StyledIconButton>
+                  <SearchResultControlMenu
+                    attrFilter={attrsFilter[attrName]}
+                    anchorElem={attributeMenuEls[attrName]}
+                    handleClose={() =>
+                      setAttributeMenuEls({
+                        ...attributeMenuEls,
+                        [attrName]: null,
+                      })
+                    }
+                    handleSelectFilterConditions={handleSelectFilterConditions(
+                      attrName
+                    )}
+                    handleUpdateAttrFilter={handleUpdateAttrFilter(attrName)}
+                    attrType={attrTypes[attrName]}
+                  />
+                </>
+              )}
             </HeaderBox>
           </StyledTableCell>
         ))}
         {hasReferral && (
           <StyledTableCell sx={{ outline: "1px solid #FFFFFF" }}>
             <HeaderBox>
-              <Typography>参照エントリ</Typography>
+              <Typography>参照アイテム</Typography>
               <StyledIconButton
                 onClick={(e) => {
                   setReferralMenuEls(e.currentTarget);

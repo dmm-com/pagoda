@@ -1,10 +1,9 @@
 import { Box, Button, Container, Typography } from "@mui/material";
 import React, { FC, useCallback, useState } from "react";
-import { Link, useHistory, useLocation } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 
 import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
 
-import { topPath } from "Routes";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { Loading } from "components/common/Loading";
 import { PageHeader } from "components/common/PageHeader";
@@ -12,10 +11,11 @@ import { EntityImportModal } from "components/entity/EntityImportModal";
 import { EntityList } from "components/entity/EntityList";
 import { usePage } from "hooks/usePage";
 import { aironeApiClient } from "repository/AironeApiClient";
+import { topPath } from "routes/Routes";
 
 export const EntityListPage: FC = () => {
   const location = useLocation();
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const [page, changePage] = usePage();
 
@@ -33,7 +33,7 @@ export const EntityListPage: FC = () => {
     changePage(1);
     setQuery(newQuery ?? "");
 
-    history.push({
+    navigate({
       pathname: location.pathname,
       search: newQuery ? `?query=${newQuery}` : "",
     });
@@ -49,10 +49,10 @@ export const EntityListPage: FC = () => {
         <Typography component={Link} to={topPath()}>
           Top
         </Typography>
-        <Typography color="textPrimary">エンティティ一覧</Typography>
+        <Typography color="textPrimary">モデル一覧</Typography>
       </AironeBreadcrumbs>
 
-      <PageHeader title="エンティティ一覧">
+      <PageHeader title="モデル一覧">
         <Box display="flex" alignItems="center">
           <Button
             variant="contained"

@@ -3,12 +3,11 @@ import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import { Box, Chip, Grid, IconButton, Stack, Typography } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import React, { FC, useEffect, useState } from "react";
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
 import { useTypedParams } from "../hooks/useTypedParams";
 
-import { entryDetailsPath, restoreEntryPath } from "Routes";
 import { Loading } from "components/common/Loading";
 import { PageHeader } from "components/common/PageHeader";
 import { EntryAttributes } from "components/entry/EntryAttributes";
@@ -16,6 +15,7 @@ import { EntryBreadcrumbs } from "components/entry/EntryBreadcrumbs";
 import { EntryControlMenu } from "components/entry/EntryControlMenu";
 import { EntryReferral } from "components/entry/EntryReferral";
 import { aironeApiClient } from "repository/AironeApiClient";
+import { entryDetailsPath, restoreEntryPath } from "routes/Routes";
 
 const FlexBox = styled(Box)(({}) => ({
   display: "flex",
@@ -74,7 +74,7 @@ export const EntryDetailsPage: FC<Props> = ({
     entityId: number;
     entryId: number;
   }>();
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const [entryAnchorEl, setEntryAnchorEl] = useState<HTMLButtonElement | null>(
     null
@@ -87,13 +87,19 @@ export const EntryDetailsPage: FC<Props> = ({
   useEffect(() => {
     // When user specifies invalid entityId, redirect to the page that is correct entityId
     if (!entry.loading && entry.value?.schema?.id != entityId) {
-      history.replace(entryDetailsPath(entry.value?.schema?.id ?? 0, entryId));
+      navigate(entryDetailsPath(entry.value?.schema?.id ?? 0, entryId), {
+        replace: true,
+      });
     }
 
     // If it'd been deleted, show restore-entry page instead
     if (!entry.loading && entry.value?.isActive === false) {
-      history.replace(
-        restoreEntryPath(entry.value?.schema?.id ?? "", entry.value?.name ?? "")
+      navigate(
+        restoreEntryPath(
+          entry.value?.schema?.id ?? "",
+          entry.value?.name ?? ""
+        ),
+        { replace: true }
       );
     }
   }, [entry.loading]);
@@ -102,7 +108,7 @@ export const EntryDetailsPage: FC<Props> = ({
     <FlexBox>
       <EntryBreadcrumbs entry={entry.value} />
 
-      <PageHeader title={entry.value?.name ?? ""} description="エントリ詳細">
+      <PageHeader title={entry.value?.name ?? ""} description="アイテム詳細">
         <ChipBox>
           <Stack direction="row" spacing={1}>
             {[

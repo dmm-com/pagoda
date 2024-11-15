@@ -13,7 +13,7 @@
           <span class='url_conv textarea'>{{ attr.last_value }}</span>
         {% elif attr.type == attr_type.date or attr.type == attr_type.datetime %}
           <span>{{ attr.last_value|date:"Y-m-d" }}</span>
-        {% elif attr.type == attr_type.entry and attr.last_value %}
+        {% elif attr.type == attr_type.object and attr.last_value %}
           <a href='/entry/show/{{ attr.last_value.id }}/'>{{ attr.last_value.name }}</a>{% if attr.last_value.deleted %}(deleted){% endif %}
         {% elif attr.type == attr_type.array_string %}
           <ul class='list-group'>
@@ -21,7 +21,7 @@
             <li class='list-group-item'>{{ value }}</li>
           {% endfor %}
           </ul>
-        {% elif attr.type == attr_type.array_entry %}
+        {% elif attr.type == attr_type.array_object %}
           <ul class='list-group'>
           {% for refer in attr.last_value %}
             <li class='list-group-item'>
@@ -39,7 +39,7 @@
           <input type="checkbox" disabled='True' />
           {% endif %}
 
-        {% elif attr.type == attr_type.named_entry %}
+        {% elif attr.type == attr_type.named_object %}
           <div class='row'>
             <div class='col-3'>
               <span class='url_conv'>{{ attr.last_value.value }}</span>
@@ -51,7 +51,7 @@
             </div>
           </div>
 
-        {% elif attr.type == attr_type.array_named_entry %}
+        {% elif attr.type == attr_type.array_named_object %}
           <ul class='list-group'>
           {% for data in attr.last_value %}
             <li class='list-group-item'>

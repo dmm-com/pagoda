@@ -33,7 +33,7 @@ function make_attr_elem(attr, hint_attr) {
         new_elem.text(attr.value);
         break;
 
-      case {{ attr_type.entry }}:
+      case {{ attr_type.object }}:
         if (attr.value) {
           new_elem.append($(`<a href='/entry/show/${ attr.value.id }/'>${ attr.value.name }</a>`));
         }
@@ -51,7 +51,7 @@ function make_attr_elem(attr, hint_attr) {
         }
         break;
 
-      case {{ attr_type.named_entry }}:
+      case {{ attr_type.named_object }}:
         new_elem.append($(get_named_column(attr.value)));
         break;
 
@@ -63,7 +63,7 @@ function make_attr_elem(attr, hint_attr) {
         new_elem.append(elem_ul);
         break;
 
-      case {{ attr_type.array_entry }}:
+      case {{ attr_type.array_object }}:
         var elem_ul = $("<ul class='list-group'/>");
         for(var value of attr.value) {
           if(value) {
@@ -75,7 +75,7 @@ function make_attr_elem(attr, hint_attr) {
         new_elem.append(elem_ul);
         break;
 
-      case {{ attr_type.array_named_entry }}:
+      case {{ attr_type.array_named_object }}:
         var elem_ul = $("<ul class='list-group'/>");
         for(var value of attr.value) {
           elem_ul.append($(`<li class='list-group-item'>${ get_named_column(value) }</li>`));

@@ -13,6 +13,7 @@ from django.http.response import JsonResponse
 from django.urls import reverse
 
 from airone.lib.acl import ACLType
+from airone.lib.elasticsearch import AttrHint
 from airone.lib.log import Logger
 from airone.lib.test import AironeViewTest, DisableStderr
 from airone.lib.types import (
@@ -21,6 +22,7 @@ from airone.lib.types import (
 from entity.models import Entity, EntityAttr
 from entry import tasks
 from entry.models import Attribute, AttributeValue, Entry
+from entry.services import AdvancedSearchService
 from entry.settings import CONFIG as ENTRY_CONFIG
 from group.models import Group
 from job.models import Job, JobOperation, JobStatus, JobTarget
@@ -53,7 +55,6 @@ class ViewTest(AironeViewTest):
             parent_entity=self._entity,
         )
         self._entity_attr.save()
-        self._entity.attrs.add(self._entity_attr)
 
         return user
 
@@ -384,7 +385,6 @@ class ViewTest(AironeViewTest):
             parent_entity=self._entity,
             is_mandatory=False,
         )
-        self._entity.attrs.add(new_attr)
         params["entry_name"] = "new_entry"
         params["attrs"] = [{"id": str(new_attr.id), "value": [{"data": "foo", "index": "0"}]}]
 
@@ -425,7 +425,6 @@ class ViewTest(AironeViewTest):
             parent_entity=entity,
             created_user=another_user,
         )
-        entity.attrs.add(attr_base)
 
         params = {
             "entry_name": "entry",
@@ -464,7 +463,6 @@ class ViewTest(AironeViewTest):
             parent_entity=self._entity,
         )
         self._entity_attr_optional.save()
-        self._entity.attrs.add(self._entity_attr_optional)
 
         params = {
             "entry_name": "hoge",
@@ -545,7 +543,6 @@ class ViewTest(AironeViewTest):
             is_mandatory=False,
         )
         attr_base.referral.add(self._entity)
-        self._entity.attrs.add(attr_base)
 
         entry = Entry.objects.create(name="entry", schema=self._entity, created_user=user)
 
@@ -636,7 +633,6 @@ class ViewTest(AironeViewTest):
             is_mandatory=False,
         )
         attr_base.referral.add(self._entity)
-        self._entity.attrs.add(attr_base)
 
         params = {
             "entry_name": "new_entry",
@@ -698,8 +694,6 @@ class ViewTest(AironeViewTest):
 
                 attr.values.add(attr_value)
 
-            entry.attrs.add(attr)
-
         # with invalid entry-id
         resp = self.client.get(reverse("entry:edit", args=[entry.id]))
         self.assertEqual(resp.status_code, 200)
@@ -711,8 +705,7 @@ class ViewTest(AironeViewTest):
         entry = Entry(name="fuga", schema=self._entity, created_user=user)
         entry.save()
 
-        attr = self.make_attr(name="attr", created_user=user, parent_entry=entry)
-        entry.attrs.add(attr)
+        self.make_attr(name="attr", created_user=user, parent_entry=entry)
 
         # with invalid entry-id
         resp = self.client.get(reverse("entry:edit", args=[entry.id]))
@@ -803,13 +796,11 @@ class ViewTest(AironeViewTest):
 
         entity = Entity.objects.create(name="entity", created_user=user)
         for attr_name in ["foo", "bar"]:
-            entity.attrs.add(
-                EntityAttr.objects.create(
-                    name=attr_name,
-                    type=AttrType.STRING,
-                    created_user=user,
-                    parent_entity=entity,
-                )
+            EntityAttr.objects.create(
+                name=attr_name,
+                type=AttrType.STRING,
+                created_user=user,
+                parent_entity=entity,
             )
 
         # making test Entry set
@@ -883,7 +874,9 @@ class ViewTest(AironeViewTest):
         self.assertTrue(bar_value_last.is_latest)
 
         # checks that we can search updated entry using updated value
-        resp = Entry.search_entries(user, [entity.id], [{"name": "bar", "keyword": "fuga"}])
+        resp = AdvancedSearchService.search_entries(
+            user, [entity.id], [AttrHint(name="bar", keyword="fuga")]
+        )
         self.assertEqual(resp.ret_count, 1)
         self.assertEqual(resp.ret_values[0].entity["id"], entity.id)
         self.assertEqual(resp.ret_values[0].entry["id"], entry.id)
@@ -952,9 +945,7 @@ class ViewTest(AironeViewTest):
         entry.save()
 
         for attr_name in ["foo", "bar", "baz"]:
-            attr = self.make_attr(name=attr_name, created_user=user, parent_entry=entry)
-            self._entity.attrs.add(attr.schema)
-            entry.attrs.add(attr)
+            self.make_attr(name=attr_name, created_user=user, parent_entry=entry)
 
         params = {
             "entry_name": entry.name,
@@ -1003,15 +994,13 @@ class ViewTest(AironeViewTest):
         user = self.admin_login()
 
         entity = Entity.objects.create(name="entity", created_user=user)
-        entity.attrs.add(
-            EntityAttr.objects.create(
-                **{
-                    "name": "attr",
-                    "type": AttrType.ARRAY_STRING,
-                    "created_user": user,
-                    "parent_entity": entity,
-                }
-            )
+        EntityAttr.objects.create(
+            **{
+                "name": "attr",
+                "type": AttrType.ARRAY_STRING,
+                "created_user": user,
+                "parent_entity": entity,
+            }
         )
 
         entry = Entry.objects.create(name="entry", created_user=user, schema=entity)
@@ -1140,7 +1129,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 200)
 
         # check es-documents of both e0 (was referred before) and e2 (is referred now)
-        ret = Entry.search_entries(
+        ret = AdvancedSearchService.search_entries(
             user,
             [ref_entity.id],
             hint_referral="",
@@ -1212,8 +1201,6 @@ class ViewTest(AironeViewTest):
 
                 attr.values.add(attr_value)
 
-            entry.attrs.add(attr)
-
         resp = self.client.get(reverse("entry:show", args=[entry.id]))
         self.assertEqual(resp.status_code, 200)
 
@@ -1229,7 +1216,6 @@ class ViewTest(AironeViewTest):
             is_mandatory=False,
         )
         attr_base.referral.add(self._entity)
-        self._entity.attrs.add(attr_base)
 
         entry = Entry.objects.create(name="old_entry", schema=self._entity, created_user=user)
 
@@ -1278,7 +1264,6 @@ class ViewTest(AironeViewTest):
             is_mandatory=False,
         )
         attr_base.referral.add(self._entity)
-        self._entity.attrs.add(attr_base)
 
         entry = Entry.objects.create(name="entry", schema=self._entity, created_user=user)
 
@@ -1319,8 +1304,6 @@ class ViewTest(AironeViewTest):
         attr = self.make_attr(
             name="attr", attrtype=AttrType.OBJECT, created_user=user, parent_entry=entry
         )
-        self._entity.attrs.add(attr.schema)
-        entry.attrs.add(attr)
 
         attr_value = AttributeValue.objects.create(
             referral=entry, created_user=user, parent_attr=attr
@@ -1357,15 +1340,13 @@ class ViewTest(AironeViewTest):
 
         entity = Entity.objects.create(name="ほげ", created_user=user)
         for name in ["foo", "bar"]:
-            entity.attrs.add(
-                EntityAttr.objects.create(
-                    **{
-                        "name": name,
-                        "type": AttrType.STRING,
-                        "created_user": user,
-                        "parent_entity": entity,
-                    }
-                )
+            EntityAttr.objects.create(
+                **{
+                    "name": name,
+                    "type": AttrType.STRING,
+                    "created_user": user,
+                    "parent_entity": entity,
+                }
             )
 
         entry = Entry.objects.create(name="fuga", schema=entity, created_user=user)
@@ -1409,16 +1390,14 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 200)
 
         # append an unpermitted Attribute
-        entity.attrs.add(
-            EntityAttr.objects.create(
-                **{
-                    "name": "new_attr",
-                    "type": AttrType.STRING,
-                    "created_user": user,
-                    "parent_entity": entity,
-                    "is_public": False,
-                }
-            )
+        EntityAttr.objects.create(
+            **{
+                "name": "new_attr",
+                "type": AttrType.STRING,
+                "created_user": user,
+                "parent_entity": entity,
+                "is_public": False,
+            }
         )
 
         # re-login with guest user
@@ -1498,9 +1477,6 @@ class ViewTest(AironeViewTest):
                 parent_entity=test_entity,
             )
 
-            test_entity.attrs.add(test_entity_attr)
-            test_entity.save()
-
             test_entry = Entry.objects.create(
                 name=type_name + ',"ENTRY"', schema=test_entity, created_user=user
             )
@@ -1512,10 +1488,6 @@ class ViewTest(AironeViewTest):
                 created_user=user,
                 parent_entry=test_entry,
             )
-
-            test_attr.save()
-            test_entry.attrs.add(test_attr)
-            test_entry.save()
 
             test_val = None
 
@@ -1536,22 +1508,24 @@ class ViewTest(AironeViewTest):
                 test_val = AttributeValue.create(user=user, attr=test_attr)
                 test_val.set_status(AttributeValue.STATUS_DATA_ARRAY_PARENT)
                 for child in value:
-                    test_val_child = None
                     match type:
                         case AttrType.ARRAY_STRING:
-                            test_val_child = AttributeValue.create(
-                                user=user, attr=test_attr, value=child
+                            AttributeValue.create(
+                                user=user, attr=test_attr, value=child, parent_attrv=test_val
                             )
                         case AttrType.ARRAY_OBJECT:
-                            test_val_child = AttributeValue.create(
-                                user=user, attr=test_attr, referral=child
+                            AttributeValue.create(
+                                user=user, attr=test_attr, referral=child, parent_attrv=test_val
                             )
                         case AttrType.ARRAY_NAMED_OBJECT:
                             [(k, v)] = child.items()
-                            test_val_child = AttributeValue.create(
-                                user=user, attr=test_attr, value=k, referral=v
+                            AttributeValue.create(
+                                user=user,
+                                attr=test_attr,
+                                value=k,
+                                referral=v,
+                                parent_attrv=test_val,
                             )
-                    test_val.data_array.add(test_val_child)
 
             test_val.save()
             test_attr.values.add(test_val)
@@ -1581,7 +1555,7 @@ class ViewTest(AironeViewTest):
         user = self.admin_login()
 
         entry = Entry.objects.create(name="fuga", schema=self._entity, created_user=user)
-        entry.attrs.add(self.make_attr(name="attr-test", parent_entry=entry, created_user=user))
+        self.make_attr(name="attr-test", parent_entry=entry, created_user=user)
 
         entry_count = Entry.objects.count()
 
@@ -1708,9 +1682,8 @@ class ViewTest(AironeViewTest):
             type=AttrType.ARRAY_STRING,
             is_mandatory=False,
             created_user=user,
-            parent_entity=self._entity,
+            parent_entity=entity,
         )
-        entity.attrs.add(attr_base)
 
         params = {
             "entry_name": "entry-test",
@@ -1771,11 +1744,10 @@ class ViewTest(AironeViewTest):
             name="attr-ref-test",
             created_user=user,
             type=AttrType.ARRAY_OBJECT,
-            parent_entity=self._entity,
+            parent_entity=entity,
             is_mandatory=False,
         )
         attr_base.referral.add(self._entity)
-        entity.attrs.add(attr_base)
 
         referral = Entry.objects.create(name="entry0", schema=self._entity, created_user=user)
 
@@ -1831,7 +1803,6 @@ class ViewTest(AironeViewTest):
             created_user=user,
             parent_entity=self._entity,
         )
-        self._entity.attrs.add(textattr)
 
         params = {
             "entry_name": "entry",
@@ -1976,6 +1947,7 @@ class ViewTest(AironeViewTest):
             "entry_name": "Jhon Doe",
             "attrs": [
                 {
+                    "entity_attr_id": str(entity.attrs.get(name="address").id),
                     "id": str(entity.attrs.get(name="address").id),
                     "type": str(AttrType.STRING),
                     "value": [{"data": "", "index": 0}],
@@ -2101,7 +2073,7 @@ class ViewTest(AironeViewTest):
             "entry_name": "entry",
             "attrs": [
                 {
-                    "entity_attr_id": "",
+                    "entity_attr_id": str(entity.attrs.get(name="address").id),
                     "id": str(entry.attrs.get(schema__name="address").id),
                     "value": [{"data": "", "index": 0}],
                     "referral_key": [{"data": "unknown", "index": 0}],
@@ -2329,7 +2301,6 @@ class ViewTest(AironeViewTest):
             created_user=user,
             parent_entity=self._entity,
         )
-        self._entity.attrs.add(attr)
 
         self._entity_attr.is_mandatory = False
         self._entity_attr.is_public = False
@@ -2392,7 +2363,6 @@ class ViewTest(AironeViewTest):
                 index=index,
                 default_permission=permission.id,
             )
-            entity.attrs.add(attr)
             attrs.append(attr)
 
         params = {
@@ -2473,7 +2443,6 @@ class ViewTest(AironeViewTest):
             parent_entity=entity,
             created_user=admin,
         )
-        entity.attrs.add(entity_attr)
 
         # creates entry that has a parameter which is typed boolean
         params = {
@@ -2538,7 +2507,6 @@ class ViewTest(AironeViewTest):
             parent_entity=entity,
             created_user=user,
         )
-        entity.attrs.add(attr_base)
 
         params = {
             "entry_name": "entry",
@@ -2566,14 +2534,13 @@ class ViewTest(AironeViewTest):
         user = self.admin_login()
 
         entity = Entity.objects.create(name="Entity", is_public=False, created_user=user)
-        attr_base = EntityAttr.objects.create(
+        EntityAttr.objects.create(
             name="attr",
             type=AttrType.STRING,
             is_mandatory=True,
             parent_entity=entity,
             created_user=user,
         )
-        entity.attrs.add(attr_base)
 
         entry = Entry.objects.create(name="Entry", schema=entity, created_user=user)
         entry.complement_attrs(user)
@@ -2625,14 +2592,12 @@ class ViewTest(AironeViewTest):
             parent_entity=entity,
             created_user=user,
         )
-        entity.attrs.add(entity_attr_ref)
         entity_attr_arr_ref = EntityAttr.objects.create(
             name="arr_ref",
             type=AttrType.ARRAY_OBJECT,
             parent_entity=entity,
             created_user=user,
         )
-        entity.attrs.add(entity_attr_arr_ref)
 
         # set entity that target each attributes refer to
         [x.referral.add(ref_entity) for x in entity.attrs.all()]
@@ -2843,8 +2808,6 @@ class ViewTest(AironeViewTest):
         attr_base = EntityAttr.objects.create(**new_attr_params)
         attr_base.referral.add(ref_entity)
 
-        entity.attrs.add(attr_base)
-
         # try to create with empty params
         params = {
             "entry_name": "new_entry1",
@@ -2941,8 +2904,6 @@ class ViewTest(AironeViewTest):
         attr_base = EntityAttr.objects.create(**new_attr_params)
         attr_base.referral.add(ref_entity)
 
-        entity.attrs.add(attr_base)
-
         params = {
             "entry_name": "new_entry",
             "attrs": [
@@ -3004,8 +2965,6 @@ class ViewTest(AironeViewTest):
             }
         )
         attr_base.referral.add(ref_entity)
-
-        entity.attrs.add(attr_base)
 
         entry = Entry.objects.create(name="entry", created_user=user, schema=entity)
         entry.complement_attrs(user)
@@ -3086,8 +3045,6 @@ class ViewTest(AironeViewTest):
         }
         attr_base = EntityAttr.objects.create(**new_attr_params)
         attr_base.referral.add(ref_entity)
-
-        entity.attrs.add(attr_base)
 
         # create an Entry associated to the 'entity'
         entry = Entry.objects.create(name="entry", created_user=user, schema=entity)
@@ -3317,7 +3274,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(len([x for x in results if x["status"] == "success"]), 3)
 
         # checks copied entries were registered to the Elasticsearch
-        res = Entry.get_all_es_docs()
+        res = AdvancedSearchService.get_all_es_docs()
         self.assertEqual(res["hits"]["total"]["value"], 3)
 
         # checks jobs were created as expected
@@ -3355,15 +3312,13 @@ class ViewTest(AironeViewTest):
         admin.groups.add(group)
 
         entity = Entity.objects.create(name="entity", created_user=admin)
-        entity.attrs.add(
-            EntityAttr.objects.create(
-                **{
-                    "name": "attr_group",
-                    "type": AttrType.GROUP,
-                    "created_user": admin,
-                    "parent_entity": entity,
-                }
-            )
+        EntityAttr.objects.create(
+            **{
+                "name": "attr_group",
+                "type": AttrType.GROUP,
+                "created_user": admin,
+                "parent_entity": entity,
+            }
         )
 
         params = {
@@ -3388,7 +3343,7 @@ class ViewTest(AironeViewTest):
 
         attrv = entry.attrs.first().get_latest_value()
         self.assertIsNotNone(attrv)
-        self.assertEqual(attrv.value, str(group.id))
+        self.assertEqual(attrv.group, group)
         self.assertEqual(attrv.data_type, AttrType.GROUP)
 
     @patch("entry.tasks.edit_entry_attrs.delay", Mock(side_effect=tasks.edit_entry_attrs))
@@ -3400,15 +3355,13 @@ class ViewTest(AironeViewTest):
             admin.groups.add(group)
 
         entity = Entity.objects.create(name="entity", created_user=admin)
-        entity.attrs.add(
-            EntityAttr.objects.create(
-                **{
-                    "name": "attr_group",
-                    "type": AttrType.GROUP,
-                    "created_user": admin,
-                    "parent_entity": entity,
-                }
-            )
+        EntityAttr.objects.create(
+            **{
+                "name": "attr_group",
+                "type": AttrType.GROUP,
+                "created_user": admin,
+                "parent_entity": entity,
+            }
         )
 
         entry = Entry.objects.create(name="entry", schema=entity, created_user=admin)
@@ -3462,7 +3415,7 @@ class ViewTest(AironeViewTest):
 
         attrv = attr.get_latest_value()
         self.assertIsNotNone(attrv)
-        self.assertEqual(attrv.value, str(Group.objects.get(name="group-1").id))
+        self.assertEqual(attrv.group, Group.objects.get(name="group-1"))
 
     @patch("entry.tasks.import_entries.delay", Mock(side_effect=tasks.import_entries))
     def test_import_entry(self):
@@ -3500,8 +3453,6 @@ class ViewTest(AironeViewTest):
             if info["type"] & AttrType.OBJECT:
                 attr.referral.add(ref_entity)
 
-            entity.attrs.add(attr)
-
         # try to import data which has invalid data structure
         for index in range(3):
             fp = self.open_fixture_file("invalid_import_data%d.yaml" % index)
@@ -3538,8 +3489,8 @@ class ViewTest(AironeViewTest):
         checklist = [
             {"attr": "str", "checker": lambda x: x.value == "foo"},
             {"attr": "obj", "checker": lambda x: x.referral.id == ref_entry.id},
-            {"attr": "grp", "checker": lambda x: x.value == str(group.id)},
-            {"attr": "role", "checker": lambda x: x.value == str(role.id)},
+            {"attr": "grp", "checker": lambda x: x.group == group},
+            {"attr": "role", "checker": lambda x: x.role == role},
             {
                 "attr": "name",
                 "checker": lambda x: x.value == "foo" and x.referral.id == ref_entry.id,
@@ -3560,12 +3511,12 @@ class ViewTest(AironeViewTest):
             {
                 "attr": "arr4",
                 "checker": lambda x: x.data_array.count() == 1
-                and x.data_array.first().value == str(group.id),
+                and x.data_array.first().group == group,
             },
             {
                 "attr": "arr5",
                 "checker": lambda x: x.data_array.count() == 1
-                and x.data_array.first().value == str(role.id),
+                and x.data_array.first().role == role,
             },
         ]
         for info in checklist:
@@ -3788,8 +3739,6 @@ class ViewTest(AironeViewTest):
             if info["type"] & AttrType.OBJECT:
                 attr.referral.add(ref_entity)
 
-            entity.attrs.add(attr)
-
         # Change a name of EntityAttr 'str (before changing)' to 'str'
         entity_attr = EntityAttr.objects.get(name="str (before changing)", parent_entity=entity)
         entity_attr.name = "str"
@@ -3812,7 +3761,7 @@ class ViewTest(AironeViewTest):
         self.assertTrue(all([x.parent_attrv == attrv for x in attrv.data_array.all()]))
 
         # check imported data was registered to the ElasticSearch
-        res = Entry.get_all_es_docs()
+        res = AdvancedSearchService.get_all_es_docs()
         self.assertEqual(res["hits"]["total"]["value"], 2)
 
         for e in [entry, ref_entry]:
@@ -3824,13 +3773,11 @@ class ViewTest(AironeViewTest):
         user = self.admin_login()
 
         entity = Entity.objects.create(name="Entity", created_user=user)
-        entity.attrs.add(
-            EntityAttr.objects.create(
-                name="str",
-                type=AttrType.STRING,
-                created_user=user,
-                parent_entity=entity,
-            )
+        EntityAttr.objects.create(
+            name="str",
+            type=AttrType.STRING,
+            created_user=user,
+            parent_entity=entity,
         )
 
         for encoding in ["UTF-8", "Shift-JIS", "EUC-JP"]:
@@ -3856,7 +3803,7 @@ class ViewTest(AironeViewTest):
 
         self.assertTrue(Job.objects.filter(operation=JobOperation.NOTIFY_CREATE_ENTRY).exists())
 
-        ret = Entry.search_entries(user, [self._entity.id], [{"name": "test"}])
+        ret = AdvancedSearchService.search_entries(user, [self._entity.id], [AttrHint(name="test")])
         self.assertEqual(ret.ret_count, 1)
         self.assertEqual(ret.ret_values[0].entry["name"], "entry")
         self.assertEqual(ret.ret_values[0].attrs["test"]["value"], "fuga")
@@ -3885,7 +3832,7 @@ class ViewTest(AironeViewTest):
 
         self.assertTrue(Job.objects.filter(operation=JobOperation.NOTIFY_UPDATE_ENTRY).exists())
 
-        ret = Entry.search_entries(user, [self._entity.id], [{"name": "test"}])
+        ret = AdvancedSearchService.search_entries(user, [self._entity.id], [AttrHint(name="test")])
         self.assertEqual(ret.ret_count, 1)
         self.assertEqual(ret.ret_values[0].entry["name"], "entry")
         self.assertEqual(ret.ret_values[0].attrs["test"]["value"], "piyo")
@@ -3905,7 +3852,6 @@ class ViewTest(AironeViewTest):
             parent_entity=entity,
             created_user=admin,
         )
-        entity.attrs.add(entity_attr)
 
         # creates entry that has a parameter which is typed date
         params = {
@@ -3973,7 +3919,6 @@ class ViewTest(AironeViewTest):
             parent_entity=entity,
             created_user=admin,
         )
-        entity.attrs.add(entity_attr)
 
         # creates entry that has a invalid format parameter which is typed date
         params = {
@@ -4002,13 +3947,12 @@ class ViewTest(AironeViewTest):
         admin = self.admin_login()
 
         entity = Entity.objects.create(name="entity", created_user=admin)
-        entity_attr = EntityAttr.objects.create(
+        EntityAttr.objects.create(
             name="attr_date",
             type=AttrType.DATE,
             parent_entity=entity,
             created_user=admin,
         )
-        entity.attrs.add(entity_attr)
 
         entry = Entry.objects.create(name="entry", schema=entity, created_user=admin)
         entry.complement_attrs(admin)
@@ -4057,7 +4001,6 @@ class ViewTest(AironeViewTest):
             parent_entity=entity,
             created_user=admin,
         )
-        entity.attrs.add(entity_attr)
 
         # creates entry that has a empty parameter which is typed date
         params = {
@@ -4176,8 +4119,6 @@ class ViewTest(AironeViewTest):
             info["schema"] = attr
             if info["type"] & AttrType.OBJECT:
                 attr.referral.add(ref_entity)
-
-            entity.attrs.add(attr)
 
         entry = Entry.objects.create(name="entry", schema=entity, created_user=user)
         entry.complement_attrs(user)
@@ -4305,13 +4246,11 @@ class ViewTest(AironeViewTest):
             },
         }
         for attr_name, info in attr_info.items():
-            entity.attrs.add(
-                EntityAttr.objects.create(
-                    name=attr_name,
-                    type=info["type"],
-                    created_user=user,
-                    parent_entity=entity,
-                )
+            EntityAttr.objects.create(
+                name=attr_name,
+                type=info["type"],
+                created_user=user,
+                parent_entity=entity,
             )
 
         for i, value in enumerate(["", "0", 0, "9999", None]):
@@ -4378,8 +4317,6 @@ class ViewTest(AironeViewTest):
                 parent_entity=entity,
             )
 
-            entity.attrs.add(attr)
-
             # send a request to create entry and expect to be error
             referral_key = []
             if info["type"] & AttrType._NAMED:
@@ -4444,7 +4381,6 @@ class ViewTest(AironeViewTest):
                 parent_entity=entity,
             )
             attr.referral.add(ref_entity)
-            entity.attrs.add(attr)
 
             referral_key = []
             if attr_type & AttrType._NAMED:
@@ -4546,15 +4482,13 @@ class ViewTest(AironeViewTest):
     def test_show_entry_history(self):
         user = self.guest_login()
         entity = Entity.objects.create(name="entity", created_user=user)
-        entity.attrs.add(
-            EntityAttr.objects.create(
-                **{
-                    "name": "attr",
-                    "created_user": user,
-                    "parent_entity": entity,
-                    "type": AttrType.STRING,
-                }
-            )
+        EntityAttr.objects.create(
+            **{
+                "name": "attr",
+                "created_user": user,
+                "parent_entity": entity,
+                "type": AttrType.STRING,
+            }
         )
 
         # create and add values
@@ -4579,7 +4513,6 @@ class ViewTest(AironeViewTest):
             parent_entity=entity,
             type=AttrType.STRING,
         )
-        entity.attrs.add(attr)
 
         # create without type parameter
         params = {
@@ -4666,15 +4599,13 @@ class ViewTest(AironeViewTest):
         role: Role = Role.objects.create(name="Role")
         role.users.add(user)
         entity = Entity.objects.create(name="entity", created_user=user)
-        entity.attrs.add(
-            EntityAttr.objects.create(
-                **{
-                    "name": "attr",
-                    "type": AttrType.STRING,
-                    "created_user": user,
-                    "parent_entity": entity,
-                }
-            )
+        EntityAttr.objects.create(
+            **{
+                "name": "attr",
+                "type": AttrType.STRING,
+                "created_user": user,
+                "parent_entity": entity,
+            }
         )
 
         entry = Entry.objects.create(name="entry", schema=entity, created_user=user)
@@ -4743,7 +4674,7 @@ class ViewTest(AironeViewTest):
         self.assertTrue(all([x.is_active for x in entry.attrs.all()]))
 
         # check that index information of restored entry in Elasticsearch is also restored
-        resp = Entry.search_entries(user, [entity.id])
+        resp = AdvancedSearchService.search_entries(user, [entity.id])
         self.assertEqual(resp.ret_count, 1)
         self.assertEqual(resp.ret_values[0].entry["id"], entry.id)
         self.assertEqual(resp.ret_values[0].entry["name"], entry.name)
@@ -4845,8 +4776,6 @@ class ViewTest(AironeViewTest):
             if info["type"] & AttrType.OBJECT:
                 attr.referral.add(ref_entity)
 
-            entity.attrs.add(attr)
-
         # initialize each AttributeValues
         entry = Entry.objects.create(name="Entry", schema=entity, created_user=user)
         entry.complement_attrs(user)
@@ -4871,7 +4800,7 @@ class ViewTest(AironeViewTest):
             self.assertEqual(resp.status_code, 200)
             self.assertEqual(attrv1.get_value(), attr.get_latest_value().get_value())
 
-        resp = Entry.search_entries(user, [entity.id], [], is_output_all=True)
+        resp = AdvancedSearchService.search_entries(user, [entity.id], [], is_output_all=True)
         self.assertEqual(resp.ret_count, 1)
         for attr_name, data in resp.ret_values[0].attrs.items():
             self.assertEqual(data["type"], attr_info[attr_name]["type"])
@@ -4980,15 +4909,13 @@ class ViewTest(AironeViewTest):
         # initialize Entity and Entry
         entity = Entity.objects.create(name="Entity", created_user=user)
         [
-            entity.attrs.add(
-                EntityAttr.objects.create(
-                    **{
-                        "name": attr_name,
-                        "type": AttrType.STRING,
-                        "created_user": user,
-                        "parent_entity": entity,
-                    }
-                )
+            EntityAttr.objects.create(
+                **{
+                    "name": attr_name,
+                    "type": AttrType.STRING,
+                    "created_user": user,
+                    "parent_entity": entity,
+                }
             )
             for attr_name in ["attr1", "attr2"]
         ]
@@ -5036,15 +4963,13 @@ class ViewTest(AironeViewTest):
 
         # initialize Entity and Entry
         entity = Entity.objects.create(name="Entity", created_user=user)
-        entity.attrs.add(
-            EntityAttr.objects.create(
-                **{
-                    "name": "attr",
-                    "type": AttrType.STRING,
-                    "created_user": user,
-                    "parent_entity": entity,
-                }
-            )
+        EntityAttr.objects.create(
+            **{
+                "name": "attr",
+                "type": AttrType.STRING,
+                "created_user": user,
+                "parent_entity": entity,
+            }
         )
 
         entry = Entry.objects.create(name="Entry", schema=entity, created_user=user)
@@ -5075,15 +5000,13 @@ class ViewTest(AironeViewTest):
 
         # initialize Entity and Entry
         entity = Entity.objects.create(name="Entity", created_user=user)
-        entity.attrs.add(
-            EntityAttr.objects.create(
-                **{
-                    "name": "attr",
-                    "type": AttrType.STRING,
-                    "created_user": user,
-                    "parent_entity": entity,
-                }
-            )
+        EntityAttr.objects.create(
+            **{
+                "name": "attr",
+                "type": AttrType.STRING,
+                "created_user": user,
+                "parent_entity": entity,
+            }
         )
 
         entry = Entry.objects.create(name="Entry", schema=entity, created_user=user)
@@ -5180,7 +5103,7 @@ class ViewTest(AironeViewTest):
         entry.complement_attrs(user)
 
         # Added another Attribute to entry to test to be able to detect this abnormal situation
-        entry.attrs.add(self.make_attr("test", parent_entry=entry, created_user=user))
+        self.make_attr("test", parent_entry=entry, created_user=user)
 
         # Send a request to import entry
         with self.assertLogs(logger=Logger, level=logging.ERROR) as cm:
@@ -5243,7 +5166,6 @@ class ViewTest(AironeViewTest):
             parent_entity=entity,
             created_user=user,
         )
-        entity.attrs.add(entity_attr)
 
         # creates entry that has a parameter which is typed boolean
         params = {
@@ -5348,7 +5270,7 @@ class ViewTest(AironeViewTest):
         ref_entry = Entry.objects.create(name="before_change", created_user=user, schema=ref_entity)
 
         entity = Entity.objects.create(name="entity", created_user=user)
-        entity_attr = EntityAttr.objects.create(
+        EntityAttr.objects.create(
             **{
                 "name": "ref",
                 "created_user": user,
@@ -5356,7 +5278,6 @@ class ViewTest(AironeViewTest):
                 "parent_entity": entity,
             }
         )
-        entity.attrs.add(entity_attr)
         entry = Entry.objects.create(name="entry", schema=entity, created_user=user)
         entry.complement_attrs(user)
         entry.attrs.first().add_value(user, ref_entry)
@@ -5378,7 +5299,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(ref_entry.name, "changed_name")
 
         # check entry changing reflects to the ElasticSearch
-        ret = Entry.search_entries(user, [entity.id], [{"name": "ref"}])
+        ret = AdvancedSearchService.search_entries(user, [entity.id], [AttrHint(name="ref")])
         self.assertEqual(ret.ret_count, 1)
         self.assertEqual(ret.ret_values[0].entry["name"], "entry")
         self.assertEqual(ret.ret_values[0].attrs["ref"]["value"]["name"], "changed_name")

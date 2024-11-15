@@ -77,10 +77,10 @@
             {% elif attr.type == attr_type.date %}
               <td id='{{ hint_attr.name }}'>{{ attr.value|default_if_none:'' }}</td>
 
-            {% elif attr.type == attr_type.entry %}
+            {% elif attr.type == attr_type.object %}
               <td id='{{ hint_attr.name }}'><a href='/entry/show/{{ attr.value.id }}/'>{{ attr.value.name }}</a></td>
 
-            {% elif attr.type == attr_type.named_entry %}
+            {% elif attr.type == attr_type.named_object %}
               <td id='{{ hint_attr.name }}'>
                 {% for key, value in attr.value.items %}
                 <div class='row'>
@@ -109,7 +109,7 @@
                 </ul>
               </td>
 
-            {% elif attr.type == attr_type.array_entry %}
+            {% elif attr.type == attr_type.array_object %}
               <td id='{{ hint_attr.name }}'>
                 <ul class='list-group'>
                 {% for value in attr.value %}
@@ -136,7 +136,7 @@
                 </ul>
               </td>
 
-            {% elif attr.type == attr_type.array_named_entry %}
+            {% elif attr.type == attr_type.array_named_object %}
               <td id='{{ hint_attr.name }}'>
                 <ul class='list-group'>
                 {% for item in attr.value %}

@@ -9,8 +9,10 @@ import {
 } from "@mui/material";
 import { useSnackbar } from "notistack";
 import React, { FC } from "react";
-import { Link, useHistory } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
+import { Confirmable } from "components/common/Confirmable";
+import { aironeApiClient } from "repository/AironeApiClient";
 import {
   entryEditPath,
   aclPath,
@@ -20,9 +22,7 @@ import {
   topPath,
   entryDetailsPath,
   aclHistoryPath,
-} from "Routes";
-import { Confirmable } from "components/common/Confirmable";
-import { aironeApiClient } from "repository/AironeApiClient";
+} from "routes/Routes";
 
 interface EntryControlProps {
   entityId: number;
@@ -31,6 +31,12 @@ interface EntryControlProps {
   handleClose: (entryId: number) => void;
   setToggle?: () => void;
   disableChangeHistory?: boolean;
+  customDetailPath?: string;
+  customEditPath?: string;
+  customCopyPath?: string;
+  customACLPath?: string;
+  customHistoryPath?: string;
+  customACLHistoryPath?: string;
 }
 
 export const EntryControlMenu: FC<EntryControlProps> = ({
@@ -40,21 +46,27 @@ export const EntryControlMenu: FC<EntryControlProps> = ({
   handleClose,
   setToggle,
   disableChangeHistory = false,
+  customDetailPath,
+  customEditPath,
+  customCopyPath,
+  customACLPath,
+  customHistoryPath,
+  customACLHistoryPath,
 }) => {
   const { enqueueSnackbar } = useSnackbar();
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const handleDelete = async (entryId: number) => {
     try {
       await aironeApiClient.destroyEntry(entryId);
-      enqueueSnackbar("エントリの削除が完了しました", {
+      enqueueSnackbar("アイテムの削除が完了しました", {
         variant: "success",
       });
       setToggle && setToggle();
-      history.replace(topPath());
-      history.replace(entityEntriesPath(entityId));
+      navigate(topPath(), { replace: true });
+      navigate(entityEntriesPath(entityId), { replace: true });
     } catch (e) {
-      enqueueSnackbar("エントリの削除が失敗しました", {
+      enqueueSnackbar("アイテムの削除が失敗しました", {
         variant: "error",
       });
     }
@@ -76,26 +88,57 @@ export const EntryControlMenu: FC<EntryControlProps> = ({
       }}
     >
       <Box sx={{ width: 150 }}>
-        <MenuItem component={Link} to={entryDetailsPath(entityId, entryId)}>
+        <MenuItem
+          component={Link}
+          to={
+            customDetailPath
+              ? customDetailPath
+              : entryDetailsPath(entityId, entryId)
+          }
+        >
           <Typography>詳細</Typography>
         </MenuItem>
-        <MenuItem component={Link} to={entryEditPath(entityId, entryId)}>
+        <MenuItem
+          component={Link}
+          to={
+            customEditPath ? customEditPath : entryEditPath(entityId, entryId)
+          }
+        >
           <Typography>編集</Typography>
         </MenuItem>
-        <MenuItem component={Link} to={copyEntryPath(entityId, entryId)}>
+        <MenuItem
+          component={Link}
+          to={
+            customCopyPath ? customCopyPath : copyEntryPath(entityId, entryId)
+          }
+        >
           <Typography>コピー</Typography>
         </MenuItem>
-        <MenuItem component={Link} to={aclPath(entryId)}>
+        <MenuItem
+          component={Link}
+          to={customACLPath ? customACLPath : aclPath(entryId)}
+        >
           <Typography>ACL 設定</Typography>
         </MenuItem>
         <MenuItem
           component={Link}
-          to={showEntryHistoryPath(entityId, entryId)}
+          to={
+            customHistoryPath
+              ? customHistoryPath
+              : showEntryHistoryPath(entityId, entryId)
+          }
           disabled={disableChangeHistory}
         >
           <Typography>変更履歴</Typography>
         </MenuItem>
-        <MenuItem component={Link} to={aclHistoryPath(entryId)}>
+        <MenuItem
+          component={Link}
+          to={
+            customACLHistoryPath
+              ? customACLHistoryPath
+              : aclHistoryPath(entryId)
+          }
+        >
           <Typography>ACL 変更履歴</Typography>
         </MenuItem>
         <Confirmable

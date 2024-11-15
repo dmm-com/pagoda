@@ -8,11 +8,10 @@ import { Box, Container } from "@mui/material";
 import { useSnackbar } from "notistack";
 import React, { FC, useCallback, useEffect, useState } from "react";
 import { FieldErrors, useForm } from "react-hook-form";
-import { Prompt, useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
 
-import { editEntityPath, entityEntriesPath, entryDetailsPath } from "Routes";
 import { ACLForm } from "components/acl/ACLForm";
 import { Schema, schema } from "components/acl/aclForm/ACLFormSchema";
 import { Loading } from "components/common/Loading";
@@ -20,11 +19,17 @@ import { PageHeader } from "components/common/PageHeader";
 import { SubmitButton } from "components/common/SubmitButton";
 import { EntityBreadcrumbs } from "components/entity/EntityBreadcrumbs";
 import { EntryBreadcrumbs } from "components/entry/EntryBreadcrumbs";
+import { usePrompt } from "hooks/usePrompt";
 import { useTypedParams } from "hooks/useTypedParams";
 import { aironeApiClient } from "repository/AironeApiClient";
+import {
+  editEntityPath,
+  entityEntriesPath,
+  entryDetailsPath,
+} from "routes/Routes";
 
 export const ACLEditPage: FC = () => {
-  const history = useHistory();
+  const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
   const { objectId } = useTypedParams<{ objectId: number }>();
   const [entity, setEntity] = useState<EntityDetail>();
@@ -42,6 +47,11 @@ export const ACLEditPage: FC = () => {
     mode: "onSubmit",
   });
 
+  usePrompt(
+    isDirty && !isSubmitSuccessful,
+    "編集した内容は失われてしまいますが、このページを離れてもよろしいですか？"
+  );
+
   const acl = useAsyncWithThrow(async () => {
     return await aironeApiClient.getAcl(objectId);
   });
@@ -50,17 +60,19 @@ export const ACLEditPage: FC = () => {
     switch (acl.value?.objtype) {
       case ACLObjtypeEnum.Entity:
         if (entity?.id) {
-          history.replace(entityEntriesPath(entity?.id));
+          navigate(entityEntriesPath(entity?.id), { replace: true });
         }
         break;
       case ACLObjtypeEnum.EntityAttr:
         if (entity?.id) {
-          history.replace(editEntityPath(entity?.id));
+          navigate(editEntityPath(entity?.id), { replace: true });
         }
         break;
       case ACLObjtypeEnum.Entry:
         if (entry?.id) {
-          history.replace(entryDetailsPath(entry?.schema.id, entry?.id));
+          navigate(entryDetailsPath(entry?.schema.id, entry?.id), {
+            replace: true,
+          });
         }
         break;
     }
@@ -169,11 +181,6 @@ export const ACLEditPage: FC = () => {
           <ACLForm control={control} watch={watch} />
         </Container>
       )}
-
-      <Prompt
-        when={isDirty && !isSubmitSuccessful}
-        message="編集した内容は失われてしまいますが、このページを離れてもよろしいですか？"
-      />
     </Box>
   );
 };

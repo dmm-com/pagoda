@@ -1,7 +1,8 @@
 import { Box, Button, Input, Typography } from "@mui/material";
+import Encoding from "encoding-japanese";
 import { useSnackbar } from "notistack";
 import React, { ChangeEvent, FC, useState } from "react";
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import {
   isResponseError,
@@ -14,7 +15,7 @@ interface Props {
 }
 
 export const ImportForm: FC<Props> = ({ handleImport, handleCancel }) => {
-  const history = useHistory();
+  const navigate = useNavigate();
   const [file, setFile] = useState<File>();
   const [errorMessage, setErrorMessage] = useState<string>("");
   const { enqueueSnackbar } = useSnackbar();
@@ -25,8 +26,15 @@ export const ImportForm: FC<Props> = ({ handleImport, handleCancel }) => {
 
   const onClick = async () => {
     if (file) {
+      // TODO its better to avoid reading file twice
+      const arrayBuffer = await file.arrayBuffer();
+      const bytes = new Uint8Array(arrayBuffer);
+      const encodingDetection = Encoding.detect(bytes);
+      const encoding =
+        typeof encodingDetection === "string" ? encodingDetection : "UNICODE";
+
       const fileReader = new FileReader();
-      fileReader.readAsText(file);
+      fileReader.readAsText(file, encoding);
 
       fileReader.onload = async () => {
         if (fileReader.result == null) {
@@ -35,7 +43,7 @@ export const ImportForm: FC<Props> = ({ handleImport, handleCancel }) => {
 
         try {
           await handleImport(fileReader.result);
-          history.go(0);
+          navigate(0);
         } catch (e) {
           if (e instanceof Error && isResponseError(e)) {
             const reportableError = await toReportableNonFieldErrors(e);

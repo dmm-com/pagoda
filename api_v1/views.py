@@ -17,7 +17,7 @@ from .serializers import PostEntrySerializer
 
 class EntryAPI(APIView):
     def post(self, request, format=None):
-        sel = PostEntrySerializer(data=request.data)
+        sel = PostEntrySerializer(data=request.data, context={"_user": request.user})
 
         # This is necessary because request.data might be changed by the processing of serializer
         raw_request_data = deepcopy(request.data)

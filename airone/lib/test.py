@@ -119,8 +119,6 @@ class AironeTestCase(TestCase):
             # register referral(s) EntityAttr.add_referral() supports any kind of types
             entity_attr.add_referral(attr_info.get("ref"))
 
-            entity.attrs.add(entity_attr)
-
         for webhook_info in webhooks:
             webhook: Webhook = Webhook.objects.create(
                 **{

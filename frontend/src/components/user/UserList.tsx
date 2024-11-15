@@ -13,11 +13,10 @@ import {
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import React, { FC, useMemo, useState } from "react";
-import { Link, useHistory, useLocation } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 
 import { UserControlMenu } from "./UserControlMenu";
 
-import { newUserPath, userPath } from "Routes";
 import { ClipboardCopyButton } from "components/common/ClipboardCopyButton";
 import { Loading } from "components/common/Loading";
 import { PaginationFooter } from "components/common/PaginationFooter";
@@ -25,6 +24,7 @@ import { SearchBox } from "components/common/SearchBox";
 import { useAsyncWithThrow } from "hooks/useAsyncWithThrow";
 import { usePage } from "hooks/usePage";
 import { aironeApiClient } from "repository/AironeApiClient";
+import { newUserPath, userPath } from "routes/Routes";
 import { UserList as ConstUserList } from "services/Constants";
 import { ServerContext } from "services/ServerContext";
 import { normalizeToMatch } from "services/StringUtil";
@@ -47,7 +47,7 @@ const UserName = styled(Typography)(({}) => ({
 
 export const UserList: FC = ({}) => {
   const location = useLocation();
-  const history = useHistory();
+  const navigate = useNavigate();
   const [page, changePage] = usePage();
   const params = new URLSearchParams(location.search);
   const [query, setQuery] = useState<string>(params.get("query") ?? "");
@@ -72,7 +72,7 @@ export const UserList: FC = ({}) => {
     changePage(1);
     setQuery(newQuery ?? "");
 
-    history.push({
+    navigate({
       pathname: location.pathname,
       search: newQuery ? `?query=${newQuery}` : "",
     });

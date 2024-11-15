@@ -72,7 +72,7 @@ class Common(Configuration):
     MIDDLEWARE = [
         "django.middleware.security.SecurityMiddleware",
         "whitenoise.middleware.WhiteNoiseMiddleware",
-        "airone.lib.log.LoggingRequestMiddleware",
+        "airone.middleware.log.LoggingRequestMiddleware",
         "django.contrib.sessions.middleware.SessionMiddleware",
         "django.middleware.common.CommonMiddleware",
         "django.middleware.csrf.CsrfViewMiddleware",
@@ -80,7 +80,8 @@ class Common(Configuration):
         "django.contrib.messages.middleware.MessageMiddleware",
         "django.middleware.clickjacking.XFrameOptionsMiddleware",
         "social_django.middleware.SocialAuthExceptionMiddleware",
-        "airone.lib.db.AirOneReplicationMiddleware",
+        "airone.middleware.db.AirOneReplicationMiddleware",
+        "airone.middleware.gate_keeper.URLGateKeeper",
         "simple_history.middleware.HistoryRequestMiddleware",
     ] + env.list("AIRONE_MIDDLEWARE", None, [])
 
@@ -232,6 +233,9 @@ class Common(Configuration):
         "SSO_DESC": env.str("AIRONE_SSO_DESC", "SSO"),
         "LEGACY_UI_DISABLED": env.bool("AIRONE_LEGACY_UI_DISABLED", False),
         "PASSWORD_RESET_DISABLED": env.bool("AIRONE_PASSWORD_RESET_DISABLED", False),
+        "CHECK_TERM_SERVICE": env.bool("AIRONE_CHECK_TERM_SERVICE", False),
+        "TERMS_OF_SERVICE_URL": env.str("AIRONE_TERMS_OF_SERVICE_URL", "#"),
+        "HEADER_COLOR": env.str("AIRONE_HEADER_COLOR", None),
         "EXTENDED_HEADER_MENUS": json.loads(
             env.str(
                 "EXTENDED_HEADER_MENUS",
@@ -338,7 +342,7 @@ class Common(Configuration):
                 "url": env.str("AIRONE_SSO_LOGIN_URL", ""),
                 "x509cert": env.str("AIRONE_SSO_X509_CERT", "", True),
                 "attr_user_permanent_id": env.str("AIRONE_SSO_USER_ID", ""),
-                "attr_name": env.str("AIRONE_SSO_USER_ID", ""),
+                "attr_username": env.str("AIRONE_SSO_USER_ID", ""),
                 "attr_email": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress",
             }
         }
@@ -356,6 +360,9 @@ class Common(Configuration):
             "social_core.pipeline.social_auth.load_extra_data",
             "social_core.pipeline.user.user_details",
         )
+
+    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+    ADMINS = [("Admin", "localhost@localdomain")]
 
     # email
     if env.bool("AIRONE_EMAIL_ENABLE", False):
@@ -477,3 +484,6 @@ class Common(Configuration):
     MAX_USERS: int | None = env.int("AIRONE_MAX_USERS", None)
     MAX_GROUPS: int | None = env.int("AIRONE_MAX_GROUPS", None)
     MAX_ROLES: int | None = env.int("AIRONE_MAX_ROLES", None)
+
+    # TODO enable experimental ES-less advanced search; TODO it must be removed
+    ENABLE_ESLESS_ADVANCED_SEARCH: bool = env.bool("AIRONE_ENABLE_ESLESS_ADVANCED_SEARCH", False)

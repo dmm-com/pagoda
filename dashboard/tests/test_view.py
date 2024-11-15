@@ -137,15 +137,13 @@ class ViewTest(AironeViewTest):
     def test_show_advanced_search(self):
         # create entity which has attr
         entity1 = Entity.objects.create(name="entity-1", created_user=self.admin)
-        entity1.attrs.add(
-            EntityAttr.objects.create(
-                **{
-                    "name": "attr-1-1",
-                    "type": AttrType.STRING,
-                    "created_user": self.admin,
-                    "parent_entity": entity1,
-                }
-            )
+        EntityAttr.objects.create(
+            **{
+                "name": "attr-1-1",
+                "type": AttrType.STRING,
+                "created_user": self.admin,
+                "parent_entity": entity1,
+            }
         )
         entity1.save()
 
@@ -170,15 +168,13 @@ class ViewTest(AironeViewTest):
     def test_show_advanced_search_results(self):
         for entity_index in range(0, 2):
             entity = Entity.objects.create(name="entity-%d" % entity_index, created_user=self.admin)
-            entity.attrs.add(
-                EntityAttr.objects.create(
-                    **{
-                        "name": "attr",
-                        "type": AttrType.STRING,
-                        "created_user": self.admin,
-                        "parent_entity": entity,
-                    }
-                )
+            EntityAttr.objects.create(
+                **{
+                    "name": "attr",
+                    "type": AttrType.STRING,
+                    "created_user": self.admin,
+                    "parent_entity": entity,
+                }
             )
 
             for entry_index in range(0, 10):
@@ -217,7 +213,16 @@ class ViewTest(AironeViewTest):
         attr = entry.attrs.first()
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(
-            resp.context["hint_attrs"], [{"name": "attr", "is_readable": attr.is_public}]
+            resp.context["hint_attrs"],
+            [
+                {
+                    "name": "attr",
+                    "is_readable": attr.is_public,
+                    "filter_key": None,
+                    "keyword": None,
+                    "exact_match": None,
+                }
+            ],
         )
         self.assertEqual(resp.context["results"]["ret_count"], 20)
         self.assertEqual(len(resp.context["results"]["ret_values"]), 20)
@@ -324,7 +329,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(
             resp.content.decode("utf-8"),
-            "The name key is required for attrinfo parameter",
+            "Invalid value for attrinfo parameter",
         )
 
         resp = self.client.get(
@@ -638,15 +643,13 @@ class ViewTest(AironeViewTest):
 
         entity = Entity.objects.create(name="Entity", created_user=user)
         for attr_name, info in attr_info.items():
-            entity.attrs.add(
-                EntityAttr.objects.create(
-                    **{
-                        "name": attr_name,
-                        "type": info["type"],
-                        "created_user": user,
-                        "parent_entity": entity,
-                    }
-                )
+            EntityAttr.objects.create(
+                **{
+                    "name": attr_name,
+                    "type": info["type"],
+                    "created_user": user,
+                    "parent_entity": entity,
+                }
             )
 
         entry = Entry.objects.create(name="entry", schema=entity, created_user=user)
@@ -1002,7 +1005,6 @@ class ViewTest(AironeViewTest):
             parent_entity=entity,
         )
         entity_attr.referral.add(ref_entity)
-        entity.attrs.add(entity_attr)
 
         # initialize Entries
         ref_entry = Entry.objects.create(name="ref", schema=ref_entity, created_user=user)
@@ -1115,9 +1117,6 @@ class ViewTest(AironeViewTest):
                 parent_entity=test_entity,
             )
 
-            test_entity.attrs.add(test_entity_attr)
-            test_entity.save()
-
             test_entry = Entry.objects.create(
                 name=type_name + ',"ENTRY"', schema=test_entity, created_user=user
             )
@@ -1129,10 +1128,6 @@ class ViewTest(AironeViewTest):
                 created_user=user,
                 parent_entry=test_entry,
             )
-
-            test_attr.save()
-            test_entry.attrs.add(test_attr)
-            test_entry.save()
 
             test_val = None
 
@@ -1153,22 +1148,30 @@ class ViewTest(AironeViewTest):
                 test_val = AttributeValue.create(user=user, attr=test_attr)
                 test_val.set_status(AttributeValue.STATUS_DATA_ARRAY_PARENT)
                 for child in value:
-                    test_val_child = None
                     match type:
                         case AttrType.ARRAY_STRING:
-                            test_val_child = AttributeValue.create(
-                                user=user, attr=test_attr, value=child
+                            AttributeValue.create(
+                                user=user,
+                                attr=test_attr,
+                                value=child,
+                                parent_attrv=test_val,
                             )
                         case AttrType.ARRAY_OBJECT:
-                            test_val_child = AttributeValue.create(
-                                user=user, attr=test_attr, referral=child
+                            AttributeValue.create(
+                                user=user,
+                                attr=test_attr,
+                                referral=child,
+                                parent_attrv=test_val,
                             )
                         case AttrType.ARRAY_NAMED_OBJECT:
                             [(k, v)] = child.items()
-                            test_val_child = AttributeValue.create(
-                                user=user, attr=test_attr, value=k, referral=v
+                            AttributeValue.create(
+                                user=user,
+                                attr=test_attr,
+                                value=k,
+                                referral=v,
+                                parent_attrv=test_val,
                             )
-                    test_val.data_array.add(test_val_child)
 
             test_val.save()
             test_attr.values.add(test_val)
@@ -1272,8 +1275,6 @@ class ViewTest(AironeViewTest):
 
                 if info["type"] & AttrType.OBJECT:
                     attr.referral.add(entity_ref)
-
-                entity.attrs.add(attr)
 
             # create an entry of Entity
             for e_index in range(2):
@@ -1405,18 +1406,18 @@ class ViewTest(AironeViewTest):
                     sorted([list(x.values())[0] for x in value_info]),
                 )
             elif attr_name == "group":
-                self.assertEqual(int(attrv.value), new_group.id)
+                self.assertEqual(attrv.group, new_group)
             elif attr_name == "arr_group":
                 self.assertEqual(
-                    [int(x.value) for x in attrv.data_array.all()],
-                    [new_group.id],
+                    [x.group for x in attrv.data_array.all().select_related("group")],
+                    [new_group],
                 )
             elif attr_name == "role":
-                self.assertEqual(int(attrv.value), new_role.id)
+                self.assertEqual(attrv.role, new_role)
             elif attr_name == "arr_role":
                 self.assertEqual(
-                    [int(x.value) for x in attrv.data_array.all()],
-                    [new_role.id],
+                    [x.role for x in attrv.data_array.all().select_related("role")],
+                    [new_role],
                 )
             elif attr_name == "date":
                 self.assertEqual(attrv.date, date(1999, 1, 1))
@@ -1511,7 +1512,6 @@ class ViewTest(AironeViewTest):
             parent_entity=entity,
         )
         entity_attr.referral.add(ref_entity)
-        entity.attrs.add(entity_attr)
 
         # initialize Entries
         ref_entry = Entry.objects.create(name="ref", schema=ref_entity, created_user=user)

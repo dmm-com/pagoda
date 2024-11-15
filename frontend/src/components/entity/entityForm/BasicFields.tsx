@@ -50,7 +50,7 @@ export const BasicFields: FC<Props> = ({ control }) => {
         </TableHead>
         <TableBody>
           <StyledTableRow>
-            <TableCell>エンティティ名</TableCell>
+            <TableCell>モデル名</TableCell>
             <TableCell>
               <Controller
                 name="name"
@@ -61,11 +61,12 @@ export const BasicFields: FC<Props> = ({ control }) => {
                     {...field}
                     id="entity-name"
                     required
-                    placeholder="エンティティ名"
+                    placeholder="モデル名"
                     error={error != null}
                     helperText={error?.message}
                     size="small"
                     fullWidth
+                    inputProps={{ "data-1p-ignore": true }}
                   />
                 )}
               />

@@ -1,16 +1,12 @@
 import { EntityDetail } from "@dmm-com/airone-apiclient-typescript-fetch";
 import LockIcon from "@mui/icons-material/Lock";
-import { Box, Typography } from "@mui/material";
-import { styled } from "@mui/material/styles";
+import { Typography } from "@mui/material";
 import React, { FC } from "react";
 import { Link } from "react-router-dom";
 
-import { topPath, entitiesPath, entityEntriesPath } from "Routes";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
-
-const StyledBox = styled(Box)({
-  display: "flex",
-});
+import { FlexBox } from "components/common/FlexBox";
+import { topPath, entitiesPath, entityEntriesPath } from "routes/Routes";
 
 interface Props {
   entity?: EntityDetail;
@@ -25,15 +21,15 @@ export const EntityBreadcrumbs: FC<Props> = ({ entity, attr, title }) => {
         Top
       </Typography>
       <Typography component={Link} to={entitiesPath()}>
-        エンティティ一覧
+        モデル一覧
       </Typography>
       {entity && (
-        <StyledBox>
+        <FlexBox>
           <Typography component={Link} to={entityEntriesPath(entity.id)}>
             {entity.name}
           </Typography>
           {!entity.isPublic && <LockIcon />}
-        </StyledBox>
+        </FlexBox>
       )}
       {attr && <Typography color="textPrimary">{attr}</Typography>}
       {title && <Typography color="textPrimary">{title}</Typography>}

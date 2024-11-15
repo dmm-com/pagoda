@@ -2,17 +2,17 @@
  * @jest-environment jsdom
  */
 
-import { render } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import React from "react";
-import { MemoryRouter, Route } from "react-router-dom";
+import { createMemoryRouter, RouterProvider } from "react-router-dom";
 
-import { editTriggerPath } from "../Routes";
+import { editTriggerPath } from "../routes/Routes";
 
 import { TriggerEditPage } from "./TriggerEditPage";
 
-import { TestWrapper } from "TestWrapper";
+import { TestWrapperWithoutRoutes } from "TestWrapper";
 
 const server = setupServer(
   // getTrigger
@@ -33,32 +33,35 @@ const server = setupServer(
   }),
   // getEntities
   http.get("http://localhost/entity/api/v2/", () => {
-    return HttpResponse.json([
-      {
-        id: 1,
-        name: "aaa",
-        note: "",
-        isToplevel: false,
-        attrs: [],
-        webhooks: [],
-      },
-      {
-        id: 2,
-        name: "aaaaa",
-        note: "",
-        isToplevel: false,
-        attrs: [],
-        webhooks: [],
-      },
-      {
-        id: 3,
-        name: "bbbbb",
-        note: "",
-        isToplevel: false,
-        attrs: [],
-        webhooks: [],
-      },
-    ]);
+    return HttpResponse.json({
+      count: 3,
+      results: [
+        {
+          id: 1,
+          name: "aaa",
+          note: "",
+          isToplevel: false,
+          attrs: [],
+          webhooks: [],
+        },
+        {
+          id: 2,
+          name: "aaaaa",
+          note: "",
+          isToplevel: false,
+          attrs: [],
+          webhooks: [],
+        },
+        {
+          id: 3,
+          name: "bbbbb",
+          note: "",
+          isToplevel: false,
+          attrs: [],
+          webhooks: [],
+        },
+      ],
+    });
   }),
   // getEntity
   http.get("http://localhost/entity/api/v2/1/", () => {
@@ -81,18 +84,25 @@ afterAll(() => server.close());
 
 describe("EditTriggerPage", () => {
   test("should match snapshot", async () => {
-    // wait async calls and get rendered fragment
-    const result = render(
-      <MemoryRouter initialEntries={["/ui/triggers/1"]}>
-        <Route
-          path={editTriggerPath(":triggerId")}
-          component={TriggerEditPage}
-        />
-      </MemoryRouter>,
+    const router = createMemoryRouter(
+      [
+        {
+          path: editTriggerPath(":triggerId"),
+          element: <TriggerEditPage />,
+        },
+      ],
       {
-        wrapper: TestWrapper,
+        initialEntries: ["/ui/triggers/1"],
       }
     );
+    const result = await act(async () => {
+      return render(<RouterProvider router={router} />, {
+        wrapper: TestWrapperWithoutRoutes,
+      });
+    });
+    await waitFor(() => {
+      expect(screen.queryByTestId("loading")).not.toBeInTheDocument();
+    });
 
     expect(result).toMatchSnapshot();
   });

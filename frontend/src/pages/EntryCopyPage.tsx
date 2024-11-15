@@ -1,12 +1,11 @@
 import { Box, Container } from "@mui/material";
 import { useSnackbar } from "notistack";
 import React, { FC, useState } from "react";
-import { Prompt, useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
 import { useTypedParams } from "../hooks/useTypedParams";
 
-import { entityEntriesPath, entryDetailsPath } from "Routes";
 import { Loading } from "components/common/Loading";
 import { PageHeader } from "components/common/PageHeader";
 import { SubmitButton } from "components/common/SubmitButton";
@@ -15,14 +14,16 @@ import {
   CopyFormProps,
 } from "components/entry/CopyForm";
 import { EntryBreadcrumbs } from "components/entry/EntryBreadcrumbs";
+import { usePrompt } from "hooks/usePrompt";
 import { aironeApiClient } from "repository/AironeApiClient";
+import { entityEntriesPath, entryDetailsPath } from "routes/Routes";
 
 interface Props {
   CopyForm?: FC<CopyFormProps>;
 }
 
 export const EntryCopyPage: FC<Props> = ({ CopyForm = DefaultCopyForm }) => {
-  const history = useHistory();
+  const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
   const { entityId, entryId } = useTypedParams<{
     entityId: number;
@@ -34,6 +35,11 @@ export const EntryCopyPage: FC<Props> = ({ CopyForm = DefaultCopyForm }) => {
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [submitted, setSubmitted] = useState<boolean>(false);
   const [edited, setEdited] = useState<boolean>(false);
+
+  usePrompt(
+    edited && !submitted,
+    "編集した内容は失われてしまいますが、このページを離れてもよろしいですか？"
+  );
 
   const entry = useAsyncWithThrow(async () => {
     return await aironeApiClient.getEntry(entryId);
@@ -53,22 +59,23 @@ export const EntryCopyPage: FC<Props> = ({ CopyForm = DefaultCopyForm }) => {
     try {
       await aironeApiClient.copyEntry(entryId, entries.split("\n"));
       setSubmitted(true);
-      enqueueSnackbar("エントリコピーのジョブ登録が成功しました", {
+      enqueueSnackbar("アイテムコピーのジョブ登録が成功しました", {
         variant: "success",
       });
       setTimeout(() => {
-        history.replace(entityEntriesPath(entityId));
+        navigate(entityEntriesPath(entityId), { replace: true });
       }, 0.1);
     } catch {
-      enqueueSnackbar("エントリコピーのジョブ登録が失敗しました", {
+      enqueueSnackbar("アイテムコピーのジョブ登録が失敗しました", {
         variant: "error",
       });
     }
   };
 
   const handleCancel = () => {
-    history.replace(
-      entryDetailsPath(entry.value?.schema?.id ?? 0, entry.value?.id ?? 0)
+    navigate(
+      entryDetailsPath(entry.value?.schema?.id ?? 0, entry.value?.id ?? 0),
+      { replace: true }
     );
   };
 
@@ -78,7 +85,7 @@ export const EntryCopyPage: FC<Props> = ({ CopyForm = DefaultCopyForm }) => {
 
       <PageHeader
         title={entry.value?.name ?? ""}
-        description="エントリのコピーを作成"
+        description="アイテムのコピーを作成"
       >
         <SubmitButton
           name="コピーを作成"
@@ -98,11 +105,6 @@ export const EntryCopyPage: FC<Props> = ({ CopyForm = DefaultCopyForm }) => {
           />
         )}
       </Container>
-
-      <Prompt
-        when={edited && !submitted}
-        message="編集した内容は失われてしまいますが、このページを離れてもよろしいですか？"
-      />
     </Box>
   );
 };

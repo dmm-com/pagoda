@@ -33,14 +33,14 @@ export const CopyForm: FC<CopyFormProps> = ({
       <Typography>
         {"入力した各行ごとに " +
           templateEntry.name.substring(0, 50) +
-          " と同じ属性を持つ別のエントリを作成"}
+          " と同じ属性を持つ別のアイテムを作成"}
       </Typography>
       <TextField
         id="copy-name"
         fullWidth
         minRows={6}
         maxRows={15}
-        placeholder="コピーするエントリ名"
+        placeholder="コピーするアイテム名"
         multiline
         value={entries}
         onChange={(e) => setEntries(e.target.value)}
@@ -51,12 +51,12 @@ export const CopyForm: FC<CopyFormProps> = ({
           SAMPLE
         </Typography>
         <Typography color="primary">
-          (Vm0001、vm0002、…vm006の6エントリを作成する場合)
+          (Vm0001、vm0002、…vm006の6アイテムを作成する場合)
         </Typography>
         <SampleTextField
           multiline
           disabled
-          label="コピーするエントリ名"
+          label="コピーするアイテム名"
           value="vm0001
 vm0002
 vm0003
