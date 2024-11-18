@@ -33,6 +33,7 @@ export class ServerContext {
   passwordResetDisabled?: boolean;
   checkTermService?: boolean;
   termsOfServiceUrl?: string;
+  extendedGeneralParameters: { [key: string]: any };
   extendedHeaderMenus: {
     name: string;
     children: { name: string; url: string }[];
@@ -55,6 +56,7 @@ export class ServerContext {
     this.passwordResetDisabled = context.password_reset_disabled;
     this.checkTermService = context.checkTermService;
     this.termsOfServiceUrl = context.termsOfServiceUrl;
+    this.extendedGeneralParameters = context.extendedGeneralParameters;
     this.extendedHeaderMenus = context.extendedHeaderMenus;
     this.headerColor = context.headerColor;
     this.flags = context.flags ?? { webhook: true };
