@@ -246,7 +246,7 @@ class Common(Configuration):
         "EXTENDED_GENERAL_PARAMETERS": json.loads(
             env.str(
                 "EXTENDED_GENERAL_PARAMETERS",
-                json.dumps([]),
+                json.dumps({}),
             )
         ),
         # This is an example to set EXTENDED_HEADER_MENUS
