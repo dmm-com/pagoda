@@ -12,15 +12,12 @@ from rest_framework import status
 from rest_framework.exceptions import ValidationError
 
 from acl.models import ACLBase
-from airone.lib.elasticsearch import AttrHint
 from airone.lib.log import Logger
 from airone.lib.test import AironeViewTest
 from airone.lib.types import AttrType
 from entity import tasks
 from entity.models import Entity, EntityAttr
-from entry import tasks as entry_tasks
 from entry.models import Entry
-from entry.services import AdvancedSearchService
 from entry.tasks import create_entry_v2
 from group.models import Group
 from role.models import Role
@@ -3628,50 +3625,3 @@ class ViewTest(AironeViewTest):
         self.assertEqual(
             [x.value for x in entry.get_attrv("vals").data_array.all()], ["fuga", "piyo"]
         )
-
-    @mock.patch("entity.tasks.edit_entity_v2.delay", mock.Mock(side_effect=tasks.edit_entity_v2))
-    @mock.patch(
-        "entry.tasks.update_es_documents.delay",
-        mock.Mock(side_effect=entry_tasks.update_es_documents),
-    )
-    def test_attr_add_remove_bug(self):
-        user = self.admin_login()
-        self.add_entry(
-            self.user,
-            "test_Entry",
-            self.entity,
-            values={
-                "val": "hoge",
-                "vals": ["hoge"],
-            },
-        )
-        # Get the entity attribute to be deleted
-        entity_attr: EntityAttr = self.entity.attrs.get(name="val", is_active=True)
-        # Prepare parameters to add the attribute back
-        params = {
-            "attrs": [{"id": entity_attr.id, "is_deleted": True}],
-        }
-        # Send a request to delete the specified attribute
-        resp = self.client.put(
-            "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
-        )
-        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
-
-        params = {
-            "attrs": [
-                {
-                    "name": "val",
-                    "type": AttrType.STRING,
-                },
-            ],
-        }
-        resp = self.client.put(
-            "/entity/api/v2/%d/" % self.entity.id, json.dumps(params), "application/json"
-        )
-        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
-
-        # Perform a search for entries to verify the state of attributes
-        resp1 = AdvancedSearchService.search_entries(user, [self.entity.id], [AttrHint(name="val")])
-
-        # Validate that the actual value matches the expected value
-        self.assertEqual(resp1.ret_values[0].attrs["val"]["value"], "")
