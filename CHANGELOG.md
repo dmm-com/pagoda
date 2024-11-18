@@ -3,6 +3,9 @@
 ## In development
 
 ### Added
+* Enable to pass general external parameters(`extendedGeneralParameters`) to React-UI
+  implementation via Django template.
+  Contributed by @userlocalhost, @hinashi
 
 ### Changed
 

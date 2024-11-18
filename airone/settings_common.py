@@ -242,6 +242,13 @@ class Common(Configuration):
                 json.dumps([]),
             )
         ),
+        # This is the general parameter that would be passed to custom-views from external world
+        "EXTENDED_GENERAL_PARAMETERS": json.loads(
+            env.str(
+                "EXTENDED_GENERAL_PARAMETERS",
+                json.dumps({}),
+            )
+        ),
         # This is an example to set EXTENDED_HEADER_MENUS
         # "EXTENDED_HEADER_MENUS": json.loads(env.str(
         #    "EXTENDED_HEADER_MENUS",
