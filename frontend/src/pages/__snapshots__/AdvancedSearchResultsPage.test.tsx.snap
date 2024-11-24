@@ -239,6 +239,9 @@ exports[`should match snapshot 1`] = `
                                 d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z"
                               />
                             </svg>
+                            <span
+                              class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                            />
                           </button>
                         </div>
                       </th>
@@ -272,6 +275,9 @@ exports[`should match snapshot 1`] = `
                               d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"
                             />
                           </svg>
+                          <span
+                            class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                          />
                         </span>
                       </td>
                       <td
@@ -337,6 +343,9 @@ exports[`should match snapshot 1`] = `
                           type="button"
                         >
                           1
+                          <span
+                            class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                          />
                         </button>
                       </li>
                       <li>
@@ -605,6 +614,9 @@ exports[`should match snapshot 1`] = `
                               d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z"
                             />
                           </svg>
+                          <span
+                            class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                          />
                         </button>
                       </div>
                     </th>
@@ -638,6 +650,9 @@ exports[`should match snapshot 1`] = `
                             d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"
                           />
                         </svg>
+                        <span
+                          class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                        />
                       </span>
                     </td>
                     <td
@@ -703,6 +718,9 @@ exports[`should match snapshot 1`] = `
                         type="button"
                       >
                         1
+                        <span
+                          class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                        />
                       </button>
                     </li>
                     <li>

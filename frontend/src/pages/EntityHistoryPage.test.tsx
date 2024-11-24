@@ -2,71 +2,84 @@
  * @jest-environment jsdom
  */
 
-import { PaginatedEntityHistoryList } from "@dmm-com/airone-apiclient-typescript-fetch";
-import {
-  render,
-  waitForElementToBeRemoved,
-  screen,
-} from "@testing-library/react";
+import { render, screen, act, waitFor } from "@testing-library/react";
+import { http, HttpResponse } from "msw";
+import { setupServer } from "msw/node";
 import React from "react";
+import { createMemoryRouter, RouterProvider } from "react-router-dom";
 
-import { TestWrapper } from "TestWrapper";
+import { TestWrapperWithoutRoutes } from "TestWrapper";
 import { EntityHistoryPage } from "pages/EntityHistoryPage";
+import { entityHistoryPath } from "routes/Routes";
 
-afterEach(() => {
-  jest.clearAllMocks();
-});
+const entity = {
+  id: 1,
+  name: "aaa",
+  note: "",
+  is_toplevel: false,
+  has_ongoing_changes: false,
+  attrs: [],
+  webhooks: [],
+};
+const histories = {
+  count: 1,
+  results: [
+    {
+      operation: 1,
+      time: new Date(2022, 0, 1, 0, 0, 0),
+      username: "aaa",
+      target_obj: "aaa",
+      text: "text",
+      is_detail: false,
+    },
+    {
+      operation: 1,
+      time: new Date(2022, 0, 1, 0, 0, 0),
+      username: "bbb",
+      target_obj: "bbb",
+      text: "text",
+      is_detail: false,
+    },
+  ],
+};
+
+const server = setupServer(
+  // getEntityHistories
+  http.get("http://localhost/entity/api/v2/1/histories", () => {
+    return HttpResponse.json(histories);
+  }),
+  // getEntity
+  http.get("http://localhost/entity/api/v2/1/", () => {
+    return HttpResponse.json(entity);
+  })
+);
+
+beforeAll(() => server.listen());
+
+afterEach(() => server.resetHandlers());
+
+afterAll(() => server.close());
 
 test("should match snapshot", async () => {
-  const entity = {
-    id: 1,
-    name: "aaa",
-    note: "",
-    isToplevel: false,
-    attrs: [],
-  };
-  const histories: PaginatedEntityHistoryList = {
-    count: 1,
-    results: [
+  const router = createMemoryRouter(
+    [
       {
-        operation: 1,
-        time: new Date(2022, 0, 1, 0, 0, 0),
-        username: "aaa",
-        targetObj: "aaa",
-        text: "text",
-        isDetail: false,
-      },
-      {
-        operation: 1,
-        time: new Date(2022, 0, 1, 0, 0, 0),
-        username: "bbb",
-        targetObj: "bbb",
-        text: "text",
-        isDetail: false,
+        path: entityHistoryPath(":entityId"),
+        element: <EntityHistoryPage />,
       },
     ],
-  };
-
-  /* eslint-disable */
-  jest
-    .spyOn(
-      require("../repository/AironeApiClient").aironeApiClient,
-      "getEntity"
-    )
-    .mockResolvedValue(Promise.resolve(entity));
-  jest
-    .spyOn(
-      require("../repository/AironeApiClient").aironeApiClient,
-      "getEntityHistories"
-    )
-    .mockResolvedValue(Promise.resolve(histories));
-  /* eslint-enable */
-
-  // wait async calls and get rendered fragment
-  const result = render(<EntityHistoryPage />, {
-    wrapper: TestWrapper,
+    {
+      initialEntries: [entityHistoryPath(1)],
+    }
+  );
+  const result = await act(async () => {
+    return render(<RouterProvider router={router} />, {
+      wrapper: TestWrapperWithoutRoutes,
+    });
   });
-  await waitForElementToBeRemoved(screen.getByTestId("loading"));
+  await waitFor(() => {
+    expect(screen.queryByTestId("loading")).not.toBeInTheDocument();
+  });
 
   expect(result).toMatchSnapshot();
 });

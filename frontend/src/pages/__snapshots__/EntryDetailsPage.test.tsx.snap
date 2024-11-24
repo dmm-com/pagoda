@@ -66,7 +66,7 @@ exports[`should match snapshot 1`] = `
                         class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
                         href="/ui/entities/2/entries"
                       >
-                        bbb
+                        test entity
                       </a>
                       <svg
                         aria-hidden="true"
@@ -97,7 +97,7 @@ exports[`should match snapshot 1`] = `
                         class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
                         href="/ui/entities/2/entries/1/details"
                       >
-                        aaa
+                        test entry
                       </a>
                       <svg
                         aria-hidden="true"
@@ -130,7 +130,7 @@ exports[`should match snapshot 1`] = `
                 class="MuiTypography-root MuiTypography-h6 css-178toxd-MuiTypography-root"
                 id="title"
               >
-                aaa
+                test entry
               </h6>
               <h6
                 class="MuiTypography-root MuiTypography-subtitle1 css-10wpov9-MuiTypography-root"
@@ -497,7 +497,7 @@ exports[`should match snapshot 1`] = `
                       class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
                       href="/ui/entities/2/entries"
                     >
-                      bbb
+                      test entity
                     </a>
                     <svg
                       aria-hidden="true"
@@ -528,7 +528,7 @@ exports[`should match snapshot 1`] = `
                       class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
                       href="/ui/entities/2/entries/1/details"
                     >
-                      aaa
+                      test entry
                     </a>
                     <svg
                       aria-hidden="true"
@@ -561,7 +561,7 @@ exports[`should match snapshot 1`] = `
               class="MuiTypography-root MuiTypography-h6 css-178toxd-MuiTypography-root"
               id="title"
             >
-              aaa
+              test entry
             </h6>
             <h6
               class="MuiTypography-root MuiTypography-subtitle1 css-10wpov9-MuiTypography-root"

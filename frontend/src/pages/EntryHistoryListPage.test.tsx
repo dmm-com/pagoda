@@ -3,6 +3,8 @@
  */
 
 import { render, screen, act, waitFor } from "@testing-library/react";
+import { http, HttpResponse } from "msw";
+import { setupServer } from "msw/node";
 import React from "react";
 import { createMemoryRouter, RouterProvider } from "react-router-dom";
 
@@ -12,40 +14,34 @@ import { EntryHistoryListPage } from "./EntryHistoryListPage";
 
 import { TestWrapperWithoutRoutes } from "TestWrapper";
 
-afterEach(() => {
-  jest.clearAllMocks();
-});
+const server = setupServer(
+  // getEntry
+  http.get("http://localhost/entry/api/v2/1/", () => {
+    return HttpResponse.json({
+      id: 1,
+      name: "test entry",
+      is_active: true,
+      schema: {
+        id: 2,
+        name: "test entity",
+      },
+      attrs: [],
+    });
+  }),
+  // getEntryHistories
+  http.get("http://localhost/entry/api/v2/1/histories", () => {
+    return HttpResponse.json({
+      count: 0,
+      results: [],
+    });
+  })
+);
+
+beforeAll(() => server.listen());
+afterEach(() => server.resetHandlers());
+afterAll(() => server.close());
 
 test("should match snapshot", async () => {
-  const entry = {
-    id: 1,
-    name: "aaa",
-    isActive: true,
-    schema: {
-      id: 2,
-      name: "bbb",
-    },
-    attrs: [],
-  };
-
-  const histories = {
-    count: 0,
-    results: [],
-  };
-
-  /* eslint-disable */
-  jest
-    .spyOn(require("repository/AironeApiClient").aironeApiClient, "getEntry")
-    .mockResolvedValue(Promise.resolve(entry));
-
-  jest
-    .spyOn(
-      require("repository/AironeApiClient").aironeApiClient,
-      "getEntryHistories"
-    )
-    .mockResolvedValue(Promise.resolve(histories));
-  /* eslint-enable */
-
   const router = createMemoryRouter(
     [
       {

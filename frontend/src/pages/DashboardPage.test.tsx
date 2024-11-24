@@ -2,20 +2,52 @@
  * @jest-environment jsdom
  */
 
-import {
-  render,
-  waitForElementToBeRemoved,
-  screen,
-} from "@testing-library/react";
+import { render, screen, act, waitFor } from "@testing-library/react";
+import { http, HttpResponse } from "msw";
+import { setupServer } from "msw/node";
 import React from "react";
 
 import { DashboardPage } from "./DashboardPage";
 
 import { TestWrapper } from "TestWrapper";
 
-afterEach(() => {
-  jest.clearAllMocks();
-});
+const server = setupServer(
+  // getEntities
+  http.get("http://localhost/entity/api/v2/", () => {
+    return HttpResponse.json({
+      count: 3,
+      next: null,
+      previous: null,
+      results: [
+        {
+          id: 1,
+          name: "aaa",
+          note: "",
+          isToplevel: false,
+          status: 1,
+        },
+        {
+          id: 2,
+          name: "aaaaa",
+          note: "",
+          isToplevel: false,
+          status: 1,
+        },
+        {
+          id: 3,
+          name: "bbbbb",
+          note: "",
+          isToplevel: false,
+          status: 1,
+        },
+      ],
+    });
+  })
+);
+
+beforeAll(() => server.listen());
+afterEach(() => server.resetHandlers());
+afterAll(() => server.close());
 
 test("should match snapshot", async () => {
   Object.defineProperty(window, "django_context", {
@@ -27,44 +59,14 @@ test("should match snapshot", async () => {
     writable: false,
   });
 
-  const entities = [
-    {
-      id: 1,
-      name: "aaa",
-      note: "",
-      isToplevel: false,
-      status: 1,
-    },
-    {
-      id: 2,
-      name: "aaaaa",
-      note: "",
-      isToplevel: false,
-      status: 1,
-    },
-    {
-      id: 3,
-      name: "bbbbb",
-      note: "",
-      isToplevel: false,
-      status: 1,
-    },
-  ];
-
-  /* eslint-disable */
-  jest
-    .spyOn(
-      require("../repository/AironeApiClient").aironeApiClient,
-      "getEntities"
-    )
-    .mockResolvedValue(Promise.resolve({ results: entities }));
-  /* eslint-enable */
-
-  // wait async calls and get rendered fragment
-  const result = render(<DashboardPage />, {
-    wrapper: TestWrapper,
+  const result = await act(() => {
+    return render(<DashboardPage />, {
+      wrapper: TestWrapper,
+    });
   });
-  await waitForElementToBeRemoved(screen.getByTestId("loading"));
+  await waitFor(() => {
+    expect(screen.queryByTestId("loading")).not.toBeInTheDocument();
+  });
 
   expect(result).toMatchSnapshot();
 });

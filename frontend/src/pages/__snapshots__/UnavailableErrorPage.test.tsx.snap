@@ -1,0 +1,148 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`should match snapshot 1`] = `
+{
+  "asFragment": [Function],
+  "baseElement": <body>
+    <div>
+      <div
+        class="MuiBox-root css-i80i99"
+      >
+        <div
+          class="MuiBox-root css-185kxi8"
+        >
+          <h1
+            class="MuiTypography-root MuiTypography-h1 css-1mdm99z-MuiTypography-root"
+            id="sorry_forbidden"
+          >
+            利用できません:;(∩´﹏\`∩);:
+          </h1>
+        </div>
+        <div
+          class="MuiBox-root css-dvxtzn"
+        >
+          <p
+            class="MuiTypography-root MuiTypography-body1 css-a2h54b-MuiTypography-root"
+          >
+            このページは現在、利用ができません。
+          </p>
+          <p
+            class="MuiTypography-root MuiTypography-body1 css-a2h54b-MuiTypography-root"
+          >
+            管理者からのお知らせをご覧いただくか、お問合せください。
+          </p>
+        </div>
+        <div
+          class="MuiBox-root css-0"
+        >
+          <button
+            class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium css-1npav5g-MuiButtonBase-root-MuiButton-root"
+            tabindex="0"
+            type="button"
+          >
+            トップページへ
+            <span
+              class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+            />
+          </button>
+        </div>
+      </div>
+    </div>
+  </body>,
+  "container": <div>
+    <div
+      class="MuiBox-root css-i80i99"
+    >
+      <div
+        class="MuiBox-root css-185kxi8"
+      >
+        <h1
+          class="MuiTypography-root MuiTypography-h1 css-1mdm99z-MuiTypography-root"
+          id="sorry_forbidden"
+        >
+          利用できません:;(∩´﹏\`∩);:
+        </h1>
+      </div>
+      <div
+        class="MuiBox-root css-dvxtzn"
+      >
+        <p
+          class="MuiTypography-root MuiTypography-body1 css-a2h54b-MuiTypography-root"
+        >
+          このページは現在、利用ができません。
+        </p>
+        <p
+          class="MuiTypography-root MuiTypography-body1 css-a2h54b-MuiTypography-root"
+        >
+          管理者からのお知らせをご覧いただくか、お問合せください。
+        </p>
+      </div>
+      <div
+        class="MuiBox-root css-0"
+      >
+        <button
+          class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium css-1npav5g-MuiButtonBase-root-MuiButton-root"
+          tabindex="0"
+          type="button"
+        >
+          トップページへ
+          <span
+            class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+          />
+        </button>
+      </div>
+    </div>
+  </div>,
+  "debug": [Function],
+  "findAllByAltText": [Function],
+  "findAllByDisplayValue": [Function],
+  "findAllByLabelText": [Function],
+  "findAllByPlaceholderText": [Function],
+  "findAllByRole": [Function],
+  "findAllByTestId": [Function],
+  "findAllByText": [Function],
+  "findAllByTitle": [Function],
+  "findByAltText": [Function],
+  "findByDisplayValue": [Function],
+  "findByLabelText": [Function],
+  "findByPlaceholderText": [Function],
+  "findByRole": [Function],
+  "findByTestId": [Function],
+  "findByText": [Function],
+  "findByTitle": [Function],
+  "getAllByAltText": [Function],
+  "getAllByDisplayValue": [Function],
+  "getAllByLabelText": [Function],
+  "getAllByPlaceholderText": [Function],
+  "getAllByRole": [Function],
+  "getAllByTestId": [Function],
+  "getAllByText": [Function],
+  "getAllByTitle": [Function],
+  "getByAltText": [Function],
+  "getByDisplayValue": [Function],
+  "getByLabelText": [Function],
+  "getByPlaceholderText": [Function],
+  "getByRole": [Function],
+  "getByTestId": [Function],
+  "getByText": [Function],
+  "getByTitle": [Function],
+  "queryAllByAltText": [Function],
+  "queryAllByDisplayValue": [Function],
+  "queryAllByLabelText": [Function],
+  "queryAllByPlaceholderText": [Function],
+  "queryAllByRole": [Function],
+  "queryAllByTestId": [Function],
+  "queryAllByText": [Function],
+  "queryAllByTitle": [Function],
+  "queryByAltText": [Function],
+  "queryByDisplayValue": [Function],
+  "queryByLabelText": [Function],
+  "queryByPlaceholderText": [Function],
+  "queryByRole": [Function],
+  "queryByTestId": [Function],
+  "queryByText": [Function],
+  "queryByTitle": [Function],
+  "rerender": [Function],
+  "unmount": [Function],
+}
+`;

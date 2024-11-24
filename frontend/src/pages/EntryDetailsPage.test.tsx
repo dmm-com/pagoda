@@ -3,6 +3,8 @@
  */
 
 import { render, screen, act, waitFor } from "@testing-library/react";
+import { http, HttpResponse } from "msw";
+import { setupServer } from "msw/node";
 import React from "react";
 import { createMemoryRouter, RouterProvider } from "react-router-dom";
 
@@ -10,51 +12,45 @@ import { TestWrapperWithoutRoutes } from "TestWrapper";
 import { EntryDetailsPage } from "pages/EntryDetailsPage";
 import { entryDetailsPath } from "routes/Routes";
 
-afterEach(() => {
-  jest.clearAllMocks();
-});
-
-test("should match snapshot", async () => {
-  const entry = {
-    id: 1,
-    name: "aaa",
-    isActive: true,
-    schema: {
-      id: 2,
-      name: "bbb",
-    },
-    attrs: [],
-  };
-
-  const referredEntries = [
-    {
+const server = setupServer(
+  // getEntry
+  http.get("http://localhost/entry/api/v2/1/", () => {
+    return HttpResponse.json({
       id: 1,
-      name: "aaa",
+      name: "test entry",
+      is_active: true,
       schema: {
         id: 2,
-        name: "bbb",
+        name: "test entity",
       },
-    },
-  ];
+      attrs: [],
+    });
+  }),
+  // getEntryReferral
+  http.get("http://localhost/entry/api/v2/1/referral/", () => {
+    return HttpResponse.json({
+      count: 1,
+      next: null,
+      previous: null,
+      results: [
+        {
+          id: 1,
+          name: "aaa",
+          schema: {
+            id: 2,
+            name: "bbb",
+          },
+        },
+      ],
+    });
+  })
+);
 
-  /* eslint-disable */
-  jest
-    .spyOn(
-      require("repository/AironeApiClient").aironeApiClient,
-      "getEntryReferral"
-    )
-    .mockResolvedValue(
-      Promise.resolve({
-        results: referredEntries,
-        count: referredEntries.length,
-      })
-    );
+beforeAll(() => server.listen());
+afterEach(() => server.resetHandlers());
+afterAll(() => server.close());
 
-  jest
-    .spyOn(require("repository/AironeApiClient").aironeApiClient, "getEntry")
-    .mockResolvedValue(Promise.resolve(entry));
-  /* eslint-enable */
-
+test("should match snapshot", async () => {
   const router = createMemoryRouter(
     [
       {
@@ -63,7 +59,7 @@ test("should match snapshot", async () => {
       },
     ],
     {
-      initialEntries: ["/ui/entities/2/entries/1/details"],
+      initialEntries: [entryDetailsPath(2, 1)],
     }
   );
   const result = await act(async () => {
