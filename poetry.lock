@@ -1348,13 +1348,13 @@ source = ["Cython (>=3.0.10)"]
 
 [[package]]
 name = "lxml-html-clean"
-version = "0.1.1"
+version = "0.4.0"
 description = "HTML cleaner from lxml project"
 optional = false
 python-versions = "*"
 files = [
-    {file = "lxml_html_clean-0.1.1-py3-none-any.whl", hash = "sha256:58c04176593c9caf72ec92e033d2f38859e918b3eff0cc0f8051ad27dc2ab8ef"},
-    {file = "lxml_html_clean-0.1.1.tar.gz", hash = "sha256:8a644ed01dbbe132fabddb9467f077f6dad12a1d4f3a6a553e280f3815fa46df"},
+    {file = "lxml_html_clean-0.4.0-py3-none-any.whl", hash = "sha256:3b5aedb6c2b4b684c0fbc8d4f1b901aae0a92c1ce525de84e71cc6dd1d9d4e3d"},
+    {file = "lxml_html_clean-0.4.0.tar.gz", hash = "sha256:a8b517d3f46c19e9303eafb2a1b4b422fe724ad42ae53793637a8e5cc36ffbc1"},
 ]
 
 [package.dependencies]
@@ -2916,4 +2916,4 @@ test = ["big-O", "importlib-resources", "jaraco.functools", "jaraco.itertools", 
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "04d1130468856f935725fedd529b4ca36c10ffe789d74a5a65c6d337fd5f20f8"
+content-hash = "a848696af022d60d56e09d802a9cb3b33d11c6b87042c1b19d8ad380605d8ea5"
