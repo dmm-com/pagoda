@@ -2,21 +2,60 @@
  * @jest-environment jsdom
  */
 
-import { ACLHistory } from "@dmm-com/airone-apiclient-typescript-fetch";
-import {
-  render,
-  waitForElementToBeRemoved,
-  screen,
-} from "@testing-library/react";
+import { render, screen, act, waitFor } from "@testing-library/react";
+import { http, HttpResponse } from "msw";
+import { setupServer } from "msw/node";
 import React from "react";
+import { createMemoryRouter, RouterProvider } from "react-router-dom";
 
 import { ACLHistoryPage } from "./ACLHistoryPage";
 
-import { TestWrapper } from "TestWrapper";
+import { TestWrapperWithoutRoutes } from "TestWrapper";
+import { aclHistoryPath } from "routes/Routes";
 
-afterEach(() => {
-  jest.clearAllMocks();
-});
+const server = setupServer(
+  // getAcl
+  http.get("http://localhost/acl/api/v2/acls/1", () => {
+    return HttpResponse.json({
+      name: "acl1",
+      objtype: 1,
+      is_public: false,
+      default_permission: 1,
+      parent: {
+        id: 10,
+        name: "Entity1",
+      },
+      roles: [
+        {
+          id: 1,
+          name: "member1",
+          description: "",
+          current_permission: 1,
+        },
+      ],
+    });
+  }),
+  // getAclHistory
+  http.get("http://localhost/acl/api/v2/acls/1/history", () => {
+    return HttpResponse.json([]);
+  }),
+  // getEntity
+  http.get("http://localhost/entity/api/v2/1/", () => {
+    return HttpResponse.json({
+      id: 1,
+      name: "test entity",
+      note: "",
+      isToplevel: false,
+      hasOngoingChanges: false,
+      attrs: [],
+      webhooks: [],
+    });
+  })
+);
+
+beforeAll(() => server.listen());
+afterEach(() => server.resetHandlers());
+afterAll(() => server.close());
 
 test("should match snapshot", async () => {
   Object.defineProperty(window, "django_context", {
@@ -28,49 +67,25 @@ test("should match snapshot", async () => {
     writable: false,
   });
 
-  const history: Array<ACLHistory> = [];
-  const acl = {
-    name: "acl1",
-    objtype: "type1",
-    is_public: false,
-    default_permission: 1,
-    parent: {
-      id: 10,
-      name: "Entity1",
-    },
-    acltypes: [
+  const router = createMemoryRouter(
+    [
       {
-        id: 1,
-        name: "type1",
+        path: aclHistoryPath(":objectId"),
+        element: <ACLHistoryPage />,
       },
     ],
-    roles: [
-      {
-        id: 1,
-        name: "member1",
-        type: 1,
-        current_permission: 1,
-      },
-    ],
-  };
-
-  /* eslint-disable */
-  jest
-    .spyOn(
-      require("../repository/AironeApiClient").aironeApiClient,
-      "getAclHistory"
-    )
-    .mockResolvedValue(Promise.resolve(history));
-  jest
-    .spyOn(require("../repository/AironeApiClient").aironeApiClient, "getAcl")
-    .mockResolvedValue(Promise.resolve(acl));
-  /* eslint-enable */
-
-  // wait async calls and get rendered fragment
-  const result = render(<ACLHistoryPage />, {
-    wrapper: TestWrapper,
+    {
+      initialEntries: [aclHistoryPath(1)],
+    }
+  );
+  const result = await act(async () => {
+    return render(<RouterProvider router={router} />, {
+      wrapper: TestWrapperWithoutRoutes,
+    });
   });
-  await waitForElementToBeRemoved(screen.getByTestId("loading"));
+  await waitFor(() => {
+    expect(screen.queryByTestId("loading")).not.toBeInTheDocument();
+  });
 
   expect(result).toMatchSnapshot();
 });
