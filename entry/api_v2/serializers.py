@@ -998,8 +998,8 @@ class EntryHistoryAttributeValueSerializer(serializers.ModelSerializer):
                 return {
                     "as_array_object": [
                         {
-                            "id": x.referral.id if x.referral else None,
-                            "name": x.referral.name if x.referral else "",
+                            "id": x.referral.id,
+                            "name": x.referral.name,
                             "schema": {
                                 "id": x.referral.entry.schema.id,
                                 "name": x.referral.entry.schema.name,

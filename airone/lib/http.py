@@ -235,11 +235,16 @@ def _is_valid(params, meta_info):
             continue
 
         # The case specified value is str
-        if _meta["type"] == str and "checker" in _meta and not _meta["checker"](params):
+        if (
+            isinstance(_meta["type"], type)
+            and _meta["type"] is str
+            and "checker" in _meta
+            and not _meta["checker"](params)
+        ):
             return False
 
         # The case specified value is list
-        if _meta["type"] == list:
+        if isinstance(_meta["type"], type) and _meta["type"] is list:
             if "checker" in _meta and not _meta["checker"](params):
                 return False
 
