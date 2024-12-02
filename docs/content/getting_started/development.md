@@ -1,5 +1,5 @@
 ---
-title: Tutorial
+title: Development
 weight: 30
 ---
 
@@ -23,17 +23,17 @@ user@hostname:~$ sudo apt-get install libldap2-dev  libsasl2-dev libxmlsec1-dev 
 user@hostname:~$ brew install libxmlsec1 mysql-client pkg-config mysql-connector-python
 ```
 
-Then, you can install libraries on which AieOne depends by following after cloning this repository. But we recommand you to setup airone on the separated environment using virtualenv not to pollute system-wide python environment.
+Then, you can install libraries on which Pagoda depends by following after cloning this repository. But we recommand you to setup pagoda on the separated environment using virtualenv not to pollute system-wide python environment.
 ```
-user@hostname:~$ git clone https://github.com/dmm-com/airone.git
-user@hostname:~$ cd airone
-user@hostname:~/airone$ python3 -m venv virtualenv
-user@hostname:~/airone$ source virtualenv/bin/activate
-(virtualenv) user@hostname:~/airone$ pip install pip --upgrade
-(virtualenv) user@hostname:~/airone$ pip install poetry
-(virtualenv) user@hostname:~/airone$ poetry install --only main
+user@hostname:~$ git clone https://github.com/dmm-com/pagoda.git
+user@hostname:~$ cd pagoda
+user@hostname:~/pagoda$ python3 -m venv virtualenv
+user@hostname:~/pagoda$ source virtualenv/bin/activate
+(virtualenv) user@hostname:~/pagoda$ pip install pip --upgrade
+(virtualenv) user@hostname:~/pagoda$ pip install poetry
+(virtualenv) user@hostname:~/pagoda$ poetry install --only main
 # or, during development, install all
-(virtualenv) user@hostname:~/airone$ poetry install
+(virtualenv) user@hostname:~/pagoda$ poetry install
 ```
 
 ## Setting-up Backend with docker-compose
@@ -42,7 +42,7 @@ Install docker-compose command.
 Run middlewares with docker-compose.
 
 ```
-user@hostname:~/airone$ docker-compose up
+user@hostname:~/pagoda$ docker-compose up
 ```
 
 ## (Setting-up Backend with manual)
@@ -150,9 +150,9 @@ user@hostname:~$ sudo mkdir /etc/nginx/ssl
 user@hostname:~$ sudo mv server* /etc/nginx/ssl
 ```
 
-Write following configuration for Pagoda on Nginx at `/etc/nginx/conf.d/airone.conf`.
+Write following configuration for Pagoda on Nginx at `/etc/nginx/conf.d/pagoda.conf`.
 ```
-upstream airone {
+upstream pagoda {
   server hostname:8080;
 }
 
@@ -173,11 +173,11 @@ server {
   location / {
     rewrite ^/(.*) /$1 break;
 
-    proxy_pass    http://airone/;
+    proxy_pass    http://pagoda/;
   }
 
-  access_log /var/log/nginx/airone.ssl.access.log combined;
-  error_log /var/log/nginx/airone.ssl.error.log;
+  access_log /var/log/nginx/pagoda.ssl.access.log combined;
+  error_log /var/log/nginx/pagoda.ssl.error.log;
 
   # set longer to wait background processing until 300s
   proxy_read_timeout 300;
@@ -194,7 +194,7 @@ bin/elasticsearch-users useradd airone
 bin/elasticsearch-users roles airone --add superuser
 ```
 
-You should cerate database and user for airone in MySQL.
+You should cerate database and user for pagoda in MySQL.
 ```
 user@hostname:~$ mysql -u root -h 127.0.0.1
 
@@ -207,9 +207,9 @@ mysql> GRANT ALL ON test_airone.* to airone@'%';
 
 This command makes database schema using the [django Migrations](https://docs.djangoproject.com/en/1.11/topics/migrations/), and makes default user account.
 ```
-user@hostname:~$ cd airone
-user@hostname:~/airone$ source virtualenv/bin/activate
-(virtualenv) user@hostname:~/airone$ tools/clear_and_initdb.sh
+user@hostname:~$ cd pagoda
+user@hostname:~/pagoda$ source virtualenv/bin/activate
+(virtualenv) user@hostname:~/pagoda$ tools/clear_and_initdb.sh
 ```
 
 (Optional) Please set the index as necessary.
@@ -219,7 +219,7 @@ mysql> CREATE INDEX permission_codename_idx ON auth_permission (codename);
 
 Finally, you should create an initial user to login the system using `tools/register_user.sh`.
 ```
-(virtualenv) user@hostname:~/airone$ tools/register_user.sh demo
+(virtualenv) user@hostname:~/pagoda$ tools/register_user.sh demo
 Password:   ## input password of this user
 Succeed in register user (demo)
 ```
@@ -232,7 +232,7 @@ This creates following user.
 
 If you want to create an administrative user who can access all information regardless of ACL (Please refer the [User-Manual(TBD)](#)), you can do it with `-s, --superuser` option. This creates another user who takes privilege of this system.
 ```
-(virtualenv) user@hostname:~/airone$ tools/register_user.sh -s admin
+(virtualenv) user@hostname:~/pagoda$ tools/register_user.sh -s admin
 Password:   ## input password of this user
 Succeed in register user (admin)
 ```
@@ -241,7 +241,7 @@ This regists all entries which has been created in the database to the Elasticse
 You can do it just by following command. The configurations about the database to read and Elasticsearch to register are referred from airone/settings.py.
 
 ```
-(virtualenv) user@hostname:~/airone$ python tools/initialize_es_document.py
+(virtualenv) user@hostname:~/pagoda$ python tools/initialize_es_document.py
 ```
 
 ## Run Pagoda
@@ -250,18 +250,18 @@ You can start Pagoda as following and can browse from `http://hostname:8080/`
 e.g. 
 
 ```
-user@hostname:~$ cd airone
-user@hostname:~/airone$ source virtualenv/bin/activate
-(virtualenv) user@hostname:~/airone$ python manage.py runserver 0:8080
+user@hostname:~$ cd pagoda
+user@hostname:~/pagoda$ source virtualenv/bin/activate
+(virtualenv) user@hostname:~/pagoda$ python manage.py runserver 0:8080
 ```
 
 ## Run Celery
 
 In addition, you have to run Celery worker to execute background task as following.
 ```
-user@hostname:~$ cd airone
-user@hostname:~/airone$ source virtualenv/bin/activate
-(virtualenv) user@hostname:~/airone$ celery -A airone worker -l info
+user@hostname:~$ cd pagoda
+user@hostname:~/pagoda$ source virtualenv/bin/activate
+(virtualenv) user@hostname:~/pagoda$ celery -A airone worker -l info
 ```
 
 ## [Experimental] Build the new UI with React
@@ -273,33 +273,33 @@ Install nvm command.
 Install npm packages.
 ```
 user@hostname:~$ nvm install 18.12.0
-user@hostname:~$ cd airone
-user@hostname:~/airone$ npm install
+user@hostname:~$ cd pagoda
+user@hostname:~/pagoda$ npm install
 ```
 
 Build
 ```
-user@hostname:~/airone$ npm run build
+user@hostname:~/pagoda$ npm run build
 
 (In development)
-user@hostname:~/airone$ npm run watch
+user@hostname:~/pagoda$ npm run watch
 ```
 
 If you have any change on API V2, you need to run this command before you build:
 
 ```
-user@hostname:~/airone$ npm run generate:client
+user@hostname:~/pagoda$ npm run generate:client
 
 (For Customview)
-user@hostname:~/airone$ npm run generate:custom_client
+user@hostname:~/pagoda$ npm run generate:custom_client
 ```
 
 To customize UI:
 
 ```
-user@hostname:~/airone$ cp -pi ./frontend/src/App.tsx ./frontend/src/customview/CustomApp.tsx
+user@hostname:~/pagoda$ cp -pi ./frontend/src/App.tsx ./frontend/src/customview/CustomApp.tsx
 (edit CustomApp.tsx)
-user@hostname:~/airone$ npm run build:custom
+user@hostname:~/pagoda$ npm run build:custom
 ```
 
 ### API V2 client
@@ -328,41 +328,41 @@ If you modify something in API client code, you need to publish it with the pack
 ## Auto-format
 
 ```
-user@hostname:~$ cd airone
-user@hostname:~/airone$ source virtualenv/bin/activate
-(virtualenv) user@hostname:~/airone$ ruff format .
-(virtualenv) user@hostname:~/airone$ ruff check --fix .
+user@hostname:~$ cd pagoda
+user@hostname:~/pagoda$ source virtualenv/bin/activate
+(virtualenv) user@hostname:~/pagoda$ ruff format .
+(virtualenv) user@hostname:~/pagoda$ ruff check --fix .
 
-user@hostname:~/airone$ npm run fix
+user@hostname:~/pagoda$ npm run fix
 ```
 
 ## Test for Django processing
 You can run tests for processing that is run by Django and Celery, which means backend processing, as below.
 ```
-user@hostname:~$ cd airone
-user@hostname:~/airone$ source virtualenv/bin/activate
-(virtualenv) user@hostname:~/airone$ python manage.py test
+user@hostname:~$ cd pagoda
+user@hostname:~/pagoda$ source virtualenv/bin/activate
+(virtualenv) user@hostname:~/pagoda$ python manage.py test
 ```
 
 When you want to run a specific test (`ModelTest.test_is_belonged_to_parent_group` in the file of `role/tests/test_model.py`) , you can do it as below.
 ```
-(virtualenv) user@hostname:~/airone$ python manage.py test role.tests.test_model.ModelTest.test_is_belonged_to_parent_group
+(virtualenv) user@hostname:~/pagoda$ python manage.py test role.tests.test_model.ModelTest.test_is_belonged_to_parent_group
 ```
 
 ## Test for React processing
 You can run test for processing that is run by Browser, wihch means frontend processing as below.
 ```
-user@hostname:~$ cd airone
-user@hostname:~/airone$ npm run test
+user@hostname:~$ cd pagoda
+user@hostname:~/pagoda$ npm run test
 ```
 
 If you have any change on a page component, please re-build snapshots along with current implementaion as below.
 
 ```
-user@hostname:~/airone$ npm run test:update
+user@hostname:~/pagoda$ npm run test:update
 ```
 
 When you want to run individual test (e.g. frontend/src/components/user/UserList.test.tsx), you can do it by following command.
 ```
-user@hostname:~/airone$ npx jest -u frontend/src/components/user/UserList.test.tsx
+user@hostname:~/pagoda$ npx jest -u frontend/src/components/user/UserList.test.tsx
 ```
