@@ -1,8 +1,13 @@
+from unittest import mock
+
 from django.conf import settings
 
+from airone.lib.elasticsearch import AttrHint
 from airone.lib.test import AironeTestCase
 from airone.lib.types import AttrType
 from entry.models import Entry
+from entry.services import AdvancedSearchService
+from group import tasks
 from group.models import Group
 from user.models import User
 
@@ -130,3 +135,27 @@ class ModelTest(AironeTestCase):
         # if the limit is not set, RuntimeError should not be raised
         settings.MAX_GROUPS = None
         Group.objects.create(name=f"group-{max_groups}")
+
+    @mock.patch(
+        "group.tasks.edit_group_referrals.delay", mock.Mock(side_effect=tasks.edit_group_referrals)
+    )
+    def test_delete_group(self):
+        testg = self._create_group("testg")
+        entity = self.create_entity(
+            user=self.user1,
+            name="Entity1",
+            attrs=[{"name": "group", "type": AttrType.GROUP}],
+        )
+
+        self.add_entry(
+            self.user1,
+            "e-1",
+            entity,
+            values={"group": testg},
+        )
+        testg.delete()
+
+        resp1 = AdvancedSearchService.search_entries(
+            self.user1, [entity.id], [AttrHint(name="group")]
+        )
+        self.assertEqual(resp1.ret_values[0].attrs["group"]["value"]["name"], "")
