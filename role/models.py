@@ -122,7 +122,7 @@ class Role(models.Model):
             user,
             None,
             operation_value=JobOperation.ROLE_REGISTER_REFERRAL.value,
-            params={"role": self.id},
+            params={"role_id": self.id},
         )
 
         if job_register_referrals:
