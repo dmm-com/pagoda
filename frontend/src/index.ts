@@ -7,3 +7,4 @@ export * from "./pages";
 export * from "./repository";
 export * from "./routes";
 export * from "./services";
+export * from "./TestWrapper";
