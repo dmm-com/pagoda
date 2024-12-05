@@ -10,7 +10,7 @@ from role.models import Role
 @may_schedule_until_job_is_ready
 def edit_role_referrals(self, job: Job) -> JobStatus:
     params = json.loads(job.params)
-    role = Role.objects.get(id=params["role_id"])
+    role = Role.objects.get(id=params["role"])
 
     for entry in [x for x in role.get_referred_entries()]:
         entry.register_es()

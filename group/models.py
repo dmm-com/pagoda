@@ -26,6 +26,10 @@ class Group(DjangoGroup):
         return super(Group, self).save(*args, **kwargs)
 
     def delete(self):
+        from airone.lib import auto_complement
+        from job.models import Job, JobOperation
+        from user.models import User
+
         """
         Override Model.delete method of Django
         """
@@ -41,8 +45,20 @@ class Group(DjangoGroup):
         )
         self.save()
 
-        for entry in self.get_referred_entries():
-            entry.register_es()
+        user = auto_complement.get_auto_complement_user(None)
+        if not user:
+            user = User.objects.create(username=settings.AIRONE["AUTO_COMPLEMENT_USER"])
+        job_register_referrals = None
+
+        job_register_referrals = Job.new_register_referrals(
+            user,
+            None,
+            operation_value=JobOperation.GROUP_REGISTER_REFERRAL.value,
+            params={"group_id": self.id},
+        )
+
+        if job_register_referrals:
+            job_register_referrals.run()
 
     def has_permission(self, target_obj, permission_level):
         """[NOTE]
