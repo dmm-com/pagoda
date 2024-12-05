@@ -116,7 +116,6 @@ class Role(models.Model):
         user = auto_complement.get_auto_complement_user(None)
         if not user:
             user = User.objects.create(username=settings.AIRONE["AUTO_COMPLEMENT_USER"])
-        job_register_referrals = None
 
         job_register_referrals = Job.new_register_referrals(
             user,
@@ -125,8 +124,7 @@ class Role(models.Model):
             params={"role_id": self.id},
         )
 
-        if job_register_referrals:
-            job_register_referrals.run()
+        job_register_referrals.run()
 
     def get_current_permission(self, aclbase) -> int:
         permissions = [x for x in self.permissions.all() if x.get_objid() == aclbase.id]

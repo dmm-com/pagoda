@@ -48,7 +48,6 @@ class Group(DjangoGroup):
         user = auto_complement.get_auto_complement_user(None)
         if not user:
             user = User.objects.create(username=settings.AIRONE["AUTO_COMPLEMENT_USER"])
-        job_register_referrals = None
 
         job_register_referrals = Job.new_register_referrals(
             user,
@@ -57,8 +56,7 @@ class Group(DjangoGroup):
             params={"group_id": self.id},
         )
 
-        if job_register_referrals:
-            job_register_referrals.run()
+        job_register_referrals.run()
 
     def has_permission(self, target_obj, permission_level):
         """[NOTE]

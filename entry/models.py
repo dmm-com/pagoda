@@ -1993,9 +1993,6 @@ class Entry(ACLBase):
                     if group.is_active:
                         attrinfo["value"] = truncate(group.name)
                         attrinfo["referral_id"] = group.id
-                    else:
-                        attrinfo["key"] = ""
-                        attrinfo["value"] = ""
 
             elif entity_attr.type & AttrType.ROLE:
                 role = attrv.role
@@ -2003,9 +2000,6 @@ class Entry(ACLBase):
                     if role.is_active:
                         attrinfo["value"] = truncate(role.name)
                         attrinfo["referral_id"] = role.id
-                    else:
-                        attrinfo["key"] = ""
-                        attrinfo["value"] = ""
 
             # Basically register attribute information whatever value doesn't exist
             if not (entity_attr.type & AttrType._ARRAY and not is_recursive):
