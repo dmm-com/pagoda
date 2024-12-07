@@ -51,6 +51,8 @@ jobs:
           NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
       - name: build
         run: npm run build:development
+      - name: build(library)
+        run: npm run build:lib
   test:
     runs-on: ubuntu-latest
     permissions:

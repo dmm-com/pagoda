@@ -1,0 +1,37 @@
+name: Release pagoda-core npm package for custom views to GitHub npm Registry
+
+on:
+  push:
+    tags:
+      # NOTE it should be pagoda-core-<major>.<minor>.<patch>
+      - 'pagoda-core-*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          registry-url: https://npm.pkg.github.com/
+          scope: "@dmm-com"
+      - name: Get tag name
+        id: get_tag
+        run: echo "tag=${GITHUB_REF#refs/tags/pagoda-core-}" >> $GITHUB_OUTPUT
+      - name: Set version
+        run: |
+          npm version "${GITHUB_REF#refs/tags/pagoda-core-}" --no-git-tag-version
+      - name: Install dependencies
+        run: npm ci
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
+      - name: Build library
+        run: npm run build:lib
+      - name: Publish package
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
