@@ -9,7 +9,6 @@ import {
 import { styled } from "@mui/material/styles";
 import React, { FC, useCallback, useEffect, useState } from "react";
 import { ErrorBoundary, FallbackProps } from "react-error-boundary";
-import { useNavigate } from "react-router-dom";
 import { useError } from "react-use";
 
 import { ForbiddenErrorPage } from "./pages/ForbiddenErrorPage";
@@ -46,16 +45,15 @@ interface GenericErrorProps {
 }
 
 const GenericError: FC<GenericErrorProps> = ({ children }) => {
-  const navigate = useNavigate();
   const [open, setOpen] = useState(true);
 
   const handleGoToTop = useCallback(() => {
-    navigate(topPath(), { replace: true });
-  }, [navigate]);
+    window.location.href = topPath();
+  }, []);
 
   const handleReload = useCallback(() => {
-    navigate(0);
-  }, [navigate]);
+    window.location.reload();
+  }, []);
 
   return (
     <Dialog open={open} onClose={() => setOpen(false)}>
