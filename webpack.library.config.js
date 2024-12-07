@@ -39,5 +39,5 @@ module.exports = {
       'node_modules',
     ],
   },
-  externals: ['react', 'react-dom'],
+  externals: ['react', 'react-dom', 'react-router-dom'],
 } 
