@@ -1,9 +1,14 @@
+from unittest import mock
+
 from django.conf import settings
 
 from airone.lib.acl import ACLType
+from airone.lib.elasticsearch import AttrHint
 from airone.lib.types import AttrType
 from entity.models import Entity
+from entry.services import AdvancedSearchService
 from group.models import Group
+from role import tasks
 from role.models import Role
 
 from .base import RoleTestBase
@@ -204,3 +209,27 @@ class ModelTest(RoleTestBase):
         # if the limit is not set, RuntimeError should not be raised
         settings.MAX_ROLES = None
         Role.objects.create(name=f"role-{max_roles}")
+
+    @mock.patch(
+        "role.tasks.edit_role_referrals.delay", mock.Mock(side_effect=tasks.edit_role_referrals)
+    )
+    def test_es_update_on_entry_delete(self):
+        user = self.users["userA"]
+        entity = self.create_entity(
+            **{
+                "user": user,
+                "name": "entity",
+                "attrs": [
+                    {
+                        "name": "role",
+                        "type": AttrType.ROLE,
+                    }
+                ],
+            }
+        )
+
+        self.add_entry(user, "e-1", entity, values={"role": self.role})
+        self.role.delete()
+
+        resp1 = AdvancedSearchService.search_entries(user, [entity.id], [AttrHint(name="role")])
+        self.assertEqual(resp1.ret_values[0].attrs["role"]["value"]["name"], "")

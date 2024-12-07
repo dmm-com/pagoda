@@ -26,7 +26,26 @@ export const jobStatusLabel = (jobStatus: number | undefined): string => {
   }
 };
 
+interface CustomJobOperationType {
+  operation: number;
+  label: string;
+}
+let customJobOperations: CustomJobOperationType[] = [];
+
+export const setCustomJobOperations = (
+  customCondition: CustomJobOperationType[]
+) => {
+  customJobOperations = customCondition;
+};
+
 export const jobOperationLabel = (jobOperation: number | undefined): string => {
+  // This shows Job label that is declared by customView
+  for (const condition of customJobOperations) {
+    if (jobOperation === condition.operation) {
+      return condition.label;
+    }
+  }
+
   switch (jobOperation) {
     case JobOperations.CREATE_ENTRY:
     case JobOperations.CREATE_ENTITY:

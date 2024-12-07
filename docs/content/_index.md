@@ -4,7 +4,7 @@ title: Pagoda
 
 <span class="badge-placeholder">[![Build core (Python / Django)](https://github.com/dmm-com/pagoda/actions/workflows/build-core.yml/badge.svg)](https://github.com/dmm-com/pagoda/actions/workflows/build-core.yml)</span>
 <span class="badge-placeholder">[![Build frontend](https://github.com/dmm-com/pagoda/actions/workflows/build-frontend.yml/badge.svg)](https://github.com/dmm-com/pagoda/actions/workflows/build-frontend.yml)</span>
-<span class="badge-placeholder">[![License: MIT](https://img.shields.io/github/license/dmm-com/airone)](https://github.com/dmm-com/airone/blob/master/LICENSE)</span>
+<span class="badge-placeholder">[![License: MIT](https://img.shields.io/github/license/dmm-com/airone)](https://github.com/dmm-com/pagoda/blob/master/LICENSE)</span>
 
 Pagoda is a Web Application which is developed by the infrastructure division of DMM.com LLC on the purpose of managing information which is associated with on-premise equipments. This aims to be versatile and flexible for doing it.
 

@@ -99,6 +99,10 @@ class Role(models.Model):
         return super(Role, self).save(*args, **kwargs)
 
     def delete(self):
+        from airone.lib import auto_complement
+        from job.models import Job, JobOperation
+        from user.models import User
+
         """
         Override Model.delete method of Django
         """
@@ -109,8 +113,18 @@ class Role(models.Model):
         )
         self.save(update_fields=["is_active", "name"])
 
-        for entry in self.get_referred_entries():
-            entry.register_es()
+        user = auto_complement.get_auto_complement_user(None)
+        if not user:
+            user = User.objects.create(username=settings.AIRONE["AUTO_COMPLEMENT_USER"])
+
+        job_register_referrals = Job.new_register_referrals(
+            user,
+            None,
+            operation_value=JobOperation.ROLE_REGISTER_REFERRAL.value,
+            params={"role_id": self.id},
+        )
+
+        job_register_referrals.run()
 
     def get_current_permission(self, aclbase) -> int:
         permissions = [x for x in self.permissions.all() if x.get_objid() == aclbase.id]

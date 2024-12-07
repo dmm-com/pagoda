@@ -130,6 +130,8 @@ class Job(models.Model):
         JobOperation.NOTIFY_DELETE_ENTRY,
         JobOperation.UPDATE_DOCUMENT,
         JobOperation.MAY_INVOKE_TRIGGER,
+        JobOperation.GROUP_REGISTER_REFERRAL,
+        JobOperation.ROLE_REGISTER_REFERRAL,
     ] + CUSTOM_HIDDEN_OPERATIONS
 
     CANCELABLE_OPERATIONS: list[JobOperation | JobOperationCustom] = [
