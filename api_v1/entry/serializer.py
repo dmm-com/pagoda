@@ -317,7 +317,7 @@ class EntrySearchChainSerializer(serializers.Serializer):
             # All results of this request would be joined and pass to next request. It might be
             # huge request and leads to glitch of Elasticsearch by just a single request.
             # This is our original curcit breaker to prevent overload because of them.
-            if search_result.ret_count > CONFIG.SEARCH_CHAIN_ACCEPTABLE_RESULT_COUNT:
+            if len(search_result.ret_values) > CONFIG.SEARCH_CHAIN_ACCEPTABLE_RESULT_COUNT:
                 Logger.warning("Search Chain API error: SEARCH_CHAIN_ACCEPTABLE_RESULT_COUNT")
                 raise ElasticsearchException()
 
