@@ -1,6 +1,6 @@
 import copy
 import json
-from unittest import mock
+from unittest import mock, skip
 
 from airone.lib.test import AironeViewTest
 from airone.lib.types import AttrType
@@ -1326,6 +1326,10 @@ class APITest(AironeViewTest):
             ),
         )
 
+    @skip("""
+    A situation that raises ElasticsearchException because of exceeding search count because of
+    installing workaround limitation cap won't be happened.
+    """)
     def test_search_chain_when_result_exceeds_acceptable_count(self):
         # Change configuration to test processing for acceptable result from elasticsearch
         ENTRY_CONFIG.conf["SEARCH_CHAIN_ACCEPTABLE_RESULT_COUNT"] = 2
