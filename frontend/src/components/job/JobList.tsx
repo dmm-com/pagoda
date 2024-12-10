@@ -25,7 +25,7 @@ import { AironeTableHeadCell } from "../common/AironeTableHeadCell";
 import { AironeTableHeadRow } from "../common/AironeTableHeadRow";
 import { Confirmable } from "../common/Confirmable";
 
-const StyledTableRow = styled(TableRow)(({ }) => ({
+const StyledTableRow = styled(TableRow)(({}) => ({
   "&:nth-of-type(odd)": {
     backgroundColor: "white",
   },
@@ -34,7 +34,7 @@ const StyledTableRow = styled(TableRow)(({ }) => ({
   },
 }));
 
-const PreparingIcon = styled(Box)(({ }) => ({
+const PreparingIcon = styled(Box)(({}) => ({
   width: "13px",
   height: "13px",
   margin: "0 4px",
@@ -44,7 +44,7 @@ const PreparingIcon = styled(Box)(({ }) => ({
   borderRadius: "8px",
 }));
 
-const DoneIcon = styled(Box)(({ }) => ({
+const DoneIcon = styled(Box)(({}) => ({
   width: "16px",
   height: "16px",
   margin: "0 4px",
@@ -52,7 +52,7 @@ const DoneIcon = styled(Box)(({ }) => ({
   borderRadius: "8px",
 }));
 
-const ErrorIcon = styled(Box)(({ }) => ({
+const ErrorIcon = styled(Box)(({}) => ({
   width: "16px",
   height: "16px",
   margin: "0 4px",
@@ -60,7 +60,7 @@ const ErrorIcon = styled(Box)(({ }) => ({
   borderRadius: "8px",
 }));
 
-const TimeoutIcon = styled(Box)(({ }) => ({
+const TimeoutIcon = styled(Box)(({}) => ({
   width: "16px",
   height: "16px",
   margin: "0 4px",
@@ -68,7 +68,7 @@ const TimeoutIcon = styled(Box)(({ }) => ({
   borderRadius: "8px",
 }));
 
-const CancelledIcon = styled(Box)(({ }) => ({
+const CancelledIcon = styled(Box)(({}) => ({
   width: "16px",
   height: "16px",
   margin: "0 4px",
@@ -76,7 +76,7 @@ const CancelledIcon = styled(Box)(({ }) => ({
   borderRadius: "8px",
 }));
 
-const UnknownIcon = styled(Box)(({ }) => ({
+const UnknownIcon = styled(Box)(({}) => ({
   width: "16px",
   height: "16px",
   margin: "0 4px",
@@ -214,35 +214,35 @@ export const JobList: FC<Props> = ({ jobs }) => {
                     JobStatuses.PROCESSING,
                     JobStatuses.CANCELED,
                   ].includes(job.status ?? 0) && (
-                      <Button
-                        variant="contained"
-                        color="error"
-                        sx={{ my: "4px" }}
-                        onClick={() => handleRerun(job.id)}
-                      >
-                        再実行
-                      </Button>
-                    )}
+                    <Button
+                      variant="contained"
+                      color="error"
+                      sx={{ my: "4px" }}
+                      onClick={() => handleRerun(job.id)}
+                    >
+                      再実行
+                    </Button>
+                  )}
                   {![
                     JobStatuses.DONE,
                     JobStatuses.ERROR,
                     JobStatuses.CANCELED,
                   ].includes(job.status ?? 0) && (
-                      <Confirmable
-                        componentGenerator={(handleOpen) => (
-                          <Button
-                            variant="contained"
-                            color="secondary"
-                            sx={{ my: "4px" }}
-                            onClick={handleOpen}
-                          >
-                            キャンセル
-                          </Button>
-                        )}
-                        dialogTitle="本当にキャンセルしますか？"
-                        onClickYes={() => handleCancel(job.id)}
-                      />
-                    )}
+                    <Confirmable
+                      componentGenerator={(handleOpen) => (
+                        <Button
+                          variant="contained"
+                          color="secondary"
+                          sx={{ my: "4px" }}
+                          onClick={handleOpen}
+                        >
+                          キャンセル
+                        </Button>
+                      )}
+                      dialogTitle="本当にキャンセルしますか？"
+                      onClickYes={() => handleCancel(job.id)}
+                    />
+                  )}
                 </Box>
               </Box>
             </TableCell>
@@ -260,7 +260,7 @@ export const JobList: FC<Props> = ({ jobs }) => {
                 job.operation == JobOperations.EXPORT_SEARCH_RESULT ||
                 job.operation == JobOperations.EXPORT_ENTRY_V2 ||
                 job.operation == JobOperations.EXPORT_SEARCH_RESULT_V2) &&
-                job.status == JobStatuses.DONE ? (
+              job.status == JobStatuses.DONE ? (
                 <Box display="flex" gap="8px">
                   <Select
                     defaultValue="utf-8"
@@ -274,8 +274,9 @@ export const JobList: FC<Props> = ({ jobs }) => {
                     <MenuItem value="shift_jis">Shift_JIS</MenuItem>
                   </Select>
                   <Button
-                    href={`/job/api/v2/${job.id}/download?encode=${encodes[job.id] ? encodes[job.id] : "utf-8"
-                      }`}
+                    href={`/job/api/v2/${job.id}/download?encode=${
+                      encodes[job.id] ? encodes[job.id] : "utf-8"
+                    }`}
                     variant="contained"
                     size="small"
                   >
