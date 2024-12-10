@@ -12,6 +12,7 @@ import {
   Typography,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
+import { useSnackbar } from "notistack";
 import React, { FC, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
@@ -108,6 +109,7 @@ interface Props {
 
 export const JobList: FC<Props> = ({ jobs }) => {
   const navigate = useNavigate();
+  const { enqueueSnackbar } = useSnackbar();
 
   const [encodes, setEncodes] = useState<{
     [key: number]: string;
@@ -119,8 +121,14 @@ export const JobList: FC<Props> = ({ jobs }) => {
   };
 
   const handleCancel = async (jobId: number) => {
-    await aironeApiClient.cancelJob(jobId);
-    navigate(0);
+    await aironeApiClient
+      .cancelJob(jobId)
+      .then(() => {
+        navigate(0);
+      })
+      .catch((resp) => {
+        enqueueSnackbar("キャンセルに失敗しました。", { variant: "error" });
+      });
   };
 
   return (
