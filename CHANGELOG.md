@@ -10,6 +10,9 @@
 ### Changed
 
 ### Fixed
+* Fixed problem that might raise ElasticsearchException depends on context by
+  SearchChain processing.
+  Contributed by @hinashi, @userlocalhost
 
 ## v3.110.0
 
