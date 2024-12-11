@@ -4,31 +4,31 @@ export const EntityStatus = {
   EDITING: 1 << 2,
 };
 
-export const EntityList = {
+export const EntityListParam = {
   MAX_ROW_COUNT: 30,
 };
 
-export const EntryList = {
+export const EntryListParam = {
   MAX_ROW_COUNT: 30,
 };
 
-export const UserList = {
+export const UserListParam = {
   MAX_ROW_COUNT: 30,
 };
 
-export const JobList = {
+export const JobListParam = {
   MAX_ROW_COUNT: 30,
 };
 
-export const EntryHistoryList = {
+export const EntryHistoryListParam = {
   MAX_ROW_COUNT: 30,
 };
 
-export const EntityHistoryList = {
+export const EntityHistoryListParam = {
   MAX_ROW_COUNT: 30,
 };
 
-export const AdvancedSerarchResultList = {
+export const AdvancedSerarchResultListParam = {
   MAX_ROW_COUNT: 100,
 };
 

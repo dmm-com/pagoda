@@ -24,7 +24,7 @@ import { SearchResultsTableHead } from "./SearchResultsTableHead";
 import { PaginationFooter } from "components/common/PaginationFooter";
 import { AttributeValue } from "components/entry/AttributeValue";
 import { entryDetailsPath } from "routes/Routes";
-import { AdvancedSerarchResultList } from "services/Constants";
+import { AdvancedSerarchResultListParam } from "services/Constants";
 import { AttrsFilter } from "services/entry/AdvancedSearch";
 
 const StyledBox = styled(Box)({
@@ -186,7 +186,7 @@ export const SearchResults: FC<Props> = ({
         {!disablePaginationFooter && (
           <PaginationFooter
             count={results.count}
-            maxRowCount={AdvancedSerarchResultList.MAX_ROW_COUNT}
+            maxRowCount={AdvancedSerarchResultListParam.MAX_ROW_COUNT}
             page={page}
             changePage={changePage}
           />
