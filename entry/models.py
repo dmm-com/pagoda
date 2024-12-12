@@ -28,6 +28,7 @@ from user.models import User
 
 from .settings import CONFIG
 
+
 class AttributeValue(models.Model):
     # This is a constant that indicates target object binds multiple AttributeValue objects.
     STATUS_DATA_ARRAY_PARENT = 1 << 0
@@ -1453,16 +1454,15 @@ class Entry(ACLBase):
 
     def add_alias(self, name):
         # validate name that is not duplicated with other Item names and Aliases in this model
-        if Entry.objects.filter(name=name, schema=self.schema, is_active=True).exists():
-            raise ValueError('The name "%s" is already used by other Item' % name)
-
-        if AliasEntry.objects.filter(name=name, entry__schema=self.schema, entry__is_active=True).exists():
-            raise ValueError('The name "%s" is already used by other Alias' % name)
+        if not self.schema.is_available(name):
+            raise ValueError("Specified name has already been used by other Item or Alias")
 
         return AliasEntry.objects.create(name=name, entry=self)
 
     def delete_alias(self, name):
-        alias = AliasEntry.objects.filter(name=name, entry__schema=self.schema, entry__is_active=True).first()
+        alias = AliasEntry.objects.filter(
+            name=name, entry__schema=self.schema, entry__is_active=True
+        ).first()
         if alias:
             alias.delete()
 
