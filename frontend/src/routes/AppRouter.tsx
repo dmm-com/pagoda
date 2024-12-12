@@ -9,6 +9,7 @@ import {
 } from "react-router-dom";
 
 import { ACLHistoryPage } from "../pages/ACLHistoryPage";
+import { ListAliasEntryPage } from "../pages/ListAliasEntryPage";
 import { EntryCopyPage } from "../pages/EntryCopyPage";
 import { EntryDetailsPage } from "../pages/EntryDetailsPage";
 import { EntryRestorePage } from "../pages/EntryRestorePage";
@@ -52,6 +53,7 @@ import {
   groupsPath,
   jobsPath,
   loginPath,
+  listAliasPath,
   newEntityPath,
   newEntryPath,
   newGroupPath,
@@ -132,6 +134,10 @@ export const AppRouter: FC<Props> = ({ customRoutes }) => {
           <Route
             path={entityHistoryPath(":entityId")}
             element={<EntityHistoryPage />}
+          />
+          <Route
+            path={listAliasPath(":entityId")}
+            element={<ListAliasEntryPage />}
           />
           <Route path={newEntityPath()} element={<EntityEditPage />} />
           <Route
