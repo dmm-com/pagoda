@@ -8,7 +8,7 @@ class ModelTest(AironeTestCase):
         super(ModelTest, self).setUp()
 
         # create common Instances in this test
-        self.user: User = User(username="test")
+        self.user = self.admin_login()
         self.model = self.create_entity(self.user, "Kingdom")
         self.item = self.add_entry(self.user, "Shin", self.model)
 
@@ -17,12 +17,12 @@ class ModelTest(AironeTestCase):
         self.item.add_alias("Li Shin")
 
         # check added alias item was actually created
-        self.assertTrue(AliasEntry.objects.filter(alias="Li Shin", entry=self.item).exists())
+        self.assertTrue(AliasEntry.objects.filter(name="Li Shin", entry=self.item).exists())
 
     def test_create_alias_with_other_item(self):
         # add alias for this item
-        AliasEntry.objects.create(alias="Li Shin", entry=self.item)
-        AliasEntry.objects.create(alias="Captain", entry=self.item)
+        AliasEntry.objects.create(name="Li Shin", entry=self.item)
+        AliasEntry.objects.create(name="Captain", entry=self.item)
 
         # add alias for other item
         other_item = self.add_entry(self.user, "Hyou", self.model)
@@ -36,7 +36,7 @@ class ModelTest(AironeTestCase):
 
     def test_create_alias_with_other_entity(self):
         # add alias for this item
-        AliasEntry.objects.create(alias="Captain", entry=self.item)
+        AliasEntry.objects.create(name="Captain", entry=self.item)
 
         # add alias for other entity
         other_model = self.create_entity(self.user, "Country")
@@ -48,15 +48,18 @@ class ModelTest(AironeTestCase):
 
     def test_delete_alias(self):
         # add alias for this item
-        AliasEntry.objects.create(alias="Li Shin", entry=self.item)
+        AliasEntry.objects.create(name="Li Shin", entry=self.item)
+
+        # delete alias for this item
+        self.item.delete_alias("Li Shin")
 
         # check deleted alias item was actually deleted
-        self.assertFalse(AliasEntry.objects.filter(alias="Li Shin", entry=self.item).exists())
+        self.assertFalse(AliasEntry.objects.filter(name="Li Shin", entry=self.item).exists())
 
     def test_list_alias(self):
         # add alias for this item
-        AliasEntry.objects.create(alias="Li Shin", entry=self.item)
-        AliasEntry.objects.create(alias="Captain", entry=self.item)
+        AliasEntry.objects.create(name="Li Shin", entry=self.item)
+        AliasEntry.objects.create(name="Captain", entry=self.item)
 
         # check list alias
         self.assertEqual(self.item.aliases.count(), 2)

@@ -4,7 +4,6 @@ from simple_history.models import HistoricalRecords
 
 from acl.models import ACLBase
 from airone.lib.acl import ACLObjType
-from entry.models import AliasEntry, Entry
 from webhook.models import Webhook
 
 
@@ -110,10 +109,10 @@ class Entity(ACLBase):
         return super(Entity, self).save(*args, **kwargs)
 
     def is_available(self, name: str) -> bool:
+        from entry.models import AliasEntry, Entry
+
         if Entry.objects.filter(name=name, schema=self, is_active=True).exists():
             return False
-        if AliasEntry.objects.filter(
-            alias=name, entry__schema=self, entry__is_active=True
-        ).exists():
+        if AliasEntry.objects.filter(name=name, entry__schema=self, entry__is_active=True).exists():
             return False
         return True
