@@ -20,7 +20,7 @@ import { Confirmable } from "components/common/Confirmable";
 import { PaginationFooter } from "components/common/PaginationFooter";
 import { aironeApiClient } from "repository/AironeApiClient";
 import { showEntryHistoryPath, topPath } from "routes/Routes";
-import { EntryHistoryList as ConstEntryHistoryList } from "services/Constants";
+import { EntryHistoryListParam } from "services/Constants";
 import { formatDateTime } from "services/DateUtil";
 
 const HeaderTableRow = styled(TableRow)(({}) => ({
@@ -133,7 +133,7 @@ export const EntryHistoryList: FC<Props> = ({
 
       <PaginationFooter
         count={histories.count ?? 0}
-        maxRowCount={ConstEntryHistoryList.MAX_ROW_COUNT}
+        maxRowCount={EntryHistoryListParam.MAX_ROW_COUNT}
         page={page}
         changePage={changePage}
       />

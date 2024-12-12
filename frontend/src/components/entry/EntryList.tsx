@@ -1,7 +1,7 @@
 import AddIcon from "@mui/icons-material/Add";
 import { Box, Button, Grid } from "@mui/material";
 import React, { FC, useState } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 import { EntryListCard } from "./EntryListCard";
 
@@ -12,7 +12,7 @@ import { useAsyncWithThrow } from "hooks/useAsyncWithThrow";
 import { usePage } from "hooks/usePage";
 import { aironeApiClient } from "repository/AironeApiClient";
 import { newEntryPath } from "routes/Routes";
-import { EntryList as ConstEntryList } from "services/Constants";
+import { EntryListParam } from "services/Constants";
 import { normalizeToMatch } from "services/StringUtil";
 
 interface Props {
@@ -96,7 +96,7 @@ export const EntryList: FC<Props> = ({ entityId, canCreateEntry = true }) => {
       )}
       <PaginationFooter
         count={entries.value?.count ?? 0}
-        maxRowCount={ConstEntryList.MAX_ROW_COUNT}
+        maxRowCount={EntryListParam.MAX_ROW_COUNT}
         page={page}
         changePage={changePage}
       />

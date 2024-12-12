@@ -1,6 +1,6 @@
 {
   "name": "@dmm-com/pagoda-core",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "[![CircleCI](https://circleci.com/gh/dmm-com/airone.svg?style=svg&circle-token=2e12c068b0ed1bab9d0c2d72529d5ee1da9b53b4)](https://circleci.com/gh/dmm-com/airone)",
   "main": "frontend/dist/pagoda-core.js",
   "types": "frontend/dist/index.d.ts",

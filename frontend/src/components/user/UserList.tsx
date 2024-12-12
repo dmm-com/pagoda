@@ -13,7 +13,7 @@ import {
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import React, { FC, useMemo, useState } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 import { UserControlMenu } from "./UserControlMenu";
 
@@ -25,7 +25,7 @@ import { useAsyncWithThrow } from "hooks/useAsyncWithThrow";
 import { usePage } from "hooks/usePage";
 import { aironeApiClient } from "repository/AironeApiClient";
 import { newUserPath, userPath } from "routes/Routes";
-import { UserList as ConstUserList } from "services/Constants";
+import { UserListParam } from "services/Constants";
 import { ServerContext } from "services/ServerContext";
 import { normalizeToMatch } from "services/StringUtil";
 
@@ -160,7 +160,7 @@ export const UserList: FC = ({}) => {
 
       <PaginationFooter
         count={users.value?.count ?? 0}
-        maxRowCount={ConstUserList.MAX_ROW_COUNT}
+        maxRowCount={UserListParam.MAX_ROW_COUNT}
         page={page}
         changePage={changePage}
       />

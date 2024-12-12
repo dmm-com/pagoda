@@ -14,7 +14,7 @@ import { JobList } from "components/job/JobList";
 import { usePage } from "hooks/usePage";
 import { aironeApiClient } from "repository/AironeApiClient";
 import { topPath } from "routes/Routes";
-import { JobList as ConstJobList } from "services/Constants";
+import { JobListParam } from "services/Constants";
 
 export const JobListPage: FC = () => {
   const location = useLocation();
@@ -60,7 +60,7 @@ export const JobListPage: FC = () => {
           <JobList jobs={jobs.value?.results ?? []} />
           <PaginationFooter
             count={jobs.value?.count ?? 0}
-            maxRowCount={ConstJobList.MAX_ROW_COUNT}
+            maxRowCount={JobListParam.MAX_ROW_COUNT}
             page={page}
             changePage={changePage}
           />

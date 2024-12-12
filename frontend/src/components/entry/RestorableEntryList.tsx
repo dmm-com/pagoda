@@ -20,7 +20,7 @@ import {
 import { styled } from "@mui/material/styles";
 import { useSnackbar } from "notistack";
 import React, { FC, useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 import { EntryAttributes } from "./EntryAttributes";
 
@@ -32,7 +32,7 @@ import { useAsyncWithThrow } from "hooks/useAsyncWithThrow";
 import { usePage } from "hooks/usePage";
 import { aironeApiClient } from "repository/AironeApiClient";
 import { restoreEntryPath, topPath } from "routes/Routes";
-import { EntryList as ConstEntryList } from "services/Constants";
+import { EntryListParam } from "services/Constants";
 import { formatDateTime } from "services/DateUtil";
 import { normalizeToMatch } from "services/StringUtil";
 
@@ -215,7 +215,7 @@ export const RestorableEntryList: FC<Props> = ({ entityId }) => {
       )}
       <PaginationFooter
         count={entries.value?.count ?? 0}
-        maxRowCount={ConstEntryList.MAX_ROW_COUNT}
+        maxRowCount={EntryListParam.MAX_ROW_COUNT}
         page={page}
         changePage={changePage}
       />

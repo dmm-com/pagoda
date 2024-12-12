@@ -51,12 +51,12 @@ import Cookies from "js-cookie";
 import fileDownload from "js-file-download";
 
 import {
-  AdvancedSerarchResultList,
-  EntityList as ConstEntityList,
-  EntityHistoryList,
-  EntryHistoryList,
+  AdvancedSerarchResultListParam,
+  EntityHistoryListParam,
+  EntityListParam,
+  EntryHistoryListParam,
   EntryReferralList,
-  JobList,
+  JobListParam,
 } from "services/Constants";
 
 export type GroupTree = Pick<_GroupTree, "id" | "name"> & {
@@ -209,8 +209,8 @@ class AironeApiClient {
   ): Promise<PaginatedEntityListList> {
     const params: EntityApiV2ListRequest = page
       ? {
-          offset: (page - 1) * ConstEntityList.MAX_ROW_COUNT,
-          limit: ConstEntityList.MAX_ROW_COUNT,
+          offset: (page - 1) * EntityListParam.MAX_ROW_COUNT,
+          limit: EntityListParam.MAX_ROW_COUNT,
           search: search,
           isToplevel: isToplevel,
         }
@@ -300,8 +300,8 @@ class AironeApiClient {
   ): Promise<PaginatedEntityHistoryList> {
     return await this.entity.entityApiV2HistoriesList({
       entityId: id,
-      offset: (page - 1) * EntityHistoryList.MAX_ROW_COUNT,
-      limit: EntityHistoryList.MAX_ROW_COUNT,
+      offset: (page - 1) * EntityHistoryListParam.MAX_ROW_COUNT,
+      limit: EntityHistoryListParam.MAX_ROW_COUNT,
     });
   }
 
@@ -445,8 +445,8 @@ class AironeApiClient {
   ): Promise<PaginatedEntryHistoryAttributeValueList> {
     return await this.entry.entryApiV2HistoriesList({
       id: id,
-      offset: (page - 1) * EntryHistoryList.MAX_ROW_COUNT,
-      limit: EntryHistoryList.MAX_ROW_COUNT,
+      offset: (page - 1) * EntryHistoryListParam.MAX_ROW_COUNT,
+      limit: EntryHistoryListParam.MAX_ROW_COUNT,
     });
   }
 
@@ -677,7 +677,7 @@ class AironeApiClient {
     referralName = "",
     searchAllEntities = false,
     page: number,
-    limit: number = AdvancedSerarchResultList.MAX_ROW_COUNT,
+    limit: number = AdvancedSerarchResultListParam.MAX_ROW_COUNT,
     offset: number = 0
   ): Promise<AdvancedSearchResult> {
     return await this.entry.entryApiV2AdvancedSearchCreate(
@@ -917,8 +917,8 @@ class AironeApiClient {
     limit?: number
   ): Promise<PaginatedJobSerializersList> {
     return await this.job.jobApiV2JobsList({
-      offset: (page - 1) * JobList.MAX_ROW_COUNT,
-      limit: limit ?? JobList.MAX_ROW_COUNT,
+      offset: (page - 1) * JobListParam.MAX_ROW_COUNT,
+      limit: limit ?? JobListParam.MAX_ROW_COUNT,
       targetId,
     });
   }
@@ -930,7 +930,7 @@ class AironeApiClient {
 
     const resp = await this.job.jobApiV2JobsList({
       offset: 0,
-      limit: JobList.MAX_ROW_COUNT,
+      limit: JobListParam.MAX_ROW_COUNT,
       createdAfter: createdAfter,
     });
     return resp.results ?? [];

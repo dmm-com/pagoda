@@ -11,7 +11,7 @@ import {
 import React, { FC } from "react";
 
 import { PaginationFooter } from "components/common/PaginationFooter";
-import { EntityHistoryList as ConstEntityHistoryList } from "services/Constants";
+import { EntityHistoryListParam } from "services/Constants";
 import { formatDateTime } from "services/DateUtil";
 
 const Operations = {
@@ -130,7 +130,7 @@ export const EntityHistoryList: FC<Props> = ({
 
       <PaginationFooter
         count={histories.count ?? 0}
-        maxRowCount={ConstEntityHistoryList.MAX_ROW_COUNT}
+        maxRowCount={EntityHistoryListParam.MAX_ROW_COUNT}
         page={page}
         changePage={changePage}
       />
