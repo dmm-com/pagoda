@@ -28,7 +28,6 @@ from user.models import User
 
 from .settings import CONFIG
 
-
 class AttributeValue(models.Model):
     # This is a constant that indicates target object binds multiple AttributeValue objects.
     STATUS_DATA_ARRAY_PARENT = 1 << 0
@@ -1452,6 +1451,21 @@ class Entry(ACLBase):
         super(Entry, self).__init__(*args, **kwargs)
         self.objtype = ACLObjType.Entry
 
+    def add_alias(self, name):
+        # validate name that is not duplicated with other Item names and Aliases in this model
+        if Entry.objects.filter(name=name, schema=self.schema, is_active=True).exists():
+            raise ValueError('The name "%s" is already used by other Item' % name)
+
+        if AliasEntry.objects.filter(name=name, entry__schema=self.schema, entry__is_active=True).exists():
+            raise ValueError('The name "%s" is already used by other Alias' % name)
+
+        return AliasEntry.objects.create(name=name, entry=self)
+
+    def delete_alias(self, name):
+        alias = AliasEntry.objects.filter(name=name, entry__schema=self.schema, entry__is_active=True).first()
+        if alias:
+            alias.delete()
+
     def add_attribute_from_base(self, base: EntityAttr, request_user: User):
         if not isinstance(base, EntityAttr):
             raise TypeError('Variable "base" is incorrect type')
@@ -2421,3 +2435,14 @@ class AdvancedSearchAttributeIndex(models.Model):
                 return self.raw_value
             case _:
                 print("TODO implement it")
+
+
+class AliasEntry(models.Model):
+    name = models.CharField(max_length=200)
+
+    # This indicates alias of this Entry
+    entry = models.ForeignKey(
+        Entry,
+        related_name="aliases",
+        on_delete=models.CASCADE,
+    )
