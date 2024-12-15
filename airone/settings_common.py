@@ -64,6 +64,8 @@ class Common(Configuration):
         "simple_history",
         "storages",
         "trigger",
+
+        "django_spanner",
     ]
 
     if os.path.exists(BASE_DIR + "/custom_view"):
@@ -137,8 +139,18 @@ class Common(Configuration):
             "mysql://airone:password@127.0.0.1:3306/airone?charset=utf8mb4",
         )
     }
-
     DATABASE_ROUTERS = ["django_replicated.router.ReplicationRouter"]
+
+    # NOTE experimental spanner integration
+    if env.bool("AIRONE_SPANNER_ENABLED", False):
+        DATABASES["spanner"] = {
+            "ENGINE": "django_spanner",
+            "PROJECT": env.str("GOOGLE_CLOUD_PROJECT", ""),
+            "INSTANCE": env.str("AIRONE_SPANNER_INSTANCE", ""),
+            "NAME": env.str("AIRONE_SPANNER_DATABASE", ""),
+        }
+        DATABASE_ROUTERS = ["airone.db.SpannerRouter"] + DATABASE_ROUTERS
+
     REPLICATED_DATABASE_SLAVES = ["default"]
     REPLICATED_CACHE_BACKEND = settings.REPLICATED_CACHE_BACKEND
     REPLICATED_DATABASE_DOWNTIME = settings.REPLICATED_DATABASE_DOWNTIME
