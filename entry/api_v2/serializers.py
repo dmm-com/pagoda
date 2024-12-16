@@ -1318,3 +1318,15 @@ class AdvancedSearchResultExportSerializer(serializers.Serializer):
             params=self.validated_data,
         )
         job.run()
+
+
+class EntryAliasRetrieveSerializer(serializers.ModelSerializer):
+    entry = EntryRetrieveSerializer()
+
+    class Meta:
+        model = Entry
+        fields = [
+            "id",
+            "name",
+            "entry",
+        ]

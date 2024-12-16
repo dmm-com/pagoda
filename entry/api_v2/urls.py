@@ -46,6 +46,14 @@ urlpatterns = [
         ),
     ),
     path(
+        "<int:pk>/alias/",
+        views.AliasEntryAPI.as_view(
+            {
+                "get": "list",
+            }
+        ),
+    ),
+    path(
         "search/",
         views.searchAPI.as_view(
             {
