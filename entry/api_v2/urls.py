@@ -47,9 +47,25 @@ urlpatterns = [
     ),
     path(
         "<int:pk>/alias/",
-        views.AliasEntryAPI.as_view(
+        views.EntryAPI.as_view(
             {
-                "get": "list",
+                "get": "list_alias",
+            }
+        ),
+    ),
+    path(
+        "alias/",
+        views.AliasUpdateAPI.as_view(
+            {
+                "post": "create",
+            }
+        ),
+    ),
+    path(
+        "alias/<int:pk>",
+        views.AliasUpdateAPI.as_view(
+            {
+                "delete": "destroy",
             }
         ),
     ),

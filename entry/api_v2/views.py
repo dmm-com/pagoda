@@ -36,6 +36,7 @@ from entry.api_v2.serializers import (
     AdvancedSearchSerializer,
     EntryAttributeValueRestoreSerializer,
     EntryAliasRetrieveSerializer,
+    EntryAliasUpdateSerializer,
     EntryBaseSerializer,
     EntryCopySerializer,
     EntryExportSerializer,
@@ -85,6 +86,7 @@ class EntryAPI(viewsets.ModelViewSet):
             "update": serializers.Serializer,
             "copy": EntryCopySerializer,
             "list": EntryHistoryAttributeValueSerializer,
+            "list_alias": AliasListAPI,
         }
         return serializer.get(self.action, EntryBaseSerializer)
 
@@ -173,6 +175,15 @@ class EntryAPI(viewsets.ModelViewSet):
         job.run()
 
         return Response({}, status=status.HTTP_200_OK)
+
+    def list_alias(self, request: Request, *args, **kwargs) -> Response:
+        print("[onix/view.list_alias(00)]")
+        user: User = self.request.user
+        entry: Entry = self.get_object()
+
+        self.queryset = AliasEntry.objects.filter(entry=entry, entry__is_active=True)
+
+        return super(EntryAPI, self).list(request, *args, **kwargs)
 
     # histories view
     def list(self, request: Request, *args, **kwargs) -> Response:
@@ -829,12 +840,25 @@ class EntryBulkDeleteAPI(generics.DestroyAPIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class AliasEntryAPI(viewsets.ModelViewSet):
-    #queryset = AliasEntry.objects.all()
+class AliasListAPI(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated & EntryPermission]
     pagination_class = LimitOffsetPagination
     serializer_class = EntryAliasRetrieveSerializer
 
     def get_queryset(self, *args, **kwargs):
-        # get all AliasEntry items that are associated with specified EntryID
-        return AliasEntry.objects.filter(entry__id=self.kwargs["pk"])
+        # get all aliasentry items that are associated with specified entryid
+        return aliasentry.objects.filter(entry__id=self.kwargs["pk"])
+
+class AliasUpdateAPI(viewsets.ModelViewSet):
+    # permission_classes = [IsAuthenticated & EntryPermission]
+    permission_classes = [IsAuthenticated]
+    pagination_class = LimitOffsetPagination
+    queryset = AliasEntry.objects.filter(entry__is_active=True)
+
+    def get_serializer_class(self):
+        print("[onix/view/get_serializer_class(00)] action: %s" % str(self.action))
+        serializer = {
+            "create": EntryAliasUpdateSerializer,
+            "destroy": EntryAliasUpdateSerializer,
+        }
+        return serializer.get(self.action, EntryAliasRetrieveSerializer)

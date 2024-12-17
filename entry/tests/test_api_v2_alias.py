@@ -1,3 +1,5 @@
+import json
+
 from airone.lib.test import AironeViewTest
 from entity.models import Entity, EntityAttr
 from entry.models import Attribute, AttributeValue, Entry, AliasEntry
@@ -32,8 +34,29 @@ class APITest(AironeViewTest):
         self.assertEqual([x["name"] for x in resp.json()["results"]], ["foo", "bar", "baz"])
         self.assertTrue(all([x["entry"]["id"] == self.item.id for x in resp.json()["results"]]))
 
-    def test_update(self):
-        pass
+    def test_create(self):
+        resp = self.client.post("/entry/api/v2/alias/", json.dumps({
+            "name": "NewAlias",
+            "entry": self.item.id,
+        }), "application/json")
+        self.assertEqual(resp.status_code, 201)
+        self.assertEqual(resp.json()["name"], "NewAlias")
+        self.assertEqual(resp.json()["entry"], self.item.id)
+
+        # check expected Alias was created correctly
+        self.assertEqual(AliasEntry.objects.filter(entry=self.item).count(), 1)
 
     def test_delete(self):
-        pass
+        # create Alias to be deleted
+        alias = self.item.add_alias("Deleting Alias")
+
+        # send request to list aliases
+        resp = self.client.delete(
+            "/entry/api/v2/alias/%s" % alias.id,
+            None,
+            "application/json"
+        )
+        self.assertEqual(resp.status_code, 204)
+
+        # check specified Alias was deleted actually
+        self.assertFalse(AliasEntry.objects.filter(entry=self.item).exists())

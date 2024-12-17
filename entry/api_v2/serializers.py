@@ -23,7 +23,7 @@ from airone.lib.log import Logger
 from airone.lib.types import AttrDefaultValue, AttrType
 from entity.api_v2.serializers import EntitySerializer
 from entity.models import Entity, EntityAttr
-from entry.models import Attribute, AttributeValue, Entry
+from entry.models import Attribute, AttributeValue, Entry, AliasEntry
 from entry.settings import CONFIG as CONFIG_ENTRY
 from group.models import Group
 from job.models import Job, JobStatus
@@ -1325,6 +1325,15 @@ class EntryAliasRetrieveSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Entry
+        fields = [
+            "id",
+            "name",
+            "entry",
+        ]
+
+class EntryAliasUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AliasEntry
         fields = [
             "id",
             "name",
