@@ -64,7 +64,7 @@ class EntryPermission(BasePermission):
             "destroy": ACLType.Writable,
             "restore": ACLType.Writable,
             "copy": ACLType.Writable,
-            "list_histories": ACLType.Readable,  # histories
+            "list_histories": ACLType.Readable,
             "list_alias": ACLType.Readable,
         }
 
@@ -84,7 +84,7 @@ class EntryAPI(viewsets.ModelViewSet):
             "retrieve": EntryRetrieveSerializer,
             "update": serializers.Serializer,
             "copy": EntryCopySerializer,
-            "list": EntryHistoryAttributeValueSerializer,
+            "list_histories": EntryHistoryAttributeValueSerializer,
             "list_alias": EntryAliasSerializer,
         }
         return serializer.get(self.action, EntryBaseSerializer)
