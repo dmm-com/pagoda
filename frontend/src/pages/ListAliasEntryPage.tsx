@@ -1,32 +1,38 @@
 import AppsIcon from "@mui/icons-material/Apps";
-import { Box, Container, IconButton, Grid } from "@mui/material";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import {
+  Box,
+  Container,
+  Grid,
+  IconButton,
+  ListItem,
+  ListItemText,
+  TextField,
+} from "@mui/material";
 import { useSnackbar } from "notistack";
 import React, { FC, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import { EntityControlMenu } from "components/entity/EntityControlMenu";
 import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
 import { useTypedParams } from "../hooks/useTypedParams";
-import { EntryImportModal } from "components/entry/EntryImportModal";
 
-import { Loading } from "components/common/Loading";
 import { PageHeader } from "components/common/PageHeader";
-import { SubmitButton } from "components/common/SubmitButton";
-import {
-  CopyForm as DefaultCopyForm,
-  CopyFormProps,
-} from "components/entry/CopyForm";
-import { EntryBreadcrumbs } from "components/entry/EntryBreadcrumbs";
-import { usePrompt } from "hooks/usePrompt";
-import { aironeApiClient } from "repository/AironeApiClient";
-import { entityEntriesPath, entryDetailsPath } from "routes/Routes";
 import { EntityBreadcrumbs } from "components/entity/EntityBreadcrumbs";
+import { EntityControlMenu } from "components/entity/EntityControlMenu";
+import {
+  CopyFormProps,
+  CopyForm as DefaultCopyForm,
+} from "components/entry/CopyForm";
+import { EntryImportModal } from "components/entry/EntryImportModal";
+import { aironeApiClient } from "repository/AironeApiClient";
 
 interface Props {
   CopyForm?: FC<CopyFormProps>;
 }
 
-export const ListAliasEntryPage: FC<Props> = ({ CopyForm = DefaultCopyForm }) => {
+export const ListAliasEntryPage: FC<Props> = ({
+  CopyForm = DefaultCopyForm,
+}) => {
   const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
 
@@ -40,6 +46,10 @@ export const ListAliasEntryPage: FC<Props> = ({ CopyForm = DefaultCopyForm }) =>
 
   const entity = useAsyncWithThrow(async () => {
     return await aironeApiClient.getEntity(entityId);
+  }, [entityId]);
+
+  const entries = useAsyncWithThrow(async () => {
+    return await aironeApiClient.getEntries(entityId, true, 1, "");
   }, [entityId]);
 
   // (TODO) get all corresponding aliases of entity
@@ -70,12 +80,38 @@ export const ListAliasEntryPage: FC<Props> = ({ CopyForm = DefaultCopyForm }) =>
       <Container>
         {/* show all Aliases that are associated with each Items */}
         <Grid container spacing={2}>
-          <Grid item xs={4} sx={{ height: "500px" }}>
-            <>xs=8</>
-          </Grid>
-          <Grid item xs={8} sx={{ height: "500px" }}>
-            <>xs=4</>
-          </Grid>
+          {entries.value?.results.map((entry) => (
+            <>
+              <Grid
+                item
+                xs={4}
+                //</>sx={{ height: "500px" }}
+                display="flex"
+                flexDirection="column"
+              >
+                <>{entry.name}</>
+                <TextField size="small"></TextField>
+              </Grid>
+              <Grid
+                item
+                xs={8}
+                //</>sx={{ height: "500px" }}
+              >
+                {entry.aliases.map((alias) => (
+                  <ListItem
+                    key={alias.id}
+                    secondaryAction={
+                      <IconButton>
+                        <DeleteOutlineIcon />
+                      </IconButton>
+                    }
+                  >
+                    <ListItemText>{alias.name}</ListItemText>
+                  </ListItem>
+                ))}
+              </Grid>
+            </>
+          ))}
         </Grid>
       </Container>
 

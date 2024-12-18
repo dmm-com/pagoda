@@ -9,10 +9,10 @@ import {
 } from "react-router-dom";
 
 import { ACLHistoryPage } from "../pages/ACLHistoryPage";
-import { ListAliasEntryPage } from "../pages/ListAliasEntryPage";
 import { EntryCopyPage } from "../pages/EntryCopyPage";
 import { EntryDetailsPage } from "../pages/EntryDetailsPage";
 import { EntryRestorePage } from "../pages/EntryRestorePage";
+import { ListAliasEntryPage } from "../pages/ListAliasEntryPage";
 import { NotFoundErrorPage } from "../pages/NotFoundErrorPage";
 import { RoleEditPage } from "../pages/RoleEditPage";
 import { RoleListPage } from "../pages/RoleListPage";
