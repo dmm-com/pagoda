@@ -1,6 +1,5 @@
 from airone.lib.test import AironeTestCase
 from entry.models import AliasEntry
-from user.models import User
 
 
 class ModelTest(AironeTestCase):

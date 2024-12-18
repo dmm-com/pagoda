@@ -41,7 +41,7 @@ urlpatterns = [
         "<int:pk>/histories/",
         views.EntryAPI.as_view(
             {
-                "get": "list",
+                "get": "list_histories",
             }
         ),
     ),
@@ -55,7 +55,7 @@ urlpatterns = [
     ),
     path(
         "alias/",
-        views.AliasUpdateAPI.as_view(
+        views.EntryAliasAPI.as_view(
             {
                 "post": "create",
             }
@@ -63,7 +63,7 @@ urlpatterns = [
     ),
     path(
         "alias/<int:pk>",
-        views.AliasUpdateAPI.as_view(
+        views.EntryAliasAPI.as_view(
             {
                 "delete": "destroy",
             }

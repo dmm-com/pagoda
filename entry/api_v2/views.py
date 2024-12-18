@@ -4,7 +4,6 @@ from datetime import datetime, timedelta
 
 from django.conf import settings
 from django.db.models import Prefetch, Q
-from django.http.response import JsonResponse
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import generics, serializers, status, viewsets
@@ -34,9 +33,8 @@ from entry.api_v2.serializers import (
     AdvancedSearchResultExportSerializer,
     AdvancedSearchResultSerializer,
     AdvancedSearchSerializer,
+    EntryAliasSerializer,
     EntryAttributeValueRestoreSerializer,
-    EntryAliasRetrieveSerializer,
-    EntryAliasUpdateSerializer,
     EntryBaseSerializer,
     EntryCopySerializer,
     EntryExportSerializer,
@@ -46,7 +44,7 @@ from entry.api_v2.serializers import (
     EntryUpdateSerializer,
     GetEntryAttrReferralSerializer,
 )
-from entry.models import Attribute, AttributeValue, Entry, AliasEntry
+from entry.models import AliasEntry, Attribute, AttributeValue, Entry
 from entry.services import AdvancedSearchService
 from entry.settings import CONFIG
 from entry.settings import CONFIG as ENTRY_CONFIG
@@ -66,7 +64,8 @@ class EntryPermission(BasePermission):
             "destroy": ACLType.Writable,
             "restore": ACLType.Writable,
             "copy": ACLType.Writable,
-            "list": ACLType.Readable,  # histories
+            "list_histories": ACLType.Readable,  # histories
+            "list_alias": ACLType.Readable,
         }
 
         if not user.has_permission(obj, permisson.get(view.action)):
@@ -86,7 +85,7 @@ class EntryAPI(viewsets.ModelViewSet):
             "update": serializers.Serializer,
             "copy": EntryCopySerializer,
             "list": EntryHistoryAttributeValueSerializer,
-            "list_alias": AliasListAPI,
+            "list_alias": EntryAliasSerializer,
         }
         return serializer.get(self.action, EntryBaseSerializer)
 
@@ -177,16 +176,13 @@ class EntryAPI(viewsets.ModelViewSet):
         return Response({}, status=status.HTTP_200_OK)
 
     def list_alias(self, request: Request, *args, **kwargs) -> Response:
-        print("[onix/view.list_alias(00)]")
-        user: User = self.request.user
         entry: Entry = self.get_object()
 
         self.queryset = AliasEntry.objects.filter(entry=entry, entry__is_active=True)
 
         return super(EntryAPI, self).list(request, *args, **kwargs)
 
-    # histories view
-    def list(self, request: Request, *args, **kwargs) -> Response:
+    def list_histories(self, request: Request, *args, **kwargs) -> Response:
         user: User = self.request.user
         entry: Entry = self.get_object()
 
@@ -840,25 +836,8 @@ class EntryBulkDeleteAPI(generics.DestroyAPIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class AliasListAPI(viewsets.ModelViewSet):
-    permission_classes = [IsAuthenticated & EntryPermission]
-    pagination_class = LimitOffsetPagination
-    serializer_class = EntryAliasRetrieveSerializer
-
-    def get_queryset(self, *args, **kwargs):
-        # get all aliasentry items that are associated with specified entryid
-        return aliasentry.objects.filter(entry__id=self.kwargs["pk"])
-
-class AliasUpdateAPI(viewsets.ModelViewSet):
-    # permission_classes = [IsAuthenticated & EntryPermission]
+class EntryAliasAPI(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     pagination_class = LimitOffsetPagination
+    serializer_class = EntryAliasSerializer
     queryset = AliasEntry.objects.filter(entry__is_active=True)
-
-    def get_serializer_class(self):
-        print("[onix/view/get_serializer_class(00)] action: %s" % str(self.action))
-        serializer = {
-            "create": EntryAliasUpdateSerializer,
-            "destroy": EntryAliasUpdateSerializer,
-        }
-        return serializer.get(self.action, EntryAliasRetrieveSerializer)

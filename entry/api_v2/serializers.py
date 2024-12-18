@@ -23,7 +23,7 @@ from airone.lib.log import Logger
 from airone.lib.types import AttrDefaultValue, AttrType
 from entity.api_v2.serializers import EntitySerializer
 from entity.models import Entity, EntityAttr
-from entry.models import Attribute, AttributeValue, Entry, AliasEntry
+from entry.models import AliasEntry, Attribute, AttributeValue, Entry
 from entry.settings import CONFIG as CONFIG_ENTRY
 from group.models import Group
 from job.models import Job, JobStatus
@@ -214,6 +214,16 @@ class EntryAttributeTypeSerializer(serializers.Serializer):
     schema = EntityAttributeTypeSerializer()
 
 
+class EntryAliasSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AliasEntry
+        fields = [
+            "id",
+            "name",
+            "entry",
+        ]
+
+
 class EntryBaseSerializer(serializers.ModelSerializer):
     # This attribute toggle privileged mode that allow user to CRUD Entry without
     # considering permission. This must not change from program, but declare in a
@@ -222,6 +232,7 @@ class EntryBaseSerializer(serializers.ModelSerializer):
 
     schema = EntitySerializer(read_only=True)
     deleted_user = UserBaseSerializer(read_only=True, allow_null=True)
+    aliases = EntryAliasSerializer(many=True, read_only=True)
 
     class Meta:
         model = Entry
@@ -233,6 +244,7 @@ class EntryBaseSerializer(serializers.ModelSerializer):
             "deleted_user",
             "deleted_time",
             "updated_time",
+            "aliases",
         ]
         extra_kwargs = {
             "id": {"read_only": True},
@@ -295,6 +307,9 @@ class EntryBaseSerializer(serializers.ModelSerializer):
             custom_view.call_custom(
                 "validate_entry", schema.name, user, schema.name, name, attrs, self.instance
             )
+
+    def get_aliases(self, obj: Entry):
+        return obj.aliases.all()
 
 
 @extend_schema_field({})
@@ -1318,24 +1333,3 @@ class AdvancedSearchResultExportSerializer(serializers.Serializer):
             params=self.validated_data,
         )
         job.run()
-
-
-class EntryAliasRetrieveSerializer(serializers.ModelSerializer):
-    entry = EntryRetrieveSerializer()
-
-    class Meta:
-        model = Entry
-        fields = [
-            "id",
-            "name",
-            "entry",
-        ]
-
-class EntryAliasUpdateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = AliasEntry
-        fields = [
-            "id",
-            "name",
-            "entry",
-        ]
