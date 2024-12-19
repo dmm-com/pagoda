@@ -223,6 +223,11 @@ class EntryAliasSerializer(serializers.ModelSerializer):
             "entry",
         ]
 
+    def validate(self, params):
+        if not params["entry"].schema.is_available(params["name"]):
+            raise DuplicatedObjectExistsError("A duplicated named Alias exists in this model")
+
+        return params
 
 class EntryBaseSerializer(serializers.ModelSerializer):
     # This attribute toggle privileged mode that allow user to CRUD Entry without

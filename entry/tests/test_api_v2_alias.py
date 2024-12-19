@@ -75,6 +75,37 @@ class APITest(AironeViewTest):
         # check expected Alias was created correctly
         self.assertEqual(AliasEntry.objects.filter(entry=self.item).count(), 1)
 
+    def test_create_with_invalid_parameter(self):
+        resp = self.client.post(
+            "/entry/api/v2/alias/",
+            json.dumps(
+                {
+                    "name": "NewAlias",
+                    # This lucks mandatory parameter "entry"
+                }
+            ),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.json(), {"entry":[{"message":"This field is required.","code":"AE-113000"}]})
+
+    def test_create_with_duplicated_name(self):
+        # create Alias that is duplicated with creation
+        alias = self.item.add_alias("hoge")
+
+        resp = self.client.post(
+            "/entry/api/v2/alias/",
+            json.dumps(
+                {
+                    "name": "hoge", # same name with other that has already been registered
+                    "entry": self.item.id,
+                }
+            ),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.json(), {"non_field_errors":[{"message":"A duplicated named Alias exists in this model","code":"AE-220000"}]})
+
     def test_delete(self):
         # create Alias to be deleted
         alias = self.item.add_alias("Deleting Alias")
@@ -85,3 +116,62 @@ class APITest(AironeViewTest):
 
         # check specified Alias was deleted actually
         self.assertFalse(AliasEntry.objects.filter(entry=self.item).exists())
+
+    def test_create_bulk(self):
+        model = self.create_entity(self.user, "Department")
+        item = self.add_entry(self.user, "Dev", model)
+
+        resp = self.client.post(
+            "/entry/api/v2/alias/bulk/", json.dumps([
+                {"name": "HOGE", "entry": item.id},
+                {"name": "FUGA", "entry": item.id},
+                {"name": "PUYO", "entry": item.id},
+            ]), "application/json"
+        )
+        self.assertEqual(resp.status_code, 200)
+
+        # check requested Aliases are created correctly
+        self.assertEqual(
+            sorted([x.name for x in AliasEntry.objects.filter(entry=item)]),
+            sorted(["HOGE", "FUGA", "PUYO"])
+        )
+
+    def test_create_bulk_with_duplicated_name(self):
+        model = self.create_entity(self.user, "Department")
+        item = self.add_entry(self.user, "Dev", model)
+
+        resp = self.client.post(
+            "/entry/api/v2/alias/bulk/", json.dumps([
+                {"name": "HOGE", "entry": item.id},
+                {"name": "FUGA", "entry": item.id},
+                {"name": "HOGE", "entry": item.id}, # This is duplicated!!
+                {"name": "FUGA", "entry": item.id}, # This is duplicated!!
+                {"name": "HOGE", "entry": item.id}, # This is duplicated!!
+            ]), "application/json"
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.json(), [{"message":"Duplicated names(['HOGE', 'FUGA']) were specified","code":"AE-220000"}])
+
+        # check specified Aliases were not creaed
+        self.assertFalse(AliasEntry.objects.filter(entry=item).exists())
+
+    def test_create_bulk_with_duplicated_alias(self):
+        model = self.create_entity(self.user, "Department")
+        item = self.add_entry(self.user, "Dev", model)
+        item.add_alias("PUYO")
+
+        resp = self.client.post(
+            "/entry/api/v2/alias/bulk/", json.dumps([
+                {"name": "HOGE", "entry": item.id},
+                {"name": "FUGA", "entry": item.id},
+                {"name": "PUYO", "entry": item.id}, # PUYO has already been registered!!
+            ]), "application/json"
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.json(), [{},{},{"non_field_errors":[{"message":"A duplicated named Alias exists in this model","code":"AE-220000"}]}])
+
+        # required aliases were not created
+        self.assertEqual(
+            sorted([x.name for x in AliasEntry.objects.filter(entry=item)]),
+            sorted(["PUYO"])
+        )

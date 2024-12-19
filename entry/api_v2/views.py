@@ -1,6 +1,7 @@
 import re
 from copy import deepcopy
 from datetime import datetime, timedelta
+from collections import Counter
 
 from django.conf import settings
 from django.db.models import Prefetch, Q
@@ -841,3 +842,17 @@ class EntryAliasAPI(viewsets.ModelViewSet):
     pagination_class = LimitOffsetPagination
     serializer_class = EntryAliasSerializer
     queryset = AliasEntry.objects.filter(entry__is_active=True)
+
+    def bulk_create(self, request, *args, **kwargs):
+        # refuse input that has duplicated name
+        counter = Counter([x["name"] for x in request.data])
+        if any([c > 1 for c in counter.values()]):
+            raise DuplicatedObjectExistsError("Duplicated names(%s) were specified" % (
+                str([name for (name, count) in counter.items() if count > 1])
+            ))
+
+        serializer = self.get_serializer(data=request.data, many=True)
+        serializer.is_valid(raise_exception=True)
+        created_aliases = serializer.save()
+
+        return Response(serializer.data)

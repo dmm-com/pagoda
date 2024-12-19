@@ -62,6 +62,14 @@ urlpatterns = [
         ),
     ),
     path(
+        "alias/bulk/",
+        views.EntryAliasAPI.as_view(
+            {
+                "post": "bulk_create",
+            }
+        ),
+    ),
+    path(
         "alias/<int:pk>",
         views.EntryAliasAPI.as_view(
             {
