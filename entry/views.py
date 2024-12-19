@@ -233,6 +233,10 @@ def do_create(request, entity_id, recv_data):
     ).exists():
         return HttpResponse("Duplicate name entry is existed", status=400)
 
+    # check duplicated Alias is existed
+    if not entity.is_available(recv_data["entry_name"]):
+        return HttpResponse("Duplicate named Alias is existed", status=400)
+
     # validate contexts of each attributes
     err = _validate_input(recv_data, entity)
     if err:
@@ -332,6 +336,10 @@ def do_edit(request, entry_id, recv_data):
     query = Q(schema=entry.schema, name=recv_data["entry_name"]) & ~Q(id=entry.id)
     if Entry.objects.filter(query).exists():
         return HttpResponse("Duplicate name entry is existed", status=400)
+
+    # check duplicated Alias is existed
+    if not entry.schema.is_available(recv_data["entry_name"]):
+        return HttpResponse("Duplicate named Alias is existed", status=400)
 
     # validate contexts of each attributes
     err = _validate_input(recv_data, entry)

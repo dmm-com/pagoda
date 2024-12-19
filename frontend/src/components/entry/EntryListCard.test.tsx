@@ -24,6 +24,7 @@ test("should render a component with essential props", function () {
     deletedUser: null,
     isActive: true,
     updatedTime: new Date(),
+    aliases: [],
   };
 
   expect(() =>

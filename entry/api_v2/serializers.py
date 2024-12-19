@@ -23,7 +23,7 @@ from airone.lib.log import Logger
 from airone.lib.types import AttrDefaultValue, AttrType
 from entity.api_v2.serializers import EntitySerializer
 from entity.models import Entity, EntityAttr
-from entry.models import Attribute, AttributeValue, Entry
+from entry.models import AliasEntry, Attribute, AttributeValue, Entry
 from entry.settings import CONFIG as CONFIG_ENTRY
 from group.models import Group
 from job.models import Job, JobStatus
@@ -214,6 +214,21 @@ class EntryAttributeTypeSerializer(serializers.Serializer):
     schema = EntityAttributeTypeSerializer()
 
 
+class EntryAliasSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AliasEntry
+        fields = [
+            "id",
+            "name",
+            "entry",
+        ]
+
+    def validate(self, params):
+        if not params["entry"].schema.is_available(params["name"]):
+            raise DuplicatedObjectExistsError("A duplicated named Alias exists in this model")
+
+        return params
+
 class EntryBaseSerializer(serializers.ModelSerializer):
     # This attribute toggle privileged mode that allow user to CRUD Entry without
     # considering permission. This must not change from program, but declare in a
@@ -222,6 +237,7 @@ class EntryBaseSerializer(serializers.ModelSerializer):
 
     schema = EntitySerializer(read_only=True)
     deleted_user = UserBaseSerializer(read_only=True, allow_null=True)
+    aliases = EntryAliasSerializer(many=True, read_only=True)
 
     class Meta:
         model = Entry
@@ -233,6 +249,7 @@ class EntryBaseSerializer(serializers.ModelSerializer):
             "deleted_user",
             "deleted_time",
             "updated_time",
+            "aliases",
         ]
         extra_kwargs = {
             "id": {"read_only": True},
@@ -245,12 +262,26 @@ class EntryBaseSerializer(serializers.ModelSerializer):
             schema = self.instance.schema
         else:
             schema = self.get_initial()["schema"]
+
+        # The schema variable might has int typed value when it was set by get_initial() method.
+        if isinstance(schema, int):
+            schema_id = schema
+            schema = Entity.objects.filter(id=schema_id, is_active=True).first()
+            if not schema:
+                raise InvalidValueError("Invalid model(id=%d) was specified" % schema_id)
+
+        # Check there is another Item that has same name
         if name and Entry.objects.filter(name=name, schema=schema, is_active=True).exists():
             # In update case, there is no problem with the same name
             if not (self.instance and self.instance.name == name):
                 raise DuplicatedObjectExistsError("specified name(%s) already exists" % name)
         if "\t" in name:
             raise InvalidValueError("Names containing tab characters cannot be specified.")
+
+        # Check there is another Alias that has same name
+        if not schema.is_available(name):
+            raise DuplicatedObjectExistsError("A duplicated named Alias exists in this model")
+
         return name
 
     def _validate(self, schema: Entity, name: str, attrs: list[dict[str, Any]]):
@@ -295,6 +326,9 @@ class EntryBaseSerializer(serializers.ModelSerializer):
             custom_view.call_custom(
                 "validate_entry", schema.name, user, schema.name, name, attrs, self.instance
             )
+
+    def get_aliases(self, obj: Entry):
+        return obj.aliases.all()
 
 
 @extend_schema_field({})

@@ -62,6 +62,13 @@ class EntryAPI(APIView):
 
             return _will_notify_update_entry
 
+        # Abort updating processing when duplicated named Alias exists
+        if not sel.validated_data["entity"].is_available(sel.validated_data["name"]):
+            return Response(
+                {"result": "Duplicate named Alias is existed"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         entry_condition = {
             "schema": sel.validated_data["entity"],
             "name": sel.validated_data["name"],

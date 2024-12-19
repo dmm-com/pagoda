@@ -933,6 +933,22 @@ class ViewTest(BaseViewTest):
         )
         self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
 
+    def test_update_entry_when_duplicated_alias_exists(self):
+        # make an Item and Alias to prevent to updating another Item
+        entry: Entry = self.add_entry(self.user, "Everest", self.entity)
+        entry.add_alias("Chomolungma")
+
+        entry: Entry = self.add_entry(self.user, "The highest mountain in the world", self.entity)
+        resp = self.client.put(
+            "/entry/api/v2/%s/" % entry.id,
+            json.dumps({"name": "Chomolungma"}), # This is same name with other Alias
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.json(), {
+            "name":[{"message":"A duplicated named Alias exists in this model","code":"AE-220000"}]
+        })
+
     def test_update_entry_with_invalid_param_attrs(self):
         entry: Entry = self.add_entry(self.user, "entry", self.entity)
         attr = {}
@@ -1991,6 +2007,7 @@ class ViewTest(BaseViewTest):
                     "name": entry.schema.name,
                     "is_public": True,
                 },
+                "aliases": [],
                 "is_active": True,
                 "deleted_user": None,
                 "deleted_time": None,
@@ -4440,6 +4457,7 @@ class ViewTest(BaseViewTest):
                         "name": "test-entity",
                         "is_public": True,
                     },
+                    "aliases": [],
                     "is_active": True,
                     "deleted_user": None,
                     "deleted_time": None,

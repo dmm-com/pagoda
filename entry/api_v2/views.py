@@ -1,6 +1,7 @@
 import re
 from copy import deepcopy
 from datetime import datetime, timedelta
+from collections import Counter
 
 from django.conf import settings
 from django.db.models import Prefetch, Q
@@ -33,6 +34,7 @@ from entry.api_v2.serializers import (
     AdvancedSearchResultExportSerializer,
     AdvancedSearchResultSerializer,
     AdvancedSearchSerializer,
+    EntryAliasSerializer,
     EntryAttributeValueRestoreSerializer,
     EntryBaseSerializer,
     EntryCopySerializer,
@@ -43,7 +45,7 @@ from entry.api_v2.serializers import (
     EntryUpdateSerializer,
     GetEntryAttrReferralSerializer,
 )
-from entry.models import Attribute, AttributeValue, Entry
+from entry.models import AliasEntry, Attribute, AttributeValue, Entry
 from entry.services import AdvancedSearchService
 from entry.settings import CONFIG
 from entry.settings import CONFIG as ENTRY_CONFIG
@@ -63,7 +65,8 @@ class EntryPermission(BasePermission):
             "destroy": ACLType.Writable,
             "restore": ACLType.Writable,
             "copy": ACLType.Writable,
-            "list": ACLType.Readable,  # histories
+            "list_histories": ACLType.Readable,
+            "list_alias": ACLType.Readable,
         }
 
         if not user.has_permission(obj, permisson.get(view.action)):
@@ -82,7 +85,8 @@ class EntryAPI(viewsets.ModelViewSet):
             "retrieve": EntryRetrieveSerializer,
             "update": serializers.Serializer,
             "copy": EntryCopySerializer,
-            "list": EntryHistoryAttributeValueSerializer,
+            "list_histories": EntryHistoryAttributeValueSerializer,
+            "list_alias": EntryAliasSerializer,
         }
         return serializer.get(self.action, EntryBaseSerializer)
 
@@ -172,8 +176,14 @@ class EntryAPI(viewsets.ModelViewSet):
 
         return Response({}, status=status.HTTP_200_OK)
 
-    # histories view
-    def list(self, request: Request, *args, **kwargs) -> Response:
+    def list_alias(self, request: Request, *args, **kwargs) -> Response:
+        entry: Entry = self.get_object()
+
+        self.queryset = AliasEntry.objects.filter(entry=entry, entry__is_active=True)
+
+        return super(EntryAPI, self).list(request, *args, **kwargs)
+
+    def list_histories(self, request: Request, *args, **kwargs) -> Response:
         user: User = self.request.user
         entry: Entry = self.get_object()
 
@@ -825,3 +835,24 @@ class EntryBulkDeleteAPI(generics.DestroyAPIView):
             job.run()
 
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class EntryAliasAPI(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
+    pagination_class = LimitOffsetPagination
+    serializer_class = EntryAliasSerializer
+    queryset = AliasEntry.objects.filter(entry__is_active=True)
+
+    def bulk_create(self, request, *args, **kwargs):
+        # refuse input that has duplicated name
+        counter = Counter([x["name"] for x in request.data])
+        if any([c > 1 for c in counter.values()]):
+            raise DuplicatedObjectExistsError("Duplicated names(%s) were specified" % (
+                str([name for (name, count) in counter.items() if count > 1])
+            ))
+
+        serializer = self.get_serializer(data=request.data, many=True)
+        serializer.is_valid(raise_exception=True)
+        created_aliases = serializer.save()
+
+        return Response(serializer.data)

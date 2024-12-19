@@ -3,6 +3,10 @@
 ## In development
 
 ### Added
+* Introduced a new feature to identify Item using another names that are related with
+  specific Item (it is named as Alias).
+  Contributed by @hinashi, @userlocalhost
+
 * Enable to pass general external parameters(`extendedGeneralParameters`) to React-UI
   implementation via Django template.
   Contributed by @userlocalhost, @hinashi

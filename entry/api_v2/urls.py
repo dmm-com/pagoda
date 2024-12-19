@@ -41,7 +41,39 @@ urlpatterns = [
         "<int:pk>/histories/",
         views.EntryAPI.as_view(
             {
-                "get": "list",
+                "get": "list_histories",
+            }
+        ),
+    ),
+    path(
+        "<int:pk>/alias/",
+        views.EntryAPI.as_view(
+            {
+                "get": "list_alias",
+            }
+        ),
+    ),
+    path(
+        "alias/",
+        views.EntryAliasAPI.as_view(
+            {
+                "post": "create",
+            }
+        ),
+    ),
+    path(
+        "alias/bulk/",
+        views.EntryAliasAPI.as_view(
+            {
+                "post": "bulk_create",
+            }
+        ),
+    ),
+    path(
+        "alias/<int:pk>",
+        views.EntryAliasAPI.as_view(
+            {
+                "delete": "destroy",
             }
         ),
     ),
