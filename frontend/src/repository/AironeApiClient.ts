@@ -14,6 +14,7 @@ import {
   EntityAttrCreate,
   EntityAttrUpdate,
   EntityDetail,
+  EntryAlias,
   EntryApi,
   EntryBase,
   EntryCopy,
@@ -666,6 +667,37 @@ class AironeApiClient {
       attrId: attrId,
       keyword: keyword,
     });
+  }
+
+  async createEntryAlias(entryId: number, name: string): Promise<EntryAlias> {
+    return await this.entry.entryApiV2AliasCreate(
+      {
+        entryAlias: {
+          name: name,
+          entry: entryId,
+        },
+      },
+      {
+        headers: {
+          "Content-Type": "application/json;charset=utf-8",
+          "X-CSRFToken": getCsrfToken(),
+        },
+      }
+    );
+  }
+
+  async deleteEntryAlias(AliasId: number): Promise<void> {
+    return await this.entry.entryApiV2AliasDestroy(
+      {
+        id: AliasId,
+      },
+      {
+        headers: {
+          "Content-Type": "application/json;charset=utf-8",
+          "X-CSRFToken": getCsrfToken(),
+        },
+      }
+    );
   }
 
   async advancedSearch(

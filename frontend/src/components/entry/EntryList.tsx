@@ -29,7 +29,6 @@ export const EntryList: FC<Props> = ({ entityId, canCreateEntry = true }) => {
   const params = new URLSearchParams(location.search);
 
   const [query, setQuery] = useState<string>(params.get("query") ?? "");
-  const [keyword, setKeyword] = useState(query ?? "");
   const [toggle, setToggle] = useState(false);
 
   const entries = useAsyncWithThrow(async () => {
@@ -53,12 +52,11 @@ export const EntryList: FC<Props> = ({ entityId, canCreateEntry = true }) => {
         <Box width="600px">
           <SearchBox
             placeholder="アイテムを絞り込む"
-            value={keyword}
-            onChange={(e) => setKeyword(e.target.value)}
+            defaultValue={query}
             onKeyPress={(e) => {
               e.key === "Enter" &&
                 handleChangeQuery(
-                  keyword.length > 0 ? normalizeToMatch(keyword) : ""
+                  normalizeToMatch((e.target as HTMLInputElement).value ?? "")
                 );
             }}
           />

@@ -40,8 +40,6 @@ interface Props {
 
 export const EntryReferral: FC<Props> = ({ entryId }) => {
   const [page, changePage] = usePage();
-
-  const [keyword, setKeyword] = useState("");
   const [keywordQuery, setKeywordQuery] = useState("");
 
   const referredEntries = useAsyncWithThrow(async () => {
@@ -73,15 +71,11 @@ export const EntryReferral: FC<Props> = ({ entryId }) => {
         </ReferralCount>
         <SearchBox
           placeholder="アイテムを絞り込む"
-          value={keyword}
-          onChange={(e) => {
-            setKeyword(e.target.value);
-          }}
           onKeyPress={(e) => {
             if (e.key === "Enter") {
               changePage(1);
               setKeywordQuery(
-                keyword.length > 0 ? normalizeToMatch(keyword) : ""
+                normalizeToMatch((e.target as HTMLInputElement).value ?? "")
               );
             }
           }}

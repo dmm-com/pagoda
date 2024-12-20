@@ -51,7 +51,6 @@ export const UserList: FC = ({}) => {
   const [page, changePage] = usePage();
   const params = new URLSearchParams(location.search);
   const [query, setQuery] = useState<string>(params.get("query") ?? "");
-  const [keyword, setKeyword] = useState(query ?? "");
   const [userAnchorEls, setUserAnchorEls] = useState<{
     [key: number]: HTMLButtonElement | null;
   }>({});
@@ -84,12 +83,11 @@ export const UserList: FC = ({}) => {
         <Box width={500}>
           <SearchBox
             placeholder="ユーザを絞り込む"
-            value={keyword}
-            onChange={(e) => setKeyword(e.target.value)}
+            defaultValue={query}
             onKeyPress={(e) => {
               e.key === "Enter" &&
                 handleChangeQuery(
-                  keyword.length > 0 ? normalizeToMatch(keyword) : undefined
+                  normalizeToMatch((e.target as HTMLInputElement).value ?? "")
                 );
             }}
           />
