@@ -39,5 +39,5 @@ module.exports = {
       'node_modules',
     ],
   },
-  externals: ['react', 'react-dom', 'react-router-dom'],
+  externals: ['@mui/material', 'react', 'react-dom', 'react-router-dom'],
 } 

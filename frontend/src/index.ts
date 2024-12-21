@@ -8,3 +8,4 @@ export * from "./repository";
 export * from "./routes";
 export * from "./services";
 export * from "./TestWrapper";
+export * from "./Theme";
