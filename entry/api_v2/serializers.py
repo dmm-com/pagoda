@@ -229,6 +229,7 @@ class EntryAliasSerializer(serializers.ModelSerializer):
 
         return params
 
+
 class EntryBaseSerializer(serializers.ModelSerializer):
     # This attribute toggle privileged mode that allow user to CRUD Entry without
     # considering permission. This must not change from program, but declare in a

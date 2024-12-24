@@ -941,13 +941,21 @@ class ViewTest(BaseViewTest):
         entry: Entry = self.add_entry(self.user, "The highest mountain in the world", self.entity)
         resp = self.client.put(
             "/entry/api/v2/%s/" % entry.id,
-            json.dumps({"name": "Chomolungma"}), # This is same name with other Alias
+            json.dumps({"name": "Chomolungma"}),  # This is same name with other Alias
             "application/json",
         )
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(resp.json(), {
-            "name":[{"message":"A duplicated named Alias exists in this model","code":"AE-220000"}]
-        })
+        self.assertEqual(
+            resp.json(),
+            {
+                "name": [
+                    {
+                        "message": "A duplicated named Alias exists in this model",
+                        "code": "AE-220000",
+                    }
+                ]
+            },
+        )
 
     def test_update_entry_with_invalid_param_attrs(self):
         entry: Entry = self.add_entry(self.user, "entry", self.entity)
@@ -1447,6 +1455,18 @@ class ViewTest(BaseViewTest):
         self.assertEqual(
             resp.json(),
             [{"code": "AE-220000", "message": "specified entry has already exist other"}],
+        )
+
+        entry2 = self.add_entry(self.user, "entry2", self.entity)
+        entry2.delete()
+        other_entry = self.add_entry(self.user, "other_entry", self.entity)
+        other_entry.add_alias("entry2")
+
+        resp = self.client.post("/entry/api/v2/%s/restore/" % entry2.id, None, "application/json")
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.json(),
+            [{"code": "AE-220000", "message": "specified entry has already exist alias"}],
         )
 
     @mock.patch("airone.lib.custom_view.is_custom", mock.Mock(return_value=True))

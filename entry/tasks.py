@@ -555,7 +555,7 @@ def do_copy_entry(self, job: Job) -> tuple[JobStatus, str, None]:
         return (
             JobStatus.ERROR,
             "Duplicated Alias(name=%s) exists in this model" % params["new_name"],
-            src_entry
+            src_entry,
         )
 
     dest_entry = Entry.objects.filter(schema=src_entry.schema, name=params["new_name"]).first()

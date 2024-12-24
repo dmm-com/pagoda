@@ -87,24 +87,36 @@ class APITest(AironeViewTest):
             "application/json",
         )
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(resp.json(), {"entry":[{"message":"This field is required.","code":"AE-113000"}]})
+        self.assertEqual(
+            resp.json(), {"entry": [{"message": "This field is required.", "code": "AE-113000"}]}
+        )
 
     def test_create_with_duplicated_name(self):
         # create Alias that is duplicated with creation
-        alias = self.item.add_alias("hoge")
+        self.item.add_alias("hoge")
 
         resp = self.client.post(
             "/entry/api/v2/alias/",
             json.dumps(
                 {
-                    "name": "hoge", # same name with other that has already been registered
+                    "name": "hoge",  # same name with other that has already been registered
                     "entry": self.item.id,
                 }
             ),
             "application/json",
         )
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(resp.json(), {"non_field_errors":[{"message":"A duplicated named Alias exists in this model","code":"AE-220000"}]})
+        self.assertEqual(
+            resp.json(),
+            {
+                "non_field_errors": [
+                    {
+                        "message": "A duplicated named Alias exists in this model",
+                        "code": "AE-220000",
+                    }
+                ]
+            },
+        )
 
     def test_delete(self):
         # create Alias to be deleted
@@ -122,18 +134,22 @@ class APITest(AironeViewTest):
         item = self.add_entry(self.user, "Dev", model)
 
         resp = self.client.post(
-            "/entry/api/v2/alias/bulk/", json.dumps([
-                {"name": "HOGE", "entry": item.id},
-                {"name": "FUGA", "entry": item.id},
-                {"name": "PUYO", "entry": item.id},
-            ]), "application/json"
+            "/entry/api/v2/alias/bulk/",
+            json.dumps(
+                [
+                    {"name": "HOGE", "entry": item.id},
+                    {"name": "FUGA", "entry": item.id},
+                    {"name": "PUYO", "entry": item.id},
+                ]
+            ),
+            "application/json",
         )
         self.assertEqual(resp.status_code, 200)
 
         # check requested Aliases are created correctly
         self.assertEqual(
             sorted([x.name for x in AliasEntry.objects.filter(entry=item)]),
-            sorted(["HOGE", "FUGA", "PUYO"])
+            sorted(["HOGE", "FUGA", "PUYO"]),
         )
 
     def test_create_bulk_with_duplicated_name(self):
@@ -141,16 +157,23 @@ class APITest(AironeViewTest):
         item = self.add_entry(self.user, "Dev", model)
 
         resp = self.client.post(
-            "/entry/api/v2/alias/bulk/", json.dumps([
-                {"name": "HOGE", "entry": item.id},
-                {"name": "FUGA", "entry": item.id},
-                {"name": "HOGE", "entry": item.id}, # This is duplicated!!
-                {"name": "FUGA", "entry": item.id}, # This is duplicated!!
-                {"name": "HOGE", "entry": item.id}, # This is duplicated!!
-            ]), "application/json"
+            "/entry/api/v2/alias/bulk/",
+            json.dumps(
+                [
+                    {"name": "HOGE", "entry": item.id},
+                    {"name": "FUGA", "entry": item.id},
+                    {"name": "HOGE", "entry": item.id},  # This is duplicated!!
+                    {"name": "FUGA", "entry": item.id},  # This is duplicated!!
+                    {"name": "HOGE", "entry": item.id},  # This is duplicated!!
+                ]
+            ),
+            "application/json",
         )
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(resp.json(), [{"message":"Duplicated names(['HOGE', 'FUGA']) were specified","code":"AE-220000"}])
+        self.assertEqual(
+            resp.json(),
+            [{"message": "Duplicated names(['HOGE', 'FUGA']) were specified", "code": "AE-220000"}],
+        )
 
         # check specified Aliases were not creaed
         self.assertFalse(AliasEntry.objects.filter(entry=item).exists())
@@ -161,17 +184,34 @@ class APITest(AironeViewTest):
         item.add_alias("PUYO")
 
         resp = self.client.post(
-            "/entry/api/v2/alias/bulk/", json.dumps([
-                {"name": "HOGE", "entry": item.id},
-                {"name": "FUGA", "entry": item.id},
-                {"name": "PUYO", "entry": item.id}, # PUYO has already been registered!!
-            ]), "application/json"
+            "/entry/api/v2/alias/bulk/",
+            json.dumps(
+                [
+                    {"name": "HOGE", "entry": item.id},
+                    {"name": "FUGA", "entry": item.id},
+                    {"name": "PUYO", "entry": item.id},  # PUYO has already been registered!!
+                ]
+            ),
+            "application/json",
         )
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(resp.json(), [{},{},{"non_field_errors":[{"message":"A duplicated named Alias exists in this model","code":"AE-220000"}]}])
+        self.assertEqual(
+            resp.json(),
+            [
+                {},
+                {},
+                {
+                    "non_field_errors": [
+                        {
+                            "message": "A duplicated named Alias exists in this model",
+                            "code": "AE-220000",
+                        }
+                    ]
+                },
+            ],
+        )
 
         # required aliases were not created
         self.assertEqual(
-            sorted([x.name for x in AliasEntry.objects.filter(entry=item)]),
-            sorted(["PUYO"])
+            sorted([x.name for x in AliasEntry.objects.filter(entry=item)]), sorted(["PUYO"])
         )

@@ -2969,10 +2969,20 @@ class ViewTest(AironeViewTest):
         resp = self.client.post(
             "/entity/api/v2/%s/entries/" % self.entity.id,
             json.dumps({"name": "Chomolungma"}),
-            "application/json"
+            "application/json",
         )
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(resp.json(), {"name":[{"message":"A duplicated named Alias exists in this model","code":"AE-220000"}]})
+        self.assertEqual(
+            resp.json(),
+            {
+                "name": [
+                    {
+                        "message": "A duplicated named Alias exists in this model",
+                        "code": "AE-220000",
+                    }
+                ]
+            },
+        )
 
     def test_create_entry_without_permission_entity(self):
         params = {

@@ -767,6 +767,9 @@ def do_restore(request, entry_id, recv_data):
             status=400,
         )
 
+    if not entry.schema.is_available(re.sub(r"_deleted_[0-9_]*$", "", entry.name)):
+        return HttpResponse("Duplicate named Alias is existed", status=400)
+
     # validation processing for checking duplication of entry
     # that "is_delete_in_chain" parameter is setting
     if entry.check_duplication_entry_at_restoring(entry_chain=[]):

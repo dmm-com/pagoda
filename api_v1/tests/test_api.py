@@ -353,7 +353,7 @@ class APITest(AironeViewTest):
         }
         resp = self.client.post("/api/v1/entry", json.dumps(params), "application/json")
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(resp.json(), {"result":"Duplicate named Alias is existed"})
+        self.assertEqual(resp.json(), {"result": "Duplicate named Alias is existed"})
 
     def test_post_entry_with_invalid_params(self):
         admin = self.admin_login()

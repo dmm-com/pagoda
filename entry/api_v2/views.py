@@ -1,7 +1,7 @@
 import re
+from collections import Counter
 from copy import deepcopy
 from datetime import datetime, timedelta
-from collections import Counter
 
 from django.conf import settings
 from django.db.models import Prefetch, Q
@@ -131,6 +131,9 @@ class EntryAPI(viewsets.ModelViewSet):
             schema=entry.schema, name=re.sub(r"_deleted_[0-9_]*$", "", entry.name), is_active=True
         ).exists():
             raise DuplicatedObjectExistsError("specified entry has already exist other")
+
+        if not entry.schema.is_available(re.sub(r"_deleted_[0-9_]*$", "", entry.name)):
+            raise DuplicatedObjectExistsError("specified entry has already exist alias")
 
         user: User = request.user
 
@@ -847,12 +850,13 @@ class EntryAliasAPI(viewsets.ModelViewSet):
         # refuse input that has duplicated name
         counter = Counter([x["name"] for x in request.data])
         if any([c > 1 for c in counter.values()]):
-            raise DuplicatedObjectExistsError("Duplicated names(%s) were specified" % (
-                str([name for (name, count) in counter.items() if count > 1])
-            ))
+            raise DuplicatedObjectExistsError(
+                "Duplicated names(%s) were specified"
+                % (str([name for (name, count) in counter.items() if count > 1]))
+            )
 
         serializer = self.get_serializer(data=request.data, many=True)
         serializer.is_valid(raise_exception=True)
-        created_aliases = serializer.save()
+        serializer.save()
 
         return Response(serializer.data)
