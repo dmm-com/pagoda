@@ -264,13 +264,6 @@ class EntryBaseSerializer(serializers.ModelSerializer):
         else:
             schema = self.get_initial()["schema"]
 
-        # The schema variable might has int typed value when it was set by get_initial() method.
-        if isinstance(schema, int):
-            schema_id = schema
-            schema = Entity.objects.filter(id=schema_id, is_active=True).first()
-            if not schema:
-                raise InvalidValueError("Invalid model(id=%d) was specified" % schema_id)
-
         # Check there is another Item that has same name
         if name and Entry.objects.filter(name=name, schema=schema, is_active=True).exists():
             # In update case, there is no problem with the same name
@@ -278,13 +271,6 @@ class EntryBaseSerializer(serializers.ModelSerializer):
                 raise DuplicatedObjectExistsError("specified name(%s) already exists" % name)
         if "\t" in name:
             raise InvalidValueError("Names containing tab characters cannot be specified.")
-
-        # Exclude myself to check available Alias
-        exclude_items = [self.instance.id] if self.instance else []
-
-        # Check there is another Alias that has same name
-        if not schema.is_available(name, exclude_items):
-            raise DuplicatedObjectExistsError("A duplicated named Alias exists in this model")
 
         return name
 
@@ -310,6 +296,11 @@ class EntryBaseSerializer(serializers.ModelSerializer):
                     raise RequiredParameterError(
                         "mandatory attrs id(%s) is not specified" % mandatory_attr.id
                     )
+
+        exclude_items = [self.instance.id] if self.instance else []
+        # Check there is another Alias that has same name
+        if not schema.is_available(name, exclude_items):
+            raise DuplicatedObjectExistsError("A duplicated named Alias exists in this model")
 
         # check attrs
         for attr in attrs:

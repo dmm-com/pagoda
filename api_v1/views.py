@@ -88,7 +88,9 @@ class EntryAPI(APIView):
                 )
 
             # Abort updating processing when duplicated named Alias exists
-            if not sel.validated_data["entity"].is_available(sel.validated_data["name"], [entry.id]):
+            if not sel.validated_data["entity"].is_available(
+                sel.validated_data["name"], [entry.id]
+            ):
                 return Response(
                     {"result": "Duplicate named Alias is existed"},
                     status=status.HTTP_400_BAD_REQUEST,
