@@ -338,7 +338,7 @@ def do_edit(request, entry_id, recv_data):
         return HttpResponse("Duplicate name entry is existed", status=400)
 
     # check duplicated Alias is existed
-    if not entry.schema.is_available(recv_data["entry_name"]):
+    if not entry.schema.is_available(recv_data["entry_name"], [entry_id]):
         return HttpResponse("Duplicate named Alias is existed", status=400)
 
     # validate contexts of each attributes

@@ -279,8 +279,11 @@ class EntryBaseSerializer(serializers.ModelSerializer):
         if "\t" in name:
             raise InvalidValueError("Names containing tab characters cannot be specified.")
 
+        # Exclude myself to check available Alias
+        exclude_items = [self.instance.id] if self.instance else []
+
         # Check there is another Alias that has same name
-        if not schema.is_available(name):
+        if not schema.is_available(name, exclude_items):
             raise DuplicatedObjectExistsError("A duplicated named Alias exists in this model")
 
         return name
