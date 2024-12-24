@@ -5014,7 +5014,7 @@ class ViewTest(AironeViewTest):
         for index, (attrname, initial_value, changed_value, query) in enumerate(testing_params):
             entry = self.add_entry(
                 user,
-                "TestEntry",
+                "TestEntry-%d" % index,
                 entity,
                 values={
                     attrname: initial_value,
