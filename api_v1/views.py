@@ -62,13 +62,6 @@ class EntryAPI(APIView):
 
             return _will_notify_update_entry
 
-        # Abort updating processing when duplicated named Alias exists
-        if not sel.validated_data["entity"].is_available(sel.validated_data["name"]):
-            return Response(
-                {"result": "Duplicate named Alias is existed"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
         entry_condition = {
             "schema": sel.validated_data["entity"],
             "name": sel.validated_data["name"],
@@ -84,16 +77,28 @@ class EntryAPI(APIView):
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
+            # Get target Item from ID
             entry = Entry.objects.get(id=sel.validated_data["id"])
+
+            # Check user has permission to update this Item
             if not request.user.has_permission(entry, ACLType.Writable):
                 return Response(
                     {"result": "Permission denied to update entry"},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
+
+            # Abort updating processing when duplicated named Alias exists
+            if not sel.validated_data["entity"].is_available(sel.validated_data["name"], [entry.id]):
+                return Response(
+                    {"result": "Duplicate named Alias is existed"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
             will_notify_update_entry = _update_entry_name(entry)
 
         elif Entry.objects.filter(**entry_condition).exists():
             entry = Entry.objects.get(**entry_condition)
+
             if not request.user.has_permission(entry, ACLType.Writable):
                 return Response(
                     {"result": "Permission denied to update entry"},
@@ -102,6 +107,13 @@ class EntryAPI(APIView):
             will_notify_update_entry = _update_entry_name(entry)
 
         else:
+            # Abort creating Item when duplicated named Alias exists
+            if not sel.validated_data["entity"].is_available(entry_condition["name"]):
+                return Response(
+                    {"result": "Duplicate named Alias is existed"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
             # This is the processing just in case for safety not to create duplicate Entries
             # when multiple requests passed through existance check. Even through multiple
             # requests coming here, Django prevents from creating multiple Entries.

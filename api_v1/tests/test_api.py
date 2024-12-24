@@ -412,6 +412,7 @@ class APITest(AironeViewTest):
         # is created at the last request to create 'valid-entry'.
         params = {"name": "valid-entry", "entity": entity.name, "attrs": {"ref": "r-1"}}
         resp = self.client.post("/api/v1/entry", json.dumps(params), "application/json")
+        print("[onix-test] resp: %s" % str(resp.content.decode("utf-8")))
         self.assertEqual(resp.status_code, 200)
 
         entry = Entry.objects.get(schema=entity, name="valid-entry")
