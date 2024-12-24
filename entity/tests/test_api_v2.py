@@ -2975,7 +2975,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(
             resp.json(),
             {
-                "name": [
+                "non_field_errors": [
                     {
                         "message": "A duplicated named Alias exists in this model",
                         "code": "AE-220000",
