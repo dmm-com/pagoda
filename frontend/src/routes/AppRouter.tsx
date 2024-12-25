@@ -12,6 +12,7 @@ import { ACLHistoryPage } from "../pages/ACLHistoryPage";
 import { EntryCopyPage } from "../pages/EntryCopyPage";
 import { EntryDetailsPage } from "../pages/EntryDetailsPage";
 import { EntryRestorePage } from "../pages/EntryRestorePage";
+import { ListAliasEntryPage } from "../pages/ListAliasEntryPage";
 import { NotFoundErrorPage } from "../pages/NotFoundErrorPage";
 import { RoleEditPage } from "../pages/RoleEditPage";
 import { RoleListPage } from "../pages/RoleListPage";
@@ -52,6 +53,7 @@ import {
   groupsPath,
   jobsPath,
   loginPath,
+  listAliasPath,
   newEntityPath,
   newEntryPath,
   newGroupPath,
@@ -132,6 +134,10 @@ export const AppRouter: FC<Props> = ({ customRoutes }) => {
           <Route
             path={entityHistoryPath(":entityId")}
             element={<EntityHistoryPage />}
+          />
+          <Route
+            path={listAliasPath(":entityId")}
+            element={<ListAliasEntryPage />}
           />
           <Route path={newEntityPath()} element={<EntityEditPage />} />
           <Route

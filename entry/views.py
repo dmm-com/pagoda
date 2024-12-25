@@ -233,6 +233,10 @@ def do_create(request, entity_id, recv_data):
     ).exists():
         return HttpResponse("Duplicate name entry is existed", status=400)
 
+    # check duplicated Alias is existed
+    if not entity.is_available(recv_data["entry_name"]):
+        return HttpResponse("Duplicate named Alias is existed", status=400)
+
     # validate contexts of each attributes
     err = _validate_input(recv_data, entity)
     if err:
@@ -332,6 +336,10 @@ def do_edit(request, entry_id, recv_data):
     query = Q(schema=entry.schema, name=recv_data["entry_name"]) & ~Q(id=entry.id)
     if Entry.objects.filter(query).exists():
         return HttpResponse("Duplicate name entry is existed", status=400)
+
+    # check duplicated Alias is existed
+    if not entry.schema.is_available(recv_data["entry_name"], [entry_id]):
+        return HttpResponse("Duplicate named Alias is existed", status=400)
 
     # validate contexts of each attributes
     err = _validate_input(recv_data, entry)
@@ -758,6 +766,9 @@ def do_restore(request, entry_id, recv_data):
             data={"msg": "", "entry_id": dup_entry.id, "entry_name": dup_entry.name},
             status=400,
         )
+
+    if not entry.schema.is_available(re.sub(r"_deleted_[0-9_]*$", "", entry.name)):
+        return HttpResponse("Duplicate named Alias is existed", status=400)
 
     # validation processing for checking duplication of entry
     # that "is_delete_in_chain" parameter is setting

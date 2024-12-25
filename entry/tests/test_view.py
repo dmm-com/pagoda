@@ -2098,6 +2098,27 @@ class ViewTest(AironeViewTest):
         self.assertEqual(entry.get_attrv("address").value, "Chiyoda ward")
         self.assertEqual(entry.get_attrv("address").referral.id, pref_info["tokyo"].id)
 
+    def test_edit_when_another_same_named_alias_exists(self):
+        user = self.guest_login()
+
+        # create Model, Item and Alias that is same name with updating Item in this test
+        model = self.create_entity(user, "Mountain")
+        item = self.add_entry(user, "Everest", model)
+        item.add_alias("Chomolungma")
+
+        resp = self.client.post(
+            reverse("entry:do_edit", args=[item.id]),
+            json.dumps(
+                {
+                    "entry_name": "Chomolungma",
+                    "attrs": [],
+                }
+            ),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.content.decode("utf-8"), "Duplicate named Alias is existed")
+
     @patch(
         "entry.tasks.create_entry_attrs.delay",
         Mock(side_effect=tasks.create_entry_attrs),
@@ -2132,6 +2153,27 @@ class ViewTest(AironeViewTest):
             len(entry.attrs.last().values.last().value),
             AttributeValue.MAXIMUM_VALUE_SIZE,
         )
+
+    def test_create_when_another_same_named_alias_exists(self):
+        user = self.guest_login()
+
+        # create Model, Item and Alias that is same name with creating Item in this test
+        model = self.create_entity(user, "Mountain")
+        item = self.add_entry(user, "Everest", model)
+        item.add_alias("Chomolungma")
+
+        resp = self.client.post(
+            reverse("entry:do_create", args=[model.id]),
+            json.dumps(
+                {
+                    "entry_name": "Chomolungma",
+                    "attrs": [],
+                }
+            ),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.content.decode("utf-8"), "Duplicate named Alias is existed")
 
     @patch("entry.tasks.edit_entry_attrs.delay", Mock(side_effect=tasks.edit_entry_attrs))
     def test_post_edit_just_limit_of_value(self):
@@ -3243,6 +3285,51 @@ class ViewTest(AironeViewTest):
                 copied_entry.delete()
 
     @patch("entry.tasks.copy_entry.delay", Mock(side_effect=tasks.copy_entry))
+    def test_copy_when_duplicated_named_alias_exists(self):
+        user = self.admin_login()
+
+        model = self.create_entity(user, "Mountain")
+        item_src = Entry.objects.create(name="Everest", created_user=user, schema=model)
+        item_src.add_alias("Chomolungma")
+
+        resp = self.client.post(
+            reverse("entry:do_copy", args=[item_src.id]),
+            json.dumps(
+                {
+                    # Chomolungma is duplicated with Alias of Everest
+                    "entries": "Mt.Fuji\nK2\nChomolungma",
+                }
+            ),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 200)
+
+        # check Chomolungma copy job was failed
+        copy_job = Job.objects.filter(user=user, operation=JobOperation.COPY_ENTRY).first()
+        self.assertEqual(copy_job.text, "Copy completed [%5d/%5d]" % (3, 3))
+        self.assertEqual(copy_job.target.entry, item_src)
+        self.assertEqual(copy_job.status, JobStatus.DONE)
+
+        # check Job of COPY has expected attributes
+        do_copy_jobs = Job.objects.filter(user=user, operation=JobOperation.DO_COPY_ENTRY)
+        self.assertEqual(do_copy_jobs.count(), 3)
+
+        EXPECTED_PARAMS = [
+            ("Mt.Fuji", JobStatus.DONE, "original entry: Everest"),
+            ("K2", JobStatus.DONE, "original entry: Everest"),
+            (
+                "Chomolungma",
+                JobStatus.ERROR,
+                "Duplicated Alias(name=Chomolungma) exists in this model",
+            ),
+        ]
+        for index, (name, status, text) in enumerate(EXPECTED_PARAMS):
+            job = do_copy_jobs[index]
+            self.assertEqual(json.loads(job.params)["new_name"], name)
+            self.assertEqual(job.status, status)
+            self.assertEqual(job.text, text)
+
+    @patch("entry.tasks.copy_entry.delay", Mock(side_effect=tasks.copy_entry))
     def test_post_copy_with_valid_entry(self):
         user = self.admin_login()
 
@@ -3548,6 +3635,37 @@ class ViewTest(AironeViewTest):
         # checks that created entry was registered to the Elasticsearch
         res = self._es.get(index=settings.ES_CONFIG["INDEX_NAME"], id=entry.id)
         self.assertTrue(res["found"])
+
+    @patch(
+        "trigger.tasks.may_invoke_trigger.delay",
+        Mock(side_effect=trigger_tasks.may_invoke_trigger),
+    )
+    @patch("entry.tasks.import_entries.delay", Mock(side_effect=tasks.import_entries))
+    def test_import_when_duplicated_named_alias_exists(self):
+        user = self.admin_login()
+
+        # create Item and Alias that is duplicated with importing Item ("entry1")
+        item = self.add_entry(user, "TestItem", self._entity)
+        item.add_alias("entry1")
+
+        # This import_data03 has following Items (entry1, entry2 and entry3)
+        with self.open_fixture_file("import_data03.yaml") as fp:
+            resp = self.client.post(
+                reverse("entry:do_import", args=[self._entity.id]), {"file": fp}
+            )
+            self.assertEqual(resp.status_code, 303)
+
+        # check expected values are set in the job attributes
+        job = Job.objects.filter(operation=JobOperation.IMPORT_ENTRY).last()
+        self.assertEqual(job.status, JobStatus.DONE)
+        self.assertEqual(job.text, "")
+
+        # check "entry1" wasn't created because same named Alias has already been registered
+        whole_items = Entry.objects.filter(schema=self._entity, is_active=True)
+        self.assertEqual(whole_items.count(), 3)
+        self.assertEqual(
+            sorted([x.name for x in whole_items.all()]), sorted(["TestItem", "entry2", "entry3"])
+        )
 
     @patch(
         "trigger.tasks.may_invoke_trigger.delay",
@@ -4704,6 +4822,24 @@ class ViewTest(AironeViewTest):
         self.assertEqual(obj["entry_id"], dup_entry.id)
         self.assertEqual(obj["entry_name"], dup_entry.name)
 
+    def test_restore_when_another_same_named_alias_exists(self):
+        user = self.guest_login()
+
+        # create Model, Item and Alias that is same name with updating Item in this test
+        model = self.create_entity(user, "Mountain")
+        other_item = self.add_entry(user, "Chomolungma", model)
+        other_item.delete()
+        item = self.add_entry(user, "Everest", model)
+        item.add_alias("Chomolungma")
+
+        resp = self.client.post(
+            reverse("entry:do_restore", args=[other_item.id]),
+            json.dumps({}),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.content.decode("utf-8"), "Duplicate named Alias is existed")
+
     @patch("entry.tasks.notify_update_entry.delay")
     def test_revert_attrv(self, mock_task):
         user = self.guest_login()
@@ -4878,7 +5014,7 @@ class ViewTest(AironeViewTest):
         for index, (attrname, initial_value, changed_value, query) in enumerate(testing_params):
             entry = self.add_entry(
                 user,
-                "TestEntry",
+                "TestEntry-%d" % index,
                 entity,
                 values={
                     attrname: initial_value,

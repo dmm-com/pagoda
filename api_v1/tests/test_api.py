@@ -338,6 +338,23 @@ class APITest(AironeViewTest):
         # checking that CREATING flag is unset after finishing this processing
         self.assertFalse(entry.get_status(Entry.STATUS_CREATING))
 
+    def test_create_entry_when_duplicated_alias_exists(self):
+        user = self.guest_login()
+
+        model = self.create_entity(user, "Mountain")
+        item = self.add_entry(user, "Everest", model)
+        item.add_alias("Chomolungma")
+
+        # send request to try to create Item that has duplicated name with another Alias
+        params = {
+            "entity": model.name,
+            "name": "Chomolungma",
+            "attrs": {},
+        }
+        resp = self.client.post("/api/v1/entry", json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.json(), {"result": "Duplicate named Alias is existed"})
+
     def test_post_entry_with_invalid_params(self):
         admin = self.admin_login()
 
@@ -395,6 +412,7 @@ class APITest(AironeViewTest):
         # is created at the last request to create 'valid-entry'.
         params = {"name": "valid-entry", "entity": entity.name, "attrs": {"ref": "r-1"}}
         resp = self.client.post("/api/v1/entry", json.dumps(params), "application/json")
+        print("[onix-test] resp: %s" % str(resp.content.decode("utf-8")))
         self.assertEqual(resp.status_code, 200)
 
         entry = Entry.objects.get(schema=entity, name="valid-entry")
