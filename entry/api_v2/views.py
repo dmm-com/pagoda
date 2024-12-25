@@ -179,6 +179,7 @@ class EntryAPI(viewsets.ModelViewSet):
 
         return Response({}, status=status.HTTP_200_OK)
 
+    @extend_schema(responses=EntryAliasSerializer(many=True))
     def list_alias(self, request: Request, *args, **kwargs) -> Response:
         entry: Entry = self.get_object()
 
@@ -186,6 +187,7 @@ class EntryAPI(viewsets.ModelViewSet):
 
         return super(EntryAPI, self).list(request, *args, **kwargs)
 
+    @extend_schema(responses=EntryHistoryAttributeValueSerializer(many=True))
     def list_histories(self, request: Request, *args, **kwargs) -> Response:
         user: User = self.request.user
         entry: Entry = self.get_object()
