@@ -37,18 +37,21 @@ const server = setupServer(
           name: "aaa",
           schema: null,
           is_active: true,
+          aliases: [],
         },
         {
           id: 2,
           name: "aaaaa",
           schema: null,
           is_active: true,
+          aliases: [],
         },
         {
           id: 3,
           name: "bbbbb",
           schema: null,
           is_active: true,
+          aliases: [],
         },
       ],
     });
