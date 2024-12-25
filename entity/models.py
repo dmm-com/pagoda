@@ -1,3 +1,5 @@
+from typing import List
+
 from django.conf import settings
 from django.db import models
 from simple_history.models import HistoricalRecords
@@ -107,3 +109,16 @@ class Entity(ACLBase):
         if max_entities and Entity.objects.count() >= max_entities:
             raise RuntimeError("The number of entities is over the limit")
         return super(Entity, self).save(*args, **kwargs)
+
+    def is_available(self, name: str, exclude_item_ids: List[int] = []) -> bool:
+        from entry.models import AliasEntry, Entry
+
+        if (
+            Entry.objects.filter(name=name, schema=self, is_active=True)
+            .exclude(id__in=exclude_item_ids)
+            .exists()
+        ):
+            return False
+        if AliasEntry.objects.filter(name=name, entry__schema=self, entry__is_active=True).exists():
+            return False
+        return True

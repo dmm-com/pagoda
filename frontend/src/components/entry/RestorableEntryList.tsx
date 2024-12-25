@@ -110,12 +110,11 @@ export const RestorableEntryList: FC<Props> = ({ entityId }) => {
 
   const [query, setQuery] = useState<string>(params.get("query") ?? "");
 
-  const [keyword, setKeyword] = useState(query ?? "");
   const [openModal, setOpenModal] = useState(false);
   const [selectedEntryId, setSelectedEntryId] = useState<number>();
 
   const entries = useAsyncWithThrow(async () => {
-    return await aironeApiClient.getEntries(entityId, false, page, keyword);
+    return await aironeApiClient.getEntries(entityId, false, page, query);
   }, [page, query]);
 
   const entryDetail = useAsyncWithThrow(async () => {
@@ -143,7 +142,7 @@ export const RestorableEntryList: FC<Props> = ({ entityId }) => {
           variant: "success",
         });
         navigate(topPath(), { replace: true });
-        navigate(restoreEntryPath(entityId, keyword), { replace: true });
+        navigate(restoreEntryPath(entityId, query), { replace: true });
       })
       .catch(() => {
         enqueueSnackbar("アイテムの復旧が失敗しました", {
@@ -159,12 +158,11 @@ export const RestorableEntryList: FC<Props> = ({ entityId }) => {
         <Box width="600px">
           <SearchBox
             placeholder="アイテムを絞り込む"
-            value={keyword}
-            onChange={(e) => setKeyword(e.target.value)}
+            defaultValue={query}
             onKeyPress={(e) => {
               e.key === "Enter" &&
                 handleChangeQuery(
-                  keyword.length > 0 ? normalizeToMatch(keyword) : ""
+                  normalizeToMatch((e.target as HTMLInputElement).value ?? "")
                 );
             }}
           />
