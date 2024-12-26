@@ -61,7 +61,6 @@
     "@hookform/resolvers": "^2.9.11",
     "@jest/globals": "^27.0.6",
     "@mui/icons-material": "^5.2.1",
-    "@mui/material": "^5.11.3",
     "@mui/x-date-pickers": "^5.0.0-alpha.7",
     "@react-oauth/google": "^0.12.1",
     "@testing-library/jest-dom": "^5.16.5",
@@ -119,6 +118,7 @@
     "zod": "^3.22.4"
   },
   "peerDependencies": {
+    "@mui/material": "^5.11.3",
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
     "react-router-dom": "^6.0.0"
