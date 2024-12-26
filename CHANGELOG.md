@@ -7,16 +7,35 @@
   specific Item (it is named as Alias).
   Contributed by @hinashi, @userlocalhost
 
-* Enable to pass general external parameters(`extendedGeneralParameters`) to React-UI
-  implementation via Django template.
-  Contributed by @userlocalhost, @hinashi
-
 ### Changed
+
+### Fixed
+
+## v3.114.0
+
+### Fixed
+* Fixed not being able to cancel a job from the Job menu.
+  Contributed by @hinashi
+
+## v3.113.0
+
+### Fixed
+* Fix Elasticsearch update on entry deletion.
+  Contributed by @tsunoda-takahiro
+
+## v3.112.0
 
 ### Fixed
 * Fixed problem that might raise ElasticsearchException depends on context by
   SearchChain processing.
   Contributed by @hinashi, @userlocalhost
+
+## v3.111.0
+
+### Added
+* Enable to pass general external parameters(`extendedGeneralParameters`) to React-UI
+  implementation via Django template.
+  Contributed by @userlocalhost, @hinashi
 
 ## v3.110.0
 
