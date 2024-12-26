@@ -822,6 +822,11 @@ class EntryAttributeValueRestoreAPI(generics.UpdateAPIView):
     ],
 )
 class EntryBulkDeleteAPI(generics.DestroyAPIView):
+    # (Execuse)
+    # Specifying serializer_class is necessary for passing processing
+    # of npm run generate
+    serializer_class = EntryUpdateSerializer
+
     def delete(self, request: Request, *args, **kwargs) -> Response:
         ids: list[str] = self.request.query_params.getlist("ids", [])
         if len(ids) == 0 or not all([id.isdecimal() for id in ids]):
