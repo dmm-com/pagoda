@@ -1945,7 +1945,7 @@ class Entry(ACLBase):
 
         def _set_attrinfo(
             entity_attr: EntityAttr,
-            attr: Attribute,
+            attr: Attribute | None,
             attrv: AttributeValue | None,
             container: list[AttributeDocument],
             is_recursive: bool = False,
@@ -2065,14 +2065,14 @@ class Entry(ACLBase):
             else:
                 entry_attrs = self.attrs.filter(schema=entity_attr, is_active=True)
 
-            entry_attr = None
+            entry_attr: Attribute | None = None
             for attr in entry_attrs:
                 if attr.schema == entity_attr:
                     entry_attr = attr
                     break
 
-            # Use it when exists prefetch for faster
             if entry_attr:
+                # Use it when exists prefetch for faster
                 if getattr(entry_attr, "prefetch_values", None):
                     attrv = entry_attr.prefetch_values[-1]
                 else:
