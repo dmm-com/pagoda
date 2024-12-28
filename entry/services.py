@@ -1,13 +1,16 @@
+import uuid
 from collections import defaultdict
 from typing import Any, DefaultDict
 
 from django.conf import settings
+from django.core.exceptions import ImproperlyConfigured
 from django.db.models import Count, Prefetch, Q
 
 from airone.lib.acl import ACLType
 from airone.lib.elasticsearch import (
     ESS,
     AdvancedSearchResultRecord,
+    AdvancedSearchResultRecordAttr,
     AdvancedSearchResultRecordIdNamePair,
     AdvancedSearchResults,
     AttrHint,
@@ -19,11 +22,18 @@ from airone.lib.elasticsearch import (
     make_search_results_for_simple,
 )
 from airone.lib.log import Logger
+from airone.lib.types import AttrType
 from entity.models import Entity, EntityAttr
 from entry.models import AdvancedSearchAttributeIndex, Attribute, AttributeValue, Entry
 from user.models import User
 
 from .settings import CONFIG
+from .spanner_advanced_search import (
+    AdvancedSearchAttribute,
+    AdvancedSearchAttributeValue,
+    AdvancedSearchEntry,
+    SpannerRepository,
+)
 
 
 class AdvancedSearchService:
@@ -316,6 +326,123 @@ class AdvancedSearchService:
         except Exception as e:
             Logger.warning("Failed to create AdvancedSearchAttributeIndex: %s" % e)
 
+        # for experimental, a new advanced search index in Cloud Spanner
+        if settings.AIRONE_SPANNER_ENABLED:
+            try:
+                # Initialize Spanner repository
+                repo = SpannerRepository(
+                    project_id=settings.AIRONE_SPANNER_PROJECT,
+                    instance_id=settings.AIRONE_SPANNER_INSTANCE,
+                    database_id=settings.AIRONE_SPANNER_DATABASE,
+                )
+
+                # First, delete all existing entries for this entity in a separate batch
+                with repo.database.batch() as batch:
+                    repo.delete_entries_by_entity(entity.id, batch)
+
+                # Prepare all entries
+                entries: list[AdvancedSearchEntry] = []
+                entry_id_map: dict[int, str] = {}  # Maps Entry.id to Spanner EntryId
+                for entry in entry_list:
+                    spanner_entry_id = str(uuid.uuid4())
+                    entry_id_map[entry.id] = spanner_entry_id
+                    entries.append(
+                        AdvancedSearchEntry(
+                            entry_id=spanner_entry_id,
+                            name=entry.name,
+                            origin_entity_id=entity.id,
+                            origin_entry_id=entry.id,
+                        )
+                    )
+
+                # Insert all entries in a single batch
+                with repo.database.batch() as batch:
+                    repo.insert_entries(entries, batch)
+
+                # Process attributes and their values in batches grouped by entity_attr
+                for entity_attr in entity_attrs:
+                    attributes: list[AdvancedSearchAttribute] = []
+                    attribute_values: list[AdvancedSearchAttributeValue] = []
+
+                    # Collect all attributes and values for this entity_attr
+                    for entry in entry_list:
+                        spanner_entry_id = entry_id_map[entry.id]
+                        attr = next(
+                            (a for a in entry.prefetch_attrs if a.schema == entity_attr),
+                            None,
+                        )
+                        if not attr:
+                            continue
+
+                        # Create attribute record
+                        spanner_attr_id = str(uuid.uuid4())
+                        attributes.append(
+                            AdvancedSearchAttribute(
+                                entry_id=spanner_entry_id,
+                                attribute_id=spanner_attr_id,
+                                type=AttrType(attr.schema.type),
+                                origin_entity_attr_id=entity_attr.id,
+                                origin_attribute_id=attr.id,
+                            )
+                        )
+
+                        # Create attribute value records
+                        for value in attr.prefetch_values:
+                            # Convert value to searchable format
+                            search_key = str(value.value)
+                            if value.referral:
+                                search_key = value.referral.name
+                                value_data = {
+                                    "id": value.referral.id,
+                                    "name": value.referral.name,
+                                }
+                            elif value.group:
+                                search_key = value.group.name
+                                value_data = {
+                                    "id": value.group.id,
+                                    "name": value.group.name,
+                                }
+                            elif value.role:
+                                search_key = value.role.name
+                                value_data = {
+                                    "id": value.role.id,
+                                    "name": value.role.name,
+                                }
+                            else:
+                                # Convert primitive values to a JSON-compatible format
+                                value_data = {"value": value.value}
+                                if isinstance(value.value, (list, dict)):
+                                    value_data = {"value": value.value}
+                                elif isinstance(value.value, bool):
+                                    value_data = {"value": value.value}
+                                elif isinstance(value.value, (int, float)):
+                                    value_data = {"value": value.value}
+                                elif value.value is None:
+                                    value_data = {"value": None}
+                                else:
+                                    value_data = {"value": str(value.value)}
+
+                            attribute_values.append(
+                                AdvancedSearchAttributeValue(
+                                    entry_id=spanner_entry_id,
+                                    attribute_id=spanner_attr_id,
+                                    attribute_value_id=str(uuid.uuid4()),
+                                    key=search_key,
+                                    value=value_data,
+                                )
+                            )
+
+                    # Insert attributes and their values in a single batch
+                    if attributes or attribute_values:
+                        with repo.database.batch() as batch:
+                            if attributes:
+                                repo.insert_attributes(attributes, batch)
+                            if attribute_values:
+                                repo.insert_attribute_values(attribute_values, batch)
+
+            except Exception as e:
+                Logger.warning(f"Failed to sync data to Spanner: {e}")
+
     @classmethod
     def search_entries_v2(
         kls,
@@ -436,5 +563,137 @@ class AdvancedSearchService:
 
         return AdvancedSearchResults(
             ret_count=total,
+            ret_values=values,
+        )
+
+    @classmethod
+    def search_entries_v3(
+        kls,
+        user: User,
+        hint_entity_ids: list[str],
+        hint_attrs: list[AttrHint] = [],
+        limit: int = CONFIG.MAX_LIST_ENTRIES,
+        entry_name: str | None = None,
+        hint_referral: str | None = None,
+        is_output_all: bool = False,
+        hint_referral_entity_id: int | None = None,
+        offset: int = 0,
+    ) -> AdvancedSearchResults:
+        """Search entries using Cloud Spanner.
+        This is a PoC implementation that uses Spanner for advanced search functionality.
+        """
+        # Check if Spanner is enabled
+        if not getattr(settings, "AIRONE_SPANNER_ENABLED", False):
+            raise ImproperlyConfigured(
+                "Spanner search is not enabled. Please set AIRONE_SPANNER_ENABLED=true"
+            )
+
+        # Get Spanner settings from environment
+        try:
+            project_id = settings.GOOGLE_CLOUD_PROJECT
+            instance_id = settings.AIRONE_SPANNER_INSTANCE
+            database_id = settings.AIRONE_SPANNER_DATABASE
+        except AttributeError as e:
+            raise ImproperlyConfigured(f"Missing Spanner configuration: {e}")
+
+        # Initialize Spanner repository with environment variables
+        repo = SpannerRepository(
+            project_id=project_id,
+            instance_id=instance_id,
+            database_id=database_id,
+        )
+
+        # Convert entity IDs to integers
+        entity_ids = [int(id) for id in hint_entity_ids]
+
+        # Get attribute names from hints
+        attr_names = [attr.name for attr in hint_attrs if attr.name]
+
+        # Search entries in Spanner
+        entries = repo.search_entries(
+            entity_ids=entity_ids,
+            attribute_names=attr_names,
+            entry_name_pattern=entry_name,
+            limit=limit,
+            offset=offset,
+        )
+
+        if not entries:
+            return AdvancedSearchResults(ret_count=0, ret_values=[])
+
+        # Get entry IDs for further queries
+        entry_ids = [entry.entry_id for entry in entries]
+
+        # Get attributes and their values
+        attr_values = repo.get_entry_attributes(entry_ids, attr_names)
+
+        # Organize attributes by entry
+        attrs_by_entry: dict[str, dict[str, dict]] = {}
+        for attr, value in attr_values:
+            if attr.entry_id not in attrs_by_entry:
+                attrs_by_entry[attr.entry_id] = {}
+
+            # TODO: Get actual attribute name from EntityAttr
+            # For now, we'll use a placeholder
+            attr_name = f"attr_{attr.origin_entity_attr_id}"
+
+            attrs_by_entry[attr.entry_id][attr_name] = {
+                "type": attr.type,
+                "value": value.value,
+                # TODO: Implement proper ACL check
+                "is_readable": True,
+            }
+
+        # Get referrals if requested
+        referrals_by_entry: dict[str, list[dict[str, Any]]] = {}
+        if hint_referral is not None:
+            referrals_by_entry = repo.get_referrals(
+                entry_ids,
+                hint_referral,
+                hint_referral_entity_id,
+            )
+
+        # Convert to AdvancedSearchResults format
+        values = []
+        for entry in entries:
+            entity_name = f"Entity_{entry.origin_entity_id}"
+
+            # 属性の型を修正
+            attrs = {
+                name: AdvancedSearchResultRecordAttr(
+                    type=attr_info["type"],
+                    value=attr_info["value"],
+                    is_readable=attr_info["is_readable"],
+                )
+                for name, attr_info in attrs_by_entry.get(entry.entry_id, {}).items()
+            }
+
+            # referralsの型を修正
+            referrals = [
+                AdvancedSearchResultRecordIdNamePair(
+                    id=ref["id"],
+                    name=ref["name"],
+                )
+                for ref in referrals_by_entry.get(entry.entry_id, [])
+            ]
+
+            values.append(
+                AdvancedSearchResultRecord(
+                    entity={
+                        "id": entry.origin_entity_id,
+                        "name": entity_name,
+                    },
+                    entry={
+                        "id": entry.origin_entry_id,
+                        "name": entry.name,
+                    },
+                    attrs=attrs,
+                    is_readable=True,
+                    referrals=referrals,
+                )
+            )
+
+        return AdvancedSearchResults(
+            ret_count=len(values),
             ret_values=values,
         )

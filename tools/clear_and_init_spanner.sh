@@ -22,15 +22,15 @@ gcloud spanner databases create $DATABASE \
     --instance=$INSTANCE \
     --ddl-file="entry/spanner/schema.sql"
 
-echo "Inserting seed data..."
-gcloud spanner databases execute-sql $DATABASE \
-    --instance=$INSTANCE \
-    --sql="$(cat entry/spanner/seed1.sql)"
-gcloud spanner databases execute-sql $DATABASE \
-    --instance=$INSTANCE \
-    --sql="$(cat entry/spanner/seed2.sql)"
-gcloud spanner databases execute-sql $DATABASE \
-    --instance=$INSTANCE \
-    --sql="$(cat entry/spanner/seed3.sql)"
+# echo "Inserting seed data..."
+# gcloud spanner databases execute-sql $DATABASE \
+#     --instance=$INSTANCE \
+#     --sql="$(cat entry/spanner/seed1.sql)"
+# gcloud spanner databases execute-sql $DATABASE \
+#     --instance=$INSTANCE \
+#     --sql="$(cat entry/spanner/seed2.sql)"
+# gcloud spanner databases execute-sql $DATABASE \
+#     --instance=$INSTANCE \
+#     --sql="$(cat entry/spanner/seed3.sql)"
 
 echo "Database initialization completed successfully."
