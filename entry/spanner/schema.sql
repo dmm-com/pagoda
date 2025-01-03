@@ -5,7 +5,7 @@ CREATE TABLE AdvancedSearchEntry (
     OriginEntryId INT64 NOT NULL
 ) PRIMARY KEY (EntryId);
 
-CREATE INDEX idx_entry_name ON AdvancedSearchEntry(Name);
+CREATE INDEX AdvancedSearchEntryNameIndex ON AdvancedSearchEntry(Name);
 
 CREATE TABLE AdvancedSearchAttribute (
     EntryId STRING(36) NOT NULL,
@@ -20,9 +20,12 @@ CREATE TABLE AdvancedSearchAttributeValue (
     EntryId STRING(36) NOT NULL,
     AttributeId STRING(36) NOT NULL,
     AttributeValueId STRING(36) NOT NULL,
-    Key STRING(512) NOT NULL,
-    Value JSON
+    Value STRING(MAX) NOT NULL,
+    RawValue JSON,
+
+    Value_Tokens TOKENLIST AS (TOKENIZE_FULLTEXT(Value)) HIDDEN
 ) PRIMARY KEY (EntryId, AttributeId, AttributeValueId),
   INTERLEAVE IN PARENT AdvancedSearchAttribute ON DELETE CASCADE;
 
-CREATE INDEX idx_attribute_value_key ON AdvancedSearchAttributeValue(Key);
+CREATE SEARCH INDEX AdvancedSearchAttributeValueValueIndex
+  ON AdvancedSearchAttributeValue(Value_Tokens);
