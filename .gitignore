@@ -143,6 +143,7 @@ tags
 
 # dumped SQL data for backup
 *.sql
+!**/spanner/*.sql
 
 # ignores customviews
 /custom_view
