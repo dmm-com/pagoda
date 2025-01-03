@@ -7,6 +7,8 @@ from google.cloud.spanner_v1.instance import Instance
 from pydantic import BaseModel, Field
 
 from airone.lib.types import AttrType
+from entity.models import EntityAttr
+from entry.models import AttributeValue
 
 
 class SpannerBatch(Protocol):
@@ -51,8 +53,104 @@ class AdvancedSearchAttributeValue(BaseModel):
     entry_id: str = Field(description="UUID of the parent entry")
     attribute_id: str = Field(description="UUID of the parent attribute")
     attribute_value_id: str = Field(description="UUID of the attribute value")
-    key: str = Field(max_length=512, description="Search key for the value")
-    value: Optional[Any] = Field(description="JSON value data")
+    value: str = Field(description="Searchable text value")
+    raw_value: Optional[dict[str, Any] | list[Any]] = Field(description="JSON value data")
+
+    @classmethod
+    def create_instance(
+        cls,
+        entry_id: str,
+        attribute_id: str,
+        attribute_value_id: str,
+        entity_attr: EntityAttr,
+        attrv: AttributeValue | None,
+    ) -> "AdvancedSearchAttributeValue":
+        """Create an instance based on EntityAttr and AttributeValue.
+        This follows the same conversion logic as AdvancedSearchAttributeIndex.
+        """
+        value: str | None = None
+        raw_value: dict[str, Any] | list[Any] | None = None
+
+        if attrv:
+            match entity_attr.type:
+                case AttrType.STRING | AttrType.TEXT:
+                    value = attrv.value
+                case AttrType.BOOLEAN:
+                    value = "true" if attrv.boolean else "false"
+                case AttrType.DATE:
+                    value = attrv.date.isoformat() if attrv.date else None
+                case AttrType.DATETIME:
+                    value = attrv.datetime.isoformat() if attrv.datetime else None
+                case AttrType.OBJECT:
+                    value = attrv.referral.name if attrv.referral else None
+                    raw_value = (
+                        {"id": attrv.referral.id, "name": attrv.referral.name}
+                        if attrv.referral
+                        else None
+                    )
+                case AttrType.NAMED_OBJECT:
+                    value = attrv.referral.name if attrv.referral else None
+                    raw_value = {
+                        str(attrv.value): {
+                            "id": attrv.referral.id,
+                            "name": attrv.referral.name,
+                        }
+                        if attrv.referral
+                        else None
+                    }
+                case AttrType.GROUP:
+                    value = attrv.group.name if attrv.group else None
+                    raw_value = (
+                        {"id": attrv.group.id, "name": attrv.group.name} if attrv.group else None
+                    )
+                case AttrType.ROLE:
+                    value = attrv.role.name if attrv.role else None
+                    raw_value = (
+                        {"id": attrv.role.id, "name": attrv.role.name} if attrv.role else None
+                    )
+                case AttrType.ARRAY_STRING:
+                    raw_value = [v.value for v in attrv.data_array.all()]
+                    value = ",".join(raw_value)
+                case AttrType.ARRAY_OBJECT:
+                    raw_value = [
+                        {"id": v.referral.id, "name": v.referral.name}
+                        for v in attrv.data_array.all()
+                        if v.referral
+                    ]
+                    value = ",".join([v["name"] for v in raw_value])
+                case AttrType.ARRAY_NAMED_OBJECT:
+                    raw_value = [
+                        {v.value: {"id": v.referral.id, "name": v.referral.name}}
+                        for v in attrv.data_array.all()
+                        if v.referral
+                    ]
+                    value = ",".join(
+                        [v.referral.name for v in attrv.data_array.all() if v.referral]
+                    )
+                case AttrType.ARRAY_GROUP:
+                    raw_value = [
+                        {"id": v.group.id, "name": v.group.name}
+                        for v in attrv.data_array.all()
+                        if v.group
+                    ]
+                    value = ",".join([v["name"] for v in raw_value])
+                case AttrType.ARRAY_ROLE:
+                    raw_value = [
+                        {"id": v.role.id, "name": v.role.name}
+                        for v in attrv.data_array.all()
+                        if v.role
+                    ]
+                    value = ",".join([v["name"] for v in raw_value])
+                case _:
+                    print("TODO implement it")
+
+        return cls(
+            entry_id=entry_id,
+            attribute_id=attribute_id,
+            attribute_value_id=attribute_value_id,
+            value=value or "",
+            raw_value=raw_value,
+        )
 
 
 # Repository interface
@@ -113,14 +211,14 @@ class SpannerRepository:
 
         batch.insert(
             table="AdvancedSearchAttributeValue",
-            columns=("EntryId", "AttributeId", "AttributeValueId", "Key", "Value"),
+            columns=("EntryId", "AttributeId", "AttributeValueId", "Value", "RawValue"),
             values=[
                 (
                     value.entry_id,
                     value.attribute_id,
                     value.attribute_value_id,
-                    value.key,
-                    json.dumps(value.value) if value.value is not None else None,
+                    value.value,
+                    json.dumps(value.raw_value) if value.raw_value is not None else None,
                 )
                 for value in values
             ],
@@ -241,7 +339,7 @@ class SpannerRepository:
                     AdvancedSearchAttribute(
                         entry_id=row[0],
                         attribute_id=row[1],
-                        type=row[2],
+                        type=AttrType(row[2]),
                         origin_entity_attr_id=row[3],
                         origin_attribute_id=row[4],
                     ),
@@ -249,8 +347,8 @@ class SpannerRepository:
                         entry_id=row[5],
                         attribute_id=row[6],
                         attribute_value_id=row[7],
-                        key=row[8],
-                        value=json.loads(row[9]) if row[9] is not None else None,
+                        value=str(row[8]),
+                        raw_value=json.loads(row[9]) if row[9] is not None else None,
                     ),
                 )
                 for row in results

@@ -340,33 +340,24 @@ class AdvancedSearchService:
                 with repo.database.batch() as batch:
                     repo.delete_entries_by_entity(entity.id, batch)
 
-                # Prepare all entries
-                entries: list[AdvancedSearchEntry] = []
-                entry_id_map: dict[int, str] = {}  # Maps Entry.id to Spanner EntryId
+                # Process each entry and its attributes/values in a single batch
                 for entry in entry_list:
                     spanner_entry_id = str(uuid.uuid4())
-                    entry_id_map[entry.id] = spanner_entry_id
-                    entries.append(
-                        AdvancedSearchEntry(
-                            entry_id=spanner_entry_id,
-                            name=entry.name,
-                            origin_entity_id=entity.id,
-                            origin_entry_id=entry.id,
-                        )
+
+                    # Prepare entry data
+                    spanner_entry = AdvancedSearchEntry(
+                        entry_id=spanner_entry_id,
+                        name=entry.name,
+                        origin_entity_id=entity.id,
+                        origin_entry_id=entry.id,
                     )
 
-                # Insert all entries in a single batch
-                with repo.database.batch() as batch:
-                    repo.insert_entries(entries, batch)
-
-                # Process attributes and their values in batches grouped by entity_attr
-                for entity_attr in entity_attrs:
+                    # Prepare attributes and values for this entry
                     attributes: list[AdvancedSearchAttribute] = []
                     attribute_values: list[AdvancedSearchAttributeValue] = []
 
-                    # Collect all attributes and values for this entity_attr
-                    for entry in entry_list:
-                        spanner_entry_id = entry_id_map[entry.id]
+                    # Process each entity_attr for this entry
+                    for entity_attr in entity_attrs:
                         attr = next(
                             (a for a in entry.prefetch_attrs if a.schema == entity_attr),
                             None,
@@ -386,59 +377,25 @@ class AdvancedSearchService:
                             )
                         )
 
-                        # Create attribute value records
-                        for value in attr.prefetch_values:
-                            # Convert value to searchable format
-                            search_key = str(value.value)
-                            if value.referral:
-                                search_key = value.referral.name
-                                value_data = {
-                                    "id": value.referral.id,
-                                    "name": value.referral.name,
-                                }
-                            elif value.group:
-                                search_key = value.group.name
-                                value_data = {
-                                    "id": value.group.id,
-                                    "name": value.group.name,
-                                }
-                            elif value.role:
-                                search_key = value.role.name
-                                value_data = {
-                                    "id": value.role.id,
-                                    "name": value.role.name,
-                                }
-                            else:
-                                # Convert primitive values to a JSON-compatible format
-                                value_data = {"value": value.value}
-                                if isinstance(value.value, (list, dict)):
-                                    value_data = {"value": value.value}
-                                elif isinstance(value.value, bool):
-                                    value_data = {"value": value.value}
-                                elif isinstance(value.value, (int, float)):
-                                    value_data = {"value": value.value}
-                                elif value.value is None:
-                                    value_data = {"value": None}
-                                else:
-                                    value_data = {"value": str(value.value)}
-
+                        # Create attribute value records using the new create_instance method
+                        for attrv in attr.prefetch_values:
                             attribute_values.append(
-                                AdvancedSearchAttributeValue(
+                                AdvancedSearchAttributeValue.create_instance(
                                     entry_id=spanner_entry_id,
                                     attribute_id=spanner_attr_id,
                                     attribute_value_id=str(uuid.uuid4()),
-                                    key=search_key,
-                                    value=value_data,
+                                    entity_attr=entity_attr,
+                                    attrv=attrv,
                                 )
                             )
 
-                    # Insert attributes and their values in a single batch
-                    if attributes or attribute_values:
-                        with repo.database.batch() as batch:
-                            if attributes:
-                                repo.insert_attributes(attributes, batch)
-                            if attribute_values:
-                                repo.insert_attribute_values(attribute_values, batch)
+                    # Insert entry and its attributes/values in a single batch
+                    with repo.database.batch() as batch:
+                        repo.insert_entries([spanner_entry], batch)
+                        if attributes:
+                            repo.insert_attributes(attributes, batch)
+                        if attribute_values:
+                            repo.insert_attribute_values(attribute_values, batch)
 
             except Exception as e:
                 Logger.warning(f"Failed to sync data to Spanner: {e}")
