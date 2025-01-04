@@ -372,6 +372,7 @@ class AdvancedSearchService:
                                 entry_id=spanner_entry_id,
                                 attribute_id=spanner_attr_id,
                                 type=AttrType(attr.schema.type),
+                                name=attr.name,
                                 origin_entity_attr_id=entity_attr.id,
                                 origin_attribute_id=attr.id,
                             )
@@ -584,22 +585,13 @@ class AdvancedSearchService:
         # Get attributes and their values
         attr_values = repo.get_entry_attributes(entry_ids, attr_names)
 
-        # Get all EntityAttr objects in a single query
-        # TODO bundle attr name in the attribute table in Spanner?
-        entity_attr_ids = {attr.origin_entity_attr_id for attr, _ in attr_values}
-        entity_attrs = {attr.id: attr for attr in EntityAttr.objects.filter(id__in=entity_attr_ids)}
-
         # Organize attributes by entry
         attrs_by_entry: dict[str, dict[str, dict]] = {}
         for attr, value in attr_values:
             if attr.entry_id not in attrs_by_entry:
                 attrs_by_entry[attr.entry_id] = {}
 
-            entity_attr = entity_attrs.get(attr.origin_entity_attr_id)
-            if not entity_attr:
-                raise RuntimeError(f"EntityAttr not found for id: {attr.origin_entity_attr_id}")
-
-            attrs_by_entry[attr.entry_id][entity_attr.name] = {
+            attrs_by_entry[attr.entry_id][attr.name] = {
                 "type": attr.type,
                 "value": value.value,
                 # TODO: Implement proper ACL check

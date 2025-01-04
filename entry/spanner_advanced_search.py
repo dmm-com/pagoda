@@ -43,6 +43,7 @@ class AdvancedSearchAttribute(BaseModel):
     entry_id: str = Field(description="UUID of the parent entry")
     attribute_id: str = Field(description="UUID of the attribute")
     type: AttrType = Field(description="Type of the attribute")
+    name: str = Field(max_length=200, description="Name of the attribute")
     origin_entity_attr_id: int = Field(description="Original entity attribute ID from Django")
     origin_attribute_id: int = Field(description="Original attribute ID from Django")
 
@@ -187,6 +188,7 @@ class SpannerRepository:
                 "EntryId",
                 "AttributeId",
                 "Type",
+                "Name",
                 "OriginEntityAttrId",
                 "OriginAttributeId",
             ),
@@ -195,6 +197,7 @@ class SpannerRepository:
                     attr.entry_id,
                     attr.attribute_id,
                     attr.type.value,
+                    attr.name,
                     attr.origin_entity_attr_id,
                     attr.origin_attribute_id,
                 )
@@ -295,6 +298,13 @@ class SpannerRepository:
             "entity_ids": spanner_v1.param_types.Array(spanner_v1.param_types.INT64)
         }
 
+        if attribute_names:
+            query += " AND a.Name IN UNNEST(@attribute_names)"
+            params["attribute_names"] = attribute_names
+            param_types["attribute_names"] = spanner_v1.param_types.Array(
+                spanner_v1.param_types.STRING
+            )
+
         if entry_name_pattern:
             query += " AND LOWER(e.Name) LIKE CONCAT('%', LOWER(@name_pattern), '%')"
             params["name_pattern"] = entry_name_pattern
@@ -331,6 +341,13 @@ class SpannerRepository:
         params = {"entry_ids": entry_ids}
         param_types = {"entry_ids": spanner_v1.param_types.Array(spanner_v1.param_types.STRING)}
 
+        if attribute_names:
+            query += " AND a.Name IN UNNEST(@attribute_names)"
+            params["attribute_names"] = attribute_names
+            param_types["attribute_names"] = spanner_v1.param_types.Array(
+                spanner_v1.param_types.STRING
+            )
+
         with self.database.snapshot() as snapshot:
             results = snapshot.execute_sql(query, params=params, param_types=param_types)
             return [
@@ -339,15 +356,16 @@ class SpannerRepository:
                         entry_id=row[0],
                         attribute_id=row[1],
                         type=AttrType(row[2]),
-                        origin_entity_attr_id=row[3],
-                        origin_attribute_id=row[4],
+                        name=row[3],
+                        origin_entity_attr_id=row[4],
+                        origin_attribute_id=row[5],
                     ),
                     AdvancedSearchAttributeValue(
-                        entry_id=row[5],
-                        attribute_id=row[6],
-                        attribute_value_id=row[7],
-                        value=str(row[8]),
-                        raw_value=row[9],
+                        entry_id=row[6],
+                        attribute_id=row[7],
+                        attribute_value_id=row[8],
+                        value=str(row[9]),
+                        raw_value=row[10],
                     ),
                 )
                 for row in results

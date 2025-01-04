@@ -11,6 +11,7 @@ CREATE TABLE AdvancedSearchAttribute (
     EntryId STRING(36) NOT NULL,
     AttributeId STRING(36) NOT NULL,
     Type INT64 NOT NULL,
+    Name STRING(200) NOT NULL,
     OriginEntityAttrId INT64 NOT NULL,
     OriginAttributeId INT64 NOT NULL
 ) PRIMARY KEY (EntryId, AttributeId),
