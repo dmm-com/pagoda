@@ -350,6 +350,13 @@ class SpannerRepository:
 
         with self.database.snapshot() as snapshot:
             results = snapshot.execute_sql(query, params=params, param_types=param_types)
+
+            def _parse_raw_value(raw_value: Any) -> Optional[dict[str, Any] | list[Any]]:
+                if isinstance(raw_value, spanner_v1.data_types.JsonObject):
+                    if raw_value._is_array:
+                        return raw_value._array_value
+                return raw_value
+
             return [
                 (
                     AdvancedSearchAttribute(
@@ -365,7 +372,7 @@ class SpannerRepository:
                         attribute_id=row[7],
                         attribute_value_id=row[8],
                         value=str(row[9]),
-                        raw_value=row[10],
+                        raw_value=_parse_raw_value(row[10]),
                     ),
                 )
                 for row in results

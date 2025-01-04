@@ -594,6 +594,7 @@ class AdvancedSearchService:
             attrs_by_entry[attr.entry_id][attr.name] = {
                 "type": attr.type,
                 "value": value.value,
+                "raw_value": value.raw_value,
                 # TODO: Implement proper ACL check
                 "is_readable": True,
             }
@@ -616,7 +617,7 @@ class AdvancedSearchService:
             attrs = {
                 name: AdvancedSearchResultRecordAttr(
                     type=attr_info["type"],
-                    value=attr_info["value"],
+                    value=attr_info["raw_value"] if attr_info["raw_value"] else attr_info["value"],
                     is_readable=attr_info["is_readable"],
                 )
                 for name, attr_info in attrs_by_entry.get(entry.entry_id, {}).items()
