@@ -1,7 +1,7 @@
 import { PaginatedEntityListList } from "@dmm-com/airone-apiclient-typescript-fetch";
 import AddIcon from "@mui/icons-material/Add";
 import { Box, Button, Grid } from "@mui/material";
-import React, { FC, useState } from "react";
+import React, { FC } from "react";
 import { Link } from "react-router-dom";
 
 import { EntityListCard } from "./EntityListCard";
@@ -9,7 +9,7 @@ import { EntityListCard } from "./EntityListCard";
 import { PaginationFooter } from "components/common/PaginationFooter";
 import { SearchBox } from "components/common/SearchBox";
 import { newEntityPath } from "routes/Routes";
-import { EntityList as ConstEntityList } from "services/Constants";
+import { EntityListParam } from "services/Constants";
 import { normalizeToMatch } from "services/StringUtil";
 
 interface Props {
@@ -29,8 +29,6 @@ export const EntityList: FC<Props> = ({
   handleChangeQuery,
   setToggle,
 }) => {
-  const [keyword, setKeyword] = useState(query ?? "");
-
   return (
     <Box>
       {/* This box shows search box and create button */}
@@ -38,12 +36,11 @@ export const EntityList: FC<Props> = ({
         <Box width="600px">
           <SearchBox
             placeholder="モデルを絞り込む"
-            value={keyword}
-            onChange={(e) => setKeyword(e.target.value)}
+            defaultValue={query}
             onKeyPress={(e) => {
               e.key === "Enter" &&
                 handleChangeQuery(
-                  keyword.length > 0 ? normalizeToMatch(keyword) : ""
+                  normalizeToMatch((e.target as HTMLInputElement).value ?? "")
                 );
             }}
           />
@@ -69,7 +66,7 @@ export const EntityList: FC<Props> = ({
       </Grid>
       <PaginationFooter
         count={entities.count ?? 0}
-        maxRowCount={ConstEntityList.MAX_ROW_COUNT}
+        maxRowCount={EntityListParam.MAX_ROW_COUNT}
         page={page}
         changePage={changePage}
       />

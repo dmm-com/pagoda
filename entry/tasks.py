@@ -153,6 +153,10 @@ def _do_import_entries(job: Job):
 
         entry: Entry = Entry.objects.filter(name=entry_data["name"], schema=entity).first()
         if not entry:
+            # skip to create Item when another duplicated Alias exists
+            if not entity.is_available(entry_data["name"]):
+                continue
+
             entry = Entry(name=entry_data["name"], schema=entity, created_user=user)
 
             # for history record
@@ -544,8 +548,16 @@ def copy_entry(self, job: Job) -> tuple[JobStatus, str, None] | None:
 @may_schedule_until_job_is_ready
 def do_copy_entry(self, job: Job) -> tuple[JobStatus, str, None]:
     src_entry = Entry.objects.get(id=job.target.id)
-
     params = json.loads(job.params)
+
+    # abort this job when there is duplicated Alias exists
+    if not src_entry.schema.is_available(params["new_name"]):
+        return (
+            JobStatus.ERROR,
+            "Duplicated Alias(name=%s) exists in this model" % params["new_name"],
+            src_entry,
+        )
+
     dest_entry = Entry.objects.filter(schema=src_entry.schema, name=params["new_name"]).first()
     if not dest_entry:
         dest_entry = src_entry.clone(job.user, name=params["new_name"])

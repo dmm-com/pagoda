@@ -1452,6 +1452,20 @@ class Entry(ACLBase):
         super(Entry, self).__init__(*args, **kwargs)
         self.objtype = ACLObjType.Entry
 
+    def add_alias(self, name):
+        # validate name that is not duplicated with other Item names and Aliases in this model
+        if not self.schema.is_available(name):
+            raise ValueError("Specified name has already been used by other Item or Alias")
+
+        return AliasEntry.objects.create(name=name, entry=self)
+
+    def delete_alias(self, name):
+        alias = AliasEntry.objects.filter(
+            name=name, entry__schema=self.schema, entry__is_active=True
+        ).first()
+        if alias:
+            alias.delete()
+
     def add_attribute_from_base(self, base: EntityAttr, request_user: User):
         if not isinstance(base, EntityAttr):
             raise TypeError('Variable "base" is incorrect type')
@@ -1931,7 +1945,7 @@ class Entry(ACLBase):
 
         def _set_attrinfo(
             entity_attr: EntityAttr,
-            attr: Attribute,
+            attr: Attribute | None,
             attrv: AttributeValue | None,
             container: list[AttributeDocument],
             is_recursive: bool = False,
@@ -2051,14 +2065,14 @@ class Entry(ACLBase):
             else:
                 entry_attrs = self.attrs.filter(schema=entity_attr, is_active=True)
 
-            entry_attr = None
+            entry_attr: Attribute | None = None
             for attr in entry_attrs:
                 if attr.schema == entity_attr:
                     entry_attr = attr
                     break
 
-            # Use it when exists prefetch for faster
             if entry_attr:
+                # Use it when exists prefetch for faster
                 if getattr(entry_attr, "prefetch_values", None):
                     attrv = entry_attr.prefetch_values[-1]
                 else:
@@ -2421,3 +2435,14 @@ class AdvancedSearchAttributeIndex(models.Model):
                 return self.raw_value
             case _:
                 print("TODO implement it")
+
+
+class AliasEntry(models.Model):
+    name = models.CharField(max_length=200)
+
+    # This indicates alias of this Entry
+    entry = models.ForeignKey(
+        Entry,
+        related_name="aliases",
+        on_delete=models.CASCADE,
+    )

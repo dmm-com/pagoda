@@ -13,7 +13,7 @@ import {
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import React, { FC, useMemo, useState } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 import { UserControlMenu } from "./UserControlMenu";
 
@@ -25,7 +25,7 @@ import { useAsyncWithThrow } from "hooks/useAsyncWithThrow";
 import { usePage } from "hooks/usePage";
 import { aironeApiClient } from "repository/AironeApiClient";
 import { newUserPath, userPath } from "routes/Routes";
-import { UserList as ConstUserList } from "services/Constants";
+import { UserListParam } from "services/Constants";
 import { ServerContext } from "services/ServerContext";
 import { normalizeToMatch } from "services/StringUtil";
 
@@ -51,7 +51,6 @@ export const UserList: FC = ({}) => {
   const [page, changePage] = usePage();
   const params = new URLSearchParams(location.search);
   const [query, setQuery] = useState<string>(params.get("query") ?? "");
-  const [keyword, setKeyword] = useState(query ?? "");
   const [userAnchorEls, setUserAnchorEls] = useState<{
     [key: number]: HTMLButtonElement | null;
   }>({});
@@ -84,12 +83,11 @@ export const UserList: FC = ({}) => {
         <Box width={500}>
           <SearchBox
             placeholder="ユーザを絞り込む"
-            value={keyword}
-            onChange={(e) => setKeyword(e.target.value)}
+            defaultValue={query}
             onKeyPress={(e) => {
               e.key === "Enter" &&
                 handleChangeQuery(
-                  keyword.length > 0 ? normalizeToMatch(keyword) : undefined
+                  normalizeToMatch((e.target as HTMLInputElement).value ?? "")
                 );
             }}
           />
@@ -160,7 +158,7 @@ export const UserList: FC = ({}) => {
 
       <PaginationFooter
         count={users.value?.count ?? 0}
-        maxRowCount={ConstUserList.MAX_ROW_COUNT}
+        maxRowCount={UserListParam.MAX_ROW_COUNT}
         page={page}
         changePage={changePage}
       />

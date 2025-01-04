@@ -276,7 +276,7 @@ class Common(Configuration):
 
     try:
         proc = subprocess.Popen(
-            "cd %s && git describe --tags" % BASE_DIR,
+            "cd %s && git tag --points-at | grep -v pagoda-core- | head -1" % BASE_DIR,
             shell=True,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,

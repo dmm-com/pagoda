@@ -148,13 +148,6 @@ class AironeTestCase(TestCase):
 
         return entry
 
-
-class AironeViewTest(AironeTestCase):
-    def setUp(self):
-        super(AironeViewTest, self).setUp()
-
-        self.client = Client()
-
     def _do_login(self, uname, is_superuser=False) -> User:
         # create test user to authenticate
         user = User(username=uname, is_superuser=is_superuser)
@@ -170,6 +163,13 @@ class AironeViewTest(AironeTestCase):
 
     def guest_login(self, uname="guest") -> User:
         return self._do_login(uname)
+
+
+class AironeViewTest(AironeTestCase):
+    def setUp(self):
+        super(AironeViewTest, self).setUp()
+
+        self.client = Client()
 
     def open_fixture_file(self, fname):
         test_file_path = inspect.getfile(self.__class__)

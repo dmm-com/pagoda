@@ -1,7 +1,7 @@
 import AddIcon from "@mui/icons-material/Add";
 import { Box, Button, Grid } from "@mui/material";
 import React, { FC, useState } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 import { EntryListCard } from "./EntryListCard";
 
@@ -12,7 +12,7 @@ import { useAsyncWithThrow } from "hooks/useAsyncWithThrow";
 import { usePage } from "hooks/usePage";
 import { aironeApiClient } from "repository/AironeApiClient";
 import { newEntryPath } from "routes/Routes";
-import { EntryList as ConstEntryList } from "services/Constants";
+import { EntryListParam } from "services/Constants";
 import { normalizeToMatch } from "services/StringUtil";
 
 interface Props {
@@ -29,7 +29,6 @@ export const EntryList: FC<Props> = ({ entityId, canCreateEntry = true }) => {
   const params = new URLSearchParams(location.search);
 
   const [query, setQuery] = useState<string>(params.get("query") ?? "");
-  const [keyword, setKeyword] = useState(query ?? "");
   const [toggle, setToggle] = useState(false);
 
   const entries = useAsyncWithThrow(async () => {
@@ -53,12 +52,11 @@ export const EntryList: FC<Props> = ({ entityId, canCreateEntry = true }) => {
         <Box width="600px">
           <SearchBox
             placeholder="アイテムを絞り込む"
-            value={keyword}
-            onChange={(e) => setKeyword(e.target.value)}
+            defaultValue={query}
             onKeyPress={(e) => {
               e.key === "Enter" &&
                 handleChangeQuery(
-                  keyword.length > 0 ? normalizeToMatch(keyword) : ""
+                  normalizeToMatch((e.target as HTMLInputElement).value ?? "")
                 );
             }}
           />
@@ -96,7 +94,7 @@ export const EntryList: FC<Props> = ({ entityId, canCreateEntry = true }) => {
       )}
       <PaginationFooter
         count={entries.value?.count ?? 0}
-        maxRowCount={ConstEntryList.MAX_ROW_COUNT}
+        maxRowCount={EntryListParam.MAX_ROW_COUNT}
         page={page}
         changePage={changePage}
       />
