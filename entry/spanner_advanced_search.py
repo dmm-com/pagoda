@@ -320,7 +320,6 @@ class SpannerRepository:
         attribute_names: list[str] | None = None,
     ) -> list[tuple[AdvancedSearchAttribute, AdvancedSearchAttributeValue]]:
         """Get attributes and their values for given entries"""
-        import json
 
         query = """
         SELECT a.*, v.*
@@ -348,7 +347,7 @@ class SpannerRepository:
                         attribute_id=row[6],
                         attribute_value_id=row[7],
                         value=str(row[8]),
-                        raw_value=json.loads(row[9]) if row[9] is not None else None,
+                        raw_value=row[9],
                     ),
                 )
                 for row in results

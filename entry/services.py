@@ -547,7 +547,7 @@ class AdvancedSearchService:
 
         # Get Spanner settings from environment
         try:
-            project_id = settings.GOOGLE_CLOUD_PROJECT
+            project_id = settings.AIRONE_SPANNER_PROJECT
             instance_id = settings.AIRONE_SPANNER_INSTANCE
             database_id = settings.AIRONE_SPANNER_DATABASE
         except AttributeError as e:
@@ -584,17 +584,22 @@ class AdvancedSearchService:
         # Get attributes and their values
         attr_values = repo.get_entry_attributes(entry_ids, attr_names)
 
+        # Get all EntityAttr objects in a single query
+        # TODO bundle attr name in the attribute table in Spanner?
+        entity_attr_ids = {attr.origin_entity_attr_id for attr, _ in attr_values}
+        entity_attrs = {attr.id: attr for attr in EntityAttr.objects.filter(id__in=entity_attr_ids)}
+
         # Organize attributes by entry
         attrs_by_entry: dict[str, dict[str, dict]] = {}
         for attr, value in attr_values:
             if attr.entry_id not in attrs_by_entry:
                 attrs_by_entry[attr.entry_id] = {}
 
-            # TODO: Get actual attribute name from EntityAttr
-            # For now, we'll use a placeholder
-            attr_name = f"attr_{attr.origin_entity_attr_id}"
+            entity_attr = entity_attrs.get(attr.origin_entity_attr_id)
+            if not entity_attr:
+                raise RuntimeError(f"EntityAttr not found for id: {attr.origin_entity_attr_id}")
 
-            attrs_by_entry[attr.entry_id][attr_name] = {
+            attrs_by_entry[attr.entry_id][entity_attr.name] = {
                 "type": attr.type,
                 "value": value.value,
                 # TODO: Implement proper ACL check

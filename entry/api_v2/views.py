@@ -400,7 +400,18 @@ class AdvancedSearchAPI(generics.GenericAPIView):
             if entity and request.user.has_permission(entity, ACLType.Readable):
                 hint_entity_ids.append(entity.id)
 
-        if settings.ENABLE_ESLESS_ADVANCED_SEARCH:
+        if settings.AIRONE_SPANNER_ENABLED:
+            resp = AdvancedSearchService.search_entries_v3(
+                request.user,
+                hint_entity_ids,
+                hint_attrs,
+                entry_limit,
+                hint_entry_name,
+                hint_referral,
+                is_output_all,
+                offset=entry_offset,
+            )
+        elif settings.ENABLE_ESLESS_ADVANCED_SEARCH:
             resp = AdvancedSearchService.search_entries_v2(
                 request.user,
                 hint_entity_ids,
