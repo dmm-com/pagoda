@@ -326,6 +326,16 @@ class EntryBaseSerializer(serializers.ModelSerializer):
         return obj.aliases.all()
 
 
+class EntrySearchSerializer(EntryBaseSerializer):
+    class Meta:
+        model = Entry
+        fields = [
+            "id",
+            "name",
+            "schema",
+        ]
+
+
 @extend_schema_field({})
 class AttributeValueField(serializers.Field):
     def to_internal_value(self, data):
