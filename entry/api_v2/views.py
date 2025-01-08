@@ -84,6 +84,7 @@ class EntryAPI(viewsets.ModelViewSet):
         serializer = {
             "retrieve": EntryRetrieveSerializer,
             "update": serializers.Serializer,
+            "restore": serializers.Serializer,
             "copy": EntryCopySerializer,
             "list_histories": EntryHistoryAttributeValueSerializer,
             "list_alias": EntryAliasSerializer,
@@ -228,7 +229,8 @@ class searchAPI(viewsets.ReadOnlyModelViewSet):
         results = AdvancedSearchService.search_entries_for_simple(
             query, limit=ENTRY_CONFIG.MAX_SEARCH_ENTRIES
         )
-        return results["ret_values"]
+        entries = Entry.objects.filter(id__in=[x["id"] for x in results["ret_values"]])
+        return entries
 
 
 class AdvancedSearchAPI(generics.GenericAPIView):
