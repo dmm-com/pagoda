@@ -19,6 +19,7 @@ import {
   EntryBase,
   EntryCopy,
   EntryRetrieve,
+  EntrySearch,
   EntrySearchChain,
   GetEntryAttrReferral,
   Group,
@@ -408,7 +409,7 @@ class AironeApiClient {
     );
   }
 
-  async restoreEntry(id: number): Promise<EntryBase> {
+  async restoreEntry(id: number): Promise<void> {
     return await this.entry.entryApiV2RestoreCreate(
       { id },
       {
@@ -636,7 +637,7 @@ class AironeApiClient {
     });
   }
 
-  async getSearchEntries(query: string): Promise<Array<EntryBase>> {
+  async getSearchEntries(query: string): Promise<EntrySearch[]> {
     return await this.entry.entryApiV2SearchList({
       query: query,
     });
