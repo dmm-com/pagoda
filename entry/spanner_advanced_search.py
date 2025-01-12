@@ -6,6 +6,7 @@ from google.cloud.spanner_v1.database import Database
 from google.cloud.spanner_v1.instance import Instance
 from pydantic import BaseModel, Field
 
+from airone.lib.elasticsearch import AttrHint, FilterKey
 from airone.lib.types import AttrType
 from entity.models import EntityAttr
 from entry.models import AttributeValue
@@ -282,6 +283,7 @@ class SpannerRepository:
         entry_name_pattern: Optional[str] = None,
         limit: int = 100,
         offset: int = 0,
+        hint_attrs: list[AttrHint] = [],
     ) -> list[AdvancedSearchEntry]:
         """Search entries based on criteria"""
         query = """
@@ -304,6 +306,160 @@ class SpannerRepository:
             param_types["attribute_names"] = spanner_v1.param_types.Array(
                 spanner_v1.param_types.STRING
             )
+
+        # Add filter conditions based on hint_attrs
+        for i, hint in enumerate(hint_attrs):
+            if not hint.name:
+                continue
+
+            param_prefix = f"hint_{i}"
+            match (hint.filter_key, hint.exact_match or False, hint.keyword):
+                case (FilterKey.EMPTY, _, _):
+                    query += f"""
+                    AND EXISTS (
+                        SELECT 1
+                        FROM AdvancedSearchAttribute a2
+                        WHERE a2.EntryId = e.EntryId
+                        AND a2.Name = @{param_prefix}_name
+                        AND NOT EXISTS (
+                            SELECT 1
+                            FROM AdvancedSearchAttributeValue v2
+                            WHERE v2.EntryId = a2.EntryId
+                            AND v2.AttributeId = a2.AttributeId
+                            AND v2.Value != ''
+                        )
+                    )"""
+                    params[f"{param_prefix}_name"] = hint.name
+                    param_types[f"{param_prefix}_name"] = spanner_v1.param_types.STRING
+
+                case (FilterKey.NON_EMPTY, _, _):
+                    query += f"""
+                    AND EXISTS (
+                        SELECT 1
+                        FROM AdvancedSearchAttribute a2
+                        WHERE a2.EntryId = e.EntryId
+                        AND a2.Name = @{param_prefix}_name
+                        AND EXISTS (
+                            SELECT 1
+                            FROM AdvancedSearchAttributeValue v2
+                            WHERE v2.EntryId = a2.EntryId
+                            AND v2.AttributeId = a2.AttributeId
+                            AND v2.Value != ''
+                        )
+                    )"""
+                    params[f"{param_prefix}_name"] = hint.name
+                    param_types[f"{param_prefix}_name"] = spanner_v1.param_types.STRING
+
+                case (FilterKey.TEXT_CONTAINED, True, keyword) if keyword:
+                    query += f"""
+                    AND EXISTS (
+                        SELECT 1
+                        FROM AdvancedSearchAttribute a2
+                        WHERE a2.EntryId = e.EntryId
+                        AND a2.Name = @{param_prefix}_name
+                        AND EXISTS (
+                            SELECT 1
+                            FROM AdvancedSearchAttributeValue v2
+                            WHERE v2.EntryId = a2.EntryId
+                            AND v2.AttributeId = a2.AttributeId
+                            AND v2.Value = @{param_prefix}_value
+                        )
+                    )"""
+                    params[f"{param_prefix}_name"] = hint.name
+                    params[f"{param_prefix}_value"] = keyword
+                    param_types[f"{param_prefix}_name"] = spanner_v1.param_types.STRING
+                    param_types[f"{param_prefix}_value"] = spanner_v1.param_types.STRING
+
+                case (FilterKey.TEXT_CONTAINED, False, keyword) if keyword:
+                    query += f"""
+                    AND EXISTS (
+                        SELECT 1
+                        FROM AdvancedSearchAttribute a2
+                        WHERE a2.EntryId = e.EntryId
+                        AND a2.Name = @{param_prefix}_name
+                        AND EXISTS (
+                            SELECT 1
+                            FROM AdvancedSearchAttributeValue v2
+                            WHERE v2.EntryId = a2.EntryId
+                            AND v2.AttributeId = a2.AttributeId
+                            AND LOWER(v2.Value) LIKE CONCAT('%', LOWER(@{param_prefix}_value), '%')
+                        )
+                    )"""
+                    params[f"{param_prefix}_name"] = hint.name
+                    params[f"{param_prefix}_value"] = keyword
+                    param_types[f"{param_prefix}_name"] = spanner_v1.param_types.STRING
+                    param_types[f"{param_prefix}_value"] = spanner_v1.param_types.STRING
+
+                case (FilterKey.TEXT_NOT_CONTAINED, True, keyword) if keyword:
+                    query += f"""
+                    AND EXISTS (
+                        SELECT 1
+                        FROM AdvancedSearchAttribute a2
+                        WHERE a2.EntryId = e.EntryId
+                        AND a2.Name = @{param_prefix}_name
+                        AND NOT EXISTS (
+                            SELECT 1
+                            FROM AdvancedSearchAttributeValue v2
+                            WHERE v2.EntryId = a2.EntryId
+                            AND v2.AttributeId = a2.AttributeId
+                            AND v2.Value = @{param_prefix}_value
+                        )
+                    )"""
+                    params[f"{param_prefix}_name"] = hint.name
+                    params[f"{param_prefix}_value"] = keyword
+                    param_types[f"{param_prefix}_name"] = spanner_v1.param_types.STRING
+                    param_types[f"{param_prefix}_value"] = spanner_v1.param_types.STRING
+
+                case (FilterKey.TEXT_NOT_CONTAINED, False, keyword) if keyword:
+                    query += f"""
+                    AND EXISTS (
+                        SELECT 1
+                        FROM AdvancedSearchAttribute a2
+                        WHERE a2.EntryId = e.EntryId
+                        AND a2.Name = @{param_prefix}_name
+                        AND NOT EXISTS (
+                            SELECT 1
+                            FROM AdvancedSearchAttributeValue v2
+                            WHERE v2.EntryId = a2.EntryId
+                            AND v2.AttributeId = a2.AttributeId
+                            AND LOWER(v2.Value) LIKE CONCAT('%', LOWER(@{param_prefix}_value), '%')
+                        )
+                    )"""
+                    params[f"{param_prefix}_name"] = hint.name
+                    params[f"{param_prefix}_value"] = keyword
+                    param_types[f"{param_prefix}_name"] = spanner_v1.param_types.STRING
+                    param_types[f"{param_prefix}_value"] = spanner_v1.param_types.STRING
+
+                case (FilterKey.DUPLICATED, _, _):
+                    query += f"""
+                    AND EXISTS (
+                        SELECT 1
+                        FROM AdvancedSearchAttribute a2
+                        JOIN AdvancedSearchAttributeValue v2
+                            ON a2.EntryId = v2.EntryId
+                            AND a2.AttributeId = v2.AttributeId
+                        WHERE a2.Name = @{param_prefix}_name
+                        GROUP BY v2.Value
+                        HAVING COUNT(*) > 1
+                    )"""
+                    params[f"{param_prefix}_name"] = hint.name
+                    param_types[f"{param_prefix}_name"] = spanner_v1.param_types.STRING
+
+                case (FilterKey.CLEARED, _, _):
+                    # Skip adding conditions for CLEARED as it matches all entries
+                    pass
+
+                case _:
+                    # その他の場合は、単純に attribute_name の存在チェックのみ
+                    query += f"""
+                    AND EXISTS (
+                        SELECT 1
+                        FROM AdvancedSearchAttribute a2
+                        WHERE a2.EntryId = e.EntryId
+                        AND a2.Name = @{param_prefix}_name
+                    )"""
+                    params[f"{param_prefix}_name"] = hint.name
+                    param_types[f"{param_prefix}_name"] = spanner_v1.param_types.STRING
 
         if entry_name_pattern:
             query += " AND LOWER(e.Name) LIKE CONCAT('%', LOWER(@name_pattern), '%')"

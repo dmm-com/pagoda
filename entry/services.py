@@ -574,6 +574,7 @@ class AdvancedSearchService:
             entry_name_pattern=entry_name,
             limit=limit,
             offset=offset,
+            hint_attrs=hint_attrs,
         )
 
         if not entries:
@@ -613,7 +614,7 @@ class AdvancedSearchService:
         for entry in entries:
             entity_name = f"Entity_{entry.origin_entity_id}"
 
-            # 属性の型を修正
+            # Convert attribute types
             attrs = {
                 name: AdvancedSearchResultRecordAttr(
                     type=attr_info["type"],
@@ -623,7 +624,7 @@ class AdvancedSearchService:
                 for name, attr_info in attrs_by_entry.get(entry.entry_id, {}).items()
             }
 
-            # referralsの型を修正
+            # Convert referral types
             referrals = [
                 AdvancedSearchResultRecordIdNamePair(
                     id=ref["id"],
