@@ -42,6 +42,7 @@ from entry.api_v2.serializers import (
     EntryHistoryAttributeValueSerializer,
     EntryImportSerializer,
     EntryRetrieveSerializer,
+    EntrySearchSerializer,
     EntryUpdateSerializer,
     GetEntryAttrReferralSerializer,
 )
@@ -84,6 +85,7 @@ class EntryAPI(viewsets.ModelViewSet):
         serializer = {
             "retrieve": EntryRetrieveSerializer,
             "update": serializers.Serializer,
+            "restore": serializers.Serializer,
             "copy": EntryCopySerializer,
             "list_histories": EntryHistoryAttributeValueSerializer,
             "list_alias": EntryAliasSerializer,
@@ -216,7 +218,7 @@ class EntryAPI(viewsets.ModelViewSet):
     ],
 )
 class searchAPI(viewsets.ReadOnlyModelViewSet):
-    serializer_class = EntryBaseSerializer
+    serializer_class = EntrySearchSerializer
 
     def get_queryset(self):
         queryset = []
