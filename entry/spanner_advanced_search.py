@@ -276,32 +276,29 @@ class SpannerRepository:
             "AdvancedSearchEntry", spanner_v1.KeySet(keys=[[entry_id] for entry_id in entry_ids])
         )
 
-    def search_entries(
+    def _build_search_query_conditions(
         self,
         entity_ids: list[int],
         attribute_names: list[str],
         entry_name_pattern: Optional[str] = None,
-        limit: int = 100,
-        offset: int = 0,
         hint_attrs: list[AttrHint] = [],
-    ) -> list[AdvancedSearchEntry]:
-        """Search entries based on criteria"""
-        query = """
-        SELECT DISTINCT e.*
-        FROM AdvancedSearchEntry e
-        JOIN AdvancedSearchAttribute a ON e.EntryId = a.EntryId
-        JOIN AdvancedSearchAttributeValue v ON
-            a.EntryId = v.EntryId AND
-            a.AttributeId = v.AttributeId
-        WHERE e.OriginEntityId IN UNNEST(@entity_ids)
+    ) -> tuple[str, dict[str, Any], dict[str, Any]]:
+        """Build common query conditions for search and count operations.
+
+        Returns:
+            tuple[str, dict[str, Any], dict[str, Any]]: A tuple containing:
+                - The WHERE clause and JOIN conditions
+                - Query parameters
+                - Parameter types
         """
+        conditions = "WHERE e.OriginEntityId IN UNNEST(@entity_ids)"
         params: dict[str, Any] = {"entity_ids": entity_ids}
         param_types: dict[str, Any] = {
             "entity_ids": spanner_v1.param_types.Array(spanner_v1.param_types.INT64)
         }
 
         if attribute_names:
-            query += " AND a.Name IN UNNEST(@attribute_names)"
+            conditions += " AND a.Name IN UNNEST(@attribute_names)"
             params["attribute_names"] = attribute_names
             param_types["attribute_names"] = spanner_v1.param_types.Array(
                 spanner_v1.param_types.STRING
@@ -315,7 +312,7 @@ class SpannerRepository:
             param_prefix = f"hint_{i}"
             match (hint.filter_key, hint.exact_match or False, hint.keyword):
                 case (FilterKey.EMPTY, _, _):
-                    query += f"""
+                    conditions += f"""
                     AND EXISTS (
                         SELECT 1
                         FROM AdvancedSearchAttribute a2
@@ -333,7 +330,7 @@ class SpannerRepository:
                     param_types[f"{param_prefix}_name"] = spanner_v1.param_types.STRING
 
                 case (FilterKey.NON_EMPTY, _, _):
-                    query += f"""
+                    conditions += f"""
                     AND EXISTS (
                         SELECT 1
                         FROM AdvancedSearchAttribute a2
@@ -351,7 +348,7 @@ class SpannerRepository:
                     param_types[f"{param_prefix}_name"] = spanner_v1.param_types.STRING
 
                 case (FilterKey.TEXT_CONTAINED, True, keyword) if keyword:
-                    query += f"""
+                    conditions += f"""
                     AND EXISTS (
                         SELECT 1
                         FROM AdvancedSearchAttribute a2
@@ -371,7 +368,7 @@ class SpannerRepository:
                     param_types[f"{param_prefix}_value"] = spanner_v1.param_types.STRING
 
                 case (FilterKey.TEXT_CONTAINED, False, keyword) if keyword:
-                    query += f"""
+                    conditions += f"""
                     AND EXISTS (
                         SELECT 1
                         FROM AdvancedSearchAttribute a2
@@ -391,7 +388,7 @@ class SpannerRepository:
                     param_types[f"{param_prefix}_value"] = spanner_v1.param_types.STRING
 
                 case (FilterKey.TEXT_NOT_CONTAINED, True, keyword) if keyword:
-                    query += f"""
+                    conditions += f"""
                     AND EXISTS (
                         SELECT 1
                         FROM AdvancedSearchAttribute a2
@@ -411,7 +408,7 @@ class SpannerRepository:
                     param_types[f"{param_prefix}_value"] = spanner_v1.param_types.STRING
 
                 case (FilterKey.TEXT_NOT_CONTAINED, False, keyword) if keyword:
-                    query += f"""
+                    conditions += f"""
                     AND EXISTS (
                         SELECT 1
                         FROM AdvancedSearchAttribute a2
@@ -431,7 +428,7 @@ class SpannerRepository:
                     param_types[f"{param_prefix}_value"] = spanner_v1.param_types.STRING
 
                 case (FilterKey.DUPLICATED, _, _):
-                    query += f"""
+                    conditions += f"""
                     AND EXISTS (
                         SELECT 1
                         FROM AdvancedSearchAttribute a2
@@ -451,7 +448,7 @@ class SpannerRepository:
 
                 case _:
                     # その他の場合は、単純に attribute_name の存在チェックのみ
-                    query += f"""
+                    conditions += f"""
                     AND EXISTS (
                         SELECT 1
                         FROM AdvancedSearchAttribute a2
@@ -462,10 +459,36 @@ class SpannerRepository:
                     param_types[f"{param_prefix}_name"] = spanner_v1.param_types.STRING
 
         if entry_name_pattern:
-            query += " AND LOWER(e.Name) LIKE CONCAT('%', LOWER(@name_pattern), '%')"
+            conditions += " AND LOWER(e.Name) LIKE CONCAT('%', LOWER(@name_pattern), '%')"
             params["name_pattern"] = entry_name_pattern
 
-        query += " LIMIT @limit OFFSET @offset"
+        return conditions, params, param_types
+
+    def search_entries(
+        self,
+        entity_ids: list[int],
+        attribute_names: list[str],
+        entry_name_pattern: Optional[str] = None,
+        limit: int = 100,
+        offset: int = 0,
+        hint_attrs: list[AttrHint] = [],
+    ) -> list[AdvancedSearchEntry]:
+        """Search entries based on criteria"""
+        conditions, params, param_types = self._build_search_query_conditions(
+            entity_ids, attribute_names, entry_name_pattern, hint_attrs
+        )
+
+        query = f"""
+        SELECT DISTINCT e.*
+        FROM AdvancedSearchEntry e
+        JOIN AdvancedSearchAttribute a ON e.EntryId = a.EntryId
+        JOIN AdvancedSearchAttributeValue v ON
+            a.EntryId = v.EntryId AND
+            a.AttributeId = v.AttributeId
+        {conditions}
+        LIMIT @limit OFFSET @offset
+        """
+
         params.update({"limit": limit, "offset": offset})
         param_types.update(
             {"limit": spanner_v1.param_types.INT64, "offset": spanner_v1.param_types.INT64}
@@ -479,6 +502,35 @@ class SpannerRepository:
                 )
                 for row in results
             ]
+
+    def count_entries(
+        self,
+        entity_ids: list[int],
+        attribute_names: list[str],
+        entry_name_pattern: Optional[str] = None,
+        hint_attrs: list[AttrHint] = [],
+    ) -> int:
+        """Count total number of entries matching the search criteria"""
+        conditions, params, param_types = self._build_search_query_conditions(
+            entity_ids, attribute_names, entry_name_pattern, hint_attrs
+        )
+
+        query = f"""
+        SELECT COUNT(DISTINCT e.EntryId)
+        FROM AdvancedSearchEntry e
+        JOIN AdvancedSearchAttribute a ON e.EntryId = a.EntryId
+        JOIN AdvancedSearchAttributeValue v ON
+            a.EntryId = v.EntryId AND
+            a.AttributeId = v.AttributeId
+        {conditions}
+        """
+
+        with self.database.snapshot() as snapshot:
+            results = snapshot.execute_sql(query, params=params, param_types=param_types)
+            # StreamedResultSet needs to be consumed using its iterator
+            for row in results:
+                return row[0]  # Return the first (and only) row's first column
+            return 0  # Return 0 if no results found
 
     def get_entry_attributes(
         self,

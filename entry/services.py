@@ -567,6 +567,14 @@ class AdvancedSearchService:
         # Get attribute names from hints
         attr_names = [attr.name for attr in hint_attrs if attr.name]
 
+        # Get total count first
+        total = repo.count_entries(
+            entity_ids=entity_ids,
+            attribute_names=attr_names,
+            entry_name_pattern=entry_name,
+            hint_attrs=hint_attrs,
+        )
+
         # Search entries in Spanner
         entries = repo.search_entries(
             entity_ids=entity_ids,
@@ -578,7 +586,7 @@ class AdvancedSearchService:
         )
 
         if not entries:
-            return AdvancedSearchResults(ret_count=0, ret_values=[])
+            return AdvancedSearchResults(ret_count=total, ret_values=[])
 
         # Get entry IDs for further queries
         entry_ids = [entry.entry_id for entry in entries]
@@ -650,6 +658,6 @@ class AdvancedSearchService:
             )
 
         return AdvancedSearchResults(
-            ret_count=len(values),
+            ret_count=total,
             ret_values=values,
         )
