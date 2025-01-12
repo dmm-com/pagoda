@@ -172,6 +172,7 @@ node_modules
 static/js/ui.js*
 coverage
 frontend/dist
+*.tgz
 
 # local django configuration
 airone/settings.py
