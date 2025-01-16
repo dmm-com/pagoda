@@ -1,5 +1,5 @@
 export * from "./AppBase";
-
+export * from "./AironeSnackbarProvider";
 export * from "./components";
 export * from "./hooks";
 export * from "./i18n";
