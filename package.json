@@ -1,6 +1,6 @@
 {
   "name": "@dmm-com/pagoda-core",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "[![CircleCI](https://circleci.com/gh/dmm-com/airone.svg?style=svg&circle-token=2e12c068b0ed1bab9d0c2d72529d5ee1da9b53b4)](https://circleci.com/gh/dmm-com/airone)",
   "main": "frontend/dist/pagoda-core.js",
   "types": "frontend/dist/index.d.ts",
@@ -27,7 +27,7 @@
     "fix": "npx eslint --fix frontend ; npx prettier --write frontend",
     "test": "TZ=UTC npx jest --coverage frontend",
     "test:update": "TZ=UTC npx jest -u frontend",
-    "build:lib": "npm run build:lib:code && npm run build:lib:types",
+    "build:lib": "rm -rf frontend/dist && npm run build:lib:code && npm run build:lib:types",
     "build:lib:code": "webpack --config webpack.library.config.js --mode development",
     "build:lib:types": "tsc --project tsconfig.lib.json"
   },
@@ -91,7 +91,6 @@
     "js-file-download": "^0.4.12",
     "material-ui-popup-state": "^5.0.10",
     "msw": "^2.0.11",
-    "notistack": "^3.0.1",
     "prettier": "2.3.2",
     "prop-types": "^15.7.2",
     "react": "^18.2.0",
@@ -119,6 +118,7 @@
   },
   "peerDependencies": {
     "@mui/material": "^5.11.3",
+    "notistack": "^3.0.1",
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
     "react-router-dom": "^6.0.0"

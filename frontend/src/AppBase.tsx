@@ -1,6 +1,5 @@
 import React, { FC } from "react";
 
-import { AironeSnackbarProvider } from "AironeSnackbarProvider";
 import { ErrorHandler } from "ErrorHandler";
 import { CheckTerms } from "components/common/CheckTerms";
 import { AppRouter } from "routes/AppRouter";
@@ -15,12 +14,10 @@ interface Props {
 
 export const AppBase: FC<Props> = ({ customRoutes }) => {
   return (
-    <AironeSnackbarProvider>
-      <ErrorHandler>
-        <CheckTerms>
-          <AppRouter customRoutes={customRoutes} />
-        </CheckTerms>
-      </ErrorHandler>
-    </AironeSnackbarProvider>
+    <ErrorHandler>
+      <CheckTerms>
+        <AppRouter customRoutes={customRoutes} />
+      </CheckTerms>
+    </ErrorHandler>
   );
 };

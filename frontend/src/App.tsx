@@ -2,6 +2,7 @@ import { ThemeProvider } from "@mui/material";
 import React, { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 
+import { AironeSnackbarProvider } from "AironeSnackbarProvider";
 import { AppBase } from "AppBase";
 import { theme } from "Theme";
 
@@ -13,7 +14,9 @@ const root = createRoot(container);
 root.render(
   <StrictMode>
     <ThemeProvider theme={theme}>
-      <AppBase />
+      <AironeSnackbarProvider>
+        <AppBase />
+      </AironeSnackbarProvider>
     </ThemeProvider>
   </StrictMode>
 );

@@ -3,13 +3,25 @@
 ## In development
 
 ### Added
-* Introduced a new feature to identify Item using another names that are related with
-  specific Item (it is named as Alias).
-  Contributed by @hinashi, @userlocalhost
 
 ### Changed
 
 ### Fixed
+
+## v3.116.0
+
+### Fixed
+* Fixed an error of auto-generate script by formality setting of DRF configuration.
+  Contributed by @userlocalhost
+
+## v3.115.0
+
+### Added
+* Introduced a new feature to identify Item using another names that are related with
+  specific Item (it is named as Alias).
+  Contributed by @hinashi, @userlocalhost
+* Allow customviews to use/modify theme.
+  Contributed by @syucream
 
 ## v3.114.0
 
