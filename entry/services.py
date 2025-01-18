@@ -308,23 +308,24 @@ class AdvancedSearchService:
 
         es.indices.refresh()
 
-        # for experimental, a new advanced search index in MySQL
-        # NOTE currently it makes indexes in both ES and MySQL for safety
-        AdvancedSearchAttributeIndex.objects.filter(entity_attr__in=entity_attrs).delete()
-        indexes: list[AdvancedSearchAttributeIndex] = []
-        for entry in entry_list:
-            for entity_attr in entity_attrs:
-                attr = next((a for a in entry.prefetch_attrs if a.schema == entity_attr), None)
-                attrv: AttributeValue | None = None
-                if attr:
-                    attrv = next(iter(attr.prefetch_values), None)
-                indexes.append(
-                    AdvancedSearchAttributeIndex.create_instance(entry, entity_attr, attrv)
-                )
-        try:
-            AdvancedSearchAttributeIndex.objects.bulk_create(indexes)
-        except Exception as e:
-            Logger.warning("Failed to create AdvancedSearchAttributeIndex: %s" % e)
+        # FIXME Stop writing to MySQL to accelerate indexing for now
+        # # for experimental, a new advanced search index in MySQL
+        # # NOTE currently it makes indexes in both ES and MySQL for safety
+        # AdvancedSearchAttributeIndex.objects.filter(entity_attr__in=entity_attrs).delete()
+        # indexes: list[AdvancedSearchAttributeIndex] = []
+        # for entry in entry_list:
+        #     for entity_attr in entity_attrs:
+        #         attr = next((a for a in entry.prefetch_attrs if a.schema == entity_attr), None)
+        #         attrv: AttributeValue | None = None
+        #         if attr:
+        #             attrv = next(iter(attr.prefetch_values), None)
+        #         indexes.append(
+        #             AdvancedSearchAttributeIndex.create_instance(entry, entity_attr, attrv)
+        #         )
+        # try:
+        #     AdvancedSearchAttributeIndex.objects.bulk_create(indexes)
+        # except Exception as e:
+        #     Logger.warning("Failed to create AdvancedSearchAttributeIndex: %s" % e)
 
         # for experimental, a new advanced search index in Cloud Spanner
         if settings.AIRONE_SPANNER_ENABLED:
@@ -340,63 +341,72 @@ class AdvancedSearchService:
                 with repo.database.batch() as batch:
                     repo.delete_entries_by_entity(entity.id, batch)
 
-                # Process each entry and its attributes/values in a single batch
-                for entry in entry_list:
-                    spanner_entry_id = str(uuid.uuid4())
+                # Process entries in chunks to avoid too large mutation groups
+                entry_chunks = [entry_list[i : i + 100] for i in range(0, len(entry_list), 100)]
+                for chunk in entry_chunks:
+                    # Process each entry in the chunk with its own mutation group
+                    with repo.database.mutation_groups() as mg:
+                        for entry in chunk:
+                            spanner_entry_id = str(uuid.uuid4())
+                            spanner_entries: list[AdvancedSearchEntry] = []
+                            spanner_attributes: list[AdvancedSearchAttribute] = []
+                            spanner_attribute_values: list[AdvancedSearchAttributeValue] = []
 
-                    # Prepare entry data
-                    spanner_entry = AdvancedSearchEntry(
-                        entry_id=spanner_entry_id,
-                        name=entry.name,
-                        origin_entity_id=entity.id,
-                        origin_entry_id=entry.id,
-                    )
-
-                    # Prepare attributes and values for this entry
-                    attributes: list[AdvancedSearchAttribute] = []
-                    attribute_values: list[AdvancedSearchAttributeValue] = []
-
-                    # Process each entity_attr for this entry
-                    for entity_attr in entity_attrs:
-                        attr = next(
-                            (a for a in entry.prefetch_attrs if a.schema == entity_attr),
-                            None,
-                        )
-                        if not attr:
-                            continue
-
-                        # Create attribute record
-                        spanner_attr_id = str(uuid.uuid4())
-                        attributes.append(
-                            AdvancedSearchAttribute(
-                                entry_id=spanner_entry_id,
-                                attribute_id=spanner_attr_id,
-                                type=AttrType(attr.schema.type),
-                                name=attr.name,
-                                origin_entity_attr_id=entity_attr.id,
-                                origin_attribute_id=attr.id,
-                            )
-                        )
-
-                        # Create attribute value records using the new create_instance method
-                        for attrv in attr.prefetch_values:
-                            attribute_values.append(
-                                AdvancedSearchAttributeValue.create_instance(
+                            # Prepare entry data
+                            spanner_entries.append(
+                                AdvancedSearchEntry(
                                     entry_id=spanner_entry_id,
-                                    attribute_id=spanner_attr_id,
-                                    attribute_value_id=str(uuid.uuid4()),
-                                    entity_attr=entity_attr,
-                                    attrv=attrv,
+                                    name=entry.name,
+                                    origin_entity_id=entity.id,
+                                    origin_entry_id=entry.id,
                                 )
                             )
 
-                    # Insert entry and its attributes/values in a single batch
-                    with repo.database.batch() as batch:
-                        repo.insert_entries([spanner_entry], batch)
-                        if attributes:
-                            repo.insert_attributes(attributes, batch)
-                        if attribute_values:
-                            repo.insert_attribute_values(attribute_values, batch)
+                            # Process each entity_attr for this entry
+                            for entity_attr in entity_attrs:
+                                attr = next(
+                                    (a for a in entry.prefetch_attrs if a.schema == entity_attr),
+                                    None,
+                                )
+                                if not attr:
+                                    continue
+
+                                # Create attribute record
+                                spanner_attr_id = str(uuid.uuid4())
+                                spanner_attributes.append(
+                                    AdvancedSearchAttribute(
+                                        entry_id=spanner_entry_id,
+                                        attribute_id=spanner_attr_id,
+                                        type=AttrType(attr.schema.type),
+                                        name=attr.name,
+                                        origin_entity_attr_id=entity_attr.id,
+                                        origin_attribute_id=attr.id,
+                                    )
+                                )
+
+                                for attrv in attr.prefetch_values:
+                                    spanner_attribute_values.append(
+                                        AdvancedSearchAttributeValue.create_instance(
+                                            entry_id=spanner_entry_id,
+                                            attribute_id=spanner_attr_id,
+                                            attribute_value_id=str(uuid.uuid4()),
+                                            entity_attr=entity_attr,
+                                            attrv=attrv,
+                                        )
+                                    )
+
+                            # Create a mutation group for this entry and its related data
+                            group = mg.group()
+                            repo.insert_entries(spanner_entries, group)
+                            if spanner_attributes:
+                                repo.insert_attributes(spanner_attributes, group)
+                            if spanner_attribute_values:
+                                repo.insert_attribute_values(spanner_attribute_values, group)
+
+                        # Batch write all mutation groups for this chunk
+                        responses = mg.batch_write()
+                        if not all(response.status.code == 0 for response in responses):
+                            raise Exception(f"Failed to batch write to Spanner: {responses}")
 
             except Exception as e:
                 Logger.warning(f"Failed to sync data to Spanner: {e}")

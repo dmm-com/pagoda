@@ -12,8 +12,8 @@ from entity.models import EntityAttr
 from entry.models import AttributeValue
 
 
-class SpannerBatch(Protocol):
-    """Protocol for Spanner batch operations"""
+class SpannerOperation(Protocol):
+    """Protocol for Spanner operations (batch and mutation groups)"""
 
     def insert(
         self,
@@ -164,12 +164,14 @@ class SpannerRepository:
         self.instance: Instance = self.client.instance(instance_id)
         self.database: Database = self.instance.database(database_id)
 
-    def insert_entries(self, entries: list[AdvancedSearchEntry], batch: SpannerBatch) -> None:
-        """Insert multiple entries in a batch"""
+    def insert_entries(
+        self, entries: list[AdvancedSearchEntry], operation: SpannerOperation
+    ) -> None:
+        """Insert multiple entries in a batch or mutation group"""
         if not entries:
             return
 
-        batch.insert(
+        operation.insert(
             table="AdvancedSearchEntry",
             columns=("EntryId", "Name", "OriginEntityId", "OriginEntryId"),
             values=[
@@ -178,12 +180,14 @@ class SpannerRepository:
             ],
         )
 
-    def insert_attributes(self, attrs: list[AdvancedSearchAttribute], batch: SpannerBatch) -> None:
-        """Insert multiple attributes in a batch"""
+    def insert_attributes(
+        self, attrs: list[AdvancedSearchAttribute], operation: SpannerOperation
+    ) -> None:
+        """Insert multiple attributes in a batch or mutation group"""
         if not attrs:
             return
 
-        batch.insert(
+        operation.insert(
             table="AdvancedSearchAttribute",
             columns=(
                 "EntryId",
@@ -207,13 +211,13 @@ class SpannerRepository:
         )
 
     def insert_attribute_values(
-        self, values: list[AdvancedSearchAttributeValue], batch: SpannerBatch
+        self, values: list[AdvancedSearchAttributeValue], operation: SpannerOperation
     ) -> None:
-        """Insert multiple attribute values in a batch"""
+        """Insert multiple attribute values in a batch or mutation group"""
         if not values:
             return
 
-        batch.insert(
+        operation.insert(
             table="AdvancedSearchAttributeValue",
             columns=("EntryId", "AttributeId", "AttributeValueId", "Value", "RawValue"),
             values=[
@@ -241,7 +245,7 @@ class SpannerRepository:
         """Insert a single attribute value"""
         self.insert_attribute_values([value], transaction)
 
-    def delete_entries_by_entity(self, entity_id: int, batch: SpannerBatch) -> None:
+    def delete_entries_by_entity(self, entity_id: int, operation: SpannerOperation) -> None:
         """Delete all entries for a given entity"""
         # First get all entry IDs for the entity
         with self.database.snapshot() as snapshot:
@@ -260,19 +264,19 @@ class SpannerRepository:
             return
 
         # Delete from AttributeValue table
-        batch.delete(
+        operation.delete(
             "AdvancedSearchAttributeValue",
             spanner_v1.KeySet(keys=[[entry_id] for entry_id in entry_ids]),
         )
 
         # Delete from Attribute table
-        batch.delete(
+        operation.delete(
             "AdvancedSearchAttribute",
             spanner_v1.KeySet(keys=[[entry_id] for entry_id in entry_ids]),
         )
 
         # Delete from Entry table
-        batch.delete(
+        operation.delete(
             "AdvancedSearchEntry", spanner_v1.KeySet(keys=[[entry_id] for entry_id in entry_ids])
         )
 
