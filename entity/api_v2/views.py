@@ -205,6 +205,11 @@ class AliasSearchFilter(filters.SearchFilter):
             return original_fields
 
 
+@extend_schema(
+    parameters=[
+        OpenApiParameter("with_alias", OpenApiTypes.STR, OpenApiParameter.QUERY),
+    ],
+)
 class EntityEntryAPI(viewsets.ModelViewSet):
     queryset = Entry.objects.all()
     pagination_class = PageNumberPagination

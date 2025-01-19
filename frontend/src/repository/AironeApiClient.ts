@@ -624,7 +624,8 @@ class AironeApiClient {
     entityId: number,
     isActive = true,
     pageNumber = 1,
-    keyword: string
+    keyword: string,
+    withAlias?: boolean
   ): Promise<PaginatedEntryBaseList> {
     //return await this.entry.entryApiV2EntriesList(entityId, isActive, pageNumber);
     // ToDo: This method must pass "isActive" parameter by manupirating DRF API's declaration.
@@ -634,6 +635,7 @@ class AironeApiClient {
       isActive: isActive,
       search: keyword,
       ordering: "name",
+      withAlias: withAlias ? "1" : "",
     });
   }
 
