@@ -1,5 +1,6 @@
 import uuid
 from collections import defaultdict
+from copy import deepcopy
 from typing import Any, DefaultDict
 
 from django.conf import settings
@@ -514,12 +515,11 @@ class AdvancedSearchService:
                     "name": entry.name,
                 },
                 attrs={
-                    result.entity_attr.name: {
-                        "type": result.type,
-                        "value": result.value,
-                        # FIXME dummy
-                        "is_readable": True,
-                    }
+                    result.entity_attr.name: AdvancedSearchResultRecordAttr(
+                        type=result.type,
+                        value=result.value,
+                        is_readable=True,
+                    )
                     for result in results
                 },
                 # FIXME dummy
@@ -546,8 +546,10 @@ class AdvancedSearchService:
         is_output_all: bool = False,
         hint_referral_entity_id: int | None = None,
         offset: int = 0,
+        join_attrs: list[dict[str, Any]] = [],
     ) -> AdvancedSearchResults:
         """Search entries using Cloud Spanner.
+
         This is a PoC implementation that uses Spanner for advanced search functionality.
         """
         # Check if Spanner is enabled
@@ -612,9 +614,7 @@ class AdvancedSearchService:
 
             attrs_by_entry[attr.entry_id][attr.name] = {
                 "type": attr.type,
-                "value": value.value,
-                "raw_value": value.raw_value,
-                # TODO: Implement proper ACL check
+                "value": value.raw_value if value.raw_value else value.value,
                 "is_readable": True,
             }
 
@@ -636,7 +636,7 @@ class AdvancedSearchService:
             attrs = {
                 name: AdvancedSearchResultRecordAttr(
                     type=attr_info["type"],
-                    value=attr_info["raw_value"] if attr_info["raw_value"] else attr_info["value"],
+                    value=attr_info["value"],
                     is_readable=attr_info["is_readable"],
                 )
                 for name, attr_info in attrs_by_entry.get(entry.entry_id, {}).items()
@@ -666,6 +666,103 @@ class AdvancedSearchService:
                     referrals=referrals,
                 )
             )
+
+        # Process join_attrs if any
+        for join_attr in join_attrs:
+            (will_filter_by_joined_attr, joined_resp) = repo.get_joined_entries(
+                values,
+                join_attr,
+                limit=limit,
+            )
+
+            # Prepare blank joining info for entries without matches
+            blank_joining_info = {
+                "%s.%s" % (join_attr["name"], k["name"]): {
+                    "is_readable": True,
+                    "type": AttrType.STRING,
+                    "value": "",
+                }
+                for k in join_attr["attrinfo"]
+            }
+
+            # Convert joined search results to dict for easier handling
+            joined_resp_info = {
+                x["entry"]["id"]: {
+                    "%s.%s" % (join_attr["name"], k): v
+                    for k, v in x["attrs"].items()
+                    if any(_x["name"] == k for _x in join_attr["attrinfo"])
+                }
+                for x in joined_resp["ret_values"]
+            }
+
+            # Insert results to previous search results
+            new_ret_values = []
+            joined_ret_values = []
+            for resp_result in values:
+                # Get referral info from joined search result
+                ref_info = resp_result.attrs.get(join_attr["name"])
+                if not ref_info:
+                    # Join EMPTY value
+                    resp_result.attrs |= blank_joining_info  # type: ignore
+                    joined_ret_values.append(deepcopy(resp_result))
+                    continue
+
+                # Get referral IDs from the result
+                ref_list = []
+                if (
+                    isinstance(ref_info, dict)
+                    and "type" in ref_info
+                    and ref_info["type"] & AttrType.OBJECT
+                ):
+                    if ref_info["type"] == AttrType.OBJECT:
+                        if isinstance(ref_info["value"], dict) and "id" in ref_info["value"]:
+                            ref_list = [ref_info["value"]["id"]]
+                    elif ref_info["type"] == AttrType.NAMED_OBJECT:
+                        if isinstance(ref_info["value"], dict):
+                            [ref_data] = ref_info["value"].values()
+                            if isinstance(ref_data, dict) and "id" in ref_data:
+                                ref_list = [ref_data["id"]]
+                    elif ref_info["type"] == AttrType.ARRAY_OBJECT:
+                        if isinstance(ref_info["value"], list):
+                            ref_list = [
+                                x["id"]
+                                for x in ref_info["value"]
+                                if isinstance(x, dict) and "id" in x
+                            ]
+                    elif ref_info["type"] == AttrType.ARRAY_NAMED_OBJECT:
+                        if isinstance(ref_info["value"], list):
+                            ref_list = []
+                            for item in ref_info["value"]:
+                                if isinstance(item, dict):
+                                    [ref_data] = item.values()
+                                    if isinstance(ref_data, dict) and "id" in ref_data:
+                                        ref_list.append(ref_data["id"])
+
+                for ref_id in ref_list:
+                    if ref_id in joined_resp_info:
+                        # Join valid value
+                        resp_result.attrs |= joined_resp_info[ref_id]  # type: ignore
+
+                        # Collect only results that match with keyword of joined_attr parameter
+                        copied_result = deepcopy(resp_result)
+                        new_ret_values.append(copied_result)
+                        joined_ret_values.append(copied_result)
+                    else:
+                        # Join EMPTY value
+                        resp_result.attrs |= blank_joining_info  # type: ignore
+                        joined_ret_values.append(deepcopy(resp_result))
+
+                if len(ref_list) == 0:
+                    # Join EMPTY value
+                    resp_result.attrs |= blank_joining_info  # type: ignore
+                    joined_ret_values.append(deepcopy(resp_result))
+
+            if will_filter_by_joined_attr:
+                values = new_ret_values
+                total = len(new_ret_values)
+            else:
+                values = joined_ret_values
+                total = len(joined_ret_values)
 
         return AdvancedSearchResults(
             ret_count=total,

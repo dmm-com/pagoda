@@ -427,6 +427,7 @@ class AdvancedSearchAPI(generics.GenericAPIView):
                 hint_referral,
                 is_output_all,
                 offset=entry_offset,
+                join_attrs=join_attrs,
             )
         elif settings.ENABLE_ESLESS_ADVANCED_SEARCH:
             resp = AdvancedSearchService.search_entries_v2(

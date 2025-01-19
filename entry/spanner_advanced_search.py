@@ -6,7 +6,11 @@ from google.cloud.spanner_v1.database import Database
 from google.cloud.spanner_v1.instance import Instance
 from pydantic import BaseModel, Field
 
-from airone.lib.elasticsearch import AttrHint, FilterKey
+from airone.lib.elasticsearch import (
+    AdvancedSearchResultRecord,
+    AttrHint,
+    FilterKey,
+)
 from airone.lib.types import AttrType
 from entity.models import EntityAttr
 from entry.models import AttributeValue
@@ -647,3 +651,164 @@ class SpannerRepository:
                                 }
                             )
         return referrals
+
+    def get_joined_entries(
+        self,
+        prev_results: list[AdvancedSearchResultRecord],
+        join_attr: dict[str, Any],
+        limit: int = 100,
+        offset: int = 0,
+    ) -> tuple[bool, dict[str, Any]]:
+        """Get joined entries for join_attrs functionality.
+        This is similar to _get_joined_resp in the original implementation.
+
+        Args:
+            prev_results: Previous search results
+            join_attr: Join attribute configuration
+            limit: Result limit
+            offset: Result offset
+
+        Returns:
+            tuple[bool, dict[str, Any]]: A tuple containing:
+                - Whether to filter by joined attributes
+                - Search results for joined entries
+        """
+        # Get entity IDs and entry names from previous results
+        item_names: list[str] = []
+        hint_entity_ids: list[int] = []
+
+        # First get all attributes matching the join attribute name
+        query = """
+        SELECT
+            a.Type,
+            a.OriginEntityAttrId,
+            v.Value,
+            v.RawValue
+        FROM (
+            SELECT DISTINCT
+                EntryId,
+                Type,
+                OriginEntityAttrId,
+                AttributeId
+            FROM AdvancedSearchAttribute
+            WHERE Name = @attr_name
+            AND Type & @object_type != 0
+        ) a
+        JOIN AdvancedSearchAttributeValue v
+            ON a.EntryId = v.EntryId
+            AND a.AttributeId = v.AttributeId
+        """
+        params = {
+            "attr_name": join_attr["name"],
+            "object_type": AttrType.OBJECT.value,
+        }
+        param_types = {
+            "attr_name": spanner_v1.param_types.STRING,
+            "object_type": spanner_v1.param_types.INT64,
+        }
+
+        with self.database.snapshot() as snapshot:
+            results = snapshot.execute_sql(query, params=params, param_types=param_types)
+            for row in results:
+                attr_type, entity_attr_id, value, raw_value = row
+                if raw_value:
+                    # Handle Spanner JsonObject type
+                    if isinstance(raw_value, spanner_v1.data_types.JsonObject):
+                        raw_value_dict = (
+                            raw_value._array_value if raw_value._is_array else raw_value
+                        )
+                    else:
+                        raw_value_dict = raw_value
+
+                    if isinstance(raw_value_dict, dict):
+                        # Handle different object types
+                        if attr_type == AttrType.OBJECT.value:
+                            if value and value not in item_names:
+                                item_names.append(value)
+                        elif attr_type == AttrType.NAMED_OBJECT.value:
+                            for co_info in raw_value_dict.values():
+                                if (
+                                    isinstance(co_info, dict)
+                                    and co_info.get("name") not in item_names
+                                ):
+                                    item_names.append(co_info["name"])
+                        elif attr_type == AttrType.ARRAY_OBJECT.value:
+                            for r in raw_value_dict:
+                                if isinstance(r, dict) and r.get("name") not in item_names:
+                                    item_names.append(r["name"])
+                        elif attr_type == AttrType.ARRAY_NAMED_OBJECT.value:
+                            for r in raw_value_dict:
+                                if isinstance(r, dict):
+                                    [co_info] = r.values()
+                                    if (
+                                        isinstance(co_info, dict)
+                                        and co_info.get("name") not in item_names
+                                    ):
+                                        item_names.append(co_info["name"])
+
+                # Add entity attr IDs for referral lookup
+                if entity_attr_id and entity_attr_id not in hint_entity_ids:
+                    hint_entity_ids.append(entity_attr_id)
+
+        # Convert hint_attrs for the join
+        hint_attrs: list[AttrHint] = []
+        for info in join_attr.get("attrinfo", []):
+            hint_attrs.append(
+                AttrHint(
+                    name=info["name"],
+                    keyword=info.get("keyword"),
+                    filter_key=info.get("filter_key"),
+                )
+            )
+
+        # Search entries that match the join criteria
+        results = self.search_entries(
+            entity_ids=list(set(hint_entity_ids)),
+            attribute_names=[x.name for x in hint_attrs if x.name],
+            entry_name_pattern="|".join(item_names) if item_names else None,
+            limit=limit,
+            offset=join_attr.get("offset", 0),
+            hint_attrs=hint_attrs,
+        )
+
+        # Get attributes for the found entries
+        entry_ids = [entry.entry_id for entry in results]
+        attr_values = self.get_entry_attributes(
+            entry_ids,
+            attribute_names=[x.name for x in hint_attrs if x.name],
+        )
+
+        # Convert results to the expected format
+        attrs_by_entry: dict[str, dict[str, dict]] = {}
+        for attr, value in attr_values:
+            if attr.entry_id not in attrs_by_entry:
+                attrs_by_entry[attr.entry_id] = {}
+            attrs_by_entry[attr.entry_id][attr.name] = {
+                "type": attr.type,
+                "value": value.raw_value if value.raw_value else value.value,
+                "is_readable": True,
+            }
+
+        ret_values = []
+        for entry in results:
+            ret_values.append(
+                {
+                    "entry": {
+                        "id": entry.origin_entry_id,
+                        "name": entry.name,
+                    },
+                    "attrs": attrs_by_entry.get(entry.entry_id, {}),
+                }
+            )
+
+        return (
+            # Whether to filter by joined attributes
+            any(
+                x.get("keyword") or x.get("filter_key", 0) > 0
+                for x in join_attr.get("attrinfo", [])
+            ),
+            {
+                "ret_values": ret_values,
+                "ret_count": len(ret_values),
+            },
+        )
