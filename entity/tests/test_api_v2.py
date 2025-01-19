@@ -2909,9 +2909,9 @@ class ViewTest(AironeViewTest):
         items[0].add_alias(ALIAS_NAME)
 
         # search item by alias name
-        resp = self.client.get("/entity/api/v2/%d/entries/?search=%s&with_alias=1" % (
-            self.entity.id, ALIAS_NAME
-        ))
+        resp = self.client.get(
+            "/entity/api/v2/%d/entries/?search=%s&with_alias=1" % (self.entity.id, ALIAS_NAME)
+        )
         self.assertEqual(resp.status_code, 200)
 
         # then only item that alias is set was returned
