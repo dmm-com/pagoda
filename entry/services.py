@@ -1,13 +1,17 @@
+import uuid
 from collections import defaultdict
+from copy import deepcopy
 from typing import Any, DefaultDict
 
 from django.conf import settings
+from django.core.exceptions import ImproperlyConfigured
 from django.db.models import Count, Prefetch, Q
 
 from airone.lib.acl import ACLType
 from airone.lib.elasticsearch import (
     ESS,
     AdvancedSearchResultRecord,
+    AdvancedSearchResultRecordAttr,
     AdvancedSearchResultRecordIdNamePair,
     AdvancedSearchResults,
     AttrHint,
@@ -19,11 +23,18 @@ from airone.lib.elasticsearch import (
     make_search_results_for_simple,
 )
 from airone.lib.log import Logger
+from airone.lib.types import AttrType
 from entity.models import Entity, EntityAttr
 from entry.models import AdvancedSearchAttributeIndex, Attribute, AttributeValue, Entry
 from user.models import User
 
 from .settings import CONFIG
+from .spanner_advanced_search import (
+    AdvancedSearchAttribute,
+    AdvancedSearchAttributeValue,
+    AdvancedSearchEntry,
+    SpannerRepository,
+)
 
 
 class AdvancedSearchService:
@@ -298,23 +309,108 @@ class AdvancedSearchService:
 
         es.indices.refresh()
 
-        # for experimental, a new advanced search index in MySQL
-        # NOTE currently it makes indexes in both ES and MySQL for safety
-        AdvancedSearchAttributeIndex.objects.filter(entity_attr__in=entity_attrs).delete()
-        indexes: list[AdvancedSearchAttributeIndex] = []
-        for entry in entry_list:
-            for entity_attr in entity_attrs:
-                attr = next((a for a in entry.prefetch_attrs if a.schema == entity_attr), None)
-                attrv: AttributeValue | None = None
-                if attr:
-                    attrv = next(iter(attr.prefetch_values), None)
-                indexes.append(
-                    AdvancedSearchAttributeIndex.create_instance(entry, entity_attr, attrv)
+        # FIXME Stop writing to MySQL to accelerate indexing for now
+        # # for experimental, a new advanced search index in MySQL
+        # # NOTE currently it makes indexes in both ES and MySQL for safety
+        # AdvancedSearchAttributeIndex.objects.filter(entity_attr__in=entity_attrs).delete()
+        # indexes: list[AdvancedSearchAttributeIndex] = []
+        # for entry in entry_list:
+        #     for entity_attr in entity_attrs:
+        #         attr = next((a for a in entry.prefetch_attrs if a.schema == entity_attr), None)
+        #         attrv: AttributeValue | None = None
+        #         if attr:
+        #             attrv = next(iter(attr.prefetch_values), None)
+        #         indexes.append(
+        #             AdvancedSearchAttributeIndex.create_instance(entry, entity_attr, attrv)
+        #         )
+        # try:
+        #     AdvancedSearchAttributeIndex.objects.bulk_create(indexes)
+        # except Exception as e:
+        #     Logger.warning("Failed to create AdvancedSearchAttributeIndex: %s" % e)
+
+        # for experimental, a new advanced search index in Cloud Spanner
+        if settings.AIRONE_SPANNER_ENABLED:
+            try:
+                # Initialize Spanner repository
+                repo = SpannerRepository(
+                    project_id=settings.AIRONE_SPANNER_PROJECT,
+                    instance_id=settings.AIRONE_SPANNER_INSTANCE,
+                    database_id=settings.AIRONE_SPANNER_DATABASE,
                 )
-        try:
-            AdvancedSearchAttributeIndex.objects.bulk_create(indexes)
-        except Exception as e:
-            Logger.warning("Failed to create AdvancedSearchAttributeIndex: %s" % e)
+
+                # First, delete all existing entries for this entity in a separate batch
+                with repo.database.batch() as batch:
+                    repo.delete_entries_by_entity(entity.id, batch)
+
+                # Process entries in chunks to avoid too large mutation groups
+                entry_chunks = [entry_list[i : i + 100] for i in range(0, len(entry_list), 100)]
+                for chunk in entry_chunks:
+                    # Process each entry in the chunk with its own mutation group
+                    with repo.database.mutation_groups() as mg:
+                        for entry in chunk:
+                            spanner_entry_id = str(uuid.uuid4())
+                            spanner_entries: list[AdvancedSearchEntry] = []
+                            spanner_attributes: list[AdvancedSearchAttribute] = []
+                            spanner_attribute_values: list[AdvancedSearchAttributeValue] = []
+
+                            # Prepare entry data
+                            spanner_entries.append(
+                                AdvancedSearchEntry(
+                                    entry_id=spanner_entry_id,
+                                    name=entry.name,
+                                    origin_entity_id=entity.id,
+                                    origin_entry_id=entry.id,
+                                )
+                            )
+
+                            # Process each entity_attr for this entry
+                            for entity_attr in entity_attrs:
+                                attr = next(
+                                    (a for a in entry.prefetch_attrs if a.schema == entity_attr),
+                                    None,
+                                )
+                                if not attr:
+                                    continue
+
+                                # Create attribute record
+                                spanner_attr_id = str(uuid.uuid4())
+                                spanner_attributes.append(
+                                    AdvancedSearchAttribute(
+                                        entry_id=spanner_entry_id,
+                                        attribute_id=spanner_attr_id,
+                                        type=AttrType(attr.schema.type),
+                                        name=attr.name,
+                                        origin_entity_attr_id=entity_attr.id,
+                                        origin_attribute_id=attr.id,
+                                    )
+                                )
+
+                                for attrv in attr.prefetch_values:
+                                    spanner_attribute_values.append(
+                                        AdvancedSearchAttributeValue.create_instance(
+                                            entry_id=spanner_entry_id,
+                                            attribute_id=spanner_attr_id,
+                                            attribute_value_id=str(uuid.uuid4()),
+                                            entity_attr=entity_attr,
+                                            attrv=attrv,
+                                        )
+                                    )
+
+                            # Create a mutation group for this entry and its related data
+                            group = mg.group()
+                            repo.insert_entries(spanner_entries, group)
+                            if spanner_attributes:
+                                repo.insert_attributes(spanner_attributes, group)
+                            if spanner_attribute_values:
+                                repo.insert_attribute_values(spanner_attribute_values, group)
+
+                        # Batch write all mutation groups for this chunk
+                        responses = mg.batch_write()
+                        if not all(response.status.code == 0 for response in responses):
+                            raise Exception(f"Failed to batch write to Spanner: {responses}")
+
+            except Exception as e:
+                Logger.warning(f"Failed to sync data to Spanner: {e}")
 
     @classmethod
     def search_entries_v2(
@@ -419,12 +515,11 @@ class AdvancedSearchService:
                     "name": entry.name,
                 },
                 attrs={
-                    result.entity_attr.name: {
-                        "type": result.type,
-                        "value": result.value,
-                        # FIXME dummy
-                        "is_readable": True,
-                    }
+                    result.entity_attr.name: AdvancedSearchResultRecordAttr(
+                        type=result.type,
+                        value=result.value,
+                        is_readable=True,
+                    )
                     for result in results
                 },
                 # FIXME dummy
@@ -433,6 +528,241 @@ class AdvancedSearchService:
             )
             for entry, results in results_by_entry.items()
         ]
+
+        return AdvancedSearchResults(
+            ret_count=total,
+            ret_values=values,
+        )
+
+    @classmethod
+    def search_entries_v3(
+        kls,
+        user: User,
+        hint_entity_ids: list[str],
+        hint_attrs: list[AttrHint] = [],
+        limit: int = CONFIG.MAX_LIST_ENTRIES,
+        entry_name: str | None = None,
+        hint_referral: str | None = None,
+        is_output_all: bool = False,
+        hint_referral_entity_id: int | None = None,
+        offset: int = 0,
+        join_attrs: list[dict[str, Any]] = [],
+    ) -> AdvancedSearchResults:
+        """Search entries using Cloud Spanner.
+
+        This is a PoC implementation that uses Spanner for advanced search functionality.
+        """
+        # Check if Spanner is enabled
+        if not getattr(settings, "AIRONE_SPANNER_ENABLED", False):
+            raise ImproperlyConfigured(
+                "Spanner search is not enabled. Please set AIRONE_SPANNER_ENABLED=true"
+            )
+
+        # Get Spanner settings from environment
+        try:
+            project_id = settings.AIRONE_SPANNER_PROJECT
+            instance_id = settings.AIRONE_SPANNER_INSTANCE
+            database_id = settings.AIRONE_SPANNER_DATABASE
+        except AttributeError as e:
+            raise ImproperlyConfigured(f"Missing Spanner configuration: {e}")
+
+        # Initialize Spanner repository with environment variables
+        repo = SpannerRepository(
+            project_id=project_id,
+            instance_id=instance_id,
+            database_id=database_id,
+        )
+
+        # Convert entity IDs to integers
+        entity_ids = [int(id) for id in hint_entity_ids]
+
+        # Get attribute names from hints
+        attr_names = [attr.name for attr in hint_attrs if attr.name]
+
+        # Get total count first
+        total = repo.count_entries(
+            entity_ids=entity_ids,
+            attribute_names=attr_names,
+            entry_name_pattern=entry_name,
+            hint_attrs=hint_attrs,
+        )
+
+        # Search entries in Spanner
+        entries = repo.search_entries(
+            entity_ids=entity_ids,
+            attribute_names=attr_names,
+            entry_name_pattern=entry_name,
+            limit=limit,
+            offset=offset,
+            hint_attrs=hint_attrs,
+        )
+
+        if not entries:
+            return AdvancedSearchResults(ret_count=total, ret_values=[])
+
+        # Get entry IDs for further queries
+        entry_ids = [entry.entry_id for entry in entries]
+
+        # Get attributes and their values
+        attr_values = repo.get_entry_attributes(entry_ids, attr_names)
+
+        # Organize attributes by entry
+        attrs_by_entry: dict[str, dict[str, dict]] = {}
+        for attr, value in attr_values:
+            if attr.entry_id not in attrs_by_entry:
+                attrs_by_entry[attr.entry_id] = {}
+
+            attrs_by_entry[attr.entry_id][attr.name] = {
+                "type": attr.type,
+                "value": value.raw_value if value.raw_value else value.value,
+                "is_readable": True,
+            }
+
+        # Get referrals if requested
+        referrals_by_entry: dict[str, list[dict[str, Any]]] = {}
+        if hint_referral is not None:
+            referrals_by_entry = repo.get_referrals(
+                entry_ids,
+                hint_referral,
+                hint_referral_entity_id,
+            )
+
+        # Convert to AdvancedSearchResults format
+        values = []
+        for entry in entries:
+            entity_name = f"Entity_{entry.origin_entity_id}"
+
+            # Convert attribute types
+            attrs = {
+                name: AdvancedSearchResultRecordAttr(
+                    type=attr_info["type"],
+                    value=attr_info["value"],
+                    is_readable=attr_info["is_readable"],
+                )
+                for name, attr_info in attrs_by_entry.get(entry.entry_id, {}).items()
+            }
+
+            # Convert referral types
+            referrals = [
+                AdvancedSearchResultRecordIdNamePair(
+                    id=ref["id"],
+                    name=ref["name"],
+                )
+                for ref in referrals_by_entry.get(entry.entry_id, [])
+            ]
+
+            values.append(
+                AdvancedSearchResultRecord(
+                    entity={
+                        "id": entry.origin_entity_id,
+                        "name": entity_name,
+                    },
+                    entry={
+                        "id": entry.origin_entry_id,
+                        "name": entry.name,
+                    },
+                    attrs=attrs,
+                    is_readable=True,
+                    referrals=referrals,
+                )
+            )
+
+        # Process join_attrs if any
+        for join_attr in join_attrs:
+            (will_filter_by_joined_attr, joined_resp) = repo.get_joined_entries(
+                values,
+                join_attr,
+                limit=limit,
+            )
+
+            # Prepare blank joining info for entries without matches
+            blank_joining_info = {
+                "%s.%s" % (join_attr["name"], k["name"]): {
+                    "is_readable": True,
+                    "type": AttrType.STRING,
+                    "value": "",
+                }
+                for k in join_attr["attrinfo"]
+            }
+
+            # Convert joined search results to dict for easier handling
+            joined_resp_info = {
+                x["entry"]["id"]: {
+                    "%s.%s" % (join_attr["name"], k): v
+                    for k, v in x["attrs"].items()
+                    if any(_x["name"] == k for _x in join_attr["attrinfo"])
+                }
+                for x in joined_resp["ret_values"]
+            }
+
+            # Insert results to previous search results
+            new_ret_values = []
+            joined_ret_values = []
+            for resp_result in values:
+                # Get referral info from joined search result
+                ref_info = resp_result.attrs.get(join_attr["name"])
+                if not ref_info:
+                    # Join EMPTY value
+                    resp_result.attrs |= blank_joining_info  # type: ignore
+                    joined_ret_values.append(deepcopy(resp_result))
+                    continue
+
+                # Get referral IDs from the result
+                ref_list = []
+                if (
+                    isinstance(ref_info, dict)
+                    and "type" in ref_info
+                    and ref_info["type"] & AttrType.OBJECT
+                ):
+                    if ref_info["type"] == AttrType.OBJECT:
+                        if isinstance(ref_info["value"], dict) and "id" in ref_info["value"]:
+                            ref_list = [ref_info["value"]["id"]]
+                    elif ref_info["type"] == AttrType.NAMED_OBJECT:
+                        if isinstance(ref_info["value"], dict):
+                            [ref_data] = ref_info["value"].values()
+                            if isinstance(ref_data, dict) and "id" in ref_data:
+                                ref_list = [ref_data["id"]]
+                    elif ref_info["type"] == AttrType.ARRAY_OBJECT:
+                        if isinstance(ref_info["value"], list):
+                            ref_list = [
+                                x["id"]
+                                for x in ref_info["value"]
+                                if isinstance(x, dict) and "id" in x
+                            ]
+                    elif ref_info["type"] == AttrType.ARRAY_NAMED_OBJECT:
+                        if isinstance(ref_info["value"], list):
+                            ref_list = []
+                            for item in ref_info["value"]:
+                                if isinstance(item, dict):
+                                    [ref_data] = item.values()
+                                    if isinstance(ref_data, dict) and "id" in ref_data:
+                                        ref_list.append(ref_data["id"])
+
+                for ref_id in ref_list:
+                    if ref_id in joined_resp_info:
+                        # Join valid value
+                        resp_result.attrs |= joined_resp_info[ref_id]  # type: ignore
+
+                        # Collect only results that match with keyword of joined_attr parameter
+                        copied_result = deepcopy(resp_result)
+                        new_ret_values.append(copied_result)
+                        joined_ret_values.append(copied_result)
+                    else:
+                        # Join EMPTY value
+                        resp_result.attrs |= blank_joining_info  # type: ignore
+                        joined_ret_values.append(deepcopy(resp_result))
+
+                if len(ref_list) == 0:
+                    # Join EMPTY value
+                    resp_result.attrs |= blank_joining_info  # type: ignore
+                    joined_ret_values.append(deepcopy(resp_result))
+
+            if will_filter_by_joined_attr:
+                values = new_ret_values
+                total = len(new_ret_values)
+            else:
+                values = joined_ret_values
+                total = len(joined_ret_values)
 
         return AdvancedSearchResults(
             ret_count=total,
