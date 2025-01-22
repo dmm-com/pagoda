@@ -3,7 +3,7 @@ from typing import Any, Literal
 
 from django.db.models import Prefetch
 from drf_spectacular.utils import extend_schema_field, extend_schema_serializer
-from pydantic import BaseModel
+from pydantic import BaseModel, RootModel
 from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from typing_extensions import TypedDict
@@ -138,6 +138,21 @@ class EntryAttributeType(TypedDict):
     is_readable: bool
     value: EntryAttributeValue
     schema: EntityAttributeType
+
+
+class AdvancedSearchJoinAttrAttrInfo(BaseModel):
+    name: str
+    keyword: str | None = None
+    filter_key: FilterKey | None = None
+
+
+class AdvancedSearchJoinAttrInfo(BaseModel):
+    name: str
+    offset: int = 0
+    attrinfo: list[AdvancedSearchJoinAttrAttrInfo] = []
+
+
+AdvancedSearchJoinAttrInfoList = RootModel[list[AdvancedSearchJoinAttrInfo]]
 
 
 class EntityAttributeTypeSerializer(serializers.Serializer):
