@@ -3,6 +3,8 @@
 ## In development
 
 ### Added
+* Enable to get items considering with Alias name (by simple solution)
+  Contributed by @userlocalhost
 
 ### Changed
 

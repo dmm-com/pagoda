@@ -192,11 +192,29 @@ class EntityAPI(viewsets.ModelViewSet):
         return Response(status=status.HTTP_202_ACCEPTED)
 
 
+class AliasSearchFilter(filters.SearchFilter):
+    def get_search_fields(self, view, request):
+        original_fields = super().get_search_fields(view, request)
+
+        # update search_fields when "with_alias" parameter was specified
+        # to consier aliases that are related with target item
+        # filtered by specified "search" parameter
+        if request.query_params.get("with_alias"):
+            return original_fields + ["aliases__name"]
+        else:
+            return original_fields
+
+
+@extend_schema(
+    parameters=[
+        OpenApiParameter("with_alias", OpenApiTypes.STR, OpenApiParameter.QUERY),
+    ],
+)
 class EntityEntryAPI(viewsets.ModelViewSet):
     queryset = Entry.objects.all()
     pagination_class = PageNumberPagination
     permission_classes = [IsAuthenticated & EntityPermission]
-    filter_backends = [DjangoFilterBackend, filters.OrderingFilter, filters.SearchFilter]
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter, AliasSearchFilter]
     filterset_fields = ["is_active"]
     ordering_fields = ["name", "updated_time"]
     search_fields = ["name"]
