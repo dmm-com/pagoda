@@ -2961,6 +2961,29 @@ class ViewTest(AironeViewTest):
         search_result = self._es.search(body={"query": {"term": {"name": entry.name}}})
         self.assertEqual(search_result["hits"]["total"]["value"], 1)
 
+    def test_create_entry_when_duplicated_alias_exists(self):
+        # make an Item and Alias to prevent to creating another Item
+        entry: Entry = self.add_entry(self.user, "Everest", self.entity)
+        entry.add_alias("Chomolungma")
+
+        resp = self.client.post(
+            "/entity/api/v2/%s/entries/" % self.entity.id,
+            json.dumps({"name": "Chomolungma"}),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.json(),
+            {
+                "non_field_errors": [
+                    {
+                        "message": "A duplicated named Alias exists in this model",
+                        "code": "AE-220000",
+                    }
+                ]
+            },
+        )
+
     def test_create_entry_without_permission_entity(self):
         params = {
             "name": "entry1",

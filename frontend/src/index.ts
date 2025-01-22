@@ -1,5 +1,5 @@
 export * from "./AppBase";
-
+export * from "./AironeSnackbarProvider";
 export * from "./components";
 export * from "./hooks";
 export * from "./i18n";
@@ -8,3 +8,4 @@ export * from "./repository";
 export * from "./routes";
 export * from "./services";
 export * from "./TestWrapper";
+export * from "./Theme";

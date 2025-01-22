@@ -20,6 +20,7 @@ import {
   editEntityPath,
   entitiesPath,
   restoreEntryPath,
+  listAliasPath,
   topPath,
   entityEntriesPath,
   aclHistoryPath,
@@ -93,6 +94,9 @@ export const EntityControlMenu: FC<Props> = ({
     >
       <MenuItem component={Link} to={entityEntriesPath(entityId)}>
         <Typography>アイテム一覧</Typography>
+      </MenuItem>
+      <MenuItem component={Link} to={listAliasPath(entityId)}>
+        <Typography>エイリアス一覧</Typography>
       </MenuItem>
       <MenuItem component={Link} to={editEntityPath(entityId)}>
         <Typography>編集</Typography>

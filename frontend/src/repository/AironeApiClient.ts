@@ -14,10 +14,12 @@ import {
   EntityAttrCreate,
   EntityAttrUpdate,
   EntityDetail,
+  EntryAlias,
   EntryApi,
   EntryBase,
   EntryCopy,
   EntryRetrieve,
+  EntrySearch,
   EntrySearchChain,
   GetEntryAttrReferral,
   Group,
@@ -407,7 +409,7 @@ class AironeApiClient {
     );
   }
 
-  async restoreEntry(id: number): Promise<EntryBase> {
+  async restoreEntry(id: number): Promise<void> {
     return await this.entry.entryApiV2RestoreCreate(
       { id },
       {
@@ -635,7 +637,7 @@ class AironeApiClient {
     });
   }
 
-  async getSearchEntries(query: string): Promise<Array<EntryBase>> {
+  async getSearchEntries(query: string): Promise<EntrySearch[]> {
     return await this.entry.entryApiV2SearchList({
       query: query,
     });
@@ -666,6 +668,37 @@ class AironeApiClient {
       attrId: attrId,
       keyword: keyword,
     });
+  }
+
+  async createEntryAlias(entryId: number, name: string): Promise<EntryAlias> {
+    return await this.entry.entryApiV2AliasCreate(
+      {
+        entryAlias: {
+          name: name,
+          entry: entryId,
+        },
+      },
+      {
+        headers: {
+          "Content-Type": "application/json;charset=utf-8",
+          "X-CSRFToken": getCsrfToken(),
+        },
+      }
+    );
+  }
+
+  async deleteEntryAlias(AliasId: number): Promise<void> {
+    return await this.entry.entryApiV2AliasDestroy(
+      {
+        id: AliasId,
+      },
+      {
+        headers: {
+          "Content-Type": "application/json;charset=utf-8",
+          "X-CSRFToken": getCsrfToken(),
+        },
+      }
+    );
   }
 
   async advancedSearch(

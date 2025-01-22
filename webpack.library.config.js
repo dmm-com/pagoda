@@ -39,5 +39,12 @@ module.exports = {
       'node_modules',
     ],
   },
-  externals: ['react', 'react-dom', 'react-router-dom'],
+  externals: [
+    '@emotion/styled',
+    '@mui/material',
+    'react',
+    'react-dom',
+    'react-router-dom',
+    'notistack'
+  ],
 } 

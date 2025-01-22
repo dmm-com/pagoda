@@ -1,7 +1,7 @@
 import { PaginatedEntityListList } from "@dmm-com/airone-apiclient-typescript-fetch";
 import AddIcon from "@mui/icons-material/Add";
 import { Box, Button, Grid } from "@mui/material";
-import React, { FC, useState } from "react";
+import React, { FC } from "react";
 import { Link } from "react-router-dom";
 
 import { EntityListCard } from "./EntityListCard";
@@ -29,8 +29,6 @@ export const EntityList: FC<Props> = ({
   handleChangeQuery,
   setToggle,
 }) => {
-  const [keyword, setKeyword] = useState(query ?? "");
-
   return (
     <Box>
       {/* This box shows search box and create button */}
@@ -38,12 +36,11 @@ export const EntityList: FC<Props> = ({
         <Box width="600px">
           <SearchBox
             placeholder="モデルを絞り込む"
-            value={keyword}
-            onChange={(e) => setKeyword(e.target.value)}
+            defaultValue={query}
             onKeyPress={(e) => {
               e.key === "Enter" &&
                 handleChangeQuery(
-                  keyword.length > 0 ? normalizeToMatch(keyword) : ""
+                  normalizeToMatch((e.target as HTMLInputElement).value ?? "")
                 );
             }}
           />
