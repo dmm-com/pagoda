@@ -1,11 +1,9 @@
 from rest_framework import generics, serializers, status, viewsets
 from rest_framework.permissions import BasePermission, IsAuthenticated
-from rest_framework.request import Request
 from rest_framework.response import Response
 
-from acl.models import ACLBase
 from airone.lib.drf import YAMLParser, YAMLRenderer
-from group.models import Group
+from job.models import Job
 from role.api_v2.serializers import (
     RoleCreateUpdateSerializer,
     RoleImportExportChildSerializer,
@@ -43,91 +41,25 @@ class RoleAPI(viewsets.ModelViewSet):
 
 class RoleImportAPI(generics.GenericAPIView):
     parser_classes = [YAMLParser]
-    permission_classes = [IsAuthenticated]
     serializer_class = serializers.Serializer
 
-    def post(self, request: Request) -> Response:
+    def post(self, request):
         import_datas = request.data
+        user: User = request.user
         serializer = RoleImportSerializer(data=import_datas)
         serializer.is_valid(raise_exception=True)
 
-        # TODO better to move the saving logic into the serializer
-        for role_data in import_datas:
-            if "name" not in role_data:
-                return Response("Role name is required", status=status.HTTP_400_BAD_REQUEST)
+        job_ids = []
+        error_list = []
 
-            if "id" in role_data:
-                # update group by id
-                role = Role.objects.filter(id=role_data["id"]).first()
-                if not role:
-                    return Response(
-                        "Specified id role does not exist(id:%s, group:%s)"
-                        % (role_data["id"], role_data["name"]),
-                        status=status.HTTP_400_BAD_REQUEST,
-                    )
-
-                # check new name is not used
-                if (role.name != role_data["name"]) and (
-                    Role.objects.filter(name=role_data["name"]).count() > 0
-                ):
-                    return Response(
-                        "New role name is already used(id:%s, group:%s->%s)"
-                        % (role_data["id"], role.name, role_data["name"]),
-                        status=status.HTTP_400_BAD_REQUEST,
-                    )
-
-                role.name = role_data["name"]
-            else:
-                # update group by name
-                role = Role.objects.filter(name=role_data["name"]).first()
-                if not role:
-                    # create group
-                    role = Role.objects.create(name=role_data["name"])
-                else:
-                    # clear registered members (users, groups and administrative ones) to that role
-                    for key in ["users", "groups", "admin_users", "admin_groups"]:
-                        getattr(role, key).clear()
-
-            role.description = role_data["description"]
-
-            # set registered members (users, groups and administrative ones) to that role
-            for key in ["users", "admin_users"]:
-                for name in role_data[key]:
-                    user: User | None = User.objects.filter(username=name, is_active=True).first()
-                    if not user:
-                        return Response(
-                            "specified user is not found (username: %s)" % name,
-                            status=status.HTTP_400_BAD_REQUEST,
-                        )
-                    getattr(role, key).add(user)
-            for key in ["groups", "admin_groups"]:
-                for name in role_data[key]:
-                    group: Group | None = Group.objects.filter(name=name, is_active=True).first()
-                    if not group:
-                        return Response(
-                            "specified group is not found (name: %s)" % name,
-                            status=status.HTTP_400_BAD_REQUEST,
-                        )
-                    getattr(role, key).add(group)
-
-            for permission in role_data.get("permissions", []):
-                acl: ACLBase | None = ACLBase.objects.filter(id=permission["obj_id"]).first()
-                if not acl:
-                    return Response(
-                        "Invalid obj_id given: %s" % str(permission["obj_id"]),
-                        status=status.HTTP_400_BAD_REQUEST,
-                    )
-
-                if permission["permission"] == "readable":
-                    acl.readable.roles.add(role)
-                elif permission["permission"] == "writable":
-                    acl.writable.roles.add(role)
-                elif permission["permission"] == "full":
-                    acl.full.roles.add(role)
-
-            role.save()
-
-        return Response()
+        job = Job.new_role_import_v2(
+            user, text="Preparing to import role data", params=import_datas
+        )
+        job.run()
+        job_ids.append(job.id)
+        return Response(
+            {"result": {"job_ids": job_ids, "error": error_list}}, status=status.HTTP_200_OK
+        )
 
 
 class RoleExportAPI(generics.ListAPIView):
