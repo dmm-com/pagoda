@@ -25,12 +25,8 @@ def edit_role_referrals(self, job: Job) -> JobStatus:
 @app.task(bind=True)
 @may_schedule_until_job_is_ready
 def import_role_v2(self, job: Job) -> tuple[JobStatus, str, None] | None:
-    job_id = job.id
-    job: Job = Job.objects.get(id=job_id)
-
     import_data = json.loads(job.params)
     err_msg = []
-
     total_count = len(import_data)
 
     for index, role_data in enumerate(import_data):
@@ -41,7 +37,7 @@ def import_role_v2(self, job: Job) -> tuple[JobStatus, str, None] | None:
         if job.is_canceled():
             job.status = JobStatus.CANCELED
             job.save(update_fields=["status"])
-            return
+            return None
 
         # Skip processing if the role name is not provided
         if "name" not in role_data:
