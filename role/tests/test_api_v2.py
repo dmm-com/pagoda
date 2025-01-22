@@ -272,6 +272,7 @@ class ViewTest(AironeViewTest):
         resp = self.client.delete(f"/role/api/v2/{role.id}")
         self.assertEqual(resp.status_code, 403)
 
+    @patch("role.tasks.import_role_v2.delay", Mock(side_effect=tasks.import_role_v2))
     def test_import(self):
         self.admin_login()
 
