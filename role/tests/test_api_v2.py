@@ -332,6 +332,16 @@ class ViewTest(AironeViewTest):
         role = self._create_role("test-role")
         entity = self.create_entity(admin, "Entity")
         entity.full.roles.add(role)
+        user = User.objects.create(username="test_user")
+        group = Group.objects.create(name="test_group")
+
+        # Associate user and group with the role
+        role.users.set([user.id])
+        role.groups.set([group.id])
+
+        # Delete the user and group
+        user.delete()
+        group.delete()
 
         resp = self.client.get("/role/api/v2/export")
         data = yaml.safe_load(resp.content.decode("utf-8"))

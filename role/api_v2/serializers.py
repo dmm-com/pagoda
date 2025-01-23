@@ -149,10 +149,10 @@ class RoleImportExportChildSerializer(serializers.ModelSerializer):
             "id": instance.id,
             "name": instance.name,
             "description": instance.description,
-            "users": [x.username for x in instance.users.all()],
-            "groups": [x.name for x in instance.groups.all()],
-            "admin_users": [x.username for x in instance.admin_users.all()],
-            "admin_groups": [x.name for x in instance.admin_groups.all()],
+            "users": [x.username for x in instance.users.filter(is_active=True)],
+            "groups": [x.name for x in instance.groups.filter(is_active=True)],
+            "admin_users": [x.username for x in instance.admin_users.filter(is_active=True)],
+            "admin_groups": [x.name for x in instance.admin_groups.filter(is_active=True)],
             "permissions": [_get_permission_data(x) for x in instance.permissions.all()],
         }
 
