@@ -6,6 +6,7 @@ from simple_history.models import HistoricalRecords
 
 from acl.models import ACLBase
 from airone.lib.acl import ACLObjType
+from category.models import Category
 from webhook.models import Webhook
 
 
@@ -99,6 +100,9 @@ class Entity(ACLBase):
     webhooks = models.ManyToManyField(Webhook, default=[], related_name="registered_entity")
 
     history = HistoricalRecords(excluded_fields=["status", "updated_time"])
+
+    # The Category that groups Models according to their purpose (which is defined by User)
+    categories = models.ManyToManyField(Category, default=[], related_name="models")
 
     def __init__(self, *args, **kwargs):
         super(Entity, self).__init__(*args, **kwargs)
