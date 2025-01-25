@@ -295,18 +295,24 @@ class SpannerRepository:
 
         Returns:
             tuple[str, dict[str, Any], dict[str, Any]]: A tuple containing:
-                - The WHERE clause and JOIN conditions
+                - The WHERE clause conditions (without JOIN conditions)
                 - Query parameters
                 - Parameter types
         """
-        conditions = "WHERE e.OriginEntityId IN UNNEST(@entity_ids)"
+        conditions = "e.OriginEntityId IN UNNEST(@entity_ids)"
         params: dict[str, Any] = {"entity_ids": entity_ids}
         param_types: dict[str, Any] = {
             "entity_ids": spanner_v1.param_types.Array(spanner_v1.param_types.INT64)
         }
 
         if attribute_names:
-            conditions += " AND a.Name IN UNNEST(@attribute_names)"
+            conditions += """
+                AND EXISTS (
+                    SELECT 1
+                    FROM AdvancedSearchAttribute a
+                    WHERE a.EntryId = e.EntryId
+                    AND a.Name IN UNNEST(@attribute_names)
+                )"""
             params["attribute_names"] = attribute_names
             param_types["attribute_names"] = spanner_v1.param_types.Array(
                 spanner_v1.param_types.STRING
@@ -489,11 +495,7 @@ class SpannerRepository:
         query = f"""
         SELECT DISTINCT e.*
         FROM AdvancedSearchEntry e
-        JOIN AdvancedSearchAttribute a ON e.EntryId = a.EntryId
-        JOIN AdvancedSearchAttributeValue v ON
-            a.EntryId = v.EntryId AND
-            a.AttributeId = v.AttributeId
-        {conditions}
+        WHERE {conditions}
         LIMIT @limit OFFSET @offset
         """
 
@@ -524,13 +526,9 @@ class SpannerRepository:
         )
 
         query = f"""
-        SELECT COUNT(DISTINCT e.EntryId)
+        SELECT COUNT(*)
         FROM AdvancedSearchEntry e
-        JOIN AdvancedSearchAttribute a ON e.EntryId = a.EntryId
-        JOIN AdvancedSearchAttributeValue v ON
-            a.EntryId = v.EntryId AND
-            a.AttributeId = v.AttributeId
-        {conditions}
+        WHERE {conditions}
         """
 
         with self.database.snapshot() as snapshot:
