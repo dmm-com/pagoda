@@ -455,63 +455,65 @@ class AdvancedSearchAPI(generics.GenericAPIView):
         # save total population number
         total_count = deepcopy(resp.ret_count)
 
-        for join_attr in join_attrs:
-            (will_filter_by_joined_attr, joined_resp) = _get_joined_resp(resp.ret_values, join_attr)
-            # This is needed to set result as blank value
-            blank_joining_info = {
-                "%s.%s" % (join_attr["name"], k["name"]): {
-                    "is_readable": True,
-                    "type": AttrType.STRING,
-                    "value": "",
+        if not settings.AIRONE_SPANNER_ENABLED:
+            for join_attr in join_attrs:
+                (will_filter_by_joined_attr, joined_resp) = _get_joined_resp(
+                    resp.ret_values, join_attr
+                )
+                # This is needed to set result as blank value
+                blank_joining_info = {
+                    "%s.%s" % (join_attr["name"], k["name"]): {
+                        "is_readable": True,
+                        "type": AttrType.STRING,
+                        "value": "",
+                    }
+                    for k in join_attr["attrinfo"]
                 }
-                for k in join_attr["attrinfo"]
-            }
 
-            # convert search result to dict to be able to handle it without loop
-            joined_resp_info = {
-                x["entry"]["id"]: {
-                    "%s.%s" % (join_attr["name"], k): v
-                    for k, v in x["attrs"].items()
-                    if any(_x["name"] == k for _x in join_attr["attrinfo"])
+                # convert search result to dict to be able to handle it without loop
+                joined_resp_info = {
+                    x["entry"]["id"]: {
+                        "%s.%s" % (join_attr["name"], k): v
+                        for k, v in x["attrs"].items()
+                        if any(_x["name"] == k for _x in join_attr["attrinfo"])
+                    }
+                    for x in joined_resp["ret_values"]
                 }
-                for x in joined_resp["ret_values"]
-            }
 
-            # this inserts result to previous search result
-            new_ret_values = []
-            joined_ret_values = []
-            for resp_result in resp.ret_values:
-                # joining search result to original one
-                ref_info = resp_result.attrs.get(join_attr["name"])
+                # this inserts result to previous search result
+                new_ret_values = []
+                joined_ret_values = []
+                for resp_result in resp.ret_values:
+                    # joining search result to original one
+                    ref_info = resp_result.attrs.get(join_attr["name"])
 
-                # This get referral Item-ID from joined search result
-                ref_list = _get_ref_id_from_es_result(ref_info)
-                for ref_id in ref_list:
-                    if ref_id and ref_id in joined_resp_info:  # type: ignore
-                        # join valid value
-                        resp_result.attrs |= joined_resp_info[ref_id]
+                    # This get referral Item-ID from joined search result
+                    ref_list = _get_ref_id_from_es_result(ref_info)
+                    for ref_id in ref_list:
+                        if ref_id and ref_id in joined_resp_info:  # type: ignore
+                            # join valid value
+                            resp_result.attrs |= joined_resp_info[ref_id]
 
-                        # collect only the result that matches with keyword of joined_attr parameter
-                        copied_result = deepcopy(resp_result)
-                        new_ret_values.append(copied_result)
-                        joined_ret_values.append(copied_result)
+                            copied_result = deepcopy(resp_result)
+                            new_ret_values.append(copied_result)
+                            joined_ret_values.append(copied_result)
 
-                    else:
+                        else:
+                            # join EMPTY value
+                            resp_result.attrs |= blank_joining_info  # type: ignore
+                            joined_ret_values.append(deepcopy(resp_result))
+
+                    if len(ref_list) == 0:
                         # join EMPTY value
                         resp_result.attrs |= blank_joining_info  # type: ignore
                         joined_ret_values.append(deepcopy(resp_result))
 
-                if len(ref_list) == 0:
-                    # join EMPTY value
-                    resp_result.attrs |= blank_joining_info  # type: ignore
-                    joined_ret_values.append(deepcopy(resp_result))
-
-            if will_filter_by_joined_attr:
-                resp.ret_values = new_ret_values
-                resp.ret_count = len(new_ret_values)
-            else:
-                resp.ret_values = joined_ret_values
-                resp.ret_count = len(joined_ret_values)
+                if will_filter_by_joined_attr:
+                    resp.ret_values = new_ret_values
+                    resp.ret_count = len(new_ret_values)
+                else:
+                    resp.ret_values = joined_ret_values
+                    resp.ret_count = len(joined_ret_values)
 
         # convert field values to fit entry retrieve API data type, as a workaround.
         # FIXME should be replaced with DRF serializer etc
