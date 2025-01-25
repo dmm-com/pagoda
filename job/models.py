@@ -78,6 +78,7 @@ class JobOperation(enum.IntEnum):
     CREATE_ENTRY_V2 = 27
     EDIT_ENTRY_V2 = 28
     DELETE_ENTRY_V2 = 29
+    IMPORT_ROLE_V2 = 30
 
 
 @enum.unique
@@ -392,6 +393,7 @@ class Job(models.Model):
                 JobOperation.CREATE_ENTRY_V2: entry_task.create_entry_v2,
                 JobOperation.EDIT_ENTRY_V2: entry_task.edit_entry_v2,
                 JobOperation.DELETE_ENTRY_V2: entry_task.delete_entry_v2,
+                JobOperation.IMPORT_ROLE_V2: role_task.import_role_v2,
             }
             for operation_num, task in CUSTOM_TASKS.items():
                 custom_task = kls.get_task_module("custom_view.tasks")
@@ -667,3 +669,13 @@ class Job(models.Model):
             return settings.AIRONE["JOB_TIMEOUT"]
         else:
             return kls.DEFAULT_JOB_TIMEOUT
+
+    @classmethod
+    def new_role_import_v2(kls, user: User, text="", params={}) -> "Job":
+        return kls._create_new_job(
+            user,
+            None,
+            JobOperation.IMPORT_ROLE_V2,
+            text,
+            json.dumps(params, default=_support_time_default, sort_keys=True),
+        )

@@ -50,10 +50,12 @@ export const ListAliasEntryPage: FC = ({}) => {
   }, [entityId]);
 
   useEffect(() => {
-    aironeApiClient.getEntries(entityId, true, page, query).then((res) => {
-      setEntries(res.results);
-      setTotalCount(res.count);
-    });
+    aironeApiClient
+      .getEntries(entityId, true, page, query, true)
+      .then((res) => {
+        setEntries(res.results);
+        setTotalCount(res.count);
+      });
   }, [page, query]);
 
   const handleChangeQuery = (newQuery?: string) => {

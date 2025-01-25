@@ -2902,6 +2902,23 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 404)
         self.assertEqual(resp.json(), {"code": "AE-230000", "message": "Not found."})
 
+    def test_list_entry_when_alias_is_related(self):
+        # create items and set alias at one of them
+        ALIAS_NAME = "test alias"
+        items = [self.add_entry(self.user, "e-%i" % i, self.entity) for i in range(3)]
+        items[0].add_alias(ALIAS_NAME)
+
+        # search item by alias name
+        resp = self.client.get(
+            "/entity/api/v2/%d/entries/?search=%s&with_alias=1" % (self.entity.id, ALIAS_NAME)
+        )
+        self.assertEqual(resp.status_code, 200)
+
+        # then only item that alias is set was returned
+        self.assertEqual(resp.json()["count"], 1)
+        self.assertEqual(resp.json()["results"][0]["name"], "e-0")
+        self.assertEqual(resp.json()["results"][0]["aliases"][0]["name"], ALIAS_NAME)
+
     @mock.patch("entry.tasks.create_entry_v2.delay", mock.Mock(side_effect=create_entry_v2))
     def test_create_entry(self):
         attr = {}

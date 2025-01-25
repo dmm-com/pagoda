@@ -31,6 +31,8 @@ from api_v1.entry.serializer import EntrySearchChainSerializer
 from entity.models import Entity, EntityAttr
 from entry.api_v2.pagination import EntryReferralPagination
 from entry.api_v2.serializers import (
+    AdvancedSearchJoinAttrInfo,
+    AdvancedSearchJoinAttrInfoList,
     AdvancedSearchResultExportSerializer,
     AdvancedSearchResultSerializer,
     AdvancedSearchSerializer,
@@ -265,10 +267,12 @@ class AdvancedSearchAPI(generics.GenericAPIView):
         is_all_entities = serializer.validated_data["is_all_entities"]
         entry_limit = serializer.validated_data["entry_limit"]
         entry_offset = serializer.validated_data["entry_offset"]
-        join_attrs = serializer.validated_data.get("join_attrs", [])
+        join_attrs = AdvancedSearchJoinAttrInfoList.model_validate(
+            serializer.validated_data.get("join_attrs", [])
+        ).root
 
         def _get_joined_resp(
-            prev_results: list[AdvancedSearchResultRecord], join_attr: dict
+            prev_results: list[AdvancedSearchResultRecord], join_attr: AdvancedSearchJoinAttrInfo
         ) -> tuple[bool, dict]:
             """
             This is a helper method for join_attrs that will get specified attr values
@@ -285,7 +289,7 @@ class AdvancedSearchAPI(generics.GenericAPIView):
                 Prefetch(
                     "attrs",
                     queryset=EntityAttr.objects.filter(
-                        name=join_attr["name"], is_active=True
+                        name=join_attr.name, is_active=True
                     ).prefetch_related(
                         Prefetch(
                             "referral", queryset=Entity.objects.filter(is_active=True).only("id")
@@ -300,7 +304,7 @@ class AdvancedSearchAPI(generics.GenericAPIView):
                 if entity is None:
                     continue
 
-                attr = next((a for a in entity.attrs.all() if a.name == join_attr["name"]), None)
+                attr = next((a for a in entity.attrs.all() if a.name == join_attr.name), None)
                 if attr is None:
                     continue
 
@@ -309,7 +313,7 @@ class AdvancedSearchAPI(generics.GenericAPIView):
                     hint_entity_ids.extend([x.id for x in attr.referral.all()])
 
                     # set Item name
-                    attrinfo = result.attrs[join_attr["name"]]
+                    attrinfo = result.attrs[join_attr.name]
 
                     if attr.type == AttrType.OBJECT and attrinfo["value"]["name"] not in item_names:
                         item_names.append(attrinfo["value"]["name"])
@@ -332,24 +336,19 @@ class AdvancedSearchAPI(generics.GenericAPIView):
 
             # set parameters to filter joining search results
             hint_attrs: list[AttrHint] = []
-            for info in join_attr.get("attrinfo", []):
+            for info in join_attr.attrinfo:
                 hint_attrs.append(
                     AttrHint(
-                        name=info["name"],
-                        keyword=info.get("keyword"),
-                        filter_key=info.get("filter_key"),
+                        name=info.name,
+                        keyword=info.keyword,
+                        filter_key=info.filter_key,
                     )
                 )
 
             # search Items from elasticsearch to join
             return (
                 # This represents whether user want to narrow down results by keyword of joined attr
-                any(
-                    [
-                        x.get("keyword") or x.get("filter_key", 0) > 0
-                        for x in join_attr.get("attrinfo", [])
-                    ]
-                ),
+                any([x.keyword or (x.filter_key or 0) > 0 for x in join_attr.attrinfo]),
                 AdvancedSearchService.search_entries(
                     request.user,
                     hint_entity_ids=list(set(hint_entity_ids)),  # this removes depulicated IDs
@@ -359,7 +358,7 @@ class AdvancedSearchAPI(generics.GenericAPIView):
                     hint_referral=None,
                     is_output_all=is_output_all,
                     hint_referral_entity_id=None,
-                    offset=join_attr.get("offset", 0),
+                    offset=join_attr.offset,
                 ).dict(),
             )
 
@@ -457,25 +456,23 @@ class AdvancedSearchAPI(generics.GenericAPIView):
 
         if not settings.AIRONE_SPANNER_ENABLED:
             for join_attr in join_attrs:
-                (will_filter_by_joined_attr, joined_resp) = _get_joined_resp(
-                    resp.ret_values, join_attr
-                )
+                (will_filter_by_joined_attr, joined_resp) = _get_joined_resp(resp.ret_values, join_attr)
                 # This is needed to set result as blank value
                 blank_joining_info = {
-                    "%s.%s" % (join_attr["name"], k["name"]): {
+                    "%s.%s" % (join_attr.name, k.name): {
                         "is_readable": True,
                         "type": AttrType.STRING,
                         "value": "",
                     }
-                    for k in join_attr["attrinfo"]
+                    for k in join_attr.attrinfo
                 }
 
                 # convert search result to dict to be able to handle it without loop
                 joined_resp_info = {
                     x["entry"]["id"]: {
-                        "%s.%s" % (join_attr["name"], k): v
+                        "%s.%s" % (join_attr.name, k): v
                         for k, v in x["attrs"].items()
-                        if any(_x["name"] == k for _x in join_attr["attrinfo"])
+                        if any(_x.name == k for _x in join_attr.attrinfo)
                     }
                     for x in joined_resp["ret_values"]
                 }
@@ -485,12 +482,12 @@ class AdvancedSearchAPI(generics.GenericAPIView):
                 joined_ret_values = []
                 for resp_result in resp.ret_values:
                     # joining search result to original one
-                    ref_info = resp_result.attrs.get(join_attr["name"])
+                    ref_info = resp_result.attrs.get(join_attr.name)
 
                     # This get referral Item-ID from joined search result
                     ref_list = _get_ref_id_from_es_result(ref_info)
                     for ref_id in ref_list:
-                        if ref_id and ref_id in joined_resp_info:  # type: ignore
+                        if ref_id and ref_id in joined_resp_info:
                             # join valid value
                             resp_result.attrs |= joined_resp_info[ref_id]
 
@@ -500,12 +497,12 @@ class AdvancedSearchAPI(generics.GenericAPIView):
 
                         else:
                             # join EMPTY value
-                            resp_result.attrs |= blank_joining_info  # type: ignore
+                            resp_result.attrs |= blank_joining_info
                             joined_ret_values.append(deepcopy(resp_result))
 
                     if len(ref_list) == 0:
                         # join EMPTY value
-                        resp_result.attrs |= blank_joining_info  # type: ignore
+                        resp_result.attrs |= blank_joining_info
                         joined_ret_values.append(deepcopy(resp_result))
 
                 if will_filter_by_joined_attr:

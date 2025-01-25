@@ -1,9 +1,12 @@
 import json
+from unittest.mock import Mock, patch
 
 import yaml
 
 from airone.lib.test import AironeViewTest
 from group.models import Group
+from job.models import Job, JobOperation, JobStatus
+from role import tasks
 from role.models import Role
 from user.models import User
 
@@ -269,6 +272,7 @@ class ViewTest(AironeViewTest):
         resp = self.client.delete(f"/role/api/v2/{role.id}")
         self.assertEqual(resp.status_code, 403)
 
+    @patch("role.tasks.import_role_v2.delay", Mock(side_effect=tasks.import_role_v2))
     def test_import(self):
         self.admin_login()
 
@@ -278,6 +282,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(Role.objects.filter(name="role1").count(), 1)
 
+    @patch("role.tasks.import_role_v2.delay", Mock(side_effect=tasks.import_role_v2))
     def test_import_for_update(self):
         self.admin_login()
 
@@ -290,6 +295,8 @@ class ViewTest(AironeViewTest):
         import_data = fp.read().replace("<role_id>", str(role.id))
         resp = self.client.post("/role/api/v2/import", import_data, content_type="application/yaml")
         self.assertEqual(resp.status_code, 200)
+        job = Job.objects.get(operation=JobOperation.IMPORT_ROLE_V2)
+        self.assertEqual(job.status, JobStatus.DONE)
 
         # This confirms role instance is updated as expected values
         role = Role.objects.filter(name="role1").first()
@@ -300,6 +307,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual([x.name for x in role.groups.all()], ["group2"])
         self.assertEqual([x.name for x in role.admin_groups.all()], ["group1"])
 
+    @patch("role.tasks.import_role_v2.delay", Mock(side_effect=tasks.import_role_v2))
     def test_import_with_permissions(self):
         admin = self.admin_login()
 
@@ -308,6 +316,8 @@ class ViewTest(AironeViewTest):
         fp = self.open_fixture_file("import_roles_with_permissions.yaml")
         import_data = fp.read().replace("<test_obj_id>", str(entity.id))
         resp = self.client.post("/role/api/v2/import", import_data, content_type="application/yaml")
+        job = Job.objects.get(operation=JobOperation.IMPORT_ROLE_V2)
+        self.assertEqual(job.status, JobStatus.DONE)
 
         self.assertEqual(resp.status_code, 200)
         role = Role.objects.filter(name="role1").first()
@@ -322,6 +332,16 @@ class ViewTest(AironeViewTest):
         role = self._create_role("test-role")
         entity = self.create_entity(admin, "Entity")
         entity.full.roles.add(role)
+        user = User.objects.create(username="test_user")
+        group = Group.objects.create(name="test_group")
+
+        # Associate user and group with the role
+        role.users.set([user.id])
+        role.groups.set([group.id])
+
+        # Delete the user and group
+        user.delete()
+        group.delete()
 
         resp = self.client.get("/role/api/v2/export")
         data = yaml.safe_load(resp.content.decode("utf-8"))
