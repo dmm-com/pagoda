@@ -25,7 +25,11 @@ from airone.lib.drf import (
     RequiredParameterError,
     YAMLParser,
 )
-from airone.lib.elasticsearch import AdvancedSearchResultRecord, AttrHint
+from airone.lib.elasticsearch import (
+    AdvancedSearchResultRecord,
+    AdvancedSearchResultRecordAttr,
+    AttrHint,
+)
 from airone.lib.types import AttrType
 from api_v1.entry.serializer import EntrySearchChainSerializer
 from entity.models import Entity, EntityAttr
@@ -456,9 +460,11 @@ class AdvancedSearchAPI(generics.GenericAPIView):
 
         if not settings.AIRONE_SPANNER_ENABLED:
             for join_attr in join_attrs:
-                (will_filter_by_joined_attr, joined_resp) = _get_joined_resp(resp.ret_values, join_attr)
-                # This is needed to set result as blank value
-                blank_joining_info = {
+                (will_filter_by_joined_attr, joined_resp) = _get_joined_resp(
+                    resp.ret_values, join_attr
+                )
+                # Prepare blank joining info for entries without matches
+                blank_joining_info: dict[str, AdvancedSearchResultRecordAttr] = {
                     "%s.%s" % (join_attr.name, k.name): {
                         "is_readable": True,
                         "type": AttrType.STRING,
@@ -467,8 +473,8 @@ class AdvancedSearchAPI(generics.GenericAPIView):
                     for k in join_attr.attrinfo
                 }
 
-                # convert search result to dict to be able to handle it without loop
-                joined_resp_info = {
+                # Convert joined search results to dict for easier handling
+                joined_resp_info: dict[int, dict[str, AdvancedSearchResultRecordAttr]] = {
                     x["entry"]["id"]: {
                         "%s.%s" % (join_attr.name, k): v
                         for k, v in x["attrs"].items()
@@ -477,11 +483,11 @@ class AdvancedSearchAPI(generics.GenericAPIView):
                     for x in joined_resp["ret_values"]
                 }
 
-                # this inserts result to previous search result
+                # Insert results to previous search results
                 new_ret_values = []
                 joined_ret_values = []
                 for resp_result in resp.ret_values:
-                    # joining search result to original one
+                    # Get referral info from joined search result
                     ref_info = resp_result.attrs.get(join_attr.name)
 
                     # This get referral Item-ID from joined search result

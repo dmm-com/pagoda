@@ -25,6 +25,7 @@ from airone.lib.elasticsearch import (
 from airone.lib.log import Logger
 from airone.lib.types import AttrType
 from entity.models import Entity, EntityAttr
+from entry.api_v2.serializers import AdvancedSearchJoinAttrInfo
 from entry.models import AdvancedSearchAttributeIndex, Attribute, AttributeValue, Entry
 from user.models import User
 
@@ -546,7 +547,7 @@ class AdvancedSearchService:
         is_output_all: bool = False,
         hint_referral_entity_id: int | None = None,
         offset: int = 0,
-        join_attrs: list[dict[str, Any]] = [],
+        join_attrs: list[AdvancedSearchJoinAttrInfo] = [],
     ) -> AdvancedSearchResults:
         """Search entries using Cloud Spanner.
 
@@ -677,20 +678,20 @@ class AdvancedSearchService:
 
             # Prepare blank joining info for entries without matches
             blank_joining_info = {
-                "%s.%s" % (join_attr["name"], k["name"]): {
+                "%s.%s" % (join_attr.name, k.name): {
                     "is_readable": True,
                     "type": AttrType.STRING,
                     "value": "",
                 }
-                for k in join_attr["attrinfo"]
+                for k in join_attr.attrinfo
             }
 
             # Convert joined search results to dict for easier handling
             joined_resp_info = {
                 x["entry"]["id"]: {
-                    "%s.%s" % (join_attr["name"], k): v
+                    "%s.%s" % (join_attr.name, k): v
                     for k, v in x["attrs"].items()
-                    if any(_x["name"] == k for _x in join_attr["attrinfo"])
+                    if any(_x.name == k for _x in join_attr.attrinfo)
                 }
                 for x in joined_resp["ret_values"]
             }
@@ -700,7 +701,7 @@ class AdvancedSearchService:
             joined_ret_values = []
             for resp_result in values:
                 # Get referral info from joined search result
-                ref_info = resp_result.attrs.get(join_attr["name"])
+                ref_info = resp_result.attrs.get(join_attr.name)
                 if not ref_info:
                     # Join EMPTY value
                     resp_result.attrs |= blank_joining_info  # type: ignore

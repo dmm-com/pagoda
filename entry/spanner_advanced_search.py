@@ -13,6 +13,7 @@ from airone.lib.elasticsearch import (
 )
 from airone.lib.types import AttrType
 from entity.models import EntityAttr
+from entry.api_v2.serializers import AdvancedSearchJoinAttrInfo
 from entry.models import AttributeValue
 
 
@@ -653,7 +654,7 @@ class SpannerRepository:
     def get_joined_entries(
         self,
         prev_results: list[AdvancedSearchResultRecord],
-        join_attr: dict[str, Any],
+        join_attr: AdvancedSearchJoinAttrInfo,
         limit: int = 100,
         offset: int = 0,
     ) -> tuple[bool, dict[str, Any]]:
@@ -715,8 +716,8 @@ class SpannerRepository:
                 """,
                     params={
                         "entity_ids": entity_ids,
-                        "attr_name": join_attr["name"],
-                        "attr_names": [attr["name"] for attr in join_attr["attrinfo"]],
+                        "attr_name": join_attr.name,
+                        "attr_names": [attr.name for attr in join_attr.attrinfo],
                     },
                     param_types={
                         "entity_ids": spanner_v1.param_types.Array(spanner_v1.param_types.INT64),
@@ -768,8 +769,7 @@ class SpannerRepository:
 
             # Determine if filtering is required based on join attributes
             will_filter = any(
-                bool(x.get("keyword")) or x.get("filter_key", 0) > 0
-                for x in join_attr.get("attrinfo", [])
+                bool(x.keyword) or (x.filter_key or 0) > 0 for x in join_attr.attrinfo
             )
 
             return will_filter, {
