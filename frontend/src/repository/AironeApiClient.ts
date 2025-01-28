@@ -8,6 +8,8 @@ import {
   AdvancedSearchResult,
   AdvancedSearchResultAttrInfo,
   AttributeData,
+  CategoryApi,
+  CategoryList,
   Configuration,
   EntityApi,
   EntityApiV2ListRequest,
@@ -76,6 +78,7 @@ function getCsrfToken(): string {
  */
 class AironeApiClient {
   private acl: AclApi;
+  private category: CategoryApi;
   private entity: EntityApi;
   private entry: EntryApi;
   private trigger: TriggerApi;
@@ -90,6 +93,7 @@ class AironeApiClient {
 
     // Each "XXXApi" is associated with "XXXAPI" defined in (~/airone/*/api_v2/views.py)
     this.acl = new AclApi(config);
+    this.category = new CategoryApi(config);
     this.entity = new EntityApi(config);
     this.entry = new EntryApi(config);
     this.trigger = new TriggerApi(config);
@@ -618,6 +622,10 @@ class AironeApiClient {
     const resp = await this.role.roleApiV2ExportListRaw();
     const data = await resp.raw.text();
     fileDownload(data, filename);
+  }
+
+  async getCategory(categoryId: number): Promise<CategoryList> {
+    return await this.category.categoryApiV2Retrieve({ id: categoryId });
   }
 
   async getEntries(

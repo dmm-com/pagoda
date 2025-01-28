@@ -22,6 +22,7 @@ import { Header } from "components/common/Header";
 import { ACLEditPage } from "pages/ACLEditPage";
 import { AdvancedSearchPage } from "pages/AdvancedSearchPage";
 import { AdvancedSearchResultsPage } from "pages/AdvancedSearchResultsPage";
+import { CategoryEditPage } from "pages/CategoryEditPage";
 import { DashboardPage } from "pages/DashboardPage";
 import { EntityEditPage } from "pages/EntityEditPage";
 import { EntityHistoryPage } from "pages/EntityHistoryPage";
@@ -43,6 +44,7 @@ import {
   advancedSearchPath,
   advancedSearchResultPath,
   copyEntryPath,
+  editCategoryPath,
   editEntityPath,
   editTriggerPath,
   entitiesPath,
@@ -53,8 +55,10 @@ import {
   groupPath,
   groupsPath,
   jobsPath,
-  loginPath,
   listAliasPath,
+  listCategoryPath,
+  loginPath,
+  newCategoryPath,
   newEntityPath,
   newEntryPath,
   newGroupPath,
@@ -69,9 +73,6 @@ import {
   triggersPath,
   userPath,
   usersPath,
-  newCategoryPath,
-  listCategoryPath,
-  editCategoryPath,
 } from "routes/Routes";
 
 // re-throw error to be caught by the root error boundary
@@ -105,6 +106,8 @@ export const AppRouter: FC<Props> = ({ customRoutes }) => {
               <Route key={r.path} path={r.path} element={r.element} />
             ))}
 
+          <Route path={newCategoryPath()} element={<CategoryEditPage />} />
+          <Route path={editCategoryPath(":categoryId")} element={<CategoryEditPage />} />
           <Route path={listCategoryPath()} element={<ListCategoryPage />} />
           <Route path={advancedSearchPath()} element={<AdvancedSearchPage />} />
           <Route
