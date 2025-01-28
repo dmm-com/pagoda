@@ -13,6 +13,7 @@ import { EntryCopyPage } from "../pages/EntryCopyPage";
 import { EntryDetailsPage } from "../pages/EntryDetailsPage";
 import { EntryRestorePage } from "../pages/EntryRestorePage";
 import { ListAliasEntryPage } from "../pages/ListAliasEntryPage";
+import { ListCategoryPage } from "../pages/ListCategoryPage";
 import { NotFoundErrorPage } from "../pages/NotFoundErrorPage";
 import { RoleEditPage } from "../pages/RoleEditPage";
 import { RoleListPage } from "../pages/RoleListPage";
@@ -68,6 +69,9 @@ import {
   triggersPath,
   userPath,
   usersPath,
+  newCategoryPath,
+  listCategoryPath,
+  editCategoryPath,
 } from "routes/Routes";
 
 // re-throw error to be caught by the root error boundary
@@ -101,6 +105,7 @@ export const AppRouter: FC<Props> = ({ customRoutes }) => {
               <Route key={r.path} path={r.path} element={r.element} />
             ))}
 
+          <Route path={listCategoryPath()} element={<ListCategoryPage />} />
           <Route path={advancedSearchPath()} element={<AdvancedSearchPage />} />
           <Route
             path={advancedSearchResultPath()}
