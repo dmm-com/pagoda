@@ -63,6 +63,7 @@ export const CategoryEditPage: FC = () => {
     async (category: Schema) => {
       try {
         if (willCreate) {
+          console.log("[onix/handleSubmit] category: ", category);
           await aironeApiClient.createCategory(category);
         } else {
           await aironeApiClient.updateCategory(categoryId, category);

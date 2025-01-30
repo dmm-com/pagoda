@@ -1,9 +1,16 @@
 from rest_framework import serializers
 
 from category.models import Category
-from entity.api_v2.serializers import EntitySerializer
+#from entity.api_v2.serializers import EntitySerializer
 from entity.models import Entity
 
+
+class EntitySerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField()
+
+    class Meta:
+        model = Entity
+        fields = ["id", "name", "is_public"]
 
 class CategoryListSerializer(serializers.ModelSerializer):
     models = EntitySerializer(many=True)
@@ -13,9 +20,14 @@ class CategoryListSerializer(serializers.ModelSerializer):
         fields = ["id", "name", "note", "models"]
 
 
+class EntitySimpleSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(write_only=True)
+    name = serializers.CharField(write_only=True, max_length=200)
+
 class CategoryCreateSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(required=False, read_only=True)
-    models = serializers.ListField(write_only=True, required=False, default=[])
+    #models = serializers.ListField(write_only=True, required=False, default=[])
+    models = EntitySerializer(many=True)
 
     class Meta:
         model = Category
@@ -29,7 +41,8 @@ class CategoryCreateSerializer(serializers.ModelSerializer):
         )
 
         # make relations created Category with specified Models
-        for model in Entity.objects.filter(id__in=validated_data.get("models", []), is_active=True):
+        print("[onix/CategoryCreateSerializer.create(10)] %s" % str(validated_data))
+        for model in Entity.objects.filter(id__in=[x["id"] for x in validated_data.get("models", [])], is_active=True):
             model.categories.add(category)
 
         return category

@@ -1,14 +1,18 @@
 import { styled } from "@mui/material/styles";
 import React, { FC } from "react";
-import { Control, Controller } from "react-hook-form";
+import { Control, Controller, FieldError } from "react-hook-form";
 import { UseFormSetValue } from "react-hook-form/dist/types/form";
 
+import { useAsyncWithThrow } from "../../hooks/useAsyncWithThrow";
+import { aironeApiClient } from "../../repository/AironeApiClient";
 import { ServerContext } from "../../services/ServerContext";
 
 import { Schema } from "./categoryForm/CategoryFormSchema";
 
 import {
+  Autocomplete,
   Box,
+  FormHelperText,
   Table,
   TableBody,
   TableCell,
@@ -21,6 +25,7 @@ import {
   HeaderTableRow,
   StyledTableRow,
 } from "components/common/Table";
+import { Entity, EntityList } from "@dmm-com/airone-apiclient-typescript-fetch";
 
 const StyledBox = styled(Box)(({ theme }) => ({
   width: theme.breakpoints.values.lg,
@@ -36,11 +41,23 @@ interface Props {
   setValue: UseFormSetValue<Schema>;
 }
 
+interface MyEntity {
+  readonly id: number;
+  readonly name: string;
+}
+
 export const CategoryForm: FC<Props> = ({
   control,
   setValue,
 }) => {
   const serverContext = ServerContext.getInstance();
+
+  const entities = useAsyncWithThrow(async () => {
+    const entities = await aironeApiClient.getEntities();
+    return entities.results.map(x => {
+      return { id: x.id, name: x.name } as MyEntity;
+    });
+  });
 
   return (
     <StyledBox>
@@ -95,6 +112,63 @@ export const CategoryForm: FC<Props> = ({
                       size="small"
                       fullWidth
                       inputProps={{ sx: { resize: "vertical" } }}
+                    />
+                  )}
+                />
+              </TableCell>
+            </StyledTableRow>
+
+            <StyledTableRow>
+              <TableCell>登録モデル(複数可)</TableCell>
+              <TableCell>
+                <Controller
+                  name="models"
+                  control={control}
+                  defaultValue={[]}
+                  render={({ field, fieldState: { error } }) => (
+                    <Autocomplete
+                      {...field}
+                      options={entities.value ?? []}
+                      disabled={entities.loading}
+                      getOptionLabel={(option: any) => option.name}
+
+                      onChange={(_e, value: any) => {
+                        console.log("[onix/onChange] value:", value);
+                        setValue("models", value, {
+                          shouldDirty: true,
+                          shouldValidate: true,
+                        });
+                      }}
+                      renderInput={(params) => (
+                        <Box>
+                          <TextField {...params} variant="outlined" />
+                          {/* NOTE: role schema will inject some nested errors. It shows the first. */}
+                          {Array.isArray(error) && (
+                            <>
+                              {(() => {
+                                const first = (error as FieldError[]).filter(
+                                  (e) => e.message != null
+                                )?.[0];
+                                return (
+                                  first != null && (
+                                    <FormHelperText error>
+                                      {first.message}
+                                    </FormHelperText>
+                                  )
+                                );
+                              })()}
+                            </>
+                          )}
+                          {error != null && (
+                            <FormHelperText error>
+                              {error.message}
+                            </FormHelperText>
+                          )}
+                        </Box>
+                      )}
+                      multiple
+                      disableCloseOnSelect
+                      fullWidth
                     />
                   )}
                 />
