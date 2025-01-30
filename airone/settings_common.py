@@ -64,6 +64,7 @@ class Common(Configuration):
         "simple_history",
         "storages",
         "trigger",
+        "category",
     ]
 
     if os.path.exists(BASE_DIR + "/custom_view"):

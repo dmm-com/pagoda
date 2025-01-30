@@ -2,6 +2,7 @@ import i18n, { Resource } from "i18next";
 import { initReactI18next } from "react-i18next";
 
 export type TranslationKey =
+  | "categories"
   | "entities"
   | "advancedSearch"
   | "management"
@@ -43,6 +44,7 @@ function toResource(resource: AironeResource): Resource {
 const resources = toResource({
   en: {
     translation: {
+      categories: "Categories",
       entities: "Entities",
       advancedSearch: "Advanced Search",
       management: "Management",
@@ -60,6 +62,7 @@ const resources = toResource({
   },
   ja: {
     translation: {
+      categories: "カテゴリ一覧",
       entities: "モデル一覧",
       advancedSearch: "高度な検索",
       management: "管理機能",

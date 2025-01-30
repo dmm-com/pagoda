@@ -42,6 +42,7 @@ urlpatterns = [
     re_path(r"^webhook/", include(("webhook.urls", "webhook"))),
     re_path(r"^role/", include(("role.urls", "role"))),
     re_path(r"^trigger/", include(("trigger.urls", "trigger"))),
+    re_path(r"^category/", include(("category.urls", "category"))),
 ]
 
 if settings.DEBUG:

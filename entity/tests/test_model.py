@@ -4,6 +4,7 @@ from django.conf import settings
 from django.test import TestCase
 
 from airone.lib.types import AttrType
+from category.models import Category
 from entity.admin import EntityAttrResource, EntityResource
 from entity.models import Entity, EntityAttr
 from user.models import User
@@ -401,3 +402,27 @@ class ModelTest(TestCase):
             created_user=self._test_user,
             parent_entity=entity,
         )
+
+    def test_category(self):
+        models = [
+            Entity.objects.create(name="Model-%d" % n, created_user=self._test_user)
+            for n in range(3)
+        ]
+        categories = [
+            Category.objects.create(name="Category-%d" % n, created_user=self._test_user)
+            for n in range(3)
+        ]
+
+        # set relation from single Model to multiple Category
+        for n in range(3):
+            models[0].categories.add(categories[n])
+
+        # check each categories are set properly
+        self.assertEqual(list(models[0].categories.all()), categories)
+
+        # set relation from single Category to multiple Model
+        for n in range(3):
+            models[n].categories.add(categories[0])
+
+        # check each models are set properly
+        self.assertEqual(list(categories[0].models.all()), models)
