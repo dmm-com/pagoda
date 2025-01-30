@@ -1,4 +1,3 @@
-import { Entity } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { styled } from "@mui/material/styles";
 import React, { FC } from "react";
 import { Control, Controller } from "react-hook-form";
@@ -6,26 +5,20 @@ import { UseFormSetValue } from "react-hook-form/dist/types/form";
 
 import { ServerContext } from "../../services/ServerContext";
 
-import { AttributesFields } from "../entity/entityForm/AttributesFields";
-import { BasicFields } from "../entity/entityForm/BasicFields";
 import { Schema } from "./categoryForm/CategoryFormSchema";
-import { WebhookFields } from "../entity/entityForm/WebhookFields";
 
 import {
   Box,
-  Checkbox,
   Table,
   TableBody,
   TableCell,
   TableHead,
-  TableRow,
-  TextField,
-  Typography,
+  TextField
 } from "@mui/material";
 
 import {
-  HeaderTableRow,
   HeaderTableCell,
+  HeaderTableRow,
   StyledTableRow,
 } from "components/common/Table";
 
@@ -101,7 +94,7 @@ export const CategoryForm: FC<Props> = ({
                       helperText={error?.message}
                       size="small"
                       fullWidth
-                      inputProps={{ sx: { resize: "vertical", minHeight: "300px" } }}
+                      inputProps={{ sx: { resize: "vertical" } }}
                     />
                   )}
                 />

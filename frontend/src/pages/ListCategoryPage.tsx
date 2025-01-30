@@ -1,16 +1,17 @@
-import { Box, Button, Container, Grid, List, ListItem, ListItemText, Typography } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
+import { Box, Button, Container, Grid, List, ListItem, ListItemText, Typography } from "@mui/material";
 import React, { FC, useState } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
-import { useTypedParams } from "../hooks/useTypedParams";
 import { usePage } from "hooks/usePage";
+import { useTypedParams } from "../hooks/useTypedParams";
 
-import { SearchBox } from "components/common/SearchBox";
 import { PageHeader } from "components/common/PageHeader";
-import { topPath } from "routes/Routes";
-import { newCategoryPath } from "routes/Routes";
+import { SearchBox } from "components/common/SearchBox";
+import { useAsyncWithThrow } from "hooks";
+import { aironeApiClient } from "repository";
+import { newCategoryPath, topPath } from "routes/Routes";
 import { normalizeToMatch } from "services/StringUtil";
 
 interface Props {
@@ -39,11 +40,9 @@ export const ListCategoryPage: FC<Props> = ({ }) => {
     });
   };
 
-  /*
-  const category = useAsyncWithThrow(async () => {
-    return await aironeApiClient.getcategory(categoryId);
+  const categories = useAsyncWithThrow(async () => {
+    return await aironeApiClient.getCategories();
   });
-  */
 
   return (
     <Box>
@@ -88,6 +87,23 @@ export const ListCategoryPage: FC<Props> = ({ }) => {
           FIXME: This should be replaced with actual category context
         */}
         <Grid container spacing={3}>
+          {categories.value?.results.map((category) => (
+            <Grid item md={4}>
+              <List
+                subheader={
+                  <Typography variant="h6" component="div">
+                    {category.name}
+                  </Typography>
+                }
+              >
+                {category.models.map((models) => (
+                  <ListItem button component={Link} to={`/categories/${category.id}/entities`}>
+                    <ListItemText primary={models.name} />
+                  </ListItem>
+                ))}
+              </List>
+            </Grid>
+          ))}
           <Grid item md={4}>
             <List
               subheader={

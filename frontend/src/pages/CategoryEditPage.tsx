@@ -1,22 +1,27 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Box, Container, Typography } from "@mui/material";
+import { Box, Typography } from "@mui/material";
 import React, { FC, useCallback, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
 
 import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
 
+import { CategoryForm } from "components/category/CategoryForm";
+import { Schema, schema } from "components/category/categoryForm/CategoryFormSchema";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { Loading } from "components/common/Loading";
 import { PageHeader } from "components/common/PageHeader";
 import { SubmitButton } from "components/common/SubmitButton";
-import { Schema, schema } from "components/category/categoryForm/CategoryFormSchema";
-import { CategoryForm } from "components/category/CategoryForm";
 import { useFormNotification } from "hooks/useFormNotification";
 import { usePrompt } from "hooks/usePrompt";
 import { useTypedParams } from "hooks/useTypedParams";
 import { aironeApiClient } from "repository/AironeApiClient";
-import { listCategoryPath, rolesPath, topPath } from "routes/Routes";
+import { listCategoryPath, topPath } from "routes/Routes";
+import {
+  extractAPIException,
+  isResponseError,
+} from "services/AironeAPIErrorUtil";
+
 
 export const CategoryEditPage: FC = () => {
   const { categoryId } = useTypedParams<{ categoryId?: number }>();
@@ -51,25 +56,16 @@ export const CategoryEditPage: FC = () => {
   }, [category.loading]);
 
   useEffect(() => {
-    isSubmitSuccessful && navigate(rolesPath());
+    isSubmitSuccessful && navigate(listCategoryPath());
   }, [isSubmitSuccessful]);
 
   const handleSubmitOnValid = useCallback(
     async (category: Schema) => {
-      /*
-      const roleCreateUpdate: RoleCreateUpdate = {
-        ...role,
-        users: role.users.map((user) => user.id),
-        groups: role.groups.map((group) => group.id),
-        adminUsers: role.adminUsers.map((user) => user.id),
-        adminGroups: role.adminGroups.map((group) => group.id),
-      };
-
       try {
         if (willCreate) {
-          await aironeApiClient.createRole(roleCreateUpdate);
+          await aironeApiClient.createCategory(category);
         } else {
-          await aironeApiClient.updateRole(roleId, roleCreateUpdate);
+          await aironeApiClient.updateCategory(categoryId, category);
         }
         enqueueSubmitResult(true);
       } catch (e) {
@@ -86,7 +82,6 @@ export const CategoryEditPage: FC = () => {
           enqueueSubmitResult(false);
         }
       }
-      */
     },
     [categoryId]
   );

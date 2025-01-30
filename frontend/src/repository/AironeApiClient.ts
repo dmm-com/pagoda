@@ -9,7 +9,9 @@ import {
   AdvancedSearchResultAttrInfo,
   AttributeData,
   CategoryApi,
+  CategoryCreate,
   CategoryList,
+  CategoryUpdate,
   Configuration,
   EntityApi,
   EntityApiV2ListRequest,
@@ -29,6 +31,7 @@ import {
   GroupCreateUpdate,
   JobApi,
   JobSerializers,
+  PaginatedCategoryListList,
   PaginatedEntityHistoryList,
   PaginatedEntityListList,
   PaginatedEntryBaseList,
@@ -624,8 +627,53 @@ class AironeApiClient {
     fileDownload(data, filename);
   }
 
+  async getCategories(
+    limit?: number,
+    offset?: number,
+    ordering?: string,
+    search?: string,
+  ): Promise<PaginatedCategoryListList> {
+    return await this.category.categoryApiV2List(
+      {
+        limit: limit,
+        offset: offset,
+        ordering: ordering,
+        search: search,
+      }
+    );
+  }
+
   async getCategory(categoryId: number): Promise<CategoryList> {
     return await this.category.categoryApiV2Retrieve({ id: categoryId });
+  }
+
+  async createCategory(category: CategoryCreate ): Promise<CategoryCreate> {
+    return await this.category.categoryApiV2Create(
+      {
+        categoryCreate: category,
+      },
+      {
+        headers: {
+          "Content-Type": "application/json;charset=utf-8",
+          "X-CSRFToken": getCsrfToken(),
+        },
+      }
+    );
+  }
+
+  async updateCategory(categoryId: number, category: CategoryUpdate): Promise<CategoryUpdate> {
+    return await this.category.categoryApiV2Update(
+    {
+      id: categoryId,
+      categoryUpdate: category,
+    },
+    {
+      headers: {
+        "Content-Type": "application/json;charset=utf-8",
+        "X-CSRFToken": getCsrfToken(),
+      },
+    }
+  );
   }
 
   async getEntries(
