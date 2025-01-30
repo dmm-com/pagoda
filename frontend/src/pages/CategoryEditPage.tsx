@@ -10,7 +10,8 @@ import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { Loading } from "components/common/Loading";
 import { PageHeader } from "components/common/PageHeader";
 import { SubmitButton } from "components/common/SubmitButton";
-import { Schema, schema } from "components/role/roleForm/RoleFormSchema";
+import { Schema, schema } from "components/category/categoryForm/CategoryFormSchema";
+import { CategoryForm } from "components/category/CategoryForm";
 import { useFormNotification } from "hooks/useFormNotification";
 import { usePrompt } from "hooks/usePrompt";
 import { useTypedParams } from "hooks/useTypedParams";
@@ -129,12 +130,10 @@ export const CategoryEditPage: FC = () => {
         />
       </PageHeader>
 
-      <Container>
-        {/*
-          <RoleForm control={control} setValue={setValue} />
-        */
-        }
-      </Container>
+      <CategoryForm
+        control={control}
+        setValue={setValue}
+      />
     </Box>
   );
 };
