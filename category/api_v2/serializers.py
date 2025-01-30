@@ -1,10 +1,11 @@
 from rest_framework import serializers
 
 from category.models import Category
-#from entity.api_v2.serializers import EntitySerializer
 from entity.models import Entity
 
 
+# We bordered the situation that ID parameter would be readonly via OpenAPI generate
+# when EntitySerializer, which is defined in the entity.api_v2.serializers, was specified.
 class EntitySerializer(serializers.ModelSerializer):
     id = serializers.IntegerField()
 
@@ -26,7 +27,6 @@ class EntitySimpleSerializer(serializers.ModelSerializer):
 
 class CategoryCreateSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(required=False, read_only=True)
-    #models = serializers.ListField(write_only=True, required=False, default=[])
     models = EntitySerializer(many=True)
 
     class Meta:
@@ -49,7 +49,7 @@ class CategoryCreateSerializer(serializers.ModelSerializer):
 
 
 class CategoryUpdateSerializer(serializers.ModelSerializer):
-    models = serializers.ListField(write_only=True, required=False, default=[])
+    models = EntitySerializer(many=True)
 
     class Meta:
         model = Category
