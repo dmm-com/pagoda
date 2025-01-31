@@ -28,6 +28,7 @@ from airone.lib.drf import (
 from airone.lib.elasticsearch import (
     AdvancedSearchResultRecord,
     AdvancedSearchResultRecordAttr,
+    AdvancedSearchResults,
     AttrHint,
 )
 from airone.lib.types import AttrType
@@ -277,16 +278,11 @@ class AdvancedSearchAPI(generics.GenericAPIView):
 
         def _get_joined_resp(
             prev_results: list[AdvancedSearchResultRecord], join_attr: AdvancedSearchJoinAttrInfo
-        ) -> tuple[bool, dict]:
+        ) -> tuple[bool, AdvancedSearchResults]:
             """
             This is a helper method for join_attrs that will get specified attr values
             that prev_result's ones refer to.
             """
-            # set hint_entity_ids for joining Items search and get item names
-            # that specified attribute refers
-            item_names = []
-            hint_entity_ids = []
-
             entities = Entity.objects.filter(
                 id__in=[result.entity["id"] for result in prev_results]
             ).prefetch_related(
@@ -301,14 +297,20 @@ class AdvancedSearchAPI(generics.GenericAPIView):
                     ),
                 )
             )
-            entity_dict = {entity.id: entity for entity in entities}
+            entity_dict: dict[int, Entity] = {entity.id: entity for entity in entities}
 
+            # set hint_entity_ids for joining Items search and get item names
+            # that specified attribute refers
+            item_names: list[str] = []
+            hint_entity_ids: list[str] = []
             for result in prev_results:
                 entity = entity_dict.get(result.entity["id"])
                 if entity is None:
                     continue
 
-                attr = next((a for a in entity.attrs.all() if a.name == join_attr.name), None)
+                attr: Attribute | None = next(
+                    (a for a in entity.attrs.all() if a.name == join_attr.name), None
+                )
                 if attr is None:
                     continue
 
@@ -339,15 +341,14 @@ class AdvancedSearchAPI(generics.GenericAPIView):
                                 item_names.append(co_info["name"])
 
             # set parameters to filter joining search results
-            hint_attrs: list[AttrHint] = []
-            for info in join_attr.attrinfo:
-                hint_attrs.append(
-                    AttrHint(
-                        name=info.name,
-                        keyword=info.keyword,
-                        filter_key=info.filter_key,
-                    )
+            hint_attrs = [
+                AttrHint(
+                    name=info.name,
+                    keyword=info.keyword,
+                    filter_key=info.filter_key,
                 )
+                for info in join_attr.attrinfo
+            ]
 
             # search Items from elasticsearch to join
             return (
@@ -363,7 +364,7 @@ class AdvancedSearchAPI(generics.GenericAPIView):
                     is_output_all=is_output_all,
                     hint_referral_entity_id=None,
                     offset=join_attr.offset,
-                ).dict(),
+                ),
             )
 
         # === End of Function: _get_joined_resp() ===
@@ -473,14 +474,14 @@ class AdvancedSearchAPI(generics.GenericAPIView):
                     for k in join_attr.attrinfo
                 }
 
-                # Convert joined search results to dict for easier handling
-                joined_resp_info: dict[int, dict[str, AdvancedSearchResultRecordAttr]] = {
-                    x["entry"]["id"]: {
+                # convert search result to dict to be able to handle it without loop
+                joined_resp_info = {
+                    x.entry["id"]: {
                         "%s.%s" % (join_attr.name, k): v
-                        for k, v in x["attrs"].items()
+                        for k, v in x.attrs.items()
                         if any(_x.name == k for _x in join_attr.attrinfo)
                     }
-                    for x in joined_resp["ret_values"]
+                    for x in joined_resp.ret_values
                 }
 
                 # Insert results to previous search results
