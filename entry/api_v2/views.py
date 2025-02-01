@@ -27,7 +27,6 @@ from airone.lib.drf import (
 )
 from airone.lib.elasticsearch import (
     AdvancedSearchResultRecord,
-    AdvancedSearchResultRecordAttr,
     AdvancedSearchResults,
     AttrHint,
 )
@@ -245,6 +244,11 @@ class AdvancedSearchAPI(generics.GenericAPIView):
     """
     NOTE for now it's just copied from /api/v1/entry/search, but it should be
     rewritten with DRF components.
+
+    Join Attrs implementation notes:
+    - Pagination is applied at root level first, then join & filter operations
+    - This may result in fewer items than requested limit
+    - Each join triggers a new ES query (N+1 pattern)
     """
 
     @extend_schema(
@@ -280,8 +284,18 @@ class AdvancedSearchAPI(generics.GenericAPIView):
             prev_results: list[AdvancedSearchResultRecord], join_attr: AdvancedSearchJoinAttrInfo
         ) -> tuple[bool, AdvancedSearchResults]:
             """
-            This is a helper method for join_attrs that will get specified attr values
-            that prev_result's ones refer to.
+            Process join operation for a single attribute.
+
+            Flow:
+            1. Get related entities from prev_results
+            2. Extract referral IDs and names
+            3. Execute new ES query for joined entities
+            4. Apply filters if specified
+
+            Note:
+            - Each call triggers new ES query
+            - Results may be reduced by join filters
+            - Pagination from root level may lead to incomplete results
             """
             entities = Entity.objects.filter(
                 id__in=[result.entity["id"] for result in prev_results]
@@ -369,21 +383,20 @@ class AdvancedSearchAPI(generics.GenericAPIView):
 
         # === End of Function: _get_joined_resp() ===
 
-        def _get_ref_id_from_es_result(attrinfo):
-            if attrinfo["type"] == AttrType.OBJECT:
-                if attrinfo.get("value") is not None:
+        def _get_ref_id_from_es_result(attrinfo) -> list[int | None]:
+            match attrinfo["type"]:
+                case AttrType.OBJECT if attrinfo.get("value") is not None:
                     return [attrinfo["value"].get("id")]
 
-            if attrinfo["type"] == AttrType.NAMED_OBJECT:
-                if attrinfo.get("value") is not None:
+                case AttrType.NAMED_OBJECT if attrinfo.get("value") is not None:
                     [ref_info] = attrinfo["value"].values()
                     return [ref_info.get("id")]
 
-            if attrinfo["type"] == AttrType.ARRAY_OBJECT:
-                return [x.get("id") for x in attrinfo["value"]]
+                case AttrType.ARRAY_OBJECT:
+                    return [x.get("id") for x in attrinfo["value"]]
 
-            if attrinfo["type"] == AttrType.ARRAY_NAMED_OBJECT:
-                return sum([[y["id"] for y in x.values()] for x in attrinfo["value"]], [])
+                case AttrType.ARRAY_NAMED_OBJECT:
+                    return sum([[y["id"] for y in x.values()] for x in attrinfo["value"]], [])
 
             return []
 
@@ -461,11 +474,13 @@ class AdvancedSearchAPI(generics.GenericAPIView):
 
         if not settings.AIRONE_SPANNER_ENABLED:
             for join_attr in join_attrs:
+                # Note: Each iteration here represents a potential N+1 query
+                # The trade-off is between query performance and result accuracy
                 (will_filter_by_joined_attr, joined_resp) = _get_joined_resp(
                     resp.ret_values, join_attr
                 )
-                # Prepare blank joining info for entries without matches
-                blank_joining_info: dict[str, AdvancedSearchResultRecordAttr] = {
+                # This is needed to set result as blank value
+                blank_joining_info = {
                     "%s.%s" % (join_attr.name, k.name): {
                         "is_readable": True,
                         "type": AttrType.STRING,
@@ -484,11 +499,11 @@ class AdvancedSearchAPI(generics.GenericAPIView):
                     for x in joined_resp.ret_values
                 }
 
-                # Insert results to previous search results
-                new_ret_values = []
-                joined_ret_values = []
+                # this inserts result to previous search result
+                new_ret_values: list[AdvancedSearchResultRecord] = []
+                joined_ret_values: list[AdvancedSearchResultRecord] = []
                 for resp_result in resp.ret_values:
-                    # Get referral info from joined search result
+                    # joining search result to original one
                     ref_info = resp_result.attrs.get(join_attr.name)
 
                     # This get referral Item-ID from joined search result
@@ -504,12 +519,12 @@ class AdvancedSearchAPI(generics.GenericAPIView):
 
                         else:
                             # join EMPTY value
-                            resp_result.attrs |= blank_joining_info
+                            resp_result.attrs |= blank_joining_info  # type: ignore
                             joined_ret_values.append(deepcopy(resp_result))
 
                     if len(ref_list) == 0:
                         # join EMPTY value
-                        resp_result.attrs |= blank_joining_info
+                        resp_result.attrs |= blank_joining_info  # type: ignore
                         joined_ret_values.append(deepcopy(resp_result))
 
                 if will_filter_by_joined_attr:
