@@ -472,6 +472,10 @@ class AdvancedSearchAPI(generics.GenericAPIView):
         # save total population number
         total_count = deepcopy(resp.ret_count)
 
+        # NOTE to fix the current count on v3 search join attrs
+        if settings.AIRONE_SPANNER_ENABLED and len(join_attrs) > 0:
+            resp.ret_count = len(resp.ret_values)
+
         if not settings.AIRONE_SPANNER_ENABLED:
             for join_attr in join_attrs:
                 # Note: Each iteration here represents a potential N+1 query

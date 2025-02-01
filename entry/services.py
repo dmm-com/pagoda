@@ -673,7 +673,6 @@ class AdvancedSearchService:
             (will_filter_by_joined_attr, joined_resp) = repo.get_joined_entries(
                 values,
                 join_attr,
-                limit=limit,
             )
 
             # Prepare blank joining info for entries without matches
@@ -715,29 +714,29 @@ class AdvancedSearchService:
                     and "type" in ref_info
                     and ref_info["type"] & AttrType.OBJECT
                 ):
-                    if ref_info["type"] == AttrType.OBJECT:
-                        if isinstance(ref_info["value"], dict) and "id" in ref_info["value"]:
+                    match ref_info["type"]:
+                        case AttrType.OBJECT if isinstance(
+                            ref_info["value"], dict
+                        ) and "id" in ref_info["value"]:
                             ref_list = [ref_info["value"]["id"]]
-                    elif ref_info["type"] == AttrType.NAMED_OBJECT:
-                        if isinstance(ref_info["value"], dict):
+                        case AttrType.NAMED_OBJECT if isinstance(ref_info["value"], dict):
                             [ref_data] = ref_info["value"].values()
                             if isinstance(ref_data, dict) and "id" in ref_data:
                                 ref_list = [ref_data["id"]]
-                    elif ref_info["type"] == AttrType.ARRAY_OBJECT:
-                        if isinstance(ref_info["value"], list):
+                        case AttrType.ARRAY_OBJECT if isinstance(ref_info["value"], list):
                             ref_list = [
                                 x["id"]
                                 for x in ref_info["value"]
                                 if isinstance(x, dict) and "id" in x
                             ]
-                    elif ref_info["type"] == AttrType.ARRAY_NAMED_OBJECT:
-                        if isinstance(ref_info["value"], list):
-                            ref_list = []
-                            for item in ref_info["value"]:
-                                if isinstance(item, dict):
-                                    [ref_data] = item.values()
-                                    if isinstance(ref_data, dict) and "id" in ref_data:
-                                        ref_list.append(ref_data["id"])
+                        case AttrType.ARRAY_NAMED_OBJECT if isinstance(ref_info["value"], list):
+                            ref_list = [
+                                ref_data["id"]
+                                for item in ref_info["value"]
+                                if isinstance(item, dict)
+                                for [ref_data] in item.values()
+                                if isinstance(ref_data, dict) and "id" in ref_data
+                            ]
 
                 for ref_id in ref_list:
                     if ref_id in joined_resp_info:
@@ -760,10 +759,8 @@ class AdvancedSearchService:
 
             if will_filter_by_joined_attr:
                 values = new_ret_values
-                total = len(new_ret_values)
             else:
                 values = joined_ret_values
-                total = len(joined_ret_values)
 
         return AdvancedSearchResults(
             ret_count=total,
