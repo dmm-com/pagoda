@@ -31,17 +31,48 @@ Advanced Search is a powerful feature that allows you to search across multiple 
 
 ### Advanced Features
 
-- **Search Chain**
-  - Follow relationships between entries
-  - Search through referenced objects
-  - Chain multiple searches to traverse complex relationships
-  - Results include both direct matches and related entries
+#### Join Attrs
 
-- **Export Functionality**
-  - Export search results to various formats
-  - Asynchronous processing for large result sets
-  - Progress tracking for export tasks
-  - Download exported files when ready
+Join Attrs enables relationship traversal in search results. Key points:
+
+- **Implementation**
+  - Sequential processing: root -> join targets
+  - Each join triggers new Elasticsearch query
+  - Supports OBJECT and ARRAY type references
+
+- **Critical Considerations**
+  1. **Pagination Behavior**
+     ```python
+     # Example: Request 100 items
+     root_results = search(limit=100)      # Returns 100 root items
+     joined_results = join_and_filter()    # May return 0-100 items
+     next_page_starts_at = 101            # Regardless of joined result size
+     ```
+     - Pagination applies to root level only
+     - Join/filter operations may reduce result size
+     - Each page may return fewer items than requested
+
+  2. **Performance Impact**
+     - N+1 query pattern with multiple joins
+     - No optimization for deep joins with filters
+
+  3. **Result Count Accuracy**
+     - Total count represents root level matches only
+     - Actual result count may be lower after joins/filters
+     - Cannot predict exact total after joins without full scan
+
+#### Search Chain
+- Follow relationships between entries
+- Search through referenced objects
+- Chain multiple searches to traverse complex relationships
+- Results include both direct matches and related entries
+
+#### Export Functionality
+
+- Export search results to various formats
+- Asynchronous processing for large result sets
+- Progress tracking for export tasks
+- Download exported files when ready
 
 ## Access Methods
 
@@ -87,7 +118,6 @@ Access Advanced Search programmatically through REST endpoints:
 - Leverage search chains for complex relationship queries
 - Monitor export task progress for large result sets
 - Consider pagination for large result sets in API usage
-
 ## For Developers
 
 ### Architecture Overview
@@ -173,3 +203,4 @@ Access Advanced Search programmatically through REST endpoints:
 - Integration tests for API endpoints
 - Performance tests for search operations
 - ACL verification tests
+
