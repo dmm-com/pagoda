@@ -26,13 +26,25 @@ CREATE TABLE AdvancedSearchAttributeValue (
     AttributeId STRING(36) NOT NULL,
     AttributeValueId STRING(36) NOT NULL,
     Value STRING(MAX) NOT NULL,
-    RawValue JSON,
-
-    Value_Tokens TOKENLIST AS (TOKENIZE_FULLTEXT(Value)) HIDDEN
+    RawValue JSON
 ) PRIMARY KEY (EntryId, AttributeId, AttributeValueId),
   INTERLEAVE IN PARENT AdvancedSearchAttribute ON DELETE CASCADE;
 
 CREATE INDEX AdvancedSearchAttributeValueParentKeyIndex ON AdvancedSearchAttributeValue(EntryId, AttributeId);
 
-CREATE SEARCH INDEX AdvancedSearchAttributeValueValueIndex
-  ON AdvancedSearchAttributeValue(Value_Tokens);
+
+CREATE TABLE AdvancedSearchEntryReferral (
+    EntryId STRING(36) NOT NULL,
+    ReferralId STRING(36) NOT NULL,
+    FOREIGN KEY (EntryId) REFERENCES AdvancedSearchEntry (EntryId),
+    FOREIGN KEY (ReferralId) REFERENCES AdvancedSearchEntry (EntryId)
+) PRIMARY KEY (EntryId, ReferralId);
+
+CREATE PROPERTY GRAPH AdvancedSearchGraph
+  NODE TABLES (AdvancedSearchEntry)
+  EDGE TABLES (
+    AdvancedSearchEntryReferral
+      SOURCE KEY (EntryId) REFERENCES AdvancedSearchEntry (EntryId)
+      DESTINATION KEY (ReferralId) REFERENCES AdvancedSearchEntry (EntryId)
+      LABEL Referral
+  );

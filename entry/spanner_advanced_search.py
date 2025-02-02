@@ -237,6 +237,25 @@ class SpannerRepository:
             ],
         )
 
+    def insert_entry_referrals(
+        self, entry_referrals: list[tuple[str, str]], operation: SpannerOperation
+    ) -> None:
+        """Insert entry referrals in a batch or mutation group.
+
+        Args:
+            entry_referrals: List of tuples (spanner_entry_id, referral_entry_id)
+            operation: Spanner operation (batch or mutation group)
+        """
+        if not entry_referrals:
+            return
+
+        # Insert the referral relationships
+        operation.insert(
+            table="AdvancedSearchEntryReferral",
+            columns=("EntryId", "ReferralId"),
+            values=entry_referrals,
+        )
+
     # Keep the single-record methods for backward compatibility
     def insert_entry(self, entry: AdvancedSearchEntry, transaction=None) -> None:
         """Insert a single entry"""
@@ -776,3 +795,29 @@ class SpannerRepository:
                 "ret_count": len(join_entries_dict),
                 "ret_values": list(join_entries_dict.values()),
             }
+
+    def get_entry_id_mapping(self, origin_entry_ids: list[int]) -> dict[int, str]:
+        """Get mapping from OriginEntryId to EntryId.
+
+        Args:
+            origin_entry_ids: List of original entry IDs from Django
+
+        Returns:
+            Dictionary mapping OriginEntryId to EntryId
+        """
+        if not origin_entry_ids:
+            return {}
+
+        query = """
+        SELECT OriginEntryId, EntryId
+        FROM AdvancedSearchEntry
+        WHERE OriginEntryId IN UNNEST(@origin_entry_ids)
+        """
+        params = {"origin_entry_ids": origin_entry_ids}
+        param_types = {
+            "origin_entry_ids": spanner_v1.param_types.Array(spanner_v1.param_types.INT64)
+        }
+
+        with self.database.snapshot() as snapshot:
+            results = snapshot.execute_sql(query, params=params, param_types=param_types)
+            return {row[0]: row[1] for row in results}

@@ -345,6 +345,11 @@ class AdvancedSearchService:
 
                 # Process entries in chunks to avoid too large mutation groups
                 entry_chunks = [entry_list[i : i + 100] for i in range(0, len(entry_list), 100)]
+                entry_referrals: set[tuple[str, int]] = (
+                    set()
+                )  # {(spanner_entry_id, referral_origin_entry_id), ...}
+
+                # First, write all entries and their attributes
                 for chunk in entry_chunks:
                     # Process each entry in the chunk with its own mutation group
                     with repo.database.mutation_groups() as mg:
@@ -387,15 +392,28 @@ class AdvancedSearchService:
                                 )
 
                                 for attrv in attr.prefetch_values:
-                                    spanner_attribute_values.append(
-                                        AdvancedSearchAttributeValue.create_instance(
-                                            entry_id=spanner_entry_id,
-                                            attribute_id=spanner_attr_id,
-                                            attribute_value_id=str(uuid.uuid4()),
-                                            entity_attr=entity_attr,
-                                            attrv=attrv,
-                                        )
+                                    value = AdvancedSearchAttributeValue.create_instance(
+                                        entry_id=spanner_entry_id,
+                                        attribute_id=spanner_attr_id,
+                                        attribute_value_id=str(uuid.uuid4()),
+                                        entity_attr=entity_attr,
+                                        attrv=attrv,
                                     )
+                                    spanner_attribute_values.append(value)
+
+                                    # Collect referral relationships
+                                    match entity_attr.type:
+                                        case AttrType.OBJECT | AttrType.NAMED_OBJECT:
+                                            if attrv.referral:
+                                                entry_referrals.add(
+                                                    (spanner_entry_id, attrv.referral.id)
+                                                )
+                                        case AttrType.ARRAY_OBJECT | AttrType.ARRAY_NAMED_OBJECT:
+                                            for array_value in attrv.data_array.all():
+                                                if array_value.referral:
+                                                    entry_referrals.add(
+                                                        (spanner_entry_id, array_value.referral.id)
+                                                    )
 
                             # Create a mutation group for this entry and its related data
                             group = mg.group()
@@ -407,8 +425,52 @@ class AdvancedSearchService:
 
                         # Batch write all mutation groups for this chunk
                         responses = mg.batch_write()
-                        if not all(response.status.code == 0 for response in responses):
-                            raise Exception(f"Failed to batch write to Spanner: {responses}")
+                        if any(response.status.code != 0 for response in responses):
+                            error_details = [
+                                (
+                                    f"code: {response.status.code}, "
+                                    f"message: {response.status.message}"
+                                )
+                                for response in responses
+                                if response.status.code != 0
+                            ]
+                            raise Exception(f"Failed to batch write to Spanner: {error_details}")
+
+                if entry_referrals:
+                    # Get mapping from OriginEntryId to EntryId for referrals
+                    referral_origin_ids = {ref_id for _, ref_id in entry_referrals}
+                    entry_id_mapping = repo.get_entry_id_mapping(list(referral_origin_ids))
+
+                    # Convert OriginEntryId to EntryId and filter out any missing mappings
+                    converted_referrals = [
+                        (entry_id, entry_id_mapping[ref_id])
+                        for entry_id, ref_id in entry_referrals
+                        if ref_id in entry_id_mapping
+                    ]
+
+                    if converted_referrals:
+                        with repo.database.mutation_groups() as mg:
+                            referral_chunks = [
+                                converted_referrals[i : i + 1000]
+                                for i in range(0, len(converted_referrals), 1000)
+                            ]
+                            for chunk in referral_chunks:
+                                group = mg.group()
+                                repo.insert_entry_referrals(chunk, group)
+
+                            responses = mg.batch_write()
+                            if any(response.status.code != 0 for response in responses):
+                                error_details = [
+                                    (
+                                        f"code: {response.status.code}, "
+                                        f"message: {response.status.message}"
+                                    )
+                                    for response in responses
+                                    if response.status.code != 0
+                                ]
+                                raise Exception(
+                                    f"Failed to batch write referrals to Spanner: {error_details}"
+                                )
 
             except Exception as e:
                 Logger.warning(f"Failed to sync data to Spanner: {e}")
