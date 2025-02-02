@@ -278,9 +278,7 @@ export const AdvancedSearchResultsPage: FC = () => {
               // attrinfo and its related joined attrinfo
               attrInfo
                 .map((info) => {
-                  const results = [];
-
-                  results.push({
+                  const base = {
                     key: info.name,
                     val: {
                       filterKey:
@@ -288,29 +286,25 @@ export const AdvancedSearchResultsPage: FC = () => {
                         AdvancedSearchResultAttrInfoFilterKeyEnum.CLEARED,
                       keyword: info.keyword || "",
                     },
-                  });
+                  };
 
-                  // weave joined attributes into the defaultAttrFilterArray
-                  joinAttrs.forEach((join) => {
-                    if (join.name === info.name) {
-                      join.attrinfo.forEach((joinedInfo) => {
-                        results.push({
-                          key: `${join.name}.${joinedInfo.name}`,
-                          val: {
-                            filterKey:
-                              joinedInfo.filterKey ||
-                              AdvancedSearchResultAttrInfoFilterKeyEnum.CLEARED,
-                            keyword: joinedInfo.keyword || "",
-                            baseAttrname: join.name,
-                            joinedAttrname: joinedInfo.name,
-                          },
-                        });
-                      });
-                    }
-                  });
-                  return results;
+                  const joined = joinAttrs
+                    .filter((join) => join.name === info.name)
+                    .flatMap((join) =>
+                      join.attrinfo.map((joinedInfo) => ({
+                        key: `${join.name}.${joinedInfo.name}`,
+                        val: {
+                          filterKey:
+                            joinedInfo.filterKey ||
+                            AdvancedSearchResultAttrInfoFilterKeyEnum.CLEARED,
+                          keyword: joinedInfo.keyword || "",
+                          baseAttrname: join.name,
+                          joinedAttrname: joinedInfo.name,
+                        },
+                      }))
+                    );
 
-                  // this convert array to dict using reduce()
+                  return [base, ...joined];
                 })
                 .flat()
                 .reduce((a, x) => ({ ...a, [x.key]: x.val }), {})
