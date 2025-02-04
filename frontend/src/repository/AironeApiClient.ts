@@ -218,17 +218,17 @@ class AironeApiClient {
   ): Promise<PaginatedEntityListList> {
     const params: EntityApiV2ListRequest = page
       ? {
-          offset: (page - 1) * EntityListParam.MAX_ROW_COUNT,
-          limit: EntityListParam.MAX_ROW_COUNT,
-          search: search,
-          isToplevel: isToplevel,
-        }
+        offset: (page - 1) * EntityListParam.MAX_ROW_COUNT,
+        limit: EntityListParam.MAX_ROW_COUNT,
+        search: search,
+        isToplevel: isToplevel,
+      }
       : {
-          // Any better way to get all the entities?
-          limit: Number.MAX_SAFE_INTEGER,
-          search: search,
-          isToplevel: isToplevel,
-        };
+        // Any better way to get all the entities?
+        limit: Number.MAX_SAFE_INTEGER,
+        search: search,
+        isToplevel: isToplevel,
+      };
 
     return await this.entity.entityApiV2List(params);
   }
@@ -647,7 +647,7 @@ class AironeApiClient {
     return await this.category.categoryApiV2Retrieve({ id: categoryId });
   }
 
-  async createCategory(category: CategoryCreate ): Promise<CategoryCreate> {
+  async createCategory(category: CategoryCreate): Promise<CategoryCreate> {
     return await this.category.categoryApiV2Create(
       {
         categoryCreate: category,
@@ -663,17 +663,28 @@ class AironeApiClient {
 
   async updateCategory(categoryId: number, category: CategoryUpdate): Promise<CategoryUpdate> {
     return await this.category.categoryApiV2Update(
-    {
-      id: categoryId,
-      categoryUpdate: category,
-    },
-    {
-      headers: {
-        "Content-Type": "application/json;charset=utf-8",
-        "X-CSRFToken": getCsrfToken(),
+      {
+        id: categoryId,
+        categoryUpdate: category,
       },
-    }
-  );
+      {
+        headers: {
+          "Content-Type": "application/json;charset=utf-8",
+          "X-CSRFToken": getCsrfToken(),
+        },
+      }
+    );
+  }
+  async deleteCategory(id: number): Promise<void> {
+    return await this.category.categoryApiV2Destroy(
+      { id },
+      {
+        headers: {
+          "Content-Type": "application/json;charset=utf-8",
+          "X-CSRFToken": getCsrfToken(),
+        },
+      }
+    );
   }
 
   async getEntries(

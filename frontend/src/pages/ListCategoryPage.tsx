@@ -1,5 +1,6 @@
 import AddIcon from "@mui/icons-material/Add";
-import { Box, Button, Container, Grid, List, ListItem, ListItemText, Typography } from "@mui/material";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
+import { Box, Button, Container, Grid, List, ListItem, ListItemText, Typography, IconButton } from "@mui/material";
 import React, { FC, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
@@ -13,6 +14,8 @@ import { useAsyncWithThrow } from "hooks";
 import { aironeApiClient } from "repository";
 import { newCategoryPath, topPath } from "routes/Routes";
 import { normalizeToMatch } from "services/StringUtil";
+import { BetweenAlignedBox } from "components/common/FlexBox";
+import { CategoryControlMenu } from "components/category/CategoryControlMenu";
 
 interface Props {
 }
@@ -21,9 +24,10 @@ export const ListCategoryPage: FC<Props> = ({ }) => {
   const navigate = useNavigate();
   const { categoryId } = useTypedParams<{ categoryId: number }>();
 
-  const [categoryAnchorEl, setcategoryAnchorEl] =
+  const [categoryAnchorEl, setCategoryAnchorEl] =
     useState<HTMLButtonElement | null>(null);
   const [openImportModal, setOpenImportModal] = React.useState(false);
+  const [toggle, setToggle] = useState(false);
 
   // variable to store search query
   const [query, setQuery] = useState("");
@@ -83,17 +87,36 @@ export const ListCategoryPage: FC<Props> = ({ }) => {
           </Button>
         </Box>
 
-        {/* Context of Category 
-          FIXME: This should be replaced with actual category context
-        */}
+        {/* Context of Category */}
         <Grid container spacing={3}>
           {categories.value?.results.map((category) => (
             <Grid item md={4}>
               <List
                 subheader={
-                  <Typography variant="h6" component="div">
-                    {category.name}
-                  </Typography>
+                  <BetweenAlignedBox>
+                    {/* Category title */}
+                    <Typography variant="h6" component="div">
+                      {category.name}
+                    </Typography>
+
+                    {/* Category control menu */}
+                    <>
+                      <IconButton
+                        onClick={(e) => {
+                          setCategoryAnchorEl(e.currentTarget.parentElement as HTMLButtonElement);
+                        }}
+                      >
+                        <MoreVertIcon fontSize="small" />
+                      </IconButton>
+                      <CategoryControlMenu
+                        categoryId={categoryId}
+                        anchorElem={categoryAnchorEl}
+                        handleClose={() => setCategoryAnchorEl(null)}
+                        setOpenImportModal={setOpenImportModal}
+                        setToggle={() => setToggle(!toggle)}
+                      />
+                    </>
+                  </BetweenAlignedBox>
                 }
               >
                 {category.models.map((models) => (
@@ -104,54 +127,6 @@ export const ListCategoryPage: FC<Props> = ({ }) => {
               </List>
             </Grid>
           ))}
-          <Grid item md={4}>
-            <List
-              subheader={
-                <Typography variant="h6" component="div">
-                  インフラ機器
-                </Typography>
-              }
-            >
-              <ListItem button component={Link} to={`/categories/${categoryId}/entities`}>
-                <ListItemText primary="サーバ" />
-              </ListItem>
-              <ListItem button component={Link} to={`/categories/${categoryId}/entities`}>
-                <ListItemText primary="switch" />
-              </ListItem>
-            </List>
-          </Grid>
-          <Grid item md={4}>
-            <List
-              subheader={
-                <Typography variant="h6" component="div">
-                  インフラ機器
-                </Typography>
-              }
-            >
-              <ListItem button component={Link} to={`/categories/${categoryId}/entities`}>
-                <ListItemText primary="サーバ" />
-              </ListItem>
-              <ListItem button component={Link} to={`/categories/${categoryId}/entities`}>
-                <ListItemText primary="switch" />
-              </ListItem>
-            </List>
-          </Grid>
-          <Grid item md={4}>
-            <List
-              subheader={
-                <Typography variant="h6" component="div">
-                  インフラ機器
-                </Typography>
-              }
-            >
-              <ListItem button component={Link} to={`/categories/${categoryId}/entities`}>
-                <ListItemText primary="サーバ" />
-              </ListItem>
-              <ListItem button component={Link} to={`/categories/${categoryId}/entities`}>
-                <ListItemText primary="switch" />
-              </ListItem>
-            </List>
-          </Grid>
         </Grid>
 
       </Container>
