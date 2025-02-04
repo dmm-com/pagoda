@@ -14,6 +14,7 @@ import { Link, useNavigate } from "react-router-dom";
 
 import { useTypedParams } from "../hooks/useTypedParams";
 
+import { PaginationFooter } from "components/common/PaginationFooter";
 import { CategoryListHeader } from "components/category/CategoryListHeader";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { PageHeader } from "components/common/PageHeader";
@@ -21,12 +22,17 @@ import { SearchBox } from "components/common/SearchBox";
 import { useAsyncWithThrow } from "hooks";
 import { usePage } from "hooks/usePage";
 import { aironeApiClient } from "repository";
-import { newCategoryPath, topPath } from "routes/Routes";
+import {
+  entityEntriesPath,
+  newCategoryPath,
+  topPath,
+} from "routes/Routes";
 import { normalizeToMatch } from "services/StringUtil";
+import { EntityListParam } from "services/Constants";
 
-interface Props {}
+interface Props { }
 
-export const ListCategoryPage: FC<Props> = ({}) => {
+export const ListCategoryPage: FC<Props> = ({ }) => {
   const navigate = useNavigate();
   const { categoryId } = useTypedParams<{ categoryId: number }>();
 
@@ -34,7 +40,8 @@ export const ListCategoryPage: FC<Props> = ({}) => {
   const [toggle, setToggle] = useState(false);
 
   // variable to store search query
-  const [query, setQuery] = useState("");
+  const params = new URLSearchParams(location.search);
+  const [query, setQuery] = useState<string>(params.get("query") ?? "");
   const [page, changePage] = usePage();
 
   // request handler when user specify query
@@ -49,8 +56,8 @@ export const ListCategoryPage: FC<Props> = ({}) => {
   };
 
   const categories = useAsyncWithThrow(async () => {
-    return await aironeApiClient.getCategories();
-  }, [toggle]);
+    return await aironeApiClient.getCategories(page, query);
+  }, [page, query, toggle]);
 
   return (
     <Box>
@@ -101,19 +108,27 @@ export const ListCategoryPage: FC<Props> = ({}) => {
                   />
                 }
               >
-                {category.models.map((models) => (
-                  <ListItem
-                    button
-                    component={Link}
-                    to={`/categories/${category.id}/entities`}
-                  >
-                    <ListItemText primary={models.name} />
-                  </ListItem>
-                ))}
+                <Box sx={{ overflowY: "scroll", maxHeight: 300 }}>
+                  {category.models.map((models) => (
+                    <ListItem
+                      button
+                      component={Link}
+                      to={entityEntriesPath(models.id)}
+                    >
+                      <ListItemText primary={models.name} />
+                    </ListItem>
+                  ))}
+                </Box>
               </List>
             </Grid>
           ))}
         </Grid>
+        <PaginationFooter
+          count={categories.value?.count ?? 0}
+          maxRowCount={EntityListParam.MAX_ROW_COUNT}
+          page={page}
+          changePage={changePage}
+        />
       </Container>
     </Box>
   );

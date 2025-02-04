@@ -628,15 +628,18 @@ class AironeApiClient {
   }
 
   async getCategories(
-    limit?: number,
-    offset?: number,
-    ordering?: string,
+    page?: number,
     search?: string,
+    ordering?: string,
   ): Promise<PaginatedCategoryListList> {
-    return await this.category.categoryApiV2List(
+    return await this.category.categoryApiV2List(page ?
       {
-        limit: limit,
-        offset: offset,
+        limit: EntityListParam.MAX_ROW_COUNT,
+        offset: (page - 1) * EntityListParam.MAX_ROW_COUNT,
+        ordering: ordering,
+        search: search,
+      } : {
+        limit: EntityListParam.MAX_ROW_COUNT,
         ordering: ordering,
         search: search,
       }
