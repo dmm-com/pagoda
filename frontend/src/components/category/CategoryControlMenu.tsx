@@ -10,19 +10,12 @@ import { useSnackbar } from "notistack";
 import React, { FC } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
-import { RateLimitedClickable } from "../common/RateLimitedClickable";
-
 import { Confirmable } from "components/common/Confirmable";
 import { aironeApiClient } from "repository/AironeApiClient";
 import {
   aclPath,
-  entityHistoryPath,
   editCategoryPath,
-  entitiesPath,
-  restoreEntryPath,
   topPath,
-  entityEntriesPath,
-  aclHistoryPath,
   listCategoryPath,
 } from "routes/Routes";
 

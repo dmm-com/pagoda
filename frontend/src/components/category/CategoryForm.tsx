@@ -1,3 +1,13 @@
+import {
+  Autocomplete,
+  Box,
+  FormHelperText,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TextField,
+} from "@mui/material";
 import { styled } from "@mui/material/styles";
 import React, { FC } from "react";
 import { Control, Controller, FieldError } from "react-hook-form";
@@ -10,22 +20,10 @@ import { ServerContext } from "../../services/ServerContext";
 import { Schema } from "./categoryForm/CategoryFormSchema";
 
 import {
-  Autocomplete,
-  Box,
-  FormHelperText,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TextField
-} from "@mui/material";
-
-import {
   HeaderTableCell,
   HeaderTableRow,
   StyledTableRow,
 } from "components/common/Table";
-import { Entity, EntityList } from "@dmm-com/airone-apiclient-typescript-fetch";
 
 const StyledBox = styled(Box)(({ theme }) => ({
   width: theme.breakpoints.values.lg,
@@ -46,15 +44,12 @@ interface MyEntity {
   readonly name: string;
 }
 
-export const CategoryForm: FC<Props> = ({
-  control,
-  setValue,
-}) => {
+export const CategoryForm: FC<Props> = ({ control, setValue }) => {
   const serverContext = ServerContext.getInstance();
 
   const entities = useAsyncWithThrow(async () => {
     const entities = await aironeApiClient.getEntities();
-    return entities.results.map(x => {
+    return entities.results.map((x) => {
       return { id: x.id, name: x.name } as MyEntity;
     });
   });
@@ -130,8 +125,11 @@ export const CategoryForm: FC<Props> = ({
                       {...field}
                       options={entities.value ?? []}
                       disabled={entities.loading}
-                      getOptionLabel={(option: any) => option.name}
-
+                      getOptionLabel={(option: MyEntity) => option.name}
+                      isOptionEqualToValue={(
+                        option: MyEntity,
+                        value: MyEntity
+                      ) => option.id === value.id}
                       onChange={(_e, value: any) => {
                         console.log("[onix/onChange] value:", value);
                         setValue("models", value, {
@@ -177,7 +175,6 @@ export const CategoryForm: FC<Props> = ({
           </TableBody>
         </Table>
       </Box>
-
     </StyledBox>
   );
 };

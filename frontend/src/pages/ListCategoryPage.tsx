@@ -1,24 +1,32 @@
 import AddIcon from "@mui/icons-material/Add";
-import { Box, Button, Container, Grid, List, ListItem, ListItemText, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  Container,
+  Grid,
+  List,
+  ListItem,
+  ListItemText,
+  Typography,
+} from "@mui/material";
 import React, { FC, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
-import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
-import { usePage } from "hooks/usePage";
 import { useTypedParams } from "../hooks/useTypedParams";
 
+import { CategoryListHeader } from "components/category/CategoryListHeader";
+import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { PageHeader } from "components/common/PageHeader";
 import { SearchBox } from "components/common/SearchBox";
 import { useAsyncWithThrow } from "hooks";
+import { usePage } from "hooks/usePage";
 import { aironeApiClient } from "repository";
 import { newCategoryPath, topPath } from "routes/Routes";
 import { normalizeToMatch } from "services/StringUtil";
-import { CategoryListHeader } from "components/category/CategoryListHeader";
 
-interface Props {
-}
+interface Props {}
 
-export const ListCategoryPage: FC<Props> = ({ }) => {
+export const ListCategoryPage: FC<Props> = ({}) => {
   const navigate = useNavigate();
   const { categoryId } = useTypedParams<{ categoryId: number }>();
 
@@ -53,10 +61,7 @@ export const ListCategoryPage: FC<Props> = ({ }) => {
         <Typography color="textPrimary">カテゴリ一覧</Typography>
       </AironeBreadcrumbs>
 
-      <PageHeader
-        title={"カテゴリ一覧"}
-      >
-      </PageHeader>
+      <PageHeader title={"カテゴリ一覧"}></PageHeader>
       <Container>
         {/* Show control menus to filter and create category */}
         <Box display="flex" justifyContent="space-between" mb="16px">
@@ -86,7 +91,7 @@ export const ListCategoryPage: FC<Props> = ({ }) => {
         {/* Context of Category */}
         <Grid container spacing={3}>
           {categories.value?.results.map((category) => (
-            <Grid item md={4}>
+            <Grid item md={4} key={category.id}>
               <List
                 subheader={
                   <CategoryListHeader
@@ -97,7 +102,11 @@ export const ListCategoryPage: FC<Props> = ({ }) => {
                 }
               >
                 {category.models.map((models) => (
-                  <ListItem button component={Link} to={`/categories/${category.id}/entities`}>
+                  <ListItem
+                    button
+                    component={Link}
+                    to={`/categories/${category.id}/entities`}
+                  >
                     <ListItemText primary={models.name} />
                   </ListItem>
                 ))}
@@ -105,7 +114,6 @@ export const ListCategoryPage: FC<Props> = ({ }) => {
             </Grid>
           ))}
         </Grid>
-
       </Container>
     </Box>
   );

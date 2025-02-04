@@ -7,7 +7,10 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
 
 import { CategoryForm } from "components/category/CategoryForm";
-import { Schema, schema } from "components/category/categoryForm/CategoryFormSchema";
+import {
+  Schema,
+  schema,
+} from "components/category/categoryForm/CategoryFormSchema";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { Loading } from "components/common/Loading";
 import { PageHeader } from "components/common/PageHeader";
@@ -21,7 +24,6 @@ import {
   extractAPIException,
   isResponseError,
 } from "services/AironeAPIErrorUtil";
-
 
 export const CategoryEditPage: FC = () => {
   const { categoryId } = useTypedParams<{ categoryId?: number }>();
@@ -48,7 +50,9 @@ export const CategoryEditPage: FC = () => {
   );
 
   const category = useAsyncWithThrow(async () => {
-    return categoryId != null ? await aironeApiClient.getCategory(categoryId) : undefined;
+    return categoryId != null
+      ? await aironeApiClient.getCategory(categoryId)
+      : undefined;
   }, [categoryId]);
 
   useEffect(() => {
@@ -108,16 +112,15 @@ export const CategoryEditPage: FC = () => {
       </AironeBreadcrumbs>
 
       <PageHeader
-        title={category.value != null ? category.value.name : "新規カテゴリの作成"}
+        title={
+          category.value != null ? category.value.name : "新規カテゴリの作成"
+        }
         description={category.value != null ? "カテゴリ編集" : undefined}
       >
         <SubmitButton
           name="保存"
           disabled={
-            !isDirty ||
-            !isValid ||
-            isSubmitting ||
-            isSubmitSuccessful
+            !isDirty || !isValid || isSubmitting || isSubmitSuccessful
             //category.value?. === false
           }
           isSubmitting={isSubmitting}
@@ -126,10 +129,7 @@ export const CategoryEditPage: FC = () => {
         />
       </PageHeader>
 
-      <CategoryForm
-        control={control}
-        setValue={setValue}
-      />
+      <CategoryForm control={control} setValue={setValue} />
     </Box>
   );
 };

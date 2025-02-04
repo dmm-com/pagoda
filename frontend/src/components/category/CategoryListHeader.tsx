@@ -1,14 +1,10 @@
 import MoreVertIcon from "@mui/icons-material/MoreVert";
-
-import { BetweenAlignedBox } from "components/common/FlexBox";
-import { CategoryControlMenu } from "components/category/CategoryControlMenu";
+import { Typography, IconButton } from "@mui/material";
 import React, { FC, useState } from "react";
 
-import {
-  Typography,
-  IconButton,
-} from "@mui/material";
 import { CategoryList } from "@dmm-com/airone-apiclient-typescript-fetch";
+import { CategoryControlMenu } from "components/category/CategoryControlMenu";
+import { BetweenAlignedBox } from "components/common/FlexBox";
 
 interface Props {
   category: CategoryList;
@@ -50,4 +46,4 @@ export const CategoryListHeader: FC<Props> = ({
       </>
     </BetweenAlignedBox>
   );
-}
+};

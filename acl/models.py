@@ -158,6 +158,8 @@ class ACLBase(models.Model):
                 model = importlib.import_module("entry.models").Entry
             case ACLObjType.EntryAttr:
                 model = importlib.import_module("entry.models").Attribute
+            case ACLObjType.Category:
+                model = importlib.import_module("category.models").Category
             case _:
                 model = type(self)
 

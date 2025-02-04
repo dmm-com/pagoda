@@ -1,7 +1,8 @@
-import { CategoryList } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { z } from "zod";
 
 import { schemaForType } from "../../../services/ZodSchemaUtil";
+
+import { CategoryList } from "@dmm-com/airone-apiclient-typescript-fetch";
 
 type CategoryForSchema = Omit<CategoryList, "isEditable">;
 
@@ -20,7 +21,7 @@ export const schema = schemaForType<CategoryForSchema>()(
         )
         .default([]),
     })
-    .superRefine(({ }, ctx) => {
+    .superRefine(({}, ctx) => {
       /*
       const userIds = users.map((u) => u.id);
       const groupIds = groups.map((g) => g.id);
@@ -52,7 +53,6 @@ export const schema = schemaForType<CategoryForSchema>()(
           });
         });
         */
-
     })
 );
 
