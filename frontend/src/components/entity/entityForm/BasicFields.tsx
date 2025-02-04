@@ -5,20 +5,19 @@ import {
   TableBody,
   TableCell,
   TableHead,
-  TableRow,
   TextField,
   Typography,
 } from "@mui/material";
+import React, { FC } from "react";
+import { Control, Controller } from "react-hook-form";
+
+import { Schema } from "./EntityFormSchema";
+
 import {
   HeaderTableRow,
   HeaderTableCell,
   StyledTableRow,
 } from "components/common/Table";
-
-import React, { FC } from "react";
-import { Control, Controller } from "react-hook-form";
-
-import { Schema } from "./EntityFormSchema";
 
 interface Props {
   control: Control<Schema>;

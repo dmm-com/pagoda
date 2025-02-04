@@ -14,25 +14,21 @@ import { Link, useNavigate } from "react-router-dom";
 
 import { useTypedParams } from "../hooks/useTypedParams";
 
-import { PaginationFooter } from "components/common/PaginationFooter";
 import { CategoryListHeader } from "components/category/CategoryListHeader";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { PageHeader } from "components/common/PageHeader";
+import { PaginationFooter } from "components/common/PaginationFooter";
 import { SearchBox } from "components/common/SearchBox";
 import { useAsyncWithThrow } from "hooks";
 import { usePage } from "hooks/usePage";
 import { aironeApiClient } from "repository";
-import {
-  entityEntriesPath,
-  newCategoryPath,
-  topPath,
-} from "routes/Routes";
-import { normalizeToMatch } from "services/StringUtil";
+import { entityEntriesPath, newCategoryPath, topPath } from "routes/Routes";
 import { EntityListParam } from "services/Constants";
+import { normalizeToMatch } from "services/StringUtil";
 
-interface Props { }
+interface Props {}
 
-export const ListCategoryPage: FC<Props> = ({ }) => {
+export const ListCategoryPage: FC<Props> = ({}) => {
   const navigate = useNavigate();
   const { categoryId } = useTypedParams<{ categoryId: number }>();
 

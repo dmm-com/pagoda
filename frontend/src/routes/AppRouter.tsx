@@ -107,7 +107,10 @@ export const AppRouter: FC<Props> = ({ customRoutes }) => {
             ))}
 
           <Route path={newCategoryPath()} element={<CategoryEditPage />} />
-          <Route path={editCategoryPath(":categoryId")} element={<CategoryEditPage />} />
+          <Route
+            path={editCategoryPath(":categoryId")}
+            element={<CategoryEditPage />}
+          />
           <Route path={listCategoryPath()} element={<ListCategoryPage />} />
           <Route path={advancedSearchPath()} element={<AdvancedSearchPage />} />
           <Route

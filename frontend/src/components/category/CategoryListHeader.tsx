@@ -1,8 +1,8 @@
+import { CategoryList } from "@dmm-com/airone-apiclient-typescript-fetch";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { Typography, IconButton } from "@mui/material";
 import React, { FC, useState } from "react";
 
-import { CategoryList } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { CategoryControlMenu } from "components/category/CategoryControlMenu";
 import { BetweenAlignedBox } from "components/common/FlexBox";
 

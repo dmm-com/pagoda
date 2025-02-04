@@ -1,8 +1,7 @@
+import { CategoryList } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { z } from "zod";
 
 import { schemaForType } from "../../../services/ZodSchemaUtil";
-
-import { CategoryList } from "@dmm-com/airone-apiclient-typescript-fetch";
 
 type CategoryForSchema = Omit<CategoryList, "isEditable">;
 
