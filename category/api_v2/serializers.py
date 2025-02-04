@@ -43,7 +43,6 @@ class CategoryCreateSerializer(serializers.ModelSerializer):
         )
 
         # make relations created Category with specified Models
-        print("[onix/CategoryCreateSerializer.create(10)] %s" % str(validated_data))
         for model in Entity.objects.filter(
             id__in=[x["id"] for x in validated_data.get("models", [])], is_active=True
         ):

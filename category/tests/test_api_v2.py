@@ -1,6 +1,7 @@
 import json
 from typing import List
 
+from airone.lib.acl import ACLType
 from airone.lib.test import AironeViewTest
 from category.models import Category
 from entity.models import Entity
@@ -40,8 +41,29 @@ class ViewTest(AironeViewTest):
             ],
         )
 
-    def test_list_include_deleted_category(self):
-        pass
+    def test_list_unauthorized_categories(self):
+        # initialize Model and Categories for testing API processing
+        model: Entity = self.create_entity(self.user, "Model")
+        categories: List[Category] = [
+            self.create_category(self.user, "Category-%d" % n, "Note-%d" % n, [model])
+            for n in range(3)
+        ]
+
+        # set categories[0] unreadable
+        categories[0].is_public = False
+        categories[0].save()
+        self.assertFalse(self.user.has_permission(categories[0], ACLType.Readable))
+
+        # get all Categories which are authorized to user
+        resp = self.client.get("/category/api/v2/")
+        self.assertEqual(resp.status_code, 200)
+
+        # check returned data has expected values
+        self.assertEqual(resp.json()["count"], 2)
+        self.assertEqual(
+            [x["id"] for x in resp.json()["results"]],
+            [categories[i].id for i in [1, 2]],
+        )
 
     def test_get(self):
         # initialize Models and Categories for testing API processing
@@ -72,7 +94,7 @@ class ViewTest(AironeViewTest):
         params = {
             "name": "New Category",
             "note": "Hoge",
-            "models": [x.id for x in models],
+            "models": [{"id": x.id, "name": x.name} for x in models],
         }
         resp = self.client.post("/category/api/v2/", json.dumps(params), "application/json")
         self.assertEqual(resp.status_code, 201)
@@ -97,6 +119,22 @@ class ViewTest(AironeViewTest):
         self.assertTrue(Category.objects.filter(id=category.id).exists())
         self.assertFalse(Category.objects.filter(id=category.id, is_active=True).exists())
 
+    def test_delete_unauthorized_category(self):
+        # initialize Models and Categories for testing API processing
+        category: Category = self.create_category(self.user, "Category", "note")
+
+        # set category unauthorized to update from current user
+        category.is_public = False
+        category.save()
+        self.assertFalse(self.user.has_permission(category, ACLType.Full))
+
+        # send request to delete target Category, then failed to do it.
+        resp = self.client.delete("/category/api/v2/%d/" % category.id)
+        self.assertEqual(resp.status_code, 404)
+
+        # check Category item, which was specified in deleting reqeust
+        self.assertTrue(category.is_active)
+
     def test_update(self):
         """
         Initially, there are 3 models (M0, M1, M2) and Category has M0 and M1
@@ -111,7 +149,7 @@ class ViewTest(AironeViewTest):
         params = {
             "name": "Updated Category",
             "note": "Updated Note",
-            "models": [models[1].id, models[2].id],
+            "models": [{"id": models[i].id, "name": models[i].name} for i in [1, 2]],
         }
         resp = self.client.put(
             "/category/api/v2/%s/" % category.id, json.dumps(params), "application/json"
@@ -120,3 +158,27 @@ class ViewTest(AironeViewTest):
 
         # check all data is updated expectedly
         self.assertEqual(list(category.models.all()), [models[1], models[2]])
+
+    def test_update_unauthorized_category(self):
+        # initialize Models and Categories for testing API processing
+        category: Category = self.create_category(self.user, "Category", "note")
+
+        # set category unauthorized to update from current user
+        category.is_public = False
+        category.save()
+        self.assertFalse(self.user.has_permission(category, ACLType.Full))
+
+        # send request to update target Category, then failed to do it.
+        params = {
+            "name": "Updated Category",
+            "note": "Updated Note",
+            "models": [],
+        }
+        resp = self.client.put(
+            "/category/api/v2/%s/" % category.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 404)
+
+        # check Category item, which was specified in deleting reqeust
+        self.assertEqual(category.name, "Category")
+        self.assertEqual(category.note, "note")

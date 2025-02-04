@@ -5,6 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 
+from airone.lib.acl import ACLType
 from airone.lib.drf import ObjectNotExistsError
 from category.api_v2.serializers import (
     CategoryCreateSerializer,
@@ -30,7 +31,13 @@ class CategoryAPI(viewsets.ModelViewSet):
         return serializer.get(self.action, CategoryListSerializer)
 
     def get_queryset(self):
-        return Category.objects.filter(is_active=True)
+        # get items that has permission to read
+        targets = []
+        for category in Category.objects.filter(is_active=True):
+            if self.request.user.has_permission(category, ACLType.Readable):
+                targets.append(category.id)
+
+        return Category.objects.filter(id__in=targets)
 
     def destroy(self, request: Request, *args, **kwargs) -> Response:
         category: Category = self.get_object()
