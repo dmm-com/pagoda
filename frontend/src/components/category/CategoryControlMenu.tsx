@@ -54,7 +54,7 @@ export const CategoryControlMenu: FC<Props> = ({
         enqueueSnackbar("カテゴリの削除が完了しました", {
           variant: "success",
         });
-        // A magic to reload the entity list with keeping snackbar
+        // A magic to reload the category list with keeping snackbar
         navigate(topPath(), { replace: true });
         navigate(listCategoryPath(), { replace: true });
         setToggle && setToggle();
