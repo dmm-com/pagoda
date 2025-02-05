@@ -2,6 +2,7 @@ import functools
 import inspect
 import os
 import sys
+from typing import List
 
 from django.conf import settings
 from django.test import Client, TestCase, override_settings
@@ -9,6 +10,7 @@ from pytz import timezone
 
 from airone.lib.acl import ACLType
 from airone.lib.types import AttrType
+from category.models import Category
 from entity.models import Entity, EntityAttr
 from entry.models import Entry
 from user.models import User
@@ -147,6 +149,17 @@ class AironeTestCase(TestCase):
         entry.register_es()
 
         return entry
+
+    def create_category(self, user: User, name: str, note: str = "", models: List[Entity] = []):
+        # create target Category instance
+        category = Category.objects.create(name=name, note=note, created_user=user)
+
+        # attach created category to each specified Models
+        for model in models:
+            if model.is_active:
+                model.categories.add(category)
+
+        return category
 
     def _do_login(self, uname, is_superuser=False) -> User:
         # create test user to authenticate

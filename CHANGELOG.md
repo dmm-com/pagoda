@@ -20,6 +20,10 @@
 * Enable to get items considering with Alias name (by simple solution)
   Contributed by @userlocalhost
 
+* Added new feature that gets together models that has same attribute
+  (feature, purpose and so on).
+  Contributed by @userlocalhost
+
 ### Changed
 * Optimize role import for job execution
   Contributed by @tsunoda-takahiro

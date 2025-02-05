@@ -8,6 +8,10 @@ import {
   AdvancedSearchResult,
   AdvancedSearchResultAttrInfo,
   AttributeData,
+  CategoryApi,
+  CategoryCreate,
+  CategoryList,
+  CategoryUpdate,
   Configuration,
   EntityApi,
   EntityApiV2ListRequest,
@@ -27,6 +31,7 @@ import {
   GroupCreateUpdate,
   JobApi,
   JobSerializers,
+  PaginatedCategoryListList,
   PaginatedEntityHistoryList,
   PaginatedEntityListList,
   PaginatedEntryBaseList,
@@ -76,6 +81,7 @@ function getCsrfToken(): string {
  */
 class AironeApiClient {
   private acl: AclApi;
+  private category: CategoryApi;
   private entity: EntityApi;
   private entry: EntryApi;
   private trigger: TriggerApi;
@@ -90,6 +96,7 @@ class AironeApiClient {
 
     // Each "XXXApi" is associated with "XXXAPI" defined in (~/airone/*/api_v2/views.py)
     this.acl = new AclApi(config);
+    this.category = new CategoryApi(config);
     this.entity = new EntityApi(config);
     this.entry = new EntryApi(config);
     this.trigger = new TriggerApi(config);
@@ -618,6 +625,74 @@ class AironeApiClient {
     const resp = await this.role.roleApiV2ExportListRaw();
     const data = await resp.raw.text();
     fileDownload(data, filename);
+  }
+
+  async getCategories(
+    page?: number,
+    search?: string,
+    ordering?: string
+  ): Promise<PaginatedCategoryListList> {
+    return await this.category.categoryApiV2List(
+      page
+        ? {
+            limit: EntityListParam.MAX_ROW_COUNT,
+            offset: (page - 1) * EntityListParam.MAX_ROW_COUNT,
+            ordering: ordering,
+            search: search,
+          }
+        : {
+            limit: EntityListParam.MAX_ROW_COUNT,
+            ordering: ordering,
+            search: search,
+          }
+    );
+  }
+
+  async getCategory(categoryId: number): Promise<CategoryList> {
+    return await this.category.categoryApiV2Retrieve({ id: categoryId });
+  }
+
+  async createCategory(category: CategoryCreate): Promise<CategoryCreate> {
+    return await this.category.categoryApiV2Create(
+      {
+        categoryCreate: category,
+      },
+      {
+        headers: {
+          "Content-Type": "application/json;charset=utf-8",
+          "X-CSRFToken": getCsrfToken(),
+        },
+      }
+    );
+  }
+
+  async updateCategory(
+    categoryId: number,
+    category: CategoryUpdate
+  ): Promise<CategoryUpdate> {
+    return await this.category.categoryApiV2Update(
+      {
+        id: categoryId,
+        categoryUpdate: category,
+      },
+      {
+        headers: {
+          "Content-Type": "application/json;charset=utf-8",
+          "X-CSRFToken": getCsrfToken(),
+        },
+      }
+    );
+  }
+  async deleteCategory(id: number): Promise<void> {
+    return await this.category.categoryApiV2Destroy(
+      { id },
+      {
+        headers: {
+          "Content-Type": "application/json;charset=utf-8",
+          "X-CSRFToken": getCsrfToken(),
+        },
+      }
+    );
   }
 
   async getEntries(

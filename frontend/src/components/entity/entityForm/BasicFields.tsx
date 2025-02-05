@@ -5,30 +5,19 @@ import {
   TableBody,
   TableCell,
   TableHead,
-  TableRow,
   TextField,
   Typography,
 } from "@mui/material";
-import { styled } from "@mui/material/styles";
 import React, { FC } from "react";
 import { Control, Controller } from "react-hook-form";
 
 import { Schema } from "./EntityFormSchema";
 
-const HeaderTableRow = styled(TableRow)(({}) => ({
-  backgroundColor: "#455A64",
-}));
-
-const HeaderTableCell = styled(TableCell)(({}) => ({
-  color: "#FFFFFF",
-  boxSizing: "border-box",
-}));
-
-const StyledTableRow = styled(TableRow)(({}) => ({
-  "& td": {
-    padding: "8px",
-  },
-}));
+import {
+  HeaderTableRow,
+  HeaderTableCell,
+  StyledTableRow,
+} from "components/common/Table";
 
 interface Props {
   control: Control<Schema>;

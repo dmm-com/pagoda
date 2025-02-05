@@ -5,6 +5,10 @@ export const FlexBox = styled(Box)(({}) => ({
   display: "flex",
 }));
 
+export const BetweenAlignedBox = styled(FlexBox)(({}) => ({
+  justifyContent: "space-between",
+}));
+
 export const RightAlignedBox = styled(FlexBox)(({}) => ({
   justifyContent: "end",
 }));

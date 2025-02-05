@@ -33,6 +33,7 @@ import {
   entitiesPath,
   groupsPath,
   jobsPath,
+  listCategoryPath,
   loginPath,
   rolesPath,
   topPath,
@@ -177,6 +178,9 @@ export const Header: FC = () => {
             </TitleBox>
 
             <MenuBox>
+              <Button component={Link} to={listCategoryPath()}>
+                {t("categories")}
+              </Button>
               <Button component={Link} to={entitiesPath()}>
                 {t("entities")}
               </Button>

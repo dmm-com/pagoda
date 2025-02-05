@@ -7,6 +7,7 @@ from rest_framework.exceptions import PermissionDenied
 from acl.models import ACLBase
 from airone.lib.acl import ACLObjType, ACLType
 from airone.lib.drf import IncorrectTypeError, ObjectNotExistsError
+from category.models import Category
 from entity.models import Entity, EntityAttr
 from entry.models import Attribute, Entry
 from role.models import HistoricalPermission, Role
@@ -184,16 +185,19 @@ class ACLSerializer(serializers.ModelSerializer):
 
     @staticmethod
     def _get_acl_model(object_id):
-        if int(object_id) == ACLObjType.Entity:
-            return Entity
-        if int(object_id) == ACLObjType.Entry:
-            return Entry
-        elif int(object_id) == ACLObjType.EntityAttr:
-            return EntityAttr
-        elif int(object_id) == ACLObjType.EntryAttr:
-            return Attribute
-        else:
-            return ACLBase
+        match int(object_id):
+            case ACLObjType.Entity:
+                return Entity
+            case ACLObjType.Entry:
+                return Entry
+            case ACLObjType.EntityAttr:
+                return EntityAttr
+            case ACLObjType.EntryAttr:
+                return Attribute
+            case ACLObjType.Category:
+                return Category
+            case _:
+                return ACLBase
 
     @staticmethod
     def _set_permission(
