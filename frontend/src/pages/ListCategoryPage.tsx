@@ -100,6 +100,7 @@ export const ListCategoryPage: FC = () => {
                   {category.models.map((models) => (
                     <ListItem
                       button
+                      key={models.id}
                       component={Link}
                       to={entityEntriesPath(models.id)}
                     >
