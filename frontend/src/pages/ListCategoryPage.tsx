@@ -12,8 +12,6 @@ import {
 import React, { FC, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
-import { useTypedParams } from "../hooks/useTypedParams";
-
 import { CategoryListHeader } from "components/category/CategoryListHeader";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { PageHeader } from "components/common/PageHeader";
@@ -26,13 +24,8 @@ import { entityEntriesPath, newCategoryPath, topPath } from "routes/Routes";
 import { EntityListParam } from "services/Constants";
 import { normalizeToMatch } from "services/StringUtil";
 
-interface Props {}
-
-export const ListCategoryPage: FC<Props> = ({}) => {
+export const ListCategoryPage: FC = () => {
   const navigate = useNavigate();
-  const { categoryId } = useTypedParams<{ categoryId: number }>();
-
-  const [openImportModal, setOpenImportModal] = React.useState(false);
   const [toggle, setToggle] = useState(false);
 
   // variable to store search query
@@ -99,7 +92,6 @@ export const ListCategoryPage: FC<Props> = ({}) => {
                 subheader={
                   <CategoryListHeader
                     category={category}
-                    setOpenImportModal={setOpenImportModal}
                     setToggle={() => setToggle(!toggle)}
                   />
                 }

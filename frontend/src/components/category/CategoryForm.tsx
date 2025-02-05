@@ -1,7 +1,6 @@
 import {
   Autocomplete,
   Box,
-  FormHelperText,
   Table,
   TableBody,
   TableCell,
@@ -10,12 +9,8 @@ import {
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import React, { FC } from "react";
-import { Control, Controller, FieldError } from "react-hook-form";
+import { Control, Controller } from "react-hook-form";
 import { UseFormSetValue } from "react-hook-form/dist/types/form";
-
-import { useAsyncWithThrow } from "../../hooks/useAsyncWithThrow";
-import { aironeApiClient } from "../../repository/AironeApiClient";
-import { ServerContext } from "../../services/ServerContext";
 
 import { Schema } from "./categoryForm/CategoryFormSchema";
 
@@ -24,6 +19,8 @@ import {
   HeaderTableRow,
   StyledTableRow,
 } from "components/common/Table";
+import { useAsyncWithThrow } from "hooks/useAsyncWithThrow";
+import { aironeApiClient } from "repository/AironeApiClient";
 
 const StyledBox = styled(Box)(({ theme }) => ({
   width: theme.breakpoints.values.lg,
@@ -39,19 +36,9 @@ interface Props {
   setValue: UseFormSetValue<Schema>;
 }
 
-interface MyEntity {
-  readonly id: number;
-  readonly name: string;
-}
-
 export const CategoryForm: FC<Props> = ({ control, setValue }) => {
-  const serverContext = ServerContext.getInstance();
-
   const entities = useAsyncWithThrow(async () => {
-    const entities = await aironeApiClient.getEntities();
-    return entities.results.map((x) => {
-      return { id: x.id, name: x.name } as MyEntity;
-    });
+    return await aironeApiClient.getEntities();
   });
 
   return (
@@ -66,7 +53,7 @@ export const CategoryForm: FC<Props> = ({ control, setValue }) => {
           </TableHead>
           <TableBody>
             <StyledTableRow>
-              <TableCell>モデル名</TableCell>
+              <TableCell>カテゴリ名</TableCell>
               <TableCell>
                 <Controller
                   name="name"
@@ -75,9 +62,9 @@ export const CategoryForm: FC<Props> = ({ control, setValue }) => {
                   render={({ field, fieldState: { error } }) => (
                     <TextField
                       {...field}
-                      id="entity-name"
+                      id="category-name"
                       required
-                      placeholder="モデル名"
+                      placeholder="カテゴリ名"
                       error={error != null}
                       helperText={error?.message}
                       size="small"
@@ -120,49 +107,27 @@ export const CategoryForm: FC<Props> = ({ control, setValue }) => {
                   name="models"
                   control={control}
                   defaultValue={[]}
-                  render={({ field, fieldState: { error } }) => (
+                  render={({ field }) => (
                     <Autocomplete
                       {...field}
-                      options={entities.value ?? []}
+                      options={entities.value?.results ?? []}
                       disabled={entities.loading}
-                      getOptionLabel={(option: MyEntity) => option.name}
-                      isOptionEqualToValue={(
-                        option: MyEntity,
-                        value: MyEntity
-                      ) => option.id === value.id}
+                      getOptionLabel={(option) => option.name}
+                      isOptionEqualToValue={(option, value) =>
+                        option.id === value.id
+                      }
                       onChange={(_e, value: any) => {
-                        console.log("[onix/onChange] value:", value);
                         setValue("models", value, {
                           shouldDirty: true,
                           shouldValidate: true,
                         });
                       }}
                       renderInput={(params) => (
-                        <Box>
-                          <TextField {...params} variant="outlined" />
-                          {/* NOTE: role schema will inject some nested errors. It shows the first. */}
-                          {Array.isArray(error) && (
-                            <>
-                              {(() => {
-                                const first = (error as FieldError[]).filter(
-                                  (e) => e.message != null
-                                )?.[0];
-                                return (
-                                  first != null && (
-                                    <FormHelperText error>
-                                      {first.message}
-                                    </FormHelperText>
-                                  )
-                                );
-                              })()}
-                            </>
-                          )}
-                          {error != null && (
-                            <FormHelperText error>
-                              {error.message}
-                            </FormHelperText>
-                          )}
-                        </Box>
+                        <TextField
+                          {...params}
+                          variant="outlined"
+                          placeholder="モデルを選択"
+                        />
                       )}
                       multiple
                       disableCloseOnSelect

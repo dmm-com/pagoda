@@ -15,17 +15,14 @@ import { aironeApiClient } from "repository/AironeApiClient";
 import {
   aclPath,
   editCategoryPath,
-  topPath,
   listCategoryPath,
+  topPath,
 } from "routes/Routes";
-
-type ExportFormatType = "YAML" | "CSV";
 
 interface Props {
   categoryId: number;
   anchorElem: HTMLButtonElement | null;
   handleClose: (categoryId: number) => void;
-  setOpenImportModal: (isOpened: boolean) => void;
   setToggle?: () => void;
 }
 
@@ -33,14 +30,12 @@ export const CategoryControlMenu: FC<Props> = ({
   categoryId,
   anchorElem,
   handleClose,
-  setOpenImportModal,
   setToggle,
 }) => {
   const { enqueueSnackbar } = useSnackbar();
   const navigate = useNavigate();
 
   const handleDelete = async (categoryId: number) => {
-    console.log("[onix/handleDelete(00)] categoryId:", categoryId);
     await aironeApiClient
       .deleteCategory(categoryId)
       .then(() => {
@@ -61,7 +56,6 @@ export const CategoryControlMenu: FC<Props> = ({
 
   return (
     <Menu
-      id={`entityControlMenu-${categoryId}`}
       open={Boolean(anchorElem)}
       onClose={() => handleClose(categoryId)}
       anchorEl={anchorElem}

@@ -4,8 +4,6 @@ import React, { FC, useCallback, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
 
-import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
-
 import { CategoryForm } from "components/category/CategoryForm";
 import {
   Schema,
@@ -15,6 +13,7 @@ import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { Loading } from "components/common/Loading";
 import { PageHeader } from "components/common/PageHeader";
 import { SubmitButton } from "components/common/SubmitButton";
+import { useAsyncWithThrow } from "hooks/useAsyncWithThrow";
 import { useFormNotification } from "hooks/useFormNotification";
 import { usePrompt } from "hooks/usePrompt";
 import { useTypedParams } from "hooks/useTypedParams";
@@ -67,7 +66,6 @@ export const CategoryEditPage: FC = () => {
     async (category: Schema) => {
       try {
         if (willCreate) {
-          console.log("[onix/handleSubmit] category: ", category);
           await aironeApiClient.createCategory(category);
         } else {
           await aironeApiClient.updateCategory(categoryId, category);

@@ -22,11 +22,6 @@ class CategoryListSerializer(serializers.ModelSerializer):
         fields = ["id", "name", "note", "models"]
 
 
-class EntitySimpleSerializer(serializers.ModelSerializer):
-    id = serializers.IntegerField(write_only=True)
-    name = serializers.CharField(write_only=True, max_length=200)
-
-
 class CategoryCreateSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(required=False, read_only=True)
     models = EntitySerializer(many=True)
