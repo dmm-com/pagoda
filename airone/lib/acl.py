@@ -9,6 +9,7 @@ class ACLObjType(enum.IntEnum):
     EntityAttr = 1 << 1
     Entry = 1 << 2
     EntryAttr = 1 << 3
+    Category = 1 << 4
 
 
 class ACLType(enum.IntEnum):

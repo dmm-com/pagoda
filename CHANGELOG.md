@@ -3,12 +3,43 @@
 ## In development
 
 ### Added
-* Enable to get items considering with Alias name (by simple solution)
-  Contributed by @userlocalhost
 
 ### Changed
 
 ### Fixed
+
+## v3.120.0
+
+### Added
+* Added new feature that gets together models that has same attribute
+  (feature, purpose and so on).
+  Contributed by @userlocalhost
+
+## v3.119.0
+
+### Changed
+* Refactor AdvancedSearchAPI to improve type safety and code readability
+  Contributed by @syucream
+
+## v3.118.0
+
+### Added
+* Enable to get items considering with Alias name (by simple solution)
+  Contributed by @userlocalhost
+
+### Changed
+* Optimize role import for job execution
+  Contributed by @tsunoda-takahiro
+
+### Fixed
+* Fix filtering of inactive users and groups in RoleExportAPI
+  Contributed by @tsunoda-takahiro
+
+## v3.117.0
+
+### Changed
+* Added '@emotion/styled' as a peer dependency in package.json and updated webpack configuration to include it as an external dependency.
+  Contributed by @syucream
 
 ## v3.116.0
 

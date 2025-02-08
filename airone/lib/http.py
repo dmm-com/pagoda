@@ -139,6 +139,7 @@ def render(request, template, context={}):
             "entry": ACLObjType.Entry,
             "attrbase": ACLObjType.EntityAttr,
             "attr": ACLObjType.EntryAttr,
+            "category": ACLObjType.Category,
         },
     }
 

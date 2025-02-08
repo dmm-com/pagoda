@@ -13,6 +13,7 @@ import { EntryCopyPage } from "../pages/EntryCopyPage";
 import { EntryDetailsPage } from "../pages/EntryDetailsPage";
 import { EntryRestorePage } from "../pages/EntryRestorePage";
 import { ListAliasEntryPage } from "../pages/ListAliasEntryPage";
+import { ListCategoryPage } from "../pages/ListCategoryPage";
 import { NotFoundErrorPage } from "../pages/NotFoundErrorPage";
 import { RoleEditPage } from "../pages/RoleEditPage";
 import { RoleListPage } from "../pages/RoleListPage";
@@ -21,6 +22,7 @@ import { Header } from "components/common/Header";
 import { ACLEditPage } from "pages/ACLEditPage";
 import { AdvancedSearchPage } from "pages/AdvancedSearchPage";
 import { AdvancedSearchResultsPage } from "pages/AdvancedSearchResultsPage";
+import { CategoryEditPage } from "pages/CategoryEditPage";
 import { DashboardPage } from "pages/DashboardPage";
 import { EntityEditPage } from "pages/EntityEditPage";
 import { EntityHistoryPage } from "pages/EntityHistoryPage";
@@ -42,6 +44,7 @@ import {
   advancedSearchPath,
   advancedSearchResultPath,
   copyEntryPath,
+  editCategoryPath,
   editEntityPath,
   editTriggerPath,
   entitiesPath,
@@ -52,8 +55,10 @@ import {
   groupPath,
   groupsPath,
   jobsPath,
-  loginPath,
   listAliasPath,
+  listCategoryPath,
+  loginPath,
+  newCategoryPath,
   newEntityPath,
   newEntryPath,
   newGroupPath,
@@ -101,6 +106,12 @@ export const AppRouter: FC<Props> = ({ customRoutes }) => {
               <Route key={r.path} path={r.path} element={r.element} />
             ))}
 
+          <Route path={newCategoryPath()} element={<CategoryEditPage />} />
+          <Route
+            path={editCategoryPath(":categoryId")}
+            element={<CategoryEditPage />}
+          />
+          <Route path={listCategoryPath()} element={<ListCategoryPage />} />
           <Route path={advancedSearchPath()} element={<AdvancedSearchPage />} />
           <Route
             path={advancedSearchResultPath()}

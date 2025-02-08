@@ -71,3 +71,9 @@ export const newRolePath = () => basePath + "roles/new";
 export const rolePath = (roleId: number | string) =>
   basePath + `roles/${roleId}`;
 export const rolesPath = () => basePath + "roles";
+
+// category
+export const newCategoryPath = () => basePath + "categories/new";
+export const listCategoryPath = () => basePath + "categories/list";
+export const editCategoryPath = (categoryId: number | string) =>
+  basePath + `categories/${categoryId}/edit`;
