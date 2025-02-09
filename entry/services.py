@@ -648,6 +648,7 @@ class AdvancedSearchService:
             attribute_names=attr_names,
             entry_name_pattern=entry_name,
             hint_attrs=hint_attrs,
+            join_attrs=join_attrs,
         )
 
         # Search entries in Spanner
@@ -667,7 +668,11 @@ class AdvancedSearchService:
         entry_ids = [entry.entry_id for entry in entries]
 
         # Get attributes and their values
-        attr_values = repo.get_entry_attributes(entry_ids, attr_names)
+        attr_values = repo.get_entry_attributes(
+            entry_ids=entry_ids,
+            attribute_names=attr_names,
+            join_attrs=join_attrs,
+        )
 
         # Organize attributes by entry
         attrs_by_entry: dict[str, dict[str, dict]] = {}

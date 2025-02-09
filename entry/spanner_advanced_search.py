@@ -310,6 +310,7 @@ class SpannerRepository:
         attribute_names: list[str],
         entry_name_pattern: Optional[str] = None,
         hint_attrs: list[AttrHint] = [],
+        join_attrs: list[AdvancedSearchJoinAttrInfo] = [],
     ) -> tuple[str, dict[str, Any], dict[str, Any]]:
         """Build common query conditions for search and count operations.
 
@@ -492,6 +493,198 @@ class SpannerRepository:
                     params[f"{param_prefix}_name"] = hint.name
                     param_types[f"{param_prefix}_name"] = spanner_v1.param_types.STRING
 
+        if len(join_attrs) > 0:
+            conditions += """
+                AND EXISTS (
+                    SELECT 1
+                    FROM
+                        GRAPH_TABLE(
+                            AdvancedSearchGraph
+                            MATCH (src: AdvancedSearchEntry)-[referral:Referral]->
+                            WHERE src.OriginEntityId IN UNNEST(@entity_ids)
+                            RETURN referral.ReferralId AS ReferralEntryId
+                        )
+                    INNER JOIN AdvancedSearchAttribute AS a
+                    ON a.EntryId = ReferralEntryId
+                    WHERE
+                        a.Name IN UNNEST(@joined_attribute_names)
+                )"""
+            params["joined_attribute_names"] = [attr.name for attr in join_attrs]
+            param_types["joined_attribute_names"] = spanner_v1.param_types.Array(
+                spanner_v1.param_types.STRING
+            )
+
+        # Add filter conditions based on join_attrs
+        for i, join_attr in enumerate(join_attrs):
+            if not join_attr.name:
+                continue
+
+            param_prefix = f"join_attr_{i}"
+
+            # Process each attribute info in the join attributes
+            for j, attr_info in enumerate(join_attr.attrinfo):
+                attr_param_prefix = f"{param_prefix}_attr_{j}"
+
+                match (attr_info.filter_key, attr_info.keyword):
+                    case (FilterKey.EMPTY, _):
+                        conditions += f"""
+                            AND EXISTS (
+                                SELECT 1
+                                FROM
+                                    GRAPH_TABLE(
+                                        AdvancedSearchGraph
+                                        MATCH (src: AdvancedSearchEntry)-[referral:Referral]->
+                                        WHERE src.OriginEntityId IN UNNEST(@entity_ids)
+                                        RETURN referral.ReferralId AS ReferralEntryId
+                                    )
+                                INNER JOIN AdvancedSearchAttribute AS a
+                                ON a.EntryId = ReferralEntryId
+                                WHERE
+                                    a.Name = @{attr_param_prefix}_name
+                                    AND NOT EXISTS (
+                                        SELECT 1
+                                        FROM AdvancedSearchAttributeValue v
+                                        WHERE v.EntryId = a.EntryId
+                                        AND v.AttributeId = a.AttributeId
+                                        AND v.Value != ''
+                                    )
+                            )"""
+                        params[f"{attr_param_prefix}_name"] = attr_info.name
+                        param_types[f"{attr_param_prefix}_name"] = spanner_v1.param_types.STRING
+
+                    case (FilterKey.NON_EMPTY, _):
+                        conditions += f"""
+                            AND EXISTS (
+                                SELECT 1
+                                FROM
+                                    GRAPH_TABLE(
+                                        AdvancedSearchGraph
+                                        MATCH (src: AdvancedSearchEntry)-[referral:Referral]->
+                                        WHERE src.OriginEntityId IN UNNEST(@entity_ids)
+                                        RETURN referral.ReferralId AS ReferralEntryId
+                                    )
+                                INNER JOIN AdvancedSearchAttribute AS a
+                                ON a.EntryId = ReferralEntryId
+                                INNER JOIN AdvancedSearchAttributeValue v
+                                ON v.EntryId = a.EntryId
+                                AND v.AttributeId = a.AttributeId
+                                WHERE
+                                    a.Name = @{attr_param_prefix}_name
+                                    AND v.Value != ''
+                            )"""
+                        params[f"{attr_param_prefix}_name"] = attr_info.name
+                        param_types[f"{attr_param_prefix}_name"] = spanner_v1.param_types.STRING
+
+                    case (FilterKey.TEXT_CONTAINED, keyword) if keyword:
+                        conditions += f"""
+                            AND EXISTS (
+                                SELECT 1
+                                FROM
+                                    GRAPH_TABLE(
+                                        AdvancedSearchGraph
+                                        MATCH (src: AdvancedSearchEntry)-[referral:Referral]->
+                                        WHERE src.OriginEntityId IN UNNEST(@entity_ids)
+                                        RETURN referral.ReferralId AS ReferralEntryId
+                                    )
+                                INNER JOIN AdvancedSearchAttribute AS a
+                                ON a.EntryId = ReferralEntryId
+                                INNER JOIN AdvancedSearchAttributeValue v
+                                ON v.EntryId = a.EntryId
+                                AND v.AttributeId = a.AttributeId
+                                WHERE
+                                    a.Name = @{attr_param_prefix}_name
+                                    AND v.Value LIKE @{attr_param_prefix}_value
+                            )"""
+                        params[f"{attr_param_prefix}_name"] = attr_info.name
+                        params[f"{attr_param_prefix}_value"] = f"%{keyword}%"
+                        param_types[f"{attr_param_prefix}_name"] = spanner_v1.param_types.STRING
+                        param_types[f"{attr_param_prefix}_value"] = spanner_v1.param_types.STRING
+
+                    case (FilterKey.TEXT_NOT_CONTAINED, keyword) if keyword:
+                        conditions += f"""
+                            AND EXISTS (
+                                SELECT 1
+                                FROM
+                                    GRAPH_TABLE(
+                                        AdvancedSearchGraph
+                                        MATCH (src: AdvancedSearchEntry)-[referral:Referral]->
+                                        WHERE src.OriginEntityId IN UNNEST(@entity_ids)
+                                        RETURN referral.ReferralId AS ReferralEntryId
+                                    )
+                                INNER JOIN AdvancedSearchAttribute AS a
+                                ON a.EntryId = ReferralEntryId
+                                WHERE
+                                    a.Name = @{attr_param_prefix}_name
+                                    AND NOT EXISTS (
+                                        SELECT 1
+                                        FROM AdvancedSearchAttributeValue v
+                                        WHERE v.EntryId = a.EntryId
+                                        AND v.AttributeId = a.AttributeId
+                                        AND v.Value LIKE @{attr_param_prefix}_value
+                                    )
+                            )"""
+                        params[f"{attr_param_prefix}_name"] = attr_info.name
+                        params[f"{attr_param_prefix}_value"] = f"%{keyword}%"
+                        param_types[f"{attr_param_prefix}_name"] = spanner_v1.param_types.STRING
+                        param_types[f"{attr_param_prefix}_value"] = spanner_v1.param_types.STRING
+
+                    case (FilterKey.DUPLICATED, _):
+                        conditions += f"""
+                            AND EXISTS (
+                                SELECT 1
+                                FROM
+                                    GRAPH_TABLE(
+                                        AdvancedSearchGraph
+                                        MATCH (src: AdvancedSearchEntry)-[referral:Referral]->
+                                        WHERE src.OriginEntityId IN UNNEST(@entity_ids)
+                                        RETURN referral.ReferralId AS ReferralEntryId
+                                    )
+                                INNER JOIN AdvancedSearchAttribute AS a
+                                ON a.EntryId = ReferralEntryId
+                                INNER JOIN AdvancedSearchAttributeValue v1
+                                ON v1.EntryId = a.EntryId
+                                AND v1.AttributeId = a.AttributeId
+                                WHERE
+                                    a.Name = @{attr_param_prefix}_name
+                                    AND EXISTS (
+                                        SELECT 1
+                                        FROM AdvancedSearchAttributeValue v2
+                                        INNER JOIN AdvancedSearchAttribute a2
+                                        ON v2.EntryId = a2.EntryId
+                                        AND v2.AttributeId = a2.AttributeId
+                                        WHERE a2.Name = a.Name
+                                        AND v2.Value = v1.Value
+                                        AND v2.EntryId != v1.EntryId
+                                    )
+                            )"""
+                        params[f"{attr_param_prefix}_name"] = attr_info.name
+                        param_types[f"{attr_param_prefix}_name"] = spanner_v1.param_types.STRING
+
+                    case (FilterKey.CLEARED, _):
+                        conditions += f"""
+                            AND EXISTS (
+                                SELECT 1
+                                FROM
+                                    GRAPH_TABLE(
+                                        AdvancedSearchGraph
+                                        MATCH (src: AdvancedSearchEntry)-[referral:Referral]->
+                                        WHERE src.OriginEntityId IN UNNEST(@entity_ids)
+                                        RETURN referral.ReferralId AS ReferralEntryId
+                                    )
+                                INNER JOIN AdvancedSearchAttribute AS a
+                                ON a.EntryId = ReferralEntryId
+                                WHERE
+                                    a.Name = @{attr_param_prefix}_name
+                                    AND NOT EXISTS (
+                                        SELECT 1
+                                        FROM AdvancedSearchAttributeValue v
+                                        WHERE v.EntryId = a.EntryId
+                                        AND v.AttributeId = a.AttributeId
+                                    )
+                            )"""
+                        params[f"{attr_param_prefix}_name"] = attr_info.name
+                        param_types[f"{attr_param_prefix}_name"] = spanner_v1.param_types.STRING
+
         if entry_name_pattern:
             conditions += " AND LOWER(e.Name) LIKE CONCAT('%', LOWER(@name_pattern), '%')"
             params["name_pattern"] = entry_name_pattern
@@ -506,10 +699,11 @@ class SpannerRepository:
         limit: int = 100,
         offset: int = 0,
         hint_attrs: list[AttrHint] = [],
+        join_attrs: list[AdvancedSearchJoinAttrInfo] = [],
     ) -> list[AdvancedSearchEntry]:
         """Search entries based on criteria"""
         conditions, params, param_types = self._build_search_query_conditions(
-            entity_ids, attribute_names, entry_name_pattern, hint_attrs
+            entity_ids, attribute_names, entry_name_pattern, hint_attrs, join_attrs
         )
 
         query = f"""
@@ -539,10 +733,11 @@ class SpannerRepository:
         attribute_names: list[str],
         entry_name_pattern: Optional[str] = None,
         hint_attrs: list[AttrHint] = [],
+        join_attrs: list[AdvancedSearchJoinAttrInfo] = [],
     ) -> int:
         """Count total number of entries matching the search criteria"""
         conditions, params, param_types = self._build_search_query_conditions(
-            entity_ids, attribute_names, entry_name_pattern, hint_attrs
+            entity_ids, attribute_names, entry_name_pattern, hint_attrs, join_attrs
         )
 
         query = f"""
@@ -562,27 +757,81 @@ class SpannerRepository:
         self,
         entry_ids: list[str],
         attribute_names: list[str] | None = None,
+        join_attrs: list[AdvancedSearchJoinAttrInfo] = [],
     ) -> list[tuple[AdvancedSearchAttribute, AdvancedSearchAttributeValue]]:
         """Get attributes and their values for given entries"""
 
-        query = """
-        SELECT a.*, v.*
-        FROM AdvancedSearchAttribute a
-        JOIN AdvancedSearchAttributeValue v
-            ON a.EntryId = v.EntryId AND a.AttributeId = v.AttributeId
-        WHERE a.EntryId IN UNNEST(@entry_ids)
+        base_query = """
+        SELECT
+          a.EntryId,
+          a.AttributeId,
+          a.Type,
+          a.Name,
+          a.OriginEntityAttrId,
+          a.OriginAttributeId,
+          v.AttributeValueId,
+          v.Value,
+          v.RawValue,
+          FALSE AS IsJoinedAttr,
+        FROM
+          AdvancedSearchAttribute a
+        JOIN
+          AdvancedSearchAttributeValue v
+        ON
+          a.EntryId = v.EntryId
+          AND a.AttributeId = v.AttributeId
+        WHERE
+          a.EntryId IN UNNEST(@entry_ids)
+        """
+        join_attr_query = """
+        SELECT
+          a.EntryId,
+          a.AttributeId,
+          a.Type,
+          a.Name,
+          a.OriginEntityAttrId,
+          a.OriginAttributeId,
+          v.AttributeValueId,
+          v.Value,
+          v.RawValue,
+          TRUE AS IsJoinedAttr,
+        FROM
+          GRAPH_TABLE(
+         AdvancedSearchGraph
+        MATCH (src: AdvancedSearchEntry)-[referral:Referral]->
+        WHERE src.EntryId IN UNNEST(@entry_ids)
+        RETURN src.EntryId AS SrcEntryId, referral.ReferralId AS ReferralEntryId
+        )
+        INNER JOIN AdvancedSearchAttribute AS a
+        ON a.EntryId = ReferralEntryId
+        JOIN
+          AdvancedSearchAttributeValue v
+        ON
+          a.EntryId = v.EntryId
+          AND a.AttributeId = v.AttributeId
         """
         params = {"entry_ids": entry_ids}
         param_types = {"entry_ids": spanner_v1.param_types.Array(spanner_v1.param_types.STRING)}
 
         if attribute_names:
-            query += " AND a.Name IN UNNEST(@attribute_names)"
+            base_query += " AND a.Name IN UNNEST(@attribute_names)"
             params["attribute_names"] = attribute_names
             param_types["attribute_names"] = spanner_v1.param_types.Array(
                 spanner_v1.param_types.STRING
             )
 
+        # FIXME filter with appropriate attr name
+        if len(join_attrs) == 0:
+            join_attr_query += "WHERE a.Name IN UNNEST(@join_attr_names)"
+            params["join_attr_names"] = [
+                attrinfo.name for attr in join_attrs for attrinfo in attr.attrinfo
+            ]
+            param_types["join_attr_names"] = spanner_v1.param_types.Array(
+                spanner_v1.param_types.STRING
+            )
+
         with self.database.snapshot() as snapshot:
+            query = f"{base_query} UNION ALL {join_attr_query}"
             results = snapshot.execute_sql(query, params=params, param_types=param_types)
 
             def _parse_raw_value(raw_value: Any) -> Optional[dict[str, Any] | list[Any]]:
@@ -591,6 +840,7 @@ class SpannerRepository:
                         return raw_value._array_value
                 return raw_value
 
+            # TODO cover join attrs
             return [
                 (
                     AdvancedSearchAttribute(
@@ -602,14 +852,15 @@ class SpannerRepository:
                         origin_attribute_id=row[5],
                     ),
                     AdvancedSearchAttributeValue(
-                        entry_id=row[6],
-                        attribute_id=row[7],
-                        attribute_value_id=row[8],
-                        value=str(row[9]),
-                        raw_value=_parse_raw_value(row[10]),
+                        entry_id=row[0],
+                        attribute_id=row[1],
+                        attribute_value_id=row[6],
+                        value=str(row[7]),
+                        raw_value=_parse_raw_value(row[8]),
                     ),
                 )
                 for row in results
+                if not row[9]
             ]
 
     def get_referrals(
