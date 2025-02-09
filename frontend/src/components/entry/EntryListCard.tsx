@@ -10,7 +10,7 @@ import {
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import React, { FC, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 
 import { ClipboardCopyButton } from "components/common/ClipboardCopyButton";
 import { EntryControlMenu } from "components/entry/EntryControlMenu";

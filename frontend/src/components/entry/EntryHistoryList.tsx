@@ -12,7 +12,7 @@ import {
 import { styled } from "@mui/material/styles";
 import { useSnackbar } from "notistack";
 import React, { FC, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 
 import { AttributeValue } from "./AttributeValue";
 

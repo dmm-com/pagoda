@@ -11,7 +11,7 @@ import {
   waitForElementToBeRemoved,
 } from "@testing-library/react";
 import React from "react";
-import { createMemoryRouter, RouterProvider } from "react-router-dom";
+import { createMemoryRouter, RouterProvider } from "react-router";
 
 import { TestWrapper, TestWrapperWithoutRoutes } from "TestWrapper";
 import { UserList } from "components/user/UserList";

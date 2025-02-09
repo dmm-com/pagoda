@@ -3,7 +3,7 @@ import { Box, Typography, Button, Container } from "@mui/material";
 import { useSnackbar } from "notistack";
 import React, { FC, useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router";
 import { useToggle } from "react-use";
 
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";

@@ -6,7 +6,7 @@ import {
   Route,
   RouterProvider,
   useRouteError,
-} from "react-router-dom";
+} from "react-router";
 
 import { ACLHistoryPage } from "../pages/ACLHistoryPage";
 import { EntryCopyPage } from "../pages/EntryCopyPage";

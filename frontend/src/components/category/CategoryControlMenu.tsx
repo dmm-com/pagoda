@@ -8,7 +8,7 @@ import {
 } from "@mui/material";
 import { useSnackbar } from "notistack";
 import React, { FC } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router";
 
 import { Confirmable } from "components/common/Confirmable";
 import { aironeApiClient } from "repository/AironeApiClient";

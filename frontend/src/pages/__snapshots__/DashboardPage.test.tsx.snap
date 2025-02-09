@@ -97,18 +97,21 @@ exports[`should match snapshot 1`] = `
           >
             <a
               class="MuiTypography-root MuiTypography-body1 css-13qg6e1-MuiTypography-root"
+              data-discover="true"
               href="/ui/entities/1/entries"
             >
               aaa
             </a>
             <a
               class="MuiTypography-root MuiTypography-body1 css-13qg6e1-MuiTypography-root"
+              data-discover="true"
               href="/ui/entities/2/entries"
             >
               aaaaa
             </a>
             <a
               class="MuiTypography-root MuiTypography-body1 css-13qg6e1-MuiTypography-root"
+              data-discover="true"
               href="/ui/entities/3/entries"
             >
               bbbbb
@@ -211,18 +214,21 @@ exports[`should match snapshot 1`] = `
         >
           <a
             class="MuiTypography-root MuiTypography-body1 css-13qg6e1-MuiTypography-root"
+            data-discover="true"
             href="/ui/entities/1/entries"
           >
             aaa
           </a>
           <a
             class="MuiTypography-root MuiTypography-body1 css-13qg6e1-MuiTypography-root"
+            data-discover="true"
             href="/ui/entities/2/entries"
           >
             aaaaa
           </a>
           <a
             class="MuiTypography-root MuiTypography-body1 css-13qg6e1-MuiTypography-root"
+            data-discover="true"
             href="/ui/entities/3/entries"
           >
             bbbbb

@@ -18,7 +18,7 @@ import { OverridableComponent } from "@mui/material/OverridableComponent";
 import { styled } from "@mui/material/styles";
 import { useSnackbar } from "notistack";
 import React, { FC, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router";
 
 import { useAsyncWithThrow } from "../../hooks/useAsyncWithThrow";
 import { aironeApiClient } from "../../repository/AironeApiClient";

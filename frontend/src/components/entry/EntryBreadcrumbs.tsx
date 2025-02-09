@@ -2,7 +2,7 @@ import { EntryRetrieve } from "@dmm-com/airone-apiclient-typescript-fetch";
 import LockIcon from "@mui/icons-material/Lock";
 import { Typography } from "@mui/material";
 import React, { FC } from "react";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { FlexBox } from "components/common/FlexBox";

@@ -10,7 +10,7 @@ import { Checkbox, Box, List, ListItem, Divider } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import * as React from "react";
 import { FC } from "react";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 
 import { groupsPath, rolePath, entryDetailsPath } from "routes/Routes";
 

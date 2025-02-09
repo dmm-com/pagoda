@@ -29,6 +29,7 @@ exports[`EntryEditPage should match snapshot 1`] = `
                   >
                     <a
                       class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                      data-discover="true"
                       href="/ui/"
                     >
                       Top
@@ -45,6 +46,7 @@ exports[`EntryEditPage should match snapshot 1`] = `
                   >
                     <a
                       class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                      data-discover="true"
                       href="/ui/entities"
                     >
                       モデル一覧
@@ -64,6 +66,7 @@ exports[`EntryEditPage should match snapshot 1`] = `
                     >
                       <a
                         class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                        data-discover="true"
                         href="/ui/entities/2/entries"
                       >
                         test entity
@@ -95,6 +98,7 @@ exports[`EntryEditPage should match snapshot 1`] = `
                     >
                       <a
                         class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                        data-discover="true"
                         href="/ui/entities/2/entries/1/details"
                       >
                         test entry
@@ -345,6 +349,7 @@ exports[`EntryEditPage should match snapshot 1`] = `
                 >
                   <a
                     class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                    data-discover="true"
                     href="/ui/"
                   >
                     Top
@@ -361,6 +366,7 @@ exports[`EntryEditPage should match snapshot 1`] = `
                 >
                   <a
                     class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                    data-discover="true"
                     href="/ui/entities"
                   >
                     モデル一覧
@@ -380,6 +386,7 @@ exports[`EntryEditPage should match snapshot 1`] = `
                   >
                     <a
                       class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                      data-discover="true"
                       href="/ui/entities/2/entries"
                     >
                       test entity
@@ -411,6 +418,7 @@ exports[`EntryEditPage should match snapshot 1`] = `
                   >
                     <a
                       class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                      data-discover="true"
                       href="/ui/entities/2/entries/1/details"
                     >
                       test entry

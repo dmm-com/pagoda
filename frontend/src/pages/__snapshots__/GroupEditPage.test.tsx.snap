@@ -29,6 +29,7 @@ exports[`EditGroupPage should match snapshot 1`] = `
                   >
                     <a
                       class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                      data-discover="true"
                       href="/ui/"
                     >
                       Top
@@ -45,6 +46,7 @@ exports[`EditGroupPage should match snapshot 1`] = `
                   >
                     <a
                       class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                      data-discover="true"
                       href="/ui/groups"
                     >
                       グループ管理
@@ -331,6 +333,7 @@ exports[`EditGroupPage should match snapshot 1`] = `
                     </span>
                     <a
                       class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                      data-discover="true"
                       href="/ui/groups/1"
                     >
                       group1
@@ -364,6 +367,7 @@ exports[`EditGroupPage should match snapshot 1`] = `
                     </span>
                     <a
                       class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                      data-discover="true"
                       href="/ui/groups/1"
                     >
                       group1
@@ -397,6 +401,7 @@ exports[`EditGroupPage should match snapshot 1`] = `
                     </span>
                     <a
                       class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                      data-discover="true"
                       href="/ui/groups/2"
                     >
                       group2
@@ -438,6 +443,7 @@ exports[`EditGroupPage should match snapshot 1`] = `
                     </span>
                     <a
                       class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                      data-discover="true"
                       href="/ui/groups/2"
                     >
                       group2
@@ -476,6 +482,7 @@ exports[`EditGroupPage should match snapshot 1`] = `
                 >
                   <a
                     class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                    data-discover="true"
                     href="/ui/"
                   >
                     Top
@@ -492,6 +499,7 @@ exports[`EditGroupPage should match snapshot 1`] = `
                 >
                   <a
                     class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                    data-discover="true"
                     href="/ui/groups"
                   >
                     グループ管理
@@ -778,6 +786,7 @@ exports[`EditGroupPage should match snapshot 1`] = `
                   </span>
                   <a
                     class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                    data-discover="true"
                     href="/ui/groups/1"
                   >
                     group1
@@ -811,6 +820,7 @@ exports[`EditGroupPage should match snapshot 1`] = `
                   </span>
                   <a
                     class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                    data-discover="true"
                     href="/ui/groups/1"
                   >
                     group1
@@ -844,6 +854,7 @@ exports[`EditGroupPage should match snapshot 1`] = `
                   </span>
                   <a
                     class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                    data-discover="true"
                     href="/ui/groups/2"
                   >
                     group2
@@ -885,6 +896,7 @@ exports[`EditGroupPage should match snapshot 1`] = `
                   </span>
                   <a
                     class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                    data-discover="true"
                     href="/ui/groups/2"
                   >
                     group2

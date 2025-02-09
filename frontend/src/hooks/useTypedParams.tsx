@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom";
+import { useParams } from "react-router";
 
 export const useTypedParams = <
   Params extends { [K in keyof Params]: any }

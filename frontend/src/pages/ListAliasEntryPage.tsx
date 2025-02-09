@@ -3,7 +3,7 @@ import AppsIcon from "@mui/icons-material/Apps";
 import { Box, Container, Grid, IconButton } from "@mui/material";
 import { useSnackbar } from "notistack";
 import React, { FC, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 import { useLocation } from "react-use";
 
 import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";

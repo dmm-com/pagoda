@@ -22,7 +22,7 @@ import React, {
   useReducer,
   useState,
 } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router";
 
 import { AdvancedSearchJoinModal } from "./AdvancedSearchJoinModal";
 import { SearchResultControlMenu } from "./SearchResultControlMenu";
