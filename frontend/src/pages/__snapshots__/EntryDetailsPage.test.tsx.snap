@@ -29,6 +29,7 @@ exports[`should match snapshot 1`] = `
                   >
                     <a
                       class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                      data-discover="true"
                       href="/ui/"
                     >
                       Top
@@ -45,6 +46,7 @@ exports[`should match snapshot 1`] = `
                   >
                     <a
                       class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                      data-discover="true"
                       href="/ui/entities"
                     >
                       モデル一覧
@@ -64,6 +66,7 @@ exports[`should match snapshot 1`] = `
                     >
                       <a
                         class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                        data-discover="true"
                         href="/ui/entities/2/entries"
                       >
                         test entity
@@ -95,6 +98,7 @@ exports[`should match snapshot 1`] = `
                     >
                       <a
                         class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                        data-discover="true"
                         href="/ui/entities/2/entries/1/details"
                       >
                         test entry
@@ -359,6 +363,7 @@ exports[`should match snapshot 1`] = `
                 >
                   <a
                     class="MuiButtonBase-root MuiListItemButton-root MuiListItemButton-gutters MuiListItemButton-root MuiListItemButton-gutters css-16ac5r2-MuiButtonBase-root-MuiListItemButton-root"
+                    data-discover="true"
                     href="/ui/entities/2/entries/1/details"
                     tabindex="0"
                   >
@@ -460,6 +465,7 @@ exports[`should match snapshot 1`] = `
                 >
                   <a
                     class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                    data-discover="true"
                     href="/ui/"
                   >
                     Top
@@ -476,6 +482,7 @@ exports[`should match snapshot 1`] = `
                 >
                   <a
                     class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                    data-discover="true"
                     href="/ui/entities"
                   >
                     モデル一覧
@@ -495,6 +502,7 @@ exports[`should match snapshot 1`] = `
                   >
                     <a
                       class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                      data-discover="true"
                       href="/ui/entities/2/entries"
                     >
                       test entity
@@ -526,6 +534,7 @@ exports[`should match snapshot 1`] = `
                   >
                     <a
                       class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                      data-discover="true"
                       href="/ui/entities/2/entries/1/details"
                     >
                       test entry
@@ -790,6 +799,7 @@ exports[`should match snapshot 1`] = `
               >
                 <a
                   class="MuiButtonBase-root MuiListItemButton-root MuiListItemButton-gutters MuiListItemButton-root MuiListItemButton-gutters css-16ac5r2-MuiButtonBase-root-MuiListItemButton-root"
+                  data-discover="true"
                   href="/ui/entities/2/entries/1/details"
                   tabindex="0"
                 >

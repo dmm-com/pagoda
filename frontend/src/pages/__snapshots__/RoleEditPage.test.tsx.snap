@@ -29,6 +29,7 @@ exports[`EditRolePage should match snapshot 1`] = `
                   >
                     <a
                       class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                      data-discover="true"
                       href="/ui/"
                     >
                       Top
@@ -45,6 +46,7 @@ exports[`EditRolePage should match snapshot 1`] = `
                   >
                     <a
                       class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                      data-discover="true"
                       href="/ui/roles"
                     >
                       ロール管理
@@ -686,6 +688,7 @@ exports[`EditRolePage should match snapshot 1`] = `
                 >
                   <a
                     class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                    data-discover="true"
                     href="/ui/"
                   >
                     Top
@@ -702,6 +705,7 @@ exports[`EditRolePage should match snapshot 1`] = `
                 >
                   <a
                     class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                    data-discover="true"
                     href="/ui/roles"
                   >
                     ロール管理

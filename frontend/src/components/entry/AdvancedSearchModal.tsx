@@ -4,7 +4,7 @@ import {
 } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { Box, Autocomplete, Checkbox, TextField, Button } from "@mui/material";
 import React, { Dispatch, FC, useState, SetStateAction } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 
 import { formatAdvancedSearchParams } from "../../services/entry/AdvancedSearch";
 import { AironeModal } from "../common/AironeModal";

@@ -1,7 +1,7 @@
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { Checkbox, IconButton, ListItem, Typography } from "@mui/material";
 import React, { FC } from "react";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 
 import { GroupTree } from "../../repository/AironeApiClient";
 import { groupPath } from "../../routes/Routes";

@@ -29,6 +29,7 @@ exports[`EntityListPage should match snapshot 1`] = `
                   >
                     <a
                       class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                      data-discover="true"
                       href="/ui/"
                     >
                       Top
@@ -172,6 +173,7 @@ exports[`EntityListPage should match snapshot 1`] = `
               </div>
               <a
                 class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium css-x1f2a7-MuiButtonBase-root-MuiButton-root"
+                data-discover="true"
                 href="/ui/entities/new"
                 tabindex="0"
               >
@@ -210,6 +212,7 @@ exports[`EntityListPage should match snapshot 1`] = `
                       >
                         <a
                           class="MuiButtonBase-root MuiCardActionArea-root css-1oitmrd-MuiButtonBase-root-MuiCardActionArea-root"
+                          data-discover="true"
                           href="/ui/entities/1/entries"
                           tabindex="0"
                         >
@@ -293,6 +296,7 @@ exports[`EntityListPage should match snapshot 1`] = `
                       >
                         <a
                           class="MuiButtonBase-root MuiCardActionArea-root css-1oitmrd-MuiButtonBase-root-MuiCardActionArea-root"
+                          data-discover="true"
                           href="/ui/entities/2/entries"
                           tabindex="0"
                         >
@@ -376,6 +380,7 @@ exports[`EntityListPage should match snapshot 1`] = `
                       >
                         <a
                           class="MuiButtonBase-root MuiCardActionArea-root css-1oitmrd-MuiButtonBase-root-MuiCardActionArea-root"
+                          data-discover="true"
                           href="/ui/entities/3/entries"
                           tabindex="0"
                         >
@@ -549,6 +554,7 @@ exports[`EntityListPage should match snapshot 1`] = `
                 >
                   <a
                     class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                    data-discover="true"
                     href="/ui/"
                   >
                     Top
@@ -692,6 +698,7 @@ exports[`EntityListPage should match snapshot 1`] = `
             </div>
             <a
               class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium css-x1f2a7-MuiButtonBase-root-MuiButton-root"
+              data-discover="true"
               href="/ui/entities/new"
               tabindex="0"
             >
@@ -730,6 +737,7 @@ exports[`EntityListPage should match snapshot 1`] = `
                     >
                       <a
                         class="MuiButtonBase-root MuiCardActionArea-root css-1oitmrd-MuiButtonBase-root-MuiCardActionArea-root"
+                        data-discover="true"
                         href="/ui/entities/1/entries"
                         tabindex="0"
                       >
@@ -813,6 +821,7 @@ exports[`EntityListPage should match snapshot 1`] = `
                     >
                       <a
                         class="MuiButtonBase-root MuiCardActionArea-root css-1oitmrd-MuiButtonBase-root-MuiCardActionArea-root"
+                        data-discover="true"
                         href="/ui/entities/2/entries"
                         tabindex="0"
                       >
@@ -896,6 +905,7 @@ exports[`EntityListPage should match snapshot 1`] = `
                     >
                       <a
                         class="MuiButtonBase-root MuiCardActionArea-root css-1oitmrd-MuiButtonBase-root-MuiCardActionArea-root"
+                        data-discover="true"
                         href="/ui/entities/3/entries"
                         tabindex="0"
                       >

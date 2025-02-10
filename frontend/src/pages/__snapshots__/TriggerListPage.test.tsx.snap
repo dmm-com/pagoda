@@ -29,6 +29,7 @@ exports[`TriggerPage should match snapshot 1`] = `
                   >
                     <a
                       class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                      data-discover="true"
                       href="/ui/"
                     >
                       Top
@@ -78,6 +79,7 @@ exports[`TriggerPage should match snapshot 1`] = `
               >
                 <a
                   class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium css-1vyw7vs-MuiButtonBase-root-MuiButton-root"
+                  data-discover="true"
                   href="/ui/triggers/new"
                   tabindex="0"
                 >
@@ -208,6 +210,7 @@ exports[`TriggerPage should match snapshot 1`] = `
                   >
                     <a
                       class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-12d63dx-MuiButtonBase-root-MuiIconButton-root"
+                      data-discover="true"
                       href="/ui/triggers/1"
                       tabindex="0"
                     >
@@ -277,6 +280,7 @@ exports[`TriggerPage should match snapshot 1`] = `
                   >
                     <a
                       class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-12d63dx-MuiButtonBase-root-MuiIconButton-root"
+                      data-discover="true"
                       href="/ui/triggers/2"
                       tabindex="0"
                     >
@@ -326,6 +330,7 @@ exports[`TriggerPage should match snapshot 1`] = `
                 >
                   <a
                     class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                    data-discover="true"
                     href="/ui/"
                   >
                     Top
@@ -375,6 +380,7 @@ exports[`TriggerPage should match snapshot 1`] = `
             >
               <a
                 class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium css-1vyw7vs-MuiButtonBase-root-MuiButton-root"
+                data-discover="true"
                 href="/ui/triggers/new"
                 tabindex="0"
               >
@@ -505,6 +511,7 @@ exports[`TriggerPage should match snapshot 1`] = `
                 >
                   <a
                     class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-12d63dx-MuiButtonBase-root-MuiIconButton-root"
+                    data-discover="true"
                     href="/ui/triggers/1"
                     tabindex="0"
                   >
@@ -574,6 +581,7 @@ exports[`TriggerPage should match snapshot 1`] = `
                 >
                   <a
                     class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-12d63dx-MuiButtonBase-root-MuiIconButton-root"
+                    data-discover="true"
                     href="/ui/triggers/2"
                     tabindex="0"
                   >

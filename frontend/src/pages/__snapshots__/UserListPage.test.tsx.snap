@@ -29,6 +29,7 @@ exports[`UserListPage should match snapshot 1`] = `
                   >
                     <a
                       class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                      data-discover="true"
                       href="/ui/"
                     >
                       Top
@@ -173,6 +174,7 @@ exports[`UserListPage should match snapshot 1`] = `
               <a
                 aria-disabled="true"
                 class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium Mui-disabled MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium css-1dcgaey-MuiButtonBase-root-MuiButton-root"
+                data-discover="true"
                 href="/ui/users/new"
                 tabindex="-1"
               >
@@ -211,6 +213,7 @@ exports[`UserListPage should match snapshot 1`] = `
                       >
                         <a
                           class="MuiButtonBase-root MuiCardActionArea-root css-1oitmrd-MuiButtonBase-root-MuiCardActionArea-root"
+                          data-discover="true"
                           href="/ui/users/1"
                           tabindex="0"
                         >
@@ -380,6 +383,7 @@ exports[`UserListPage should match snapshot 1`] = `
                 >
                   <a
                     class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                    data-discover="true"
                     href="/ui/"
                   >
                     Top
@@ -524,6 +528,7 @@ exports[`UserListPage should match snapshot 1`] = `
             <a
               aria-disabled="true"
               class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium Mui-disabled MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium css-1dcgaey-MuiButtonBase-root-MuiButton-root"
+              data-discover="true"
               href="/ui/users/new"
               tabindex="-1"
             >
@@ -562,6 +567,7 @@ exports[`UserListPage should match snapshot 1`] = `
                     >
                       <a
                         class="MuiButtonBase-root MuiCardActionArea-root css-1oitmrd-MuiButtonBase-root-MuiCardActionArea-root"
+                        data-discover="true"
                         href="/ui/users/1"
                         tabindex="0"
                       >

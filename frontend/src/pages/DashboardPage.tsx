@@ -2,7 +2,7 @@ import { Box, Container, Typography, TypographyTypeMap } from "@mui/material";
 import { OverridableComponent } from "@mui/material/OverridableComponent";
 import { styled } from "@mui/material/styles";
 import React, { FC } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router";
 
 import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
 

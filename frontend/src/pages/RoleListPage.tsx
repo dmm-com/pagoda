@@ -1,7 +1,7 @@
 import AddIcon from "@mui/icons-material/Add";
 import { Box, Button, Container, Typography } from "@mui/material";
 import React, { FC, useCallback, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 
 import { RoleImportModal } from "../components/role/RoleImportModal";
 import { RoleList } from "../components/role/RoleList";

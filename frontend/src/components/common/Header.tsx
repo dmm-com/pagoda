@@ -20,7 +20,7 @@ import { styled } from "@mui/material/styles";
 import PopupState, { bindHover, bindMenu } from "material-ui-popup-state";
 import HoverMenu from "material-ui-popup-state/HoverMenu";
 import React, { FC, MouseEvent, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 import { useInterval } from "react-use";
 
 import { useTranslation } from "../../hooks/useTranslation";

@@ -3,7 +3,7 @@ import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import { Box, Chip, Grid, IconButton, Stack, Typography } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import React, { FC, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 
 import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
 import { useTypedParams } from "../hooks/useTypedParams";

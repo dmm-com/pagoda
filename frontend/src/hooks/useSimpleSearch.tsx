@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router";
 
 import { topPath } from "../routes/Routes";
 

@@ -2,7 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Box, Typography } from "@mui/material";
 import React, { FC, useCallback, useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router";
 
 import { CategoryForm } from "components/category/CategoryForm";
 import {

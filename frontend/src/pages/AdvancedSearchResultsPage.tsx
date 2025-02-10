@@ -9,7 +9,7 @@ import SettingsIcon from "@mui/icons-material/Settings";
 import { Box, Button, IconButton, Typography } from "@mui/material";
 import { useSnackbar } from "notistack";
 import React, { FC, useEffect, useMemo, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router";
 
 import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
 

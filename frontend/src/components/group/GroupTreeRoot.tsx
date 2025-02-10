@@ -8,7 +8,7 @@ import {
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import React, { FC } from "react";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 
 import { GroupTree } from "../../repository/AironeApiClient";
 import { groupPath } from "../../routes/Routes";

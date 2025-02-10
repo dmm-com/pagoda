@@ -1,6 +1,6 @@
 import { Box, Button, Container, Typography } from "@mui/material";
 import React, { FC, useCallback, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { PageHeader } from "components/common/PageHeader";

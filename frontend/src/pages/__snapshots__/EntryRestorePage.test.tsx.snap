@@ -29,6 +29,7 @@ exports[`should match snapshot 1`] = `
                   >
                     <a
                       class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                      data-discover="true"
                       href="/ui/"
                     >
                       Top
@@ -45,6 +46,7 @@ exports[`should match snapshot 1`] = `
                   >
                     <a
                       class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                      data-discover="true"
                       href="/ui/entities"
                     >
                       モデル一覧
@@ -64,6 +66,7 @@ exports[`should match snapshot 1`] = `
                     >
                       <a
                         class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                        data-discover="true"
                         href="/ui/entities/1/entries"
                       >
                         aaa
@@ -530,6 +533,7 @@ exports[`should match snapshot 1`] = `
                 >
                   <a
                     class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                    data-discover="true"
                     href="/ui/"
                   >
                     Top
@@ -546,6 +550,7 @@ exports[`should match snapshot 1`] = `
                 >
                   <a
                     class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                    data-discover="true"
                     href="/ui/entities"
                   >
                     モデル一覧
@@ -565,6 +570,7 @@ exports[`should match snapshot 1`] = `
                   >
                     <a
                       class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                      data-discover="true"
                       href="/ui/entities/1/entries"
                     >
                       aaa

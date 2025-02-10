@@ -1,6 +1,6 @@
 import { Box, Button, Container, Typography } from "@mui/material";
 import React, { FC, useCallback, useState } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router";
 
 import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
 
