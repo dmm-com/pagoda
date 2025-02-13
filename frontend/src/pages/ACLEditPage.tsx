@@ -4,14 +4,15 @@ import {
   EntryRetrieve,
 } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Box, Container } from "@mui/material";
+import { Box, Container, Typography } from "@mui/material";
 import { useSnackbar } from "notistack";
 import React, { FC, useCallback, useEffect, useState } from "react";
 import { FieldErrors, useForm } from "react-hook-form";
-import { useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router";
 
 import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
 
+import { AironeBreadcrumbs } from "components";
 import { ACLForm } from "components/acl/ACLForm";
 import { Schema, schema } from "components/acl/aclForm/ACLFormSchema";
 import { Loading } from "components/common/Loading";
@@ -26,6 +27,8 @@ import {
   editEntityPath,
   entityEntriesPath,
   entryDetailsPath,
+  listCategoryPath,
+  topPath,
 } from "routes/Routes";
 
 export const ACLEditPage: FC = () => {
@@ -58,6 +61,9 @@ export const ACLEditPage: FC = () => {
 
   const historyReplace = () => {
     switch (acl.value?.objtype) {
+      case ACLObjtypeEnum.Category:
+        navigate(listCategoryPath(), { replace: true });
+        break;
       case ACLObjtypeEnum.Entity:
         if (entity?.id) {
           navigate(entityEntriesPath(entity?.id), { replace: true });
@@ -121,6 +127,20 @@ export const ACLEditPage: FC = () => {
       roles: acl.value.roles,
     });
     switch (acl.value.objtype) {
+      case ACLObjtypeEnum.Category:
+        setBreadcrumbs(
+          <AironeBreadcrumbs>
+            <Typography component={Link} to={topPath()}>
+              Top
+            </Typography>
+            <Typography component={Link} to={listCategoryPath()}>
+              カテゴリ一覧
+            </Typography>
+            <Typography color="textPrimary">{acl.value.name}</Typography>
+            <Typography color="textPrimary">ACL設定</Typography>
+          </AironeBreadcrumbs>
+        );
+        break;
       case ACLObjtypeEnum.Entity:
         aironeApiClient.getEntity(objectId).then((resp) => {
           setEntity(resp);
