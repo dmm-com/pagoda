@@ -3,6 +3,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 from airone.lib.acl import ACLType
+from category.models import Category
 from entity.models import Entity, EntityAttr
 from entry.models import Attribute, Entry
 from role.models import HistoricalPermission
@@ -19,6 +20,12 @@ def create_permission(instance):
 
 @receiver(post_save, sender=ACLBase)
 def aclbase_create_permission(sender, instance, created, **kwargs):
+    if created:
+        create_permission(instance)
+
+
+@receiver(post_save, sender=Category)
+def category_create_permission(sender, instance, created, **kwargs):
     if created:
         create_permission(instance)
 
