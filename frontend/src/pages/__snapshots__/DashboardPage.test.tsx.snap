@@ -6,46 +6,16 @@ exports[`should match snapshot 1`] = `
   "baseElement": <body>
     <div>
       <div
-        class="MuiBox-root css-0"
+        class="MuiContainer-root MuiContainer-maxWidthLg css-1br4z8z-MuiContainer-root"
       >
         <div
-          class="MuiBox-root css-1baykhj"
-        >
-          <div
-            class="MuiBox-root css-t0pdf1"
-          >
-            <div
-              class="MuiBox-root css-jqffe8"
-            >
-              <nav
-                aria-label="breadcrumb"
-                class="MuiTypography-root MuiTypography-body1 MuiBreadcrumbs-root css-63vwl1-MuiTypography-root-MuiBreadcrumbs-root"
-              >
-                <ol
-                  class="MuiBreadcrumbs-ol css-4pdmu4-MuiBreadcrumbs-ol"
-                >
-                  <li
-                    class="MuiBreadcrumbs-li"
-                  >
-                    <p
-                      class="MuiTypography-root MuiTypography-body1 css-1gqyz35-MuiTypography-root"
-                    >
-                      Top
-                    </p>
-                  </li>
-                </ol>
-              </nav>
-            </div>
-          </div>
-        </div>
-        <div
-          class="MuiContainer-root MuiContainer-maxWidthLg css-1br4z8z-MuiContainer-root"
+          class="MuiBox-root css-1c5ij41"
         >
           <div
             class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-miwl14-MuiFormControl-root-MuiTextField-root"
           >
             <div
-              class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth Mui-focused MuiInputBase-formControl MuiInputBase-adornedStart css-4ama2z-MuiInputBase-root-MuiOutlinedInput-root"
+              class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-adornedStart css-4ama2z-MuiInputBase-root-MuiOutlinedInput-root"
             >
               <div
                 class="MuiInputAdornment-root MuiInputAdornment-positionStart MuiInputAdornment-outlined MuiInputAdornment-sizeMedium css-ittuaa-MuiInputAdornment-root"
@@ -71,7 +41,7 @@ exports[`should match snapshot 1`] = `
                 aria-invalid="false"
                 class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputAdornedStart css-1o9s3wi-MuiInputBase-input-MuiOutlinedInput-input"
                 id=":r0:"
-                placeholder="Search"
+                placeholder="カテゴリを絞り込む"
                 type="text"
                 value=""
               />
@@ -91,31 +61,129 @@ exports[`should match snapshot 1`] = `
               </fieldset>
             </div>
           </div>
+        </div>
+        <div
+          class="MuiGrid-root MuiGrid-container MuiGrid-spacing-xs-3 css-zow5z4-MuiGrid-root"
+        >
           <div
-            class="MuiBox-root css-i48sxq"
-            id="entity_list"
+            class="MuiGrid-root MuiGrid-item MuiGrid-grid-md-4 css-1ube6tp-MuiGrid-root"
           >
-            <a
-              class="MuiTypography-root MuiTypography-body1 css-13qg6e1-MuiTypography-root"
-              data-discover="true"
-              href="/ui/entities/1/entries"
+            <ul
+              class="MuiList-root MuiList-padding MuiList-subheader css-p64g7a-MuiList-root"
             >
-              aaa
-            </a>
-            <a
-              class="MuiTypography-root MuiTypography-body1 css-13qg6e1-MuiTypography-root"
-              data-discover="true"
-              href="/ui/entities/2/entries"
+              <div
+                class="MuiBox-root css-mbiude"
+              >
+                <div
+                  class="MuiTypography-root MuiTypography-h6 css-2ulfj5-MuiTypography-root"
+                >
+                  aaa
+                </div>
+                <button
+                  class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-78trlr-MuiButtonBase-root-MuiIconButton-root"
+                  tabindex="0"
+                  type="button"
+                >
+                  <svg
+                    aria-hidden="true"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-ptiqhd-MuiSvgIcon-root"
+                    data-testid="MoreVertIcon"
+                    focusable="false"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
+                    />
+                  </svg>
+                  <span
+                    class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                  />
+                </button>
+              </div>
+              <div
+                class="MuiBox-root css-a4jtbn"
+              />
+            </ul>
+          </div>
+          <div
+            class="MuiGrid-root MuiGrid-item MuiGrid-grid-md-4 css-1ube6tp-MuiGrid-root"
+          >
+            <ul
+              class="MuiList-root MuiList-padding MuiList-subheader css-p64g7a-MuiList-root"
             >
-              aaaaa
-            </a>
-            <a
-              class="MuiTypography-root MuiTypography-body1 css-13qg6e1-MuiTypography-root"
-              data-discover="true"
-              href="/ui/entities/3/entries"
+              <div
+                class="MuiBox-root css-mbiude"
+              >
+                <div
+                  class="MuiTypography-root MuiTypography-h6 css-2ulfj5-MuiTypography-root"
+                >
+                  aaaaa
+                </div>
+                <button
+                  class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-78trlr-MuiButtonBase-root-MuiIconButton-root"
+                  tabindex="0"
+                  type="button"
+                >
+                  <svg
+                    aria-hidden="true"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-ptiqhd-MuiSvgIcon-root"
+                    data-testid="MoreVertIcon"
+                    focusable="false"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
+                    />
+                  </svg>
+                  <span
+                    class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                  />
+                </button>
+              </div>
+              <div
+                class="MuiBox-root css-a4jtbn"
+              />
+            </ul>
+          </div>
+          <div
+            class="MuiGrid-root MuiGrid-item MuiGrid-grid-md-4 css-1ube6tp-MuiGrid-root"
+          >
+            <ul
+              class="MuiList-root MuiList-padding MuiList-subheader css-p64g7a-MuiList-root"
             >
-              bbbbb
-            </a>
+              <div
+                class="MuiBox-root css-mbiude"
+              >
+                <div
+                  class="MuiTypography-root MuiTypography-h6 css-2ulfj5-MuiTypography-root"
+                >
+                  bbbbb
+                </div>
+                <button
+                  class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-78trlr-MuiButtonBase-root-MuiIconButton-root"
+                  tabindex="0"
+                  type="button"
+                >
+                  <svg
+                    aria-hidden="true"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-ptiqhd-MuiSvgIcon-root"
+                    data-testid="MoreVertIcon"
+                    focusable="false"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
+                    />
+                  </svg>
+                  <span
+                    class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                  />
+                </button>
+              </div>
+              <div
+                class="MuiBox-root css-a4jtbn"
+              />
+            </ul>
           </div>
         </div>
       </div>
@@ -123,46 +191,16 @@ exports[`should match snapshot 1`] = `
   </body>,
   "container": <div>
     <div
-      class="MuiBox-root css-0"
+      class="MuiContainer-root MuiContainer-maxWidthLg css-1br4z8z-MuiContainer-root"
     >
       <div
-        class="MuiBox-root css-1baykhj"
-      >
-        <div
-          class="MuiBox-root css-t0pdf1"
-        >
-          <div
-            class="MuiBox-root css-jqffe8"
-          >
-            <nav
-              aria-label="breadcrumb"
-              class="MuiTypography-root MuiTypography-body1 MuiBreadcrumbs-root css-63vwl1-MuiTypography-root-MuiBreadcrumbs-root"
-            >
-              <ol
-                class="MuiBreadcrumbs-ol css-4pdmu4-MuiBreadcrumbs-ol"
-              >
-                <li
-                  class="MuiBreadcrumbs-li"
-                >
-                  <p
-                    class="MuiTypography-root MuiTypography-body1 css-1gqyz35-MuiTypography-root"
-                  >
-                    Top
-                  </p>
-                </li>
-              </ol>
-            </nav>
-          </div>
-        </div>
-      </div>
-      <div
-        class="MuiContainer-root MuiContainer-maxWidthLg css-1br4z8z-MuiContainer-root"
+        class="MuiBox-root css-1c5ij41"
       >
         <div
           class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-miwl14-MuiFormControl-root-MuiTextField-root"
         >
           <div
-            class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth Mui-focused MuiInputBase-formControl MuiInputBase-adornedStart css-4ama2z-MuiInputBase-root-MuiOutlinedInput-root"
+            class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-adornedStart css-4ama2z-MuiInputBase-root-MuiOutlinedInput-root"
           >
             <div
               class="MuiInputAdornment-root MuiInputAdornment-positionStart MuiInputAdornment-outlined MuiInputAdornment-sizeMedium css-ittuaa-MuiInputAdornment-root"
@@ -188,7 +226,7 @@ exports[`should match snapshot 1`] = `
               aria-invalid="false"
               class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputAdornedStart css-1o9s3wi-MuiInputBase-input-MuiOutlinedInput-input"
               id=":r0:"
-              placeholder="Search"
+              placeholder="カテゴリを絞り込む"
               type="text"
               value=""
             />
@@ -208,31 +246,129 @@ exports[`should match snapshot 1`] = `
             </fieldset>
           </div>
         </div>
+      </div>
+      <div
+        class="MuiGrid-root MuiGrid-container MuiGrid-spacing-xs-3 css-zow5z4-MuiGrid-root"
+      >
         <div
-          class="MuiBox-root css-i48sxq"
-          id="entity_list"
+          class="MuiGrid-root MuiGrid-item MuiGrid-grid-md-4 css-1ube6tp-MuiGrid-root"
         >
-          <a
-            class="MuiTypography-root MuiTypography-body1 css-13qg6e1-MuiTypography-root"
-            data-discover="true"
-            href="/ui/entities/1/entries"
+          <ul
+            class="MuiList-root MuiList-padding MuiList-subheader css-p64g7a-MuiList-root"
           >
-            aaa
-          </a>
-          <a
-            class="MuiTypography-root MuiTypography-body1 css-13qg6e1-MuiTypography-root"
-            data-discover="true"
-            href="/ui/entities/2/entries"
+            <div
+              class="MuiBox-root css-mbiude"
+            >
+              <div
+                class="MuiTypography-root MuiTypography-h6 css-2ulfj5-MuiTypography-root"
+              >
+                aaa
+              </div>
+              <button
+                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-78trlr-MuiButtonBase-root-MuiIconButton-root"
+                tabindex="0"
+                type="button"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-ptiqhd-MuiSvgIcon-root"
+                  data-testid="MoreVertIcon"
+                  focusable="false"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
+                  />
+                </svg>
+                <span
+                  class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                />
+              </button>
+            </div>
+            <div
+              class="MuiBox-root css-a4jtbn"
+            />
+          </ul>
+        </div>
+        <div
+          class="MuiGrid-root MuiGrid-item MuiGrid-grid-md-4 css-1ube6tp-MuiGrid-root"
+        >
+          <ul
+            class="MuiList-root MuiList-padding MuiList-subheader css-p64g7a-MuiList-root"
           >
-            aaaaa
-          </a>
-          <a
-            class="MuiTypography-root MuiTypography-body1 css-13qg6e1-MuiTypography-root"
-            data-discover="true"
-            href="/ui/entities/3/entries"
+            <div
+              class="MuiBox-root css-mbiude"
+            >
+              <div
+                class="MuiTypography-root MuiTypography-h6 css-2ulfj5-MuiTypography-root"
+              >
+                aaaaa
+              </div>
+              <button
+                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-78trlr-MuiButtonBase-root-MuiIconButton-root"
+                tabindex="0"
+                type="button"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-ptiqhd-MuiSvgIcon-root"
+                  data-testid="MoreVertIcon"
+                  focusable="false"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
+                  />
+                </svg>
+                <span
+                  class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                />
+              </button>
+            </div>
+            <div
+              class="MuiBox-root css-a4jtbn"
+            />
+          </ul>
+        </div>
+        <div
+          class="MuiGrid-root MuiGrid-item MuiGrid-grid-md-4 css-1ube6tp-MuiGrid-root"
+        >
+          <ul
+            class="MuiList-root MuiList-padding MuiList-subheader css-p64g7a-MuiList-root"
           >
-            bbbbb
-          </a>
+            <div
+              class="MuiBox-root css-mbiude"
+            >
+              <div
+                class="MuiTypography-root MuiTypography-h6 css-2ulfj5-MuiTypography-root"
+              >
+                bbbbb
+              </div>
+              <button
+                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-78trlr-MuiButtonBase-root-MuiIconButton-root"
+                tabindex="0"
+                type="button"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-ptiqhd-MuiSvgIcon-root"
+                  data-testid="MoreVertIcon"
+                  focusable="false"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
+                  />
+                </svg>
+                <span
+                  class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                />
+              </button>
+            </div>
+            <div
+              class="MuiBox-root css-a4jtbn"
+            />
+          </ul>
         </div>
       </div>
     </div>
