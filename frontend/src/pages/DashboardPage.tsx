@@ -1,17 +1,29 @@
-import { Box, Container, Typography, TypographyTypeMap } from "@mui/material";
+import {
+  Box,
+  Container,
+  Grid,
+  List,
+  ListItem,
+  ListItemText,
+  Typography,
+  TypographyTypeMap
+} from "@mui/material";
 import { OverridableComponent } from "@mui/material/OverridableComponent";
 import { styled } from "@mui/material/styles";
-import React, { FC } from "react";
+import React, { FC, useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router";
 
 import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
 
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
+import { CategoryListHeader } from "components/category/CategoryListHeader";
 import { Loading } from "components/common/Loading";
-import { SearchBox } from "components/common/SearchBox";
+import { PaginationFooter } from "components/common/PaginationFooter";
+import { usePage } from "hooks/usePage";
 import { useSimpleSearch } from "hooks/useSimpleSearch";
 import { aironeApiClient } from "repository/AironeApiClient";
 import { entityEntriesPath, entryDetailsPath } from "routes/Routes";
+import { EntityListParam } from "services/Constants";
 
 const StyledContainer = styled(Container)({
   marginTop: "16px",
@@ -33,7 +45,7 @@ const Result = styled(Typography)(({ theme }) => ({
   textOverflow: "ellipsis",
 })) as OverridableComponent<TypographyTypeMap>;
 
-const ResultEntityForEntry = styled(Typography)(({}) => ({
+const ResultEntityForEntry = styled(Typography)(({ }) => ({
   color: "gray",
 }));
 
@@ -41,6 +53,12 @@ export const DashboardPage: FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
+  // variable to store search query for Category
+  const params = new URLSearchParams(location.search);
+  const [queryCategory, setQueryCategory] = useState<string>(params.get("query") ?? "");
+  const [page, changePage] = usePage();
+
+  // variable to store search query for Searching Entry
   const [query, submitQuery] = useSimpleSearch();
 
   const entries = useAsyncWithThrow(async () => {
@@ -60,6 +78,23 @@ export const DashboardPage: FC = () => {
     );
   }
 
+  const [toggle, setToggle] = useState(false);
+
+  // request handler when user specify query
+  const handleChangeQuery = (newQuery?: string) => {
+    changePage(1);
+    setQueryCategory(newQuery ?? "");
+
+    navigate({
+      pathname: location.pathname,
+      search: newQuery ? `?query=${newQuery}` : "",
+    });
+  };
+
+  const categories = useAsyncWithThrow(async () => {
+    return await aironeApiClient.getCategories(page, queryCategory);
+  }, [page, query, toggle]);
+
   return (
     <Box>
       <AironeBreadcrumbs>
@@ -67,14 +102,45 @@ export const DashboardPage: FC = () => {
       </AironeBreadcrumbs>
 
       <StyledContainer>
-        <SearchBox
-          placeholder="Search"
-          defaultValue={query}
-          onKeyPress={(e) => {
-            e.key === "Enter" && submitQuery(e.target.value);
-          }}
-          autoFocus
-        />
+
+        {/* Context of Category */}
+        <>
+          <Grid container spacing={3}>
+            {categories.value?.results.map((category) => (
+              <Grid item md={4} key={category.id}>
+                <List
+                  subheader={
+                    <CategoryListHeader
+                      category={category}
+                      setToggle={() => setToggle(!toggle)}
+                    />
+                  }
+                >
+                  <Box sx={{ overflowY: "scroll", maxHeight: 300 }}>
+                    {category.models.map((models) => (
+                      <ListItem
+                        button
+                        key={models.id}
+                        component={Link}
+                        to={entityEntriesPath(models.id)}
+                      >
+                        <ListItemText primary={models.name} />
+                      </ListItem>
+                    ))}
+                  </Box>
+                </List>
+              </Grid>
+            ))}
+          </Grid>
+          <PaginationFooter
+            count={categories.value?.count ?? 0}
+            maxRowCount={EntityListParam.MAX_ROW_COUNT}
+            page={page}
+            changePage={changePage}
+          />
+        </>
+
+        {/* Models that are configured to be shown at the top page */}
         {entries.loading ? (
           <Loading />
         ) : entries.value ? (

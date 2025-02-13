@@ -7,6 +7,7 @@ import {
   TableHead,
   TextField,
 } from "@mui/material";
+import { Unstable_NumberInput as NumberInput } from '@mui/base';
 import { styled } from "@mui/material/styles";
 import React, { FC } from "react";
 import { Control, Controller } from "react-hook-form";
@@ -132,6 +133,30 @@ export const CategoryForm: FC<Props> = ({ control, setValue }) => {
                       multiple
                       disableCloseOnSelect
                       fullWidth
+                    />
+                  )}
+                />
+              </TableCell>
+            </StyledTableRow>
+            <StyledTableRow>
+              <TableCell>表示優先度</TableCell>
+              <TableCell>
+                <Controller
+                  name="priority"
+                  control={control}
+                  defaultValue={0}
+                  render={({ field, fieldState: { error } }) => (
+                    <TextField
+                      {...field}
+                      type="number"
+                      id="category-priority"
+                      required
+                      placeholder="表示優先度"
+                      error={error != null}
+                      helperText={error?.message}
+                      size="small"
+                      fullWidth
+                      inputProps={{ "data-1p-ignore": true }}
                     />
                   )}
                 />

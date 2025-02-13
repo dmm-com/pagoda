@@ -37,7 +37,7 @@ class CategoryAPI(viewsets.ModelViewSet):
             if self.request.user.has_permission(category, ACLType.Readable):
                 targets.append(category.id)
 
-        return Category.objects.filter(id__in=targets)
+        return Category.objects.filter(id__in=targets).order_by("-priority")
 
     def destroy(self, request: Request, *args, **kwargs) -> Response:
         category: Category = self.get_object()
