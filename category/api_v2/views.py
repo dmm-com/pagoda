@@ -20,7 +20,7 @@ class CategoryAPI(viewsets.ModelViewSet):
     pagination_class = LimitOffsetPagination
     permission_classes = [IsAuthenticated & EntityPermission]
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter, filters.SearchFilter]
-    search_fields = ["name"]
+    search_fields = ["name", "models__name"]
     ordering = ["-priority", "name"]
 
     def get_serializer_class(self):
