@@ -21,7 +21,7 @@ class CategoryAPI(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated & EntityPermission]
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter, filters.SearchFilter]
     search_fields = ["name"]
-    ordering = ["name"]
+    ordering = ["-priority", "name"]
 
     def get_serializer_class(self):
         serializer = {
@@ -37,7 +37,7 @@ class CategoryAPI(viewsets.ModelViewSet):
             if self.request.user.has_permission(category, ACLType.Readable):
                 targets.append(category.id)
 
-        return Category.objects.filter(id__in=targets).order_by("-priority")
+        return Category.objects.filter(id__in=targets)
 
     def destroy(self, request: Request, *args, **kwargs) -> Response:
         category: Category = self.get_object()
