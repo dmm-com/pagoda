@@ -1,10 +1,10 @@
 import { CategoryList } from "@dmm-com/airone-apiclient-typescript-fetch";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
-import { IconButton, Typography } from "@mui/material";
+import { Box, IconButton, Typography } from "@mui/material";
 import React, { FC, useState } from "react";
 
 import { CategoryControlMenu } from "components/category/CategoryControlMenu";
-import { BetweenAlignedBox } from "components/common/FlexBox";
+import { BetweenAlignedBox, FlexBox } from "components/common/FlexBox";
 
 interface Props {
   category: CategoryList;
@@ -17,13 +17,23 @@ export const CategoryListHeader: FC<Props> = ({ category, setToggle }) => {
 
   return (
     <BetweenAlignedBox>
-      {/* Category title */}
-      <Typography variant="h6" component="div">
-        {category.name}
-      </Typography>
+      {/* Category image */}
+      <FlexBox>
+        <Box
+          mr={"8px"}
+          sx={{ height: "24px", wdith: "24px" }}
+          component="img"
+          src="/static/images/category/01.png"
+        />
+
+        {/* Category title */}
+        <Typography variant="h6" component="div">
+          {category.name}
+        </Typography>
+      </FlexBox>
 
       {/* Category control menu */}
-      <>
+      <FlexBox sx={{ marginInlineStart: "40px" }}>
         <IconButton
           onClick={(e) => {
             setCategoryAnchorEl(e.currentTarget);
@@ -37,7 +47,7 @@ export const CategoryListHeader: FC<Props> = ({ category, setToggle }) => {
           handleClose={() => setCategoryAnchorEl(null)}
           setToggle={setToggle}
         />
-      </>
+      </FlexBox>
     </BetweenAlignedBox>
   );
 };
