@@ -8,20 +8,27 @@ import { BetweenAlignedBox, FlexBox } from "components/common/FlexBox";
 
 interface Props {
   category: CategoryList;
-  setToggle?: () => void;
+  isEdit: boolean;
+  setToggle: () => void;
 }
 
-export const CategoryListHeader: FC<Props> = ({ category, setToggle }) => {
+export const CategoryListHeader: FC<Props> = ({
+  category,
+  isEdit,
+  setToggle,
+}) => {
   const [categoryAnchorEl, setCategoryAnchorEl] =
     useState<HTMLButtonElement | null>(null);
 
   return (
     <BetweenAlignedBox>
       {/* Category image */}
-      <FlexBox>
+      <FlexBox alignItems="center">
         <Box
-          mr={"8px"}
-          sx={{ height: "24px", wdith: "24px" }}
+          mr="8px"
+          p="4px"
+          height="24px"
+          width="24px"
           component="img"
           src="/static/images/category/01.png"
         />
@@ -33,21 +40,23 @@ export const CategoryListHeader: FC<Props> = ({ category, setToggle }) => {
       </FlexBox>
 
       {/* Category control menu */}
-      <FlexBox sx={{ marginInlineStart: "40px" }}>
-        <IconButton
-          onClick={(e) => {
-            setCategoryAnchorEl(e.currentTarget);
-          }}
-        >
-          <MoreVertIcon fontSize="small" />
-        </IconButton>
-        <CategoryControlMenu
-          categoryId={category.id}
-          anchorElem={categoryAnchorEl}
-          handleClose={() => setCategoryAnchorEl(null)}
-          setToggle={setToggle}
-        />
-      </FlexBox>
+      {isEdit && (
+        <FlexBox sx={{ marginInlineStart: "40px" }}>
+          <IconButton
+            onClick={(e) => {
+              setCategoryAnchorEl(e.currentTarget);
+            }}
+          >
+            <MoreVertIcon fontSize="small" />
+          </IconButton>
+          <CategoryControlMenu
+            categoryId={category.id}
+            anchorElem={categoryAnchorEl}
+            handleClose={() => setCategoryAnchorEl(null)}
+            setToggle={setToggle}
+          />
+        </FlexBox>
+      )}
     </BetweenAlignedBox>
   );
 };
