@@ -64,6 +64,8 @@ export const CategoryEditPage: FC = () => {
 
   const handleSubmitOnValid = useCallback(
     async (category: Schema) => {
+      // Note: This might not necessary any more
+      category = { ...category, priority: Number(category.priority) };
       try {
         if (willCreate) {
           await aironeApiClient.createCategory(category);

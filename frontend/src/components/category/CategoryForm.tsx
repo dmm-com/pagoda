@@ -137,6 +137,30 @@ export const CategoryForm: FC<Props> = ({ control, setValue }) => {
                 />
               </TableCell>
             </StyledTableRow>
+            <StyledTableRow>
+              <TableCell>表示優先度</TableCell>
+              <TableCell>
+                <Controller
+                  name="priority"
+                  control={control}
+                  defaultValue={0}
+                  render={({ field, fieldState: { error } }) => (
+                    <TextField
+                      {...field}
+                      type="number"
+                      id="category-priority"
+                      required
+                      placeholder="表示優先度"
+                      error={error != null}
+                      helperText={error?.message}
+                      size="small"
+                      fullWidth
+                      inputProps={{ "data-1p-ignore": true }}
+                    />
+                  )}
+                />
+              </TableCell>
+            </StyledTableRow>
           </TableBody>
         </Table>
       </Box>

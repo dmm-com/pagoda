@@ -150,9 +150,13 @@ class AironeTestCase(TestCase):
 
         return entry
 
-    def create_category(self, user: User, name: str, note: str = "", models: List[Entity] = []):
+    def create_category(
+        self, user: User, name: str, note: str = "", models: List[Entity] = [], priority=0
+    ) -> Category:
         # create target Category instance
-        category = Category.objects.create(name=name, note=note, created_user=user)
+        category = Category.objects.create(
+            name=name, note=note, priority=priority, created_user=user
+        )
 
         # attach created category to each specified Models
         for model in models:

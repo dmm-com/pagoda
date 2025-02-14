@@ -36,6 +36,7 @@ class ViewTest(AironeViewTest):
                     "name": x.name,
                     "note": x.note,
                     "models": [{"id": model.id, "name": model.name, "is_public": True}],
+                    "priority": x.priority,
                 }
                 for x in categories
             ],
@@ -80,6 +81,7 @@ class ViewTest(AironeViewTest):
                 "name": category.name,
                 "note": category.note,
                 "models": [{"id": x.id, "name": x.name, "is_public": True} for x in models],
+                "priority": category.priority,
             },
         )
 
@@ -95,6 +97,7 @@ class ViewTest(AironeViewTest):
             "name": "New Category",
             "note": "Hoge",
             "models": [{"id": x.id, "name": x.name} for x in models],
+            "priority": 100,
         }
         resp = self.client.post("/category/api/v2/", json.dumps(params), "application/json")
         self.assertEqual(resp.status_code, 201)
@@ -104,6 +107,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(category.id, resp.json()["id"])
         self.assertEqual(category.name, resp.json()["name"])
         self.assertEqual(category.note, resp.json()["note"])
+        self.assertEqual(category.priority, resp.json()["priority"])
         self.assertEqual(category.models.count(), 3)
         self.assertEqual(list(category.models.all()), models)
 
@@ -150,6 +154,7 @@ class ViewTest(AironeViewTest):
             "name": "Updated Category",
             "note": "Updated Note",
             "models": [{"id": models[i].id, "name": models[i].name} for i in [1, 2]],
+            "priority": 100,
         }
         resp = self.client.put(
             "/category/api/v2/%s/" % category.id, json.dumps(params), "application/json"
@@ -173,6 +178,7 @@ class ViewTest(AironeViewTest):
             "name": "Updated Category",
             "note": "Updated Note",
             "models": [],
+            "priority": 100,
         }
         resp = self.client.put(
             "/category/api/v2/%s/" % category.id, json.dumps(params), "application/json"

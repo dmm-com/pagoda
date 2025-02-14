@@ -19,7 +19,7 @@ class CategoryListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Category
-        fields = ["id", "name", "note", "models"]
+        fields = ["id", "name", "note", "models", "priority"]
 
 
 class CategoryCreateSerializer(serializers.ModelSerializer):
@@ -28,7 +28,7 @@ class CategoryCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Category
-        fields = ["id", "name", "note", "models"]
+        fields = ["id", "name", "note", "models", "priority"]
 
     def create(self, validated_data):
         # craete Category instance
@@ -51,19 +51,17 @@ class CategoryUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Category
-        fields = ["name", "note", "models"]
+        fields = ["name", "note", "models", "priority"]
 
     def update(self, category: Category, validated_data):
         # name and note are updated
         updated_fields: list[str] = []
-        category_name = validated_data.get("name", category.name)
-        if category_name != category.name:
-            category.name = category_name
-            updated_fields.append("name")
-        category_note = validated_data.get("note", category.note)
-        if category_note != category.note:
-            category.note = category_note
-            updated_fields.append("note")
+
+        for key in ["name", "note", "priority"]:
+            content = validated_data.get(key, getattr(category, key))
+            if content != getattr(category, key):
+                setattr(category, key, content)
+                updated_fields.append(key)
 
         if len(updated_fields) > 0:
             category.save(update_fields=updated_fields)
