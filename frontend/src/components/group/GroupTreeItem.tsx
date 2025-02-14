@@ -1,11 +1,12 @@
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { Checkbox, IconButton, ListItem, Typography } from "@mui/material";
 import React, { FC } from "react";
-import { Link } from "react-router";
 
 import { GroupTree } from "../../repository/AironeApiClient";
 import { groupPath } from "../../routes/Routes";
 import { ServerContext } from "../../services/ServerContext";
+
+import { AironeLink } from "components/common";
 
 const CHILDREN_INDENT_WIDTH = 16;
 
@@ -45,7 +46,7 @@ export const GroupTreeItem: FC<Props> = ({
               }
             />
             <Typography
-              component={Link}
+              component={AironeLink}
               to={isSuperuser ? groupPath(groupTree.id) : "#"}
             >
               {groupTree.name}

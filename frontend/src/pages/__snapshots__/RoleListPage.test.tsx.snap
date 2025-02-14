@@ -28,7 +28,7 @@ exports[`RoleListPage should match snapshot 1`] = `
                     class="MuiBreadcrumbs-li"
                   >
                     <a
-                      class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                      class="MuiTypography-root MuiTypography-body1 css-z7oskh-MuiTypography-root"
                       data-discover="true"
                       href="/ui/"
                     >
@@ -276,7 +276,7 @@ exports[`RoleListPage should match snapshot 1`] = `
                   class="MuiBreadcrumbs-li"
                 >
                   <a
-                    class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 css-z7oskh-MuiTypography-root"
                     data-discover="true"
                     href="/ui/"
                   >

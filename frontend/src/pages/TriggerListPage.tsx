@@ -32,6 +32,7 @@ import React, { FC, useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { useAsync } from "react-use";
 
+import { AironeLink } from "components";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { Confirmable } from "components/common/Confirmable";
 import { Loading } from "components/common/Loading";
@@ -94,7 +95,7 @@ const ElemTriggerCondition: FC<{
     case EntryAttributeTypeTypeEnum.OBJECT:
       return (
         <Box
-          component={Link}
+          component={AironeLink}
           to={entryDetailsPath(
             cond.refCond?.schema.id ?? 0,
             cond.refCond?.id ?? 0
@@ -110,7 +111,7 @@ const ElemTriggerCondition: FC<{
         <StyledBox>
           <Box>{cond.strCond}</Box>
           <Box
-            component={Link}
+            component={AironeLink}
             to={entryDetailsPath(
               cond.refCond?.schema.id ?? 0,
               cond.refCond?.id ?? 0
@@ -154,7 +155,7 @@ const ElemTriggerActionValue: FC<{
     case EntryAttributeTypeTypeEnum.OBJECT:
       return (
         <Box
-          component={Link}
+          component={AironeLink}
           to={entryDetailsPath(
             value.refCond?.schema.id ?? 0,
             value.refCond?.id ?? 0
@@ -170,7 +171,7 @@ const ElemTriggerActionValue: FC<{
         <StyledBox>
           <Box>{value.strCond}</Box>
           <Box
-            component={Link}
+            component={AironeLink}
             to={entryDetailsPath(
               value.refCond?.schema.id ?? 0,
               value.refCond?.id ?? 0
@@ -234,7 +235,7 @@ export const TriggerListPage: FC = () => {
   return (
     <Box className="container-fluid">
       <AironeBreadcrumbs>
-        <Typography component={Link} to={topPath()}>
+        <Typography component={AironeLink} to={topPath()}>
           Top
         </Typography>
         <Typography color="textPrimary">トリガー管理</Typography>

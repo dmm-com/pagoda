@@ -6,13 +6,13 @@ import {
   EntryAttributeValueObject,
   EntryAttributeValueRole,
 } from "@dmm-com/airone-apiclient-typescript-fetch";
-import { Checkbox, Box, List, ListItem, Divider } from "@mui/material";
+import { Box, Checkbox, Divider, List, ListItem } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import * as React from "react";
 import { FC } from "react";
-import { Link } from "react-router";
 
-import { groupsPath, rolePath, entryDetailsPath } from "routes/Routes";
+import { AironeLink } from "components/common";
+import { entryDetailsPath, groupsPath, rolePath } from "routes/Routes";
 
 const StyledBox = styled(Box)(() => ({
   display: "flex",
@@ -53,7 +53,7 @@ const ElemObject: FC<{
 }> = ({ attrValue }) => {
   return attrValue ? (
     <Box
-      component={Link}
+      component={AironeLink}
       to={entryDetailsPath(attrValue.schema?.id ?? 0, attrValue.id)}
     >
       {attrValue.name}
@@ -72,7 +72,7 @@ const ElemNamedObject: FC<{
       <Divider orientation="vertical" flexItem />
       {attrValue.object ? (
         <Box
-          component={Link}
+          component={AironeLink}
           to={entryDetailsPath(
             attrValue.object.schema?.id ?? 0,
             attrValue.object.id ?? 0
@@ -93,7 +93,7 @@ const ElemGroup: FC<{ attrValue: EntryAttributeValueGroup | undefined }> = ({
   attrValue,
 }) => {
   return attrValue ? (
-    <Box component={Link} to={groupsPath()}>
+    <Box component={AironeLink} to={groupsPath()}>
       {attrValue.name}
     </Box>
   ) : (
@@ -105,7 +105,7 @@ const ElemRole: FC<{ attrValue: EntryAttributeValueRole | undefined }> = ({
   attrValue,
 }) => {
   return attrValue ? (
-    <Box component={Link} to={rolePath(attrValue.id)}>
+    <Box component={AironeLink} to={rolePath(attrValue.id)}>
       {attrValue.name}
     </Box>
   ) : (

@@ -12,6 +12,7 @@ import {
 import React, { FC, useState } from "react";
 import { Link, useNavigate } from "react-router";
 
+import { AironeLink } from "components";
 import { CategoryListHeader } from "components/category/CategoryListHeader";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { PageHeader } from "components/common/PageHeader";
@@ -51,7 +52,7 @@ export const ListCategoryPage: FC = () => {
   return (
     <Box>
       <AironeBreadcrumbs>
-        <Typography component={Link} to={topPath()}>
+        <Typography component={AironeLink} to={topPath()}>
           Top
         </Typography>
         <Typography color="textPrimary">カテゴリ一覧</Typography>

@@ -2,15 +2,15 @@ import { EntryRetrieve } from "@dmm-com/airone-apiclient-typescript-fetch";
 import LockIcon from "@mui/icons-material/Lock";
 import { Typography } from "@mui/material";
 import React, { FC } from "react";
-import { Link } from "react-router";
 
+import { AironeLink } from "components/common";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { FlexBox } from "components/common/FlexBox";
 import {
-  topPath,
   entitiesPath,
   entityEntriesPath,
   entryDetailsPath,
+  topPath,
 } from "routes/Routes";
 
 interface Props {
@@ -21,15 +21,18 @@ interface Props {
 export const EntryBreadcrumbs: FC<Props> = ({ entry, title }) => {
   return (
     <AironeBreadcrumbs>
-      <Typography component={Link} to={topPath()}>
+      <Typography component={AironeLink} to={topPath()}>
         Top
       </Typography>
-      <Typography component={Link} to={entitiesPath()}>
+      <Typography component={AironeLink} to={entitiesPath()}>
         モデル一覧
       </Typography>
       {entry && (
         <FlexBox>
-          <Typography component={Link} to={entityEntriesPath(entry.schema.id)}>
+          <Typography
+            component={AironeLink}
+            to={entityEntriesPath(entry.schema.id)}
+          >
             {entry.schema.name}
           </Typography>
           {!entry.schema.isPublic && <LockIcon />}
@@ -38,7 +41,7 @@ export const EntryBreadcrumbs: FC<Props> = ({ entry, title }) => {
       {entry && (
         <FlexBox>
           <Typography
-            component={Link}
+            component={AironeLink}
             to={entryDetailsPath(entry.schema.id, entry.id)}
           >
             {entry.name}

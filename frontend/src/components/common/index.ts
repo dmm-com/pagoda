@@ -1,4 +1,5 @@
 export * from "./AironeBreadcrumbs";
+export * from "./AironeLink";
 export * from "./AironeModal";
 export * from "./AironeTableHeadCell";
 export * from "./AironeTableHeadRow";

@@ -9,10 +9,11 @@ import SettingsIcon from "@mui/icons-material/Settings";
 import { Box, Button, IconButton, Typography } from "@mui/material";
 import { useSnackbar } from "notistack";
 import React, { FC, useEffect, useMemo, useState } from "react";
-import { Link, useLocation } from "react-router";
+import { useLocation } from "react-router";
 
 import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
 
+import { AironeLink } from "components";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { Confirmable } from "components/common/Confirmable";
 import { CenterAlignedBox } from "components/common/FlexBox";
@@ -195,10 +196,10 @@ export const AdvancedSearchResultsPage: FC = () => {
   return (
     <Box className="container-fluid">
       <AironeBreadcrumbs>
-        <Typography component={Link} to={topPath()}>
+        <Typography component={AironeLink} to={topPath()}>
           Top
         </Typography>
-        <Typography component={Link} to={advancedSearchPath()}>
+        <Typography component={AironeLink} to={advancedSearchPath()}>
           高度な検索
         </Typography>
         <Typography color="textPrimary">検索結果</Typography>
