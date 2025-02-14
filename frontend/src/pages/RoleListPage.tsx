@@ -7,6 +7,7 @@ import { RoleImportModal } from "../components/role/RoleImportModal";
 import { RoleList } from "../components/role/RoleList";
 import { aironeApiClient } from "../repository/AironeApiClient";
 
+import { AironeLink } from "components";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { PageHeader } from "components/common/PageHeader";
 import { newRolePath, topPath } from "routes/Routes";
@@ -21,7 +22,7 @@ export const RoleListPage: FC = () => {
   return (
     <Box className="container-fluid">
       <AironeBreadcrumbs>
-        <Typography component={Link} to={topPath()}>
+        <Typography component={AironeLink} to={topPath()}>
           Top
         </Typography>
         <Typography color="textPrimary">ロール管理</Typography>
