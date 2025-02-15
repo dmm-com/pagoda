@@ -19,16 +19,16 @@ exports[`EditTriggerPage should match snapshot 1`] = `
             >
               <nav
                 aria-label="breadcrumb"
-                class="MuiTypography-root MuiTypography-body1 MuiBreadcrumbs-root css-63vwl1-MuiTypography-root-MuiBreadcrumbs-root"
+                class="MuiTypography-root MuiTypography-body1 MuiBreadcrumbs-root css-5cvx94-MuiTypography-root-MuiBreadcrumbs-root"
               >
                 <ol
-                  class="MuiBreadcrumbs-ol css-4pdmu4-MuiBreadcrumbs-ol"
+                  class="MuiBreadcrumbs-ol css-1uwp4ue-MuiBreadcrumbs-ol"
                 >
                   <li
                     class="MuiBreadcrumbs-li"
                   >
                     <a
-                      class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                      class="MuiTypography-root MuiTypography-body1 css-rizt0-MuiTypography-root"
                       data-discover="true"
                       href="/ui/"
                     >
@@ -37,7 +37,7 @@ exports[`EditTriggerPage should match snapshot 1`] = `
                   </li>
                   <li
                     aria-hidden="true"
-                    class="MuiBreadcrumbs-separator css-1wuw8dw-MuiBreadcrumbs-separator"
+                    class="MuiBreadcrumbs-separator css-jhr02i-MuiBreadcrumbs-separator"
                   >
                     /
                   </li>
@@ -45,7 +45,7 @@ exports[`EditTriggerPage should match snapshot 1`] = `
                     class="MuiBreadcrumbs-li"
                   >
                     <a
-                      class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                      class="MuiTypography-root MuiTypography-body1 css-rizt0-MuiTypography-root"
                       data-discover="true"
                       href="/ui/triggers"
                     >
@@ -54,7 +54,7 @@ exports[`EditTriggerPage should match snapshot 1`] = `
                   </li>
                   <li
                     aria-hidden="true"
-                    class="MuiBreadcrumbs-separator css-1wuw8dw-MuiBreadcrumbs-separator"
+                    class="MuiBreadcrumbs-separator css-jhr02i-MuiBreadcrumbs-separator"
                   >
                     /
                   </li>
@@ -62,7 +62,7 @@ exports[`EditTriggerPage should match snapshot 1`] = `
                     class="MuiBreadcrumbs-li"
                   >
                     <p
-                      class="MuiTypography-root MuiTypography-body1 css-1gqyz35-MuiTypography-root"
+                      class="MuiTypography-root MuiTypography-body1 css-1bgbmvw-MuiTypography-root"
                     >
                       編集
                     </p>
@@ -73,77 +73,76 @@ exports[`EditTriggerPage should match snapshot 1`] = `
           </div>
         </div>
         <div
-          class="MuiBox-root css-1wo2fgg"
+          class="MuiBox-root css-1cs9h4l"
         >
           <div
-            class="MuiBox-root css-t1gim7"
+            class="MuiBox-root css-1519avi"
           >
             <div
               class="MuiBox-root css-9rtbay"
             >
               <h6
-                class="MuiTypography-root MuiTypography-h6 css-178toxd-MuiTypography-root"
+                class="MuiTypography-root MuiTypography-h6 css-2toz8d-MuiTypography-root"
                 id="title"
               >
                 test entity
               </h6>
               <h6
-                class="MuiTypography-root MuiTypography-subtitle1 css-10wpov9-MuiTypography-root"
+                class="MuiTypography-root MuiTypography-subtitle1 css-1i3tsf3-MuiTypography-root"
                 id="description"
               >
                 トリガー編集
               </h6>
               <div
-                class="MuiBox-root css-1b3gh38"
+                class="MuiBox-root css-hoapfw"
               >
                 <div
-                  class="MuiBox-root css-1wcjc1k"
+                  class="MuiBox-root css-1kdfklj"
                 >
                   <button
-                    class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium Mui-disabled MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium css-jjpace-MuiButtonBase-root-MuiButton-root"
+                    class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary Mui-disabled MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary css-8fe6cp-MuiButtonBase-root-MuiButton-root"
                     disabled=""
+                    id=":r0:"
                     tabindex="-1"
                     type="button"
                   >
                     保存
                   </button>
                   <button
-                    class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium css-ljnmqm-MuiButtonBase-root-MuiButton-root"
+                    class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInfo MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInfo css-152i8rg-MuiButtonBase-root-MuiButton-root"
+                    id=":r1:"
                     tabindex="0"
                     type="button"
                   >
                     キャンセル
-                    <span
-                      class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-                    />
                   </button>
                 </div>
               </div>
             </div>
             <hr
-              class="MuiDivider-root MuiDivider-fullWidth MuiDivider-flexItem css-yk10cl-MuiDivider-root"
+              class="MuiDivider-root MuiDivider-fullWidth MuiDivider-flexItem css-lhgpb-MuiDivider-root"
             />
           </div>
         </div>
         <div
-          class="MuiContainer-root MuiContainer-maxWidthLg css-1oqqzyl-MuiContainer-root"
+          class="MuiContainer-root MuiContainer-maxWidthLg css-5c1adp-MuiContainer-root"
         >
           <div
-            class="MuiBox-root css-1hpddhw"
+            class="MuiBox-root css-eatyye"
           >
             <h4
-              class="MuiTypography-root MuiTypography-h4 css-5lbw0b-MuiTypography-root"
+              class="MuiTypography-root MuiTypography-h4 css-f84ov1-MuiTypography-root"
             >
               設定対象のモデル
             </h4>
             <div
-              class="MuiAutocomplete-root MuiAutocomplete-fullWidth MuiAutocomplete-hasClearIcon MuiAutocomplete-hasPopupIcon css-1kkal6p-MuiAutocomplete-root"
+              class="MuiAutocomplete-root MuiAutocomplete-fullWidth MuiAutocomplete-hasClearIcon MuiAutocomplete-hasPopupIcon css-1w98mmc-MuiAutocomplete-root"
             >
               <div
-                class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-wb57ya-MuiFormControl-root-MuiTextField-root"
+                class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-cmpglg-MuiFormControl-root-MuiTextField-root"
               >
                 <div
-                  class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-adornedEnd MuiAutocomplete-inputRoot css-154xyx0-MuiInputBase-root-MuiOutlinedInput-root"
+                  class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-adornedEnd MuiAutocomplete-inputRoot css-1n04w30-MuiInputBase-root-MuiOutlinedInput-root"
                 >
                   <input
                     aria-autocomplete="list"
@@ -151,8 +150,8 @@ exports[`EditTriggerPage should match snapshot 1`] = `
                     aria-invalid="false"
                     autocapitalize="none"
                     autocomplete="off"
-                    class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputAdornedEnd MuiAutocomplete-input MuiAutocomplete-inputFocused css-nxo287-MuiInputBase-input-MuiOutlinedInput-input"
-                    id=":r0:"
+                    class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputAdornedEnd MuiAutocomplete-input MuiAutocomplete-inputFocused css-1dune0f-MuiInputBase-input-MuiOutlinedInput-input"
+                    id=":r2:"
                     placeholder="モデルを選択"
                     role="combobox"
                     spellcheck="false"
@@ -160,18 +159,19 @@ exports[`EditTriggerPage should match snapshot 1`] = `
                     value="test entity"
                   />
                   <div
-                    class="MuiAutocomplete-endAdornment css-1q60rmi-MuiAutocomplete-endAdornment"
+                    class="MuiAutocomplete-endAdornment css-1uhhrmm-MuiAutocomplete-endAdornment"
                   >
                     <button
                       aria-label="Clear"
-                      class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium MuiAutocomplete-clearIndicator css-1glvl0p-MuiButtonBase-root-MuiIconButton-root-MuiAutocomplete-clearIndicator"
+                      class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium MuiAutocomplete-clearIndicator css-1x7n7v0-MuiButtonBase-root-MuiIconButton-root-MuiAutocomplete-clearIndicator"
+                      id=":r5:"
                       tabindex="-1"
                       title="Clear"
                       type="button"
                     >
                       <svg
                         aria-hidden="true"
-                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-ptiqhd-MuiSvgIcon-root"
+                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-120dh41-MuiSvgIcon-root"
                         data-testid="CloseIcon"
                         focusable="false"
                         viewBox="0 0 24 24"
@@ -180,20 +180,18 @@ exports[`EditTriggerPage should match snapshot 1`] = `
                           d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"
                         />
                       </svg>
-                      <span
-                        class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-                      />
                     </button>
                     <button
                       aria-label="Open"
-                      class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium MuiAutocomplete-popupIndicator css-qzbt6i-MuiButtonBase-root-MuiIconButton-root-MuiAutocomplete-popupIndicator"
+                      class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium MuiAutocomplete-popupIndicator css-2y136s-MuiButtonBase-root-MuiIconButton-root-MuiAutocomplete-popupIndicator"
+                      id=":r4:"
                       tabindex="-1"
                       title="Open"
                       type="button"
                     >
                       <svg
                         aria-hidden="true"
-                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1umw9bq-MuiSvgIcon-root"
                         data-testid="ArrowDropDownIcon"
                         focusable="false"
                         viewBox="0 0 24 24"
@@ -202,19 +200,17 @@ exports[`EditTriggerPage should match snapshot 1`] = `
                           d="M7 10l5 5 5-5z"
                         />
                       </svg>
-                      <span
-                        class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-                      />
                     </button>
                   </div>
                   <fieldset
                     aria-hidden="true"
-                    class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
+                    class="MuiOutlinedInput-notchedOutline css-1ll44ll-MuiOutlinedInput-notchedOutline"
                   >
                     <legend
-                      class="css-ihdtdm"
+                      class="css-w4cd9x"
                     >
                       <span
+                        aria-hidden="true"
                         class="notranslate"
                       >
                         ​
@@ -226,46 +222,47 @@ exports[`EditTriggerPage should match snapshot 1`] = `
             </div>
           </div>
           <div
-            class="MuiBox-root css-1hpddhw"
+            class="MuiBox-root css-eatyye"
           >
             <h4
-              class="MuiTypography-root MuiTypography-h4 MuiTypography-alignCenter css-s15ygg-MuiTypography-root"
+              class="MuiTypography-root MuiTypography-h4 MuiTypography-alignCenter css-1na57pt-MuiTypography-root"
+              style="--Typography-textAlign: center;"
             >
               条件
             </h4>
             <table
-              class="MuiTable-root css-rqglhn-MuiTable-root"
+              class="MuiTable-root css-1xwxv7r-MuiTable-root"
               data-testid="conditions"
             >
               <thead
-                class="MuiTableHead-root css-15wwp11-MuiTableHead-root"
+                class="MuiTableHead-root css-1a7iywq-MuiTableHead-root"
               >
                 <tr
-                  class="MuiTableRow-root MuiTableRow-head css-15pgmhf-MuiTableRow-root"
+                  class="MuiTableRow-root MuiTableRow-head css-1wtsgsb-MuiTableRow-root"
                 >
                   <th
-                    class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-skm94m-MuiTableCell-root"
+                    class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-8816du-MuiTableCell-root"
                     scope="col"
                     width="400px"
                   >
                     属性名
                   </th>
                   <th
-                    class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-skm94m-MuiTableCell-root"
+                    class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-8816du-MuiTableCell-root"
                     scope="col"
                     width="400px"
                   >
                     値
                   </th>
                   <th
-                    class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-skm94m-MuiTableCell-root"
+                    class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-8816du-MuiTableCell-root"
                     scope="col"
                     width="100px"
                   >
                     削除
                   </th>
                   <th
-                    class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-skm94m-MuiTableCell-root"
+                    class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-8816du-MuiTableCell-root"
                     scope="col"
                     width="100px"
                   >
@@ -274,42 +271,40 @@ exports[`EditTriggerPage should match snapshot 1`] = `
                 </tr>
               </thead>
               <tbody
-                class="MuiTableBody-root css-kcs60j-MuiTableBody-root"
+                class="MuiTableBody-root css-x2c5vp-MuiTableBody-root"
               >
                 <tr
-                  class="MuiTableRow-root css-1q1u3t4-MuiTableRow-root"
+                  class="MuiTableRow-root css-1xtozoh-MuiTableRow-root"
                 >
                   <td
-                    class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
+                    class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1dc80h3-MuiTableCell-root"
                   />
                   <td
-                    class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
+                    class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1dc80h3-MuiTableCell-root"
                   />
                   <td
-                    class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
+                    class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1dc80h3-MuiTableCell-root"
                   />
                   <td
-                    class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
+                    class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1dc80h3-MuiTableCell-root"
                   >
                     <button
-                      class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-78trlr-MuiButtonBase-root-MuiIconButton-root"
+                      class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-53g0n7-MuiButtonBase-root-MuiIconButton-root"
+                      id=":r6:"
                       tabindex="0"
                       type="button"
                     >
                       <svg
                         aria-hidden="true"
-                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1umw9bq-MuiSvgIcon-root"
                         data-testid="AddIcon"
                         focusable="false"
                         viewBox="0 0 24 24"
                       >
                         <path
-                          d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"
+                          d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6z"
                         />
                       </svg>
-                      <span
-                        class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-                      />
                     </button>
                   </td>
                 </tr>
@@ -317,46 +312,47 @@ exports[`EditTriggerPage should match snapshot 1`] = `
             </table>
           </div>
           <div
-            class="MuiBox-root css-1hpddhw"
+            class="MuiBox-root css-eatyye"
           >
             <h4
-              class="MuiTypography-root MuiTypography-h4 MuiTypography-alignCenter css-s15ygg-MuiTypography-root"
+              class="MuiTypography-root MuiTypography-h4 MuiTypography-alignCenter css-1na57pt-MuiTypography-root"
+              style="--Typography-textAlign: center;"
             >
               アクション
             </h4>
             <table
-              class="MuiTable-root css-rqglhn-MuiTable-root"
+              class="MuiTable-root css-1xwxv7r-MuiTable-root"
               data-testid="actions"
             >
               <thead
-                class="MuiTableHead-root css-15wwp11-MuiTableHead-root"
+                class="MuiTableHead-root css-1a7iywq-MuiTableHead-root"
               >
                 <tr
-                  class="MuiTableRow-root MuiTableRow-head css-15pgmhf-MuiTableRow-root"
+                  class="MuiTableRow-root MuiTableRow-head css-1wtsgsb-MuiTableRow-root"
                 >
                   <th
-                    class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-skm94m-MuiTableCell-root"
+                    class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-8816du-MuiTableCell-root"
                     scope="col"
                     width="400px"
                   >
                     属性名
                   </th>
                   <th
-                    class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-skm94m-MuiTableCell-root"
+                    class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-8816du-MuiTableCell-root"
                     scope="col"
                     width="400px"
                   >
                     値
                   </th>
                   <th
-                    class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-skm94m-MuiTableCell-root"
+                    class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-8816du-MuiTableCell-root"
                     scope="col"
                     width="100px"
                   >
                     削除
                   </th>
                   <th
-                    class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-skm94m-MuiTableCell-root"
+                    class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-8816du-MuiTableCell-root"
                     scope="col"
                     width="100px"
                   >
@@ -365,42 +361,40 @@ exports[`EditTriggerPage should match snapshot 1`] = `
                 </tr>
               </thead>
               <tbody
-                class="MuiTableBody-root css-kcs60j-MuiTableBody-root"
+                class="MuiTableBody-root css-x2c5vp-MuiTableBody-root"
               >
                 <tr
-                  class="MuiTableRow-root css-1q1u3t4-MuiTableRow-root"
+                  class="MuiTableRow-root css-1xtozoh-MuiTableRow-root"
                 >
                   <td
-                    class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
+                    class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1dc80h3-MuiTableCell-root"
                   />
                   <td
-                    class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
+                    class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1dc80h3-MuiTableCell-root"
                   />
                   <td
-                    class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
+                    class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1dc80h3-MuiTableCell-root"
                   />
                   <td
-                    class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
+                    class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1dc80h3-MuiTableCell-root"
                   >
                     <button
-                      class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-78trlr-MuiButtonBase-root-MuiIconButton-root"
+                      class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-53g0n7-MuiButtonBase-root-MuiIconButton-root"
+                      id=":r7:"
                       tabindex="0"
                       type="button"
                     >
                       <svg
                         aria-hidden="true"
-                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1umw9bq-MuiSvgIcon-root"
                         data-testid="AddIcon"
                         focusable="false"
                         viewBox="0 0 24 24"
                       >
                         <path
-                          d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"
+                          d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6z"
                         />
                       </svg>
-                      <span
-                        class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-                      />
                     </button>
                   </td>
                 </tr>
@@ -426,16 +420,16 @@ exports[`EditTriggerPage should match snapshot 1`] = `
           >
             <nav
               aria-label="breadcrumb"
-              class="MuiTypography-root MuiTypography-body1 MuiBreadcrumbs-root css-63vwl1-MuiTypography-root-MuiBreadcrumbs-root"
+              class="MuiTypography-root MuiTypography-body1 MuiBreadcrumbs-root css-5cvx94-MuiTypography-root-MuiBreadcrumbs-root"
             >
               <ol
-                class="MuiBreadcrumbs-ol css-4pdmu4-MuiBreadcrumbs-ol"
+                class="MuiBreadcrumbs-ol css-1uwp4ue-MuiBreadcrumbs-ol"
               >
                 <li
                   class="MuiBreadcrumbs-li"
                 >
                   <a
-                    class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 css-rizt0-MuiTypography-root"
                     data-discover="true"
                     href="/ui/"
                   >
@@ -444,7 +438,7 @@ exports[`EditTriggerPage should match snapshot 1`] = `
                 </li>
                 <li
                   aria-hidden="true"
-                  class="MuiBreadcrumbs-separator css-1wuw8dw-MuiBreadcrumbs-separator"
+                  class="MuiBreadcrumbs-separator css-jhr02i-MuiBreadcrumbs-separator"
                 >
                   /
                 </li>
@@ -452,7 +446,7 @@ exports[`EditTriggerPage should match snapshot 1`] = `
                   class="MuiBreadcrumbs-li"
                 >
                   <a
-                    class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 css-rizt0-MuiTypography-root"
                     data-discover="true"
                     href="/ui/triggers"
                   >
@@ -461,7 +455,7 @@ exports[`EditTriggerPage should match snapshot 1`] = `
                 </li>
                 <li
                   aria-hidden="true"
-                  class="MuiBreadcrumbs-separator css-1wuw8dw-MuiBreadcrumbs-separator"
+                  class="MuiBreadcrumbs-separator css-jhr02i-MuiBreadcrumbs-separator"
                 >
                   /
                 </li>
@@ -469,7 +463,7 @@ exports[`EditTriggerPage should match snapshot 1`] = `
                   class="MuiBreadcrumbs-li"
                 >
                   <p
-                    class="MuiTypography-root MuiTypography-body1 css-1gqyz35-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 css-1bgbmvw-MuiTypography-root"
                   >
                     編集
                   </p>
@@ -480,77 +474,76 @@ exports[`EditTriggerPage should match snapshot 1`] = `
         </div>
       </div>
       <div
-        class="MuiBox-root css-1wo2fgg"
+        class="MuiBox-root css-1cs9h4l"
       >
         <div
-          class="MuiBox-root css-t1gim7"
+          class="MuiBox-root css-1519avi"
         >
           <div
             class="MuiBox-root css-9rtbay"
           >
             <h6
-              class="MuiTypography-root MuiTypography-h6 css-178toxd-MuiTypography-root"
+              class="MuiTypography-root MuiTypography-h6 css-2toz8d-MuiTypography-root"
               id="title"
             >
               test entity
             </h6>
             <h6
-              class="MuiTypography-root MuiTypography-subtitle1 css-10wpov9-MuiTypography-root"
+              class="MuiTypography-root MuiTypography-subtitle1 css-1i3tsf3-MuiTypography-root"
               id="description"
             >
               トリガー編集
             </h6>
             <div
-              class="MuiBox-root css-1b3gh38"
+              class="MuiBox-root css-hoapfw"
             >
               <div
-                class="MuiBox-root css-1wcjc1k"
+                class="MuiBox-root css-1kdfklj"
               >
                 <button
-                  class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium Mui-disabled MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium css-jjpace-MuiButtonBase-root-MuiButton-root"
+                  class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary Mui-disabled MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary css-8fe6cp-MuiButtonBase-root-MuiButton-root"
                   disabled=""
+                  id=":r0:"
                   tabindex="-1"
                   type="button"
                 >
                   保存
                 </button>
                 <button
-                  class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium css-ljnmqm-MuiButtonBase-root-MuiButton-root"
+                  class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInfo MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInfo css-152i8rg-MuiButtonBase-root-MuiButton-root"
+                  id=":r1:"
                   tabindex="0"
                   type="button"
                 >
                   キャンセル
-                  <span
-                    class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-                  />
                 </button>
               </div>
             </div>
           </div>
           <hr
-            class="MuiDivider-root MuiDivider-fullWidth MuiDivider-flexItem css-yk10cl-MuiDivider-root"
+            class="MuiDivider-root MuiDivider-fullWidth MuiDivider-flexItem css-lhgpb-MuiDivider-root"
           />
         </div>
       </div>
       <div
-        class="MuiContainer-root MuiContainer-maxWidthLg css-1oqqzyl-MuiContainer-root"
+        class="MuiContainer-root MuiContainer-maxWidthLg css-5c1adp-MuiContainer-root"
       >
         <div
-          class="MuiBox-root css-1hpddhw"
+          class="MuiBox-root css-eatyye"
         >
           <h4
-            class="MuiTypography-root MuiTypography-h4 css-5lbw0b-MuiTypography-root"
+            class="MuiTypography-root MuiTypography-h4 css-f84ov1-MuiTypography-root"
           >
             設定対象のモデル
           </h4>
           <div
-            class="MuiAutocomplete-root MuiAutocomplete-fullWidth MuiAutocomplete-hasClearIcon MuiAutocomplete-hasPopupIcon css-1kkal6p-MuiAutocomplete-root"
+            class="MuiAutocomplete-root MuiAutocomplete-fullWidth MuiAutocomplete-hasClearIcon MuiAutocomplete-hasPopupIcon css-1w98mmc-MuiAutocomplete-root"
           >
             <div
-              class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-wb57ya-MuiFormControl-root-MuiTextField-root"
+              class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-cmpglg-MuiFormControl-root-MuiTextField-root"
             >
               <div
-                class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-adornedEnd MuiAutocomplete-inputRoot css-154xyx0-MuiInputBase-root-MuiOutlinedInput-root"
+                class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-adornedEnd MuiAutocomplete-inputRoot css-1n04w30-MuiInputBase-root-MuiOutlinedInput-root"
               >
                 <input
                   aria-autocomplete="list"
@@ -558,8 +551,8 @@ exports[`EditTriggerPage should match snapshot 1`] = `
                   aria-invalid="false"
                   autocapitalize="none"
                   autocomplete="off"
-                  class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputAdornedEnd MuiAutocomplete-input MuiAutocomplete-inputFocused css-nxo287-MuiInputBase-input-MuiOutlinedInput-input"
-                  id=":r0:"
+                  class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputAdornedEnd MuiAutocomplete-input MuiAutocomplete-inputFocused css-1dune0f-MuiInputBase-input-MuiOutlinedInput-input"
+                  id=":r2:"
                   placeholder="モデルを選択"
                   role="combobox"
                   spellcheck="false"
@@ -567,18 +560,19 @@ exports[`EditTriggerPage should match snapshot 1`] = `
                   value="test entity"
                 />
                 <div
-                  class="MuiAutocomplete-endAdornment css-1q60rmi-MuiAutocomplete-endAdornment"
+                  class="MuiAutocomplete-endAdornment css-1uhhrmm-MuiAutocomplete-endAdornment"
                 >
                   <button
                     aria-label="Clear"
-                    class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium MuiAutocomplete-clearIndicator css-1glvl0p-MuiButtonBase-root-MuiIconButton-root-MuiAutocomplete-clearIndicator"
+                    class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium MuiAutocomplete-clearIndicator css-1x7n7v0-MuiButtonBase-root-MuiIconButton-root-MuiAutocomplete-clearIndicator"
+                    id=":r5:"
                     tabindex="-1"
                     title="Clear"
                     type="button"
                   >
                     <svg
                       aria-hidden="true"
-                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-ptiqhd-MuiSvgIcon-root"
+                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-120dh41-MuiSvgIcon-root"
                       data-testid="CloseIcon"
                       focusable="false"
                       viewBox="0 0 24 24"
@@ -587,20 +581,18 @@ exports[`EditTriggerPage should match snapshot 1`] = `
                         d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"
                       />
                     </svg>
-                    <span
-                      class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-                    />
                   </button>
                   <button
                     aria-label="Open"
-                    class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium MuiAutocomplete-popupIndicator css-qzbt6i-MuiButtonBase-root-MuiIconButton-root-MuiAutocomplete-popupIndicator"
+                    class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium MuiAutocomplete-popupIndicator css-2y136s-MuiButtonBase-root-MuiIconButton-root-MuiAutocomplete-popupIndicator"
+                    id=":r4:"
                     tabindex="-1"
                     title="Open"
                     type="button"
                   >
                     <svg
                       aria-hidden="true"
-                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1umw9bq-MuiSvgIcon-root"
                       data-testid="ArrowDropDownIcon"
                       focusable="false"
                       viewBox="0 0 24 24"
@@ -609,19 +601,17 @@ exports[`EditTriggerPage should match snapshot 1`] = `
                         d="M7 10l5 5 5-5z"
                       />
                     </svg>
-                    <span
-                      class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-                    />
                   </button>
                 </div>
                 <fieldset
                   aria-hidden="true"
-                  class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
+                  class="MuiOutlinedInput-notchedOutline css-1ll44ll-MuiOutlinedInput-notchedOutline"
                 >
                   <legend
-                    class="css-ihdtdm"
+                    class="css-w4cd9x"
                   >
                     <span
+                      aria-hidden="true"
                       class="notranslate"
                     >
                       ​
@@ -633,46 +623,47 @@ exports[`EditTriggerPage should match snapshot 1`] = `
           </div>
         </div>
         <div
-          class="MuiBox-root css-1hpddhw"
+          class="MuiBox-root css-eatyye"
         >
           <h4
-            class="MuiTypography-root MuiTypography-h4 MuiTypography-alignCenter css-s15ygg-MuiTypography-root"
+            class="MuiTypography-root MuiTypography-h4 MuiTypography-alignCenter css-1na57pt-MuiTypography-root"
+            style="--Typography-textAlign: center;"
           >
             条件
           </h4>
           <table
-            class="MuiTable-root css-rqglhn-MuiTable-root"
+            class="MuiTable-root css-1xwxv7r-MuiTable-root"
             data-testid="conditions"
           >
             <thead
-              class="MuiTableHead-root css-15wwp11-MuiTableHead-root"
+              class="MuiTableHead-root css-1a7iywq-MuiTableHead-root"
             >
               <tr
-                class="MuiTableRow-root MuiTableRow-head css-15pgmhf-MuiTableRow-root"
+                class="MuiTableRow-root MuiTableRow-head css-1wtsgsb-MuiTableRow-root"
               >
                 <th
-                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-skm94m-MuiTableCell-root"
+                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-8816du-MuiTableCell-root"
                   scope="col"
                   width="400px"
                 >
                   属性名
                 </th>
                 <th
-                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-skm94m-MuiTableCell-root"
+                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-8816du-MuiTableCell-root"
                   scope="col"
                   width="400px"
                 >
                   値
                 </th>
                 <th
-                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-skm94m-MuiTableCell-root"
+                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-8816du-MuiTableCell-root"
                   scope="col"
                   width="100px"
                 >
                   削除
                 </th>
                 <th
-                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-skm94m-MuiTableCell-root"
+                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-8816du-MuiTableCell-root"
                   scope="col"
                   width="100px"
                 >
@@ -681,42 +672,40 @@ exports[`EditTriggerPage should match snapshot 1`] = `
               </tr>
             </thead>
             <tbody
-              class="MuiTableBody-root css-kcs60j-MuiTableBody-root"
+              class="MuiTableBody-root css-x2c5vp-MuiTableBody-root"
             >
               <tr
-                class="MuiTableRow-root css-1q1u3t4-MuiTableRow-root"
+                class="MuiTableRow-root css-1xtozoh-MuiTableRow-root"
               >
                 <td
-                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
+                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1dc80h3-MuiTableCell-root"
                 />
                 <td
-                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
+                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1dc80h3-MuiTableCell-root"
                 />
                 <td
-                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
+                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1dc80h3-MuiTableCell-root"
                 />
                 <td
-                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
+                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1dc80h3-MuiTableCell-root"
                 >
                   <button
-                    class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-78trlr-MuiButtonBase-root-MuiIconButton-root"
+                    class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-53g0n7-MuiButtonBase-root-MuiIconButton-root"
+                    id=":r6:"
                     tabindex="0"
                     type="button"
                   >
                     <svg
                       aria-hidden="true"
-                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1umw9bq-MuiSvgIcon-root"
                       data-testid="AddIcon"
                       focusable="false"
                       viewBox="0 0 24 24"
                     >
                       <path
-                        d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"
+                        d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6z"
                       />
                     </svg>
-                    <span
-                      class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-                    />
                   </button>
                 </td>
               </tr>
@@ -724,46 +713,47 @@ exports[`EditTriggerPage should match snapshot 1`] = `
           </table>
         </div>
         <div
-          class="MuiBox-root css-1hpddhw"
+          class="MuiBox-root css-eatyye"
         >
           <h4
-            class="MuiTypography-root MuiTypography-h4 MuiTypography-alignCenter css-s15ygg-MuiTypography-root"
+            class="MuiTypography-root MuiTypography-h4 MuiTypography-alignCenter css-1na57pt-MuiTypography-root"
+            style="--Typography-textAlign: center;"
           >
             アクション
           </h4>
           <table
-            class="MuiTable-root css-rqglhn-MuiTable-root"
+            class="MuiTable-root css-1xwxv7r-MuiTable-root"
             data-testid="actions"
           >
             <thead
-              class="MuiTableHead-root css-15wwp11-MuiTableHead-root"
+              class="MuiTableHead-root css-1a7iywq-MuiTableHead-root"
             >
               <tr
-                class="MuiTableRow-root MuiTableRow-head css-15pgmhf-MuiTableRow-root"
+                class="MuiTableRow-root MuiTableRow-head css-1wtsgsb-MuiTableRow-root"
               >
                 <th
-                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-skm94m-MuiTableCell-root"
+                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-8816du-MuiTableCell-root"
                   scope="col"
                   width="400px"
                 >
                   属性名
                 </th>
                 <th
-                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-skm94m-MuiTableCell-root"
+                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-8816du-MuiTableCell-root"
                   scope="col"
                   width="400px"
                 >
                   値
                 </th>
                 <th
-                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-skm94m-MuiTableCell-root"
+                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-8816du-MuiTableCell-root"
                   scope="col"
                   width="100px"
                 >
                   削除
                 </th>
                 <th
-                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-skm94m-MuiTableCell-root"
+                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-8816du-MuiTableCell-root"
                   scope="col"
                   width="100px"
                 >
@@ -772,42 +762,40 @@ exports[`EditTriggerPage should match snapshot 1`] = `
               </tr>
             </thead>
             <tbody
-              class="MuiTableBody-root css-kcs60j-MuiTableBody-root"
+              class="MuiTableBody-root css-x2c5vp-MuiTableBody-root"
             >
               <tr
-                class="MuiTableRow-root css-1q1u3t4-MuiTableRow-root"
+                class="MuiTableRow-root css-1xtozoh-MuiTableRow-root"
               >
                 <td
-                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
+                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1dc80h3-MuiTableCell-root"
                 />
                 <td
-                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
+                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1dc80h3-MuiTableCell-root"
                 />
                 <td
-                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
+                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1dc80h3-MuiTableCell-root"
                 />
                 <td
-                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
+                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1dc80h3-MuiTableCell-root"
                 >
                   <button
-                    class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-78trlr-MuiButtonBase-root-MuiIconButton-root"
+                    class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-53g0n7-MuiButtonBase-root-MuiIconButton-root"
+                    id=":r7:"
                     tabindex="0"
                     type="button"
                   >
                     <svg
                       aria-hidden="true"
-                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1umw9bq-MuiSvgIcon-root"
                       data-testid="AddIcon"
                       focusable="false"
                       viewBox="0 0 24 24"
                     >
                       <path
-                        d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"
+                        d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6z"
                       />
                     </svg>
-                    <span
-                      class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-                    />
                   </button>
                 </td>
               </tr>

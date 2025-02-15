@@ -19,16 +19,16 @@ exports[`should match snapshot 1`] = `
             >
               <nav
                 aria-label="breadcrumb"
-                class="MuiTypography-root MuiTypography-body1 MuiBreadcrumbs-root css-63vwl1-MuiTypography-root-MuiBreadcrumbs-root"
+                class="MuiTypography-root MuiTypography-body1 MuiBreadcrumbs-root css-5cvx94-MuiTypography-root-MuiBreadcrumbs-root"
               >
                 <ol
-                  class="MuiBreadcrumbs-ol css-4pdmu4-MuiBreadcrumbs-ol"
+                  class="MuiBreadcrumbs-ol css-1uwp4ue-MuiBreadcrumbs-ol"
                 >
                   <li
                     class="MuiBreadcrumbs-li"
                   >
                     <p
-                      class="MuiTypography-root MuiTypography-body1 css-1gqyz35-MuiTypography-root"
+                      class="MuiTypography-root MuiTypography-body1 css-1bgbmvw-MuiTypography-root"
                     >
                       Top
                     </p>
@@ -39,37 +39,38 @@ exports[`should match snapshot 1`] = `
           </div>
         </div>
         <div
-          class="MuiContainer-root MuiContainer-maxWidthLg css-1br4z8z-MuiContainer-root"
+          class="MuiContainer-root MuiContainer-maxWidthLg css-1u4usyw-MuiContainer-root"
         >
           <div
-            class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-miwl14-MuiFormControl-root-MuiTextField-root"
+            class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-14i0oaq-MuiFormControl-root-MuiTextField-root"
           >
             <div
-              class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth Mui-focused MuiInputBase-formControl MuiInputBase-adornedStart css-4ama2z-MuiInputBase-root-MuiOutlinedInput-root"
+              class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth Mui-focused MuiInputBase-formControl MuiInputBase-adornedStart css-ervgxf-MuiInputBase-root-MuiOutlinedInput-root"
             >
               <div
-                class="MuiInputAdornment-root MuiInputAdornment-positionStart MuiInputAdornment-outlined MuiInputAdornment-sizeMedium css-ittuaa-MuiInputAdornment-root"
+                class="MuiInputAdornment-root MuiInputAdornment-positionStart MuiInputAdornment-outlined MuiInputAdornment-sizeMedium css-1nowbqt-MuiInputAdornment-root"
               >
                 <span
+                  aria-hidden="true"
                   class="notranslate"
                 >
                   ​
                 </span>
                 <svg
                   aria-hidden="true"
-                  class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                  class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1umw9bq-MuiSvgIcon-root"
                   data-testid="SearchIcon"
                   focusable="false"
                   viewBox="0 0 24 24"
                 >
                   <path
-                    d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"
+                    d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"
                   />
                 </svg>
               </div>
               <input
                 aria-invalid="false"
-                class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputAdornedStart css-1o9s3wi-MuiInputBase-input-MuiOutlinedInput-input"
+                class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputAdornedStart css-2u11ia-MuiInputBase-input-MuiOutlinedInput-input"
                 id=":r0:"
                 placeholder="Search"
                 type="text"
@@ -77,12 +78,13 @@ exports[`should match snapshot 1`] = `
               />
               <fieldset
                 aria-hidden="true"
-                class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
+                class="MuiOutlinedInput-notchedOutline css-1ll44ll-MuiOutlinedInput-notchedOutline"
               >
                 <legend
-                  class="css-ihdtdm"
+                  class="css-w4cd9x"
                 >
                   <span
+                    aria-hidden="true"
                     class="notranslate"
                   >
                     ​
@@ -92,25 +94,25 @@ exports[`should match snapshot 1`] = `
             </div>
           </div>
           <div
-            class="MuiBox-root css-i48sxq"
+            class="MuiBox-root css-1ohp7h0"
             id="entity_list"
           >
             <a
-              class="MuiTypography-root MuiTypography-body1 css-13qg6e1-MuiTypography-root"
+              class="MuiTypography-root MuiTypography-body1 css-d59ur-MuiTypography-root"
               data-discover="true"
               href="/ui/entities/1/entries"
             >
               aaa
             </a>
             <a
-              class="MuiTypography-root MuiTypography-body1 css-13qg6e1-MuiTypography-root"
+              class="MuiTypography-root MuiTypography-body1 css-d59ur-MuiTypography-root"
               data-discover="true"
               href="/ui/entities/2/entries"
             >
               aaaaa
             </a>
             <a
-              class="MuiTypography-root MuiTypography-body1 css-13qg6e1-MuiTypography-root"
+              class="MuiTypography-root MuiTypography-body1 css-d59ur-MuiTypography-root"
               data-discover="true"
               href="/ui/entities/3/entries"
             >
@@ -136,16 +138,16 @@ exports[`should match snapshot 1`] = `
           >
             <nav
               aria-label="breadcrumb"
-              class="MuiTypography-root MuiTypography-body1 MuiBreadcrumbs-root css-63vwl1-MuiTypography-root-MuiBreadcrumbs-root"
+              class="MuiTypography-root MuiTypography-body1 MuiBreadcrumbs-root css-5cvx94-MuiTypography-root-MuiBreadcrumbs-root"
             >
               <ol
-                class="MuiBreadcrumbs-ol css-4pdmu4-MuiBreadcrumbs-ol"
+                class="MuiBreadcrumbs-ol css-1uwp4ue-MuiBreadcrumbs-ol"
               >
                 <li
                   class="MuiBreadcrumbs-li"
                 >
                   <p
-                    class="MuiTypography-root MuiTypography-body1 css-1gqyz35-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 css-1bgbmvw-MuiTypography-root"
                   >
                     Top
                   </p>
@@ -156,37 +158,38 @@ exports[`should match snapshot 1`] = `
         </div>
       </div>
       <div
-        class="MuiContainer-root MuiContainer-maxWidthLg css-1br4z8z-MuiContainer-root"
+        class="MuiContainer-root MuiContainer-maxWidthLg css-1u4usyw-MuiContainer-root"
       >
         <div
-          class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-miwl14-MuiFormControl-root-MuiTextField-root"
+          class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-14i0oaq-MuiFormControl-root-MuiTextField-root"
         >
           <div
-            class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth Mui-focused MuiInputBase-formControl MuiInputBase-adornedStart css-4ama2z-MuiInputBase-root-MuiOutlinedInput-root"
+            class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth Mui-focused MuiInputBase-formControl MuiInputBase-adornedStart css-ervgxf-MuiInputBase-root-MuiOutlinedInput-root"
           >
             <div
-              class="MuiInputAdornment-root MuiInputAdornment-positionStart MuiInputAdornment-outlined MuiInputAdornment-sizeMedium css-ittuaa-MuiInputAdornment-root"
+              class="MuiInputAdornment-root MuiInputAdornment-positionStart MuiInputAdornment-outlined MuiInputAdornment-sizeMedium css-1nowbqt-MuiInputAdornment-root"
             >
               <span
+                aria-hidden="true"
                 class="notranslate"
               >
                 ​
               </span>
               <svg
                 aria-hidden="true"
-                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1umw9bq-MuiSvgIcon-root"
                 data-testid="SearchIcon"
                 focusable="false"
                 viewBox="0 0 24 24"
               >
                 <path
-                  d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"
+                  d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14"
                 />
               </svg>
             </div>
             <input
               aria-invalid="false"
-              class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputAdornedStart css-1o9s3wi-MuiInputBase-input-MuiOutlinedInput-input"
+              class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputAdornedStart css-2u11ia-MuiInputBase-input-MuiOutlinedInput-input"
               id=":r0:"
               placeholder="Search"
               type="text"
@@ -194,12 +197,13 @@ exports[`should match snapshot 1`] = `
             />
             <fieldset
               aria-hidden="true"
-              class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
+              class="MuiOutlinedInput-notchedOutline css-1ll44ll-MuiOutlinedInput-notchedOutline"
             >
               <legend
-                class="css-ihdtdm"
+                class="css-w4cd9x"
               >
                 <span
+                  aria-hidden="true"
                   class="notranslate"
                 >
                   ​
@@ -209,25 +213,25 @@ exports[`should match snapshot 1`] = `
           </div>
         </div>
         <div
-          class="MuiBox-root css-i48sxq"
+          class="MuiBox-root css-1ohp7h0"
           id="entity_list"
         >
           <a
-            class="MuiTypography-root MuiTypography-body1 css-13qg6e1-MuiTypography-root"
+            class="MuiTypography-root MuiTypography-body1 css-d59ur-MuiTypography-root"
             data-discover="true"
             href="/ui/entities/1/entries"
           >
             aaa
           </a>
           <a
-            class="MuiTypography-root MuiTypography-body1 css-13qg6e1-MuiTypography-root"
+            class="MuiTypography-root MuiTypography-body1 css-d59ur-MuiTypography-root"
             data-discover="true"
             href="/ui/entities/2/entries"
           >
             aaaaa
           </a>
           <a
-            class="MuiTypography-root MuiTypography-body1 css-13qg6e1-MuiTypography-root"
+            class="MuiTypography-root MuiTypography-body1 css-d59ur-MuiTypography-root"
             data-discover="true"
             href="/ui/entities/3/entries"
           >
