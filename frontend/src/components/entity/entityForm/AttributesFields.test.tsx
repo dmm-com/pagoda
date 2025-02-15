@@ -72,18 +72,18 @@ describe("AttributesFields", () => {
 
     // add second attribute
     await act(async () => {
-      // now there is 1 attribute, and each webhook has 6 buttons (note, type, up, down, delete, add)
+      // now there is 1 attribute, and each webhook has 5 buttons (note, up, down, delete, add)
       // click the add button of the first webhook
-      screen.getAllByRole("button")[5].click();
+      screen.getAllByRole("button")[4].click();
     });
 
     expect(screen.queryAllByPlaceholderText("属性名")).toHaveLength(2);
 
     // delete first attribute
     await act(async () => {
-      // now there is 1 attribute, and each webhook has 6 buttons (note, type, up, down, delete, add)
-      // click the add button of the first webhook
-      screen.getAllByRole("button")[4].click();
+      // now there is 1 attribute, and each webhook has 5 buttons (note, up, down, delete, add)
+      // click the delete button of the first webhook
+      screen.getAllByRole("button")[3].click();
     });
 
     expect(screen.queryAllByPlaceholderText("属性名")).toHaveLength(1);
