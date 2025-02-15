@@ -1,6 +1,13 @@
-import { TableCell } from "@mui/material";
+import { TableCell, TableCellProps } from "@mui/material";
 import { styled } from "@mui/material/styles";
+import { SxProps, Theme } from "@mui/system";
+import React from "react";
 
-export const AironeTableHeadCell = styled(TableCell)(({}) => ({
-  color: "#FFFFFF",
-}));
+type StyledTableCellProps = TableCellProps & {
+  sx?: SxProps<Theme>;
+};
+
+export const AironeTableHeadCell: React.ComponentType<StyledTableCellProps> =
+  styled(TableCell)<StyledTableCellProps>({
+    color: "#FFFFFF",
+  }) as React.ComponentType<StyledTableCellProps>;
