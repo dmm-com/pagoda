@@ -6,6 +6,7 @@ import {
   Grid,
   List,
   ListItem,
+  ListItemButton,
   ListItemText,
   Typography,
 } from "@mui/material";
@@ -98,13 +99,13 @@ export const ListCategoryPage: FC = () => {
               >
                 <Box sx={{ overflowY: "scroll", maxHeight: 300 }}>
                   {category.models.map((models) => (
-                    <ListItem
-                      button
-                      key={models.id}
-                      component={Link}
-                      to={entityEntriesPath(models.id)}
-                    >
-                      <ListItemText primary={models.name} />
+                    <ListItem disablePadding key={models.id}>
+                      <ListItemButton
+                        component={Link}
+                        to={entityEntriesPath(models.id)}
+                      >
+                        <ListItemText primary={models.name} />
+                      </ListItemButton>
                     </ListItem>
                   ))}
                 </Box>

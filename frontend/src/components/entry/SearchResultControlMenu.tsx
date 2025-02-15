@@ -175,11 +175,13 @@ export const SearchResultControlMenu: FC<Props> = ({
             <StyledTypography variant="caption">次を含む日付</StyledTypography>
             <LocalizationProvider dateAdapter={AdapterDateFns}>
               <DesktopDatePicker
-                inputFormat="yyyy/MM/dd"
+                format="yyyy/MM/dd"
                 value={
                   filterKey ===
                   AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_CONTAINED
                     ? keyword
+                      ? new Date(keyword)
+                      : null
                     : null
                 }
                 onChange={(date: Date | null) => {
@@ -197,9 +199,11 @@ export const SearchResultControlMenu: FC<Props> = ({
                     keyword: settingDateValue,
                   });
                 }}
-                renderInput={(params) => (
-                  <StyledTextField size="small" {...params} />
-                )}
+                slotProps={{
+                  textField: {
+                    size: "small",
+                  },
+                }}
               />
             </LocalizationProvider>
           </StyledBox>
@@ -209,11 +213,13 @@ export const SearchResultControlMenu: FC<Props> = ({
             </StyledTypography>
             <LocalizationProvider dateAdapter={AdapterDateFns}>
               <DesktopDatePicker
-                inputFormat="yyyy/MM/dd"
+                format="yyyy/MM/dd"
                 value={
                   filterKey ===
                   AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_NOT_CONTAINED
                     ? keyword
+                      ? new Date(keyword)
+                      : null
                     : null
                 }
                 onChange={(date: Date | null) => {
@@ -231,9 +237,11 @@ export const SearchResultControlMenu: FC<Props> = ({
                     keyword: settingDateValue,
                   });
                 }}
-                renderInput={(params) => (
-                  <StyledTextField size="small" {...params} />
-                )}
+                slotProps={{
+                  textField: {
+                    size: "small",
+                  },
+                }}
               />
             </LocalizationProvider>
           </StyledBox>
