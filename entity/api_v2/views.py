@@ -1,5 +1,3 @@
-from distutils.util import strtobool
-
 from django.db.models import F
 from django.http import Http404
 from django.http.response import HttpResponse, JsonResponse
@@ -30,6 +28,23 @@ from entry.api_v2.serializers import EntryBaseSerializer, EntryCreateSerializer
 from entry.models import Entry
 from job.models import Job
 from user.models import History, User
+
+
+# distutils.util.strtoboolの代替実装
+def strtobool(val):
+    """Convert a string representation of truth to true (1) or false (0).
+
+    True values are 'y', 'yes', 't', 'true', 'on', and '1'; false values
+    are 'n', 'no', 'f', 'false', 'off', and '0'.  Raises ValueError if
+    'val' is anything else.
+    """
+    val = val.lower()
+    if val in ("y", "yes", "t", "true", "on", "1"):
+        return 1
+    elif val in ("n", "no", "f", "false", "off", "0"):
+        return 0
+    else:
+        raise ValueError(f"Invalid truth value {val}")
 
 
 @http_get
