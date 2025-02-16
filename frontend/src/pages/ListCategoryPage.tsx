@@ -10,7 +10,7 @@ import {
   Typography,
 } from "@mui/material";
 import React, { FC, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router";
 
 import { CategoryListHeader } from "components/category/CategoryListHeader";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";

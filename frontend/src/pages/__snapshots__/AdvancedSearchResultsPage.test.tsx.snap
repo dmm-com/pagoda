@@ -29,6 +29,7 @@ exports[`should match snapshot 1`] = `
                   >
                     <a
                       class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                      data-discover="true"
                       href="/ui/"
                     >
                       Top
@@ -45,6 +46,7 @@ exports[`should match snapshot 1`] = `
                   >
                     <a
                       class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                      data-discover="true"
                       href="/ui/advanced_search"
                     >
                       高度な検索
@@ -285,6 +287,7 @@ exports[`should match snapshot 1`] = `
                       >
                         <a
                           class="MuiBox-root css-0"
+                          data-discover="true"
                           href="/ui/entities/1/entries/2/details"
                         >
                           entry1
@@ -404,6 +407,7 @@ exports[`should match snapshot 1`] = `
                 >
                   <a
                     class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                    data-discover="true"
                     href="/ui/"
                   >
                     Top
@@ -420,6 +424,7 @@ exports[`should match snapshot 1`] = `
                 >
                   <a
                     class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                    data-discover="true"
                     href="/ui/advanced_search"
                   >
                     高度な検索
@@ -660,6 +665,7 @@ exports[`should match snapshot 1`] = `
                     >
                       <a
                         class="MuiBox-root css-0"
+                        data-discover="true"
                         href="/ui/entities/1/entries/2/details"
                       >
                         entry1

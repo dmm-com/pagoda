@@ -29,6 +29,7 @@ exports[`JobListPage should match snapshot 1`] = `
                   >
                     <a
                       class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                      data-discover="true"
                       href="/ui/"
                     >
                       Top
@@ -165,6 +166,7 @@ exports[`JobListPage should match snapshot 1`] = `
                 >
                   <a
                     class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                    data-discover="true"
                     href="/ui/entities/0/entries"
                   />
                 </td>
@@ -256,6 +258,7 @@ exports[`JobListPage should match snapshot 1`] = `
                 >
                   <a
                     class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                    data-discover="true"
                     href="/ui/entities/0/entries"
                   />
                 </td>
@@ -427,6 +430,7 @@ exports[`JobListPage should match snapshot 1`] = `
                 >
                   <a
                     class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                    data-discover="true"
                     href="/ui/"
                   >
                     Top
@@ -563,6 +567,7 @@ exports[`JobListPage should match snapshot 1`] = `
               >
                 <a
                   class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                  data-discover="true"
                   href="/ui/entities/0/entries"
                 />
               </td>
@@ -654,6 +659,7 @@ exports[`JobListPage should match snapshot 1`] = `
               >
                 <a
                   class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                  data-discover="true"
                   href="/ui/entities/0/entries"
                 />
               </td>

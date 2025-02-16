@@ -44,7 +44,7 @@ module.exports = {
     '@mui/material',
     'react',
     'react-dom',
-    'react-router-dom',
+    'react-router',
     'notistack'
   ],
 } 

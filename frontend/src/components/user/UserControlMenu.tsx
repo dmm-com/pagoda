@@ -10,7 +10,7 @@ import {
 } from "@mui/material";
 import { useSnackbar } from "notistack";
 import React, { FC, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 
 import { UserPasswordFormModal } from "./UserPasswordFormModal";
 

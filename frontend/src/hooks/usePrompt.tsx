@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useBlocker } from "react-router-dom";
+import { useBlocker } from "react-router";
 
 export const usePrompt = (when: boolean, message: string) => {
   const blocker = useBlocker(
