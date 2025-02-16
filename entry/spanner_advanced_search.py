@@ -238,12 +238,12 @@ class SpannerRepository:
         )
 
     def insert_entry_referrals(
-        self, entry_referrals: list[tuple[str, str]], operation: SpannerOperation
+        self, entry_referrals: list[tuple[str, str, str]], operation: SpannerOperation
     ) -> None:
         """Insert entry referrals in a batch or mutation group.
 
         Args:
-            entry_referrals: List of tuples (spanner_entry_id, referral_entry_id)
+            entry_referrals: List of tuples (spanner_entry_id, spanner_attr_id, referral_entry_id)
             operation: Spanner operation (batch or mutation group)
         """
         if not entry_referrals:
@@ -252,7 +252,7 @@ class SpannerRepository:
         # Insert the referral relationships
         operation.insert(
             table="AdvancedSearchEntryReferral",
-            columns=("EntryId", "ReferralId"),
+            columns=("EntryId", "AttributeId", "ReferralId"),
             values=entry_referrals,
         )
 
@@ -502,10 +502,11 @@ class SpannerRepository:
                             AdvancedSearchGraph
                             MATCH (src: AdvancedSearchEntry)-[referral:Referral]->
                             WHERE src.OriginEntityId IN UNNEST(@entity_ids)
-                            RETURN referral.ReferralId AS ReferralEntryId
+                            RETURN referral.ReferralId AS ReferralEntryId,
+                            referral.AttributeId AS SrcAttributeId
                         )
                     INNER JOIN AdvancedSearchAttribute AS a
-                    ON a.EntryId = ReferralEntryId
+                    ON a.EntryId = ReferralEntryId AND a.AttributeId = SrcAttributeId
                     WHERE
                         a.Name IN UNNEST(@joined_attribute_names)
                 )"""
@@ -535,10 +536,12 @@ class SpannerRepository:
                                         AdvancedSearchGraph
                                         MATCH (src: AdvancedSearchEntry)-[referral:Referral]->
                                         WHERE src.OriginEntityId IN UNNEST(@entity_ids)
-                                        RETURN referral.ReferralId AS ReferralEntryId
+                                        RETURN src.EntryId AS SrcEntryId,
+                                        referral.AttributeId AS SrcAttributeId,
+                                        referral.ReferralId AS ReferralEntryId
                                     )
                                 INNER JOIN AdvancedSearchAttribute AS a
-                                ON a.EntryId = ReferralEntryId
+                                ON a.EntryId = ReferralEntryId AND a.AttributeId = SrcAttributeId
                                 WHERE
                                     a.Name = @{attr_param_prefix}_name
                                     AND NOT EXISTS (
@@ -561,10 +564,12 @@ class SpannerRepository:
                                         AdvancedSearchGraph
                                         MATCH (src: AdvancedSearchEntry)-[referral:Referral]->
                                         WHERE src.OriginEntityId IN UNNEST(@entity_ids)
-                                        RETURN referral.ReferralId AS ReferralEntryId
+                                        RETURN src.EntryId AS SrcEntryId,
+                                        referral.AttributeId AS SrcAttributeId,
+                                        referral.ReferralId AS ReferralEntryId
                                     )
                                 INNER JOIN AdvancedSearchAttribute AS a
-                                ON a.EntryId = ReferralEntryId
+                                ON a.EntryId = ReferralEntryId AND a.AttributeId = SrcAttributeId
                                 INNER JOIN AdvancedSearchAttributeValue v
                                 ON v.EntryId = a.EntryId
                                 AND v.AttributeId = a.AttributeId
@@ -584,10 +589,12 @@ class SpannerRepository:
                                         AdvancedSearchGraph
                                         MATCH (src: AdvancedSearchEntry)-[referral:Referral]->
                                         WHERE src.OriginEntityId IN UNNEST(@entity_ids)
-                                        RETURN referral.ReferralId AS ReferralEntryId
+                                        RETURN src.EntryId AS SrcEntryId,
+                                        referral.AttributeId AS SrcAttributeId,
+                                        referral.ReferralId AS ReferralEntryId
                                     )
                                 INNER JOIN AdvancedSearchAttribute AS a
-                                ON a.EntryId = ReferralEntryId
+                                ON a.EntryId = ReferralEntryId AND a.AttributeId = SrcAttributeId
                                 INNER JOIN AdvancedSearchAttributeValue v
                                 ON v.EntryId = a.EntryId
                                 AND v.AttributeId = a.AttributeId
@@ -609,10 +616,12 @@ class SpannerRepository:
                                         AdvancedSearchGraph
                                         MATCH (src: AdvancedSearchEntry)-[referral:Referral]->
                                         WHERE src.OriginEntityId IN UNNEST(@entity_ids)
-                                        RETURN referral.ReferralId AS ReferralEntryId
+                                        RETURN src.EntryId AS SrcEntryId,
+                                        referral.AttributeId AS SrcAttributeId,
+                                        referral.ReferralId AS ReferralEntryId
                                     )
                                 INNER JOIN AdvancedSearchAttribute AS a
-                                ON a.EntryId = ReferralEntryId
+                                ON a.EntryId = ReferralEntryId AND a.AttributeId = SrcAttributeId
                                 WHERE
                                     a.Name = @{attr_param_prefix}_name
                                     AND NOT EXISTS (
@@ -637,10 +646,12 @@ class SpannerRepository:
                                         AdvancedSearchGraph
                                         MATCH (src: AdvancedSearchEntry)-[referral:Referral]->
                                         WHERE src.OriginEntityId IN UNNEST(@entity_ids)
-                                        RETURN referral.ReferralId AS ReferralEntryId
+                                        RETURN src.EntryId AS SrcEntryId,
+                                        referral.AttributeId AS SrcAttributeId,
+                                        referral.ReferralId AS ReferralEntryId
                                     )
                                 INNER JOIN AdvancedSearchAttribute AS a
-                                ON a.EntryId = ReferralEntryId
+                                ON a.EntryId = ReferralEntryId AND a.AttributeId = SrcAttributeId
                                 INNER JOIN AdvancedSearchAttributeValue v1
                                 ON v1.EntryId = a.EntryId
                                 AND v1.AttributeId = a.AttributeId
@@ -669,10 +680,12 @@ class SpannerRepository:
                                         AdvancedSearchGraph
                                         MATCH (src: AdvancedSearchEntry)-[referral:Referral]->
                                         WHERE src.OriginEntityId IN UNNEST(@entity_ids)
-                                        RETURN referral.ReferralId AS ReferralEntryId
+                                        RETURN src.EntryId AS SrcEntryId,
+                                        referral.AttributeId AS SrcAttributeId,
+                                        referral.ReferralId AS ReferralEntryId
                                     )
                                 INNER JOIN AdvancedSearchAttribute AS a
-                                ON a.EntryId = ReferralEntryId
+                                ON a.EntryId = ReferralEntryId AND a.AttributeId = SrcAttributeId
                                 WHERE
                                     a.Name = @{attr_param_prefix}_name
                                     AND NOT EXISTS (
@@ -800,10 +813,13 @@ class SpannerRepository:
          AdvancedSearchGraph
         MATCH (src: AdvancedSearchEntry)-[referral:Referral]->
         WHERE src.EntryId IN UNNEST(@entry_ids)
-        RETURN src.EntryId AS SrcEntryId, referral.ReferralId AS ReferralEntryId
+        RETURN src.EntryId AS SrcEntryId,
+        referral.AttributeId AS SrcAttributeId,
+        referral.ReferralId AS ReferralEntryId
         )
         INNER JOIN AdvancedSearchAttribute AS a
-        ON a.EntryId = ReferralEntryId
+        ON
+          a.EntryId = ReferralEntryId AND a.AttributeId = SrcAttributeId
         JOIN
           AdvancedSearchAttributeValue v
         ON

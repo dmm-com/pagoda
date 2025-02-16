@@ -345,9 +345,9 @@ class AdvancedSearchService:
 
                 # Process entries in chunks to avoid too large mutation groups
                 entry_chunks = [entry_list[i : i + 100] for i in range(0, len(entry_list), 100)]
-                entry_referrals: set[tuple[str, int]] = (
+                entry_referrals: set[tuple[str, str, int]] = (
                     set()
-                )  # {(spanner_entry_id, referral_origin_entry_id), ...}
+                )  # (entry_id, attribute_id, referral_origin_entry_id)
 
                 # First, write all entries and their attributes
                 for chunk in entry_chunks:
@@ -406,13 +406,21 @@ class AdvancedSearchService:
                                         case AttrType.OBJECT | AttrType.NAMED_OBJECT:
                                             if attrv.referral:
                                                 entry_referrals.add(
-                                                    (spanner_entry_id, attrv.referral.id)
+                                                    (
+                                                        spanner_entry_id,
+                                                        spanner_attr_id,
+                                                        attrv.referral.id,
+                                                    )
                                                 )
                                         case AttrType.ARRAY_OBJECT | AttrType.ARRAY_NAMED_OBJECT:
                                             for array_value in attrv.data_array.all():
                                                 if array_value.referral:
                                                     entry_referrals.add(
-                                                        (spanner_entry_id, array_value.referral.id)
+                                                        (
+                                                            spanner_entry_id,
+                                                            spanner_attr_id,
+                                                            array_value.referral.id,
+                                                        )
                                                     )
 
                             # Create a mutation group for this entry and its related data
@@ -438,13 +446,13 @@ class AdvancedSearchService:
 
                 if entry_referrals:
                     # Get mapping from OriginEntryId to EntryId for referrals
-                    referral_origin_ids = {ref_id for _, ref_id in entry_referrals}
+                    referral_origin_ids = {ref_id for _, _, ref_id in entry_referrals}
                     entry_id_mapping = repo.get_entry_id_mapping(list(referral_origin_ids))
 
                     # Convert OriginEntryId to EntryId and filter out any missing mappings
-                    converted_referrals = [
-                        (entry_id, entry_id_mapping[ref_id])
-                        for entry_id, ref_id in entry_referrals
+                    converted_referrals: list[tuple[str, str, str]] = [
+                        (entry_id, attr_id, entry_id_mapping[ref_id])
+                        for entry_id, attr_id, ref_id in entry_referrals
                         if ref_id in entry_id_mapping
                     ]
 

@@ -32,13 +32,14 @@ CREATE TABLE AdvancedSearchAttributeValue (
 
 CREATE INDEX AdvancedSearchAttributeValueParentKeyIndex ON AdvancedSearchAttributeValue(EntryId, AttributeId);
 
-
 CREATE TABLE AdvancedSearchEntryReferral (
     EntryId STRING(36) NOT NULL,
+    AttributeId STRING(36) NOT NULL,
     ReferralId STRING(36) NOT NULL,
     FOREIGN KEY (EntryId) REFERENCES AdvancedSearchEntry (EntryId),
+    FOREIGN KEY (EntryId, AttributeId) REFERENCES AdvancedSearchAttribute (EntryId, AttributeId),
     FOREIGN KEY (ReferralId) REFERENCES AdvancedSearchEntry (EntryId)
-) PRIMARY KEY (EntryId, ReferralId);
+) PRIMARY KEY (EntryId, AttributeId, ReferralId);
 
 CREATE PROPERTY GRAPH AdvancedSearchGraph
   NODE TABLES (AdvancedSearchEntry)
