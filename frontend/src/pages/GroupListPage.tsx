@@ -18,6 +18,7 @@ import { GroupImportModal } from "../components/group/GroupImportModal";
 import { GroupTreeRoot } from "../components/group/GroupTreeRoot";
 import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
 
+import { AironeLink } from "components";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { Loading } from "components/common/Loading";
 import { PageHeader } from "components/common/PageHeader";
@@ -84,7 +85,7 @@ export const GroupListPage: FC = () => {
   return (
     <Box display="flex" flexDirection="column" flexGrow="1">
       <AironeBreadcrumbs>
-        <Typography component={Link} to={topPath()}>
+        <Typography component={AironeLink} to={topPath()}>
           Top
         </Typography>
         <Typography color="textPrimary">グループ管理</Typography>

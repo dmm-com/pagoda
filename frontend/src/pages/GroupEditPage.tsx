@@ -2,10 +2,11 @@ import { zodResolver } from "@hookform/resolvers/zod/dist/zod";
 import { Box, Container, Typography } from "@mui/material";
 import React, { FC, useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { Link, useNavigate } from "react-router";
+import { useNavigate } from "react-router";
 
 import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
 
+import { AironeLink } from "components";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { PageHeader } from "components/common/PageHeader";
 import { SubmitButton } from "components/common/SubmitButton";
@@ -102,10 +103,10 @@ export const GroupEditPage: FC = () => {
   return (
     <Box>
       <AironeBreadcrumbs>
-        <Typography component={Link} to={topPath()}>
+        <Typography component={AironeLink} to={topPath()}>
           Top
         </Typography>
-        <Typography component={Link} to={groupsPath()}>
+        <Typography component={AironeLink} to={groupsPath()}>
           グループ管理
         </Typography>
         <Typography color="textPrimary">グループ編集</Typography>

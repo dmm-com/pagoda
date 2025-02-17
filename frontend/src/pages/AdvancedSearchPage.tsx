@@ -22,6 +22,7 @@ import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
 import { aironeApiClient } from "../repository/AironeApiClient";
 import { formatAdvancedSearchParams } from "../services/entry/AdvancedSearch";
 
+import { AironeLink } from "components";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { advancedSearchResultPath, topPath } from "routes/Routes";
 
@@ -110,7 +111,7 @@ export const AdvancedSearchPage: FC = () => {
   return (
     <Box className="container-fluid">
       <AironeBreadcrumbs>
-        <Typography component={Link} to={topPath()}>
+        <Typography component={AironeLink} to={topPath()}>
           Top
         </Typography>
         <Typography color="textPrimary">高度な検索</Typography>
