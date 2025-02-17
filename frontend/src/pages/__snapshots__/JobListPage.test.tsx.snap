@@ -28,7 +28,11 @@ exports[`JobListPage should match snapshot 1`] = `
                     class="MuiBreadcrumbs-li"
                   >
                     <a
+<<<<<<< HEAD
                       class="MuiTypography-root MuiTypography-body1 css-rizt0-MuiTypography-root"
+=======
+                      class="MuiTypography-root MuiTypography-body1 css-z7oskh-MuiTypography-root"
+>>>>>>> master
                       data-discover="true"
                       href="/ui/"
                     >
@@ -163,7 +167,11 @@ exports[`JobListPage should match snapshot 1`] = `
                   class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1dc80h3-MuiTableCell-root"
                 >
                   <a
+<<<<<<< HEAD
                     class="MuiTypography-root MuiTypography-body1 css-rizt0-MuiTypography-root"
+=======
+                    class="MuiTypography-root MuiTypography-body1 css-z7oskh-MuiTypography-root"
+>>>>>>> master
                     data-discover="true"
                     href="/ui/entities/0/entries"
                   />
@@ -257,7 +265,11 @@ exports[`JobListPage should match snapshot 1`] = `
                   class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1dc80h3-MuiTableCell-root"
                 >
                   <a
+<<<<<<< HEAD
                     class="MuiTypography-root MuiTypography-body1 css-rizt0-MuiTypography-root"
+=======
+                    class="MuiTypography-root MuiTypography-body1 css-z7oskh-MuiTypography-root"
+>>>>>>> master
                     data-discover="true"
                     href="/ui/entities/0/entries"
                   />
@@ -429,7 +441,11 @@ exports[`JobListPage should match snapshot 1`] = `
                   class="MuiBreadcrumbs-li"
                 >
                   <a
+<<<<<<< HEAD
                     class="MuiTypography-root MuiTypography-body1 css-rizt0-MuiTypography-root"
+=======
+                    class="MuiTypography-root MuiTypography-body1 css-z7oskh-MuiTypography-root"
+>>>>>>> master
                     data-discover="true"
                     href="/ui/"
                   >
@@ -564,7 +580,11 @@ exports[`JobListPage should match snapshot 1`] = `
                 class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1dc80h3-MuiTableCell-root"
               >
                 <a
+<<<<<<< HEAD
                   class="MuiTypography-root MuiTypography-body1 css-rizt0-MuiTypography-root"
+=======
+                  class="MuiTypography-root MuiTypography-body1 css-z7oskh-MuiTypography-root"
+>>>>>>> master
                   data-discover="true"
                   href="/ui/entities/0/entries"
                 />
@@ -658,7 +678,11 @@ exports[`JobListPage should match snapshot 1`] = `
                 class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1dc80h3-MuiTableCell-root"
               >
                 <a
+<<<<<<< HEAD
                   class="MuiTypography-root MuiTypography-body1 css-rizt0-MuiTypography-root"
+=======
+                  class="MuiTypography-root MuiTypography-body1 css-z7oskh-MuiTypography-root"
+>>>>>>> master
                   data-discover="true"
                   href="/ui/entities/0/entries"
                 />

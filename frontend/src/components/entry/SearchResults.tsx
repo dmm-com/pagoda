@@ -17,10 +17,10 @@ import {
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import React, { FC, useMemo } from "react";
-import { Link } from "react-router";
 
 import { SearchResultsTableHead } from "./SearchResultsTableHead";
 
+import { AironeLink } from "components/common";
 import { PaginationFooter } from "components/common/PaginationFooter";
 import { AttributeValue } from "components/entry/AttributeValue";
 import { entryDetailsPath } from "routes/Routes";
@@ -135,7 +135,7 @@ export const SearchResults: FC<Props> = ({
 
                   <TableCell>
                     <Box
-                      component={Link}
+                      component={AironeLink}
                       to={entryDetailsPath(result.entity.id, result.entry.id)}
                     >
                       {result.entry.name}
@@ -167,7 +167,7 @@ export const SearchResults: FC<Props> = ({
                         {result.referrals?.map((referral) => (
                           <ListItem key={referral.id}>
                             <Box
-                              component={Link}
+                              component={AironeLink}
                               to={entryDetailsPath(0, referral.id)}
                             >
                               {referral.name}

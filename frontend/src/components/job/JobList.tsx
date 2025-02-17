@@ -14,7 +14,7 @@ import {
 import { styled } from "@mui/material/styles";
 import { useSnackbar } from "notistack";
 import React, { FC, useState } from "react";
-import { Link, useNavigate } from "react-router";
+import { useNavigate } from "react-router";
 
 import { aironeApiClient } from "../../repository/AironeApiClient";
 import { entityEntriesPath } from "../../routes/Routes";
@@ -24,6 +24,8 @@ import { jobOperationLabel, jobStatusLabel } from "../../services/JobUtil";
 import { AironeTableHeadCell } from "../common/AironeTableHeadCell";
 import { AironeTableHeadRow } from "../common/AironeTableHeadRow";
 import { Confirmable } from "../common/Confirmable";
+
+import { AironeLink } from "components/common";
 
 const StyledTableRow = styled(TableRow)(({}) => ({
   "&:nth-of-type(odd)": {
@@ -171,7 +173,7 @@ export const JobList: FC<Props> = ({ jobs }) => {
                   case JobOperations.EXPORT_ENTRY_V2:
                     return (
                       <Typography
-                        component={Link}
+                        component={AironeLink}
                         to={entityEntriesPath(job.target?.id ?? 0)}
                       >
                         {job.target?.name ?? ""}
@@ -191,7 +193,7 @@ export const JobList: FC<Props> = ({ jobs }) => {
                   case JobOperations.DELETE_ENTRY_V2:
                     return (
                       <Typography
-                        component={Link}
+                        component={AironeLink}
                         to={entityEntriesPath(job.target?.schemaId ?? 0)}
                       >
                         {job.target?.schemaName ?? ""}
