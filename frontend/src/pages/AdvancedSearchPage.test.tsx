@@ -83,13 +83,9 @@ describe("AdvancedSearchPage", () => {
   });
 
   test("all entities are shown", async () => {
-    const elemInputEntity = screen.getByPlaceholderText("モデルを選択");
-
-    if (elemInputEntity.parentNode) {
-      fireEvent.click(elemInputEntity.parentNode);
-    } else {
-      throw new Error("Parent node not found");
-    }
+    await act(async () => {
+      fireEvent.click(screen.getAllByRole("button", { name: "Open" })[0]);
+    });
 
     const options = screen.getAllByRole("option");
     expect(options).toHaveLength(2);
@@ -119,29 +115,12 @@ describe("AdvancedSearchPage", () => {
       throw new Error("Parent node not found");
     }
 
-    // Question:
-    // After sending request to get attributes from server,
-    // you have to implement processing for waiting Promise (until .loading == false).
-    //
-    // Answer:
-    // You should use findBy() method that wait until loading == false.
-    const elemInputEntityAttr = await screen.findByPlaceholderText(
-      "属性を選択"
-    );
-
-    // This is a thip to close options of Entities that are shown above.
-    // make an event to press Escape key using fireEvent
-    // fireEvent.click(document.body);   // this doesn't work :(
     await act(async () => {
       fireEvent.keyDown(elemInputEntity, { key: "Escape" });
     });
 
     await act(async () => {
-      if (elemInputEntityAttr.parentNode) {
-        fireEvent.click(elemInputEntityAttr.parentNode);
-      } else {
-        throw new Error("Parent node not found");
-      }
+      fireEvent.click(screen.getAllByRole("button", { name: "Open" })[1]);
     });
 
     const options = screen.getAllByRole("option");
@@ -152,6 +131,11 @@ describe("AdvancedSearchPage", () => {
     expect(options[2]).toHaveTextContent("obj");
 
     fireEvent.click(options[1]);
+
+    const elemInputEntityAttr = await screen.findByPlaceholderText(
+      "属性を選択"
+    );
+
     if (elemInputEntityAttr.parentNode instanceof HTMLElement) {
       const selectedEntity = within(
         elemInputEntityAttr.parentNode
@@ -176,16 +160,8 @@ describe("AdvancedSearchPage", () => {
       fireEvent.keyDown(elemInputEntity, { key: "Escape" });
     });
 
-    const elemInputEntityAttr = await screen.findByPlaceholderText(
-      "属性を選択"
-    );
-
     await act(async () => {
-      if (elemInputEntityAttr.parentNode) {
-        fireEvent.click(elemInputEntityAttr.parentNode);
-      } else {
-        throw new Error("Parent node not found");
-      }
+      fireEvent.click(screen.getAllByRole("button", { name: "Open" })[1]);
     });
 
     const options = screen.getAllByRole("option");
@@ -198,6 +174,10 @@ describe("AdvancedSearchPage", () => {
     await act(async () => {
       fireEvent.click(options[0]);
     });
+
+    const elemInputEntityAttr = await screen.findByPlaceholderText(
+      "属性を選択"
+    );
 
     if (elemInputEntityAttr.parentNode instanceof HTMLElement) {
       const selectedEntity = within(

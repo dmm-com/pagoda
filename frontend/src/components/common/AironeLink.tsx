@@ -1,7 +1,9 @@
 import { styled } from "@mui/material/styles";
-import { Link } from "react-router";
+import { Link, LinkProps } from "react-router";
 
-export const AironeLink = styled(Link)(({ theme }) => ({
+export const AironeLink: React.ComponentType<LinkProps> = styled(
+  Link
+)<LinkProps>(({ theme }) => ({
   color: theme.palette.primary.main,
   textDecoration: "none",
   "&:hover": {

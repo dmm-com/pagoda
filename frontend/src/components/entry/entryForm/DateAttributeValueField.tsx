@@ -1,4 +1,4 @@
-import { Box, TextField, Typography } from "@mui/material";
+import { Box, Typography } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { DesktopDatePicker } from "@mui/x-date-pickers/DesktopDatePicker";
@@ -42,8 +42,8 @@ export const DateAttributeValueField: FC<Props> = ({
         render={({ field, fieldState: { error } }) => (
           <LocalizationProvider dateAdapter={AdapterDateFns}>
             <DesktopDatePicker
-              inputFormat="yyyy/MM/dd"
-              value={field.value}
+              format="yyyy/MM/dd"
+              value={field.value ? new Date(field.value) : null}
               onChange={(date: Date | null) => {
                 let settingDateValue = "";
                 if (date !== null) {
@@ -56,15 +56,14 @@ export const DateAttributeValueField: FC<Props> = ({
                   shouldValidate: true,
                 });
               }}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  error={error != null}
-                  helperText={error?.message}
-                  size="small"
-                  fullWidth={false}
-                />
-              )}
+              slotProps={{
+                textField: {
+                  error: error != null,
+                  helperText: error?.message,
+                  size: "small",
+                  fullWidth: false,
+                },
+              }}
               disabled={isDisabled}
             />
           </LocalizationProvider>
