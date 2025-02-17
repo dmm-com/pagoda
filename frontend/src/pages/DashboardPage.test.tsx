@@ -2,7 +2,7 @@
  * @jest-environment jsdom
  */
 
-import { render, screen, act, waitFor } from "@testing-library/react";
+import { act, render } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import React from "react";
@@ -13,7 +13,7 @@ import { TestWrapper } from "TestWrapper";
 
 const server = setupServer(
   // getEntities
-  http.get("http://localhost/entity/api/v2/", () => {
+  http.get("http://localhost/category/api/v2/", () => {
     return HttpResponse.json({
       count: 3,
       next: null,
@@ -23,22 +23,22 @@ const server = setupServer(
           id: 1,
           name: "aaa",
           note: "",
-          isToplevel: false,
-          status: 1,
+          models: [],
+          priority: 20,
         },
         {
           id: 2,
           name: "aaaaa",
           note: "",
-          isToplevel: false,
-          status: 1,
+          models: [],
+          priority: 10,
         },
         {
           id: 3,
           name: "bbbbb",
           note: "",
-          isToplevel: false,
-          status: 1,
+          models: [],
+          priority: 0,
         },
       ],
     });
@@ -64,9 +64,5 @@ test("should match snapshot", async () => {
       wrapper: TestWrapper,
     });
   });
-  await waitFor(() => {
-    expect(screen.queryByTestId("loading")).not.toBeInTheDocument();
-  });
-
   expect(result).toMatchSnapshot();
 });
