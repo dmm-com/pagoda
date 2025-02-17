@@ -157,9 +157,9 @@ class ViewTest(AironeViewTest):
         entity_names = map(lambda e: e.name, resp.context["entities"])
 
         # entity-1 should be displayed
-        self.assertEquals(1, len(list(filter(lambda n: n == "entity-1", entity_names))))
+        self.assertEqual(1, len(list(filter(lambda n: n == "entity-1", entity_names))))
         # entity-2 should not be displayed
-        self.assertEquals(0, len(list(filter(lambda n: n == "entity-2", entity_names))))
+        self.assertEqual(0, len(list(filter(lambda n: n == "entity-2", entity_names))))
 
     @patch(
         "dashboard.tasks.export_search_result.delay",
