@@ -4,6 +4,7 @@ import React, { FC, useState } from "react";
 import { Link, useNavigate } from "react-router";
 
 import { CategoryListHeader } from "components/category/CategoryListHeader";
+import { AironeLink } from "components/common";
 import { PaginationFooter } from "components/common/PaginationFooter";
 import { SearchBox } from "components/common/SearchBox";
 import { useAsyncWithThrow } from "hooks";
@@ -95,19 +96,9 @@ export const CategoryList: FC<Props> = ({ isEdit = false }) => {
                 {category.models.map((models) => (
                   <Typography
                     key={models.id}
-                    component={Link}
+                    component={AironeLink}
                     to={entityEntriesPath(models.id)}
                     variant="body2"
-                    /*
-                  sx={{
-                    color: "#607D8B",
-                    textDecoration: "none",
-                    '&:hover': {
-                      textDecoration: 'underline',
-                      color: "#455A64",
-                    }
-                  }}
-                  */
                   >
                     {models.name}
                   </Typography>
