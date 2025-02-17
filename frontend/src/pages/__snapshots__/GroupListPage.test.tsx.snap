@@ -28,11 +28,7 @@ exports[`GroupListPage should match snapshot 1`] = `
                     class="MuiBreadcrumbs-li"
                   >
                     <a
-<<<<<<< HEAD
-                      class="MuiTypography-root MuiTypography-body1 css-rizt0-MuiTypography-root"
-=======
-                      class="MuiTypography-root MuiTypography-body1 css-z7oskh-MuiTypography-root"
->>>>>>> master
+                      class="MuiTypography-root MuiTypography-body1 css-1rk5fdy-MuiTypography-root"
                       data-discover="true"
                       href="/ui/"
                     >
@@ -169,11 +165,7 @@ exports[`GroupListPage should match snapshot 1`] = `
                     </svg>
                   </span>
                   <a
-<<<<<<< HEAD
-                    class="MuiTypography-root MuiTypography-body1 css-rizt0-MuiTypography-root"
-=======
-                    class="MuiTypography-root MuiTypography-body1 css-z7oskh-MuiTypography-root"
->>>>>>> master
+                    class="MuiTypography-root MuiTypography-body1 css-1rk5fdy-MuiTypography-root"
                     data-discover="true"
                     href="/ui/groups/1"
                   >
@@ -222,11 +214,7 @@ exports[`GroupListPage should match snapshot 1`] = `
                     </svg>
                   </span>
                   <a
-<<<<<<< HEAD
-                    class="MuiTypography-root MuiTypography-body1 css-rizt0-MuiTypography-root"
-=======
-                    class="MuiTypography-root MuiTypography-body1 css-z7oskh-MuiTypography-root"
->>>>>>> master
+                    class="MuiTypography-root MuiTypography-body1 css-1rk5fdy-MuiTypography-root"
                     data-discover="true"
                     href="/ui/groups/1"
                   >
@@ -275,11 +263,7 @@ exports[`GroupListPage should match snapshot 1`] = `
                     </svg>
                   </span>
                   <a
-<<<<<<< HEAD
-                    class="MuiTypography-root MuiTypography-body1 css-rizt0-MuiTypography-root"
-=======
-                    class="MuiTypography-root MuiTypography-body1 css-z7oskh-MuiTypography-root"
->>>>>>> master
+                    class="MuiTypography-root MuiTypography-body1 css-1rk5fdy-MuiTypography-root"
                     data-discover="true"
                     href="/ui/groups/2"
                   >
@@ -336,11 +320,7 @@ exports[`GroupListPage should match snapshot 1`] = `
                     </svg>
                   </span>
                   <a
-<<<<<<< HEAD
-                    class="MuiTypography-root MuiTypography-body1 css-rizt0-MuiTypography-root"
-=======
-                    class="MuiTypography-root MuiTypography-body1 css-z7oskh-MuiTypography-root"
->>>>>>> master
+                    class="MuiTypography-root MuiTypography-body1 css-1rk5fdy-MuiTypography-root"
                     data-discover="true"
                     href="/ui/groups/2"
                   >
@@ -463,11 +443,7 @@ exports[`GroupListPage should match snapshot 1`] = `
                   class="MuiBreadcrumbs-li"
                 >
                   <a
-<<<<<<< HEAD
-                    class="MuiTypography-root MuiTypography-body1 css-rizt0-MuiTypography-root"
-=======
-                    class="MuiTypography-root MuiTypography-body1 css-z7oskh-MuiTypography-root"
->>>>>>> master
+                    class="MuiTypography-root MuiTypography-body1 css-1rk5fdy-MuiTypography-root"
                     data-discover="true"
                     href="/ui/"
                   >
@@ -604,11 +580,7 @@ exports[`GroupListPage should match snapshot 1`] = `
                   </svg>
                 </span>
                 <a
-<<<<<<< HEAD
-                  class="MuiTypography-root MuiTypography-body1 css-rizt0-MuiTypography-root"
-=======
-                  class="MuiTypography-root MuiTypography-body1 css-z7oskh-MuiTypography-root"
->>>>>>> master
+                  class="MuiTypography-root MuiTypography-body1 css-1rk5fdy-MuiTypography-root"
                   data-discover="true"
                   href="/ui/groups/1"
                 >
@@ -657,11 +629,7 @@ exports[`GroupListPage should match snapshot 1`] = `
                   </svg>
                 </span>
                 <a
-<<<<<<< HEAD
-                  class="MuiTypography-root MuiTypography-body1 css-rizt0-MuiTypography-root"
-=======
-                  class="MuiTypography-root MuiTypography-body1 css-z7oskh-MuiTypography-root"
->>>>>>> master
+                  class="MuiTypography-root MuiTypography-body1 css-1rk5fdy-MuiTypography-root"
                   data-discover="true"
                   href="/ui/groups/1"
                 >
@@ -710,11 +678,7 @@ exports[`GroupListPage should match snapshot 1`] = `
                   </svg>
                 </span>
                 <a
-<<<<<<< HEAD
-                  class="MuiTypography-root MuiTypography-body1 css-rizt0-MuiTypography-root"
-=======
-                  class="MuiTypography-root MuiTypography-body1 css-z7oskh-MuiTypography-root"
->>>>>>> master
+                  class="MuiTypography-root MuiTypography-body1 css-1rk5fdy-MuiTypography-root"
                   data-discover="true"
                   href="/ui/groups/2"
                 >
@@ -771,11 +735,7 @@ exports[`GroupListPage should match snapshot 1`] = `
                   </svg>
                 </span>
                 <a
-<<<<<<< HEAD
-                  class="MuiTypography-root MuiTypography-body1 css-rizt0-MuiTypography-root"
-=======
-                  class="MuiTypography-root MuiTypography-body1 css-z7oskh-MuiTypography-root"
->>>>>>> master
+                  class="MuiTypography-root MuiTypography-body1 css-1rk5fdy-MuiTypography-root"
                   data-discover="true"
                   href="/ui/groups/2"
                 >

@@ -28,11 +28,7 @@ exports[`EntryListPage should match snapshot 1`] = `
                     class="MuiBreadcrumbs-li"
                   >
                     <a
-<<<<<<< HEAD
-                      class="MuiTypography-root MuiTypography-body1 css-rizt0-MuiTypography-root"
-=======
-                      class="MuiTypography-root MuiTypography-body1 css-z7oskh-MuiTypography-root"
->>>>>>> master
+                      class="MuiTypography-root MuiTypography-body1 css-1rk5fdy-MuiTypography-root"
                       data-discover="true"
                       href="/ui/"
                     >
@@ -49,11 +45,7 @@ exports[`EntryListPage should match snapshot 1`] = `
                     class="MuiBreadcrumbs-li"
                   >
                     <a
-<<<<<<< HEAD
-                      class="MuiTypography-root MuiTypography-body1 css-rizt0-MuiTypography-root"
-=======
-                      class="MuiTypography-root MuiTypography-body1 css-z7oskh-MuiTypography-root"
->>>>>>> master
+                      class="MuiTypography-root MuiTypography-body1 css-1rk5fdy-MuiTypography-root"
                       data-discover="true"
                       href="/ui/entities"
                     >
@@ -73,11 +65,7 @@ exports[`EntryListPage should match snapshot 1`] = `
                       class="MuiBox-root css-162tvoi"
                     >
                       <a
-<<<<<<< HEAD
-                        class="MuiTypography-root MuiTypography-body1 css-rizt0-MuiTypography-root"
-=======
-                        class="MuiTypography-root MuiTypography-body1 css-z7oskh-MuiTypography-root"
->>>>>>> master
+                        class="MuiTypography-root MuiTypography-body1 css-1rk5fdy-MuiTypography-root"
                         data-discover="true"
                         href="/ui/entities/1/entries"
                       >
@@ -590,11 +578,7 @@ exports[`EntryListPage should match snapshot 1`] = `
                   class="MuiBreadcrumbs-li"
                 >
                   <a
-<<<<<<< HEAD
-                    class="MuiTypography-root MuiTypography-body1 css-rizt0-MuiTypography-root"
-=======
-                    class="MuiTypography-root MuiTypography-body1 css-z7oskh-MuiTypography-root"
->>>>>>> master
+                    class="MuiTypography-root MuiTypography-body1 css-1rk5fdy-MuiTypography-root"
                     data-discover="true"
                     href="/ui/"
                   >
@@ -611,11 +595,7 @@ exports[`EntryListPage should match snapshot 1`] = `
                   class="MuiBreadcrumbs-li"
                 >
                   <a
-<<<<<<< HEAD
-                    class="MuiTypography-root MuiTypography-body1 css-rizt0-MuiTypography-root"
-=======
-                    class="MuiTypography-root MuiTypography-body1 css-z7oskh-MuiTypography-root"
->>>>>>> master
+                    class="MuiTypography-root MuiTypography-body1 css-1rk5fdy-MuiTypography-root"
                     data-discover="true"
                     href="/ui/entities"
                   >
@@ -635,11 +615,7 @@ exports[`EntryListPage should match snapshot 1`] = `
                     class="MuiBox-root css-162tvoi"
                   >
                     <a
-<<<<<<< HEAD
-                      class="MuiTypography-root MuiTypography-body1 css-rizt0-MuiTypography-root"
-=======
-                      class="MuiTypography-root MuiTypography-body1 css-z7oskh-MuiTypography-root"
->>>>>>> master
+                      class="MuiTypography-root MuiTypography-body1 css-1rk5fdy-MuiTypography-root"
                       data-discover="true"
                       href="/ui/entities/1/entries"
                     >

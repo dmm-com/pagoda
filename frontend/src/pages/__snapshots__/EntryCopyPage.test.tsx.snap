@@ -28,11 +28,7 @@ exports[`should match snapshot 1`] = `
                     class="MuiBreadcrumbs-li"
                   >
                     <a
-<<<<<<< HEAD
-                      class="MuiTypography-root MuiTypography-body1 css-rizt0-MuiTypography-root"
-=======
-                      class="MuiTypography-root MuiTypography-body1 css-z7oskh-MuiTypography-root"
->>>>>>> master
+                      class="MuiTypography-root MuiTypography-body1 css-1rk5fdy-MuiTypography-root"
                       data-discover="true"
                       href="/ui/"
                     >
@@ -49,11 +45,7 @@ exports[`should match snapshot 1`] = `
                     class="MuiBreadcrumbs-li"
                   >
                     <a
-<<<<<<< HEAD
-                      class="MuiTypography-root MuiTypography-body1 css-rizt0-MuiTypography-root"
-=======
-                      class="MuiTypography-root MuiTypography-body1 css-z7oskh-MuiTypography-root"
->>>>>>> master
+                      class="MuiTypography-root MuiTypography-body1 css-1rk5fdy-MuiTypography-root"
                       data-discover="true"
                       href="/ui/entities"
                     >
@@ -73,11 +65,7 @@ exports[`should match snapshot 1`] = `
                       class="MuiBox-root css-162tvoi"
                     >
                       <a
-<<<<<<< HEAD
-                        class="MuiTypography-root MuiTypography-body1 css-rizt0-MuiTypography-root"
-=======
-                        class="MuiTypography-root MuiTypography-body1 css-z7oskh-MuiTypography-root"
->>>>>>> master
+                        class="MuiTypography-root MuiTypography-body1 css-1rk5fdy-MuiTypography-root"
                         data-discover="true"
                         href="/ui/entities/2/entries"
                       >
@@ -109,11 +97,7 @@ exports[`should match snapshot 1`] = `
                       class="MuiBox-root css-162tvoi"
                     >
                       <a
-<<<<<<< HEAD
-                        class="MuiTypography-root MuiTypography-body1 css-rizt0-MuiTypography-root"
-=======
-                        class="MuiTypography-root MuiTypography-body1 css-z7oskh-MuiTypography-root"
->>>>>>> master
+                        class="MuiTypography-root MuiTypography-body1 css-1rk5fdy-MuiTypography-root"
                         data-discover="true"
                         href="/ui/entities/2/entries/1/details"
                       >
@@ -340,11 +324,7 @@ vm0006
                   class="MuiBreadcrumbs-li"
                 >
                   <a
-<<<<<<< HEAD
-                    class="MuiTypography-root MuiTypography-body1 css-rizt0-MuiTypography-root"
-=======
-                    class="MuiTypography-root MuiTypography-body1 css-z7oskh-MuiTypography-root"
->>>>>>> master
+                    class="MuiTypography-root MuiTypography-body1 css-1rk5fdy-MuiTypography-root"
                     data-discover="true"
                     href="/ui/"
                   >
@@ -361,11 +341,7 @@ vm0006
                   class="MuiBreadcrumbs-li"
                 >
                   <a
-<<<<<<< HEAD
-                    class="MuiTypography-root MuiTypography-body1 css-rizt0-MuiTypography-root"
-=======
-                    class="MuiTypography-root MuiTypography-body1 css-z7oskh-MuiTypography-root"
->>>>>>> master
+                    class="MuiTypography-root MuiTypography-body1 css-1rk5fdy-MuiTypography-root"
                     data-discover="true"
                     href="/ui/entities"
                   >
@@ -385,11 +361,7 @@ vm0006
                     class="MuiBox-root css-162tvoi"
                   >
                     <a
-<<<<<<< HEAD
-                      class="MuiTypography-root MuiTypography-body1 css-rizt0-MuiTypography-root"
-=======
-                      class="MuiTypography-root MuiTypography-body1 css-z7oskh-MuiTypography-root"
->>>>>>> master
+                      class="MuiTypography-root MuiTypography-body1 css-1rk5fdy-MuiTypography-root"
                       data-discover="true"
                       href="/ui/entities/2/entries"
                     >
@@ -421,11 +393,7 @@ vm0006
                     class="MuiBox-root css-162tvoi"
                   >
                     <a
-<<<<<<< HEAD
-                      class="MuiTypography-root MuiTypography-body1 css-rizt0-MuiTypography-root"
-=======
-                      class="MuiTypography-root MuiTypography-body1 css-z7oskh-MuiTypography-root"
->>>>>>> master
+                      class="MuiTypography-root MuiTypography-body1 css-1rk5fdy-MuiTypography-root"
                       data-discover="true"
                       href="/ui/entities/2/entries/1/details"
                     >
