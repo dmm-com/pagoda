@@ -2,11 +2,11 @@ import { EntityDetail } from "@dmm-com/airone-apiclient-typescript-fetch";
 import LockIcon from "@mui/icons-material/Lock";
 import { Typography } from "@mui/material";
 import React, { FC } from "react";
-import { Link } from "react-router";
 
+import { AironeLink } from "components/common";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { FlexBox } from "components/common/FlexBox";
-import { topPath, entitiesPath, entityEntriesPath } from "routes/Routes";
+import { entitiesPath, entityEntriesPath, topPath } from "routes/Routes";
 
 interface Props {
   entity?: EntityDetail;
@@ -17,15 +17,15 @@ interface Props {
 export const EntityBreadcrumbs: FC<Props> = ({ entity, attr, title }) => {
   return (
     <AironeBreadcrumbs>
-      <Typography component={Link} to={topPath()}>
+      <Typography component={AironeLink} to={topPath()}>
         Top
       </Typography>
-      <Typography component={Link} to={entitiesPath()}>
+      <Typography component={AironeLink} to={entitiesPath()}>
         モデル一覧
       </Typography>
       {entity && (
         <FlexBox>
-          <Typography component={Link} to={entityEntriesPath(entity.id)}>
+          <Typography component={AironeLink} to={entityEntriesPath(entity.id)}>
             {entity.name}
           </Typography>
           {!entity.isPublic && <LockIcon />}

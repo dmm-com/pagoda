@@ -28,7 +28,7 @@ exports[`should match snapshot 1`] = `
                     class="MuiBreadcrumbs-li"
                   >
                     <a
-                      class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                      class="MuiTypography-root MuiTypography-body1 css-z7oskh-MuiTypography-root"
                       data-discover="true"
                       href="/ui/"
                     >
@@ -45,7 +45,7 @@ exports[`should match snapshot 1`] = `
                     class="MuiBreadcrumbs-li"
                   >
                     <a
-                      class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                      class="MuiTypography-root MuiTypography-body1 css-z7oskh-MuiTypography-root"
                       data-discover="true"
                       href="/ui/advanced_search"
                     >
@@ -286,7 +286,7 @@ exports[`should match snapshot 1`] = `
                         class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
                       >
                         <a
-                          class="MuiBox-root css-0"
+                          class="MuiBox-root css-p5ouq3"
                           data-discover="true"
                           href="/ui/entities/1/entries/2/details"
                         >
@@ -406,7 +406,7 @@ exports[`should match snapshot 1`] = `
                   class="MuiBreadcrumbs-li"
                 >
                   <a
-                    class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 css-z7oskh-MuiTypography-root"
                     data-discover="true"
                     href="/ui/"
                   >
@@ -423,7 +423,7 @@ exports[`should match snapshot 1`] = `
                   class="MuiBreadcrumbs-li"
                 >
                   <a
-                    class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 css-z7oskh-MuiTypography-root"
                     data-discover="true"
                     href="/ui/advanced_search"
                   >
@@ -664,7 +664,7 @@ exports[`should match snapshot 1`] = `
                       class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1ex1afd-MuiTableCell-root"
                     >
                       <a
-                        class="MuiBox-root css-0"
+                        class="MuiBox-root css-p5ouq3"
                         data-discover="true"
                         href="/ui/entities/1/entries/2/details"
                       >

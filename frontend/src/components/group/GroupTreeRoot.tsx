@@ -8,13 +8,14 @@ import {
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import React, { FC } from "react";
-import { Link } from "react-router";
 
 import { GroupTree } from "../../repository/AironeApiClient";
 import { groupPath } from "../../routes/Routes";
 import { ServerContext } from "../../services/ServerContext";
 
 import { GroupTreeItem } from "./GroupTreeItem";
+
+import { AironeLink } from "components/common";
 
 const StyledListItem = styled(ListItem)(({}) => ({
   "&:nth-of-type(odd)": {
@@ -56,7 +57,7 @@ export const GroupTreeRoot: FC<Props> = ({
                 }
               />
               <Typography
-                component={Link}
+                component={AironeLink}
                 to={isSuperuser ? groupPath(groupTree.id) : "#"}
               >
                 {groupTree.name}
