@@ -1,5 +1,6 @@
 import { CategoryList } from "@dmm-com/airone-apiclient-typescript-fetch";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
+import TurnedInTwoToneIcon from "@mui/icons-material/TurnedInTwoTone";
 import { Box, IconButton, Typography } from "@mui/material";
 import React, { FC, useState } from "react";
 
@@ -24,14 +25,9 @@ export const CategoryListHeader: FC<Props> = ({
     <BetweenAlignedBox>
       {/* Category image */}
       <FlexBox alignItems="center">
-        <Box
-          mr="8px"
-          p="4px"
-          height="24px"
-          width="24px"
-          component="img"
-          src="/static/images/category/01.png"
-        />
+        <Box mr="8px" p="4px" height="24px" width="24px">
+          <TurnedInTwoToneIcon sx={{ color: "#626687" }} />
+        </Box>
 
         {/* Category title */}
         <Typography variant="h6" component="div">
