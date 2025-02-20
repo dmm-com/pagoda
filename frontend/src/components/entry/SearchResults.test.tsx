@@ -22,7 +22,7 @@ test("should render a component with essential props", function () {
           /* do nothing */
         }}
         bulkOperationEntryIds={[]}
-        handleChangeBulkOperationEntryId={() => {
+        setBulkOperationEntryIds={() => {
           /* do nothing */
         }}
         hasReferral={false}

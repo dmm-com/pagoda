@@ -160,14 +160,6 @@ export const AdvancedSearchResultsPage: FC = () => {
     }
   };
 
-  const handleChangeBulkOperationEntryId = (id: number, checked: boolean) => {
-    if (checked) {
-      setBulkOperationEntryIds([...bulkOperationEntryIds, id]);
-    } else {
-      setBulkOperationEntryIds(bulkOperationEntryIds.filter((i) => i !== id));
-    }
-  };
-
   const handleBulkDelete = async () => {
     try {
       await aironeApiClient.destroyEntries(bulkOperationEntryIds);
@@ -311,7 +303,7 @@ export const AdvancedSearchResultsPage: FC = () => {
                 .reduce((a, x) => ({ ...a, [x.key]: x.val }), {})
             }
             bulkOperationEntryIds={bulkOperationEntryIds}
-            handleChangeBulkOperationEntryId={handleChangeBulkOperationEntryId}
+            setBulkOperationEntryIds={setBulkOperationEntryIds}
             entityIds={entityIds}
             searchAllEntities={searchAllEntities}
             joinAttrs={joinAttrs}
