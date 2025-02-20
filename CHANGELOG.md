@@ -3,6 +3,9 @@
 ## In development
 
 ### Added
+* Added processing to be able to delete rest of Items as well as that are not checked
+  in the AdvancedPageResult page.
+  Contributed by @hinashi, @userlocalhost
 
 ### Changed
 
