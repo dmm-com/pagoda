@@ -836,6 +836,7 @@ class EntryAttributeValueRestoreAPI(generics.UpdateAPIView):
         OpenApiParameter(
             "ids", {"type": "array", "items": {"type": "number"}}, OpenApiParameter.QUERY
         ),
+        OpenApiParameter("isAll", OpenApiTypes.BOOL, OpenApiParameter.QUERY),
     ],
 )
 class EntryBulkDeleteAPI(generics.DestroyAPIView):
@@ -857,9 +858,19 @@ class EntryBulkDeleteAPI(generics.DestroyAPIView):
         if not all([user.has_permission(e, ACLType.Writable) for e in entries]):
             raise PermissionDenied("deleting some entries is not allowed")
 
+        # Run jobs that delete user specified Items
+        target_model = entries.first().schema if entries.first() else None
         for entry in entries:
             job: Job = Job.new_delete_entry_v2(user, entry)
             job.run()
+
+        # Run jobs that delete rest of Items of same Model
+        isAll: bool = self.request.query_params.get("isAll", False)
+        if isAll and target_model is not None:
+            entries = Entry.objects.filter(schema=target_model, is_active=True).exclude(id__in=ids)
+            for entry in entries:
+                job: Job = Job.new_delete_entry_v2(user, entry)
+                job.run()
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 

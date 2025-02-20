@@ -218,17 +218,17 @@ class AironeApiClient {
   ): Promise<PaginatedEntityListList> {
     const params: EntityApiV2ListRequest = page
       ? {
-          offset: (page - 1) * EntityListParam.MAX_ROW_COUNT,
-          limit: EntityListParam.MAX_ROW_COUNT,
-          search: search,
-          isToplevel: isToplevel,
-        }
+        offset: (page - 1) * EntityListParam.MAX_ROW_COUNT,
+        limit: EntityListParam.MAX_ROW_COUNT,
+        search: search,
+        isToplevel: isToplevel,
+      }
       : {
-          // Any better way to get all the entities?
-          limit: Number.MAX_SAFE_INTEGER,
-          search: search,
-          isToplevel: isToplevel,
-        };
+        // Any better way to get all the entities?
+        limit: Number.MAX_SAFE_INTEGER,
+        search: search,
+        isToplevel: isToplevel,
+      };
 
     return await this.entity.entityApiV2List(params);
   }
@@ -404,9 +404,9 @@ class AironeApiClient {
     );
   }
 
-  async destroyEntries(ids: Array<number>): Promise<void> {
+  async destroyEntries(ids: Array<number>, isAll?: boolean): Promise<void> {
     return await this.entry.entryApiV2BulkDeleteDestroy(
-      { ids },
+      { ids, isAll },
       {
         headers: {
           "Content-Type": "application/json;charset=utf-8",
@@ -635,16 +635,16 @@ class AironeApiClient {
     return await this.category.categoryApiV2List(
       page
         ? {
-            limit: EntityListParam.MAX_ROW_COUNT,
-            offset: (page - 1) * EntityListParam.MAX_ROW_COUNT,
-            ordering: ordering,
-            search: search,
-          }
+          limit: EntityListParam.MAX_ROW_COUNT,
+          offset: (page - 1) * EntityListParam.MAX_ROW_COUNT,
+          ordering: ordering,
+          search: search,
+        }
         : {
-            limit: EntityListParam.MAX_ROW_COUNT,
-            ordering: ordering,
-            search: search,
-          }
+          limit: EntityListParam.MAX_ROW_COUNT,
+          ordering: ordering,
+          search: search,
+        }
     );
   }
 
