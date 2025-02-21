@@ -11,9 +11,8 @@ import {
   Button,
   Checkbox,
   FormControlLabel,
-  FormGroup,
   IconButton,
-  Typography
+  Typography,
 } from "@mui/material";
 import { useSnackbar } from "notistack";
 import React, { FC, useEffect, useMemo, useState } from "react";
@@ -171,7 +170,10 @@ export const AdvancedSearchResultsPage: FC = () => {
 
   const handleBulkDelete = async () => {
     try {
-      await aironeApiClient.destroyEntries(bulkOperationEntryIds, isDeleteAllItems);
+      await aironeApiClient.destroyEntries(
+        bulkOperationEntryIds,
+        isDeleteAllItems
+      );
       enqueueSnackbar("複数アイテムの削除に成功しました", {
         variant: "success",
       });
@@ -260,10 +262,14 @@ export const AdvancedSearchResultsPage: FC = () => {
             dialogTitle="本当に削除しますか？"
             onClickYes={handleBulkDelete}
             content={
-              bulkOperationEntryIds.length == AdvancedSerarchResultListParam.MAX_ROW_COUNT ? (
-                <FormControlLabel control={
-                  <Checkbox onChange={(e) => setIsDeleteAllItems(true)} />
-                } label="未選択のアイテムもまとめて削除する" />
+              bulkOperationEntryIds.length ==
+              AdvancedSerarchResultListParam.MAX_ROW_COUNT ? (
+                <FormControlLabel
+                  control={
+                    <Checkbox onChange={() => setIsDeleteAllItems(true)} />
+                  }
+                  label="未選択のアイテムもまとめて削除する"
+                />
               ) : (
                 <></>
               )

@@ -869,8 +869,8 @@ class EntryBulkDeleteAPI(generics.DestroyAPIView):
         if isAll and target_model is not None:
             entries = Entry.objects.filter(schema=target_model, is_active=True).exclude(id__in=ids)
             for entry in entries:
-                job: Job = Job.new_delete_entry_v2(user, entry)
-                job.run()
+                another_job: Job = Job.new_delete_entry_v2(user, entry)
+                another_job.run()
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 

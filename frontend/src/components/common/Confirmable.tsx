@@ -1,4 +1,11 @@
-import { Box, Button, Dialog, DialogActions, DialogTitle, DialogContent } from "@mui/material";
+import {
+  Box,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogTitle,
+  DialogContent,
+} from "@mui/material";
 import React, { ReactElement, FC, SyntheticEvent, useState } from "react";
 
 interface Props {
@@ -40,9 +47,7 @@ export const Confirmable: FC<Props> = ({
       >
         <DialogTitle id="alert-dialog-title">{dialogTitle}</DialogTitle>
         <DialogContent>
-          <>
-            {content}
-          </>
+          <>{content}</>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleConfirmed} color="primary" autoFocus>
