@@ -6,7 +6,14 @@ import {
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import SettingsIcon from "@mui/icons-material/Settings";
-import { Box, Button, IconButton, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  Checkbox,
+  FormControlLabel,
+  IconButton,
+  Typography,
+} from "@mui/material";
 import { useSnackbar } from "notistack";
 import React, { FC, useEffect, useMemo, useState } from "react";
 import { useLocation } from "react-router";
@@ -58,6 +65,7 @@ export const AdvancedSearchResultsPage: FC = () => {
     Array<number>
   >([]);
   const [toggle, setToggle] = useState(false);
+  const [isDeleteAllItems, setIsDeleteAllItems] = useState(false);
 
   const {
     entityIds,
@@ -160,17 +168,12 @@ export const AdvancedSearchResultsPage: FC = () => {
     }
   };
 
-  const handleChangeBulkOperationEntryId = (id: number, checked: boolean) => {
-    if (checked) {
-      setBulkOperationEntryIds([...bulkOperationEntryIds, id]);
-    } else {
-      setBulkOperationEntryIds(bulkOperationEntryIds.filter((i) => i !== id));
-    }
-  };
-
   const handleBulkDelete = async () => {
     try {
-      await aironeApiClient.destroyEntries(bulkOperationEntryIds);
+      await aironeApiClient.destroyEntries(
+        bulkOperationEntryIds,
+        isDeleteAllItems
+      );
       enqueueSnackbar("複数アイテムの削除に成功しました", {
         variant: "success",
       });
@@ -258,6 +261,19 @@ export const AdvancedSearchResultsPage: FC = () => {
             )}
             dialogTitle="本当に削除しますか？"
             onClickYes={handleBulkDelete}
+            content={
+              bulkOperationEntryIds.length ==
+              AdvancedSerarchResultListParam.MAX_ROW_COUNT ? (
+                <FormControlLabel
+                  control={
+                    <Checkbox onChange={() => setIsDeleteAllItems(true)} />
+                  }
+                  label="未選択のアイテムもまとめて削除する"
+                />
+              ) : (
+                <></>
+              )
+            }
           />
         </Box>
       </PageHeader>
@@ -311,7 +327,7 @@ export const AdvancedSearchResultsPage: FC = () => {
                 .reduce((a, x) => ({ ...a, [x.key]: x.val }), {})
             }
             bulkOperationEntryIds={bulkOperationEntryIds}
-            handleChangeBulkOperationEntryId={handleChangeBulkOperationEntryId}
+            setBulkOperationEntryIds={setBulkOperationEntryIds}
             entityIds={entityIds}
             searchAllEntities={searchAllEntities}
             joinAttrs={joinAttrs}
