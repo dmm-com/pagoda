@@ -19,16 +19,16 @@ exports[`should match snapshot 1`] = `
             >
               <nav
                 aria-label="breadcrumb"
-                class="MuiTypography-root MuiTypography-body1 MuiBreadcrumbs-root css-63vwl1-MuiTypography-root-MuiBreadcrumbs-root"
+                class="MuiTypography-root MuiTypography-body1 MuiBreadcrumbs-root css-5cvx94-MuiTypography-root-MuiBreadcrumbs-root"
               >
                 <ol
-                  class="MuiBreadcrumbs-ol css-4pdmu4-MuiBreadcrumbs-ol"
+                  class="MuiBreadcrumbs-ol css-1uwp4ue-MuiBreadcrumbs-ol"
                 >
                   <li
                     class="MuiBreadcrumbs-li"
                   >
                     <a
-                      class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                      class="MuiTypography-root MuiTypography-body1 css-1rk5fdy-MuiTypography-root"
                       data-discover="true"
                       href="/ui/"
                     >
@@ -37,7 +37,7 @@ exports[`should match snapshot 1`] = `
                   </li>
                   <li
                     aria-hidden="true"
-                    class="MuiBreadcrumbs-separator css-1wuw8dw-MuiBreadcrumbs-separator"
+                    class="MuiBreadcrumbs-separator css-jhr02i-MuiBreadcrumbs-separator"
                   >
                     /
                   </li>
@@ -45,7 +45,7 @@ exports[`should match snapshot 1`] = `
                     class="MuiBreadcrumbs-li"
                   >
                     <a
-                      class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                      class="MuiTypography-root MuiTypography-body1 css-1rk5fdy-MuiTypography-root"
                       data-discover="true"
                       href="/ui/entities"
                     >
@@ -54,7 +54,7 @@ exports[`should match snapshot 1`] = `
                   </li>
                   <li
                     aria-hidden="true"
-                    class="MuiBreadcrumbs-separator css-1wuw8dw-MuiBreadcrumbs-separator"
+                    class="MuiBreadcrumbs-separator css-jhr02i-MuiBreadcrumbs-separator"
                   >
                     /
                   </li>
@@ -62,10 +62,10 @@ exports[`should match snapshot 1`] = `
                     class="MuiBreadcrumbs-li"
                   >
                     <div
-                      class="MuiBox-root css-gvoll6"
+                      class="MuiBox-root css-162tvoi"
                     >
                       <a
-                        class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                        class="MuiTypography-root MuiTypography-body1 css-1rk5fdy-MuiTypography-root"
                         data-discover="true"
                         href="/ui/entities/1/entries"
                       >
@@ -73,20 +73,20 @@ exports[`should match snapshot 1`] = `
                       </a>
                       <svg
                         aria-hidden="true"
-                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1umw9bq-MuiSvgIcon-root"
                         data-testid="LockIcon"
                         focusable="false"
                         viewBox="0 0 24 24"
                       >
                         <path
-                          d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"
+                          d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2m-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2m3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1z"
                         />
                       </svg>
                     </div>
                   </li>
                   <li
                     aria-hidden="true"
-                    class="MuiBreadcrumbs-separator css-1wuw8dw-MuiBreadcrumbs-separator"
+                    class="MuiBreadcrumbs-separator css-jhr02i-MuiBreadcrumbs-separator"
                   >
                     /
                   </li>
@@ -94,7 +94,7 @@ exports[`should match snapshot 1`] = `
                     class="MuiBreadcrumbs-li"
                   >
                     <p
-                      class="MuiTypography-root MuiTypography-body1 css-1gqyz35-MuiTypography-root"
+                      class="MuiTypography-root MuiTypography-body1 css-1bgbmvw-MuiTypography-root"
                     >
                       ACL変更履歴
                     </p>
@@ -105,84 +105,81 @@ exports[`should match snapshot 1`] = `
           </div>
         </div>
         <div
-          class="MuiBox-root css-1wo2fgg"
+          class="MuiBox-root css-1cs9h4l"
         >
           <div
-            class="MuiBox-root css-t1gim7"
+            class="MuiBox-root css-1519avi"
           >
             <div
               class="MuiBox-root css-9rtbay"
             >
               <h6
-                class="MuiTypography-root MuiTypography-h6 css-178toxd-MuiTypography-root"
+                class="MuiTypography-root MuiTypography-h6 css-2toz8d-MuiTypography-root"
                 id="title"
               >
                 acl1
               </h6>
               <h6
-                class="MuiTypography-root MuiTypography-subtitle1 css-10wpov9-MuiTypography-root"
+                class="MuiTypography-root MuiTypography-subtitle1 css-1i3tsf3-MuiTypography-root"
                 id="description"
               >
                 ACL変更履歴
               </h6>
               <div
-                class="MuiBox-root css-1b3gh38"
+                class="MuiBox-root css-hoapfw"
               >
                 <div
                   class="MuiBox-root css-vxcgou"
                 >
                   <button
-                    class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-78trlr-MuiButtonBase-root-MuiIconButton-root"
+                    class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-53g0n7-MuiButtonBase-root-MuiIconButton-root"
                     id="controlMenu"
                     tabindex="0"
                     type="button"
                   >
                     <svg
                       aria-hidden="true"
-                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1umw9bq-MuiSvgIcon-root"
                       data-testid="AppsIcon"
                       focusable="false"
                       viewBox="0 0 24 24"
                     >
                       <path
-                        d="M4 8h4V4H4v4zm6 12h4v-4h-4v4zm-6 0h4v-4H4v4zm0-6h4v-4H4v4zm6 0h4v-4h-4v4zm6-10v4h4V4h-4zm-6 4h4V4h-4v4zm6 6h4v-4h-4v4zm0 6h4v-4h-4v4z"
+                        d="M4 8h4V4H4zm6 12h4v-4h-4zm-6 0h4v-4H4zm0-6h4v-4H4zm6 0h4v-4h-4zm6-10v4h4V4zm-6 4h4V4h-4zm6 6h4v-4h-4zm0 6h4v-4h-4z"
                       />
                     </svg>
-                    <span
-                      class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-                    />
                   </button>
                 </div>
               </div>
             </div>
             <hr
-              class="MuiDivider-root MuiDivider-fullWidth MuiDivider-flexItem css-yk10cl-MuiDivider-root"
+              class="MuiDivider-root MuiDivider-fullWidth MuiDivider-flexItem css-lhgpb-MuiDivider-root"
             />
           </div>
         </div>
         <div
-          class="MuiContainer-root MuiContainer-maxWidthLg css-1oqqzyl-MuiContainer-root"
+          class="MuiContainer-root MuiContainer-maxWidthLg css-5c1adp-MuiContainer-root"
         >
           <div
             class="MuiBox-root css-0"
           >
             <table
-              class="MuiTable-root css-rqglhn-MuiTable-root"
+              class="MuiTable-root css-1xwxv7r-MuiTable-root"
               id="table_history_list"
             >
               <thead
-                class="MuiTableHead-root css-15wwp11-MuiTableHead-root"
+                class="MuiTableHead-root css-1a7iywq-MuiTableHead-root"
               >
                 <tr
-                  class="MuiTableRow-root MuiTableRow-head css-15pgmhf-MuiTableRow-root"
+                  class="MuiTableRow-root MuiTableRow-head css-1msocm9-MuiTableRow-root"
                 >
                   <th
-                    class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-flimy0-MuiTableCell-root"
+                    class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-1nttwnn-MuiTableCell-root"
                     scope="col"
                     width="200px"
                   />
                   <th
-                    class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-flimy0-MuiTableCell-root"
+                    class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-1nttwnn-MuiTableCell-root"
                     scope="col"
                     width="540px"
                   >
@@ -190,31 +187,31 @@ exports[`should match snapshot 1`] = `
                       class="MuiBox-root css-k008qs"
                     >
                       <p
-                        class="MuiTypography-root MuiTypography-body1 css-kwew1m-MuiTypography-root"
+                        class="MuiTypography-root MuiTypography-body1 css-1cva0vv-MuiTypography-root"
                       >
                         項目
                       </p>
                       <p
-                        class="MuiTypography-root MuiTypography-body1 css-kwew1m-MuiTypography-root"
+                        class="MuiTypography-root MuiTypography-body1 css-1cva0vv-MuiTypography-root"
                       >
                         変更前
                       </p>
                       <p
-                        class="MuiTypography-root MuiTypography-body1 css-kwew1m-MuiTypography-root"
+                        class="MuiTypography-root MuiTypography-body1 css-1cva0vv-MuiTypography-root"
                       >
                         変更後
                       </p>
                     </div>
                   </th>
                   <th
-                    class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-flimy0-MuiTableCell-root"
+                    class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-1nttwnn-MuiTableCell-root"
                     scope="col"
                     width="140px"
                   >
                     実行日時
                   </th>
                   <th
-                    class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-flimy0-MuiTableCell-root"
+                    class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-1nttwnn-MuiTableCell-root"
                     scope="col"
                     width="144px"
                   >
@@ -223,7 +220,7 @@ exports[`should match snapshot 1`] = `
                 </tr>
               </thead>
               <tbody
-                class="MuiTableBody-root css-apqrd9-MuiTableBody-root"
+                class="MuiTableBody-root css-gmh7jj-MuiTableBody-root"
               />
             </table>
           </div>
@@ -246,16 +243,16 @@ exports[`should match snapshot 1`] = `
           >
             <nav
               aria-label="breadcrumb"
-              class="MuiTypography-root MuiTypography-body1 MuiBreadcrumbs-root css-63vwl1-MuiTypography-root-MuiBreadcrumbs-root"
+              class="MuiTypography-root MuiTypography-body1 MuiBreadcrumbs-root css-5cvx94-MuiTypography-root-MuiBreadcrumbs-root"
             >
               <ol
-                class="MuiBreadcrumbs-ol css-4pdmu4-MuiBreadcrumbs-ol"
+                class="MuiBreadcrumbs-ol css-1uwp4ue-MuiBreadcrumbs-ol"
               >
                 <li
                   class="MuiBreadcrumbs-li"
                 >
                   <a
-                    class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 css-1rk5fdy-MuiTypography-root"
                     data-discover="true"
                     href="/ui/"
                   >
@@ -264,7 +261,7 @@ exports[`should match snapshot 1`] = `
                 </li>
                 <li
                   aria-hidden="true"
-                  class="MuiBreadcrumbs-separator css-1wuw8dw-MuiBreadcrumbs-separator"
+                  class="MuiBreadcrumbs-separator css-jhr02i-MuiBreadcrumbs-separator"
                 >
                   /
                 </li>
@@ -272,7 +269,7 @@ exports[`should match snapshot 1`] = `
                   class="MuiBreadcrumbs-li"
                 >
                   <a
-                    class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 css-1rk5fdy-MuiTypography-root"
                     data-discover="true"
                     href="/ui/entities"
                   >
@@ -281,7 +278,7 @@ exports[`should match snapshot 1`] = `
                 </li>
                 <li
                   aria-hidden="true"
-                  class="MuiBreadcrumbs-separator css-1wuw8dw-MuiBreadcrumbs-separator"
+                  class="MuiBreadcrumbs-separator css-jhr02i-MuiBreadcrumbs-separator"
                 >
                   /
                 </li>
@@ -289,10 +286,10 @@ exports[`should match snapshot 1`] = `
                   class="MuiBreadcrumbs-li"
                 >
                   <div
-                    class="MuiBox-root css-gvoll6"
+                    class="MuiBox-root css-162tvoi"
                   >
                     <a
-                      class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                      class="MuiTypography-root MuiTypography-body1 css-1rk5fdy-MuiTypography-root"
                       data-discover="true"
                       href="/ui/entities/1/entries"
                     >
@@ -300,20 +297,20 @@ exports[`should match snapshot 1`] = `
                     </a>
                     <svg
                       aria-hidden="true"
-                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1umw9bq-MuiSvgIcon-root"
                       data-testid="LockIcon"
                       focusable="false"
                       viewBox="0 0 24 24"
                     >
                       <path
-                        d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"
+                        d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2m-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2m3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1z"
                       />
                     </svg>
                   </div>
                 </li>
                 <li
                   aria-hidden="true"
-                  class="MuiBreadcrumbs-separator css-1wuw8dw-MuiBreadcrumbs-separator"
+                  class="MuiBreadcrumbs-separator css-jhr02i-MuiBreadcrumbs-separator"
                 >
                   /
                 </li>
@@ -321,7 +318,7 @@ exports[`should match snapshot 1`] = `
                   class="MuiBreadcrumbs-li"
                 >
                   <p
-                    class="MuiTypography-root MuiTypography-body1 css-1gqyz35-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 css-1bgbmvw-MuiTypography-root"
                   >
                     ACL変更履歴
                   </p>
@@ -332,84 +329,81 @@ exports[`should match snapshot 1`] = `
         </div>
       </div>
       <div
-        class="MuiBox-root css-1wo2fgg"
+        class="MuiBox-root css-1cs9h4l"
       >
         <div
-          class="MuiBox-root css-t1gim7"
+          class="MuiBox-root css-1519avi"
         >
           <div
             class="MuiBox-root css-9rtbay"
           >
             <h6
-              class="MuiTypography-root MuiTypography-h6 css-178toxd-MuiTypography-root"
+              class="MuiTypography-root MuiTypography-h6 css-2toz8d-MuiTypography-root"
               id="title"
             >
               acl1
             </h6>
             <h6
-              class="MuiTypography-root MuiTypography-subtitle1 css-10wpov9-MuiTypography-root"
+              class="MuiTypography-root MuiTypography-subtitle1 css-1i3tsf3-MuiTypography-root"
               id="description"
             >
               ACL変更履歴
             </h6>
             <div
-              class="MuiBox-root css-1b3gh38"
+              class="MuiBox-root css-hoapfw"
             >
               <div
                 class="MuiBox-root css-vxcgou"
               >
                 <button
-                  class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-78trlr-MuiButtonBase-root-MuiIconButton-root"
+                  class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-53g0n7-MuiButtonBase-root-MuiIconButton-root"
                   id="controlMenu"
                   tabindex="0"
                   type="button"
                 >
                   <svg
                     aria-hidden="true"
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1umw9bq-MuiSvgIcon-root"
                     data-testid="AppsIcon"
                     focusable="false"
                     viewBox="0 0 24 24"
                   >
                     <path
-                      d="M4 8h4V4H4v4zm6 12h4v-4h-4v4zm-6 0h4v-4H4v4zm0-6h4v-4H4v4zm6 0h4v-4h-4v4zm6-10v4h4V4h-4zm-6 4h4V4h-4v4zm6 6h4v-4h-4v4zm0 6h4v-4h-4v4z"
+                      d="M4 8h4V4H4zm6 12h4v-4h-4zm-6 0h4v-4H4zm0-6h4v-4H4zm6 0h4v-4h-4zm6-10v4h4V4zm-6 4h4V4h-4zm6 6h4v-4h-4zm0 6h4v-4h-4z"
                     />
                   </svg>
-                  <span
-                    class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-                  />
                 </button>
               </div>
             </div>
           </div>
           <hr
-            class="MuiDivider-root MuiDivider-fullWidth MuiDivider-flexItem css-yk10cl-MuiDivider-root"
+            class="MuiDivider-root MuiDivider-fullWidth MuiDivider-flexItem css-lhgpb-MuiDivider-root"
           />
         </div>
       </div>
       <div
-        class="MuiContainer-root MuiContainer-maxWidthLg css-1oqqzyl-MuiContainer-root"
+        class="MuiContainer-root MuiContainer-maxWidthLg css-5c1adp-MuiContainer-root"
       >
         <div
           class="MuiBox-root css-0"
         >
           <table
-            class="MuiTable-root css-rqglhn-MuiTable-root"
+            class="MuiTable-root css-1xwxv7r-MuiTable-root"
             id="table_history_list"
           >
             <thead
-              class="MuiTableHead-root css-15wwp11-MuiTableHead-root"
+              class="MuiTableHead-root css-1a7iywq-MuiTableHead-root"
             >
               <tr
-                class="MuiTableRow-root MuiTableRow-head css-15pgmhf-MuiTableRow-root"
+                class="MuiTableRow-root MuiTableRow-head css-1msocm9-MuiTableRow-root"
               >
                 <th
-                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-flimy0-MuiTableCell-root"
+                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-1nttwnn-MuiTableCell-root"
                   scope="col"
                   width="200px"
                 />
                 <th
-                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-flimy0-MuiTableCell-root"
+                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-1nttwnn-MuiTableCell-root"
                   scope="col"
                   width="540px"
                 >
@@ -417,31 +411,31 @@ exports[`should match snapshot 1`] = `
                     class="MuiBox-root css-k008qs"
                   >
                     <p
-                      class="MuiTypography-root MuiTypography-body1 css-kwew1m-MuiTypography-root"
+                      class="MuiTypography-root MuiTypography-body1 css-1cva0vv-MuiTypography-root"
                     >
                       項目
                     </p>
                     <p
-                      class="MuiTypography-root MuiTypography-body1 css-kwew1m-MuiTypography-root"
+                      class="MuiTypography-root MuiTypography-body1 css-1cva0vv-MuiTypography-root"
                     >
                       変更前
                     </p>
                     <p
-                      class="MuiTypography-root MuiTypography-body1 css-kwew1m-MuiTypography-root"
+                      class="MuiTypography-root MuiTypography-body1 css-1cva0vv-MuiTypography-root"
                     >
                       変更後
                     </p>
                   </div>
                 </th>
                 <th
-                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-flimy0-MuiTableCell-root"
+                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-1nttwnn-MuiTableCell-root"
                   scope="col"
                   width="140px"
                 >
                   実行日時
                 </th>
                 <th
-                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-flimy0-MuiTableCell-root"
+                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-1nttwnn-MuiTableCell-root"
                   scope="col"
                   width="144px"
                 >
@@ -450,7 +444,7 @@ exports[`should match snapshot 1`] = `
               </tr>
             </thead>
             <tbody
-              class="MuiTableBody-root css-apqrd9-MuiTableBody-root"
+              class="MuiTableBody-root css-gmh7jj-MuiTableBody-root"
             />
           </table>
         </div>

@@ -12,7 +12,7 @@ exports[`should match snapshot 1`] = `
           class="MuiBox-root css-185kxi8"
         >
           <h1
-            class="MuiTypography-root MuiTypography-h1 css-1mdm99z-MuiTypography-root"
+            class="MuiTypography-root MuiTypography-h1 css-qgkryb-MuiTypography-root"
             id="sorry_forbidden"
           >
             利用できません:;(∩´﹏\`∩);:
@@ -22,12 +22,12 @@ exports[`should match snapshot 1`] = `
           class="MuiBox-root css-dvxtzn"
         >
           <p
-            class="MuiTypography-root MuiTypography-body1 css-a2h54b-MuiTypography-root"
+            class="MuiTypography-root MuiTypography-body1 css-e679fg-MuiTypography-root"
           >
             このページは現在、利用ができません。
           </p>
           <p
-            class="MuiTypography-root MuiTypography-body1 css-a2h54b-MuiTypography-root"
+            class="MuiTypography-root MuiTypography-body1 css-e679fg-MuiTypography-root"
           >
             管理者からのお知らせをご覧いただくか、お問合せください。
           </p>
@@ -36,14 +36,12 @@ exports[`should match snapshot 1`] = `
           class="MuiBox-root css-0"
         >
           <button
-            class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium css-1npav5g-MuiButtonBase-root-MuiButton-root"
+            class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary css-1mkkyro-MuiButtonBase-root-MuiButton-root"
+            id=":r0:"
             tabindex="0"
             type="button"
           >
             トップページへ
-            <span
-              class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-            />
           </button>
         </div>
       </div>
@@ -57,7 +55,7 @@ exports[`should match snapshot 1`] = `
         class="MuiBox-root css-185kxi8"
       >
         <h1
-          class="MuiTypography-root MuiTypography-h1 css-1mdm99z-MuiTypography-root"
+          class="MuiTypography-root MuiTypography-h1 css-qgkryb-MuiTypography-root"
           id="sorry_forbidden"
         >
           利用できません:;(∩´﹏\`∩);:
@@ -67,12 +65,12 @@ exports[`should match snapshot 1`] = `
         class="MuiBox-root css-dvxtzn"
       >
         <p
-          class="MuiTypography-root MuiTypography-body1 css-a2h54b-MuiTypography-root"
+          class="MuiTypography-root MuiTypography-body1 css-e679fg-MuiTypography-root"
         >
           このページは現在、利用ができません。
         </p>
         <p
-          class="MuiTypography-root MuiTypography-body1 css-a2h54b-MuiTypography-root"
+          class="MuiTypography-root MuiTypography-body1 css-e679fg-MuiTypography-root"
         >
           管理者からのお知らせをご覧いただくか、お問合せください。
         </p>
@@ -81,14 +79,12 @@ exports[`should match snapshot 1`] = `
         class="MuiBox-root css-0"
       >
         <button
-          class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium css-1npav5g-MuiButtonBase-root-MuiButton-root"
+          class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary css-1mkkyro-MuiButtonBase-root-MuiButton-root"
+          id=":r0:"
           tabindex="0"
           type="button"
         >
           トップページへ
-          <span
-            class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-          />
         </button>
       </div>
     </div>

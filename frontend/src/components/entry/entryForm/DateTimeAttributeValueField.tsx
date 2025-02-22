@@ -1,4 +1,4 @@
-import { Box, TextField, Typography } from "@mui/material";
+import { Box, Typography } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { DateTimePicker } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
@@ -42,32 +42,28 @@ export const DateTimeAttributeValueField: FC<Props> = ({
         render={({ field, fieldState: { error } }) => (
           <LocalizationProvider dateAdapter={AdapterDateFns}>
             <DateTimePicker
-              inputFormat="yyyy/MM/dd HH:mm:ss"
-              value={field.value}
-              onChange={(
-                date: Date | null,
-                keyboardInputValue?: string | undefined
-              ) => {
+              format="yyyy/MM/dd HH:mm:ss"
+              value={field.value ? new Date(field.value) : null}
+              onChange={(date: Date | null) => {
                 setValue(
                   `attrs.${attrId}.value.asString`,
                   date != null && !isNaN(date.getTime()) // if the date is valid
                     ? date.toISOString()
-                    : keyboardInputValue,
+                    : "",
                   {
                     shouldDirty: true,
                     shouldValidate: true,
                   }
                 );
               }}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  error={error != null}
-                  helperText={error?.message}
-                  size="small"
-                  fullWidth={false}
-                />
-              )}
+              slotProps={{
+                textField: {
+                  error: error != null,
+                  helperText: error?.message,
+                  size: "small",
+                  fullWidth: false,
+                },
+              }}
               disabled={isDisabled}
             />
           </LocalizationProvider>

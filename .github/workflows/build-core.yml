@@ -14,13 +14,16 @@ on:
 jobs:
   lint:
     runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        python-version: ["3.12.9"]
     steps:
       - uses: actions/checkout@v3
       - name: Install poetry
         run: pipx install poetry
       - uses: actions/setup-python@v4
         with:
-          python-version: "3.11.5"
+          python-version: ${{ matrix.python-version }}
           cache: "poetry"
       - name: apt-get
         run: |
@@ -37,7 +40,7 @@ jobs:
           poetry run ruff format --check .
 
   # set modules have python test code outputs.modules
-  setup_python311:
+  setup_python:
     runs-on: ubuntu-24.04
     outputs:
       targets: ${{ steps.modules.outputs.targets }}
@@ -49,13 +52,14 @@ jobs:
           modules=$(ls -d */tests/ | sed 's/\/tests\///' | jq -Rsc 'split("\n")[:-1]')
           echo "targets=$modules" >> $GITHUB_OUTPUT
 
-  python311:
+  test:
     runs-on: ubuntu-24.04
-    needs: setup_python311
+    needs: setup_python
     strategy:
       fail-fast: false
       matrix:
-        target: ${{ fromJson(needs.setup_python311.outputs.targets) }}
+        python-version: ["3.12.9"]
+        target: ${{ fromJson(needs.setup_python.outputs.targets) }}
     services:
       rabbitmq:
         image: rabbitmq:3.8.19-management
@@ -93,7 +97,7 @@ jobs:
         run: pipx install poetry
       - uses: actions/setup-python@v4
         with:
-          python-version: "3.11.5"
+          python-version: ${{ matrix.python-version }}
           cache: "poetry"
       - name: Install additional dependencies
         run: |

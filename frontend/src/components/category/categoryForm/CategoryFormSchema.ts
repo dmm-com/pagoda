@@ -16,6 +16,8 @@ export const schema = schemaForType<CategoryList>()(
         })
       )
       .default([]),
+    //priority: z.number().default(0).refine((v) => Number(v)),
+    priority: z.coerce.number(),
   })
 );
 

@@ -1,11 +1,12 @@
 import { zodResolver } from "@hookform/resolvers/zod/dist/zod";
-import { Box, Typography, Button, Container } from "@mui/material";
+import { Box, Button, Container, Typography } from "@mui/material";
 import { useSnackbar } from "notistack";
 import React, { FC, useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
-import { Link, useNavigate } from "react-router";
+import { useNavigate } from "react-router";
 import { useToggle } from "react-use";
 
+import { AironeLink } from "components";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { Confirmable } from "components/common/Confirmable";
 import { Loading } from "components/common/Loading";
@@ -148,10 +149,10 @@ export const UserEditPage: FC = () => {
   return (
     <Box>
       <AironeBreadcrumbs>
-        <Typography component={Link} to={topPath()}>
+        <Typography component={AironeLink} to={topPath()}>
           Top
         </Typography>
-        <Typography component={Link} to={usersPath()}>
+        <Typography component={AironeLink} to={usersPath()}>
           ユーザ管理
         </Typography>
         <Typography color="textPrimary">ユーザ情報の設定</Typography>

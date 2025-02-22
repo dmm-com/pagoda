@@ -2,8 +2,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Box, Typography } from "@mui/material";
 import React, { FC, useCallback, useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { Link, useNavigate } from "react-router";
+import { useNavigate } from "react-router";
 
+import { AironeLink } from "components";
 import { CategoryForm } from "components/category/CategoryForm";
 import {
   Schema,
@@ -64,6 +65,8 @@ export const CategoryEditPage: FC = () => {
 
   const handleSubmitOnValid = useCallback(
     async (category: Schema) => {
+      // Note: This might not necessary any more
+      category = { ...category, priority: Number(category.priority) };
       try {
         if (willCreate) {
           await aironeApiClient.createCategory(category);
@@ -100,10 +103,10 @@ export const CategoryEditPage: FC = () => {
   return (
     <Box className="container-fluid">
       <AironeBreadcrumbs>
-        <Typography component={Link} to={topPath()}>
+        <Typography component={AironeLink} to={topPath()}>
           Top
         </Typography>
-        <Typography component={Link} to={listCategoryPath()}>
+        <Typography component={AironeLink} to={listCategoryPath()}>
           カテゴリ一覧
         </Typography>
         <Typography color="textPrimary">カテゴリ編集</Typography>

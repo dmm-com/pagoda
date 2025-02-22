@@ -1,11 +1,12 @@
 import ReplayIcon from "@mui/icons-material/Replay";
 import { Box, Button, Container, Typography } from "@mui/material";
 import React, { FC, useMemo } from "react";
-import { Link, useLocation } from "react-router";
+import { useLocation } from "react-router";
 import { useToggle } from "react-use";
 
 import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
 
+import { AironeLink } from "components";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { Loading } from "components/common/Loading";
 import { PageHeader } from "components/common/PageHeader";
@@ -37,7 +38,7 @@ export const JobListPage: FC = () => {
   return (
     <Box className="container-fluid">
       <AironeBreadcrumbs>
-        <Typography component={Link} to={topPath()}>
+        <Typography component={AironeLink} to={topPath()}>
           Top
         </Typography>
         <Typography color="textPrimary">ジョブ一覧</Typography>
