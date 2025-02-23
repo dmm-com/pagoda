@@ -715,8 +715,10 @@ class SpannerRepository:
         join_attrs: list[AdvancedSearchJoinAttrInfo] = [],
     ) -> list[AdvancedSearchEntry]:
         """Search entries based on criteria"""
+        # Note: join_attrs is passed as empty list to avoid duplicate conditions,
+        # as we'll add join conditions separately with EXISTS clause
         conditions, params, param_types = self._build_search_query_conditions(
-            entity_ids, attribute_names, entry_name_pattern, hint_attrs, join_attrs
+            entity_ids, attribute_names, entry_name_pattern, hint_attrs, []
         )
 
         query = f"""
@@ -749,12 +751,30 @@ class SpannerRepository:
         join_attrs: list[AdvancedSearchJoinAttrInfo] = [],
     ) -> int:
         """Count total number of entries matching the search criteria"""
+        # Build base query conditions
+        # Note: Pass empty join_attrs here and add join conditions later as EXISTS clause
+        # to avoid duplicate conditions and get accurate count
         conditions, params, param_types = self._build_search_query_conditions(
-            entity_ids, attribute_names, entry_name_pattern, hint_attrs, join_attrs
+            entity_ids, attribute_names, entry_name_pattern, hint_attrs, []
         )
 
+        # Build join attributes conditions if any
+        if join_attrs:
+            parent_attr_names = [attr.name for attr in join_attrs]
+            if parent_attr_names:
+                conditions += """ AND EXISTS (
+                    SELECT 1
+                    FROM AdvancedSearchAttribute ja
+                    WHERE ja.EntryId = e.EntryId
+                    AND ja.Name IN UNNEST(@parent_attr_names)
+                )"""
+                params["parent_attr_names"] = parent_attr_names
+                param_types["parent_attr_names"] = spanner_v1.param_types.Array(
+                    spanner_v1.param_types.STRING
+                )
+
         query = f"""
-        SELECT COUNT(*)
+        SELECT COUNT(DISTINCT e.EntryId)
         FROM AdvancedSearchEntry e
         WHERE {conditions}
         """
@@ -829,7 +849,7 @@ class SpannerRepository:
                    referral.ReferralId AS ReferralEntryId
           )
         INNER JOIN AdvancedSearchAttribute AS a
-          ON a.EntryId = ReferralEntryId
+          ON a.EntryId = ReferralEntryId AND a.AttributeId = SrcAttributeId
         INNER JOIN AdvancedSearchAttribute AS p
           ON p.EntryId = SrcEntryId
           AND p.AttributeId = SrcAttributeId
