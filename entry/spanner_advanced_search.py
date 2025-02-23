@@ -482,7 +482,7 @@ class SpannerRepository:
                     pass
 
                 case _:
-                    # その他の場合は、単純に attribute_name の存在チェックのみ
+                    # Otherwise, just check the existence of attribute_name
                     conditions += f"""
                     AND EXISTS (
                         SELECT 1
@@ -772,8 +772,13 @@ class SpannerRepository:
         attribute_names: list[str] | None = None,
         join_attrs: list[AdvancedSearchJoinAttrInfo] = [],
     ) -> list[tuple[AdvancedSearchAttribute, AdvancedSearchAttributeValue]]:
-        """Get attributes and their values for given entries"""
+        """Get attributes and their values for given entries
 
+        Args:
+            entry_ids: Target entry IDs
+            attribute_names: Filter by attribute names if specified
+            join_attrs: Join attribute information for 1-level depth
+        """
         base_query = """
         SELECT
           a.EntryId,
@@ -785,7 +790,7 @@ class SpannerRepository:
           v.AttributeValueId,
           v.Value,
           v.RawValue,
-          FALSE AS IsJoinedAttr,
+          FALSE AS IsJoinedAttr
         FROM
           AdvancedSearchAttribute a
         JOIN
@@ -796,36 +801,45 @@ class SpannerRepository:
         WHERE
           a.EntryId IN UNNEST(@entry_ids)
         """
+
         join_attr_query = """
         SELECT
-          a.EntryId,
+          SrcEntryId AS EntryId,
           a.AttributeId,
           a.Type,
-          a.Name,
+          CONCAT(p.Name, '.', a.Name) AS Name,
           a.OriginEntityAttrId,
           a.OriginAttributeId,
           v.AttributeValueId,
           v.Value,
           v.RawValue,
-          TRUE AS IsJoinedAttr,
+          TRUE AS IsJoinedAttr
         FROM
           GRAPH_TABLE(
-         AdvancedSearchGraph
-        MATCH (src: AdvancedSearchEntry)-[referral:Referral]->
-        WHERE src.EntryId IN UNNEST(@entry_ids)
-        RETURN src.EntryId AS SrcEntryId,
-        referral.AttributeId AS SrcAttributeId,
-        referral.ReferralId AS ReferralEntryId
-        )
+            AdvancedSearchGraph
+            MATCH (src: AdvancedSearchEntry)-[referral:Referral]->
+            WHERE src.EntryId IN UNNEST(@entry_ids)
+            AND referral.AttributeId IN (
+              SELECT AttributeId
+              FROM AdvancedSearchAttribute
+              WHERE Name IN UNNEST(@parent_attr_names)
+            )
+            RETURN src.EntryId AS SrcEntryId,
+                   referral.AttributeId AS SrcAttributeId,
+                   referral.ReferralId AS ReferralEntryId
+          )
         INNER JOIN AdvancedSearchAttribute AS a
-        ON
-          a.EntryId = ReferralEntryId AND a.AttributeId = SrcAttributeId
+          ON a.EntryId = ReferralEntryId
+        INNER JOIN AdvancedSearchAttribute AS p
+          ON p.EntryId = SrcEntryId
+          AND p.AttributeId = SrcAttributeId
         JOIN
           AdvancedSearchAttributeValue v
         ON
           a.EntryId = v.EntryId
           AND a.AttributeId = v.AttributeId
         """
+
         params = {"entry_ids": entry_ids}
         param_types = {"entry_ids": spanner_v1.param_types.Array(spanner_v1.param_types.STRING)}
 
@@ -836,19 +850,28 @@ class SpannerRepository:
                 spanner_v1.param_types.STRING
             )
 
-        # FIXME filter with appropriate attr name
-        if len(join_attrs) == 0:
-            join_attr_query += "WHERE a.Name IN UNNEST(@join_attr_names)"
-            params["join_attr_names"] = [
-                attrinfo.name for attr in join_attrs for attrinfo in attr.attrinfo
-            ]
-            param_types["join_attr_names"] = spanner_v1.param_types.Array(
-                spanner_v1.param_types.STRING
-            )
+        queries = [base_query]
+        if len(join_attrs) > 0:
+            # Add join attribute filter conditions for both parent and child attributes
+            parent_attr_names = [attr.name for attr in join_attrs]
+            child_attr_names = [attrinfo.name for attr in join_attrs for attrinfo in attr.attrinfo]
+
+            if parent_attr_names and child_attr_names:
+                join_attr_query += " AND a.Name IN UNNEST(@child_attr_names)"
+                params["parent_attr_names"] = parent_attr_names
+                params["child_attr_names"] = child_attr_names
+                param_types["parent_attr_names"] = spanner_v1.param_types.Array(
+                    spanner_v1.param_types.STRING
+                )
+                param_types["child_attr_names"] = spanner_v1.param_types.Array(
+                    spanner_v1.param_types.STRING
+                )
+            queries.append(join_attr_query)
+
+        final_query = "\nUNION ALL\n".join(queries)
 
         with self.database.snapshot() as snapshot:
-            query = f"{base_query} UNION ALL {join_attr_query}"
-            results = snapshot.execute_sql(query, params=params, param_types=param_types)
+            results = snapshot.execute_sql(final_query, params=params, param_types=param_types)
 
             def _parse_raw_value(raw_value: Any) -> Optional[dict[str, Any] | list[Any]]:
                 if isinstance(raw_value, spanner_v1.data_types.JsonObject):
@@ -856,7 +879,6 @@ class SpannerRepository:
                         return raw_value._array_value
                 return raw_value
 
-            # TODO cover join attrs
             return [
                 (
                     AdvancedSearchAttribute(
@@ -876,7 +898,6 @@ class SpannerRepository:
                     ),
                 )
                 for row in results
-                if not row[9]
             ]
 
     def get_referrals(
@@ -955,59 +976,53 @@ class SpannerRepository:
         Returns:
             Tuple of (will_filter_by_joined_attr, search_results)
         """
-        # Get entity IDs from previous results
-        entity_ids = [result.entity["id"] for result in prev_results]
 
         # Fetch all required data in a single query
         with self.database.snapshot() as snapshot:
             values = list(
                 snapshot.execute_sql(
                     """
-                WITH source_entries AS (
-                    SELECT EntryId, OriginEntityId
-                    FROM AdvancedSearchEntry
-                    WHERE OriginEntityId IN UNNEST(@entity_ids)
-                ),
-                source_values AS (
-                    SELECT av.RawValue, av.Value, a.EntryId, a.Type
-                    FROM source_entries se
-                    JOIN AdvancedSearchAttribute a ON se.EntryId = a.EntryId
-                    JOIN AdvancedSearchAttributeValue av
-                        ON a.EntryId = av.EntryId
-                        AND a.AttributeId = av.AttributeId
-                    WHERE a.Name = @attr_name
+                WITH parent_attrs AS (
+                    SELECT
+                        AttributeId,
+                        Name
+                    FROM
+                        AdvancedSearchAttribute
+                    WHERE
+                        Name IN UNNEST(@parent_attr_names)
                 )
                 SELECT
                     sv.RawValue,
                     sv.Value,
-                    sv.EntryId,
-                    sv.Type,
+                    sa.EntryId,
+                    sa.Type,
                     je.EntryId as JoinedEntryId,
                     je.Name as JoinedName,
-                    je.OriginEntityId as JoinedOriginEntityId,
-                    je.OriginEntryId as JoinedOriginEntryId,
                     ja.Name as JoinedAttrName,
                     ja.Type as JoinedAttrType,
                     jav.RawValue as JoinedRawValue,
                     jav.Value as JoinedValue
-                FROM source_values sv
+                FROM AdvancedSearchAttributeValue sv
+                JOIN AdvancedSearchAttribute sa
+                    ON sv.EntryId = sa.EntryId
+                    AND sv.AttributeId = sa.AttributeId
+                JOIN parent_attrs pa ON sa.AttributeId = pa.AttributeId
                 LEFT JOIN AdvancedSearchEntry je
                     ON je.OriginEntryId = CAST(JSON_VALUE(sv.RawValue, '$.id') AS INT64)
                 LEFT JOIN AdvancedSearchAttribute ja
-                    ON je.EntryId = ja.EntryId
-                    AND ja.Name IN UNNEST(@attr_names)
+                    ON je.EntryId = ja.EntryId AND ja.Name IN UNNEST(@attr_names)
                 LEFT JOIN AdvancedSearchAttributeValue jav
                     ON ja.EntryId = jav.EntryId
                     AND ja.AttributeId = jav.AttributeId
                 """,
                     params={
-                        "entity_ids": entity_ids,
-                        "attr_name": join_attr.name,
+                        "parent_attr_names": [join_attr.name],
                         "attr_names": [attr.name for attr in join_attr.attrinfo],
                     },
                     param_types={
-                        "entity_ids": spanner_v1.param_types.Array(spanner_v1.param_types.INT64),
-                        "attr_name": spanner_v1.param_types.STRING,
+                        "parent_attr_names": spanner_v1.param_types.Array(
+                            spanner_v1.param_types.STRING
+                        ),
                         "attr_names": spanner_v1.param_types.Array(spanner_v1.param_types.STRING),
                     },
                 )
@@ -1018,26 +1033,24 @@ class SpannerRepository:
             for value in values:
                 joined_entry_id = value[4]
                 joined_name = value[5]
-                joined_origin_entity_id = value[6]
-                joined_origin_entry_id = value[7]
-                joined_attr_name = value[8]
-                joined_attr_type = value[9] if value[9] is not None else None
-                joined_raw_value = value[10]
-                joined_value = value[11]
+                joined_attr_name = value[6]
+                joined_attr_type = value[7] if value[7] is not None else None
+                joined_raw_value = value[8]
+                joined_value = value[9]
 
                 # Skip if no joined entry found
                 if not joined_entry_id:
                     continue
 
                 # Add joined entry information
-                if joined_origin_entry_id not in join_entries_dict:
-                    join_entries_dict[joined_origin_entry_id] = {
+                if joined_entry_id not in join_entries_dict:
+                    join_entries_dict[joined_entry_id] = {
                         "entity": {
-                            "id": joined_origin_entity_id,
-                            "name": f"Entity_{joined_origin_entity_id}",
+                            "id": joined_entry_id,
+                            "name": f"Entity_{joined_entry_id}",
                         },
                         "entry": {
-                            "id": joined_origin_entry_id,
+                            "id": joined_entry_id,
                             "name": joined_name,
                         },
                         "attrs": {},
@@ -1047,7 +1060,7 @@ class SpannerRepository:
 
                 # Add attribute values
                 if joined_attr_name and joined_attr_type is not None:
-                    join_entries_dict[joined_origin_entry_id]["attrs"][joined_attr_name] = {
+                    join_entries_dict[joined_entry_id]["attrs"][joined_attr_name] = {
                         "type": AttrType(joined_attr_type),
                         "value": joined_raw_value if joined_raw_value is not None else joined_value,
                         "is_readable": True,
