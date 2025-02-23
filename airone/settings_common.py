@@ -159,6 +159,12 @@ class Common(Configuration):
         DATABASES["slave"] = env.db("AIRONE_MYSQL_SLAVE_URL")
         REPLICATED_DATABASE_SLAVES = ["slave"]
 
+    # NOTE experimental Cloud Spanner
+    AIRONE_SPANNER_ENABLED = env.bool("AIRONE_SPANNER_ENABLED", False)
+    AIRONE_SPANNER_PROJECT = env.str("GOOGLE_CLOUD_PROJECT", "")
+    AIRONE_SPANNER_INSTANCE = env.str("AIRONE_SPANNER_INSTANCE", "")
+    AIRONE_SPANNER_DATABASE = env.str("AIRONE_SPANNER_DATABASE", "")
+
     # Password validation
     # https://docs.djangoproject.com/en/1.11/ref/settings/#auth-password-validators
 
