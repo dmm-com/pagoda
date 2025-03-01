@@ -98,7 +98,7 @@ const ElemTriggerCondition: FC<{
           component={AironeLink}
           to={entryDetailsPath(
             cond.refCond?.schema.id ?? 0,
-            cond.refCond?.id ?? 0
+            cond.refCond?.id ?? 0,
           )}
         >
           {cond.refCond?.name ?? ""}
@@ -114,7 +114,7 @@ const ElemTriggerCondition: FC<{
             component={AironeLink}
             to={entryDetailsPath(
               cond.refCond?.schema.id ?? 0,
-              cond.refCond?.id ?? 0
+              cond.refCond?.id ?? 0,
             )}
           >
             {cond.refCond?.name ?? ""}
@@ -158,7 +158,7 @@ const ElemTriggerActionValue: FC<{
           component={AironeLink}
           to={entryDetailsPath(
             value.refCond?.schema.id ?? 0,
-            value.refCond?.id ?? 0
+            value.refCond?.id ?? 0,
           )}
         >
           {value.refCond?.name ?? ""}
@@ -174,7 +174,7 @@ const ElemTriggerActionValue: FC<{
             component={AironeLink}
             to={entryDetailsPath(
               value.refCond?.schema.id ?? 0,
-              value.refCond?.id ?? 0
+              value.refCond?.id ?? 0,
             )}
           >
             {value.refCond?.name ?? ""}

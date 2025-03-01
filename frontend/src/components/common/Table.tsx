@@ -17,7 +17,7 @@ type StyledTableCellProps = TableCellProps & {
 };
 
 export const HeaderTableRow: React.ComponentType<StyledTableRowProps> = styled(
-  TableRow
+  TableRow,
 )<StyledTableRowProps>({
   backgroundColor: "#455A64",
 }) as React.ComponentType<StyledTableRowProps>;
@@ -29,7 +29,7 @@ export const HeaderTableCell: React.ComponentType<StyledTableCellProps> =
   }) as React.ComponentType<StyledTableCellProps>;
 
 export const StyledTableRow: React.ComponentType<StyledTableRowProps> = styled(
-  TableRow
+  TableRow,
 )<StyledTableRowProps>({
   "& td": {
     padding: "8px",

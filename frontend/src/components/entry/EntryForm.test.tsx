@@ -37,6 +37,6 @@ test("should render a component with essential props", function () {
   expect(() =>
     render(<Wrapper />, {
       wrapper: TestWrapper,
-    })
+    }),
   ).not.toThrow();
 });

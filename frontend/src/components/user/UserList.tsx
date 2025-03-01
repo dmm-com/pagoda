@@ -87,7 +87,7 @@ export const UserList: FC = ({}) => {
             onKeyPress={(e) => {
               e.key === "Enter" &&
                 handleChangeQuery(
-                  normalizeToMatch((e.target as HTMLInputElement).value ?? "")
+                  normalizeToMatch((e.target as HTMLInputElement).value ?? ""),
                 );
             }}
           />

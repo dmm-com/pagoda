@@ -32,7 +32,7 @@ export const schema = schemaForType<TriggerParent>()(
             })
             .nullable(),
           boolCond: z.boolean().optional(),
-        })
+        }),
       )
       .min(1, "最低でもひとつの条件を設定してください"),
     actions: z
@@ -59,12 +59,12 @@ export const schema = schemaForType<TriggerParent>()(
                 })
                 .nullable(),
               boolCond: z.boolean().optional(),
-            })
+            }),
           ),
-        })
+        }),
       )
       .min(1, "最低でもひとつのアクションを設定してください"),
-  })
+  }),
 );
 
 export type Schema = z.infer<typeof schema>;

@@ -18,5 +18,5 @@ root.render(
         <AppBase />
       </AironeSnackbarProvider>
     </ThemeProvider>
-  </StrictMode>
+  </StrictMode>,
 );

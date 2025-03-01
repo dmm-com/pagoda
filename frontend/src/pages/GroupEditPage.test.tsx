@@ -73,7 +73,7 @@ const server = setupServer(
         },
       ],
     });
-  })
+  }),
 );
 
 beforeAll(() => server.listen());

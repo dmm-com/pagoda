@@ -33,7 +33,7 @@ interface CustomJobOperationType {
 let customJobOperations: CustomJobOperationType[] = [];
 
 export const setCustomJobOperations = (
-  customCondition: CustomJobOperationType[]
+  customCondition: CustomJobOperationType[],
 ) => {
   customJobOperations = customCondition;
 };

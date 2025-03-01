@@ -45,7 +45,7 @@ export const RoleEditPage: FC = () => {
 
   usePrompt(
     isDirty && !isSubmitSuccessful,
-    "編集した内容は失われてしまいますが、このページを離れてもよろしいですか？"
+    "編集した内容は失われてしまいますが、このページを離れてもよろしいですか？",
   );
 
   const role = useAsyncWithThrow(async () => {
@@ -85,14 +85,14 @@ export const RoleEditPage: FC = () => {
             (name, message) => {
               setError(name, { type: "custom", message: message });
               enqueueSubmitResult(false);
-            }
+            },
           );
         } else {
           enqueueSubmitResult(false);
         }
       }
     },
-    [roleId]
+    [roleId],
   );
 
   const handleCancel = async () => {

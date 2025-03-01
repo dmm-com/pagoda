@@ -55,7 +55,7 @@ const server = setupServer(
         },
       ],
     });
-  })
+  }),
 );
 
 beforeAll(() => server.listen());
@@ -73,7 +73,7 @@ describe("EntryListPage", () => {
       ],
       {
         initialEntries: ["/ui/entities/1/entries"],
-      }
+      },
     );
     const result = await act(async () => {
       return render(<RouterProvider router={router} />, {

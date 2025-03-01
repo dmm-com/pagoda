@@ -16,7 +16,7 @@ const server = setupServer(
     "http://localhost/entity/api/v2/attrs?entity_ids=1&referral_attr=",
     () => {
       return HttpResponse.json([]);
-    }
+    },
   ),
   // advancedSearch
   http.post("http://localhost/entry/api/v2/advanced_search/", () => {
@@ -49,7 +49,7 @@ const server = setupServer(
         },
       ],
     });
-  })
+  }),
 );
 
 beforeAll(() => server.listen());

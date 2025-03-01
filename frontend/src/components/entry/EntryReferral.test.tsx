@@ -31,13 +31,13 @@ test("should render a component with essential props", async () => {
   jest
     .spyOn(
       require("repository/AironeApiClient").aironeApiClient,
-      "getEntryReferral"
+      "getEntryReferral",
     )
     .mockResolvedValue(
       Promise.resolve({
         results: referredEntries,
         count: referredEntries.length,
-      })
+      }),
     );
   /* eslint-enable */
 

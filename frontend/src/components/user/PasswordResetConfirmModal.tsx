@@ -29,7 +29,7 @@ export const PasswordResetConfirmModal: FC<Props> = ({
         uidb64,
         token,
         password,
-        passwordConfirmation
+        passwordConfirmation,
       );
       enqueueSnackbar("パスワードリセットに成功しました", {
         variant: "success",

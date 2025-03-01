@@ -180,8 +180,8 @@ export const AppRouter: FC<Props> = ({ customRoutes }) => {
           <Route path={topPath()} element={<DashboardPage />} />
           <Route path="*" element={<NotFoundErrorPage />} />
         </Route>
-      </Route>
-    )
+      </Route>,
+    ),
   );
 
   return <RouterProvider router={router} />;

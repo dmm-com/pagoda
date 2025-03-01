@@ -22,10 +22,10 @@ export const schema = z.object({
             z.object({
               headerKey: z.string().min(1, "ヘッダキーは必須です").default(""),
               headerValue: z.string().default(""),
-            })
+            }),
           )
           .default([]),
-      })
+      }),
     )
     .default([]),
   attrs: z
@@ -43,11 +43,11 @@ export const schema = z.object({
             z.object({
               id: z.number(),
               name: z.string(),
-            })
+            }),
           )
           .default([]),
         note: z.string().default(""),
-      })
+      }),
     )
     .default([]),
 });

@@ -45,7 +45,7 @@ describe("RoleForm", () => {
         resolver: zodResolver(schema),
         mode: "onBlur",
         defaultValues,
-      })
+      }),
     );
 
     /* eslint-disable */

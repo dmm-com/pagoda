@@ -51,7 +51,7 @@ const server = setupServer(
   // getEntity
   http.get("http://localhost/entity/api/v2/1/", () => {
     return HttpResponse.json(entity);
-  })
+  }),
 );
 
 beforeAll(() => server.listen());
@@ -70,7 +70,7 @@ test("should match snapshot", async () => {
     ],
     {
       initialEntries: [entityHistoryPath(1)],
-    }
+    },
   );
   const result = await act(async () => {
     return render(<RouterProvider router={router} />, {
