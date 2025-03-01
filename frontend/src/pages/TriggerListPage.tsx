@@ -1,8 +1,8 @@
 import {
   EntryAttributeTypeTypeEnum,
-  TriggerAction,
+  type TriggerAction,
   TriggerActionValue,
-  TriggerCondition,
+  type TriggerCondition,
 } from "@dmm-com/airone-apiclient-typescript-fetch";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
