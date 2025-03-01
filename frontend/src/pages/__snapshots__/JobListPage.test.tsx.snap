@@ -79,7 +79,6 @@ exports[`JobListPage should match snapshot 1`] = `
               >
                 <button
                   class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedSuccess MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButton-colorSuccess MuiButton-root MuiButton-outlined MuiButton-outlinedSuccess MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButton-colorSuccess css-deqglb-MuiButtonBase-root-MuiButton-root"
-                  id=":r0:"
                   tabindex="0"
                   type="button"
                 >
@@ -191,7 +190,6 @@ exports[`JobListPage should match snapshot 1`] = `
                     >
                       <button
                         class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedError MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorError MuiButton-root MuiButton-contained MuiButton-containedError MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorError css-1fn4qev-MuiButtonBase-root-MuiButton-root"
-                        id=":r1:"
                         tabindex="0"
                         type="button"
                       >
@@ -202,7 +200,6 @@ exports[`JobListPage should match snapshot 1`] = `
                       >
                         <button
                           class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary css-v8e7gc-MuiButtonBase-root-MuiButton-root"
-                          id=":r2:"
                           tabindex="0"
                           type="button"
                         >
@@ -480,7 +477,6 @@ exports[`JobListPage should match snapshot 1`] = `
             >
               <button
                 class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedSuccess MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButton-colorSuccess MuiButton-root MuiButton-outlined MuiButton-outlinedSuccess MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButton-colorSuccess css-deqglb-MuiButtonBase-root-MuiButton-root"
-                id=":r0:"
                 tabindex="0"
                 type="button"
               >
@@ -592,7 +588,6 @@ exports[`JobListPage should match snapshot 1`] = `
                   >
                     <button
                       class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedError MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorError MuiButton-root MuiButton-contained MuiButton-containedError MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorError css-1fn4qev-MuiButtonBase-root-MuiButton-root"
-                      id=":r1:"
                       tabindex="0"
                       type="button"
                     >
@@ -603,7 +598,6 @@ exports[`JobListPage should match snapshot 1`] = `
                     >
                       <button
                         class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary css-v8e7gc-MuiButtonBase-root-MuiButton-root"
-                        id=":r2:"
                         tabindex="0"
                         type="button"
                       >
