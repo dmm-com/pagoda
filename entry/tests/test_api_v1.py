@@ -95,7 +95,7 @@ class ViewTest(AironeViewTest):
             "/",
             "?",
             "_",
-            " " "&",
+            " &",
             "|",
         ]
 

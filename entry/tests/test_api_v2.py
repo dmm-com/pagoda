@@ -2868,7 +2868,7 @@ class ViewTest(BaseViewTest):
                 "non_field_errors": [
                     {
                         "code": "AE-121000",
-                        "message": "Expected a list of items but got type " '"dict".',
+                        "message": 'Expected a list of items but got type "dict".',
                     }
                 ]
             },
