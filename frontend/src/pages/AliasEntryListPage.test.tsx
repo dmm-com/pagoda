@@ -39,13 +39,13 @@ const server = setupServer(
     });
   }),
 
-  // GET /entry/api/v2/:entityId/
-  http.get("http://localhost/entry/api/v2/1/", ({ request }) => {
+  // GET /entity/api/v2/:entityId/entries/
+  http.get("http://localhost/entity/api/v2/1/entries/", ({ request }) => {
     // Get query parameters (when isAlias is true)
     const url = new URL(request.url);
-    const isAlias = url.searchParams.get("is_alias");
+    const withAlias = url.searchParams.get("with_alias");
 
-    if (isAlias === "true") {
+    if (withAlias === "1") {
       return HttpResponse.json({
         count: 2,
         next: null,
