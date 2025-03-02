@@ -30,3 +30,8 @@ Object.defineProperties(globalThis, {
     Request: { value: Request },
     Response: { value: Response },
 });
+
+// Add polyfill for performance.markResourceTiming used by undici
+if (typeof performance !== 'undefined' && typeof performance.markResourceTiming !== 'function') {
+    performance.markResourceTiming = () => {};
+}
