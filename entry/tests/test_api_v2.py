@@ -4854,6 +4854,35 @@ class ViewTest(BaseViewTest):
         self.assertTrue(mock_task.called)
 
     @patch("entry.tasks.delete_entry_v2.delay", Mock(side_effect=tasks.delete_entry_v2))
+    def test_delete_entries_without_all_parameter(self):
+        # create test Items that would be deleted in this test
+        items = [self.add_entry(self.user, "item-%d" % i, self.entity) for i in range(5)]
+
+        # send request to delete only items[0]
+        resp = self.client.delete(
+            "/entry/api/v2/bulk_delete/?ids=%s" % items[0].id, None, "application/json"
+        )
+        self.assertEqual(resp.status_code, 204)
+        self.assertEqual(resp.content, b"")
+
+        # check only items[0] was deleted and rest of items are still alive.
+        [x.refresh_from_db() for x in items]
+        self.assertFalse(items[0].is_active)
+        self.assertTrue(all(x.is_active for x in items[1:]))
+
+        # send request to delete all items
+        resp = self.client.delete(
+            "/entry/api/v2/bulk_delete/?ids=%s&isAll=false" % items[1].id, None, "application/json"
+        )
+        self.assertEqual(resp.status_code, 204)
+        self.assertEqual(resp.content, b"")
+
+        # check only items[0] and items[1] are delete, and rest of items are still alived
+        [x.refresh_from_db() for x in items]
+        self.assertFalse(all(x.is_active for x in items[:2]))
+        self.assertTrue(all(x.is_active for x in items[2:]))
+
+    @patch("entry.tasks.delete_entry_v2.delay", Mock(side_effect=tasks.delete_entry_v2))
     def test_delete_entries_with_all_parameter(self):
         # create test Items that would be deleted in this test
         items = [self.add_entry(self.user, "item-%d" % i, self.entity) for i in range(5)]

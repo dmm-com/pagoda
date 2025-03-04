@@ -866,6 +866,9 @@ class EntryBulkDeleteAPI(generics.DestroyAPIView):
 
         # Run jobs that delete rest of Items of same Model
         isAll: bool = self.request.query_params.get("isAll", False)
+        if isinstance(isAll, str):
+            isAll = isAll.lower() == "true"
+
         if isAll and target_model is not None:
             entries = Entry.objects.filter(schema=target_model, is_active=True).exclude(id__in=ids)
             for entry in entries:
