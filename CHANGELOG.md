@@ -11,6 +11,22 @@
 
 ### Fixed
 
+## v3.122.0
+
+### Changed
+* Upgrade Python version to 3.12
+  Contributed by @syucream
+* Upgrade MUI version to 6
+  Contributed by @syucream
+
+## v3.121.0
+
+### Changed
+* Changed TOP page to a category list
+  Contributed by @userlocalhost, @hinashi
+* Upgrade Node.js version to 22.13
+  Contributed by @syucream
+
 ## v3.120.0
 
 ### Added
