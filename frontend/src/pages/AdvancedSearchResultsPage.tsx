@@ -172,12 +172,14 @@ export const AdvancedSearchResultsPage: FC = () => {
     try {
       await aironeApiClient.destroyEntries(
         bulkOperationEntryIds,
-        JSON.stringify(attrInfo.map((info) => ({
-          name: info.name,
-          filterKey: String(info.filterKey),
-          keyword: info.keyword,
-        }))),
-        isDeleteAllItems,
+        JSON.stringify(
+          attrInfo.map((info) => ({
+            name: info.name,
+            filterKey: String(info.filterKey),
+            keyword: info.keyword,
+          }))
+        ),
+        isDeleteAllItems
       );
       enqueueSnackbar("複数アイテムの削除に成功しました", {
         variant: "success",
@@ -268,7 +270,7 @@ export const AdvancedSearchResultsPage: FC = () => {
             onClickYes={handleBulkDelete}
             content={
               bulkOperationEntryIds.length ==
-                AdvancedSerarchResultListParam.MAX_ROW_COUNT ? (
+              AdvancedSerarchResultListParam.MAX_ROW_COUNT ? (
                 <FormControlLabel
                   control={
                     <Checkbox onChange={() => setIsDeleteAllItems(true)} />
