@@ -1,3 +1,4 @@
+import json
 import re
 from collections import Counter
 from copy import deepcopy
@@ -25,7 +26,12 @@ from airone.lib.drf import (
     RequiredParameterError,
     YAMLParser,
 )
-from airone.lib.elasticsearch import AdvancedSearchResultRecord, AdvancedSearchResults, AttrHint
+from airone.lib.elasticsearch import (
+    AdvancedSearchResultRecord,
+    AdvancedSearchResults,
+    AttrHint,
+    FilterKey,
+)
 from airone.lib.types import AttrType
 from api_v1.entry.serializer import EntrySearchChainSerializer
 from entity.models import Entity, EntityAttr
@@ -837,6 +843,7 @@ class EntryAttributeValueRestoreAPI(generics.UpdateAPIView):
             "ids", {"type": "array", "items": {"type": "number"}}, OpenApiParameter.QUERY
         ),
         OpenApiParameter("isAll", OpenApiTypes.BOOL, OpenApiParameter.QUERY),
+        OpenApiParameter("attrinfo", OpenApiTypes.STR, OpenApiParameter.QUERY),
     ],
 )
 class EntryBulkDeleteAPI(generics.DestroyAPIView):
@@ -844,8 +851,26 @@ class EntryBulkDeleteAPI(generics.DestroyAPIView):
     # Specifying serializer_class is necessary for passing processing
     # of npm run generate
     serializer_class = EntryUpdateSerializer
+    internal_limit = 10000
+
+    def _validate_attrinfo(self):
+        attrinfo_raw = self.request.query_params.get("attrinfo", "[]")
+        try:
+            json_loaded_value = json.loads(attrinfo_raw)
+            for info in json_loaded_value:
+                if not any(x in info for x in ["name", "filterKey", "keyword"]):
+                    raise RequiredParameterError("(00)Invalid attrinfo was specified")
+                if not FilterKey(int(info["filterKey"])):
+                    raise RequiredParameterError("(01)Invalid attrinfo was specified")
+        except Exception as e:
+            raise RequiredParameterError("(E0)Invalid attrinfo was specified (%s)" % str(e))
+
+        return json_loaded_value
 
     def delete(self, request: Request, *args, **kwargs) -> Response:
+        # validate "attrinfo" parameter and save it before deleting item processing
+        attrinfo = self._validate_attrinfo()
+
         ids: list[str] = self.request.query_params.getlist("ids", [])
         if len(ids) == 0 or not all([id.isdecimal() for id in ids]):
             raise RequiredParameterError("some ids are invalid")
@@ -870,7 +895,27 @@ class EntryBulkDeleteAPI(generics.DestroyAPIView):
             isAll = isAll.lower() == "true"
 
         if isAll and target_model is not None:
-            entries = Entry.objects.filter(schema=target_model, is_active=True).exclude(id__in=ids)
+            results = AdvancedSearchService.search_entries(
+                request.user,
+                hint_entity_ids=list(set([e.schema.id for e in entries])),
+                hint_attrs=[
+                    AttrHint(
+                        **{
+                            "name": x["name"],
+                            "filter_key": FilterKey(int(x["filterKey"])),
+                            "keyword": x["keyword"],
+                        }
+                    )
+                    for x in attrinfo
+                ],
+                limit=self.internal_limit,
+            )
+
+            entries = Entry.objects.filter(
+                id__in=[x.entry["id"] for x in results.ret_values],
+                schema=target_model,
+                is_active=True,
+            ).exclude(id__in=ids)
             for entry in entries:
                 another_job: Job = Job.new_delete_entry_v2(user, entry)
                 another_job.run()

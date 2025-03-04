@@ -4909,3 +4909,45 @@ class ViewTest(BaseViewTest):
         # check all items were deleted.
         [x.refresh_from_db() for x in items]
         self.assertFalse(any(x.is_active for x in items))
+
+    @patch("entry.tasks.delete_entry_v2.delay", Mock(side_effect=tasks.delete_entry_v2))
+    def test_delete_entries_with_all_parameter_and_attrinfo(self):
+        # create test Items that would be deleted in this test
+        items = [
+            self.add_entry(
+                self.user,
+                "item-%d" % i,
+                self.entity,
+                values={
+                    "val": "hoge" if i < 3 else "fuga",
+                },
+            )
+            for i in range(5)
+        ]
+
+        # send request to delete all items with attrinfo
+        attrinfo_as_str = json.dumps(
+            [
+                {
+                    "name": "val",
+                    "keyword": "hoge",
+                    "filterKey": "3",
+                }
+            ]
+        )
+        resp = self.client.delete(
+            "/entry/api/v2/bulk_delete/?ids=%s&isAll=true&attrinfo=%s"
+            % (
+                items[0].id,
+                attrinfo_as_str,
+            ),
+            None,
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 204)
+        self.assertEqual(resp.content, b"")
+
+        # check only items, which are matched with "val=hoge", were deleted.
+        [x.refresh_from_db() for x in items]
+        self.assertFalse(any(x.is_active for x in items[:3]))
+        self.assertTrue(any(x.is_active for x in items[3:]))
