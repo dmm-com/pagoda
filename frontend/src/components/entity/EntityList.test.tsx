@@ -46,7 +46,7 @@ describe("EntityList", () => {
         changePage={changePage}
         handleChangeQuery={handleChangeQuery}
       />,
-      { wrapper: TestWrapper }
+      { wrapper: TestWrapper },
     );
 
     expect(screen.getByRole("link", { name: "entity1" })).toBeInTheDocument();
@@ -65,7 +65,7 @@ describe("EntityList", () => {
       });
     });
     expect(screen.getByPlaceholderText("モデルを絞り込む")).toHaveValue(
-      "entity"
+      "entity",
     );
     expect(handleChangeQuery).toBeCalled();
   });

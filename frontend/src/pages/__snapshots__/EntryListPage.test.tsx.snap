@@ -211,7 +211,6 @@ exports[`EntryListPage should match snapshot 1`] = `
                 class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary css-sv12w-MuiButtonBase-root-MuiButton-root"
                 data-discover="true"
                 href="/ui/entities/1/entries/new"
-                id=":r2:"
                 tabindex="0"
               >
                 <svg
@@ -274,7 +273,6 @@ exports[`EntryListPage should match snapshot 1`] = `
                         aria-label="名前をコピーしました"
                         class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-53g0n7-MuiButtonBase-root-MuiIconButton-root"
                         data-mui-internal-clone-element="true"
-                        id=":r5:"
                         tabindex="0"
                         type="button"
                       >
@@ -292,7 +290,6 @@ exports[`EntryListPage should match snapshot 1`] = `
                       </button>
                       <button
                         class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-53g0n7-MuiButtonBase-root-MuiIconButton-root"
-                        id=":r6:"
                         tabindex="0"
                         type="button"
                       >
@@ -354,7 +351,6 @@ exports[`EntryListPage should match snapshot 1`] = `
                         aria-label="名前をコピーしました"
                         class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-53g0n7-MuiButtonBase-root-MuiIconButton-root"
                         data-mui-internal-clone-element="true"
-                        id=":r9:"
                         tabindex="0"
                         type="button"
                       >
@@ -372,7 +368,6 @@ exports[`EntryListPage should match snapshot 1`] = `
                       </button>
                       <button
                         class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-53g0n7-MuiButtonBase-root-MuiIconButton-root"
-                        id=":ra:"
                         tabindex="0"
                         type="button"
                       >
@@ -434,7 +429,6 @@ exports[`EntryListPage should match snapshot 1`] = `
                         aria-label="名前をコピーしました"
                         class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-53g0n7-MuiButtonBase-root-MuiIconButton-root"
                         data-mui-internal-clone-element="true"
-                        id=":rd:"
                         tabindex="0"
                         type="button"
                       >
@@ -452,7 +446,6 @@ exports[`EntryListPage should match snapshot 1`] = `
                       </button>
                       <button
                         class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-53g0n7-MuiButtonBase-root-MuiIconButton-root"
-                        id=":re:"
                         tabindex="0"
                         type="button"
                       >
@@ -761,7 +754,6 @@ exports[`EntryListPage should match snapshot 1`] = `
               class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary css-sv12w-MuiButtonBase-root-MuiButton-root"
               data-discover="true"
               href="/ui/entities/1/entries/new"
-              id=":r2:"
               tabindex="0"
             >
               <svg
@@ -824,7 +816,6 @@ exports[`EntryListPage should match snapshot 1`] = `
                       aria-label="名前をコピーしました"
                       class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-53g0n7-MuiButtonBase-root-MuiIconButton-root"
                       data-mui-internal-clone-element="true"
-                      id=":r5:"
                       tabindex="0"
                       type="button"
                     >
@@ -842,7 +833,6 @@ exports[`EntryListPage should match snapshot 1`] = `
                     </button>
                     <button
                       class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-53g0n7-MuiButtonBase-root-MuiIconButton-root"
-                      id=":r6:"
                       tabindex="0"
                       type="button"
                     >
@@ -904,7 +894,6 @@ exports[`EntryListPage should match snapshot 1`] = `
                       aria-label="名前をコピーしました"
                       class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-53g0n7-MuiButtonBase-root-MuiIconButton-root"
                       data-mui-internal-clone-element="true"
-                      id=":r9:"
                       tabindex="0"
                       type="button"
                     >
@@ -922,7 +911,6 @@ exports[`EntryListPage should match snapshot 1`] = `
                     </button>
                     <button
                       class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-53g0n7-MuiButtonBase-root-MuiIconButton-root"
-                      id=":ra:"
                       tabindex="0"
                       type="button"
                     >
@@ -984,7 +972,6 @@ exports[`EntryListPage should match snapshot 1`] = `
                       aria-label="名前をコピーしました"
                       class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-53g0n7-MuiButtonBase-root-MuiIconButton-root"
                       data-mui-internal-clone-element="true"
-                      id=":rd:"
                       tabindex="0"
                       type="button"
                     >
@@ -1002,7 +989,6 @@ exports[`EntryListPage should match snapshot 1`] = `
                     </button>
                     <button
                       class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-53g0n7-MuiButtonBase-root-MuiIconButton-root"
-                      id=":re:"
                       tabindex="0"
                       type="button"
                     >

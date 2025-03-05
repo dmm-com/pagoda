@@ -101,7 +101,6 @@ exports[`should match snapshot 1`] = `
                 >
                   <button
                     class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInfo MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInfo css-mnflth-MuiButtonBase-root-MuiButton-root"
-                    id=":r0:"
                     tabindex="0"
                     type="button"
                   >
@@ -127,7 +126,6 @@ exports[`should match snapshot 1`] = `
                   >
                     <button
                       class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInfo MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInfo css-fm83n0-MuiButtonBase-root-MuiButton-root"
-                      id=":r1:"
                       tabindex="0"
                       type="button"
                     >
@@ -139,7 +137,6 @@ exports[`should match snapshot 1`] = `
                   >
                     <button
                       class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInfo MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInfo css-19ekxha-MuiButtonBase-root-MuiButton-root"
-                      id=":r2:"
                       tabindex="0"
                       type="button"
                     >
@@ -152,7 +149,6 @@ exports[`should match snapshot 1`] = `
                     <button
                       class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInfo Mui-disabled MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInfo css-fm83n0-MuiButtonBase-root-MuiButton-root"
                       disabled=""
-                      id=":r3:"
                       tabindex="-1"
                       type="button"
                     >
@@ -223,7 +219,6 @@ exports[`should match snapshot 1`] = `
                           </p>
                           <button
                             class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-5ws45t-MuiButtonBase-root-MuiIconButton-root"
-                            id=":r5:"
                             tabindex="0"
                             type="button"
                           >
@@ -467,7 +462,6 @@ exports[`should match snapshot 1`] = `
               >
                 <button
                   class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInfo MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInfo css-mnflth-MuiButtonBase-root-MuiButton-root"
-                  id=":r0:"
                   tabindex="0"
                   type="button"
                 >
@@ -493,7 +487,6 @@ exports[`should match snapshot 1`] = `
                 >
                   <button
                     class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInfo MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInfo css-fm83n0-MuiButtonBase-root-MuiButton-root"
-                    id=":r1:"
                     tabindex="0"
                     type="button"
                   >
@@ -505,7 +498,6 @@ exports[`should match snapshot 1`] = `
                 >
                   <button
                     class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInfo MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInfo css-19ekxha-MuiButtonBase-root-MuiButton-root"
-                    id=":r2:"
                     tabindex="0"
                     type="button"
                   >
@@ -518,7 +510,6 @@ exports[`should match snapshot 1`] = `
                   <button
                     class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInfo Mui-disabled MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInfo css-fm83n0-MuiButtonBase-root-MuiButton-root"
                     disabled=""
-                    id=":r3:"
                     tabindex="-1"
                     type="button"
                   >
@@ -589,7 +580,6 @@ exports[`should match snapshot 1`] = `
                         </p>
                         <button
                           class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-5ws45t-MuiButtonBase-root-MuiIconButton-root"
-                          id=":r5:"
                           tabindex="0"
                           type="button"
                         >

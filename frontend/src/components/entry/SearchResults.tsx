@@ -91,7 +91,7 @@ export const SearchResults: FC<Props> = ({
       _attrNames.map((attrName) => [
         attrName,
         results.values[0]?.attrs[attrName]?.type,
-      ])
+      ]),
     );
     return [_attrNames, _attrTypes];
   }, [defaultAttrsFilter, results.values]);
@@ -121,12 +121,12 @@ export const SearchResults: FC<Props> = ({
                     <TableCell sx={{ padding: 0 }}>
                       <Checkbox
                         checked={bulkOperationEntryIds.includes(
-                          result.entry.id
+                          result.entry.id,
                         )}
                         onChange={(e) =>
                           handleChangeBulkOperationEntryId(
                             result.entry.id,
-                            e.target.checked
+                            e.target.checked,
                           )
                         }
                       />

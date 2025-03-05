@@ -134,7 +134,6 @@ exports[`EditEntityPage should match snapshot 1`] = `
                   <button
                     class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary Mui-disabled MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary css-8fe6cp-MuiButtonBase-root-MuiButton-root"
                     disabled=""
-                    id=":r0:"
                     tabindex="-1"
                     type="button"
                   >
@@ -142,7 +141,6 @@ exports[`EditEntityPage should match snapshot 1`] = `
                   </button>
                   <button
                     class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInfo MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInfo css-152i8rg-MuiButtonBase-root-MuiButton-root"
-                    id=":r1:"
                     tabindex="0"
                     type="button"
                   >
@@ -420,7 +418,6 @@ exports[`EditEntityPage should match snapshot 1`] = `
                 >
                   <button
                     class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-53g0n7-MuiButtonBase-root-MuiIconButton-root"
-                    id=":r4:"
                     tabindex="0"
                     type="button"
                   >
@@ -553,7 +550,6 @@ exports[`EditEntityPage should match snapshot 1`] = `
                 >
                   <button
                     class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-53g0n7-MuiButtonBase-root-MuiIconButton-root"
-                    id=":r5:"
                     tabindex="0"
                     type="button"
                   >
@@ -710,7 +706,6 @@ exports[`EditEntityPage should match snapshot 1`] = `
                 <button
                   class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary Mui-disabled MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary css-8fe6cp-MuiButtonBase-root-MuiButton-root"
                   disabled=""
-                  id=":r0:"
                   tabindex="-1"
                   type="button"
                 >
@@ -718,7 +713,6 @@ exports[`EditEntityPage should match snapshot 1`] = `
                 </button>
                 <button
                   class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInfo MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInfo css-152i8rg-MuiButtonBase-root-MuiButton-root"
-                  id=":r1:"
                   tabindex="0"
                   type="button"
                 >
@@ -996,7 +990,6 @@ exports[`EditEntityPage should match snapshot 1`] = `
               >
                 <button
                   class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-53g0n7-MuiButtonBase-root-MuiIconButton-root"
-                  id=":r4:"
                   tabindex="0"
                   type="button"
                 >
@@ -1129,7 +1122,6 @@ exports[`EditEntityPage should match snapshot 1`] = `
               >
                 <button
                   class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-53g0n7-MuiButtonBase-root-MuiIconButton-root"
-                  id=":r5:"
                   tabindex="0"
                   type="button"
                 >

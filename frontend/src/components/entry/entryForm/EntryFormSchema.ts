@@ -44,7 +44,7 @@ export const schema = schemaForType<EditableEntry>()(
                 .array(
                   z.object({
                     value: z.string().max(1 << 16, "属性の値が大きすぎます"),
-                  })
+                  }),
                 )
                 .optional(),
               asObject: z
@@ -59,7 +59,7 @@ export const schema = schemaForType<EditableEntry>()(
                   z.object({
                     id: z.number(),
                     name: z.string(),
-                  })
+                  }),
                 )
                 .optional(),
               asNamedObject: z
@@ -86,7 +86,7 @@ export const schema = schemaForType<EditableEntry>()(
                       .nullable()
                       .default(null),
                     _boolean: z.boolean().default(false),
-                  })
+                  }),
                 )
                 .optional(),
               asGroup: z
@@ -101,7 +101,7 @@ export const schema = schemaForType<EditableEntry>()(
                   z.object({
                     id: z.number(),
                     name: z.string(),
-                  })
+                  }),
                 )
                 .optional(),
               asRole: z
@@ -116,7 +116,7 @@ export const schema = schemaForType<EditableEntry>()(
                   z.object({
                     id: z.number(),
                     name: z.string(),
-                  })
+                  }),
                 )
                 .optional(),
             }),
@@ -172,7 +172,7 @@ export const schema = schemaForType<EditableEntry>()(
               return true;
             },
             // TODO specify path to feedback users error cause
-            "必須項目です"
+            "必須項目です",
           )
           .refine(({ value, type }) => {
             switch (type) {
@@ -185,10 +185,10 @@ export const schema = schemaForType<EditableEntry>()(
                 );
             }
             return true;
-          }, "値が不正です")
+          }, "値が不正です"),
       )
       .default({}),
-  })
+  }),
 );
 
 export type Schema = z.infer<typeof schema>;

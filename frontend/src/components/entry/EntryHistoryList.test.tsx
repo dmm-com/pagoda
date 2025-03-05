@@ -63,7 +63,7 @@ describe("EntryHistoryList", () => {
             /* do nothing */
           }}
         />,
-        { wrapper: TestWrapper }
+        { wrapper: TestWrapper },
       );
     });
 

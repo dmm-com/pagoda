@@ -61,7 +61,7 @@ describe("GroupForm", () => {
         resolver: zodResolver(schema),
         mode: "onBlur",
         defaultValues,
-      })
+      }),
     );
 
     /* eslint-disable */
@@ -71,7 +71,7 @@ describe("GroupForm", () => {
     jest
       .spyOn(
         require("repository/AironeApiClient").aironeApiClient,
-        "getGroupTrees"
+        "getGroupTrees",
       )
       .mockResolvedValue(Promise.resolve(groups));
     /* eslint-enable */

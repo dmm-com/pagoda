@@ -13,12 +13,12 @@ export const schema = schemaForType<CategoryList>()(
         z.object({
           id: z.number(),
           name: z.string(),
-        })
+        }),
       )
       .default([]),
     //priority: z.number().default(0).refine((v) => Number(v)),
     priority: z.coerce.number(),
-  })
+  }),
 );
 
 export type Schema = z.infer<typeof schema>;

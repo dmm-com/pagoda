@@ -22,8 +22,8 @@ test("should render a component with essential props", function () {
       />,
       {
         wrapper: TestWrapper,
-      }
-    )
+      },
+    ),
   ).not.toThrow();
 });
 
@@ -42,7 +42,7 @@ test("should render a component with optional props", function () {
       />,
       {
         wrapper: TestWrapper,
-      }
-    )
+      },
+    ),
   ).not.toThrow();
 });

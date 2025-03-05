@@ -20,7 +20,7 @@ test("should render with essential props", () => {
         }}
         setOpenImportModal={() => false}
       />,
-      { wrapper: TestWrapper }
-    )
+      { wrapper: TestWrapper },
+    ),
   ).not.toThrow();
 });

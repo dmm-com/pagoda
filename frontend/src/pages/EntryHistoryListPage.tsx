@@ -19,7 +19,7 @@ export const EntryHistoryListPage: FC = () => {
   const [page, changePage] = usePage();
 
   const [entryAnchorEl, setEntryAnchorEl] = useState<HTMLButtonElement | null>(
-    null
+    null,
   );
 
   const entry = useAsyncWithThrow(async () => {

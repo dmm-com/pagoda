@@ -20,7 +20,7 @@ test("should render a component with essential props", async () => {
       Promise.resolve({
         count: 0,
         results: [],
-      })
+      }),
     );
   /* eslint-enable */
 

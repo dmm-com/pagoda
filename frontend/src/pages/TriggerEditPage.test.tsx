@@ -73,7 +73,7 @@ const server = setupServer(
       attrs: [],
       webhooks: [],
     });
-  })
+  }),
 );
 
 beforeAll(() => server.listen());
@@ -93,7 +93,7 @@ describe("EditTriggerPage", () => {
       ],
       {
         initialEntries: ["/ui/triggers/1"],
-      }
+      },
     );
     const result = await act(async () => {
       return render(<RouterProvider router={router} />, {

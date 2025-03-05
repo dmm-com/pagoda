@@ -35,7 +35,7 @@ export const GroupForm: FC<Props> = ({ control, setValue, groupId }) => {
   const users = useAsyncWithThrow(async () => {
     const _users = await aironeApiClient.getUsers(1, userKeyword);
     return _users.results?.map(
-      (user): GroupMember => ({ id: user.id, username: user.username })
+      (user): GroupMember => ({ id: user.id, username: user.username }),
     );
   }, [userKeyword]);
 
