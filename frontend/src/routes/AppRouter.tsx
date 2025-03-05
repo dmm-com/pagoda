@@ -9,11 +9,11 @@ import {
 } from "react-router";
 
 import { ACLHistoryPage } from "../pages/ACLHistoryPage";
+import { AliasEntryListPage } from "../pages/AliasEntryListPage";
+import { CategoryListPage } from "../pages/CategoryListPage";
 import { EntryCopyPage } from "../pages/EntryCopyPage";
 import { EntryDetailsPage } from "../pages/EntryDetailsPage";
 import { EntryRestorePage } from "../pages/EntryRestorePage";
-import { ListAliasEntryPage } from "../pages/ListAliasEntryPage";
-import { ListCategoryPage } from "../pages/ListCategoryPage";
 import { NotFoundErrorPage } from "../pages/NotFoundErrorPage";
 import { RoleEditPage } from "../pages/RoleEditPage";
 import { RoleListPage } from "../pages/RoleListPage";
@@ -111,7 +111,7 @@ export const AppRouter: FC<Props> = ({ customRoutes }) => {
             path={editCategoryPath(":categoryId")}
             element={<CategoryEditPage />}
           />
-          <Route path={listCategoryPath()} element={<ListCategoryPage />} />
+          <Route path={listCategoryPath()} element={<CategoryListPage />} />
           <Route path={advancedSearchPath()} element={<AdvancedSearchPage />} />
           <Route
             path={advancedSearchResultPath()}
@@ -148,7 +148,7 @@ export const AppRouter: FC<Props> = ({ customRoutes }) => {
           />
           <Route
             path={listAliasPath(":entityId")}
-            element={<ListAliasEntryPage />}
+            element={<AliasEntryListPage />}
           />
           <Route path={newEntityPath()} element={<EntityEditPage />} />
           <Route
