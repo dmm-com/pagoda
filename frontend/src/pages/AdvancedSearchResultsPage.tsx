@@ -84,10 +84,10 @@ function DeleteAllLabel(attrinfo: Array<AdvancedSearchResultAttrInfo>) {
         </Typography>
         <Table size="small">
           <TableBody>
-            {attrinfo.map((info) => {
+            {attrinfo.map((info, index) => {
               if (isAttrInfoSet(info)) {
                 return (
-                  <TableRow>
+                  <TableRow key={index}>
                     <TableCell>
                       <Typography>属性「{info.name}」の値が</Typography>
                     </TableCell>
