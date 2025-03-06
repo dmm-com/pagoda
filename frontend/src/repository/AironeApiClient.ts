@@ -407,7 +407,7 @@ class AironeApiClient {
   async destroyEntries(
     ids: Array<number>,
     attrinfo?: string,
-    isAll?: boolean
+    isAll?: boolean,
   ): Promise<void> {
     return await this.entry.entryApiV2BulkDeleteDestroy(
       { attrinfo, ids, isAll },

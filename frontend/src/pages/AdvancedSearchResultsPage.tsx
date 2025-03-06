@@ -71,7 +71,7 @@ function DeleteAllLabel(attrinfo: Array<AdvancedSearchResultAttrInfo>) {
       default:
         return "";
     }
-  }
+  };
 
   if (attrinfo.some((x) => isAttrInfoSet(x))) {
     return (
@@ -89,13 +89,9 @@ function DeleteAllLabel(attrinfo: Array<AdvancedSearchResultAttrInfo>) {
                 return (
                   <TableRow>
                     <TableCell>
-                      <Typography>
-                        属性「{info.name}」の値が
-                      </Typography>
+                      <Typography>属性「{info.name}」の値が</Typography>
                     </TableCell>
-                    <TableCell>
-                      {renderLabel(info)}
-                    </TableCell>
+                    <TableCell>{renderLabel(info)}</TableCell>
                   </TableRow>
                 );
               }
@@ -105,11 +101,7 @@ function DeleteAllLabel(attrinfo: Array<AdvancedSearchResultAttrInfo>) {
       </>
     );
   } else {
-    return (
-      <>
-        未選択の全てのアイテムもまとめて削除する
-      </>
-    );
+    return <>未選択の全てのアイテムもまとめて削除する</>;
   }
 }
 
@@ -255,10 +247,10 @@ export const AdvancedSearchResultsPage: FC = () => {
             name: info.name,
             filterKey: String(info.filterKey),
             keyword: info.keyword,
-          }))
+          })),
         ),
         // disable isDeleteAllItems when join-attrs are specified
-        isDeleteAllItems && joinAttrs.length == 0
+        isDeleteAllItems && joinAttrs.length == 0,
       );
       enqueueSnackbar("複数アイテムの削除に成功しました", {
         variant: "success",
@@ -349,9 +341,14 @@ export const AdvancedSearchResultsPage: FC = () => {
             onClickYes={handleBulkDelete}
             content={
               bulkOperationEntryIds.length ==
-                AdvancedSerarchResultListParam.MAX_ROW_COUNT && joinAttrs.length == 0 ? (
+                AdvancedSerarchResultListParam.MAX_ROW_COUNT &&
+              joinAttrs.length == 0 ? (
                 <FormControlLabel
-                  sx={attrInfo.some((x) => isAttrInfoSet(x)) ? { alignItems: "flex-start" } : {}}
+                  sx={
+                    attrInfo.some((x) => isAttrInfoSet(x))
+                      ? { alignItems: "flex-start" }
+                      : {}
+                  }
                   control={
                     <Checkbox onChange={() => setIsDeleteAllItems(true)} />
                   }
