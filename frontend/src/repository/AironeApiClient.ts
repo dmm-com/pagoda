@@ -114,7 +114,7 @@ class AironeApiClient {
     username: string,
     password: string,
     email?: string,
-    isSuperuser?: boolean
+    isSuperuser?: boolean,
   ): Promise<UserCreate> {
     return await this.user.userApiV2Create(
       {
@@ -130,7 +130,7 @@ class AironeApiClient {
           "Content-Type": "application/json;charset=utf-8",
           "X-CSRFToken": getCsrfToken(),
         },
-      }
+      },
     );
   }
 
@@ -151,7 +151,7 @@ class AironeApiClient {
           "Content-Type": "application/json;charset=utf-8",
           "X-CSRFToken": getCsrfToken(),
         },
-      }
+      },
     );
   }
 
@@ -159,7 +159,7 @@ class AironeApiClient {
     userId: number,
     username: string,
     email?: string,
-    isSuperuser?: boolean
+    isSuperuser?: boolean,
   ): Promise<UserUpdate> {
     return await this.user.userApiV2Update(
       {
@@ -175,7 +175,7 @@ class AironeApiClient {
           "Content-Type": "application/json;charset=utf-8",
           "X-CSRFToken": getCsrfToken(),
         },
-      }
+      },
     );
   }
 
@@ -184,7 +184,7 @@ class AironeApiClient {
     isPublic: boolean,
     aclSettings: Array<ACLSetting>,
     objectType: ACLObjtypeEnum,
-    defaultPermission?: number
+    defaultPermission?: number,
   ): Promise<void> {
     await this.acl.aclApiV2AclsUpdate(
       {
@@ -201,7 +201,7 @@ class AironeApiClient {
           "Content-Type": "application/json;charset=utf-8",
           "X-CSRFToken": getCsrfToken(),
         },
-      }
+      },
     );
   }
 
@@ -214,7 +214,7 @@ class AironeApiClient {
   async getEntities(
     page?: number,
     search?: string,
-    isToplevel?: boolean
+    isToplevel?: boolean,
   ): Promise<PaginatedEntityListList> {
     const params: EntityApiV2ListRequest = page
       ? {
@@ -242,7 +242,7 @@ class AironeApiClient {
     note: string,
     isToplevel: boolean,
     attrs: Array<EntityAttrCreate>,
-    webhooks: Array<WebhookCreateUpdate>
+    webhooks: Array<WebhookCreateUpdate>,
   ): Promise<void> {
     await this.entity.entityApiV2Create(
       {
@@ -259,7 +259,7 @@ class AironeApiClient {
           "Content-Type": "application/json;charset=utf-8",
           "X-CSRFToken": getCsrfToken(),
         },
-      }
+      },
     );
   }
 
@@ -269,7 +269,7 @@ class AironeApiClient {
     note: string,
     isToplevel: boolean,
     attrs: Array<EntityAttrUpdate>,
-    webhooks: Array<WebhookCreateUpdate>
+    webhooks: Array<WebhookCreateUpdate>,
   ): Promise<void> {
     await this.entity.entityApiV2Update(
       {
@@ -287,7 +287,7 @@ class AironeApiClient {
           "Content-Type": "application/json;charset=utf-8",
           "X-CSRFToken": getCsrfToken(),
         },
-      }
+      },
     );
   }
 
@@ -299,13 +299,13 @@ class AironeApiClient {
           "Content-Type": "application/json;charset=utf-8",
           "X-CSRFToken": getCsrfToken(),
         },
-      }
+      },
     );
   }
 
   async getEntityHistories(
     id: number,
-    page: number
+    page: number,
   ): Promise<PaginatedEntityHistoryList> {
     return await this.entity.entityApiV2HistoriesList({
       entityId: id,
@@ -333,7 +333,7 @@ class AironeApiClient {
   async getEntityAttrs(
     entityIds: number[],
     searchAllEntities = false,
-    referralAttr: string = ""
+    referralAttr: string = "",
   ): Promise<Array<string>> {
     return await this.entity.entityApiV2AttrsList({
       entityIds: searchAllEntities
@@ -350,7 +350,7 @@ class AironeApiClient {
   async getEntryReferral(
     id: number,
     page: number,
-    keyword?: string
+    keyword?: string,
   ): Promise<PaginatedEntryBaseList> {
     return await this.entry.entryApiV2ReferralList({
       id: id,
@@ -363,7 +363,7 @@ class AironeApiClient {
   async createEntry(
     entityId: number,
     name: string,
-    attrs: AttributeData[]
+    attrs: AttributeData[],
   ): Promise<void> {
     await this.entity.entityApiV2EntriesCreate(
       { entityId, entryCreate: { name, attrs } },
@@ -372,14 +372,14 @@ class AironeApiClient {
           "Content-Type": "application/json;charset=utf-8",
           "X-CSRFToken": getCsrfToken(),
         },
-      }
+      },
     );
   }
 
   async updateEntry(
     id: number,
     name: string,
-    attrs: AttributeData[]
+    attrs: AttributeData[],
   ): Promise<void> {
     await this.entry.entryApiV2Update(
       { id, entryUpdate: { name, attrs } },
@@ -388,7 +388,7 @@ class AironeApiClient {
           "Content-Type": "application/json;charset=utf-8",
           "X-CSRFToken": getCsrfToken(),
         },
-      }
+      },
     );
   }
 
@@ -400,7 +400,7 @@ class AironeApiClient {
           "Content-Type": "application/json;charset=utf-8",
           "X-CSRFToken": getCsrfToken(),
         },
-      }
+      },
     );
   }
 
@@ -416,7 +416,7 @@ class AironeApiClient {
           "Content-Type": "application/json;charset=utf-8",
           "X-CSRFToken": getCsrfToken(),
         },
-      }
+      },
     );
   }
 
@@ -428,13 +428,13 @@ class AironeApiClient {
           "Content-Type": "application/json;charset=utf-8",
           "X-CSRFToken": getCsrfToken(),
         },
-      }
+      },
     );
   }
 
   async copyEntry(
     id: number,
-    copyEntryNames: Array<string>
+    copyEntryNames: Array<string>,
   ): Promise<EntryCopy> {
     return await this.entry.entryApiV2CopyCreate(
       {
@@ -448,13 +448,13 @@ class AironeApiClient {
           "Content-Type": "application/json;charset=utf-8",
           "X-CSRFToken": getCsrfToken(),
         },
-      }
+      },
     );
   }
 
   async getEntryHistories(
     id: number,
-    page: number
+    page: number,
   ): Promise<PaginatedEntryHistoryAttributeValueList> {
     return await this.entry.entryApiV2HistoriesList({
       id: id,
@@ -472,7 +472,7 @@ class AironeApiClient {
         headers: {
           "X-CSRFToken": getCsrfToken(),
         },
-      }
+      },
     );
   }
 
@@ -497,7 +497,7 @@ class AironeApiClient {
           "Content-Type": "application/json;charset=utf-8",
           "X-CSRFToken": getCsrfToken(),
         },
-      }
+      },
     );
   }
 
@@ -509,7 +509,7 @@ class AironeApiClient {
           "Content-Type": "application/json;charset=utf-8",
           "X-CSRFToken": getCsrfToken(),
         },
-      }
+      },
     );
   }
 
@@ -523,7 +523,7 @@ class AironeApiClient {
           "Content-Type": "application/json;charset=utf-8",
           "X-CSRFToken": getCsrfToken(),
         },
-      }
+      },
     );
   }
 
@@ -535,7 +535,7 @@ class AironeApiClient {
       id: groupTree["id"],
       name: groupTree["name"],
       children: groupTree["children"].map((child: { [key: string]: any }) =>
-        toTyped(child)
+        toTyped(child),
       ),
     });
 
@@ -543,7 +543,7 @@ class AironeApiClient {
       id: groupTree.id,
       name: groupTree.name,
       children: groupTree.children.map((child: { [key: string]: any }) =>
-        toTyped(child)
+        toTyped(child),
       ),
     }));
   }
@@ -582,7 +582,7 @@ class AironeApiClient {
           "Content-Type": "application/json;charset=utf-8",
           "X-CSRFToken": getCsrfToken(),
         },
-      }
+      },
     );
   }
 
@@ -597,7 +597,7 @@ class AironeApiClient {
           "Content-Type": "application/json;charset=utf-8",
           "X-CSRFToken": getCsrfToken(),
         },
-      }
+      },
     );
   }
 
@@ -611,7 +611,7 @@ class AironeApiClient {
           "Content-Type": "application/json;charset=utf-8",
           "X-CSRFToken": getCsrfToken(),
         },
-      }
+      },
     );
   }
 
@@ -634,7 +634,7 @@ class AironeApiClient {
   async getCategories(
     page?: number,
     search?: string,
-    ordering?: string
+    ordering?: string,
   ): Promise<PaginatedCategoryListList> {
     return await this.category.categoryApiV2List(
       page
@@ -648,7 +648,7 @@ class AironeApiClient {
             limit: EntityListParam.MAX_ROW_COUNT,
             ordering: ordering,
             search: search,
-          }
+          },
     );
   }
 
@@ -666,13 +666,13 @@ class AironeApiClient {
           "Content-Type": "application/json;charset=utf-8",
           "X-CSRFToken": getCsrfToken(),
         },
-      }
+      },
     );
   }
 
   async updateCategory(
     categoryId: number,
-    category: CategoryUpdate
+    category: CategoryUpdate,
   ): Promise<CategoryUpdate> {
     return await this.category.categoryApiV2Update(
       {
@@ -684,7 +684,7 @@ class AironeApiClient {
           "Content-Type": "application/json;charset=utf-8",
           "X-CSRFToken": getCsrfToken(),
         },
-      }
+      },
     );
   }
   async deleteCategory(id: number): Promise<void> {
@@ -695,7 +695,7 @@ class AironeApiClient {
           "Content-Type": "application/json;charset=utf-8",
           "X-CSRFToken": getCsrfToken(),
         },
-      }
+      },
     );
   }
 
@@ -704,7 +704,7 @@ class AironeApiClient {
     isActive = true,
     pageNumber = 1,
     keyword: string,
-    withAlias?: boolean
+    withAlias?: boolean,
   ): Promise<PaginatedEntryBaseList> {
     //return await this.entry.entryApiV2EntriesList(entityId, isActive, pageNumber);
     // ToDo: This method must pass "isActive" parameter by manupirating DRF API's declaration.
@@ -737,13 +737,13 @@ class AironeApiClient {
           "Content-Type": "application/json;charset=utf-8",
           "X-CSRFToken": getCsrfToken(),
         },
-      }
+      },
     );
   }
 
   async getEntryAttrReferrals(
     attrId: number,
-    keyword?: string
+    keyword?: string,
   ): Promise<Array<GetEntryAttrReferral>> {
     return await this.entry.entryApiV2AttrReferralsList({
       attrId: attrId,
@@ -764,7 +764,7 @@ class AironeApiClient {
           "Content-Type": "application/json;charset=utf-8",
           "X-CSRFToken": getCsrfToken(),
         },
-      }
+      },
     );
   }
 
@@ -778,7 +778,7 @@ class AironeApiClient {
           "Content-Type": "application/json;charset=utf-8",
           "X-CSRFToken": getCsrfToken(),
         },
-      }
+      },
     );
   }
 
@@ -792,7 +792,7 @@ class AironeApiClient {
     searchAllEntities = false,
     page: number,
     limit: number = AdvancedSerarchResultListParam.MAX_ROW_COUNT,
-    offset: number = 0
+    offset: number = 0,
   ): Promise<AdvancedSearchResult> {
     return await this.entry.entryApiV2AdvancedSearchCreate(
       {
@@ -814,12 +814,12 @@ class AironeApiClient {
           "X-CSRFToken": getCsrfToken(),
           "Content-Type": "application/json;charset=utf-8",
         },
-      }
+      },
     );
   }
 
   async advancedSearchChain(
-    entrySearchChain: EntrySearchChain
+    entrySearchChain: EntrySearchChain,
   ): Promise<EntryBase[]> {
     return await this.entry.entryApiV2AdvancedSearchChainCreate(
       {
@@ -830,7 +830,7 @@ class AironeApiClient {
           "X-CSRFToken": getCsrfToken(),
           "Content-Type": "application/json;charset=utf-8",
         },
-      }
+      },
     );
   }
 
@@ -840,7 +840,7 @@ class AironeApiClient {
     entryName: string,
     hasReferral: boolean,
     isAllEntities: boolean,
-    format: "yaml" | "csv"
+    format: "yaml" | "csv",
   ): Promise<void> {
     await this.entry.entryApiV2AdvancedSearchResultExportCreate(
       {
@@ -858,7 +858,7 @@ class AironeApiClient {
           "X-CSRFToken": getCsrfToken(),
           "Content-Type": "application/json;charset=utf-8",
         },
-      }
+      },
     );
   }
 
@@ -874,7 +874,7 @@ class AironeApiClient {
 
   async updateTrigger(
     triggerId: number,
-    params: TriggerParentUpdate
+    params: TriggerParentUpdate,
   ): Promise<void> {
     await this.trigger.triggerApiV2Update(
       {
@@ -886,7 +886,7 @@ class AironeApiClient {
           "Content-Type": "application/json;charset=utf-8",
           "X-CSRFToken": getCsrfToken(),
         },
-      }
+      },
     );
   }
 
@@ -900,7 +900,7 @@ class AironeApiClient {
           "Content-Type": "application/json;charset=utf-8",
           "X-CSRFToken": getCsrfToken(),
         },
-      }
+      },
     );
   }
 
@@ -914,7 +914,7 @@ class AironeApiClient {
           "Content-Type": "application/json;charset=utf-8",
           "X-CSRFToken": getCsrfToken(),
         },
-      }
+      },
     );
   }
 
@@ -934,7 +934,7 @@ class AironeApiClient {
           "Content-Type": "application/json;charset=utf-8",
           "X-CSRFToken": getCsrfToken(),
         },
-      }
+      },
     );
   }
 
@@ -966,7 +966,7 @@ class AironeApiClient {
     userId: number,
     oldPassword: string,
     newPassword: string,
-    checkPassword: string
+    checkPassword: string,
   ): Promise<void> {
     await this.user.userApiV2EditPasswdPartialUpdate(
       {
@@ -982,14 +982,14 @@ class AironeApiClient {
           "Content-Type": "application/json;charset=utf-8",
           "X-CSRFToken": getCsrfToken(),
         },
-      }
+      },
     );
   }
 
   async updateUserPasswordAsSuperuser(
     userId: number,
     newPassword: string,
-    checkPassword: string
+    checkPassword: string,
   ): Promise<void> {
     await this.user.userApiV2SuEditPasswdPartialUpdate(
       {
@@ -1004,7 +1004,7 @@ class AironeApiClient {
           "Content-Type": "application/json;charset=utf-8",
           "X-CSRFToken": getCsrfToken(),
         },
-      }
+      },
     );
   }
 
@@ -1021,14 +1021,14 @@ class AironeApiClient {
           "Content-Type": "application/json;charset=utf-8",
           "X-CSRFToken": getCsrfToken(),
         },
-      }
+      },
     );
   }
 
   async getJobs(
     page: number = 1,
     targetId?: number,
-    limit?: number
+    limit?: number,
   ): Promise<PaginatedJobSerializersList> {
     return await this.job.jobApiV2JobsList({
       offset: (page - 1) * JobListParam.MAX_ROW_COUNT,
@@ -1058,7 +1058,7 @@ class AironeApiClient {
           "Content-Type": "application/yaml",
           "X-CSRFToken": getCsrfToken(),
         },
-      }
+      },
     );
   }
 
@@ -1070,13 +1070,13 @@ class AironeApiClient {
           "Content-Type": "application/yaml",
           "X-CSRFToken": getCsrfToken(),
         },
-      }
+      },
     );
   }
 
   async importEntries(
     data: string | ArrayBuffer,
-    force: boolean
+    force: boolean,
   ): Promise<void> {
     return await this.entry.entryApiV2ImportCreate(
       {
@@ -1088,7 +1088,7 @@ class AironeApiClient {
           "X-CSRFToken": getCsrfToken(),
         },
         body: new Blob([data]),
-      }
+      },
     );
   }
 
@@ -1104,7 +1104,7 @@ class AironeApiClient {
           "Content-Type": "application/json;charset=utf-8",
           "X-CSRFToken": getCsrfToken(),
         },
-      }
+      },
     );
   }
 
@@ -1112,7 +1112,7 @@ class AironeApiClient {
     uidb64: string,
     token: string,
     password1: string,
-    password2: string
+    password2: string,
   ): Promise<void> {
     await this.user.userApiV2PasswordResetConfirmCreate(
       {
@@ -1128,7 +1128,7 @@ class AironeApiClient {
           "Content-Type": "application/json;charset=utf-8",
           "X-CSRFToken": getCsrfToken(),
         },
-      }
+      },
     );
   }
 

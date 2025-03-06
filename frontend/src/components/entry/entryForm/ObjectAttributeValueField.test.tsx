@@ -120,14 +120,14 @@ describe("ObjectAttributeValueField", () => {
         resolver: zodResolver(schema),
         mode: "onBlur",
         defaultValues,
-      })
+      }),
     );
 
     /* eslint-disable */
     jest
       .spyOn(
         require("../../../repository/AironeApiClient").aironeApiClient,
-        "getEntryAttrReferrals"
+        "getEntryAttrReferrals",
       )
       .mockResolvedValue(Promise.resolve(entries));
     /* eslint-enable */
@@ -139,7 +139,7 @@ describe("ObjectAttributeValueField", () => {
           control={control}
           setValue={setValue}
         />,
-        { wrapper: TestWrapper }
+        { wrapper: TestWrapper },
       );
     });
 
@@ -178,14 +178,14 @@ describe("ObjectAttributeValueField", () => {
         resolver: zodResolver(schema),
         mode: "onBlur",
         defaultValues,
-      })
+      }),
     );
 
     /* eslint-disable */
     jest
       .spyOn(
         require("../../../repository/AironeApiClient").aironeApiClient,
-        "getEntryAttrReferrals"
+        "getEntryAttrReferrals",
       )
       .mockResolvedValue(Promise.resolve(entries));
     /* eslint-enable */
@@ -198,7 +198,7 @@ describe("ObjectAttributeValueField", () => {
           setValue={setValue}
           multiple
         />,
-        { wrapper: TestWrapper }
+        { wrapper: TestWrapper },
       );
     });
 
@@ -245,14 +245,14 @@ describe("ObjectAttributeValueField", () => {
         resolver: zodResolver(schema),
         mode: "onBlur",
         defaultValues,
-      })
+      }),
     );
 
     /* eslint-disable */
     jest
       .spyOn(
         require("../../../repository/AironeApiClient").aironeApiClient,
-        "getEntryAttrReferrals"
+        "getEntryAttrReferrals",
       )
       .mockResolvedValue(Promise.resolve(entries));
     /* eslint-enable */
@@ -264,7 +264,7 @@ describe("ObjectAttributeValueField", () => {
           control={control}
           setValue={setValue}
         />,
-        { wrapper: TestWrapper }
+        { wrapper: TestWrapper },
       );
     });
 
@@ -308,14 +308,14 @@ describe("ObjectAttributeValueField", () => {
         resolver: zodResolver(schema),
         mode: "onBlur",
         defaultValues,
-      })
+      }),
     );
 
     /* eslint-disable */
     jest
       .spyOn(
         require("../../../repository/AironeApiClient").aironeApiClient,
-        "getEntryAttrReferrals"
+        "getEntryAttrReferrals",
       )
       .mockResolvedValue(Promise.resolve(entries));
     /* eslint-enable */
@@ -327,7 +327,7 @@ describe("ObjectAttributeValueField", () => {
           control={control}
           setValue={setValue}
         />,
-        { wrapper: TestWrapper }
+        { wrapper: TestWrapper },
       );
     });
 

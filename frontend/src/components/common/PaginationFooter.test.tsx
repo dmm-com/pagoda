@@ -53,11 +53,11 @@ describe("PaginationFooter", () => {
           page={c.page}
           changePage={changePage}
         />,
-        { wrapper: TestWrapper }
+        { wrapper: TestWrapper },
       );
 
       expect(screen.getByText(c.expected)).toBeInTheDocument();
-    })
+    }),
   );
 
   test("check change page handler", () => {
@@ -68,19 +68,19 @@ describe("PaginationFooter", () => {
         page={1}
         changePage={changePage}
       />,
-      { wrapper: TestWrapper }
+      { wrapper: TestWrapper },
     );
 
     expect(screen.getByRole("button", { name: "page 1" })).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: "Go to page 2" })
+      screen.getByRole("button", { name: "Go to page 2" }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: "Go to page 3" })
+      screen.getByRole("button", { name: "Go to page 3" }),
     ).toBeInTheDocument();
     expect(screen.getByText("…")).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: "Go to page 34" })
+      screen.getByRole("button", { name: "Go to page 34" }),
     ).toBeInTheDocument();
 
     // change page
@@ -98,19 +98,19 @@ describe("PaginationFooter", () => {
         page={2}
         changePage={changePage}
       />,
-      { wrapper: TestWrapper }
+      { wrapper: TestWrapper },
     );
 
     expect(
-      screen.getByRole("button", { name: "Go to page 1" })
+      screen.getByRole("button", { name: "Go to page 1" }),
     ).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "page 2" })).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: "Go to page 3" })
+      screen.getByRole("button", { name: "Go to page 3" }),
     ).toBeInTheDocument();
     expect(screen.getByText("…")).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: "Go to page 34" })
+      screen.getByRole("button", { name: "Go to page 34" }),
     ).toBeInTheDocument();
   });
 });

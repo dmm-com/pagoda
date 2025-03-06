@@ -83,7 +83,7 @@ export const ListAliasEntryPage: FC = ({}) => {
             } else {
               return entry;
             }
-          })
+          }),
         );
         target.value = "";
         enqueueSubmitResult(true);
@@ -93,7 +93,7 @@ export const ListAliasEntryPage: FC = ({}) => {
           extractAPIException(
             e,
             (message) => enqueueSubmitResult(false, `詳細: "${message}"`),
-            (name, message) => enqueueSubmitResult(false, `詳細: "${message}"`)
+            (name, message) => enqueueSubmitResult(false, `詳細: "${message}"`),
           );
         } else {
           enqueueSubmitResult(false);
@@ -111,7 +111,7 @@ export const ListAliasEntryPage: FC = ({}) => {
               ...entry,
               aliases: entry.aliases.filter((alias) => alias.id !== id),
             };
-          })
+          }),
         );
         enqueueSnackbar("エイリアスの削除が完了しました。", {
           variant: "success",
@@ -154,7 +154,7 @@ export const ListAliasEntryPage: FC = ({}) => {
             onKeyPress={(e) => {
               e.key === "Enter" &&
                 handleChangeQuery(
-                  normalizeToMatch((e.target as HTMLInputElement).value ?? "")
+                  normalizeToMatch((e.target as HTMLInputElement).value ?? ""),
                 );
             }}
           />

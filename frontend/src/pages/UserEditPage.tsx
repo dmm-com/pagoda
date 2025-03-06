@@ -48,7 +48,7 @@ export const UserEditPage: FC = () => {
 
   usePrompt(
     isDirty && !isSubmitSuccessful,
-    "編集した内容は失われてしまいますが、このページを離れてもよろしいですか？"
+    "編集した内容は失われてしまいますが、このページを離れてもよろしいですか？",
   );
 
   const user = useAsyncWithThrow(async () => {
@@ -96,14 +96,14 @@ export const UserEditPage: FC = () => {
           user.username,
           user.password ?? "",
           user.email,
-          user.isSuperuser
+          user.isSuperuser,
         );
       } else {
         await aironeApiClient.updateUser(
           userId ?? 0,
           user.username,
           user.email,
-          user.isSuperuser
+          user.isSuperuser,
         );
       }
       enqueueSubmitResult(true);
@@ -115,7 +115,7 @@ export const UserEditPage: FC = () => {
           (name, message) => {
             setError(name, { type: "custom", message: message });
             enqueueSubmitResult(false);
-          }
+          },
         );
       } else {
         enqueueSubmitResult(false);

@@ -48,7 +48,7 @@ describe("DateAttributeValueField", () => {
         resolver: zodResolver(schema),
         mode: "onBlur",
         defaultValues,
-      })
+      }),
     );
 
     render(
@@ -59,7 +59,7 @@ describe("DateAttributeValueField", () => {
       />,
       {
         wrapper: TestWrapper,
-      }
+      },
     );
 
     expect(screen.getByRole("textbox")).toHaveValue("2020/01/01");

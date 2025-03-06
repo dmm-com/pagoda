@@ -20,7 +20,7 @@ const server = setupServer(
       email: "user1@example.com",
       is_superuser: false,
     });
-  })
+  }),
 );
 
 beforeAll(() => server.listen());

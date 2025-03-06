@@ -45,7 +45,7 @@ const server = setupServer(
       attrs: [],
       webhooks: [],
     });
-  })
+  }),
 );
 
 beforeAll(() => server.listen());
@@ -71,7 +71,7 @@ test("should match snapshot", async () => {
     ],
     {
       initialEntries: [aclPath(1)],
-    }
+    },
   );
   const result = await act(async () => {
     return render(<RouterProvider router={router} />, {

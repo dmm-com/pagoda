@@ -45,7 +45,7 @@ export const EntityEditPage: FC = () => {
 
   usePrompt(
     isDirty && !isSubmitSuccessful,
-    "編集した内容は失われてしまいますが、このページを離れてもよろしいですか？"
+    "編集した内容は失われてしまいますが、このページを離れてもよろしいですか？",
   );
 
   const entity = useAsyncWithThrow(async () => {
@@ -90,7 +90,7 @@ export const EntityEditPage: FC = () => {
       entity.value?.attrs
         .filter(
           (attr) =>
-            !entityForm.attrs.some((attrForm) => attrForm.id === attr.id)
+            !entityForm.attrs.some((attrForm) => attrForm.id === attr.id),
         )
         .map((attr) => ({
           id: attr.id,
@@ -107,7 +107,7 @@ export const EntityEditPage: FC = () => {
           isVerified: false,
           headers: webhook.headers,
           isDeleted: false,
-        })
+        }),
       ) ?? [];
 
     const deletedWebhooks =
@@ -115,8 +115,8 @@ export const EntityEditPage: FC = () => {
         .filter(
           (webhook) =>
             !entityForm.webhooks.some(
-              (webhookForm) => webhookForm.id === webhook.id
-            )
+              (webhookForm) => webhookForm.id === webhook.id,
+            ),
         )
         .map((webhook) => ({
           id: webhook.id,
@@ -131,7 +131,7 @@ export const EntityEditPage: FC = () => {
           entityForm.note,
           entityForm.isToplevel,
           attrs,
-          webhooks
+          webhooks,
         );
       } else {
         await aironeApiClient.updateEntity(
@@ -140,7 +140,7 @@ export const EntityEditPage: FC = () => {
           entityForm.note,
           entityForm.isToplevel,
           [...attrs, ...deletedAttrs],
-          [...webhooks, ...deletedWebhooks]
+          [...webhooks, ...deletedWebhooks],
         );
       }
       enqueueSubmitResult(true);
@@ -163,7 +163,7 @@ export const EntityEditPage: FC = () => {
                 setError(name, { type: "custom", message: message });
             }
             enqueueSubmitResult(false);
-          }
+          },
         );
       } else {
         enqueueSubmitResult(false);

@@ -187,7 +187,7 @@ export const SearchResultControlMenu: FC<Props> = ({
                 onChange={(date: Date | null) => {
                   const settingDateValue = date
                     ? new Date(
-                        date.getTime() - date.getTimezoneOffset() * 60000
+                        date.getTime() - date.getTimezoneOffset() * 60000,
                       )
                         .toISOString()
                         .split("T")[0]
@@ -225,7 +225,7 @@ export const SearchResultControlMenu: FC<Props> = ({
                 onChange={(date: Date | null) => {
                   const settingDateValue = date
                     ? new Date(
-                        date.getTime() - date.getTimezoneOffset() * 60000
+                        date.getTime() - date.getTimezoneOffset() * 60000,
                       )
                         .toISOString()
                         .split("T")[0]
@@ -306,10 +306,10 @@ export const SearchResultControlMenu: FC<Props> = ({
                     : ""
                 }
                 onChange={handleChangeKeyword(
-                  AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_CONTAINED
+                  AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_CONTAINED,
                 )}
                 onKeyPress={handleKeyPressKeyword(
-                  AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_CONTAINED
+                  AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_CONTAINED,
                 )}
               />
             </Box>
@@ -324,10 +324,10 @@ export const SearchResultControlMenu: FC<Props> = ({
                     : ""
                 }
                 onChange={handleChangeKeyword(
-                  AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_NOT_CONTAINED
+                  AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_NOT_CONTAINED,
                 )}
                 onKeyPress={handleKeyPressKeyword(
-                  AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_NOT_CONTAINED
+                  AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_NOT_CONTAINED,
                 )}
               />
             </Box>

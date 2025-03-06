@@ -99,7 +99,7 @@ export const TriggerEditPage: FC = () => {
 
   usePrompt(
     isDirty && !isSubmitSuccessful,
-    "編集した内容は失われてしまいますが、このページを離れてもよろしいですか？"
+    "編集した内容は失われてしまいますが、このページを離れてもよろしいですか？",
   );
 
   const entities = useAsyncWithThrow(async () => {
@@ -123,7 +123,7 @@ export const TriggerEditPage: FC = () => {
 
     return trigger.conditions.flatMap((cond) => {
       const attrInfo = entity.value?.attrs.find(
-        (attr) => attr.id === cond.attr.id
+        (attr) => attr.id === cond.attr.id,
       );
 
       switch (attrInfo?.type) {
@@ -158,7 +158,7 @@ export const TriggerEditPage: FC = () => {
   };
 
   const convertActions2ServerFormat = (
-    trigger: Schema
+    trigger: Schema,
   ): TriggerActionUpdate[] => {
     if (!entity.value) {
       return [];
@@ -166,7 +166,7 @@ export const TriggerEditPage: FC = () => {
 
     return trigger.actions.flatMap((action): TriggerActionUpdate[] => {
       const attrInfo = entity.value?.attrs.find(
-        (attr) => attr.id === action.attr.id
+        (attr) => attr.id === action.attr.id,
       );
 
       switch (attrInfo?.type) {
@@ -254,7 +254,7 @@ export const TriggerEditPage: FC = () => {
         setError("conditions", { message: errMsg });
       }
     },
-    [triggerId, entity]
+    [triggerId, entity],
   );
 
   const handleCancel = async () => {
@@ -282,7 +282,7 @@ export const TriggerEditPage: FC = () => {
         },
         {
           shouldValidate: true,
-        }
+        },
       );
     }
     trigger();

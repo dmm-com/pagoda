@@ -39,7 +39,7 @@ describe("BasicFields", () => {
         resolver: zodResolver(schema),
         mode: "onBlur",
         defaultValues,
-      })
+      }),
     );
 
     render(<BasicFields control={control} />, { wrapper: TestWrapper });

@@ -193,7 +193,7 @@ export const AdvancedSearchResultsPage: FC = () => {
         referralName,
         searchAllEntities,
         page,
-        AdvancedSerarchResultListParam.MAX_ROW_COUNT
+        AdvancedSerarchResultListParam.MAX_ROW_COUNT,
       );
     };
 
@@ -234,7 +234,7 @@ export const AdvancedSearchResultsPage: FC = () => {
         entryName,
         hasReferral,
         searchAllEntities,
-        exportStyle
+        exportStyle,
       );
       enqueueSnackbar("エクスポートジョブの登録に成功しました", {
         variant: "success",
@@ -405,7 +405,7 @@ export const AdvancedSearchResultsPage: FC = () => {
                           baseAttrname: join.name,
                           joinedAttrname: joinedInfo.name,
                         },
-                      }))
+                      })),
                     );
 
                   return [base, ...joined];
@@ -451,7 +451,7 @@ export const AdvancedSearchResultsPage: FC = () => {
         setOpenModal={setOpenModal}
         attrNames={entityAttrs.value ?? []}
         initialAttrNames={attrInfo.map(
-          (e: AdvancedSearchResultAttrInfo) => e.name
+          (e: AdvancedSearchResultAttrInfo) => e.name,
         )}
         attrInfos={attrInfo}
       />

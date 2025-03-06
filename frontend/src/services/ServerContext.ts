@@ -13,7 +13,7 @@ class User {
 const FlagKey = {
   0: "webhook",
 } as const;
-type FlagKey = typeof FlagKey[keyof typeof FlagKey];
+type FlagKey = (typeof FlagKey)[keyof typeof FlagKey];
 
 /**
  * Context continued from server side to succeed information only server side can know.

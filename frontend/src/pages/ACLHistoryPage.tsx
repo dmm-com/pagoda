@@ -68,7 +68,7 @@ export const ACLHistoryPage: FC = () => {
       case ACLObjtypeEnum.Entity:
         aironeApiClient.getEntity(objectId).then((resp) => {
           setBreadcrumbs(
-            <EntityBreadcrumbs entity={resp} title="ACL変更履歴" />
+            <EntityBreadcrumbs entity={resp} title="ACL変更履歴" />,
           );
         });
         break;

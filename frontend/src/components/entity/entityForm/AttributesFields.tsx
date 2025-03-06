@@ -65,7 +65,7 @@ export const AttributesFields: FC<Props> = ({
   });
 
   const [latestChangedIndex, setLatestChangedIndex] = useState<number | null>(
-    null
+    null,
   );
 
   const handleAppendAttribute = (index: number) => {

@@ -627,7 +627,7 @@ class AdvancedSearchChainAPI(generics.GenericAPIView):
             return Response(
                 {
                     "reason": (
-                        "Data overflow was happened. " "Please narrow down intermediate conditions"
+                        "Data overflow was happened. Please narrow down intermediate conditions"
                     )
                 },
                 status=status.HTTP_400_BAD_REQUEST,

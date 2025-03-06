@@ -2,7 +2,7 @@ import { GroupTree } from "../../repository/AironeApiClient";
 
 export const filterAncestorsAndOthers = (
   groupTrees: GroupTree[],
-  targetGroupId: number
+  targetGroupId: number,
 ): GroupTree[] => {
   return groupTrees
     .filter((t) => t.id !== targetGroupId)

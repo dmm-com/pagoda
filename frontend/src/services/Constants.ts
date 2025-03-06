@@ -170,7 +170,7 @@ export const ACLType = {
   Writable: 4,
   Full: 8,
 } as const;
-export type ACLType = typeof ACLType[keyof typeof ACLType];
+export type ACLType = (typeof ACLType)[keyof typeof ACLType];
 
 export const ACLTypeLabels: Record<ACLType, string> = {
   [ACLType.Nothing]: "権限なし",

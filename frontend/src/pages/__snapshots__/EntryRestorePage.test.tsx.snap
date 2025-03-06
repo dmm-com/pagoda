@@ -267,7 +267,6 @@ exports[`should match snapshot 1`] = `
                       >
                         <button
                           class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-53g0n7-MuiButtonBase-root-MuiIconButton-root"
-                          id=":r2:"
                           tabindex="0"
                           type="button"
                         >
@@ -328,7 +327,6 @@ exports[`should match snapshot 1`] = `
                       >
                         <button
                           class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-53g0n7-MuiButtonBase-root-MuiIconButton-root"
-                          id=":r4:"
                           tabindex="0"
                           type="button"
                         >
@@ -389,7 +387,6 @@ exports[`should match snapshot 1`] = `
                       >
                         <button
                           class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-53g0n7-MuiButtonBase-root-MuiIconButton-root"
-                          id=":r6:"
                           tabindex="0"
                           type="button"
                         >
@@ -755,7 +752,6 @@ exports[`should match snapshot 1`] = `
                     >
                       <button
                         class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-53g0n7-MuiButtonBase-root-MuiIconButton-root"
-                        id=":r2:"
                         tabindex="0"
                         type="button"
                       >
@@ -816,7 +812,6 @@ exports[`should match snapshot 1`] = `
                     >
                       <button
                         class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-53g0n7-MuiButtonBase-root-MuiIconButton-root"
-                        id=":r4:"
                         tabindex="0"
                         type="button"
                       >
@@ -877,7 +872,6 @@ exports[`should match snapshot 1`] = `
                     >
                       <button
                         class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-53g0n7-MuiButtonBase-root-MuiIconButton-root"
-                        id=":r6:"
                         tabindex="0"
                         type="button"
                       >

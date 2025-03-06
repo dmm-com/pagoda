@@ -34,21 +34,21 @@ export const AdvancedSearchJoinModal: FC<Props> = ({
     joinAttrs.find((attr) => attr.name === targetAttrname);
 
   const [selectedAttrNames, setSelectedAttrNames] = useState<Array<string>>(
-    currentAttrInfo?.attrinfo.map((attr) => attr.name) ?? []
+    currentAttrInfo?.attrinfo.map((attr) => attr.name) ?? [],
   );
 
   const referralAttrs = useAsyncWithThrow(async () => {
     return await aironeApiClient.getEntityAttrs(
       targetEntityIds,
       searchAllEntities,
-      targetAttrname
+      targetAttrname,
     );
   }, [targetEntityIds, searchAllEntities, targetAttrname]);
 
   const handleUpdatePageURL = () => {
     // to prevent duplication of same name parameter
     const currentJoinAttrs = joinAttrs.filter(
-      (attr) => attr.name !== targetAttrname
+      (attr) => attr.name !== targetAttrname,
     );
 
     const newJoinAttrs = [

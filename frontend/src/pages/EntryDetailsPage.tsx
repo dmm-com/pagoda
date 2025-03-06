@@ -77,7 +77,7 @@ export const EntryDetailsPage: FC<Props> = ({
   const navigate = useNavigate();
 
   const [entryAnchorEl, setEntryAnchorEl] = useState<HTMLButtonElement | null>(
-    null
+    null,
   );
 
   const entry = useAsyncWithThrow(async () => {
@@ -97,9 +97,9 @@ export const EntryDetailsPage: FC<Props> = ({
       navigate(
         restoreEntryPath(
           entry.value?.schema?.id ?? "",
-          entry.value?.name ?? ""
+          entry.value?.name ?? "",
         ),
-        { replace: true }
+        { replace: true },
       );
     }
   }, [entry.loading]);
@@ -166,7 +166,7 @@ export const EntryDetailsPage: FC<Props> = ({
                 <EntryAttributes
                   attributes={
                     entry.value?.attrs.filter(
-                      (attr) => !excludeAttrs.includes(attr.schema.name)
+                      (attr) => !excludeAttrs.includes(attr.schema.name),
                     ) ?? []
                   }
                 />

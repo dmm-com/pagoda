@@ -65,14 +65,14 @@ export const UserPasswordFormModal: FC<Props> = ({
         await aironeApiClient.updateUserPasswordAsSuperuser(
           userId,
           newPassword,
-          checkPassword
+          checkPassword,
         );
       } else {
         await aironeApiClient.updateUserPassword(
           userId,
           oldPassword,
           newPassword,
-          checkPassword
+          checkPassword,
         );
       }
 
@@ -87,7 +87,7 @@ export const UserPasswordFormModal: FC<Props> = ({
         "パスワードリセットに失敗しました。入力項目を見直してください",
         {
           variant: "error",
-        }
+        },
       );
       // TODO show error causes
     }

@@ -32,7 +32,7 @@ test("should render a component with essential props", function () {
         searchAllEntities={false}
         setSearchResults={() => {}}
       />,
-      { wrapper: TestWrapper }
-    )
+      { wrapper: TestWrapper },
+    ),
   ).not.toThrow();
 });

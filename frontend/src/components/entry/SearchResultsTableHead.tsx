@@ -87,19 +87,19 @@ export const SearchResultsTableHead: FC<Props> = ({
   const [entryFilter, entryFilterDispatcher] = useReducer(
     (
       _state: string,
-      event: ChangeEvent<HTMLTextAreaElement | HTMLInputElement>
+      event: ChangeEvent<HTMLTextAreaElement | HTMLInputElement>,
     ) => event.target.value,
-    defaultEntryFilter ?? ""
+    defaultEntryFilter ?? "",
   );
   const [referralFilter, referralFilterDispatcher] = useReducer(
     (
       _state: string,
-      event: ChangeEvent<HTMLTextAreaElement | HTMLInputElement>
+      event: ChangeEvent<HTMLTextAreaElement | HTMLInputElement>,
     ) => event.target.value,
-    defaultReferralFilter ?? ""
+    defaultReferralFilter ?? "",
   );
   const [attrsFilter, setAttrsFilter] = useState<AttrsFilter>(
-    defaultAttrsFilter ?? {}
+    defaultAttrsFilter ?? {},
   );
 
   const [joinAttrName, setJoinAttrname] = useState<string>("");
@@ -107,7 +107,7 @@ export const SearchResultsTableHead: FC<Props> = ({
     [key: string]: HTMLButtonElement | null;
   }>({});
   const [entryMenuEls, setEntryMenuEls] = useState<HTMLButtonElement | null>(
-    null
+    null,
   );
   const [referralMenuEls, setReferralMenuEls] =
     useState<HTMLButtonElement | null>(null);
@@ -125,9 +125,9 @@ export const SearchResultsTableHead: FC<Props> = ({
             attrName,
             getIsFiltered(attrFilter.filterKey, attrFilter.keyword),
           ];
-        })
+        }),
       ),
-    [defaultAttrsFilter]
+    [defaultAttrsFilter],
   );
 
   useEffect(() => {
@@ -139,7 +139,7 @@ export const SearchResultsTableHead: FC<Props> = ({
     (
       attrFilter?: AttrFilter,
       overwriteEntryName?: string,
-      overwriteReferral?: string
+      overwriteReferral?: string,
     ) => {
       const _attrsFilter =
         attrName != null && attrFilter != null
@@ -160,7 +160,7 @@ export const SearchResultsTableHead: FC<Props> = ({
             attrinfo: Object.keys(_attrsFilter)
               .filter(
                 (j) =>
-                  _attrsFilter[j].baseAttrname === _attrsFilter[k].baseAttrname
+                  _attrsFilter[j].baseAttrname === _attrsFilter[k].baseAttrname,
               )
               .map((j) => ({
                 name: _attrsFilter[j]?.joinedAttrname ?? "",
@@ -278,7 +278,7 @@ export const SearchResultsTableHead: FC<Props> = ({
                     }}
                     sx={{ marginLeft: "auto" }}
                   >
-                    {isFiltered[attrName] ?? false ? (
+                    {(isFiltered[attrName] ?? false) ? (
                       <FilterAltIcon />
                     ) : (
                       <FilterListIcon />
@@ -294,7 +294,7 @@ export const SearchResultsTableHead: FC<Props> = ({
                       })
                     }
                     handleSelectFilterConditions={handleSelectFilterConditions(
-                      attrName
+                      attrName,
                     )}
                     handleUpdateAttrFilter={handleUpdateAttrFilter(attrName)}
                     attrType={attrTypes[attrName]}
