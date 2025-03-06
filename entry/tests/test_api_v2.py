@@ -4928,11 +4928,8 @@ class ViewTest(BaseViewTest):
         # send request to delete all items with attrinfo
         attrinfo_as_str = json.dumps(
             [
-                {
-                    "name": "val",
-                    "keyword": "hoge",
-                    "filterKey": "3",
-                }
+                {"name": "ref", "keyword": "", "filterKey": "0"},
+                {"name": "val", "keyword": "hoge", "filterKey": "3"},
             ]
         )
         resp = self.client.delete(

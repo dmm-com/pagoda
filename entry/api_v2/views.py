@@ -860,10 +860,10 @@ class EntryBulkDeleteAPI(generics.DestroyAPIView):
             for info in json_loaded_value:
                 if not any(x in info for x in ["name", "filterKey", "keyword"]):
                     raise RequiredParameterError("(00)Invalid attrinfo was specified")
-                if not FilterKey(int(info["filterKey"])):
+                if not FilterKey.isin(int(info["filterKey"])):
                     raise RequiredParameterError("(01)Invalid attrinfo was specified")
         except Exception as e:
-            raise RequiredParameterError("(E0)Invalid attrinfo was specified (%s)" % str(e))
+            raise RequiredParameterError(e)
 
         return json_loaded_value
 

@@ -1,10 +1,12 @@
 import enum
 
+from airone.lib.types import BaseIntEnum
+
 __all__ = ["ACLType", "ACLObjType"]
 
 
 @enum.unique
-class ACLObjType(enum.IntEnum):
+class ACLObjType(BaseIntEnum):
     Entity = 1 << 0
     EntityAttr = 1 << 1
     Entry = 1 << 2
@@ -12,7 +14,7 @@ class ACLObjType(enum.IntEnum):
     Category = 1 << 4
 
 
-class ACLType(enum.IntEnum):
+class ACLType(BaseIntEnum):
     Nothing = 1 << 0
     Readable = 1 << 1
     Writable = 1 << 2
