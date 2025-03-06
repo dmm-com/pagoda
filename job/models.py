@@ -15,6 +15,7 @@ from django.db import models
 from acl.models import ACLBase
 from airone.lib import auto_complement
 from airone.lib.log import Logger
+from airone.lib.types import BaseIntEnum
 from entity.models import Entity
 from entry.models import Entry
 from job.settings import CONFIG as JOB_CONFIG
@@ -36,7 +37,7 @@ else:
     CUSTOM_PARALLELIZABLE_OPERATIONS = []
     CUSTOM_TASKS = {}
 
-    class JobOperationCustom(enum.IntEnum):  # type: ignore
+    class JobOperationCustom(BaseIntEnum):  # type: ignore
         pass
 
 
@@ -47,7 +48,7 @@ def _support_time_default(o):
 
 
 @enum.unique
-class JobOperation(enum.IntEnum):
+class JobOperation(BaseIntEnum):
     # Constant to describes status of each jobs
     CREATE_ENTRY = 1
     EDIT_ENTRY = 2
@@ -82,14 +83,14 @@ class JobOperation(enum.IntEnum):
 
 
 @enum.unique
-class JobTarget(enum.IntEnum):
+class JobTarget(BaseIntEnum):
     UNKNOWN = 0
     ENTRY = 1
     ENTITY = 2
 
 
 @enum.unique
-class JobStatus(enum.IntEnum):
+class JobStatus(BaseIntEnum):
     PREPARING = 1
     DONE = 2
     ERROR = 3

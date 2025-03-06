@@ -404,9 +404,13 @@ class AironeApiClient {
     );
   }
 
-  async destroyEntries(ids: Array<number>): Promise<void> {
+  async destroyEntries(
+    ids: Array<number>,
+    attrinfo?: string,
+    isAll?: boolean,
+  ): Promise<void> {
     return await this.entry.entryApiV2BulkDeleteDestroy(
-      { ids },
+      { attrinfo, ids, isAll },
       {
         headers: {
           "Content-Type": "application/json;charset=utf-8",

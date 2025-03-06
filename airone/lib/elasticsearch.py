@@ -10,7 +10,7 @@ from typing_extensions import TypedDict
 
 from airone.lib.acl import ACLType
 from airone.lib.log import Logger
-from airone.lib.types import AttrType
+from airone.lib.types import AttrType, BaseIntEnum
 from entity.models import Entity
 from entry.settings import CONFIG
 from user.models import User
@@ -42,7 +42,7 @@ class AdvancedSearchResults(BaseModel):
 
 
 @enum.unique
-class FilterKey(enum.IntEnum):
+class FilterKey(BaseIntEnum):
     CLEARED = 0
     EMPTY = 1
     NON_EMPTY = 2
