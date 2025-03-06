@@ -12,6 +12,10 @@ import {
   Checkbox,
   FormControlLabel,
   IconButton,
+  Table,
+  TableBody,
+  TableCell,
+  TableRow,
   Typography,
 } from "@mui/material";
 import { useSnackbar } from "notistack";
@@ -34,6 +38,80 @@ import { aironeApiClient } from "repository/AironeApiClient";
 import { advancedSearchPath, topPath } from "routes/Routes";
 import { AdvancedSerarchResultListParam } from "services/Constants";
 import { extractAdvancedSearchParams } from "services/entry/AdvancedSearch";
+
+function isAttrInfoSet(info: AdvancedSearchResultAttrInfo) {
+  switch (info.filterKey) {
+    case AdvancedSearchResultAttrInfoFilterKeyEnum.CLEARED:
+      return false;
+    case AdvancedSearchResultAttrInfoFilterKeyEnum.EMPTY:
+    case AdvancedSearchResultAttrInfoFilterKeyEnum.NON_EMPTY:
+    case AdvancedSearchResultAttrInfoFilterKeyEnum.DUPLICATED:
+    case AdvancedSearchResultAttrInfoFilterKeyEnum.DUPLICATED:
+      return true;
+    case AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_CONTAINED:
+      return info.keyword !== "";
+    default:
+      return false;
+  }
+}
+
+function DeleteAllLabel(attrinfo: Array<AdvancedSearchResultAttrInfo>) {
+  const renderLabel = (info: AdvancedSearchResultAttrInfo) => {
+    switch (info.filterKey) {
+      case AdvancedSearchResultAttrInfoFilterKeyEnum.EMPTY:
+        return "(空白)";
+      case AdvancedSearchResultAttrInfoFilterKeyEnum.NON_EMPTY:
+        return "(空白ではない)";
+      case AdvancedSearchResultAttrInfoFilterKeyEnum.DUPLICATED:
+        return "(重複している)";
+      case AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_CONTAINED:
+        return `「${info.keyword}」を含む`;
+      case AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_NOT_CONTAINED:
+        return `「${info.keyword}」を含まない`;
+      default:
+        return "";
+    }
+  }
+
+  if (attrinfo.some((x) => isAttrInfoSet(x))) {
+    return (
+      <>
+        <Typography>
+          以下の条件にマッチする未選択の全てのアイテムを削除する
+        </Typography>
+        <Typography variant="caption" color="warning">
+          （↑のチェックを入れない場合、一覧で選択したアイテムのみ削除されます）
+        </Typography>
+        <Table size="small">
+          <TableBody>
+            {attrinfo.map((info) => {
+              if (isAttrInfoSet(info)) {
+                return (
+                  <TableRow>
+                    <TableCell>
+                      <Typography>
+                        属性「{info.name}」の値が
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
+                      {renderLabel(info)}
+                    </TableCell>
+                  </TableRow>
+                );
+              }
+            })}
+          </TableBody>
+        </Table>
+      </>
+    );
+  } else {
+    return (
+      <>
+        未選択の全てのアイテムもまとめて削除する
+      </>
+    );
+  }
+}
 
 export const getIsFiltered = (filterKey?: number, keyword?: string) => {
   switch (filterKey) {
@@ -179,7 +257,8 @@ export const AdvancedSearchResultsPage: FC = () => {
             keyword: info.keyword,
           }))
         ),
-        isDeleteAllItems
+        // disable isDeleteAllItems when join-attrs are specified
+        isDeleteAllItems && joinAttrs.length == 0
       );
       enqueueSnackbar("複数アイテムの削除に成功しました", {
         variant: "success",
@@ -270,12 +349,13 @@ export const AdvancedSearchResultsPage: FC = () => {
             onClickYes={handleBulkDelete}
             content={
               bulkOperationEntryIds.length ==
-              AdvancedSerarchResultListParam.MAX_ROW_COUNT ? (
+                AdvancedSerarchResultListParam.MAX_ROW_COUNT && joinAttrs.length == 0 ? (
                 <FormControlLabel
+                  sx={attrInfo.some((x) => isAttrInfoSet(x)) ? { alignItems: "flex-start" } : {}}
                   control={
                     <Checkbox onChange={() => setIsDeleteAllItems(true)} />
                   }
-                  label="未選択のアイテムもまとめて削除する"
+                  label={DeleteAllLabel(attrInfo)}
                 />
               ) : (
                 <></>
