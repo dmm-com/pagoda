@@ -4,7 +4,7 @@ import React, { FC, useState } from "react";
 import { Link, useNavigate } from "react-router";
 
 import { CategoryListHeader } from "components/category/CategoryListHeader";
-import { AironeLink } from "components/common";
+import { AironeLink, Loading } from "components/common";
 import { PaginationFooter } from "components/common/PaginationFooter";
 import { SearchBox } from "components/common/SearchBox";
 import { useAsyncWithThrow } from "hooks";
@@ -72,42 +72,46 @@ export const CategoryList: FC<Props> = ({ isEdit = false }) => {
       </Box>
 
       {/* Context of Category */}
-      <Grid container spacing={3}>
-        {categories.value?.results.map((category) => (
-          <Grid item md={4} key={category.id}>
-            <List
-              subheader={
-                <CategoryListHeader
-                  category={category}
-                  setToggle={() => setToggle(!toggle)}
-                  isEdit={isEdit}
-                />
-              }
-            >
-              <Box
-                sx={{
-                  display: "flex",
-                  flexDirection: "column",
-                  //overflowY: "scroll",
-                  //maxHeight: 300,
-                  ml: "40px",
-                }}
+      {categories.loading ? (
+        <Loading />
+      ) : (
+        <Grid container spacing={3}>
+          {categories.value?.results.map((category) => (
+            <Grid item md={4} key={category.id}>
+              <List
+                subheader={
+                  <CategoryListHeader
+                    category={category}
+                    setToggle={() => setToggle(!toggle)}
+                    isEdit={isEdit}
+                  />
+                }
               >
-                {category.models.map((models) => (
-                  <Typography
-                    key={models.id}
-                    component={AironeLink}
-                    to={entityEntriesPath(models.id)}
-                    variant="body2"
-                  >
-                    {models.name}
-                  </Typography>
-                ))}
-              </Box>
-            </List>
-          </Grid>
-        ))}
-      </Grid>
+                <Box
+                  sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    //overflowY: "scroll",
+                    //maxHeight: 300,
+                    ml: "40px",
+                  }}
+                >
+                  {category.models.map((models) => (
+                    <Typography
+                      key={models.id}
+                      component={AironeLink}
+                      to={entityEntriesPath(models.id)}
+                      variant="body2"
+                    >
+                      {models.name}
+                    </Typography>
+                  ))}
+                </Box>
+              </List>
+            </Grid>
+          ))}
+        </Grid>
+      )}
       <PaginationFooter
         count={categories.value?.count ?? 0}
         maxRowCount={EntityListParam.MAX_ROW_COUNT}

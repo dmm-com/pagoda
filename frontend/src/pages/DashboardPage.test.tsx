@@ -2,7 +2,7 @@
  * @jest-environment jsdom
  */
 
-import { act, render } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import React from "react";
@@ -63,6 +63,9 @@ test("should match snapshot", async () => {
     return render(<DashboardPage />, {
       wrapper: TestWrapper,
     });
+  });
+  await waitFor(() => {
+    expect(screen.queryByTestId("loading")).not.toBeInTheDocument();
   });
   expect(result).toMatchSnapshot();
 });
