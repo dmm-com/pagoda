@@ -218,7 +218,9 @@ exports[`should match snapshot 1`] = `
                             アイテム名
                           </p>
                           <button
+                            aria-label="アイテム名でフィルタ"
                             class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-5ws45t-MuiButtonBase-root-MuiIconButton-root"
+                            data-mui-internal-clone-element="true"
                             tabindex="0"
                             type="button"
                           >
@@ -579,7 +581,9 @@ exports[`should match snapshot 1`] = `
                           アイテム名
                         </p>
                         <button
+                          aria-label="アイテム名でフィルタ"
                           class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-5ws45t-MuiButtonBase-root-MuiIconButton-root"
+                          data-mui-internal-clone-element="true"
                           tabindex="0"
                           type="button"
                         >

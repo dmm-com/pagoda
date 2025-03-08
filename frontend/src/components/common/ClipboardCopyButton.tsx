@@ -16,14 +16,16 @@ export const ClipboardCopyButton: FC<Props> = ({ name }) => {
         disableHoverListener
         disableFocusListener
       >
-        <IconButton
-          onClick={() => {
-            global.navigator.clipboard.writeText(name);
-            setOpen(true);
-          }}
-        >
-          <ContentCopyIcon fontSize="small" />
-        </IconButton>
+        <Tooltip title="名前をコピーする">
+          <IconButton
+            onClick={() => {
+              global.navigator.clipboard.writeText(name);
+              setOpen(true);
+            }}
+          >
+            <ContentCopyIcon fontSize="small" />
+          </IconButton>
+        </Tooltip>
       </Tooltip>
     </ClickAwayListener>
   );

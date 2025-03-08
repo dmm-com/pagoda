@@ -289,7 +289,9 @@ exports[`EntryListPage should match snapshot 1`] = `
                         </svg>
                       </button>
                       <button
+                        aria-label="アイテムの操作"
                         class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-53g0n7-MuiButtonBase-root-MuiIconButton-root"
+                        data-mui-internal-clone-element="true"
                         tabindex="0"
                         type="button"
                       >
@@ -367,7 +369,9 @@ exports[`EntryListPage should match snapshot 1`] = `
                         </svg>
                       </button>
                       <button
+                        aria-label="アイテムの操作"
                         class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-53g0n7-MuiButtonBase-root-MuiIconButton-root"
+                        data-mui-internal-clone-element="true"
                         tabindex="0"
                         type="button"
                       >
@@ -445,7 +449,9 @@ exports[`EntryListPage should match snapshot 1`] = `
                         </svg>
                       </button>
                       <button
+                        aria-label="アイテムの操作"
                         class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-53g0n7-MuiButtonBase-root-MuiIconButton-root"
+                        data-mui-internal-clone-element="true"
                         tabindex="0"
                         type="button"
                       >
@@ -832,7 +838,9 @@ exports[`EntryListPage should match snapshot 1`] = `
                       </svg>
                     </button>
                     <button
+                      aria-label="アイテムの操作"
                       class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-53g0n7-MuiButtonBase-root-MuiIconButton-root"
+                      data-mui-internal-clone-element="true"
                       tabindex="0"
                       type="button"
                     >
@@ -910,7 +918,9 @@ exports[`EntryListPage should match snapshot 1`] = `
                       </svg>
                     </button>
                     <button
+                      aria-label="アイテムの操作"
                       class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-53g0n7-MuiButtonBase-root-MuiIconButton-root"
+                      data-mui-internal-clone-element="true"
                       tabindex="0"
                       type="button"
                     >
@@ -988,7 +998,9 @@ exports[`EntryListPage should match snapshot 1`] = `
                       </svg>
                     </button>
                     <button
+                      aria-label="アイテムの操作"
                       class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-53g0n7-MuiButtonBase-root-MuiIconButton-root"
+                      data-mui-internal-clone-element="true"
                       tabindex="0"
                       type="button"
                     >
