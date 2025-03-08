@@ -1,5 +1,6 @@
 import AddIcon from "@mui/icons-material/Add";
-import { Box, Button, Container, Grid, List, Typography } from "@mui/material";
+import { Box, Button, Container, List, Typography } from "@mui/material";
+import Grid from "@mui/material/Grid2";
 import React, { FC, useState } from "react";
 import { Link, useNavigate } from "react-router";
 
@@ -77,7 +78,7 @@ export const CategoryList: FC<Props> = ({ isEdit = false }) => {
       ) : (
         <Grid container spacing={3}>
           {categories.value?.results.map((category) => (
-            <Grid item md={4} key={category.id}>
+            <Grid size={4} key={category.id}>
               <List
                 subheader={
                   <CategoryListHeader

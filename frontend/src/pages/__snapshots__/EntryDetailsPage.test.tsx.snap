@@ -206,10 +206,10 @@ exports[`should match snapshot 1`] = `
           </div>
         </div>
         <div
-          class="MuiGrid-root MuiGrid-container css-rvs8lc-MuiGrid-root"
+          class="MuiGrid2-root MuiGrid2-container MuiGrid2-direction-xs-row css-1sq6lgs-MuiGrid2-root"
         >
           <div
-            class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-1 css-1dv2ucr-MuiGrid-root"
+            class="MuiGrid2-root MuiGrid2-direction-xs-row MuiGrid2-grid-xs-1 css-1lc06tg-MuiGrid2-root"
           >
             <div
               class="MuiBox-root css-0"
@@ -375,7 +375,7 @@ exports[`should match snapshot 1`] = `
             </div>
           </div>
           <div
-            class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-4 css-vok43g-MuiGrid-root"
+            class="MuiGrid2-root MuiGrid2-direction-xs-row MuiGrid2-grid-xs-4 css-17yh78r-MuiGrid2-root"
           >
             <div
               class="MuiBox-root css-1310p9u"
@@ -421,7 +421,7 @@ exports[`should match snapshot 1`] = `
             </div>
           </div>
           <div
-            class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-1 css-1xemioo-MuiGrid-root"
+            class="MuiGrid2-root MuiGrid2-direction-xs-row MuiGrid2-grid-xs-1 css-1d4ugon-MuiGrid2-root"
           >
             <div
               class="MuiBox-root css-0"
@@ -633,10 +633,10 @@ exports[`should match snapshot 1`] = `
         </div>
       </div>
       <div
-        class="MuiGrid-root MuiGrid-container css-rvs8lc-MuiGrid-root"
+        class="MuiGrid2-root MuiGrid2-container MuiGrid2-direction-xs-row css-1sq6lgs-MuiGrid2-root"
       >
         <div
-          class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-1 css-1dv2ucr-MuiGrid-root"
+          class="MuiGrid2-root MuiGrid2-direction-xs-row MuiGrid2-grid-xs-1 css-1lc06tg-MuiGrid2-root"
         >
           <div
             class="MuiBox-root css-0"
@@ -802,7 +802,7 @@ exports[`should match snapshot 1`] = `
           </div>
         </div>
         <div
-          class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-4 css-vok43g-MuiGrid-root"
+          class="MuiGrid2-root MuiGrid2-direction-xs-row MuiGrid2-grid-xs-4 css-17yh78r-MuiGrid2-root"
         >
           <div
             class="MuiBox-root css-1310p9u"
@@ -848,7 +848,7 @@ exports[`should match snapshot 1`] = `
           </div>
         </div>
         <div
-          class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-1 css-1xemioo-MuiGrid-root"
+          class="MuiGrid2-root MuiGrid2-direction-xs-row MuiGrid2-grid-xs-1 css-1d4ugon-MuiGrid2-root"
         >
           <div
             class="MuiBox-root css-0"

@@ -1,6 +1,7 @@
 import { EntryBase } from "@dmm-com/airone-apiclient-typescript-fetch";
 import AppsIcon from "@mui/icons-material/Apps";
-import { Box, Container, Grid, IconButton } from "@mui/material";
+import { Box, Container, IconButton } from "@mui/material";
+import Grid from "@mui/material/Grid2";
 import { useSnackbar } from "notistack";
 import React, { FC, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
@@ -168,10 +169,8 @@ export const ListAliasEntryPage: FC = ({}) => {
             display="flex"
             alignItems="center"
           >
-            <Grid item xs={4}>
-              {entry.name}
-            </Grid>
-            <Grid item xs={8}>
+            <Grid size={4}>{entry.name}</Grid>
+            <Grid size={8}>
               <AliasEntryList
                 entry={entry}
                 handleCreate={handleCreate}
