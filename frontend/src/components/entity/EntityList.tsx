@@ -1,6 +1,7 @@
 import { PaginatedEntityListList } from "@dmm-com/airone-apiclient-typescript-fetch";
 import AddIcon from "@mui/icons-material/Add";
-import { Box, Button, Grid } from "@mui/material";
+import { Box, Button } from "@mui/material";
+import Grid from "@mui/material/Grid2";
 import React, { FC } from "react";
 import { Link } from "react-router";
 
@@ -59,7 +60,7 @@ export const EntityList: FC<Props> = ({
       {/* This box shows each entity Cards */}
       <Grid container spacing={2} id="entity_list">
         {entities.results?.map((entity) => (
-          <Grid item xs={4} key={entity.id}>
+          <Grid size={4} key={entity.id}>
             <EntityListCard entity={entity} setToggle={setToggle} />
           </Grid>
         ))}

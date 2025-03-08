@@ -6,11 +6,11 @@ import {
   Card,
   CardActionArea,
   CardHeader,
-  Grid,
   IconButton,
   Tooltip,
   Typography,
 } from "@mui/material";
+import Grid from "@mui/material/Grid2";
 import { styled } from "@mui/material/styles";
 import React, { FC, useMemo, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router";
@@ -111,7 +111,7 @@ export const UserList: FC = ({}) => {
         <Grid container spacing={2} id="user_list">
           {users.value?.results?.map((user) => {
             return (
-              <Grid item xs={4} key={user.id}>
+              <Grid size={4} key={user.id}>
                 <Card sx={{ height: "100%" }}>
                   <StyledCardHeader
                     title={

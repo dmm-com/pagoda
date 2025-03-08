@@ -1,5 +1,6 @@
 import AddIcon from "@mui/icons-material/Add";
-import { Box, Button, Grid } from "@mui/material";
+import { Box, Button } from "@mui/material";
+import Grid from "@mui/material/Grid2";
 import React, { FC, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router";
 
@@ -81,7 +82,7 @@ export const EntryList: FC<Props> = ({ entityId, canCreateEntry = true }) => {
         <Grid container spacing={2} id="entry_list">
           {entries.value?.results?.map((entry) => {
             return (
-              <Grid item xs={4} key={entry.id}>
+              <Grid size={4} key={entry.id}>
                 <EntryListCard
                   entityId={entityId}
                   entry={entry}
