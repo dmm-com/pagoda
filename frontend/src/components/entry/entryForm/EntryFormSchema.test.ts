@@ -248,6 +248,47 @@ describe("schema", () => {
     expect(() => schema.parse(value)).toThrow();
   });
 
+  test("validation fails if name contains 4-byte characters", () => {
+    const value = {
+      ...baseValue,
+      name: "テスト😊", // Contains emoji (4-byte character)
+    };
+
+    expect(() => schema.parse(value)).toThrow();
+  });
+
+  test("validation fails if string attribute value contains 4-byte characters", () => {
+    const value = {
+      ...baseValue,
+      attrs: {
+        string: {
+          ...baseValue.attrs.string,
+          value: {
+            asString: "テスト🚀", // Contains emoji (4-byte character)
+          },
+        },
+      },
+    };
+
+    expect(() => schema.parse(value)).toThrow();
+  });
+
+  test("validation fails if array string attribute value contains 4-byte characters", () => {
+    const value = {
+      ...baseValue,
+      attrs: {
+        arrayString: {
+          ...baseValue.attrs.arrayString,
+          value: {
+            asArrayString: [{ value: "テスト🎮" }], // Contains emoji (4-byte character)
+          },
+        },
+      },
+    };
+
+    expect(() => schema.parse(value)).toThrow();
+  });
+
   test("validation fails if array-string attr value is mandatory and empty", () => {
     const value = {
       ...baseValue,
