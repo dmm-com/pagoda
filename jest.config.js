@@ -19,6 +19,9 @@ module.exports = {
     "frontend/src",
     "node_modules"
   ],
+  moduleNameMapper: {
+    uuid: require.resolve('uuid')
+  },
   transformIgnorePatterns: [],
   testEnvironment: "jsdom",
   testEnvironmentOptions: {
