@@ -5,7 +5,6 @@ import {
   Card,
   CardActionArea,
   CardHeader,
-  Grid,
   IconButton,
   Modal,
   Paper,
@@ -17,6 +16,7 @@ import {
   TableRow,
   Typography,
 } from "@mui/material";
+import Grid from "@mui/material/Grid2";
 import { styled } from "@mui/material/styles";
 import { useSnackbar } from "notistack";
 import React, { FC, useState } from "react";
@@ -176,7 +176,7 @@ export const RestorableEntryList: FC<Props> = ({ entityId }) => {
         <Grid container spacing={2} id="entry_list">
           {entries.value?.results?.map((entry) => {
             return (
-              <Grid item xs={4} key={entry.id}>
+              <Grid size={4} key={entry.id}>
                 <StyledCard>
                   <StyledCardHeader
                     title={
