@@ -57,7 +57,7 @@ interface Props {
   defaultReferralFilter?: string;
   defaultAttrsFilter?: AttrsFilter;
   bulkOperationEntryIds: Array<number>;
-  handleChangeBulkOperationEntryId: (id: number, checked: boolean) => void;
+  setBulkOperationEntryIds: (entryIds: Array<number>) => void;
   entityIds: number[];
   searchAllEntities: boolean;
   joinAttrs: AdvancedSearchJoinAttrInfo[];
@@ -75,7 +75,7 @@ export const SearchResults: FC<Props> = ({
   defaultReferralFilter,
   defaultAttrsFilter = {},
   bulkOperationEntryIds,
-  handleChangeBulkOperationEntryId,
+  setBulkOperationEntryIds,
   entityIds,
   searchAllEntities,
   joinAttrs,
@@ -96,6 +96,22 @@ export const SearchResults: FC<Props> = ({
     return [_attrNames, _attrTypes];
   }, [defaultAttrsFilter, results.values]);
 
+  const handleChangeBulkOperationEntryId = (id: number, checked: boolean) => {
+    if (checked) {
+      setBulkOperationEntryIds([...bulkOperationEntryIds, id]);
+    } else {
+      setBulkOperationEntryIds(bulkOperationEntryIds.filter((i) => i !== id));
+    }
+  };
+
+  const handleChangeAllBulkOperationEntryIds = (checked: boolean) => {
+    if (checked) {
+      setBulkOperationEntryIds(results.values.map((v) => v.entry.id));
+    } else {
+      setBulkOperationEntryIds([]);
+    }
+  };
+
   return (
     <Box display="flex" flexDirection="column">
       <StyledBox>
@@ -111,6 +127,9 @@ export const SearchResults: FC<Props> = ({
               searchAllEntities={searchAllEntities}
               joinAttrs={joinAttrs}
               refreshSearchResults={setSearchResults}
+              handleChangeAllBulkOperationEntryIds={
+                handleChangeAllBulkOperationEntryIds
+              }
               isReadonly={isReadonly}
             />
             <TableBody>

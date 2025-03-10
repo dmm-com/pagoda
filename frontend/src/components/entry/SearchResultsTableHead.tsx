@@ -3,6 +3,8 @@ import {
   EntryAttributeTypeTypeEnum,
 } from "@dmm-com/airone-apiclient-typescript-fetch";
 import AddIcon from "@mui/icons-material/Add";
+import CheckBoxOutlineBlankOutlinedIcon from "@mui/icons-material/CheckBoxOutlineBlankOutlined";
+import CheckBoxOutlinedIcon from "@mui/icons-material/CheckBoxOutlined";
 import FilterAltIcon from "@mui/icons-material/FilterAlt";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import {
@@ -22,7 +24,7 @@ import React, {
   useReducer,
   useState,
 } from "react";
-import { useNavigate, useLocation } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 
 import { AdvancedSearchJoinModal } from "./AdvancedSearchJoinModal";
 import { SearchResultControlMenu } from "./SearchResultControlMenu";
@@ -61,6 +63,7 @@ interface Props {
   searchAllEntities: boolean;
   joinAttrs: AdvancedSearchJoinAttrInfo[];
   refreshSearchResults: () => void;
+  handleChangeAllBulkOperationEntryIds: (checked: boolean) => void;
   isReadonly?: boolean;
 }
 
@@ -74,10 +77,12 @@ export const SearchResultsTableHead: FC<Props> = ({
   searchAllEntities,
   joinAttrs,
   refreshSearchResults,
+  handleChangeAllBulkOperationEntryIds,
   isReadonly = false,
 }) => {
   const location = useLocation();
   const navigate = useNavigate();
+  const [checked, setChecked] = useState(false);
 
   const [entryFilter, entryFilterDispatcher] = useReducer(
     (
@@ -190,7 +195,27 @@ export const SearchResultsTableHead: FC<Props> = ({
     <TableHead>
       <TableRow sx={{ backgroundColor: "primary.dark" }}>
         {/* Bulk operation checkbox would be invisible when Readonly mode is true */}
-        {!isReadonly && <TableCell sx={{ witdh: "80px" }} />}
+        {!isReadonly && (
+          <TableCell sx={{ witdh: "80px" }}>
+            <StyledIconButton>
+              {checked ? (
+                <CheckBoxOutlinedIcon
+                  onClick={() => {
+                    setChecked(false);
+                    handleChangeAllBulkOperationEntryIds(false);
+                  }}
+                />
+              ) : (
+                <CheckBoxOutlineBlankOutlinedIcon
+                  onClick={() => {
+                    setChecked(true);
+                    handleChangeAllBulkOperationEntryIds(true);
+                  }}
+                />
+              )}
+            </StyledIconButton>
+          </TableCell>
+        )}
         <StyledTableCell sx={{ outline: "1px solid #FFFFFF" }}>
           <HeaderBox>
             <Typography>アイテム名</Typography>
