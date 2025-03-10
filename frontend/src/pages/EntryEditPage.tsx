@@ -3,6 +3,7 @@ import { Box } from "@mui/material";
 import React, { FC, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
+import { v4 as uuidv4 } from "uuid";
 
 import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
 
@@ -33,11 +34,13 @@ import {
 interface Props {
   excludeAttrs?: string[];
   EntryForm?: FC<EntryFormProps>;
+  useUUID?: boolean;
 }
 
 export const EntryEditPage: FC<Props> = ({
   excludeAttrs = [],
   EntryForm = DefaultEntryForm,
+  useUUID = false,
 }) => {
   const { entityId, entryId } = useTypedParams<{
     entityId: number;
@@ -86,6 +89,7 @@ export const EntryEditPage: FC<Props> = ({
           entity.value,
           excludeAttrs,
         );
+        entryInfo.name = useUUID ? uuidv4() : "";
         reset(entryInfo);
         setInitialized(true);
       }
