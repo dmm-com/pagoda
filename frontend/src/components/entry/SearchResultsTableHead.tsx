@@ -13,6 +13,7 @@ import {
   TableCell,
   TableHead,
   TableRow,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
@@ -223,13 +224,19 @@ export const SearchResultsTableHead: FC<Props> = ({
             {/* SearchControlMenu would be invisible when Readonly Mode is True */}
             {!isReadonly && (
               <>
-                <StyledIconButton
-                  onClick={(e) => {
-                    setEntryMenuEls(e.currentTarget);
-                  }}
-                >
-                  {defaultEntryFilter ? <FilterAltIcon /> : <FilterListIcon />}
-                </StyledIconButton>
+                <Tooltip title="アイテム名でフィルタ">
+                  <StyledIconButton
+                    onClick={(e) => {
+                      setEntryMenuEls(e.currentTarget);
+                    }}
+                  >
+                    {defaultEntryFilter ? (
+                      <FilterAltIcon />
+                    ) : (
+                      <FilterListIcon />
+                    )}
+                  </StyledIconButton>
+                </Tooltip>
                 <SearchResultControlMenuForEntry
                   entryFilter={entryFilter}
                   anchorElem={entryMenuEls}
@@ -253,9 +260,11 @@ export const SearchResultsTableHead: FC<Props> = ({
               {(attrTypes[attrName] & EntryAttributeTypeTypeEnum.OBJECT) > 0 &&
                 !isReadonly &&
                 attrsFilter[attrName]?.joinedAttrname === undefined && (
-                  <StyledIconButton onClick={() => setJoinAttrname(attrName)}>
-                    <AddIcon />
-                  </StyledIconButton>
+                  <Tooltip title="アイテムの属性を結合する">
+                    <StyledIconButton onClick={() => setJoinAttrname(attrName)}>
+                      <AddIcon />
+                    </StyledIconButton>
+                  </Tooltip>
                 )}
               {attrName === joinAttrName && (
                 <AdvancedSearchJoinModal
@@ -269,21 +278,23 @@ export const SearchResultsTableHead: FC<Props> = ({
               )}
               {!isReadonly && (
                 <>
-                  <StyledIconButton
-                    onClick={(e) => {
-                      setAttributeMenuEls({
-                        ...attributeMenuEls,
-                        [attrName]: e.currentTarget,
-                      });
-                    }}
-                    sx={{ marginLeft: "auto" }}
-                  >
-                    {(isFiltered[attrName] ?? false) ? (
-                      <FilterAltIcon />
-                    ) : (
-                      <FilterListIcon />
-                    )}
-                  </StyledIconButton>
+                  <Tooltip title="属性値でフィルタ">
+                    <StyledIconButton
+                      onClick={(e) => {
+                        setAttributeMenuEls({
+                          ...attributeMenuEls,
+                          [attrName]: e.currentTarget,
+                        });
+                      }}
+                      sx={{ marginLeft: "auto" }}
+                    >
+                      {(isFiltered[attrName] ?? false) ? (
+                        <FilterAltIcon />
+                      ) : (
+                        <FilterListIcon />
+                      )}
+                    </StyledIconButton>
+                  </Tooltip>
                   <SearchResultControlMenu
                     attrFilter={attrsFilter[attrName]}
                     anchorElem={attributeMenuEls[attrName]}
@@ -308,13 +319,19 @@ export const SearchResultsTableHead: FC<Props> = ({
           <StyledTableCell sx={{ outline: "1px solid #FFFFFF" }}>
             <HeaderBox>
               <Typography>参照アイテム</Typography>
-              <StyledIconButton
-                onClick={(e) => {
-                  setReferralMenuEls(e.currentTarget);
-                }}
-              >
-                {defaultReferralFilter ? <FilterAltIcon /> : <FilterListIcon />}
-              </StyledIconButton>
+              <Tooltip title="参照アイテムでフィルタ">
+                <StyledIconButton
+                  onClick={(e) => {
+                    setReferralMenuEls(e.currentTarget);
+                  }}
+                >
+                  {defaultReferralFilter ? (
+                    <FilterAltIcon />
+                  ) : (
+                    <FilterListIcon />
+                  )}
+                </StyledIconButton>
+              </Tooltip>
               <SearchResultControlMenuForReferral
                 referralFilter={referralFilter}
                 anchorElem={referralMenuEls}
