@@ -11,6 +11,12 @@
 
 ### Fixed
 
+## v3.123.0
+
+### Fixed
+* Fixed simple search results page
+  Contributed by @hinashi
+
 ## v3.122.0
 
 ### Changed
