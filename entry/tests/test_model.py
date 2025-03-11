@@ -240,6 +240,12 @@ class ModelTest(AironeTestCase):
         self.assertTrue(entry.attrs.filter(id=attr.id).exists())
         self.assertEqual(entry.attrs.count(), 1)
 
+        # check that deleted attributes are restored
+        attr.delete()
+        entry.add_attribute_from_base(attrbase, user)
+        self.assertTrue(entry.attrs.filter(id=attr.id, is_active=True).exists())
+        self.assertEqual(entry.attrs.count(), 1)
+
     def test_status_update_methods_of_attribute_value(self):
         value = AttributeValue(value="hoge", created_user=self._user, parent_attr=self._attr)
         value.save()

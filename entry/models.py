@@ -1475,15 +1475,16 @@ class Entry(ACLBase):
 
         # If multiple requests are invoked to make requests at the same time,
         # some may create the same attribute. So use get_or_create().
-        attr, is_created = Attribute.objects.get_or_create(
+        attr, _ = Attribute.objects.get_or_create(
             schema=base,
             parent_entry=self,
-            is_active=True,
             defaults={
                 "name": base.name,
                 "created_user": request_user,
             },
         )
+        if attr.is_active is False:
+            attr.restore()
         return attr
 
     def get_prev_refers_objects(self) -> QuerySet:
