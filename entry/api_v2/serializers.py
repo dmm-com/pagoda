@@ -287,6 +287,16 @@ class EntryBaseSerializer(serializers.ModelSerializer):
         if "\t" in name:
             raise InvalidValueError("Names containing tab characters cannot be specified.")
 
+        # Check specified name is matched with Model.item_name_patten if it's configured
+        if schema.item_name_pattern is None:
+            # OK to be created or updated because there is no pattern to be regulated
+            pass
+        elif re.match(schema.item_name_pattern, name):
+            # OK to be created or updated
+            pass
+        else:
+            raise InvalidValueError("Specified name doesn't match configured pattern")
+
         return name
 
     def _validate(self, schema: Entity, name: str, attrs: list[dict[str, Any]]):
