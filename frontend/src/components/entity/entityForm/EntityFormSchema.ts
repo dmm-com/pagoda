@@ -3,16 +3,12 @@ import { z } from "zod";
 export const schema = z.object({
   name: z.string().min(1, "モデル名は必須です").default(""),
   note: z.string().default(""),
-  itemNamePattern: z.string().nullable().default("").refine((value) => {
-    if (value === null) {
+  itemNamePattern: z.string().default("").refine((value) => {
+    try {
+      new RegExp(value);
       return true;
-    } else {
-      try {
-        new RegExp(value);
-        return true;
-      } catch {
-        return false;
-      }
+    } catch {
+      return false;
     }
   }, { message: "正規表現として正しい文字列を入力してください" }),
   isToplevel: z.boolean().default(false),

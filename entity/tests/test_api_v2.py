@@ -3665,3 +3665,14 @@ class ViewTest(AironeViewTest):
         self.assertEqual(
             [x.value for x in entry.get_attrv("vals").data_array.all()], ["fuga", "piyo"]
         )
+
+    @mock.patch("entry.tasks.create_entry_v2.delay", mock.Mock(side_effect=create_entry_v2))
+    def test_create_entry_when_pattern_is_set(self):
+        model: Entity = self.create_entity(
+            **{
+                "user": self.user,
+                "name": "VM",
+                "attrs": self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY,
+                "item_name_pattern": "^vm[0-9]+$|^template-.*",
+            }
+        )

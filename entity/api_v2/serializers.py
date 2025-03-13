@@ -205,11 +205,10 @@ class EntitySerializer(serializers.ModelSerializer):
         fields = ["id", "name", "is_public"]
 
     def validate_item_name_pattern(self, item_name_pattern: str):
-        if item_name_pattern:
-            try:
-                re.compile(item_name_pattern)
-            except Exception:
-                raise ValidationError("Invalid regex pattern")
+        try:
+            re.compile(item_name_pattern)
+        except Exception:
+            raise ValidationError("Invalid regex pattern")
 
         return item_name_pattern
 

@@ -276,9 +276,15 @@ class EntryBaseSerializer(serializers.ModelSerializer):
 
     def validate_name(self, name: str):
         if self.instance:
+            # case for creation
             schema = self.instance.schema
         else:
-            schema = self.get_initial()["schema"]
+            # case for creation
+            schema = Entity.objects.filter(id=self.get_initial()["schema"], is_active=True).first()
+
+        if not schema:
+            # skip validation check when schema is None because this is name check processing
+            return name
 
         # Check there is another Item that has same name
         if name and Entry.objects.filter(name=name, schema=schema, is_active=True).exists():
@@ -296,7 +302,7 @@ class EntryBaseSerializer(serializers.ModelSerializer):
             # OK to be created or updated
             pass
         else:
-            raise InvalidValueError("Specified name doesn't match configured pattern")
+            raise InvalidValueError("Specified name doesn't match configured pattern \"%s\"" % schema.item_name_pattern)
 
         return name
 
