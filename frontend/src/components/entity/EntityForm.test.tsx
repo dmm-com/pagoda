@@ -18,6 +18,7 @@ describe("EntityForm", () => {
   const entity: Schema = {
     name: "hoge",
     note: "fuga",
+    itemNamePattern: "",
     isToplevel: false,
     webhooks: [],
     attrs: [],

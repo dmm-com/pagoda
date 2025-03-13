@@ -105,7 +105,7 @@ class Entity(ACLBase):
     categories = models.ManyToManyField(Category, default=[], related_name="models")
 
     # This is a pattern for making Item that that is written by regex
-    item_name_pattern = models.CharField(max_length=400, blank=True, default=None, null=True)
+    item_name_pattern = models.CharField(max_length=400, blank=True)
 
     def __init__(self, *args, **kwargs):
         super(Entity, self).__init__(*args, **kwargs)

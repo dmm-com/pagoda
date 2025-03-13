@@ -129,6 +129,7 @@ export const EntityEditPage: FC = () => {
         await aironeApiClient.createEntity(
           entityForm.name,
           entityForm.note,
+          entityForm.itemNamePattern,
           entityForm.isToplevel,
           attrs,
           webhooks,
@@ -138,6 +139,7 @@ export const EntityEditPage: FC = () => {
           entityId,
           entityForm.name,
           entityForm.note,
+          entityForm.itemNamePattern,
           entityForm.isToplevel,
           [...attrs, ...deletedAttrs],
           [...webhooks, ...deletedWebhooks],
