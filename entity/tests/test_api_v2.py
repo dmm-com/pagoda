@@ -67,6 +67,7 @@ class ViewTest(AironeViewTest):
             {
                 "id": self.entity.id,
                 "is_toplevel": False,
+                "item_name_pattern": "",
                 "name": "test-entity",
                 "note": "",
                 "status": 0,
@@ -441,6 +442,7 @@ class ViewTest(AironeViewTest):
                     {
                         "id": self.ref_entity.id,
                         "is_toplevel": False,
+                        "item_name_pattern": "",
                         "name": "ref_entity",
                         "note": "",
                         "status": 0,
@@ -448,6 +450,7 @@ class ViewTest(AironeViewTest):
                     {
                         "id": self.entity.id,
                         "is_toplevel": False,
+                        "item_name_pattern": "",
                         "name": "test-entity",
                         "note": "",
                         "status": 0,
