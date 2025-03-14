@@ -302,7 +302,9 @@ class EntryBaseSerializer(serializers.ModelSerializer):
             # OK to be created or updated
             pass
         else:
-            raise InvalidValueError("Specified name doesn't match configured pattern \"%s\"" % schema.item_name_pattern)
+            raise InvalidValueError(
+                'Specified name doesn\'t match configured pattern "%s"' % schema.item_name_pattern
+            )
 
         return name
 

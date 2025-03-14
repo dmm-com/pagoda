@@ -49,6 +49,14 @@ class ViewTest(AironeViewTest):
             }
         )
 
+    def _send_request_item_creation(self, model, params, expected_http_response_code):
+        resp = self.client.post(
+            "/entity/api/v2/%s/entries/" % model.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, expected_http_response_code)
+
+        return resp
+
     def test_retrieve_entity(self):
         self.entity.attrs.all().delete()
         self.entity.webhooks.all().delete()
@@ -3668,6 +3676,12 @@ class ViewTest(AironeViewTest):
 
     @mock.patch("entry.tasks.create_entry_v2.delay", mock.Mock(side_effect=create_entry_v2))
     def test_create_entry_when_pattern_is_set(self):
+        # helper method to create item
+        def _send_request(item_name, expected_status):
+            return self._send_request_item_creation(
+                model, {"name": item_name, "attrs": []}, expected_status
+            )
+
         model: Entity = self.create_entity(
             **{
                 "user": self.user,
@@ -3676,3 +3690,15 @@ class ViewTest(AironeViewTest):
                 "item_name_pattern": "^vm[0-9]+$|^template-.*",
             }
         )
+
+        # send request to create an Entry that complies with item_name_pattern
+        for item_name in ["vm1234", "template-vm-hoge"]:
+            _send_request(item_name, status.HTTP_202_ACCEPTED)
+
+        # send request to create an Entry that doesn't comply with item_name_pattern
+        for item_name in ["Incompatible Item", "vm1234-hoge"]:
+            resp = _send_request(item_name, status.HTTP_400_BAD_REQUEST)
+            self.assertEqual(
+                resp.json()["name"][0]["message"],
+                'Specified name doesn\'t match configured pattern "%s"' % model.item_name_pattern,
+            )
