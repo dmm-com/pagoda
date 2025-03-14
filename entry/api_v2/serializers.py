@@ -280,7 +280,12 @@ class EntryBaseSerializer(serializers.ModelSerializer):
             schema = self.instance.schema
         else:
             # case for creation
-            schema = Entity.objects.filter(id=self.get_initial()["schema"], is_active=True).first()
+            if isinstance(self.get_initial()["schema"], Entity):
+                schema = self.get_initial()["schema"]
+            elif isinstance(self.get_initial()["schema"], int):
+                schema = Entity.objects.filter(
+                    id=self.get_initial()["schema"], is_active=True
+                ).first()
 
         if not schema:
             # skip validation check when schema is None because this is name check processing
