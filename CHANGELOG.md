@@ -7,6 +7,10 @@
   in the AdvancedPageResult page.
   Contributed by @hinashi, @userlocalhost
 
+* Added new feature "Item name pattern" that user can restrict Item(Entry) name in
+  accordance with its pattern(s), which are configured at Model.
+  Contributed by @hinashi, @userlocalhost
+
 ### Changed
 
 ### Fixed

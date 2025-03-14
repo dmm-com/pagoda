@@ -10,6 +10,7 @@ describe("schema", () => {
   const baseValue: Schema = {
     name: "entity",
     note: "note",
+    itemNamePattern: "",
     isToplevel: false,
     webhooks: [
       {

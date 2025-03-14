@@ -240,6 +240,7 @@ class AironeApiClient {
   async createEntity(
     name: string,
     note: string,
+    itemNamePattern: string,
     isToplevel: boolean,
     attrs: Array<EntityAttrCreate>,
     webhooks: Array<WebhookCreateUpdate>,
@@ -249,6 +250,7 @@ class AironeApiClient {
         entityCreate: {
           name: name,
           note: note,
+          itemNamePattern: itemNamePattern,
           isToplevel: isToplevel,
           attrs: attrs,
           webhooks: webhooks,
@@ -267,6 +269,7 @@ class AironeApiClient {
     id: number,
     name: string,
     note: string,
+    itemNamePattern: string,
     isToplevel: boolean,
     attrs: Array<EntityAttrUpdate>,
     webhooks: Array<WebhookCreateUpdate>,
@@ -277,6 +280,7 @@ class AironeApiClient {
         entityUpdate: {
           name: name,
           note: note,
+          itemNamePattern: itemNamePattern,
           isToplevel: isToplevel,
           attrs: attrs,
           webhooks: webhooks,
