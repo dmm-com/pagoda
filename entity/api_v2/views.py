@@ -244,7 +244,9 @@ class EntityEntryAPI(viewsets.ModelViewSet):
         entity = Entity.objects.filter(id=self.kwargs.get("entity_id"), is_active=True).first()
         if not entity:
             raise Http404
-        return self.queryset.filter(schema=entity).select_related("schema")
+        return (
+            self.queryset.filter(schema=entity).select_related("schema").prefetch_related("aliases")
+        )
 
     @extend_schema(request=EntryCreateSerializer)
     def create(self, request: Request, entity_id: int) -> Response:
