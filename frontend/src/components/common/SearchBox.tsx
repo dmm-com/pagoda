@@ -1,7 +1,7 @@
 import SearchIcon from "@mui/icons-material/Search";
 import { InputAdornment, SxProps, TextField, Theme } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import React, { FC } from "react";
+import React, { FC, useRef } from "react";
 
 const StyledTextField = styled(TextField)({
   background: "#F4F4F4",
@@ -13,7 +13,7 @@ const StyledTextField = styled(TextField)({
 interface Props {
   placeholder: string;
   onChange?: React.ChangeEventHandler<HTMLTextAreaElement | HTMLInputElement>;
-  onKeyPress?: (e: any) => void;
+  onKeyPress?: (e: React.KeyboardEvent<HTMLDivElement>, value: string) => void;
   value?: string;
   defaultValue?: string;
   inputSx?: SxProps<Theme>;
@@ -29,6 +29,8 @@ export const SearchBox: FC<Props> = ({
   inputSx,
   autoFocus,
 }) => {
+  const inputRef = useRef<HTMLInputElement>(null);
+
   return (
     <StyledTextField
       key={defaultValue}
@@ -48,8 +50,13 @@ export const SearchBox: FC<Props> = ({
       defaultValue={defaultValue}
       value={value}
       onChange={onChange}
-      onKeyPress={onKeyPress}
+      onKeyDown={(e) => {
+        if (onKeyPress && inputRef.current && e.key === "Enter") {
+          onKeyPress(e, inputRef.current.value);
+        }
+      }}
       autoFocus={autoFocus}
+      inputRef={inputRef}
     />
   );
 };

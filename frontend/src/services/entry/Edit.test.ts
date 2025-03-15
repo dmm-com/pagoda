@@ -4,11 +4,15 @@
 
 import { EntryAttributeTypeTypeEnum } from "@dmm-com/airone-apiclient-typescript-fetch";
 
-import { formalizeEntryInfo, convertAttrsFormatCtoS } from "./Edit";
+import {
+  EntryAttributeValueType,
+  convertAttrsFormatCtoS,
+  formalizeEntryInfo,
+} from "./Edit";
 
 import {
-  EditableEntryAttrs,
   EditableEntryAttrValue,
+  EditableEntryAttrs,
 } from "components/entry/entryForm/EditableEntry";
 
 Object.defineProperty(window, "django_context", {
@@ -89,10 +93,10 @@ test("formalizeEntryInfo should return expect value", () => {
           asArrayRole: [],
           asArrayString: [],
           asBoolean: false,
-          asGroup: undefined,
+          asGroup: null,
           asNamedObject: { name: "", object: null },
-          asObject: undefined,
-          asRole: undefined,
+          asObject: null,
+          asRole: null,
           asString: "",
         },
       },
@@ -111,10 +115,10 @@ test("formalizeEntryInfo should return expect value", () => {
           asArrayRole: [],
           asArrayString: [],
           asBoolean: false,
-          asGroup: undefined,
+          asGroup: null,
           asNamedObject: { name: "", object: null },
-          asObject: undefined,
-          asRole: undefined,
+          asObject: null,
+          asRole: null,
           asString: "",
         },
       },
@@ -133,10 +137,10 @@ test("formalizeEntryInfo should return expect value", () => {
           asArrayRole: [],
           asArrayString: [],
           asBoolean: false,
-          asGroup: undefined,
+          asGroup: null,
           asNamedObject: { name: "", object: null },
-          asObject: undefined,
-          asRole: undefined,
+          asObject: null,
+          asRole: null,
           asString: "",
         },
       },
@@ -254,7 +258,7 @@ test("convertAttrsFormatCtoS() returns expected value", () => {
       type: EntryAttributeTypeTypeEnum;
       value: EditableEntryAttrValue;
     };
-    expected_data: any;
+    expected_data: EntryAttributeValueType;
   }> = [
     // boolean
     {
@@ -439,13 +443,39 @@ test("convertAttrsFormatCtoS() returns expected value", () => {
   });
 });
 
+test("convertAttrsFormatCtoS() should return expected value", () => {
+  const client_data: Record<string, EditableEntryAttrs> = {
+    key: {
+      index: 0,
+      type: EntryAttributeTypeTypeEnum.BOOLEAN,
+      isMandatory: true,
+      schema: {
+        id: 1,
+        name: "test",
+      },
+      value: {
+        asBoolean: true,
+      },
+    },
+  };
+
+  const sending_data = convertAttrsFormatCtoS(client_data);
+
+  expect(sending_data).toStrictEqual([
+    {
+      id: 1,
+      value: true,
+    },
+  ]);
+});
+
 test("convertAttrsFormatCtoS() returns expected value when nothing value", () => {
   const cases: Array<{
     client_data: {
       type: EntryAttributeTypeTypeEnum;
       value: EditableEntryAttrValue;
     };
-    expected_data: any;
+    expected_data: EntryAttributeValueType;
   }> = [
     // boolean
     {

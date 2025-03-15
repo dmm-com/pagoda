@@ -116,7 +116,7 @@ export const CategoryForm: FC<Props> = ({ control, setValue }) => {
                       isOptionEqualToValue={(option, value) =>
                         option.id === value.id
                       }
-                      onChange={(_e, value: any) => {
+                      onChange={(_e, value: { id: number; name: string }[]) => {
                         setValue("models", value, {
                           shouldDirty: true,
                           shouldValidate: true,

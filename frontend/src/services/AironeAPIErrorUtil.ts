@@ -13,28 +13,43 @@ type AironeApiNonFieldsError = {
 
 type AironeApiIndexedFieldsError = Array<ErrorDetail>;
 
-type AironeApiFieldsError<T> = {
-  [K in keyof T]?: Array<ErrorDetail>;
+type AironeApiErrorBase = {
+  code?: string;
+  message?: string;
+  non_field_errors?: Array<ErrorDetail>;
+  [key: string]: unknown;
 };
 
 // root-level error has the same structure with ErrorDetail
-export function isAironeApiRootError(jsonError: any): jsonError is ErrorDetail {
-  return jsonError?.code != null && jsonError?.message != null;
+export function isAironeApiRootError(
+  jsonError: unknown,
+): jsonError is ErrorDetail {
+  if (Array.isArray(jsonError)) {
+    return false;
+  }
+
+  const error = jsonError as AironeApiErrorBase;
+  return error?.code != null && error?.message != null;
 }
 
 export function isAironeApiNonFieldsError(
-  jsonError: any,
+  jsonError: unknown,
 ): jsonError is AironeApiNonFieldsError {
+  if (Array.isArray(jsonError)) {
+    return false;
+  }
+
+  const error = jsonError as AironeApiErrorBase;
   return (
-    jsonError?.non_field_errors != null &&
-    Array.isArray(jsonError.non_field_errors) &&
-    jsonError.non_field_errors[0]?.code != null &&
-    jsonError.non_field_errors[0]?.message != null
+    error?.non_field_errors != null &&
+    Array.isArray(error.non_field_errors) &&
+    error.non_field_errors[0]?.code != null &&
+    error.non_field_errors[0]?.message != null
   );
 }
 
 export function isAironeApiIndexedError(
-  jsonError: any,
+  jsonError: unknown,
 ): jsonError is AironeApiIndexedFieldsError {
   return (
     Array.isArray(jsonError) &&
@@ -64,25 +79,26 @@ export const toReportableNonFieldErrors = async (
   const jsonError = await error.response.json();
 
   if (isAironeApiRootError(jsonError)) {
-    return extractErrorDetail(jsonError);
+    return extractErrorDetail(jsonError as ErrorDetail);
   }
 
   if (isAironeApiNonFieldsError(jsonError)) {
-    return jsonError.non_field_errors
+    return (jsonError as AironeApiNonFieldsError).non_field_errors
       .map((e) => extractErrorDetail(e))
       .join(", ");
   }
 
   if (isAironeApiIndexedError(jsonError)) {
-    return jsonError.map((e) => extractErrorDetail(e)).join(", ");
+    return (jsonError as AironeApiIndexedFieldsError)
+      .map((e) => extractErrorDetail(e))
+      .join(", ");
   }
 
   return null;
 };
 
 // Extract error response with predefined data type, then report them appropriately
-// TODO check type-safety more in runtime! currently unsafe
-export const extractAPIException = async <T>(
+export const extractAPIException = async <T extends Record<string, unknown>>(
   error: ResponseError,
   nonFieldReporter: (message: string) => void,
   fieldReporter: (name: keyof T, message: string) => void,
@@ -95,12 +111,12 @@ export const extractAPIException = async <T>(
 
   // root-level error will drop field-level errors
   if (isAironeApiRootError(jsonError)) {
-    nonFieldReporter(extractErrorDetail(jsonError));
+    nonFieldReporter(extractErrorDetail(jsonError as ErrorDetail));
     return;
   }
 
   if (isAironeApiNonFieldsError(jsonError)) {
-    const fullMessage = jsonError.non_field_errors
+    const fullMessage = (jsonError as AironeApiNonFieldsError).non_field_errors
       .map((e) => extractErrorDetail(e))
       .join(", ");
     nonFieldReporter(fullMessage);
@@ -108,25 +124,29 @@ export const extractAPIException = async <T>(
   }
 
   if (isAironeApiIndexedError(jsonError)) {
-    const fullMessage = jsonError.map((e) => extractErrorDetail(e)).join(", ");
+    const fullMessage = (jsonError as AironeApiIndexedFieldsError)
+      .map((e) => extractErrorDetail(e))
+      .join(", ");
     nonFieldReporter(fullMessage);
     return;
   }
 
-  const typed = jsonError as AironeApiFieldsError<T>;
+  const typed = jsonError as Record<string, Array<ErrorDetail>>;
   Object.keys(typed).forEach((fieldName: string) => {
-    const details = (typed as Record<string, Array<ErrorDetail>>)[fieldName];
-    const message = details.map((e) => extractErrorDetail(e)).join(", ");
+    const details = typed[fieldName];
+    if (Array.isArray(details) && details.length > 0) {
+      const message = details.map((e) => extractErrorDetail(e)).join(", ");
 
-    // This convert snake_case to camelCase (e.g. "nw_addr" -> "nwAddr")
-    const snakeToCamel = (x: string) =>
-      x
-        .toLowerCase()
-        .replace(/(_\w)/g, (m: string) => m.toUpperCase().substr(1));
+      // This convert snake_case to camelCase (e.g. "nw_addr" -> "nwAddr")
+      const snakeToCamel = (x: string) =>
+        x
+          .toLowerCase()
+          .replace(/(_\w)/g, (m: string) => m.toUpperCase().substr(1));
 
-    // It's necessary to convert fieldName from snake case to cammel case because
-    // server-side response its name as snake case but zod expect it as camel case.
-    fieldReporter(snakeToCamel(fieldName) as keyof T, message);
+      // It's necessary to convert fieldName from snake case to cammel case because
+      // server-side response its name as snake case but zod expect it as camel case.
+      fieldReporter(snakeToCamel(fieldName) as keyof T, message);
+    }
   });
 };
 
