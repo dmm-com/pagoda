@@ -58,9 +58,9 @@ describe("EntityList", () => {
       fireEvent.change(screen.getByPlaceholderText("モデルを絞り込む"), {
         target: { value: "entity" },
       });
-      fireEvent.keyPress(screen.getByPlaceholderText("モデルを絞り込む"), {
+      fireEvent.keyDown(screen.getByPlaceholderText("モデルを絞り込む"), {
         key: "Enter",
-        code: 13,
+        code: "Enter",
         charCode: 13,
       });
     });

@@ -532,21 +532,26 @@ class AironeApiClient {
   }
 
   async getGroupTrees(): Promise<GroupTree[]> {
+    interface APIGroupTreeData {
+      id: number;
+      name: string;
+      children: APIGroupTreeData[];
+    }
+
     const groupTrees = await this.group.groupApiV2GroupsTreeList();
 
-    // typing children here because API side type definition will break API client generation.
-    const toTyped = (groupTree: { [key: string]: any }): GroupTree => ({
-      id: groupTree["id"],
-      name: groupTree["name"],
-      children: groupTree["children"].map((child: { [key: string]: any }) =>
-        toTyped(child),
+    const toTyped = (groupTree: Partial<APIGroupTreeData>): GroupTree => ({
+      id: groupTree.id as number,
+      name: groupTree.name as string,
+      children: (groupTree.children || []).map(
+        (child: Partial<APIGroupTreeData>) => toTyped(child),
       ),
     });
 
     return groupTrees.map((groupTree) => ({
       id: groupTree.id,
       name: groupTree.name,
-      children: groupTree.children.map((child: { [key: string]: any }) =>
+      children: groupTree.children.map((child: Partial<APIGroupTreeData>) =>
         toTyped(child),
       ),
     }));

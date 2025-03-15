@@ -315,8 +315,8 @@ export const Header: FC = () => {
                 <SearchBox
                   placeholder="Search"
                   defaultValue={query}
-                  onKeyPress={(e) => {
-                    e.key === "Enter" && submitQuery(e.target.value);
+                  onKeyPress={(e, value) => {
+                    e.key === "Enter" && submitQuery(value);
                   }}
                   inputSx={{ height: "42px", "& input": { py: "9px" } }}
                 />
