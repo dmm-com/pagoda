@@ -1,6 +1,7 @@
 import { useParams } from "react-router";
 
 export const useTypedParams = <
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   Params extends { [K in keyof Params]: any },
 >() => {
   const params = useParams() as unknown as Partial<Params>;

@@ -61,8 +61,8 @@ export const DashboardPage: FC = () => {
           <SearchBox
             placeholder="Search"
             defaultValue={query}
-            onKeyPress={(e) => {
-              e.key === "Enter" && submitQuery(e.target.value);
+            onKeyPress={(e, value) => {
+              e.key === "Enter" && submitQuery(value);
             }}
             autoFocus
           />
