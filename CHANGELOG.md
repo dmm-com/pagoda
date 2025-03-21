@@ -3,17 +3,28 @@
 ## In development
 
 ### Added
-* Added processing to be able to delete rest of Items as well as that are not checked
-  in the AdvancedPageResult page.
-  Contributed by @hinashi, @userlocalhost
-
-* Added new feature "Item name pattern" that user can restrict Item(Entry) name in
-  accordance with its pattern(s), which are configured at Model.
-  Contributed by @hinashi, @userlocalhost
 
 ### Changed
 
 ### Fixed
+
+## v3.125.0
+
+### Added
+* Added new feature "Item name pattern" that user can restrict Item(Entry) name in
+  accordance with its pattern(s), which are configured at Model.
+  Contributed by @hinashi, @userlocalhost
+* Enhance EntityEntryAPI to prefetch aliases for improved performance.
+  Contributed by @syucream
+
+## v3.124.0
+
+### Added
+* Added processing to be able to delete rest of Items as well as that are not checked
+  in the AdvancedPageResult page.
+  Contributed by @hinashi, @userlocalhost
+* Add tooltips to improve UI usability.
+  Contributed by @syucream
 
 ## v3.123.0
 
