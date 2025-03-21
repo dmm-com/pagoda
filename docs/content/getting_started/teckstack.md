@@ -3,8 +3,6 @@ title: Tech Stack
 weight: 30
 ---
 
-# Tech Stack
-
 Pagoda is a Single Source of Truth (SSoT) system that enables the definition of flexible data structures, relationships, and access control (ACL).
 
 ## Core Architecture

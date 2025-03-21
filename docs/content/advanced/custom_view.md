@@ -3,8 +3,6 @@ title: CustomView
 weight: 0
 ---
 
-# Custom View
-
 ## Overview
 
 Custom Views in Pagoda allow developers to extend the standard UI with their own React-based interfaces. This feature enables you to create specialized views that leverage Pagoda's core functionality while providing tailored user experiences for specific use cases.

@@ -1,5 +1,3 @@
-# Frontend Architecture
-
 Pagoda provides two distinct user interfaces: a modern React-based SPA (New UI) and a traditional Django template-based interface (Legacy UI). This document explains both interfaces, their features, and how to work with them.
 
 ## For Users

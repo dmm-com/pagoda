@@ -1,5 +1,3 @@
-# Categories
-
 Categories in Pagoda help you organize and group related entities for easier navigation and management. Think of categories as customizable collections of links to your entity sets.
 
 ## Features
