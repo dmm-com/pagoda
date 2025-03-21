@@ -83,7 +83,7 @@ export function formalizeEntryInfo(
                       (item) => ({
                         name: item.name,
                         object: item.object,
-                        _boolean: false,
+                        _boolean: item._boolean,
                       }),
                     ),
                   }
