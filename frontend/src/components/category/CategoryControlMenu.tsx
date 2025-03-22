@@ -74,11 +74,6 @@ export const CategoryControlMenu: FC<Props> = ({
       <MenuItem component={Link} to={aclPath(categoryId)}>
         <Typography>ACL 設定</Typography>
       </MenuItem>
-      {/*
-      <MenuItem component={Link} to={aclHistoryPath(categoryId)}>
-        <Typography>ACL 変更履歴</Typography>
-      </MenuItem>
-      */}
       <Confirmable
         componentGenerator={(handleOpen) => (
           <MenuItem onClick={handleOpen}>

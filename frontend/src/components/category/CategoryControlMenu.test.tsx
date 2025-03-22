@@ -5,24 +5,22 @@
 import { render, screen } from "@testing-library/react";
 import React from "react";
 
-import { GroupControlMenu } from "./GroupControlMenu";
+import { CategoryControlMenu } from "./CategoryControlMenu";
 
 import { TestWrapper } from "TestWrapper";
 
-describe("GroupControlMenu", () => {
-  test("should render a component with essential props", function () {
+describe("CategoryControlMenu", () => {
+  test("renders without crashing", () => {
+    const handleClose = jest.fn();
+
     expect(() =>
       render(
-        <GroupControlMenu
-          groupId={1}
-          anchorElem={null}
-          handleClose={() => {
-            /* do nothing */
-          }}
+        <CategoryControlMenu
+          categoryId={1}
+          anchorElem={document.createElement("button")}
+          handleClose={handleClose}
         />,
-        {
-          wrapper: TestWrapper,
-        },
+        { wrapper: TestWrapper },
       ),
     ).not.toThrow();
   });
@@ -30,22 +28,27 @@ describe("GroupControlMenu", () => {
   test("menu items are displayed correctly", () => {
     // specify anchorElem to open the menu
     render(
-      <GroupControlMenu
-        groupId={1}
+      <CategoryControlMenu
+        categoryId={1}
         anchorElem={document.createElement("button")}
-        handleClose={() => {}}
+        handleClose={jest.fn()}
       />,
       { wrapper: TestWrapper },
     );
 
     // menu items text should be displayed
-    expect(screen.getByText("グループ編集")).toBeInTheDocument();
+    expect(screen.getByText("編集")).toBeInTheDocument();
+    expect(screen.getByText("ACL 設定")).toBeInTheDocument();
     expect(screen.getByText("削除")).toBeInTheDocument();
   });
 
   test("anchorElem is null, menu is closed", () => {
     const { container } = render(
-      <GroupControlMenu groupId={1} anchorElem={null} handleClose={() => {}} />,
+      <CategoryControlMenu
+        categoryId={1}
+        anchorElem={null}
+        handleClose={jest.fn()}
+      />,
       { wrapper: TestWrapper },
     );
 
