@@ -14,8 +14,8 @@ import {
   Typography,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
+import { DateTimePicker, DesktopDatePicker } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
-import { DesktopDatePicker } from "@mui/x-date-pickers/DesktopDatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import React, { ChangeEvent, FC } from "react";
 
@@ -167,9 +167,7 @@ export const SearchResultControlMenu: FC<Props> = ({
         <Typography>重複</Typography>
       </MenuItem>
 
-      {/* date-like-type specific text selector */}
-      {(attrType === EntryAttributeTypeTypeEnum.DATE ||
-        attrType === EntryAttributeTypeTypeEnum.DATETIME) && (
+      {attrType === EntryAttributeTypeTypeEnum.DATE && (
         <Box>
           <StyledBox display="flex" flexDirection="column">
             <StyledTypography variant="caption">次を含む日付</StyledTypography>
@@ -229,6 +227,83 @@ export const SearchResultControlMenu: FC<Props> = ({
                       )
                         .toISOString()
                         .split("T")[0]
+                    : "";
+                  handleSelectFilterConditions({
+                    ...attrFilter,
+                    filterKey:
+                      AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_NOT_CONTAINED,
+                    keyword: settingDateValue,
+                  });
+                }}
+                slotProps={{
+                  textField: {
+                    size: "small",
+                  },
+                }}
+              />
+            </LocalizationProvider>
+          </StyledBox>
+        </Box>
+      )}
+
+      {attrType === EntryAttributeTypeTypeEnum.DATETIME && (
+        <Box>
+          <StyledBox display="flex" flexDirection="column">
+            <StyledTypography variant="caption">次を含む日時</StyledTypography>
+            <LocalizationProvider dateAdapter={AdapterDateFns}>
+              <DateTimePicker
+                format="yyyy/MM/dd HH:mm"
+                ampm={false}
+                value={
+                  filterKey ===
+                  AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_CONTAINED
+                    ? keyword
+                      ? new Date(keyword)
+                      : null
+                    : null
+                }
+                onAccept={(date: Date | null) => {
+                  const settingDateValue = date
+                    ? new Date(
+                        date.getTime() - date.getTimezoneOffset() * 60000,
+                      ).toISOString()
+                    : "";
+                  handleSelectFilterConditions({
+                    ...attrFilter,
+                    filterKey:
+                      AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_CONTAINED,
+                    keyword: settingDateValue,
+                  });
+                }}
+                slotProps={{
+                  textField: {
+                    size: "small",
+                  },
+                }}
+              />
+            </LocalizationProvider>
+          </StyledBox>
+          <StyledBox display="flex" flexDirection="column">
+            <StyledTypography variant="caption">
+              次を含まない日時
+            </StyledTypography>
+            <LocalizationProvider dateAdapter={AdapterDateFns}>
+              <DateTimePicker
+                format="yyyy/MM/dd HH:mm"
+                ampm={false}
+                value={
+                  filterKey ===
+                  AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_NOT_CONTAINED
+                    ? keyword
+                      ? new Date(keyword)
+                      : null
+                    : null
+                }
+                onAccept={(date: Date | null) => {
+                  const settingDateValue = date
+                    ? new Date(
+                        date.getTime() - date.getTimezoneOffset() * 60000,
+                      ).toISOString()
                     : "";
                   handleSelectFilterConditions({
                     ...attrFilter,
