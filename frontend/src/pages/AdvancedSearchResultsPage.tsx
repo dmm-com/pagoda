@@ -163,17 +163,6 @@ export const AdvancedSearchResultsPage: FC = () => {
     return await aironeApiClient.getEntityAttrs(entityIds, searchAllEntities);
   });
 
-  const handleSetResults = () => {
-    setSearchResults({
-      count: 0,
-      values: [],
-      page: page,
-      isInProcessing: true,
-      totalCount: 0,
-    });
-    setToggle(!toggle);
-  };
-
   useEffect(() => {
     const sendSearchRequest = () => {
       return aironeApiClient.advancedSearch(
@@ -194,18 +183,24 @@ export const AdvancedSearchResultsPage: FC = () => {
 
     sendSearchRequest().then((results) => {
       if (joinAttrs.length > 0) {
-        if (results.count === 0) {
-          changePage(page + 1);
-          return;
+        if (page == 1) {
+          setSearchResults({
+            count: results.count,
+            values: results.values,
+            page: page,
+            totalCount: results.totalCount,
+            isInProcessing: false,
+          });
+        } else {
+          setSearchResults({
+            ...searchResults,
+            count: searchResults.count + results.count,
+            values: searchResults.values.concat(results.values),
+            page: page,
+            totalCount: results.totalCount,
+            isInProcessing: false,
+          });
         }
-        setSearchResults({
-          ...searchResults,
-          count: searchResults.count + results.count,
-          values: searchResults.values.concat(results.values),
-          page: page,
-          totalCount: results.totalCount,
-          isInProcessing: false,
-        });
       } else {
         setSearchResults({
           count: results.count,
@@ -416,7 +411,6 @@ export const AdvancedSearchResultsPage: FC = () => {
             searchAllEntities={searchAllEntities}
             joinAttrs={joinAttrs}
             disablePaginationFooter={joinAttrs.length > 0}
-            setSearchResults={handleSetResults}
           />
 
           {/* show button to show continuous search results manually when joinAttrs are specified */}

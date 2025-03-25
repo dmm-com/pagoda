@@ -30,7 +30,6 @@ test("should render a component with essential props", function () {
         joinAttrs={[]}
         disablePaginationFooter={false}
         searchAllEntities={false}
-        setSearchResults={() => {}}
       />,
       { wrapper: TestWrapper },
     ),
