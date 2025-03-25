@@ -63,7 +63,6 @@ interface Props {
   entityIds: number[];
   searchAllEntities: boolean;
   joinAttrs: AdvancedSearchJoinAttrInfo[];
-  refreshSearchResults: () => void;
   handleChangeAllBulkOperationEntryIds: (checked: boolean) => void;
   isReadonly?: boolean;
 }
@@ -77,7 +76,6 @@ export const SearchResultsTableHead: FC<Props> = ({
   entityIds,
   searchAllEntities,
   joinAttrs,
-  refreshSearchResults,
   handleChangeAllBulkOperationEntryIds,
   isReadonly = false,
 }) => {
@@ -173,10 +171,6 @@ export const SearchResultsTableHead: FC<Props> = ({
           .filter((v, i, a) => a.findIndex((t) => t.name === v.name) === i),
       });
 
-      if (getIsFiltered(attrFilter?.filterKey, attrFilter?.keyword)) {
-        refreshSearchResults();
-      }
-
       // simply reload with the new params
       navigate({
         pathname: location.pathname,
@@ -198,21 +192,16 @@ export const SearchResultsTableHead: FC<Props> = ({
         {/* Bulk operation checkbox would be invisible when Readonly mode is true */}
         {!isReadonly && (
           <TableCell sx={{ witdh: "80px" }}>
-            <StyledIconButton>
+            <StyledIconButton
+              onClick={() => {
+                setChecked(!checked);
+                handleChangeAllBulkOperationEntryIds(!checked);
+              }}
+            >
               {checked ? (
-                <CheckBoxOutlinedIcon
-                  onClick={() => {
-                    setChecked(false);
-                    handleChangeAllBulkOperationEntryIds(false);
-                  }}
-                />
+                <CheckBoxOutlinedIcon />
               ) : (
-                <CheckBoxOutlineBlankOutlinedIcon
-                  onClick={() => {
-                    setChecked(true);
-                    handleChangeAllBulkOperationEntryIds(true);
-                  }}
-                />
+                <CheckBoxOutlineBlankOutlinedIcon />
               )}
             </StyledIconButton>
           </TableCell>
@@ -273,7 +262,6 @@ export const SearchResultsTableHead: FC<Props> = ({
                   targetAttrname={joinAttrName}
                   joinAttrs={joinAttrs}
                   handleClose={() => setJoinAttrname("")}
-                  refreshSearchResults={refreshSearchResults}
                 />
               )}
               {!isReadonly && (

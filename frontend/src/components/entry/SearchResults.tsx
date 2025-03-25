@@ -62,7 +62,6 @@ interface Props {
   searchAllEntities: boolean;
   joinAttrs: AdvancedSearchJoinAttrInfo[];
   disablePaginationFooter: boolean;
-  setSearchResults: () => void;
   isReadonly?: boolean;
 }
 
@@ -80,7 +79,6 @@ export const SearchResults: FC<Props> = ({
   searchAllEntities,
   joinAttrs,
   disablePaginationFooter,
-  setSearchResults,
   isReadonly = false,
 }) => {
   // NOTE attrTypes are guessed by the first element on the results. So if it has no appropriate attr,
@@ -126,7 +124,6 @@ export const SearchResults: FC<Props> = ({
               entityIds={entityIds}
               searchAllEntities={searchAllEntities}
               joinAttrs={joinAttrs}
-              refreshSearchResults={setSearchResults}
               handleChangeAllBulkOperationEntryIds={
                 handleChangeAllBulkOperationEntryIds
               }
