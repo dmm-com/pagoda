@@ -8,6 +8,16 @@
 
 ### Fixed
 
+## v3.126.0
+
+### Added
+* Introduce datetime picker.
+  Contributed by @syucream
+
+### Fixed
+* Fixed failing refresh after filtering in advanced search.
+  Contributed by @hinashi
+
 ## v3.125.0
 
 ### Added
