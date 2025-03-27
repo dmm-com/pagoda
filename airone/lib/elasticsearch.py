@@ -282,10 +282,14 @@ def make_query(
                 keyword_infos = resp["aggregations"]["attr_aggs"]["attr_name_aggs"][
                     "attr_value_aggs"
                 ]["buckets"]
-                keyword_list = [x["key"] for x in keyword_infos]
-                hint_attr.keyword = CONFIG.OR_SEARCH_CHARACTER.join(
-                    ["^" + x + "$" for x in keyword_list]
-                )
+                if keyword_infos == []:
+                    # Since there are 0 duplicates, set a condition that will always be false.
+                    hint_attr.keyword = "a^"
+                else:
+                    keyword_list = [x["key"] for x in keyword_infos]
+                    hint_attr.keyword = CONFIG.OR_SEARCH_CHARACTER.join(
+                        ["^" + x + "$" for x in keyword_list]
+                    )
 
     # Making a query to send ElasticSearch by the specified parameters
     query: dict[str, Any] = {
