@@ -1304,6 +1304,14 @@ class AdvancedSearchSerializer(serializers.Serializer):
             raise ValidationError("keyword(s) in attrs are too large")
         return attrs
 
+    def validate_join_attrs(self, join_attrs: list[dict[str, str]]) -> list[dict[str, str]]:
+        # Check whether target is included in attrs
+        attr_names = [x["name"] for x in self.initial_data["attrinfo"]]
+        for join_attr in join_attrs:
+            if join_attr["name"] not in attr_names:
+                raise ValidationError("join_attr name is not included in attrs")
+        return join_attrs
+
 
 class AdvancedSearchResultValueAttrSerializer(serializers.Serializer):
     type = serializers.IntegerField()

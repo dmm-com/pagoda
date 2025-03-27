@@ -445,6 +445,7 @@ export const AdvancedSearchResultsPage: FC = () => {
           (e: AdvancedSearchResultAttrInfo) => e.name,
         )}
         attrInfos={attrInfo}
+        joinAttrs={joinAttrs}
       />
     </Box>
   );

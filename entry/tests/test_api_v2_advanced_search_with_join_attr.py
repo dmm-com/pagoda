@@ -48,7 +48,11 @@ class ViewTest(BaseViewTest):
     def test_join_attr_for_array_object(self):
         params = {
             "entities": [self.entity.id],
-            "attrinfo": [],
+            "attrinfo": [
+                {
+                    "name": "refs",
+                }
+            ],
             "join_attrs": [
                 {
                     "name": "refs",
@@ -82,7 +86,11 @@ class ViewTest(BaseViewTest):
     def test_join_attr_for_array_named_object(self):
         params = {
             "entities": [self.entity.id],
-            "attrinfo": [],
+            "attrinfo": [
+                {
+                    "name": "names",
+                }
+            ],
             "join_attrs": [
                 {
                     "name": "names",
@@ -230,7 +238,7 @@ class ViewTest(BaseViewTest):
         # This sends request with join_attrs that have filter_key to get empty Items
         params = {
             "entities": [self.entity.id],
-            "attrinfo": [],
+            "attrinfo": [{"name": "ref"}],
             "join_attrs": [
                 {
                     "name": "ref",
@@ -252,7 +260,7 @@ class ViewTest(BaseViewTest):
         # This sends request with join_attrs that have filter_key to get non-empty Items
         params = {
             "entities": [self.entity.id],
-            "attrinfo": [],
+            "attrinfo": [{"name": "ref"}],
             "join_attrs": [
                 {
                     "name": "ref",
