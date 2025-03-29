@@ -105,4 +105,68 @@ describe("schema", () => {
 
     expect(() => schema.parse(value)).toThrow();
   });
+
+  // Object-like types require a referral
+  const objectLikeTestCases = [
+    { type: AttributeTypes.object.type, name: "object" },
+    { type: AttributeTypes.named_object.type, name: "named_object" },
+    { type: AttributeTypes.array_object.type, name: "array_object" },
+    {
+      type: AttributeTypes.array_named_object.type,
+      name: "array_named_object",
+    },
+  ];
+
+  objectLikeTestCases.forEach(({ type, name }) => {
+    test(`validation fails if ${name} type has empty referral`, () => {
+      const value = {
+        ...baseValue,
+        attrs: [
+          {
+            ...baseValue.attrs[0],
+            type: type,
+            referral: [],
+          },
+        ],
+      };
+
+      expect(() => schema.parse(value)).toThrow();
+    });
+
+    test(`validation succeeds if ${name} type has non-empty referral`, () => {
+      const value = {
+        ...baseValue,
+        attrs: [
+          {
+            ...baseValue.attrs[0],
+            type: type,
+            referral: [
+              {
+                id: 1,
+                name: "referred1",
+              },
+            ],
+          },
+        ],
+      };
+
+      expect(schema.parse(value)).toEqual(value);
+    });
+  });
+
+  // Non-object-like types do not require a referral
+  test("validation succeeds if non-object-like type has empty referral", () => {
+    const value = {
+      ...baseValue,
+      attrs: [
+        {
+          ...baseValue.attrs[0],
+          type: AttributeTypes.string.type,
+          referral: [],
+        },
+      ],
+    };
+
+    expect(schema.parse(value)).toEqual(value);
+  });
 });
