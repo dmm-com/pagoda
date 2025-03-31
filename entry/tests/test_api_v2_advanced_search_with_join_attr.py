@@ -1,6 +1,8 @@
 import json
 
 from airone.lib.elasticsearch import FilterKey
+from airone.lib.types import AttrType
+from entity.models import EntityAttr
 from entry.tests.test_api_v2 import BaseViewTest
 
 
@@ -282,3 +284,42 @@ class ViewTest(BaseViewTest):
                 {"as_string": "hoge-0"},
             ],
         )
+
+    def test_join_attr_add_attribute_case(self):
+        # Added new attribute
+        new_attr = EntityAttr.objects.create(
+            name="new_attr",
+            type=AttrType.OBJECT,
+            parent_entity=self.entity,
+            created_user=self.user,
+        )
+        new_attr.add_referral(self.ref_entity)
+        self.entity.attrs.add(new_attr)
+
+        # Creates an entry with the new attributes.
+        # old entry does not have the new attributes.
+        self.add_entry(
+            self.user,
+            "NewEntry",
+            self.entity,
+            {"new_attr": self.ref_entry.id},
+        )
+
+        params = {
+            "entities": [self.entity.id],
+            "attrinfo": [
+                {"name": "val"},
+                {"name": "new_attr"},
+            ],
+            "join_attrs": [
+                {
+                    "name": "new_attr",
+                    "attrinfo": [{"name": "val"}],
+                },
+            ],
+        }
+        resp = self.client.post(
+            "/entry/api/v2/advanced_search/", json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json()["total_count"], 5)
