@@ -335,6 +335,8 @@ class AdvancedSearchAPI(generics.GenericAPIView):
                     hint_entity_ids.extend([x.id for x in attr.referral.all()])
 
                     # set Item name
+                    if join_attr.name not in result.attrs:
+                        continue
                     attrinfo = result.attrs[join_attr.name]
 
                     if attr.type == AttrType.OBJECT and attrinfo["value"]["name"] not in item_names:
@@ -386,19 +388,20 @@ class AdvancedSearchAPI(generics.GenericAPIView):
         # === End of Function: _get_joined_resp() ===
 
         def _get_ref_id_from_es_result(attrinfo) -> list[int | None]:
-            match attrinfo["type"]:
-                case AttrType.OBJECT if attrinfo.get("value") is not None:
-                    return [attrinfo["value"].get("id")]
+            if attrinfo and attrinfo.get("value") is not None:
+                match attrinfo["type"]:
+                    case AttrType.OBJECT:
+                        return [attrinfo["value"].get("id")]
 
-                case AttrType.NAMED_OBJECT if attrinfo.get("value") is not None:
-                    [ref_info] = attrinfo["value"].values()
-                    return [ref_info.get("id")]
+                    case AttrType.NAMED_OBJECT:
+                        [ref_info] = attrinfo["value"].values()
+                        return [ref_info.get("id")]
 
-                case AttrType.ARRAY_OBJECT:
-                    return [x.get("id") for x in attrinfo["value"]]
+                    case AttrType.ARRAY_OBJECT:
+                        return [x.get("id") for x in attrinfo["value"]]
 
-                case AttrType.ARRAY_NAMED_OBJECT:
-                    return sum([[y["id"] for y in x.values()] for x in attrinfo["value"]], [])
+                    case AttrType.ARRAY_NAMED_OBJECT:
+                        return sum([[y["id"] for y in x.values()] for x in attrinfo["value"]], [])
 
             return []
 
