@@ -93,26 +93,17 @@ class EntrySearchChainSerializer(serializers.Serializer):
 
         def _complement_entities(condition: dict, entities: list[Entity]):
             if "name" in condition:
-                # This Attributes must be existed because existance check has already been done
                 entity_ids = []
-                for attr in [
-                    EntityAttr.objects.get(
-                        name=condition["name"], is_active=True, parent_entity__pk=x
-                    )
-                    for x in entities
-                ]:
-                    # complements Entity IDs that this condition implicitly expects
-                    entity_ids += [x.id for x in attr.referral.filter(is_active=True)]
+                for entity in entities:
+                    entity_attr = EntityAttr.objects.filter(
+                        name=condition["name"], is_active=True, parent_entity__pk=entity
+                    ).first()
+                    if entity_attr:
+                        # complements Entity IDs that this condition implicitly expects
+                        entity_ids += [x.id for x in entity_attr.referral.filter(is_active=True)]
 
                 # complement Entity IDs of each conditions
                 condition["entities"] = list(set(entity_ids))
-
-        def _get_serializer(condition):
-            # This determines which serializer is from condition context.
-            if "entity" in condition:
-                return ReferSerializer
-            else:
-                return AttrSerializer
 
         def _may_validate_and_complement_condition(
             condition, entities: list[Entity] | None, serializer_class

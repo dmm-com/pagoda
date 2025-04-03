@@ -1218,6 +1218,23 @@ class APITest(AironeViewTest):
         self.assertEqual(resp.json()["ret_count"], 0)
         self.assertEqual(resp.json()["ret_values"], [])
 
+    def test_search_with_only_exists_attributes_some_entities(self):
+        params = {
+            "entities": ["VLAN", "Network"],
+            "attrs": [
+                {
+                    "name": "note",  # note attr is not exists in Network entity
+                    "value": "test",
+                }
+            ],
+        }
+
+        resp = self.client.post(
+            "/api/v1/entry/search_chain", json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json()["ret_count"], 2)
+
     def test_search_forward_chain_exceeding_search_limit(self):
         # check the case that the number of Entries of Entry.search_results() exceeds
         # expected limit.
