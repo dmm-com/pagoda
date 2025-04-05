@@ -507,3 +507,166 @@ class ElasticSearchTest(TestCase):
                 key=lambda x: x.entry["id"],
             ),
         )
+
+    def test_date_range_search(self):
+        # Test for date range with tilde delimiter
+        date_result = elasticsearch._is_date_check("2023-01-01~2023-12-31")
+        self.assertEqual(date_result[0], "~")
+        self.assertEqual(date_result[1][0].strftime("%Y-%m-%d"), "2023-01-01")
+        self.assertEqual(date_result[1][1].strftime("%Y-%m-%d"), "2023-12-31")
+
+        # Test for date range with slash delimiter
+        date_result = elasticsearch._is_date_check("2023/01/01~2023/12/31")
+        self.assertEqual(date_result[0], "~")
+        self.assertEqual(date_result[1][0].strftime("%Y-%m-%d"), "2023-01-01")
+        self.assertEqual(date_result[1][1].strftime("%Y-%m-%d"), "2023-12-31")
+
+        # Test for date range containing whitespace
+        date_result = elasticsearch._is_date_check("2023-01-01 ~ 2023-12-31")
+        self.assertEqual(date_result[0], "~")
+        self.assertEqual(date_result[1][0].strftime("%Y-%m-%d"), "2023-01-01")
+        self.assertEqual(date_result[1][1].strftime("%Y-%m-%d"), "2023-12-31")
+
+        # Test for invalid date range (end date before start date)
+        date_result = elasticsearch._is_date_check("2023-12-31~2023-01-01")
+        self.assertIsNone(date_result)
+
+        # Test for invalid date range (different formats)
+        date_result = elasticsearch._is_date_check("2023-01-01~2023/01/01")
+        self.assertIsNone(date_result)
+
+        # Test Elasticsearch query generation with date range in _make_an_attribute_filter
+        hint = elasticsearch.AttrHint(name="test_date")
+        filter_query = elasticsearch._make_an_attribute_filter(hint, "2023-01-01~2023-12-31")
+
+        # Verify expected query structure
+        self.assertEqual(filter_query["nested"]["path"], "attr")
+
+        # Check range condition in should clause
+        range_query = None
+        for condition in filter_query["nested"]["query"]["bool"]["filter"][1]["bool"]["should"]:
+            if "range" in condition:
+                range_query = condition["range"]
+                break
+
+        self.assertIsNotNone(range_query)
+        self.assertEqual(range_query["attr.date_value"]["format"], "yyyy-MM-dd")
+        self.assertEqual(range_query["attr.date_value"]["gte"], "2023-01-01")
+        self.assertEqual(range_query["attr.date_value"]["lte"], "2023-12-31")
+
+    def test_is_date_check(self):
+        """Test the _is_date_check function with legacy date formats and ISO8601 datetime formats"""
+        from datetime import datetime, timezone
+
+        from airone.lib.elasticsearch import _is_date_check
+
+        # Valid single date (YYYY-MM-DD)
+        result = _is_date_check("2023-01-01")
+        self.assertEqual(result[0], "")
+        self.assertEqual(result[1], datetime(2023, 1, 1))
+
+        # Dates with comparison operators
+        result = _is_date_check(">2023-12-31")
+        self.assertEqual(result[0], ">")
+        self.assertEqual(result[1], datetime(2023, 12, 31))
+
+        result = _is_date_check("<2023-05-15")
+        self.assertEqual(result[0], "<")
+        self.assertEqual(result[1], datetime(2023, 5, 15))
+
+        # Valid date range (YYYY-MM-DD~YYYY-MM-DD)
+        result = _is_date_check("2023-01-01~2023-01-31")
+        self.assertEqual(result[0], "~")
+        self.assertEqual(result[1][0], datetime(2023, 1, 1))
+        self.assertEqual(result[1][1], datetime(2023, 1, 31))
+
+        # Different delimiters (YYYY/MM/DD)
+        result = _is_date_check("2023/01/01")
+        self.assertEqual(result[0], "")
+        self.assertEqual(result[1], datetime(2023, 1, 1))
+
+        result = _is_date_check("2023/12/31~2024/01/01")
+        self.assertEqual(result[0], "~")
+        self.assertEqual(result[1][0], datetime(2023, 12, 31))
+        self.assertEqual(result[1][1], datetime(2024, 1, 1))
+
+        # Invalid formats
+        self.assertIsNone(_is_date_check("2023-13-01"))  # Invalid month
+        self.assertIsNone(_is_date_check("2023/02/30"))  # Non-existent date
+        self.assertIsNone(_is_date_check("2023-01"))  # Incomplete format
+        self.assertIsNone(_is_date_check("text"))  # Not a date
+        self.assertIsNone(_is_date_check("2023-01-01~"))  # Incomplete range
+
+        # Date range order check
+        self.assertIsNone(_is_date_check("2023-01-31~2023-01-01"))  # End date before start date
+
+        # ISO8601 format tests
+        # Valid single ISO8601 timestamp
+        result = _is_date_check("2023-01-01T12:34:56")
+        self.assertEqual(result[0], "")
+        self.assertEqual(result[1], datetime(2023, 1, 1, 12, 34, 56))
+
+        # ISO8601 with timezone
+        result = _is_date_check("2023-01-01T12:34:56Z")
+        self.assertEqual(result[0], "")
+        self.assertEqual(result[1], datetime(2023, 1, 1, 12, 34, 56, tzinfo=timezone.utc))
+
+        result = _is_date_check("2023-01-01T12:34:56+09:00")
+        self.assertEqual(result[0], "")
+        # Expect UTC normalized time (12:34:56+09:00 -> 03:34:56Z)
+        self.assertEqual(result[1], datetime(2023, 1, 1, 3, 34, 56, tzinfo=timezone.utc))
+
+        # ISO8601 with milliseconds
+        result = _is_date_check("2023-01-01T12:34:56.789")
+        self.assertEqual(result[0], "")
+        self.assertEqual(result[1], datetime(2023, 1, 1, 12, 34, 56, 789000))
+
+        # ISO8601 with comparison operators
+        result = _is_date_check(">2023-01-01T00:00:00")
+        self.assertEqual(result[0], ">")
+        self.assertEqual(result[1], datetime(2023, 1, 1, 0, 0, 0))
+
+        result = _is_date_check("<2023-12-31T23:59:59")
+        self.assertEqual(result[0], "<")
+        self.assertEqual(result[1], datetime(2023, 12, 31, 23, 59, 59))
+
+        # ISO8601 timestamp range
+        result = _is_date_check("2023-01-01T00:00:00~2023-01-01T23:59:59")
+        self.assertEqual(result[0], "~")
+        self.assertEqual(result[1][0], datetime(2023, 1, 1, 0, 0, 0))
+        self.assertEqual(result[1][1], datetime(2023, 1, 1, 23, 59, 59))
+
+        # ISO8601 with 'T' delimiter
+        result = _is_date_check("2023-01-01T12:34:56")
+        self.assertEqual(result[0], "")
+        self.assertEqual(result[1], datetime(2023, 1, 1, 12, 34, 56))
+
+        # ISO8601 timestamp range with timezones
+        result = _is_date_check("2023-01-01T00:00:00Z~2023-01-01T23:59:59+09:00")
+        self.assertEqual(result[0], "~")
+        self.assertEqual(result[1][0], datetime(2023, 1, 1, 0, 0, 0, tzinfo=timezone.utc))
+        self.assertEqual(
+            result[1][1], datetime(2023, 1, 1, 14, 59, 59, tzinfo=timezone.utc)
+        )  # 23:59:59+09:00 -> 14:59:59Z
+
+        # 秒なしの形式も有効とする
+        self.assertEqual(
+            _is_date_check("2023-01-01T12:34"), ("", datetime(2023, 1, 1, 12, 34))
+        )  # Incomplete time format is valid
+        self.assertIsNone(_is_date_check("2023-01-01T"))  # Missing time part
+
+        # Invalid ISO8601 formats
+        self.assertIsNone(_is_date_check("2023-01-01T25:00:00"))  # Invalid hour
+        self.assertIsNone(_is_date_check("2023-01-01T12:61:00"))  # Invalid minute
+        self.assertIsNone(_is_date_check("2023-01-01T12:00:61"))  # Invalid second
+        self.assertIsNone(_is_date_check("2023-01-01T12:34:56~"))  # Incomplete range
+
+        # Mixed date and datetime in range (now considered valid)
+        self.assertEqual(
+            _is_date_check("2023-01-01~2023-01-31T23:59:59"),
+            ("~", (datetime(2023, 1, 1, 0, 0), datetime(2023, 1, 31, 23, 59, 59))),
+        )  # Date ~ DateTime
+        self.assertEqual(
+            _is_date_check("2023-01-01T00:00:00~2023-01-31"),
+            ("~", (datetime(2023, 1, 1, 0, 0, 0), datetime(2023, 1, 31, 0, 0))),
+        )  # DateTime ~ Date

@@ -827,18 +827,22 @@ def _make_an_attribute_filter(hint: AttrHint, keyword: str) -> dict[str, dict]:
             "range": {"attr.date_value": {"format": "yyyy-MM-dd"}},
         }
         for range_check, date_obj in date_results:
-            timestr = date_obj.strftime("%Y-%m-%d")
             match range_check:
                 case "<":
                     # search of before date user specified
-                    date_cond["range"]["attr.date_value"]["lt"] = timestr
+                    date_cond["range"]["attr.date_value"]["lt"] = date_obj.strftime("%Y-%m-%d")
                 case ">":
                     # search of after date user specified
-                    date_cond["range"]["attr.date_value"]["gt"] = timestr
+                    date_cond["range"]["attr.date_value"]["gt"] = date_obj.strftime("%Y-%m-%d")
+                case "~":
+                    # search of date range user specified
+                    start_date, end_date = date_obj
+                    date_cond["range"]["attr.date_value"]["gte"] = start_date.strftime("%Y-%m-%d")
+                    date_cond["range"]["attr.date_value"]["lte"] = end_date.strftime("%Y-%m-%d")
                 case _:
                     # search of exact day
-                    date_cond["range"]["attr.date_value"]["gte"] = timestr
-                    date_cond["range"]["attr.date_value"]["lte"] = timestr
+                    date_cond["range"]["attr.date_value"]["gte"] = date_obj.strftime("%Y-%m-%d")
+                    date_cond["range"]["attr.date_value"]["lte"] = date_obj.strftime("%Y-%m-%d")
 
         str_cond = {"regexp": {"attr.value": _get_regex_pattern(keyword)}}
 
@@ -1133,11 +1137,72 @@ def make_search_results_for_simple(res: dict[str, Any]) -> dict[str, str]:
     return result
 
 
-def _is_date_check(value: str) -> tuple[str, datetime] | None:
+def _is_date_check(value: str) -> tuple[str, datetime | tuple[datetime, datetime]] | None:
+    def _parse_basic_iso8601(value: str) -> datetime | None:
+        """Parse a basic ISO 8601 formatted date string
+
+        Only supports YYYY-MM-DDThh:mm:ss format.
+        The 'T' character must be used as the separator between date and time.
+        Returns a datetime object if successful, None if parsing fails.
+        """
+        try:
+            return datetime.fromisoformat(value)
+        except ValueError:
+            return None
+
+    # First check for ISO 8601 format
+    operator = ""
+    iso_value = value
+
+    # Check if there's a comparison operator
+    if value and value[0] in ["<", ">"]:
+        operator = value[0]
+        iso_value = value[1:]
+
+    # Check if there's a date range
+    if "~" in iso_value:
+        date_parts = iso_value.split("~")
+        if len(date_parts) == 2:
+            start_datetime = _parse_basic_iso8601(date_parts[0].strip())
+            end_datetime = _parse_basic_iso8601(date_parts[1].strip())
+            if start_datetime and end_datetime:
+                # Ensure start date is not after end date
+                if start_datetime <= end_datetime:
+                    return "~", (start_datetime, end_datetime)
+
+    # Check for single ISO 8601 format
+    iso_datetime = _parse_basic_iso8601(iso_value)
+    if iso_datetime:
+        return operator, iso_datetime
+
+    # Check for legacy date format
     try:
         for delimiter in ["-", "/"]:
             date_format = "%%Y%(del)s%%m%(del)s%%d" % {"del": delimiter}
 
+            # Detect date range separated by tilde (~)
+            if "~" in value:
+                date_parts = value.split("~")
+                if len(date_parts) == 2:
+                    # Verify both dates have the same format
+                    start_date_match = re.match(
+                        r"^[0-9]{4}%(del)s[0-9]+%(del)s[0-9]+" % {"del": delimiter},
+                        date_parts[0].strip(),
+                    )
+                    end_date_match = re.match(
+                        r"^[0-9]{4}%(del)s[0-9]+%(del)s[0-9]+" % {"del": delimiter},
+                        date_parts[1].strip(),
+                    )
+
+                    if start_date_match and end_date_match:
+                        start_date = datetime.strptime(date_parts[0].strip(), date_format)
+                        end_date = datetime.strptime(date_parts[1].strip(), date_format)
+
+                        # Validate start date is not after end date
+                        if start_date <= end_date:
+                            return ("~", (start_date, end_date))
+
+            # Process existing date searches with < and > operators
             if re.match(r"^[<>]?[0-9]{4}%(del)s[0-9]+%(del)s[0-9]+" % {"del": delimiter}, value):
                 if value[0] in ["<", ">"]:
                     return (
@@ -1148,9 +1213,7 @@ def _is_date_check(value: str) -> tuple[str, datetime] | None:
                     return "", datetime.strptime(value.split(" ")[0], date_format)
 
     except ValueError:
-        # When datetime.strptie raised ValueError, it means value parameter maches date
-        # format but they are not date value. In this case, we should deal it with a
-        # string value.
+        # datetime.strptime raises ValueError when format matches but contains invalid date values
         return None
 
     return None
