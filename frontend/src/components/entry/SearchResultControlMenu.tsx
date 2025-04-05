@@ -120,7 +120,7 @@ export const SearchResultControlMenu: FC<Props> = ({
 
   // 初期状態の設定
   useEffect(() => {
-    if (keyword && keyword.includes(",")) {
+    if (keyword && keyword.includes("~")) {
       setIsRange(true);
     } else {
       setIsRange(false);
@@ -206,17 +206,17 @@ export const SearchResultControlMenu: FC<Props> = ({
               {isRange ? (
                 <DateRangePicker
                   initialStart={
-                    keyword.includes(",") ? keyword.split(",")[0] : undefined
+                    keyword.includes("~") ? keyword.split("~")[0] : undefined
                   }
                   initialEnd={
-                    keyword.includes(",") ? keyword.split(",")[1] : undefined
+                    keyword.includes("~") ? keyword.split("~")[1] : undefined
                   }
                   onApply={(start, end) => {
                     handleSelectFilterConditions({
                       ...attrFilter,
                       filterKey:
                         AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_CONTAINED,
-                      keyword: `${start},${end}`,
+                      keyword: `${start}~${end}`,
                     });
                   }}
                   onCancel={() => {}}
@@ -264,17 +264,17 @@ export const SearchResultControlMenu: FC<Props> = ({
               {isRange ? (
                 <DateRangePicker
                   initialStart={
-                    keyword.includes(",") ? keyword.split(",")[0] : undefined
+                    keyword.includes("~") ? keyword.split("~")[0] : undefined
                   }
                   initialEnd={
-                    keyword.includes(",") ? keyword.split(",")[1] : undefined
+                    keyword.includes("~") ? keyword.split("~")[1] : undefined
                   }
                   onApply={(start, end) => {
                     handleSelectFilterConditions({
                       ...attrFilter,
                       filterKey:
                         AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_NOT_CONTAINED,
-                      keyword: `${start},${end}`,
+                      keyword: `${start}~${end}`,
                     });
                   }}
                   onCancel={() => {}}
@@ -337,20 +337,19 @@ export const SearchResultControlMenu: FC<Props> = ({
             <LocalizationProvider dateAdapter={AdapterDateFns}>
               {isRange ? (
                 <DateTimeRangePicker
-                  format="yyyy/MM/dd HH:mm"
                   ampm={false}
                   initialStart={
-                    keyword.includes(",") ? keyword.split(",")[0] : undefined
+                    keyword.includes("~") ? keyword.split("~")[0] : undefined
                   }
                   initialEnd={
-                    keyword.includes(",") ? keyword.split(",")[1] : undefined
+                    keyword.includes("~") ? keyword.split("~")[1] : undefined
                   }
                   onApply={(start, end) => {
                     handleSelectFilterConditions({
                       ...attrFilter,
                       filterKey:
                         AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_CONTAINED,
-                      keyword: `${start},${end}`,
+                      keyword: `${start}~${end}`,
                     });
                   }}
                   onCancel={() => {}}
@@ -396,20 +395,19 @@ export const SearchResultControlMenu: FC<Props> = ({
             <LocalizationProvider dateAdapter={AdapterDateFns}>
               {isRange ? (
                 <DateTimeRangePicker
-                  format="yyyy/MM/dd HH:mm"
                   ampm={false}
                   initialStart={
-                    keyword.includes(",") ? keyword.split(",")[0] : undefined
+                    keyword.includes("~") ? keyword.split("~")[0] : undefined
                   }
                   initialEnd={
-                    keyword.includes(",") ? keyword.split(",")[1] : undefined
+                    keyword.includes("~") ? keyword.split("~")[1] : undefined
                   }
                   onApply={(start, end) => {
                     handleSelectFilterConditions({
                       ...attrFilter,
                       filterKey:
                         AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_NOT_CONTAINED,
-                      keyword: `${start},${end}`,
+                      keyword: `${start}~${end}`,
                     });
                   }}
                   onCancel={() => {}}

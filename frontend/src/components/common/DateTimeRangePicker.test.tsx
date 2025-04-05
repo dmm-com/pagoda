@@ -32,10 +32,10 @@ jest.mock("@mui/x-date-pickers", () => ({
     const formatValue = (val: Date | null) => {
       if (!val) return "";
       const date = val.toISOString().split("T")[0].replace(/-/g, "/");
-      // ampmに基づいて時間フォーマットを変更
+      // Change time format based on ampm setting
       let time = val.toTimeString().split(" ")[0].substring(0, 5);
       if (ampm) {
-        // 12時間制の場合の処理（テスト用に簡略化）
+        // Processing for 12-hour format (simplified for testing)
         const hours = parseInt(time.split(":")[0], 10);
         const minutes = time.split(":")[1];
         const period = hours >= 12 ? "PM" : "AM";
@@ -79,7 +79,7 @@ describe("DateTimeRangePicker", () => {
     jest.clearAllMocks();
   });
 
-  test("初期日時が表示されること", () => {
+  test("Initial date and time should be displayed correctly", () => {
     render(
       <DateTimeRangePicker
         {...baseProps}
@@ -96,7 +96,7 @@ describe("DateTimeRangePicker", () => {
     ).not.toBeInTheDocument();
   });
 
-  test("開始日時が終了日時より後の場合、バリデーションエラーが表示され適用ボタンが無効化されること", async () => {
+  test("When start date is after end date, validation error should be displayed and apply button should be disabled", async () => {
     render(
       <DateTimeRangePicker
         {...baseProps}
@@ -106,27 +106,27 @@ describe("DateTimeRangePicker", () => {
       { wrapper: TestWrapper },
     );
 
-    // 開始日時を終了日時より後に変更
+    // Change start date to be after end date
     const startInput = screen.getByLabelText("開始日時");
     fireEvent.change(startInput, { target: { value: "2024/04/15 10:00" } });
 
-    // 適用ボタンが表示されるまで待機
+    // Wait for apply button to appear
     const applyButton = await screen.findByRole("button", { name: "適用" });
 
-    // 適用ボタンが無効化されていることを確認
+    // Confirm apply button is disabled
     expect(applyButton).toBeDisabled();
     expect(
       screen.getByText("終了日時は開始日時以降を指定してください"),
     ).toBeInTheDocument();
   });
 
-  test("有効な日時が選択され適用ボタンがクリックされた場合、フォーマットされた日時でonApplyが呼ばれること", async () => {
+  test("When valid dates are selected and apply button is clicked, onApply should be called with formatted dates", async () => {
     const handleApply = jest.fn();
     render(<DateTimeRangePicker {...baseProps} onApply={handleApply} />, {
       wrapper: TestWrapper,
     });
 
-    // 日時を入力
+    // Input dates
     fireEvent.change(screen.getByLabelText("開始日時"), {
       target: { value: "2024/05/15 09:30" },
     });
@@ -134,15 +134,22 @@ describe("DateTimeRangePicker", () => {
       target: { value: "2024/05/20 18:45" },
     });
 
-    // 適用ボタンをクリック
+    // Click apply button
     const applyButton = await screen.findByRole("button", { name: "適用" });
     fireEvent.click(applyButton);
 
-    // コールバックが正しい引数で呼ばれることを確認
+    // Verify callback is called with correct arguments
     expect(handleApply).toHaveBeenCalledTimes(1);
+
+    // Verify ISO8601 formatted date strings are passed
+    // Note: Due to mock Date object behavior, exact dates may vary by environment, so we verify the pattern with regex
+    expect(handleApply).toHaveBeenCalledWith(
+      expect.stringMatching(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/),
+      expect.stringMatching(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/),
+    );
   });
 
-  test("キャンセルボタンがクリックされた場合、onCancelが呼ばれること", async () => {
+  test("When cancel button is clicked, onCancel should be called", async () => {
     const handleCancel = jest.fn();
     render(
       <DateTimeRangePicker
@@ -154,38 +161,38 @@ describe("DateTimeRangePicker", () => {
       { wrapper: TestWrapper },
     );
 
-    // 日時を変更して編集状態にする
+    // Change date to enter edit mode
     fireEvent.change(screen.getByLabelText("開始日時"), {
       target: { value: "2024/06/02 11:30" },
     });
 
-    // キャンセルボタンをクリック
+    // Click cancel button
     const cancelButton = await screen.findByRole("button", {
       name: "キャンセル",
     });
     fireEvent.click(cancelButton);
 
-    // onCancelコールバックが呼ばれることを確認
+    // Verify onCancel callback is called
     expect(handleCancel).toHaveBeenCalledTimes(1);
   });
 
-  test("初期プロップスが変更された場合、状態がリセットされボタンが非表示になること", async () => {
+  test("When initial props change, state should reset and buttons should be hidden", async () => {
     const { rerender } = render(
       <DateTimeRangePicker {...baseProps} initialStart="2024-08-01T10:00:00" />,
       { wrapper: TestWrapper },
     );
 
-    // 日時を変更して編集状態にする
+    // Change date to enter edit mode
     fireEvent.change(screen.getByLabelText("開始日時"), {
       target: { value: "2024/08/02 11:30" },
     });
 
-    // 編集ボタンが表示されることを確認
+    // Verify edit buttons are displayed
     expect(
       await screen.findByRole("button", { name: "適用" }),
     ).toBeInTheDocument();
 
-    // プロップスを変更してコンポーネントを再レンダリング
+    // Change props and rerender component
     rerender(
       <DateTimeRangePicker
         {...baseProps}
@@ -194,11 +201,11 @@ describe("DateTimeRangePicker", () => {
       />,
     );
 
-    // 新しい値が表示されることを確認
+    // Verify new values are displayed
     expect(screen.getByLabelText("開始日時")).toHaveValue("2024/09/01 09:00");
     expect(screen.getByLabelText("終了日時")).toHaveValue("2024/09/10 18:00");
 
-    // 編集ボタンが非表示になっていることを確認
+    // Verify edit buttons are hidden
     expect(
       screen.queryByRole("button", { name: "適用" }),
     ).not.toBeInTheDocument();
