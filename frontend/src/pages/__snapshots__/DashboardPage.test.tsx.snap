@@ -72,10 +72,10 @@ exports[`should match snapshot 1`] = `
             </div>
           </div>
           <div
-            class="MuiGrid-root MuiGrid-container MuiGrid-spacing-xs-3 css-1qw2a80-MuiGrid-root"
+            class="MuiGrid2-root MuiGrid2-container MuiGrid2-direction-xs-row MuiGrid2-spacing-xs-3 css-ipzchf-MuiGrid2-root"
           >
             <div
-              class="MuiGrid-root MuiGrid-item MuiGrid-grid-md-4 css-1ube6tp-MuiGrid-root"
+              class="MuiGrid2-root MuiGrid2-direction-xs-row MuiGrid2-grid-xs-4 css-17yh78r-MuiGrid2-root"
             >
               <ul
                 class="MuiList-root MuiList-padding MuiList-subheader css-h1es49-MuiList-root"
@@ -118,7 +118,7 @@ exports[`should match snapshot 1`] = `
               </ul>
             </div>
             <div
-              class="MuiGrid-root MuiGrid-item MuiGrid-grid-md-4 css-1ube6tp-MuiGrid-root"
+              class="MuiGrid2-root MuiGrid2-direction-xs-row MuiGrid2-grid-xs-4 css-17yh78r-MuiGrid2-root"
             >
               <ul
                 class="MuiList-root MuiList-padding MuiList-subheader css-h1es49-MuiList-root"
@@ -161,7 +161,7 @@ exports[`should match snapshot 1`] = `
               </ul>
             </div>
             <div
-              class="MuiGrid-root MuiGrid-item MuiGrid-grid-md-4 css-1ube6tp-MuiGrid-root"
+              class="MuiGrid2-root MuiGrid2-direction-xs-row MuiGrid2-grid-xs-4 css-17yh78r-MuiGrid2-root"
             >
               <ul
                 class="MuiList-root MuiList-padding MuiList-subheader css-h1es49-MuiList-root"
@@ -352,10 +352,10 @@ exports[`should match snapshot 1`] = `
           </div>
         </div>
         <div
-          class="MuiGrid-root MuiGrid-container MuiGrid-spacing-xs-3 css-1qw2a80-MuiGrid-root"
+          class="MuiGrid2-root MuiGrid2-container MuiGrid2-direction-xs-row MuiGrid2-spacing-xs-3 css-ipzchf-MuiGrid2-root"
         >
           <div
-            class="MuiGrid-root MuiGrid-item MuiGrid-grid-md-4 css-1ube6tp-MuiGrid-root"
+            class="MuiGrid2-root MuiGrid2-direction-xs-row MuiGrid2-grid-xs-4 css-17yh78r-MuiGrid2-root"
           >
             <ul
               class="MuiList-root MuiList-padding MuiList-subheader css-h1es49-MuiList-root"
@@ -398,7 +398,7 @@ exports[`should match snapshot 1`] = `
             </ul>
           </div>
           <div
-            class="MuiGrid-root MuiGrid-item MuiGrid-grid-md-4 css-1ube6tp-MuiGrid-root"
+            class="MuiGrid2-root MuiGrid2-direction-xs-row MuiGrid2-grid-xs-4 css-17yh78r-MuiGrid2-root"
           >
             <ul
               class="MuiList-root MuiList-padding MuiList-subheader css-h1es49-MuiList-root"
@@ -441,7 +441,7 @@ exports[`should match snapshot 1`] = `
             </ul>
           </div>
           <div
-            class="MuiGrid-root MuiGrid-item MuiGrid-grid-md-4 css-1ube6tp-MuiGrid-root"
+            class="MuiGrid2-root MuiGrid2-direction-xs-row MuiGrid2-grid-xs-4 css-17yh78r-MuiGrid2-root"
           >
             <ul
               class="MuiList-root MuiList-padding MuiList-subheader css-h1es49-MuiList-root"

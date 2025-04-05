@@ -1,6 +1,7 @@
 import AppsIcon from "@mui/icons-material/Apps";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
-import { Box, Chip, Grid, IconButton, Stack, Typography } from "@mui/material";
+import { Box, Chip, IconButton, Stack, Typography } from "@mui/material";
+import Grid from "@mui/material/Grid2";
 import { styled } from "@mui/material/styles";
 import React, { FC, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
@@ -77,7 +78,7 @@ export const EntryDetailsPage: FC<Props> = ({
   const navigate = useNavigate();
 
   const [entryAnchorEl, setEntryAnchorEl] = useState<HTMLButtonElement | null>(
-    null
+    null,
   );
 
   const entry = useAsyncWithThrow(async () => {
@@ -97,9 +98,9 @@ export const EntryDetailsPage: FC<Props> = ({
       navigate(
         restoreEntryPath(
           entry.value?.schema?.id ?? "",
-          entry.value?.name ?? ""
+          entry.value?.name ?? "",
         ),
-        { replace: true }
+        { replace: true },
       );
     }
   }, [entry.loading]);
@@ -152,10 +153,10 @@ export const EntryDetailsPage: FC<Props> = ({
       </PageHeader>
 
       <Grid container flexGrow="1" columns={6}>
-        <LeftGrid item xs={1}>
+        <LeftGrid size={1}>
           <EntryReferral entryId={entryId} />
         </LeftGrid>
-        <Grid item xs={4}>
+        <Grid size={4}>
           {[
             {
               name: "attr_list",
@@ -166,7 +167,7 @@ export const EntryDetailsPage: FC<Props> = ({
                 <EntryAttributes
                   attributes={
                     entry.value?.attrs.filter(
-                      (attr) => !excludeAttrs.includes(attr.schema.name)
+                      (attr) => !excludeAttrs.includes(attr.schema.name),
                     ) ?? []
                   }
                 />
@@ -184,9 +185,7 @@ export const EntryDetailsPage: FC<Props> = ({
             );
           })}
         </Grid>
-        <RightGrid item xs={1}>
-          {sideContent}
-        </RightGrid>
+        <RightGrid size={1}>{sideContent}</RightGrid>
       </Grid>
     </FlexBox>
   );

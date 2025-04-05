@@ -19,7 +19,11 @@ module.exports = {
     "frontend/src",
     "node_modules"
   ],
+  moduleNameMapper: {
+    uuid: require.resolve('uuid')
+  },
   transformIgnorePatterns: [],
+  testEnvironment: "jsdom",
   testEnvironmentOptions: {
     // to integrate msw 2.x
     // ref. https://mswjs.io/docs/migrations/1.x-to-2.x/#cannot-find-module-mswnode-jsdom

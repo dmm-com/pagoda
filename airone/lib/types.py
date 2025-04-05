@@ -2,8 +2,14 @@ import enum
 from typing import Any
 
 
+class BaseIntEnum(enum.IntEnum):
+    @classmethod
+    def isin(cls, v):
+        return v in cls.__members__.values()
+
+
 @enum.unique
-class AttrType(enum.IntEnum):
+class AttrType(BaseIntEnum):
     OBJECT = 1 << 0
     STRING = 1 << 1
     TEXT = 1 << 2

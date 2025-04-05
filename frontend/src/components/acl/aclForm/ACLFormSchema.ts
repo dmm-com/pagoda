@@ -33,14 +33,14 @@ export const schema = schemaForType<ACLForm>()(
           name: z.string(),
           description: z.string(),
           currentPermission: z.number(),
-        })
+        }),
       ),
     })
     .superRefine(({ isPublic, defaultPermission, roles }, ctx) => {
       const isDefaultPermissionFull =
         defaultPermission != null && defaultPermission === ACLType.Full;
       const isSomeRolesFull = roles.some(
-        (r) => r.currentPermission === ACLType.Full
+        (r) => r.currentPermission === ACLType.Full,
       );
 
       if (!isPublic && !isDefaultPermissionFull && !isSomeRolesFull) {
@@ -52,7 +52,7 @@ export const schema = schemaForType<ACLForm>()(
           } にしてください`,
         });
       }
-    })
+    }),
 );
 
 export type Schema = z.infer<typeof schema>;

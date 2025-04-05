@@ -24,6 +24,7 @@ describe("AttributesFields", () => {
   const defaultValues: Schema = {
     name: "hoge",
     note: "fuga",
+    itemNamePattern: "",
     isToplevel: false,
     webhooks: [],
     attrs: [],
@@ -39,7 +40,7 @@ describe("AttributesFields", () => {
         resolver: zodResolver(schema),
         mode: "onBlur",
         defaultValues,
-      })
+      }),
     );
 
     render(
@@ -48,7 +49,7 @@ describe("AttributesFields", () => {
         setValue={setValue}
         referralEntities={[]}
       />,
-      { wrapper: TestWrapper }
+      { wrapper: TestWrapper },
     );
 
     expect(screen.queryAllByPlaceholderText("属性名")).toHaveLength(0);

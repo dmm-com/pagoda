@@ -1,3 +1,4 @@
+import re
 from datetime import date, datetime
 from typing import Any, Literal
 
@@ -275,9 +276,20 @@ class EntryBaseSerializer(serializers.ModelSerializer):
 
     def validate_name(self, name: str):
         if self.instance:
+            # case for creation
             schema = self.instance.schema
         else:
-            schema = self.get_initial()["schema"]
+            # case for creation
+            if isinstance(self.get_initial()["schema"], Entity):
+                schema = self.get_initial()["schema"]
+            elif isinstance(self.get_initial()["schema"], int):
+                schema = Entity.objects.filter(
+                    id=self.get_initial()["schema"], is_active=True
+                ).first()
+
+        if not schema:
+            # skip validation check when schema is None because this is name check processing
+            return name
 
         # Check there is another Item that has same name
         if name and Entry.objects.filter(name=name, schema=schema, is_active=True).exists():
@@ -286,6 +298,18 @@ class EntryBaseSerializer(serializers.ModelSerializer):
                 raise DuplicatedObjectExistsError("specified name(%s) already exists" % name)
         if "\t" in name:
             raise InvalidValueError("Names containing tab characters cannot be specified.")
+
+        # Check specified name is matched with Model.item_name_patten if it's configured
+        if schema.item_name_pattern is None:
+            # OK to be created or updated because there is no pattern to be regulated
+            pass
+        elif re.match(schema.item_name_pattern, name):
+            # OK to be created or updated
+            pass
+        else:
+            raise InvalidValueError(
+                'Specified name doesn\'t match configured pattern "%s"' % schema.item_name_pattern
+            )
 
         return name
 
@@ -1279,6 +1303,14 @@ class AdvancedSearchSerializer(serializers.Serializer):
         if any([len(attr.get("keyword", "")) > CONFIG_ENTRY.MAX_QUERY_SIZE for attr in attrs]):
             raise ValidationError("keyword(s) in attrs are too large")
         return attrs
+
+    def validate_join_attrs(self, join_attrs: list[dict[str, str]]) -> list[dict[str, str]]:
+        # Check whether target is included in attrs
+        attr_names = [x["name"] for x in self.initial_data["attrinfo"]]
+        for join_attr in join_attrs:
+            if join_attr["name"] not in attr_names:
+                raise ValidationError("join_attr name is not included in attrs")
+        return join_attrs
 
 
 class AdvancedSearchResultValueAttrSerializer(serializers.Serializer):

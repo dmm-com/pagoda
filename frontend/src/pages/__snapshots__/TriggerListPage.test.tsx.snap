@@ -81,7 +81,6 @@ exports[`TriggerPage should match snapshot 1`] = `
                   class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary css-qk5ybc-MuiButtonBase-root-MuiButton-root"
                   data-discover="true"
                   href="/ui/triggers/new"
-                  id=":r0:"
                   tabindex="0"
                 >
                   <svg
@@ -186,7 +185,6 @@ exports[`TriggerPage should match snapshot 1`] = `
                     >
                       <button
                         class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-4qb85i-MuiButtonBase-root-MuiIconButton-root"
-                        id=":r1:"
                         tabindex="0"
                         type="button"
                       >
@@ -211,7 +209,6 @@ exports[`TriggerPage should match snapshot 1`] = `
                       class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-4qb85i-MuiButtonBase-root-MuiIconButton-root"
                       data-discover="true"
                       href="/ui/triggers/1"
-                      id=":r3:"
                       tabindex="0"
                     >
                       <svg
@@ -258,7 +255,6 @@ exports[`TriggerPage should match snapshot 1`] = `
                     >
                       <button
                         class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-4qb85i-MuiButtonBase-root-MuiIconButton-root"
-                        id=":r4:"
                         tabindex="0"
                         type="button"
                       >
@@ -283,7 +279,6 @@ exports[`TriggerPage should match snapshot 1`] = `
                       class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-4qb85i-MuiButtonBase-root-MuiIconButton-root"
                       data-discover="true"
                       href="/ui/triggers/2"
-                      id=":r6:"
                       tabindex="0"
                     >
                       <svg
@@ -384,7 +379,6 @@ exports[`TriggerPage should match snapshot 1`] = `
                 class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary css-qk5ybc-MuiButtonBase-root-MuiButton-root"
                 data-discover="true"
                 href="/ui/triggers/new"
-                id=":r0:"
                 tabindex="0"
               >
                 <svg
@@ -489,7 +483,6 @@ exports[`TriggerPage should match snapshot 1`] = `
                   >
                     <button
                       class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-4qb85i-MuiButtonBase-root-MuiIconButton-root"
-                      id=":r1:"
                       tabindex="0"
                       type="button"
                     >
@@ -514,7 +507,6 @@ exports[`TriggerPage should match snapshot 1`] = `
                     class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-4qb85i-MuiButtonBase-root-MuiIconButton-root"
                     data-discover="true"
                     href="/ui/triggers/1"
-                    id=":r3:"
                     tabindex="0"
                   >
                     <svg
@@ -561,7 +553,6 @@ exports[`TriggerPage should match snapshot 1`] = `
                   >
                     <button
                       class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-4qb85i-MuiButtonBase-root-MuiIconButton-root"
-                      id=":r4:"
                       tabindex="0"
                       type="button"
                     >
@@ -586,7 +577,6 @@ exports[`TriggerPage should match snapshot 1`] = `
                     class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-4qb85i-MuiButtonBase-root-MuiIconButton-root"
                     data-discover="true"
                     href="/ui/triggers/2"
-                    id=":r6:"
                     tabindex="0"
                   >
                     <svg

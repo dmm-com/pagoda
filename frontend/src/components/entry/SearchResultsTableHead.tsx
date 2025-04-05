@@ -3,6 +3,8 @@ import {
   EntryAttributeTypeTypeEnum,
 } from "@dmm-com/airone-apiclient-typescript-fetch";
 import AddIcon from "@mui/icons-material/Add";
+import CheckBoxOutlineBlankOutlinedIcon from "@mui/icons-material/CheckBoxOutlineBlankOutlined";
+import CheckBoxOutlinedIcon from "@mui/icons-material/CheckBoxOutlined";
 import FilterAltIcon from "@mui/icons-material/FilterAlt";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import {
@@ -11,6 +13,7 @@ import {
   TableCell,
   TableHead,
   TableRow,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
@@ -22,7 +25,7 @@ import React, {
   useReducer,
   useState,
 } from "react";
-import { useNavigate, useLocation } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 
 import { AdvancedSearchJoinModal } from "./AdvancedSearchJoinModal";
 import { SearchResultControlMenu } from "./SearchResultControlMenu";
@@ -60,7 +63,7 @@ interface Props {
   entityIds: number[];
   searchAllEntities: boolean;
   joinAttrs: AdvancedSearchJoinAttrInfo[];
-  refreshSearchResults: () => void;
+  handleChangeAllBulkOperationEntryIds: (checked: boolean) => void;
   isReadonly?: boolean;
 }
 
@@ -73,28 +76,29 @@ export const SearchResultsTableHead: FC<Props> = ({
   entityIds,
   searchAllEntities,
   joinAttrs,
-  refreshSearchResults,
+  handleChangeAllBulkOperationEntryIds,
   isReadonly = false,
 }) => {
   const location = useLocation();
   const navigate = useNavigate();
+  const [checked, setChecked] = useState(false);
 
   const [entryFilter, entryFilterDispatcher] = useReducer(
     (
       _state: string,
-      event: ChangeEvent<HTMLTextAreaElement | HTMLInputElement>
+      event: ChangeEvent<HTMLTextAreaElement | HTMLInputElement>,
     ) => event.target.value,
-    defaultEntryFilter ?? ""
+    defaultEntryFilter ?? "",
   );
   const [referralFilter, referralFilterDispatcher] = useReducer(
     (
       _state: string,
-      event: ChangeEvent<HTMLTextAreaElement | HTMLInputElement>
+      event: ChangeEvent<HTMLTextAreaElement | HTMLInputElement>,
     ) => event.target.value,
-    defaultReferralFilter ?? ""
+    defaultReferralFilter ?? "",
   );
   const [attrsFilter, setAttrsFilter] = useState<AttrsFilter>(
-    defaultAttrsFilter ?? {}
+    defaultAttrsFilter ?? {},
   );
 
   const [joinAttrName, setJoinAttrname] = useState<string>("");
@@ -102,7 +106,7 @@ export const SearchResultsTableHead: FC<Props> = ({
     [key: string]: HTMLButtonElement | null;
   }>({});
   const [entryMenuEls, setEntryMenuEls] = useState<HTMLButtonElement | null>(
-    null
+    null,
   );
   const [referralMenuEls, setReferralMenuEls] =
     useState<HTMLButtonElement | null>(null);
@@ -120,9 +124,9 @@ export const SearchResultsTableHead: FC<Props> = ({
             attrName,
             getIsFiltered(attrFilter.filterKey, attrFilter.keyword),
           ];
-        })
+        }),
       ),
-    [defaultAttrsFilter]
+    [defaultAttrsFilter],
   );
 
   useEffect(() => {
@@ -134,7 +138,7 @@ export const SearchResultsTableHead: FC<Props> = ({
     (
       attrFilter?: AttrFilter,
       overwriteEntryName?: string,
-      overwriteReferral?: string
+      overwriteReferral?: string,
     ) => {
       const _attrsFilter =
         attrName != null && attrFilter != null
@@ -155,7 +159,7 @@ export const SearchResultsTableHead: FC<Props> = ({
             attrinfo: Object.keys(_attrsFilter)
               .filter(
                 (j) =>
-                  _attrsFilter[j].baseAttrname === _attrsFilter[k].baseAttrname
+                  _attrsFilter[j].baseAttrname === _attrsFilter[k].baseAttrname,
               )
               .map((j) => ({
                 name: _attrsFilter[j]?.joinedAttrname ?? "",
@@ -166,10 +170,6 @@ export const SearchResultsTableHead: FC<Props> = ({
           // This removes duplicates
           .filter((v, i, a) => a.findIndex((t) => t.name === v.name) === i),
       });
-
-      if (getIsFiltered(attrFilter?.filterKey, attrFilter?.keyword)) {
-        refreshSearchResults();
-      }
 
       // simply reload with the new params
       navigate({
@@ -190,7 +190,22 @@ export const SearchResultsTableHead: FC<Props> = ({
     <TableHead>
       <TableRow sx={{ backgroundColor: "primary.dark" }}>
         {/* Bulk operation checkbox would be invisible when Readonly mode is true */}
-        {!isReadonly && <TableCell sx={{ witdh: "80px" }} />}
+        {!isReadonly && (
+          <TableCell sx={{ witdh: "80px" }}>
+            <StyledIconButton
+              onClick={() => {
+                setChecked(!checked);
+                handleChangeAllBulkOperationEntryIds(!checked);
+              }}
+            >
+              {checked ? (
+                <CheckBoxOutlinedIcon />
+              ) : (
+                <CheckBoxOutlineBlankOutlinedIcon />
+              )}
+            </StyledIconButton>
+          </TableCell>
+        )}
         <StyledTableCell sx={{ outline: "1px solid #FFFFFF" }}>
           <HeaderBox>
             <Typography>アイテム名</Typography>
@@ -198,13 +213,19 @@ export const SearchResultsTableHead: FC<Props> = ({
             {/* SearchControlMenu would be invisible when Readonly Mode is True */}
             {!isReadonly && (
               <>
-                <StyledIconButton
-                  onClick={(e) => {
-                    setEntryMenuEls(e.currentTarget);
-                  }}
-                >
-                  {defaultEntryFilter ? <FilterAltIcon /> : <FilterListIcon />}
-                </StyledIconButton>
+                <Tooltip title="アイテム名でフィルタ">
+                  <StyledIconButton
+                    onClick={(e) => {
+                      setEntryMenuEls(e.currentTarget);
+                    }}
+                  >
+                    {defaultEntryFilter ? (
+                      <FilterAltIcon />
+                    ) : (
+                      <FilterListIcon />
+                    )}
+                  </StyledIconButton>
+                </Tooltip>
                 <SearchResultControlMenuForEntry
                   entryFilter={entryFilter}
                   anchorElem={entryMenuEls}
@@ -228,9 +249,11 @@ export const SearchResultsTableHead: FC<Props> = ({
               {(attrTypes[attrName] & EntryAttributeTypeTypeEnum.OBJECT) > 0 &&
                 !isReadonly &&
                 attrsFilter[attrName]?.joinedAttrname === undefined && (
-                  <StyledIconButton onClick={() => setJoinAttrname(attrName)}>
-                    <AddIcon />
-                  </StyledIconButton>
+                  <Tooltip title="アイテムの属性を結合する">
+                    <StyledIconButton onClick={() => setJoinAttrname(attrName)}>
+                      <AddIcon />
+                    </StyledIconButton>
+                  </Tooltip>
                 )}
               {attrName === joinAttrName && (
                 <AdvancedSearchJoinModal
@@ -239,26 +262,27 @@ export const SearchResultsTableHead: FC<Props> = ({
                   targetAttrname={joinAttrName}
                   joinAttrs={joinAttrs}
                   handleClose={() => setJoinAttrname("")}
-                  refreshSearchResults={refreshSearchResults}
                 />
               )}
               {!isReadonly && (
                 <>
-                  <StyledIconButton
-                    onClick={(e) => {
-                      setAttributeMenuEls({
-                        ...attributeMenuEls,
-                        [attrName]: e.currentTarget,
-                      });
-                    }}
-                    sx={{ marginLeft: "auto" }}
-                  >
-                    {isFiltered[attrName] ?? false ? (
-                      <FilterAltIcon />
-                    ) : (
-                      <FilterListIcon />
-                    )}
-                  </StyledIconButton>
+                  <Tooltip title="属性値でフィルタ">
+                    <StyledIconButton
+                      onClick={(e) => {
+                        setAttributeMenuEls({
+                          ...attributeMenuEls,
+                          [attrName]: e.currentTarget,
+                        });
+                      }}
+                      sx={{ marginLeft: "auto" }}
+                    >
+                      {(isFiltered[attrName] ?? false) ? (
+                        <FilterAltIcon />
+                      ) : (
+                        <FilterListIcon />
+                      )}
+                    </StyledIconButton>
+                  </Tooltip>
                   <SearchResultControlMenu
                     attrFilter={attrsFilter[attrName]}
                     anchorElem={attributeMenuEls[attrName]}
@@ -269,7 +293,7 @@ export const SearchResultsTableHead: FC<Props> = ({
                       })
                     }
                     handleSelectFilterConditions={handleSelectFilterConditions(
-                      attrName
+                      attrName,
                     )}
                     handleUpdateAttrFilter={handleUpdateAttrFilter(attrName)}
                     attrType={attrTypes[attrName]}
@@ -283,13 +307,19 @@ export const SearchResultsTableHead: FC<Props> = ({
           <StyledTableCell sx={{ outline: "1px solid #FFFFFF" }}>
             <HeaderBox>
               <Typography>参照アイテム</Typography>
-              <StyledIconButton
-                onClick={(e) => {
-                  setReferralMenuEls(e.currentTarget);
-                }}
-              >
-                {defaultReferralFilter ? <FilterAltIcon /> : <FilterListIcon />}
-              </StyledIconButton>
+              <Tooltip title="参照アイテムでフィルタ">
+                <StyledIconButton
+                  onClick={(e) => {
+                    setReferralMenuEls(e.currentTarget);
+                  }}
+                >
+                  {defaultReferralFilter ? (
+                    <FilterAltIcon />
+                  ) : (
+                    <FilterListIcon />
+                  )}
+                </StyledIconButton>
+              </Tooltip>
               <SearchResultControlMenuForReferral
                 referralFilter={referralFilter}
                 anchorElem={referralMenuEls}

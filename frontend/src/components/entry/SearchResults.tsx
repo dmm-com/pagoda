@@ -57,12 +57,11 @@ interface Props {
   defaultReferralFilter?: string;
   defaultAttrsFilter?: AttrsFilter;
   bulkOperationEntryIds: Array<number>;
-  handleChangeBulkOperationEntryId: (id: number, checked: boolean) => void;
+  setBulkOperationEntryIds: (entryIds: Array<number>) => void;
   entityIds: number[];
   searchAllEntities: boolean;
   joinAttrs: AdvancedSearchJoinAttrInfo[];
   disablePaginationFooter: boolean;
-  setSearchResults: () => void;
   isReadonly?: boolean;
 }
 
@@ -75,12 +74,11 @@ export const SearchResults: FC<Props> = ({
   defaultReferralFilter,
   defaultAttrsFilter = {},
   bulkOperationEntryIds,
-  handleChangeBulkOperationEntryId,
+  setBulkOperationEntryIds,
   entityIds,
   searchAllEntities,
   joinAttrs,
   disablePaginationFooter,
-  setSearchResults,
   isReadonly = false,
 }) => {
   // NOTE attrTypes are guessed by the first element on the results. So if it has no appropriate attr,
@@ -91,10 +89,26 @@ export const SearchResults: FC<Props> = ({
       _attrNames.map((attrName) => [
         attrName,
         results.values[0]?.attrs[attrName]?.type,
-      ])
+      ]),
     );
     return [_attrNames, _attrTypes];
   }, [defaultAttrsFilter, results.values]);
+
+  const handleChangeBulkOperationEntryId = (id: number, checked: boolean) => {
+    if (checked) {
+      setBulkOperationEntryIds([...bulkOperationEntryIds, id]);
+    } else {
+      setBulkOperationEntryIds(bulkOperationEntryIds.filter((i) => i !== id));
+    }
+  };
+
+  const handleChangeAllBulkOperationEntryIds = (checked: boolean) => {
+    if (checked) {
+      setBulkOperationEntryIds(results.values.map((v) => v.entry.id));
+    } else {
+      setBulkOperationEntryIds([]);
+    }
+  };
 
   return (
     <Box display="flex" flexDirection="column">
@@ -110,7 +124,9 @@ export const SearchResults: FC<Props> = ({
               entityIds={entityIds}
               searchAllEntities={searchAllEntities}
               joinAttrs={joinAttrs}
-              refreshSearchResults={setSearchResults}
+              handleChangeAllBulkOperationEntryIds={
+                handleChangeAllBulkOperationEntryIds
+              }
               isReadonly={isReadonly}
             />
             <TableBody>
@@ -121,12 +137,12 @@ export const SearchResults: FC<Props> = ({
                     <TableCell sx={{ padding: 0 }}>
                       <Checkbox
                         checked={bulkOperationEntryIds.includes(
-                          result.entry.id
+                          result.entry.id,
                         )}
                         onChange={(e) =>
                           handleChangeBulkOperationEntryId(
                             result.entry.id,
-                            e.target.checked
+                            e.target.checked,
                           )
                         }
                       />

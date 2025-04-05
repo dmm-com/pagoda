@@ -8,25 +8,25 @@ type StyledBoxProps = BoxProps & {
 };
 
 export const FlexBox: React.ComponentType<StyledBoxProps> = styled(
-  Box
+  Box,
 )<StyledBoxProps>({
   display: "flex",
 }) as React.ComponentType<StyledBoxProps>;
 
 export const BetweenAlignedBox: React.ComponentType<StyledBoxProps> = styled(
-  FlexBox
+  FlexBox,
 )<StyledBoxProps>({
   justifyContent: "space-between",
 }) as React.ComponentType<StyledBoxProps>;
 
 export const RightAlignedBox: React.ComponentType<StyledBoxProps> = styled(
-  FlexBox
+  FlexBox,
 )<StyledBoxProps>({
   justifyContent: "end",
 }) as React.ComponentType<StyledBoxProps>;
 
 export const CenterAlignedBox: React.ComponentType<StyledBoxProps> = styled(
-  FlexBox
+  FlexBox,
 )<StyledBoxProps>({
   justifyContent: "center",
 }) as React.ComponentType<StyledBoxProps>;

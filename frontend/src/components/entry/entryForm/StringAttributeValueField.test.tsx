@@ -73,7 +73,7 @@ describe("StringAttributeValueField", () => {
         resolver: zodResolver(schema),
         mode: "onBlur",
         defaultValues,
-      })
+      }),
     );
 
     render(<StringAttributeValueField attrId={0} control={control} />, {
@@ -103,7 +103,7 @@ describe("StringAttributeValueField", () => {
         resolver: zodResolver(schema),
         mode: "onBlur",
         defaultValues,
-      })
+      }),
     );
 
     render(<ArrayStringAttributeValueField attrId={1} control={control} />, {

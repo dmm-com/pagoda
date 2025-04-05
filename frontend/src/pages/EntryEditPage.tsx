@@ -3,6 +3,7 @@ import { Box } from "@mui/material";
 import React, { FC, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
+import { v4 as uuidv4 } from "uuid";
 
 import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
 
@@ -33,11 +34,13 @@ import {
 interface Props {
   excludeAttrs?: string[];
   EntryForm?: FC<EntryFormProps>;
+  useUUID?: boolean;
 }
 
 export const EntryEditPage: FC<Props> = ({
   excludeAttrs = [],
   EntryForm = DefaultEntryForm,
+  useUUID = false,
 }) => {
   const { entityId, entryId } = useTypedParams<{
     entityId: number;
@@ -65,7 +68,7 @@ export const EntryEditPage: FC<Props> = ({
 
   usePrompt(
     isDirty && !isSubmitSuccessful,
-    "編集した内容は失われてしまいますが、このページを離れてもよろしいですか？"
+    "編集した内容は失われてしまいますが、このページを離れてもよろしいですか？",
   );
 
   const entity = useAsyncWithThrow(async () => {
@@ -84,8 +87,9 @@ export const EntryEditPage: FC<Props> = ({
         const entryInfo = formalizeEntryInfo(
           undefined,
           entity.value,
-          excludeAttrs
+          excludeAttrs,
         );
+        entryInfo.name = useUUID ? uuidv4() : "";
         reset(entryInfo);
         setInitialized(true);
       }
@@ -99,7 +103,7 @@ export const EntryEditPage: FC<Props> = ({
         const entryInfo = formalizeEntryInfo(
           entry.value,
           entity.value,
-          excludeAttrs
+          excludeAttrs,
         );
         reset(entryInfo);
         setInitialized(true);
@@ -136,7 +140,7 @@ export const EntryEditPage: FC<Props> = ({
           (name, message) => {
             setError(name, { type: "custom", message: message });
             enqueueSubmitResult(false);
-          }
+          },
         );
       } else {
         enqueueSubmitResult(false);
@@ -193,7 +197,7 @@ export const EntryEditPage: FC<Props> = ({
           entity={{
             ...entity.value,
             attrs: entity.value.attrs.filter(
-              (attr) => !excludeAttrs.includes(attr.name)
+              (attr) => !excludeAttrs.includes(attr.name),
             ),
           }}
           control={control}

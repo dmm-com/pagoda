@@ -13,12 +13,28 @@ import {
 } from "components/entry/entryForm/EditableEntry";
 import { Schema } from "components/entry/entryForm/EntryFormSchema";
 
+// zodの型推論を使ってEditableEntryAttrsの型を定義
+type SchemaAttrs = Schema["attrs"] extends Record<string, infer U> ? U : never;
+
+// 属性値の型定義（テストでも使用するためにエクスポート）
+export type EntryAttributeValueType =
+  | string
+  | boolean
+  | number
+  | null
+  | undefined
+  | Array<string>
+  | Array<number>
+  | { id: number | null; name: string }
+  | Array<{ id: number | null; name: string }>
+  | Array<{ id: number | null; name: string; _boolean: boolean }>;
+
 // Convert Entry information from server-side value to presentation format.
 // (NOTE) It might be needed to be refactored because if server returns proper format with frontend, this is not necessary.
 export function formalizeEntryInfo(
   entry: EntryRetrieve | undefined,
   entity: EntityDetail,
-  excludeAttrs: string[]
+  excludeAttrs: string[],
 ): Schema {
   return {
     name: entry ? entry.name : "",
@@ -29,30 +45,30 @@ export function formalizeEntryInfo(
     attrs: entity.attrs
       .filter((attr) => !excludeAttrs.includes(attr.name))
       .filter((attr) => attr.id != 0)
-      .reduce((acc: Record<string, any>, attr) => {
+      .reduce((acc: Record<string, SchemaAttrs>, attr) => {
         function getAttrValue(
-          attrType: number,
-          value: EntryAttributeValue | undefined
-        ) {
+          attrType: EntryAttributeTypeTypeEnum,
+          value: EntryAttributeValue | undefined,
+        ): EditableEntryAttrValue {
           if (!value) {
             return {
               asString: "",
               asBoolean: false,
-              asObject: undefined,
-              asGroup: undefined,
-              asRole: undefined,
-              asNamedObject: { name: "", object: null },
               asArrayString: [],
               asArrayObject: [],
               asArrayGroup: [],
               asArrayRole: [],
               asArrayNamedObject: [],
+              asObject: null,
+              asGroup: null,
+              asRole: null,
+              asNamedObject: { name: "", object: null },
             };
           }
 
           switch (attrType) {
             case EntryAttributeTypeTypeEnum.ARRAY_STRING:
-              return value?.asArrayString?.length ?? 0 > 0
+              return (value?.asArrayString?.length ?? 0 > 0)
                 ? {
                     asArrayString: value.asArrayString?.map((value) => {
                       return { value: value };
@@ -61,15 +77,62 @@ export function formalizeEntryInfo(
                 : { asArrayString: [{ value: "" }] };
             case EntryAttributeTypeTypeEnum.ARRAY_NAMED_OBJECT:
             case EntryAttributeTypeTypeEnum.ARRAY_NAMED_OBJECT_BOOLEAN:
-              return value?.asArrayNamedObject?.length ?? 0 > 0
-                ? value
+              return (value?.asArrayNamedObject?.length ?? 0 > 0)
+                ? {
+                    asArrayNamedObject: value.asArrayNamedObject?.map(
+                      (item) => ({
+                        name: item.name,
+                        object: item.object,
+                        _boolean: item._boolean,
+                      }),
+                    ),
+                  }
                 : {
                     asArrayNamedObject: [
                       { name: "", object: null, _boolean: false },
                     ],
                   };
             default:
-              return value;
+              // u4ed6u306eu578bu306eu5834u5408u306fu9069u5207u306bu5909u63db
+              const result: EditableEntryAttrValue = {};
+
+              if (value.asBoolean !== undefined) {
+                result.asBoolean = value.asBoolean;
+              }
+
+              if (value.asString !== undefined) {
+                result.asString = value.asString;
+              }
+
+              if (value.asObject !== undefined) {
+                result.asObject = value.asObject;
+              }
+
+              if (value.asGroup !== undefined) {
+                result.asGroup = value.asGroup;
+              }
+
+              if (value.asRole !== undefined) {
+                result.asRole = value.asRole;
+              }
+
+              if (value.asNamedObject !== undefined) {
+                result.asNamedObject = value.asNamedObject;
+              }
+
+              if (value.asArrayObject !== undefined) {
+                result.asArrayObject = value.asArrayObject;
+              }
+
+              if (value.asArrayGroup !== undefined) {
+                result.asArrayGroup = value.asArrayGroup;
+              }
+
+              if (value.asArrayRole !== undefined) {
+                result.asArrayRole = value.asArrayRole;
+              }
+
+              return result;
           }
         }
 
@@ -77,13 +140,13 @@ export function formalizeEntryInfo(
 
         acc[String(attr.id)] = {
           index: attr.index,
-          type: attr.type,
+          type: attr.type as EntryAttributeTypeTypeEnum,
           isMandatory: attr.isMandatory,
           schema: {
             id: attr.id,
             name: attr.name,
           },
-          value: getAttrValue(attr.type, value),
+          value: getAttrValue(attr.type as EntryAttributeTypeTypeEnum, value),
         };
         return acc;
       }, {}),
@@ -91,10 +154,13 @@ export function formalizeEntryInfo(
 }
 
 export function convertAttrsFormatCtoS(
-  attrs: Record<string, EditableEntryAttrs>
+  attrs: Record<string, EditableEntryAttrs>,
 ): AttributeData[] {
   return Object.entries(attrs).map(([{}, attr]) => {
-    function getAttrValue(attrType: number, attrValue: EditableEntryAttrValue) {
+    function getAttrValue(
+      attrType: EntryAttributeTypeTypeEnum,
+      attrValue: EditableEntryAttrValue,
+    ): EntryAttributeValueType {
       switch (attrType) {
         case EntryAttributeTypeTypeEnum.STRING:
         case EntryAttributeTypeTypeEnum.TEXT:

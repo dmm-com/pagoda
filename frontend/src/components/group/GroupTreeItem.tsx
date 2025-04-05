@@ -16,7 +16,7 @@ interface Props {
   selectedGroupId: number | null;
   handleSelectGroupId: (groupId: number | null) => void;
   setGroupAnchorEls?: (
-    els: { groupId: number; el: HTMLButtonElement } | null
+    els: { groupId: number; el: HTMLButtonElement } | null,
   ) => void;
 }
 

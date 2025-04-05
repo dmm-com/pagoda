@@ -38,7 +38,7 @@ export const EntryCopyPage: FC<Props> = ({ CopyForm = DefaultCopyForm }) => {
 
   usePrompt(
     edited && !submitted,
-    "編集した内容は失われてしまいますが、このページを離れてもよろしいですか？"
+    "編集した内容は失われてしまいますが、このページを離れてもよろしいですか？",
   );
 
   const entry = useAsyncWithThrow(async () => {
@@ -75,7 +75,7 @@ export const EntryCopyPage: FC<Props> = ({ CopyForm = DefaultCopyForm }) => {
   const handleCancel = () => {
     navigate(
       entryDetailsPath(entry.value?.schema?.id ?? 0, entry.value?.id ?? 0),
-      { replace: true }
+      { replace: true },
     );
   };
 

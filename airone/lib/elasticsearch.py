@@ -10,7 +10,7 @@ from typing_extensions import TypedDict
 
 from airone.lib.acl import ACLType
 from airone.lib.log import Logger
-from airone.lib.types import AttrType
+from airone.lib.types import AttrType, BaseIntEnum
 from entity.models import Entity
 from entry.settings import CONFIG
 from user.models import User
@@ -42,7 +42,7 @@ class AdvancedSearchResults(BaseModel):
 
 
 @enum.unique
-class FilterKey(enum.IntEnum):
+class FilterKey(BaseIntEnum):
     CLEARED = 0
     EMPTY = 1
     NON_EMPTY = 2
@@ -282,10 +282,14 @@ def make_query(
                 keyword_infos = resp["aggregations"]["attr_aggs"]["attr_name_aggs"][
                     "attr_value_aggs"
                 ]["buckets"]
-                keyword_list = [x["key"] for x in keyword_infos]
-                hint_attr.keyword = CONFIG.OR_SEARCH_CHARACTER.join(
-                    ["^" + x + "$" for x in keyword_list]
-                )
+                if keyword_infos == []:
+                    # Since there are 0 duplicates, set a condition that will always be false.
+                    hint_attr.keyword = "a^"
+                else:
+                    keyword_list = [x["key"] for x in keyword_infos]
+                    hint_attr.keyword = CONFIG.OR_SEARCH_CHARACTER.join(
+                        ["^" + x + "$" for x in keyword_list]
+                    )
 
     # Making a query to send ElasticSearch by the specified parameters
     query: dict[str, Any] = {

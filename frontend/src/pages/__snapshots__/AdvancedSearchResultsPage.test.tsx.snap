@@ -101,7 +101,6 @@ exports[`should match snapshot 1`] = `
                 >
                   <button
                     class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInfo MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInfo css-mnflth-MuiButtonBase-root-MuiButton-root"
-                    id=":r0:"
                     tabindex="0"
                     type="button"
                   >
@@ -127,7 +126,6 @@ exports[`should match snapshot 1`] = `
                   >
                     <button
                       class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInfo MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInfo css-fm83n0-MuiButtonBase-root-MuiButton-root"
-                      id=":r1:"
                       tabindex="0"
                       type="button"
                     >
@@ -139,7 +137,6 @@ exports[`should match snapshot 1`] = `
                   >
                     <button
                       class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInfo MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInfo css-19ekxha-MuiButtonBase-root-MuiButton-root"
-                      id=":r2:"
                       tabindex="0"
                       type="button"
                     >
@@ -152,7 +149,6 @@ exports[`should match snapshot 1`] = `
                     <button
                       class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInfo Mui-disabled MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInfo css-fm83n0-MuiButtonBase-root-MuiButton-root"
                       disabled=""
-                      id=":r3:"
                       tabindex="-1"
                       type="button"
                     >
@@ -208,7 +204,25 @@ exports[`should match snapshot 1`] = `
                       <th
                         class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-16v8e99-MuiTableCell-root"
                         scope="col"
-                      />
+                      >
+                        <button
+                          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-5ws45t-MuiButtonBase-root-MuiIconButton-root"
+                          tabindex="0"
+                          type="button"
+                        >
+                          <svg
+                            aria-hidden="true"
+                            class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1umw9bq-MuiSvgIcon-root"
+                            data-testid="CheckBoxOutlineBlankOutlinedIcon"
+                            focusable="false"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              d="M19 5v14H5V5zm0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2"
+                            />
+                          </svg>
+                        </button>
+                      </th>
                       <th
                         class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-msxbr9-MuiTableCell-root"
                         scope="col"
@@ -222,8 +236,9 @@ exports[`should match snapshot 1`] = `
                             アイテム名
                           </p>
                           <button
+                            aria-label="アイテム名でフィルタ"
                             class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-5ws45t-MuiButtonBase-root-MuiIconButton-root"
-                            id=":r5:"
+                            data-mui-internal-clone-element="true"
                             tabindex="0"
                             type="button"
                           >
@@ -467,7 +482,6 @@ exports[`should match snapshot 1`] = `
               >
                 <button
                   class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInfo MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInfo css-mnflth-MuiButtonBase-root-MuiButton-root"
-                  id=":r0:"
                   tabindex="0"
                   type="button"
                 >
@@ -493,7 +507,6 @@ exports[`should match snapshot 1`] = `
                 >
                   <button
                     class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInfo MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInfo css-fm83n0-MuiButtonBase-root-MuiButton-root"
-                    id=":r1:"
                     tabindex="0"
                     type="button"
                   >
@@ -505,7 +518,6 @@ exports[`should match snapshot 1`] = `
                 >
                   <button
                     class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInfo MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInfo css-19ekxha-MuiButtonBase-root-MuiButton-root"
-                    id=":r2:"
                     tabindex="0"
                     type="button"
                   >
@@ -518,7 +530,6 @@ exports[`should match snapshot 1`] = `
                   <button
                     class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInfo Mui-disabled MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInfo css-fm83n0-MuiButtonBase-root-MuiButton-root"
                     disabled=""
-                    id=":r3:"
                     tabindex="-1"
                     type="button"
                   >
@@ -574,7 +585,25 @@ exports[`should match snapshot 1`] = `
                     <th
                       class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-16v8e99-MuiTableCell-root"
                       scope="col"
-                    />
+                    >
+                      <button
+                        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-5ws45t-MuiButtonBase-root-MuiIconButton-root"
+                        tabindex="0"
+                        type="button"
+                      >
+                        <svg
+                          aria-hidden="true"
+                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1umw9bq-MuiSvgIcon-root"
+                          data-testid="CheckBoxOutlineBlankOutlinedIcon"
+                          focusable="false"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            d="M19 5v14H5V5zm0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2"
+                          />
+                        </svg>
+                      </button>
+                    </th>
                     <th
                       class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-msxbr9-MuiTableCell-root"
                       scope="col"
@@ -588,8 +617,9 @@ exports[`should match snapshot 1`] = `
                           アイテム名
                         </p>
                         <button
+                          aria-label="アイテム名でフィルタ"
                           class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-5ws45t-MuiButtonBase-root-MuiIconButton-root"
-                          id=":r5:"
+                          data-mui-internal-clone-element="true"
                           tabindex="0"
                           type="button"
                         >

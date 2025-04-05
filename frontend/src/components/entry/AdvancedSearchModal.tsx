@@ -1,9 +1,10 @@
 import {
+  AdvancedSearchJoinAttrInfo,
   AdvancedSearchResultAttrInfo,
   AdvancedSearchResultAttrInfoFilterKeyEnum,
 } from "@dmm-com/airone-apiclient-typescript-fetch";
-import { Box, Autocomplete, Checkbox, TextField, Button } from "@mui/material";
-import React, { Dispatch, FC, useState, SetStateAction } from "react";
+import { Autocomplete, Box, Button, Checkbox, TextField } from "@mui/material";
+import React, { Dispatch, FC, SetStateAction, useState } from "react";
 import { useNavigate } from "react-router";
 
 import { formatAdvancedSearchParams } from "../../services/entry/AdvancedSearch";
@@ -15,6 +16,7 @@ interface Props {
   attrNames: string[];
   initialAttrNames: string[];
   attrInfos: AdvancedSearchResultAttrInfo[];
+  joinAttrs: AdvancedSearchJoinAttrInfo[];
 }
 
 export const AdvancedSearchModal: FC<Props> = ({
@@ -23,13 +25,14 @@ export const AdvancedSearchModal: FC<Props> = ({
   attrNames,
   initialAttrNames,
   attrInfos,
+  joinAttrs,
 }) => {
   const navigate = useNavigate();
   const params = new URLSearchParams(location.search);
 
   const [selectedAttrNames, setSelectedAttrNames] = useState(initialAttrNames);
   const [hasReferral, setHasReferral] = useState(
-    params.get("has_referral") === "true"
+    params.get("has_referral") === "true",
   );
 
   const handleUpdatePageURL = () => {
@@ -46,10 +49,13 @@ export const AdvancedSearchModal: FC<Props> = ({
               keyword: attrInfo?.keyword ?? "",
             },
           ];
-        })
+        }),
       ),
       hasReferral,
       baseParams: new URLSearchParams(location.search),
+      joinAttrs: joinAttrs.filter((joinAttr) =>
+        selectedAttrNames.includes(joinAttr.name),
+      ),
     });
 
     // Update Page URL parameters

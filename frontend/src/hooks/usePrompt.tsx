@@ -4,7 +4,7 @@ import { useBlocker } from "react-router";
 export const usePrompt = (when: boolean, message: string) => {
   const blocker = useBlocker(
     ({ currentLocation, nextLocation }) =>
-      when && currentLocation.pathname !== nextLocation.pathname
+      when && currentLocation.pathname !== nextLocation.pathname,
   );
 
   useEffect(() => {

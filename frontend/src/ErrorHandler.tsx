@@ -129,7 +129,7 @@ const ErrorBridge: FC<{ children: React.ReactNode }> = ({ children }) => {
       }
       dispatchError(event.reason);
     },
-    []
+    [],
   );
 
   useEffect(() => {
@@ -137,7 +137,7 @@ const ErrorBridge: FC<{ children: React.ReactNode }> = ({ children }) => {
     return () => {
       window.removeEventListener(
         "unhandledrejection",
-        handleUnhandledRejection
+        handleUnhandledRejection,
       );
     };
   }, [handleUnhandledRejection]);

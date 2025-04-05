@@ -17,7 +17,6 @@ interface Props {
   targetAttrname: string;
   joinAttrs: AdvancedSearchJoinAttrInfo[];
   handleClose: () => void;
-  refreshSearchResults: () => void;
 }
 
 export const AdvancedSearchJoinModal: FC<Props> = ({
@@ -26,7 +25,6 @@ export const AdvancedSearchJoinModal: FC<Props> = ({
   targetAttrname,
   joinAttrs,
   handleClose,
-  refreshSearchResults,
 }) => {
   const navigate = useNavigate();
   // This is join attributes that have been already been selected before.
@@ -34,21 +32,21 @@ export const AdvancedSearchJoinModal: FC<Props> = ({
     joinAttrs.find((attr) => attr.name === targetAttrname);
 
   const [selectedAttrNames, setSelectedAttrNames] = useState<Array<string>>(
-    currentAttrInfo?.attrinfo.map((attr) => attr.name) ?? []
+    currentAttrInfo?.attrinfo.map((attr) => attr.name) ?? [],
   );
 
   const referralAttrs = useAsyncWithThrow(async () => {
     return await aironeApiClient.getEntityAttrs(
       targetEntityIds,
       searchAllEntities,
-      targetAttrname
+      targetAttrname,
     );
   }, [targetEntityIds, searchAllEntities, targetAttrname]);
 
   const handleUpdatePageURL = () => {
     // to prevent duplication of same name parameter
     const currentJoinAttrs = joinAttrs.filter(
-      (attr) => attr.name !== targetAttrname
+      (attr) => attr.name !== targetAttrname,
     );
 
     const newJoinAttrs = [
@@ -68,9 +66,6 @@ export const AdvancedSearchJoinModal: FC<Props> = ({
       baseParams: new URLSearchParams(location.search),
       joinAttrs: newJoinAttrs,
     });
-
-    // update page by changing joined Attribute filter condition
-    refreshSearchResults();
 
     // Update Page URL parameters
     navigate({

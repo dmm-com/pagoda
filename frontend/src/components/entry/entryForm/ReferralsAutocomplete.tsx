@@ -15,7 +15,7 @@ interface Props {
   attrId: number;
   value: GetEntryAttrReferral | GetEntryAttrReferral[] | null;
   handleChange: (
-    value: GetEntryAttrReferral | GetEntryAttrReferral[] | null
+    value: GetEntryAttrReferral | GetEntryAttrReferral[] | null,
   ) => void;
   multiple?: boolean;
   error?: { message?: string };
@@ -31,7 +31,7 @@ export const ReferralsAutocomplete: FC<Props> = ({
   isDisabled = false,
 }) => {
   const [inputValue, setInputValue] = useState<string>(
-    !multiple ? (value as GetEntryAttrReferral | null)?.name ?? "" : ""
+    !multiple ? ((value as GetEntryAttrReferral | null)?.name ?? "") : "",
   );
 
   const referrals = useAsyncWithThrow(async () => {
@@ -40,7 +40,7 @@ export const ReferralsAutocomplete: FC<Props> = ({
 
   const _handleChange = (
     value: GetEntryAttrReferral | GetEntryAttrReferral[] | null,
-    reason: AutocompleteChangeReason
+    reason: AutocompleteChangeReason,
   ) => {
     if (!multiple && value != null && !Array.isArray(value)) {
       setInputValue(value.name);
@@ -59,7 +59,7 @@ export const ReferralsAutocomplete: FC<Props> = ({
 
   const handleInputChange = (
     _value: string,
-    reason: AutocompleteInputChangeReason
+    reason: AutocompleteInputChangeReason,
   ) => {
     switch (reason) {
       case "input":

@@ -79,7 +79,6 @@ exports[`GroupListPage should match snapshot 1`] = `
               >
                 <button
                   class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInfo MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInfo css-1ep9zj1-MuiButtonBase-root-MuiButton-root"
-                  id=":r0:"
                   tabindex="0"
                   type="button"
                 >
@@ -87,7 +86,6 @@ exports[`GroupListPage should match snapshot 1`] = `
                 </button>
                 <button
                   class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInfo MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInfo css-1ep9zj1-MuiButtonBase-root-MuiButton-root"
-                  id=":r1:"
                   tabindex="0"
                   type="button"
                 >
@@ -97,7 +95,6 @@ exports[`GroupListPage should match snapshot 1`] = `
                   class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary css-qk5ybc-MuiButtonBase-root-MuiButton-root"
                   data-discover="true"
                   href="/ui/groups/new"
-                  id=":r2:"
                   tabindex="0"
                 >
                   <svg
@@ -173,7 +170,6 @@ exports[`GroupListPage should match snapshot 1`] = `
                   </a>
                   <button
                     class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-1ffhwr1-MuiButtonBase-root-MuiIconButton-root"
-                    id=":r4:"
                     tabindex="0"
                     type="button"
                   >
@@ -222,7 +218,6 @@ exports[`GroupListPage should match snapshot 1`] = `
                   </a>
                   <button
                     class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-1ffhwr1-MuiButtonBase-root-MuiIconButton-root"
-                    id=":r5:"
                     tabindex="0"
                     type="button"
                   >
@@ -271,7 +266,6 @@ exports[`GroupListPage should match snapshot 1`] = `
                   </a>
                   <button
                     class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-1ffhwr1-MuiButtonBase-root-MuiIconButton-root"
-                    id=":r6:"
                     tabindex="0"
                     type="button"
                   >
@@ -328,7 +322,6 @@ exports[`GroupListPage should match snapshot 1`] = `
                   </a>
                   <button
                     class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-1ffhwr1-MuiButtonBase-root-MuiIconButton-root"
-                    id=":r7:"
                     tabindex="0"
                     type="button"
                   >
@@ -494,7 +487,6 @@ exports[`GroupListPage should match snapshot 1`] = `
             >
               <button
                 class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInfo MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInfo css-1ep9zj1-MuiButtonBase-root-MuiButton-root"
-                id=":r0:"
                 tabindex="0"
                 type="button"
               >
@@ -502,7 +494,6 @@ exports[`GroupListPage should match snapshot 1`] = `
               </button>
               <button
                 class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInfo MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInfo css-1ep9zj1-MuiButtonBase-root-MuiButton-root"
-                id=":r1:"
                 tabindex="0"
                 type="button"
               >
@@ -512,7 +503,6 @@ exports[`GroupListPage should match snapshot 1`] = `
                 class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary css-qk5ybc-MuiButtonBase-root-MuiButton-root"
                 data-discover="true"
                 href="/ui/groups/new"
-                id=":r2:"
                 tabindex="0"
               >
                 <svg
@@ -588,7 +578,6 @@ exports[`GroupListPage should match snapshot 1`] = `
                 </a>
                 <button
                   class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-1ffhwr1-MuiButtonBase-root-MuiIconButton-root"
-                  id=":r4:"
                   tabindex="0"
                   type="button"
                 >
@@ -637,7 +626,6 @@ exports[`GroupListPage should match snapshot 1`] = `
                 </a>
                 <button
                   class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-1ffhwr1-MuiButtonBase-root-MuiIconButton-root"
-                  id=":r5:"
                   tabindex="0"
                   type="button"
                 >
@@ -686,7 +674,6 @@ exports[`GroupListPage should match snapshot 1`] = `
                 </a>
                 <button
                   class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-1ffhwr1-MuiButtonBase-root-MuiIconButton-root"
-                  id=":r6:"
                   tabindex="0"
                   type="button"
                 >
@@ -743,7 +730,6 @@ exports[`GroupListPage should match snapshot 1`] = `
                 </a>
                 <button
                   class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-1ffhwr1-MuiButtonBase-root-MuiIconButton-root"
-                  id=":r7:"
                   tabindex="0"
                   type="button"
                 >

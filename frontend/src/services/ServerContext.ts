@@ -3,7 +3,7 @@ class User {
   username: string;
   isSuperuser: boolean;
 
-  constructor(user: any) {
+  constructor(user: { id: number; username: string; isSuperuser: boolean }) {
     this.id = user.id;
     this.username = user.username;
     this.isSuperuser = user.isSuperuser;
@@ -13,7 +13,14 @@ class User {
 const FlagKey = {
   0: "webhook",
 } as const;
-type FlagKey = typeof FlagKey[keyof typeof FlagKey];
+type FlagKey = (typeof FlagKey)[keyof typeof FlagKey];
+
+// windowオブジェクトの型拡張
+declare global {
+  interface Window {
+    django_context?: Record<string, unknown>;
+  }
+}
 
 /**
  * Context continued from server side to succeed information only server side can know.
@@ -33,7 +40,7 @@ export class ServerContext {
   passwordResetDisabled?: boolean;
   checkTermService?: boolean;
   termsOfServiceUrl?: string;
-  extendedGeneralParameters: { [key: string]: any };
+  extendedGeneralParameters: Record<string, unknown>;
   extendedHeaderMenus: {
     name: string;
     children: { name: string; url: string }[];
@@ -43,28 +50,46 @@ export class ServerContext {
 
   private static _instance: ServerContext | undefined;
 
-  constructor(context: any) {
-    this.loginNext = context.next;
-    this.title = context.title;
-    this.subTitle = context.subtitle;
-    this.noteDesc = context.note_desc;
-    this.noteLink = context.note_link;
-    this.version = context.version;
-    this.user = context.user ? new User(context.user) : undefined;
-    this.singleSignOnLoginUrl = context.singleSignOnLoginUrl;
-    this.legacyUiDisabled = context.legacyUiDisabled;
-    this.passwordResetDisabled = context.password_reset_disabled;
-    this.checkTermService = context.checkTermService;
-    this.termsOfServiceUrl = context.termsOfServiceUrl;
-    this.extendedGeneralParameters = context.extendedGeneralParameters;
-    this.extendedHeaderMenus = context.extendedHeaderMenus;
-    this.headerColor = context.headerColor;
-    this.flags = context.flags ?? { webhook: true };
+  constructor(context: Record<string, unknown>) {
+    this.loginNext = context.next as string;
+    this.title = context.title as string;
+    this.subTitle = context.subtitle as string;
+    this.noteDesc = context.note_desc as string;
+    this.noteLink = context.note_link as string;
+    this.version = context.version as string;
+    this.user = context.user
+      ? new User(
+          context.user as {
+            id: number;
+            username: string;
+            isSuperuser: boolean;
+          },
+        )
+      : undefined;
+    this.singleSignOnLoginUrl = context.singleSignOnLoginUrl as
+      | string
+      | undefined;
+    this.legacyUiDisabled = context.legacyUiDisabled as boolean | undefined;
+    this.passwordResetDisabled = context.password_reset_disabled as
+      | boolean
+      | undefined;
+    this.checkTermService = context.checkTermService as boolean | undefined;
+    this.termsOfServiceUrl = context.termsOfServiceUrl as string | undefined;
+    this.extendedGeneralParameters =
+      context.extendedGeneralParameters as Record<string, unknown>;
+    this.extendedHeaderMenus = context.extendedHeaderMenus as {
+      name: string;
+      children: { name: string; url: string }[];
+    }[];
+    this.headerColor = context.headerColor as string | undefined;
+    this.flags = (context.flags as Record<FlagKey, boolean>) ?? {
+      webhook: true,
+    };
   }
 
   static getInstance() {
-    if ((window as any).django_context) {
-      this._instance = new ServerContext((window as any).django_context);
+    if (typeof window !== "undefined" && window.django_context) {
+      this._instance = new ServerContext(window.django_context);
     }
     return this._instance;
   }

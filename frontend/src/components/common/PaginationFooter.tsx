@@ -27,7 +27,7 @@ export const PaginationFooter: FC<Props> = ({
       <Typography>
         {`${Math.min(maxRowCount * (page - 1) + 1, count)} - ${Math.min(
           maxRowCount * page,
-          count
+          count,
         )} / ${count} 件`}
       </Typography>
       <Stack spacing={2}>

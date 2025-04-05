@@ -30,7 +30,7 @@ class EntrySearchChainAPI(APIView):
             return Response(
                 {
                     "reason": (
-                        "Data overflow was happened. " "Please narrow down intermediate conditions"
+                        "Data overflow was happened. Please narrow down intermediate conditions"
                     )
                 },
                 status=status.HTTP_400_BAD_REQUEST,
@@ -210,10 +210,7 @@ class UpdateHistory(APIView):
                 )
             except ValueError:
                 return Response(
-                    (
-                        "The older_than parameter accepts for following format "
-                        "'YYYY-MM-DDTHH:MM:SS'"
-                    ),
+                    ("The older_than parameter accepts for following format 'YYYY-MM-DDTHH:MM:SS'"),
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
@@ -230,10 +227,7 @@ class UpdateHistory(APIView):
                 )
             except ValueError:
                 return Response(
-                    (
-                        "The newer_than parameter accepts for following format "
-                        "'YYYY-MM-DDTHH:MM:SS'"
-                    ),
+                    ("The newer_than parameter accepts for following format 'YYYY-MM-DDTHH:MM:SS'"),
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 

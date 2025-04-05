@@ -18,6 +18,7 @@ describe("EntityForm", () => {
   const entity: Schema = {
     name: "hoge",
     note: "fuga",
+    itemNamePattern: "",
     isToplevel: false,
     webhooks: [],
     attrs: [],
@@ -33,7 +34,7 @@ describe("EntityForm", () => {
         resolver: zodResolver(schema),
         mode: "onBlur",
         defaultValues: entity,
-      })
+      }),
     );
 
     render(
@@ -42,7 +43,7 @@ describe("EntityForm", () => {
         setValue={setValue}
         referralEntities={[]}
       />,
-      { wrapper: TestWrapper }
+      { wrapper: TestWrapper },
     );
 
     expect(screen.queryByText("基本情報")).toBeInTheDocument();
@@ -68,7 +69,7 @@ describe("EntityForm", () => {
         resolver: zodResolver(schema),
         mode: "onBlur",
         defaultValues: entity,
-      })
+      }),
     );
 
     render(
@@ -77,7 +78,7 @@ describe("EntityForm", () => {
         setValue={setValue}
         referralEntities={[]}
       />,
-      { wrapper: TestWrapper }
+      { wrapper: TestWrapper },
     );
 
     expect(screen.queryByText("基本情報")).toBeInTheDocument();

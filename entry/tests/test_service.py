@@ -459,6 +459,25 @@ class AdvancedSearchServiceTest(AironeTestCase):
             [x.entry["name"] for x in result.ret_values], ["dup-%s" % i for i in range(4)]
         )
 
+    def test_search_entries_with_duplicated_filter_key_without_duplicated_item(self):
+        entity = self.create_entity_with_all_type_attributes(self._user)
+
+        self.add_entry(self._user, "entry1", entity, values={"str": ""})
+        self.add_entry(self._user, "entry2", entity, values={"str": "hoge"})
+        self.add_entry(self._user, "entry3", entity, values={"str": "fuga"})
+
+        result = AdvancedSearchService.search_entries(
+            self._user,
+            [entity.id],
+            [
+                AttrHint(
+                    name="str",
+                    filter_key=FilterKey.DUPLICATED,
+                )
+            ],
+        )
+        self.assertEqual(result.ret_count, 0)
+
     def test_search_entries_with_text_not_contained_filter_key(self):
         entity = self.create_entity_with_all_type_attributes(self._user)
 

@@ -26,7 +26,7 @@ const server = setupServer(
         is_editable: true,
       },
     ]);
-  })
+  }),
 );
 
 beforeAll(() => server.listen());

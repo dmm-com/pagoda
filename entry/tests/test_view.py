@@ -5250,10 +5250,7 @@ class ViewTest(AironeViewTest):
         # Check expected log was dispatched
         self.assertEqual(
             cm.output[0],
-            (
-                "ERROR:airone:[task.import_entry] "
-                "Abnormal entry was detected(entry:%d)" % entry.id
-            ),
+            ("ERROR:airone:[task.import_entry] Abnormal entry was detected(entry:%d)" % entry.id),
         )
 
         # Check Job processing was ended successfully

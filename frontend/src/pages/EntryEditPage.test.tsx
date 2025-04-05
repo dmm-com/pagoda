@@ -37,7 +37,7 @@ const server = setupServer(
       },
       attrs: [],
     });
-  })
+  }),
 );
 
 beforeAll(() => server.listen());
@@ -66,7 +66,7 @@ describe("EntryEditPage", () => {
       ],
       {
         initialEntries: ["/ui/entities/2/entries/1/edit"],
-      }
+      },
     );
     const result = await act(async () => {
       return render(<RouterProvider router={router} />, {

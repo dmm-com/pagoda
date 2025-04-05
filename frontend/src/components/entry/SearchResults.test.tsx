@@ -22,7 +22,7 @@ test("should render a component with essential props", function () {
           /* do nothing */
         }}
         bulkOperationEntryIds={[]}
-        handleChangeBulkOperationEntryId={() => {
+        setBulkOperationEntryIds={() => {
           /* do nothing */
         }}
         hasReferral={false}
@@ -30,9 +30,8 @@ test("should render a component with essential props", function () {
         joinAttrs={[]}
         disablePaginationFooter={false}
         searchAllEntities={false}
-        setSearchResults={() => {}}
       />,
-      { wrapper: TestWrapper }
-    )
+      { wrapper: TestWrapper },
+    ),
   ).not.toThrow();
 });

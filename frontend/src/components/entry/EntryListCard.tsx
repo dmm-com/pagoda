@@ -62,9 +62,11 @@ export const EntryListCard: FC<Props> = ({ entityId, entry, setToggle }) => {
           <>
             <ClipboardCopyButton name={entry.name} />
 
-            <IconButton onClick={(e) => setAnchorElem(e.currentTarget)}>
-              <MoreVertIcon fontSize="small" />
-            </IconButton>
+            <Tooltip title="アイテムの操作">
+              <IconButton onClick={(e) => setAnchorElem(e.currentTarget)}>
+                <MoreVertIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
             <EntryControlMenu
               entityId={entityId}
               entryId={entry.id}

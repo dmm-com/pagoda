@@ -32,7 +32,7 @@ describe("CopyForm", () => {
         setEntries={setEntries}
         templateEntry={entry}
       />,
-      { wrapper: TestWrapper }
+      { wrapper: TestWrapper },
     );
 
     act(() => {

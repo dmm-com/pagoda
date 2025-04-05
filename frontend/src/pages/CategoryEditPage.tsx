@@ -46,7 +46,7 @@ export const CategoryEditPage: FC = () => {
 
   usePrompt(
     isDirty && !isSubmitSuccessful,
-    "編集した内容は失われてしまいますが、このページを離れてもよろしいですか？"
+    "編集した内容は失われてしまいますが、このページを離れてもよろしいですか？",
   );
 
   const category = useAsyncWithThrow(async () => {
@@ -82,14 +82,14 @@ export const CategoryEditPage: FC = () => {
             (name, message) => {
               setError(name, { type: "custom", message: message });
               enqueueSubmitResult(false);
-            }
+            },
           );
         } else {
           enqueueSubmitResult(false);
         }
       }
     },
-    [categoryId]
+    [categoryId],
   );
 
   const handleCancel = async () => {

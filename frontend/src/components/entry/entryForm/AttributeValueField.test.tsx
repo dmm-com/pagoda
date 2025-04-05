@@ -39,7 +39,7 @@ const server = setupServer(
   // getRoles
   http.get("http://localhost/role/api/v2/", () => {
     return HttpResponse.json([]);
-  })
+  }),
 );
 
 beforeAll(() => server.listen());
@@ -387,7 +387,7 @@ describe("AttributeValue", () => {
           resolver: zodResolver(schema),
           mode: "onBlur",
           defaultValues,
-        })
+        }),
       );
 
       await act(async () => {
@@ -398,7 +398,7 @@ describe("AttributeValue", () => {
             type={c.type}
             schemaId={c.schemaId}
           />,
-          { wrapper: TestWrapper }
+          { wrapper: TestWrapper },
         );
       });
 

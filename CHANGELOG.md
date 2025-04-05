@@ -8,6 +8,40 @@
 
 ### Fixed
 
+## v3.126.0
+
+### Added
+* Introduce datetime picker.
+  Contributed by @syucream
+
+### Fixed
+* Fixed failing refresh after filtering in advanced search.
+  Contributed by @hinashi
+
+## v3.125.0
+
+### Added
+* Added new feature "Item name pattern" that user can restrict Item(Entry) name in
+  accordance with its pattern(s), which are configured at Model.
+  Contributed by @hinashi, @userlocalhost
+* Enhance EntityEntryAPI to prefetch aliases for improved performance.
+  Contributed by @syucream
+
+## v3.124.0
+
+### Added
+* Added processing to be able to delete rest of Items as well as that are not checked
+  in the AdvancedPageResult page.
+  Contributed by @hinashi, @userlocalhost
+* Add tooltips to improve UI usability.
+  Contributed by @syucream
+
+## v3.123.0
+
+### Fixed
+* Fixed simple search results page
+  Contributed by @hinashi
+
 ## v3.122.0
 
 ### Changed
