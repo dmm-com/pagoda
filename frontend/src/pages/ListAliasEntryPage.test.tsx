@@ -76,7 +76,7 @@ const server = setupServer(
       previous: null,
       results: [],
     });
-  })
+  }),
 );
 
 beforeAll(() => server.listen({ onUnhandledRequest: "warn" }));
@@ -102,7 +102,7 @@ test("should match snapshot", async () => {
     ],
     {
       initialEntries: [listAliasPath(1)],
-    }
+    },
   );
   const result = await act(async () => {
     return render(<RouterProvider router={router} />, {

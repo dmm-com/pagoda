@@ -89,7 +89,7 @@ const server = setupServer(
       previous: null,
       results: [],
     });
-  })
+  }),
 );
 
 beforeAll(() => server.listen());
@@ -108,14 +108,14 @@ describe("AliasEntryListPage", () => {
       ],
       {
         initialEntries: ["/ui/entities/1/alias"],
-      }
+      },
     );
 
     // Render component
     render(
       <TestWrapperWithoutRoutes>
         <RouterProvider router={router} />
-      </TestWrapperWithoutRoutes>
+      </TestWrapperWithoutRoutes>,
     );
 
     // Wait for page title to be displayed

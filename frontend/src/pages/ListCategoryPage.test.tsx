@@ -39,7 +39,7 @@ const server = setupServer(
         },
       ],
     });
-  })
+  }),
 );
 
 beforeAll(() => server.listen());
@@ -65,7 +65,7 @@ test("should match snapshot", async () => {
     ],
     {
       initialEntries: [listCategoryPath()],
-    }
+    },
   );
   const result = await act(async () => {
     return render(<RouterProvider router={router} />, {

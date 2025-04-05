@@ -39,7 +39,7 @@ const server = setupServer(
         },
       ],
     });
-  })
+  }),
 );
 
 beforeAll(() => server.listen());
@@ -58,19 +58,19 @@ describe("CategoryListPage", () => {
       ],
       {
         initialEntries: [listCategoryPath()],
-      }
+      },
     );
 
     // Render component
     render(
       <TestWrapperWithoutRoutes>
         <RouterProvider router={router} />
-      </TestWrapperWithoutRoutes>
+      </TestWrapperWithoutRoutes>,
     );
 
     // Verify that the category list title is displayed (with specific element)
     expect(
-      screen.getByRole("heading", { name: "カテゴリ一覧" })
+      screen.getByRole("heading", { name: "カテゴリ一覧" }),
     ).toBeInTheDocument();
 
     // Wait for categories to be displayed
