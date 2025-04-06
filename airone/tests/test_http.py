@@ -1,11 +1,14 @@
+import io
 import unittest
+import urllib.parse
 
 from django.contrib.auth.models import AnonymousUser
-from django.test import RequestFactory
+from django.test import RequestFactory, TestCase
+from django.utils.encoding import smart_str
 
 from acl.models import ACLBase
 from airone.lib.acl import ACLType
-from airone.lib.http import get_obj_with_check_perm, http_get
+from airone.lib.http import get_download_response, get_obj_with_check_perm, http_get
 from airone.lib.test import AironeViewTest
 from entry.models import Entry
 
@@ -90,3 +93,57 @@ class ViewTest(AironeViewTest):
             self.assertIsNone(target_obj)
             self.assertEqual(error.content, b"You don't have permission to access this object")
             self.assertEqual(error.status_code, 400)
+
+
+class GetDownloadResponseTest(TestCase):
+    def test_utf8_encoding(self):
+        data = "テストデータ"
+        filename = "testfile_utf8.txt"
+        stream = io.StringIO(data)
+        response = get_download_response(stream, filename, encode="utf-8")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.content, data.encode("utf-8"))
+        self.assertEqual(
+            response["Content-Disposition"],
+            f'attachment; filename="{urllib.parse.quote(smart_str(filename))}"',
+        )
+        self.assertEqual(response["Content-Type"], "application/force-download")
+
+    def test_shift_jis_encoding_success(self):
+        data = "テストデータ"  # Characters that can be represented in Shift_JIS
+        filename = "testfile_sjis_ok.txt"
+        stream = io.StringIO(data)
+        response = get_download_response(stream, filename, encode="shift_jis")
+
+        self.assertEqual(response.status_code, 200)
+        # Compare with Shift_JIS byte string
+        self.assertEqual(response.content, data.encode("shift_jis"))
+        self.assertEqual(
+            response["Content-Disposition"],
+            f'attachment; filename="{urllib.parse.quote(smart_str(filename))}"',
+        )
+        self.assertEqual(response["Content-Type"], "application/force-download")
+
+    def test_shift_jis_encoding_error(self):
+        # The full-width tilde (\uff5e) cannot be directly represented in Shift_JIS
+        data = "チルダ\uff5eテスト"
+        filename = "testfile_sjis_error.txt"
+        stream = io.StringIO(data)
+
+        # The response should be returned normally without error because errors='replace' is applied
+        response = get_download_response(stream, filename, encode="shift_jis")
+
+        # Verify that the response is generated normally
+        self.assertEqual(response.status_code, 200)
+
+        # Characters that cannot be encoded should be replaced
+        expected_bytes = data.encode("shift_jis", errors="replace")
+        self.assertEqual(response.content, expected_bytes)
+
+        # Verify that headers are also set correctly
+        self.assertEqual(
+            response["Content-Disposition"],
+            f'attachment; filename="{urllib.parse.quote(smart_str(filename))}"',
+        )
+        self.assertEqual(response["Content-Type"], "application/force-download")
