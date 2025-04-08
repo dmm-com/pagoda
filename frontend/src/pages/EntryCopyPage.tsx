@@ -11,7 +11,7 @@ import { PageHeader } from "components/common/PageHeader";
 import { SubmitButton } from "components/common/SubmitButton";
 import {
   CopyForm as DefaultCopyForm,
-  CopyFormProps
+  CopyFormProps,
 } from "components/entry/CopyForm";
 import { EntryBreadcrumbs } from "components/entry/EntryBreadcrumbs";
 import { usePrompt } from "hooks/usePrompt";
@@ -38,7 +38,7 @@ export const EntryCopyPage: FC<Props> = ({ CopyForm = DefaultCopyForm }) => {
 
   usePrompt(
     edited && !submitted,
-    "編集した内容は失われてしまいますが、このページを離れてもよろしいですか？"
+    "編集した内容は失われてしまいますが、このページを離れてもよろしいですか？",
   );
 
   const entry = useAsyncWithThrow(async () => {
@@ -62,19 +62,19 @@ export const EntryCopyPage: FC<Props> = ({ CopyForm = DefaultCopyForm }) => {
         entries
           .split("\n")
           .map((e) => e.trim())
-          .filter((e) => e.length > 0)
+          .filter((e) => e.length > 0),
       );
 
       setSubmitted(true);
       enqueueSnackbar("アイテムコピーのジョブ登録が成功しました", {
-        variant: "success"
+        variant: "success",
       });
       setTimeout(() => {
         navigate(entityEntriesPath(entityId), { replace: true });
       }, 0.1);
     } catch {
       enqueueSnackbar("アイテムコピーのジョブ登録が失敗しました", {
-        variant: "error"
+        variant: "error",
       });
     }
   };
@@ -82,7 +82,7 @@ export const EntryCopyPage: FC<Props> = ({ CopyForm = DefaultCopyForm }) => {
   const handleCancel = () => {
     navigate(
       entryDetailsPath(entry.value?.schema?.id ?? 0, entry.value?.id ?? 0),
-      { replace: true }
+      { replace: true },
     );
   };
 
