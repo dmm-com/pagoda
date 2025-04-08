@@ -61,8 +61,8 @@ export const EntryCopyPage: FC<Props> = ({ CopyForm = DefaultCopyForm }) => {
         entryId,
         entries
           .split("\n")
-          .map((e) => e.trim()) // 前後の空白を除去（必要に応じて）
-          .filter((e) => e.length > 0) // 空文字を除外
+          .map((e) => e.trim())
+          .filter((e) => e.length > 0)
       );
 
       setSubmitted(true);
