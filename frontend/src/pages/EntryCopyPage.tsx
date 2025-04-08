@@ -57,7 +57,14 @@ export const EntryCopyPage: FC<Props> = ({ CopyForm = DefaultCopyForm }) => {
   const handleCopy = async () => {
     setSubmitting(true);
     try {
-      await aironeApiClient.copyEntry(entryId, entries.split("\n"));
+      await aironeApiClient.copyEntry(
+        entryId,
+        entries
+          .split("\n")
+          .map((e) => e.trim())
+          .filter((e) => e.length > 0),
+      );
+
       setSubmitted(true);
       enqueueSnackbar("アイテムコピーのジョブ登録が成功しました", {
         variant: "success",
