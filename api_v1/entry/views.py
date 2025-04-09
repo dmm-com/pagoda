@@ -91,7 +91,7 @@ class EntrySearchAPI(APIView):
                 )
                 for x in attrinfo
             ]
-        except (TypeError, ValidationError):
+        except (TypeError, ValidationError, AttributeError):
             return Response(
                 "The type of parameter 'attrinfo' is incorrect",
                 status=status.HTTP_400_BAD_REQUEST,
