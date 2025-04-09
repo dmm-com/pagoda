@@ -8,6 +8,24 @@
 
 ### Fixed
 
+## v3.128.0
+
+### Added
+* Support range filter on advanced search.
+  Contributed by @syucream
+
+### Fixed
+* Fixed handle encoding errors in download response with errors=replace.
+  Contributed by @syucream
+* Fix copy error caused by empty lines in entry names.
+  Contributed by @tsunoda-takahiro
+
+## v3.127.0
+
+### Fixed
+* Fixed error with multiple entities in search_chain.
+  Contributed by @hinashi
+
 ## v3.126.0
 
 ### Added
