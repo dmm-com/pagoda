@@ -155,18 +155,33 @@ describe("schema", () => {
   });
 
   // Non-object-like types do not require a referral
-  test("validation succeeds if non-object-like type has empty referral", () => {
-    const value = {
-      ...baseValue,
-      attrs: [
-        {
-          ...baseValue.attrs[0],
-          type: AttributeTypes.string.type,
-          referral: [],
-        },
-      ],
-    };
+  const nonObjectLikeTestCases = [
+    AttributeTypes.string.type,
+    AttributeTypes.group.type,
+    AttributeTypes.role.type,
+    AttributeTypes.text.type,
+    AttributeTypes.boolean.type,
+    AttributeTypes.date.type,
+    AttributeTypes.datetime.type,
+    AttributeTypes.array_string.type,
+    AttributeTypes.array_group.type,
+    AttributeTypes.array_role.type,
+  ];
 
-    expect(schema.parse(value)).toEqual(value);
+  nonObjectLikeTestCases.forEach((type) => {
+    test("validation succeeds if non-object-like type has empty referral", () => {
+      const value = {
+        ...baseValue,
+        attrs: [
+          {
+            ...baseValue.attrs[0],
+            type: type,
+            referral: [],
+          },
+        ],
+      };
+
+      expect(schema.parse(value)).toEqual(value);
+    });
   });
 });
