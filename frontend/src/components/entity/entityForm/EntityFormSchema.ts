@@ -3,14 +3,7 @@ import { z } from "zod";
 import { AttributeTypes } from "../../../services/Constants";
 
 const isObjectLikeType = (type: number): boolean => {
-  return (
-    (type &
-      (AttributeTypes.object.type |
-        AttributeTypes.named_object.type |
-        AttributeTypes.array_object.type |
-        AttributeTypes.array_named_object.type)) !==
-    0
-  );
+  return (type & AttributeTypes.object.type) !== 0;
 };
 
 export const schema = z.object({
