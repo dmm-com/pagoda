@@ -17,6 +17,7 @@ class APITest(AironeViewTest):
             {"entities": "hoge"},
             {"entry_name": ["hoge"]},
             {"attrinfo": "hoge"},
+            {"attrinfo": ["hoge"]},
             {"is_output_all": "hoge"},
             {"referral": ["hoge"]},
             {"entry_limit": "hoge"},
