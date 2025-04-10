@@ -1,4 +1,5 @@
-from rest_framework import generics, serializers, status, viewsets
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters, generics, serializers, status, viewsets
 from rest_framework.permissions import BasePermission, IsAuthenticated
 from rest_framework.response import Response
 
@@ -30,6 +31,9 @@ class RolePermission(BasePermission):
 class RoleAPI(viewsets.ModelViewSet):
     queryset = Role.objects.filter(is_active=True).prefetch_related("admin_users", "admin_groups")
     permission_classes = [IsAuthenticated & RolePermission]
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter, filters.SearchFilter]
+    search_fields = ["name"]
+    ordering = ["name"]
 
     def get_serializer_class(self):
         serializer = {

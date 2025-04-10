@@ -399,3 +399,30 @@ class ViewTest(AironeViewTest):
         # Assert that the users and groups lists are empty
         self.assertEqual(role_data["users"], [])
         self.assertEqual(role_data["groups"], [])
+
+    def test_list_roles_with_ordering(self):
+        self.admin_login()
+        self._create_role("role-c")
+        self._create_role("role-a")
+        self._create_role("role-b")
+
+        resp = self.client.get("/role/api/v2/")
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(
+            [x["name"] for x in resp.json()],
+            ["role-a", "role-b", "role-c"],
+        )
+
+        resp = self.client.get("/role/api/v2/?ordering=name")
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(
+            [x["name"] for x in resp.json()],
+            ["role-a", "role-b", "role-c"],
+        )
+
+        resp = self.client.get("/role/api/v2/?ordering=-name")
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(
+            [x["name"] for x in resp.json()],
+            ["role-c", "role-b", "role-a"],
+        )
