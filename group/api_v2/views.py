@@ -50,6 +50,9 @@ class GroupTreeAPI(viewsets.ReadOnlyModelViewSet):
     queryset = Group.objects.filter(parent_group__isnull=True, is_active=True)
     serializer_class = GroupTreeSerializer
     permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter, filters.SearchFilter]
+    ordering = ["name"]
+    search_fields = ["name"]
 
 
 class GroupImportAPI(generics.GenericAPIView):

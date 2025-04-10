@@ -92,3 +92,17 @@ class ViewTest(AironeViewTest):
         obj = yaml.load(resp.content, Loader=yaml.SafeLoader)
         self.assertTrue(isinstance(obj, list))
         self.assertEqual(len(obj), 2)
+
+    def test_group_tree_parent_ordering(self):
+        self.admin_login()
+
+        self._create_group("group-b")
+        self._create_group("group-a")
+        self._create_group("group-c")
+
+        resp = self.client.get("/group/api/v2/groups/tree")
+        self.assertEqual(resp.status_code, 200)
+
+        body = resp.json()
+
+        self.assertEqual([g["name"] for g in body], ["group-a", "group-b", "group-c"])
