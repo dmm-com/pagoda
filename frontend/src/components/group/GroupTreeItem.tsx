@@ -45,13 +45,14 @@ export const GroupTreeItem: FC<Props> = ({
                 handleSelectGroupId(e.target.checked ? groupTree.id : null)
               }
             />
-            <Typography
-              component={AironeLink}
-              to={isSuperuser ? groupPath(groupTree.id) : "#"}
-            >
-              {groupTree.name}
-            </Typography>
-            {setGroupAnchorEls != null && (
+            {isSuperuser ? (
+              <Typography component={AironeLink} to={groupPath(groupTree.id)}>
+                {groupTree.name}
+              </Typography>
+            ) : (
+              <Typography>{groupTree.name}</Typography>
+            )}
+            {isSuperuser && setGroupAnchorEls != null && (
               <IconButton
                 sx={{ margin: "0 0 0 auto" }}
                 onClick={(e) => {
