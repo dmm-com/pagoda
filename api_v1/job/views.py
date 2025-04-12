@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta, timezone
 
 from django.db.models import Q
+from pydantic import BaseModel
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -111,6 +112,21 @@ class SpecificJobAPI(APIView):
         return Response("Success to run command")
 
 
+class SearchJobResponse(BaseModel):
+    class Job(BaseModel):
+        id: int
+        user: str
+        target_type: int
+        target: dict
+        text: str
+        status: int
+        operation: int
+        created_at: datetime
+        updated_at: datetime
+
+    result: list["SearchJobResponse.Job"]
+
+
 class SearchJob(APIView):
     def get(self, request):
         """
@@ -140,4 +156,9 @@ class SearchJob(APIView):
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-        return Response({"result": [x.to_json() for x in jobs]})
+        return Response(
+            SearchJobResponse(
+                result=[SearchJobResponse.Job(**x.to_json()) for x in jobs]
+            ).model_dump(),
+            status=status.HTTP_200_OK,
+        )

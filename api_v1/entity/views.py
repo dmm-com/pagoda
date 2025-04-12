@@ -1,5 +1,6 @@
 from functools import reduce
 
+from pydantic import BaseModel
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -7,9 +8,13 @@ from rest_framework.views import APIView
 from entity.models import Entity, EntityAttr
 
 
+class EntityAttrsAPIResponse(BaseModel):
+    result: list[str]
+
+
 class EntityAttrsAPI(APIView):
-    def get(self, request, entity_ids, format=None):
-        entities = [
+    def get(self, request, entity_ids: str, format=None):
+        entities: list[Entity] = [
             Entity.objects.filter(id=x, is_active=True).first() for x in entity_ids.split(",") if x
         ]
 
@@ -19,11 +24,8 @@ class EntityAttrsAPI(APIView):
                 [[a.name for a in e.attrs.filter(is_active=True)] for e in entities],
             )
 
-        def get_attrs_of_all_entities():
-            return sorted(
-                list(set([x.name for x in EntityAttr.objects.filter(is_active=True)])),
-                key=lambda x: x,
-            )
+        def get_attrs_of_all_entities() -> set[str]:
+            return set([x.name for x in EntityAttr.objects.filter(is_active=True)])
 
         if entities:
             # the case invalid entity-id was specified
@@ -34,4 +36,7 @@ class EntityAttrsAPI(APIView):
         else:
             attrs = get_attrs_of_all_entities()
 
-        return Response({"result": sorted(attrs)})
+        return Response(
+            EntityAttrsAPIResponse(result=sorted(list(attrs))).model_dump(),
+            status=status.HTTP_200_OK,
+        )
