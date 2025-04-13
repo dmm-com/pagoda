@@ -12,7 +12,6 @@ import { TestWrapperWithoutRoutes } from "TestWrapper";
 import { ListAliasEntryPage } from "pages/ListAliasEntryPage";
 import { listAliasPath } from "routes/Routes";
 
-// モックロケーションを設定
 const mockLocation = {
   pathname: "/ui/entities/1/alias",
   search: "",
@@ -20,7 +19,6 @@ const mockLocation = {
   state: null,
 };
 
-// useLocationのモック
 jest.mock("react-use", () => ({
   ...jest.requireActual("react-use"),
   useLocation: () => mockLocation,
@@ -68,7 +66,7 @@ const server = setupServer(
     });
   }),
 
-  // GET /entity/api/v2/:entityId/entries/ の未処理リクエストに対するモック
+  // Mock for unhandled requests to GET /entity/api/v2/:entityId/entries/
   http.get("http://localhost/entity/api/v2/1/entries/", () => {
     return HttpResponse.json({
       count: 0,
