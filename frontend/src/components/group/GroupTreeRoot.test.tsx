@@ -11,7 +11,7 @@ import { ServerContext } from "../../services/ServerContext";
 
 import { GroupTreeRoot } from "./GroupTreeRoot";
 
-// ServerContext のモック
+// Mock for ServerContext
 jest.mock("../../services/ServerContext", () => {
   const mockInstance = {
     user: { isSuperuser: false },
@@ -56,12 +56,12 @@ describe("GroupTreeRoot", () => {
   };
 
   afterEach(() => {
-    // ステートをテストごとに初期化
+    // Reset mock state after each test
     (ServerContext.getInstance as jest.Mock).mockReset();
   });
 
   test("renders correctly for general user (no menu buttons)", () => {
-    // 一般ユーザとしてモックを上書き
+    // Mock as a general user
     (ServerContext.getInstance as jest.Mock).mockReturnValue({
       user: { isSuperuser: false },
     });
@@ -71,7 +71,7 @@ describe("GroupTreeRoot", () => {
     expect(screen.getAllByRole("checkbox")).toHaveLength(4);
     expect(screen.getAllByRole("checkbox")[0]).toBeChecked();
 
-    // 一般ユーザは操作ボタンが表示されない想定
+    // General users should not see any action buttons
     expect(screen.queryAllByRole("button")).toHaveLength(0);
   });
 
@@ -85,7 +85,7 @@ describe("GroupTreeRoot", () => {
     expect(screen.getAllByRole("checkbox")).toHaveLength(4);
     expect(screen.getAllByRole("checkbox")[0]).toBeChecked();
 
-    // スーパーユーザの場合は、4つのグループそれぞれにボタンがある想定
+    // Superusers should see menu buttons for each group
     expect(screen.getAllByRole("button")).toHaveLength(4);
   });
 });
