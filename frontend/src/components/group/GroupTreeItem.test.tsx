@@ -99,25 +99,24 @@ describe("GroupTreeItem", () => {
     expect(link?.getAttribute("href")).not.toBe("#");
   });
 
-test("should not render group name as a clickable link when user is not superuser", () => {
-  (ServerContext.getInstance as jest.Mock).mockReturnValue({
-    user: { isSuperuser: false },
+  test("should not render group name as a clickable link when user is not superuser", () => {
+    (ServerContext.getInstance as jest.Mock).mockReturnValue({
+      user: { isSuperuser: false },
+    });
+
+    const { container } = render(
+      <GroupTreeItem
+        depth={0}
+        groupTrees={[mockGroupTrees[0]]}
+        selectedGroupId={null}
+        handleSelectGroupId={() => {}}
+      />,
+      { wrapper: TestWrapper },
+    );
+
+    const link = container.querySelector("a");
+    expect(link).toBeNull();
   });
-
-  const { container } = render(
-    <GroupTreeItem
-      depth={0}
-      groupTrees={[mockGroupTrees[0]]}
-      selectedGroupId={null}
-      handleSelectGroupId={() => {}}
-    />,
-    { wrapper: TestWrapper },
-  );
-
-  const link = container.querySelector("a");
-  expect(link).toBeNull();
-});
-
 
   test("should check the checkbox when group ID matches selectedGroupId", () => {
     render(
