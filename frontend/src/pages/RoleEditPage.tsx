@@ -23,6 +23,7 @@ import {
   extractAPIException,
   isResponseError,
 } from "services/AironeAPIErrorUtil";
+import { ForbiddenError } from "services/Exceptions";
 
 export const RoleEditPage: FC = () => {
   const { roleId } = useTypedParams<{ roleId?: number }>();
@@ -51,6 +52,12 @@ export const RoleEditPage: FC = () => {
   const role = useAsyncWithThrow(async () => {
     return roleId != null ? await aironeApiClient.getRole(roleId) : undefined;
   }, [roleId]);
+
+  useEffect(() => {
+    if (!role.loading && role.value && !role.value.isEditable) {
+      throw new ForbiddenError("Only admin can edit a role");
+    }
+  }, [role]);
 
   useEffect(() => {
     !role.loading && role.value != null && reset(role.value);
