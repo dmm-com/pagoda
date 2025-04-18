@@ -71,9 +71,11 @@ export const GroupListPage: FC = () => {
   }, [selectedGroupId]);
 
   const filteredUsersInGroup = useMemo(() => {
+    const keywordLower = keyword.toLowerCase();
     return (
-      usersInGroup.value?.filter((user) => user.username.includes(keyword)) ??
-      []
+      usersInGroup.value?.filter((user) =>
+        user.username.toLowerCase().includes(keywordLower),
+      ) ?? []
     );
   }, [usersInGroup, keyword]);
 
