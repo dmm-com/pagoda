@@ -54,11 +54,11 @@ export function formalizeEntryInfo(
             return {
               asString: "",
               asBoolean: false,
-              asArrayString: [],
+              asArrayString: [{ value: "" }],
               asArrayObject: [],
               asArrayGroup: [],
               asArrayRole: [],
-              asArrayNamedObject: [],
+              asArrayNamedObject: [{ name: "", object: null, _boolean: false }],
               asObject: null,
               asGroup: null,
               asRole: null,

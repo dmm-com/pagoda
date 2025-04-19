@@ -93,7 +93,7 @@ describe("ObjectAttributeValueField", () => {
           name: "array-named-object",
         },
         value: {
-          asArrayNamedObject: [],
+          asArrayNamedObject: [{ name: "", object: null, _boolean: false }],
         },
       },
     },
