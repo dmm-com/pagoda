@@ -7,35 +7,32 @@ import {
   Typography,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import React, { ChangeEvent, Dispatch, FC, KeyboardEvent } from "react";
-
-const StyledTextField = styled(TextField)({
-  margin: "8px",
-});
+import React, { FC, KeyboardEvent } from "react";
+import type { HintEntryParam as HintEntry } from "../../services/entry/AdvancedSearch";
 
 const StyledBox = styled(Box)({
   margin: "8px",
 });
 
 interface Props {
-  entryFilter: string;
+  hintEntry?: HintEntry;
   anchorElem: HTMLButtonElement | null;
   handleClose: () => void;
-  entryFilterDispatcher: Dispatch<
-    ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  >;
+  hintEntryDispatcher: (entry: Partial<HintEntry>) => void;
   handleSelectFilterConditions: () => void;
   handleClear: () => void;
 }
 
 export const SearchResultControlMenuForEntry: FC<Props> = ({
-  entryFilter,
+  hintEntry,
   anchorElem,
   handleClose,
-  entryFilterDispatcher,
+  hintEntryDispatcher,
   handleSelectFilterConditions,
   handleClear,
 }) => {
+  hintEntry = hintEntry ?? { filter_key: 3, keyword: "" };
+
   const handleKeyPressKeyword = (e: KeyboardEvent<HTMLDivElement>) => {
     if (e.key === "Enter") {
       handleSelectFilterConditions();
@@ -54,13 +51,28 @@ export const SearchResultControlMenuForEntry: FC<Props> = ({
         </Button>
       </StyledBox>
       <Divider />
-      <StyledTextField
-        size="small"
-        placeholder="次を含むテキスト"
-        value={entryFilter}
-        onChange={entryFilterDispatcher}
-        onKeyPress={handleKeyPressKeyword}
-      />
+      <StyledBox>
+        <TextField
+          size="small"
+          placeholder="次を含むテキスト"
+          value={hintEntry?.filter_key === 3 ? (hintEntry?.keyword ?? "") : ""}
+          onChange={(e) =>
+            hintEntryDispatcher({ filter_key: 3, keyword: e.target.value })
+          }
+          onKeyPress={handleKeyPressKeyword}
+        />
+      </StyledBox>
+      <StyledBox>
+        <TextField
+          size="small"
+          placeholder="次を含まないテキスト"
+          value={hintEntry?.filter_key === 4 ? (hintEntry?.keyword ?? "") : ""}
+          onChange={(e) =>
+            hintEntryDispatcher({ filter_key: 4, keyword: e.target.value })
+          }
+          onKeyPress={handleKeyPressKeyword}
+        />
+      </StyledBox>
     </Menu>
   );
 };

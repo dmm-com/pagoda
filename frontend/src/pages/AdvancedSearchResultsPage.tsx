@@ -1,8 +1,3 @@
-import {
-  AdvancedSearchResult,
-  AdvancedSearchResultAttrInfo,
-  AdvancedSearchResultAttrInfoFilterKeyEnum,
-} from "@dmm-com/airone-apiclient-typescript-fetch";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import SettingsIcon from "@mui/icons-material/Settings";
@@ -24,6 +19,11 @@ import { useLocation } from "react-router";
 
 import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
 
+import {
+  AdvancedSearchResult,
+  AdvancedSearchResultAttrInfo,
+  AdvancedSearchResultAttrInfoFilterKeyEnum,
+} from "@dmm-com/airone-apiclient-typescript-fetch";
 import { AironeLink } from "components";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { Confirmable } from "components/common/Confirmable";
@@ -37,7 +37,7 @@ import { usePage } from "hooks/usePage";
 import { aironeApiClient } from "repository/AironeApiClient";
 import { advancedSearchPath, topPath } from "routes/Routes";
 import { AdvancedSerarchResultListParam } from "services/Constants";
-import { extractAdvancedSearchParams } from "services/entry/AdvancedSearch";
+import { extractAdvancedSearchParams, HintEntryParam } from "services/entry/AdvancedSearch";
 
 function isAttrInfoSet(info: AdvancedSearchResultAttrInfo) {
   switch (info.filterKey) {
@@ -145,6 +145,7 @@ export const AdvancedSearchResultsPage: FC = () => {
     referralName,
     attrInfo,
     joinAttrs,
+    hintEntry,
   } = useMemo(() => {
     const params = new URLSearchParams(location.search);
     return extractAdvancedSearchParams(params);
@@ -175,6 +176,8 @@ export const AdvancedSearchResultsPage: FC = () => {
         searchAllEntities,
         page,
         AdvancedSerarchResultListParam.MAX_ROW_COUNT,
+        0,
+        hintEntry,
       );
     };
 
@@ -366,7 +369,6 @@ export const AdvancedSearchResultsPage: FC = () => {
             page={page}
             changePage={changePage}
             hasReferral={hasReferral}
-            defaultEntryFilter={entryName}
             defaultReferralFilter={referralName}
             defaultAttrsFilter={
               // make defaultAttrFilter to make fabric contexts of joinAttrs into the one of attrinfo

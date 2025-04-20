@@ -1,8 +1,4 @@
 import {
-  AdvancedSearchJoinAttrInfo,
-  AdvancedSearchResult,
-} from "@dmm-com/airone-apiclient-typescript-fetch";
-import {
   Box,
   Checkbox,
   List,
@@ -20,6 +16,10 @@ import React, { FC, useMemo } from "react";
 
 import { SearchResultsTableHead } from "./SearchResultsTableHead";
 
+import {
+  AdvancedSearchJoinAttrInfo,
+  AdvancedSearchResult,
+} from "@dmm-com/airone-apiclient-typescript-fetch";
 import { AironeLink } from "components/common";
 import { PaginationFooter } from "components/common/PaginationFooter";
 import { AttributeValue } from "components/entry/AttributeValue";
@@ -53,7 +53,6 @@ interface Props {
   page: number;
   changePage: (page: number) => void;
   hasReferral: boolean;
-  defaultEntryFilter?: string;
   defaultReferralFilter?: string;
   defaultAttrsFilter?: AttrsFilter;
   bulkOperationEntryIds: Array<number>;
@@ -70,7 +69,6 @@ export const SearchResults: FC<Props> = ({
   page,
   changePage,
   hasReferral,
-  defaultEntryFilter,
   defaultReferralFilter,
   defaultAttrsFilter = {},
   bulkOperationEntryIds,
@@ -118,15 +116,12 @@ export const SearchResults: FC<Props> = ({
             <SearchResultsTableHead
               hasReferral={hasReferral}
               attrTypes={attrTypes}
-              defaultEntryFilter={defaultEntryFilter}
               defaultReferralFilter={defaultReferralFilter}
               defaultAttrsFilter={defaultAttrsFilter}
               entityIds={entityIds}
               searchAllEntities={searchAllEntities}
               joinAttrs={joinAttrs}
-              handleChangeAllBulkOperationEntryIds={
-                handleChangeAllBulkOperationEntryIds
-              }
+              handleChangeAllBulkOperationEntryIds={handleChangeAllBulkOperationEntryIds}
               isReadonly={isReadonly}
             />
             <TableBody>

@@ -1,7 +1,3 @@
-import {
-  AdvancedSearchJoinAttrInfo,
-  EntryAttributeTypeTypeEnum,
-} from "@dmm-com/airone-apiclient-typescript-fetch";
 import AddIcon from "@mui/icons-material/Add";
 import CheckBoxOutlineBlankOutlinedIcon from "@mui/icons-material/CheckBoxOutlineBlankOutlined";
 import CheckBoxOutlinedIcon from "@mui/icons-material/CheckBoxOutlined";
@@ -20,6 +16,7 @@ import { styled } from "@mui/material/styles";
 import React, {
   ChangeEvent,
   FC,
+  useCallback,
   useEffect,
   useMemo,
   useReducer,
@@ -32,6 +29,10 @@ import { SearchResultControlMenu } from "./SearchResultControlMenu";
 import { SearchResultControlMenuForEntry } from "./SearchResultControlMenuForEntry";
 import { SearchResultControlMenuForReferral } from "./SearchResultControlMenuForReferral";
 
+import {
+  AdvancedSearchJoinAttrInfo,
+  EntryAttributeTypeTypeEnum,
+} from "@dmm-com/airone-apiclient-typescript-fetch";
 import { getIsFiltered } from "pages/AdvancedSearchResultsPage";
 import {
   AttrFilter,
@@ -57,7 +58,6 @@ const StyledTableCell = styled(TableCell)(({ theme }) => ({
 interface Props {
   hasReferral: boolean;
   attrTypes: Record<string, number>;
-  defaultEntryFilter?: string;
   defaultReferralFilter?: string;
   defaultAttrsFilter?: AttrsFilter;
   entityIds: number[];
@@ -70,7 +70,6 @@ interface Props {
 export const SearchResultsTableHead: FC<Props> = ({
   hasReferral,
   attrTypes,
-  defaultEntryFilter,
   defaultReferralFilter,
   defaultAttrsFilter = {},
   entityIds,
@@ -83,13 +82,21 @@ export const SearchResultsTableHead: FC<Props> = ({
   const navigate = useNavigate();
   const [checked, setChecked] = useState(false);
 
-  const [entryFilter, entryFilterDispatcher] = useReducer(
-    (
-      _state: string,
-      event: ChangeEvent<HTMLTextAreaElement | HTMLInputElement>,
-    ) => event.target.value,
-    defaultEntryFilter ?? "",
+  const [hintEntry, setHintEntry] = useState<{
+    filter_key: number;
+    keyword: string;
+  }>({ filter_key: 3, keyword: "" });
+  const [entryMenuEls, setEntryMenuEls] = useState<HTMLButtonElement | null>(
+    null,
   );
+
+  const hintEntryDispatcher = useCallback(
+    (update: Partial<{ filter_key: number; keyword: string }>) => {
+      setHintEntry((prev) => ({ ...prev, ...update }));
+    },
+    [],
+  );
+
   const [referralFilter, referralFilterDispatcher] = useReducer(
     (
       _state: string,
@@ -105,9 +112,6 @@ export const SearchResultsTableHead: FC<Props> = ({
   const [attributeMenuEls, setAttributeMenuEls] = useState<{
     [key: string]: HTMLButtonElement | null;
   }>({});
-  const [entryMenuEls, setEntryMenuEls] = useState<HTMLButtonElement | null>(
-    null,
-  );
   const [referralMenuEls, setReferralMenuEls] =
     useState<HTMLButtonElement | null>(null);
 
@@ -145,12 +149,18 @@ export const SearchResultsTableHead: FC<Props> = ({
           ? { ...attrsFilter, [attrName]: attrFilter }
           : attrsFilter;
 
+      const hintEntryParam =
+        hintEntry.keyword && hintEntry.keyword.length > 0
+          ? { filter_key: hintEntry.filter_key, keyword: hintEntry.keyword }
+          : undefined;
+
       const newParams = formatAdvancedSearchParams({
         attrsFilter: Object.keys(_attrsFilter)
           .filter((k) => _attrsFilter[k]?.joinedAttrname === undefined)
           .reduce((a, k) => ({ ...a, [k]: _attrsFilter[k] }), {}),
-        entryName: overwriteEntryName ?? entryFilter,
+        entryName: "",
         referralName: overwriteReferral ?? referralFilter,
+        hintEntry: hintEntryParam,
         baseParams: new URLSearchParams(location.search),
         joinAttrs: Object.keys(_attrsFilter)
           .filter((k) => _attrsFilter[k]?.joinedAttrname !== undefined)
@@ -219,21 +229,17 @@ export const SearchResultsTableHead: FC<Props> = ({
                       setEntryMenuEls(e.currentTarget);
                     }}
                   >
-                    {defaultEntryFilter ? (
-                      <FilterAltIcon />
-                    ) : (
-                      <FilterListIcon />
-                    )}
+                    {hintEntry.keyword ? <FilterAltIcon /> : <FilterListIcon />}
                   </StyledIconButton>
                 </Tooltip>
                 <SearchResultControlMenuForEntry
-                  entryFilter={entryFilter}
+                  hintEntry={hintEntry}
                   anchorElem={entryMenuEls}
                   handleClose={() => setEntryMenuEls(null)}
-                  entryFilterDispatcher={entryFilterDispatcher}
+                  hintEntryDispatcher={hintEntryDispatcher}
                   handleSelectFilterConditions={handleSelectFilterConditions()}
                   handleClear={() =>
-                    handleSelectFilterConditions()(undefined, "")
+                    setHintEntry({ filter_key: 3, keyword: "" })
                   }
                 />
               </>
