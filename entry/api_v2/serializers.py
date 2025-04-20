@@ -1293,6 +1293,11 @@ class AdvancedSearchSerializer(serializers.Serializer):
     is_all_entities = serializers.BooleanField(default=False)
     entry_limit = serializers.IntegerField(default=CONFIG_ENTRY.MAX_LIST_ENTRIES)
     entry_offset = serializers.IntegerField(default=0)
+    hint_entry = serializers.DictField(
+        required=False,
+        child=serializers.CharField(),
+        help_text='Entry name filter hint. Example: {"filter_key": 3, "keyword": "foo"}',
+    )
 
     def validate_entry_name(self, entry_name: str) -> str:
         if len(entry_name) > CONFIG_ENTRY.MAX_QUERY_SIZE:

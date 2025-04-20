@@ -240,6 +240,7 @@ def make_query(
     entry_name: str | None,
     hint_referral: str | None = None,
     hint_referral_entity_id: int | None = None,
+    hint_entry: AttrHint | None = None,  # FIXME rename the type
 ) -> dict[str, Any]:
     """Create a search query for Elasticsearch.
 
@@ -307,7 +308,19 @@ def make_query(
     )
 
     # Included in query if refinement is entered for 'Name' in advanced search
-    if entry_name:
+    if hint_entry is not None:
+        pattern = _get_regex_pattern(hint_entry.keyword or "")
+        match getattr(hint_entry, "filter_key", None):
+            case FilterKey.TEXT_CONTAINED:
+                should_clause = {"bool": {"must": [{"regexp": {"name": pattern}}]}}
+                query["query"]["bool"]["filter"].append({"bool": {"should": [should_clause]}})
+            case FilterKey.TEXT_NOT_CONTAINED:
+                must_not_clause = {"bool": {"must": [{"regexp": {"name": pattern}}]}}
+                query["query"]["bool"]["filter"].append({"bool": {"must_not": [must_not_clause]}})
+            case _:
+                # FIXME support other cases
+                pass
+    elif entry_name:
         query["query"]["bool"]["filter"].append(_make_entry_name_query(entry_name))
 
     if hint_referral:

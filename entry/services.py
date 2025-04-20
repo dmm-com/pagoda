@@ -39,6 +39,7 @@ class AdvancedSearchService:
         is_output_all: bool = False,
         hint_referral_entity_id: int | None = None,
         offset: int = 0,
+        hint_entry: AttrHint | None = None,
     ) -> AdvancedSearchResults:
         """Main method called from advanced search.
 
@@ -66,6 +67,8 @@ class AdvancedSearchService:
                 Flag to output all attribute values.
             offset (int): Defaults to 0.
                 The number of offset to get a part of a large amount of search results
+            hint_entry (AttrHint | None): Defaults to None.
+                Input value used to refine the entry.
 
         Returns:
             AdvancedSearchResults: As a result of the search,
@@ -112,7 +115,7 @@ class AdvancedSearchService:
 
             # make query for elasticsearch to retrieve data user wants
             query = make_query(
-                entity, hint_attrs, entry_name, hint_referral, hint_referral_entity_id
+                entity, hint_attrs, entry_name, hint_referral, hint_referral_entity_id, hint_entry
             )
 
             # sending request to elasticsearch with making query

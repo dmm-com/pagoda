@@ -261,8 +261,23 @@ class AdvancedSearchAPI(generics.GenericAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
+        hint_entry = serializer.validated_data.get("hint_entry")
+        entry_name = serializer.validated_data["entry_name"]
+        # entry_nameとhint_entryは排他、hint_entry優先
+        if hint_entry and (hint_entry.get("filter_key") is not None or hint_entry.get("keyword")):
+            hint_entry = AttrHint(
+                name="name",
+                filter_key=FilterKey(int(hint_entry["filter_key"]))
+                if "filter_key" in hint_entry
+                else None,
+                keyword=hint_entry.get("keyword"),
+            )
+            entry_name = None
+        else:
+            hint_entry = None
+            # entry_nameは既に取得済み
+
         hint_entities = serializer.validated_data["entities"]
-        hint_entry_name = serializer.validated_data["entry_name"]
         hint_attrs = [
             AttrHint(
                 name=x["name"],
@@ -273,7 +288,7 @@ class AdvancedSearchAPI(generics.GenericAPIView):
             for x in serializer.validated_data["attrinfo"]
         ]
         hint_referral = serializer.validated_data.get("referral_name")
-        has_referral = serializer.validated_data["has_referral"]
+        has_referral = serializer.validated_data.get("has_referral")
         is_output_all = serializer.validated_data["is_output_all"]
         is_all_entities = serializer.validated_data["is_all_entities"]
         entry_limit = serializer.validated_data["entry_limit"]
@@ -445,7 +460,7 @@ class AdvancedSearchAPI(generics.GenericAPIView):
                 hint_entity_ids,
                 hint_attrs,
                 entry_limit,
-                hint_entry_name,
+                entry_name,
                 hint_referral,
                 is_output_all,
                 offset=entry_offset,
@@ -456,10 +471,11 @@ class AdvancedSearchAPI(generics.GenericAPIView):
                 hint_entity_ids,
                 hint_attrs,
                 entry_limit,
-                hint_entry_name,
+                entry_name,
                 hint_referral,
                 is_output_all,
                 offset=entry_offset,
+                hint_entry=hint_entry,
             )
 
         # save total population number
