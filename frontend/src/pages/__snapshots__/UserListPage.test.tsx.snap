@@ -208,23 +208,13 @@ exports[`UserListPage should match snapshot 1`] = `
                       <span
                         class="MuiTypography-root MuiTypography-h5 MuiCardHeader-title css-16xl4zq-MuiTypography-root"
                       >
-                        <a
-                          class="MuiButtonBase-root MuiCardActionArea-root css-coyn9m-MuiButtonBase-root-MuiCardActionArea-root"
-                          data-discover="true"
-                          href="/ui/users/1"
-                          tabindex="0"
+                        <p
+                          aria-label="user1"
+                          class="MuiTypography-root MuiTypography-body1 css-act3v7-MuiTypography-root"
+                          data-mui-internal-clone-element="true"
                         >
-                          <p
-                            aria-label="user1"
-                            class="MuiTypography-root MuiTypography-body1 css-act3v7-MuiTypography-root"
-                            data-mui-internal-clone-element="true"
-                          >
-                            user1
-                          </p>
-                          <span
-                            class="MuiCardActionArea-focusHighlight css-1h5un5t-MuiCardActionArea-focusHighlight"
-                          />
-                        </a>
+                          user1
+                        </p>
                       </span>
                     </div>
                     <div
@@ -246,23 +236,6 @@ exports[`UserListPage should match snapshot 1`] = `
                         >
                           <path
                             d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2m0 16H8V7h11z"
-                          />
-                        </svg>
-                      </button>
-                      <button
-                        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-53g0n7-MuiButtonBase-root-MuiIconButton-root"
-                        tabindex="0"
-                        type="button"
-                      >
-                        <svg
-                          aria-hidden="true"
-                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-120dh41-MuiSvgIcon-root"
-                          data-testid="MoreVertIcon"
-                          focusable="false"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2m0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2m0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2"
                           />
                         </svg>
                       </button>
@@ -556,23 +529,13 @@ exports[`UserListPage should match snapshot 1`] = `
                     <span
                       class="MuiTypography-root MuiTypography-h5 MuiCardHeader-title css-16xl4zq-MuiTypography-root"
                     >
-                      <a
-                        class="MuiButtonBase-root MuiCardActionArea-root css-coyn9m-MuiButtonBase-root-MuiCardActionArea-root"
-                        data-discover="true"
-                        href="/ui/users/1"
-                        tabindex="0"
+                      <p
+                        aria-label="user1"
+                        class="MuiTypography-root MuiTypography-body1 css-act3v7-MuiTypography-root"
+                        data-mui-internal-clone-element="true"
                       >
-                        <p
-                          aria-label="user1"
-                          class="MuiTypography-root MuiTypography-body1 css-act3v7-MuiTypography-root"
-                          data-mui-internal-clone-element="true"
-                        >
-                          user1
-                        </p>
-                        <span
-                          class="MuiCardActionArea-focusHighlight css-1h5un5t-MuiCardActionArea-focusHighlight"
-                        />
-                      </a>
+                        user1
+                      </p>
                     </span>
                   </div>
                   <div
@@ -594,23 +557,6 @@ exports[`UserListPage should match snapshot 1`] = `
                       >
                         <path
                           d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2m0 16H8V7h11z"
-                        />
-                      </svg>
-                    </button>
-                    <button
-                      class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-53g0n7-MuiButtonBase-root-MuiIconButton-root"
-                      tabindex="0"
-                      type="button"
-                    >
-                      <svg
-                        aria-hidden="true"
-                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-120dh41-MuiSvgIcon-root"
-                        data-testid="MoreVertIcon"
-                        focusable="false"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2m0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2m0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2"
                         />
                       </svg>
                     </button>
