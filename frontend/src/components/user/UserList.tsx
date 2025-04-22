@@ -61,8 +61,14 @@ export const UserList: FC = ({}) => {
   }, [page, query, toggle]);
 
   const serverContext = useMemo(() => ServerContext.getInstance(), []);
-  const currentUsername = useMemo(() => serverContext?.user?.username, [serverContext]);
-  const isSuperuser = useMemo(() => serverContext?.user?.isSuperuser === true, [serverContext]);
+  const currentUsername = useMemo(
+    () => serverContext?.user?.username,
+    [serverContext],
+  );
+  const isSuperuser = useMemo(
+    () => serverContext?.user?.isSuperuser === true,
+    [serverContext],
+  );
 
   const handleChangeQuery = (newQuery?: string) => {
     changePage(1);
@@ -118,7 +124,10 @@ export const UserList: FC = ({}) => {
                     title={
                       isLinkVisible ? (
                         <CardActionArea component={Link} to={userPath(user.id)}>
-                          <Tooltip title={user.username} placement="bottom-start">
+                          <Tooltip
+                            title={user.username}
+                            placement="bottom-start"
+                          >
                             <UserName>{user.username}</UserName>
                           </Tooltip>
                         </CardActionArea>
@@ -130,7 +139,7 @@ export const UserList: FC = ({}) => {
                     }
                     action={
                       <>
-                        <ClipboardCopyButton name={user.username}/>
+                        <ClipboardCopyButton name={user.username} />
                         {isMenuVisible && (
                           <>
                             <IconButton
