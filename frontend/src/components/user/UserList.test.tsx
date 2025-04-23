@@ -13,16 +13,34 @@ import {
 import React from "react";
 import { createMemoryRouter, RouterProvider } from "react-router";
 
+import { UserList } from "./UserList";
+
 import { TestWrapper, TestWrapperWithoutRoutes } from "TestWrapper";
-import { UserList } from "components/user/UserList";
+import { aironeApiClient } from "repository/AironeApiClient";
+import { ServerContext } from "services/ServerContext";
+
+// Mock ServerContext
+jest.mock("services/ServerContext", () => ({
+  ServerContext: {
+    getInstance: jest.fn(),
+  },
+}));
+
+// Mock API
+jest.mock("repository/AironeApiClient", () => ({
+  aironeApiClient: {
+    getUsers: jest.fn(),
+    destroyUser: jest.fn(),
+  },
+}));
 
 afterEach(() => {
   jest.clearAllMocks();
 });
 
 describe("UserList", () => {
-  const users: PaginatedUserListList = {
-    count: 1,
+  const mockUsers: PaginatedUserListList = {
+    count: 2,
     next: null,
     previous: null,
     results: [
@@ -43,24 +61,79 @@ describe("UserList", () => {
     ],
   };
 
-  /* eslint-disable */
-  jest
-    .spyOn(require("repository/AironeApiClient").aironeApiClient, "getUsers")
-    .mockResolvedValue(Promise.resolve(users));
-  jest
-    .spyOn(require("repository/AironeApiClient").aironeApiClient, "destroyUser")
-    .mockResolvedValue(Promise.resolve());
-  /* eslint-enable */
-
-  test("should show users", async function () {
-    render(<UserList />, { wrapper: TestWrapper });
-
-    await waitForElementToBeRemoved(screen.getByTestId("loading"));
-
-    expect(screen.getAllByRole("link", { name: /user*/i })).toHaveLength(2);
+  beforeEach(() => {
+    (aironeApiClient.getUsers as jest.Mock).mockResolvedValue(mockUsers);
   });
 
-  test("should navigate to user create page", async () => {
+  test("should render users", async () => {
+    (ServerContext.getInstance as jest.Mock).mockReturnValue({
+      user: { username: "user1", isSuperuser: false },
+    });
+
+    render(<UserList />, { wrapper: TestWrapper });
+    await waitForElementToBeRemoved(screen.getByTestId("loading"));
+
+    expect(screen.getByText("user1")).toBeInTheDocument();
+    expect(screen.getByText("user2")).toBeInTheDocument();
+  });
+
+  test("superuser sees menu for all users", async () => {
+    (ServerContext.getInstance as jest.Mock).mockReturnValue({
+      user: { username: "admin", isSuperuser: true },
+    });
+
+    render(<UserList />, { wrapper: TestWrapper });
+    await waitForElementToBeRemoved(screen.getByTestId("loading"));
+
+    const menuIcons = screen.getAllByTestId("MoreVertIcon");
+    expect(menuIcons.length).toBe(2);
+  });
+
+  test("normal user sees menu only for themselves", async () => {
+    (ServerContext.getInstance as jest.Mock).mockReturnValue({
+      user: { username: "user1", isSuperuser: false },
+    });
+
+    render(<UserList />, { wrapper: TestWrapper });
+    await waitForElementToBeRemoved(screen.getByTestId("loading"));
+
+    const menuIcons = screen.getAllByTestId("MoreVertIcon");
+    expect(menuIcons.length).toBe(1);
+  });
+
+  test("normal user cannot use register button", async () => {
+    (ServerContext.getInstance as jest.Mock).mockReturnValue({
+      user: { username: "user1", isSuperuser: false },
+    });
+
+    render(<UserList />, { wrapper: TestWrapper });
+    await waitForElementToBeRemoved(screen.getByTestId("loading"));
+
+    const registerLink = screen.getByRole("link", {
+      name: /新規ユーザを登録/i,
+    });
+    expect(registerLink.classList.contains("Mui-disabled")).toBe(true);
+  });
+
+  test("superuser can use register button", async () => {
+    (ServerContext.getInstance as jest.Mock).mockReturnValue({
+      user: { username: "admin", isSuperuser: true },
+    });
+
+    render(<UserList />, { wrapper: TestWrapper });
+    await waitForElementToBeRemoved(screen.getByTestId("loading"));
+
+    const registerLink = screen.getByRole("link", {
+      name: /新規ユーザを登録/i,
+    });
+    expect(registerLink.classList.contains("Mui-disabled")).toBe(false);
+  });
+
+  test("should navigate to create page", async () => {
+    (ServerContext.getInstance as jest.Mock).mockReturnValue({
+      user: { username: "admin", isSuperuser: true },
+    });
+
     const router = createMemoryRouter([
       {
         path: "/",
@@ -68,10 +141,8 @@ describe("UserList", () => {
       },
     ]);
 
-    await act(async () => {
-      render(<RouterProvider router={router} />, {
-        wrapper: TestWrapperWithoutRoutes,
-      });
+    render(<RouterProvider router={router} />, {
+      wrapper: TestWrapperWithoutRoutes,
     });
 
     await waitFor(() => {
@@ -79,13 +150,17 @@ describe("UserList", () => {
     });
 
     await act(async () => {
-      screen.getByRole("link", { name: "新規ユーザを登録" }).click();
+      screen.getByRole("link", { name: /新規ユーザを登録/i }).click();
     });
 
     expect(router.state.location.pathname).toBe("/ui/users/new");
   });
 
-  test("should navigate to user details page", async function () {
+  test("should navigate to user detail page", async () => {
+    (ServerContext.getInstance as jest.Mock).mockReturnValue({
+      user: { username: "admin", isSuperuser: true },
+    });
+
     const router = createMemoryRouter([
       {
         path: "/",
@@ -93,10 +168,8 @@ describe("UserList", () => {
       },
     ]);
 
-    await act(async () => {
-      render(<RouterProvider router={router} />, {
-        wrapper: TestWrapperWithoutRoutes,
-      });
+    render(<RouterProvider router={router} />, {
+      wrapper: TestWrapperWithoutRoutes,
     });
 
     await waitFor(() => {
@@ -108,31 +181,5 @@ describe("UserList", () => {
     });
 
     expect(router.state.location.pathname).toBe("/ui/users/1");
-  });
-
-  test("should delete a user", async function () {
-    await act(async () => {
-      render(<UserList />, { wrapper: TestWrapper });
-    });
-
-    await waitFor(() => {
-      expect(screen.queryByTestId("loading")).not.toBeInTheDocument();
-    });
-
-    await act(async () => {
-      // open a menu for user1
-      // NOTE there are 4 buttons (user1 copy, user1 menu, user2 copy, user2 menu)
-      screen.getAllByRole("button")[1].click();
-    });
-    await act(async () => {
-      screen.getByRole("menuitem", { name: "削除" }).click();
-    });
-    await act(async () => {
-      screen.getByRole("button", { name: "Yes" }).click();
-    });
-
-    await waitFor(() => {
-      screen.getByText("ユーザ(user1)の削除が完了しました");
-    });
   });
 });

@@ -60,12 +60,15 @@ export const UserList: FC = ({}) => {
     return await aironeApiClient.getUsers(page, query);
   }, [page, query, toggle]);
 
-  const isSuperuser = useMemo(() => {
-    const serverContext = ServerContext.getInstance();
-    return (
-      serverContext?.user?.isSuperuser != null && serverContext.user.isSuperuser
-    );
-  }, []);
+  const serverContext = useMemo(() => ServerContext.getInstance(), []);
+  const currentUsername = useMemo(
+    () => serverContext?.user?.username,
+    [serverContext],
+  );
+  const isSuperuser = useMemo(
+    () => serverContext?.user?.isSuperuser === true,
+    [serverContext],
+  );
 
   const handleChangeQuery = (newQuery?: string) => {
     changePage(1);
@@ -110,42 +113,58 @@ export const UserList: FC = ({}) => {
       ) : (
         <Grid container spacing={2} id="user_list">
           {users.value?.results?.map((user) => {
+            const isCurrentUser = user.username === currentUsername;
+            const isLinkVisible = isSuperuser || isCurrentUser;
+            const isMenuVisible = isSuperuser || isCurrentUser;
+
             return (
               <Grid size={4} key={user.id}>
                 <Card sx={{ height: "100%" }}>
                   <StyledCardHeader
                     title={
-                      <CardActionArea component={Link} to={userPath(user.id)}>
+                      isLinkVisible ? (
+                        <CardActionArea component={Link} to={userPath(user.id)}>
+                          <Tooltip
+                            title={user.username}
+                            placement="bottom-start"
+                          >
+                            <UserName>{user.username}</UserName>
+                          </Tooltip>
+                        </CardActionArea>
+                      ) : (
                         <Tooltip title={user.username} placement="bottom-start">
                           <UserName>{user.username}</UserName>
                         </Tooltip>
-                      </CardActionArea>
+                      )
                     }
                     action={
                       <>
                         <ClipboardCopyButton name={user.username} />
-
-                        <IconButton
-                          onClick={(e) => {
-                            setUserAnchorEls({
-                              ...userAnchorEls,
-                              [user.id]: e.currentTarget,
-                            });
-                          }}
-                        >
-                          <MoreVertIcon fontSize="small" />
-                        </IconButton>
-                        <UserControlMenu
-                          user={user}
-                          anchorElem={userAnchorEls[user.id]}
-                          handleClose={(userId: number) =>
-                            setUserAnchorEls({
-                              ...userAnchorEls,
-                              [userId]: null,
-                            })
-                          }
-                          setToggle={() => setToggle(!toggle)}
-                        />
+                        {isMenuVisible && (
+                          <>
+                            <IconButton
+                              onClick={(e) => {
+                                setUserAnchorEls({
+                                  ...userAnchorEls,
+                                  [user.id]: e.currentTarget,
+                                });
+                              }}
+                            >
+                              <MoreVertIcon fontSize="small" />
+                            </IconButton>
+                            <UserControlMenu
+                              user={user}
+                              anchorElem={userAnchorEls[user.id]}
+                              handleClose={(userId: number) =>
+                                setUserAnchorEls({
+                                  ...userAnchorEls,
+                                  [userId]: null,
+                                })
+                              }
+                              setToggle={() => setToggle(!toggle)}
+                            />
+                          </>
+                        )}
                       </>
                     }
                   />
