@@ -109,7 +109,9 @@ describe("UserList", () => {
     render(<UserList />, { wrapper: TestWrapper });
     await waitForElementToBeRemoved(screen.getByTestId("loading"));
 
-    const registerLink = screen.getByRole("link", { name: /新規ユーザを登録/i });
+    const registerLink = screen.getByRole("link", {
+      name: /新規ユーザを登録/i,
+    });
     expect(registerLink.classList.contains("Mui-disabled")).toBe(true);
   });
 
@@ -121,7 +123,9 @@ describe("UserList", () => {
     render(<UserList />, { wrapper: TestWrapper });
     await waitForElementToBeRemoved(screen.getByTestId("loading"));
 
-    const registerLink = screen.getByRole("link", { name: /新規ユーザを登録/i });
+    const registerLink = screen.getByRole("link", {
+      name: /新規ユーザを登録/i,
+    });
     expect(registerLink.classList.contains("Mui-disabled")).toBe(false);
   });
 
