@@ -8,6 +8,30 @@
 
 ### Fixed
 
+## v3.130.0
+
+### Changed
+* Support case-insensitive filter for group members.
+  Contributed by @tsunoda-takahiro
+* Update permission-based rendering in UserList.
+  Contributed by @tsunoda-takahiro
+* Add access control to RoleEditPage for non-editable roles.
+  Contributed by @tsunoda-takahiro
+
+### Fixed
+* Initialize array values in entry form fields and remove useEffect hooks.
+  Contributed by @syucream
+
+## v3.129.0
+
+### Changed
+* Disable group name links and menu for unauthorized users.
+  Contributed by @tsunoda-takahiro
+
+### Fixed
+* Fixed an error with invalid attrinfo parameter in entry searchAPI.
+  Contributed by @hinashi
+
 ## v3.128.0
 
 ### Added
