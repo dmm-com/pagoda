@@ -100,6 +100,9 @@ export const GroupEditPage: FC = () => {
     throw new ForbiddenError("only admin can edit a group");
   }
 
+  const pageTitle = group.value?.name ?? "新規グループの作成";
+  const pageDescription = willCreate ? undefined : "グループ編集";
+
   return (
     <Box>
       <AironeBreadcrumbs>
@@ -109,13 +112,11 @@ export const GroupEditPage: FC = () => {
         <Typography component={AironeLink} to={groupsPath()}>
           グループ管理
         </Typography>
-        <Typography color="textPrimary">グループ編集</Typography>
+        <Typography color="textPrimary">
+          {willCreate ? "新規グループの作成" : "グループの編集"}
+        </Typography>
       </AironeBreadcrumbs>
-
-      <PageHeader
-        title={group.value?.name ?? "新規グループの作成"}
-        description={group.value?.id != 0 ? "グループ編集" : undefined}
-      >
+      <PageHeader title={pageTitle} description={pageDescription}>
         <SubmitButton
           name="保存"
           disabled={!isDirty || !isValid || isSubmitting || isSubmitSuccessful}
