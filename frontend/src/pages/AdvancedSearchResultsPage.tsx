@@ -37,7 +37,7 @@ import { usePage } from "hooks/usePage";
 import { aironeApiClient } from "repository/AironeApiClient";
 import { advancedSearchPath, topPath } from "routes/Routes";
 import { AdvancedSerarchResultListParam } from "services/Constants";
-import { extractAdvancedSearchParams, HintEntryParam } from "services/entry/AdvancedSearch";
+import { extractAdvancedSearchParams } from "services/entry/AdvancedSearch";
 
 function isAttrInfoSet(info: AdvancedSearchResultAttrInfo) {
   switch (info.filterKey) {
@@ -140,7 +140,6 @@ export const AdvancedSearchResultsPage: FC = () => {
   const {
     entityIds,
     searchAllEntities,
-    entryName,
     hasReferral,
     referralName,
     attrInfo,
@@ -168,7 +167,6 @@ export const AdvancedSearchResultsPage: FC = () => {
     const sendSearchRequest = () => {
       return aironeApiClient.advancedSearch(
         entityIds,
-        entryName,
         attrInfo,
         joinAttrs,
         hasReferral,
@@ -221,7 +219,6 @@ export const AdvancedSearchResultsPage: FC = () => {
       await aironeApiClient.exportAdvancedSearchResults(
         entityIds,
         attrInfo,
-        entryName,
         hasReferral,
         searchAllEntities,
         exportStyle,
@@ -369,6 +366,7 @@ export const AdvancedSearchResultsPage: FC = () => {
             page={page}
             changePage={changePage}
             hasReferral={hasReferral}
+            defaultEntryFilter={hintEntry}
             defaultReferralFilter={referralName}
             defaultAttrsFilter={
               // make defaultAttrFilter to make fabric contexts of joinAttrs into the one of attrinfo

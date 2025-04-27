@@ -22,6 +22,7 @@ import {
   EntryApi,
   EntryBase,
   EntryCopy,
+  EntryHint,
   EntryRetrieve,
   EntrySearch,
   EntrySearchChain,
@@ -793,7 +794,6 @@ class AironeApiClient {
 
   async advancedSearch(
     entityIds: number[] = [],
-    entryName = "",
     attrInfo: AdvancedSearchResultAttrInfo[] = [],
     joinAttrs: AdvancedSearchJoinAttrInfo[] = [],
     hasReferral = false,
@@ -802,6 +802,7 @@ class AironeApiClient {
     page: number,
     limit: number = AdvancedSerarchResultListParam.MAX_ROW_COUNT,
     offset: number = 0,
+    entryHint?: EntryHint,
   ): Promise<AdvancedSearchResult> {
     return await this.entry.entryApiV2AdvancedSearchCreate(
       {
@@ -809,13 +810,13 @@ class AironeApiClient {
           entities: entityIds,
           attrinfo: attrInfo,
           joinAttrs: joinAttrs,
-          entryName: entryName,
           hasReferral: hasReferral,
           isOutputAll: false,
           isAllEntities: searchAllEntities,
           referralName: referralName,
           entryLimit: limit,
           entryOffset: offset === 0 ? (page - 1) * limit : offset,
+          hintEntry: entryHint,
         },
       },
       {
@@ -846,7 +847,6 @@ class AironeApiClient {
   async exportAdvancedSearchResults(
     entityIds: number[],
     attrinfo: Array<AdvancedSearchResultAttrInfo>,
-    entryName: string,
     hasReferral: boolean,
     isAllEntities: boolean,
     format: "yaml" | "csv",
@@ -856,7 +856,6 @@ class AironeApiClient {
         advancedSearchResultExport: {
           entities: entityIds,
           attrinfo: attrinfo,
-          entryName: entryName,
           hasReferral: hasReferral,
           isAllEntities: isAllEntities,
           exportStyle: format,

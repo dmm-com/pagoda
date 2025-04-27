@@ -11,6 +11,7 @@ from airone.lib.elasticsearch import (
     AdvancedSearchResultRecordIdNamePair,
     AdvancedSearchResults,
     AttrHint,
+    EntryHint,
     FilterKey,
     execute_query,
     make_query,
@@ -39,7 +40,7 @@ class AdvancedSearchService:
         is_output_all: bool = False,
         hint_referral_entity_id: int | None = None,
         offset: int = 0,
-        hint_entry: AttrHint | None = None,
+        hint_entry: EntryHint | None = None,
     ) -> AdvancedSearchResults:
         """Main method called from advanced search.
 

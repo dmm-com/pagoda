@@ -19,6 +19,7 @@ import { SearchResultsTableHead } from "./SearchResultsTableHead";
 import {
   AdvancedSearchJoinAttrInfo,
   AdvancedSearchResult,
+  EntryHint,
 } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { AironeLink } from "components/common";
 import { PaginationFooter } from "components/common/PaginationFooter";
@@ -53,6 +54,7 @@ interface Props {
   page: number;
   changePage: (page: number) => void;
   hasReferral: boolean;
+  defaultEntryFilter?: EntryHint;
   defaultReferralFilter?: string;
   defaultAttrsFilter?: AttrsFilter;
   bulkOperationEntryIds: Array<number>;
@@ -69,6 +71,7 @@ export const SearchResults: FC<Props> = ({
   page,
   changePage,
   hasReferral,
+  defaultEntryFilter,
   defaultReferralFilter,
   defaultAttrsFilter = {},
   bulkOperationEntryIds,
@@ -116,6 +119,7 @@ export const SearchResults: FC<Props> = ({
             <SearchResultsTableHead
               hasReferral={hasReferral}
               attrTypes={attrTypes}
+              defaultEntryFilter={defaultEntryFilter}
               defaultReferralFilter={defaultReferralFilter}
               defaultAttrsFilter={defaultAttrsFilter}
               entityIds={entityIds}

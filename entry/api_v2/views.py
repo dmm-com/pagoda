@@ -30,6 +30,7 @@ from airone.lib.elasticsearch import (
     AdvancedSearchResultRecord,
     AdvancedSearchResults,
     AttrHint,
+    EntryHint,
     FilterKey,
 )
 from airone.lib.types import AttrType
@@ -262,20 +263,11 @@ class AdvancedSearchAPI(generics.GenericAPIView):
         serializer.is_valid(raise_exception=True)
 
         hint_entry = serializer.validated_data.get("hint_entry")
-        entry_name = serializer.validated_data["entry_name"]
-        # entry_nameとhint_entryは排他、hint_entry優先
         if hint_entry and (hint_entry.get("filter_key") is not None or hint_entry.get("keyword")):
-            hint_entry = AttrHint(
-                name="name",
-                filter_key=FilterKey(int(hint_entry["filter_key"]))
-                if "filter_key" in hint_entry
-                else None,
+            hint_entry = EntryHint(
                 keyword=hint_entry.get("keyword"),
+                filter_key=hint_entry.get("filter_key"),
             )
-            entry_name = None
-        else:
-            hint_entry = None
-            # entry_nameは既に取得済み
 
         hint_entities = serializer.validated_data["entities"]
         hint_attrs = [
@@ -460,10 +452,11 @@ class AdvancedSearchAPI(generics.GenericAPIView):
                 hint_entity_ids,
                 hint_attrs,
                 entry_limit,
-                entry_name,
+                None,  # don't use in APIv2
                 hint_referral,
                 is_output_all,
                 offset=entry_offset,
+                # TODO rethink to support hint_entry
             )
         else:
             resp = AdvancedSearchService.search_entries(
@@ -471,7 +464,7 @@ class AdvancedSearchAPI(generics.GenericAPIView):
                 hint_entity_ids,
                 hint_attrs,
                 entry_limit,
-                entry_name,
+                None,  # don't use in APIv2
                 hint_referral,
                 is_output_all,
                 offset=entry_offset,

@@ -10,7 +10,7 @@ import yaml
 from rest_framework import status
 from rest_framework.exceptions import ValidationError
 
-from airone.lib.elasticsearch import AttrHint
+from airone.lib.elasticsearch import AttrHint, EntryFilterKey
 from airone.lib.log import Logger
 from airone.lib.test import AironeViewTest
 from airone.lib.types import (
@@ -3331,12 +3331,11 @@ class ViewTest(BaseViewTest):
         self.assertEqual(resp.status_code, 200)
         # TODO assert result
 
-    def test_advanced_search_with_too_long_entry_name(self):
+    def test_advanced_search_with_too_long_keyword(self):
         params = {
             "entities": [],
-            "entry_name": "a" * (CONFIG.MAX_QUERY_SIZE + 1),
             "is_all_entities": True,
-            "attrinfo": [],
+            "attrinfo": [{"name": "a" * (CONFIG.MAX_QUERY_SIZE + 1)}],
         }
 
         resp = self.client.post(
@@ -3344,11 +3343,11 @@ class ViewTest(BaseViewTest):
         )
         self.assertEqual(resp.status_code, 400)
 
-    def test_advanced_search_with_too_long_keyword(self):
+    def test_advanced_search_with_too_long_hint_entry_keyword(self):
         params = {
             "entities": [],
             "is_all_entities": True,
-            "attrinfo": [{"name": "a" * (CONFIG.MAX_QUERY_SIZE + 1)}],
+            "hint_entry": [{"keyword": "a" * (CONFIG.MAX_QUERY_SIZE + 1)}],
         }
 
         resp = self.client.post(
@@ -3612,13 +3611,13 @@ class ViewTest(BaseViewTest):
                     "entities": [entity.id],
                     "attrinfo": [{"name": x["name"]} for x in exporting_attrs],
                     "export_style": "csv",
-                    "entry_name": [],
+                    "hint_entry": [],  # invalid type
                 }
             ),
             "application/json",
         )
         self.assertEqual(resp.status_code, 400)
-        self.assertIn("entry_name", resp.json())
+        self.assertIn("hint_entry", resp.json())
 
         resp = self.client.post(
             "/entry/api/v2/advanced_search_result_export/",
@@ -3658,13 +3657,16 @@ class ViewTest(BaseViewTest):
                     "entities": [entity.id],
                     "attrinfo": [{"name": "attr"}],
                     "export_style": "csv",
-                    "entry_name": "a" * 250,
+                    "hint_entry": {
+                        "filter_key": EntryFilterKey.TEXT_CONTAINED,
+                        "keyword": "a" * 250,
+                    },
                 }
             ),
             "application/json",
         )
         self.assertEqual(resp.status_code, 400)
-        self.assertIn("entry_name", resp.json())
+        self.assertIn("hint_entry", resp.json())
 
         resp = self.client.post(
             "/entry/api/v2/advanced_search_result_export/",
@@ -3687,7 +3689,10 @@ class ViewTest(BaseViewTest):
                     "entities": [entity.id],
                     "attrinfo": [{"name": "attr"}],
                     "export_style": "csv",
-                    "entry_name": "a" * 249,
+                    "hint_entry": {
+                        "filter_key": EntryFilterKey.TEXT_CONTAINED,
+                        "keyword": "a" * 249,
+                    },
                 }
             ),
             "application/json",
@@ -4224,7 +4229,7 @@ class ViewTest(BaseViewTest):
     @patch(
         "entry.tasks.export_search_result_v2.delay", Mock(side_effect=tasks.export_search_result_v2)
     )
-    def test_export_with_hint_entry_name(self):
+    def test_export_with_hint_entry(self):
         admin = self._create_user("admin", is_superuser=True)
 
         entity = Entity.objects.create(name="Entity", created_user=admin)
@@ -4237,7 +4242,7 @@ class ViewTest(BaseViewTest):
                 {
                     "entities": [entity.id],
                     "attrinfo": [],
-                    "entry_name": "ba",
+                    "hint_entry": {"filter_key": EntryFilterKey.TEXT_CONTAINED, "keyword": "ba"},
                     "export_style": "yaml",
                 }
             ),

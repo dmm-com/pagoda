@@ -32,6 +32,8 @@ import { SearchResultControlMenuForReferral } from "./SearchResultControlMenuFor
 import {
   AdvancedSearchJoinAttrInfo,
   EntryAttributeTypeTypeEnum,
+  EntryHint,
+  EntryHintFilterKeyEnum,
 } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { getIsFiltered } from "pages/AdvancedSearchResultsPage";
 import {
@@ -58,6 +60,7 @@ const StyledTableCell = styled(TableCell)(({ theme }) => ({
 interface Props {
   hasReferral: boolean;
   attrTypes: Record<string, number>;
+  defaultEntryFilter?: EntryHint;
   defaultReferralFilter?: string;
   defaultAttrsFilter?: AttrsFilter;
   entityIds: number[];
@@ -70,6 +73,7 @@ interface Props {
 export const SearchResultsTableHead: FC<Props> = ({
   hasReferral,
   attrTypes,
+  defaultEntryFilter,
   defaultReferralFilter,
   defaultAttrsFilter = {},
   entityIds,
@@ -82,16 +86,13 @@ export const SearchResultsTableHead: FC<Props> = ({
   const navigate = useNavigate();
   const [checked, setChecked] = useState(false);
 
-  const [hintEntry, setHintEntry] = useState<{
-    filter_key: number;
-    keyword: string;
-  }>({ filter_key: 3, keyword: "" });
+  const [hintEntry, setHintEntry] = useState<EntryHint>(defaultEntryFilter ?? { filterKey: EntryHintFilterKeyEnum.CLEARED, keyword: "" });
   const [entryMenuEls, setEntryMenuEls] = useState<HTMLButtonElement | null>(
     null,
   );
 
   const hintEntryDispatcher = useCallback(
-    (update: Partial<{ filter_key: number; keyword: string }>) => {
+    (update: Partial<EntryHint>) => {
       setHintEntry((prev) => ({ ...prev, ...update }));
     },
     [],
@@ -141,7 +142,6 @@ export const SearchResultsTableHead: FC<Props> = ({
     (attrName?: string) =>
     (
       attrFilter?: AttrFilter,
-      overwriteEntryName?: string,
       overwriteReferral?: string,
     ) => {
       const _attrsFilter =
@@ -151,14 +151,13 @@ export const SearchResultsTableHead: FC<Props> = ({
 
       const hintEntryParam =
         hintEntry.keyword && hintEntry.keyword.length > 0
-          ? { filter_key: hintEntry.filter_key, keyword: hintEntry.keyword }
+          ? { filterKey: hintEntry.filterKey, keyword: hintEntry.keyword }
           : undefined;
 
       const newParams = formatAdvancedSearchParams({
         attrsFilter: Object.keys(_attrsFilter)
           .filter((k) => _attrsFilter[k]?.joinedAttrname === undefined)
           .reduce((a, k) => ({ ...a, [k]: _attrsFilter[k] }), {}),
-        entryName: "",
         referralName: overwriteReferral ?? referralFilter,
         hintEntry: hintEntryParam,
         baseParams: new URLSearchParams(location.search),
@@ -238,9 +237,6 @@ export const SearchResultsTableHead: FC<Props> = ({
                   handleClose={() => setEntryMenuEls(null)}
                   hintEntryDispatcher={hintEntryDispatcher}
                   handleSelectFilterConditions={handleSelectFilterConditions()}
-                  handleClear={() =>
-                    setHintEntry({ filter_key: 3, keyword: "" })
-                  }
                 />
               </>
             )}
@@ -333,7 +329,7 @@ export const SearchResultsTableHead: FC<Props> = ({
                 referralFilterDispatcher={referralFilterDispatcher}
                 handleSelectFilterConditions={handleSelectFilterConditions()}
                 handleClear={() =>
-                  handleSelectFilterConditions()(undefined, undefined, "")
+                  handleSelectFilterConditions()(undefined, "")
                 }
               />
             </HeaderBox>

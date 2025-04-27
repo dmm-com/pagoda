@@ -1,3 +1,4 @@
+import { EntryHint, EntryHintFilterKeyEnum } from "@dmm-com/airone-apiclient-typescript-fetch";
 import {
   Box,
   Button,
@@ -8,19 +9,17 @@ import {
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import React, { FC, KeyboardEvent } from "react";
-import type { HintEntryParam as HintEntry } from "../../services/entry/AdvancedSearch";
 
 const StyledBox = styled(Box)({
   margin: "8px",
 });
 
 interface Props {
-  hintEntry?: HintEntry;
+  hintEntry?: EntryHint;
   anchorElem: HTMLButtonElement | null;
   handleClose: () => void;
-  hintEntryDispatcher: (entry: Partial<HintEntry>) => void;
+  hintEntryDispatcher: (entry: Partial<EntryHint>) => void;
   handleSelectFilterConditions: () => void;
-  handleClear: () => void;
 }
 
 export const SearchResultControlMenuForEntry: FC<Props> = ({
@@ -29,10 +28,7 @@ export const SearchResultControlMenuForEntry: FC<Props> = ({
   handleClose,
   hintEntryDispatcher,
   handleSelectFilterConditions,
-  handleClear,
 }) => {
-  hintEntry = hintEntry ?? { filter_key: 3, keyword: "" };
-
   const handleKeyPressKeyword = (e: KeyboardEvent<HTMLDivElement>) => {
     if (e.key === "Enter") {
       handleSelectFilterConditions();
@@ -45,8 +41,14 @@ export const SearchResultControlMenuForEntry: FC<Props> = ({
       onClose={() => handleClose()}
       anchorEl={anchorElem}
     >
+      <Box pl="16px" py="8px">
+        <Typography>絞り込み条件</Typography>
+      </Box>
       <StyledBox>
-        <Button variant="outlined" fullWidth onClick={() => handleClear()}>
+        <Button variant="outlined" fullWidth onClick={() => {
+          hintEntryDispatcher({ filterKey: EntryHintFilterKeyEnum.CLEARED, keyword: "" });
+          handleSelectFilterConditions();
+        }}>
           <Typography>クリア</Typography>
         </Button>
       </StyledBox>
@@ -55,9 +57,9 @@ export const SearchResultControlMenuForEntry: FC<Props> = ({
         <TextField
           size="small"
           placeholder="次を含むテキスト"
-          value={hintEntry?.filter_key === 3 ? (hintEntry?.keyword ?? "") : ""}
+          value={hintEntry?.filterKey === EntryHintFilterKeyEnum.TEXT_CONTAINED ? (hintEntry?.keyword ?? "") : ""}
           onChange={(e) =>
-            hintEntryDispatcher({ filter_key: 3, keyword: e.target.value })
+            hintEntryDispatcher({ filterKey: EntryHintFilterKeyEnum.TEXT_CONTAINED, keyword: e.target.value })
           }
           onKeyPress={handleKeyPressKeyword}
         />
@@ -66,9 +68,9 @@ export const SearchResultControlMenuForEntry: FC<Props> = ({
         <TextField
           size="small"
           placeholder="次を含まないテキスト"
-          value={hintEntry?.filter_key === 4 ? (hintEntry?.keyword ?? "") : ""}
+          value={hintEntry?.filterKey === EntryHintFilterKeyEnum.TEXT_NOT_CONTAINED ? (hintEntry?.keyword ?? "") : ""}
           onChange={(e) =>
-            hintEntryDispatcher({ filter_key: 4, keyword: e.target.value })
+            hintEntryDispatcher({ filterKey: EntryHintFilterKeyEnum.TEXT_NOT_CONTAINED, keyword: e.target.value })
           }
           onKeyPress={handleKeyPressKeyword}
         />

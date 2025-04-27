@@ -11,7 +11,7 @@ from rest_framework.exceptions import ValidationError
 from airone.celery import app
 from airone.lib import custom_view
 from airone.lib.acl import ACLType
-from airone.lib.elasticsearch import AdvancedSearchResultRecord, AttrHint
+from airone.lib.elasticsearch import AdvancedSearchResultRecord, AttrHint, EntryHint
 from airone.lib.event_notification import (
     notify_entry_create,
     notify_entry_delete,
@@ -778,7 +778,7 @@ def export_search_result_v2(self, job: Job):
 
     has_referral: bool = params.get("has_referral", False)
     referral_name: str | None = params.get("referral_name")
-    entry_name: str | None = params.get("entry_name")
+
     if has_referral and referral_name is None:
         referral_name = ""
 
@@ -790,13 +790,27 @@ def export_search_result_v2(self, job: Job):
     except ValidationError:
         return JobStatus.ERROR, "Invalid attrinfo"
 
+    hint_entry_raw = serializer.validated_data.get("hint_entry")
+    hint_entry: EntryHint | None = None
+    if hint_entry_raw and (
+        hint_entry_raw.get("filter_key") is not None or hint_entry_raw.get("keyword")
+    ):
+        hint_entry = EntryHint(
+            keyword=hint_entry_raw.get("keyword"),
+            filter_key=hint_entry_raw.get("filter_key"),
+        )
+
     resp = AdvancedSearchService.search_entries(
         user,
         params["entities"],
         hint_attrs,
         settings.ES_CONFIG["MAXIMUM_RESULTS_NUM"],
-        entry_name,
-        referral_name,
+        entry_name=None,
+        hint_referral=referral_name,
+        is_output_all=False,
+        hint_referral_entity_id=None,
+        offset=0,
+        hint_entry=hint_entry,
     )
 
     output: io.StringIO | None = None
