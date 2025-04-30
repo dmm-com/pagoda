@@ -60,7 +60,10 @@ describe("formatAdvancedSearchParams", () => {
       ]),
     );
     expect(actual.get("hint_entry")).toBe(
-      JSON.stringify({ filterKey: AdvancedSearchResultAttrInfoFilterKeyEnum.CLEARED, keyword: "test-hint" })
+      JSON.stringify({
+        filterKey: AdvancedSearchResultAttrInfoFilterKeyEnum.CLEARED,
+        keyword: "test-hint",
+      }),
     );
   });
 
@@ -159,8 +162,17 @@ describe("extractAdvancedSearchParams", () => {
 
   test("extractAdvancedSearchParams with hint_entry", () => {
     const params = new URLSearchParams();
-    params.set("hint_entry", JSON.stringify({ filterKey: AdvancedSearchResultAttrInfoFilterKeyEnum.NON_EMPTY, keyword: "hint-keyword" }));
+    params.set(
+      "hint_entry",
+      JSON.stringify({
+        filterKey: AdvancedSearchResultAttrInfoFilterKeyEnum.NON_EMPTY,
+        keyword: "hint-keyword",
+      }),
+    );
     const extracted = extractAdvancedSearchParams(params);
-    expect(extracted.hintEntry).toEqual({ filterKey: AdvancedSearchResultAttrInfoFilterKeyEnum.NON_EMPTY, keyword: "hint-keyword" });
+    expect(extracted.hintEntry).toEqual({
+      filterKey: AdvancedSearchResultAttrInfoFilterKeyEnum.NON_EMPTY,
+      keyword: "hint-keyword",
+    });
   });
 });

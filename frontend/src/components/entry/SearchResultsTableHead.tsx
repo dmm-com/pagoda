@@ -1,3 +1,9 @@
+import {
+  AdvancedSearchJoinAttrInfo,
+  EntryAttributeTypeTypeEnum,
+  EntryHint,
+  EntryHintFilterKeyEnum,
+} from "@dmm-com/airone-apiclient-typescript-fetch";
 import AddIcon from "@mui/icons-material/Add";
 import CheckBoxOutlineBlankOutlinedIcon from "@mui/icons-material/CheckBoxOutlineBlankOutlined";
 import CheckBoxOutlinedIcon from "@mui/icons-material/CheckBoxOutlined";
@@ -29,12 +35,6 @@ import { SearchResultControlMenu } from "./SearchResultControlMenu";
 import { SearchResultControlMenuForEntry } from "./SearchResultControlMenuForEntry";
 import { SearchResultControlMenuForReferral } from "./SearchResultControlMenuForReferral";
 
-import {
-  AdvancedSearchJoinAttrInfo,
-  EntryAttributeTypeTypeEnum,
-  EntryHint,
-  EntryHintFilterKeyEnum,
-} from "@dmm-com/airone-apiclient-typescript-fetch";
 import { getIsFiltered } from "pages/AdvancedSearchResultsPage";
 import {
   AttrFilter,
@@ -86,17 +86,19 @@ export const SearchResultsTableHead: FC<Props> = ({
   const navigate = useNavigate();
   const [checked, setChecked] = useState(false);
 
-  const [hintEntry, setHintEntry] = useState<EntryHint>(defaultEntryFilter ?? { filterKey: EntryHintFilterKeyEnum.CLEARED, keyword: "" });
+  const [hintEntry, setHintEntry] = useState<EntryHint>(
+    defaultEntryFilter ?? {
+      filterKey: EntryHintFilterKeyEnum.CLEARED,
+      keyword: "",
+    },
+  );
   const [entryMenuEls, setEntryMenuEls] = useState<HTMLButtonElement | null>(
     null,
   );
 
-  const hintEntryDispatcher = useCallback(
-    (update: Partial<EntryHint>) => {
-      setHintEntry((prev) => ({ ...prev, ...update }));
-    },
-    [],
-  );
+  const hintEntryDispatcher = useCallback((update: Partial<EntryHint>) => {
+    setHintEntry((prev) => ({ ...prev, ...update }));
+  }, []);
 
   const [referralFilter, referralFilterDispatcher] = useReducer(
     (
@@ -140,10 +142,7 @@ export const SearchResultsTableHead: FC<Props> = ({
 
   const handleSelectFilterConditions =
     (attrName?: string) =>
-    (
-      attrFilter?: AttrFilter,
-      overwriteReferral?: string,
-    ) => {
+    (attrFilter?: AttrFilter, overwriteReferral?: string) => {
       const _attrsFilter =
         attrName != null && attrFilter != null
           ? { ...attrsFilter, [attrName]: attrFilter }

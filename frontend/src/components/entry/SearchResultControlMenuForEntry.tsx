@@ -1,4 +1,7 @@
-import { EntryHint, EntryHintFilterKeyEnum } from "@dmm-com/airone-apiclient-typescript-fetch";
+import {
+  EntryHint,
+  EntryHintFilterKeyEnum,
+} from "@dmm-com/airone-apiclient-typescript-fetch";
 import {
   Box,
   Button,
@@ -45,10 +48,17 @@ export const SearchResultControlMenuForEntry: FC<Props> = ({
         <Typography>絞り込み条件</Typography>
       </Box>
       <StyledBox>
-        <Button variant="outlined" fullWidth onClick={() => {
-          hintEntryDispatcher({ filterKey: EntryHintFilterKeyEnum.CLEARED, keyword: "" });
-          handleSelectFilterConditions();
-        }}>
+        <Button
+          variant="outlined"
+          fullWidth
+          onClick={() => {
+            hintEntryDispatcher({
+              filterKey: EntryHintFilterKeyEnum.CLEARED,
+              keyword: "",
+            });
+            handleSelectFilterConditions();
+          }}
+        >
           <Typography>クリア</Typography>
         </Button>
       </StyledBox>
@@ -57,9 +67,16 @@ export const SearchResultControlMenuForEntry: FC<Props> = ({
         <TextField
           size="small"
           placeholder="次を含むテキスト"
-          value={hintEntry?.filterKey === EntryHintFilterKeyEnum.TEXT_CONTAINED ? (hintEntry?.keyword ?? "") : ""}
+          value={
+            hintEntry?.filterKey === EntryHintFilterKeyEnum.TEXT_CONTAINED
+              ? (hintEntry?.keyword ?? "")
+              : ""
+          }
           onChange={(e) =>
-            hintEntryDispatcher({ filterKey: EntryHintFilterKeyEnum.TEXT_CONTAINED, keyword: e.target.value })
+            hintEntryDispatcher({
+              filterKey: EntryHintFilterKeyEnum.TEXT_CONTAINED,
+              keyword: e.target.value,
+            })
           }
           onKeyPress={handleKeyPressKeyword}
         />
@@ -68,9 +85,16 @@ export const SearchResultControlMenuForEntry: FC<Props> = ({
         <TextField
           size="small"
           placeholder="次を含まないテキスト"
-          value={hintEntry?.filterKey === EntryHintFilterKeyEnum.TEXT_NOT_CONTAINED ? (hintEntry?.keyword ?? "") : ""}
+          value={
+            hintEntry?.filterKey === EntryHintFilterKeyEnum.TEXT_NOT_CONTAINED
+              ? (hintEntry?.keyword ?? "")
+              : ""
+          }
           onChange={(e) =>
-            hintEntryDispatcher({ filterKey: EntryHintFilterKeyEnum.TEXT_NOT_CONTAINED, keyword: e.target.value })
+            hintEntryDispatcher({
+              filterKey: EntryHintFilterKeyEnum.TEXT_NOT_CONTAINED,
+              keyword: e.target.value,
+            })
           }
           onKeyPress={handleKeyPressKeyword}
         />

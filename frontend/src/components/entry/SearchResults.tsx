@@ -1,4 +1,9 @@
 import {
+  AdvancedSearchJoinAttrInfo,
+  AdvancedSearchResult,
+  EntryHint,
+} from "@dmm-com/airone-apiclient-typescript-fetch";
+import {
   Box,
   Checkbox,
   List,
@@ -16,11 +21,6 @@ import React, { FC, useMemo } from "react";
 
 import { SearchResultsTableHead } from "./SearchResultsTableHead";
 
-import {
-  AdvancedSearchJoinAttrInfo,
-  AdvancedSearchResult,
-  EntryHint,
-} from "@dmm-com/airone-apiclient-typescript-fetch";
 import { AironeLink } from "components/common";
 import { PaginationFooter } from "components/common/PaginationFooter";
 import { AttributeValue } from "components/entry/AttributeValue";
@@ -125,7 +125,9 @@ export const SearchResults: FC<Props> = ({
               entityIds={entityIds}
               searchAllEntities={searchAllEntities}
               joinAttrs={joinAttrs}
-              handleChangeAllBulkOperationEntryIds={handleChangeAllBulkOperationEntryIds}
+              handleChangeAllBulkOperationEntryIds={
+                handleChangeAllBulkOperationEntryIds
+              }
               isReadonly={isReadonly}
             />
             <TableBody>
