@@ -11,7 +11,6 @@ describe("formatAdvancedSearchParams", () => {
 
     params.append("entity", "101");
     params.append("entity", "102");
-    params.set("entry_name", "hoge");
     params.set("is_all_entities", "false");
     params.set("has_referral", "false");
     params.set("referral_name", "hoge");
@@ -32,7 +31,6 @@ describe("formatAdvancedSearchParams", () => {
   test("set params", () => {
     const actual = formatAdvancedSearchParams({
       entityIds: ["1", "2"],
-      entryName: "entry_name",
       searchAllEntities: true,
       hasReferral: true,
       referralName: "referral_name",
@@ -42,14 +40,17 @@ describe("formatAdvancedSearchParams", () => {
           keyword: "",
         },
       },
+      hintEntry: {
+        filterKey: AdvancedSearchResultAttrInfoFilterKeyEnum.CLEARED,
+        keyword: "test-hint",
+      },
     });
 
-    expect(actual.getAll("entity").map((e) => Number(e))).toEqual([1, 2]);
-    expect(actual.get("entry_name")).toEqual("entry_name");
-    expect(actual.get("is_all_entities")).toEqual("true");
-    expect(actual.get("has_referral")).toEqual("true");
-    expect(actual.get("referral_name")).toEqual("referral_name");
-    expect(actual.get("attrinfo")).toEqual(
+    expect(actual.getAll("entity")).toEqual(["1", "2"]);
+    expect(actual.get("is_all_entities")).toBe("true");
+    expect(actual.get("has_referral")).toBe("true");
+    expect(actual.get("referral_name")).toBe("referral_name");
+    expect(actual.get("attrinfo")).toBe(
       JSON.stringify([
         {
           name: "attr1",
@@ -57,6 +58,12 @@ describe("formatAdvancedSearchParams", () => {
           keyword: "",
         },
       ]),
+    );
+    expect(actual.get("hint_entry")).toBe(
+      JSON.stringify({
+        filterKey: AdvancedSearchResultAttrInfoFilterKeyEnum.CLEARED,
+        keyword: "test-hint",
+      }),
     );
   });
 
@@ -66,7 +73,6 @@ describe("formatAdvancedSearchParams", () => {
     });
 
     expect(actual.getAll("entity").map((e) => Number(e))).toEqual([1, 2]);
-    expect(actual.has("entry_name")).toBeFalsy();
   });
 
   test("overwrite base params", () => {
@@ -78,7 +84,6 @@ describe("formatAdvancedSearchParams", () => {
     // overwritten
     expect(actual.getAll("entity").map((e) => Number(e))).toEqual([1, 2]);
     // base params
-    expect(actual.get("entry_name")).toEqual("hoge");
     expect(actual.get("is_all_entities")).toEqual("false");
     expect(actual.get("has_referral")).toEqual("false");
     expect(actual.get("referral_name")).toEqual("hoge");
@@ -100,7 +105,6 @@ describe("extractAdvancedSearchParams", () => {
 
     params.append("entity", "1");
     params.append("entity", "2");
-    params.set("entry_name", "entry_name");
     params.set("is_all_entities", "true");
     params.set("has_referral", "true");
     params.set("referral_name", "referral_name");
@@ -122,7 +126,6 @@ describe("extractAdvancedSearchParams", () => {
     const {
       entityIds,
       searchAllEntities,
-      entryName,
       hasReferral,
       referralName,
       attrInfo,
@@ -130,7 +133,6 @@ describe("extractAdvancedSearchParams", () => {
 
     expect(entityIds).toEqual([1, 2]);
     expect(searchAllEntities).toEqual(true);
-    expect(entryName).toEqual("entry_name");
     expect(hasReferral).toEqual(true);
     expect(referralName).toEqual("referral_name");
     expect(attrInfo).toEqual([
@@ -146,7 +148,6 @@ describe("extractAdvancedSearchParams", () => {
     const {
       entityIds,
       searchAllEntities,
-      entryName,
       hasReferral,
       referralName,
       attrInfo,
@@ -154,9 +155,24 @@ describe("extractAdvancedSearchParams", () => {
 
     expect(entityIds).toEqual([]);
     expect(searchAllEntities).toEqual(false);
-    expect(entryName).toEqual("");
     expect(hasReferral).toEqual(false);
     expect(referralName).toEqual("");
     expect(attrInfo).toEqual([]);
+  });
+
+  test("extractAdvancedSearchParams with hint_entry", () => {
+    const params = new URLSearchParams();
+    params.set(
+      "hint_entry",
+      JSON.stringify({
+        filterKey: AdvancedSearchResultAttrInfoFilterKeyEnum.NON_EMPTY,
+        keyword: "hint-keyword",
+      }),
+    );
+    const extracted = extractAdvancedSearchParams(params);
+    expect(extracted.hintEntry).toEqual({
+      filterKey: AdvancedSearchResultAttrInfoFilterKeyEnum.NON_EMPTY,
+      keyword: "hint-keyword",
+    });
   });
 });

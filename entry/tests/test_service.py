@@ -3,7 +3,7 @@ from datetime import date, datetime, timezone
 
 from django.conf import settings
 
-from airone.lib.elasticsearch import AttrHint, FilterKey
+from airone.lib.elasticsearch import AttrHint, EntryFilterKey, EntryHint, FilterKey
 from airone.lib.log import Logger
 from airone.lib.test import AironeTestCase
 from airone.lib.types import AttrType
@@ -831,6 +831,43 @@ class AdvancedSearchServiceTest(AironeTestCase):
             user, [entity.id], [AttrHint(name=attr.name, keyword="^100$")]
         )
         self.assertEqual(resp.ret_count, 1)
+
+    def test_search_entries_with_hint_entry(self):
+        user = User.objects.create(username="hintuser")
+        entity = Entity.objects.create(name="HintEntity", created_user=user)
+        attr = EntityAttr.objects.create(
+            name="hint_attr", type=AttrType.STRING, created_user=user, parent_entity=entity
+        )
+        entity.attrs.add(attr)
+        entry1 = Entry.objects.create(name="foo-entry", schema=entity, created_user=user)
+        entry1_attr = entry1.add_attribute_from_base(attr, user)
+        entry1_attr.add_value(user, "val1")
+        entry1.register_es()
+        entry2 = Entry.objects.create(name="bar-entry", schema=entity, created_user=user)
+        entry2_attr = entry2.add_attribute_from_base(attr, user)
+        entry2_attr.add_value(user, "val2")
+        entry2.register_es()
+
+        hint_entry = EntryHint(filter_key=EntryFilterKey.TEXT_CONTAINED, keyword="foo")
+        res = AdvancedSearchService.search_entries(
+            user=user,
+            hint_entity_ids=[entity.id],
+            hint_attrs=[],
+            hint_entry=hint_entry,
+        )
+        self.assertEqual(res.ret_count, 1)
+        self.assertTrue(any("foo" in v.entry["name"] for v in res.ret_values))
+
+        # use hint entry even if entry_name is specified
+        res2 = AdvancedSearchService.search_entries(
+            user=user,
+            hint_entity_ids=[entity.id],
+            hint_attrs=[],
+            entry_name="bar-entry",
+            hint_entry=hint_entry,
+        )
+        self.assertEqual(res2.ret_count, 1)
+        self.assertTrue(any("foo" in v.entry["name"] for v in res2.ret_values))
 
     def test_search_entries_for_simple(self):
         self._entity.attrs.add(self._attr.schema)

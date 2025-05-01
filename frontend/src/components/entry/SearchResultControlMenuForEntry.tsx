@@ -1,4 +1,8 @@
 import {
+  EntryHint,
+  EntryHintFilterKeyEnum,
+} from "@dmm-com/airone-apiclient-typescript-fetch";
+import {
   Box,
   Button,
   Divider,
@@ -7,34 +11,26 @@ import {
   Typography,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import React, { ChangeEvent, Dispatch, FC, KeyboardEvent } from "react";
-
-const StyledTextField = styled(TextField)({
-  margin: "8px",
-});
+import React, { FC, KeyboardEvent } from "react";
 
 const StyledBox = styled(Box)({
   margin: "8px",
 });
 
 interface Props {
-  entryFilter: string;
+  hintEntry?: EntryHint;
   anchorElem: HTMLButtonElement | null;
   handleClose: () => void;
-  entryFilterDispatcher: Dispatch<
-    ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  >;
+  hintEntryDispatcher: (entry: Partial<EntryHint>) => void;
   handleSelectFilterConditions: () => void;
-  handleClear: () => void;
 }
 
 export const SearchResultControlMenuForEntry: FC<Props> = ({
-  entryFilter,
+  hintEntry,
   anchorElem,
   handleClose,
-  entryFilterDispatcher,
+  hintEntryDispatcher,
   handleSelectFilterConditions,
-  handleClear,
 }) => {
   const handleKeyPressKeyword = (e: KeyboardEvent<HTMLDivElement>) => {
     if (e.key === "Enter") {
@@ -48,19 +44,61 @@ export const SearchResultControlMenuForEntry: FC<Props> = ({
       onClose={() => handleClose()}
       anchorEl={anchorElem}
     >
+      <Box pl="16px" py="8px">
+        <Typography>絞り込み条件</Typography>
+      </Box>
       <StyledBox>
-        <Button variant="outlined" fullWidth onClick={() => handleClear()}>
+        <Button
+          variant="outlined"
+          fullWidth
+          onClick={() => {
+            hintEntryDispatcher({
+              filterKey: EntryHintFilterKeyEnum.CLEARED,
+              keyword: "",
+            });
+            handleSelectFilterConditions();
+          }}
+        >
           <Typography>クリア</Typography>
         </Button>
       </StyledBox>
       <Divider />
-      <StyledTextField
-        size="small"
-        placeholder="次を含むテキスト"
-        value={entryFilter}
-        onChange={entryFilterDispatcher}
-        onKeyPress={handleKeyPressKeyword}
-      />
+      <StyledBox>
+        <TextField
+          size="small"
+          placeholder="次を含むテキスト"
+          value={
+            hintEntry?.filterKey === EntryHintFilterKeyEnum.TEXT_CONTAINED
+              ? (hintEntry?.keyword ?? "")
+              : ""
+          }
+          onChange={(e) =>
+            hintEntryDispatcher({
+              filterKey: EntryHintFilterKeyEnum.TEXT_CONTAINED,
+              keyword: e.target.value,
+            })
+          }
+          onKeyPress={handleKeyPressKeyword}
+        />
+      </StyledBox>
+      <StyledBox>
+        <TextField
+          size="small"
+          placeholder="次を含まないテキスト"
+          value={
+            hintEntry?.filterKey === EntryHintFilterKeyEnum.TEXT_NOT_CONTAINED
+              ? (hintEntry?.keyword ?? "")
+              : ""
+          }
+          onChange={(e) =>
+            hintEntryDispatcher({
+              filterKey: EntryHintFilterKeyEnum.TEXT_NOT_CONTAINED,
+              keyword: e.target.value,
+            })
+          }
+          onKeyPress={handleKeyPressKeyword}
+        />
+      </StyledBox>
     </Menu>
   );
 };

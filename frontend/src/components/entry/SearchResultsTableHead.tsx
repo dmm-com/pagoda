@@ -1,6 +1,8 @@
 import {
   AdvancedSearchJoinAttrInfo,
   EntryAttributeTypeTypeEnum,
+  EntryHint,
+  EntryHintFilterKeyEnum,
 } from "@dmm-com/airone-apiclient-typescript-fetch";
 import AddIcon from "@mui/icons-material/Add";
 import CheckBoxOutlineBlankOutlinedIcon from "@mui/icons-material/CheckBoxOutlineBlankOutlined";
@@ -20,6 +22,7 @@ import { styled } from "@mui/material/styles";
 import React, {
   ChangeEvent,
   FC,
+  useCallback,
   useEffect,
   useMemo,
   useReducer,
@@ -57,7 +60,7 @@ const StyledTableCell = styled(TableCell)(({ theme }) => ({
 interface Props {
   hasReferral: boolean;
   attrTypes: Record<string, number>;
-  defaultEntryFilter?: string;
+  defaultEntryFilter?: EntryHint;
   defaultReferralFilter?: string;
   defaultAttrsFilter?: AttrsFilter;
   entityIds: number[];
@@ -83,13 +86,20 @@ export const SearchResultsTableHead: FC<Props> = ({
   const navigate = useNavigate();
   const [checked, setChecked] = useState(false);
 
-  const [entryFilter, entryFilterDispatcher] = useReducer(
-    (
-      _state: string,
-      event: ChangeEvent<HTMLTextAreaElement | HTMLInputElement>,
-    ) => event.target.value,
-    defaultEntryFilter ?? "",
+  const [hintEntry, setHintEntry] = useState<EntryHint>(
+    defaultEntryFilter ?? {
+      filterKey: EntryHintFilterKeyEnum.CLEARED,
+      keyword: "",
+    },
   );
+  const [entryMenuEls, setEntryMenuEls] = useState<HTMLButtonElement | null>(
+    null,
+  );
+
+  const hintEntryDispatcher = useCallback((update: Partial<EntryHint>) => {
+    setHintEntry((prev) => ({ ...prev, ...update }));
+  }, []);
+
   const [referralFilter, referralFilterDispatcher] = useReducer(
     (
       _state: string,
@@ -105,9 +115,6 @@ export const SearchResultsTableHead: FC<Props> = ({
   const [attributeMenuEls, setAttributeMenuEls] = useState<{
     [key: string]: HTMLButtonElement | null;
   }>({});
-  const [entryMenuEls, setEntryMenuEls] = useState<HTMLButtonElement | null>(
-    null,
-  );
   const [referralMenuEls, setReferralMenuEls] =
     useState<HTMLButtonElement | null>(null);
 
@@ -135,22 +142,23 @@ export const SearchResultsTableHead: FC<Props> = ({
 
   const handleSelectFilterConditions =
     (attrName?: string) =>
-    (
-      attrFilter?: AttrFilter,
-      overwriteEntryName?: string,
-      overwriteReferral?: string,
-    ) => {
+    (attrFilter?: AttrFilter, overwriteReferral?: string) => {
       const _attrsFilter =
         attrName != null && attrFilter != null
           ? { ...attrsFilter, [attrName]: attrFilter }
           : attrsFilter;
 
+      const hintEntryParam =
+        hintEntry.keyword && hintEntry.keyword.length > 0
+          ? { filterKey: hintEntry.filterKey, keyword: hintEntry.keyword }
+          : undefined;
+
       const newParams = formatAdvancedSearchParams({
         attrsFilter: Object.keys(_attrsFilter)
           .filter((k) => _attrsFilter[k]?.joinedAttrname === undefined)
           .reduce((a, k) => ({ ...a, [k]: _attrsFilter[k] }), {}),
-        entryName: overwriteEntryName ?? entryFilter,
         referralName: overwriteReferral ?? referralFilter,
+        hintEntry: hintEntryParam,
         baseParams: new URLSearchParams(location.search),
         joinAttrs: Object.keys(_attrsFilter)
           .filter((k) => _attrsFilter[k]?.joinedAttrname !== undefined)
@@ -219,22 +227,15 @@ export const SearchResultsTableHead: FC<Props> = ({
                       setEntryMenuEls(e.currentTarget);
                     }}
                   >
-                    {defaultEntryFilter ? (
-                      <FilterAltIcon />
-                    ) : (
-                      <FilterListIcon />
-                    )}
+                    {hintEntry.keyword ? <FilterAltIcon /> : <FilterListIcon />}
                   </StyledIconButton>
                 </Tooltip>
                 <SearchResultControlMenuForEntry
-                  entryFilter={entryFilter}
+                  hintEntry={hintEntry}
                   anchorElem={entryMenuEls}
                   handleClose={() => setEntryMenuEls(null)}
-                  entryFilterDispatcher={entryFilterDispatcher}
+                  hintEntryDispatcher={hintEntryDispatcher}
                   handleSelectFilterConditions={handleSelectFilterConditions()}
-                  handleClear={() =>
-                    handleSelectFilterConditions()(undefined, "")
-                  }
                 />
               </>
             )}
@@ -327,7 +328,7 @@ export const SearchResultsTableHead: FC<Props> = ({
                 referralFilterDispatcher={referralFilterDispatcher}
                 handleSelectFilterConditions={handleSelectFilterConditions()}
                 handleClear={() =>
-                  handleSelectFilterConditions()(undefined, undefined, "")
+                  handleSelectFilterConditions()(undefined, "")
                 }
               />
             </HeaderBox>

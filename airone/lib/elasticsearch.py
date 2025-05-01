@@ -51,10 +51,24 @@ class FilterKey(BaseIntEnum):
     DUPLICATED = 5
 
 
+@enum.unique
+class EntryFilterKey(BaseIntEnum):
+    CLEARED = 0
+    TEXT_CONTAINED = 1
+    TEXT_NOT_CONTAINED = 2
+
+
 class AttrHint(BaseModel):
     name: str
     is_readable: bool | None = None
     filter_key: FilterKey | None = None
+    keyword: str | None = None
+    exact_match: bool | None = None
+
+
+class EntryHint(BaseModel):
+    is_readable: bool | None = None
+    filter_key: EntryFilterKey | None = None
     keyword: str | None = None
     exact_match: bool | None = None
 
@@ -240,6 +254,7 @@ def make_query(
     entry_name: str | None,
     hint_referral: str | None = None,
     hint_referral_entity_id: int | None = None,
+    hint_entry: EntryHint | None = None,
 ) -> dict[str, Any]:
     """Create a search query for Elasticsearch.
 
@@ -307,7 +322,22 @@ def make_query(
     )
 
     # Included in query if refinement is entered for 'Name' in advanced search
-    if entry_name:
+    if hint_entry is not None:
+        pattern = _get_regex_pattern(hint_entry.keyword or "")
+        match getattr(hint_entry, "filter_key", None):
+            case EntryFilterKey.CLEARED:
+                # Don't perform any filter
+                pass
+            case EntryFilterKey.TEXT_CONTAINED:
+                should_clause = {"bool": {"must": [{"regexp": {"name": pattern}}]}}
+                query["query"]["bool"]["filter"].append({"bool": {"should": [should_clause]}})
+            case EntryFilterKey.TEXT_NOT_CONTAINED:
+                must_not_clause = {"bool": {"must": [{"regexp": {"name": pattern}}]}}
+                query["query"]["bool"]["filter"].append({"bool": {"must_not": [must_not_clause]}})
+            case _:
+                # NOTE: Unsupported filter key
+                pass
+    elif entry_name:
         query["query"]["bool"]["filter"].append(_make_entry_name_query(entry_name))
 
     if hint_referral:

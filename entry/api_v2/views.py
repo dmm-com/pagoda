@@ -30,6 +30,7 @@ from airone.lib.elasticsearch import (
     AdvancedSearchResultRecord,
     AdvancedSearchResults,
     AttrHint,
+    EntryHint,
     FilterKey,
 )
 from airone.lib.types import AttrType
@@ -261,8 +262,14 @@ class AdvancedSearchAPI(generics.GenericAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
+        hint_entry = serializer.validated_data.get("hint_entry")
+        if hint_entry and (hint_entry.get("filter_key") is not None or hint_entry.get("keyword")):
+            hint_entry = EntryHint(
+                keyword=hint_entry.get("keyword"),
+                filter_key=hint_entry.get("filter_key"),
+            )
+
         hint_entities = serializer.validated_data["entities"]
-        hint_entry_name = serializer.validated_data["entry_name"]
         hint_attrs = [
             AttrHint(
                 name=x["name"],
@@ -273,7 +280,7 @@ class AdvancedSearchAPI(generics.GenericAPIView):
             for x in serializer.validated_data["attrinfo"]
         ]
         hint_referral = serializer.validated_data.get("referral_name")
-        has_referral = serializer.validated_data["has_referral"]
+        has_referral = serializer.validated_data.get("has_referral")
         is_output_all = serializer.validated_data["is_output_all"]
         is_all_entities = serializer.validated_data["is_all_entities"]
         entry_limit = serializer.validated_data["entry_limit"]
@@ -445,10 +452,11 @@ class AdvancedSearchAPI(generics.GenericAPIView):
                 hint_entity_ids,
                 hint_attrs,
                 entry_limit,
-                hint_entry_name,
+                None,  # don't use in APIv2
                 hint_referral,
                 is_output_all,
                 offset=entry_offset,
+                # TODO rethink to support hint_entry
             )
         else:
             resp = AdvancedSearchService.search_entries(
@@ -456,10 +464,11 @@ class AdvancedSearchAPI(generics.GenericAPIView):
                 hint_entity_ids,
                 hint_attrs,
                 entry_limit,
-                hint_entry_name,
+                None,  # don't use in APIv2
                 hint_referral,
                 is_output_all,
                 offset=entry_offset,
+                hint_entry=hint_entry,
             )
 
         # save total population number

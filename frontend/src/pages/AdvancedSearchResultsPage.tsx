@@ -140,11 +140,11 @@ export const AdvancedSearchResultsPage: FC = () => {
   const {
     entityIds,
     searchAllEntities,
-    entryName,
     hasReferral,
     referralName,
     attrInfo,
     joinAttrs,
+    hintEntry,
   } = useMemo(() => {
     const params = new URLSearchParams(location.search);
     return extractAdvancedSearchParams(params);
@@ -167,7 +167,6 @@ export const AdvancedSearchResultsPage: FC = () => {
     const sendSearchRequest = () => {
       return aironeApiClient.advancedSearch(
         entityIds,
-        entryName,
         attrInfo,
         joinAttrs,
         hasReferral,
@@ -175,6 +174,8 @@ export const AdvancedSearchResultsPage: FC = () => {
         searchAllEntities,
         page,
         AdvancedSerarchResultListParam.MAX_ROW_COUNT,
+        0,
+        hintEntry,
       );
     };
 
@@ -218,7 +219,6 @@ export const AdvancedSearchResultsPage: FC = () => {
       await aironeApiClient.exportAdvancedSearchResults(
         entityIds,
         attrInfo,
-        entryName,
         hasReferral,
         searchAllEntities,
         exportStyle,
@@ -366,7 +366,7 @@ export const AdvancedSearchResultsPage: FC = () => {
             page={page}
             changePage={changePage}
             hasReferral={hasReferral}
-            defaultEntryFilter={entryName}
+            defaultEntryFilter={hintEntry}
             defaultReferralFilter={referralName}
             defaultAttrsFilter={
               // make defaultAttrFilter to make fabric contexts of joinAttrs into the one of attrinfo

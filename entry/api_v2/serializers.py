@@ -19,7 +19,7 @@ from airone.lib.drf import (
     ObjectNotExistsError,
     RequiredParameterError,
 )
-from airone.lib.elasticsearch import FilterKey
+from airone.lib.elasticsearch import EntryFilterKey, FilterKey
 from airone.lib.log import Logger
 from airone.lib.types import AttrDefaultValue, AttrType
 from entity.api_v2.serializers import EntitySerializer
@@ -1282,9 +1282,36 @@ class AdvancedSearchJoinAttrInfoSerializer(serializers.Serializer):
     attrinfo = AdvancedSearchResultAttrInfoSerializer(many=True)
 
 
+class EntryHintSerializer(serializers.Serializer):
+    @extend_schema_field(
+        {
+            "type": "integer",
+            "enum": [k.value for k in EntryFilterKey],
+            "x-enum-varnames": [k.name for k in EntryFilterKey],
+        }
+    )
+    class EntryFilterKeyField(serializers.IntegerField):
+        pass
+
+    filter_key = EntryFilterKeyField(required=False)
+    keyword = serializers.CharField(
+        required=False, allow_blank=True, max_length=CONFIG_ENTRY.MAX_QUERY_SIZE
+    )
+    exact_match = serializers.BooleanField(required=False)
+
+    def validate_keyword(self, keyword: str) -> str:
+        if len(keyword) > CONFIG_ENTRY.MAX_QUERY_SIZE:
+            raise ValidationError("keyword is too long")
+        return keyword
+
+    def validate_filter_key(self, filter_key: int):
+        if filter_key not in [k.value for k in EntryFilterKey]:
+            raise ValidationError("filter key parameter is invalid value")
+        return filter_key
+
+
 class AdvancedSearchSerializer(serializers.Serializer):
     entities = serializers.ListField(child=serializers.IntegerField())
-    entry_name = serializers.CharField(allow_blank=True, default="")
     attrinfo = AdvancedSearchResultAttrInfoSerializer(many=True)
     join_attrs = AdvancedSearchJoinAttrInfoSerializer(many=True, required=False)
     has_referral = serializers.BooleanField(default=False)
@@ -1293,11 +1320,7 @@ class AdvancedSearchSerializer(serializers.Serializer):
     is_all_entities = serializers.BooleanField(default=False)
     entry_limit = serializers.IntegerField(default=CONFIG_ENTRY.MAX_LIST_ENTRIES)
     entry_offset = serializers.IntegerField(default=0)
-
-    def validate_entry_name(self, entry_name: str) -> str:
-        if len(entry_name) > CONFIG_ENTRY.MAX_QUERY_SIZE:
-            raise ValidationError("entry_name is too long")
-        return entry_name
+    hint_entry = EntryHintSerializer(required=False)
 
     def validate_attrs(self, attrs: list[dict[str, str]]) -> list[dict[str, str]]:
         if any([len(attr.get("keyword", "")) > CONFIG_ENTRY.MAX_QUERY_SIZE for attr in attrs]):
@@ -1354,11 +1377,9 @@ class AdvancedSearchResultExportSerializer(serializers.Serializer):
     attrinfo = AdvancedSearchResultAttrInfoSerializer(many=True)
     has_referral = serializers.BooleanField(required=False)
     referral_name = serializers.CharField(required=False)
-    entry_name = serializers.CharField(
-        required=False, allow_blank=True, max_length=CONFIG_ENTRY.MAX_QUERY_SIZE
-    )
     is_all_entities = serializers.BooleanField(default=False)
     export_style = serializers.CharField()
+    hint_entry = EntryHintSerializer(required=False)
 
     def validate_entities(self, entities: list[int]) -> list[int]:
         if Entity.objects.filter(id__in=entities).count() != len(entities):

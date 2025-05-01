@@ -1,6 +1,7 @@
 import {
   AdvancedSearchJoinAttrInfo,
   AdvancedSearchResult,
+  EntryHint,
 } from "@dmm-com/airone-apiclient-typescript-fetch";
 import {
   Box,
@@ -53,7 +54,7 @@ interface Props {
   page: number;
   changePage: (page: number) => void;
   hasReferral: boolean;
-  defaultEntryFilter?: string;
+  defaultEntryFilter?: EntryHint;
   defaultReferralFilter?: string;
   defaultAttrsFilter?: AttrsFilter;
   bulkOperationEntryIds: Array<number>;
