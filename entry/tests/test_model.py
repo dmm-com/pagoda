@@ -4156,6 +4156,43 @@ class ModelTest(AironeTestCase):
 
         self.assertEqual(entry.get_attrv("attr-changed").value, "value")
 
+    def test_get_attrv_item(self):
+        model_ref = self.create_entity(self._user, "Ref")
+        model_test = self.create_entity(
+            self._user,
+            "Test Entity",
+            attrs=[
+                {"name": "str", "type": AttrType.STRING},
+                {"name": "obj", "type": AttrType.OBJECT},
+                {"name": "name", "type": AttrType.NAMED_OBJECT},
+                {"name": "arr_str", "type": AttrType.ARRAY_STRING},
+                {"name": "arr_obj", "type": AttrType.ARRAY_OBJECT},
+                {"name": "arr_name", "type": AttrType.ARRAY_NAMED_OBJECT},
+            ],
+        )
+
+        item_refs = [self.add_entry(self._user, "ref%d" % x, model_ref) for x in range(2)]
+        item_test = self.add_entry(
+            self._user,
+            "test",
+            model_test,
+            values={
+                "str": "foo",
+                "obj": item_refs[0],
+                "name": {"name": "hoge", "id": item_refs[1].id},
+                "arr_obj": item_refs,
+                "arr_name": [{"name": "hoge", "id": x.id} for x in item_refs],
+            },
+        )
+
+        # check AttributeValue.get_attrv_item() returns expected results
+        self.assertEqual(item_test.get_attrv_item("str"), None)
+        self.assertEqual(item_test.get_attrv_item("obj"), item_refs[0])
+        self.assertIsInstance(item_test.get_attrv_item("obj"), Entry)
+        self.assertEqual(item_test.get_attrv_item("name"), item_refs[1])
+        self.assertEqual(item_test.get_attrv_item("arr_obj"), item_refs)
+        self.assertEqual(item_test.get_attrv_item("arr_name"), item_refs)
+
     def test_inherit_individual_attribute_permissions_when_it_is_complemented(self):
         [user1, user2] = [User.objects.create(username=x) for x in ["u1", "u2"]]
         groups = [Group.objects.create(name=x) for x in ["g1", "g2"]]

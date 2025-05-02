@@ -1,7 +1,7 @@
 import re
 from collections.abc import Iterable
 from datetime import date, datetime
-from typing import Any, List, Optional, Type
+from typing import Any, List, Optional, Type, Union
 
 from django.conf import settings
 from django.db import models
@@ -499,6 +499,15 @@ class AttributeValue(models.Model):
             return (False, str(e))
 
         return (True, None)
+
+    @property
+    def is_array(self):
+        return self.parent_attr.is_array()
+
+    @property
+    def ref_item(self):
+        if self.referral is not None and self.referral.is_active:
+            return self.referral.entry
 
 
 class Attribute(ACLBase):
@@ -2266,6 +2275,19 @@ class Entry(ACLBase):
             parent_attr__schema__is_active=True,
             parent_attr__parent_entry=self,
         ).last()
+
+    def get_attrv_item(self, attr_name: str) -> Union["Entry", list["Entry"], None]:
+        """
+        This helper method returns Item that is referred by specified attribute value
+        """
+        attrv = self.get_attrv(attr_name)
+        if not attrv:
+            return None
+
+        if attrv.is_array:
+            return [x.ref_item for x in attrv.data_array.filter(referral__is_active=True)]
+        else:
+            return attrv.ref_item
 
     def get_trigger_params(self, user: User, attrnames: list[str]) -> list[dict]:
         entry_dict = self.to_dict(user, with_metainfo=True) or {}
