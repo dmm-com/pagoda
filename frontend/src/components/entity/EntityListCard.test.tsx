@@ -76,7 +76,7 @@ describe("EntityListCard", () => {
     expect(moreButton).toBeInTheDocument();
   });
 
-  test("should copy entity name to clipboard when copy button is clicked", () => {
+  test("should copy entity name to clipboard when copy button is clicked", async () => {
     // Mock clipboard API
     Object.assign(navigator, {
       clipboard: {
@@ -88,11 +88,21 @@ describe("EntityListCard", () => {
       wrapper: TestWrapper,
     });
 
-    // Verify the correct button name
+    // ボタンはaria-labelで取得
     const copyButton = screen.getByRole("button", {
-      name: "名前をコピーしました",
+      name: "名前をコピーする",
     });
+
+    // ホバー時のTooltip
+    fireEvent.mouseOver(copyButton);
+    expect(await screen.findByText("名前をコピーする")).toBeInTheDocument();
+
+    // クリック
     fireEvent.click(copyButton);
+
+    // クリック後のTooltip
+    fireEvent.mouseOver(copyButton);
+    expect(await screen.findByText("名前をコピーしました")).toBeInTheDocument();
 
     // Verify the correct value was written to clipboard
     expect(navigator.clipboard.writeText).toHaveBeenCalledWith(entity.name);
