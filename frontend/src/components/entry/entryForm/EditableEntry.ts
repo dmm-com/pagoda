@@ -5,7 +5,7 @@ import {
   EntryAttributeValueRole,
 } from "@dmm-com/airone-apiclient-typescript-fetch";
 
-export type EditableEntryAttrValueObject = Pick<
+type EditableEntryAttrValueObject = Pick<
   EntryAttributeValueObject,
   "id" | "name"
 >;
