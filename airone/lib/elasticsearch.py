@@ -348,10 +348,8 @@ def make_query(
             _make_referral_entity_query(hint_referral_entity_id)
         )
 
-    # Set the attribute name so that all the attributes specified in the attribute,
-    # to be searched can be used
-    if hint_attrs:
-        query["query"]["bool"]["filter"].append(
+    if any(hint.keyword for hint in hint_attrs):
+        query["query"]["bool"]["should"].append(
             {
                 "nested": {
                     "path": "attr",
