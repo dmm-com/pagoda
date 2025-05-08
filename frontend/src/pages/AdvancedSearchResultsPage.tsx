@@ -120,7 +120,7 @@ export const getIsFiltered = (filterKey?: number, keyword?: string) => {
   return false;
 };
 
-export interface AirOneAdvancedSearchResult extends AdvancedSearchResult {
+interface AirOneAdvancedSearchResult extends AdvancedSearchResult {
   page: number;
   isInProcessing: boolean;
 }
