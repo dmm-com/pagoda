@@ -230,7 +230,7 @@ exports[`EntityListPage should match snapshot 1`] = `
                       class="MuiCardHeader-action css-116l9hl-MuiCardHeader-action"
                     >
                       <button
-                        aria-label="名前をコピーしました"
+                        aria-label="名前をコピーする"
                         class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-53g0n7-MuiButtonBase-root-MuiIconButton-root"
                         data-mui-internal-clone-element="true"
                         tabindex="0"
@@ -317,7 +317,7 @@ exports[`EntityListPage should match snapshot 1`] = `
                       class="MuiCardHeader-action css-116l9hl-MuiCardHeader-action"
                     >
                       <button
-                        aria-label="名前をコピーしました"
+                        aria-label="名前をコピーする"
                         class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-53g0n7-MuiButtonBase-root-MuiIconButton-root"
                         data-mui-internal-clone-element="true"
                         tabindex="0"
@@ -404,7 +404,7 @@ exports[`EntityListPage should match snapshot 1`] = `
                       class="MuiCardHeader-action css-116l9hl-MuiCardHeader-action"
                     >
                       <button
-                        aria-label="名前をコピーしました"
+                        aria-label="名前をコピーする"
                         class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-53g0n7-MuiButtonBase-root-MuiIconButton-root"
                         data-mui-internal-clone-element="true"
                         tabindex="0"
@@ -760,7 +760,7 @@ exports[`EntityListPage should match snapshot 1`] = `
                     class="MuiCardHeader-action css-116l9hl-MuiCardHeader-action"
                   >
                     <button
-                      aria-label="名前をコピーしました"
+                      aria-label="名前をコピーする"
                       class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-53g0n7-MuiButtonBase-root-MuiIconButton-root"
                       data-mui-internal-clone-element="true"
                       tabindex="0"
@@ -847,7 +847,7 @@ exports[`EntityListPage should match snapshot 1`] = `
                     class="MuiCardHeader-action css-116l9hl-MuiCardHeader-action"
                   >
                     <button
-                      aria-label="名前をコピーしました"
+                      aria-label="名前をコピーする"
                       class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-53g0n7-MuiButtonBase-root-MuiIconButton-root"
                       data-mui-internal-clone-element="true"
                       tabindex="0"
@@ -934,7 +934,7 @@ exports[`EntityListPage should match snapshot 1`] = `
                     class="MuiCardHeader-action css-116l9hl-MuiCardHeader-action"
                   >
                     <button
-                      aria-label="名前をコピーしました"
+                      aria-label="名前をコピーする"
                       class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-53g0n7-MuiButtonBase-root-MuiIconButton-root"
                       data-mui-internal-clone-element="true"
                       tabindex="0"

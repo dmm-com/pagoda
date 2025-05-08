@@ -1,5 +1,5 @@
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
-import { ClickAwayListener, IconButton, Tooltip } from "@mui/material";
+import { IconButton, Tooltip } from "@mui/material";
 import React, { FC, useState } from "react";
 
 interface Props {
@@ -7,26 +7,22 @@ interface Props {
 }
 
 export const ClipboardCopyButton: FC<Props> = ({ name }) => {
-  const [open, setOpen] = useState<boolean>(false);
+  const [copied, setCopied] = useState(false);
   return (
-    <ClickAwayListener onClickAway={() => setOpen(false)}>
-      <Tooltip
-        title="名前をコピーしました"
-        open={open}
-        disableHoverListener
-        disableFocusListener
+    <Tooltip
+      title={copied ? "名前をコピーしました" : "名前をコピーする"}
+      onClose={() => setCopied(false)}
+    >
+      <IconButton
+        aria-label="名前をコピーする"
+        onClick={() => {
+          global.navigator.clipboard.writeText(name);
+          setCopied(true);
+          setTimeout(() => setCopied(false), 1000);
+        }}
       >
-        <Tooltip title="名前をコピーする">
-          <IconButton
-            onClick={() => {
-              global.navigator.clipboard.writeText(name);
-              setOpen(true);
-            }}
-          >
-            <ContentCopyIcon fontSize="small" />
-          </IconButton>
-        </Tooltip>
-      </Tooltip>
-    </ClickAwayListener>
+        <ContentCopyIcon fontSize="small" />
+      </IconButton>
+    </Tooltip>
   );
 };
