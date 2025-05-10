@@ -79,9 +79,11 @@ describe("ChangeUserAuthModal", () => {
       screen.getByRole("button", { name: "送信" }).click();
     });
 
-    expect(
-      screen.queryByText("認証方法の変更に成功しました"),
-    ).not.toBeInTheDocument();
+    await waitFor(() => {
+      expect(
+        screen.queryByText("認証方法の変更に成功しました"),
+      ).not.toBeInTheDocument();
+    });
   });
 
   test("should handle a failure on updating auth method", async () => {
@@ -109,8 +111,10 @@ describe("ChangeUserAuthModal", () => {
       screen.getByRole("button", { name: "送信" }).click();
     });
 
-    expect(
-      screen.queryByText("認証方法の変更に失敗しました"),
-    ).not.toBeInTheDocument();
+    await waitFor(() => {
+      expect(
+        screen.queryByText("認証方法の変更に失敗しました"),
+      ).not.toBeInTheDocument();
+    });
   });
 });

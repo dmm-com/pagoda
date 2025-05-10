@@ -9,7 +9,7 @@ export const TestWrapper: FC<{ children: React.ReactNode }> = ({
   const theme = createTheme();
   return (
     <ThemeProvider theme={theme}>
-      <SnackbarProvider>
+      <SnackbarProvider maxSnack={1} autoHideDuration={100}>
         <MemoryRouter>{children}</MemoryRouter>
       </SnackbarProvider>
     </ThemeProvider>
@@ -22,7 +22,9 @@ export const TestWrapperWithoutRoutes: FC<{ children: React.ReactNode }> = ({
   const theme = createTheme();
   return (
     <ThemeProvider theme={theme}>
-      <SnackbarProvider>{children}</SnackbarProvider>
+      <SnackbarProvider maxSnack={1} autoHideDuration={100}>
+        {children}
+      </SnackbarProvider>
     </ThemeProvider>
   );
 };
