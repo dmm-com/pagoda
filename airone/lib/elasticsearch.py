@@ -354,28 +354,31 @@ def make_query(
             _make_referral_entity_query(hint_referral_entity_id)
         )
 
-    # 属性存在チェックの対象となる属性を決定
-    attr_existence_should_clauses = []
+    # Determine attributes for existence check
+    attr_existence_should_clauses: list[dict[str, Any]] = []
     if allow_missing_attributes:
-        # APIv2向け: キーワードが指定されている属性のみ、存在チェックの対象とする
+        # For APIv2: Only attributes with specified keywords are subject to existence check
         for hint in hint_attrs:
             if hint.name and hint.keyword:
                 attr_existence_should_clauses.append({"term": {"attr.name": hint.name}})
     else:
-        # 旧UI向け (従来通りの挙動): 指定された全ての属性を存在チェックの対象とする
         for hint in hint_attrs:
             if hint.name:
                 attr_existence_should_clauses.append({"term": {"attr.name": hint.name}})
 
-    # 属性存在チェック条件を追加
+    # Add attribute existence check condition (commonized)
     if attr_existence_should_clauses:
-        query["query"]["bool"]["should"].append(
+        nested_query_bool_part: dict[str, Any] = {"should": attr_existence_should_clauses}
+
+        # Add minimum_should_match only for APIv2
+        if allow_missing_attributes:
+            nested_query_bool_part["minimum_should_match"] = 1
+
+        query["query"]["bool"]["filter"].append(
             {
                 "nested": {
                     "path": "attr",
-                    "query": {
-                        "bool": {"should": attr_existence_should_clauses, "minimum_should_match": 1}
-                    },
+                    "query": {"bool": nested_query_bool_part},
                 }
             }
         )
@@ -852,7 +855,7 @@ def _make_an_attribute_filter(hint: AttrHint, keyword: str) -> dict[str, dict]:
        If the conversion result is not empty, create a 'regexp' query.
        If the conversion result is an empty string, search for data
            with an empty attribute value
-    4. After the above process, create a 'nested' query and return it.
+    # 4. After the above process, create a 'nested' query and return it.
 
     Args:
         hint (AttrHint): Dictionary of attribute names and search keywords to be processed
