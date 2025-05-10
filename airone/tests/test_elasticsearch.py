@@ -201,6 +201,137 @@ class ElasticSearchTest(TestCase):
             },
         )
 
+    def test_make_query_allow_missing_attributes(self):
+        """Test make_query with allow_missing_attributes=True (APIv2 case)."""
+        query = elasticsearch.make_query(
+            hint_entity=self._entity,
+            hint_attrs=[
+                AttrHint(name="attr_with_keyword", keyword="has_keyword"),
+                AttrHint(name="attr_without_keyword", keyword=""),
+                AttrHint(name="another_attr_with_keyword", keyword="another_keyword"),
+            ],
+            entry_name="test_entry_apiv2",
+            allow_missing_attributes=True,
+        )
+
+        expected_query = {
+            "query": {
+                "bool": {
+                    "filter": [
+                        {
+                            "nested": {
+                                "path": "entity",
+                                "query": {"term": {"entity.id": self._entity.id}},
+                            }
+                        },
+                        {
+                            "bool": {
+                                "should": [
+                                    {
+                                        "bool": {
+                                            "must": [
+                                                {
+                                                    "regexp": {
+                                                        "name": ".*[tT][eE][sS][tT]_[eE][nN][tT][rR][yY]_[aA][pP][iI][vV]2.*"
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "nested": {
+                                "path": "attr",
+                                "query": {
+                                    "bool": {
+                                        "should": [
+                                            {"term": {"attr.name": "attr_with_keyword"}},
+                                            {"term": {"attr.name": "another_attr_with_keyword"}},
+                                        ],
+                                        "minimum_should_match": 1,
+                                    }
+                                },
+                            }
+                        },
+                        {
+                            "bool": {
+                                "filter": [
+                                    {
+                                        "nested": {
+                                            "path": "attr",
+                                            "query": {
+                                                "bool": {
+                                                    "filter": [
+                                                        {
+                                                            "term": {
+                                                                "attr.name": "attr_with_keyword"
+                                                            }
+                                                        },
+                                                        {
+                                                            "bool": {
+                                                                "should": [
+                                                                    {
+                                                                        "match": {
+                                                                            "attr.value": "has_keyword"
+                                                                        }
+                                                                    },
+                                                                    {
+                                                                        "regexp": {
+                                                                            "attr.value": ".*[hH][aA][sS]_[kK][eE][yY][wW][oO][rR][dD].*"
+                                                                        }
+                                                                    },
+                                                                ]
+                                                            }
+                                                        },
+                                                    ]
+                                                }
+                                            },
+                                        }
+                                    },
+                                    {
+                                        "nested": {
+                                            "path": "attr",
+                                            "query": {
+                                                "bool": {
+                                                    "filter": [
+                                                        {
+                                                            "term": {
+                                                                "attr.name": "another_attr_with_keyword"
+                                                            }
+                                                        },
+                                                        {
+                                                            "bool": {
+                                                                "should": [
+                                                                    {
+                                                                        "match": {
+                                                                            "attr.value": "another_keyword"
+                                                                        }
+                                                                    },
+                                                                    {
+                                                                        "regexp": {
+                                                                            "attr.value": ".*[aA][nN][oO][tT][hH][eE][rR]_[kK][eE][yY][wW][oO][rR][dD].*"
+                                                                        }
+                                                                    },
+                                                                ]
+                                                            }
+                                                        },
+                                                    ]
+                                                }
+                                            },
+                                        }
+                                    },
+                                ]
+                            }
+                        },
+                    ],
+                    "should": [],
+                }
+            }
+        }
+        self.assertEqual(query, expected_query)
+
     def test_make_query_for_simple(self):
         query = elasticsearch.make_query_for_simple("hoge|fuga&1", None, [], 0)
         self.assertEqual(

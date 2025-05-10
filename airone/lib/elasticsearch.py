@@ -255,6 +255,7 @@ def make_query(
     hint_referral: str | None = None,
     hint_referral_entity_id: int | None = None,
     hint_entry: EntryHint | None = None,
+    allow_missing_attributes: bool = False,
 ) -> dict[str, Any]:
     """Create a search query for Elasticsearch.
 
@@ -274,6 +275,11 @@ def make_query(
         hint_referral_entity_id (int):
             - Limit result to the Entries that refer to Entry, which belongs to
               specified Entity.
+        allow_missing_attributes (bool, optional): Defaults to False.
+            If True, entries that do not have attributes specified in hint_attrs (without a keyword)
+            will be included in the search results.
+            If False, attributes specified in hint_attrs (without a keyword) must exist
+            in the entry.
 
     Returns:
         dict[str, Any]: The created search query is returned.
@@ -348,20 +354,31 @@ def make_query(
             _make_referral_entity_query(hint_referral_entity_id)
         )
 
-    # Set the attribute name so that all the attributes specified in the attribute,
-    # to be searched can be used
-    if hint_attrs:
+    # Determine attributes for existence check
+    attr_existence_should_clauses: list[dict[str, Any]] = []
+    if allow_missing_attributes:
+        # For APIv2: Only attributes with specified keywords are subject to existence check
+        for hint in hint_attrs:
+            if hint.name and hint.keyword:
+                attr_existence_should_clauses.append({"term": {"attr.name": hint.name}})
+    else:
+        for hint in hint_attrs:
+            if hint.name:
+                attr_existence_should_clauses.append({"term": {"attr.name": hint.name}})
+
+    # Add attribute existence check condition (commonized)
+    if attr_existence_should_clauses:
+        nested_query_bool_part: dict[str, Any] = {"should": attr_existence_should_clauses}
+
+        # Add minimum_should_match only for APIv2
+        if allow_missing_attributes:
+            nested_query_bool_part["minimum_should_match"] = 1
+
         query["query"]["bool"]["filter"].append(
             {
                 "nested": {
                     "path": "attr",
-                    "query": {
-                        "bool": {
-                            "should": [
-                                {"term": {"attr.name": x.name}} for x in hint_attrs if x.name
-                            ]
-                        }
-                    },
+                    "query": {"bool": nested_query_bool_part},
                 }
             }
         )
@@ -838,7 +855,7 @@ def _make_an_attribute_filter(hint: AttrHint, keyword: str) -> dict[str, dict]:
        If the conversion result is not empty, create a 'regexp' query.
        If the conversion result is an empty string, search for data
            with an empty attribute value
-    4. After the above process, create a 'nested' query and return it.
+    # 4. After the above process, create a 'nested' query and return it.
 
     Args:
         hint (AttrHint): Dictionary of attribute names and search keywords to be processed

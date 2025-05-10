@@ -41,6 +41,7 @@ class AdvancedSearchService:
         hint_referral_entity_id: int | None = None,
         offset: int = 0,
         hint_entry: EntryHint | None = None,
+        allow_missing_attributes: bool = False,
     ) -> AdvancedSearchResults:
         """Main method called from advanced search.
 
@@ -70,6 +71,11 @@ class AdvancedSearchService:
                 The number of offset to get a part of a large amount of search results
             hint_entry (AttrHint | None): Defaults to None.
                 Input value used to refine the entry.
+            allow_missing_attributes (bool, optional): Defaults to False.
+                If True, entries that do not have attributes specified in hint_attrs
+                (without a keyword) will be included in the search results.
+                If False, attributes specified in hint_attrs (without a keyword)
+                must exist in the entry.
 
         Returns:
             AdvancedSearchResults: As a result of the search,
@@ -116,7 +122,13 @@ class AdvancedSearchService:
 
             # make query for elasticsearch to retrieve data user wants
             query = make_query(
-                entity, hint_attrs, entry_name, hint_referral, hint_referral_entity_id, hint_entry
+                entity,
+                hint_attrs,
+                entry_name,
+                hint_referral,
+                hint_referral_entity_id,
+                hint_entry,
+                allow_missing_attributes=allow_missing_attributes,
             )
 
             # sending request to elasticsearch with making query
