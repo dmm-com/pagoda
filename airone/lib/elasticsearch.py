@@ -255,6 +255,7 @@ def make_query(
     hint_referral: str | None = None,
     hint_referral_entity_id: int | None = None,
     hint_entry: EntryHint | None = None,
+    allow_missing_attributes: bool = False,
 ) -> dict[str, Any]:
     """Create a search query for Elasticsearch.
 
@@ -274,6 +275,11 @@ def make_query(
         hint_referral_entity_id (int):
             - Limit result to the Entries that refer to Entry, which belongs to
               specified Entity.
+        allow_missing_attributes (bool, optional): Defaults to False.
+            If True, entries that do not have attributes specified in hint_attrs (without a keyword)
+            will be included in the search results.
+            If False, attributes specified in hint_attrs (without a keyword) must exist
+            in the entry.
 
     Returns:
         dict[str, Any]: The created search query is returned.
@@ -348,17 +354,27 @@ def make_query(
             _make_referral_entity_query(hint_referral_entity_id)
         )
 
-    if any(hint.keyword for hint in hint_attrs):
+    # 属性存在チェックの対象となる属性を決定
+    attr_existence_should_clauses = []
+    if allow_missing_attributes:
+        # APIv2向け: キーワードが指定されている属性のみ、存在チェックの対象とする
+        for hint in hint_attrs:
+            if hint.name and hint.keyword:
+                attr_existence_should_clauses.append({"term": {"attr.name": hint.name}})
+    else:
+        # 旧UI向け (従来通りの挙動): 指定された全ての属性を存在チェックの対象とする
+        for hint in hint_attrs:
+            if hint.name:
+                attr_existence_should_clauses.append({"term": {"attr.name": hint.name}})
+
+    # 属性存在チェック条件を追加
+    if attr_existence_should_clauses:
         query["query"]["bool"]["should"].append(
             {
                 "nested": {
                     "path": "attr",
                     "query": {
-                        "bool": {
-                            "should": [
-                                {"term": {"attr.name": x.name}} for x in hint_attrs if x.name
-                            ]
-                        }
+                        "bool": {"should": attr_existence_should_clauses, "minimum_should_match": 1}
                     },
                 }
             }
