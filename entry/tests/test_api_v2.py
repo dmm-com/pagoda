@@ -3355,6 +3355,102 @@ class ViewTest(BaseViewTest):
         )
         self.assertEqual(resp.status_code, 400)
 
+    def test_advanced_search_results_multiple_entities_different_attrs(self):
+        alpha_entity_api = Entity.objects.create(
+            name="AlphaEntityAPIResults", created_user=self.user
+        )
+        beta_entity_api = Entity.objects.create(name="BetaEntityAPIResults", created_user=self.user)
+
+        # common attribute for both entities
+        common_attr_alpha_schema = EntityAttr.objects.create(
+            name="common_attr_api",
+            type=AttrType.STRING,
+            created_user=self.user,
+            parent_entity=alpha_entity_api,
+        )
+        common_attr_beta_schema = EntityAttr.objects.create(
+            name="common_attr_api",
+            type=AttrType.STRING,
+            created_user=self.user,
+            parent_entity=beta_entity_api,
+        )
+        # attribute only for alpha entity
+        alpha_only_attr_schema = EntityAttr.objects.create(
+            name="alpha_only_attr_api",
+            type=AttrType.STRING,
+            created_user=self.user,
+            parent_entity=alpha_entity_api,
+        )
+
+        entry_alpha_api = Entry.objects.create(
+            name="entryAlphaAPIResults1", schema=alpha_entity_api, created_user=self.user
+        )
+        attr_alpha_common = entry_alpha_api.add_attribute_from_base(
+            common_attr_alpha_schema, self.user
+        )
+        attr_alpha_common.add_value(self.user, "common_value_Alpha_API")
+        attr_alpha_only = entry_alpha_api.add_attribute_from_base(alpha_only_attr_schema, self.user)
+        attr_alpha_only.add_value(self.user, "alpha_specific_value_API")
+
+        entry_beta_api = Entry.objects.create(
+            name="entryBetaAPIResults1", schema=beta_entity_api, created_user=self.user
+        )
+        attr_beta_common = entry_beta_api.add_attribute_from_base(
+            common_attr_beta_schema, self.user
+        )
+        attr_beta_common.add_value(self.user, "common_value_Beta_API")
+
+        entry_alpha_api.register_es()
+        entry_beta_api.register_es()
+
+        params = {
+            "entities": [str(alpha_entity_api.id), str(beta_entity_api.id)],
+            "attrinfo": [
+                {"name": "common_attr_api"},
+                {"name": "alpha_only_attr_api"},
+            ],
+            "is_output_all": True,
+            "is_all_entities": False,
+            "entry_limit": 10,
+            "entry_offset": 0,
+        }
+
+        resp = self.client.post(
+            "/entry/api/v2/advanced_search/", json.dumps(params), "application/json"
+        )
+
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+
+        response_data = resp.json()
+        self.assertEqual(response_data["count"], 2)
+        self.assertEqual(len(response_data["values"]), 2)
+
+        ret_values_sorted = sorted(response_data["values"], key=lambda x: x["entry"]["name"])
+
+        entry_alpha_result = ret_values_sorted[0]
+        self.assertEqual(entry_alpha_result["entry"]["name"], "entryAlphaAPIResults1")
+        self.assertEqual(entry_alpha_result["entity"]["name"], "AlphaEntityAPIResults")
+        self.assertIn("common_attr_api", entry_alpha_result["attrs"])
+        self.assertEqual(
+            entry_alpha_result["attrs"]["common_attr_api"]["value"],
+            {"as_string": "common_value_Alpha_API"},
+        )
+        self.assertIn("alpha_only_attr_api", entry_alpha_result["attrs"])
+        self.assertEqual(
+            entry_alpha_result["attrs"]["alpha_only_attr_api"]["value"],
+            {"as_string": "alpha_specific_value_API"},
+        )
+
+        entry_beta_result = ret_values_sorted[1]
+        self.assertEqual(entry_beta_result["entry"]["name"], "entryBetaAPIResults1")
+        self.assertEqual(entry_beta_result["entity"]["name"], "BetaEntityAPIResults")
+        self.assertIn("common_attr_api", entry_beta_result["attrs"])
+        self.assertEqual(
+            entry_beta_result["attrs"]["common_attr_api"]["value"],
+            {"as_string": "common_value_Beta_API"},
+        )
+        self.assertNotIn("alpha_only_attr_api", entry_beta_result["attrs"])
+
     @patch(
         "entry.tasks.export_search_result_v2.delay", Mock(side_effect=tasks.export_search_result_v2)
     )

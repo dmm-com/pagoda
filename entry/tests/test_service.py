@@ -1125,6 +1125,92 @@ class AdvancedSearchServiceTest(AironeTestCase):
         self.assertEqual(res.ret_count, 0)
         self.assertEqual(len(res.ret_values), 0)
 
+    def test_search_entries_allow_missing_attributes(self):
+        # 1. Setup Entities
+        alpha_entity = Entity.objects.create(
+            name="AlphaEntityAllowMissing", created_user=self._user
+        )
+        beta_entity = Entity.objects.create(name="BetaEntityAllowMissing", created_user=self._user)
+
+        # 2. Setup EntityAttrs
+        # Common attribute for both AlphaEntity and BetaEntity
+        common_attr_alpha_schema = EntityAttr.objects.create(
+            name="common_attr",
+            type=AttrType.STRING,
+            created_user=self._user,
+            parent_entity=alpha_entity,
+        )
+        common_attr_beta_schema = EntityAttr.objects.create(
+            name="common_attr",
+            type=AttrType.STRING,
+            created_user=self._user,
+            parent_entity=beta_entity,
+        )
+
+        # Attribute only for AlphaEntity
+        alpha_only_attr_schema = EntityAttr.objects.create(
+            name="alpha_only_attr",
+            type=AttrType.STRING,
+            created_user=self._user,
+            parent_entity=alpha_entity,
+        )
+
+        # 3. Setup Entries and AttributeValues
+        # Entry for AlphaEntity
+        entry_a1 = Entry.objects.create(
+            name="entryA1_allow_missing", schema=alpha_entity, created_user=self._user
+        )
+        attr_a1_common = entry_a1.add_attribute_from_base(common_attr_alpha_schema, self._user)
+        attr_a1_common.add_value(self._user, "common_value_A")
+        attr_a1_alpha_only = entry_a1.add_attribute_from_base(alpha_only_attr_schema, self._user)
+        attr_a1_alpha_only.add_value(self._user, "alpha_specific_value")
+
+        # Entry for BetaEntity (does not have alpha_only_attr)
+        entry_b1 = Entry.objects.create(
+            name="entryB1_allow_missing", schema=beta_entity, created_user=self._user
+        )
+        attr_b1_common = entry_b1.add_attribute_from_base(common_attr_beta_schema, self._user)
+        attr_b1_common.add_value(self._user, "common_value_B")
+
+        # 4. Register entries to Elasticsearch
+        entry_a1.register_es()
+        entry_b1.register_es()
+
+        # 5. Perform search with allow_missing_attributes=True
+        hint_attrs = [
+            AttrHint(name="common_attr"),
+            AttrHint(name="alpha_only_attr"),  # This attribute is missing in BetaEntity
+        ]
+        entity_ids_list = [alpha_entity.id, beta_entity.id]
+
+        result = AdvancedSearchService.search_entries(
+            user=self._user,
+            hint_entity_ids=entity_ids_list,
+            hint_attrs=hint_attrs,
+            allow_missing_attributes=True,
+        )
+
+        # 6. Assertions
+        self.assertEqual(result.ret_count, 2, "Should return both entries")
+        self.assertEqual(len(result.ret_values), 2)
+
+        ret_entry_names = sorted([v.entry["name"] for v in result.ret_values])
+        self.assertEqual(ret_entry_names, ["entryA1_allow_missing", "entryB1_allow_missing"])
+
+        for ret_val in result.ret_values:
+            if ret_val.entry["name"] == "entryA1_allow_missing":
+                self.assertEqual(ret_val.entity["name"], "AlphaEntityAllowMissing")
+                self.assertIn("common_attr", ret_val.attrs)
+                self.assertEqual(ret_val.attrs["common_attr"]["value"], "common_value_A")
+                self.assertIn("alpha_only_attr", ret_val.attrs)
+                self.assertEqual(ret_val.attrs["alpha_only_attr"]["value"], "alpha_specific_value")
+            elif ret_val.entry["name"] == "entryB1_allow_missing":
+                self.assertEqual(ret_val.entity["name"], "BetaEntityAllowMissing")
+                self.assertIn("common_attr", ret_val.attrs)
+                self.assertEqual(ret_val.attrs["common_attr"]["value"], "common_value_B")
+                # BetaEntity does not have 'alpha_only_attr', so it should not be in its results.
+                self.assertNotIn("alpha_only_attr", ret_val.attrs)
+
     def test_search_entries_v2_with_all_attribute_types(self):
         """
         This tests all typed attribute values are retrieved by search_entries_v2

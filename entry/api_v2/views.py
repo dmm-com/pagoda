@@ -469,6 +469,7 @@ class AdvancedSearchAPI(generics.GenericAPIView):
                 is_output_all,
                 offset=entry_offset,
                 hint_entry=hint_entry,
+                allow_missing_attributes=True,  # For APIv2, allow entries missing attributes
             )
 
         # save total population number
