@@ -11,7 +11,7 @@ from airone.lib.elasticsearch import AdvancedSearchResultRecord, AttrHint
 from airone.lib.test import AironeTestCase
 from airone.lib.types import AttrType
 from entity.models import Entity, EntityAttr
-from entry.models import Attribute, AttributeValue, Entry
+from entry.models import Attribute, AttributeValue, Entry, ItemRoadmap
 from entry.services import AdvancedSearchService
 from entry.settings import CONFIG
 from group.models import Group
@@ -5062,3 +5062,57 @@ class ModelTest(AironeTestCase):
         Entry.objects.create(
             name=f"entry-{max_entries}", created_user=self._user, schema=self._entity
         )
+
+    def test_item_roadmap(self):
+        # initialize models and items that spans each ones.
+        model_vlan = self.create_entity(self._user, "VLAN")
+        model_nw = self.create_entity(
+            self._user,
+            "Network",
+            attrs=[
+                {"name": "vlan", "type": AttrType.OBJECT},
+                {"name": "netmask", "type": AttrType.STRING},
+            ],
+        )
+        model_ip = self.create_entity(
+            self._user,
+            "IPAddress",
+            attrs=[
+                {"name": "nw", "type": AttrType.OBJECT},
+            ],
+        )
+
+        # create items that have following referral structure
+        # ( item2.obj -> item1.obj -> item0 )
+        # ( item2.arr -> [item0, item1] )
+        item_vlan1 = self.add_entry(self._user, "vlan0001", model_vlan)
+        item_nw1 = self.add_entry(
+            self._user,
+            "192.168.0.0/24",
+            model_nw,
+            values={
+                "vlan": item_vlan1,
+                "netmask": "24",
+            },
+        )
+        item_ip1 = self.add_entry(self._user, "192.168.0.1", model_ip, values={"nw": item_nw1})
+
+        # create ItemRoadmap instance to walk item road-map
+        irm = ItemRoadmap([item_ip1.id], ["nw", "vlan"])
+        for piw in irm.list:
+            self.assertEqual(piw["nw"].item, item_nw)
+
+            # self.assertEqual(piw["nw"]["vlan"].item, item_vlan)
+
+        # Get Item
+        # irm["nw"].item => item_nw1
+        # irm.next("nw").item => item_nw1
+        # irm["nw"]["netmask"].value => "24"
+        # irm["nw"].value("netmask") => "24"
+        # irm["nw"]["vlan"].item => item_vlan1
+        # irm["nw"]["vlan"].item => item_vlan1
+
+        # irm["nw"] => <IntermediateInstance>
+        # irm["nw"].item => Entry
+        # irm["nw"].value => AttributeValue.value
+        # irm["nw"]["vlan"] => <IntermediateInstance>
