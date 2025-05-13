@@ -2517,7 +2517,7 @@ class PrefetchedItemWrapper(object):
             raise e
 
 
-class ItemRoadmap(object):
+class ItemWalker(object):
     @classmethod
     def prefetch_attr_refs(kls, attrnames, nested_prefetch=[], is_intermediate=True):
         """
@@ -2555,16 +2555,25 @@ class ItemRoadmap(object):
             to_attr="attr_list",
         )
 
-    def __init__(self, base_item_ids, attr_routes=[]):
-        last_prefetch = None
-        for i, attrnames in enumerate(reversed(attr_routes)):
-            last_prefetch = ItemRoadmap.prefetch_attr_refs(
-                attrnames=attrnames,
-                nested_prefetch=[last_prefetch] if last_prefetch else [],
-                is_intermediate=i != len(attr_routes) - 1,
-            )
+    @classmethod
+    def create_prefetch(kls, step_map=(), is_last=False) -> Prefetch:
+        # check attr_routes has nested attribute steps
+        related_prefetches = []
+        for step_attrname, co_steps in step_map.items():
+            if co_steps:
+                related_prefetches.append(ItemWalker.create_prefetch(co_steps))
 
-        self.base_items = Entry.objects.prefetch_related(last_prefetch).filter(id__in=base_item_ids)
+        # create Prefetch object
+        return ItemWalker.prefetch_attr_refs(
+            attrnames=step_map.keys(),
+            nested_prefetch=related_prefetches,
+            is_intermediate=not is_last,
+        )
+
+    def __init__(self, base_item_ids, step_map=()):
+        prefetch = ItemWalker.create_prefetch(step_map, is_last=True)
+
+        self.base_items = Entry.objects.prefetch_related(prefetch).filter(id__in=base_item_ids)
 
     @property
     def list(self):

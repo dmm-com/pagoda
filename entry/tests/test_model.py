@@ -11,7 +11,7 @@ from airone.lib.elasticsearch import AdvancedSearchResultRecord, AttrHint
 from airone.lib.test import AironeTestCase
 from airone.lib.types import AttrType
 from entity.models import Entity, EntityAttr
-from entry.models import Attribute, AttributeValue, Entry, ItemRoadmap
+from entry.models import Attribute, AttributeValue, Entry, ItemWalker
 from entry.services import AdvancedSearchService
 from entry.settings import CONFIG
 from group.models import Group
@@ -5110,10 +5110,18 @@ class ModelTest(AironeTestCase):
             },
         )
         item_ip_type = self.add_entry(self._user, "Shared", model_ip_type)
-        item_ip1 = self.add_entry(self._user, "192.168.0.1", model_ip, values={"nw": item_nw1})
+        item_ip1 = self.add_entry(
+            self._user,
+            "192.168.0.1",
+            model_ip,
+            values={
+                "nw": item_nw2,
+                "type": item_ip_type,
+            },
+        )
 
-        # create ItemRoadmap instance to walk item road-map
-        irm = ItemRoadmap(
+        # create ItemWalker instance to step each items along with prepared roadmap
+        iw = ItemWalker(
             [item_ip1.id],
             {
                 "nw": {
@@ -5127,21 +5135,21 @@ class ModelTest(AironeTestCase):
                 "type": {},
             },
         )
-        for piw in irm.list:
+        for piw in iw.list:
+            # This tests basic feature of its item() method
             self.assertEqual(piw.item, item_ip1)
-            self.assertEqual(piw["nw"].item, item_nw1)
 
-            self.assertEqual(piw["nw"]["vlan"].item, item_vlan1)
+            # This tests getting neighbor items
+            self.assertEqual(piw["nw"].item, item_nw2)
+            self.assertEqual(piw["type"].item, item_ip_type)
+
+            # This gets neighbor item's attribute value
             self.assertEqual(piw["nw"].value("netmask"), "24")
-        # Get Item
-        # irm["nw"].item => item_nw1
-        # irm.next("nw").item => item_nw1
-        # irm["nw"]["netmask"].value => "24"
-        # irm["nw"].value("netmask") => "24"
-        # irm["nw"]["vlan"].item => item_vlan1
-        # irm["nw"]["vlan"].item => item_vlan1
 
-        # irm["nw"] => <IntermediateInstance>
-        # irm["nw"].item => Entry
-        # irm["nw"].value => AttributeValue.value
-        # irm["nw"]["vlan"] => <IntermediateInstance>
+            # This tests stepping another next item
+            self.assertEqual(piw["nw"]["vlan"].item, item_vlan1)
+
+            # This tests stepping another branched next item and its attribute value
+            # for ARRAY typed attribute "cidr"
+            self.assertEqual([x.item for x in piw["nw"]["cidr"]], [item_nw1])
+            self.assertEqual([x.value("netmask") for x in piw["nw"]["cidr"]], ["16"])

@@ -3,6 +3,10 @@
 ## In development
 
 ### Added
+* New confident feature "ItemWalker" that make uesr easy to make processing
+  to get Item that is reffered by another Item through attribute value with
+  less I/O (SQL) using Prefetch.
+  Contributed by @userlocalhost, @hinashi
 
 ### Changed
 
