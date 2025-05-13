@@ -161,6 +161,7 @@ class AironeApiClient {
     username: string,
     email?: string,
     isSuperuser?: boolean,
+    tokenLifetime?: number,
   ): Promise<UserUpdate> {
     return await this.user.userApiV2Update(
       {
@@ -169,6 +170,7 @@ class AironeApiClient {
           username,
           email,
           isSuperuser,
+          tokenLifetime,
         },
       },
       {

@@ -65,11 +65,7 @@ class UserCreateSerializer(UserBaseSerializer):
 class UserUpdateSerializer(UserBaseSerializer):
     class Meta:
         model = User
-        fields = [
-            "username",
-            "email",
-            "is_superuser",
-        ]
+        fields = ["username", "email", "is_superuser", "token_lifetime"]
 
 
 class UserRetrieveSerializer(UserBaseSerializer):

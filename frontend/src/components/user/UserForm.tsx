@@ -94,7 +94,10 @@ const ElemAuthenticationMethod: FC<ReadonlyProps> = ({ user }) => {
   );
 };
 
-const ElemAccessTokenConfiguration: FC<ReadonlyProps> = ({ user }) => {
+const ElemAccessTokenConfiguration: FC<Props & ReadonlyProps> = ({
+  control,
+  user,
+}) => {
   return (
     <StyledTableRow>
       <TableCell sx={{ width: "400px", wordBreak: "break-word" }}>
@@ -103,23 +106,32 @@ const ElemAccessTokenConfiguration: FC<ReadonlyProps> = ({ user }) => {
       <TableCell sx={{ width: "750px", p: "0px", wordBreak: "break-word" }}>
         <InputBox>
           {user.token != null ? (
-            <Box sx={{ flexDirecton: "column" }}>
+            <Box sx={{ flexDirection: "column", width: "100%" }}>
               <Box sx={{ pb: "20px" }}>
-                {/* This TextField only allow to accept numeric string */}
-                <TextField
-                  variant="standard"
-                  label="アクセストークンが有効な期間"
-                  id="outlined-start-adornment"
-                  InputProps={{
-                    type: "number",
-                    endAdornment: (
-                      <InputAdornment position="end">秒</InputAdornment>
-                    ),
-                    readOnly: true,
-                  }}
-                  value={user.token.lifetime}
-                  disabled
-                  data-testid="token-lifetime"
+                <Controller
+                  name="tokenLifetime"
+                  control={control}
+                  defaultValue={user.token?.lifetime ?? 0}
+                  render={({ field, fieldState: { error } }) => (
+                    <TextField
+                      {...field}
+                      type="number"
+                      variant="standard"
+                      label="アクセストークンが有効な期間"
+                      InputProps={{
+                        endAdornment: (
+                          <InputAdornment position="end">秒</InputAdornment>
+                        ),
+                      }}
+                      error={error != null}
+                      helperText={
+                        error?.message ??
+                        "※0 を入力した場合は期限は無期限になります"
+                      }
+                      sx={{ width: "100%" }}
+                      data-testid="token-lifetime"
+                    />
+                  )}
                 />
               </Box>
 
@@ -127,17 +139,18 @@ const ElemAccessTokenConfiguration: FC<ReadonlyProps> = ({ user }) => {
                 <TextField
                   variant="standard"
                   label="作成日"
-                  id="outlined-start-adornment"
+                  id="token-created"
                   InputProps={{ disableUnderline: true, readOnly: true }}
                   value={user.token.created}
                   disabled
                   data-testid="token-created"
+                  sx={{ mr: 2 }}
                 />
 
                 <TextField
                   variant="standard"
                   label="有効期限"
-                  id="outlined-start-adornment"
+                  id="token-expire"
                   InputProps={{ disableUnderline: true, readOnly: true }}
                   value={
                     user.token.lifetime === 0 ? "無期限" : user.token.expire
@@ -365,7 +378,7 @@ export const UserForm: FC<UserFormProps> = ({
             {!isCreateMode && isMyself && user != null && (
               <>
                 <ElemAccessToken user={user} />
-                <ElemAccessTokenConfiguration user={user} />
+                <ElemAccessTokenConfiguration user={user} control={control} />
                 <ElemAuthenticationMethod user={user} />
               </>
             )}
