@@ -1,0 +1,13 @@
+{
+  "entry": ["frontend/src/App.tsx"],
+  "project": ["**/*.{js,ts,jsx,tsx}"],
+  "ignore": ["docs/**/*.js", "static/**/*.js", "templates/**/*.js"],
+  "ignoreDependencies": [
+    // CLI
+    "webpack-bundle-analyzer"
+  ],
+  "ignoreBinaries": [
+    // to use `export` command
+    "export"
+  ]
+}
