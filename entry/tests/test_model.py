@@ -5071,14 +5071,17 @@ class ModelTest(AironeTestCase):
             "Network",
             attrs=[
                 {"name": "vlan", "type": AttrType.OBJECT},
+                {"name": "cidr", "type": AttrType.ARRAY_OBJECT},
                 {"name": "netmask", "type": AttrType.STRING},
             ],
         )
+        model_ip_type = self.create_entity(self._user, "IPType")
         model_ip = self.create_entity(
             self._user,
             "IPAddress",
             attrs=[
                 {"name": "nw", "type": AttrType.OBJECT},
+                {"name": "type", "type": AttrType.OBJECT},
             ],
         )
 
@@ -5088,22 +5091,48 @@ class ModelTest(AironeTestCase):
         item_vlan1 = self.add_entry(self._user, "vlan0001", model_vlan)
         item_nw1 = self.add_entry(
             self._user,
+            "192.168.0.0/16",
+            model_nw,
+            values={
+                "vlan": item_vlan1,
+                "netmask": "16",
+                "cidr": [],
+            },
+        )
+        item_nw2 = self.add_entry(
+            self._user,
             "192.168.0.0/24",
             model_nw,
             values={
                 "vlan": item_vlan1,
                 "netmask": "24",
+                "cidr": [item_nw1],
             },
         )
+        item_ip_type = self.add_entry(self._user, "Shared", model_ip_type)
         item_ip1 = self.add_entry(self._user, "192.168.0.1", model_ip, values={"nw": item_nw1})
 
         # create ItemRoadmap instance to walk item road-map
-        irm = ItemRoadmap([item_ip1.id], ["nw", "vlan"])
+        irm = ItemRoadmap(
+            [item_ip1.id],
+            {
+                "nw": {
+                    "vlan": {},
+                    "netmask": {},
+                    "cidr": {
+                        "vlan": {},
+                        "netmask": {},
+                    },
+                },
+                "type": {},
+            },
+        )
         for piw in irm.list:
-            self.assertEqual(piw["nw"].item, item_nw)
+            self.assertEqual(piw.item, item_ip1)
+            self.assertEqual(piw["nw"].item, item_nw1)
 
-            # self.assertEqual(piw["nw"]["vlan"].item, item_vlan)
-
+            self.assertEqual(piw["nw"]["vlan"].item, item_vlan1)
+            self.assertEqual(piw["nw"].value("netmask"), "24")
         # Get Item
         # irm["nw"].item => item_nw1
         # irm.next("nw").item => item_nw1

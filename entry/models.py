@@ -2477,7 +2477,6 @@ class AliasEntry(models.Model):
 class PrefetchedItemWrapper(object):
     def __init__(self, prefetched_item):
         self.pi = prefetched_item
-        self.attrv = {}
 
     # Plz fix it
     # def __getitem__(self, attrname) -> PrefetchedItemWrapper | list(PrefetchedItemWrapper):
@@ -2489,7 +2488,7 @@ class PrefetchedItemWrapper(object):
             attr = [a for a in self.pi.attr_list if a.schema.name == attrname][0]
 
             # save attribute value to self.attrv to be able to return it via value() method
-            attrv = self.attrv[attrname] = attr.value_list[0]
+            attrv = attr.value_list[0]
 
             if attr.schema.type & AttrType._ARRAY and AttrType.OBJECT:
                 return [PrefetchedItemWrapper(v.referral.entry) for v in attrv.co_values]
@@ -2504,11 +2503,18 @@ class PrefetchedItemWrapper(object):
     def item(self) -> Entry:
         return self.pi
 
-    @property
-    def value(self, attrname) -> str | int | None:
-        attrv = self.attrv.get(attrname)
-        if attrv:
-            return attrv.value
+    def value(self, attrname) -> list[str | int] | str | int | None:
+        try:
+            attr = [a for a in self.pi.attr_list if a.schema.name == attrname][0]
+            attrv = attr.value_list[0]
+
+            if attr.schema.type & AttrType._ARRAY:
+                return [v.value for v in attrv.co_values if v.value is not None]
+            else:
+                return attrv.value
+
+        except IndexError as e:
+            raise e
 
 
 class ItemRoadmap(object):
@@ -2551,9 +2557,11 @@ class ItemRoadmap(object):
 
     def __init__(self, base_item_ids, attr_routes=[]):
         last_prefetch = None
-        for attrname in reversed(attr_routes):
+        for i, attrnames in enumerate(reversed(attr_routes)):
             last_prefetch = ItemRoadmap.prefetch_attr_refs(
-                [attrname], nested_prefetch=[last_prefetch] if last_prefetch else []
+                attrnames=attrnames,
+                nested_prefetch=[last_prefetch] if last_prefetch else [],
+                is_intermediate=i != len(attr_routes) - 1,
             )
 
         self.base_items = Entry.objects.prefetch_related(last_prefetch).filter(id__in=base_item_ids)
