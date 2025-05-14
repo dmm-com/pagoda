@@ -2475,8 +2475,9 @@ class AliasEntry(models.Model):
 # This instance wrapps prefetched Entry instance to abstract intermediate method call
 # (e.g. attr_list, value_list, ...)
 class PrefetchedItemWrapper(object):
-    def __init__(self, prefetched_item):
+    def __init__(self, prefetched_item, attrv=None):
         self.pi = prefetched_item
+        self.attrv = attrv
 
     # Plz fix it
     # def __getitem__(self, attrname) -> PrefetchedItemWrapper | list(PrefetchedItemWrapper):
@@ -2490,11 +2491,17 @@ class PrefetchedItemWrapper(object):
             # save attribute value to self.attrv to be able to return it via value() method
             attrv = attr.value_list[0]
 
-            if attr.schema.type & AttrType._ARRAY and AttrType.OBJECT:
-                return [PrefetchedItemWrapper(v.referral.entry) for v in attrv.co_values]
+            if attr.schema.type & AttrType._ARRAY and attr.schema.type & AttrType.OBJECT:
+                if attr.schema.type & AttrType.OBJECT:
+                    return [PrefetchedItemWrapper(v.referral.entry, attrv) for v in attrv.co_values]
+                else:
+                    return [PrefetchedItemWrapper(None, attrv) for v in attrv.co_values]
 
-            elif AttrType.OBJECT:
-                return PrefetchedItemWrapper(attrv.referral.entry)
+            elif attr.schema.type & AttrType.OBJECT:
+                return PrefetchedItemWrapper(attrv.referral.entry, attrv)
+
+            else:
+                return PrefetchedItemWrapper(None, attrv)
 
         except IndexError as e:
             raise e
@@ -2503,18 +2510,12 @@ class PrefetchedItemWrapper(object):
     def item(self) -> Entry:
         return self.pi
 
-    def value(self, attrname) -> list[str | int] | str | int | None:
-        try:
-            attr = [a for a in self.pi.attr_list if a.schema.name == attrname][0]
-            attrv = attr.value_list[0]
+    @property
+    def value(self) -> str | int | None:
+        if self.attrv is not None:
+            return self.attrv.value
 
-            if attr.schema.type & AttrType._ARRAY:
-                return [v.value for v in attrv.co_values if v.value is not None]
-            else:
-                return attrv.value
-
-        except IndexError as e:
-            raise e
+        return None
 
 
 class ItemWalker(object):

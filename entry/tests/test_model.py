@@ -5063,7 +5063,7 @@ class ModelTest(AironeTestCase):
             name=f"entry-{max_entries}", created_user=self._user, schema=self._entity
         )
 
-    def test_item_roadmap(self):
+    def test_item_walker(self):
         # initialize models and items that spans each ones.
         model_vlan = self.create_entity(self._user, "VLAN")
         model_nw = self.create_entity(
@@ -5082,6 +5082,13 @@ class ModelTest(AironeTestCase):
             attrs=[
                 {"name": "nw", "type": AttrType.OBJECT},
                 {"name": "type", "type": AttrType.OBJECT},
+            ],
+        )
+        model_srv = self.create_entity(
+            self._user,
+            "Server",
+            attrs=[
+                {"name": "I/F", "type": AttrType.NAMED_OBJECT},
             ],
         )
 
@@ -5119,37 +5126,50 @@ class ModelTest(AironeTestCase):
                 "type": item_ip_type,
             },
         )
+        item_srv1 = self.add_entry(
+            self._user,
+            "srv1000",
+            model_srv,
+            values={
+                "I/F": {"name": "eth0", "id": item_ip1},
+            },
+        )
 
         # create ItemWalker instance to step each items along with prepared roadmap
         iw = ItemWalker(
-            [item_ip1.id],
+            [item_srv1.id],
             {
-                "nw": {
-                    "vlan": {},
-                    "netmask": {},
-                    "cidr": {
+                "I/F": {
+                    "nw": {
                         "vlan": {},
                         "netmask": {},
+                        "cidr": {
+                            "vlan": {},
+                            "netmask": {},
+                        },
                     },
+                    "type": {},
                 },
-                "type": {},
             },
         )
         for piw in iw.list:
             # This tests basic feature of its item() method
-            self.assertEqual(piw.item, item_ip1)
+            self.assertEqual(piw.item, item_srv1)
 
             # This tests getting neighbor items
-            self.assertEqual(piw["nw"].item, item_nw2)
-            self.assertEqual(piw["type"].item, item_ip_type)
+            self.assertEqual(item_srv1.get_attrv_item("I/F"), item_ip1)
+            self.assertEqual(piw["I/F"].item, item_ip1)
+            self.assertEqual(piw["I/F"].value, "eth0")
 
             # This gets neighbor item's attribute value
-            self.assertEqual(piw["nw"].value("netmask"), "24")
+            self.assertEqual(piw["I/F"]["nw"].item, item_nw2)
+            self.assertEqual(piw["I/F"]["type"].item, item_ip_type)
+            self.assertEqual(piw["I/F"]["nw"]["netmask"].value, "24")
 
             # This tests stepping another next item
-            self.assertEqual(piw["nw"]["vlan"].item, item_vlan1)
+            self.assertEqual(piw["I/F"]["nw"]["vlan"].item, item_vlan1)
 
             # This tests stepping another branched next item and its attribute value
             # for ARRAY typed attribute "cidr"
-            self.assertEqual([x.item for x in piw["nw"]["cidr"]], [item_nw1])
-            self.assertEqual([x.value("netmask") for x in piw["nw"]["cidr"]], ["16"])
+            self.assertEqual([x.item for x in piw["I/F"]["nw"]["cidr"]], [item_nw1])
+            self.assertEqual([x["netmask"].value for x in piw["I/F"]["nw"]["cidr"]], ["16"])
