@@ -8,6 +8,18 @@
 
 ### Fixed
 
+## v3.131.0
+
+### Changed
+* Refactor entry name search to use EntryHint with filter keys.
+  Contributed by @syucream
+* Allow to match missing attributes ub advanced search.
+  Contributed by @syucream
+
+### Fixed
+* Fix breadcrumb label switching for group edit/create.
+  Contributed by @tsunoda-takahiro
+
 ## v3.130.0
 
 ### Changed
