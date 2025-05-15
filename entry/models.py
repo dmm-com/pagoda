@@ -2504,7 +2504,7 @@ class PrefetchedItemWrapper(object):
                 return PrefetchedItemWrapper(None, attrv)
 
         except IndexError as e:
-            raise KeyError(attrname)
+            raise KeyError("(%s) " % attrname, e)
 
     @property
     def item(self) -> Entry:
