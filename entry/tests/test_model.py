@@ -5155,6 +5155,7 @@ class ModelTest(AironeTestCase):
         for piw in iw.list:
             # This tests basic feature of its item() method
             self.assertEqual(piw.item, item_srv1)
+            self.assertEqual(piw.value, "")
 
             # This tests getting neighbor items
             self.assertEqual(item_srv1.get_attrv_item("I/F"), item_ip1)
@@ -5163,7 +5164,9 @@ class ModelTest(AironeTestCase):
 
             # This gets neighbor item's attribute value
             self.assertEqual(piw["I/F"]["nw"].item, item_nw2)
+            self.assertEqual(piw["I/F"]["nw"].value, "")
             self.assertEqual(piw["I/F"]["type"].item, item_ip_type)
+            self.assertEqual(piw["I/F"]["nw"]["netmask"].item, None)
             self.assertEqual(piw["I/F"]["nw"]["netmask"].value, "24")
 
             # This tests stepping another next item
@@ -5173,3 +5176,7 @@ class ModelTest(AironeTestCase):
             # for ARRAY typed attribute "cidr"
             self.assertEqual([x.item for x in piw["I/F"]["nw"]["cidr"]], [item_nw1])
             self.assertEqual([x["netmask"].value for x in piw["I/F"]["nw"]["cidr"]], ["16"])
+
+            # Check expected exception was raised when invalid attribute was specified
+            with self.assertRaises(KeyError):
+                piw["InvalidKey"]

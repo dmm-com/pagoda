@@ -2504,18 +2504,18 @@ class PrefetchedItemWrapper(object):
                 return PrefetchedItemWrapper(None, attrv)
 
         except IndexError as e:
-            raise e
+            raise KeyError(attrname)
 
     @property
     def item(self) -> Entry:
         return self.pi
 
     @property
-    def value(self) -> str | int | None:
+    def value(self) -> str:
         if self.attrv is not None:
             return self.attrv.value
 
-        return None
+        return ""
 
 
 class ItemWalker(object):
@@ -2557,7 +2557,7 @@ class ItemWalker(object):
         )
 
     @classmethod
-    def create_prefetch(kls, step_map=(), is_last=False) -> Prefetch:
+    def create_prefetch(kls, step_map={}, is_last=False) -> Prefetch:
         # check attr_routes has nested attribute steps
         related_prefetches = []
         for step_attrname, co_steps in step_map.items():
@@ -2571,7 +2571,7 @@ class ItemWalker(object):
             is_intermediate=not is_last,
         )
 
-    def __init__(self, base_item_ids, step_map=()):
+    def __init__(self, base_item_ids, step_map={}):
         prefetch = ItemWalker.create_prefetch(step_map, is_last=True)
 
         self.base_items = Entry.objects.prefetch_related(prefetch).filter(id__in=base_item_ids)
