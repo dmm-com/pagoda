@@ -2488,9 +2488,16 @@ class PrefetchedItemWrapper(object):
         try:
             attr = [a for a in self.pi.attr_list if a.schema.name == attrname][0]
 
-            # save attribute value to self.attrv to be able to return it via value() method
-            attrv = attr.value_list[0]
+            # return empty item wrapped by PrefetchedItemWrapper
+            # when specified attribute doesn't have valid AttributeValue.
+            if not attr.value_list:
+                if attr.schema.type & AttrType._ARRAY:
+                    return []
+                else:
+                    return PrefetchedItemWrapper(None, None)
 
+            # return next referral item that is indicated by specified attribute name
+            attrv = attr.value_list[0]
             if attr.schema.type & AttrType._ARRAY and attr.schema.type & AttrType.OBJECT:
                 if attr.schema.type & AttrType.OBJECT:
                     return [PrefetchedItemWrapper(v.referral.entry, attrv) for v in attrv.co_values]

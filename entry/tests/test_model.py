@@ -5180,3 +5180,38 @@ class ModelTest(AironeTestCase):
             # Check expected exception was raised when invalid attribute was specified
             with self.assertRaises(KeyError):
                 piw["InvalidKey"]
+
+    def test_item_walker_with_empty_values(self):
+        model = self.create_entity(
+            self._user, "Model", attrs=self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY
+        )
+        item0 = self.add_entry(self._user, "item0", model)
+        item1 = self.add_entry(self._user, "item1", model, values={"ref": item0})
+
+        iw = ItemWalker(
+            [item1.id],
+            {
+                "ref": {
+                    "val": {},
+                    "vals": {},
+                    "ref": {},
+                    "refs": {},
+                    "name": {},
+                    "names": {},
+                }
+            },
+        )
+        # This refers each empty referral values
+        for piw in iw.list:
+            self.assertEqual(piw["ref"].item, item0)
+            self.assertEqual(piw["ref"].value, "")
+            self.assertEqual(piw["ref"]["val"].item, None)
+            self.assertEqual(piw["ref"]["val"].value, "")
+            self.assertEqual(piw["ref"]["ref"].item, None)
+            self.assertEqual(piw["ref"]["ref"].value, "")
+            self.assertEqual(piw["ref"]["name"].item, None)
+            self.assertEqual(piw["ref"]["name"].value, "")
+            self.assertEqual(piw["ref"]["vals"], [])
+            self.assertEqual(piw["ref"]["refs"], [])
+            self.assertEqual([x.item for x in piw["ref"]["names"]], [None])
+            self.assertEqual([x.value for x in piw["ref"]["names"]], [""])
