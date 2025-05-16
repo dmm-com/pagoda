@@ -58,7 +58,14 @@ export const UserEditPage: FC = () => {
   }, [userId, shouldRefresh]);
 
   useEffect(() => {
-    !user.loading && reset(user.value);
+    if (!user.loading && user.value) {
+      reset({
+        username: user.value.username,
+        email: user.value.email,
+        isSuperuser: user.value.isSuperuser,
+        tokenLifetime: user.value.token?.lifetime ?? 0,
+      });
+    }
   }, [user.value]);
 
   useEffect(() => {
@@ -104,6 +111,7 @@ export const UserEditPage: FC = () => {
           user.username,
           user.email,
           user.isSuperuser,
+          user.tokenLifetime,
         );
       }
       enqueueSubmitResult(true);
