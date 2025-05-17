@@ -128,7 +128,7 @@ interface AirOneAdvancedSearchResult extends AdvancedSearchResult {
 export const AdvancedSearchResultsPage: FC = () => {
   const location = useLocation();
   const { enqueueSnackbar } = useSnackbar();
-  const [page, changePage] = usePage();
+  const { page, changePage } = usePage();
 
   const [openModal, setOpenModal] = useState(false);
   const [bulkOperationEntryIds, setBulkOperationEntryIds] = useState<
