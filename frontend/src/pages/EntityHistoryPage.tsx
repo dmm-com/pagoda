@@ -16,7 +16,7 @@ import { aironeApiClient } from "repository/AironeApiClient";
 export const EntityHistoryPage: FC = () => {
   const { entityId } = useTypedParams<{ entityId: number }>();
 
-  const [page, changePage] = usePage();
+  const { page, changePage } = usePage();
 
   const [entityAnchorEl, setEntityAnchorEl] =
     useState<HTMLButtonElement | null>(null);

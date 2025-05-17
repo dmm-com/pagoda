@@ -20,7 +20,6 @@ import Grid from "@mui/material/Grid2";
 import { styled } from "@mui/material/styles";
 import { useSnackbar } from "notistack";
 import React, { FC, useState } from "react";
-import { useLocation, useNavigate } from "react-router";
 
 import { EntryAttributes } from "./EntryAttributes";
 
@@ -31,7 +30,7 @@ import { SearchBox } from "components/common/SearchBox";
 import { useAsyncWithThrow } from "hooks/useAsyncWithThrow";
 import { usePage } from "hooks/usePage";
 import { aironeApiClient } from "repository/AironeApiClient";
-import { restoreEntryPath, topPath } from "routes/Routes";
+import { restoreEntryPath } from "routes/Routes";
 import { EntryListParam } from "services/Constants";
 import { formatDateTime } from "services/DateUtil";
 import { normalizeToMatch } from "services/StringUtil";
@@ -100,15 +99,9 @@ interface Props {
 }
 
 export const RestorableEntryList: FC<Props> = ({ entityId }) => {
-  const location = useLocation();
-  const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
 
-  const [page, changePage] = usePage();
-
-  const params = new URLSearchParams(location.search);
-
-  const [query, setQuery] = useState<string>(params.get("query") ?? "");
+  const { page, query, changePage, changeQuery } = usePage();
 
   const [openModal, setOpenModal] = useState(false);
   const [selectedEntryId, setSelectedEntryId] = useState<number>();
@@ -124,15 +117,7 @@ export const RestorableEntryList: FC<Props> = ({ entityId }) => {
     return await aironeApiClient.getEntry(selectedEntryId);
   }, [selectedEntryId]);
 
-  const handleChangeQuery = (newQuery?: string) => {
-    changePage(1);
-    setQuery(newQuery ?? "");
-
-    navigate({
-      pathname: location.pathname,
-      search: newQuery ? `?query=${newQuery}` : "",
-    });
-  };
+  const handleChangeQuery = changeQuery;
 
   const handleRestore = async (entryId: number) => {
     await aironeApiClient
@@ -141,8 +126,7 @@ export const RestorableEntryList: FC<Props> = ({ entityId }) => {
         enqueueSnackbar("アイテムの復旧が完了しました", {
           variant: "success",
         });
-        navigate(topPath(), { replace: true });
-        navigate(restoreEntryPath(entityId, query), { replace: true });
+        window.location.href = restoreEntryPath(entityId, query);
       })
       .catch(() => {
         enqueueSnackbar("アイテムの復旧が失敗しました", {

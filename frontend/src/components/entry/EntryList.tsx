@@ -2,7 +2,7 @@ import AddIcon from "@mui/icons-material/Add";
 import { Box, Button } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import React, { FC, useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router";
+import { Link } from "react-router";
 
 import { EntryListCard } from "./EntryListCard";
 
@@ -22,29 +22,14 @@ interface Props {
 }
 
 export const EntryList: FC<Props> = ({ entityId, canCreateEntry = true }) => {
-  const location = useLocation();
-  const navigate = useNavigate();
-
-  const [page, changePage] = usePage();
-
-  const params = new URLSearchParams(location.search);
-
-  const [query, setQuery] = useState<string>(params.get("query") ?? "");
+  const { page, query, changePage, changeQuery } = usePage();
   const [toggle, setToggle] = useState(false);
 
   const entries = useAsyncWithThrow(async () => {
     return await aironeApiClient.getEntries(entityId, true, page, query);
   }, [page, query, toggle]);
 
-  const handleChangeQuery = (newQuery?: string) => {
-    changePage(1);
-    setQuery(newQuery ?? "");
-
-    navigate({
-      pathname: location.pathname,
-      search: newQuery ? `?query=${newQuery}` : "",
-    });
-  };
+  const handleChangeQuery = changeQuery;
 
   return (
     <Box>

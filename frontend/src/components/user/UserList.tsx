@@ -13,7 +13,7 @@ import {
 import Grid from "@mui/material/Grid2";
 import { styled } from "@mui/material/styles";
 import React, { FC, useMemo, useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router";
+import { Link } from "react-router";
 
 import { UserControlMenu } from "./UserControlMenu";
 
@@ -46,11 +46,7 @@ const UserName = styled(Typography)(({}) => ({
 }));
 
 export const UserList: FC = ({}) => {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const [page, changePage] = usePage();
-  const params = new URLSearchParams(location.search);
-  const [query, setQuery] = useState<string>(params.get("query") ?? "");
+  const { page, query, changePage, changeQuery } = usePage();
   const [userAnchorEls, setUserAnchorEls] = useState<{
     [key: number]: HTMLButtonElement | null;
   }>({});
@@ -70,15 +66,7 @@ export const UserList: FC = ({}) => {
     [serverContext],
   );
 
-  const handleChangeQuery = (newQuery?: string) => {
-    changePage(1);
-    setQuery(newQuery ?? "");
-
-    navigate({
-      pathname: location.pathname,
-      search: newQuery ? `?query=${newQuery}` : "",
-    });
-  };
+  const handleChangeQuery = changeQuery;
 
   return (
     <Box>
@@ -87,11 +75,13 @@ export const UserList: FC = ({}) => {
           <SearchBox
             placeholder="ユーザを絞り込む"
             defaultValue={query}
-            onKeyPress={(e) => {
-              e.key === "Enter" &&
-                handleChangeQuery(
-                  normalizeToMatch((e.target as HTMLInputElement).value ?? ""),
-                );
+            onKeyPress={(
+              e: React.KeyboardEvent<HTMLDivElement>,
+              value: string,
+            ) => {
+              if (e.key === "Enter") {
+                handleChangeQuery(normalizeToMatch(value));
+              }
             }}
           />
         </Box>

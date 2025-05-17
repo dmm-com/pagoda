@@ -39,7 +39,7 @@ interface Props {
 }
 
 export const EntryReferral: FC<Props> = ({ entryId }) => {
-  const [page, changePage] = usePage();
+  const { page, changePage } = usePage();
   const [keywordQuery, setKeywordQuery] = useState("");
 
   const referredEntries = useAsyncWithThrow(async () => {

@@ -20,7 +20,7 @@ import { JobListParam } from "services/Constants";
 export const JobListPage: FC = () => {
   const location = useLocation();
 
-  const [page, changePage] = usePage();
+  const { page, changePage } = usePage();
   const [refresh, toggleRefresh] = useToggle(false);
 
   const { targetId } = useMemo(() => {

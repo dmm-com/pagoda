@@ -2,7 +2,7 @@ import AddIcon from "@mui/icons-material/Add";
 import { Box, Button, Container, List, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import React, { FC, useState } from "react";
-import { Link, useNavigate } from "react-router";
+import { Link } from "react-router";
 
 import { CategoryListHeader } from "components/category/CategoryListHeader";
 import { AironeLink, Loading } from "components/common";
@@ -20,23 +20,12 @@ interface Props {
 }
 
 export const CategoryList: FC<Props> = ({ isEdit = false }) => {
-  const navigate = useNavigate();
   const [toggle, setToggle] = useState(false);
-
-  // variable to store search query
-  const params = new URLSearchParams(location.search);
-  const [query, setQuery] = useState<string>(params.get("query") ?? "");
-  const [page, changePage] = usePage();
+  const { page, query, changeQuery, changePage } = usePage();
 
   // request handler when user specify query
   const handleChangeQuery = (newQuery?: string) => {
-    changePage(1);
-    setQuery(newQuery ?? "");
-
-    navigate({
-      pathname: location.pathname,
-      search: newQuery ? `?query=${newQuery}` : "",
-    });
+    changeQuery(newQuery ?? "");
   };
 
   const categories = useAsyncWithThrow(async () => {

@@ -4,8 +4,6 @@ import { Box, Container, IconButton } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import { useSnackbar } from "notistack";
 import React, { FC, useEffect, useState } from "react";
-import { useNavigate } from "react-router";
-import { useLocation } from "react-use";
 
 import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
 import { useTypedParams } from "../hooks/useTypedParams";
@@ -31,13 +29,9 @@ export const ListAliasEntryPage: FC = ({}) => {
     entityId: number;
   }>();
 
-  const location = useLocation();
-  const params = new URLSearchParams(location.search);
-  const navigate = useNavigate();
   const { enqueueSubmitResult } = useFormNotification("エイリアス", true);
   const { enqueueSnackbar } = useSnackbar();
-  const [page, changePage] = usePage();
-  const [query, setQuery] = useState<string>(params.get("query") ?? "");
+  const { page, query, changePage, changeQuery } = usePage();
 
   const [entityAnchorEl, setEntityAnchorEl] =
     useState<HTMLButtonElement | null>(null);
@@ -59,15 +53,7 @@ export const ListAliasEntryPage: FC = ({}) => {
       });
   }, [page, query]);
 
-  const handleChangeQuery = (newQuery?: string) => {
-    changePage(1);
-    setQuery(newQuery ?? "");
-
-    navigate({
-      pathname: location.pathname,
-      search: newQuery ? `?query=${newQuery}` : "",
-    });
-  };
+  const handleChangeQuery = changeQuery;
 
   const handleCreate = (entryId: number, target: HTMLInputElement) => {
     const name = target.value;
