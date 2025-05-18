@@ -362,7 +362,6 @@ class Job(models.Model):
             entity_task = kls.get_task_module("entity.tasks")
             group_task = kls.get_task_module("group.tasks")
             role_task = kls.get_task_module("role.tasks")
-            trigger_task = kls.get_task_module("trigger.tasks")
 
             kls._METHOD_TABLE = {
                 JobOperation.CREATE_ENTRY: entry_task.create_entry_attrs,
@@ -387,7 +386,6 @@ class Job(models.Model):
                 JobOperation.ROLE_REGISTER_REFERRAL: role_task.edit_role_referrals,
                 JobOperation.UPDATE_DOCUMENT: entry_task.update_es_documents,
                 JobOperation.EXPORT_SEARCH_RESULT_V2: entry_task.export_search_result_v2,
-                JobOperation.MAY_INVOKE_TRIGGER: trigger_task.may_invoke_trigger,
                 JobOperation.CREATE_ENTITY_V2: entity_task.create_entity_v2,
                 JobOperation.EDIT_ENTITY_V2: entity_task.edit_entity_v2,
                 JobOperation.DELETE_ENTITY_V2: entity_task.delete_entity_v2,
@@ -404,8 +402,15 @@ class Job(models.Model):
 
     @classmethod
     def register_method_table(kls, operation: JobOperation | JobOperationCustom, method):
-        if operation not in kls.method_table():
-            kls._METHOD_TABLE[operation] = method
+        # Raise error if trying to register a handler that's already registered
+        if operation in kls._METHOD_TABLE:
+            raise ValueError(
+                f"Task handler for operation {operation} is already registered. "
+                f"Duplicate registration attempt for {method.__module__}.{method.__name__}"
+            )
+        # For decorator registration, register directly without calling method_table()
+        # This avoids potential circular imports
+        kls._METHOD_TABLE[operation] = method
 
     @classmethod
     def get_job_with_params(kls, user: User, params):

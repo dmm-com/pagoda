@@ -1,12 +1,12 @@
 import functools
 import traceback
-from typing import Any, Callable
+from typing import Any, Callable, Union
 
 from django.core.mail import mail_admins
 
 from acl.models import ACLBase
 from airone.lib.log import Logger
-from job.models import Job, JobStatus
+from job.models import Job, JobOperation, JobOperationCustom, JobStatus
 
 
 def _handle_task(
@@ -83,5 +83,30 @@ def may_schedule_until_job_is_ready_with_handlers(
             _handle_task(kls, func, job, on_cancelled)
 
         return wrapper
+
+    return decorator
+
+
+def register_job_task(operation: Union[JobOperation, JobOperationCustom]) -> Callable:
+    """
+    A decorator to register a Celery task in the job model's method table.
+    This allows registering tasks while avoiding circular imports by using
+    it at task function definition.
+
+    Raises ValueError if a task is already registered for the same operation.
+
+    Example:
+    @register_job_task(JobOperation.MAY_INVOKE_TRIGGER)
+    @app.task(bind=True)
+    def may_invoke_trigger(self, job):
+        # Task implementation
+        pass
+    """
+
+    def decorator(
+        func: Callable[[Any, Job], JobStatus | tuple[JobStatus, str, ACLBase | None] | None],
+    ) -> Callable[[Any, Job], JobStatus | tuple[JobStatus, str, ACLBase | None] | None]:
+        Job.register_method_table(operation, func)
+        return func
 
     return decorator
