@@ -26,10 +26,10 @@
     "link:client": "cd apiclient/typescript-fetch/ && npm link && cd ../../ && npm link '@dmm-com/airone-apiclient-typescript-fetch'",
     "watch": "webpack build --entry ./frontend/src/App.tsx --watch --mode development",
     "watch:custom": "webpack build --watch --entry ./frontend/src/customview/CustomApp.tsx --mode development",
-    "lint": "npx eslint frontend && npx prettier --check frontend && npx knip",
-    "fix": "npx eslint --fix frontend ; npx prettier --write frontend",
-    "test": "TZ=UTC npx jest --coverage frontend",
-    "test:update": "TZ=UTC npx jest -u frontend"
+    "lint": "eslint frontend && prettier --check frontend && knip",
+    "fix": "eslint --fix frontend ; prettier --write frontend ; knip --fix",
+    "test": "TZ=UTC jest --coverage frontend",
+    "test:update": "TZ=UTC jest -u frontend"
   },
   "repository": {
     "type": "git",
