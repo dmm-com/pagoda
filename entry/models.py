@@ -2471,7 +2471,6 @@ class AliasEntry(models.Model):
     )
 
 
-# TODO: name more good name
 # This instance wrapps prefetched Entry instance to abstract intermediate method call
 # (e.g. attr_list, value_list, ...)
 class PrefetchedItemWrapper(object):
@@ -2485,11 +2484,16 @@ class PrefetchedItemWrapper(object):
         """
         This returns neighbor PrefetchedItemWrapper instance that wraps prefetched Entry instance
         """
+        if isinstance(attrname, int):
+            raise IndexError
+
         try:
-            attr = [a for a in self.pi.attr_list if a.schema.name == attrname][0]
+            if self.pi is None:
+                raise KeyError("Invalid attribute name was specified (%s)" % attrname)
 
             # return empty item wrapped by PrefetchedItemWrapper
             # when specified attribute doesn't have valid AttributeValue.
+            attr = [a for a in self.pi.attr_list if a.schema.name == attrname][0]
             if not attr.value_list:
                 if attr.schema.type & AttrType._ARRAY:
                     return []
@@ -2498,20 +2502,25 @@ class PrefetchedItemWrapper(object):
 
             # return next referral item that is indicated by specified attribute name
             attrv = attr.value_list[0]
-            if attr.schema.type & AttrType._ARRAY and attr.schema.type & AttrType.OBJECT:
+            if attr.schema.type & AttrType._ARRAY:
                 if attr.schema.type & AttrType.OBJECT:
-                    return [PrefetchedItemWrapper(v.referral.entry, attrv) for v in attrv.co_values]
+                    return [
+                        PrefetchedItemWrapper(v.referral.entry if v.referral else None, attrv)
+                        for v in attrv.co_values
+                    ]
                 else:
                     return [PrefetchedItemWrapper(None, attrv) for v in attrv.co_values]
 
             elif attr.schema.type & AttrType.OBJECT:
-                return PrefetchedItemWrapper(attrv.referral.entry, attrv)
+                return PrefetchedItemWrapper(
+                    attrv.referral.entry if attrv.referral else None, attrv
+                )
 
             else:
                 return PrefetchedItemWrapper(None, attrv)
 
-        except IndexError as e:
-            raise KeyError("(%s) " % attrname, e)
+        except (IndexError, AttributeError) as _:
+            return PrefetchedItemWrapper(None, None)
 
     @property
     def item(self) -> Entry:

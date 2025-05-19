@@ -5177,9 +5177,27 @@ class ModelTest(AironeTestCase):
             self.assertEqual([x.item for x in piw["I/F"]["nw"]["cidr"]], [item_nw1])
             self.assertEqual([x["netmask"].value for x in piw["I/F"]["nw"]["cidr"]], ["16"])
 
-            # Check expected exception was raised when invalid attribute was specified
-            with self.assertRaises(KeyError):
-                piw["InvalidKey"]
+    def test_item_walker_abnormal_way(self):
+        model = self.create_entity(
+            self._user, "Model", attrs=self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY
+        )
+        item = self.add_entry(self._user, "item0", model)
+        iw = ItemWalker(
+            [item.id],
+            {"ref": {}},
+        )
+        for piw in iw.list:
+            # check to raise KeyError when unexpected key was specified
+            with self.assertRaises(
+                KeyError, msg="Invalid attribute name was specified (InvalidAttr)"
+            ):
+                piw["InvalidAttr"]
+                piw["ref"]["InvalidAttr"]
+
+            # check to raise IndexError when when it's handled as array
+            with self.assertRaises(IndexError):
+                piw[0]
+                [x for x in piw]
 
     def test_item_walker_with_empty_values(self):
         model = self.create_entity(
@@ -5203,6 +5221,7 @@ class ModelTest(AironeTestCase):
         )
         # This refers each empty referral values
         for piw in iw.list:
+            # check to get actual attribute values
             self.assertEqual(piw["ref"].item, item0)
             self.assertEqual(piw["ref"].value, "")
             self.assertEqual(piw["ref"]["val"].item, None)
@@ -5213,5 +5232,4 @@ class ModelTest(AironeTestCase):
             self.assertEqual(piw["ref"]["name"].value, "")
             self.assertEqual(piw["ref"]["vals"], [])
             self.assertEqual(piw["ref"]["refs"], [])
-            self.assertEqual([x.item for x in piw["ref"]["names"]], [None])
-            self.assertEqual([x.value for x in piw["ref"]["names"]], [""])
+            self.assertEqual(piw["ref"]["names"], [])
