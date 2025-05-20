@@ -33,7 +33,6 @@ jest.mock("../../../repository/AironeApiClient", () => ({
   },
 }));
 
-
 describe("RoleAttributeValueField", () => {
   const defaultValues: Schema = {
     name: "entry",
