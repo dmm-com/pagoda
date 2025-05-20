@@ -11,7 +11,7 @@ from airone.lib.elasticsearch import AdvancedSearchResultRecord, AttrHint
 from airone.lib.test import AironeTestCase
 from airone.lib.types import AttrType
 from entity.models import Entity, EntityAttr
-from entry.models import Attribute, AttributeValue, Entry
+from entry.models import Attribute, AttributeValue, Entry, ItemWalker
 from entry.services import AdvancedSearchService
 from entry.settings import CONFIG
 from group.models import Group
@@ -5062,3 +5062,174 @@ class ModelTest(AironeTestCase):
         Entry.objects.create(
             name=f"entry-{max_entries}", created_user=self._user, schema=self._entity
         )
+
+    def test_item_walker(self):
+        # initialize models and items that spans each ones.
+        model_vlan = self.create_entity(self._user, "VLAN")
+        model_nw = self.create_entity(
+            self._user,
+            "Network",
+            attrs=[
+                {"name": "vlan", "type": AttrType.OBJECT},
+                {"name": "cidr", "type": AttrType.ARRAY_OBJECT},
+                {"name": "netmask", "type": AttrType.STRING},
+            ],
+        )
+        model_ip_type = self.create_entity(self._user, "IPType")
+        model_ip = self.create_entity(
+            self._user,
+            "IPAddress",
+            attrs=[
+                {"name": "nw", "type": AttrType.OBJECT},
+                {"name": "type", "type": AttrType.OBJECT},
+            ],
+        )
+        model_srv = self.create_entity(
+            self._user,
+            "Server",
+            attrs=[
+                {"name": "I/F", "type": AttrType.NAMED_OBJECT},
+            ],
+        )
+
+        # create items that have following referral structure
+        # ( item2.obj -> item1.obj -> item0 )
+        # ( item2.arr -> [item0, item1] )
+        item_vlan1 = self.add_entry(self._user, "vlan0001", model_vlan)
+        item_nw1 = self.add_entry(
+            self._user,
+            "192.168.0.0/16",
+            model_nw,
+            values={
+                "vlan": item_vlan1,
+                "netmask": "16",
+                "cidr": [],
+            },
+        )
+        item_nw2 = self.add_entry(
+            self._user,
+            "192.168.0.0/24",
+            model_nw,
+            values={
+                "vlan": item_vlan1,
+                "netmask": "24",
+                "cidr": [item_nw1],
+            },
+        )
+        item_ip_type = self.add_entry(self._user, "Shared", model_ip_type)
+        item_ip1 = self.add_entry(
+            self._user,
+            "192.168.0.1",
+            model_ip,
+            values={
+                "nw": item_nw2,
+                "type": item_ip_type,
+            },
+        )
+        item_srv1 = self.add_entry(
+            self._user,
+            "srv1000",
+            model_srv,
+            values={
+                "I/F": {"name": "eth0", "id": item_ip1},
+            },
+        )
+
+        # create ItemWalker instance to step each items along with prepared roadmap
+        iw = ItemWalker(
+            [item_srv1.id],
+            {
+                "I/F": {
+                    "nw": {
+                        "vlan": {},
+                        "netmask": {},
+                        "cidr": {
+                            "vlan": {},
+                            "netmask": {},
+                        },
+                    },
+                    "type": {},
+                },
+            },
+        )
+        for piw in iw.list:
+            # This tests basic feature of its item() method
+            self.assertEqual(piw.item, item_srv1)
+            self.assertEqual(piw.value, "")
+
+            # This tests getting neighbor items
+            self.assertEqual(item_srv1.get_attrv_item("I/F"), item_ip1)
+            self.assertEqual(piw["I/F"].item, item_ip1)
+            self.assertEqual(piw["I/F"].value, "eth0")
+
+            # This gets neighbor item's attribute value
+            self.assertEqual(piw["I/F"]["nw"].item, item_nw2)
+            self.assertEqual(piw["I/F"]["nw"].value, "")
+            self.assertEqual(piw["I/F"]["type"].item, item_ip_type)
+            self.assertEqual(piw["I/F"]["nw"]["netmask"].item, None)
+            self.assertEqual(piw["I/F"]["nw"]["netmask"].value, "24")
+
+            # This tests stepping another next item
+            self.assertEqual(piw["I/F"]["nw"]["vlan"].item, item_vlan1)
+
+            # This tests stepping another branched next item and its attribute value
+            # for ARRAY typed attribute "cidr"
+            self.assertEqual([x.item for x in piw["I/F"]["nw"]["cidr"]], [item_nw1])
+            self.assertEqual([x["netmask"].value for x in piw["I/F"]["nw"]["cidr"]], ["16"])
+
+    def test_item_walker_abnormal_way(self):
+        model = self.create_entity(
+            self._user, "Model", attrs=self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY
+        )
+        item = self.add_entry(self._user, "item0", model)
+        iw = ItemWalker(
+            [item.id],
+            {"ref": {}},
+        )
+        for piw in iw.list:
+            # check to raise KeyError when unexpected key was specified
+            with self.assertRaises(
+                KeyError, msg="Invalid attribute name was specified (InvalidAttr)"
+            ):
+                piw["InvalidAttr"]
+                piw["ref"]["InvalidAttr"]
+
+            # check to raise IndexError when when it's handled as array
+            with self.assertRaises(IndexError):
+                piw[0]
+                [x for x in piw]
+
+    def test_item_walker_with_empty_values(self):
+        model = self.create_entity(
+            self._user, "Model", attrs=self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY
+        )
+        item0 = self.add_entry(self._user, "item0", model)
+        item1 = self.add_entry(self._user, "item1", model, values={"ref": item0})
+
+        iw = ItemWalker(
+            [item1.id],
+            {
+                "ref": {
+                    "val": {},
+                    "vals": {},
+                    "ref": {},
+                    "refs": {},
+                    "name": {},
+                    "names": {},
+                }
+            },
+        )
+        # This refers each empty referral values
+        for piw in iw.list:
+            # check to get actual attribute values
+            self.assertEqual(piw["ref"].item, item0)
+            self.assertEqual(piw["ref"].value, "")
+            self.assertEqual(piw["ref"]["val"].item, None)
+            self.assertEqual(piw["ref"]["val"].value, "")
+            self.assertEqual(piw["ref"]["ref"].item, None)
+            self.assertEqual(piw["ref"]["ref"].value, "")
+            self.assertEqual(piw["ref"]["name"].item, None)
+            self.assertEqual(piw["ref"]["name"].value, "")
+            self.assertEqual(piw["ref"]["vals"], [])
+            self.assertEqual(piw["ref"]["refs"], [])
+            self.assertEqual(piw["ref"]["names"], [])

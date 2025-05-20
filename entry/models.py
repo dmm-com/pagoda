@@ -2469,3 +2469,129 @@ class AliasEntry(models.Model):
         related_name="aliases",
         on_delete=models.CASCADE,
     )
+
+
+# This instance wrapps prefetched Entry instance to abstract intermediate method call
+# (e.g. attr_list, value_list, ...)
+class PrefetchedItemWrapper(object):
+    def __init__(self, prefetched_item, attrv=None):
+        self.pi = prefetched_item
+        self.attrv = attrv
+
+    # Plz fix it
+    # def __getitem__(self, attrname) -> PrefetchedItemWrapper | list(PrefetchedItemWrapper):
+    def __getitem__(self, attrname):
+        """
+        This returns neighbor PrefetchedItemWrapper instance that wraps prefetched Entry instance
+        """
+        if isinstance(attrname, int):
+            raise IndexError
+
+        try:
+            if self.pi is None:
+                raise KeyError("Invalid attribute name was specified (%s)" % attrname)
+
+            # return empty item wrapped by PrefetchedItemWrapper
+            # when specified attribute doesn't have valid AttributeValue.
+            attr = [a for a in self.pi.attr_list if a.schema.name == attrname][0]
+            if not attr.value_list:
+                if attr.schema.type & AttrType._ARRAY:
+                    return []
+                else:
+                    return PrefetchedItemWrapper(None, None)
+
+            # return next referral item that is indicated by specified attribute name
+            attrv = attr.value_list[0]
+            if attr.schema.type & AttrType._ARRAY:
+                if attr.schema.type & AttrType.OBJECT:
+                    return [
+                        PrefetchedItemWrapper(v.referral.entry if v.referral else None, attrv)
+                        for v in attrv.co_values
+                    ]
+                else:
+                    return [PrefetchedItemWrapper(None, attrv) for v in attrv.co_values]
+
+            elif attr.schema.type & AttrType.OBJECT:
+                return PrefetchedItemWrapper(
+                    attrv.referral.entry if attrv.referral else None, attrv
+                )
+
+            else:
+                return PrefetchedItemWrapper(None, attrv)
+
+        except (IndexError, AttributeError) as _:
+            return PrefetchedItemWrapper(None, None)
+
+    @property
+    def item(self) -> Entry:
+        return self.pi
+
+    @property
+    def value(self) -> str:
+        if self.attrv is not None:
+            return self.attrv.value
+
+        return ""
+
+
+class ItemWalker(object):
+    @classmethod
+    def prefetch_attr_refs(kls, attrnames, nested_prefetch=[], is_intermediate=True):
+        """
+        This returns the Prefetch object for the specified attribute name
+        to determine referral items that specified attribute name indicates.
+
+        Making nested Prefetch structure by using this method, you can get
+        referral items with less query count for backend database.
+        """
+        prefetch_co_values = Prefetch(
+            lookup="data_array",
+            queryset=AttributeValue.objects.filter(referral__is_active=True)
+            .select_related("referral__entry")
+            .prefetch_related(*nested_prefetch),
+            to_attr="co_values",
+        )
+
+        prefetch_value = Prefetch(
+            lookup="values",
+            queryset=AttributeValue.objects.filter(is_latest=True)
+            .select_related("referral")
+            .prefetch_related(*nested_prefetch)
+            .prefetch_related(prefetch_co_values),
+            to_attr="value_list",
+        )
+
+        return Prefetch(
+            lookup="referral__entry__attrs" if is_intermediate else "attrs",
+            queryset=Attribute.objects.filter(
+                is_active=True,
+                schema__name__in=attrnames,
+            )
+            .select_related("schema")
+            .prefetch_related(prefetch_value),
+            to_attr="attr_list",
+        )
+
+    @classmethod
+    def create_prefetch(kls, step_map={}, is_last=False) -> Prefetch:
+        # check attr_routes has nested attribute steps
+        related_prefetches = []
+        for step_attrname, co_steps in step_map.items():
+            if co_steps:
+                related_prefetches.append(ItemWalker.create_prefetch(co_steps))
+
+        # create Prefetch object
+        return ItemWalker.prefetch_attr_refs(
+            attrnames=step_map.keys(),
+            nested_prefetch=related_prefetches,
+            is_intermediate=not is_last,
+        )
+
+    def __init__(self, base_item_ids, step_map={}):
+        prefetch = ItemWalker.create_prefetch(step_map, is_last=True)
+
+        self.base_items = Entry.objects.prefetch_related(prefetch).filter(id__in=base_item_ids)
+
+    @property
+    def list(self):
+        return [PrefetchedItemWrapper(x) for x in self.base_items]
