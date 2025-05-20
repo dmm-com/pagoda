@@ -1,19 +1,24 @@
-import { Autocomplete, Box, TextField, Typography } from "@mui/material";
+import {
+  Autocomplete,
+  Box,
+  TextField,
+  Typography,
+  CircularProgress,
+} from "@mui/material";
 import { styled } from "@mui/material/styles";
-import React, { FC } from "react";
+import React, { FC, useEffect, useState } from "react";
 import { Control, Controller } from "react-hook-form";
 import { UseFormSetValue } from "react-hook-form/dist/types/form";
 
-import { useAsyncWithThrow } from "../../../hooks/useAsyncWithThrow";
 import { aironeApiClient } from "../../../repository/AironeApiClient";
 
 import { Schema } from "./EntryFormSchema";
 
-const StyledTypography = styled(Typography)(({}) => ({
+const StyledTypography = styled(Typography)(() => ({
   color: "rgba(0, 0, 0, 0.6)",
 }));
 
-const StyledBox = styled(Box)(({}) => ({
+const StyledBox = styled(Box)(() => ({
   display: "flex",
   alignItems: "center",
 }));
@@ -26,34 +31,44 @@ interface Props {
   isDisabled?: boolean;
 }
 
+type RoleOption = { id: number; name: string };
+
 export const RoleAttributeValueField: FC<Props> = ({
-  multiple,
+  multiple = false,
   attrId,
   control,
   setValue,
   isDisabled = false,
 }) => {
-  const roles = useAsyncWithThrow(async () => {
-    const _roles = await aironeApiClient.getRoles();
-    return _roles.map((g) => ({ id: g.id, name: g.name }));
-  }, []);
+  const [options, setOptions] = useState<RoleOption[]>([]);
+  const [inputValue, setInputValue] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleChange = (
-    value: { id: number; name: string } | { id: number; name: string }[] | null,
-  ) => {
-    if (multiple === true) {
-      if (value != null && !Array.isArray(value)) {
-        throw new Error("value must be an array");
+  useEffect(() => {
+    const fetchRoles = async () => {
+      setLoading(true);
+      try {
+        const roles = await aironeApiClient.searchRoles(inputValue);
+        setOptions(roles.map((r) => ({ id: r.id, name: r.name })));
+      } finally {
+        setLoading(false);
       }
-      setValue(`attrs.${attrId}.value.asArrayRole`, value ?? [], {
-        shouldDirty: true,
-        shouldValidate: true,
-      });
+    };
+    fetchRoles();
+  }, [inputValue]);
+
+  const handleChange = (value: RoleOption | RoleOption[] | null) => {
+    if (multiple) {
+      setValue(
+        `attrs.${attrId}.value.asArrayRole`,
+        (value as RoleOption[]) ?? [],
+        {
+          shouldDirty: true,
+          shouldValidate: true,
+        },
+      );
     } else {
-      if (value != null && Array.isArray(value)) {
-        throw new Error("value must not be an array");
-      }
-      setValue(`attrs.${attrId}.value.asRole`, value, {
+      setValue(`attrs.${attrId}.value.asRole`, (value as RoleOption) ?? null, {
         shouldDirty: true,
         shouldValidate: true,
       });
@@ -66,31 +81,38 @@ export const RoleAttributeValueField: FC<Props> = ({
       <StyledBox>
         <Controller
           name={
-            multiple === true
+            multiple
               ? `attrs.${attrId}.value.asArrayRole`
               : `attrs.${attrId}.value.asRole`
           }
           control={control}
           render={({ field, fieldState: { error } }) => (
-            <Autocomplete
+            <Autocomplete<RoleOption, boolean>
               fullWidth
               multiple={multiple}
-              loading={roles.loading}
-              options={roles.value ?? []}
-              value={field.value}
-              getOptionLabel={(option: { id: number; name: string }) =>
-                option.name
-              }
+              loading={loading}
+              options={options}
+              value={field.value ?? (multiple ? [] : null)}
+              getOptionLabel={(option) => option.name}
               isOptionEqualToValue={(option, value) => option.id === value.id}
-              onChange={(_e, value) => handleChange(value)}
+              onChange={(_, value) => handleChange(value)}
+              onInputChange={(_, value) => setInputValue(value)}
               renderInput={(params) => (
                 <TextField
                   {...params}
-                  error={error != null}
+                  error={!!error}
                   helperText={error?.message}
                   size="small"
                   placeholder={multiple ? "" : "-NOT SET-"}
-                  disabled={isDisabled}
+                  InputProps={{
+                    ...params.InputProps,
+                    endAdornment: (
+                      <>
+                        {loading ? <CircularProgress size={20} /> : null}
+                        {params.InputProps.endAdornment}
+                      </>
+                    ),
+                  }}
                 />
               )}
               disabled={isDisabled}

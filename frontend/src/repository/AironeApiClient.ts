@@ -584,6 +584,13 @@ class AironeApiClient {
     return await this.role.roleApiV2Retrieve({ id: roleId });
   }
 
+  async searchRoles(keyword?: string): Promise<Role[]> {
+    return await this.role.roleApiV2List({
+      ordering: "name",
+      search: keyword,
+    });
+  }
+
   async createRole(role: RoleCreateUpdate): Promise<void> {
     await this.role.roleApiV2Create(
       {
