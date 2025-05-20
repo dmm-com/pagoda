@@ -17,6 +17,8 @@ import {
 import React from "react";
 import { useForm } from "react-hook-form";
 
+import { aironeApiClient } from "../../../repository/AironeApiClient";
+
 import { schema, Schema } from "./EntryFormSchema";
 import { RoleAttributeValueField } from "./RoleAttributeValueField";
 
@@ -31,8 +33,6 @@ jest.mock("../../../repository/AironeApiClient", () => ({
   },
 }));
 
-// ✅ Import mocked instance for type-safe access
-import { aironeApiClient } from "../../../repository/AironeApiClient";
 
 describe("RoleAttributeValueField", () => {
   const defaultValues: Schema = {
