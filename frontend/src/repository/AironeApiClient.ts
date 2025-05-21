@@ -576,8 +576,11 @@ class AironeApiClient {
     fileDownload(data, filename);
   }
 
-  async getRoles(): Promise<Role[]> {
-    return await this.role.roleApiV2List();
+  async getRoles(keyword?: string): Promise<Role[]> {
+    return await this.role.roleApiV2List({
+      ordering: "name",
+      search: keyword,
+    });
   }
 
   async getRole(roleId: number): Promise<Role> {
