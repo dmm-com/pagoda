@@ -48,7 +48,7 @@ export const RoleAttributeValueField: FC<Props> = ({
     const fetchRoles = async () => {
       setLoading(true);
       try {
-        const roles = await aironeApiClient.searchRoles(inputValue);
+        const roles = await aironeApiClient.getRoles(inputValue);
         setOptions(roles.map((r) => ({ id: r.id, name: r.name })));
       } finally {
         setLoading(false);
