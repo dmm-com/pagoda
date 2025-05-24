@@ -356,43 +356,6 @@ class Job(models.Model):
 
     @classmethod
     def method_table(kls):
-        entry_task = kls.get_task_module("entry.tasks")
-        dashboard_task = kls.get_task_module("dashboard.tasks")
-        entity_task = kls.get_task_module("entity.tasks")
-        group_task = kls.get_task_module("group.tasks")
-        role_task = kls.get_task_module("role.tasks")
-
-        kls._METHOD_TABLE |= {
-            JobOperation.CREATE_ENTRY: entry_task.create_entry_attrs,
-            JobOperation.EDIT_ENTRY: entry_task.edit_entry_attrs,
-            JobOperation.DELETE_ENTRY: entry_task.delete_entry,
-            JobOperation.COPY_ENTRY: entry_task.copy_entry,
-            JobOperation.DO_COPY_ENTRY: entry_task.do_copy_entry,
-            JobOperation.IMPORT_ENTRY: entry_task.import_entries,
-            JobOperation.IMPORT_ENTRY_V2: entry_task.import_entries_v2,
-            JobOperation.EXPORT_ENTRY: entry_task.export_entries,
-            JobOperation.EXPORT_ENTRY_V2: entry_task.export_entries_v2,
-            JobOperation.RESTORE_ENTRY: entry_task.restore_entry,
-            JobOperation.EXPORT_SEARCH_RESULT: dashboard_task.export_search_result,
-            JobOperation.REGISTER_REFERRALS: entry_task.register_referrals,
-            JobOperation.CREATE_ENTITY: entity_task.create_entity,
-            JobOperation.EDIT_ENTITY: entity_task.edit_entity,
-            JobOperation.DELETE_ENTITY: entity_task.delete_entity,
-            JobOperation.NOTIFY_CREATE_ENTRY: entry_task.notify_create_entry,
-            JobOperation.NOTIFY_UPDATE_ENTRY: entry_task.notify_update_entry,
-            JobOperation.NOTIFY_DELETE_ENTRY: entry_task.notify_delete_entry,
-            JobOperation.GROUP_REGISTER_REFERRAL: group_task.edit_group_referrals,
-            JobOperation.ROLE_REGISTER_REFERRAL: role_task.edit_role_referrals,
-            JobOperation.UPDATE_DOCUMENT: entry_task.update_es_documents,
-            JobOperation.EXPORT_SEARCH_RESULT_V2: entry_task.export_search_result_v2,
-            JobOperation.CREATE_ENTITY_V2: entity_task.create_entity_v2,
-            JobOperation.EDIT_ENTITY_V2: entity_task.edit_entity_v2,
-            JobOperation.DELETE_ENTITY_V2: entity_task.delete_entity_v2,
-            JobOperation.CREATE_ENTRY_V2: entry_task.create_entry_v2,
-            JobOperation.EDIT_ENTRY_V2: entry_task.edit_entry_v2,
-            JobOperation.DELETE_ENTRY_V2: entry_task.delete_entry_v2,
-            JobOperation.IMPORT_ROLE_V2: role_task.import_role_v2,
-        }
         for operation_num, task in CUSTOM_TASKS.items():
             custom_task = kls.get_task_module("custom_view.tasks")
             kls._METHOD_TABLE |= {operation_num: getattr(custom_task, task)}

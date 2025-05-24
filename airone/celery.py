@@ -31,4 +31,9 @@ app.config_from_object("django.conf:settings", namespace="CELERY")
 app.autodiscover_tasks()
 
 # Recognize tasks explicitly
+import dashboard.tasks  # noqa: F401, E402
+import entity.tasks  # noqa: F401, E402
+import entry.tasks  # noqa: F401, E402
+import group.tasks  # noqa: F401, E402
+import role.tasks  # noqa: F401, E402
 import trigger.tasks  # noqa: F401, E402
