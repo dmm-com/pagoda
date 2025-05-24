@@ -495,7 +495,7 @@ def _get_regex_pattern(keyword: str) -> str:
 
     # Elasticsearch doesn't support anchor operators,
     begin = ".*"
-    if escaped[0] == "^":
+    if escaped and escaped[0] == "^":
         begin = ""
         escaped = escaped.lstrip("^")
 
