@@ -1,15 +1,16 @@
 import json
 
 from airone.celery import app
-from airone.lib.job import may_schedule_until_job_is_ready
+from airone.lib.job import may_schedule_until_job_is_ready, register_job_task
 from entry.models import Entry
-from job.models import Job, JobStatus
+from job.models import Job, JobOperation, JobStatus
 from trigger.models import (
     TriggerCondition,
 )
 from user.models import User
 
 
+@register_job_task(JobOperation.MAY_INVOKE_TRIGGER)
 @app.task(bind=True)
 @may_schedule_until_job_is_ready
 def may_invoke_trigger(self, job: Job) -> JobStatus:

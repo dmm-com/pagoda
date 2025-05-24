@@ -2,14 +2,15 @@ import json
 
 from acl.models import ACLBase
 from airone.celery import app
-from airone.lib.job import may_schedule_until_job_is_ready
+from airone.lib.job import may_schedule_until_job_is_ready, register_job_task
 from airone.lib.log import Logger
 from group.models import Group
-from job.models import Job, JobStatus
+from job.models import Job, JobOperation, JobStatus
 from role.models import Role
 from user.models import User
 
 
+@register_job_task(JobOperation.ROLE_REGISTER_REFERRAL)
 @app.task(bind=True)
 @may_schedule_until_job_is_ready
 def edit_role_referrals(self, job: Job) -> JobStatus:
@@ -22,6 +23,7 @@ def edit_role_referrals(self, job: Job) -> JobStatus:
     return JobStatus.DONE
 
 
+@register_job_task(JobOperation.IMPORT_ROLE_V2)
 @app.task(bind=True)
 @may_schedule_until_job_is_ready
 def import_role_v2(self, job: Job) -> tuple[JobStatus, str, None] | None:
