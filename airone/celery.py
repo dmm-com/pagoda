@@ -29,3 +29,6 @@ app.config_from_object("django.conf:settings", namespace="CELERY")
 
 # Load task modules from all registered Django app configs.
 app.autodiscover_tasks()
+
+# Recognize tasks explicitly
+import trigger.tasks  # noqa: F401, E402
