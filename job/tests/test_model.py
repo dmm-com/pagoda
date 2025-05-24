@@ -258,16 +258,14 @@ class ModelTest(AironeTestCase):
     def test_method_table(self):
         method_table = Job.method_table()
 
+        # This confirms all operations of JobOperation are registered
+        self.assertListEqual(
+            sorted([x for x in method_table]),
+            sorted([x for x in JobOperation] + [x for x in JobOperationCustom]),
+        )
+
         # This confirms the number of JobOperation and method_table count is same
         self.assertEqual(len(method_table), len(JobOperation) + len(JobOperationCustom))
-
-        # This confirms all operations of JobOperation are registered
-        self.assertTrue(
-            all(
-                [x.value in method_table for x in JobOperation]
-                + [x.value in method_table for x in JobOperationCustom]
-            )
-        )
 
     def test_register_method_table(self):
         @app.task(bind=True)
