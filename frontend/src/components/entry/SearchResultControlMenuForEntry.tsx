@@ -13,6 +13,8 @@ import {
 import { styled } from "@mui/material/styles";
 import React, { FC, KeyboardEvent } from "react";
 
+import { AttrFilter } from "../../services/entry/AdvancedSearch";
+
 const StyledBox = styled(Box)({
   margin: "8px",
 });
@@ -22,7 +24,11 @@ interface Props {
   anchorElem: HTMLButtonElement | null;
   handleClose: () => void;
   hintEntryDispatcher: (entry: Partial<EntryHint>) => void;
-  handleSelectFilterConditions: () => void;
+  handleSelectFilterConditions: (
+    attrFilter?: AttrFilter,
+    overwriteReferral?: string,
+    overwriteHintEntry?: EntryHint,
+  ) => void;
 }
 
 export const SearchResultControlMenuForEntry: FC<Props> = ({
@@ -52,11 +58,16 @@ export const SearchResultControlMenuForEntry: FC<Props> = ({
           variant="outlined"
           fullWidth
           onClick={() => {
-            hintEntryDispatcher({
+            const clearedHintEntry = {
               filterKey: EntryHintFilterKeyEnum.CLEARED,
               keyword: "",
-            });
-            handleSelectFilterConditions();
+            };
+            hintEntryDispatcher(clearedHintEntry);
+            handleSelectFilterConditions(
+              undefined,
+              undefined,
+              clearedHintEntry,
+            );
           }}
         >
           <Typography>クリア</Typography>
