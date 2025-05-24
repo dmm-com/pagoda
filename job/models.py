@@ -5,7 +5,7 @@ import pickle
 import time
 from datetime import date, datetime, timedelta
 from importlib import import_module
-from typing import Any
+from typing import Any, Callable, Optional, TypeAlias, Union
 
 import pytz
 from django.conf import settings
@@ -20,6 +20,10 @@ from entity.models import Entity
 from entry.models import Entry
 from job.settings import CONFIG as JOB_CONFIG
 from user.models import User
+
+TaskReturnType: TypeAlias = Union["JobStatus", tuple["JobStatus", str, Optional[ACLBase]], None]
+
+TaskHandler: TypeAlias = Callable[[Any, "Job"], TaskReturnType]
 
 if os.path.exists(settings.BASE_DIR + "/custom_view"):
     from custom_view.lib.task import (
@@ -120,7 +124,7 @@ class Job(models.Model):
     _TASK_MODULE: dict[str, Any] = {}
 
     # This hash table describes operation status value and operation processing
-    _METHOD_TABLE: dict[JobOperation | JobOperationCustom, Any] = {}
+    _METHOD_TABLE: dict[JobOperation | JobOperationCustom, TaskHandler] = {}
 
     # In some jobs sholdn't make user aware of existence because of user experience
     # (e.g. re-registrating elasticsearch data of entries which refer to changed name entry).
@@ -363,7 +367,9 @@ class Job(models.Model):
         return kls._METHOD_TABLE
 
     @classmethod
-    def register_method_table(kls, operation: JobOperation | JobOperationCustom, method):
+    def register_method_table(
+        kls, operation: JobOperation | JobOperationCustom, method: TaskHandler
+    ):
         # Raise error if trying to register a handler that's already registered
         if operation in kls._METHOD_TABLE:
             raise ValueError(

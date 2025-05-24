@@ -1,17 +1,17 @@
 import functools
 import traceback
-from typing import Any, Callable, Union
+from typing import Callable, Union
 
 from django.core.mail import mail_admins
 
 from acl.models import ACLBase
 from airone.lib.log import Logger
-from job.models import Job, JobOperation, JobOperationCustom, JobStatus
+from job.models import Job, JobOperation, JobOperationCustom, JobStatus, TaskHandler
 
 
 def _handle_task(
     kls,
-    func: Callable[[Any, Job], JobStatus | tuple[JobStatus, str, ACLBase | None] | None],
+    func: TaskHandler,
     job: Job,
     on_cancelled: Callable[[Job], None] | None = None,
 ) -> None:
@@ -61,7 +61,7 @@ raised exception:
 
 
 def may_schedule_until_job_is_ready(
-    func: Callable[[Any, Job], JobStatus | tuple[JobStatus, str, ACLBase | None] | None],
+    func: TaskHandler,
 ):
     @functools.wraps(func)
     def wrapper(kls, job_id: int):
@@ -75,7 +75,7 @@ def may_schedule_until_job_is_ready_with_handlers(
     on_cancelled: Callable[[Job], None] | None = None,
 ):
     def decorator(
-        func: Callable[[Any, Job], JobStatus | tuple[JobStatus, str, ACLBase | None] | None],
+        func: TaskHandler,
     ):
         @functools.wraps(func)
         def wrapper(kls, job_id: int):
@@ -104,8 +104,8 @@ def register_job_task(operation: Union[JobOperation, JobOperationCustom]) -> Cal
     """
 
     def decorator(
-        func: Callable[[Any, Job], JobStatus | tuple[JobStatus, str, ACLBase | None] | None],
-    ) -> Callable[[Any, Job], JobStatus | tuple[JobStatus, str, ACLBase | None] | None]:
+        func: TaskHandler,
+    ) -> TaskHandler:
         Job.register_method_table(operation, func)
         return func
 
