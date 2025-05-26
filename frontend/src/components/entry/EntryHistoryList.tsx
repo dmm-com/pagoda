@@ -45,7 +45,7 @@ const StyledTableRow = styled(TableRow)(() => ({
   },
 }));
 
-export const EntryHistoryValueWrapper: FC<WrapperProps> = ({ children }) => {
+const EntryHistoryValueWrapper: FC<WrapperProps> = ({ children }) => {
   return (
     <Box
       sx={{
