@@ -1,6 +1,7 @@
 import { PaginatedEntryHistoryAttributeValueList } from "@dmm-com/airone-apiclient-typescript-fetch";
 import RestoreIcon from "@mui/icons-material/Restore";
 import {
+  Box,
   IconButton,
   Table,
   TableBody,
@@ -11,7 +12,7 @@ import {
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { useSnackbar } from "notistack";
-import React, { FC, useCallback } from "react";
+import React, { FC, ReactNode, useCallback } from "react";
 import { useNavigate } from "react-router";
 
 import { AttributeValue } from "./AttributeValue";
@@ -22,6 +23,10 @@ import { aironeApiClient } from "repository/AironeApiClient";
 import { showEntryHistoryPath, topPath } from "routes/Routes";
 import { EntryHistoryListParam } from "services/Constants";
 import { formatDateTime } from "services/DateUtil";
+
+interface WrapperProps {
+  children: ReactNode;
+}
 
 const HeaderTableRow = styled(TableRow)(({}) => ({
   backgroundColor: "#455A64",
@@ -39,6 +44,21 @@ const StyledTableRow = styled(TableRow)(() => ({
     padding: "8px 16px",
   },
 }));
+
+export const EntryHistoryValueWrapper: FC<WrapperProps> = ({ children }) => {
+  return (
+    <Box
+      sx={{
+        maxWidth: 300,
+        whiteSpace: "pre-wrap",
+        wordBreak: "break-word",
+        overflowWrap: "break-word",
+      }}
+    >
+      {children}
+    </Box>
+  );
+};
 
 interface Props {
   entityId: number;
@@ -92,24 +112,28 @@ export const EntryHistoryList: FC<Props> = ({
             <StyledTableRow key={history.id}>
               <TableCell>{history.parentAttr.name}</TableCell>
               <TableCell>
-                {history.prevValue ? (
+                <EntryHistoryValueWrapper>
+                  {history.prevValue ? (
+                    <AttributeValue
+                      attrInfo={{
+                        type: history.type,
+                        value: history.prevValue,
+                      }}
+                    />
+                  ) : (
+                    <Typography>-</Typography>
+                  )}
+                </EntryHistoryValueWrapper>
+              </TableCell>
+              <TableCell>
+                <EntryHistoryValueWrapper>
                   <AttributeValue
                     attrInfo={{
                       type: history.type,
-                      value: history.prevValue,
+                      value: history.currValue,
                     }}
                   />
-                ) : (
-                  <Typography>-</Typography>
-                )}
-              </TableCell>
-              <TableCell>
-                <AttributeValue
-                  attrInfo={{
-                    type: history.type,
-                    value: history.currValue,
-                  }}
-                />
+                </EntryHistoryValueWrapper>
               </TableCell>
               <TableCell>{formatDateTime(history.createdTime)}</TableCell>
               <TableCell>{history.createdUser}</TableCell>
