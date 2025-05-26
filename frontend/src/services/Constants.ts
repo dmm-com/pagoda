@@ -46,25 +46,25 @@ export const BaseAttributeTypes = {
 };
 
 export const AttributeTypes: Record<string, { name: string; type: number }> = {
-  object: {
-    name: "object",
-    type: BaseAttributeTypes.object,
-  },
   string: {
     name: "string",
     type: BaseAttributeTypes.string,
   },
-  named_object: {
-    name: "named_object",
-    type: BaseAttributeTypes.object | BaseAttributeTypes.named,
+  array_string: {
+    name: "array_string",
+    type: BaseAttributeTypes.string | BaseAttributeTypes.array,
+  },
+  object: {
+    name: "object",
+    type: BaseAttributeTypes.object,
   },
   array_object: {
     name: "array_object",
     type: BaseAttributeTypes.object | BaseAttributeTypes.array,
   },
-  array_string: {
-    name: "array_string",
-    type: BaseAttributeTypes.string | BaseAttributeTypes.array,
+  named_object: {
+    name: "named_object",
+    type: BaseAttributeTypes.object | BaseAttributeTypes.named,
   },
   array_named_object: {
     name: "array_named_object",
@@ -73,9 +73,17 @@ export const AttributeTypes: Record<string, { name: string; type: number }> = {
       BaseAttributeTypes.named |
       BaseAttributeTypes.array,
   },
+  group: {
+    name: "group",
+    type: BaseAttributeTypes.group,
+  },
   array_group: {
     name: "array_group",
     type: BaseAttributeTypes.group | BaseAttributeTypes.array,
+  },
+  role: {
+    name: "role",
+    type: BaseAttributeTypes.role,
   },
   array_role: {
     name: "array_role",
@@ -89,17 +97,9 @@ export const AttributeTypes: Record<string, { name: string; type: number }> = {
     name: "boolean",
     type: BaseAttributeTypes.bool,
   },
-  group: {
-    name: "group",
-    type: BaseAttributeTypes.group,
-  },
   date: {
     name: "date",
     type: BaseAttributeTypes.date,
-  },
-  role: {
-    name: "role",
-    type: BaseAttributeTypes.role,
   },
   datetime: {
     name: "datetime",
