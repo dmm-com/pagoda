@@ -20,6 +20,7 @@ import Grid from "@mui/material/Grid2";
 import { styled } from "@mui/material/styles";
 import { useSnackbar } from "notistack";
 import React, { FC, useState } from "react";
+import { useNavigate } from "react-router";
 
 import { EntryAttributes } from "./EntryAttributes";
 
@@ -30,7 +31,7 @@ import { SearchBox } from "components/common/SearchBox";
 import { useAsyncWithThrow } from "hooks/useAsyncWithThrow";
 import { usePage } from "hooks/usePage";
 import { aironeApiClient } from "repository/AironeApiClient";
-import { restoreEntryPath } from "routes/Routes";
+import { restoreEntryPath, topPath } from "routes/Routes";
 import { EntryListParam } from "services/Constants";
 import { formatDateTime } from "services/DateUtil";
 import { normalizeToMatch } from "services/StringUtil";
@@ -100,6 +101,7 @@ interface Props {
 
 export const RestorableEntryList: FC<Props> = ({ entityId }) => {
   const { enqueueSnackbar } = useSnackbar();
+  const navigate = useNavigate();
 
   const { page, query, changePage, changeQuery } = usePage();
 
@@ -126,7 +128,8 @@ export const RestorableEntryList: FC<Props> = ({ entityId }) => {
         enqueueSnackbar("アイテムの復旧が完了しました", {
           variant: "success",
         });
-        window.location.href = restoreEntryPath(entityId, query);
+        navigate(topPath());
+        navigate(restoreEntryPath(entityId, query));
       })
       .catch(() => {
         enqueueSnackbar("アイテムの復旧が失敗しました", {
