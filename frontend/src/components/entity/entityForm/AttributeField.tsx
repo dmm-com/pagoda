@@ -35,6 +35,24 @@ const StyledBox = styled(Box)(({ theme }) => ({
   gap: "8px",
 }));
 
+// Define the custom display order for attribute types
+const ATTRIBUTE_TYPE_ORDER = [
+  "string",
+  "array_string",
+  "object",
+  "array_object",
+  "named_object",
+  "array_named_object",
+  "group",
+  "array_group",
+  "role",
+  "array_role",
+  "text",
+  "boolean",
+  "date",
+  "datetime",
+];
+
 interface Props {
   control: Control<Schema>;
   setValue: UseFormSetValue<Schema>;
@@ -71,9 +89,9 @@ export const AttributeField: FC<Props> = ({
   const [openModal, setOpenModal] = useState(false);
 
   const attributeTypeMenuItems = useMemo(() => {
-    return Object.keys(AttributeTypes).map((typename, index) => (
-      <MenuItem key={index} value={AttributeTypes[typename].type}>
-        {AttributeTypes[typename].name}
+    return ATTRIBUTE_TYPE_ORDER.map((key) => (
+      <MenuItem key={key} value={AttributeTypes[key].type}>
+        {AttributeTypes[key].name}
       </MenuItem>
     ));
   }, []);
@@ -227,7 +245,6 @@ export const AttributeField: FC<Props> = ({
         </IconButton>
       </TableCell>
 
-      {/* This is a button to add new Attribute */}
       <TableCell>
         <IconButton onClick={() => handleAppendAttribute(index ?? 0)}>
           <AddIcon />
@@ -262,7 +279,6 @@ export const AttributeField: FC<Props> = ({
       <TableCell />
       <TableCell />
       <TableCell />
-      {/* This is a button to add new Attribute */}
       <TableCell>
         <IconButton onClick={() => handleAppendAttribute(index ?? 0)}>
           <AddIcon />
