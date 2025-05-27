@@ -2,12 +2,10 @@ import { Box, Button, TextField } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { useSnackbar } from "notistack";
 import React, { FC, useMemo, useState } from "react";
-import { useNavigate } from "react-router";
 
 import { aironeApiClient } from "../../repository/AironeApiClient";
 import { AironeModal } from "../common/AironeModal";
 
-import { loginPath, topPath, usersPath } from "routes/Routes";
 import { ServerContext } from "services/ServerContext";
 
 const PasswordField = styled(Box)(({ theme }) => ({
@@ -34,15 +32,17 @@ interface Props {
   userId: number;
   openModal: boolean;
   onClose: () => void;
+  onSubmitSuccess?: () => void;
 }
 
 export const UserPasswordFormModal: FC<Props> = ({
   userId,
   openModal,
   onClose,
+  onSubmitSuccess,
 }) => {
   const { enqueueSnackbar } = useSnackbar();
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
 
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -75,13 +75,7 @@ export const UserPasswordFormModal: FC<Props> = ({
           checkPassword,
         );
       }
-
-      if (ServerContext.getInstance()?.user?.id == userId) {
-        navigate(loginPath(), { replace: true });
-      } else {
-        navigate(topPath(), { replace: true });
-        navigate(usersPath(), { replace: true });
-      }
+      onSubmitSuccess?.();
     } catch (e) {
       enqueueSnackbar(
         "パスワードリセットに失敗しました。入力項目を見直してください",
