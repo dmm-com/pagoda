@@ -38,6 +38,10 @@ class ElasticSearchTest(TestCase):
         p2 = elasticsearch._get_regex_pattern("^keyword$")
         self.assertEqual(p2, "[kK][eE][yY][wW][oO][rR][dD]")
 
+        # with empty string
+        p3 = elasticsearch._get_regex_pattern("")
+        self.assertEqual(p3, ".*.*")
+
     def test_make_query(self):
         query = elasticsearch.make_query(
             hint_entity=self._entity,
