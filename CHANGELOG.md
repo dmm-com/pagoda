@@ -3,14 +3,26 @@
 ## In development
 
 ### Added
+
+### Changed
+
+### Fixed
+
+## v3.132.0
+
+### Added
 * New confident feature "ItemWalker" that make uesr easy to make processing
   to get Item that is reffered by another Item through attribute value with
   less I/O (SQL) using Prefetch.
   Contributed by @userlocalhost, @hinashi
 
 ### Changed
+* Consolidate page and query state management in usePage hook.
+  Contributed by @syucream
 
 ### Fixed
+* Enable real-time API search for group, role selection field.
+  Contributed by @tsunoda-takahiro
 
 ## v3.131.0
 
