@@ -142,15 +142,23 @@ export const SearchResultsTableHead: FC<Props> = ({
 
   const handleSelectFilterConditions =
     (attrName?: string) =>
-    (attrFilter?: AttrFilter, overwriteReferral?: string) => {
+    (
+      attrFilter?: AttrFilter,
+      overwriteReferral?: string,
+      overwriteHintEntry?: EntryHint,
+    ) => {
       const _attrsFilter =
         attrName != null && attrFilter != null
           ? { ...attrsFilter, [attrName]: attrFilter }
           : attrsFilter;
 
+      const effectiveHintEntry = overwriteHintEntry ?? hintEntry;
       const hintEntryParam =
-        hintEntry.keyword && hintEntry.keyword.length > 0
-          ? { filterKey: hintEntry.filterKey, keyword: hintEntry.keyword }
+        effectiveHintEntry.keyword && effectiveHintEntry.keyword.length > 0
+          ? {
+              filterKey: effectiveHintEntry.filterKey,
+              keyword: effectiveHintEntry.keyword,
+            }
           : undefined;
 
       const newParams = formatAdvancedSearchParams({
@@ -326,7 +334,13 @@ export const SearchResultsTableHead: FC<Props> = ({
                 anchorElem={referralMenuEls}
                 handleClose={() => setReferralMenuEls(null)}
                 referralFilterDispatcher={referralFilterDispatcher}
-                handleSelectFilterConditions={handleSelectFilterConditions()}
+                handleSelectFilterConditions={(
+                  attrFilter,
+                  overwriteEntryName,
+                  overwriteReferral,
+                ) =>
+                  handleSelectFilterConditions()(attrFilter, overwriteReferral)
+                }
                 handleClear={() =>
                   handleSelectFilterConditions()(undefined, "")
                 }
