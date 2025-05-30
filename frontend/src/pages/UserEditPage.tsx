@@ -19,7 +19,7 @@ import { useFormNotification } from "hooks/useFormNotification";
 import { usePrompt } from "hooks/usePrompt";
 import { useTypedParams } from "hooks/useTypedParams";
 import { aironeApiClient } from "repository/AironeApiClient";
-import { topPath, usersPath } from "routes/Routes";
+import { topPath, usersPath, loginPath } from "routes/Routes";
 import {
   extractAPIException,
   isResponseError,
@@ -183,6 +183,17 @@ export const UserEditPage: FC = () => {
               userId={user.value?.id ?? 0}
               openModal={openModal}
               onClose={handleCloseModal}
+              onSubmitSuccess={() => {
+                enqueueSnackbar("パスワードを変更しました", {
+                  variant: "success",
+                });
+
+                if (user.value?.id === ServerContext.getInstance()?.user?.id) {
+                  navigate(loginPath(), { replace: true });
+                } else {
+                  navigate(usersPath(), { replace: true });
+                }
+              }}
             />
           </Box>
           <Box mx="4px">
