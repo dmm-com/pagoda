@@ -8,6 +8,22 @@
 
 ### Fixed
 
+## v3.133.0
+
+### Changed
+* Reorder attribute type dropdown and handle missing definitions.
+  Contributed by @tsunoda-takahiro
+
+### Fixed
+* Fixed an issue where the snackbar would disappear in restore entry.
+  Contributed by @hinashi
+* Fix entry filter clear button.
+  Contributed by @syucream
+* Fix handle empty string case in Elasticsearch regex pattern generation.
+  Contributed by @syucream
+* Fix layout and wrapping for entry history values.
+  Contributed by @tsunoda-takahiro
+
 ## v3.132.0
 
 ### Added
