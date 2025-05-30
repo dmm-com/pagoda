@@ -2,14 +2,15 @@ import json
 
 from airone.celery import app
 from airone.lib import custom_view
-from airone.lib.job import may_schedule_until_job_is_ready
+from airone.lib.job import may_schedule_until_job_is_ready, register_job_task
 from airone.lib.types import AttrType
 from entity.api_v2.serializers import EntityCreateSerializer, EntityUpdateSerializer
 from entity.models import Entity, EntityAttr
-from job.models import Job, JobStatus
+from job.models import Job, JobOperation, JobStatus
 from user.models import History, User
 
 
+@register_job_task(JobOperation.CREATE_ENTITY)
 @app.task(bind=True)
 @may_schedule_until_job_is_ready
 def create_entity(self, job: Job) -> JobStatus:
@@ -52,6 +53,7 @@ def create_entity(self, job: Job) -> JobStatus:
     return JobStatus.DONE
 
 
+@register_job_task(JobOperation.EDIT_ENTITY)
 @app.task(bind=True)
 @may_schedule_until_job_is_ready
 def edit_entity(self, job: Job) -> JobStatus:
@@ -158,6 +160,7 @@ def edit_entity(self, job: Job) -> JobStatus:
     return JobStatus.DONE
 
 
+@register_job_task(JobOperation.DELETE_ENTITY)
 @app.task(bind=True)
 @may_schedule_until_job_is_ready
 def delete_entity(self, job: Job) -> JobStatus:
@@ -183,6 +186,7 @@ def delete_entity(self, job: Job) -> JobStatus:
     return JobStatus.DONE
 
 
+@register_job_task(JobOperation.CREATE_ENTITY_V2)
 @app.task(bind=True)
 @may_schedule_until_job_is_ready
 def create_entity_v2(self, job: Job) -> JobStatus:
@@ -198,6 +202,7 @@ def create_entity_v2(self, job: Job) -> JobStatus:
     return JobStatus.DONE
 
 
+@register_job_task(JobOperation.EDIT_ENTITY_V2)
 @app.task(bind=True)
 @may_schedule_until_job_is_ready
 def edit_entity_v2(self, job: Job) -> JobStatus:
@@ -216,6 +221,7 @@ def edit_entity_v2(self, job: Job) -> JobStatus:
     return JobStatus.DONE
 
 
+@register_job_task(JobOperation.DELETE_ENTITY_V2)
 @app.task(bind=True)
 @may_schedule_until_job_is_ready
 def delete_entity_v2(self, job: Job) -> JobStatus:

@@ -1,11 +1,12 @@
 import json
 
 from airone.celery import app
-from airone.lib.job import may_schedule_until_job_is_ready
+from airone.lib.job import may_schedule_until_job_is_ready, register_job_task
 from group.models import Group
-from job.models import Job, JobStatus
+from job.models import Job, JobOperation, JobStatus
 
 
+@register_job_task(JobOperation.GROUP_REGISTER_REFERRAL)
 @app.task(bind=True)
 @may_schedule_until_job_is_ready
 def edit_group_referrals(self, job: Job) -> JobStatus:

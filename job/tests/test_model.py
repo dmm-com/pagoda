@@ -257,17 +257,17 @@ class ModelTest(AironeTestCase):
 
     def test_method_table(self):
         method_table = Job.method_table()
+        expected_operations = sorted([x for x in JobOperation] + [x for x in JobOperationCustom])
+
+        # This confirms all operations of JobOperation are registered
+        self.maxDiff = None
+        self.assertCountEqual(
+            list(method_table.keys()),
+            expected_operations,
+        )
 
         # This confirms the number of JobOperation and method_table count is same
         self.assertEqual(len(method_table), len(JobOperation) + len(JobOperationCustom))
-
-        # This confirms all operations of JobOperation are registered
-        self.assertTrue(
-            all(
-                [x.value in method_table for x in JobOperation]
-                + [x.value in method_table for x in JobOperationCustom]
-            )
-        )
 
     def test_register_method_table(self):
         @app.task(bind=True)
@@ -288,5 +288,8 @@ class ModelTest(AironeTestCase):
         self.assertEqual(job.run(will_delay=False), "result of custom_method")
 
         # check unable to overwrite method when specified operation has already registered.
-        Job.register_method_table("custom_operation", another_custom_method)
+        # It should raise ValueError
+        with self.assertRaises(ValueError):
+            Job.register_method_table("custom_operation", another_custom_method)
+        # Ensure the original method is still registered
         self.assertEqual(job.run(will_delay=False), "result of custom_method")
