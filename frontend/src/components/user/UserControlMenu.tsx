@@ -96,8 +96,10 @@ export const UserControlMenu: FC<UserControlProps> = ({
           userId={user.id}
           openModal={openModal}
           onClose={handleCloseModal}
-          onSubmitSuccess={() =>{
-            enqueueSnackbar("パスワードの変更が完了しました", { variant: "success"});
+          onSubmitSuccess={() => {
+            enqueueSnackbar("パスワードの変更が完了しました", {
+              variant: "success",
+            });
             handleCloseModal();
             setToggle?.();
           }}
