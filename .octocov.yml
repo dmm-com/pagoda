@@ -1,0 +1,13 @@
+coverage:
+  paths:
+    - coverage.xml              # Python coverage from coverage.py
+    - coverage/lcov.info         # Frontend coverage from Jest
+comment:
+  if: true                     # Always comment on PRs
+report:
+  if: is_pull_request          # Generate report for PRs
+badge:
+  path: coverage               # Generate coverage badge
+datastore:
+  github:
+    if: is_default_branch      # Store data only on main branch

@@ -72,9 +72,8 @@ jobs:
           NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
       - name: test
         run: npm run test
-      - name: codecov
-        uses: codecov/codecov-action@v3
+      - name: octocov
+        uses: k1LoW/octocov-action@v1
         with:
-          token: ${{secrets.CODECOV_TOKEN}}
-          flags: ui
+          config: .octocov.yml
         continue-on-error: true
