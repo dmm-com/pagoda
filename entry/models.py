@@ -1,3 +1,4 @@
+import math
 import re
 from collections.abc import Iterable
 from datetime import date, datetime
@@ -195,6 +196,18 @@ class AttributeValue(models.Model):
         match self.parent_attr.schema.type:
             case AttrType.STRING | AttrType.TEXT:
                 value = self.value
+
+            case AttrType.NUMBER:
+                if self.value == "":  # Treat empty string as None for NUMBER type
+                    value = None
+                elif self.value is None:  # Should not happen if we always save "" for None
+                    value = None
+                else:
+                    try:
+                        value = float(self.value)
+                    except (ValueError, TypeError):
+                        # Log an error or handle as per project policy
+                        value = None  # Return None if conversion fails
 
             case AttrType.BOOLEAN:
                 value = self.boolean
@@ -405,6 +418,29 @@ class AttributeValue(models.Model):
             match t:
                 case AttrType.STRING | AttrType.TEXT:
                     return _is_validate_attr_str(value)
+
+                case AttrType.NUMBER:
+                    if value is None or value == "":
+                        if is_mandatory:
+                            raise ValueError("Numeric value is mandatory and cannot be empty.")
+                        return True
+                    if isinstance(value, (int, float)):
+                        if isinstance(value, float) and (math.isnan(value) or math.isinf(value)):
+                            raise Exception("value(%s) is NaN or Infinity" % value)
+                        return True
+                    if isinstance(value, str):
+                        try:
+                            f_val = float(value)
+                            if math.isnan(f_val) or math.isinf(f_val):
+                                raise Exception("value(%s) is NaN or Infinity" % value)
+                            if len(value.encode("utf-8")) > AttributeValue.MAXIMUM_VALUE_SIZE:
+                                raise ExceedLimitError("value is exceeded the limit")
+                            return True
+                        except ValueError:
+                            raise Exception("value(%s) is not a valid number string" % value)
+                        except ExceedLimitError as e:
+                            raise e
+                    raise Exception("value(%s) is not a valid number type or format" % value)
 
                 case AttrType.OBJECT:
                     return _is_validate_attr_object(value)
@@ -868,6 +904,25 @@ class Attribute(ACLBase):
             return isinstance(val, (model, int, str)) or val is None
 
         match self.schema.type:
+            case AttrType.NUMBER:
+                if value is None or value == "":
+                    if self.schema.is_mandatory:
+                        raise ValueError("Numeric value is mandatory and cannot be empty.")
+                    return True
+                if isinstance(value, (int, float)):
+                    if isinstance(value, float) and (math.isnan(value) or math.isinf(value)):
+                        return False  # NaN or Infinity is not a valid storable number here
+                    return True
+                if isinstance(value, str):
+                    try:
+                        f_val = float(value)
+                        if math.isnan(f_val) or math.isinf(f_val):
+                            return False  # NaN or Infinity is not a valid storable number here
+                        return True
+                    except ValueError:
+                        return False
+                return False
+
             case AttrType.NAMED_OBJECT:
                 return isinstance(value, dict)
 
@@ -961,8 +1016,35 @@ class Attribute(ACLBase):
                 case AttrType.STRING | AttrType.TEXT:
                     attrv.boolean = boolean
                     attrv.value = str(val)
-                    if not attrv.value:
-                        return None
+                    if not attrv.value:  # if empty string or None coerced to ""
+                        return None  # For STRING, empty means no AttributeValue
+
+                case AttrType.NUMBER:
+                    attrv.boolean = boolean  # Assuming boolean might be relevant for NUMBER too
+                    if val is None or val == "":
+                        attrv.value = ""  # Store as empty string for None/empty input
+                    elif isinstance(val, (int, float)):
+                        if isinstance(val, float) and (math.isnan(val) or math.isinf(val)):
+                            # This should ideally be caught by validation earlier
+                            attrv.value = ""  # Or handle as error
+                        else:
+                            attrv.value = str(
+                                float(val)
+                            )  # Ensure consistent float string representation
+                    elif isinstance(val, str):
+                        # Already validated by _validate_value, so should be
+                        # convertible and not NaN/Inf
+                        try:
+                            attrv.value = str(float(val))
+                        except ValueError:
+                            # Fallback, should have been caught by validation
+                            attrv.value = ""
+                    else:
+                        # Should not happen if validation is correct
+                        attrv.value = ""
+                    # For NUMBER, an AttributeValue with value="" is created
+                    # to represent None/empty.
+                    # So, we don't return None here based on attrv.value being "".
 
                 case AttrType.GROUP:
                     attrv.boolean = boolean

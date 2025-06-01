@@ -130,6 +130,7 @@ class EntryAttributeValue(TypedDict, total=False):
     # date; use string instead
     as_role: EntryAttributeValueRole | None
     as_array_role: list[EntryAttributeValueRole]
+    as_number: float | None  # Added for AttrType.NUMBER
 
 
 class EntryAttributeType(TypedDict):
@@ -209,6 +210,7 @@ class EntryAttributeValueSerializer(serializers.Serializer):
     # date; use string instead
     as_role = EntryAttributeValueRoleSerializer(allow_null=True, required=False)
     as_array_role = serializers.ListField(child=EntryAttributeValueRoleSerializer(), required=False)
+    as_number = serializers.FloatField(allow_null=True, required=False)  # Added for AttrType.NUMBER
 
 
 class EntryAttributeTypeSerializer(serializers.Serializer):
@@ -725,6 +727,12 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
                 case AttrType.BOOLEAN:
                     return {"as_boolean": attrv.boolean}
 
+                case AttrType.NUMBER:
+                    # attrv.get_value() should return a float or None for NUMBER type
+                    # based on previous model changes.
+                    val = attrv.get_value()
+                    return {"as_number": val}
+
                 case AttrType.DATE:
                     return {"as_string": attrv.date if attrv.date else ""}
 
@@ -797,6 +805,11 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
 
                 case AttrType.DATETIME:
                     return {"as_string": AttrDefaultValue[type]}
+
+                case AttrType.NUMBER:
+                    return {
+                        "as_number": AttrDefaultValue.get(type)
+                    }  # Use .get for safety, though type should exist
 
                 case _:
                     raise IncorrectTypeError(f"unexpected type: {type}")
@@ -1199,6 +1212,9 @@ class EntryHistoryAttributeValueSerializer(serializers.ModelSerializer):
 
             case AttrType.DATETIME:
                 return {"as_string": obj.datetime if obj.datetime else ""}
+
+            case AttrType.NUMBER:
+                return {"as_number": obj.get_value()}
 
             case _:
                 return {}
