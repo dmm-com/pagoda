@@ -3328,7 +3328,7 @@ class ViewTest(BaseViewTest):
                     {"name": "refs", "type": AttrType.ARRAY_OBJECT},
                 ],
             )
-            for name in ["ModelA", "ModelB", "ModelC"]
+            for name in ["ModelA", "ModelB", "ModelC", "ModelD"]
         ]
         # create Items that is referred by other items
         ref_items = [
@@ -3336,35 +3336,43 @@ class ViewTest(BaseViewTest):
             for (name, schema) in [
                 ("r01", models[0]),
                 ("r02", models[0]),
+                ("r03", models[0]),
             ]
         ]
         # create items that refers ref_items
         items = [
             self.add_entry(self.user, name, schema, values={"refs": value})
             for (name, schema, value) in [
-                ("r01", models[1], [ref_items[0]]),
-                ("r02", models[2], [ref_items[0], ref_items[1]]),
+                ("item01", models[1], [ref_items[0]]),
+                ("item02", models[2], [ref_items[0], ref_items[1]]),
+                ("item03", models[3], [ref_items[1], ref_items[2]]),
             ]
         ]
 
-        params = {
-            "entities": [models[0].id],
-            "attrinfo": [],
-            "has_referral": True,
-            "referral_name": "",
-            "exclude_referrals": [models[1].id],
-        }
-        resp = self.client.post(
-            "/entry/api/v2/advanced_search/", json.dumps(params), "application/json"
-        )
-        self.assertEqual(resp.status_code, 200)
+        # This doesn't return items that are referred by models[1]
+        REQUEST_AND_RESULTS = [
+            ([models[1].id], [ref_items[1], ref_items[2]]),
+            ([models[1].id, models[2].id], [ref_items[2]]),
+            ([models[1].id, models[2].id, models[3].id], []),
+        ]
+        for exclude_referrals, expected_items in REQUEST_AND_RESULTS:
+            params = {
+                "entities": [models[0].id],
+                "attrinfo": [],
+                "has_referral": True,
+                "referral_name": "",
+                "exclude_referrals": exclude_referrals,
+            }
+            resp = self.client.post(
+                "/entry/api/v2/advanced_search/", json.dumps(params), "application/json"
+            )
+            self.assertEqual(resp.status_code, 200)
 
-        # check advanced_search doesn't return items that are referred by ModelB
-        self.assertEqual(resp.json()["count"], 1)
-        self.assertEqual(
-            [x["entry"] for x in resp.json()["values"]],
-            [{"id": items[0].id, "name": items[0].name}],
-        )
+            self.assertEqual(resp.json()["count"], len(expected_items))
+            self.assertEqual(
+                [x["entry"] for x in resp.json()["values"]],
+                [{"id": x.id, "name": x.name} for x in expected_items],
+            )
 
     def test_advanced_search_all_entities(self):
         params = {
