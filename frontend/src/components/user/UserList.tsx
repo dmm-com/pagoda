@@ -12,10 +12,12 @@ import {
 } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import { styled } from "@mui/material/styles";
+import { useSnackbar } from "notistack";
 import React, { FC, useMemo, useState } from "react";
 import { Link } from "react-router";
 
 import { UserControlMenu } from "./UserControlMenu";
+import { UserPasswordFormModal } from "./UserPasswordFormModal";
 
 import { ClipboardCopyButton } from "components/common/ClipboardCopyButton";
 import { Loading } from "components/common/Loading";
@@ -45,7 +47,7 @@ const UserName = styled(Typography)(({}) => ({
   whiteSpace: "nowrap",
 }));
 
-export const UserList: FC = ({}) => {
+export const UserList: FC = () => {
   const { page, query, changePage, changeQuery } = usePage();
   const [userAnchorEls, setUserAnchorEls] = useState<{
     [key: number]: HTMLButtonElement | null;
@@ -67,6 +69,20 @@ export const UserList: FC = ({}) => {
   );
 
   const handleChangeQuery = changeQuery;
+
+  // 新規追加: パスワードモーダル制御用
+  const [passwordModalUserId, setPasswordModalUserId] = useState<number | null>(
+    null,
+  );
+  const { enqueueSnackbar } = useSnackbar();
+
+  const handleOpenPasswordModal = (userId: number) => {
+    setPasswordModalUserId(userId);
+  };
+
+  const handleClosePasswordModal = () => {
+    setPasswordModalUserId(null);
+  };
 
   return (
     <Box>
@@ -151,6 +167,7 @@ export const UserList: FC = ({}) => {
                                   [userId]: null,
                                 })
                               }
+                              onClickEditPassword={handleOpenPasswordModal}
                               setToggle={() => setToggle(!toggle)}
                             />
                           </>
@@ -164,7 +181,20 @@ export const UserList: FC = ({}) => {
           })}
         </Grid>
       )}
-
+      {passwordModalUserId !== null && (
+        <UserPasswordFormModal
+          userId={passwordModalUserId}
+          openModal={true}
+          onClose={handleClosePasswordModal}
+          onSubmitSuccess={() => {
+            enqueueSnackbar("パスワードの変更が完了しました", {
+              variant: "success",
+            });
+            handleClosePasswordModal();
+            setToggle(!toggle);
+          }}
+        />
+      )}
       <PaginationFooter
         count={users.value?.count ?? 0}
         maxRowCount={UserListParam.MAX_ROW_COUNT}
