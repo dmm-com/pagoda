@@ -288,6 +288,7 @@ class AdvancedSearchAPI(generics.GenericAPIView):
         join_attrs = AdvancedSearchJoinAttrInfoList.model_validate(
             serializer.validated_data.get("join_attrs", [])
         ).root
+        exclude_referrals = serializer.validated_data["exclude_referrals"]
 
         def _get_joined_resp(
             prev_results: list[AdvancedSearchResultRecord], join_attr: AdvancedSearchJoinAttrInfo
@@ -389,6 +390,7 @@ class AdvancedSearchAPI(generics.GenericAPIView):
                     is_output_all=is_output_all,
                     hint_referral_entity_id=None,
                     offset=join_attr.offset,
+                    exclude_referrals=exclude_referrals,
                 ),
             )
 
@@ -470,6 +472,7 @@ class AdvancedSearchAPI(generics.GenericAPIView):
                 offset=entry_offset,
                 hint_entry=hint_entry,
                 allow_missing_attributes=True,  # For APIv2, allow entries missing attributes
+                exclude_referrals=exclude_referrals,
             )
 
         # save total population number
