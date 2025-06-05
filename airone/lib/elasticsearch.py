@@ -597,7 +597,7 @@ def _make_entry_name_query(entry_name: str) -> dict[str, str]:
     return entry_name_or_query
 
 
-def _make_query_specific_referred_items(model_id):
+def _make_query_specific_referred_items(model_id: int) -> dict[str, dict]:
     return {
         "nested": {
             "path": "referrals.schema",
@@ -606,7 +606,7 @@ def _make_query_specific_referred_items(model_id):
     }
 
 
-def _make_query_include_referrals(include_referrals: list[int]) -> dict[str, str]:
+def _make_query_include_referrals(include_referrals: list[int]) -> dict[str, dict]:
     return {
         "bool": {
             "should": [
@@ -616,7 +616,7 @@ def _make_query_include_referrals(include_referrals: list[int]) -> dict[str, str
     }
 
 
-def _make_query_exclude_referrals(exclude_referrals: list[int]) -> dict[str, str]:
+def _make_query_exclude_referrals(exclude_referrals: list[int]) -> dict[str, dict]:
     return {
         "bool": {
             "must_not": [
