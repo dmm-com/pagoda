@@ -3374,6 +3374,63 @@ class ViewTest(BaseViewTest):
                 [{"id": x.id, "name": x.name} for x in expected_items],
             )
 
+    def test_advanced_search_with_include_referrals(self):
+        # create test Models
+        models = [
+            self.create_entity(
+                user=self.user,
+                name=name,
+                attrs=[
+                    {"name": "refs", "type": AttrType.ARRAY_OBJECT},
+                ],
+            )
+            for name in ["ModelA", "ModelB", "ModelC", "ModelD"]
+        ]
+        # create Items that is referred by other items
+        ref_items = [
+            self.add_entry(self.user, name, schema)
+            for (name, schema) in [
+                ("r01", models[0]),
+                ("r02", models[0]),
+                ("r03", models[0]),
+            ]
+        ]
+        # create items that refers ref_items
+        [
+            self.add_entry(self.user, name, schema, values={"refs": value})
+            for (name, schema, value) in [
+                ("item01", models[1], [ref_items[0]]),
+                ("item02", models[2], [ref_items[1]]),
+                ("item03", models[3], [ref_items[1], ref_items[2]]),
+            ]
+        ]
+
+        # This returns only referred by specific item's Model
+        REQUEST_AND_RESULTS = [
+            ([models[1].id], [ref_items[0]]),
+            ([models[1].id, models[2].id], [ref_items[0], ref_items[1]]),
+            ([models[1].id, models[2].id, models[3].id], ref_items),
+            ([models[3].id], [ref_items[1], ref_items[2]]),
+        ]
+        for include_referrals, expected_items in REQUEST_AND_RESULTS:
+            params = {
+                "entities": [models[0].id],
+                "attrinfo": [],
+                "has_referral": True,
+                "referral_name": "",
+                "include_referrals": include_referrals,
+            }
+            resp = self.client.post(
+                "/entry/api/v2/advanced_search/", json.dumps(params), "application/json"
+            )
+            self.assertEqual(resp.status_code, 200)
+
+            self.assertEqual(resp.json()["count"], len(expected_items))
+            self.assertEqual(
+                [x["entry"] for x in resp.json()["values"]],
+                [{"id": x.id, "name": x.name} for x in expected_items],
+            )
+
     def test_advanced_search_all_entities(self):
         params = {
             "entities": [],

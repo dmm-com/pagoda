@@ -1324,6 +1324,9 @@ class AdvancedSearchSerializer(serializers.Serializer):
     exclude_referrals = serializers.ListField(
         child=serializers.IntegerField(), required=False, default=[]
     )
+    include_referrals = serializers.ListField(
+        child=serializers.IntegerField(), required=False, default=[]
+    )
 
     def validate_attrs(self, attrs: list[dict[str, str]]) -> list[dict[str, str]]:
         if any([len(attr.get("keyword", "")) > CONFIG_ENTRY.MAX_QUERY_SIZE for attr in attrs]):
