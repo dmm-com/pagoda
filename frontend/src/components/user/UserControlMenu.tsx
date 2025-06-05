@@ -23,6 +23,7 @@ interface UserControlProps {
   handleClose: (userId: number) => void;
   onClickEditPassword: (userId: number) => void;
   setToggle?: () => void;
+  isSelf?: boolean;
 }
 
 export const UserControlMenu: FC<UserControlProps> = ({
@@ -31,6 +32,7 @@ export const UserControlMenu: FC<UserControlProps> = ({
   handleClose,
   onClickEditPassword,
   setToggle,
+  isSelf = false,
 }) => {
   const { enqueueSnackbar } = useSnackbar();
   const navigate = useNavigate();
@@ -75,19 +77,20 @@ export const UserControlMenu: FC<UserControlProps> = ({
         >
           <Typography>パスワード編集</Typography>
         </MenuItem>
-
-        <Confirmable
-          componentGenerator={(handleOpen) => (
-            <MenuItem onClick={handleOpen} sx={{ justifyContent: "end" }}>
-              <ListItemText>削除</ListItemText>
-              <ListItemIcon>
-                <DeleteOutlineIcon />
-              </ListItemIcon>
-            </MenuItem>
-          )}
-          dialogTitle={`本当に削除しますか？(${user.username})`}
-          onClickYes={() => handleDelete(user)}
-        />
+        {!isSelf && (
+          <Confirmable
+            componentGenerator={(handleOpen) => (
+              <MenuItem onClick={handleOpen} sx={{ justifyContent: "end" }}>
+                <ListItemText>削除</ListItemText>
+                <ListItemIcon>
+                  <DeleteOutlineIcon />
+                </ListItemIcon>
+              </MenuItem>
+            )}
+            dialogTitle={`本当に削除しますか？(${user.username})`}
+            onClickYes={() => handleDelete(user)}
+          />
+        )}
       </Box>
     </Menu>
   );

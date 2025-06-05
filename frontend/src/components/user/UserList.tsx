@@ -160,6 +160,7 @@ export const UserList: FC = () => {
                             </IconButton>
                             <UserControlMenu
                               user={user}
+                              isSelf={isCurrentUser}
                               anchorElem={userAnchorEls[user.id]}
                               handleClose={(userId: number) =>
                                 setUserAnchorEls({
