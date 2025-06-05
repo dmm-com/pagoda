@@ -3340,7 +3340,7 @@ class ViewTest(BaseViewTest):
             ]
         ]
         # create items that refers ref_items
-        items = [
+        [
             self.add_entry(self.user, name, schema, values={"refs": value})
             for (name, schema, value) in [
                 ("item01", models[1], [ref_items[0]]),
