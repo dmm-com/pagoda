@@ -808,6 +808,8 @@ class AironeApiClient {
     limit: number = AdvancedSerarchResultListParam.MAX_ROW_COUNT,
     offset: number = 0,
     entryHint?: EntryHint,
+    excludeReferrals: number[] = [],
+    includeReferrals: number[] = [],
   ): Promise<AdvancedSearchResult> {
     return await this.entry.entryApiV2AdvancedSearchCreate(
       {
@@ -822,6 +824,8 @@ class AironeApiClient {
           entryLimit: limit,
           entryOffset: offset === 0 ? (page - 1) * limit : offset,
           hintEntry: entryHint,
+          excludeReferrals: excludeReferrals,
+          includeReferrals: includeReferrals,
         },
       },
       {
