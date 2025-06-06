@@ -3,6 +3,8 @@
 ## In development
 
 ### Added
+* Added new parameter `exclude_referrals` for advanced search
+  Contributed by @userlocalhost
 
 ### Changed
 

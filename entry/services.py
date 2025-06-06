@@ -42,6 +42,8 @@ class AdvancedSearchService:
         offset: int = 0,
         hint_entry: EntryHint | None = None,
         allow_missing_attributes: bool = False,
+        exclude_referrals: list[int] = [],
+        include_referrals: list[int] = [],
     ) -> AdvancedSearchResults:
         """Main method called from advanced search.
 
@@ -76,6 +78,11 @@ class AdvancedSearchService:
                 (without a keyword) will be included in the search results.
                 If False, attributes specified in hint_attrs (without a keyword)
                 must exist in the entry.
+            exclude_referrals (list(int)): Default []
+                This has Model ID's list that want to exclude for referral items.
+            include_referrals (list(int)): Default []
+                If it's set, this method only targets items that are referred by
+                items of specified Models.
 
         Returns:
             AdvancedSearchResults: As a result of the search,
@@ -129,6 +136,8 @@ class AdvancedSearchService:
                 hint_referral_entity_id,
                 hint_entry,
                 allow_missing_attributes=allow_missing_attributes,
+                exclude_referrals=exclude_referrals,
+                include_referrals=include_referrals,
             )
 
             # sending request to elasticsearch with making query

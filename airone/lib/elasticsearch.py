@@ -256,6 +256,8 @@ def make_query(
     hint_referral_entity_id: int | None = None,
     hint_entry: EntryHint | None = None,
     allow_missing_attributes: bool = False,
+    exclude_referrals: list[int] = [],
+    include_referrals: list[int] = [],
 ) -> dict[str, Any]:
     """Create a search query for Elasticsearch.
 
@@ -280,6 +282,11 @@ def make_query(
             will be included in the search results.
             If False, attributes specified in hint_attrs (without a keyword) must exist
             in the entry.
+        exclude_referrals (list(int)): Default []
+            This has Model ID's list that want to exclude for referral items.
+        include_referrals (list(int)): Default []
+            If it's set, this method only targets items that are referred by
+            items of specified Models.
 
     Returns:
         dict[str, Any]: The created search query is returned.
@@ -348,6 +355,13 @@ def make_query(
 
     if hint_referral:
         query["query"]["bool"]["filter"].append(_make_referral_query(hint_referral))
+
+    # These are filter results from Elasticsearch by referred item's Models
+    if exclude_referrals:
+        query["query"]["bool"]["filter"].append(_make_query_exclude_referrals(exclude_referrals))
+
+    if include_referrals:
+        query["query"]["bool"]["filter"].append(_make_query_include_referrals(include_referrals))
 
     if hint_referral_entity_id:
         query["query"]["bool"]["filter"].append(
@@ -581,6 +595,35 @@ def _make_entry_name_query(entry_name: str) -> dict[str, str]:
         entry_name_or_query["bool"]["should"].append(entry_name_and_query)
 
     return entry_name_or_query
+
+
+def _make_query_specific_referred_items(model_id: int) -> dict[str, dict]:
+    return {
+        "nested": {
+            "path": "referrals.schema",
+            "query": {"term": {"referrals.schema.id": model_id}},
+        }
+    }
+
+
+def _make_query_include_referrals(include_referrals: list[int]) -> dict[str, dict]:
+    return {
+        "bool": {
+            "should": [
+                _make_query_specific_referred_items(model_id) for model_id in include_referrals
+            ]
+        }
+    }
+
+
+def _make_query_exclude_referrals(exclude_referrals: list[int]) -> dict[str, dict]:
+    return {
+        "bool": {
+            "must_not": [
+                _make_query_specific_referred_items(model_id) for model_id in exclude_referrals
+            ]
+        }
+    }
 
 
 def _make_referral_query(referral_name: str) -> dict[str, str]:
