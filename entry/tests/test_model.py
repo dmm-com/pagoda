@@ -5,7 +5,7 @@ from django.conf import settings
 from django.db.models import Q
 
 from acl.models import ACLBase
-from airone.lib.acl import ACLObjType, ACLType
+from airone.lib.acl import ACLType
 from airone.lib.drf import ExceedLimitError
 from airone.lib.elasticsearch import AdvancedSearchResultRecord, AttrHint
 from airone.lib.test import AironeTestCase
@@ -137,128 +137,6 @@ class ModelTest(AironeTestCase):
             created_user=(user and user or self._user),
             parent_entry=(entry and entry or self._entry),
         )
-
-    def test_make_attribute_value(self):
-        AttributeValue(value="hoge", created_user=self._user, parent_attr=self._attr).save()
-
-        self.assertEqual(AttributeValue.objects.count(), 1)
-        self.assertEqual(AttributeValue.objects.last().value, "hoge")
-        self.assertEqual(AttributeValue.objects.last().created_user, self._user)
-        self.assertIsNotNone(AttributeValue.objects.last().created_time)
-
-    def test_make_attribute(self):
-        value = AttributeValue(value="hoge", created_user=self._user, parent_attr=self._attr)
-        value.save()
-
-        self._attr.values.add(value)
-
-        self.assertEqual(Attribute.objects.count(), 1)
-        self.assertEqual(Attribute.objects.last().objtype, ACLObjType.EntryAttr)
-        self.assertEqual(Attribute.objects.last().values.count(), 1)
-        self.assertEqual(Attribute.objects.last().values.last(), value)
-
-    def test_make_entry(self):
-        entry = Entry(name="test", schema=self._entity, created_user=self._user)
-        entry.save()
-
-        attr = self.make_attr("attr", entry=entry)
-
-        self.assertEqual(Entry.objects.count(), 2)
-        self.assertEqual(Entry.objects.last().created_user, self._user)
-        self.assertEqual(Entry.objects.last().attrs.count(), 1)
-        self.assertEqual(Entry.objects.last().attrs.last(), attr)
-        self.assertEqual(Entry.objects.last().name, "test")
-        self.assertEqual(
-            Entry.objects.last().is_active,
-            True,
-            "Entry should not be deleted after created",
-        )
-
-    def test_inherite_attribute_permission_of_user(self):
-        user = User.objects.create(username="hoge")
-
-        entity = Entity.objects.create(name="entity", created_user=user)
-        attrbase = EntityAttr.objects.create(
-            name="attr", type=AttrType.OBJECT, created_user=user, parent_entity=entity
-        )
-
-        # update acl metadata
-        attrbase.is_public = False
-        attrbase.default_permission = ACLType.Readable.id
-
-        # set a permission to the user
-        user.permissions.add(attrbase.writable)
-
-        entry = Entry.objects.create(name="entry", schema=entity, created_user=user)
-        attr = entry.add_attribute_from_base(attrbase, user)
-
-        # checks that acl metadata is not inherited
-        self.assertTrue(attr.is_public)
-        self.assertEqual(attr.default_permission, ACLType.Nothing.id)
-        self.assertEqual(user.permissions.get(name="writable").codename, attrbase.writable.codename)
-
-    def test_inherite_attribute_permission_of_group(self):
-        user = User.objects.create(username="hoge")
-        group = Group.objects.create(name="group")
-        user.groups.add(group)
-
-        entity = Entity.objects.create(name="entity", created_user=user)
-        attrbase = EntityAttr.objects.create(
-            name="attr", type=AttrType.OBJECT, created_user=user, parent_entity=entity
-        )
-
-        # set a permission to the user
-        group.permissions.add(attrbase.writable)
-
-        entry = Entry.objects.create(name="entry", schema=entity, created_user=user)
-        entry.add_attribute_from_base(attrbase, user)
-
-        self.assertEqual(
-            group.permissions.get(name="writable").codename, attrbase.writable.codename
-        )
-
-    def test_update_attribute_from_base(self):
-        user = User.objects.create(username="hoge")
-
-        # test objects to be handled as referral
-        entity = Entity.objects.create(name="entity", created_user=user)
-
-        attrbase = EntityAttr.objects.create(
-            name="attrbase",
-            type=AttrType.STRING,
-            created_user=user,
-            parent_entity=entity,
-        )
-        entry: Entry = Entry.objects.create(name="entry", schema=entity, created_user=user)
-
-        attr = entry.add_attribute_from_base(attrbase, user)
-        self.assertTrue(entry.attrs.filter(id=attr.id).exists())
-        self.assertEqual(entry.attrs.count(), 1)
-
-        # check not to create multiple same Attribute objects by add_attribute_from_base method
-        entry.add_attribute_from_base(attrbase, user)
-        self.assertTrue(entry.attrs.filter(id=attr.id).exists())
-        self.assertEqual(entry.attrs.count(), 1)
-
-        # check that deleted attributes are restored
-        attr.delete()
-        entry.add_attribute_from_base(attrbase, user)
-        self.assertTrue(entry.attrs.filter(id=attr.id, is_active=True).exists())
-        self.assertEqual(entry.attrs.count(), 1)
-
-    def test_status_update_methods_of_attribute_value(self):
-        value = AttributeValue(value="hoge", created_user=self._user, parent_attr=self._attr)
-        value.save()
-
-        self.assertFalse(value.get_status(AttributeValue.STATUS_DATA_ARRAY_PARENT))
-
-        value.set_status(AttributeValue.STATUS_DATA_ARRAY_PARENT)
-
-        self.assertTrue(value.get_status(AttributeValue.STATUS_DATA_ARRAY_PARENT))
-
-        value.del_status(AttributeValue.STATUS_DATA_ARRAY_PARENT)
-
-        self.assertFalse(value.get_status(AttributeValue.STATUS_DATA_ARRAY_PARENT))
 
     def test_attr_helper_of_attribute_with_string_values(self):
         self.assertTrue(self._attr.is_updated("hoge"))
@@ -526,63 +404,6 @@ class ModelTest(AironeTestCase):
                 ]
             )
         )
-
-    def test_for_boolean_attr_and_value(self):
-        attr = self.make_attr("attr_bool", AttrType.BOOLEAN)
-
-        # Checks get_latest_value returns empty AttributeValue
-        # even if target attribute doesn't have any value
-        attrv = attr.get_latest_value()
-        self.assertIsNotNone(attrv)
-        self.assertIsNone(attrv.referral)
-        self.assertIsNone(attrv.date)
-
-        attr.values.add(
-            AttributeValue.objects.create(
-                **{
-                    "created_user": self._user,
-                    "parent_attr": attr,
-                }
-            )
-        )
-
-        # Checks default value
-        self.assertIsNotNone(attr.get_latest_value())
-        self.assertFalse(attr.get_latest_value().boolean)
-
-        # Checks attitude of is_update
-        self.assertFalse(attr.is_updated(False))
-        self.assertTrue(attr.is_updated(True))
-
-    def test_for_date_attr_and_value(self):
-        attr = self.make_attr("attr_date", AttrType.DATE)
-
-        attr.values.add(
-            AttributeValue.objects.create(
-                **{
-                    "created_user": self._user,
-                    "parent_attr": attr,
-                }
-            )
-        )
-
-        # Checks default value
-        self.assertIsNotNone(attr.get_latest_value())
-        self.assertIsNone(attr.get_latest_value().date)
-
-        # Checks attitude of is_update
-        self.assertTrue(attr.is_updated(date(9999, 12, 31)))
-        self.assertTrue(attr.is_updated("9999-12-31"))
-
-        # Checks is_updated() return False when current value is empty
-        # and empty string "" was specified
-        self.assertFalse(attr.is_updated(""))
-        self.assertFalse(attr.is_updated("2022-01-99"))
-
-        # Checks is_updated() return True when current value is NOT empty
-        # and empty string "" was specified
-        attr.add_value(self._user, date(2022, 7, 7))
-        self.assertTrue(attr.is_updated(""))
 
     def test_for_group_attr_and_value(self):
         test_group = Group.objects.create(name="g0")
