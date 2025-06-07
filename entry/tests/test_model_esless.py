@@ -1,19 +1,13 @@
 from datetime import date, datetime, timezone
-from unittest import skip
 
 from django.conf import settings
-from django.db.models import Q
 
-from acl.models import ACLBase
-from airone.lib.acl import ACLObjType, ACLType
-from airone.lib.drf import ExceedLimitError
+from airone.lib.acl import ACLType
 from airone.lib.test import ESLessAironeTestCase
 from airone.lib.types import AttrType
 from entity.models import Entity, EntityAttr
-from entry.models import Attribute, AttributeValue, Entry, ItemWalker
-from entry.settings import CONFIG
+from entry.models import Attribute, AttributeValue, Entry
 from group.models import Group
-from role.models import Role
 from user.models import User
 
 
@@ -224,6 +218,7 @@ class ModelESLessTest(ESLessAironeTestCase):
         self.assertEqual(
             group.permissions.get(name="writable").codename, attrbase.writable.codename
         )
+
     def test_update_attribute_from_base(self):
         user = User.objects.create(username="hoge")
         entity = Entity.objects.create(name="entity", created_user=user)
@@ -270,4 +265,3 @@ class ModelESLessTest(ESLessAironeTestCase):
         self.assertFalse(attr.is_updated("2022-01-99"))
         attr.add_value(self._user, date(2022, 7, 7))
         self.assertTrue(attr.is_updated(""))
-

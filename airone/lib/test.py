@@ -38,7 +38,7 @@ class AironeTestCaseBase(TestCase):
     ]
 
     TZ_INFO = timezone(settings.TIME_ZONE)
-    
+
     # Subclasses can override this to disable ElasticSearch
     enable_elasticsearch = True
 
@@ -198,12 +198,14 @@ class AironeTestCaseBase(TestCase):
 # Backward compatibility - existing code continues to work
 class AironeTestCase(AironeTestCaseBase):
     """ElasticSearch enabled test case (existing behavior)"""
+
     enable_elasticsearch = True
 
 
 # New ElasticSearch-less test case for faster execution
 class ESLessAironeTestCase(AironeTestCaseBase):
     """ElasticSearch disabled test case for faster execution"""
+
     enable_elasticsearch = False
 
 
@@ -222,6 +224,7 @@ class AironeViewTest(AironeTestCase):
 
 class ESLessAironeViewTest(ESLessAironeTestCase):
     """ElasticSearch disabled view test case for faster execution"""
+
     def setUp(self):
         super(ESLessAironeViewTest, self).setUp()
 
