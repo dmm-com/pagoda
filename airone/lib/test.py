@@ -19,7 +19,7 @@ from webhook.models import Webhook
 from .elasticsearch import ESS
 
 
-class AironeTestCase(TestCase):
+class AironeTestCaseBase(TestCase):
     ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY = [
         {"name": "val", "type": AttrType.STRING},
         {"name": "vals", "type": AttrType.ARRAY_STRING},
@@ -38,6 +38,9 @@ class AironeTestCase(TestCase):
     ]
 
     TZ_INFO = timezone(settings.TIME_ZONE)
+    
+    # Subclasses can override this to disable ElasticSearch
+    enable_elasticsearch = True
 
     def setUp(self):
         OVERRIDE_ES_CONFIG = settings.ES_CONFIG.copy()
@@ -68,8 +71,11 @@ class AironeTestCase(TestCase):
         ).enable()
 
         # Before starting test, clear all documents in the Elasticsearch of test index
-        self._es = ESS()
-        self._es.recreate_index()
+        if self.enable_elasticsearch:
+            self._es = ESS()
+            self._es.recreate_index()
+        else:
+            self._es = None
 
     def tearDown(self):
         for fname in os.listdir(settings.MEDIA_ROOT):
@@ -151,8 +157,9 @@ class AironeTestCase(TestCase):
             attr = entry.attrs.get(schema__name=attrname)
             attr.add_value(user, value)
 
-        # register it to the elasticsearch
-        entry.register_es()
+        # register it to the elasticsearch (only if enabled)
+        if self.enable_elasticsearch:
+            entry.register_es()
 
         return entry
 
@@ -188,9 +195,29 @@ class AironeTestCase(TestCase):
         return self._do_login(uname)
 
 
+# Backward compatibility - existing code continues to work
+class AironeTestCase(AironeTestCaseBase):
+    """ElasticSearch enabled test case (existing behavior)"""
+    enable_elasticsearch = True
+
+
+# New ElasticSearch-less test case for faster execution
+class ESLessAironeTestCase(AironeTestCaseBase):
+    """ElasticSearch disabled test case for faster execution"""
+    enable_elasticsearch = False
+
+
 class AironeViewTest(AironeTestCase):
     def setUp(self):
         super(AironeViewTest, self).setUp()
+
+        self.client = Client()
+
+
+class ESLessAironeViewTest(ESLessAironeTestCase):
+    """ElasticSearch disabled view test case for faster execution"""
+    def setUp(self):
+        super(ESLessAironeViewTest, self).setUp()
 
         self.client = Client()
 
