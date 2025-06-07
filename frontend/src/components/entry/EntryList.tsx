@@ -27,7 +27,7 @@ export const EntryList: FC<Props> = ({ entityId, canCreateEntry = true }) => {
 
   const entries = useAsyncWithThrow(async () => {
     return await aironeApiClient.getEntries(entityId, true, page, query);
-  }, [page, query, toggle]);
+  }, [entityId, page, query, toggle]);
 
   const handleChangeQuery = changeQuery;
 
