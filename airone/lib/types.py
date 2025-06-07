@@ -18,6 +18,7 @@ class AttrType(BaseIntEnum):
     DATE = 1 << 5
     ROLE = 1 << 6
     DATETIME = 1 << 7
+    NUMBER = 1 << 8
     _ARRAY = 1 << 10
     _NAMED = 1 << 11
     NAMED_OBJECT = _NAMED | OBJECT
@@ -44,6 +45,7 @@ AttrTypeValue = {
     "boolean": AttrType.BOOLEAN,
     "date": AttrType.DATE,
     "datetime": AttrType.DATETIME,
+    "number": AttrType.NUMBER,
 }
 AttrDefaultValue: dict[int, Any] = {
     AttrType.OBJECT: None,
@@ -60,4 +62,5 @@ AttrDefaultValue: dict[int, Any] = {
     AttrType.DATE: None,
     AttrType.ROLE: None,
     AttrType.DATETIME: None,
+    AttrType.NUMBER: None,
 }
