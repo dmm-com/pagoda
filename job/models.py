@@ -1,3 +1,6 @@
+from django.contrib.contenttypes.models import ContentType
+from airone.lib import auto_complement
+
 import enum
 import json
 import os
@@ -311,26 +314,30 @@ class Job(models.Model):
     def _create_new_job(
         kls,
         user: User,
-        target: Entity | Entry | Any,
+        target: Entity | Entry | Any | None,
         operation: int,
         text: str | None,
-        params: str | None = None,
+        params: dict | None = None,  # Changed to dict | None
         depend_on=None,
     ) -> "Job":
         t_type = JobTarget.UNKNOWN
-        if isinstance(target, Entry):
-            t_type = JobTarget.ENTRY
-        elif isinstance(target, Entity):
-            t_type = JobTarget.ENTITY
+        if target is not None:
+            if isinstance(target, Entry):
+                t_type = JobTarget.ENTRY
+            elif isinstance(target, Entity):
+                t_type = JobTarget.ENTITY
 
-        # set dependent job to prevent running tasks simultaneously which set to target same one.
         dependent_job: Job | None = None
-        if target:
+        if target is not None:
             threshold = datetime.now(pytz.timezone(settings.TIME_ZONE)) - timedelta(
                 seconds=kls._get_job_timeout()
             )
             dependent_job = (
-                Job.objects.filter(target=target, operation=operation, updated_at__gt=threshold)
+                Job.objects.filter(
+                    target=target,
+                    operation=operation,
+                    updated_at__gt=threshold
+                )
                 .order_by("updated_at")
                 .last()
             )
@@ -338,16 +345,21 @@ class Job(models.Model):
         if dependent_job is None and depend_on is not None:
             dependent_job = depend_on
 
-        job_params = {
+        # Serialize params to JSON string internally
+        params_str = json.dumps(params, default=_support_time_default, sort_keys=True) if params is not None else "{}"
+
+        job_params: dict[str, Any] = {
             "user": user,
-            "target": target,
             "target_type": t_type,
             "status": JobStatus.PREPARING,
             "operation": operation,
             "text": text,
-            "params": params if params is not None else "{}",
+            "params": params_str,
             "dependent_job": dependent_job,
         }
+
+        if target is not None:
+            job_params["target"] = target
 
         return kls.objects.create(**job_params)
 
@@ -384,115 +396,121 @@ class Job(models.Model):
     def get_job_with_params(kls, user: User, params):
         return kls.objects.filter(
             user=user,
-            params=json.dumps(params, default=_support_time_default, sort_keys=True),
+            params=json.dumps(params, default=_support_time_default, sort_keys=True)
         )
 
     @classmethod
     def new_create(kls, user: User, target, text="", params={}):
         return kls._create_new_job(
-            user,
-            target,
-            JobOperation.CREATE_ENTRY,
-            text,
-            json.dumps(params, default=_support_time_default, sort_keys=True),
+            user=user,
+            target=target,
+            operation=JobOperation.CREATE_ENTRY,
+            text=text,
+            params=params,
         )
 
     @classmethod
     def new_edit(kls, user: User, target, text="", params={}):
         return kls._create_new_job(
-            user,
-            target,
-            JobOperation.EDIT_ENTRY,
-            text,
-            json.dumps(params, default=_support_time_default, sort_keys=True),
+            user=user,
+            target=target,
+            operation=JobOperation.EDIT_ENTRY,
+            text=text,
+            params=params,
         )
 
     @classmethod
     def new_delete(kls, user: User, target, text=""):
-        return kls._create_new_job(user, target, JobOperation.DELETE_ENTRY, text)
+        return kls._create_new_job(user=user, target=target, operation=JobOperation.DELETE_ENTRY, text=text)
 
     @classmethod
     def new_copy(kls, user: User, target, text="", params={}):
         return kls._create_new_job(
-            user,
-            target,
-            JobOperation.COPY_ENTRY,
-            text,
-            json.dumps(params, sort_keys=True),
+            user=user,
+            target=target,
+            operation=JobOperation.COPY_ENTRY,
+            text=text,
+            params=params,
         )
 
     @classmethod
     def new_do_copy(kls, user: User, target, text="", params={}):
         return kls._create_new_job(
-            user,
-            target,
-            JobOperation.DO_COPY_ENTRY,
-            text,
-            json.dumps(params, sort_keys=True),
+            user=user,
+            target=target,
+            operation=JobOperation.DO_COPY_ENTRY,
+            text=text,
+            params=params,
         )
 
     @classmethod
     def new_import(kls, user: User, entity, text="", params={}):
         return kls._create_new_job(
-            user,
-            entity,
-            JobOperation.IMPORT_ENTRY,
-            text,
-            json.dumps(params, default=_support_time_default, sort_keys=True),
+            user=user,
+            target=entity,
+            operation=JobOperation.IMPORT_ENTRY,
+            text=text,
+            params=params,
         )
 
     @classmethod
-    def new_import_v2(kls, user: User, entity, text="", params={}) -> "Job":
+    def new_import_v2(kls, user: User, entity, text="", params={}):
         return kls._create_new_job(
-            user,
-            entity,
-            JobOperation.IMPORT_ENTRY_V2,
-            text,
-            json.dumps(params, default=_support_time_default, sort_keys=True),
+            user=user,
+            target=entity,
+            operation=JobOperation.IMPORT_ENTRY_V2,
+            text=text,
+            params=params,
         )
 
     @classmethod
     def new_export(kls, user: User, target=None, text="", params={}):
         return kls._create_new_job(
-            user,
-            target,
-            JobOperation.EXPORT_ENTRY,
-            text,
-            json.dumps(params, default=_support_time_default, sort_keys=True),
+            user=user,
+            target=target,
+            operation=JobOperation.EXPORT_ENTRY,
+            text=text,
+            params=params,
         )
 
     @classmethod
     def new_export_v2(kls, user: User, target=None, text="", params={}):
         return kls._create_new_job(
-            user,
-            target,
-            JobOperation.EXPORT_ENTRY_V2,
-            text,
-            json.dumps(params, default=_support_time_default, sort_keys=True),
+            user=user,
+            target=target,
+            operation=JobOperation.EXPORT_ENTRY_V2,
+            text=text,
+            params=params,
         )
 
     @classmethod
     def new_restore(kls, user: User, target, text="", params={}):
-        return kls._create_new_job(user, target, JobOperation.RESTORE_ENTRY, text, params)
+        return kls._create_new_job(
+            user=user,
+            target=target,
+            operation=JobOperation.RESTORE_ENTRY,
+            text=text,
+            params=params,
+        )
 
     @classmethod
     def new_export_search_result(kls, user: User, target=None, text="", params={}):
         return kls._create_new_job(
-            user,
-            target,
-            JobOperation.EXPORT_SEARCH_RESULT,
-            text,
-            json.dumps(params, default=_support_time_default, sort_keys=True),
+            user=user,
+            target=target,
+            operation=JobOperation.EXPORT_SEARCH_RESULT,
+            text=text,
+            params=params,
         )
 
     @classmethod
     def new_export_search_result_v2(kls, user: User, target=None, text="", params={}):
         return kls._create_new_job(
-            user,
-            target,
-            JobOperation.EXPORT_SEARCH_RESULT_V2,
-            text,
-            json.dumps(params, default=_support_time_default, sort_keys=True),
+            user=user,
+            target=target,
+            operation=JobOperation.EXPORT_SEARCH_RESULT_V2,
+            text=text,
+            params=params,
         )
 
     @classmethod
@@ -500,36 +518,36 @@ class Job(models.Model):
         kls, user: User, target, operation_value=JobOperation.REGISTER_REFERRALS, params={}
     ):
         return kls._create_new_job(
-            user,
-            target,
-            operation_value,
-            "",
-            json.dumps(params, default=_support_time_default, sort_keys=True),
+            user=user,
+            target=target,
+            operation=operation_value,
+            text="",
+            params=params,
         )
 
     @classmethod
     def new_create_entity(kls, user: User, target, text="", params={}):
         return kls._create_new_job(
-            user,
-            target,
-            JobOperation.CREATE_ENTITY,
-            text,
-            json.dumps(params, default=_support_time_default, sort_keys=True),
+            user=user,
+            target=target,
+            operation=JobOperation.CREATE_ENTITY,
+            text=text,
+            params=params,
         )
 
     @classmethod
     def new_edit_entity(kls, user: User, target, text="", params={}):
         return kls._create_new_job(
-            user,
-            target,
-            JobOperation.EDIT_ENTITY,
-            text,
-            json.dumps(params, default=_support_time_default, sort_keys=True),
+            user=user,
+            target=target,
+            operation=JobOperation.EDIT_ENTITY,
+            text=text,
+            params=params,
         )
 
     @classmethod
     def new_delete_entity(kls, user: User, target, text=""):
-        return kls._create_new_job(user, target, JobOperation.DELETE_ENTITY, text)
+        return kls._create_new_job(user=user, target=target, operation=JobOperation.DELETE_ENTITY, text=text)
 
     @classmethod
     def new_update_documents(kls, target, text="", params={}):
@@ -537,94 +555,93 @@ class Job(models.Model):
         if not user:
             user = User.objects.create(username=settings.AIRONE["AUTO_COMPLEMENT_USER"])
         return kls._create_new_job(
-            user,
-            target,
-            JobOperation.UPDATE_DOCUMENT,
-            text,
-            json.dumps(params, sort_keys=True),
+            user=user,
+            target=target,
+            operation=JobOperation.UPDATE_DOCUMENT,
+            text=text,
+            params=params,
         )
-
     @classmethod
     def new_notify_create_entry(kls, user: User, target, text=""):
-        return kls._create_new_job(user, target, JobOperation.NOTIFY_CREATE_ENTRY, text)
+        return kls._create_new_job(user=user, target=target, operation=JobOperation.NOTIFY_CREATE_ENTRY, text=text)
 
     @classmethod
     def new_notify_update_entry(kls, user: User, target, text=""):
-        return kls._create_new_job(user, target, JobOperation.NOTIFY_UPDATE_ENTRY, text)
+        return kls._create_new_job(user=user, target=target, operation=JobOperation.NOTIFY_UPDATE_ENTRY, text=text)
 
     @classmethod
     def new_notify_delete_entry(kls, user: User, target, text=""):
-        return kls._create_new_job(user, target, JobOperation.NOTIFY_DELETE_ENTRY, text)
+        return kls._create_new_job(user=user, target=target, operation=JobOperation.NOTIFY_DELETE_ENTRY, text=text)
 
     @classmethod
     def new_invoke_trigger(kls, user: User, target_entry, recv_attrs={}, dependent_job=None):
         return kls._create_new_job(
-            user,
-            target_entry,
-            JobOperation.MAY_INVOKE_TRIGGER,
-            "",
-            json.dumps(recv_attrs),
-            dependent_job,
+            user=user,
+            target=target_entry,
+            operation=JobOperation.MAY_INVOKE_TRIGGER,
+            text="",
+            params=recv_attrs,
+            depend_on=dependent_job,
         )
 
     @classmethod
     def new_create_entity_v2(kls, user: User, target: Entity, text="", params={}):
         return kls._create_new_job(
-            user,
-            target,
-            JobOperation.CREATE_ENTITY_V2,
-            text,
-            json.dumps(params, default=_support_time_default, sort_keys=True),
+            user=user,
+            target=target,
+            operation=JobOperation.CREATE_ENTITY_V2,
+            text=text,
+            params=params,
         )
 
     @classmethod
     def new_edit_entity_v2(kls, user: User, target: Entity, text="", params={}):
         return kls._create_new_job(
-            user,
-            target,
-            JobOperation.EDIT_ENTITY_V2,
-            text,
-            json.dumps(params, default=_support_time_default, sort_keys=True),
+            user=user,
+            target=target,
+            operation=JobOperation.EDIT_ENTITY_V2,
+            text=text,
+            params=params,
         )
 
     @classmethod
     def new_delete_entity_v2(kls, user: User, target: Entity, text="", params={}):
         return kls._create_new_job(
-            user,
-            target,
-            JobOperation.DELETE_ENTITY_V2,
-            text,
-            json.dumps(params, default=_support_time_default, sort_keys=True),
+            user=user,
+            target=target,
+            operation=JobOperation.DELETE_ENTITY_V2,
+            text=text,
+            params=params,
         )
 
     @classmethod
     def new_create_entry_v2(kls, user: User, target, text="", params={}):
         return kls._create_new_job(
-            user,
-            target,
-            JobOperation.CREATE_ENTRY_V2,
-            text,
-            json.dumps(params, default=_support_time_default, sort_keys=True),
+            user=user,
+            target=target,
+            operation=JobOperation.CREATE_ENTRY_V2,
+            text=text,
+            params=params,
         )
 
     @classmethod
     def new_edit_entry_v2(kls, user: User, target: Entry, text="", params={}):
         return kls._create_new_job(
-            user,
-            target,
-            JobOperation.EDIT_ENTRY_V2,
-            text,
-            json.dumps(params, default=_support_time_default, sort_keys=True),
+            user=user,
+            target=target,
+            operation=JobOperation.EDIT_ENTRY_V2,
+            text=text,
+            params=params,
         )
 
     @classmethod
     def new_delete_entry_v2(kls, user: User, target: Entry, text="", params={}):
         return kls._create_new_job(
-            user,
-            target,
-            JobOperation.DELETE_ENTRY_V2,
-            text,
-            json.dumps(params, default=_support_time_default, sort_keys=True),
+            user=user,
+            target=target,
+            operation=JobOperation.DELETE_ENTRY_V2,
+            text=text,
+            params=params,
         )
 
     def set_cache(self, value):
@@ -645,11 +662,11 @@ class Job(models.Model):
             return kls.DEFAULT_JOB_TIMEOUT
 
     @classmethod
-    def new_role_import_v2(kls, user: User, text="", params={}) -> "Job":
+    def new_role_import_v2(kls, user: User, text="", params: dict | None = None) -> "Job":
         return kls._create_new_job(
-            user,
-            None,
-            JobOperation.IMPORT_ROLE_V2,
-            text,
-            json.dumps(params, default=_support_time_default, sort_keys=True),
+            user=user,
+            target=None,
+            operation=JobOperation.IMPORT_ROLE_V2,
+            text=text,
+            params=params
         )
