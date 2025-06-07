@@ -1,6 +1,3 @@
-from django.contrib.contenttypes.models import ContentType
-from airone.lib import auto_complement
-
 import enum
 import json
 import os
@@ -317,7 +314,7 @@ class Job(models.Model):
         target: Entity | Entry | Any | None,
         operation: int,
         text: str | None,
-        params: dict | None = None,  # Changed to dict | None
+        params: dict | None = None,
         depend_on=None,
     ) -> "Job":
         t_type = JobTarget.UNKNOWN
@@ -327,17 +324,14 @@ class Job(models.Model):
             elif isinstance(target, Entity):
                 t_type = JobTarget.ENTITY
 
+        # # set dependent job to prevent running tasks simultaneously which set to target same one.
         dependent_job: Job | None = None
         if target is not None:
             threshold = datetime.now(pytz.timezone(settings.TIME_ZONE)) - timedelta(
                 seconds=kls._get_job_timeout()
             )
             dependent_job = (
-                Job.objects.filter(
-                    target=target,
-                    operation=operation,
-                    updated_at__gt=threshold
-                )
+                Job.objects.filter(target=target, operation=operation, updated_at__gt=threshold)
                 .order_by("updated_at")
                 .last()
             )
@@ -345,8 +339,11 @@ class Job(models.Model):
         if dependent_job is None and depend_on is not None:
             dependent_job = depend_on
 
-        # Serialize params to JSON string internally
-        params_str = json.dumps(params, default=_support_time_default, sort_keys=True) if params is not None else "{}"
+        params_str = (
+            json.dumps(params, default=_support_time_default, sort_keys=True)
+            if params is not None
+            else "{}"
+        )
 
         job_params: dict[str, Any] = {
             "user": user,
@@ -395,8 +392,7 @@ class Job(models.Model):
     @classmethod
     def get_job_with_params(kls, user: User, params):
         return kls.objects.filter(
-            user=user,
-            params=json.dumps(params, default=_support_time_default, sort_keys=True)
+            user=user, params=json.dumps(params, default=_support_time_default, sort_keys=True)
         )
 
     @classmethod
@@ -421,7 +417,9 @@ class Job(models.Model):
 
     @classmethod
     def new_delete(kls, user: User, target, text=""):
-        return kls._create_new_job(user=user, target=target, operation=JobOperation.DELETE_ENTRY, text=text)
+        return kls._create_new_job(
+            user=user, target=target, operation=JobOperation.DELETE_ENTRY, text=text
+        )
 
     @classmethod
     def new_copy(kls, user: User, target, text="", params={}):
@@ -547,7 +545,9 @@ class Job(models.Model):
 
     @classmethod
     def new_delete_entity(kls, user: User, target, text=""):
-        return kls._create_new_job(user=user, target=target, operation=JobOperation.DELETE_ENTITY, text=text)
+        return kls._create_new_job(
+            user=user, target=target, operation=JobOperation.DELETE_ENTITY, text=text
+        )
 
     @classmethod
     def new_update_documents(kls, target, text="", params={}):
@@ -561,17 +561,24 @@ class Job(models.Model):
             text=text,
             params=params,
         )
+
     @classmethod
     def new_notify_create_entry(kls, user: User, target, text=""):
-        return kls._create_new_job(user=user, target=target, operation=JobOperation.NOTIFY_CREATE_ENTRY, text=text)
+        return kls._create_new_job(
+            user=user, target=target, operation=JobOperation.NOTIFY_CREATE_ENTRY, text=text
+        )
 
     @classmethod
     def new_notify_update_entry(kls, user: User, target, text=""):
-        return kls._create_new_job(user=user, target=target, operation=JobOperation.NOTIFY_UPDATE_ENTRY, text=text)
+        return kls._create_new_job(
+            user=user, target=target, operation=JobOperation.NOTIFY_UPDATE_ENTRY, text=text
+        )
 
     @classmethod
     def new_notify_delete_entry(kls, user: User, target, text=""):
-        return kls._create_new_job(user=user, target=target, operation=JobOperation.NOTIFY_DELETE_ENTRY, text=text)
+        return kls._create_new_job(
+            user=user, target=target, operation=JobOperation.NOTIFY_DELETE_ENTRY, text=text
+        )
 
     @classmethod
     def new_invoke_trigger(kls, user: User, target_entry, recv_attrs={}, dependent_job=None):
@@ -664,9 +671,5 @@ class Job(models.Model):
     @classmethod
     def new_role_import_v2(kls, user: User, text="", params: dict | None = None) -> "Job":
         return kls._create_new_job(
-            user=user,
-            target=None,
-            operation=JobOperation.IMPORT_ROLE_V2,
-            text=text,
-            params=params
+            user=user, target=None, operation=JobOperation.IMPORT_ROLE_V2, text=text, params=params
         )
