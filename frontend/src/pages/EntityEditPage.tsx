@@ -21,7 +21,6 @@ import {
   extractAPIException,
   isResponseError,
 } from "services/AironeAPIErrorUtil";
-import { findDuplicateIndexes } from "services/entity/Edit";
 
 export const EntityEditPage: FC = () => {
   const { entityId } = useTypedParams<{ entityId: number }>();
@@ -152,18 +151,7 @@ export const EntityEditPage: FC = () => {
           e,
           (message) => enqueueSubmitResult(false, `詳細: "${message}"`),
           (name, message) => {
-            switch (name) {
-              case "attrs":
-                findDuplicateIndexes(entityForm.attrs).forEach((index) => {
-                  setError(`attrs.${index}.name`, {
-                    type: "custom",
-                    message: message,
-                  });
-                });
-                break;
-              default:
-                setError(name, { type: "custom", message: message });
-            }
+            setError(name, { type: "custom", message: message });
             enqueueSubmitResult(false);
           },
         );
