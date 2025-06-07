@@ -183,60 +183,47 @@ class ModelESLessTest(ESLessAironeTestCase):
         self.assertEqual(entry.created_user, self._user)
 
     def test_inherite_attribute_permission_of_user(self):
-        # add a test user who has different attribute permission
-        test_user = User.objects.create(username="test_user")
+        user = User.objects.create(username="hoge")
 
-        # add permissions of attrs individually
-        self._entity_attr.acl.acl.create(
-            principal=test_user,
-            permission=ACLType.Writable,
-            object_type=ACLObjType.EntityAttr,
+        entity = Entity.objects.create(name="entity", created_user=user)
+        attrbase = EntityAttr.objects.create(
+            name="attr", type=AttrType.OBJECT, created_user=user, parent_entity=entity
         )
 
-        # create new entry which inherites ACL configuration from EntityAttr
-        entry = Entry.objects.create(
-            name="hoge",
-            schema=self._entity,
-            created_user=self._user,
-        )
+        # update acl metadata
+        attrbase.is_public = False
+        attrbase.default_permission = ACLType.Readable.id
 
-        attr = Attribute.objects.create(
-            name=self._entity_attr.name,
-            schema=self._entity_attr,
-            created_user=self._user,
-            parent_entry=entry,
-        )
+        # set a permission to the user
+        user.permissions.add(attrbase.writable)
 
-        self.assertTrue(test_user.has_permission(attr, ACLType.Writable))
+        entry = Entry.objects.create(name="entry", schema=entity, created_user=user)
+        attr = entry.add_attribute_from_base(attrbase, user)
+
+        # checks that acl metadata is not inherited
+        self.assertTrue(attr.is_public)
+        self.assertEqual(attr.default_permission, ACLType.Nothing.id)
+        self.assertEqual(user.permissions.get(name="writable").codename, attrbase.writable.codename)
 
     def test_inherite_attribute_permission_of_group(self):
-        # add a test user who has different attribute permission
-        test_user = User.objects.create(username="test_user")
-        test_group = Group.objects.create(name="test_group")
-        test_user.groups.add(test_group)
+        user = User.objects.create(username="hoge")
+        group = Group.objects.create(name="group")
+        user.groups.add(group)
 
-        # add permissions of attrs individually
-        self._entity_attr.acl.acl.create(
-            principal=test_group,
-            permission=ACLType.Writable,
-            object_type=ACLObjType.EntityAttr,
+        entity = Entity.objects.create(name="entity", created_user=user)
+        attrbase = EntityAttr.objects.create(
+            name="attr", type=AttrType.OBJECT, created_user=user, parent_entity=entity
         )
 
-        # create new entry which inherites ACL configuration from EntityAttr
-        entry = Entry.objects.create(
-            name="hoge",
-            schema=self._entity,
-            created_user=self._user,
-        )
+        # set a permission to the user
+        group.permissions.add(attrbase.writable)
 
-        attr = Attribute.objects.create(
-            name=self._entity_attr.name,
-            schema=self._entity_attr,
-            created_user=self._user,
-            parent_entry=entry,
-        )
+        entry = Entry.objects.create(name="entry", schema=entity, created_user=user)
+        entry.add_attribute_from_base(attrbase, user)
 
-        self.assertTrue(test_user.has_permission(attr, ACLType.Writable))
+        self.assertEqual(
+            group.permissions.get(name="writable").codename, attrbase.writable.codename
+        )
     def test_update_attribute_from_base(self):
         user = User.objects.create(username="hoge")
         entity = Entity.objects.create(name="entity", created_user=user)
