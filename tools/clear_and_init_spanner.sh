@@ -11,7 +11,7 @@ show_usage() {
   echo ""
   echo "Options:"
   echo " -h, --help               display this help message and exit"
-  echo " -i, --instance PASSWORD  spanner instance name that are created on your G-Cloud"
+  echo " -i, --instance INSTANCE  spanner instance name that are created on your G-Cloud"
   echo " -d, --database DATABASE  database name that will be created on your spanner instance"
 }
 
