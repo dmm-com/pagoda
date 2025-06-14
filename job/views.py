@@ -3,7 +3,7 @@ import io
 from datetime import datetime, timezone
 
 from django.db.models import Q
-from django.http import HttpResponse
+from django.http import HttpRequest, HttpResponse
 
 # libraries of AirOne
 from airone.lib.http import get_download_response, http_get, render
@@ -16,7 +16,7 @@ from .settings import CONFIG
 
 
 @http_get
-def index(request):
+def index(request: HttpRequest) -> HttpResponse:
     limitation = CONFIG.MAX_LIST_VIEW
     if request.GET.get("nolimit", None):
         limitation = None
@@ -55,7 +55,7 @@ def index(request):
 
 
 @http_get
-def download(request, job_id):
+def download(request: HttpRequest, job_id: int) -> HttpResponse:
     job = Job.objects.filter(id=job_id).first()
     if not job:
         return HttpResponse("Invalid Job-ID is specified", status=400)

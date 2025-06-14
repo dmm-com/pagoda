@@ -389,7 +389,7 @@ class AttributeDataSerializer(serializers.Serializer):
 class EntryCreateData(TypedDict, total=False):
     name: str
     schema: Entity
-    attrs: list[AttributeDataSerializer]
+    attrs: list[dict[str, Any]]
     created_user: User
 
 
@@ -470,7 +470,7 @@ class PrivilegedEntryCreateSerializer(EntryCreateSerializer):
 
 class EntryUpdateData(TypedDict, total=False):
     name: str
-    attrs: list[AttributeDataSerializer]
+    attrs: list[dict[str, Any]]
     delay_trigger: bool
     call_stacks: list[int]
 

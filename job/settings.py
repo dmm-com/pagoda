@@ -1,6 +1,8 @@
+from typing import Any
+
 from airone.lib.settings import Settings
 
-CONFIG = Settings(
+CONFIG: Any = Settings(
     {
         "MAX_LIST_VIEW": 50,
         "MAX_LIST_NAV": 10,

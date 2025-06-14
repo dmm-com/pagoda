@@ -1,5 +1,6 @@
 import errno
 import io
+from typing import Any
 
 from django.db.models import Q, QuerySet
 from drf_spectacular.types import OpenApiTypes
@@ -20,10 +21,10 @@ from job.models import Job, JobOperation, JobStatus
 class JobAPI(viewsets.ModelViewSet):
     serializer_class = JobSerializers
 
-    def get_queryset(self):
+    def get_queryset(self) -> QuerySet[Job]:
         return Job.objects.filter(user=self.request.user)
 
-    def destroy(self, request: Request, *args, **kwargs) -> Response:
+    def destroy(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         job: Job = self.get_object()
 
         if job.status == JobStatus.DONE:
@@ -48,7 +49,7 @@ class JobAPI(viewsets.ModelViewSet):
             ),
         ],
     )
-    def download(self, request: Request, *args, **kwargs) -> Response:
+    def download(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         job: Job = self.get_object()
         encode_param = request.query_params.get("encode", "utf-8")
 
@@ -116,7 +117,7 @@ class JobListAPI(viewsets.ModelViewSet):
 
         return Job.objects.filter(query).select_related("target").order_by("-created_at")
 
-    def get_serializer_context(self):
+    def get_serializer_context(self) -> dict[str, Any]:
         context = super().get_serializer_context()
 
         # prefetch target entries, then pass it via context manually to avoid N+1 in serializer
@@ -135,15 +136,15 @@ class JobListAPI(viewsets.ModelViewSet):
 class JobRerunAPI(generics.UpdateAPIView):
     serializer_class = serializers.Serializer
 
-    def get_queryset(self):
+    def get_queryset(self) -> QuerySet[Job]:
         return Job.objects.filter(user=self.request.user)
 
-    def update(self, request: Request, *args, **kwargs) -> Response:
+    def update(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         return Response(
             "Unsupported. use PATCH alternatively", status=status.HTTP_405_METHOD_NOT_ALLOWED
         )
 
-    def patch(self, request: Request, *args, **kwargs) -> Response:
+    def patch(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         job: Job = self.get_object()
 
         # check job status before starting processing
