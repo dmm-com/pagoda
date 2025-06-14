@@ -1,9 +1,11 @@
 import json
+from typing import Union
 
 from django.conf import settings
 from django.contrib.auth import logout as django_logout
 from django.contrib.auth import views as django_auth_views
-from django.http import HttpResponse, JsonResponse
+from django.forms import Form
+from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_protect
 
 from airone.lib.http import render
@@ -11,7 +13,7 @@ from airone.lib.log import Logger
 
 
 @csrf_protect
-def logout(request):
+def logout(request: HttpRequest) -> HttpResponse:
     if request.method != "POST":
         return HttpResponse("Invalid HTTP method is specified", status=400)
 
@@ -20,7 +22,7 @@ def logout(request):
 
 
 class PagodaLoginView(django_auth_views.LoginView):
-    def form_valid(self, form):
+    def form_valid(self, form: Form) -> Union[HttpResponse, JsonResponse]:
         response = super().form_valid(form)
 
         if not settings.AIRONE["CHECK_TERM_SERVICE"]:

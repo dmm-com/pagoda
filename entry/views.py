@@ -513,10 +513,12 @@ def import_data(request, entity_id):
 @http_file_upload
 def do_import_data(request, entity_id: int, context):
     user: User = request.user
-    entity: Entity
-    entity, error = get_obj_with_check_perm(user, Entity, entity_id, ACLType.Writable)
+    entity_result, error = get_obj_with_check_perm(user, Entity, entity_id, ACLType.Writable)
     if error:
         return error
+    if entity_result is None:
+        return HttpResponse("Failed to get entity", status=400)
+    entity: Entity = entity_result
     if not entity.is_active:
         return HttpResponse("Failed to get entity of specified id", status=400)
 
