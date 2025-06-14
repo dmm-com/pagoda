@@ -8,6 +8,30 @@
 
 ### Fixed
 
+## v3.135.0
+
+### Changed
+* simplify job model.
+  Contributed by @syucream
+
+## v3.134.0
+
+### Added
+* Added new parameter `exclude_referrals` for advanced search.
+  Contributed by @userlocalhost
+
+### Changed
+* register Celery tasks with decorator pattern and cleanup task table.
+  Contributed by @syucream
+
+### Fixed
+* Fix modal closing when pressing Tab in UserControlMenu.
+  Contributed by @tsunoda-takahiro
+* Prevent users from deleting their own accounts.
+  Contributed by @tsunoda-takahiro
+* Fix snackbar not appearing after password reset by superuser.
+  Contributed by @tsunoda-takahiro
+
 ## v3.133.0
 
 ### Changed

@@ -25,9 +25,8 @@ describe("UserControlMenu", () => {
         <UserControlMenu
           user={mockUser}
           anchorElem={null}
-          handleClose={() => {
-            /* do nothing */
-          }}
+          handleClose={() => {}}
+          onClickEditPassword={() => {}}
         />,
         {
           wrapper: TestWrapper,
@@ -43,6 +42,7 @@ describe("UserControlMenu", () => {
         user={mockUser}
         anchorElem={document.createElement("button")}
         handleClose={() => {}}
+        onClickEditPassword={() => {}}
       />,
       { wrapper: TestWrapper },
     );
@@ -58,6 +58,7 @@ describe("UserControlMenu", () => {
         user={mockUser}
         anchorElem={null}
         handleClose={() => {}}
+        onClickEditPassword={() => {}}
       />,
       { wrapper: TestWrapper },
     );
@@ -75,6 +76,7 @@ describe("UserControlMenu", () => {
           user={mockUser}
           anchorElem={document.createElement("button")}
           handleClose={() => {}}
+          onClickEditPassword={() => {}}
           setToggle={() => {}}
         />,
         { wrapper: TestWrapper },

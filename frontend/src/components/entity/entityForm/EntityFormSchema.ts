@@ -83,7 +83,28 @@ export const schema = z.object({
           },
         ),
     )
-    .default([]),
+    .default([])
+    .superRefine((attrs, ctx) => {
+      const nameCounts = new Map<string, number[]>();
+      attrs.forEach((attr, index) => {
+        if (attr.name) {
+          const indices = nameCounts.get(attr.name) || [];
+          indices.push(index);
+          nameCounts.set(attr.name, indices);
+        }
+      });
+      nameCounts.forEach((indices) => {
+        if (indices.length > 1) {
+          indices.forEach((index) => {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              message: "属性名が重複しています",
+              path: [index, "name"],
+            });
+          });
+        }
+      });
+    }),
 });
 
 export type Schema = z.infer<typeof schema>;
