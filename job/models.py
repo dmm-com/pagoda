@@ -368,7 +368,7 @@ class Job(models.Model):
         return kls._TASK_MODULE[component]
 
     @classmethod
-    def method_table(kls):
+    def method_table(kls) -> dict[JobOperation | JobOperationCustom, TaskHandler]:
         for operation_num, task in CUSTOM_TASKS.items():
             custom_task = kls.get_task_module("custom_view.tasks")
             kls._METHOD_TABLE |= {operation_num: getattr(custom_task, task)}
