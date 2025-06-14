@@ -79,7 +79,7 @@ def check_superuser(func: Callable[..., HttpResponse]) -> Callable[..., HttpResp
 
 
 def http_post(
-    validator: List[Dict[str, Any]] = []
+    validator: List[Dict[str, Any]] = [],
 ) -> Callable[[Callable[..., HttpResponse]], Callable[..., HttpResponse]]:
     def _decorator(func: Callable[..., HttpResponse]) -> Callable[..., HttpResponse]:
         def http_post_handler(*args: Any, **kwargs: Any) -> HttpResponse:
@@ -120,6 +120,8 @@ def http_file_upload(func: Callable[..., HttpResponse]) -> Callable[..., HttpRes
 
             except Exception:
                 return None
+
+        return None
 
     def wrapper(*args: Any, **kwargs: Any) -> HttpResponse:
         request = args[0]

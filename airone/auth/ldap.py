@@ -13,6 +13,10 @@ class LDAPBackend(object):
     def authenticate(
         self, request: HttpRequest, username: Optional[str] = None, password: Optional[str] = None
     ) -> Optional[User]:
+        # Return None if username or password is None
+        if username is None or password is None:
+            return None
+
         # check authentication with local database at first.
         user = User.objects.filter(
             username=username,

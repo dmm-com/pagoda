@@ -59,3 +59,4 @@ full traceback:
         mail_admins(subject, message)
         if not settings.DEBUG:
             return HttpResponseServerError("Internal Server Error")
+        return None
