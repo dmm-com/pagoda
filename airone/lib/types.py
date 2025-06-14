@@ -1,5 +1,5 @@
 import enum
-from typing import Any
+from typing import Any, Literal, Union
 
 
 class BaseIntEnum(enum.IntEnum):
@@ -29,6 +29,25 @@ class AttrType(BaseIntEnum):
     ARRAY_ROLE = _ARRAY | ROLE
 
 
+# Type aliases for better type safety
+AttrTypeValueLiteral = Union[
+    Literal["string"],
+    Literal["object"],
+    Literal["named_object"],
+    Literal["group"],
+    Literal["role"],
+    Literal["array_string"],
+    Literal["array_object"],
+    Literal["array_named_object"],
+    Literal["array_group"],
+    Literal["array_role"],
+    Literal["textarea"],
+    Literal["boolean"],
+    Literal["date"],
+    Literal["datetime"],
+]
+
+# Mapping from string to AttrType enum values (backwards compatibility)
 AttrTypeValue = {
     "string": AttrType.STRING,
     "object": AttrType.OBJECT,
