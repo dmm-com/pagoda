@@ -1,7 +1,7 @@
 import collections
 import json
 import re
-from typing import Any, List, Optional, Protocol, TypedDict, Union, runtime_checkable
+from typing import Any, List, Optional, TypedDict
 
 import requests
 from django.conf import settings
@@ -20,34 +20,6 @@ from entity.admin import EntityAttrResource, EntityResource
 from entity.models import Entity, EntityAttr
 from user.models import History, User
 from webhook.models import Webhook
-
-
-# Protocol definitions for structural typing
-@runtime_checkable
-class EntityLike(Protocol):
-    """Protocol for Entity-like objects"""
-
-    name: str
-    is_active: bool
-
-    def save(self, *args, **kwargs) -> None: ...
-    def delete(self, *args, **kwargs) -> None: ...
-
-
-@runtime_checkable
-class EntityAttrLike(Protocol):
-    """Protocol for EntityAttr-like objects"""
-
-    name: str
-    type: int
-    is_mandatory: bool
-    is_delete_in_chain: bool
-    index: int
-    note: str
-
-    def add_referral(
-        self, referral: Union["EntityLike", str, int, List[Union["EntityLike", str, int]]]
-    ) -> None: ...
 
 
 # Enhanced TypedDict definitions
@@ -563,8 +535,6 @@ class EntityDetailAttributeSerializer(serializers.Serializer):
     is_writable = serializers.BooleanField()
     referral = serializers.ListField(child=serializers.DictField())
     note = serializers.CharField()
-
-    # Using the enhanced EntityDetailAttribute defined above
 
 
 class EntityDetailSerializer(EntityListSerializer):
