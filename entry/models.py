@@ -1,3 +1,4 @@
+import math
 import re
 from collections.abc import Iterable
 from datetime import date, datetime
@@ -61,6 +62,7 @@ class AttributeValue(models.Model):
         related_name="referred_attr_value",
         on_delete=models.SET_NULL,
     )
+    number = models.FloatField(null=True)
 
     # This parameter means that target AttributeValue is the latest one. This is usefull to
     # find out enabled AttributeValues by Attribute or EntityAttr object. And separating this
@@ -196,6 +198,9 @@ class AttributeValue(models.Model):
             case AttrType.STRING | AttrType.TEXT:
                 value = self.value
 
+            case AttrType.NUMBER:
+                value = self.number
+
             case AttrType.BOOLEAN:
                 value = self.boolean
 
@@ -268,6 +273,8 @@ class AttributeValue(models.Model):
                 return self.referral
             case AttrType.BOOLEAN:
                 return self.boolean
+            case AttrType.NUMBER:
+                return self.number
             case AttrType.DATE:
                 return self.date
             case AttrType.NAMED_OBJECT:
@@ -405,6 +412,29 @@ class AttributeValue(models.Model):
             match t:
                 case AttrType.STRING | AttrType.TEXT:
                     return _is_validate_attr_str(value)
+
+                case AttrType.NUMBER:
+                    if value is None or value == "":
+                        if is_mandatory:
+                            raise ValueError("Numeric value is mandatory and cannot be empty.")
+                        return True
+                    if isinstance(value, (int, float)):
+                        if isinstance(value, float) and (math.isnan(value) or math.isinf(value)):
+                            raise Exception("value(%s) is NaN or Infinity" % value)
+                        return True
+                    if isinstance(value, str):
+                        try:
+                            f_val = float(value)
+                            if math.isnan(f_val) or math.isinf(f_val):
+                                raise Exception("value(%s) is NaN or Infinity" % value)
+                            if len(value.encode("utf-8")) > AttributeValue.MAXIMUM_VALUE_SIZE:
+                                raise ExceedLimitError("value is exceeded the limit")
+                            return True
+                        except ValueError:
+                            raise Exception("value(%s) is not a valid number string" % value)
+                        except ExceedLimitError as e:
+                            raise e
+                    raise Exception("value(%s) is not a valid number type or format" % value)
 
                 case AttrType.OBJECT:
                     return _is_validate_attr_object(value)
@@ -613,6 +643,16 @@ class Attribute(ACLBase):
 
             case AttrType.BOOLEAN:
                 return last_value.boolean != bool(recv_value)
+
+            case AttrType.NUMBER:
+                if recv_value is None or recv_value == "":
+                    return last_value.number is not None
+                try:
+                    recv_number = float(recv_value)
+                    return last_value.number != recv_number
+                except (ValueError, TypeError):
+                    # Invalid input should always trigger an update
+                    return True
 
             case AttrType.GROUP:
                 last_group_id = str(last_value.group.id) if last_value.group else ""
@@ -868,6 +908,25 @@ class Attribute(ACLBase):
             return isinstance(val, (model, int, str)) or val is None
 
         match self.schema.type:
+            case AttrType.NUMBER:
+                if value is None or value == "":
+                    if self.schema.is_mandatory:
+                        raise ValueError("Numeric value is mandatory and cannot be empty.")
+                    return True
+                if isinstance(value, (int, float)):
+                    if isinstance(value, float) and (math.isnan(value) or math.isinf(value)):
+                        return False  # NaN or Infinity is not a valid storable number here
+                    return True
+                if isinstance(value, str):
+                    try:
+                        f_val = float(value)
+                        if math.isnan(f_val) or math.isinf(f_val):
+                            return False  # NaN or Infinity is not a valid storable number here
+                        return True
+                    except ValueError:
+                        return False
+                return False
+
             case AttrType.NAMED_OBJECT:
                 return isinstance(value, dict)
 
@@ -961,8 +1020,39 @@ class Attribute(ACLBase):
                 case AttrType.STRING | AttrType.TEXT:
                     attrv.boolean = boolean
                     attrv.value = str(val)
-                    if not attrv.value:
-                        return None
+                    if not attrv.value:  # if empty string or None coerced to ""
+                        return None  # For STRING, empty means no AttributeValue
+
+                case AttrType.NUMBER:
+                    attrv.boolean = boolean  # Assuming boolean might be relevant for NUMBER too
+                    if val is None or val == "":
+                        attrv.number = None
+                        attrv.value = ""  # Keep for backward compatibility
+                    elif isinstance(val, (int, float)):
+                        if isinstance(val, float) and (math.isnan(val) or math.isinf(val)):
+                            # This should ideally be caught by validation earlier
+                            attrv.number = None
+                            attrv.value = ""  # Or handle as error
+                        else:
+                            attrv.number = float(val)
+                            attrv.value = str(float(val))  # Keep for backward compatibility
+                    elif isinstance(val, str):
+                        # Already validated by _validate_value, so should be
+                        # convertible and not NaN/Inf
+                        try:
+                            float_val = float(val)
+                            attrv.number = float_val
+                            attrv.value = str(float_val)  # Keep for backward compatibility
+                        except ValueError:
+                            # Fallback, should have been caught by validation
+                            attrv.number = None
+                            attrv.value = ""
+                    else:
+                        # Should not happen if validation is correct
+                        attrv.number = None
+                        attrv.value = ""
+                    # For NUMBER, an AttributeValue is created regardless of value
+                    # to maintain consistency with other types.
 
                 case AttrType.GROUP:
                     attrv.boolean = boolean
@@ -1169,6 +1259,20 @@ class Attribute(ACLBase):
 
             case AttrType.BOOLEAN:
                 return value
+
+            case AttrType.NUMBER:
+                # Handle numeric values for import - convert strings to numeric format
+                if value is None or value == "":
+                    return None
+                elif isinstance(value, (int, float)):
+                    return float(value)
+                elif isinstance(value, str):
+                    try:
+                        return float(value)
+                    except ValueError:
+                        return None
+                else:
+                    return None
 
             case AttrType.DATE:
                 return value
@@ -2024,6 +2128,9 @@ class Entry(ACLBase):
                     if role.is_active:
                         attrinfo["value"] = truncate(role.name)
                         attrinfo["referral_id"] = role.id
+
+            elif entity_attr.type & AttrType.NUMBER:
+                attrinfo["value"] = attrv.number if attrv.number is not None else None
 
             # Basically register attribute information whatever value doesn't exist
             if not (entity_attr.type & AttrType._ARRAY and not is_recursive):

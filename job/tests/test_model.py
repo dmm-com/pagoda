@@ -1,11 +1,11 @@
 import json
 
 import mock
+from custom_view.lib.task import JobOperationCustom
 from django.conf import settings
 
 from airone.celery import app
 from airone.lib.test import AironeTestCase
-from custom_view.lib.task import JobOperationCustom
 from entity.models import Entity
 from entry.models import Entry
 from job.models import Job, JobOperation, JobStatus, JobTarget
