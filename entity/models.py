@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional, Union
 
 from django.conf import settings
 from django.db import models
@@ -60,10 +60,14 @@ class EntityAttr(ACLBase):
         finally:
             del self.skip_history_when_saving
 
-    def add_referral(self, referral):
+    def add_referral(
+        self, referral: Union["Entity", str, int, List[Union["Entity", str, int]]]
+    ) -> None:
         adding_referral = None
         if isinstance(referral, list):
-            [self.add_referral(x) for x in referral if x]
+            for x in referral:
+                if x:
+                    self.add_referral(x)
 
         elif isinstance(referral, str):
             adding_referral = Entity.objects.filter(name=referral, is_active=True).first()
@@ -79,7 +83,7 @@ class EntityAttr(ACLBase):
             self.referral.add(adding_referral)
 
     def save(self, *args, **kwargs) -> None:
-        max_attributes_per_entity: int | None = settings.MAX_ATTRIBUTES_PER_ENTITY
+        max_attributes_per_entity: Optional[int] = settings.MAX_ATTRIBUTES_PER_ENTITY
         if (
             max_attributes_per_entity
             and EntityAttr.objects.filter(parent_entity=self.parent_entity).count()
@@ -112,13 +116,16 @@ class Entity(ACLBase):
         self.objtype = ACLObjType.Entity
 
     def save(self, *args, **kwargs) -> None:
-        max_entities: int | None = settings.MAX_ENTITIES
+        max_entities: Optional[int] = settings.MAX_ENTITIES
         if max_entities and Entity.objects.count() >= max_entities:
             raise RuntimeError("The number of entities is over the limit")
         return super(Entity, self).save(*args, **kwargs)
 
-    def is_available(self, name: str, exclude_item_ids: List[int] = []) -> bool:
+    def is_available(self, name: str, exclude_item_ids: Optional[List[int]] = None) -> bool:
         from entry.models import AliasEntry, Entry
+
+        if exclude_item_ids is None:
+            exclude_item_ids = []
 
         if (
             Entry.objects.filter(name=name, schema=self, is_active=True)
