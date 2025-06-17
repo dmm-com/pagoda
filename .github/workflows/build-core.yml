@@ -121,42 +121,6 @@ jobs:
           poetry run python manage.py collectstatic
           poetry run coverage run manage.py test ${{ matrix.target }} --parallel 
           poetry run coverage report
-      - name: Upload coverage artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-${{ matrix.target }}
-          path: .coverage
-          retention-days: 1
-
-  aggregate-coverage:
-    runs-on: ubuntu-24.04
-    needs: test
-    if: always()
-    permissions:
-      contents: read
-      pull-requests: write
-    steps:
-      - uses: actions/checkout@v3
-      - name: Install poetry
-        run: pipx install poetry
-      - uses: actions/setup-python@v4
-        with:
-          python-version: "3.12.9"
-          cache: "poetry"
-      - name: poetry install
-        run: |
-          poetry install --no-ansi
-      - name: Download all coverage artifacts
-        uses: actions/download-artifact@v4
-        with:
-          pattern: coverage-*
-          path: coverage-reports
-          merge-multiple: true
-      - name: Combine coverage reports
-        run: |
-          mv custom_view_sample custom_view
-          poetry run coverage combine coverage-reports/.coverage
-          poetry run coverage report
           poetry run coverage xml
       - name: octocov
         uses: k1LoW/octocov-action@v1
@@ -164,24 +128,4 @@ jobs:
           config: .octocov.yml
           github-token: ${{ secrets.GITHUB_TOKEN }}
         continue-on-error: true
-      - name: Cleanup coverage artifacts
-        uses: actions/github-script@v7
-        if: always()
-        with:
-          script: |
-            const artifacts = await github.rest.actions.listWorkflowRunArtifacts({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              run_id: context.runId,
-            });
 
-            for (const artifact of artifacts.data.artifacts) {
-              if (artifact.name.startsWith('coverage-')) {
-                await github.rest.actions.deleteArtifact({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  artifact_id: artifact.id,
-                });
-                console.log(`Deleted artifact: ${artifact.name}`);
-              }
-            }
