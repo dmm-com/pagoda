@@ -10,6 +10,7 @@ export type AttrFilter = {
   keyword: string;
   baseAttrname?: string;
   joinedAttrname?: string;
+  alterName?: string;
 };
 
 export type AttrsFilter = Record<string, AttrFilter>;
