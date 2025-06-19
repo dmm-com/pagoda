@@ -8,6 +8,12 @@
 
 ### Fixed
 
+## v3.136.0
+
+### Added
+* Enhance type hints.
+  Contributed by @syucream
+
 ## v3.135.0
 
 ### Changed
