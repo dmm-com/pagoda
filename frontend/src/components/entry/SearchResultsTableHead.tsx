@@ -252,7 +252,11 @@ export const SearchResultsTableHead: FC<Props> = ({
         {attrNames.map((attrName) => (
           <StyledTableCell key={attrName}>
             <HeaderBox>
-              <Typography>{attrName}</Typography>
+              <Typography>
+                {defaultAttrsFilter[attrName]?.alterName
+                  ? defaultAttrsFilter[attrName].alterName
+                  : attrName}
+              </Typography>
 
               {/* Bulk operation checkbox would be invisible when Readonly mode is true */}
               {(attrTypes[attrName] & EntryAttributeTypeTypeEnum.OBJECT) > 0 &&
