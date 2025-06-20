@@ -55,6 +55,9 @@ jobs:
   test:
     runs-on: ubuntu-24.04
     needs: setup_python
+    permissions:
+      contents: read
+      pull-requests: write
     strategy:
       fail-fast: false
       matrix:
@@ -123,4 +126,6 @@ jobs:
         uses: k1LoW/octocov-action@v1
         with:
           config: .octocov.yml
+          github-token: ${{ secrets.GITHUB_TOKEN }}
         continue-on-error: true
+
