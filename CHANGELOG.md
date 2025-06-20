@@ -3,6 +3,8 @@
 ## In development
 
 ### Added
+* Added new parameter "omitHeadline" to the SearchResults react component
+  Contributed by @userlocalhost
 
 ### Changed
 

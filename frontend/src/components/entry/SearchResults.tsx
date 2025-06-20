@@ -3,9 +3,11 @@ import {
   AdvancedSearchResult,
   EntryHint,
 } from "@dmm-com/airone-apiclient-typescript-fetch";
+import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import {
   Box,
   Checkbox,
+  IconButton,
   List,
   ListItem,
   Paper,
@@ -16,17 +18,25 @@ import {
   TableRow,
   Typography,
 } from "@mui/material";
+import { ExtendButtonBaseTypeMap } from "@mui/material/ButtonBase/ButtonBase";
+import { IconButtonTypeMap } from "@mui/material/IconButton/IconButton";
+import { OverridableComponent } from "@mui/material/OverridableComponent";
 import { styled } from "@mui/material/styles";
 import React, { FC, useMemo } from "react";
+import { Link } from "react-router";
 
 import { SearchResultsTableHead } from "./SearchResultsTableHead";
 
 import { AironeLink } from "components/common";
 import { PaginationFooter } from "components/common/PaginationFooter";
 import { AttributeValue } from "components/entry/AttributeValue";
-import { entryDetailsPath } from "routes/Routes";
+import { entryDetailsPath, entryEditPath } from "routes/Routes";
 import { AdvancedSerarchResultListParam } from "services/Constants";
 import { AttrsFilter } from "services/entry/AdvancedSearch";
+
+const StyledIconButton = styled(IconButton)(({ theme }) => ({
+  margin: theme.spacing(1),
+})) as OverridableComponent<ExtendButtonBaseTypeMap<IconButtonTypeMap>>;
 
 const StyledBox = styled(Box)({
   display: "table",
@@ -64,6 +74,7 @@ interface Props {
   joinAttrs: AdvancedSearchJoinAttrInfo[];
   disablePaginationFooter: boolean;
   isReadonly?: boolean;
+  omitHeadline?: boolean;
 }
 
 export const SearchResults: FC<Props> = ({
@@ -81,6 +92,7 @@ export const SearchResults: FC<Props> = ({
   joinAttrs,
   disablePaginationFooter,
   isReadonly = false,
+  omitHeadline = false,
 }) => {
   // NOTE attrTypes are guessed by the first element on the results. So if it has no appropriate attr,
   // the type guess doesn't work well. We should improve attr type API if more accurate type is needed.
@@ -129,6 +141,7 @@ export const SearchResults: FC<Props> = ({
                 handleChangeAllBulkOperationEntryIds
               }
               isReadonly={isReadonly}
+              omitHeadline={omitHeadline}
             />
             <TableBody>
               {results.values?.map((result) => (
@@ -151,12 +164,23 @@ export const SearchResults: FC<Props> = ({
                   )}
 
                   <TableCell>
-                    <Box
-                      component={AironeLink}
-                      to={entryDetailsPath(result.entity.id, result.entry.id)}
-                    >
-                      {result.entry.name}
-                    </Box>
+                    {omitHeadline ? (
+                      // show edit icon instead of item name when omitHeadline is true
+                      <StyledIconButton
+                        component={Link}
+                        to={entryEditPath(result.entity.id, result.entry.id)}
+                      >
+                        <EditOutlinedIcon />
+                      </StyledIconButton>
+                    ) : (
+                      // show each item name
+                      <Box
+                        component={AironeLink}
+                        to={entryDetailsPath(result.entity.id, result.entry.id)}
+                      >
+                        {result.entry.name}
+                      </Box>
+                    )}
                   </TableCell>
                   {attrNames.map((attrName) => (
                     <TableCell key={attrName}>
