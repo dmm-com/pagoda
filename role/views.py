@@ -21,7 +21,7 @@ def set_role_members(role, recv_data):
                 getattr(role, member).add(instance)
 
 
-def is_role_editable(role, recv_data):
+def is_role_editable(user, recv_data):
     admin_users = [
         User.objects.get(id=u["id"])
         for u in recv_data["admin_users"]
@@ -33,7 +33,7 @@ def is_role_editable(role, recv_data):
         if Group.objects.filter(id=g["id"]).exists()
     ]
 
-    return Role.editable(role, admin_users, admin_groups)
+    return Role.editable(user, admin_users, admin_groups)
 
 
 def initialize_role_context():
