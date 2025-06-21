@@ -40,6 +40,8 @@ class ExportedEntryAttributeValueObject(BaseModel):
 
 ExportedEntryAttributePrimitiveValue = (
     str  # includes text, string, group, role
+    | int
+    | float
     | date
     | datetime
     | bool

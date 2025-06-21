@@ -1822,6 +1822,9 @@ class Entry(ACLBase):
                 case AttrType.DATETIME:
                     attrinfo["last_value"] = last_value.datetime
 
+                case AttrType.NUMBER:
+                    attrinfo["last_value"] = last_value.number
+
             ret_attrs.append(attrinfo)
 
         return ret_attrs
@@ -2130,7 +2133,7 @@ class Entry(ACLBase):
                         attrinfo["referral_id"] = role.id
 
             elif entity_attr.type & AttrType.NUMBER:
-                attrinfo["value"] = str(attrv.number) if attrv.number is not None else ""
+                attrinfo["value"] = attrv.number if attrv.number is not None else ""
 
             # Basically register attribute information whatever value doesn't exist
             if not (entity_attr.type & AttrType._ARRAY and not is_recursive):

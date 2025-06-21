@@ -702,6 +702,7 @@ class ViewTest(BaseViewTest):
                 {"id": attr["date"].id, "value": "2018-12-31"},
                 {"id": attr["role"].id, "value": self.role.id},
                 {"id": attr["roles"].id, "value": [self.role.id]},
+                {"id": attr["num"].id, "value": 42},
                 {"id": attr["datetime"].id, "value": "2018-12-31T00:00:00+00:00"},
             ],
         }
@@ -730,6 +731,7 @@ class ViewTest(BaseViewTest):
                 "vals": ["hoge", "fuga"],
                 "role": "role0",
                 "roles": ["role0"],
+                "num": 42,
                 "datetime": datetime.datetime(2018, 12, 31, 0, 0, 0, tzinfo=datetime.timezone.utc),
             },
         )
@@ -1997,6 +1999,7 @@ class ViewTest(BaseViewTest):
                     "names",
                     "role",
                     "roles",
+                    "num",
                 ]
             ),
         )
@@ -2305,6 +2308,7 @@ class ViewTest(BaseViewTest):
                 ],
                 "role": self.role.id,
                 "roles": [self.role.id],
+                "num": 123,
             },
         )
 
@@ -2338,6 +2342,7 @@ class ViewTest(BaseViewTest):
                 {"name": "date", "value": datetime.date(2018, 12, 31)},
                 {"name": "role", "value": "role0"},
                 {"name": "roles", "value": ["role0"]},
+                {"name": "num", "value": 123},
                 {
                     "name": "datetime",
                     "value": datetime.datetime(2018, 12, 31, 0, 0, 0, tzinfo=datetime.timezone.utc),
@@ -2665,6 +2670,7 @@ class ViewTest(BaseViewTest):
             "vals": ["foo"],
             "role": {"id": self.role.id, "name": "role0"},
             "roles": [{"id": self.role.id, "name": "role0"}],
+            "num": 123.45,
         }
         for attr_name in result.ret_values[0].attrs:
             self.assertEqual(result.ret_values[0].attrs[attr_name]["value"], attrs[attr_name])
@@ -2704,6 +2710,7 @@ class ViewTest(BaseViewTest):
             "date": "2018-12-31",
             "role": {"id": self.role.id, "name": "role0"},
             "roles": [{"id": self.role.id, "name": "role0"}],
+            "num": 123.45,
             "datetime": "2018-12-31T00:00:00+00:00",
         }
         for attr_name in result.ret_values[0].attrs:
@@ -2835,6 +2842,7 @@ class ViewTest(BaseViewTest):
             "vals": ["foo"],
             "role": {"id": self.role.id, "name": "role0"},
             "roles": [{"id": self.role.id, "name": "role0"}],
+            "num": 123.45,
             "datetime": "2018-12-31T00:00:00+00:00",
         }
         for attr_name in result.ret_values[0].attrs:
@@ -4542,6 +4550,7 @@ class ViewTest(BaseViewTest):
             {"column": "date", "csv": "", "yaml": None},
             {"column": "role", "csv": "", "yaml": None},
             {"column": "roles", "csv": "", "yaml": []},
+            {"column": "num", "csv": "", "yaml": None},
             {"column": "datetime", "csv": "", "yaml": None},
         ]
 
@@ -4841,6 +4850,7 @@ class ViewTest(BaseViewTest):
             "text": {"value": "fuga", "result": {"as_string": "fuga"}},
             "bool": {"value": False, "result": {"as_boolean": False}},
             "date": {"value": "2018-12-31", "result": {"as_string": "2018-12-31"}},
+            "num": {"value": 456, "result": {"as_string": "456"}},
             "datetime": {
                 "value": "2018-12-31T00:00:00+00:00",
                 "result": {"as_string": "2018-12-31T00:00:00Z"},
@@ -4851,7 +4861,7 @@ class ViewTest(BaseViewTest):
         )
         resp = self.client.get("/entry/api/v2/%s/histories/" % entry.id)
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(resp.json()["count"], 19)
+        self.assertEqual(resp.json()["count"], 20)
         attrv = entry.get_attrv("datetime")
         self.assertEqual(
             resp.json()["results"][0],
@@ -4881,7 +4891,7 @@ class ViewTest(BaseViewTest):
 
         resp = self.client.get("/entry/api/v2/%s/histories/" % entry.id)
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(resp.json()["count"], 20)
+        self.assertEqual(resp.json()["count"], 21)
         self.assertEqual(resp.json()["results"][0]["parent_attr"]["name"], "vals")
         self.assertEqual(
             resp.json()["results"][0]["curr_value"]["as_array_string"], ["hoge", "fuga"]

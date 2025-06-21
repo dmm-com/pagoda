@@ -4361,6 +4361,7 @@ class ModelTest(AironeTestCase):
             "arr_group": [],
             "role": None,
             "arr_role": [],
+            "number": None,
             "datetime": None,
         }
         for attr in entry.attrs.all():
