@@ -62,7 +62,6 @@ class AttributeValue(models.Model):
         related_name="referred_attr_value",
         on_delete=models.SET_NULL,
     )
-    number = models.FloatField(null=True)
 
     # This parameter means that target AttributeValue is the latest one. This is usefull to
     # find out enabled AttributeValues by Attribute or EntityAttr object. And separating this
@@ -199,7 +198,14 @@ class AttributeValue(models.Model):
                 value = self.value
 
             case AttrType.NUMBER:
-                value = self.number
+                # Convert string value back to number for NUMBER type
+                if self.value and self.value.strip():
+                    try:
+                        value = float(self.value)
+                    except ValueError:
+                        value = None
+                else:
+                    value = None
 
             case AttrType.BOOLEAN:
                 value = self.boolean
@@ -274,7 +280,14 @@ class AttributeValue(models.Model):
             case AttrType.BOOLEAN:
                 return self.boolean
             case AttrType.NUMBER:
-                return self.number
+                # Convert string value back to number for NUMBER type
+                if self.value and self.value.strip():
+                    try:
+                        return float(self.value)
+                    except ValueError:
+                        return None
+                else:
+                    return None
             case AttrType.DATE:
                 return self.date
             case AttrType.NAMED_OBJECT:
@@ -645,11 +658,19 @@ class Attribute(ACLBase):
                 return last_value.boolean != bool(recv_value)
 
             case AttrType.NUMBER:
+                # Get current number value from the value field
+                current_number = None
+                if last_value.value and last_value.value.strip():
+                    try:
+                        current_number = float(last_value.value)
+                    except ValueError:
+                        current_number = None
+                
                 if recv_value is None or recv_value == "":
-                    return last_value.number is not None
+                    return current_number is not None
                 try:
                     recv_number = float(recv_value)
-                    return last_value.number != recv_number
+                    return current_number != recv_number
                 except (ValueError, TypeError):
                     # Invalid input should always trigger an update
                     return True
@@ -1024,32 +1045,25 @@ class Attribute(ACLBase):
                         return None  # For STRING, empty means no AttributeValue
 
                 case AttrType.NUMBER:
-                    attrv.boolean = boolean  # Assuming boolean might be relevant for NUMBER too
                     if val is None or val == "":
-                        attrv.number = None
-                        attrv.value = ""  # Keep for backward compatibility
+                        attrv.value = ""
                     elif isinstance(val, (int, float)):
                         if isinstance(val, float) and (math.isnan(val) or math.isinf(val)):
                             # This should ideally be caught by validation earlier
-                            attrv.number = None
                             attrv.value = ""  # Or handle as error
                         else:
-                            attrv.number = float(val)
-                            attrv.value = str(float(val))  # Keep for backward compatibility
+                            attrv.value = str(float(val))
                     elif isinstance(val, str):
                         # Already validated by _validate_value, so should be
                         # convertible and not NaN/Inf
                         try:
                             float_val = float(val)
-                            attrv.number = float_val
-                            attrv.value = str(float_val)  # Keep for backward compatibility
+                            attrv.value = str(float_val)
                         except ValueError:
                             # Fallback, should have been caught by validation
-                            attrv.number = None
                             attrv.value = ""
                     else:
                         # Should not happen if validation is correct
-                        attrv.number = None
                         attrv.value = ""
                     # For NUMBER, an AttributeValue is created regardless of value
                     # to maintain consistency with other types.
@@ -1823,7 +1837,14 @@ class Entry(ACLBase):
                     attrinfo["last_value"] = last_value.datetime
 
                 case AttrType.NUMBER:
-                    attrinfo["last_value"] = last_value.number
+                    # Convert string value back to number for NUMBER type
+                    if last_value.value and last_value.value.strip():
+                        try:
+                            attrinfo["last_value"] = float(last_value.value)
+                        except ValueError:
+                            attrinfo["last_value"] = None
+                    else:
+                        attrinfo["last_value"] = None
 
             ret_attrs.append(attrinfo)
 
@@ -2133,7 +2154,14 @@ class Entry(ACLBase):
                         attrinfo["referral_id"] = role.id
 
             elif entity_attr.type & AttrType.NUMBER:
-                attrinfo["value"] = attrv.number if attrv.number is not None else ""
+                # Convert string value to number for NUMBER type
+                if attrv.value and attrv.value.strip():
+                    try:
+                        attrinfo["value"] = float(attrv.value)
+                    except ValueError:
+                        attrinfo["value"] = ""
+                else:
+                    attrinfo["value"] = ""
 
             # Basically register attribute information whatever value doesn't exist
             if not (entity_attr.type & AttrType._ARRAY and not is_recursive):
@@ -2497,8 +2525,18 @@ class AdvancedSearchAttributeIndex(models.Model):
                     key = attrv.role.name if attrv.role else None
                     value = {"id": attrv.role.id, "name": attrv.role.name} if attrv.role else None
                 case AttrType.NUMBER:
-                    key = str(attrv.number) if attrv.number is not None else None
-                    value = attrv.number if attrv.number is not None else None
+                    # Convert string value to number for NUMBER type
+                    if attrv.value and attrv.value.strip():
+                        try:
+                            number_value = float(attrv.value)
+                            key = str(number_value)
+                            value = number_value
+                        except ValueError:
+                            key = None
+                            value = None
+                    else:
+                        key = None
+                        value = None
                 case AttrType.ARRAY_STRING:
                     value = [v.value for v in attrv.data_array.all()]
                     key = ",".join(value)
@@ -2550,7 +2588,7 @@ class AdvancedSearchAttributeIndex(models.Model):
             case AttrType.STRING | AttrType.TEXT | AttrType.DATE | AttrType.DATETIME:
                 return self.key
             case AttrType.BOOLEAN:
-                return self.key == "true"
+                return self.key
             case AttrType.NUMBER:
                 return self.raw_value
             case (
