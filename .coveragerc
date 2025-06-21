@@ -1,0 +1,10 @@
+[run]
+parallel = true
+concurrency = multiprocessing
+source = .
+omit = 
+    */migrations/*
+    manage.py
+    */settings*.py
+    */venv/*
+    */node_modules/*
