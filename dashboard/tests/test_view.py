@@ -1573,6 +1573,7 @@ class ViewTest(AironeViewTest):
             {"column": "date", "csv": "", "yaml": None},
             {"column": "role", "csv": "", "yaml": ""},
             {"column": "roles", "csv": "", "yaml": []},
+            {"column": "num", "csv": "", "yaml": None},
             {"column": "datetime", "csv": "", "yaml": None},
         ]
 

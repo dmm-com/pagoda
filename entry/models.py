@@ -2130,7 +2130,7 @@ class Entry(ACLBase):
                         attrinfo["referral_id"] = role.id
 
             elif entity_attr.type & AttrType.NUMBER:
-                attrinfo["value"] = attrv.number if attrv.number is not None else None
+                attrinfo["value"] = str(attrv.number) if attrv.number is not None else ""
 
             # Basically register attribute information whatever value doesn't exist
             if not (entity_attr.type & AttrType._ARRAY and not is_recursive):
