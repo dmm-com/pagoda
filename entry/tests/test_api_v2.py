@@ -4850,7 +4850,7 @@ class ViewTest(BaseViewTest):
             "text": {"value": "fuga", "result": {"as_string": "fuga"}},
             "bool": {"value": False, "result": {"as_boolean": False}},
             "date": {"value": "2018-12-31", "result": {"as_string": "2018-12-31"}},
-            "num": {"value": 456, "result": {"as_string": "456"}},
+            "num": {"value": 456, "result": {"as_number": 456.0}},
             "datetime": {
                 "value": "2018-12-31T00:00:00+00:00",
                 "result": {"as_string": "2018-12-31T00:00:00Z"},

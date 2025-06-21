@@ -1149,6 +1149,9 @@ def make_search_results(
                 case AttrType.STRING | AttrType.TEXT | AttrType.BOOLEAN:
                     ret_attrinfo["value"] = attrinfo["value"]
 
+                case AttrType.NUMBER:
+                    ret_attrinfo["value"] = attrinfo["value"]
+
                 case AttrType.DATE | AttrType.DATETIME:
                     ret_attrinfo["value"] = attrinfo["date_value"]
 

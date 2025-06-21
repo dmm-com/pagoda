@@ -2496,6 +2496,9 @@ class AdvancedSearchAttributeIndex(models.Model):
                 case AttrType.ROLE:
                     key = attrv.role.name if attrv.role else None
                     value = {"id": attrv.role.id, "name": attrv.role.name} if attrv.role else None
+                case AttrType.NUMBER:
+                    key = str(attrv.number) if attrv.number is not None else None
+                    value = attrv.number if attrv.number is not None else None
                 case AttrType.ARRAY_STRING:
                     value = [v.value for v in attrv.data_array.all()]
                     key = ",".join(value)
@@ -2544,16 +2547,12 @@ class AdvancedSearchAttributeIndex(models.Model):
     @property
     def value(self):
         match self.type:
-            case (
-                AttrType.STRING
-                | AttrType.TEXT
-                | AttrType.BOOLEAN
-                | AttrType.DATE
-                | AttrType.DATETIME
-            ):
+            case AttrType.STRING | AttrType.TEXT | AttrType.DATE | AttrType.DATETIME:
                 return self.key
             case AttrType.BOOLEAN:
                 return self.key == "true"
+            case AttrType.NUMBER:
+                return self.raw_value
             case (
                 AttrType.OBJECT
                 | AttrType.NAMED_OBJECT
