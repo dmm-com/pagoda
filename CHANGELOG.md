@@ -3,10 +3,18 @@
 ## In development
 
 ### Added
+* Added new parameter "omitHeadline" to the SearchResults react component
+  Contributed by @userlocalhost
 
 ### Changed
 
 ### Fixed
+
+## v3.136.0
+
+### Added
+* Enhance type hints.
+  Contributed by @syucream
 
 ## v3.135.0
 

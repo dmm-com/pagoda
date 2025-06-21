@@ -1,7 +1,8 @@
 import re
+from typing import Callable
 
 from django.conf import settings
-from django.http import Http404
+from django.http import Http404, HttpRequest, HttpResponse
 
 
 class URLRouteGuider:
@@ -37,10 +38,10 @@ class URLRouteGuider:
         r"^/api/v1/.*$",
     ]
 
-    def __init__(self, get_response):
+    def __init__(self, get_response: Callable[[HttpRequest], HttpResponse]) -> None:
         self.get_response = get_response
 
-    def __call__(self, request):
+    def __call__(self, request: HttpRequest) -> HttpResponse:
         if settings.AIRONE.get("LEGACY_UI_DISABLED"):
             if any(re.match(x, request.path) for x in self.VEILED_URL_PATTERNS):
                 raise Http404

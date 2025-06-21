@@ -1,7 +1,7 @@
 import collections
 import json
 import re
-from typing import Any, TypedDict
+from typing import Any, List, Optional, TypedDict
 
 import requests
 from django.conf import settings
@@ -20,6 +20,28 @@ from entity.admin import EntityAttrResource, EntityResource
 from entity.models import Entity, EntityAttr
 from user.models import History, User
 from webhook.models import Webhook
+
+
+# Enhanced TypedDict definitions
+class EntityAttrReferralData(TypedDict):
+    """Type definition for EntityAttr referral data"""
+
+    id: int
+    name: str
+
+
+class EntityDetailAttribute(TypedDict):
+    """Enhanced type definition for Entity detail attributes"""
+
+    id: int
+    index: int
+    name: str
+    type: int
+    is_mandatory: bool
+    is_delete_in_chain: bool
+    is_writable: bool
+    referral: List[EntityAttrReferralData]
+    note: str
 
 
 class WebhookHeadersSerializer(serializers.Serializer):
@@ -59,7 +81,7 @@ class WebhookCreateUpdateSerializer(serializers.ModelSerializer):
         read_only_fields = ["is_verified"]
         extra_kwargs = {"url": {"required": False}}
 
-    def validate_id(self, id: int | None):
+    def validate_id(self, id: Optional[int]) -> Optional[int]:
         entity: Entity = self.parent.parent.instance
         if id is not None and not entity.webhooks.filter(id=id).exists():
             raise ObjectNotExistsError("Invalid id(%s) object does not exist" % id)
@@ -95,8 +117,8 @@ class EntityAttrCreateSerializer(serializers.ModelSerializer):
             "note",
         ]
 
-    def validate_type(self, type: int | None):
-        if type not in AttrTypeValue.values():
+    def validate_type(self, type: Optional[int]) -> Optional[int]:
+        if type is not None and type not in AttrTypeValue.values():
             raise ObjectNotExistsError("attrs type(%s) does not exist" % type)
 
         return type
@@ -130,16 +152,16 @@ class EntityAttrUpdateSerializer(serializers.ModelSerializer):
         ]
         extra_kwargs = {"name": {"required": False}, "type": {"required": False}}
 
-    def validate_id(self, id: int):
+    def validate_id(self, id: int) -> int:
         entity: Entity = self.parent.parent.instance
-        entity_attr: EntityAttr | None = entity.attrs.filter(id=id, is_active=True).first()
+        entity_attr: Optional[EntityAttr] = entity.attrs.filter(id=id, is_active=True).first()
         if not entity_attr:
             raise ObjectNotExistsError("Invalid id(%s) object does not exist" % id)
 
         return id
 
-    def validate_type(self, type: int | None):
-        if type not in AttrTypeValue.values():
+    def validate_type(self, type: Optional[int]) -> Optional[int]:
+        if type is not None and type not in AttrTypeValue.values():
             raise ObjectNotExistsError("attrs type(%s) does not exist" % type)
 
         return type
@@ -514,17 +536,6 @@ class EntityDetailAttributeSerializer(serializers.Serializer):
     referral = serializers.ListField(child=serializers.DictField())
     note = serializers.CharField()
 
-    class EntityDetailAttribute(TypedDict):
-        id: int
-        index: int
-        name: str
-        type: int
-        is_mandatory: bool
-        is_delete_in_chain: bool
-        is_writable: bool
-        referral: list[dict[str, Any]]
-        note: str
-
 
 class EntityDetailSerializer(EntityListSerializer):
     attrs = serializers.SerializerMethodField(method_name="get_attrs")
@@ -547,10 +558,10 @@ class EntityDetailSerializer(EntityListSerializer):
         ]
 
     @extend_schema_field(serializers.ListField(child=EntityDetailAttributeSerializer()))
-    def get_attrs(self, obj: Entity) -> list[EntityDetailAttributeSerializer.EntityDetailAttribute]:
+    def get_attrs(self, obj: Entity) -> List[EntityDetailAttribute]:
         user = User.objects.get(id=self.context["request"].user.id)
 
-        attrinfo: list[EntityDetailAttributeSerializer.EntityDetailAttribute] = [
+        attrinfo: List[EntityDetailAttribute] = [
             {
                 "id": x.id,
                 "index": x.index,
@@ -560,10 +571,12 @@ class EntityDetailSerializer(EntityListSerializer):
                 "is_delete_in_chain": x.is_delete_in_chain,
                 "is_writable": user.has_permission(x, ACLType.Writable),
                 "referral": [
-                    {
-                        "id": r.id,
-                        "name": r.name,
-                    }
+                    EntityAttrReferralData(
+                        {
+                            "id": r.id,
+                            "name": r.name,
+                        }
+                    )
                     for r in x.referral.all()
                 ],
                 "note": x.note,
