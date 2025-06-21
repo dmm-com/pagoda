@@ -83,6 +83,7 @@ class APITest(AironeViewTest):
                 "vals": ["foo", "bar"],
                 "refs": ["r-2", "r-3"],
                 "names": [{"name": "foo", "id": "r-4"}, {"name": "bar", "id": "r-5"}],
+                "num": 123.45,
                 "datetime": "2018-12-31T12:34:56Z",
             },
         }
