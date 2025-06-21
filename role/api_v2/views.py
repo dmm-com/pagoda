@@ -25,7 +25,7 @@ class RolePermission(BasePermission):
             "destroy": is_editable,
             "update": is_editable,
         }
-        return permission.get(view.action)
+        return permission.get(view.action, False)
 
 
 class RoleAPI(viewsets.ModelViewSet):

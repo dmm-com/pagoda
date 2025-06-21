@@ -1,4 +1,5 @@
 import io
+from typing import Any, Dict
 
 import yaml
 from django.http import HttpResponse
@@ -32,7 +33,7 @@ def edit(request, group_id):
     group = Group.objects.get(id=group_id)
 
     # set selected group information
-    context = {
+    context: Dict[str, Any] = {
         "default_group_id": int(group_id),
         "current_group_name": group.name,
         "current_group_members": User.objects.filter(groups__id=group.id, is_active=True).order_by(
