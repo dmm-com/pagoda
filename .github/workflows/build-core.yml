@@ -119,13 +119,13 @@ jobs:
           poetry run python manage.py makemigrations
           poetry run python manage.py migrate
           poetry run python manage.py collectstatic
-          poetry run coverage run manage.py test ${{ matrix.target }} --parallel 
+          poetry run coverage run --concurrency=multiprocessing manage.py test ${{ matrix.target }} --parallel 
           poetry run coverage report
       - name: Upload coverage data for aggregation
         uses: actions/upload-artifact@v4
         with:
           name: coverage-${{ matrix.target }}
-          path: .coverage*
+          path: .coverage
           retention-days: 1
         continue-on-error: true
 
