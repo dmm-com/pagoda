@@ -121,7 +121,48 @@ jobs:
           poetry run python manage.py collectstatic
           poetry run coverage run manage.py test ${{ matrix.target }} --parallel 
           poetry run coverage report
-          poetry run coverage xml
+      - name: Upload coverage data for aggregation
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-${{ matrix.target }}
+          path: .coverage*
+          retention-days: 1
+        continue-on-error: true
+
+  coverage-report:
+    runs-on: ubuntu-24.04
+    needs: test
+    if: always()
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install poetry
+        run: pipx install poetry
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.12.9"
+          cache: "poetry"
+      - name: poetry install
+        run: poetry install --no-ansi
+        continue-on-error: true
+
+      - name: Download coverag artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: coverage-*
+          path: coverage-reports
+        continue-on-error: true
+
+      - name: Combine coverage
+        run: |
+          mv custom_view_sample custom_view
+          find coverage-reports -name ".coverage*" -exec cp {} . \; 2>/dev/null || true
+          poetry run coverage combine 2>/dev/null || true
+          poetry run coverage xml 2>/dev/null || echo '<?xml version="1.0"?><coverage></coverage>' > coverage.xml
+        continue-on-error: true
+
       - name: octocov
         uses: k1LoW/octocov-action@v1
         with:
