@@ -1024,7 +1024,6 @@ class Attribute(ACLBase):
                         return None  # For STRING, empty means no AttributeValue
 
                 case AttrType.NUMBER:
-                    attrv.boolean = boolean  # Assuming boolean might be relevant for NUMBER too
                     if val is None or val == "":
                         attrv.number = None
                         attrv.value = ""  # Keep for backward compatibility
@@ -2550,7 +2549,7 @@ class AdvancedSearchAttributeIndex(models.Model):
             case AttrType.STRING | AttrType.TEXT | AttrType.DATE | AttrType.DATETIME:
                 return self.key
             case AttrType.BOOLEAN:
-                return self.key == "true"
+                return self.key
             case AttrType.NUMBER:
                 return self.raw_value
             case (

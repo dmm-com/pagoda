@@ -36,7 +36,7 @@ bar"
       - name: roles
         value:
           - role0
-      - name: number
+      - name: num
         value: 123.45
       - name: datetime
         value: 2018-12-31T00:00:00+00:00

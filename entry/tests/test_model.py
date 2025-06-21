@@ -65,7 +65,7 @@ class ModelTest(AironeTestCase):
                 "set_val": datetime(2018, 12, 31, 12, 34, 56, tzinfo=timezone.utc),
                 "exp_val": datetime(2018, 12, 31, 12, 34, 56, tzinfo=timezone.utc),
             },
-            {"name": "number", "set_val": 123.45, "exp_val": 123.45},
+            {"name": "num", "set_val": 123.45, "exp_val": 123.45},
         ]
         if ref:
             attrinfo.append({"name": "obj", "set_val": ref, "exp_val": ref.name})
@@ -109,7 +109,7 @@ class ModelTest(AironeTestCase):
             "date": AttrType.DATE,
             "role": AttrType.ROLE,
             "datetime": AttrType.DATETIME,
-            "number": AttrType.NUMBER,
+            "num": AttrType.NUMBER,
             "arr_str": AttrType.ARRAY_STRING,
             "arr_obj": AttrType.ARRAY_OBJECT,
             "arr_name": AttrType.ARRAY_NAMED_OBJECT,
@@ -3864,7 +3864,7 @@ class ModelTest(AironeTestCase):
                 "referral_id": [""],
                 "date_value": ["2018-12-31T12:34:56+00:00"],
             },
-            "number": {"key": [""], "value": [123.45], "referral_id": [""]},
+            "num": {"key": [""], "value": [123.45], "referral_id": [""]},
         }
         # check all attributes are expected ones
         self.assertEqual(
@@ -4361,7 +4361,7 @@ class ModelTest(AironeTestCase):
             "arr_group": [],
             "role": None,
             "arr_role": [],
-            "number": None,
+            "num": None,
             "datetime": None,
         }
         for attr in entry.attrs.all():
