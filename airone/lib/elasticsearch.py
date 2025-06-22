@@ -77,7 +77,7 @@ class AttributeDocument(TypedDict):
     name: str
     type: int
     key: str
-    value: str | bool
+    value: str | bool | float | None
     date_value: str | None
     referral_id: str
     is_readable: bool
@@ -1150,7 +1150,8 @@ def make_search_results(
                     ret_attrinfo["value"] = attrinfo["value"]
 
                 case AttrType.NUMBER:
-                    ret_attrinfo["value"] = attrinfo["value"]
+                    # recognize empty string is None
+                    ret_attrinfo["value"] = attrinfo["value"] if attrinfo["value"] else None
 
                 case AttrType.DATE | AttrType.DATETIME:
                     ret_attrinfo["value"] = attrinfo["date_value"]

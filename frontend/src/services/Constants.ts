@@ -41,6 +41,7 @@ export const BaseAttributeTypes = {
   date: 1 << 5,
   role: 1 << 6,
   datetime: 1 << 7,
+  number: 1 << 8,
   array: 1 << 10,
   named: 1 << 11,
 };
@@ -104,6 +105,10 @@ export const AttributeTypes: Record<string, { name: string; type: number }> = {
   datetime: {
     name: "datetime",
     type: BaseAttributeTypes.datetime,
+  },
+  number: {
+    name: "number",
+    type: BaseAttributeTypes.number,
   },
 };
 

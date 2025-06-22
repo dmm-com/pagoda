@@ -236,19 +236,8 @@ class ViewTest(AironeViewTest):
                     "note": "",
                 },
                 {
-                    "id": self.entity.attrs.get(name="num").id,
-                    "index": 13,
-                    "is_delete_in_chain": False,
-                    "is_mandatory": False,
-                    "is_writable": True,
-                    "name": "num",
-                    "referral": [],
-                    "type": AttrType.NUMBER,
-                    "note": "",
-                },
-                {
                     "id": self.entity.attrs.get(name="datetime").id,
-                    "index": 14,
+                    "index": 13,
                     "is_delete_in_chain": False,
                     "is_mandatory": False,
                     "is_writable": True,
@@ -257,11 +246,22 @@ class ViewTest(AironeViewTest):
                     "type": AttrType.DATETIME,
                     "note": "",
                 },
+                {
+                    "id": self.entity.attrs.get(name="num").id,
+                    "index": 14,
+                    "is_delete_in_chain": False,
+                    "is_mandatory": False,
+                    "is_writable": True,
+                    "name": "num",
+                    "referral": [],
+                    "type": AttrType.NUMBER,
+                    "note": "",
+                },
             ],
         )
 
         entity_attr: EntityAttr = self.entity.attrs.get(name="refs")
-        entity_attr.index = 14
+        entity_attr.index = 15
         entity_attr.is_delete_in_chain = True
         entity_attr.is_mandatory = True
         entity_attr.referral.add(self.ref_entity)
@@ -272,7 +272,7 @@ class ViewTest(AironeViewTest):
             resp.json()["attrs"][-1],
             {
                 "id": entity_attr.id,
-                "index": 14,
+                "index": 15,
                 "is_delete_in_chain": True,
                 "is_mandatory": True,
                 "is_writable": True,

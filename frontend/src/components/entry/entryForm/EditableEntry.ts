@@ -26,6 +26,7 @@ export type EditableEntryAttrValue = {
   asBoolean?: boolean;
   asGroup?: EntryAttributeValueGroup | null;
   asRole?: EntryAttributeValueRole | null;
+  asNumber?: number | null;
 };
 
 export type EditableEntry = {

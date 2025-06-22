@@ -665,7 +665,7 @@ class Attribute(ACLBase):
                         current_number = float(last_value.value)
                     except ValueError:
                         current_number = None
-                
+
                 if recv_value is None or recv_value == "":
                     return current_number is not None
                 try:
@@ -2487,7 +2487,7 @@ class AdvancedSearchAttributeIndex(models.Model):
         cls, entry: Entry, entity_attr: EntityAttr, attrv: AttributeValue | None
     ) -> "AdvancedSearchAttributeIndex":
         key: str | None = None
-        value: dict[str, Any] | list[Any] | None = None
+        value: dict[str, Any] | list[Any] | float | None = None
 
         if attrv:
             match entity_attr.type:

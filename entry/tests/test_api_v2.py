@@ -2342,11 +2342,11 @@ class ViewTest(BaseViewTest):
                 {"name": "date", "value": datetime.date(2018, 12, 31)},
                 {"name": "role", "value": "role0"},
                 {"name": "roles", "value": ["role0"]},
-                {"name": "num", "value": 123},
                 {
                     "name": "datetime",
                     "value": datetime.datetime(2018, 12, 31, 0, 0, 0, tzinfo=datetime.timezone.utc),
                 },
+                {"name": "num", "value": 123},
             ],
         )
 
@@ -2761,6 +2761,7 @@ class ViewTest(BaseViewTest):
             "date": None,
             "role": {"id": "", "name": ""},
             "roles": [],
+            "num": 123.45,  # Should remain unchanged from first import
             "datetime": None,
         }
         for attr_name in result.ret_values[0].attrs:
@@ -3243,6 +3244,11 @@ class ViewTest(BaseViewTest):
                                 "type": AttrType.DATETIME,
                                 "value": {"as_string": "2018-12-31T00:00:00+00:00"},
                             },
+                            "num": {
+                                "is_readable": True,
+                                "type": AttrType.NUMBER,
+                                "value": {"as_number": None},
+                            },
                         },
                         "is_readable": True,
                         "referrals": None,
@@ -3317,6 +3323,11 @@ class ViewTest(BaseViewTest):
                                 "is_readable": True,
                                 "type": AttrType.DATETIME,
                                 "value": {"as_string": ""},
+                            },
+                            "num": {
+                                "is_readable": True,
+                                "type": AttrType.NUMBER,
+                                "value": {"as_number": None},
                             },
                         },
                         "is_readable": True,
@@ -4550,8 +4561,8 @@ class ViewTest(BaseViewTest):
             {"column": "date", "csv": "", "yaml": None},
             {"column": "role", "csv": "", "yaml": None},
             {"column": "roles", "csv": "", "yaml": []},
-            {"column": "num", "csv": "", "yaml": None},
             {"column": "datetime", "csv": "", "yaml": None},
+            {"column": "num", "csv": "", "yaml": None},
         ]
 
         # send request to export data
@@ -5173,6 +5184,7 @@ class ViewTest(BaseViewTest):
         self.assertFalse(any(x.is_active for x in items[:3]))
         self.assertTrue(any(x.is_active for x in items[3:]))
 
+    @patch("entry.tasks.create_entry_v2.delay", Mock(side_effect=tasks.create_entry_v2))
     def test_create_and_retrieve_entry_with_number_attr(self):
         entry_name = "test_entry_with_number"
         number_value = 123.45
@@ -5187,7 +5199,9 @@ class ViewTest(BaseViewTest):
         }
 
         # Create Entry with Number attribute
-        resp_create = self.client.post("/entry/api/v2/", payload, "application/json")
+        resp_create = self.client.post(
+            f"/entity/api/v2/{self.entity.id}/entries/", payload, "application/json"
+        )
         self.assertEqual(resp_create.status_code, status.HTTP_201_CREATED, resp_create.content)
         created_data = resp_create.json()
         self.assertEqual(created_data["name"], entry_name)
@@ -5232,7 +5246,9 @@ class ViewTest(BaseViewTest):
             "schema": self.entity.id,
             "attrs": [{"id": num_entity_attr.id, "value": {"as_number": None}}],
         }
-        resp_create_none = self.client.post("/entry/api/v2/", payload_none, "application/json")
+        resp_create_none = self.client.post(
+            f"/entity/api/v2/{self.entity.id}/entries/", payload_none, "application/json"
+        )
         self.assertEqual(
             resp_create_none.status_code, status.HTTP_201_CREATED, resp_create_none.content
         )

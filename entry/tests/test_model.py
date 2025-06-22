@@ -3959,6 +3959,11 @@ class ModelTest(AironeTestCase):
                         "type": AttrType.DATETIME,
                         "value": None,
                     },
+                    "num": {
+                        "is_readable": True,
+                        "type": AttrType.NUMBER,
+                        "value": None,
+                    },
                 },
             ),
         )

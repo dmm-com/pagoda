@@ -44,6 +44,10 @@ const ElemString: FC<{ attrValue: string }> = ({ attrValue }) => {
   );
 };
 
+const ElemNumber: FC<{ attrValue: number | null }> = ({ attrValue }) => {
+  return <Box>{attrValue != null ? attrValue.toString() : ""}</Box>;
+};
+
 const ElemObject: FC<{
   attrValue: EntryAttributeValueObject | undefined;
 }> = ({ attrValue }) => {
@@ -144,6 +148,15 @@ export const AttributeValue: FC<Props> = ({ attrInfo }) => {
         <StyledList>
           <StyledListItem>
             <ElemBool attrValue={attrInfo.value.asBoolean ?? false} />
+          </StyledListItem>
+        </StyledList>
+      );
+
+    case EntryAttributeTypeTypeEnum.NUMBER:
+      return (
+        <StyledList>
+          <StyledListItem>
+            <ElemNumber attrValue={attrInfo.value.asNumber ?? null} />
           </StyledListItem>
         </StyledList>
       );
