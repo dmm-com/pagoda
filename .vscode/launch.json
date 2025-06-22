@@ -2,7 +2,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Test",
+            "name": "Test Django",
             "type": "debugpy",
             "justMyCode": false,
             "request": "launch",
@@ -88,6 +88,20 @@
                 "debugsqlshell"
             ],
             "django": true,
+        },
+        {
+            "name": "Test Frontend",
+            "type": "node-terminal",
+            "request": "launch",
+            "command": "npm run test",
+            "cwd": "${workspaceFolder}",
+        },
+        {
+            "name": "Watch Frontend",
+            "type": "node-terminal",
+            "request": "launch",
+            "command": "npm run watch",
+            "cwd": "${workspaceFolder}",
         },
     ]
 }
