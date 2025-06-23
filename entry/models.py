@@ -2533,6 +2533,13 @@ class PrefetchedItemWrapper(object):
 
         return ""
 
+    @property
+    def boolean(self) -> bool:
+        if self.attrv is not None:
+            return self.attrv.boolean
+
+        return False
+
 
 class ItemWalker(object):
     @classmethod
