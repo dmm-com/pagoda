@@ -5073,6 +5073,8 @@ class ModelTest(AironeTestCase):
                 {"name": "vlan", "type": AttrType.OBJECT},
                 {"name": "cidr", "type": AttrType.ARRAY_OBJECT},
                 {"name": "netmask", "type": AttrType.STRING},
+                {"name": "label", "type": AttrType.ARRAY_STRING},
+                {"name": "deleted", "type": AttrType.BOOLEAN},
             ],
         )
         model_ip_type = self.create_entity(self._user, "IPType")
@@ -5104,6 +5106,8 @@ class ModelTest(AironeTestCase):
                 "vlan": item_vlan1,
                 "netmask": "16",
                 "cidr": [],
+                "label": [],
+                "deleted": False,
             },
         )
         item_nw2 = self.add_entry(
@@ -5114,6 +5118,8 @@ class ModelTest(AironeTestCase):
                 "vlan": item_vlan1,
                 "netmask": "24",
                 "cidr": [item_nw1],
+                "label": ["child", "24"],
+                "deleted": True,
             },
         )
         item_ip_type = self.add_entry(self._user, "Shared", model_ip_type)
@@ -5147,6 +5153,8 @@ class ModelTest(AironeTestCase):
                             "vlan": {},
                             "netmask": {},
                         },
+                        "label": {},
+                        "deleted": {},
                     },
                     "type": {},
                 },
@@ -5168,6 +5176,7 @@ class ModelTest(AironeTestCase):
             self.assertEqual(piw["I/F"]["type"].item, item_ip_type)
             self.assertEqual(piw["I/F"]["nw"]["netmask"].item, None)
             self.assertEqual(piw["I/F"]["nw"]["netmask"].value, "24")
+            self.assertEqual(piw["I/F"]["nw"]["deleted"].boolean, True)
 
             # This tests stepping another next item
             self.assertEqual(piw["I/F"]["nw"]["vlan"].item, item_vlan1)
@@ -5176,6 +5185,10 @@ class ModelTest(AironeTestCase):
             # for ARRAY typed attribute "cidr"
             self.assertEqual([x.item for x in piw["I/F"]["nw"]["cidr"]], [item_nw1])
             self.assertEqual([x["netmask"].value for x in piw["I/F"]["nw"]["cidr"]], ["16"])
+
+            # This tests stepping another branched next item and its attribute value
+            # for ARRAY typed attribute "label"
+            self.assertEqual([x.value for x in piw["I/F"]["nw"]["label"]], ["child", "24"])
 
     def test_item_walker_abnormal_way(self):
         model = self.create_entity(
@@ -5216,6 +5229,7 @@ class ModelTest(AironeTestCase):
                     "refs": {},
                     "name": {},
                     "names": {},
+                    "bool": {},
                 }
             },
         )
@@ -5230,6 +5244,7 @@ class ModelTest(AironeTestCase):
             self.assertEqual(piw["ref"]["ref"].value, "")
             self.assertEqual(piw["ref"]["name"].item, None)
             self.assertEqual(piw["ref"]["name"].value, "")
+            self.assertEqual(piw["ref"]["bool"].boolean, False)
             self.assertEqual(piw["ref"]["vals"], [])
             self.assertEqual(piw["ref"]["refs"], [])
             self.assertEqual(piw["ref"]["names"], [])
