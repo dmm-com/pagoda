@@ -849,7 +849,7 @@ class SpannerRepository:
                    referral.ReferralId AS ReferralEntryId
           )
         INNER JOIN AdvancedSearchAttribute AS a
-          ON a.EntryId = ReferralEntryId AND a.AttributeId = SrcAttributeId
+          ON a.EntryId = ReferralEntryId
         INNER JOIN AdvancedSearchAttribute AS p
           ON p.EntryId = SrcEntryId
           AND p.AttributeId = SrcAttributeId
