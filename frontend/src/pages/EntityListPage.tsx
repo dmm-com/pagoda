@@ -1,17 +1,18 @@
 import { Box, Button, Container, Typography } from "@mui/material";
 import React, { FC, useCallback, useState } from "react";
 
-import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
-
 import { AironeLink } from "components";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { Loading } from "components/common/Loading";
 import { PageHeader } from "components/common/PageHeader";
 import { EntityImportModal } from "components/entity/EntityImportModal";
 import { EntityList } from "components/entity/EntityList";
+import { useAsyncWithThrow } from "hooks/useAsyncWithThrow";
 import { usePage } from "hooks/usePage";
+import { usePageTitle } from "hooks/usePageTitle";
 import { aironeApiClient } from "repository/AironeApiClient";
 import { topPath } from "routes/Routes";
+import { TITLE_TEMPLATES } from "services";
 
 export const EntityListPage: FC = () => {
   const { page, query, changePage, changeQuery } = usePage();
@@ -26,6 +27,8 @@ export const EntityListPage: FC = () => {
   const handleExport = useCallback(async () => {
     await aironeApiClient.exportEntities("entity.yaml");
   }, []);
+
+  usePageTitle(TITLE_TEMPLATES.entityList);
 
   return (
     <Box className="container-fluid">

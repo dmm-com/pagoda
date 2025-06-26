@@ -2,15 +2,16 @@ import AppsIcon from "@mui/icons-material/Apps";
 import { Box, Container, IconButton } from "@mui/material";
 import React, { FC, useState } from "react";
 
-import { EntityControlMenu } from "../components/entity/EntityControlMenu";
-import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
-import { useTypedParams } from "../hooks/useTypedParams";
-
 import { PageHeader } from "components/common/PageHeader";
 import { EntityBreadcrumbs } from "components/entity/EntityBreadcrumbs";
+import { EntityControlMenu } from "components/entity/EntityControlMenu";
 import { EntryImportModal } from "components/entry/EntryImportModal";
 import { EntryList } from "components/entry/EntryList";
+import { useAsyncWithThrow } from "hooks/useAsyncWithThrow";
+import { usePageTitle } from "hooks/usePageTitle";
+import { useTypedParams } from "hooks/useTypedParams";
 import { aironeApiClient } from "repository/AironeApiClient";
+import { TITLE_TEMPLATES } from "services";
 
 interface Props {
   canCreateEntry?: boolean;
@@ -25,6 +26,10 @@ export const EntryListPage: FC<Props> = ({ canCreateEntry = true }) => {
 
   const entity = useAsyncWithThrow(async () => {
     return await aironeApiClient.getEntity(entityId);
+  });
+
+  usePageTitle(entity.loading ? "読み込み中..." : TITLE_TEMPLATES.entryList, {
+    prefix: entity.value?.name,
   });
 
   return (
