@@ -4,10 +4,7 @@ interface PageTitleOptions {
   prefix?: string;
 }
 
-export const usePageTitle = (
-  title?: string,
-  options?: PageTitleOptions
-) => {
+export const usePageTitle = (title?: string, options?: PageTitleOptions) => {
   useEffect(() => {
     const originalTitle = document.title;
     const prefix = options?.prefix;
