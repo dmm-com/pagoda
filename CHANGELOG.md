@@ -3,12 +3,28 @@
 ## In development
 
 ### Added
-* Added new parameter "omitHeadline" to the SearchResults react component
-  Contributed by @userlocalhost
 
 ### Changed
 
 ### Fixed
+
+## v3.139.0
+
+### Added
+* Added dynamic page titles with usePageTitle hook
+  Contributed by @tsunoda-takahiro
+
+## v3.138.0
+
+### Added
+* Support boolean, array_string attribute of ItemWalker
+  Contributed by @hinashi
+
+## v3.137.0
+
+### Added
+* Added new parameter "omitHeadline" to the SearchResults react component
+  Contributed by @userlocalhost
 
 ## v3.136.0
 
