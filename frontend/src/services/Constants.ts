@@ -178,3 +178,17 @@ export const ACLTypeLabels: Record<ACLType, string> = {
   [ACLType.Writable]: "閲覧・編集",
   [ACLType.Full]: "閲覧・編集・削除",
 };
+
+export const TITLE_TEMPLATES = {
+  userList: "User List",
+  userEdit: "EditUser",
+  groupList: "Group List",
+  groupEdit: "EditGroup",
+  roleList: "Role List",
+  roleEdit: "EditRole",
+  entryList: "Item List",
+  entryDetail: "Item Detail",
+  entryEdit: "EditItem",
+  entityList: "Model List",
+  entityEdit: "EditModel",
+};

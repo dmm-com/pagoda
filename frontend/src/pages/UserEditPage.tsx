@@ -16,10 +16,12 @@ import { UserPasswordFormModal } from "components/user/UserPasswordFormModal";
 import { schema, Schema } from "components/user/userForm/UserFormSchema";
 import { useAsyncWithThrow } from "hooks/useAsyncWithThrow";
 import { useFormNotification } from "hooks/useFormNotification";
+import { usePageTitle } from "hooks/usePageTitle";
 import { usePrompt } from "hooks/usePrompt";
 import { useTypedParams } from "hooks/useTypedParams";
 import { aironeApiClient } from "repository/AironeApiClient";
 import { topPath, usersPath, loginPath } from "routes/Routes";
+import { TITLE_TEMPLATES } from "services";
 import {
   extractAPIException,
   isResponseError,
@@ -71,6 +73,10 @@ export const UserEditPage: FC = () => {
   useEffect(() => {
     isSubmitSuccessful && navigate(usersPath());
   }, [isSubmitSuccessful]);
+
+  usePageTitle(user.loading ? "読み込み中..." : TITLE_TEMPLATES.userEdit, {
+    prefix: user.value?.username ?? (willCreate ? "新規作成" : undefined),
+  });
 
   // These state variables and handlers are used for password reset feature
   const [openModal, setOpenModal] = useState(false);
