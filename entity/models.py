@@ -6,7 +6,7 @@ from simple_history.models import HistoricalRecords
 
 from acl.models import ACLBase
 from airone.lib.acl import ACLObjType
-from airone.lib.types import AttrType, AttrDefaultValue
+from airone.lib.types import AttrDefaultValue, AttrType
 from category.models import Category
 from webhook.models import Webhook
 
@@ -105,22 +105,19 @@ class EntityAttr(ACLBase):
         """Validates if the given value is valid for this attribute type as default value"""
         if value is None:
             return True  # None is always valid
-        
+
         # Only String, Text, Boolean types support custom default values, currently
         supported_types = [AttrType.STRING, AttrType.TEXT, AttrType.BOOLEAN]
         if self.type not in supported_types:
             return False
-            
-        # Type-specific validation
-        match self.type:
-            case AttrType.INTEGER:
-                return isinstance(value, int)
-            case AttrType.FLOAT:
-                return isinstance(value, float)
-            case AttrType.DATE:
-                return isinstance(value, str)
-            
-        return False
+
+        # Type-specific validation for supported types
+        if self.type == AttrType.STRING or self.type == AttrType.TEXT:
+            return isinstance(value, str)
+        elif self.type == AttrType.BOOLEAN:
+            return isinstance(value, bool)
+
+        return True
 
 
 class Entity(ACLBase):

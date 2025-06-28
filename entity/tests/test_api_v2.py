@@ -3705,3 +3705,261 @@ class ViewTest(AironeViewTest):
                 resp.json()["name"][0]["message"],
                 'Specified name doesn\'t match configured pattern "%s"' % model.item_name_pattern,
             )
+
+    @mock.patch(
+        "entity.tasks.create_entity_v2.delay", mock.Mock(side_effect=tasks.create_entity_v2)
+    )
+    def test_create_entity_with_attr_default_values(self):
+        """Test creating an entity with attributes that have default values"""
+        params = {
+            "name": "entity_with_defaults",
+            "note": "test entity with default values",
+            "attrs": [
+                {
+                    "name": "string_attr",
+                    "type": AttrType.STRING,
+                    "default_value": "default string value",
+                    "index": 1,
+                },
+                {
+                    "name": "text_attr",
+                    "type": AttrType.TEXT,
+                    "default_value": "default\nmultiline\ntext",
+                    "index": 2,
+                },
+                {
+                    "name": "bool_attr",
+                    "type": AttrType.BOOLEAN,
+                    "default_value": True,
+                    "index": 3,
+                },
+                {
+                    "name": "bool_string_attr",
+                    "type": AttrType.BOOLEAN,
+                    "default_value": "true",  # Should be converted to boolean
+                    "index": 4,
+                },
+            ],
+        }
+
+        resp = self.client.post("/entity/api/v2/", json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
+
+        # Verify entity was created
+        try:
+            entity = Entity.objects.get(name="entity_with_defaults")
+            self.assertEqual(entity.note, "test entity with default values")
+        except Entity.DoesNotExist:
+            # Check what entities exist
+            entities = Entity.objects.filter(name__contains="entity_with_defaults")
+            entity_names = list(entities.values_list("name", flat=True))
+            self.fail(
+                f"Entity 'entity_with_defaults' was not created. Existing entities: {entity_names}"
+            )
+
+        # Verify attributes have correct default values
+        string_attr = entity.attrs.get(name="string_attr")
+        self.assertEqual(string_attr.default_value, "default string value")
+
+        text_attr = entity.attrs.get(name="text_attr")
+        self.assertEqual(text_attr.default_value, "default\nmultiline\ntext")
+
+        bool_attr = entity.attrs.get(name="bool_attr")
+        self.assertEqual(bool_attr.default_value, True)
+
+        bool_string_attr = entity.attrs.get(name="bool_string_attr")
+        self.assertEqual(bool_string_attr.default_value, True)  # Should be converted
+
+    def test_create_entity_with_invalid_default_values(self):
+        """Test creating entity with invalid default values should fail"""
+        params = {
+            "name": "entity_with_invalid_defaults",
+            "attrs": [
+                {
+                    "name": "string_attr",
+                    "type": AttrType.STRING,
+                    "default_value": 123,  # Invalid: number for string type
+                    "index": 1,
+                }
+            ],
+        }
+
+        resp = self.client.post("/entity/api/v2/", json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("Default value must be a string", str(resp.json()))
+
+    def test_create_entity_with_unsupported_type_default_value(self):
+        """Test that unsupported types clear default_value"""
+        params = {
+            "name": "entity_with_unsupported_default",
+            "attrs": [
+                {
+                    "name": "object_attr",
+                    "type": AttrType.OBJECT,
+                    "default_value": "some value",  # Should be cleared
+                    "referral": [self.ref_entity.id],
+                    "index": 1,
+                }
+            ],
+        }
+
+        resp = self.client.post("/entity/api/v2/", json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
+
+        # Verify entity was created and default_value was cleared
+        entity = Entity.objects.get(name="entity_with_unsupported_default")
+        object_attr = entity.attrs.get(name="object_attr")
+        self.assertIsNone(object_attr.default_value)
+
+    @mock.patch("entity.tasks.edit_entity_v2.delay", mock.Mock(side_effect=tasks.edit_entity_v2))
+    def test_update_entity_attr_default_values(self):
+        """Test updating entity attributes with default values"""
+        # First create an entity with some attributes
+        entity = Entity.objects.create(name="update_test_entity", created_user=self.user)
+        string_attr = EntityAttr.objects.create(
+            name="string_attr",
+            type=AttrType.STRING,
+            created_user=self.user,
+            parent_entity=entity,
+            default_value="original value",
+        )
+        bool_attr = EntityAttr.objects.create(
+            name="bool_attr",
+            type=AttrType.BOOLEAN,
+            created_user=self.user,
+            parent_entity=entity,
+            default_value=False,
+        )
+
+        # Update the entity with new default values
+        params = {
+            "id": entity.id,
+            "name": "update_test_entity",
+            "attrs": [
+                {
+                    "id": string_attr.id,
+                    "name": "string_attr",
+                    "type": AttrType.STRING,
+                    "default_value": "updated string value",
+                    "index": 1,
+                },
+                {
+                    "id": bool_attr.id,
+                    "name": "bool_attr",
+                    "type": AttrType.BOOLEAN,
+                    "default_value": "true",  # Should be converted to boolean
+                    "index": 2,
+                },
+            ],
+        }
+
+        resp = self.client.put(
+            f"/entity/api/v2/{entity.id}/", json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
+
+        # Verify default values were updated
+        string_attr.refresh_from_db()
+        bool_attr.refresh_from_db()
+
+        self.assertEqual(string_attr.default_value, "updated string value")
+        self.assertEqual(bool_attr.default_value, True)
+
+    def test_retrieve_entity_includes_default_values(self):
+        """Test that entity retrieval includes default_value in response"""
+        # Create entity with attributes that have default values
+        entity = Entity.objects.create(name="retrieve_test_entity", created_user=self.user)
+        EntityAttr.objects.create(
+            name="string_attr",
+            type=AttrType.STRING,
+            created_user=self.user,
+            parent_entity=entity,
+            default_value="test default",
+        )
+        EntityAttr.objects.create(
+            name="bool_attr",
+            type=AttrType.BOOLEAN,
+            created_user=self.user,
+            parent_entity=entity,
+            default_value=True,
+        )
+        EntityAttr.objects.create(
+            name="no_default_attr", type=AttrType.TEXT, created_user=self.user, parent_entity=entity
+        )
+
+        resp = self.client.get(f"/entity/api/v2/{entity.id}/")
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+
+        # Find the attributes in the response
+        attrs = resp.json()["attrs"]
+        string_attr_data = next(attr for attr in attrs if attr["name"] == "string_attr")
+        bool_attr_data = next(attr for attr in attrs if attr["name"] == "bool_attr")
+        no_default_attr_data = next(attr for attr in attrs if attr["name"] == "no_default_attr")
+
+        # Verify default values are included in response
+        self.assertEqual(string_attr_data["defaultValue"], "test default")
+        self.assertEqual(bool_attr_data["defaultValue"], True)
+        self.assertIsNone(no_default_attr_data["defaultValue"])
+
+    def test_boolean_edge_cases_api(self):
+        """Test various boolean conversion edge cases through API"""
+        test_cases = [
+            ("false", False),
+            ("FALSE", False),
+            ("0", False),
+            (0, False),
+            ("1", True),
+            (1, True),
+        ]
+
+        for i, (input_value, expected_output) in enumerate(test_cases):
+            params = {
+                "name": f"bool_test_entity_{i}",
+                "attrs": [
+                    {
+                        "name": "bool_attr",
+                        "type": AttrType.BOOLEAN,
+                        "default_value": input_value,
+                        "index": 1,
+                    }
+                ],
+            }
+
+            resp = self.client.post("/entity/api/v2/", json.dumps(params), "application/json")
+            self.assertEqual(
+                resp.status_code, status.HTTP_202_ACCEPTED, f"Failed for input: {input_value}"
+            )
+
+            # Verify the boolean was stored correctly
+            entity = Entity.objects.get(name=f"bool_test_entity_{i}")
+            bool_attr = entity.attrs.get(name="bool_attr")
+            self.assertEqual(
+                bool_attr.default_value,
+                expected_output,
+                f"Expected {expected_output} for input {input_value}",
+            )
+
+    def test_boolean_invalid_values_api(self):
+        """Test that invalid boolean values are rejected through API"""
+        invalid_values = ["yes", "no", "invalid", 2, -1, 1.5]
+
+        for i, invalid_value in enumerate(invalid_values):
+            params = {
+                "name": f"invalid_bool_test_{i}",
+                "attrs": [
+                    {
+                        "name": "bool_attr",
+                        "type": AttrType.BOOLEAN,
+                        "default_value": invalid_value,
+                        "index": 1,
+                    }
+                ],
+            }
+
+            resp = self.client.post("/entity/api/v2/", json.dumps(params), "application/json")
+            self.assertEqual(
+                resp.status_code,
+                status.HTTP_400_BAD_REQUEST,
+                f"Should have failed for invalid value: {invalid_value}",
+            )
+            self.assertIn("Invalid boolean value", str(resp.json()))
