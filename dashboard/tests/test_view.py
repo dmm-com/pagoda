@@ -1574,6 +1574,7 @@ class ViewTest(AironeViewTest):
             {"column": "role", "csv": "", "yaml": ""},
             {"column": "roles", "csv": "", "yaml": []},
             {"column": "datetime", "csv": "", "yaml": None},
+            {"column": "num", "csv": "", "yaml": None},
         ]
 
         # send request to export data

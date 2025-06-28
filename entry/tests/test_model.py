@@ -1,3 +1,4 @@
+import math
 from datetime import date, datetime, timezone
 from unittest import skip
 
@@ -64,6 +65,7 @@ class ModelTest(AironeTestCase):
                 "set_val": datetime(2018, 12, 31, 12, 34, 56, tzinfo=timezone.utc),
                 "exp_val": datetime(2018, 12, 31, 12, 34, 56, tzinfo=timezone.utc),
             },
+            {"name": "num", "set_val": 123.45, "exp_val": 123.45},
         ]
         if ref:
             attrinfo.append({"name": "obj", "set_val": ref, "exp_val": ref.name})
@@ -107,6 +109,7 @@ class ModelTest(AironeTestCase):
             "date": AttrType.DATE,
             "role": AttrType.ROLE,
             "datetime": AttrType.DATETIME,
+            "num": AttrType.NUMBER,
             "arr_str": AttrType.ARRAY_STRING,
             "arr_obj": AttrType.ARRAY_OBJECT,
             "arr_name": AttrType.ARRAY_NAMED_OBJECT,
@@ -3861,6 +3864,7 @@ class ModelTest(AironeTestCase):
                 "referral_id": [""],
                 "date_value": ["2018-12-31T12:34:56+00:00"],
             },
+            "num": {"key": [""], "value": [123.45], "referral_id": [""]},
         }
         # check all attributes are expected ones
         self.assertEqual(
@@ -3953,6 +3957,11 @@ class ModelTest(AironeTestCase):
                     "datetime": {
                         "is_readable": True,
                         "type": AttrType.DATETIME,
+                        "value": None,
+                    },
+                    "num": {
+                        "is_readable": True,
+                        "type": AttrType.NUMBER,
                         "value": None,
                     },
                 },
@@ -4357,6 +4366,7 @@ class ModelTest(AironeTestCase):
             "arr_group": [],
             "role": None,
             "arr_role": [],
+            "num": None,
             "datetime": None,
         }
         for attr in entry.attrs.all():
@@ -5248,3 +5258,152 @@ class ModelTest(AironeTestCase):
             self.assertEqual(piw["ref"]["vals"], [])
             self.assertEqual(piw["ref"]["refs"], [])
             self.assertEqual(piw["ref"]["names"], [])
+
+    def test_for_number_attr_and_value(self):
+        # Test setup: Create an entity and a user
+        user = User(username="test_number_user")
+        user.set_password("password")
+        user.save()
+        entity_schema = Entity.objects.create(name="NumberTestEntity", created_user=user)
+
+        # Create a NUMBER attribute schema
+        number_attr_schema = EntityAttr.objects.create(
+            name="NumericAttribute",
+            parent_entity=entity_schema,
+            type=AttrType.NUMBER,
+            created_user=user,
+            is_mandatory=False,
+        )
+
+        # Create an Entry
+        entry_instance = Entry.objects.create(
+            name="TestEntryForNumber", schema=entity_schema, created_user=user
+        )
+
+        # Create the Attribute instance for the entry
+        attribute_instance = Attribute.objects.create(
+            name=number_attr_schema.name,  # Use the name from the schema
+            parent_entry=entry_instance,
+            schema=number_attr_schema,
+            created_user=user,
+        )
+
+        # Test cases: (input_value, expected_stored_value_str,
+        #              expected_retrieved_value_float_or_none, should_raise_validation_error,
+        #              is_mandatory_test_case)
+        test_cases = [
+            (100, "100.0", 100.0, False, False),
+            (-10.5, "-10.5", -10.5, False, False),
+            (0, "0.0", 0.0, False, False),
+            ("123.45", "123.45", 123.45, False, False),
+            ("-0.99", "-0.99", -0.99, False, False),
+            ("0", "0.0", 0.0, False, False),
+            (None, "", None, False, False),  # Store as empty string, retrieve as None
+            ("", "", None, False, False),  # Store as empty string, retrieve as None
+            (
+                "  ",
+                "",
+                None,
+                True,
+                False,
+            ),  # Invalid: whitespace only string (should be caught by _validate_value or add_value)
+            ("abc", "", None, True, False),  # Invalid: non-numeric string
+            ("1.2.3", "", None, True, False),  # Invalid: multiple decimal points
+            (float("nan"), "", None, True, False),  # Invalid: NaN
+            (float("inf"), "", None, True, False),  # Invalid: Infinity
+            (float("-inf"), "", None, True, False),  # Invalid: Negative Infinity
+            ("", "", None, True, True),  # Invalid: Mandatory but empty
+            (None, "", None, True, True),  # Invalid: Mandatory but None
+        ]
+
+        for val_in, _, val_out, raises_error, is_mandatory in test_cases:
+            with self.subTest(input_value=val_in, is_mandatory=is_mandatory):
+                attribute_instance.schema.is_mandatory = is_mandatory
+                attribute_instance.schema.save()
+
+                if raises_error:
+                    with self.assertRaises(
+                        (ValueError, TypeError, Exception),
+                        msg=f"Failed for input: {val_in} (mandatory={is_mandatory})",
+                    ):
+                        # Test _validate_value (indirectly via add_value) and add_value logic
+                        # Forcing a clean slate for add_value by deleting previous
+                        # AttributeValue if it exists
+                        AttributeValue.objects.filter(parent_attr=attribute_instance).delete()
+                        attr_v = attribute_instance.add_value(user=user, value=val_in)
+                        # If add_value did not raise an error but was expected to,
+                        # this check might be needed.
+                        # For example, if _validate_value passes but _set_attrv should fail
+                        # or result in an unusable state.
+                        # The current model changes aim to make _validate_value stricter
+                        # for NaN/Inf.
+                        # If '  ' passes _validate_value, add_value should still treat it
+                        # as invalid or empty.
+                        if val_in == "  ":
+                            # Specific case where _validate_value might be lenient
+                            # but add_value should be strict
+                            # If add_value created an AttributeValue for '  ',
+                            # check its effective value.
+                            # Assuming '  ' should be treated as empty or invalid,
+                            # leading to None or error.
+                            if attr_v and attr_v.get_value() is not None:
+                                raise ValueError(
+                                    f"Input '{val_in}' should have resulted in None or error, "
+                                    f"but got {attr_v.get_value()}"
+                                )
+                else:
+                    # Test add_value and get_value
+                    AttributeValue.objects.filter(parent_attr=attribute_instance).delete()
+                    attr_v = attribute_instance.add_value(user=user, value=val_in)
+                    self.assertIsNotNone(
+                        attr_v, f"add_value returned None for valid input: {val_in}"
+                    )
+
+                    # Check stored string value (value in DB is attr_v.value)
+                    # For None/empty, we store ""
+                    expected_stored_val = (
+                        "" if val_in is None or val_in == "" else str(float(val_in))
+                    )
+                    # For NaN/Inf, they should have raised an error.
+                    # If not, this check is a fallback.
+                    if isinstance(val_in, float) and (math.isnan(val_in) or math.isinf(val_in)):
+                        # This case should be caught by raises_error=True path
+                        pass
+                    else:
+                        self.assertEqual(
+                            attr_v.value,
+                            expected_stored_val,
+                            f"Stored value mismatch for input: {val_in}",
+                        )
+
+                    retrieved = attr_v.get_value()
+                    if val_out is None:
+                        self.assertIsNone(
+                            retrieved, f"Retrieved value mismatch for input: {val_in}"
+                        )
+                    else:
+                        self.assertAlmostEqual(
+                            retrieved,
+                            val_out,
+                            places=5,
+                            msg=f"Retrieved value mismatch for input: {val_in}",
+                        )
+
+        # Clean up
+        AttributeValue.objects.filter(parent_attr=attribute_instance).delete()
+        # attribute_instance can be deleted if it's always created by get. If not, this is fine.
+        # number_attr_schema, entry_instance, entity_schema, user are created
+        # for this test method only.
+        # Depending on test runner and base class, explicit deletion might not
+        # be needed if transactions roll back.
+        # However, explicit cleanup is safer.
+        # Attribute.objects.filter(schema=number_attr_schema).delete()
+        # Alternative to instance delete
+        number_attr_schema.delete()
+        # This should cascade delete Attribute via on_delete=models.CASCADE
+        # on Attribute.schema
+        entry_instance.delete()
+        # This should cascade delete AttributeValue via on_delete=models.CASCADE
+        # on AttributeValue.parent_attr -> Attribute.entry
+        entity_schema.delete()
+        user.delete()

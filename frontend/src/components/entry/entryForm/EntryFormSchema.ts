@@ -181,6 +181,7 @@ export const schema = schemaForType<EditableEntry>()(
                   }),
                 )
                 .optional(),
+              asNumber: z.number().nullable().optional(),
             }),
           })
           .refine(
@@ -229,6 +230,8 @@ export const schema = schemaForType<EditableEntry>()(
                   return (
                     value.value.asArrayRole?.some((v) => v != null) ?? false
                   );
+                case AttributeTypes.number.type:
+                  return value.value.asNumber != null;
               }
 
               return true;

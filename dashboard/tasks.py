@@ -67,6 +67,7 @@ def _csv_export(
                     | AttrType.BOOLEAN
                     | AttrType.DATE
                     | AttrType.DATETIME
+                    | AttrType.NUMBER
                 ):
                     line_data.append(str(vval))
 

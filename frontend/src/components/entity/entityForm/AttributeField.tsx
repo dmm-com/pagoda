@@ -49,6 +49,7 @@ const ATTRIBUTE_TYPE_ORDER = [
   "array_role",
   "text",
   "boolean",
+  "number",
   "date",
   "datetime",
 ];

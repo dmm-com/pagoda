@@ -560,6 +560,8 @@ class AdvancedSearchAPI(generics.GenericAPIView):
                             return "as_array_role"
                     elif type & AttrType.STRING or type & AttrType.TEXT:
                         return "as_string"
+                    elif type & AttrType.NUMBER:
+                        return "as_number"
                     elif type & AttrType._NAMED:
                         return "as_named_object"
                     elif type & AttrType.OBJECT:
