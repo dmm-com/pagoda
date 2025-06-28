@@ -39,9 +39,11 @@ class EntityDetailAttribute(TypedDict):
     type: int
     is_mandatory: bool
     is_delete_in_chain: bool
+    is_summarized: bool
     is_writable: bool
     referral: List[EntityAttrReferralData]
     note: str
+    default_value: Any
 
 
 class WebhookHeadersSerializer(serializers.Serializer):
@@ -115,6 +117,7 @@ class EntityAttrCreateSerializer(serializers.ModelSerializer):
             "is_delete_in_chain",
             "created_user",
             "note",
+            "default_value",
         ]
 
     def validate_type(self, type: Optional[int]) -> Optional[int]:
@@ -128,6 +131,16 @@ class EntityAttrCreateSerializer(serializers.ModelSerializer):
 
         if attr["type"] & AttrType.OBJECT and not len(referral):
             raise RequiredParameterError("When specified object type, referral field is required")
+
+        # Only String, Text, Boolean types support default values (MVP)
+        attr_type = attr.get("type")
+        default_value = attr.get("default_value")
+        
+        if default_value is not None and attr_type is not None:
+            supported_types = [AttrType.STRING, AttrType.TEXT, AttrType.BOOLEAN]
+            if attr_type not in supported_types:
+                # Clear default_value for unsupported types
+                attr["default_value"] = None
 
         return attr
 
@@ -149,6 +162,7 @@ class EntityAttrUpdateSerializer(serializers.ModelSerializer):
             "is_delete_in_chain",
             "is_deleted",
             "note",
+            "default_value",
         ]
         extra_kwargs = {"name": {"required": False}, "type": {"required": False}}
 
@@ -189,6 +203,21 @@ class EntityAttrUpdateSerializer(serializers.ModelSerializer):
                 raise RequiredParameterError(
                     "When specified object type, referral field is required"
                 )
+
+        # Only String, Text, Boolean types support default values (MVP)
+        attr_type = attr.get("type")
+        default_value = attr.get("default_value")
+        
+        # For updates, check existing attribute type if type is not being changed
+        if "id" in attr and attr_type is None:
+            entity_attr = EntityAttr.objects.get(id=attr["id"])
+            attr_type = entity_attr.type
+            
+        if default_value is not None and attr_type is not None:
+            supported_types = [AttrType.STRING, AttrType.TEXT, AttrType.BOOLEAN]
+            if attr_type not in supported_types:
+                # Clear default_value for unsupported types
+                attr["default_value"] = None
 
         return attr
 
@@ -532,9 +561,11 @@ class EntityDetailAttributeSerializer(serializers.Serializer):
     type = serializers.IntegerField()
     is_mandatory = serializers.BooleanField()
     is_delete_in_chain = serializers.BooleanField()
+    is_summarized = serializers.BooleanField()
     is_writable = serializers.BooleanField()
     referral = serializers.ListField(child=serializers.DictField())
     note = serializers.CharField()
+    default_value = serializers.JSONField(required=False, allow_null=True)
 
 
 class EntityDetailSerializer(EntityListSerializer):
@@ -569,6 +600,7 @@ class EntityDetailSerializer(EntityListSerializer):
                 "type": x.type,
                 "is_mandatory": x.is_mandatory,
                 "is_delete_in_chain": x.is_delete_in_chain,
+                "is_summarized": x.is_summarized,
                 "is_writable": user.has_permission(x, ACLType.Writable),
                 "referral": [
                     EntityAttrReferralData(
@@ -580,6 +612,7 @@ class EntityDetailSerializer(EntityListSerializer):
                     for r in x.referral.all()
                 ],
                 "note": x.note,
+                "default_value": x.default_value,
             }
             for x in obj.attrs.filter(is_active=True).prefetch_related("referral").order_by("index")
         ]

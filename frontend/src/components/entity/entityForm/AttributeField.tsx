@@ -188,6 +188,72 @@ export const AttributeField: FC<Props> = ({
 
       <TableCell>
         <Controller
+          name={`attrs.${index}.defaultValue`}
+          control={control}
+          render={({ field }) => {
+            // Check if this attribute type supports default values (String, Text, Boolean only)
+            const isDefaultValueSupported = 
+              attrType === AttributeTypes.string.type ||
+              attrType === AttributeTypes.text.type ||
+              attrType === AttributeTypes.boolean.type;
+
+            if (!isDefaultValueSupported) {
+              // For unsupported types, show disabled field and clear any existing value
+              if (field.value !== undefined) {
+                field.onChange(undefined);
+              }
+              return (
+                <TextField
+                  value=""
+                  placeholder="この型では未サポート"
+                  size="small"
+                  fullWidth
+                  disabled
+                />
+              );
+            }
+
+            // Render input for supported types only
+            if (attrType === AttributeTypes.boolean.type) {
+              return (
+                <Checkbox
+                  checked={field.value ?? false}
+                  onChange={(e) => field.onChange(e.target.checked)}
+                  disabled={!isWritable}
+                />
+              );
+            }
+            
+            if (attrType === AttributeTypes.string.type || attrType === AttributeTypes.text.type) {
+              return (
+                <TextField
+                  {...field}
+                  value={field.value ?? ""}
+                  placeholder="デフォルト値"
+                  size="small"
+                  fullWidth
+                  disabled={!isWritable}
+                  onChange={(e) => field.onChange(e.target.value || undefined)}
+                />
+              );
+            }
+
+            // Fallback (should not reach here due to isDefaultValueSupported check)
+            return (
+              <TextField
+                value=""
+                placeholder="未サポート"
+                size="small"
+                fullWidth
+                disabled
+              />
+            );
+          }}
+        />
+      </TableCell>
+
+      <TableCell>
+        <Controller
           name={`attrs.${index}.isMandatory`}
           control={control}
           defaultValue={false}
