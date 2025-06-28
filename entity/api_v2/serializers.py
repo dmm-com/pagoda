@@ -223,7 +223,12 @@ class EntityAttrUpdateSerializer(serializers.ModelSerializer):
 
     def validate_id(self, id: int) -> int:
         # Handle case when serializer is used directly (e.g., in tests)
-        if self.parent is None or not hasattr(self.parent, "parent") or self.parent.parent is None:
+        if (
+            self.parent is None
+            or not hasattr(self.parent, "parent")
+            or self.parent.parent is None
+            or not hasattr(self.parent.parent, "instance")
+        ):
             # When used directly, try to get the entity from the EntityAttr
             entity_attr: Optional[EntityAttr] = EntityAttr.objects.filter(
                 id=id, is_active=True
@@ -234,8 +239,10 @@ class EntityAttrUpdateSerializer(serializers.ModelSerializer):
 
         # Normal case when used as nested serializer
         entity: Entity = self.parent.parent.instance
-        entity_attr: Optional[EntityAttr] = entity.attrs.filter(id=id, is_active=True).first()
-        if not entity_attr:
+        nested_entity_attr: Optional[EntityAttr] = entity.attrs.filter(
+            id=id, is_active=True
+        ).first()
+        if not nested_entity_attr:
             raise ObjectNotExistsError("Invalid id(%s) object does not exist" % id)
 
         return id
