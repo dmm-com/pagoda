@@ -154,7 +154,15 @@ class EntityAttrSerializerTest(AironeViewTest):
 
     def test_create_attr_unsupported_type_clears_default_value(self):
         """Test that unsupported types clear the default_value"""
-        data = {"name": "object_attr", "type": AttrType.OBJECT, "default_value": "some value"}
+        # Create a reference entity for the OBJECT type
+        ref_entity = Entity.objects.create(name="ref_entity", created_user=self.user)
+
+        data = {
+            "name": "object_attr",
+            "type": AttrType.OBJECT,
+            "default_value": "some value",
+            "referral": [ref_entity.id],
+        }
         serializer = EntityAttrCreateSerializer(data=data, context=self._get_serializer_context())
         # This should be valid but default_value should be cleared
         self.assertTrue(serializer.is_valid())

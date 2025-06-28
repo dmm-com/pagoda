@@ -102,6 +102,7 @@ class ViewTest(AironeViewTest):
                     "referral": [],
                     "type": AttrType.STRING,
                     "note": "",
+                    "default_value": None,
                 },
                 {
                     "id": self.entity.attrs.get(name="vals").id,
@@ -113,6 +114,7 @@ class ViewTest(AironeViewTest):
                     "referral": [],
                     "type": AttrType.ARRAY_STRING,
                     "note": "",
+                    "default_value": None,
                 },
                 {
                     "id": self.entity.attrs.get(name="ref").id,
@@ -124,6 +126,7 @@ class ViewTest(AironeViewTest):
                     "referral": [],
                     "type": AttrType.OBJECT,
                     "note": "",
+                    "default_value": None,
                 },
                 {
                     "id": self.entity.attrs.get(name="refs").id,
@@ -135,6 +138,7 @@ class ViewTest(AironeViewTest):
                     "referral": [],
                     "type": AttrType.ARRAY_OBJECT,
                     "note": "",
+                    "default_value": None,
                 },
                 {
                     "id": self.entity.attrs.get(name="name").id,
@@ -146,6 +150,7 @@ class ViewTest(AironeViewTest):
                     "referral": [],
                     "type": AttrType.NAMED_OBJECT,
                     "note": "",
+                    "default_value": None,
                 },
                 {
                     "id": self.entity.attrs.get(name="names").id,
@@ -157,6 +162,7 @@ class ViewTest(AironeViewTest):
                     "referral": [],
                     "type": AttrType.ARRAY_NAMED_OBJECT,
                     "note": "",
+                    "default_value": None,
                 },
                 {
                     "id": self.entity.attrs.get(name="group").id,
@@ -168,6 +174,7 @@ class ViewTest(AironeViewTest):
                     "referral": [],
                     "type": AttrType.GROUP,
                     "note": "",
+                    "default_value": None,
                 },
                 {
                     "id": self.entity.attrs.get(name="groups").id,
@@ -179,6 +186,7 @@ class ViewTest(AironeViewTest):
                     "referral": [],
                     "type": AttrType.ARRAY_GROUP,
                     "note": "",
+                    "default_value": None,
                 },
                 {
                     "id": self.entity.attrs.get(name="bool").id,
@@ -190,6 +198,7 @@ class ViewTest(AironeViewTest):
                     "referral": [],
                     "type": AttrType.BOOLEAN,
                     "note": "",
+                    "default_value": None,
                 },
                 {
                     "id": self.entity.attrs.get(name="text").id,
@@ -201,6 +210,7 @@ class ViewTest(AironeViewTest):
                     "referral": [],
                     "type": AttrType.TEXT,
                     "note": "",
+                    "default_value": None,
                 },
                 {
                     "id": self.entity.attrs.get(name="date").id,
@@ -212,6 +222,7 @@ class ViewTest(AironeViewTest):
                     "referral": [],
                     "type": AttrType.DATE,
                     "note": "",
+                    "default_value": None,
                 },
                 {
                     "id": self.entity.attrs.get(name="role").id,
@@ -223,6 +234,7 @@ class ViewTest(AironeViewTest):
                     "referral": [],
                     "type": AttrType.ROLE,
                     "note": "",
+                    "default_value": None,
                 },
                 {
                     "id": self.entity.attrs.get(name="roles").id,
@@ -234,6 +246,7 @@ class ViewTest(AironeViewTest):
                     "referral": [],
                     "type": AttrType.ARRAY_ROLE,
                     "note": "",
+                    "default_value": None,
                 },
                 {
                     "id": self.entity.attrs.get(name="datetime").id,
@@ -245,6 +258,7 @@ class ViewTest(AironeViewTest):
                     "referral": [],
                     "type": AttrType.DATETIME,
                     "note": "",
+                    "default_value": None,
                 },
             ],
         )
@@ -3788,6 +3802,9 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("Default value must be a string", str(resp.json()))
 
+    @mock.patch(
+        "entity.tasks.create_entity_v2.delay", mock.Mock(side_effect=tasks.create_entity_v2)
+    )
     def test_create_entity_with_unsupported_type_default_value(self):
         """Test that unsupported types clear default_value"""
         params = {
@@ -3897,10 +3914,13 @@ class ViewTest(AironeViewTest):
         no_default_attr_data = next(attr for attr in attrs if attr["name"] == "no_default_attr")
 
         # Verify default values are included in response
-        self.assertEqual(string_attr_data["defaultValue"], "test default")
-        self.assertEqual(bool_attr_data["defaultValue"], True)
-        self.assertIsNone(no_default_attr_data["defaultValue"])
+        self.assertEqual(string_attr_data["default_value"], "test default")
+        self.assertEqual(bool_attr_data["default_value"], True)
+        self.assertIsNone(no_default_attr_data["default_value"])
 
+    @mock.patch(
+        "entity.tasks.create_entity_v2.delay", mock.Mock(side_effect=tasks.create_entity_v2)
+    )
     def test_boolean_edge_cases_api(self):
         """Test various boolean conversion edge cases through API"""
         test_cases = [
