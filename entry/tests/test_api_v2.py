@@ -5195,34 +5195,19 @@ class ViewTest(BaseViewTest):
         payload = {
             "name": entry_name,
             "schema": self.entity.id,
-            "attrs": [{"id": num_entity_attr.id, "value": {"as_number": number_value}}],
+            "attrs": [{"id": num_entity_attr.id, "value": number_value}],
         }
 
         # Create Entry with Number attribute
         resp_create = self.client.post(
             f"/entity/api/v2/{self.entity.id}/entries/", payload, "application/json"
         )
-        self.assertEqual(resp_create.status_code, status.HTTP_201_CREATED, resp_create.content)
-        created_data = resp_create.json()
-        self.assertEqual(created_data["name"], entry_name)
-        created_entry_id = created_data["id"]
+        self.assertEqual(resp_create.status_code, status.HTTP_202_ACCEPTED, resp_create.content)
 
-        # Check 'num' attribute in creation response
-        num_attr_created = None
-        # Iterate through attributes in the creation response
-        for attr in created_data.get("attrs", []):
-            # Identify the 'num' attribute by its schema name
-            if attr.get("schema", {}).get("name") == "num":
-                num_attr_created = attr
-                break
-        self.assertIsNotNone(
-            num_attr_created, "'num' attribute not found in creation response's attrs list"
-        )
-        # Verify the value of the 'num' attribute, expecting
-        # {"value": {"as_number": <number_value>}} structure
-        self.assertAlmostEqual(
-            num_attr_created.get("value", {}).get("as_number"), number_value, places=5
-        )
+        # Wait for job to complete and get the created entry
+        created_entry = Entry.objects.filter(name=entry_name, schema=self.entity).first()
+        self.assertIsNotNone(created_entry, "Entry was not created")
+        created_entry_id = created_entry.id
 
         # Retrieve the created entry
         resp_get = self.client.get(f"/entry/api/v2/{created_entry_id}/")
@@ -5237,31 +5222,27 @@ class ViewTest(BaseViewTest):
                 num_attr_retrieved = attr
                 break
         self.assertIsNotNone(num_attr_retrieved, "'num' attribute not found in retrieval response")
-        self.assertAlmostEqual(num_attr_retrieved["value"].get("as_number"), number_value, places=5)
+        # Verify the value of the 'num' attribute - check for as_number format
+        self.assertAlmostEqual(num_attr_retrieved["value"]["as_number"], number_value, places=5)
 
         # Test with None value for number
         entry_name_none = "test_entry_with_number_none"
         payload_none = {
             "name": entry_name_none,
             "schema": self.entity.id,
-            "attrs": [{"id": num_entity_attr.id, "value": {"as_number": None}}],
+            "attrs": [{"id": num_entity_attr.id, "value": None}],
         }
         resp_create_none = self.client.post(
             f"/entity/api/v2/{self.entity.id}/entries/", payload_none, "application/json"
         )
         self.assertEqual(
-            resp_create_none.status_code, status.HTTP_201_CREATED, resp_create_none.content
+            resp_create_none.status_code, status.HTTP_202_ACCEPTED, resp_create_none.content
         )
-        created_data_none = resp_create_none.json()
-        created_entry_id_none = created_data_none["id"]
-        # Check in creation response for None
-        num_attr_created_none = None
-        for attr in created_data_none.get("attrs", []):
-            if attr.get("schema", {}).get("name") == "num":
-                num_attr_created_none = attr
-                break
-        self.assertIsNotNone(num_attr_created_none)
-        self.assertIsNone(num_attr_created_none.get("value", {}).get("as_number"))
+
+        # Wait for job to complete and get the created entry
+        created_entry_none = Entry.objects.filter(name=entry_name_none, schema=self.entity).first()
+        self.assertIsNotNone(created_entry_none, "Entry with None value was not created")
+        created_entry_id_none = created_entry_none.id
 
         resp_get_none = self.client.get(f"/entry/api/v2/{created_entry_id_none}/")
         self.assertEqual(resp_get_none.status_code, status.HTTP_200_OK, resp_get_none.content)
@@ -5272,7 +5253,7 @@ class ViewTest(BaseViewTest):
                 num_attr_retrieved_none = attr
                 break
         self.assertIsNotNone(num_attr_retrieved_none)
-        self.assertIsNone(num_attr_retrieved_none["value"].get("as_number"))
+        self.assertIsNone(num_attr_retrieved_none["value"]["as_number"])
 
         # Test with invalid number value
         entry_name_invalid = "test_entry_with_invalid_number"
@@ -5282,12 +5263,12 @@ class ViewTest(BaseViewTest):
             "attrs": [
                 {
                     "id": num_entity_attr.id,
-                    "value": {"as_number": "not-a-number"},  # Invalid type for as_number
+                    "value": "not-a-number",  # Invalid string for number
                 }
             ],
         }
         resp_create_invalid = self.client.post(
-            "/entry/api/v2/", payload_invalid, "application/json"
+            f"/entity/api/v2/{self.entity.id}/entries/", payload_invalid, "application/json"
         )
         self.assertEqual(
             resp_create_invalid.status_code,
