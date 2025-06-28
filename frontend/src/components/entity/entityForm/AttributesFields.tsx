@@ -78,6 +78,7 @@ export const AttributesFields: FC<Props> = ({
       isWritable: true,
       referral: [],
       note: "",
+      defaultValue: undefined, // Explicitly initialize defaultValue
     });
   };
 

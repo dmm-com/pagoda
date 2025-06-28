@@ -191,29 +191,13 @@ export const AttributeField: FC<Props> = ({
           name={`attrs.${index}.defaultValue`}
           control={control}
           render={({ field }) => {
-            // Check if this attribute type supports default values (String, Text, Boolean only)
+            // Check if this attribute type supports default values
             const isDefaultValueSupported = 
               attrType === AttributeTypes.string.type ||
               attrType === AttributeTypes.text.type ||
               attrType === AttributeTypes.boolean.type;
 
-            if (!isDefaultValueSupported) {
-              // For unsupported types, show disabled field and clear any existing value
-              if (field.value !== undefined) {
-                field.onChange(undefined);
-              }
-              return (
-                <TextField
-                  value=""
-                  placeholder="この型では未サポート"
-                  size="small"
-                  fullWidth
-                  disabled
-                />
-              );
-            }
-
-            // Render input for supported types only
+            // Boolean type gets a checkbox
             if (attrType === AttributeTypes.boolean.type) {
               return (
                 <Checkbox
@@ -224,28 +208,15 @@ export const AttributeField: FC<Props> = ({
               );
             }
             
-            if (attrType === AttributeTypes.string.type || attrType === AttributeTypes.text.type) {
-              return (
-                <TextField
-                  {...field}
-                  value={field.value ?? ""}
-                  placeholder="デフォルト値"
-                  size="small"
-                  fullWidth
-                  disabled={!isWritable}
-                  onChange={(e) => field.onChange(e.target.value || undefined)}
-                />
-              );
-            }
-
-            // Fallback (should not reach here due to isDefaultValueSupported check)
+            // Text input for supported string types or disabled for unsupported types
             return (
               <TextField
-                value=""
-                placeholder="未サポート"
+                {...field}
+                value={field.value ?? ""}
+                placeholder={isDefaultValueSupported ? "デフォルト値" : "この型では未サポート"}
                 size="small"
                 fullWidth
-                disabled
+                disabled={!isWritable || !isDefaultValueSupported}
               />
             );
           }}
