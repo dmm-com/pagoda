@@ -6,7 +6,6 @@ import {
   EntryAttributeValueObject,
   EntryRetrieve,
 } from "@dmm-com/airone-apiclient-typescript-fetch";
-
 import {
   EditableEntryAttrValue,
   EditableEntryAttrs,
@@ -49,9 +48,21 @@ export function formalizeEntryInfo(
         function getAttrValue(
           attrType: EntryAttributeTypeTypeEnum,
           value: EntryAttributeValue | undefined,
+          attrDetail: EntityDetail["attrs"][0],
         ): EditableEntryAttrValue {
           if (!value) {
-            return {
+            // Use defaultValue from EntityAttr if available
+            // Backend returns raw primitive values (string, boolean, null)
+            // Auto-generated types show it as object but it's actually scalar values
+            const defaultValue = attrDetail.defaultValue;
+            
+            // Debug: Log defaultValue to check its format
+            // if (defaultValue !== null && defaultValue !== undefined) {
+            //   console.log(`🔍 Default value for ${attrDetail.name}:`, defaultValue, typeof defaultValue);
+            // }
+            
+            // Default values for when no default is specified
+            const defaults = {
               asString: "",
               asBoolean: false,
               asArrayString: [{ value: "" }],
@@ -64,6 +75,36 @@ export function formalizeEntryInfo(
               asRole: null,
               asNamedObject: { name: "", object: null },
             };
+
+            // Apply defaultValue for supported types (backend returns raw primitive values)
+            if (defaultValue !== null && defaultValue !== undefined) {
+              switch (attrType) {
+                case EntryAttributeTypeTypeEnum.STRING:
+                case EntryAttributeTypeTypeEnum.TEXT:
+                  // Handle both string values and potential object wrappers
+                  if (typeof defaultValue === "string") {
+                    defaults.asString = defaultValue;
+                  } else if (typeof defaultValue === "object" && defaultValue !== null && "asString" in defaultValue) {
+                    defaults.asString = (defaultValue as { asString: string }).asString;
+                  }
+                  break;
+                case EntryAttributeTypeTypeEnum.BOOLEAN:
+                  // Handle both boolean values and potential object wrappers
+                  if (typeof defaultValue === "boolean") {
+                    defaults.asBoolean = defaultValue;
+                  } else if (typeof defaultValue === "object" && defaultValue !== null && "asBoolean" in defaultValue) {
+                    defaults.asBoolean = (defaultValue as { asBoolean: boolean }).asBoolean;
+                  }
+                  break;
+              }
+            }
+
+            // Debug: Log final defaults object
+            // if (defaultValue !== null && defaultValue !== undefined) {
+            //   console.log(`✅ Final defaults for ${attrDetail.name}:`, defaults);
+            // }
+
+            return defaults;
           }
 
           switch (attrType) {
@@ -146,7 +187,7 @@ export function formalizeEntryInfo(
             id: attr.id,
             name: attr.name,
           },
-          value: getAttrValue(attr.type as EntryAttributeTypeTypeEnum, value),
+          value: getAttrValue(attr.type as EntryAttributeTypeTypeEnum, value, attr),
         };
         return acc;
       }, {}),

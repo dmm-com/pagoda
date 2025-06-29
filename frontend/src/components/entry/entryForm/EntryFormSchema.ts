@@ -56,14 +56,13 @@ export const schema = schemaForType<EditableEntry>()(
               name: z.string(),
             }),
             value: z.object({
-              asBoolean: z.boolean().default(false).optional(),
+              asBoolean: z.boolean().optional(),
               asString: z
                 .string()
                 .max(1 << 16, "属性の値が大きすぎます")
                 .refine((value) => !hasFourByteChars(value), {
                   message: "使用できない文字が含まれています",
                 })
-                .default("")
                 .optional(),
               asArrayString: z
                 .array(

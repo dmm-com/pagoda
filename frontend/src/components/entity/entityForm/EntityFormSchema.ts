@@ -68,6 +68,7 @@ export const schema = z.object({
             )
             .default([]),
           note: z.string().default(""),
+          defaultValue: z.any().optional(),
         })
         .refine(
           (attr) => {

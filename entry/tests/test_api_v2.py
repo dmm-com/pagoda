@@ -5162,3 +5162,177 @@ class ViewTest(BaseViewTest):
         [x.refresh_from_db() for x in items]
         self.assertFalse(any(x.is_active for x in items[:3]))
         self.assertTrue(any(x.is_active for x in items[3:]))
+
+    @mock.patch("entry.tasks.create_entry_v2.delay", mock.Mock(side_effect=tasks.create_entry_v2))
+    def test_create_entry_with_default_values(self):
+        """Test entries are created with default values from EntityAttr when no value provided"""
+        # Create entity with attributes that have default values
+        entity = self.create_entity(
+            self.user,
+            "TestEntity",
+            attrs=[
+                {"name": "string_with_default", "type": AttrType.STRING},
+                {"name": "bool_with_default", "type": AttrType.BOOLEAN},
+                {"name": "text_with_default", "type": AttrType.TEXT},
+                {"name": "string_no_default", "type": AttrType.STRING},
+            ],
+        )
+
+        # Set default values for some attributes
+        string_attr = entity.attrs.get(name="string_with_default")
+        string_attr.default_value = "default string value"
+        string_attr.save()
+
+        bool_attr = entity.attrs.get(name="bool_with_default")
+        bool_attr.default_value = True
+        bool_attr.save()
+
+        text_attr = entity.attrs.get(name="text_with_default")
+        text_attr.default_value = "default text value"
+        text_attr.save()
+
+        # Create entry without providing values for attributes with defaults
+        params = {
+            "name": "test_entry",
+            "attrs": [
+                # Only provide value for one attribute, others should use defaults
+                {"id": entity.attrs.get(name="string_no_default").id, "value": "provided value"}
+            ],
+        }
+
+        resp = self.client.post(
+            "/entity/%s/entries/" % entity.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
+
+        # Wait for entry creation job to complete
+        job = Job.objects.filter(operation=JobOperation.CREATE_ENTRY_V2).last()
+        self.assertEqual(job.status, JobStatus.DONE)
+
+        # Verify entry was created with default values
+        entry = Entry.objects.get(name="test_entry", schema=entity)
+        self.assertIsNotNone(entry)
+
+        # Check that attributes with default values were created with those defaults
+        string_attr_value = entry.attrs.get(schema=string_attr)
+        self.assertEqual(string_attr_value.get_value(), "default string value")
+
+        bool_attr_value = entry.attrs.get(schema=bool_attr)
+        self.assertEqual(bool_attr_value.get_value(), True)
+
+        text_attr_value = entry.attrs.get(schema=text_attr)
+        self.assertEqual(text_attr_value.get_value(), "default text value")
+
+        # Check that attribute without default was not created (no value provided)
+        string_no_default_attr = entity.attrs.get(name="string_no_default")
+        string_no_default_value = entry.attrs.get(schema=string_no_default_attr)
+        self.assertEqual(string_no_default_value.get_value(), "provided value")
+
+    @mock.patch("entry.tasks.create_entry_v2.delay", mock.Mock(side_effect=tasks.create_entry_v2))
+    def test_create_entry_provided_value_overrides_default(self):
+        """Test that provided values override default values from EntityAttr"""
+        # Create entity with attribute that has default value
+        entity = self.create_entity(
+            self.user,
+            "TestEntity",
+            attrs=[
+                {"name": "string_attr", "type": AttrType.STRING},
+                {"name": "bool_attr", "type": AttrType.BOOLEAN},
+            ],
+        )
+
+        # Set default values
+        string_attr = entity.attrs.get(name="string_attr")
+        string_attr.default_value = "default value"
+        string_attr.save()
+
+        bool_attr = entity.attrs.get(name="bool_attr")
+        bool_attr.default_value = True
+        bool_attr.save()
+
+        # Create entry providing values that should override defaults
+        params = {
+            "name": "test_entry_override",
+            "attrs": [
+                {"id": string_attr.id, "value": "provided value"},
+                {"id": bool_attr.id, "value": False},
+            ],
+        }
+
+        resp = self.client.post(
+            "/entity/%s/entries/" % entity.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
+
+        # Wait for entry creation job to complete
+        job = Job.objects.filter(operation=JobOperation.CREATE_ENTRY_V2).last()
+        self.assertEqual(job.status, JobStatus.DONE)
+
+        # Verify entry was created with provided values, not defaults
+        entry = Entry.objects.get(name="test_entry_override", schema=entity)
+
+        string_attr_value = entry.attrs.get(schema=string_attr)
+        self.assertEqual(string_attr_value.get_value(), "provided value")  # Not default
+
+        bool_attr_value = entry.attrs.get(schema=bool_attr)
+        self.assertEqual(bool_attr_value.get_value(), False)  # Not default (True)
+
+    @mock.patch("entry.tasks.create_entry_v2.delay", mock.Mock(side_effect=tasks.create_entry_v2))
+    def test_create_entry_unsupported_type_no_default(self):
+        """Test that unsupported types don't get default values applied"""
+        # Create reference entity
+        ref_entity = self.create_entity(self.user, "RefEntity", attrs=[])
+
+        # Create entity with unsupported type attribute that has default_value
+        entity = self.create_entity(
+            self.user,
+            "TestEntity",
+            attrs=[
+                {"name": "object_attr", "type": AttrType.OBJECT, "referral": [ref_entity]},
+                {"name": "date_attr", "type": AttrType.DATE},
+            ],
+        )
+
+        # Try to set default values (should be ignored for unsupported types)
+        object_attr = entity.attrs.get(name="object_attr")
+        object_attr.default_value = "ignored value"
+        object_attr.save()
+
+        date_attr = entity.attrs.get(name="date_attr")
+        date_attr.default_value = "2023-01-01"
+        date_attr.save()
+
+        # Create entry without providing values
+        params = {
+            "name": "test_entry_unsupported",
+            "attrs": [],
+        }
+
+        resp = self.client.post(
+            "/entity/%s/entries/" % entity.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
+
+        # Wait for entry creation job to complete
+        job = Job.objects.filter(operation=JobOperation.CREATE_ENTRY_V2).last()
+        self.assertEqual(job.status, JobStatus.DONE)
+
+        # Verify entry was created but unsupported types should use type defaults, not custom
+        entry = Entry.objects.get(name="test_entry_unsupported", schema=entity)
+
+        # Since unsupported types don't apply default_value, these attributes should either
+        # not have AttributeValues created or use the hardcoded type defaults
+        object_attr_values = entry.attrs.filter(schema=object_attr)
+        date_attr_values = entry.attrs.filter(schema=date_attr)
+
+        # For unsupported types, no custom default should be applied
+        # The behavior should be the same as before (either no value or type default)
+        if object_attr_values.exists():
+            object_attr_value = object_attr_values.first()
+            # Should not be the custom default "ignored value"
+            self.assertNotEqual(object_attr_value.get_value(), "ignored value")
+
+        if date_attr_values.exists():
+            date_attr_value = date_attr_values.first()
+            # Should not be the custom default "2023-01-01"
+            self.assertNotEqual(date_attr_value.get_value(), "2023-01-01")

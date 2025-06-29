@@ -39,9 +39,11 @@ class EntityDetailAttribute(TypedDict):
     type: int
     is_mandatory: bool
     is_delete_in_chain: bool
+    is_summarized: bool
     is_writable: bool
     referral: List[EntityAttrReferralData]
     note: str
+    default_value: Any
 
 
 class WebhookHeadersSerializer(serializers.Serializer):
@@ -115,6 +117,7 @@ class EntityAttrCreateSerializer(serializers.ModelSerializer):
             "is_delete_in_chain",
             "created_user",
             "note",
+            "default_value",
         ]
 
     def validate_type(self, type: Optional[int]) -> Optional[int]:
@@ -123,11 +126,76 @@ class EntityAttrCreateSerializer(serializers.ModelSerializer):
 
         return type
 
+    def _validate_default_value_for_type(self, attr_type: int, default_value):
+        """
+        Validates that the default_value is appropriate for the given attribute type.
+        Returns the validated (and potentially converted) default value.
+        """
+        if default_value is None:
+            return None
+
+        # String and Text types
+        if attr_type in [AttrType.STRING, AttrType.TEXT]:
+            if not isinstance(default_value, str):
+                raise ValidationError(
+                    f"Default value must be a string for this attribute type, "
+                    f"got {type(default_value).__name__}"
+                )
+            return default_value
+
+        # Boolean type
+        elif attr_type == AttrType.BOOLEAN:
+            if isinstance(default_value, bool):
+                return default_value
+
+            # Handle boolean-like strings
+            if isinstance(default_value, str):
+                if default_value.lower() in ["true", "1"]:
+                    return True
+                elif default_value.lower() in ["false", "0"]:
+                    return False
+                else:
+                    raise ValidationError(
+                        f"Invalid boolean value: '{default_value}'. "
+                        "Accepted values: true, false, 1, 0 (case-insensitive)"
+                    )
+
+            # Handle numeric booleans
+            if isinstance(default_value, (int, float)):
+                if default_value in [0, 1]:
+                    return bool(default_value)
+                else:
+                    raise ValidationError(
+                        f"Invalid boolean value: {default_value}. Numeric values must be 0 or 1"
+                    )
+
+            raise ValidationError(
+                f"Default value must be a boolean for BOOLEAN type, "
+                f"got {type(default_value).__name__}"
+            )
+
+        return default_value
+
     def validate(self, attr: dict):
         referral = attr.get("referral", [])
 
         if attr["type"] & AttrType.OBJECT and not len(referral):
             raise RequiredParameterError("When specified object type, referral field is required")
+
+        # Only String, Text, Boolean types support default values (MVP)
+        attr_type = attr.get("type")
+        default_value = attr.get("default_value")
+
+        if default_value is not None and attr_type is not None:
+            supported_types = [AttrType.STRING, AttrType.TEXT, AttrType.BOOLEAN]
+            if attr_type not in supported_types:
+                # Clear default_value for unsupported types
+                attr["default_value"] = None
+            else:
+                # Validate and potentially convert the default value
+                attr["default_value"] = self._validate_default_value_for_type(
+                    attr_type, default_value
+                )
 
         return attr
 
@@ -149,13 +217,32 @@ class EntityAttrUpdateSerializer(serializers.ModelSerializer):
             "is_delete_in_chain",
             "is_deleted",
             "note",
+            "default_value",
         ]
         extra_kwargs = {"name": {"required": False}, "type": {"required": False}}
 
     def validate_id(self, id: int) -> int:
+        # Handle case when serializer is used directly (e.g., in tests)
+        if (
+            self.parent is None
+            or not hasattr(self.parent, "parent")
+            or self.parent.parent is None
+            or not hasattr(self.parent.parent, "instance")
+        ):
+            # When used directly, try to get the entity from the EntityAttr
+            entity_attr: Optional[EntityAttr] = EntityAttr.objects.filter(
+                id=id, is_active=True
+            ).first()
+            if not entity_attr:
+                raise ObjectNotExistsError("Invalid id(%s) object does not exist" % id)
+            return id
+
+        # Normal case when used as nested serializer
         entity: Entity = self.parent.parent.instance
-        entity_attr: Optional[EntityAttr] = entity.attrs.filter(id=id, is_active=True).first()
-        if not entity_attr:
+        nested_entity_attr: Optional[EntityAttr] = entity.attrs.filter(
+            id=id, is_active=True
+        ).first()
+        if not nested_entity_attr:
             raise ObjectNotExistsError("Invalid id(%s) object does not exist" % id)
 
         return id
@@ -165,6 +252,56 @@ class EntityAttrUpdateSerializer(serializers.ModelSerializer):
             raise ObjectNotExistsError("attrs type(%s) does not exist" % type)
 
         return type
+
+    def _validate_default_value_for_type(self, attr_type: int, default_value):
+        """
+        Validates that the default_value is appropriate for the given attribute type.
+        Returns the validated (and potentially converted) default value.
+        """
+        if default_value is None:
+            return None
+
+        # String and Text types
+        if attr_type in [AttrType.STRING, AttrType.TEXT]:
+            if not isinstance(default_value, str):
+                raise ValidationError(
+                    f"Default value must be a string for this attribute type, "
+                    f"got {type(default_value).__name__}"
+                )
+            return default_value
+
+        # Boolean type
+        elif attr_type == AttrType.BOOLEAN:
+            if isinstance(default_value, bool):
+                return default_value
+
+            # Handle boolean-like strings
+            if isinstance(default_value, str):
+                if default_value.lower() in ["true", "1"]:
+                    return True
+                elif default_value.lower() in ["false", "0"]:
+                    return False
+                else:
+                    raise ValidationError(
+                        f"Invalid boolean value: '{default_value}'. "
+                        "Accepted values: true, false, 1, 0 (case-insensitive)"
+                    )
+
+            # Handle numeric booleans
+            if isinstance(default_value, (int, float)):
+                if default_value in [0, 1]:
+                    return bool(default_value)
+                else:
+                    raise ValidationError(
+                        f"Invalid boolean value: {default_value}. Numeric values must be 0 or 1"
+                    )
+
+            raise ValidationError(
+                f"Default value must be a boolean for BOOLEAN type, "
+                f"got {type(default_value).__name__}"
+            )
+
+        return default_value
 
     def validate(self, attr: dict):
         # case update EntityAttr
@@ -188,6 +325,26 @@ class EntityAttrUpdateSerializer(serializers.ModelSerializer):
             if attr["type"] & AttrType.OBJECT and not len(referral):
                 raise RequiredParameterError(
                     "When specified object type, referral field is required"
+                )
+
+        # Only String, Text, Boolean types support default values (MVP)
+        attr_type = attr.get("type")
+        default_value = attr.get("default_value")
+
+        # For updates, check existing attribute type if type is not being changed
+        if "id" in attr and attr_type is None:
+            entity_attr = EntityAttr.objects.get(id=attr["id"])
+            attr_type = entity_attr.type
+
+        if default_value is not None and attr_type is not None:
+            supported_types = [AttrType.STRING, AttrType.TEXT, AttrType.BOOLEAN]
+            if attr_type not in supported_types:
+                # Clear default_value for unsupported types
+                attr["default_value"] = None
+            else:
+                # Validate and potentially convert the default value
+                attr["default_value"] = self._validate_default_value_for_type(
+                    attr_type, default_value
                 )
 
         return attr
@@ -234,6 +391,61 @@ class EntitySerializer(serializers.ModelSerializer):
 
         return item_name_pattern
 
+    def _validate_and_convert_default_value(self, attr_type: int, default_value):
+        """
+        Helper method to validate and convert default_value based on attribute type.
+        This implements the same logic as EntityAttrCreateSerializer.
+        """
+        if default_value is None:
+            return None
+
+        # Only certain types support default values
+        supported_types = [AttrType.STRING, AttrType.TEXT, AttrType.BOOLEAN]
+        if attr_type not in supported_types:
+            return None
+
+        # String and Text types
+        if attr_type in [AttrType.STRING, AttrType.TEXT]:
+            if not isinstance(default_value, str):
+                raise ValidationError(
+                    f"Default value must be a string for this attribute type, "
+                    f"got {type(default_value).__name__}"
+                )
+            return default_value
+
+        # Boolean type
+        elif attr_type == AttrType.BOOLEAN:
+            if isinstance(default_value, bool):
+                return default_value
+
+            # Handle boolean-like strings
+            if isinstance(default_value, str):
+                if default_value.lower() in ["true", "1"]:
+                    return True
+                elif default_value.lower() in ["false", "0"]:
+                    return False
+                else:
+                    raise ValidationError(
+                        f"Invalid boolean value: '{default_value}'. "
+                        "Accepted values: true, false, 1, 0 (case-insensitive)"
+                    )
+
+            # Handle numeric booleans
+            if isinstance(default_value, (int, float)):
+                if default_value in [0, 1]:
+                    return bool(default_value)
+                else:
+                    raise ValidationError(
+                        f"Invalid boolean value: {default_value}. Numeric values must be 0 or 1"
+                    )
+
+            raise ValidationError(
+                f"Default value must be a boolean for BOOLEAN type, "
+                f"got {type(default_value).__name__}"
+            )
+
+        return default_value
+
     def _update_or_create(
         self,
         user: User,
@@ -253,6 +465,21 @@ class EntitySerializer(serializers.ModelSerializer):
 
         # create EntityAttr instances in associated with specifying data
         for attr_data in attrs_data:
+            # Apply type-specific validation and conversion for default_value
+            attr_type = attr_data.get("type")
+            default_value = attr_data.get("default_value")
+
+            if default_value is not None and attr_type is not None:
+                # Apply the same validation logic as in the serializer
+                try:
+                    converted_value = self._validate_and_convert_default_value(
+                        attr_type, default_value
+                    )
+                    attr_data["default_value"] = converted_value
+                except Exception:
+                    # If conversion fails, keep the original value
+                    pass
+
             # This is necessary not to pass invalid parameter to DRF DB-register
             attr_referrals = attr_data.pop("referral", [])
 
@@ -532,9 +759,11 @@ class EntityDetailAttributeSerializer(serializers.Serializer):
     type = serializers.IntegerField()
     is_mandatory = serializers.BooleanField()
     is_delete_in_chain = serializers.BooleanField()
+    is_summarized = serializers.BooleanField()
     is_writable = serializers.BooleanField()
     referral = serializers.ListField(child=serializers.DictField())
     note = serializers.CharField()
+    default_value = serializers.JSONField(required=False, allow_null=True)
 
 
 class EntityDetailSerializer(EntityListSerializer):
@@ -569,6 +798,7 @@ class EntityDetailSerializer(EntityListSerializer):
                 "type": x.type,
                 "is_mandatory": x.is_mandatory,
                 "is_delete_in_chain": x.is_delete_in_chain,
+                "is_summarized": x.is_summarized,
                 "is_writable": user.has_permission(x, ACLType.Writable),
                 "referral": [
                     EntityAttrReferralData(
@@ -580,6 +810,7 @@ class EntityDetailSerializer(EntityListSerializer):
                     for r in x.referral.all()
                 ],
                 "note": x.note,
+                "default_value": x.default_value,
             }
             for x in obj.attrs.filter(is_active=True).prefetch_related("referral").order_by("index")
         ]

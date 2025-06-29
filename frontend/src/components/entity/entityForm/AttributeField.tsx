@@ -1,4 +1,3 @@
-import { Entity } from "@dmm-com/airone-apiclient-typescript-fetch";
 import AddIcon from "@mui/icons-material/Add";
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
@@ -25,6 +24,7 @@ import { Link } from "react-router";
 import { AttributeNoteModal } from "./AttributeNoteModal";
 import { Schema } from "./EntityFormSchema";
 
+import { Entity } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { aclPath } from "routes/Routes";
 import { AttributeTypes } from "services/Constants";
 
@@ -184,6 +184,43 @@ export const AttributeField: FC<Props> = ({
             />
           )}
         </StyledBox>
+      </TableCell>
+
+      <TableCell>
+        <Controller
+          name={`attrs.${index}.defaultValue`}
+          control={control}
+          render={({ field }) => {
+            // Check if this attribute type supports default values
+            const isDefaultValueSupported = 
+              attrType === AttributeTypes.string.type ||
+              attrType === AttributeTypes.text.type ||
+              attrType === AttributeTypes.boolean.type;
+
+            // Boolean type gets a checkbox
+            if (attrType === AttributeTypes.boolean.type) {
+              return (
+                <Checkbox
+                  checked={field.value ?? false}
+                  onChange={(e) => field.onChange(e.target.checked)}
+                  disabled={!isWritable}
+                />
+              );
+            }
+            
+            // Text input for supported string types or disabled for unsupported types
+            return (
+              <TextField
+                {...field}
+                value={field.value ?? ""}
+                placeholder={isDefaultValueSupported ? "デフォルト値" : "この型では未サポート"}
+                size="small"
+                fullWidth
+                disabled={!isWritable || !isDefaultValueSupported}
+              />
+            );
+          }}
+        />
       </TableCell>
 
       <TableCell>

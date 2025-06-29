@@ -283,6 +283,7 @@ class ModelTest(TestCase):
             "index": attr.index,
             "is_mandatory": attr.is_mandatory,
             "is_delete_in_chain": attr.is_delete_in_chain,
+            "default_value": attr.default_value,
         }
 
         # check not to change any parameter
@@ -310,6 +311,11 @@ class ModelTest(TestCase):
         # check to change is_delete_in_chain parameter
         changed_params = copy(params)
         changed_params["is_delete_in_chain"] = not params["is_delete_in_chain"]
+        self.assertTrue(attr.is_updated(**changed_params))
+
+        # check to change default_value parameter
+        changed_params = copy(params)
+        changed_params["default_value"] = "new default value"
         self.assertTrue(attr.is_updated(**changed_params))
 
     def test_add_referral(self):
@@ -426,3 +432,133 @@ class ModelTest(TestCase):
 
         # check each models are set properly
         self.assertEqual(list(categories[0].models.all()), models)
+
+    def test_entity_attr_default_value_field(self):
+        """Test setting and retrieving default values for EntityAttr"""
+        entity = Entity.objects.create(name="test_entity", created_user=self._test_user)
+
+        # Test string attribute with default value
+        string_attr = EntityAttr.objects.create(
+            name="string_attr",
+            type=AttrType.STRING,
+            created_user=self._test_user,
+            parent_entity=entity,
+            default_value="default string",
+        )
+        self.assertEqual(string_attr.default_value, "default string")
+
+        # Test text attribute with default value
+        text_attr = EntityAttr.objects.create(
+            name="text_attr",
+            type=AttrType.TEXT,
+            created_user=self._test_user,
+            parent_entity=entity,
+            default_value="default text content",
+        )
+        self.assertEqual(text_attr.default_value, "default text content")
+
+        # Test boolean attribute with default value
+        bool_attr = EntityAttr.objects.create(
+            name="bool_attr",
+            type=AttrType.BOOLEAN,
+            created_user=self._test_user,
+            parent_entity=entity,
+            default_value=True,
+        )
+        self.assertEqual(bool_attr.default_value, True)
+
+        # Test attribute without default value (should be None)
+        no_default_attr = EntityAttr.objects.create(
+            name="no_default_attr",
+            type=AttrType.STRING,
+            created_user=self._test_user,
+            parent_entity=entity,
+        )
+        self.assertIsNone(no_default_attr.default_value)
+
+    def test_get_default_value_method(self):
+        """Test get_default_value method returns custom vs type-based defaults"""
+        from airone.lib.types import AttrDefaultValue
+
+        entity = Entity.objects.create(name="test_entity", created_user=self._test_user)
+
+        # Test with custom default value
+        custom_attr = EntityAttr.objects.create(
+            name="custom_attr",
+            type=AttrType.STRING,
+            created_user=self._test_user,
+            parent_entity=entity,
+            default_value="custom default",
+        )
+        self.assertEqual(custom_attr.get_default_value(), "custom default")
+
+        # Test with no custom default value (should return type-based default)
+        type_default_attr = EntityAttr.objects.create(
+            name="type_default_attr",
+            type=AttrType.STRING,
+            created_user=self._test_user,
+            parent_entity=entity,
+        )
+        self.assertEqual(type_default_attr.get_default_value(), AttrDefaultValue[AttrType.STRING])
+
+        # Test boolean type-based default
+        bool_type_default_attr = EntityAttr.objects.create(
+            name="bool_type_default_attr",
+            type=AttrType.BOOLEAN,
+            created_user=self._test_user,
+            parent_entity=entity,
+        )
+        self.assertEqual(bool_type_default_attr.get_default_value(), False)
+
+        # Test boolean custom default
+        bool_custom_attr = EntityAttr.objects.create(
+            name="bool_custom_attr",
+            type=AttrType.BOOLEAN,
+            created_user=self._test_user,
+            parent_entity=entity,
+            default_value=True,
+        )
+        self.assertEqual(bool_custom_attr.get_default_value(), True)
+
+    def test_validate_default_value_method(self):
+        """Test validate_default_value method for different types"""
+        entity = Entity.objects.create(name="test_entity", created_user=self._test_user)
+
+        # Test valid string default value
+        string_attr = EntityAttr.objects.create(
+            name="string_attr",
+            type=AttrType.STRING,
+            created_user=self._test_user,
+            parent_entity=entity,
+        )
+        self.assertTrue(string_attr.validate_default_value("valid string"))
+        self.assertTrue(string_attr.validate_default_value(None))  # None should be valid
+
+        # Test valid boolean default values
+        bool_attr = EntityAttr.objects.create(
+            name="bool_attr",
+            type=AttrType.BOOLEAN,
+            created_user=self._test_user,
+            parent_entity=entity,
+        )
+        self.assertTrue(bool_attr.validate_default_value(True))
+        self.assertTrue(bool_attr.validate_default_value(False))
+        self.assertTrue(bool_attr.validate_default_value(None))
+
+        # Test valid text default value
+        text_attr = EntityAttr.objects.create(
+            name="text_attr", type=AttrType.TEXT, created_user=self._test_user, parent_entity=entity
+        )
+        self.assertTrue(text_attr.validate_default_value("multi\nline\ntext"))
+
+        # Test unsupported type (should return False for non-None values)
+        object_attr = EntityAttr.objects.create(
+            name="object_attr",
+            type=AttrType.OBJECT,
+            created_user=self._test_user,
+            parent_entity=entity,
+        )
+        self.assertFalse(object_attr.validate_default_value("any value"))
+        self.assertTrue(
+            object_attr.validate_default_value(None)
+        )  # None should be valid for any type

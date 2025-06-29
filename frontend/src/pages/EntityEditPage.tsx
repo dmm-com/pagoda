@@ -1,10 +1,10 @@
-import { WebhookCreateUpdate } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Box } from "@mui/material";
 import React, { FC, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
 
+import { WebhookCreateUpdate } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { Loading } from "components/common/Loading";
 import { PageHeader } from "components/common/PageHeader";
 import { SubmitButton } from "components/common/SubmitButton";
@@ -85,6 +85,7 @@ export const EntityEditPage: FC = () => {
         referral: attr.referral.map((r) => r.id),
         isDeleted: false,
         note: attr.note,
+        defaultValue: attr.defaultValue,
       }));
 
     const deletedAttrs =
@@ -173,7 +174,35 @@ export const EntityEditPage: FC = () => {
   );
 
   useEffect(() => {
-    !entity.loading && entity.value != null && reset(entity.value);
+    if (!entity.loading && entity.value != null) {
+      // Convert entity data to form schema format, ensuring defaultValue is included
+      const formData: Schema = {
+        name: entity.value.name,
+        note: entity.value.note ?? "",
+        itemNamePattern: entity.value.itemNamePattern ?? "",
+        isToplevel: entity.value.isToplevel,
+        webhooks: entity.value.webhooks.map((webhook) => ({
+          ...webhook,
+          url: webhook.url ?? "",
+          label: webhook.label ?? "",
+          isEnabled: webhook.isEnabled ?? false,
+          headers: webhook.headers ?? [],
+        })),
+        attrs: entity.value.attrs.map((attr) => ({
+          ...attr,
+          name: attr.name ?? "",
+          note: attr.note ?? "",
+          referral: (attr.referral ?? []).map((ref) => ({
+            id: ref.id,
+            name: ref.name,
+          })),
+          defaultValue: attr.defaultValue,
+          isSummarized: attr.isSummarized,
+        })),
+      };
+      
+      reset(formData);
+    }
   }, [entity.loading]);
 
   useEffect(() => {
