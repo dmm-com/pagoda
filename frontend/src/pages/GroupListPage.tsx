@@ -12,18 +12,20 @@ import { styled } from "@mui/material/styles";
 import React, { FC, useCallback, useMemo, useState } from "react";
 import { Link } from "react-router";
 
-import { SearchBox } from "../components/common/SearchBox";
 import { GroupControlMenu } from "../components/group/GroupControlMenu";
 import { GroupImportModal } from "../components/group/GroupImportModal";
 import { GroupTreeRoot } from "../components/group/GroupTreeRoot";
-import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
 
 import { AironeLink } from "components";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { Loading } from "components/common/Loading";
 import { PageHeader } from "components/common/PageHeader";
+import { SearchBox } from "components/common/SearchBox";
+import { useAsyncWithThrow } from "hooks/useAsyncWithThrow";
+import { usePageTitle } from "hooks/usePageTitle";
 import { aironeApiClient } from "repository/AironeApiClient";
 import { newGroupPath, topPath } from "routes/Routes";
+import { TITLE_TEMPLATES } from "services";
 import { ServerContext } from "services/ServerContext";
 
 const StyledContainer = styled(Container)({
@@ -88,6 +90,8 @@ export const GroupListPage: FC = () => {
   }, []);
 
   const isSuperuser = ServerContext.getInstance()?.user?.isSuperuser ?? false;
+
+  usePageTitle(TITLE_TEMPLATES.groupList);
 
   return (
     <Box display="flex" flexDirection="column" flexGrow="1">

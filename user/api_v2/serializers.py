@@ -280,7 +280,8 @@ class UserAuthSerializer(serializers.Serializer):
         if user.authenticate_type == User.AuthenticateType.AUTH_TYPE_LDAP:
             raise ValidationError("already authenticated by LDAP")
 
-        if not LDAPBackend.is_authenticated(user.username, attrs.get("ldap_password")):
+        ldap_password = attrs.get("ldap_password")
+        if ldap_password is None or not LDAPBackend.is_authenticated(user.username, ldap_password):
             raise ValidationError("LDAP authentication was Failed of user %s" % user.username)
 
         return attrs

@@ -2656,7 +2656,7 @@ class PrefetchedItemWrapper(object):
                         for v in attrv.co_values
                     ]
                 else:
-                    return [PrefetchedItemWrapper(None, attrv) for v in attrv.co_values]
+                    return [PrefetchedItemWrapper(None, v) for v in attrv.co_values]
 
             elif attr.schema.type & AttrType.OBJECT:
                 return PrefetchedItemWrapper(
@@ -2680,6 +2680,13 @@ class PrefetchedItemWrapper(object):
 
         return ""
 
+    @property
+    def boolean(self) -> bool:
+        if self.attrv is not None:
+            return self.attrv.boolean
+
+        return False
+
 
 class ItemWalker(object):
     @classmethod
@@ -2693,7 +2700,7 @@ class ItemWalker(object):
         """
         prefetch_co_values = Prefetch(
             lookup="data_array",
-            queryset=AttributeValue.objects.filter(referral__is_active=True)
+            queryset=AttributeValue.objects.exclude(referral__is_active=False)
             .select_related("referral__entry")
             .prefetch_related(*nested_prefetch),
             to_attr="co_values",

@@ -30,6 +30,7 @@ class AttrType(BaseIntEnum):
     ARRAY_ROLE = _ARRAY | ROLE
 
 
+# Mapping from string to AttrType enum values (backwards compatibility)
 AttrTypeValue = {
     "string": AttrType.STRING,
     "object": AttrType.OBJECT,

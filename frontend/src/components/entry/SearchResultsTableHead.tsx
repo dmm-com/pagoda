@@ -68,6 +68,7 @@ interface Props {
   joinAttrs: AdvancedSearchJoinAttrInfo[];
   handleChangeAllBulkOperationEntryIds: (checked: boolean) => void;
   isReadonly?: boolean;
+  omitHeadline?: boolean;
 }
 
 export const SearchResultsTableHead: FC<Props> = ({
@@ -81,6 +82,7 @@ export const SearchResultsTableHead: FC<Props> = ({
   joinAttrs,
   handleChangeAllBulkOperationEntryIds,
   isReadonly = false,
+  omitHeadline = false,
 }) => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -222,9 +224,14 @@ export const SearchResultsTableHead: FC<Props> = ({
             </StyledIconButton>
           </TableCell>
         )}
-        <StyledTableCell sx={{ outline: "1px solid #FFFFFF" }}>
+
+        <StyledTableCell
+          {...(omitHeadline
+            ? { sx: { minWidth: "0px" } }
+            : { sx: { outline: "1px solid #FFFFFF" } })}
+        >
           <HeaderBox>
-            <Typography>アイテム名</Typography>
+            <Typography>{!omitHeadline ? "アイテム名" : ""}</Typography>
 
             {/* SearchControlMenu would be invisible when Readonly Mode is True */}
             {!isReadonly && (
@@ -249,10 +256,15 @@ export const SearchResultsTableHead: FC<Props> = ({
             )}
           </HeaderBox>
         </StyledTableCell>
+
         {attrNames.map((attrName) => (
           <StyledTableCell key={attrName}>
             <HeaderBox>
-              <Typography>{attrName}</Typography>
+              <Typography>
+                {defaultAttrsFilter[attrName]?.alterName
+                  ? defaultAttrsFilter[attrName].alterName
+                  : attrName}
+              </Typography>
 
               {/* Bulk operation checkbox would be invisible when Readonly mode is true */}
               {(attrTypes[attrName] & EntryAttributeTypeTypeEnum.OBJECT) > 0 &&

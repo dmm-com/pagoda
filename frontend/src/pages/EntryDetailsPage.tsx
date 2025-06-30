@@ -6,17 +6,18 @@ import { styled } from "@mui/material/styles";
 import React, { FC, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 
-import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
-import { useTypedParams } from "../hooks/useTypedParams";
-
 import { Loading } from "components/common/Loading";
 import { PageHeader } from "components/common/PageHeader";
 import { EntryAttributes } from "components/entry/EntryAttributes";
 import { EntryBreadcrumbs } from "components/entry/EntryBreadcrumbs";
 import { EntryControlMenu } from "components/entry/EntryControlMenu";
 import { EntryReferral } from "components/entry/EntryReferral";
+import { useAsyncWithThrow } from "hooks/useAsyncWithThrow";
+import { usePageTitle } from "hooks/usePageTitle";
+import { useTypedParams } from "hooks/useTypedParams";
 import { aironeApiClient } from "repository/AironeApiClient";
 import { entryDetailsPath, restoreEntryPath } from "routes/Routes";
+import { TITLE_TEMPLATES } from "services";
 
 const FlexBox = styled(Box)(({}) => ({
   display: "flex",
@@ -104,6 +105,10 @@ export const EntryDetailsPage: FC<Props> = ({
       );
     }
   }, [entry.loading]);
+
+  usePageTitle(entry.loading ? "読み込み中..." : TITLE_TEMPLATES.entryDetail, {
+    prefix: entry.value?.name,
+  });
 
   return (
     <FlexBox>

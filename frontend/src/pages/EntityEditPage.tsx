@@ -13,10 +13,12 @@ import { EntityForm } from "components/entity/EntityForm";
 import { Schema, schema } from "components/entity/entityForm/EntityFormSchema";
 import { useAsyncWithThrow } from "hooks/useAsyncWithThrow";
 import { useFormNotification } from "hooks/useFormNotification";
+import { usePageTitle } from "hooks/usePageTitle";
 import { usePrompt } from "hooks/usePrompt";
 import { useTypedParams } from "hooks/useTypedParams";
 import { aironeApiClient } from "repository/AironeApiClient";
 import { entitiesPath, entityEntriesPath } from "routes/Routes";
+import { TITLE_TEMPLATES } from "services";
 import {
   extractAPIException,
   isResponseError,
@@ -160,6 +162,15 @@ export const EntityEditPage: FC = () => {
       }
     }
   };
+
+  usePageTitle(
+    entity.loading || (entityId && entity.loading)
+      ? "読み込み中..."
+      : TITLE_TEMPLATES.entityEdit,
+    {
+      prefix: entity.value?.name ?? (entityId == null ? "新規作成" : undefined),
+    },
+  );
 
   useEffect(() => {
     !entity.loading && entity.value != null && reset(entity.value);

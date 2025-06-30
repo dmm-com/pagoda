@@ -5,11 +5,9 @@ import {
   AutocompleteInputChangeReason,
   TextField,
 } from "@mui/material";
-import React, { FC, useState } from "react";
+import React, { FC, useState, useCallback } from "react";
 
 import { aironeApiClient } from "../../../repository/AironeApiClient";
-
-import { useAsyncWithThrow } from "hooks/useAsyncWithThrow";
 
 interface Props {
   attrId: number;
@@ -30,13 +28,40 @@ export const ReferralsAutocomplete: FC<Props> = ({
   error,
   isDisabled = false,
 }) => {
+  const [options, setOptions] = useState<GetEntryAttrReferral[]>([]);
   const [inputValue, setInputValue] = useState<string>(
     !multiple ? ((value as GetEntryAttrReferral | null)?.name ?? "") : "",
   );
+  const [loading, setLoading] = useState(false);
+  const [hasFetchedInitial, setHasFetchedInitial] = useState(false);
 
-  const referrals = useAsyncWithThrow(async () => {
-    return await aironeApiClient.getEntryAttrReferrals(attrId, inputValue);
-  }, [attrId, inputValue]);
+  const fetchInitialOptions = useCallback(async () => {
+    if (hasFetchedInitial) return;
+    setLoading(true);
+    try {
+      const result = await aironeApiClient.getEntryAttrReferrals(attrId);
+      setOptions(result);
+      setHasFetchedInitial(true);
+    } finally {
+      setLoading(false);
+    }
+  }, [attrId, hasFetchedInitial]);
+
+  const fetchFilteredOptions = useCallback(
+    async (keyword: string) => {
+      setLoading(true);
+      try {
+        const result = await aironeApiClient.getEntryAttrReferrals(
+          attrId,
+          keyword,
+        );
+        setOptions(result);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [attrId],
+  );
 
   const _handleChange = (
     value: GetEntryAttrReferral | GetEntryAttrReferral[] | null,
@@ -47,11 +72,7 @@ export const ReferralsAutocomplete: FC<Props> = ({
     }
 
     if (reason === "clear") {
-      if (multiple) {
-        handleChange([]);
-      } else {
-        handleChange(null);
-      }
+      handleChange(multiple ? [] : null);
     } else {
       handleChange(value);
     }
@@ -64,9 +85,11 @@ export const ReferralsAutocomplete: FC<Props> = ({
     switch (reason) {
       case "input":
         setInputValue(_value);
+        fetchFilteredOptions(_value);
         break;
       case "clear":
         setInputValue("");
+        fetchFilteredOptions("");
         break;
     }
   };
@@ -81,8 +104,8 @@ export const ReferralsAutocomplete: FC<Props> = ({
     <Autocomplete
       fullWidth
       multiple={multiple}
-      loading={referrals.loading}
-      options={referrals.value ?? []}
+      loading={loading}
+      options={options}
       value={value}
       inputValue={inputValue}
       getOptionLabel={(option) => option?.name ?? "-NOT SET-"}
@@ -90,6 +113,7 @@ export const ReferralsAutocomplete: FC<Props> = ({
       onChange={(_e, value, reason) => _handleChange(value, reason)}
       onInputChange={(e, value, reason) => handleInputChange(value, reason)}
       onBlur={handleBlur}
+      onOpen={fetchInitialOptions}
       renderInput={(params) => (
         <TextField
           {...params}

@@ -6,8 +6,10 @@ import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { PageHeader } from "components/common/PageHeader";
 import { UserImportModal } from "components/user/UserImportModal";
 import { UserList } from "components/user/UserList";
+import { usePageTitle } from "hooks/usePageTitle";
 import { aironeApiClient } from "repository/AironeApiClient";
 import { topPath } from "routes/Routes";
+import { TITLE_TEMPLATES } from "services";
 
 export const UserListPage: FC = () => {
   const [openImportModal, setOpenImportModal] = useState(false);
@@ -15,6 +17,8 @@ export const UserListPage: FC = () => {
   const handleExport = useCallback(async () => {
     await aironeApiClient.exportUsers("user.yaml");
   }, []);
+
+  usePageTitle(TITLE_TEMPLATES.userList);
 
   return (
     <Box className="container-fluid">

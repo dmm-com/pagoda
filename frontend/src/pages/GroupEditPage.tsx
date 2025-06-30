@@ -4,19 +4,20 @@ import React, { FC, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
 
-import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
-
 import { AironeLink } from "components";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { PageHeader } from "components/common/PageHeader";
 import { SubmitButton } from "components/common/SubmitButton";
 import { GroupForm } from "components/group/GroupForm";
 import { schema, Schema } from "components/group/groupForm/GroupFormSchema";
+import { useAsyncWithThrow } from "hooks/useAsyncWithThrow";
 import { useFormNotification } from "hooks/useFormNotification";
+import { usePageTitle } from "hooks/usePageTitle";
 import { usePrompt } from "hooks/usePrompt";
 import { useTypedParams } from "hooks/useTypedParams";
 import { aironeApiClient } from "repository/AironeApiClient";
 import { groupsPath, topPath } from "routes/Routes";
+import { TITLE_TEMPLATES } from "services";
 import {
   extractAPIException,
   isResponseError,
@@ -91,6 +92,10 @@ export const GroupEditPage: FC = () => {
   useEffect(() => {
     isSubmitSuccessful && navigate(groupsPath(), { replace: true });
   }, [isSubmitSuccessful]);
+
+  usePageTitle(group.loading ? "読み込み中..." : TITLE_TEMPLATES.groupEdit, {
+    prefix: group.value?.name ?? (willCreate ? "新規作成" : undefined),
+  });
 
   const handleCancel = async () => {
     navigate(-1);
