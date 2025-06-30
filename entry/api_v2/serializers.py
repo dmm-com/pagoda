@@ -445,11 +445,13 @@ class EntryCreateSerializer(EntryBaseSerializer):
                 # Use provided attribute value
                 attr.add_value(user, attr_data[0]["value"])
             else:
-                # Check if entity attribute has a default value
-                default_value = entity_attr.get_default_value()
-                if default_value is not None:
-                    # Apply default value from EntityAttr
-                    attr.add_value(user, default_value)
+                # Check if entity attribute has a default value (only for supported types)
+                supported_types = [AttrType.STRING, AttrType.TEXT, AttrType.BOOLEAN]
+                if entity_attr.type in supported_types:
+                    default_value = entity_attr.get_default_value()
+                    if default_value is not None:
+                        # Apply default value from EntityAttr
+                        attr.add_value(user, default_value)
 
         if custom_view.is_custom("after_create_entry_v2", entity_name):
             custom_view.call_custom("after_create_entry_v2", entity_name, user, entry)

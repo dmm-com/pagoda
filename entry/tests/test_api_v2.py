@@ -5201,7 +5201,7 @@ class ViewTest(BaseViewTest):
         }
 
         resp = self.client.post(
-            "/entity/%s/entries/" % entity.id, json.dumps(params), "application/json"
+            "/entity/api/v2/%s/entries/" % entity.id, json.dumps(params), "application/json"
         )
         self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
 
@@ -5215,18 +5215,18 @@ class ViewTest(BaseViewTest):
 
         # Check that attributes with default values were created with those defaults
         string_attr_value = entry.attrs.get(schema=string_attr)
-        self.assertEqual(string_attr_value.get_value(), "default string value")
+        self.assertEqual(string_attr_value.get_latest_value().get_value(), "default string value")
 
         bool_attr_value = entry.attrs.get(schema=bool_attr)
-        self.assertEqual(bool_attr_value.get_value(), True)
+        self.assertEqual(bool_attr_value.get_latest_value().get_value(), True)
 
         text_attr_value = entry.attrs.get(schema=text_attr)
-        self.assertEqual(text_attr_value.get_value(), "default text value")
+        self.assertEqual(text_attr_value.get_latest_value().get_value(), "default text value")
 
         # Check that attribute without default was not created (no value provided)
         string_no_default_attr = entity.attrs.get(name="string_no_default")
         string_no_default_value = entry.attrs.get(schema=string_no_default_attr)
-        self.assertEqual(string_no_default_value.get_value(), "provided value")
+        self.assertEqual(string_no_default_value.get_latest_value().get_value(), "provided value")
 
     @mock.patch("entry.tasks.create_entry_v2.delay", mock.Mock(side_effect=tasks.create_entry_v2))
     def test_create_entry_provided_value_overrides_default(self):
@@ -5260,7 +5260,7 @@ class ViewTest(BaseViewTest):
         }
 
         resp = self.client.post(
-            "/entity/%s/entries/" % entity.id, json.dumps(params), "application/json"
+            "/entity/api/v2/%s/entries/" % entity.id, json.dumps(params), "application/json"
         )
         self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
 
@@ -5272,10 +5272,14 @@ class ViewTest(BaseViewTest):
         entry = Entry.objects.get(name="test_entry_override", schema=entity)
 
         string_attr_value = entry.attrs.get(schema=string_attr)
-        self.assertEqual(string_attr_value.get_value(), "provided value")  # Not default
+        self.assertEqual(
+            string_attr_value.get_latest_value().get_value(), "provided value"
+        )  # Not default
 
         bool_attr_value = entry.attrs.get(schema=bool_attr)
-        self.assertEqual(bool_attr_value.get_value(), False)  # Not default (True)
+        self.assertEqual(
+            bool_attr_value.get_latest_value().get_value(), False
+        )  # Not default (True)
 
     @mock.patch("entry.tasks.create_entry_v2.delay", mock.Mock(side_effect=tasks.create_entry_v2))
     def test_create_entry_unsupported_type_no_default(self):
@@ -5309,7 +5313,7 @@ class ViewTest(BaseViewTest):
         }
 
         resp = self.client.post(
-            "/entity/%s/entries/" % entity.id, json.dumps(params), "application/json"
+            "/entity/api/v2/%s/entries/" % entity.id, json.dumps(params), "application/json"
         )
         self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
 
@@ -5330,9 +5334,9 @@ class ViewTest(BaseViewTest):
         if object_attr_values.exists():
             object_attr_value = object_attr_values.first()
             # Should not be the custom default "ignored value"
-            self.assertNotEqual(object_attr_value.get_value(), "ignored value")
+            self.assertNotEqual(object_attr_value.get_latest_value().get_value(), "ignored value")
 
         if date_attr_values.exists():
             date_attr_value = date_attr_values.first()
             # Should not be the custom default "2023-01-01"
-            self.assertNotEqual(date_attr_value.get_value(), "2023-01-01")
+            self.assertNotEqual(date_attr_value.get_latest_value().get_value(), "2023-01-01")
