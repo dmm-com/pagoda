@@ -48,6 +48,9 @@ class GetEntrySerializer(serializers.ModelSerializer):
                         for x in attrv.data_array.all()
                     ]
 
+                elif attr.schema.type & AttrType.NUMBER:
+                    return [x.number for x in attrv.data_array.all()]
+
             elif attr.schema.type & AttrType.STRING or attr.schema.type & AttrType.TEXT:
                 return attrv.value
 
@@ -79,6 +82,9 @@ class GetEntrySerializer(serializers.ModelSerializer):
 
             elif attr.schema.type & AttrType.DATETIME:
                 return attrv.datetime
+
+            elif attr.schema.type & AttrType.NUMBER:
+                return attrv.number
 
         return [
             {
@@ -160,6 +166,11 @@ class PostEntrySerializer(serializers.Serializer):
             elif attr.type & AttrType.ROLE:
                 return [x for x in [AttributeValue.uniform_storable(v, Role) for v in value] if x]
 
+            elif attr.type & AttrType.NUMBER:
+                if not all([isinstance(v, (int, float)) for v in value]):
+                    return None
+                return value
+
         elif attr.type & AttrType.STRING or attr.type & AttrType.TEXT:
             if not (isinstance(value, str) or isinstance(value, int) or isinstance(value, float)):
                 return None
@@ -217,6 +228,11 @@ class PostEntrySerializer(serializers.Serializer):
                 return datetime.fromisoformat(value)
             else:
                 return None
+
+        elif attr.type & AttrType.NUMBER:
+            if not isinstance(value, (int, float)):
+                return None
+            return value
 
         return None
 

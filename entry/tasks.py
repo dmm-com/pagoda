@@ -122,6 +122,14 @@ def _convert_data_value(attr: Attribute, info: dict):
                     return None
                 else:
                     return datetime.fromisoformat(recv_value)
+            case AttrType.NUMBER:
+                if recv_value is None or recv_value == "":
+                    return None
+                else:
+                    try:
+                        return float(recv_value)
+                    except (ValueError, TypeError):
+                        return None
             case _:
                 return recv_value
 

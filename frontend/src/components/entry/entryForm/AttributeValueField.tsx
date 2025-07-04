@@ -8,6 +8,7 @@ import { DateAttributeValueField } from "./DateAttributeValueField";
 import { DateTimeAttributeValueField } from "./DateTimeAttributeValueField";
 import { Schema } from "./EntryFormSchema";
 import { GroupAttributeValueField } from "./GroupAttributeValueField";
+import { NumberAttributeValueField } from "./NumberAttributeValueField";
 import {
   ArrayNamedObjectAttributeValueField,
   NamedObjectAttributeValueField,
@@ -77,6 +78,15 @@ export const AttributeValueField: FC<Props> = ({
     case EntryAttributeTypeTypeEnum.BOOLEAN:
       return (
         <BooleanAttributeValueField
+          attrId={schemaId}
+          control={control}
+          isDisabled={isDisabled}
+        />
+      );
+
+    case EntryAttributeTypeTypeEnum.NUMBER:
+      return (
+        <NumberAttributeValueField
           attrId={schemaId}
           control={control}
           isDisabled={isDisabled}

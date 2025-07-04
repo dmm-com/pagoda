@@ -702,6 +702,7 @@ class ViewTest(BaseViewTest):
                 {"id": attr["date"].id, "value": "2018-12-31"},
                 {"id": attr["role"].id, "value": self.role.id},
                 {"id": attr["roles"].id, "value": [self.role.id]},
+                {"id": attr["num"].id, "value": 42},
                 {"id": attr["datetime"].id, "value": "2018-12-31T00:00:00+00:00"},
             ],
         }
@@ -730,6 +731,7 @@ class ViewTest(BaseViewTest):
                 "vals": ["hoge", "fuga"],
                 "role": "role0",
                 "roles": ["role0"],
+                "num": 42,
                 "datetime": datetime.datetime(2018, 12, 31, 0, 0, 0, tzinfo=datetime.timezone.utc),
             },
         )
@@ -1997,6 +1999,7 @@ class ViewTest(BaseViewTest):
                     "names",
                     "role",
                     "roles",
+                    "num",
                 ]
             ),
         )
@@ -2305,6 +2308,7 @@ class ViewTest(BaseViewTest):
                 ],
                 "role": self.role.id,
                 "roles": [self.role.id],
+                "num": 123,
             },
         )
 
@@ -2342,6 +2346,7 @@ class ViewTest(BaseViewTest):
                     "name": "datetime",
                     "value": datetime.datetime(2018, 12, 31, 0, 0, 0, tzinfo=datetime.timezone.utc),
                 },
+                {"name": "num", "value": 123},
             ],
         )
 
@@ -2665,6 +2670,7 @@ class ViewTest(BaseViewTest):
             "vals": ["foo"],
             "role": {"id": self.role.id, "name": "role0"},
             "roles": [{"id": self.role.id, "name": "role0"}],
+            "num": 123.45,
         }
         for attr_name in result.ret_values[0].attrs:
             self.assertEqual(result.ret_values[0].attrs[attr_name]["value"], attrs[attr_name])
@@ -2704,6 +2710,7 @@ class ViewTest(BaseViewTest):
             "date": "2018-12-31",
             "role": {"id": self.role.id, "name": "role0"},
             "roles": [{"id": self.role.id, "name": "role0"}],
+            "num": 123.45,
             "datetime": "2018-12-31T00:00:00+00:00",
         }
         for attr_name in result.ret_values[0].attrs:
@@ -2754,6 +2761,7 @@ class ViewTest(BaseViewTest):
             "date": None,
             "role": {"id": "", "name": ""},
             "roles": [],
+            "num": 123.45,  # Should remain unchanged from first import
             "datetime": None,
         }
         for attr_name in result.ret_values[0].attrs:
@@ -2835,6 +2843,7 @@ class ViewTest(BaseViewTest):
             "vals": ["foo"],
             "role": {"id": self.role.id, "name": "role0"},
             "roles": [{"id": self.role.id, "name": "role0"}],
+            "num": 123.45,
             "datetime": "2018-12-31T00:00:00+00:00",
         }
         for attr_name in result.ret_values[0].attrs:
@@ -3235,6 +3244,11 @@ class ViewTest(BaseViewTest):
                                 "type": AttrType.DATETIME,
                                 "value": {"as_string": "2018-12-31T00:00:00+00:00"},
                             },
+                            "num": {
+                                "is_readable": True,
+                                "type": AttrType.NUMBER,
+                                "value": {"as_number": None},
+                            },
                         },
                         "is_readable": True,
                         "referrals": None,
@@ -3309,6 +3323,11 @@ class ViewTest(BaseViewTest):
                                 "is_readable": True,
                                 "type": AttrType.DATETIME,
                                 "value": {"as_string": ""},
+                            },
+                            "num": {
+                                "is_readable": True,
+                                "type": AttrType.NUMBER,
+                                "value": {"as_number": None},
                             },
                         },
                         "is_readable": True,
@@ -4543,6 +4562,7 @@ class ViewTest(BaseViewTest):
             {"column": "role", "csv": "", "yaml": None},
             {"column": "roles", "csv": "", "yaml": []},
             {"column": "datetime", "csv": "", "yaml": None},
+            {"column": "num", "csv": "", "yaml": None},
         ]
 
         # send request to export data
@@ -4841,6 +4861,7 @@ class ViewTest(BaseViewTest):
             "text": {"value": "fuga", "result": {"as_string": "fuga"}},
             "bool": {"value": False, "result": {"as_boolean": False}},
             "date": {"value": "2018-12-31", "result": {"as_string": "2018-12-31"}},
+            "num": {"value": 456, "result": {"as_number": 456.0}},
             "datetime": {
                 "value": "2018-12-31T00:00:00+00:00",
                 "result": {"as_string": "2018-12-31T00:00:00Z"},
@@ -4851,7 +4872,7 @@ class ViewTest(BaseViewTest):
         )
         resp = self.client.get("/entry/api/v2/%s/histories/" % entry.id)
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(resp.json()["count"], 19)
+        self.assertEqual(resp.json()["count"], 20)
         attrv = entry.get_attrv("datetime")
         self.assertEqual(
             resp.json()["results"][0],
@@ -4881,7 +4902,7 @@ class ViewTest(BaseViewTest):
 
         resp = self.client.get("/entry/api/v2/%s/histories/" % entry.id)
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(resp.json()["count"], 20)
+        self.assertEqual(resp.json()["count"], 21)
         self.assertEqual(resp.json()["results"][0]["parent_attr"]["name"], "vals")
         self.assertEqual(
             resp.json()["results"][0]["curr_value"]["as_array_string"], ["hoge", "fuga"]
@@ -5162,3 +5183,95 @@ class ViewTest(BaseViewTest):
         [x.refresh_from_db() for x in items]
         self.assertFalse(any(x.is_active for x in items[:3]))
         self.assertTrue(any(x.is_active for x in items[3:]))
+
+    @patch("entry.tasks.create_entry_v2.delay", Mock(side_effect=tasks.create_entry_v2))
+    def test_create_and_retrieve_entry_with_number_attr(self):
+        entry_name = "test_entry_with_number"
+        number_value = 123.45
+        # Ensure 'num' attribute exists in self.entity, created via
+        # ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY
+        num_entity_attr = self.entity.attrs.get(name="num")
+
+        payload = {
+            "name": entry_name,
+            "schema": self.entity.id,
+            "attrs": [{"id": num_entity_attr.id, "value": number_value}],
+        }
+
+        # Create Entry with Number attribute
+        resp_create = self.client.post(
+            f"/entity/api/v2/{self.entity.id}/entries/", payload, "application/json"
+        )
+        self.assertEqual(resp_create.status_code, status.HTTP_202_ACCEPTED, resp_create.content)
+
+        # Wait for job to complete and get the created entry
+        created_entry = Entry.objects.filter(name=entry_name, schema=self.entity).first()
+        self.assertIsNotNone(created_entry, "Entry was not created")
+        created_entry_id = created_entry.id
+
+        # Retrieve the created entry
+        resp_get = self.client.get(f"/entry/api/v2/{created_entry_id}/")
+        self.assertEqual(resp_get.status_code, status.HTTP_200_OK, resp_get.content)
+        retrieved_data = resp_get.json()
+        self.assertEqual(retrieved_data["name"], entry_name)
+
+        # Check 'num' attribute in retrieval response
+        num_attr_retrieved = None
+        for attr in retrieved_data.get("attrs", []):
+            if attr["schema"]["name"] == "num":
+                num_attr_retrieved = attr
+                break
+        self.assertIsNotNone(num_attr_retrieved, "'num' attribute not found in retrieval response")
+        # Verify the value of the 'num' attribute - check for as_number format
+        self.assertAlmostEqual(num_attr_retrieved["value"]["as_number"], number_value, places=5)
+
+        # Test with None value for number
+        entry_name_none = "test_entry_with_number_none"
+        payload_none = {
+            "name": entry_name_none,
+            "schema": self.entity.id,
+            "attrs": [{"id": num_entity_attr.id, "value": None}],
+        }
+        resp_create_none = self.client.post(
+            f"/entity/api/v2/{self.entity.id}/entries/", payload_none, "application/json"
+        )
+        self.assertEqual(
+            resp_create_none.status_code, status.HTTP_202_ACCEPTED, resp_create_none.content
+        )
+
+        # Wait for job to complete and get the created entry
+        created_entry_none = Entry.objects.filter(name=entry_name_none, schema=self.entity).first()
+        self.assertIsNotNone(created_entry_none, "Entry with None value was not created")
+        created_entry_id_none = created_entry_none.id
+
+        resp_get_none = self.client.get(f"/entry/api/v2/{created_entry_id_none}/")
+        self.assertEqual(resp_get_none.status_code, status.HTTP_200_OK, resp_get_none.content)
+        retrieved_data_none = resp_get_none.json()
+        num_attr_retrieved_none = None
+        for attr in retrieved_data_none.get("attrs", []):
+            if attr["schema"]["name"] == "num":
+                num_attr_retrieved_none = attr
+                break
+        self.assertIsNotNone(num_attr_retrieved_none)
+        self.assertIsNone(num_attr_retrieved_none["value"]["as_number"])
+
+        # Test with invalid number value
+        entry_name_invalid = "test_entry_with_invalid_number"
+        payload_invalid = {
+            "name": entry_name_invalid,
+            "schema": self.entity.id,
+            "attrs": [
+                {
+                    "id": num_entity_attr.id,
+                    "value": "not-a-number",  # Invalid string for number
+                }
+            ],
+        }
+        resp_create_invalid = self.client.post(
+            f"/entity/api/v2/{self.entity.id}/entries/", payload_invalid, "application/json"
+        )
+        self.assertEqual(
+            resp_create_invalid.status_code,
+            status.HTTP_400_BAD_REQUEST,
+            resp_create_invalid.content,
+        )
