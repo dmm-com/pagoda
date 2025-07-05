@@ -182,6 +182,13 @@ export const schema = schemaForType<EditableEntry>()(
                 )
                 .optional(),
               asNumber: z.number().nullable().optional(),
+              asArrayNumber: z
+                .array(
+                  z.object({
+                    value: z.number().nullable(),
+                  }),
+                )
+                .optional(),
             }),
           })
           .refine(
@@ -232,6 +239,11 @@ export const schema = schemaForType<EditableEntry>()(
                   );
                 case AttributeTypes.number.type:
                   return value.value.asNumber != null;
+                case AttributeTypes.array_number.type:
+                  return (
+                    value.value.asArrayNumber?.some((v) => v.value != null) ??
+                    false
+                  );
               }
 
               return true;
