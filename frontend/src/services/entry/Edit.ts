@@ -12,10 +12,8 @@ import {
 } from "components/entry/entryForm/EditableEntry";
 import { Schema } from "components/entry/entryForm/EntryFormSchema";
 
-// zodの型推論を使ってEditableEntryAttrsの型を定義
 type SchemaAttrs = Schema["attrs"] extends Record<string, infer U> ? U : never;
 
-// 属性値の型定義（テストでも使用するためにエクスポート）
 export type EntryAttributeValueType =
   | string
   | boolean
@@ -56,11 +54,6 @@ export function formalizeEntryInfo(
             // Auto-generated types show it as object but it's actually scalar values
             const defaultValue = attrDetail.defaultValue;
             
-            // Debug: Log defaultValue to check its format
-            // if (defaultValue !== null && defaultValue !== undefined) {
-            //   console.log(`🔍 Default value for ${attrDetail.name}:`, defaultValue, typeof defaultValue);
-            // }
-            
             // Default values for when no default is specified
             const defaults = {
               asString: "",
@@ -98,11 +91,6 @@ export function formalizeEntryInfo(
                   break;
               }
             }
-
-            // Debug: Log final defaults object
-            // if (defaultValue !== null && defaultValue !== undefined) {
-            //   console.log(`✅ Final defaults for ${attrDetail.name}:`, defaults);
-            // }
 
             return defaults;
           }

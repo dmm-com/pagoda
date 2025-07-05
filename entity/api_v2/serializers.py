@@ -147,28 +147,6 @@ class EntityAttrCreateSerializer(serializers.ModelSerializer):
         elif attr_type == AttrType.BOOLEAN:
             if isinstance(default_value, bool):
                 return default_value
-
-            # Handle boolean-like strings
-            if isinstance(default_value, str):
-                if default_value.lower() in ["true", "1"]:
-                    return True
-                elif default_value.lower() in ["false", "0"]:
-                    return False
-                else:
-                    raise ValidationError(
-                        f"Invalid boolean value: '{default_value}'. "
-                        "Accepted values: true, false, 1, 0 (case-insensitive)"
-                    )
-
-            # Handle numeric booleans
-            if isinstance(default_value, (int, float)):
-                if default_value in [0, 1]:
-                    return bool(default_value)
-                else:
-                    raise ValidationError(
-                        f"Invalid boolean value: {default_value}. Numeric values must be 0 or 1"
-                    )
-
             raise ValidationError(
                 f"Default value must be a boolean for BOOLEAN type, "
                 f"got {type(default_value).__name__}"
@@ -274,28 +252,6 @@ class EntityAttrUpdateSerializer(serializers.ModelSerializer):
         elif attr_type == AttrType.BOOLEAN:
             if isinstance(default_value, bool):
                 return default_value
-
-            # Handle boolean-like strings
-            if isinstance(default_value, str):
-                if default_value.lower() in ["true", "1"]:
-                    return True
-                elif default_value.lower() in ["false", "0"]:
-                    return False
-                else:
-                    raise ValidationError(
-                        f"Invalid boolean value: '{default_value}'. "
-                        "Accepted values: true, false, 1, 0 (case-insensitive)"
-                    )
-
-            # Handle numeric booleans
-            if isinstance(default_value, (int, float)):
-                if default_value in [0, 1]:
-                    return bool(default_value)
-                else:
-                    raise ValidationError(
-                        f"Invalid boolean value: {default_value}. Numeric values must be 0 or 1"
-                    )
-
             raise ValidationError(
                 f"Default value must be a boolean for BOOLEAN type, "
                 f"got {type(default_value).__name__}"
@@ -417,28 +373,6 @@ class EntitySerializer(serializers.ModelSerializer):
         elif attr_type == AttrType.BOOLEAN:
             if isinstance(default_value, bool):
                 return default_value
-
-            # Handle boolean-like strings
-            if isinstance(default_value, str):
-                if default_value.lower() in ["true", "1"]:
-                    return True
-                elif default_value.lower() in ["false", "0"]:
-                    return False
-                else:
-                    raise ValidationError(
-                        f"Invalid boolean value: '{default_value}'. "
-                        "Accepted values: true, false, 1, 0 (case-insensitive)"
-                    )
-
-            # Handle numeric booleans
-            if isinstance(default_value, (int, float)):
-                if default_value in [0, 1]:
-                    return bool(default_value)
-                else:
-                    raise ValidationError(
-                        f"Invalid boolean value: {default_value}. Numeric values must be 0 or 1"
-                    )
-
             raise ValidationError(
                 f"Default value must be a boolean for BOOLEAN type, "
                 f"got {type(default_value).__name__}"
