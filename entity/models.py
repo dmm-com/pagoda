@@ -118,8 +118,8 @@ class EntityAttr(ACLBase):
         elif self.type == AttrType.BOOLEAN:
             return isinstance(value, bool)
         elif self.type == AttrType.NUMBER:
-            # Only accept int/float types
-            if not isinstance(value, (int, float)):
+            # Only accept int/float types, but reject bool (bool is a subclass of int)
+            if not isinstance(value, (int, float)) or isinstance(value, bool):
                 return False
             # Reject NaN and Infinity values
             if isinstance(value, float) and (math.isnan(value) or math.isinf(value)):
