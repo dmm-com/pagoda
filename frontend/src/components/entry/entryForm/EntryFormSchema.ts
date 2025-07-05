@@ -194,43 +194,43 @@ export const schema = schemaForType<EditableEntry>()(
                 case AttributeTypes.text.type:
                 case AttributeTypes.date.type:
                 case AttributeTypes.datetime.type:
-                  return value.value.asString !== "";
+                  return (value.value as any).asString !== "";
                 case AttributeTypes.array_string.type:
                   return (
-                    value.value.asArrayString?.some((v) => v.value !== "") ??
+                    (value.value as any).asArrayString?.some((v: any) => v.value !== "") ??
                     false
                   );
                 case AttributeTypes.object.type:
-                  return value.value.asObject != null;
+                  return (value.value as any).asObject != null;
                 case AttributeTypes.array_object.type:
                   return (
-                    value.value.asArrayObject?.some((v) => v != null) ?? false
+                    (value.value as any).asArrayObject?.some((v: any) => v != null) ?? false
                   );
                 case AttributeTypes.named_object.type:
                   return (
-                    value.value.asNamedObject?.name !== "" ||
-                    value.value.asNamedObject?.object != null
+                    (value.value as any).asNamedObject?.name !== "" ||
+                    (value.value as any).asNamedObject?.object != null
                   );
                 case AttributeTypes.array_named_object.type:
                   return (
-                    value.value.asArrayNamedObject?.some((v) => {
+                    (value.value as any).asArrayNamedObject?.some((v: any) => {
                       return v.name !== "" || v.object != null;
                     }) ?? false
                   );
                 case AttributeTypes.group.type:
-                  return value.value.asGroup != null;
+                  return (value.value as any).asGroup != null;
                 case AttributeTypes.array_group.type:
                   return (
-                    value.value.asArrayGroup?.some((v) => v != null) ?? false
+                    (value.value as any).asArrayGroup?.some((v: any) => v != null) ?? false
                   );
                 case AttributeTypes.role.type:
-                  return value.value.asRole != null;
+                  return (value.value as any).asRole != null;
                 case AttributeTypes.array_role.type:
                   return (
-                    value.value.asArrayRole?.some((v) => v != null) ?? false
+                    (value.value as any).asArrayRole?.some((v: any) => v != null) ?? false
                   );
                 case AttributeTypes.number.type:
-                  return value.value.asNumber != null;
+                  return (value.value as any).asNumber != null;
               }
 
               return true;
@@ -244,8 +244,8 @@ export const schema = schemaForType<EditableEntry>()(
               case AttributeTypes.datetime.type:
                 return (
                   // check if the non-empty value is a valid date
-                  (value.asString ?? "") == "" ||
-                  !isNaN(new Date(value.asString ?? "").getTime())
+                  ((value as any).asString ?? "") == "" ||
+                  !isNaN(new Date((value as any).asString ?? "").getTime())
                 );
             }
             return true;

@@ -342,7 +342,7 @@ test("formalizeEntryInfo should use defaultValue when creating new entry", () =>
 test("convertAttrsFormatCtoS() returns expected value", () => {
   const cases: Array<{
     client_data: {
-      type: EntryAttributeTypeTypeEnum;
+      type: typeof EntryAttributeTypeTypeEnum[keyof typeof EntryAttributeTypeTypeEnum];
       value: EditableEntryAttrValue;
     };
     expected_data: EntryAttributeValueType;
@@ -650,7 +650,7 @@ test("convertAttrsFormatCtoS() should return expected value", () => {
 test("convertAttrsFormatCtoS() returns expected value when nothing value", () => {
   const cases: Array<{
     client_data: {
-      type: EntryAttributeTypeTypeEnum;
+      type: typeof EntryAttributeTypeTypeEnum[keyof typeof EntryAttributeTypeTypeEnum];
       value: EditableEntryAttrValue;
     };
     expected_data: EntryAttributeValueType;

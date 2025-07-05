@@ -196,7 +196,8 @@ export const AttributeField: FC<Props> = ({
             const isDefaultValueSupported = 
               attrType === AttributeTypes.string.type ||
               attrType === AttributeTypes.text.type ||
-              attrType === AttributeTypes.boolean.type;
+              attrType === AttributeTypes.boolean.type ||
+              attrType === AttributeTypes.number.type;
 
             // Boolean type gets a checkbox
             if (attrType === AttributeTypes.boolean.type) {
@@ -204,6 +205,21 @@ export const AttributeField: FC<Props> = ({
                 <Checkbox
                   checked={field.value ?? false}
                   onChange={(e) => field.onChange(e.target.checked)}
+                  disabled={!isWritable}
+                />
+              );
+            }
+            
+            // Number type gets a number input
+            if (attrType === AttributeTypes.number.type) {
+              return (
+                <TextField
+                  {...field}
+                  type="number"
+                  value={field.value ?? ""}
+                  placeholder="デフォルト値"
+                  size="small"
+                  fullWidth
                   disabled={!isWritable}
                 />
               );
