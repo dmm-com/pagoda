@@ -41,6 +41,7 @@ export const BaseAttributeTypes = {
   date: 1 << 5,
   role: 1 << 6,
   datetime: 1 << 7,
+  number: 1 << 8,
   array: 1 << 10,
   named: 1 << 11,
 };
@@ -104,6 +105,10 @@ export const AttributeTypes: Record<string, { name: string; type: number }> = {
   datetime: {
     name: "datetime",
     type: BaseAttributeTypes.datetime,
+  },
+  number: {
+    name: "number",
+    type: BaseAttributeTypes.number,
   },
 };
 
@@ -177,4 +182,18 @@ export const ACLTypeLabels: Record<ACLType, string> = {
   [ACLType.Readable]: "閲覧",
   [ACLType.Writable]: "閲覧・編集",
   [ACLType.Full]: "閲覧・編集・削除",
+};
+
+export const TITLE_TEMPLATES = {
+  userList: "User List",
+  userEdit: "EditUser",
+  groupList: "Group List",
+  groupEdit: "EditGroup",
+  roleList: "Role List",
+  roleEdit: "EditRole",
+  entryList: "Item List",
+  entryDetail: "Item Detail",
+  entryEdit: "EditItem",
+  entityList: "Model List",
+  entityEdit: "EditModel",
 };

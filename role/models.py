@@ -1,7 +1,7 @@
 import importlib
 import sys
 from datetime import datetime
-from typing import List
+from typing import TYPE_CHECKING, List
 
 from django.conf import settings
 from django.contrib.auth.models import Group, Permission
@@ -11,6 +11,9 @@ from simple_history.models import HistoricalRecords
 
 from airone.lib.acl import ACLType
 from airone.lib.types import AttrType
+
+if TYPE_CHECKING:
+    from acl.models import ACLBase
 
 
 class Role(models.Model):
@@ -76,7 +79,7 @@ class Role(models.Model):
             list(self.admin_groups.all()),
         )
 
-    def is_permitted(self, target_obj, permission_level) -> bool:
+    def is_permitted(self, target_obj: "ACLBase", permission_level) -> bool:
         """This method has regulation
         * You don't call this method to check object permission directly because,
           this method don't care about hieralchical data structure
@@ -126,7 +129,7 @@ class Role(models.Model):
 
         job_register_referrals.run()
 
-    def get_current_permission(self, aclbase) -> int:
+    def get_current_permission(self, aclbase: "ACLBase") -> int:
         permissions = [x for x in self.permissions.all() if x.get_objid() == aclbase.id]
         if permissions:
             return permissions[0].get_aclid()

@@ -26,7 +26,7 @@ class UserPermission(BasePermission):
             "create": current_user.is_superuser,
             "update": current_user.is_superuser,
         }
-        return permisson.get(view.action)
+        return permisson.get(view.action, False)
 
 
 class GroupAPI(viewsets.ModelViewSet):

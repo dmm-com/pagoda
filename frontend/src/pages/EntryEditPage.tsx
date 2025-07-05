@@ -5,8 +5,6 @@ import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
 import { v4 as uuidv4 } from "uuid";
 
-import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
-
 import { Loading } from "components/common/Loading";
 import { PageHeader } from "components/common/PageHeader";
 import { SubmitButton } from "components/common/SubmitButton";
@@ -17,11 +15,14 @@ import {
   EntryFormProps,
 } from "components/entry/EntryForm";
 import { Schema, schema } from "components/entry/entryForm/EntryFormSchema";
+import { useAsyncWithThrow } from "hooks/useAsyncWithThrow";
 import { useFormNotification } from "hooks/useFormNotification";
+import { usePageTitle } from "hooks/usePageTitle";
 import { usePrompt } from "hooks/usePrompt";
 import { useTypedParams } from "hooks/useTypedParams";
 import { aironeApiClient } from "repository/AironeApiClient";
 import { entityEntriesPath, entryDetailsPath } from "routes/Routes";
+import { TITLE_TEMPLATES } from "services";
 import {
   extractAPIException,
   isResponseError,
@@ -120,6 +121,15 @@ export const EntryEditPage: FC<Props> = ({
       }
     }
   }, [isSubmitSuccessful]);
+
+  usePageTitle(
+    entity.loading || (entryId && entry.loading)
+      ? "読み込み中..."
+      : TITLE_TEMPLATES.entryEdit,
+    {
+      prefix: entry.value?.name ?? (entryId == null ? "新規作成" : undefined),
+    },
+  );
 
   const handleSubmitOnValid = async (entry: Schema) => {
     const updatedAttr = convertAttrsFormatCtoS(entry.attrs);

@@ -96,6 +96,7 @@ test("formalizeEntryInfo should return expect value", () => {
           asArrayGroup: [],
           asArrayRole: [],
           asArrayNamedObject: [{ name: "", object: null, _boolean: false }],
+          asNumber: null,
           asObject: null,
           asGroup: null,
           asRole: null,
@@ -118,6 +119,7 @@ test("formalizeEntryInfo should return expect value", () => {
           asArrayGroup: [],
           asArrayRole: [],
           asArrayNamedObject: [{ name: "", object: null, _boolean: false }],
+          asNumber: null,
           asObject: null,
           asGroup: null,
           asRole: null,
@@ -140,6 +142,7 @@ test("formalizeEntryInfo should return expect value", () => {
           asArrayGroup: [],
           asArrayRole: [],
           asArrayNamedObject: [{ name: "", object: null, _boolean: false }],
+          asNumber: null,
           asObject: null,
           asGroup: null,
           asRole: null,
@@ -362,6 +365,16 @@ test("convertAttrsFormatCtoS() returns expected value", () => {
         },
       },
       expected_data: "value",
+    },
+    // number
+    {
+      client_data: {
+        type: EntryAttributeTypeTypeEnum.NUMBER,
+        value: {
+          asNumber: 2,
+        },
+      },
+      expected_data: 2,
     },
     // object
     {
@@ -660,6 +673,16 @@ test("convertAttrsFormatCtoS() returns expected value when nothing value", () =>
         },
       },
       expected_data: "",
+    },
+    // number
+    {
+      client_data: {
+        type: EntryAttributeTypeTypeEnum.NUMBER,
+        value: {
+          asNumber: null,
+        },
+      },
+      expected_data: null,
     },
     // object
     {

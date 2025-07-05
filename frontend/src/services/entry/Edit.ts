@@ -67,6 +67,7 @@ export function formalizeEntryInfo(
               asGroup: null,
               asRole: null,
               asNamedObject: { name: "", object: null },
+              asNumber: null,
             };
 
             // Apply defaultValue for supported types (backend returns raw primitive values)
@@ -161,6 +162,10 @@ export function formalizeEntryInfo(
                 result.asArrayRole = value.asArrayRole;
               }
 
+              if (value.asNumber !== undefined) {
+                result.asNumber = value.asNumber;
+              }
+
               return result;
           }
         }
@@ -199,6 +204,9 @@ export function convertAttrsFormatCtoS(
 
         case EntryAttributeTypeTypeEnum.BOOLEAN:
           return attrValue.asBoolean;
+
+        case EntryAttributeTypeTypeEnum.NUMBER:
+          return attrValue.asNumber;
 
         case EntryAttributeTypeTypeEnum.OBJECT:
           return attrValue.asObject?.id ?? null;

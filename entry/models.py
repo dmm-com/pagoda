@@ -1,3 +1,4 @@
+import math
 import re
 from collections.abc import Iterable
 from datetime import date, datetime
@@ -196,6 +197,16 @@ class AttributeValue(models.Model):
             case AttrType.STRING | AttrType.TEXT:
                 value = self.value
 
+            case AttrType.NUMBER:
+                # Convert string value back to number for NUMBER type
+                if self.value and self.value.strip():
+                    try:
+                        value = float(self.value)
+                    except ValueError:
+                        value = None
+                else:
+                    value = None
+
             case AttrType.BOOLEAN:
                 value = self.boolean
 
@@ -268,6 +279,15 @@ class AttributeValue(models.Model):
                 return self.referral
             case AttrType.BOOLEAN:
                 return self.boolean
+            case AttrType.NUMBER:
+                # Convert string value back to number for NUMBER type
+                if self.value and self.value.strip():
+                    try:
+                        return float(self.value)
+                    except ValueError:
+                        return None
+                else:
+                    return None
             case AttrType.DATE:
                 return self.date
             case AttrType.NAMED_OBJECT:
@@ -405,6 +425,29 @@ class AttributeValue(models.Model):
             match t:
                 case AttrType.STRING | AttrType.TEXT:
                     return _is_validate_attr_str(value)
+
+                case AttrType.NUMBER:
+                    if value is None or value == "":
+                        if is_mandatory:
+                            raise ValueError("Numeric value is mandatory and cannot be empty.")
+                        return True
+                    if isinstance(value, (int, float)):
+                        if isinstance(value, float) and (math.isnan(value) or math.isinf(value)):
+                            raise Exception("value(%s) is NaN or Infinity" % value)
+                        return True
+                    if isinstance(value, str):
+                        try:
+                            f_val = float(value)
+                            if math.isnan(f_val) or math.isinf(f_val):
+                                raise Exception("value(%s) is NaN or Infinity" % value)
+                            if len(value.encode("utf-8")) > AttributeValue.MAXIMUM_VALUE_SIZE:
+                                raise ExceedLimitError("value is exceeded the limit")
+                            return True
+                        except ValueError:
+                            raise Exception("value(%s) is not a valid number string" % value)
+                        except ExceedLimitError as e:
+                            raise e
+                    raise Exception("value(%s) is not a valid number type or format" % value)
 
                 case AttrType.OBJECT:
                     return _is_validate_attr_object(value)
@@ -613,6 +656,24 @@ class Attribute(ACLBase):
 
             case AttrType.BOOLEAN:
                 return last_value.boolean != bool(recv_value)
+
+            case AttrType.NUMBER:
+                # Get current number value from the value field
+                current_number = None
+                if last_value.value and last_value.value.strip():
+                    try:
+                        current_number = float(last_value.value)
+                    except ValueError:
+                        current_number = None
+
+                if recv_value is None or recv_value == "":
+                    return current_number is not None
+                try:
+                    recv_number = float(recv_value)
+                    return current_number != recv_number
+                except (ValueError, TypeError):
+                    # Invalid input should always trigger an update
+                    return True
 
             case AttrType.GROUP:
                 last_group_id = str(last_value.group.id) if last_value.group else ""
@@ -868,6 +929,25 @@ class Attribute(ACLBase):
             return isinstance(val, (model, int, str)) or val is None
 
         match self.schema.type:
+            case AttrType.NUMBER:
+                if value is None or value == "":
+                    if self.schema.is_mandatory:
+                        raise ValueError("Numeric value is mandatory and cannot be empty.")
+                    return True
+                if isinstance(value, (int, float)):
+                    if isinstance(value, float) and (math.isnan(value) or math.isinf(value)):
+                        return False  # NaN or Infinity is not a valid storable number here
+                    return True
+                if isinstance(value, str):
+                    try:
+                        f_val = float(value)
+                        if math.isnan(f_val) or math.isinf(f_val):
+                            return False  # NaN or Infinity is not a valid storable number here
+                        return True
+                    except ValueError:
+                        return False
+                return False
+
             case AttrType.NAMED_OBJECT:
                 return isinstance(value, dict)
 
@@ -961,8 +1041,32 @@ class Attribute(ACLBase):
                 case AttrType.STRING | AttrType.TEXT:
                     attrv.boolean = boolean
                     attrv.value = str(val)
-                    if not attrv.value:
-                        return None
+                    if not attrv.value:  # if empty string or None coerced to ""
+                        return None  # For STRING, empty means no AttributeValue
+
+                case AttrType.NUMBER:
+                    if val is None or val == "":
+                        attrv.value = ""
+                    elif isinstance(val, (int, float)):
+                        if isinstance(val, float) and (math.isnan(val) or math.isinf(val)):
+                            # This should ideally be caught by validation earlier
+                            attrv.value = ""  # Or handle as error
+                        else:
+                            attrv.value = str(float(val))
+                    elif isinstance(val, str):
+                        # Already validated by _validate_value, so should be
+                        # convertible and not NaN/Inf
+                        try:
+                            float_val = float(val)
+                            attrv.value = str(float_val)
+                        except ValueError:
+                            # Fallback, should have been caught by validation
+                            attrv.value = ""
+                    else:
+                        # Should not happen if validation is correct
+                        attrv.value = ""
+                    # For NUMBER, an AttributeValue is created regardless of value
+                    # to maintain consistency with other types.
 
                 case AttrType.GROUP:
                     attrv.boolean = boolean
@@ -1169,6 +1273,20 @@ class Attribute(ACLBase):
 
             case AttrType.BOOLEAN:
                 return value
+
+            case AttrType.NUMBER:
+                # Handle numeric values for import - convert strings to numeric format
+                if value is None or value == "":
+                    return None
+                elif isinstance(value, (int, float)):
+                    return float(value)
+                elif isinstance(value, str):
+                    try:
+                        return float(value)
+                    except ValueError:
+                        return None
+                else:
+                    return None
 
             case AttrType.DATE:
                 return value
@@ -1718,6 +1836,16 @@ class Entry(ACLBase):
                 case AttrType.DATETIME:
                     attrinfo["last_value"] = last_value.datetime
 
+                case AttrType.NUMBER:
+                    # Convert string value back to number for NUMBER type
+                    if last_value.value and last_value.value.strip():
+                        try:
+                            attrinfo["last_value"] = float(last_value.value)
+                        except ValueError:
+                            attrinfo["last_value"] = None
+                    else:
+                        attrinfo["last_value"] = None
+
             ret_attrs.append(attrinfo)
 
         return ret_attrs
@@ -2024,6 +2152,16 @@ class Entry(ACLBase):
                     if role.is_active:
                         attrinfo["value"] = truncate(role.name)
                         attrinfo["referral_id"] = role.id
+
+            elif entity_attr.type & AttrType.NUMBER:
+                # Convert string value to number for NUMBER type
+                if attrv.value and attrv.value.strip():
+                    try:
+                        attrinfo["value"] = float(attrv.value)
+                    except ValueError:
+                        attrinfo["value"] = ""
+                else:
+                    attrinfo["value"] = ""
 
             # Basically register attribute information whatever value doesn't exist
             if not (entity_attr.type & AttrType._ARRAY and not is_recursive):
@@ -2349,7 +2487,7 @@ class AdvancedSearchAttributeIndex(models.Model):
         cls, entry: Entry, entity_attr: EntityAttr, attrv: AttributeValue | None
     ) -> "AdvancedSearchAttributeIndex":
         key: str | None = None
-        value: dict[str, Any] | list[Any] | None = None
+        value: dict[str, Any] | list[Any] | float | None = None
 
         if attrv:
             match entity_attr.type:
@@ -2386,6 +2524,19 @@ class AdvancedSearchAttributeIndex(models.Model):
                 case AttrType.ROLE:
                     key = attrv.role.name if attrv.role else None
                     value = {"id": attrv.role.id, "name": attrv.role.name} if attrv.role else None
+                case AttrType.NUMBER:
+                    # Convert string value to number for NUMBER type
+                    if attrv.value and attrv.value.strip():
+                        try:
+                            number_value = float(attrv.value)
+                            key = str(number_value)
+                            value = number_value
+                        except ValueError:
+                            key = None
+                            value = None
+                    else:
+                        key = None
+                        value = None
                 case AttrType.ARRAY_STRING:
                     value = [v.value for v in attrv.data_array.all()]
                     key = ",".join(value)
@@ -2434,16 +2585,12 @@ class AdvancedSearchAttributeIndex(models.Model):
     @property
     def value(self):
         match self.type:
-            case (
-                AttrType.STRING
-                | AttrType.TEXT
-                | AttrType.BOOLEAN
-                | AttrType.DATE
-                | AttrType.DATETIME
-            ):
+            case AttrType.STRING | AttrType.TEXT | AttrType.DATE | AttrType.DATETIME:
                 return self.key
             case AttrType.BOOLEAN:
-                return self.key == "true"
+                return self.key
+            case AttrType.NUMBER:
+                return self.raw_value
             case (
                 AttrType.OBJECT
                 | AttrType.NAMED_OBJECT
@@ -2509,7 +2656,7 @@ class PrefetchedItemWrapper(object):
                         for v in attrv.co_values
                     ]
                 else:
-                    return [PrefetchedItemWrapper(None, attrv) for v in attrv.co_values]
+                    return [PrefetchedItemWrapper(None, v) for v in attrv.co_values]
 
             elif attr.schema.type & AttrType.OBJECT:
                 return PrefetchedItemWrapper(
@@ -2533,6 +2680,13 @@ class PrefetchedItemWrapper(object):
 
         return ""
 
+    @property
+    def boolean(self) -> bool:
+        if self.attrv is not None:
+            return self.attrv.boolean
+
+        return False
+
 
 class ItemWalker(object):
     @classmethod
@@ -2546,7 +2700,7 @@ class ItemWalker(object):
         """
         prefetch_co_values = Prefetch(
             lookup="data_array",
-            queryset=AttributeValue.objects.filter(referral__is_active=True)
+            queryset=AttributeValue.objects.exclude(referral__is_active=False)
             .select_related("referral__entry")
             .prefetch_related(*nested_prefetch),
             to_attr="co_values",

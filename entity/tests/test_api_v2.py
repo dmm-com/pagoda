@@ -275,11 +275,24 @@ class ViewTest(AironeViewTest):
                     "note": "",
                     "default_value": None,
                 },
+                {
+                    "id": self.entity.attrs.get(name="num").id,
+                    "index": 14,
+                    "is_delete_in_chain": False,
+                    "is_mandatory": False,
+                    "is_summarized": False,
+                    "is_writable": True,
+                    "name": "num",
+                    "referral": [],
+                    "type": AttrType.NUMBER,
+                    "note": "",
+                    "default_value": None,
+                },
             ],
         )
 
         entity_attr: EntityAttr = self.entity.attrs.get(name="refs")
-        entity_attr.index = 14
+        entity_attr.index = 15
         entity_attr.is_delete_in_chain = True
         entity_attr.is_mandatory = True
         entity_attr.referral.add(self.ref_entity)
@@ -290,7 +303,7 @@ class ViewTest(AironeViewTest):
             resp.json()["attrs"][-1],
             {
                 "id": entity_attr.id,
-                "index": 14,
+                "index": 15,
                 "name": "refs",
                 "type": AttrType.ARRAY_OBJECT,
                 "is_mandatory": True,
@@ -2983,6 +2996,7 @@ class ViewTest(AironeViewTest):
                 {"id": attr["date"].id, "value": "2018-12-31"},
                 {"id": attr["role"].id, "value": self.role.id},
                 {"id": attr["roles"].id, "value": [self.role.id]},
+                {"id": attr["num"].id, "value": 123.45},
                 {"id": attr["datetime"].id, "value": "2018-12-31T00:00Z"},
             ],
         }
@@ -3007,6 +3021,7 @@ class ViewTest(AironeViewTest):
                 "groups": ["group0"],
                 "name": {"hoge": "r-0"},
                 "names": [{"hoge": "r-0"}],
+                "num": 123.45,
                 "ref": "r-0",
                 "refs": ["r-0"],
                 "text": "hoge\nfuga",
