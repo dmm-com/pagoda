@@ -450,7 +450,7 @@ class EntryCreateSerializer(EntryBaseSerializer):
                 attr.add_value(user, attr_data[0]["value"])
             else:
                 # Check if entity attribute has a default value (only for supported types)
-                supported_types = [AttrType.STRING, AttrType.TEXT, AttrType.BOOLEAN]
+                supported_types = [AttrType.STRING, AttrType.TEXT, AttrType.BOOLEAN, AttrType.NUMBER]
                 if entity_attr.type in supported_types:
                     default_value = entity_attr.get_default_value()
                     if default_value is not None:
