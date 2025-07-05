@@ -23,6 +23,7 @@ import {
   extractAPIException,
   isResponseError,
 } from "services/AironeAPIErrorUtil";
+import { BaseAttributeTypes } from "services/Constants";
 
 export const EntityEditPage: FC = () => {
   const { entityId } = useTypedParams<{ entityId: number }>();
@@ -74,19 +75,38 @@ export const EntityEditPage: FC = () => {
     // Adjusted attributes for the API
     const attrs = entityForm.attrs
       .filter((attr) => attr.isWritable)
-      .map((attr, index) => ({
-        id: attr.id,
-        name: attr.name,
-        type: attr.type,
-        index: index,
-        isMandatory: attr.isMandatory,
-        isDeleteInChain: attr.isDeleteInChain,
-        isSummarized: attr.isSummarized,
-        referral: attr.referral.map((r) => r.id),
-        isDeleted: false,
-        note: attr.note,
-        defaultValue: attr.defaultValue,
-      }));
+      .map((attr, index) => {
+        // Convert defaultValue to appropriate type
+        let processedDefaultValue: any = null;
+        if (attr.defaultValue != null) {
+          if (attr.type === BaseAttributeTypes.number) {
+            const numValue = Number(attr.defaultValue);
+            if (!isNaN(numValue)) {
+              processedDefaultValue = numValue;
+            }
+          } else if (attr.type === BaseAttributeTypes.bool) {
+            processedDefaultValue = Boolean(attr.defaultValue);
+          } else if (attr.type === BaseAttributeTypes.string || attr.type === BaseAttributeTypes.text) {
+            processedDefaultValue = String(attr.defaultValue);
+          } else {
+            processedDefaultValue = attr.defaultValue;
+          }
+        }
+
+        return {
+          id: attr.id,
+          name: attr.name,
+          type: attr.type,
+          index: index,
+          isMandatory: attr.isMandatory,
+          isDeleteInChain: attr.isDeleteInChain,
+          isSummarized: attr.isSummarized,
+          referral: attr.referral.map((r) => r.id),
+          isDeleted: false,
+          note: attr.note,
+          defaultValue: processedDefaultValue,
+        };
+      });
 
     const deletedAttrs =
       entity.value?.attrs
@@ -196,7 +216,7 @@ export const EntityEditPage: FC = () => {
             id: ref.id,
             name: ref.name,
           })),
-          defaultValue: attr.defaultValue,
+          defaultValue: attr.defaultValue as string | number | boolean | null | undefined,
           isSummarized: attr.isSummarized,
         })),
       };

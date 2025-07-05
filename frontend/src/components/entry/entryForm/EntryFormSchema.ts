@@ -1,5 +1,4 @@
 import { EntryAttributeTypeTypeEnum } from "@dmm-com/airone-apiclient-typescript-fetch";
-import { AttributeTypes } from "services/Constants";
 import { schemaForType } from "services/ZodSchemaUtil";
 import { z } from "zod";
 
@@ -190,46 +189,46 @@ export const schema = schemaForType<EditableEntry>()(
               }
 
               switch (value.type) {
-                case AttributeTypes.string.type:
-                case AttributeTypes.text.type:
-                case AttributeTypes.date.type:
-                case AttributeTypes.datetime.type:
+                case EntryAttributeTypeTypeEnum.STRING:
+                case EntryAttributeTypeTypeEnum.TEXT:
+                case EntryAttributeTypeTypeEnum.DATE:
+                case EntryAttributeTypeTypeEnum.DATETIME:
                   return (value.value as any).asString !== "";
-                case AttributeTypes.array_string.type:
+                case EntryAttributeTypeTypeEnum.ARRAY_STRING:
                   return (
                     (value.value as any).asArrayString?.some((v: any) => v.value !== "") ??
                     false
                   );
-                case AttributeTypes.object.type:
+                case EntryAttributeTypeTypeEnum.OBJECT:
                   return (value.value as any).asObject != null;
-                case AttributeTypes.array_object.type:
+                case EntryAttributeTypeTypeEnum.ARRAY_OBJECT:
                   return (
                     (value.value as any).asArrayObject?.some((v: any) => v != null) ?? false
                   );
-                case AttributeTypes.named_object.type:
+                case EntryAttributeTypeTypeEnum.NAMED_OBJECT:
                   return (
                     (value.value as any).asNamedObject?.name !== "" ||
                     (value.value as any).asNamedObject?.object != null
                   );
-                case AttributeTypes.array_named_object.type:
+                case EntryAttributeTypeTypeEnum.ARRAY_NAMED_OBJECT:
                   return (
                     (value.value as any).asArrayNamedObject?.some((v: any) => {
                       return v.name !== "" || v.object != null;
                     }) ?? false
                   );
-                case AttributeTypes.group.type:
+                case EntryAttributeTypeTypeEnum.GROUP:
                   return (value.value as any).asGroup != null;
-                case AttributeTypes.array_group.type:
+                case EntryAttributeTypeTypeEnum.ARRAY_GROUP:
                   return (
                     (value.value as any).asArrayGroup?.some((v: any) => v != null) ?? false
                   );
-                case AttributeTypes.role.type:
+                case EntryAttributeTypeTypeEnum.ROLE:
                   return (value.value as any).asRole != null;
-                case AttributeTypes.array_role.type:
+                case EntryAttributeTypeTypeEnum.ARRAY_ROLE:
                   return (
                     (value.value as any).asArrayRole?.some((v: any) => v != null) ?? false
                   );
-                case AttributeTypes.number.type:
+                case EntryAttributeTypeTypeEnum.NUMBER:
                   return (value.value as any).asNumber != null;
               }
 
@@ -240,8 +239,8 @@ export const schema = schemaForType<EditableEntry>()(
           )
           .refine(({ value, type }) => {
             switch (type) {
-              case AttributeTypes.date.type:
-              case AttributeTypes.datetime.type:
+              case EntryAttributeTypeTypeEnum.DATE:
+              case EntryAttributeTypeTypeEnum.DATETIME:
                 return (
                   // check if the non-empty value is a valid date
                   ((value as any).asString ?? "") == "" ||

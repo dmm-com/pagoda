@@ -203,7 +203,7 @@ export const AttributeField: FC<Props> = ({
             if (attrType === AttributeTypes.boolean.type) {
               return (
                 <Checkbox
-                  checked={field.value ?? false}
+                  checked={Boolean(field.value) ?? false}
                   onChange={(e) => field.onChange(e.target.checked)}
                   disabled={!isWritable}
                 />

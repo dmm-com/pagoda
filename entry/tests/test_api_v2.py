@@ -5195,6 +5195,7 @@ class ViewTest(BaseViewTest):
                 {"name": "string_with_default", "type": AttrType.STRING},
                 {"name": "bool_with_default", "type": AttrType.BOOLEAN},
                 {"name": "text_with_default", "type": AttrType.TEXT},
+                {"name": "number_with_default", "type": AttrType.NUMBER},
                 {"name": "string_no_default", "type": AttrType.STRING},
             ],
         )
@@ -5211,6 +5212,10 @@ class ViewTest(BaseViewTest):
         text_attr = entity.attrs.get(name="text_with_default")
         text_attr.default_value = "default text value"
         text_attr.save()
+
+        number_attr = entity.attrs.get(name="number_with_default")
+        number_attr.default_value = 42.5
+        number_attr.save()
 
         # Create entry without providing values for attributes with defaults
         params = {
@@ -5244,6 +5249,9 @@ class ViewTest(BaseViewTest):
         text_attr_value = entry.attrs.get(schema=text_attr)
         self.assertEqual(text_attr_value.get_latest_value().get_value(), "default text value")
 
+        number_attr_value = entry.attrs.get(schema=number_attr)
+        self.assertEqual(number_attr_value.get_latest_value().get_value(), 42.5)
+
         # Check that attribute without default was not created (no value provided)
         string_no_default_attr = entity.attrs.get(name="string_no_default")
         string_no_default_value = entry.attrs.get(schema=string_no_default_attr)
@@ -5259,6 +5267,7 @@ class ViewTest(BaseViewTest):
             attrs=[
                 {"name": "string_attr", "type": AttrType.STRING},
                 {"name": "bool_attr", "type": AttrType.BOOLEAN},
+                {"name": "number_attr", "type": AttrType.NUMBER},
             ],
         )
 
@@ -5271,12 +5280,17 @@ class ViewTest(BaseViewTest):
         bool_attr.default_value = True
         bool_attr.save()
 
+        number_attr = entity.attrs.get(name="number_attr")
+        number_attr.default_value = 123.456
+        number_attr.save()
+
         # Create entry providing values that should override defaults
         params = {
             "name": "test_entry_override",
             "attrs": [
                 {"id": string_attr.id, "value": "provided value"},
                 {"id": bool_attr.id, "value": False},
+                {"id": number_attr.id, "value": 999.999},
             ],
         }
 
@@ -5301,6 +5315,11 @@ class ViewTest(BaseViewTest):
         self.assertEqual(
             bool_attr_value.get_latest_value().get_value(), False
         )  # Not default (True)
+
+        number_attr_value = entry.attrs.get(schema=number_attr)
+        self.assertEqual(
+            number_attr_value.get_latest_value().get_value(), 999.999
+        )  # Not default (123.456)
 
     @mock.patch("entry.tasks.create_entry_v2.delay", mock.Mock(side_effect=tasks.create_entry_v2))
     def test_create_entry_unsupported_type_no_default(self):
@@ -5361,6 +5380,73 @@ class ViewTest(BaseViewTest):
             date_attr_value = date_attr_values.first()
             # Should not be the custom default "2023-01-01"
             self.assertNotEqual(date_attr_value.get_latest_value().get_value(), "2023-01-01")
+
+    @mock.patch("entry.tasks.create_entry_v2.delay", mock.Mock(side_effect=tasks.create_entry_v2))
+    def test_create_entry_number_default_value_scenarios(self):
+        """Test Number type default value scenarios (integer, float, zero, negative)"""
+        # Create entity with number attributes
+        entity = self.create_entity(
+            self.user,
+            "NumberTestEntity",
+            attrs=[
+                {"name": "number_int", "type": AttrType.NUMBER},
+                {"name": "number_float", "type": AttrType.NUMBER},
+                {"name": "number_zero", "type": AttrType.NUMBER},
+                {"name": "number_negative", "type": AttrType.NUMBER},
+            ],
+        )
+
+        # Set different number default values
+        number_int_attr = entity.attrs.get(name="number_int")
+        number_int_attr.default_value = 42
+        number_int_attr.save()
+
+        number_float_attr = entity.attrs.get(name="number_float")
+        number_float_attr.default_value = 3.14159
+        number_float_attr.save()
+
+        number_zero_attr = entity.attrs.get(name="number_zero")
+        number_zero_attr.default_value = 0
+        number_zero_attr.save()
+
+        number_negative_attr = entity.attrs.get(name="number_negative")
+        number_negative_attr.default_value = -123.45
+        number_negative_attr.save()
+
+        # Create entry without providing values for number attributes
+        params = {
+            "name": "test_entry_number_defaults",
+            "attrs": [],
+        }
+
+        resp = self.client.post(
+            "/entity/api/v2/%s/entries/" % entity.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
+
+        # Wait for entry creation job to complete
+        job = Job.objects.filter(operation=JobOperation.CREATE_ENTRY_V2).last()
+        self.assertEqual(job.status, JobStatus.DONE)
+
+        # Verify entry was created with number default values
+        entry = Entry.objects.get(name="test_entry_number_defaults", schema=entity)
+        self.assertIsNotNone(entry)
+
+        # Check integer default
+        number_int_value = entry.attrs.get(schema=number_int_attr)
+        self.assertEqual(number_int_value.get_latest_value().get_value(), 42)
+
+        # Check float default
+        number_float_value = entry.attrs.get(schema=number_float_attr)
+        self.assertAlmostEqual(number_float_value.get_latest_value().get_value(), 3.14159, places=5)
+
+        # Check zero default
+        number_zero_value = entry.attrs.get(schema=number_zero_attr)
+        self.assertEqual(number_zero_value.get_latest_value().get_value(), 0)
+
+        # Check negative default
+        number_negative_value = entry.attrs.get(schema=number_negative_attr)
+        self.assertEqual(number_negative_value.get_latest_value().get_value(), -123.45)
 
     @patch("entry.tasks.create_entry_v2.delay", Mock(side_effect=tasks.create_entry_v2))
     def test_create_and_retrieve_entry_with_number_attr(self):

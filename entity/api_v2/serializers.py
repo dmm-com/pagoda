@@ -157,9 +157,7 @@ class EntityAttrCreateSerializer(serializers.ModelSerializer):
         elif attr_type == AttrType.NUMBER:
             if isinstance(default_value, (int, float)) and not isinstance(default_value, bool):
                 if math.isnan(default_value) or math.isinf(default_value):
-                    raise ValidationError(
-                        "Default value cannot be NaN or Infinity for NUMBER type"
-                    )
+                    raise ValidationError("Default value cannot be NaN or Infinity for NUMBER type")
                 return default_value
             raise ValidationError(
                 f"Default value must be a number for NUMBER type, "
@@ -275,9 +273,7 @@ class EntityAttrUpdateSerializer(serializers.ModelSerializer):
         elif attr_type == AttrType.NUMBER:
             if isinstance(default_value, (int, float)) and not isinstance(default_value, bool):
                 if math.isnan(default_value) or math.isinf(default_value):
-                    raise ValidationError(
-                        "Default value cannot be NaN or Infinity for NUMBER type"
-                    )
+                    raise ValidationError("Default value cannot be NaN or Infinity for NUMBER type")
                 return default_value
             raise ValidationError(
                 f"Default value must be a number for NUMBER type, "
@@ -409,9 +405,7 @@ class EntitySerializer(serializers.ModelSerializer):
         elif attr_type == AttrType.NUMBER:
             if isinstance(default_value, (int, float)) and not isinstance(default_value, bool):
                 if math.isnan(default_value) or math.isinf(default_value):
-                    raise ValidationError(
-                        "Default value cannot be NaN or Infinity for NUMBER type"
-                    )
+                    raise ValidationError("Default value cannot be NaN or Infinity for NUMBER type")
                 return default_value
             raise ValidationError(
                 f"Default value must be a number for NUMBER type, "
