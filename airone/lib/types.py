@@ -24,6 +24,7 @@ class AttrType(BaseIntEnum):
     NAMED_OBJECT = _NAMED | OBJECT
     ARRAY_OBJECT = _ARRAY | OBJECT
     ARRAY_STRING = _ARRAY | STRING
+    ARRAY_NUMBER = _ARRAY | NUMBER
     ARRAY_NAMED_OBJECT = _ARRAY | _NAMED | OBJECT
     ARRAY_NAMED_OBJECT_BOOLEAN = 3081  # unmanaged by AttrTypeXXX
     ARRAY_GROUP = _ARRAY | GROUP
@@ -38,6 +39,7 @@ AttrTypeValue = {
     "group": AttrType.GROUP,
     "role": AttrType.ROLE,
     "array_string": AttrType.ARRAY_STRING,
+    "array_number": AttrType.ARRAY_NUMBER,
     "array_object": AttrType.ARRAY_OBJECT,
     "array_named_object": AttrType.ARRAY_NAMED_OBJECT,
     "array_group": AttrType.ARRAY_GROUP,
@@ -54,6 +56,7 @@ AttrDefaultValue: dict[int, Any] = {
     AttrType.NAMED_OBJECT: {"name": "", "id": None},
     AttrType.ARRAY_OBJECT: [],
     AttrType.ARRAY_STRING: [],
+    AttrType.ARRAY_NUMBER: [],
     AttrType.ARRAY_NAMED_OBJECT: dict().values(),
     AttrType.ARRAY_GROUP: [],
     AttrType.ARRAY_ROLE: [],
