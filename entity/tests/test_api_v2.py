@@ -3780,9 +3780,9 @@ class ViewTest(AironeViewTest):
                     "index": 3,
                 },
                 {
-                    "name": "bool_string_attr",
+                    "name": "bool_false_attr",
                     "type": AttrType.BOOLEAN,
-                    "default_value": "true",  # Should be converted to boolean
+                    "default_value": False,
                     "index": 4,
                 },
             ],
@@ -3813,8 +3813,8 @@ class ViewTest(AironeViewTest):
         bool_attr = entity.attrs.get(name="bool_attr")
         self.assertEqual(bool_attr.default_value, True)
 
-        bool_string_attr = entity.attrs.get(name="bool_string_attr")
-        self.assertEqual(bool_string_attr.default_value, True)  # Should be converted
+        bool_false_attr = entity.attrs.get(name="bool_false_attr")
+        self.assertEqual(bool_false_attr.default_value, False)
 
     def test_create_entity_with_invalid_default_values(self):
         """Test creating entity with invalid default values should fail"""
@@ -3896,7 +3896,7 @@ class ViewTest(AironeViewTest):
                     "id": bool_attr.id,
                     "name": "bool_attr",
                     "type": AttrType.BOOLEAN,
-                    "default_value": "true",  # Should be converted to boolean
+                    "default_value": True,  # Use boolean value
                     "index": 2,
                 },
             ],
@@ -3954,17 +3954,18 @@ class ViewTest(AironeViewTest):
         "entity.tasks.create_entity_v2.delay", mock.Mock(side_effect=tasks.create_entity_v2)
     )
     def test_boolean_edge_cases_api(self):
-        """Test various boolean conversion edge cases through API"""
-        test_cases = [
-            ("false", False),
-            ("FALSE", False),
-            ("0", False),
-            (0, False),
-            ("1", True),
-            (1, True),
+        """Test that string and numeric values are rejected for boolean type through API"""
+        # All these should be rejected now
+        invalid_cases = [
+            "false",
+            "FALSE",
+            "0",
+            0,
+            "1",
+            1,
         ]
 
-        for i, (input_value, expected_output) in enumerate(test_cases):
+        for i, input_value in enumerate(invalid_cases):
             params = {
                 "name": f"bool_test_entity_{i}",
                 "attrs": [
@@ -3979,16 +3980,28 @@ class ViewTest(AironeViewTest):
 
             resp = self.client.post("/entity/api/v2/", json.dumps(params), "application/json")
             self.assertEqual(
-                resp.status_code, status.HTTP_202_ACCEPTED, f"Failed for input: {input_value}"
+                resp.status_code,
+                status.HTTP_400_BAD_REQUEST,
+                f"Should have rejected: {input_value}",
             )
 
-            # Verify the boolean was stored correctly
-            entity = Entity.objects.get(name=f"bool_test_entity_{i}")
-            bool_attr = entity.attrs.get(name="bool_attr")
+        # Test with valid boolean values
+        for i, bool_value in enumerate([True, False]):
+            params = {
+                "name": f"valid_bool_test_{i}",
+                "attrs": [
+                    {
+                        "name": "bool_attr",
+                        "type": AttrType.BOOLEAN,
+                        "default_value": bool_value,
+                        "index": 1,
+                    }
+                ],
+            }
+
+            resp = self.client.post("/entity/api/v2/", json.dumps(params), "application/json")
             self.assertEqual(
-                bool_attr.default_value,
-                expected_output,
-                f"Expected {expected_output} for input {input_value}",
+                resp.status_code, status.HTTP_202_ACCEPTED, f"Should accept boolean: {bool_value}"
             )
 
     def test_boolean_invalid_values_api(self):
@@ -4014,4 +4027,10 @@ class ViewTest(AironeViewTest):
                 status.HTTP_400_BAD_REQUEST,
                 f"Should have failed for invalid value: {invalid_value}",
             )
-            self.assertIn("Invalid boolean value", str(resp.json()))
+            # Check that the error message indicates boolean type issue
+            error_msg = str(resp.json())
+            self.assertTrue(
+                "Default value must be a boolean for BOOLEAN type" in error_msg
+                or "boolean" in error_msg.lower(),
+                f"Error message doesn't indicate boolean type issue: {error_msg}",
+            )

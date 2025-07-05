@@ -50,50 +50,44 @@ class EntityAttrSerializerTest(AironeViewTest):
         self.assertEqual(serializer.validated_data["default_value"], False)
 
     def test_create_attr_boolean_string_conversion(self):
-        """Test boolean attribute with string values that should be converted"""
+        """Test boolean attribute with string values should be rejected"""
+        # All string values should be rejected for boolean type
         test_cases = [
-            ("true", True),
-            ("false", False),
-            ("True", True),
-            ("False", False),
-            ("TRUE", True),
-            ("FALSE", False),
-            ("1", True),
-            ("0", False),
+            "true",
+            "false",
+            "True",
+            "False",
+            "TRUE",
+            "FALSE",
+            "1",
+            "0",
         ]
 
-        for input_value, expected_output in test_cases:
+        for input_value in test_cases:
             data = {"name": "bool_attr", "type": AttrType.BOOLEAN, "default_value": input_value}
             serializer = EntityAttrCreateSerializer(
                 data=data, context=self._get_serializer_context()
             )
-            self.assertTrue(serializer.is_valid(), f"Failed for input: {input_value}")
-            self.assertEqual(
-                serializer.validated_data["default_value"],
-                expected_output,
-                f"Expected {expected_output} for input {input_value}",
-            )
+            with self.assertRaises(ValidationError, msg=f"Should fail for string: {input_value}"):
+                serializer.is_valid(raise_exception=True)
 
     def test_create_attr_boolean_numeric_conversion(self):
-        """Test boolean attribute with numeric values"""
+        """Test boolean attribute with numeric values should be rejected"""
+        # All numeric values should be rejected for boolean type
         test_cases = [
-            (1, True),
-            (0, False),
-            (1.0, True),
-            (0.0, False),
+            1,
+            0,
+            1.0,
+            0.0,
         ]
 
-        for input_value, expected_output in test_cases:
+        for input_value in test_cases:
             data = {"name": "bool_attr", "type": AttrType.BOOLEAN, "default_value": input_value}
             serializer = EntityAttrCreateSerializer(
                 data=data, context=self._get_serializer_context()
             )
-            self.assertTrue(serializer.is_valid(), f"Failed for input: {input_value}")
-            self.assertEqual(
-                serializer.validated_data["default_value"],
-                expected_output,
-                f"Expected {expected_output} for input {input_value}",
-            )
+            with self.assertRaises(ValidationError, msg=f"Should fail for number: {input_value}"):
+                serializer.is_valid(raise_exception=True)
 
     def test_create_attr_invalid_boolean_values(self):
         """Test boolean attribute with invalid values that should raise ValidationError"""
@@ -103,6 +97,16 @@ class EntityAttrSerializerTest(AironeViewTest):
             "on",
             "off",
             "invalid",
+            "true",  # String values now rejected
+            "false",
+            "TRUE",
+            "FALSE",
+            "1",
+            "0",
+            1,  # Numeric values now rejected
+            0,
+            1.0,
+            0.0,
             2,
             -1,
             1.5,
@@ -186,7 +190,7 @@ class EntityAttrSerializerTest(AironeViewTest):
         self.assertEqual(serializer.validated_data["default_value"], "updated value")
 
     def test_update_attr_boolean_conversion(self):
-        """Test updating boolean attribute with string conversion"""
+        """Test updating boolean attribute with string value should be rejected"""
         # Create an existing boolean attribute
         attr = EntityAttr.objects.create(
             name="bool_attr",
@@ -196,11 +200,11 @@ class EntityAttrSerializerTest(AironeViewTest):
             default_value=False,
         )
 
-        # Test updating with string value
+        # Test updating with string value should fail
         data = {"id": attr.id, "default_value": "true"}
         serializer = EntityAttrUpdateSerializer(data=data, context=self._get_serializer_context())
-        self.assertTrue(serializer.is_valid())
-        self.assertEqual(serializer.validated_data["default_value"], True)
+        with self.assertRaises(ValidationError):
+            serializer.is_valid(raise_exception=True)
 
     def test_update_attr_invalid_default_value(self):
         """Test updating attribute with invalid default value"""
@@ -241,11 +245,17 @@ class EntityAttrSerializerTest(AironeViewTest):
             parent_entity=self.entity,
         )
 
-        # Update without specifying type (should infer from existing)
+        # Update without specifying type - string values should be rejected
         data = {
             "id": attr.id,
-            "default_value": "true",  # Should be converted to boolean
+            "default_value": "true",  # String should be rejected for boolean type
         }
+        serializer = EntityAttrUpdateSerializer(data=data, context=self._get_serializer_context())
+        with self.assertRaises(ValidationError):
+            serializer.is_valid(raise_exception=True)
+
+        # Test with valid boolean value
+        data["default_value"] = True
         serializer = EntityAttrUpdateSerializer(data=data, context=self._get_serializer_context())
         self.assertTrue(serializer.is_valid())
         self.assertEqual(serializer.validated_data["default_value"], True)
