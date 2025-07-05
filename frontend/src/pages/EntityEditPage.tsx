@@ -1,10 +1,7 @@
+
 import { WebhookCreateUpdate } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Box } from "@mui/material";
-import React, { FC, useEffect } from "react";
-import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router";
-
 import { Loading } from "components/common/Loading";
 import { PageHeader } from "components/common/PageHeader";
 import { SubmitButton } from "components/common/SubmitButton";
@@ -16,6 +13,9 @@ import { useFormNotification } from "hooks/useFormNotification";
 import { usePageTitle } from "hooks/usePageTitle";
 import { usePrompt } from "hooks/usePrompt";
 import { useTypedParams } from "hooks/useTypedParams";
+import React, { FC, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { useNavigate } from "react-router";
 import { aironeApiClient } from "repository/AironeApiClient";
 import { entitiesPath, entityEntriesPath } from "routes/Routes";
 import { TITLE_TEMPLATES } from "services";
@@ -23,6 +23,7 @@ import {
   extractAPIException,
   isResponseError,
 } from "services/AironeAPIErrorUtil";
+import { BaseAttributeTypes } from "services/Constants";
 
 export const EntityEditPage: FC = () => {
   const { entityId } = useTypedParams<{ entityId: number }>();
@@ -74,18 +75,38 @@ export const EntityEditPage: FC = () => {
     // Adjusted attributes for the API
     const attrs = entityForm.attrs
       .filter((attr) => attr.isWritable)
-      .map((attr, index) => ({
-        id: attr.id,
-        name: attr.name,
-        type: attr.type,
-        index: index,
-        isMandatory: attr.isMandatory,
-        isDeleteInChain: attr.isDeleteInChain,
-        isSummarized: attr.isSummarized,
-        referral: attr.referral.map((r) => r.id),
-        isDeleted: false,
-        note: attr.note,
-      }));
+      .map((attr, index) => {
+        // Convert defaultValue to appropriate type
+        let processedDefaultValue: any = null;
+        if (attr.defaultValue != null) {
+          if (attr.type === BaseAttributeTypes.number) {
+            const numValue = Number(attr.defaultValue);
+            if (!isNaN(numValue)) {
+              processedDefaultValue = numValue;
+            }
+          } else if (attr.type === BaseAttributeTypes.bool) {
+            processedDefaultValue = Boolean(attr.defaultValue);
+          } else if (attr.type === BaseAttributeTypes.string || attr.type === BaseAttributeTypes.text) {
+            processedDefaultValue = String(attr.defaultValue);
+          } else {
+            processedDefaultValue = attr.defaultValue;
+          }
+        }
+
+        return {
+          id: attr.id,
+          name: attr.name,
+          type: attr.type,
+          index: index,
+          isMandatory: attr.isMandatory,
+          isDeleteInChain: attr.isDeleteInChain,
+          isSummarized: attr.isSummarized,
+          referral: attr.referral.map((r) => r.id),
+          isDeleted: false,
+          note: attr.note,
+          defaultValue: processedDefaultValue,
+        };
+      });
 
     const deletedAttrs =
       entity.value?.attrs
@@ -173,7 +194,35 @@ export const EntityEditPage: FC = () => {
   );
 
   useEffect(() => {
-    !entity.loading && entity.value != null && reset(entity.value);
+    if (!entity.loading && entity.value != null) {
+      // Convert entity data to form schema format, ensuring defaultValue is included
+      const formData: Schema = {
+        name: entity.value.name,
+        note: entity.value.note ?? "",
+        itemNamePattern: entity.value.itemNamePattern ?? "",
+        isToplevel: entity.value.isToplevel,
+        webhooks: entity.value.webhooks.map((webhook) => ({
+          ...webhook,
+          url: webhook.url ?? "",
+          label: webhook.label ?? "",
+          isEnabled: webhook.isEnabled ?? false,
+          headers: webhook.headers ?? [],
+        })),
+        attrs: entity.value.attrs.map((attr) => ({
+          ...attr,
+          name: attr.name ?? "",
+          note: attr.note ?? "",
+          referral: (attr.referral ?? []).map((ref) => ({
+            id: ref.id,
+            name: ref.name,
+          })),
+          defaultValue: attr.defaultValue as string | number | boolean | null | undefined,
+          isSummarized: attr.isSummarized,
+        })),
+      };
+      
+      reset(formData);
+    }
   }, [entity.loading]);
 
   useEffect(() => {

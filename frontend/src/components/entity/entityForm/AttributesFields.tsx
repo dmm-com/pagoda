@@ -11,11 +11,11 @@ import { styled } from "@mui/material/styles";
 import React, { FC, useState } from "react";
 import { Control, useFieldArray } from "react-hook-form";
 import { UseFormSetValue } from "react-hook-form/dist/types/form";
+import { AttributeTypes } from "services/Constants";
 
 import { AttributeField } from "./AttributeField";
 import { Schema } from "./EntityFormSchema";
 
-import { AttributeTypes } from "services/Constants";
 
 const HeaderTableRow = styled(TableRow)(({}) => ({
   backgroundColor: "#455A64",
@@ -78,6 +78,7 @@ export const AttributesFields: FC<Props> = ({
       isWritable: true,
       referral: [],
       note: "",
+      defaultValue: undefined, // Explicitly initialize defaultValue
     });
   };
 
@@ -103,6 +104,7 @@ export const AttributesFields: FC<Props> = ({
             <HeaderTableCell width="300px">属性名</HeaderTableCell>
             <HeaderTableCell width="100px">属性説明</HeaderTableCell>
             <HeaderTableCell width="300px">型</HeaderTableCell>
+            <HeaderTableCell width="200px">デフォルト値</HeaderTableCell>
             <HeaderTableCell width="100px">必須</HeaderTableCell>
             <HeaderTableCell width="100px">関連削除</HeaderTableCell>
             <HeaderTableCell width="100px">並び替え</HeaderTableCell>

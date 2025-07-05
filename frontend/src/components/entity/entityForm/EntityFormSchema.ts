@@ -68,6 +68,7 @@ export const schema = z.object({
             )
             .default([]),
           note: z.string().default(""),
+          defaultValue: z.union([z.string(), z.number(), z.boolean(), z.null()]).optional(),
         })
         .refine(
           (attr) => {

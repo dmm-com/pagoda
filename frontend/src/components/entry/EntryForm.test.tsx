@@ -15,13 +15,13 @@ import {
   screen,
   waitFor,
 } from "@testing-library/react";
+import { TestWrapper } from "TestWrapper";
+import { EntryForm } from "components/entry/EntryForm";
 import React, { FC } from "react";
 import { useForm } from "react-hook-form";
 
 import { Schema, schema } from "./entryForm/EntryFormSchema";
 
-import { TestWrapper } from "TestWrapper";
-import { EntryForm } from "components/entry/EntryForm";
 
 describe("EntryForm", () => {
   const mockEntity: EntityDetail = {
@@ -39,6 +39,7 @@ describe("EntryForm", () => {
         isMandatory: true,
         isWritable: true,
         isDeleteInChain: false,
+        isSummarized: false,
         note: "",
         referral: [],
       },
@@ -50,6 +51,7 @@ describe("EntryForm", () => {
         isMandatory: false,
         isWritable: true,
         isDeleteInChain: false,
+        isSummarized: false,
         note: "",
         referral: [],
       },
@@ -61,6 +63,7 @@ describe("EntryForm", () => {
         isMandatory: false,
         isWritable: false,
         isDeleteInChain: false,
+        isSummarized: false,
         note: "",
         referral: [],
       },
@@ -354,6 +357,7 @@ describe("EntryForm", () => {
           isMandatory: false,
           isWritable: true,
           isDeleteInChain: false,
+          isSummarized: false,
           note: "",
           referral: [],
         },
@@ -365,6 +369,7 @@ describe("EntryForm", () => {
           isMandatory: false,
           isWritable: true,
           isDeleteInChain: false,
+          isSummarized: false,
           note: "",
           referral: [],
         },
