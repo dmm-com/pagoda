@@ -1,3 +1,4 @@
+import math
 from typing import Any, List, Optional, Union
 
 from django.conf import settings
@@ -106,8 +107,8 @@ class EntityAttr(ACLBase):
         if value is None:
             return True  # None is always valid
 
-        # Only String, Text, Boolean types support custom default values, currently
-        supported_types = [AttrType.STRING, AttrType.TEXT, AttrType.BOOLEAN]
+        # Only String, Text, Boolean, Number types support custom default values, currently
+        supported_types = [AttrType.STRING, AttrType.TEXT, AttrType.BOOLEAN, AttrType.NUMBER]
         if self.type not in supported_types:
             return False
 
@@ -116,6 +117,14 @@ class EntityAttr(ACLBase):
             return isinstance(value, str)
         elif self.type == AttrType.BOOLEAN:
             return isinstance(value, bool)
+        elif self.type == AttrType.NUMBER:
+            # Only accept int/float types
+            if not isinstance(value, (int, float)):
+                return False
+            # Reject NaN and Infinity values
+            if isinstance(value, float) and (math.isnan(value) or math.isinf(value)):
+                return False
+            return True
 
         return True
 

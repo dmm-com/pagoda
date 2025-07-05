@@ -1,5 +1,6 @@
 import collections
 import json
+import math
 import re
 from typing import Any, List, Optional, TypedDict
 
@@ -152,6 +153,19 @@ class EntityAttrCreateSerializer(serializers.ModelSerializer):
                 f"got {type(default_value).__name__}"
             )
 
+        # Number type
+        elif attr_type == AttrType.NUMBER:
+            if isinstance(default_value, (int, float)):
+                if math.isnan(default_value) or math.isinf(default_value):
+                    raise ValidationError(
+                        "Default value cannot be NaN or Infinity for NUMBER type"
+                    )
+                return default_value
+            raise ValidationError(
+                f"Default value must be a number for NUMBER type, "
+                f"got {type(default_value).__name__}"
+            )
+
         return default_value
 
     def validate(self, attr: dict):
@@ -160,12 +174,12 @@ class EntityAttrCreateSerializer(serializers.ModelSerializer):
         if attr["type"] & AttrType.OBJECT and not len(referral):
             raise RequiredParameterError("When specified object type, referral field is required")
 
-        # Only String, Text, Boolean types support default values (MVP)
+        # Only String, Text, Boolean, Number types support default values (MVP)
         attr_type = attr.get("type")
         default_value = attr.get("default_value")
 
         if default_value is not None and attr_type is not None:
-            supported_types = [AttrType.STRING, AttrType.TEXT, AttrType.BOOLEAN]
+            supported_types = [AttrType.STRING, AttrType.TEXT, AttrType.BOOLEAN, AttrType.NUMBER]
             if attr_type not in supported_types:
                 # Clear default_value for unsupported types
                 attr["default_value"] = None
@@ -257,6 +271,19 @@ class EntityAttrUpdateSerializer(serializers.ModelSerializer):
                 f"got {type(default_value).__name__}"
             )
 
+        # Number type
+        elif attr_type == AttrType.NUMBER:
+            if isinstance(default_value, (int, float)):
+                if math.isnan(default_value) or math.isinf(default_value):
+                    raise ValidationError(
+                        "Default value cannot be NaN or Infinity for NUMBER type"
+                    )
+                return default_value
+            raise ValidationError(
+                f"Default value must be a number for NUMBER type, "
+                f"got {type(default_value).__name__}"
+            )
+
         return default_value
 
     def validate(self, attr: dict):
@@ -283,7 +310,7 @@ class EntityAttrUpdateSerializer(serializers.ModelSerializer):
                     "When specified object type, referral field is required"
                 )
 
-        # Only String, Text, Boolean types support default values (MVP)
+        # Only String, Text, Boolean, Number types support default values (MVP)
         attr_type = attr.get("type")
         default_value = attr.get("default_value")
 
@@ -293,7 +320,7 @@ class EntityAttrUpdateSerializer(serializers.ModelSerializer):
             attr_type = entity_attr.type
 
         if default_value is not None and attr_type is not None:
-            supported_types = [AttrType.STRING, AttrType.TEXT, AttrType.BOOLEAN]
+            supported_types = [AttrType.STRING, AttrType.TEXT, AttrType.BOOLEAN, AttrType.NUMBER]
             if attr_type not in supported_types:
                 # Clear default_value for unsupported types
                 attr["default_value"] = None
@@ -356,7 +383,7 @@ class EntitySerializer(serializers.ModelSerializer):
             return None
 
         # Only certain types support default values
-        supported_types = [AttrType.STRING, AttrType.TEXT, AttrType.BOOLEAN]
+        supported_types = [AttrType.STRING, AttrType.TEXT, AttrType.BOOLEAN, AttrType.NUMBER]
         if attr_type not in supported_types:
             return None
 
@@ -375,6 +402,19 @@ class EntitySerializer(serializers.ModelSerializer):
                 return default_value
             raise ValidationError(
                 f"Default value must be a boolean for BOOLEAN type, "
+                f"got {type(default_value).__name__}"
+            )
+
+        # Number type
+        elif attr_type == AttrType.NUMBER:
+            if isinstance(default_value, (int, float)):
+                if math.isnan(default_value) or math.isinf(default_value):
+                    raise ValidationError(
+                        "Default value cannot be NaN or Infinity for NUMBER type"
+                    )
+                return default_value
+            raise ValidationError(
+                f"Default value must be a number for NUMBER type, "
                 f"got {type(default_value).__name__}"
             )
 

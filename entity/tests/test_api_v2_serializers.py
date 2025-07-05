@@ -49,6 +49,38 @@ class EntityAttrSerializerTest(AironeViewTest):
         self.assertTrue(serializer.is_valid())
         self.assertEqual(serializer.validated_data["default_value"], False)
 
+    def test_create_attr_with_number_default_value(self):
+        """Test creating number attribute with valid default values"""
+        # Test with integer
+        data = {"name": "number_attr", "type": AttrType.NUMBER, "default_value": 42}
+        serializer = EntityAttrCreateSerializer(data=data, context=self._get_serializer_context())
+        self.assertTrue(serializer.is_valid())
+        self.assertEqual(serializer.validated_data["default_value"], 42)
+
+        # Test with float
+        data["default_value"] = 3.14
+        serializer = EntityAttrCreateSerializer(data=data, context=self._get_serializer_context())
+        self.assertTrue(serializer.is_valid())
+        self.assertEqual(serializer.validated_data["default_value"], 3.14)
+
+        # Test with negative number
+        data["default_value"] = -123.45
+        serializer = EntityAttrCreateSerializer(data=data, context=self._get_serializer_context())
+        self.assertTrue(serializer.is_valid())
+        self.assertEqual(serializer.validated_data["default_value"], -123.45)
+
+        # Test with zero
+        data["default_value"] = 0
+        serializer = EntityAttrCreateSerializer(data=data, context=self._get_serializer_context())
+        self.assertTrue(serializer.is_valid())
+        self.assertEqual(serializer.validated_data["default_value"], 0)
+
+        # Test with zero float
+        data["default_value"] = 0.0
+        serializer = EntityAttrCreateSerializer(data=data, context=self._get_serializer_context())
+        self.assertTrue(serializer.is_valid())
+        self.assertEqual(serializer.validated_data["default_value"], 0.0)
+
     def test_create_attr_boolean_string_conversion(self):
         """Test boolean attribute with string values should be rejected"""
         # All string values should be rejected for boolean type
@@ -156,6 +188,35 @@ class EntityAttrSerializerTest(AironeViewTest):
             with self.assertRaises(ValidationError, msg=f"Should fail for: {invalid_value}"):
                 serializer.is_valid(raise_exception=True)
 
+    def test_create_attr_invalid_number_values(self):
+        """Test number attribute with invalid values that should raise ValidationError"""
+        import math
+        
+        invalid_values = [
+            "123",  # String numbers should be rejected
+            "3.14",
+            "-42",
+            "0",
+            "text",  # Non-numeric strings
+            "abc",
+            True,  # Boolean values
+            False,
+            [],  # Lists and other types
+            {},
+            None,  # None should be handled separately
+            math.nan,  # NaN should be rejected
+            math.inf,  # Infinity should be rejected
+            -math.inf,  # Negative infinity should be rejected
+        ]
+
+        for invalid_value in invalid_values:
+            data = {"name": "number_attr", "type": AttrType.NUMBER, "default_value": invalid_value}
+            serializer = EntityAttrCreateSerializer(
+                data=data, context=self._get_serializer_context()
+            )
+            with self.assertRaises(ValidationError, msg=f"Should fail for: {invalid_value}"):
+                serializer.is_valid(raise_exception=True)
+
     def test_create_attr_unsupported_type_clears_default_value(self):
         """Test that unsupported types clear the default_value"""
         # Create a reference entity for the OBJECT type
@@ -227,7 +288,7 @@ class EntityAttrSerializerTest(AironeViewTest):
 
     def test_create_attr_null_default_value(self):
         """Test that None/null default values are handled correctly"""
-        for attr_type in [AttrType.STRING, AttrType.TEXT, AttrType.BOOLEAN]:
+        for attr_type in [AttrType.STRING, AttrType.TEXT, AttrType.BOOLEAN, AttrType.NUMBER]:
             data = {"name": f"attr_{attr_type}", "type": attr_type, "default_value": None}
             serializer = EntityAttrCreateSerializer(
                 data=data, context=self._get_serializer_context()
@@ -259,3 +320,60 @@ class EntityAttrSerializerTest(AironeViewTest):
         serializer = EntityAttrUpdateSerializer(data=data, context=self._get_serializer_context())
         self.assertTrue(serializer.is_valid())
         self.assertEqual(serializer.validated_data["default_value"], True)
+
+    def test_update_attr_number_default_value(self):
+        """Test updating number attribute with valid default values"""
+        # Create an existing number attribute
+        attr = EntityAttr.objects.create(
+            name="number_attr",
+            type=AttrType.NUMBER,
+            created_user=self.user,
+            parent_entity=self.entity,
+            default_value=42,
+        )
+
+        # Test updating with valid integer
+        data = {"id": attr.id, "default_value": 100}
+        serializer = EntityAttrUpdateSerializer(data=data, context=self._get_serializer_context())
+        self.assertTrue(serializer.is_valid())
+        self.assertEqual(serializer.validated_data["default_value"], 100)
+
+        # Test updating with valid float
+        data["default_value"] = 3.14159
+        serializer = EntityAttrUpdateSerializer(data=data, context=self._get_serializer_context())
+        self.assertTrue(serializer.is_valid())
+        self.assertEqual(serializer.validated_data["default_value"], 3.14159)
+
+    def test_update_attr_invalid_number_values(self):
+        """Test updating number attribute with invalid values"""
+        import math
+        
+        # Create an existing number attribute
+        attr = EntityAttr.objects.create(
+            name="number_attr",
+            type=AttrType.NUMBER,
+            created_user=self.user,
+            parent_entity=self.entity,
+            default_value=42,
+        )
+
+        # Test invalid values
+        invalid_values = [
+            "123",  # String should be rejected
+            "not_a_number",
+            True,  # Boolean should be rejected
+            False,
+            [],  # Other types should be rejected
+            {},
+            math.nan,  # NaN should be rejected
+            math.inf,  # Infinity should be rejected
+            -math.inf,  # Negative infinity should be rejected
+        ]
+
+        for invalid_value in invalid_values:
+            data = {"id": attr.id, "default_value": invalid_value}
+            serializer = EntityAttrUpdateSerializer(
+                data=data, context=self._get_serializer_context()
+            )
+            with self.assertRaises(ValidationError, msg=f"Should fail for: {invalid_value}"):
+                serializer.is_valid(raise_exception=True)
