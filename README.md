@@ -2,6 +2,8 @@
 [![Build frontend](https://github.com/dmm-com/pagoda/actions/workflows/build-frontend.yml/badge.svg)](https://github.com/dmm-com/pagoda/actions/workflows/build-frontend.yml)
 [![codecov](https://codecov.io/gh/dmm-com/airone/branch/master/graph/badge.svg)](https://codecov.io/gh/dmm-com/airone)
 
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/dmm-com/pagoda)
+
 # Pagoda
 Yet another SSoT system to be able to define flexible data-structure, relation and ACL.
 
