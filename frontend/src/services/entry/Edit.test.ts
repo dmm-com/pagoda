@@ -2,17 +2,18 @@
  * @jest-environment jsdom
  */
 
-import {
-  EntryAttributeValueType,
-  convertAttrsFormatCtoS,
-  formalizeEntryInfo,
-} from "./Edit";
 
 import { EntryAttributeTypeTypeEnum } from "@dmm-com/airone-apiclient-typescript-fetch";
 import {
   EditableEntryAttrValue,
   EditableEntryAttrs,
 } from "components/entry/entryForm/EditableEntry";
+
+import {
+  EntryAttributeValueType,
+  convertAttrsFormatCtoS,
+  formalizeEntryInfo,
+} from "./Edit";
 
 Object.defineProperty(window, "django_context", {
   value: {

@@ -1,3 +1,4 @@
+import { Entity } from "@dmm-com/airone-apiclient-typescript-fetch";
 import AddIcon from "@mui/icons-material/Add";
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
@@ -20,13 +21,12 @@ import React, { FC, useMemo, useState } from "react";
 import { Control, Controller, useWatch } from "react-hook-form";
 import { UseFormSetValue } from "react-hook-form/dist/types/form";
 import { Link } from "react-router";
+import { aclPath } from "routes/Routes";
+import { AttributeTypes } from "services/Constants";
 
 import { AttributeNoteModal } from "./AttributeNoteModal";
 import { Schema } from "./EntityFormSchema";
 
-import { Entity } from "@dmm-com/airone-apiclient-typescript-fetch";
-import { aclPath } from "routes/Routes";
-import { AttributeTypes } from "services/Constants";
 
 const StyledBox = styled(Box)(({ theme }) => ({
   margin: theme.spacing(1),

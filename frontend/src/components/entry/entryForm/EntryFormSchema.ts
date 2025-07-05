@@ -1,10 +1,10 @@
 import { EntryAttributeTypeTypeEnum } from "@dmm-com/airone-apiclient-typescript-fetch";
+import { AttributeTypes } from "services/Constants";
+import { schemaForType } from "services/ZodSchemaUtil";
 import { z } from "zod";
 
 import { EditableEntry } from "./EditableEntry";
 
-import { AttributeTypes } from "services/Constants";
-import { schemaForType } from "services/ZodSchemaUtil";
 
 // Function to detect 4-byte characters (characters outside the BMP - Basic Multilingual Plane)
 const hasFourByteChars = (value: string): boolean => {

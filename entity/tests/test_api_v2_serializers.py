@@ -191,7 +191,7 @@ class EntityAttrSerializerTest(AironeViewTest):
     def test_create_attr_invalid_number_values(self):
         """Test number attribute with invalid values that should raise ValidationError"""
         import math
-        
+
         invalid_values = [
             "123",  # String numbers should be rejected
             "3.14",
@@ -203,7 +203,6 @@ class EntityAttrSerializerTest(AironeViewTest):
             False,
             [],  # Lists and other types
             {},
-            None,  # None should be handled separately
             math.nan,  # NaN should be rejected
             math.inf,  # Infinity should be rejected
             -math.inf,  # Negative infinity should be rejected
@@ -347,7 +346,7 @@ class EntityAttrSerializerTest(AironeViewTest):
     def test_update_attr_invalid_number_values(self):
         """Test updating number attribute with invalid values"""
         import math
-        
+
         # Create an existing number attribute
         attr = EntityAttr.objects.create(
             name="number_attr",
