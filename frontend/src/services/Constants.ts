@@ -110,6 +110,10 @@ export const AttributeTypes: Record<string, { name: string; type: number }> = {
     name: "number",
     type: BaseAttributeTypes.number,
   },
+  array_number: {
+    name: "array_number",
+    type: BaseAttributeTypes.number | BaseAttributeTypes.array,
+  },
 };
 
 export const EntryReferralList = {

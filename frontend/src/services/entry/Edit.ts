@@ -6,7 +6,6 @@ import {
   EntryAttributeValueObject,
   EntryRetrieve,
 } from "@dmm-com/airone-apiclient-typescript-fetch";
-
 import {
   EditableEntryAttrValue,
   EditableEntryAttrs,
@@ -25,6 +24,7 @@ export type EntryAttributeValueType =
   | undefined
   | Array<string>
   | Array<number>
+  | Array<number | null>
   | { id: number | null; name: string }
   | Array<{ id: number | null; name: string }>
   | Array<{ id: number | null; name: string; _boolean: boolean }>;
@@ -64,6 +64,7 @@ export function formalizeEntryInfo(
               asRole: null,
               asNamedObject: { name: "", object: null },
               asNumber: null,
+              asArrayNumber: [{ value: null }],
             };
           }
 
@@ -76,6 +77,14 @@ export function formalizeEntryInfo(
                     }),
                   }
                 : { asArrayString: [{ value: "" }] };
+            case EntryAttributeTypeTypeEnum.ARRAY_NUMBER:
+              return (value?.asArrayNumber?.length ?? 0 > 0)
+                ? {
+                    asArrayNumber: value.asArrayNumber?.map((item) => {
+                      return { value: item };
+                    }),
+                  }
+                : { asArrayNumber: [{ value: null }] };
             case EntryAttributeTypeTypeEnum.ARRAY_NAMED_OBJECT:
             case EntryAttributeTypeTypeEnum.ARRAY_NAMED_OBJECT_BOOLEAN:
               return (value?.asArrayNamedObject?.length ?? 0 > 0)
@@ -196,6 +205,9 @@ export function convertAttrsFormatCtoS(
 
         case EntryAttributeTypeTypeEnum.ARRAY_STRING:
           return attrValue.asArrayString?.map((x) => x.value);
+
+        case EntryAttributeTypeTypeEnum.ARRAY_NUMBER:
+          return attrValue.asArrayNumber?.map((x) => x.value);
 
         case EntryAttributeTypeTypeEnum.ARRAY_OBJECT:
           return attrValue.asArrayObject?.map((x) => x.id);

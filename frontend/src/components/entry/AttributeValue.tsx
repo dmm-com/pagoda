@@ -247,6 +247,17 @@ export const AttributeValue: FC<Props> = ({ attrInfo }) => {
         </StyledList>
       );
 
+    case EntryAttributeTypeTypeEnum.ARRAY_NUMBER:
+      return (
+        <StyledList>
+          {attrInfo.value?.asArrayNumber?.map((info, n) => (
+            <StyledListItem key={n}>
+              <ElemNumber attrValue={info} />
+            </StyledListItem>
+          ))}
+        </StyledList>
+      );
+
     default:
       throw new Error(`unkwnon attribute type: ${attrInfo.type}`);
   }

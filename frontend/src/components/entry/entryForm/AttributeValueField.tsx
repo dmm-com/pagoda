@@ -3,6 +3,7 @@ import React, { FC } from "react";
 import { Control } from "react-hook-form";
 import { UseFormSetValue } from "react-hook-form/dist/types/form";
 
+import { ArrayNumberAttributeValueField } from "./ArrayNumberAttributeValueField";
 import { BooleanAttributeValueField } from "./BooleanAttributeValueField";
 import { DateAttributeValueField } from "./DateAttributeValueField";
 import { DateTimeAttributeValueField } from "./DateTimeAttributeValueField";
@@ -19,6 +20,8 @@ import {
   ArrayStringAttributeValueField,
   StringAttributeValueField,
 } from "./StringAttributeValueField";
+
+import { AttributeTypes } from "services/Constants";
 
 interface Props {
   control: Control<Schema>;
@@ -169,6 +172,11 @@ export const AttributeValueField: FC<Props> = ({
     case EntryAttributeTypeTypeEnum.ARRAY_STRING:
       return (
         <ArrayStringAttributeValueField control={control} attrId={schemaId} />
+      );
+
+    case AttributeTypes.array_number.type:
+      return (
+        <ArrayNumberAttributeValueField control={control} attrId={schemaId} />
       );
 
     case EntryAttributeTypeTypeEnum.ARRAY_NAMED_OBJECT:
