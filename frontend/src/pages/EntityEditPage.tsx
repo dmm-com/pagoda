@@ -1,7 +1,10 @@
-
 import { WebhookCreateUpdate } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Box } from "@mui/material";
+import React, { FC, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { useNavigate } from "react-router";
+
 import { Loading } from "components/common/Loading";
 import { PageHeader } from "components/common/PageHeader";
 import { SubmitButton } from "components/common/SubmitButton";
@@ -13,9 +16,6 @@ import { useFormNotification } from "hooks/useFormNotification";
 import { usePageTitle } from "hooks/usePageTitle";
 import { usePrompt } from "hooks/usePrompt";
 import { useTypedParams } from "hooks/useTypedParams";
-import React, { FC, useEffect } from "react";
-import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router";
 import { aironeApiClient } from "repository/AironeApiClient";
 import { entitiesPath, entityEntriesPath } from "routes/Routes";
 import { TITLE_TEMPLATES } from "services";
@@ -86,7 +86,10 @@ export const EntityEditPage: FC = () => {
             }
           } else if (attr.type === BaseAttributeTypes.bool) {
             processedDefaultValue = Boolean(attr.defaultValue);
-          } else if (attr.type === BaseAttributeTypes.string || attr.type === BaseAttributeTypes.text) {
+          } else if (
+            attr.type === BaseAttributeTypes.string ||
+            attr.type === BaseAttributeTypes.text
+          ) {
             processedDefaultValue = String(attr.defaultValue);
           } else {
             processedDefaultValue = attr.defaultValue;
@@ -216,11 +219,16 @@ export const EntityEditPage: FC = () => {
             id: ref.id,
             name: ref.name,
           })),
-          defaultValue: attr.defaultValue as string | number | boolean | null | undefined,
+          defaultValue: attr.defaultValue as
+            | string
+            | number
+            | boolean
+            | null
+            | undefined,
           isSummarized: attr.isSummarized,
         })),
       };
-      
+
       reset(formData);
     }
   }, [entity.loading]);

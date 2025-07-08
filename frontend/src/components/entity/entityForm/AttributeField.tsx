@@ -21,12 +21,12 @@ import React, { FC, useMemo, useState } from "react";
 import { Control, Controller, useWatch } from "react-hook-form";
 import { UseFormSetValue } from "react-hook-form/dist/types/form";
 import { Link } from "react-router";
-import { aclPath } from "routes/Routes";
-import { AttributeTypes } from "services/Constants";
 
 import { AttributeNoteModal } from "./AttributeNoteModal";
 import { Schema } from "./EntityFormSchema";
 
+import { aclPath } from "routes/Routes";
+import { AttributeTypes } from "services/Constants";
 
 const StyledBox = styled(Box)(({ theme }) => ({
   margin: theme.spacing(1),
@@ -193,7 +193,7 @@ export const AttributeField: FC<Props> = ({
           control={control}
           render={({ field }) => {
             // Check if this attribute type supports default values
-            const isDefaultValueSupported = 
+            const isDefaultValueSupported =
               attrType === AttributeTypes.string.type ||
               attrType === AttributeTypes.text.type ||
               attrType === AttributeTypes.boolean.type ||
@@ -209,7 +209,7 @@ export const AttributeField: FC<Props> = ({
                 />
               );
             }
-            
+
             // Number type gets a number input
             if (attrType === AttributeTypes.number.type) {
               return (
@@ -224,13 +224,17 @@ export const AttributeField: FC<Props> = ({
                 />
               );
             }
-            
+
             // Text input for supported string types or disabled for unsupported types
             return (
               <TextField
                 {...field}
                 value={field.value ?? ""}
-                placeholder={isDefaultValueSupported ? "デフォルト値" : "この型では未サポート"}
+                placeholder={
+                  isDefaultValueSupported
+                    ? "デフォルト値"
+                    : "この型では未サポート"
+                }
                 size="small"
                 fullWidth
                 disabled={!isWritable || !isDefaultValueSupported}

@@ -2,18 +2,18 @@
  * @jest-environment jsdom
  */
 
-
 import { EntryAttributeTypeTypeEnum } from "@dmm-com/airone-apiclient-typescript-fetch";
-import {
-  EditableEntryAttrValue,
-  EditableEntryAttrs,
-} from "components/entry/entryForm/EditableEntry";
 
 import {
   EntryAttributeValueType,
   convertAttrsFormatCtoS,
   formalizeEntryInfo,
 } from "./Edit";
+
+import {
+  EditableEntryAttrValue,
+  EditableEntryAttrs,
+} from "components/entry/entryForm/EditableEntry";
 
 Object.defineProperty(window, "django_context", {
   value: {
@@ -325,16 +325,16 @@ test("formalizeEntryInfo should use defaultValue when creating new entry", () =>
   };
 
   const result = formalizeEntryInfo(undefined, entity, []);
-  
+
   // Check string attribute with default value
   expect(result.attrs[2].value.asString).toBe("default string value");
-  
+
   // Check boolean attribute with default value
   expect(result.attrs[3].value.asBoolean).toBe(true);
-  
+
   // Check text attribute with default value
   expect(result.attrs[4].value.asString).toBe("default\ntext\nvalue");
-  
+
   // Check string attribute without default value (should use empty string)
   expect(result.attrs[5].value.asString).toBe("");
 });
@@ -342,7 +342,7 @@ test("formalizeEntryInfo should use defaultValue when creating new entry", () =>
 test("convertAttrsFormatCtoS() returns expected value", () => {
   const cases: Array<{
     client_data: {
-      type: typeof EntryAttributeTypeTypeEnum[keyof typeof EntryAttributeTypeTypeEnum];
+      type: (typeof EntryAttributeTypeTypeEnum)[keyof typeof EntryAttributeTypeTypeEnum];
       value: EditableEntryAttrValue;
     };
     expected_data: EntryAttributeValueType;
@@ -607,16 +607,16 @@ test("formalizeEntryInfo should use defaultValue when creating new entry", () =>
   };
 
   const result = formalizeEntryInfo(undefined, entity, []);
-  
+
   // Check string attribute with default value
   expect(result.attrs[2].value.asString).toBe("default string value");
-  
+
   // Check boolean attribute with default value
   expect(result.attrs[3].value.asBoolean).toBe(true);
-  
+
   // Check text attribute with default value
   expect(result.attrs[4].value.asString).toBe("default\ntext\nvalue");
-  
+
   // Check string attribute without default value (should use empty string)
   expect(result.attrs[5].value.asString).toBe("");
 });
@@ -650,7 +650,7 @@ test("convertAttrsFormatCtoS() should return expected value", () => {
 test("convertAttrsFormatCtoS() returns expected value when nothing value", () => {
   const cases: Array<{
     client_data: {
-      type: typeof EntryAttributeTypeTypeEnum[keyof typeof EntryAttributeTypeTypeEnum];
+      type: (typeof EntryAttributeTypeTypeEnum)[keyof typeof EntryAttributeTypeTypeEnum];
       value: EditableEntryAttrValue;
     };
     expected_data: EntryAttributeValueType;
@@ -871,16 +871,16 @@ test("formalizeEntryInfo should use defaultValue when creating new entry", () =>
   };
 
   const result = formalizeEntryInfo(undefined, entity, []);
-  
+
   // Check string attribute with default value
   expect(result.attrs[2].value.asString).toBe("default string value");
-  
+
   // Check boolean attribute with default value
   expect(result.attrs[3].value.asBoolean).toBe(true);
-  
+
   // Check text attribute with default value
   expect(result.attrs[4].value.asString).toBe("default\ntext\nvalue");
-  
+
   // Check string attribute without default value (should use empty string)
   expect(result.attrs[5].value.asString).toBe("");
 });

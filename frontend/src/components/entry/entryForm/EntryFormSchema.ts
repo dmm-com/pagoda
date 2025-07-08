@@ -1,9 +1,9 @@
 import { EntryAttributeTypeTypeEnum } from "@dmm-com/airone-apiclient-typescript-fetch";
-import { schemaForType } from "services/ZodSchemaUtil";
 import { z } from "zod";
 
 import { EditableEntry } from "./EditableEntry";
 
+import { schemaForType } from "services/ZodSchemaUtil";
 
 // Function to detect 4-byte characters (characters outside the BMP - Basic Multilingual Plane)
 const hasFourByteChars = (value: string): boolean => {
@@ -196,14 +196,17 @@ export const schema = schemaForType<EditableEntry>()(
                   return (value.value as any).asString !== "";
                 case EntryAttributeTypeTypeEnum.ARRAY_STRING:
                   return (
-                    (value.value as any).asArrayString?.some((v: any) => v.value !== "") ??
-                    false
+                    (value.value as any).asArrayString?.some(
+                      (v: any) => v.value !== "",
+                    ) ?? false
                   );
                 case EntryAttributeTypeTypeEnum.OBJECT:
                   return (value.value as any).asObject != null;
                 case EntryAttributeTypeTypeEnum.ARRAY_OBJECT:
                   return (
-                    (value.value as any).asArrayObject?.some((v: any) => v != null) ?? false
+                    (value.value as any).asArrayObject?.some(
+                      (v: any) => v != null,
+                    ) ?? false
                   );
                 case EntryAttributeTypeTypeEnum.NAMED_OBJECT:
                   return (
@@ -220,13 +223,17 @@ export const schema = schemaForType<EditableEntry>()(
                   return (value.value as any).asGroup != null;
                 case EntryAttributeTypeTypeEnum.ARRAY_GROUP:
                   return (
-                    (value.value as any).asArrayGroup?.some((v: any) => v != null) ?? false
+                    (value.value as any).asArrayGroup?.some(
+                      (v: any) => v != null,
+                    ) ?? false
                   );
                 case EntryAttributeTypeTypeEnum.ROLE:
                   return (value.value as any).asRole != null;
                 case EntryAttributeTypeTypeEnum.ARRAY_ROLE:
                   return (
-                    (value.value as any).asArrayRole?.some((v: any) => v != null) ?? false
+                    (value.value as any).asArrayRole?.some(
+                      (v: any) => v != null,
+                    ) ?? false
                   );
                 case EntryAttributeTypeTypeEnum.NUMBER:
                   return (value.value as any).asNumber != null;

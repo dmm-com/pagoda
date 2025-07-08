@@ -6,6 +6,7 @@ import {
   EntryAttributeValueObject,
   EntryRetrieve,
 } from "@dmm-com/airone-apiclient-typescript-fetch";
+
 import {
   EditableEntryAttrValue,
   EditableEntryAttrs,
@@ -44,7 +45,7 @@ export function formalizeEntryInfo(
       .filter((attr) => attr.id != 0)
       .reduce((acc: Record<string, SchemaAttrs>, attr) => {
         function getAttrValue(
-          attrType: typeof EntryAttributeTypeTypeEnum[keyof typeof EntryAttributeTypeTypeEnum],
+          attrType: (typeof EntryAttributeTypeTypeEnum)[keyof typeof EntryAttributeTypeTypeEnum],
           value: EntryAttributeValue | undefined,
           attrDetail: EntityDetail["attrs"][0],
         ): EditableEntryAttrValue {
@@ -53,7 +54,7 @@ export function formalizeEntryInfo(
             // Backend returns raw primitive values (string, boolean, null)
             // Auto-generated types show it as object but it's actually scalar values
             const defaultValue = attrDetail.defaultValue;
-            
+
             // Default values for when no default is specified
             const defaults = {
               asString: "",
@@ -78,24 +79,42 @@ export function formalizeEntryInfo(
                   // Handle both string values and potential object wrappers
                   if (typeof defaultValue === "string") {
                     defaults.asString = defaultValue;
-                  } else if (typeof defaultValue === "object" && defaultValue !== null && "asString" in defaultValue) {
-                    defaults.asString = (defaultValue as { asString: string }).asString;
+                  } else if (
+                    typeof defaultValue === "object" &&
+                    defaultValue !== null &&
+                    "asString" in defaultValue
+                  ) {
+                    defaults.asString = (
+                      defaultValue as { asString: string }
+                    ).asString;
                   }
                   break;
                 case EntryAttributeTypeTypeEnum.BOOLEAN:
                   // Handle both boolean values and potential object wrappers
                   if (typeof defaultValue === "boolean") {
                     defaults.asBoolean = defaultValue;
-                  } else if (typeof defaultValue === "object" && defaultValue !== null && "asBoolean" in defaultValue) {
-                    defaults.asBoolean = (defaultValue as { asBoolean: boolean }).asBoolean;
+                  } else if (
+                    typeof defaultValue === "object" &&
+                    defaultValue !== null &&
+                    "asBoolean" in defaultValue
+                  ) {
+                    defaults.asBoolean = (
+                      defaultValue as { asBoolean: boolean }
+                    ).asBoolean;
                   }
                   break;
                 case EntryAttributeTypeTypeEnum.NUMBER:
                   // Handle both number values and potential object wrappers
                   if (typeof defaultValue === "number") {
                     (defaults as any).asNumber = defaultValue;
-                  } else if (typeof defaultValue === "object" && defaultValue !== null && "asNumber" in defaultValue) {
-                    (defaults as any).asNumber = (defaultValue as { asNumber: number }).asNumber;
+                  } else if (
+                    typeof defaultValue === "object" &&
+                    defaultValue !== null &&
+                    "asNumber" in defaultValue
+                  ) {
+                    (defaults as any).asNumber = (
+                      defaultValue as { asNumber: number }
+                    ).asNumber;
                   }
                   break;
               }
@@ -182,13 +201,17 @@ export function formalizeEntryInfo(
 
         acc[String(attr.id)] = {
           index: attr.index,
-          type: attr.type as typeof EntryAttributeTypeTypeEnum[keyof typeof EntryAttributeTypeTypeEnum],
+          type: attr.type as (typeof EntryAttributeTypeTypeEnum)[keyof typeof EntryAttributeTypeTypeEnum],
           isMandatory: attr.isMandatory,
           schema: {
             id: attr.id,
             name: attr.name,
           },
-          value: getAttrValue(attr.type as typeof EntryAttributeTypeTypeEnum[keyof typeof EntryAttributeTypeTypeEnum], value, attr),
+          value: getAttrValue(
+            attr.type as (typeof EntryAttributeTypeTypeEnum)[keyof typeof EntryAttributeTypeTypeEnum],
+            value,
+            attr,
+          ),
         };
         return acc;
       }, {}),
@@ -200,7 +223,7 @@ export function convertAttrsFormatCtoS(
 ): AttributeData[] {
   return Object.entries(attrs).map(([{}, attr]) => {
     function getAttrValue(
-      attrType: typeof EntryAttributeTypeTypeEnum[keyof typeof EntryAttributeTypeTypeEnum],
+      attrType: (typeof EntryAttributeTypeTypeEnum)[keyof typeof EntryAttributeTypeTypeEnum],
       attrValue: EditableEntryAttrValue,
     ): EntryAttributeValueType {
       switch (attrType) {
