@@ -77,7 +77,8 @@ export const EntityEditPage: FC = () => {
       .filter((attr) => attr.isWritable)
       .map((attr, index) => {
         // Convert defaultValue to appropriate type
-        let processedDefaultValue: any = null;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let processedDefaultValue: any | null = null;
         if (attr.defaultValue != null) {
           if (attr.type === BaseAttributeTypes.number) {
             const numValue = Number(attr.defaultValue);

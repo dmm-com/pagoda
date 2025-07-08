@@ -68,7 +68,7 @@ export function formalizeEntryInfo(
               asGroup: null,
               asRole: null,
               asNamedObject: { name: "", object: null },
-              asNumber: null,
+              asNumber: null as number | null,
             };
 
             // Apply defaultValue for supported types (backend returns raw primitive values)
@@ -106,13 +106,13 @@ export function formalizeEntryInfo(
                 case EntryAttributeTypeTypeEnum.NUMBER:
                   // Handle both number values and potential object wrappers
                   if (typeof defaultValue === "number") {
-                    (defaults as any).asNumber = defaultValue;
+                    defaults.asNumber = defaultValue;
                   } else if (
                     typeof defaultValue === "object" &&
                     defaultValue !== null &&
                     "asNumber" in defaultValue
                   ) {
-                    (defaults as any).asNumber = (
+                    defaults.asNumber = (
                       defaultValue as { asNumber: number }
                     ).asNumber;
                   }

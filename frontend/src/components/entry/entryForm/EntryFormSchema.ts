@@ -193,50 +193,43 @@ export const schema = schemaForType<EditableEntry>()(
                 case EntryAttributeTypeTypeEnum.TEXT:
                 case EntryAttributeTypeTypeEnum.DATE:
                 case EntryAttributeTypeTypeEnum.DATETIME:
-                  return (value.value as any).asString !== "";
+                  return value.value.asString !== "";
                 case EntryAttributeTypeTypeEnum.ARRAY_STRING:
                   return (
-                    (value.value as any).asArrayString?.some(
-                      (v: any) => v.value !== "",
-                    ) ?? false
+                    value.value.asArrayString?.some((v) => v.value !== "") ??
+                    false
                   );
                 case EntryAttributeTypeTypeEnum.OBJECT:
-                  return (value.value as any).asObject != null;
+                  return value.value.asObject != null;
                 case EntryAttributeTypeTypeEnum.ARRAY_OBJECT:
                   return (
-                    (value.value as any).asArrayObject?.some(
-                      (v: any) => v != null,
-                    ) ?? false
+                    value.value.asArrayObject?.some((v) => v != null) ?? false
                   );
                 case EntryAttributeTypeTypeEnum.NAMED_OBJECT:
                   return (
-                    (value.value as any).asNamedObject?.name !== "" ||
-                    (value.value as any).asNamedObject?.object != null
+                    value.value.asNamedObject?.name !== "" ||
+                    value.value.asNamedObject?.object != null
                   );
                 case EntryAttributeTypeTypeEnum.ARRAY_NAMED_OBJECT:
                   return (
-                    (value.value as any).asArrayNamedObject?.some((v: any) => {
+                    value.value.asArrayNamedObject?.some((v) => {
                       return v.name !== "" || v.object != null;
                     }) ?? false
                   );
                 case EntryAttributeTypeTypeEnum.GROUP:
-                  return (value.value as any).asGroup != null;
+                  return value.value.asGroup != null;
                 case EntryAttributeTypeTypeEnum.ARRAY_GROUP:
                   return (
-                    (value.value as any).asArrayGroup?.some(
-                      (v: any) => v != null,
-                    ) ?? false
+                    value.value.asArrayGroup?.some((v) => v != null) ?? false
                   );
                 case EntryAttributeTypeTypeEnum.ROLE:
-                  return (value.value as any).asRole != null;
+                  return value.value.asRole != null;
                 case EntryAttributeTypeTypeEnum.ARRAY_ROLE:
                   return (
-                    (value.value as any).asArrayRole?.some(
-                      (v: any) => v != null,
-                    ) ?? false
+                    value.value.asArrayRole?.some((v) => v != null) ?? false
                   );
                 case EntryAttributeTypeTypeEnum.NUMBER:
-                  return (value.value as any).asNumber != null;
+                  return value.value.asNumber != null;
               }
 
               return true;
@@ -250,8 +243,8 @@ export const schema = schemaForType<EditableEntry>()(
               case EntryAttributeTypeTypeEnum.DATETIME:
                 return (
                   // check if the non-empty value is a valid date
-                  ((value as any).asString ?? "") == "" ||
-                  !isNaN(new Date((value as any).asString ?? "").getTime())
+                  (value.asString ?? "") == "" ||
+                  !isNaN(new Date(value.asString ?? "").getTime())
                 );
             }
             return true;
