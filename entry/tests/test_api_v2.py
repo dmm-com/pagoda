@@ -5184,6 +5184,270 @@ class ViewTest(BaseViewTest):
         self.assertFalse(any(x.is_active for x in items[:3]))
         self.assertTrue(any(x.is_active for x in items[3:]))
 
+    @mock.patch("entry.tasks.create_entry_v2.delay", mock.Mock(side_effect=tasks.create_entry_v2))
+    def test_create_entry_with_default_values(self):
+        """Test entries are created with default values from EntityAttr when no value provided"""
+        # Create entity with attributes that have default values
+        entity = self.create_entity(
+            self.user,
+            "TestEntity",
+            attrs=[
+                {"name": "string_with_default", "type": AttrType.STRING},
+                {"name": "bool_with_default", "type": AttrType.BOOLEAN},
+                {"name": "text_with_default", "type": AttrType.TEXT},
+                {"name": "number_with_default", "type": AttrType.NUMBER},
+                {"name": "string_no_default", "type": AttrType.STRING},
+            ],
+        )
+
+        # Set default values for some attributes
+        string_attr = entity.attrs.get(name="string_with_default")
+        string_attr.default_value = "default string value"
+        string_attr.save()
+
+        bool_attr = entity.attrs.get(name="bool_with_default")
+        bool_attr.default_value = True
+        bool_attr.save()
+
+        text_attr = entity.attrs.get(name="text_with_default")
+        text_attr.default_value = "default text value"
+        text_attr.save()
+
+        number_attr = entity.attrs.get(name="number_with_default")
+        number_attr.default_value = 42.5
+        number_attr.save()
+
+        # Create entry without providing values for attributes with defaults
+        params = {
+            "name": "test_entry",
+            "attrs": [
+                # Only provide value for one attribute, others should use defaults
+                {"id": entity.attrs.get(name="string_no_default").id, "value": "provided value"}
+            ],
+        }
+
+        resp = self.client.post(
+            "/entity/api/v2/%s/entries/" % entity.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
+
+        # Wait for entry creation job to complete
+        job = Job.objects.filter(operation=JobOperation.CREATE_ENTRY_V2).last()
+        self.assertEqual(job.status, JobStatus.DONE)
+
+        # Verify entry was created with default values
+        entry = Entry.objects.get(name="test_entry", schema=entity)
+        self.assertIsNotNone(entry)
+
+        # Check that attributes with default values were created with those defaults
+        string_attr_value = entry.attrs.get(schema=string_attr)
+        self.assertEqual(string_attr_value.get_latest_value().get_value(), "default string value")
+
+        bool_attr_value = entry.attrs.get(schema=bool_attr)
+        self.assertEqual(bool_attr_value.get_latest_value().get_value(), True)
+
+        text_attr_value = entry.attrs.get(schema=text_attr)
+        self.assertEqual(text_attr_value.get_latest_value().get_value(), "default text value")
+
+        number_attr_value = entry.attrs.get(schema=number_attr)
+        self.assertEqual(number_attr_value.get_latest_value().get_value(), 42.5)
+
+        # Check that attribute without default was not created (no value provided)
+        string_no_default_attr = entity.attrs.get(name="string_no_default")
+        string_no_default_value = entry.attrs.get(schema=string_no_default_attr)
+        self.assertEqual(string_no_default_value.get_latest_value().get_value(), "provided value")
+
+    @mock.patch("entry.tasks.create_entry_v2.delay", mock.Mock(side_effect=tasks.create_entry_v2))
+    def test_create_entry_provided_value_overrides_default(self):
+        """Test that provided values override default values from EntityAttr"""
+        # Create entity with attribute that has default value
+        entity = self.create_entity(
+            self.user,
+            "TestEntity",
+            attrs=[
+                {"name": "string_attr", "type": AttrType.STRING},
+                {"name": "bool_attr", "type": AttrType.BOOLEAN},
+                {"name": "number_attr", "type": AttrType.NUMBER},
+            ],
+        )
+
+        # Set default values
+        string_attr = entity.attrs.get(name="string_attr")
+        string_attr.default_value = "default value"
+        string_attr.save()
+
+        bool_attr = entity.attrs.get(name="bool_attr")
+        bool_attr.default_value = True
+        bool_attr.save()
+
+        number_attr = entity.attrs.get(name="number_attr")
+        number_attr.default_value = 123.456
+        number_attr.save()
+
+        # Create entry providing values that should override defaults
+        params = {
+            "name": "test_entry_override",
+            "attrs": [
+                {"id": string_attr.id, "value": "provided value"},
+                {"id": bool_attr.id, "value": False},
+                {"id": number_attr.id, "value": 999.999},
+            ],
+        }
+
+        resp = self.client.post(
+            "/entity/api/v2/%s/entries/" % entity.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
+
+        # Wait for entry creation job to complete
+        job = Job.objects.filter(operation=JobOperation.CREATE_ENTRY_V2).last()
+        self.assertEqual(job.status, JobStatus.DONE)
+
+        # Verify entry was created with provided values, not defaults
+        entry = Entry.objects.get(name="test_entry_override", schema=entity)
+
+        string_attr_value = entry.attrs.get(schema=string_attr)
+        self.assertEqual(
+            string_attr_value.get_latest_value().get_value(), "provided value"
+        )  # Not default
+
+        bool_attr_value = entry.attrs.get(schema=bool_attr)
+        self.assertEqual(
+            bool_attr_value.get_latest_value().get_value(), False
+        )  # Not default (True)
+
+        number_attr_value = entry.attrs.get(schema=number_attr)
+        self.assertEqual(
+            number_attr_value.get_latest_value().get_value(), 999.999
+        )  # Not default (123.456)
+
+    @mock.patch("entry.tasks.create_entry_v2.delay", mock.Mock(side_effect=tasks.create_entry_v2))
+    def test_create_entry_unsupported_type_no_default(self):
+        """Test that unsupported types don't get default values applied"""
+        # Create reference entity
+        ref_entity = self.create_entity(self.user, "RefEntity", attrs=[])
+
+        # Create entity with unsupported type attribute that has default_value
+        entity = self.create_entity(
+            self.user,
+            "TestEntity",
+            attrs=[
+                {"name": "object_attr", "type": AttrType.OBJECT, "referral": [ref_entity]},
+                {"name": "date_attr", "type": AttrType.DATE},
+            ],
+        )
+
+        # Try to set default values (should be ignored for unsupported types)
+        object_attr = entity.attrs.get(name="object_attr")
+        object_attr.default_value = "ignored value"
+        object_attr.save()
+
+        date_attr = entity.attrs.get(name="date_attr")
+        date_attr.default_value = "2023-01-01"
+        date_attr.save()
+
+        # Create entry without providing values
+        params = {
+            "name": "test_entry_unsupported",
+            "attrs": [],
+        }
+
+        resp = self.client.post(
+            "/entity/api/v2/%s/entries/" % entity.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
+
+        # Wait for entry creation job to complete
+        job = Job.objects.filter(operation=JobOperation.CREATE_ENTRY_V2).last()
+        self.assertEqual(job.status, JobStatus.DONE)
+
+        # Verify entry was created but unsupported types should use type defaults, not custom
+        entry = Entry.objects.get(name="test_entry_unsupported", schema=entity)
+
+        # Since unsupported types don't apply default_value, these attributes should either
+        # not have AttributeValues created or use the hardcoded type defaults
+        object_attr_values = entry.attrs.filter(schema=object_attr)
+        date_attr_values = entry.attrs.filter(schema=date_attr)
+
+        # For unsupported types, no custom default should be applied
+        # The behavior should be the same as before (either no value or type default)
+        if object_attr_values.exists():
+            object_attr_value = object_attr_values.first()
+            # Should not be the custom default "ignored value"
+            self.assertNotEqual(object_attr_value.get_latest_value().get_value(), "ignored value")
+
+        if date_attr_values.exists():
+            date_attr_value = date_attr_values.first()
+            # Should not be the custom default "2023-01-01"
+            self.assertNotEqual(date_attr_value.get_latest_value().get_value(), "2023-01-01")
+
+    @mock.patch("entry.tasks.create_entry_v2.delay", mock.Mock(side_effect=tasks.create_entry_v2))
+    def test_create_entry_number_default_value_scenarios(self):
+        """Test Number type default value scenarios (integer, float, zero, negative)"""
+        # Create entity with number attributes
+        entity = self.create_entity(
+            self.user,
+            "NumberTestEntity",
+            attrs=[
+                {"name": "number_int", "type": AttrType.NUMBER},
+                {"name": "number_float", "type": AttrType.NUMBER},
+                {"name": "number_zero", "type": AttrType.NUMBER},
+                {"name": "number_negative", "type": AttrType.NUMBER},
+            ],
+        )
+
+        # Set different number default values
+        number_int_attr = entity.attrs.get(name="number_int")
+        number_int_attr.default_value = 42
+        number_int_attr.save()
+
+        number_float_attr = entity.attrs.get(name="number_float")
+        number_float_attr.default_value = 3.14159
+        number_float_attr.save()
+
+        number_zero_attr = entity.attrs.get(name="number_zero")
+        number_zero_attr.default_value = 0
+        number_zero_attr.save()
+
+        number_negative_attr = entity.attrs.get(name="number_negative")
+        number_negative_attr.default_value = -123.45
+        number_negative_attr.save()
+
+        # Create entry without providing values for number attributes
+        params = {
+            "name": "test_entry_number_defaults",
+            "attrs": [],
+        }
+
+        resp = self.client.post(
+            "/entity/api/v2/%s/entries/" % entity.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
+
+        # Wait for entry creation job to complete
+        job = Job.objects.filter(operation=JobOperation.CREATE_ENTRY_V2).last()
+        self.assertEqual(job.status, JobStatus.DONE)
+
+        # Verify entry was created with number default values
+        entry = Entry.objects.get(name="test_entry_number_defaults", schema=entity)
+        self.assertIsNotNone(entry)
+
+        # Check integer default
+        number_int_value = entry.attrs.get(schema=number_int_attr)
+        self.assertEqual(number_int_value.get_latest_value().get_value(), 42)
+
+        # Check float default
+        number_float_value = entry.attrs.get(schema=number_float_attr)
+        self.assertAlmostEqual(number_float_value.get_latest_value().get_value(), 3.14159, places=5)
+
+        # Check zero default
+        number_zero_value = entry.attrs.get(schema=number_zero_attr)
+        self.assertEqual(number_zero_value.get_latest_value().get_value(), 0)
+
+        # Check negative default
+        number_negative_value = entry.attrs.get(schema=number_negative_attr)
+        self.assertEqual(number_negative_value.get_latest_value().get_value(), -123.45)
+
     @patch("entry.tasks.create_entry_v2.delay", Mock(side_effect=tasks.create_entry_v2))
     def test_create_and_retrieve_entry_with_number_attr(self):
         entry_name = "test_entry_with_number"
