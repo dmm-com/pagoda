@@ -68,6 +68,7 @@ interface Props {
   joinAttrs: AdvancedSearchJoinAttrInfo[];
   handleChangeAllBulkOperationEntryIds: (checked: boolean) => void;
   isReadonly?: boolean;
+  isNarrowDown?: boolean;
   omitHeadline?: boolean;
 }
 
@@ -82,6 +83,7 @@ export const SearchResultsTableHead: FC<Props> = ({
   joinAttrs,
   handleChangeAllBulkOperationEntryIds,
   isReadonly = false,
+  isNarrowDown = true,
   omitHeadline = false,
 }) => {
   const location = useLocation();
@@ -233,8 +235,8 @@ export const SearchResultsTableHead: FC<Props> = ({
           <HeaderBox>
             <Typography>{!omitHeadline ? "アイテム名" : ""}</Typography>
 
-            {/* SearchControlMenu would be invisible when Readonly Mode is True */}
-            {!isReadonly && (
+            {/* SearchControlMenu would be invisible when NarrowDown Mode is True */}
+            {isNarrowDown && !omitHeadline && (
               <>
                 <Tooltip title="アイテム名でフィルタ">
                   <StyledIconButton
@@ -266,9 +268,9 @@ export const SearchResultsTableHead: FC<Props> = ({
                   : attrName}
               </Typography>
 
-              {/* Bulk operation checkbox would be invisible when Readonly mode is true */}
+              {/* Bulk operation checkbox would be invisible when NarrowDown mode is true */}
               {(attrTypes[attrName] & EntryAttributeTypeTypeEnum.OBJECT) > 0 &&
-                !isReadonly &&
+                isNarrowDown &&
                 attrsFilter[attrName]?.joinedAttrname === undefined && (
                   <Tooltip title="アイテムの属性を結合する">
                     <StyledIconButton onClick={() => setJoinAttrname(attrName)}>
@@ -285,7 +287,7 @@ export const SearchResultsTableHead: FC<Props> = ({
                   handleClose={() => setJoinAttrname("")}
                 />
               )}
-              {!isReadonly && (
+              {isNarrowDown && (
                 <>
                   <Tooltip title="属性値でフィルタ">
                     <StyledIconButton
