@@ -89,179 +89,223 @@ class ViewTest(AironeViewTest):
     def test_retrieve_entity_with_attr(self):
         resp = self.client.get("/entity/api/v2/%d/" % self.entity.id)
         self.assertEqual(resp.status_code, 200)
+        self.maxDiff = None
         self.assertEqual(
             resp.json()["attrs"],
             [
                 {
                     "id": self.entity.attrs.get(name="val").id,
                     "index": 0,
-                    "is_delete_in_chain": False,
-                    "is_mandatory": False,
-                    "is_writable": True,
                     "name": "val",
-                    "referral": [],
                     "type": AttrType.STRING,
+                    "is_mandatory": False,
+                    "is_delete_in_chain": False,
+                    "is_summarized": False,
+                    "is_writable": True,
+                    "referral": [],
                     "note": "",
+                    "default_value": None,
                 },
                 {
                     "id": self.entity.attrs.get(name="vals").id,
                     "index": 1,
-                    "is_delete_in_chain": False,
-                    "is_mandatory": False,
-                    "is_writable": True,
                     "name": "vals",
-                    "referral": [],
                     "type": AttrType.ARRAY_STRING,
+                    "is_mandatory": False,
+                    "is_delete_in_chain": False,
+                    "is_summarized": False,
+                    "is_writable": True,
+                    "referral": [],
                     "note": "",
+                    "default_value": None,
                 },
                 {
                     "id": self.entity.attrs.get(name="ref").id,
                     "index": 2,
-                    "is_delete_in_chain": False,
-                    "is_mandatory": False,
-                    "is_writable": True,
                     "name": "ref",
-                    "referral": [],
                     "type": AttrType.OBJECT,
+                    "is_mandatory": False,
+                    "is_delete_in_chain": False,
+                    "is_summarized": False,
+                    "is_writable": True,
+                    "referral": [],
                     "note": "",
+                    "default_value": None,
                 },
                 {
                     "id": self.entity.attrs.get(name="refs").id,
                     "index": 3,
-                    "is_delete_in_chain": False,
-                    "is_mandatory": False,
-                    "is_writable": True,
                     "name": "refs",
-                    "referral": [],
                     "type": AttrType.ARRAY_OBJECT,
+                    "is_mandatory": False,
+                    "is_delete_in_chain": False,
+                    "is_summarized": False,
+                    "is_writable": True,
+                    "referral": [],
                     "note": "",
+                    "default_value": None,
                 },
                 {
                     "id": self.entity.attrs.get(name="name").id,
                     "index": 4,
-                    "is_delete_in_chain": False,
-                    "is_mandatory": False,
-                    "is_writable": True,
                     "name": "name",
-                    "referral": [],
                     "type": AttrType.NAMED_OBJECT,
+                    "is_mandatory": False,
+                    "is_delete_in_chain": False,
+                    "is_summarized": False,
+                    "is_writable": True,
+                    "referral": [],
                     "note": "",
+                    "default_value": None,
                 },
                 {
                     "id": self.entity.attrs.get(name="names").id,
                     "index": 5,
-                    "is_delete_in_chain": False,
-                    "is_mandatory": False,
-                    "is_writable": True,
                     "name": "names",
-                    "referral": [],
                     "type": AttrType.ARRAY_NAMED_OBJECT,
+                    "is_mandatory": False,
+                    "is_delete_in_chain": False,
+                    "is_summarized": False,
+                    "is_writable": True,
+                    "referral": [],
                     "note": "",
+                    "default_value": None,
                 },
                 {
                     "id": self.entity.attrs.get(name="group").id,
                     "index": 6,
-                    "is_delete_in_chain": False,
-                    "is_mandatory": False,
-                    "is_writable": True,
                     "name": "group",
-                    "referral": [],
                     "type": AttrType.GROUP,
+                    "is_mandatory": False,
+                    "is_delete_in_chain": False,
+                    "is_summarized": False,
+                    "is_writable": True,
+                    "referral": [],
                     "note": "",
+                    "default_value": None,
                 },
                 {
                     "id": self.entity.attrs.get(name="groups").id,
                     "index": 7,
-                    "is_delete_in_chain": False,
-                    "is_mandatory": False,
-                    "is_writable": True,
                     "name": "groups",
-                    "referral": [],
                     "type": AttrType.ARRAY_GROUP,
+                    "is_mandatory": False,
+                    "is_delete_in_chain": False,
+                    "is_summarized": False,
+                    "is_writable": True,
+                    "referral": [],
                     "note": "",
+                    "default_value": None,
                 },
                 {
                     "id": self.entity.attrs.get(name="bool").id,
                     "index": 8,
-                    "is_delete_in_chain": False,
-                    "is_mandatory": False,
-                    "is_writable": True,
                     "name": "bool",
-                    "referral": [],
                     "type": AttrType.BOOLEAN,
+                    "is_mandatory": False,
+                    "is_delete_in_chain": False,
+                    "is_summarized": False,
+                    "is_writable": True,
+                    "referral": [],
                     "note": "",
+                    "default_value": None,
                 },
                 {
                     "id": self.entity.attrs.get(name="text").id,
                     "index": 9,
-                    "is_delete_in_chain": False,
-                    "is_mandatory": False,
-                    "is_writable": True,
                     "name": "text",
-                    "referral": [],
                     "type": AttrType.TEXT,
+                    "is_mandatory": False,
+                    "is_delete_in_chain": False,
+                    "is_summarized": False,
+                    "is_writable": True,
+                    "referral": [],
                     "note": "",
+                    "default_value": None,
                 },
                 {
                     "id": self.entity.attrs.get(name="date").id,
                     "index": 10,
-                    "is_delete_in_chain": False,
-                    "is_mandatory": False,
-                    "is_writable": True,
                     "name": "date",
-                    "referral": [],
                     "type": AttrType.DATE,
+                    "is_mandatory": False,
+                    "is_delete_in_chain": False,
+                    "is_summarized": False,
+                    "is_writable": True,
+                    "referral": [],
                     "note": "",
+                    "default_value": None,
                 },
                 {
                     "id": self.entity.attrs.get(name="role").id,
                     "index": 11,
-                    "is_delete_in_chain": False,
-                    "is_mandatory": False,
-                    "is_writable": True,
                     "name": "role",
-                    "referral": [],
                     "type": AttrType.ROLE,
+                    "is_mandatory": False,
+                    "is_delete_in_chain": False,
+                    "is_summarized": False,
+                    "is_writable": True,
+                    "referral": [],
                     "note": "",
+                    "default_value": None,
                 },
                 {
                     "id": self.entity.attrs.get(name="roles").id,
                     "index": 12,
-                    "is_delete_in_chain": False,
-                    "is_mandatory": False,
-                    "is_writable": True,
                     "name": "roles",
-                    "referral": [],
                     "type": AttrType.ARRAY_ROLE,
+                    "is_mandatory": False,
+                    "is_delete_in_chain": False,
+                    "is_summarized": False,
+                    "is_writable": True,
+                    "referral": [],
                     "note": "",
+                    "default_value": None,
                 },
                 {
                     "id": self.entity.attrs.get(name="datetime").id,
                     "index": 13,
-                    "is_delete_in_chain": False,
-                    "is_mandatory": False,
-                    "is_writable": True,
                     "name": "datetime",
-                    "referral": [],
                     "type": AttrType.DATETIME,
+                    "is_mandatory": False,
+                    "is_delete_in_chain": False,
+                    "is_summarized": False,
+                    "is_writable": True,
+                    "referral": [],
                     "note": "",
+                    "default_value": None,
                 },
                 {
                     "id": self.entity.attrs.get(name="num").id,
                     "index": 14,
                     "is_delete_in_chain": False,
                     "is_mandatory": False,
+                    "is_summarized": False,
                     "is_writable": True,
                     "name": "num",
                     "referral": [],
                     "type": AttrType.NUMBER,
                     "note": "",
+                    "default_value": None,
+                },
+                {
+                    "id": self.entity.attrs.get(name="nums").id,
+                    "index": 15,
+                    "name": "nums",
+                    "type": AttrType.ARRAY_NUMBER,
+                    "is_mandatory": False,
+                    "is_delete_in_chain": False,
+                    "is_summarized": False,
+                    "is_writable": True,
+                    "referral": [],
+                    "note": "",
+                    "default_value": None,
                 },
             ],
         )
 
         entity_attr: EntityAttr = self.entity.attrs.get(name="refs")
-        entity_attr.index = 15
+        entity_attr.index = 16
         entity_attr.is_delete_in_chain = True
         entity_attr.is_mandatory = True
         entity_attr.referral.add(self.ref_entity)
@@ -272,19 +316,21 @@ class ViewTest(AironeViewTest):
             resp.json()["attrs"][-1],
             {
                 "id": entity_attr.id,
-                "index": 15,
-                "is_delete_in_chain": True,
-                "is_mandatory": True,
-                "is_writable": True,
+                "index": 16,
                 "name": "refs",
+                "type": AttrType.ARRAY_OBJECT,
+                "is_mandatory": True,
+                "is_delete_in_chain": True,
+                "is_summarized": False,
+                "is_writable": True,
                 "referral": [
                     {
                         "id": self.ref_entity.id,
                         "name": "ref_entity",
                     }
                 ],
-                "type": AttrType.ARRAY_OBJECT,
                 "note": "",
+                "default_value": None,
             },
         )
 
@@ -2964,6 +3010,7 @@ class ViewTest(AironeViewTest):
                 {"id": attr["role"].id, "value": self.role.id},
                 {"id": attr["roles"].id, "value": [self.role.id]},
                 {"id": attr["num"].id, "value": 123.45},
+                {"id": attr["nums"].id, "value": [123.45, 678.90]},
                 {"id": attr["datetime"].id, "value": "2018-12-31T00:00Z"},
             ],
         }
@@ -2989,6 +3036,7 @@ class ViewTest(AironeViewTest):
                 "name": {"hoge": "r-0"},
                 "names": [{"hoge": "r-0"}],
                 "num": 123.45,
+                "nums": [123.45, 678.90],
                 "ref": "r-0",
                 "refs": ["r-0"],
                 "text": "hoge\nfuga",
@@ -3717,4 +3765,287 @@ class ViewTest(AironeViewTest):
             self.assertEqual(
                 resp.json()["name"][0]["message"],
                 'Specified name doesn\'t match configured pattern "%s"' % model.item_name_pattern,
+            )
+
+    @mock.patch(
+        "entity.tasks.create_entity_v2.delay", mock.Mock(side_effect=tasks.create_entity_v2)
+    )
+    def test_create_entity_with_attr_default_values(self):
+        """Test creating an entity with attributes that have default values"""
+        params = {
+            "name": "entity_with_defaults",
+            "note": "test entity with default values",
+            "attrs": [
+                {
+                    "name": "string_attr",
+                    "type": AttrType.STRING,
+                    "default_value": "default string value",
+                    "index": 1,
+                },
+                {
+                    "name": "text_attr",
+                    "type": AttrType.TEXT,
+                    "default_value": "default\nmultiline\ntext",
+                    "index": 2,
+                },
+                {
+                    "name": "bool_attr",
+                    "type": AttrType.BOOLEAN,
+                    "default_value": True,
+                    "index": 3,
+                },
+                {
+                    "name": "bool_false_attr",
+                    "type": AttrType.BOOLEAN,
+                    "default_value": False,
+                    "index": 4,
+                },
+            ],
+        }
+
+        resp = self.client.post("/entity/api/v2/", json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
+
+        # Verify entity was created
+        try:
+            entity = Entity.objects.get(name="entity_with_defaults")
+            self.assertEqual(entity.note, "test entity with default values")
+        except Entity.DoesNotExist:
+            # Check what entities exist
+            entities = Entity.objects.filter(name__contains="entity_with_defaults")
+            entity_names = list(entities.values_list("name", flat=True))
+            self.fail(
+                f"Entity 'entity_with_defaults' was not created. Existing entities: {entity_names}"
+            )
+
+        # Verify attributes have correct default values
+        string_attr = entity.attrs.get(name="string_attr")
+        self.assertEqual(string_attr.default_value, "default string value")
+
+        text_attr = entity.attrs.get(name="text_attr")
+        self.assertEqual(text_attr.default_value, "default\nmultiline\ntext")
+
+        bool_attr = entity.attrs.get(name="bool_attr")
+        self.assertEqual(bool_attr.default_value, True)
+
+        bool_false_attr = entity.attrs.get(name="bool_false_attr")
+        self.assertEqual(bool_false_attr.default_value, False)
+
+    def test_create_entity_with_invalid_default_values(self):
+        """Test creating entity with invalid default values should fail"""
+        params = {
+            "name": "entity_with_invalid_defaults",
+            "attrs": [
+                {
+                    "name": "string_attr",
+                    "type": AttrType.STRING,
+                    "default_value": 123,  # Invalid: number for string type
+                    "index": 1,
+                }
+            ],
+        }
+
+        resp = self.client.post("/entity/api/v2/", json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("Default value must be a string", str(resp.json()))
+
+    @mock.patch(
+        "entity.tasks.create_entity_v2.delay", mock.Mock(side_effect=tasks.create_entity_v2)
+    )
+    def test_create_entity_with_unsupported_type_default_value(self):
+        """Test that unsupported types clear default_value"""
+        params = {
+            "name": "entity_with_unsupported_default",
+            "attrs": [
+                {
+                    "name": "object_attr",
+                    "type": AttrType.OBJECT,
+                    "default_value": "some value",  # Should be cleared
+                    "referral": [self.ref_entity.id],
+                    "index": 1,
+                }
+            ],
+        }
+
+        resp = self.client.post("/entity/api/v2/", json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
+
+        # Verify entity was created and default_value was cleared
+        entity = Entity.objects.get(name="entity_with_unsupported_default")
+        object_attr = entity.attrs.get(name="object_attr")
+        self.assertIsNone(object_attr.default_value)
+
+    @mock.patch("entity.tasks.edit_entity_v2.delay", mock.Mock(side_effect=tasks.edit_entity_v2))
+    def test_update_entity_attr_default_values(self):
+        """Test updating entity attributes with default values"""
+        # First create an entity with some attributes
+        entity = Entity.objects.create(name="update_test_entity", created_user=self.user)
+        string_attr = EntityAttr.objects.create(
+            name="string_attr",
+            type=AttrType.STRING,
+            created_user=self.user,
+            parent_entity=entity,
+            default_value="original value",
+        )
+        bool_attr = EntityAttr.objects.create(
+            name="bool_attr",
+            type=AttrType.BOOLEAN,
+            created_user=self.user,
+            parent_entity=entity,
+            default_value=False,
+        )
+
+        # Update the entity with new default values
+        params = {
+            "id": entity.id,
+            "name": "update_test_entity",
+            "attrs": [
+                {
+                    "id": string_attr.id,
+                    "name": "string_attr",
+                    "type": AttrType.STRING,
+                    "default_value": "updated string value",
+                    "index": 1,
+                },
+                {
+                    "id": bool_attr.id,
+                    "name": "bool_attr",
+                    "type": AttrType.BOOLEAN,
+                    "default_value": True,  # Use boolean value
+                    "index": 2,
+                },
+            ],
+        }
+
+        resp = self.client.put(
+            f"/entity/api/v2/{entity.id}/", json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
+
+        # Verify default values were updated
+        string_attr.refresh_from_db()
+        bool_attr.refresh_from_db()
+
+        self.assertEqual(string_attr.default_value, "updated string value")
+        self.assertEqual(bool_attr.default_value, True)
+
+    def test_retrieve_entity_includes_default_values(self):
+        """Test that entity retrieval includes default_value in response"""
+        # Create entity with attributes that have default values
+        entity = Entity.objects.create(name="retrieve_test_entity", created_user=self.user)
+        EntityAttr.objects.create(
+            name="string_attr",
+            type=AttrType.STRING,
+            created_user=self.user,
+            parent_entity=entity,
+            default_value="test default",
+        )
+        EntityAttr.objects.create(
+            name="bool_attr",
+            type=AttrType.BOOLEAN,
+            created_user=self.user,
+            parent_entity=entity,
+            default_value=True,
+        )
+        EntityAttr.objects.create(
+            name="no_default_attr", type=AttrType.TEXT, created_user=self.user, parent_entity=entity
+        )
+
+        resp = self.client.get(f"/entity/api/v2/{entity.id}/")
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+
+        # Find the attributes in the response
+        attrs = resp.json()["attrs"]
+        string_attr_data = next(attr for attr in attrs if attr["name"] == "string_attr")
+        bool_attr_data = next(attr for attr in attrs if attr["name"] == "bool_attr")
+        no_default_attr_data = next(attr for attr in attrs if attr["name"] == "no_default_attr")
+
+        # Verify default values are included in response
+        self.assertEqual(string_attr_data["default_value"], "test default")
+        self.assertEqual(bool_attr_data["default_value"], True)
+        self.assertIsNone(no_default_attr_data["default_value"])
+
+    @mock.patch(
+        "entity.tasks.create_entity_v2.delay", mock.Mock(side_effect=tasks.create_entity_v2)
+    )
+    def test_boolean_edge_cases_api(self):
+        """Test that string and numeric values are rejected for boolean type through API"""
+        # All these should be rejected now
+        invalid_cases = [
+            "false",
+            "FALSE",
+            "0",
+            0,
+            "1",
+            1,
+        ]
+
+        for i, input_value in enumerate(invalid_cases):
+            params = {
+                "name": f"bool_test_entity_{i}",
+                "attrs": [
+                    {
+                        "name": "bool_attr",
+                        "type": AttrType.BOOLEAN,
+                        "default_value": input_value,
+                        "index": 1,
+                    }
+                ],
+            }
+
+            resp = self.client.post("/entity/api/v2/", json.dumps(params), "application/json")
+            self.assertEqual(
+                resp.status_code,
+                status.HTTP_400_BAD_REQUEST,
+                f"Should have rejected: {input_value}",
+            )
+
+        # Test with valid boolean values
+        for i, bool_value in enumerate([True, False]):
+            params = {
+                "name": f"valid_bool_test_{i}",
+                "attrs": [
+                    {
+                        "name": "bool_attr",
+                        "type": AttrType.BOOLEAN,
+                        "default_value": bool_value,
+                        "index": 1,
+                    }
+                ],
+            }
+
+            resp = self.client.post("/entity/api/v2/", json.dumps(params), "application/json")
+            self.assertEqual(
+                resp.status_code, status.HTTP_202_ACCEPTED, f"Should accept boolean: {bool_value}"
+            )
+
+    def test_boolean_invalid_values_api(self):
+        """Test that invalid boolean values are rejected through API"""
+        invalid_values = ["yes", "no", "invalid", 2, -1, 1.5]
+
+        for i, invalid_value in enumerate(invalid_values):
+            params = {
+                "name": f"invalid_bool_test_{i}",
+                "attrs": [
+                    {
+                        "name": "bool_attr",
+                        "type": AttrType.BOOLEAN,
+                        "default_value": invalid_value,
+                        "index": 1,
+                    }
+                ],
+            }
+
+            resp = self.client.post("/entity/api/v2/", json.dumps(params), "application/json")
+            self.assertEqual(
+                resp.status_code,
+                status.HTTP_400_BAD_REQUEST,
+                f"Should have failed for invalid value: {invalid_value}",
+            )
+            # Check that the error message indicates boolean type issue
+            error_msg = str(resp.json())
+            self.assertTrue(
+                "Default value must be a boolean for BOOLEAN type" in error_msg
+                or "boolean" in error_msg.lower(),
+                f"Error message doesn't indicate boolean type issue: {error_msg}",
             )

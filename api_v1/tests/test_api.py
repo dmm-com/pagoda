@@ -84,6 +84,7 @@ class APITest(AironeViewTest):
                 "refs": ["r-2", "r-3"],
                 "names": [{"name": "foo", "id": "r-4"}, {"name": "bar", "id": "r-5"}],
                 "num": 123.45,
+                "nums": [1.5, 2.3, 3.7],
                 "datetime": "2018-12-31T12:34:56Z",
             },
         }
@@ -159,6 +160,18 @@ class APITest(AironeViewTest):
                 "check": lambda v: self.assertEqual(v.data_array.last().value, "bar"),
             },
             {
+                "name": "nums",
+                "check": lambda v: self.assertEqual(v.data_array.count(), 3),
+            },
+            {
+                "name": "nums",
+                "check": lambda v: self.assertEqual(float(v.data_array.first().value), 1.5),
+            },
+            {
+                "name": "nums",
+                "check": lambda v: self.assertEqual(float(v.data_array.last().value), 3.7),
+            },
+            {
                 "name": "refs",
                 "check": lambda v: self.assertEqual(v.data_array.count(), 2),
             },
@@ -215,6 +228,7 @@ class APITest(AironeViewTest):
                 "roles": [],
                 "text": "",
                 "vals": [],
+                "nums": [],
                 "refs": [],
                 "names": [],
             },
@@ -238,7 +252,7 @@ class APITest(AironeViewTest):
             elif attr.schema.name == "name":
                 self.assertEqual(attrv.value, "")
                 self.assertIsNone(attrv.referral)
-            elif attr.schema.name in ["vals", "refs", "names", "groups"]:
+            elif attr.schema.name in ["vals", "nums", "refs", "names", "groups", "roles"]:
                 self.assertEqual(attrv.data_array.count(), 0)
 
     @mock.patch("entry.tasks.notify_update_entry.delay")

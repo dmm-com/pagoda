@@ -21,7 +21,6 @@ import {
   StringAttributeValueField,
 } from "./StringAttributeValueField";
 
-import { AttributeTypes } from "services/Constants";
 
 interface Props {
   control: Control<Schema>;
@@ -174,7 +173,7 @@ export const AttributeValueField: FC<Props> = ({
         <ArrayStringAttributeValueField control={control} attrId={schemaId} />
       );
 
-    case AttributeTypes.array_number.type:
+    case EntryAttributeTypeTypeEnum.ARRAY_NUMBER:
       return (
         <ArrayNumberAttributeValueField control={control} attrId={schemaId} />
       );

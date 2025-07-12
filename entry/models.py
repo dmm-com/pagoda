@@ -636,6 +636,33 @@ class Attribute(ACLBase):
                     if not last_value.data_array.filter(value=value).exists():
                         return True
 
+            case AttrType.ARRAY_NUMBER:
+                # the case that specified value is empty or invalid
+                if not recv_value:
+                    # Value would be changed as empty when there are any values
+                    # in the latest AttributeValue
+                    return last_value.data_array.count() > 0
+
+                # Convert and filter values like other array types (exclude None/empty)
+                stored_numbers = []
+                for x in last_value.data_array.all():
+                    if x.value and x.value.strip():
+                        try:
+                            stored_numbers.append(float(x.value))
+                        except ValueError:
+                            pass  # Skip invalid values
+
+                recv_numbers = []
+                for v in recv_value:
+                    if v is not None:  # Filter out None like ARRAY_GROUP does with 'if v'
+                        try:
+                            recv_numbers.append(float(v))
+                        except (ValueError, TypeError):
+                            pass  # Skip invalid values
+
+                # Simple comparison like other array types
+                return sorted(stored_numbers) != sorted(recv_numbers)
+
             case AttrType.ARRAY_OBJECT:
                 # the case that specified value is empty or invalid
                 if not recv_value:
@@ -1831,6 +1858,13 @@ class Entry(ACLBase):
                     # this dict-key 'last_value' is uniformed with all array types
                     attrinfo["last_value"] = [x.value for x in last_value.data_array.all()]
 
+                case AttrType.ARRAY_NUMBER:
+                    # Convert string values back to numbers for ARRAY_NUMBER type
+                    attrinfo["last_value"] = [
+                        float(x.value) if x.value and x.value.strip() else None
+                        for x in last_value.data_array.all()
+                    ]
+
                 case AttrType.ARRAY_OBJECT:
                     attrinfo["last_value"] = [
                         x.referral
@@ -2634,6 +2668,13 @@ class AdvancedSearchAttributeIndex(models.Model):
                         if v.role
                     ]
                     key = ",".join([v["name"] for v in value])
+                case AttrType.ARRAY_NUMBER:
+                    # Convert string values to numbers for ARRAY_NUMBER type
+                    value = [
+                        float(v.value) if v.value and v.value.strip() else None
+                        for v in attrv.data_array.all()
+                    ]
+                    key = ",".join([str(v) if v is not None else "" for v in value])
                 case _:
                     print("TODO implement it")
 

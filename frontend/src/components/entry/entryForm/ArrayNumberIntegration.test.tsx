@@ -200,7 +200,7 @@ describe("Array Number Integration Tests", () => {
 
   test("validation workflow: mandatory field validation", async () => {
     // Start with empty mandatory array
-    const defaultValues = createDefaultValues(null, [], []);
+    const defaultValues = createDefaultValues(null, []);
     defaultValues.attrs.mandatory_array_number.value.asArrayNumber = [];
 
     const {

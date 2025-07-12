@@ -523,6 +523,13 @@ exports[`EditEntityPage should match snapshot 1`] = `
                 <th
                   class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-8816du-MuiTableCell-root"
                   scope="col"
+                  width="200px"
+                >
+                  デフォルト値
+                </th>
+                <th
+                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-8816du-MuiTableCell-root"
+                  scope="col"
                   width="100px"
                 >
                   必須
@@ -1137,6 +1144,13 @@ exports[`EditEntityPage should match snapshot 1`] = `
                 width="300px"
               >
                 型
+              </th>
+              <th
+                class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-8816du-MuiTableCell-root"
+                scope="col"
+                width="200px"
+              >
+                デフォルト値
               </th>
               <th
                 class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-8816du-MuiTableCell-root"

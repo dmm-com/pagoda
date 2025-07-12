@@ -671,6 +671,12 @@ class ModelTest(AironeTestCase):
         self.assertFalse(attr.is_updated([123.45, 67.89]))
         self.assertTrue(attr.is_updated([123.45, 99.99]))
 
+        # Test with None values - None is treated as "no value" so filtered out
+        attr.add_value(self._user, [123.45, None, 67.89])
+        self.assertFalse(attr.is_updated([123.45, None, 67.89]))  # Same values should not update
+        self.assertFalse(attr.is_updated([67.89, 123.45]))  # Order doesn't matter, None filtered
+        self.assertTrue(attr.is_updated([123.45, 67.89, 999]))  # Adding value should update
+
     def test_get_attribute_value_during_updating(self):
         user = User.objects.create(username="hoge")
 
@@ -3948,6 +3954,11 @@ class ModelTest(AironeTestCase):
                 "date_value": ["2018-12-31T12:34:56+00:00"],
             },
             "num": {"key": [""], "value": [123.45], "referral_id": [""]},
+            "arr_num": {
+                "key": ["", "", "", ""],
+                "value": [123.45, 67.89, 0.123, -45.67],
+                "referral_id": ["", "", "", ""],
+            },
         }
         # check all attributes are expected ones
         self.assertEqual(
@@ -4046,6 +4057,11 @@ class ModelTest(AironeTestCase):
                         "is_readable": True,
                         "type": AttrType.NUMBER,
                         "value": None,
+                    },
+                    "arr_num": {
+                        "is_readable": True,
+                        "type": AttrType.ARRAY_NUMBER,
+                        "value": [],
                     },
                 },
             ),
@@ -4447,6 +4463,7 @@ class ModelTest(AironeTestCase):
             "arr_obj": [],
             "arr_name": dict().values(),
             "arr_group": [],
+            "arr_num": [],
             "role": None,
             "arr_role": [],
             "num": None,
@@ -5409,18 +5426,28 @@ class ModelTest(AironeTestCase):
 
                     for i, child_value in enumerate(child_values):
                         self.assertEqual(child_value.data_type, AttrType.ARRAY_NUMBER)
-                        child_retrieved = child_value.get_value()
+                        # For array number child values, access the stored value directly
                         if input_val[i] is None:
-                            self.assertIsNone(
-                                child_retrieved, f"Child value should be None at index {i}"
+                            # Check if the stored value is empty or None
+                            self.assertTrue(
+                                not child_value.value or child_value.value.strip() == "",
+                                f"Child value should be None/empty at index {i}",
                             )
                         else:
-                            self.assertAlmostEqual(
-                                child_retrieved,
-                                expected_output[i],
-                                places=10,
-                                msg=f"Child value mismatch at index {i} for input: {input_val}",
-                            )
+                            # Convert the stored string value back to float for comparison
+                            if child_value.value and child_value.value.strip():
+                                child_retrieved = float(child_value.value)
+                                self.assertAlmostEqual(
+                                    child_retrieved,
+                                    expected_output[i],
+                                    places=10,
+                                    msg=f"Child value mismatch at index {i} for input: {input_val}",
+                                )
+                            else:
+                                self.fail(
+                                    f"Expected value {expected_output[i]} but got empty/None "
+                                    f"at index {i}"
+                                )
                 else:  # Empty array
                     self.assertEqual(
                         len(child_values), 0, "Empty array should have no child values"

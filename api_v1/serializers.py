@@ -49,7 +49,10 @@ class GetEntrySerializer(serializers.ModelSerializer):
                     ]
 
                 elif attr.schema.type & AttrType.NUMBER:
-                    return [x.number for x in attrv.data_array.all()]
+                    return [
+                        float(x.value) if x.value and x.value.strip() else None
+                        for x in attrv.data_array.all()
+                    ]
 
             elif attr.schema.type & AttrType.STRING or attr.schema.type & AttrType.TEXT:
                 return attrv.value
@@ -84,7 +87,7 @@ class GetEntrySerializer(serializers.ModelSerializer):
                 return attrv.datetime
 
             elif attr.schema.type & AttrType.NUMBER:
-                return attrv.number
+                return float(attrv.value) if attrv.value and attrv.value.strip() else None
 
         return [
             {

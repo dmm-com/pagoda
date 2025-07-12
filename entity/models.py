@@ -1,4 +1,5 @@
-from typing import List, Optional, Union
+import math
+from typing import Any, List, Optional, Union
 
 from django.conf import settings
 from django.db import models
@@ -6,6 +7,7 @@ from simple_history.models import HistoricalRecords
 
 from acl.models import ACLBase
 from airone.lib.acl import ACLObjType
+from airone.lib.types import AttrDefaultValue, AttrType
 from category.models import Category
 from webhook.models import Webhook
 
@@ -30,6 +32,7 @@ class EntityAttr(ACLBase):
     is_delete_in_chain = models.BooleanField(default=False)
 
     note = models.CharField(max_length=200, blank=True, default="")
+    default_value = models.JSONField(null=True, blank=True, default=None)
 
     history = HistoricalRecords(m2m_fields=[referral], excluded_fields=["status", "updated_time"])
 
@@ -37,13 +40,14 @@ class EntityAttr(ACLBase):
         super(ACLBase, self).__init__(*args, **kwargs)
         self.objtype = ACLObjType.EntityAttr
 
-    def is_updated(self, name, is_mandatory, is_delete_in_chain, index) -> bool:
+    def is_updated(self, name, is_mandatory, is_delete_in_chain, index, default_value=None) -> bool:
         # checks each parameters that are different between current object parameters
         if (
             self.name != name
             or self.is_mandatory != is_mandatory
             or self.is_delete_in_chain != is_delete_in_chain
             or self.index != int(index)
+            or self.default_value != default_value
         ):
             return True
         return False
@@ -91,6 +95,38 @@ class EntityAttr(ACLBase):
         ):
             raise RuntimeError("The number of attributes per entity is over the limit")
         return super(EntityAttr, self).save(*args, **kwargs)
+
+    def get_default_value(self) -> Any:
+        """Returns custom default value if set, otherwise returns type-based default value"""
+        if self.default_value is not None:
+            return self.default_value
+        return AttrDefaultValue.get(self.type, None)
+
+    def validate_default_value(self, value: Any) -> bool:
+        """Validates if the given value is valid for this attribute type as default value"""
+        if value is None:
+            return True  # None is always valid
+
+        # Only String, Text, Boolean, Number types support custom default values, currently
+        supported_types = [AttrType.STRING, AttrType.TEXT, AttrType.BOOLEAN, AttrType.NUMBER]
+        if self.type not in supported_types:
+            return False
+
+        # Type-specific validation for supported types
+        if self.type == AttrType.STRING or self.type == AttrType.TEXT:
+            return isinstance(value, str)
+        elif self.type == AttrType.BOOLEAN:
+            return isinstance(value, bool)
+        elif self.type == AttrType.NUMBER:
+            # Only accept int/float types, but reject bool (bool is a subclass of int)
+            if not isinstance(value, (int, float)) or isinstance(value, bool):
+                return False
+            # Reject NaN and Infinity values
+            if isinstance(value, float) and (math.isnan(value) or math.isinf(value)):
+                return False
+            return True
+
+        return True
 
 
 class Entity(ACLBase):

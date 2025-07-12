@@ -74,6 +74,7 @@ interface Props {
   joinAttrs: AdvancedSearchJoinAttrInfo[];
   disablePaginationFooter: boolean;
   isReadonly?: boolean;
+  isNarrowDown?: boolean;
   omitHeadline?: boolean;
 }
 
@@ -92,6 +93,7 @@ export const SearchResults: FC<Props> = ({
   joinAttrs,
   disablePaginationFooter,
   isReadonly = false,
+  isNarrowDown = true,
   omitHeadline = false,
 }) => {
   // NOTE attrTypes are guessed by the first element on the results. So if it has no appropriate attr,
@@ -141,6 +143,7 @@ export const SearchResults: FC<Props> = ({
                 handleChangeAllBulkOperationEntryIds
               }
               isReadonly={isReadonly}
+              isNarrowDown={isNarrowDown}
               omitHeadline={omitHeadline}
             />
             <TableBody>

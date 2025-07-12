@@ -50,6 +50,7 @@ const ATTRIBUTE_TYPE_ORDER = [
   "text",
   "boolean",
   "number",
+  "array_number",
   "date",
   "datetime",
 ];
@@ -185,6 +186,63 @@ export const AttributeField: FC<Props> = ({
             />
           )}
         </StyledBox>
+      </TableCell>
+
+      <TableCell>
+        <Controller
+          name={`attrs.${index}.defaultValue`}
+          control={control}
+          render={({ field }) => {
+            // Check if this attribute type supports default values
+            const isDefaultValueSupported =
+              attrType === AttributeTypes.string.type ||
+              attrType === AttributeTypes.text.type ||
+              attrType === AttributeTypes.boolean.type ||
+              attrType === AttributeTypes.number.type;
+
+            // Boolean type gets a checkbox
+            if (attrType === AttributeTypes.boolean.type) {
+              return (
+                <Checkbox
+                  checked={Boolean(field.value) ?? false}
+                  onChange={(e) => field.onChange(e.target.checked)}
+                  disabled={!isWritable}
+                />
+              );
+            }
+
+            // Number type gets a number input
+            if (attrType === AttributeTypes.number.type) {
+              return (
+                <TextField
+                  {...field}
+                  type="number"
+                  value={field.value ?? ""}
+                  placeholder="デフォルト値"
+                  size="small"
+                  fullWidth
+                  disabled={!isWritable}
+                />
+              );
+            }
+
+            // Text input for supported string types or disabled for unsupported types
+            return (
+              <TextField
+                {...field}
+                value={field.value ?? ""}
+                placeholder={
+                  isDefaultValueSupported
+                    ? "デフォルト値"
+                    : "この型では未サポート"
+                }
+                size="small"
+                fullWidth
+                disabled={!isWritable || !isDefaultValueSupported}
+              />
+            );
+          }}
+        />
       </TableCell>
 
       <TableCell>
