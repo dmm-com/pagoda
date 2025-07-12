@@ -133,6 +133,7 @@ class EntryAttributeValue(TypedDict, total=False):
     as_role: EntryAttributeValueRole | None
     as_array_role: list[EntryAttributeValueRole]
     as_number: float | None  # Added for AttrType.NUMBER
+    as_array_number: list[float | None]  # Added for AttrType.ARRAY_NUMBER
 
 
 class EntryAttributeType(TypedDict):
@@ -213,6 +214,9 @@ class EntryAttributeValueSerializer(serializers.Serializer):
     as_role = EntryAttributeValueRoleSerializer(allow_null=True, required=False)
     as_array_role = serializers.ListField(child=EntryAttributeValueRoleSerializer(), required=False)
     as_number = serializers.FloatField(allow_null=True, required=False)  # Added for AttrType.NUMBER
+    as_array_number = serializers.ListField(
+        child=serializers.FloatField(allow_null=True), required=False
+    )
 
 
 class EntryAttributeTypeSerializer(serializers.Serializer):
@@ -644,6 +648,14 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
                         "as_array_string": [x.value for x in attrv.data_array.all()],
                     }
 
+                case AttrType.ARRAY_NUMBER:
+                    return {
+                        "as_array_number": [
+                            float(x.value) if x.value and x.value.strip() else None
+                            for x in attrv.data_array.all()
+                        ],
+                    }
+
                 case AttrType.ARRAY_OBJECT:
                     return {
                         "as_array_object": [
@@ -783,6 +795,11 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
                 case AttrType.ARRAY_STRING:
                     return {
                         "as_array_string": AttrDefaultValue[type],
+                    }
+
+                case AttrType.ARRAY_NUMBER:
+                    return {
+                        "as_array_number": AttrDefaultValue.get(type, []),
                     }
 
                 case AttrType.ARRAY_NAMED_OBJECT:
@@ -1099,6 +1116,14 @@ class EntryHistoryAttributeValueSerializer(serializers.ModelSerializer):
         match attr_type:
             case AttrType.ARRAY_STRING:
                 return {"as_array_string": [x.value for x in obj.data_array.all()]}
+
+            case AttrType.ARRAY_NUMBER:
+                return {
+                    "as_array_number": [
+                        float(x.value) if x.value and x.value.strip() else None
+                        for x in obj.data_array.all()
+                    ]
+                }
 
             case AttrType.ARRAY_OBJECT:
                 return {

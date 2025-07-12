@@ -2,14 +2,13 @@
  * @jest-environment jsdom
  */
 
-import { EntryAttributeTypeTypeEnum } from "@dmm-com/airone-apiclient-typescript-fetch";
-
 import {
   EntryAttributeValueType,
   convertAttrsFormatCtoS,
   formalizeEntryInfo,
 } from "./Edit";
 
+import { EntryAttributeTypeTypeEnum } from "@dmm-com/airone-apiclient-typescript-fetch";
 import {
   EditableEntryAttrValue,
   EditableEntryAttrs,
@@ -98,6 +97,7 @@ test("formalizeEntryInfo should return expect value", () => {
           asArrayRole: [],
           asArrayNamedObject: [{ name: "", object: null, _boolean: false }],
           asNumber: null,
+          asArrayNumber: [{ value: null }],
           asObject: null,
           asGroup: null,
           asRole: null,
@@ -121,6 +121,7 @@ test("formalizeEntryInfo should return expect value", () => {
           asArrayRole: [],
           asArrayNamedObject: [{ name: "", object: null, _boolean: false }],
           asNumber: null,
+          asArrayNumber: [{ value: null }],
           asObject: null,
           asGroup: null,
           asRole: null,
@@ -144,6 +145,7 @@ test("formalizeEntryInfo should return expect value", () => {
           asArrayRole: [],
           asArrayNamedObject: [{ name: "", object: null, _boolean: false }],
           asNumber: null,
+          asArrayNumber: [{ value: null }],
           asObject: null,
           asGroup: null,
           asRole: null,
@@ -514,6 +516,16 @@ test("convertAttrsFormatCtoS() returns expected value", () => {
       },
       expected_data: [2],
     },
+    // array_number
+    {
+      client_data: {
+        type: EntryAttributeTypeTypeEnum.ARRAY_NUMBER,
+        value: {
+          asArrayNumber: [{ value: 123 }, { value: 456 }],
+        },
+      },
+      expected_data: [123, 456],
+    },
   ];
 
   cases.forEach((c) => {
@@ -774,6 +786,16 @@ test("convertAttrsFormatCtoS() returns expected value when nothing value", () =>
         type: EntryAttributeTypeTypeEnum.ARRAY_ROLE,
         value: {
           asArrayRole: [],
+        },
+      },
+      expected_data: [],
+    },
+    // array_number
+    {
+      client_data: {
+        type: EntryAttributeTypeTypeEnum.ARRAY_NUMBER,
+        value: {
+          asArrayNumber: [],
         },
       },
       expected_data: [],

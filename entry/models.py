@@ -243,6 +243,12 @@ class AttributeValue(models.Model):
             case AttrType.ARRAY_STRING:
                 value = [x.value for x in self.data_array.all()]
 
+            case AttrType.ARRAY_NUMBER:
+                value = [
+                    float(x.value) if x.value and x.value.strip() else None
+                    for x in self.data_array.all()
+                ]
+
             case AttrType.ARRAY_OBJECT:
                 value = [
                     _get_object_value(x, is_active) for x in self.data_array.all() if x.referral
@@ -273,6 +279,11 @@ class AttributeValue(models.Model):
         match self.data_type:
             case AttrType.ARRAY_STRING:
                 return [x.value for x in self.data_array.all()]
+            case AttrType.ARRAY_NUMBER:
+                return [
+                    float(x.value) if x.value and x.value.strip() else None
+                    for x in self.data_array.all()
+                ]
             case AttrType.ARRAY_OBJECT:
                 return [x.referral for x in self.data_array.all()]
             case AttrType.OBJECT:
@@ -924,6 +935,24 @@ class Attribute(ACLBase):
             exclude = Q(id=exclude_id)
         self.values.filter(is_latest=True).exclude(exclude).update(is_latest=False)
 
+    def _validate_single_number(self, value) -> bool:
+        """Validates a single number value (helper for array number validation)"""
+        if value is None or value == "":
+            return True
+        if isinstance(value, (int, float)):
+            if isinstance(value, float) and (math.isnan(value) or math.isinf(value)):
+                return False  # NaN or Infinity is not a valid storable number here
+            return True
+        if isinstance(value, str):
+            try:
+                f_val = float(value)
+                if math.isnan(f_val) or math.isinf(f_val):
+                    return False  # NaN or Infinity is not a valid storable number here
+                return True
+            except ValueError:
+                return False
+        return False
+
     def _validate_value(self, value) -> bool:
         def _is_group_object(val: Any, model: Type[Group | Role]) -> bool:
             return isinstance(val, (model, int, str)) or val is None
@@ -1015,6 +1044,13 @@ class Attribute(ACLBase):
 
                     case AttrType.ARRAY_STRING:
                         return True
+
+                    case AttrType.ARRAY_NUMBER:
+                        return (
+                            all(self._validate_single_number(x) for x in value)
+                            if isinstance(value, list)
+                            else False
+                        )
 
                     case AttrType.ARRAY_GROUP:
                         return all(_is_group_object(x, Group) for x in value)
@@ -1312,6 +1348,14 @@ class Attribute(ACLBase):
                     case AttrType.ARRAY_STRING:
                         return value
 
+                    case AttrType.ARRAY_NUMBER:
+                        return [
+                            float(x)
+                            if isinstance(x, (int, float, str)) and str(x).strip()
+                            else None
+                            for x in value
+                        ]
+
                     case AttrType.ARRAY_OBJECT:
                         return sum(
                             [
@@ -1349,6 +1393,9 @@ class Attribute(ACLBase):
 
         attrv = self.get_latest_value()
         if self.is_array() and attrv:
+            updated_data: (
+                list[dict[str, Any]] | list[str] | list[float | None] | list[int] | None
+            ) = None
             match self.schema.type:
                 case AttrType.ARRAY_NAMED_OBJECT | AttrType.ARRAY_NAMED_OBJECT_BOOLEAN:
                     if referral is None:
@@ -1368,6 +1415,16 @@ class Attribute(ACLBase):
                         return
 
                     updated_data = [x.value for x in attrv.data_array.all() if x.value != value]
+
+                case AttrType.ARRAY_NUMBER:
+                    if not value:
+                        return
+
+                    updated_data = [
+                        float(x.value) if x.value and x.value.strip() else None
+                        for x in attrv.data_array.all()
+                        if x.value != str(value)
+                    ]
 
                 case AttrType.ARRAY_OBJECT:
                     if referral is None:
@@ -1422,7 +1479,9 @@ class Attribute(ACLBase):
         """
         attrv = self.get_latest_value()
         if self.is_array() and attrv:
-            updated_data = None
+            updated_data: (
+                list[dict[str, Any]] | list[str] | list[float | None] | list[int] | None
+            ) = None
             match self.schema.type:
                 case AttrType.ARRAY_NAMED_OBJECT | AttrType.ARRAY_NAMED_OBJECT_BOOLEAN:
                     if value or referral:
@@ -1438,6 +1497,13 @@ class Attribute(ACLBase):
                 case AttrType.ARRAY_STRING:
                     if value:
                         updated_data = [x.value for x in attrv.data_array.all()] + [value]
+
+                case AttrType.ARRAY_NUMBER:
+                    if value:
+                        updated_data = [
+                            float(x.value) if x.value and x.value.strip() else None
+                            for x in attrv.data_array.all()
+                        ] + [float(value)]
 
                 case AttrType.ARRAY_OBJECT:
                     if referral:
