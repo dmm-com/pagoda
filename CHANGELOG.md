@@ -8,6 +8,12 @@
 
 ### Fixed
 
+## v3.140.0
+
+### Added
+* Added number type attribute.
+  Contributed by @syucream
+
 ## v3.139.0
 
 ### Added

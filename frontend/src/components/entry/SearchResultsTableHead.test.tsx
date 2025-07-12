@@ -131,6 +131,7 @@ describe("SearchResultsTableHead", () => {
     renderSearchResultsTableHead({
       hasReferral: true,
       isReadonly: true,
+      isNarrowDown: false,
     });
 
     // Should not show filter button for item name in readonly mode
