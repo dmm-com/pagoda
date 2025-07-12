@@ -1,18 +1,14 @@
-from collections import defaultdict
-from typing import Any, DefaultDict
+from typing import Any
 
 from django.conf import settings
-from django.db.models import Count, Prefetch, Q
+from django.db.models import Prefetch
 
 from airone.lib.acl import ACLType
 from airone.lib.elasticsearch import (
     ESS,
-    AdvancedSearchResultRecord,
-    AdvancedSearchResultRecordIdNamePair,
     AdvancedSearchResults,
     AttrHint,
     EntryHint,
-    FilterKey,
     execute_query,
     make_query,
     make_query_for_simple,
@@ -21,7 +17,7 @@ from airone.lib.elasticsearch import (
 )
 from airone.lib.log import Logger
 from entity.models import Entity, EntityAttr
-from entry.models import AdvancedSearchAttributeIndex, Attribute, AttributeValue, Entry
+from entry.models import Attribute, AttributeValue, Entry
 from user.models import User
 
 from .settings import CONFIG
@@ -322,144 +318,3 @@ class AdvancedSearchService:
             es.delete(id=entry_id, ignore=[404])
 
         es.indices.refresh()
-
-        # for experimental, a new advanced search index in MySQL
-        # NOTE currently it makes indexes in both ES and MySQL for safety
-        AdvancedSearchAttributeIndex.objects.filter(entity_attr__in=entity_attrs).delete()
-        indexes: list[AdvancedSearchAttributeIndex] = []
-        for entry in entry_list:
-            for entity_attr in entity_attrs:
-                attr = next((a for a in entry.prefetch_attrs if a.schema == entity_attr), None)
-                attrv: AttributeValue | None = None
-                if attr:
-                    attrv = next(iter(attr.prefetch_values), None)
-                indexes.append(
-                    AdvancedSearchAttributeIndex.create_instance(entry, entity_attr, attrv)
-                )
-        try:
-            AdvancedSearchAttributeIndex.objects.bulk_create(indexes)
-        except Exception as e:
-            Logger.warning("Failed to create AdvancedSearchAttributeIndex: %s" % e)
-
-    @classmethod
-    def search_entries_v2(
-        kls,
-        user: User,
-        hint_entity_ids: list[str],
-        hint_attrs: list[AttrHint] = [],
-        limit: int = CONFIG.MAX_LIST_ENTRIES,
-        entry_name: str | None = None,
-        hint_referral: str | None = None,
-        is_output_all: bool = False,
-        hint_referral_entity_id: int | None = None,
-        offset: int = 0,
-    ) -> AdvancedSearchResults:
-        names: list[str] = [attr_hint.name for attr_hint in hint_attrs]
-
-        entity_attrs = EntityAttr.objects.filter(parent_entity__in=hint_entity_ids, name__in=names)
-
-        entity_attr_map: dict[str, list[EntityAttr]] = {
-            name: [attr for attr in entity_attrs if attr.name == name] for name in names
-        }
-
-        conditions = Q()
-        for attr_hint in hint_attrs:
-            _entity_attrs = entity_attr_map[attr_hint.name]
-            keyword = attr_hint.keyword
-            match (attr_hint.filter_key, attr_hint.exact_match or False, keyword):
-                case (FilterKey.EMPTY, _, _):
-                    conditions |= Q(entity_attr__in=_entity_attrs, key__isnull=True)
-                case (FilterKey.NON_EMPTY, _, _):
-                    conditions |= Q(entity_attr__in=_entity_attrs, key__isnull=False)
-                # TODO support array types in exact match
-                case (FilterKey.TEXT_CONTAINED, True, keyword):
-                    conditions |= Q(entity_attr__in=_entity_attrs, key=keyword)
-                case (FilterKey.TEXT_CONTAINED, False, keyword):
-                    conditions |= Q(entity_attr__in=_entity_attrs, key__icontains=keyword)
-                case (FilterKey.TEXT_NOT_CONTAINED, True, keyword):
-                    conditions |= Q(entity_attr__in=_entity_attrs) & ~Q(key=keyword)
-                case (FilterKey.TEXT_NOT_CONTAINED, False, keyword):
-                    conditions |= Q(entity_attr__in=_entity_attrs) & ~Q(key__icontains=keyword)
-                # TODO Support DUPLICATED
-                case _:
-                    conditions |= Q(entity_attr__in=_entity_attrs)
-
-        if entry_name:
-            conditions &= Q(entry_name__icontains=entry_name)
-
-        matched = (
-            AdvancedSearchAttributeIndex.objects.filter(conditions)
-            .values("entry_id")
-            .annotate(attr_count=Count("entry_id"))
-            .filter(attr_count=len(names))
-            .order_by("-entry_id")
-            .values_list("entry_id", flat=True)
-        )
-
-        total_entry_ids = list(matched)
-        total = len(total_entry_ids)
-        entry_ids = total_entry_ids[offset : offset + limit]
-
-        results = AdvancedSearchAttributeIndex.objects.filter(
-            entity_attr__in=entity_attrs, entry_id__in=entry_ids
-        ).select_related("entry__schema", "entity_attr")
-
-        results_by_entry: DefaultDict[Entry, list[AdvancedSearchAttributeIndex]] = defaultdict(list)
-        for result in results:
-            results_by_entry[result.entry].append(result)
-
-        # TODO now it does't support filtering entries by referrals, just hide the values
-        referrals_by_entry: dict[int, list[AdvancedSearchResultRecordIdNamePair]] = {}
-        if hint_referral is not None:
-            referrings = [e for e in results_by_entry.keys()]
-            ref_values = AttributeValue.objects.filter(is_latest=True, referral__in=referrings)
-            if len(hint_referral) > 0:
-                ref_values = ref_values.filter(
-                    parent_attr__parent_entry__name__icontains=hint_referral
-                )
-            if hint_referral_entity_id is not None:
-                ref_values = ref_values.filter(
-                    parent_attr__parent_entry__schema__id=hint_referral_entity_id
-                )
-
-            for ref_value in ref_values.select_related("referral", "parent_attr__parent_entry"):
-                referring_entry = ref_value.referral
-                referred_entry = ref_value.parent_attr.parent_entry
-                if referring_entry.id not in referrals_by_entry:
-                    referrals_by_entry[referring_entry.id] = []
-                referrals_by_entry[referring_entry.id].append(
-                    AdvancedSearchResultRecordIdNamePair(
-                        id=referred_entry.id, name=referred_entry.name
-                    )
-                )
-
-        values = [
-            AdvancedSearchResultRecord(
-                entity={
-                    "id": entry.schema.id,
-                    "name": entry.schema.name,
-                },
-                entry={
-                    "id": entry.id,
-                    "name": entry.name,
-                },
-                attrs={
-                    result.entity_attr.name: {
-                        "type": result.type,
-                        "value": result.value,
-                        # FIXME dummy
-                        "is_readable": True,
-                    }
-                    for result in results
-                },
-                # FIXME dummy
-                is_readable=True,
-                referrals=referrals_by_entry.get(entry.id, []),
-            )
-            for entry, results in results_by_entry.items()
-        ]
-
-        return AdvancedSearchResults(
-            ret_count=total,
-            ret_values=values,
-        )
