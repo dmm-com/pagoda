@@ -4,7 +4,6 @@ from collections import Counter
 from copy import deepcopy
 from datetime import datetime, timedelta
 
-from django.conf import settings
 from django.db.models import Prefetch, Q
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, extend_schema
@@ -450,33 +449,20 @@ class AdvancedSearchAPI(generics.GenericAPIView):
             if entity and request.user.has_permission(entity, ACLType.Readable):
                 hint_entity_ids.append(entity.id)
 
-        if settings.ENABLE_ESLESS_ADVANCED_SEARCH:
-            resp = AdvancedSearchService.search_entries_v2(
-                request.user,
-                hint_entity_ids,
-                hint_attrs,
-                entry_limit,
-                None,  # don't use in APIv2
-                hint_referral,
-                is_output_all,
-                offset=entry_offset,
-                # TODO rethink to support hint_entry
-            )
-        else:
-            resp = AdvancedSearchService.search_entries(
-                request.user,
-                hint_entity_ids,
-                hint_attrs,
-                entry_limit,
-                None,  # don't use in APIv2
-                hint_referral,
-                is_output_all,
-                offset=entry_offset,
-                hint_entry=hint_entry,
-                allow_missing_attributes=True,  # For APIv2, allow entries missing attributes
-                exclude_referrals=exclude_referrals,
-                include_referrals=include_referrals,
-            )
+        resp = AdvancedSearchService.search_entries(
+            request.user,
+            hint_entity_ids,
+            hint_attrs,
+            entry_limit,
+            None,  # don't use in APIv2
+            hint_referral,
+            is_output_all,
+            offset=entry_offset,
+            hint_entry=hint_entry,
+            allow_missing_attributes=True,  # For APIv2, allow entries missing attributes
+            exclude_referrals=exclude_referrals,
+            include_referrals=include_referrals,
+        )
 
         # save total population number
         total_count = deepcopy(resp.ret_count)
