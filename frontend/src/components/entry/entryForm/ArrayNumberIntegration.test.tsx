@@ -93,7 +93,7 @@ describe("Array Number Integration Tests", () => {
 
     const {
       result: {
-        current: { control, getValues, trigger, formState },
+        current: { control, getValues, trigger },
       },
     } = renderHook(() =>
       useForm<Schema>({
@@ -201,7 +201,7 @@ describe("Array Number Integration Tests", () => {
 
     const {
       result: {
-        current: { control, getValues, trigger, formState },
+        current: { control, getValues, trigger },
       },
     } = renderHook(() =>
       useForm<Schema>({
