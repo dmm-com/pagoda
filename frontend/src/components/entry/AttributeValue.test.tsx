@@ -267,9 +267,7 @@ describe("AttributeValue", () => {
     render(<AttributeValue attrInfo={attrInfo} />, { wrapper: TestWrapper });
 
     expect(screen.getAllByRole("listitem")).toHaveLength(1);
-    expect(
-      within(screen.getByRole("listitem")).getByText("42"),
-    ).toBeVisible();
+    expect(within(screen.getByRole("listitem")).getByText("42")).toBeVisible();
   });
 
   test("should show number typed value with decimal", async () => {
@@ -293,9 +291,7 @@ describe("AttributeValue", () => {
     render(<AttributeValue attrInfo={attrInfo} />, { wrapper: TestWrapper });
 
     expect(screen.getAllByRole("listitem")).toHaveLength(1);
-    expect(
-      within(screen.getByRole("listitem")).getByText("0"),
-    ).toBeVisible();
+    expect(within(screen.getByRole("listitem")).getByText("0")).toBeVisible();
   });
 
   test("should show negative number typed value", async () => {

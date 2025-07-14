@@ -271,10 +271,7 @@ describe("AttributeValue", () => {
           name: "array_number",
         },
         value: {
-          asArrayNumber: [
-            { value: 123 },
-            { value: 456 },
-          ],
+          asArrayNumber: [{ value: 123 }, { value: 456 }],
         },
       },
     },

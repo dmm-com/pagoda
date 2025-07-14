@@ -3,7 +3,7 @@ import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import { Box, IconButton, List, ListItem, TextField } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import React, { FC } from "react";
-import { Control, useFieldArray, Controller } from "react-hook-form";
+import { Control, Controller, useFieldArray } from "react-hook-form";
 
 import { Schema } from "./EntryFormSchema";
 
@@ -65,6 +65,7 @@ export const NumberAttributeValueFieldForArray: FC<
           {handleClickDeleteListItem != null && (
             <IconButton
               id="del_button"
+              aria-label="delete"
               onClick={() => handleClickDeleteListItem(index)}
             >
               <DeleteOutlineIcon />
@@ -73,6 +74,7 @@ export const NumberAttributeValueFieldForArray: FC<
           {handleClickAddListItem != null && (
             <IconButton
               id="add_button"
+              aria-label="add"
               onClick={() => handleClickAddListItem(index)}
             >
               <AddIcon />

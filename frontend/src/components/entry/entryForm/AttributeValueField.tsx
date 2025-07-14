@@ -21,7 +21,6 @@ import {
   StringAttributeValueField,
 } from "./StringAttributeValueField";
 
-
 interface Props {
   control: Control<Schema>;
   setValue: UseFormSetValue<Schema>;

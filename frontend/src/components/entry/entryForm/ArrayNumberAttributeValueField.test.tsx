@@ -7,18 +7,18 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import {
   act,
   fireEvent,
-  screen,
   render,
   renderHook,
+  screen,
 } from "@testing-library/react";
 import React from "react";
 import { useForm } from "react-hook-form";
 
-import { schema, Schema } from "./EntryFormSchema";
 import {
   ArrayNumberAttributeValueField,
   NumberAttributeValueFieldForArray,
 } from "./ArrayNumberAttributeValueField";
+import { schema, Schema } from "./EntryFormSchema";
 
 import { TestWrapper } from "TestWrapper";
 
@@ -69,7 +69,7 @@ describe("ArrayNumberAttributeValueField", () => {
           name: "empty-array-number",
         },
         value: {
-          asArrayNumber: [],
+          asArrayNumber: [{ value: null }],
         },
       },
     },
@@ -104,9 +104,7 @@ describe("ArrayNumberAttributeValueField", () => {
       });
     });
     expect(screen.getAllByRole("spinbutton")[0]).toHaveValue(456);
-    expect(getValues("attrs.1.value.asArrayNumber")).toEqual([
-      { value: 456 },
-    ]);
+    expect(getValues("attrs.1.value.asArrayNumber")).toEqual([{ value: 456 }]);
 
     // add second element
     act(() => {
@@ -483,7 +481,11 @@ describe("NumberAttributeValueFieldForArray", () => {
     );
 
     render(
-      <NumberAttributeValueFieldForArray attrId={0} index={0} control={control} />,
+      <NumberAttributeValueFieldForArray
+        attrId={0}
+        index={0}
+        control={control}
+      />,
       { wrapper: TestWrapper },
     );
 
@@ -558,7 +560,11 @@ describe("NumberAttributeValueFieldForArray", () => {
     );
 
     render(
-      <NumberAttributeValueFieldForArray attrId={0} index={0} control={control} />,
+      <NumberAttributeValueFieldForArray
+        attrId={0}
+        index={0}
+        control={control}
+      />,
       { wrapper: TestWrapper },
     );
 

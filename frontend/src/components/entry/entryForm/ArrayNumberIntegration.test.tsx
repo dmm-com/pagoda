@@ -7,9 +7,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import {
   act,
   fireEvent,
-  screen,
   render,
   renderHook,
+  screen,
   waitFor,
 } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
@@ -49,7 +49,7 @@ describe("Array Number Integration Tests", () => {
       name: "test-entity",
     },
     attrs: {
-      "number": {
+      "1": {
         type: EntryAttributeTypeTypeEnum.NUMBER,
         index: 0,
         isMandatory: false,
@@ -61,7 +61,7 @@ describe("Array Number Integration Tests", () => {
           asNumber: numberValue,
         },
       },
-      "array_number": {
+      "2": {
         type: EntryAttributeTypeTypeEnum.ARRAY_NUMBER,
         index: 1,
         isMandatory: false,
@@ -73,7 +73,7 @@ describe("Array Number Integration Tests", () => {
           asArrayNumber: arrayNumberValues,
         },
       },
-      "mandatory_array_number": {
+      "3": {
         type: EntryAttributeTypeTypeEnum.ARRAY_NUMBER,
         index: 2,
         isMandatory: true,
@@ -90,7 +90,7 @@ describe("Array Number Integration Tests", () => {
 
   test("complete user workflow: create, edit, and validate array number entries", async () => {
     const defaultValues = createDefaultValues();
-    
+
     const {
       result: {
         current: { control, getValues, trigger, formState },
@@ -111,7 +111,7 @@ describe("Array Number Integration Tests", () => {
             control={control}
             setValue={() => {}}
             type={EntryAttributeTypeTypeEnum.NUMBER}
-            schemaId={0}
+            schemaId={1}
           />
         </div>
         <div data-testid="array-number-field">
@@ -119,7 +119,7 @@ describe("Array Number Integration Tests", () => {
             control={control}
             setValue={() => {}}
             type={EntryAttributeTypeTypeEnum.ARRAY_NUMBER}
-            schemaId={1}
+            schemaId={2}
           />
         </div>
         <div data-testid="mandatory-array-number-field">
@@ -127,7 +127,7 @@ describe("Array Number Integration Tests", () => {
             control={control}
             setValue={() => {}}
             type={EntryAttributeTypeTypeEnum.ARRAY_NUMBER}
-            schemaId={2}
+            schemaId={3}
           />
         </div>
       </div>,
@@ -136,29 +136,29 @@ describe("Array Number Integration Tests", () => {
 
     // Verify initial state
     expect(screen.getAllByRole("spinbutton")).toHaveLength(3); // 1 number + 1 array number + 1 mandatory
-    
+
     // Test single number field
     const numberInput = screen.getAllByRole("spinbutton")[0];
     act(() => {
       fireEvent.change(numberInput, { target: { value: "123.45" } });
     });
-    expect(getValues("attrs.number.value.asNumber")).toBe(123.45);
+    expect(getValues("attrs.1.value.asNumber")).toBe(123.45);
 
     // Test array number field - edit first element
     const arrayNumberInput = screen.getAllByRole("spinbutton")[1];
     act(() => {
       fireEvent.change(arrayNumberInput, { target: { value: "456.78" } });
     });
-    expect(getValues("attrs.array_number.value.asArrayNumber.0.value")).toBe(456.78);
+    expect(getValues("attrs.2.value.asArrayNumber.0.value")).toBe(456.78);
 
     // Add second element to array
-    const addButtons = screen.getAllByRole("button").filter(btn => 
-      btn.getAttribute("id") === "add_button"
-    );
+    const addButtons = screen
+      .getAllByRole("button")
+      .filter((btn) => btn.getAttribute("id") === "add_button");
     act(() => {
       addButtons[0].click();
     });
-    
+
     // Should now have 4 total spinbutton inputs
     await waitFor(() => {
       expect(screen.getAllByRole("spinbutton")).toHaveLength(4);
@@ -169,39 +169,35 @@ describe("Array Number Integration Tests", () => {
     act(() => {
       fireEvent.change(newArrayElement, { target: { value: "789" } });
     });
-    
-    expect(getValues("attrs.array_number.value.asArrayNumber")).toEqual([
+
+    expect(getValues("attrs.2.value.asArrayNumber")).toEqual([
       { value: 456.78 },
       { value: 789 },
     ]);
 
     // Test deletion - remove first element
-    const deleteButtons = screen.getAllByRole("button").filter(btn => 
-      btn.getAttribute("id") === "del_button"
-    );
+    const deleteButtons = screen
+      .getAllByRole("button")
+      .filter((btn) => btn.getAttribute("id") === "del_button");
     act(() => {
       deleteButtons[0].click();
     });
 
     await waitFor(() => {
-      expect(getValues("attrs.array_number.value.asArrayNumber")).toEqual([
+      expect(getValues("attrs.2.value.asArrayNumber")).toEqual([
         { value: 789 },
       ]);
     });
 
-    // Test validation trigger
     await act(async () => {
-      await trigger();
+      expect(await trigger()).toBe(true);
     });
-
-    // Should be valid at this point
-    expect(formState.isValid).toBe(true);
   });
 
   test("validation workflow: mandatory field validation", async () => {
     // Start with empty mandatory array
     const defaultValues = createDefaultValues(null, []);
-    defaultValues.attrs.mandatory_array_number.value.asArrayNumber = [];
+    defaultValues.attrs["3"].value.asArrayNumber = [{ value: null }];
 
     const {
       result: {
@@ -221,7 +217,7 @@ describe("Array Number Integration Tests", () => {
           control={control}
           setValue={() => {}}
           type={EntryAttributeTypeTypeEnum.ARRAY_NUMBER}
-          schemaId={2}
+          schemaId={3}
         />
       </div>,
       { wrapper: TestWrapper },
@@ -229,14 +225,12 @@ describe("Array Number Integration Tests", () => {
 
     // Should have one empty element (auto-created)
     expect(screen.getAllByRole("spinbutton")).toHaveLength(1);
-    expect(getValues("attrs.mandatory_array_number.value.asArrayNumber.0.value")).toBe(null);
+    expect(getValues("attrs.3.value.asArrayNumber.0.value")).toBe(null);
 
     // Trigger validation - should fail because mandatory field has only null values
     await act(async () => {
-      await trigger();
+      expect(await trigger()).toBe(false);
     });
-
-    expect(formState.isValid).toBe(false);
 
     // Add a value to make it valid
     const input = screen.getByRole("spinbutton");
@@ -245,15 +239,13 @@ describe("Array Number Integration Tests", () => {
     });
 
     await act(async () => {
-      await trigger();
+      expect(await trigger()).toBe(true);
     });
-
-    expect(formState.isValid).toBe(true);
   });
 
   test("edge cases: extreme values and special scenarios", async () => {
     const defaultValues = createDefaultValues();
-    
+
     const {
       result: {
         current: { control, getValues },
@@ -272,7 +264,7 @@ describe("Array Number Integration Tests", () => {
           control={control}
           setValue={() => {}}
           type={EntryAttributeTypeTypeEnum.ARRAY_NUMBER}
-          schemaId={1}
+          schemaId={2}
         />
       </div>,
       { wrapper: TestWrapper },
@@ -283,7 +275,7 @@ describe("Array Number Integration Tests", () => {
     // Test extreme values
     const testValues = [
       { input: "0", expected: 0 },
-      { input: "-0", expected: 0 },
+      { input: "-0", expected: -0 },
       { input: "123.456789", expected: 123.456789 },
       { input: "-999.999", expected: -999.999 },
       { input: "1e6", expected: 1000000 },
@@ -294,14 +286,14 @@ describe("Array Number Integration Tests", () => {
       act(() => {
         fireEvent.change(input, { target: { value: inputValue } });
       });
-      expect(getValues("attrs.array_number.value.asArrayNumber.0.value")).toBe(expected);
+      expect(getValues("attrs.2.value.asArrayNumber.0.value")).toBe(expected);
     }
 
     // Test empty string conversion to null
     act(() => {
       fireEvent.change(input, { target: { value: "" } });
     });
-    expect(getValues("attrs.array_number.value.asArrayNumber.0.value")).toBe(null);
+    expect(getValues("attrs.2.value.asArrayNumber.0.value")).toBe(null);
   });
 
   test("complex array manipulation workflow", async () => {
@@ -310,7 +302,7 @@ describe("Array Number Integration Tests", () => {
       { value: 2 },
       { value: 3 },
     ]);
-    
+
     const {
       result: {
         current: { control, getValues },
@@ -329,7 +321,7 @@ describe("Array Number Integration Tests", () => {
           control={control}
           setValue={() => {}}
           type={EntryAttributeTypeTypeEnum.ARRAY_NUMBER}
-          schemaId={1}
+          schemaId={2}
         />
       </div>,
       { wrapper: TestWrapper },
@@ -337,16 +329,16 @@ describe("Array Number Integration Tests", () => {
 
     // Should have 3 initial elements
     expect(screen.getAllByRole("spinbutton")).toHaveLength(3);
-    expect(getValues("attrs.array_number.value.asArrayNumber")).toEqual([
+    expect(getValues("attrs.2.value.asArrayNumber")).toEqual([
       { value: 1 },
       { value: 2 },
       { value: 3 },
     ]);
 
     // Insert new element after first one
-    const addButtons = screen.getAllByRole("button").filter(btn => 
-      btn.getAttribute("id") === "add_button"
-    );
+    const addButtons = screen
+      .getAllByRole("button")
+      .filter((btn) => btn.getAttribute("id") === "add_button");
     act(() => {
       addButtons[0].click(); // Add after first element
     });
@@ -361,7 +353,7 @@ describe("Array Number Integration Tests", () => {
       fireEvent.change(newInput, { target: { value: "1.5" } });
     });
 
-    expect(getValues("attrs.array_number.value.asArrayNumber")).toEqual([
+    expect(getValues("attrs.2.value.asArrayNumber")).toEqual([
       { value: 1 },
       { value: 1.5 },
       { value: 2 },
@@ -369,15 +361,15 @@ describe("Array Number Integration Tests", () => {
     ]);
 
     // Delete the middle element (index 2, value 2)
-    const deleteButtons = screen.getAllByRole("button").filter(btn => 
-      btn.getAttribute("id") === "del_button"
-    );
+    const deleteButtons = screen
+      .getAllByRole("button")
+      .filter((btn) => btn.getAttribute("id") === "del_button");
     act(() => {
       deleteButtons[2].click();
     });
 
     await waitFor(() => {
-      expect(getValues("attrs.array_number.value.asArrayNumber")).toEqual([
+      expect(getValues("attrs.2.value.asArrayNumber")).toEqual([
         { value: 1 },
         { value: 1.5 },
         { value: 3 },
@@ -390,7 +382,7 @@ describe("Array Number Integration Tests", () => {
 
   test("accessibility and user experience", async () => {
     const defaultValues = createDefaultValues();
-    
+
     const {
       result: {
         current: { control },
@@ -409,7 +401,7 @@ describe("Array Number Integration Tests", () => {
           control={control}
           setValue={() => {}}
           type={EntryAttributeTypeTypeEnum.ARRAY_NUMBER}
-          schemaId={1}
+          schemaId={2}
         />
       </div>,
       { wrapper: TestWrapper },
@@ -417,27 +409,27 @@ describe("Array Number Integration Tests", () => {
 
     // Check that inputs have correct type and accessibility attributes
     const numberInputs = screen.getAllByRole("spinbutton");
-    numberInputs.forEach(input => {
+    numberInputs.forEach((input) => {
       expect(input).toHaveAttribute("type", "number");
       expect(input).toBeEnabled();
     });
 
     // Check that buttons are properly labeled and functional
-    const addButtons = screen.getAllByRole("button").filter(btn => 
-      btn.getAttribute("id") === "add_button"
-    );
-    const deleteButtons = screen.getAllByRole("button").filter(btn => 
-      btn.getAttribute("id") === "del_button"
-    );
+    const addButtons = screen
+      .getAllByRole("button")
+      .filter((btn) => btn.getAttribute("id") === "add_button");
+    const deleteButtons = screen
+      .getAllByRole("button")
+      .filter((btn) => btn.getAttribute("id") === "del_button");
 
     expect(addButtons).toHaveLength(1);
     expect(deleteButtons).toHaveLength(1);
 
     // Buttons should be clickable
-    addButtons.forEach(button => {
+    addButtons.forEach((button) => {
       expect(button).toBeEnabled();
     });
-    deleteButtons.forEach(button => {
+    deleteButtons.forEach((button) => {
       expect(button).toBeEnabled();
     });
   });

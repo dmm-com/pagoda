@@ -2,13 +2,14 @@
  * @jest-environment jsdom
  */
 
+import { EntryAttributeTypeTypeEnum } from "@dmm-com/airone-apiclient-typescript-fetch";
+
 import {
   EntryAttributeValueType,
   convertAttrsFormatCtoS,
   formalizeEntryInfo,
 } from "./Edit";
 
-import { EntryAttributeTypeTypeEnum } from "@dmm-com/airone-apiclient-typescript-fetch";
 import {
   EditableEntryAttrValue,
   EditableEntryAttrs,
