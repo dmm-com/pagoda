@@ -6,11 +6,7 @@ from google.cloud.spanner_v1.database import Database
 from google.cloud.spanner_v1.instance import Instance
 from pydantic import BaseModel, Field
 
-from airone.lib.elasticsearch import (
-    AdvancedSearchResultRecord,
-    AttrHint,
-    FilterKey,
-)
+from airone.lib.elasticsearch import AdvancedSearchResultRecord, AttrHint, FilterKey
 from airone.lib.types import AttrType
 from entity.models import EntityAttr
 from entry.api_v2.serializers import AdvancedSearchJoinAttrInfo

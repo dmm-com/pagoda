@@ -689,7 +689,7 @@ class AdvancedSearchService:
 
             attrs_by_entry[attr.entry_id][attr.name] = {
                 "type": attr.type,
-                "value": value.raw_value if value.raw_value else value.value,
+                "value": value.raw_value if value.raw_value is not None else value.value,
                 "is_readable": True,
             }
 

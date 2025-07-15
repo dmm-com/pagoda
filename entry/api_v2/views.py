@@ -25,12 +25,8 @@ from airone.lib.drf import (
     RequiredParameterError,
     YAMLParser,
 )
-from airone.lib.elasticsearch import (
-    AdvancedSearchResultRecord,
-    AdvancedSearchResults,
-    AttrHint,
-)
-from airone.lib.types import AttrType
+from airone.lib.elasticsearch import AdvancedSearchResultRecord, AdvancedSearchResults, AttrHint
+from airone.lib.types import AttrDefaultValue, AttrType
 from api_v1.entry.serializer import EntrySearchChainSerializer
 from entity.models import Entity, EntityAttr
 from entry.api_v2.pagination import EntryReferralPagination
@@ -573,13 +569,24 @@ class AdvancedSearchAPI(generics.GenericAPIView):
                         return "as_string"
                     raise IncorrectTypeError(f"unexpected type: {type}")
 
+                def _get_default_value(type: int) -> str:
+                    if type == AttrType.NAMED_OBJECT:
+                        return {"name": "", "id": None}
+                    if type == AttrType.ARRAY_NAMED_OBJECT:
+                        return []
+                    return AttrDefaultValue[type]
+
                 entry.attrs[name] = {
                     "is_readable": attr["is_readable"],
                     "type": attr["type"],
                     "value": {
-                        _get_typed_value(attr["type"]): attr.get("value", ""),
+                        _get_typed_value(attr["type"]): attr.get(
+                            "value", _get_default_value(attr["type"])
+                        ),
                     },
                 }
+
+                # print(entry.entry["id"], entry.attrs[name]["value"])
 
                 # "asString" is a string type and does not allow None
                 if (
@@ -643,7 +650,7 @@ class AdvancedSearchChainAPI(generics.GenericAPIView):
             return Response(
                 {
                     "reason": (
-                        "Data overflow was happened. " "Please narrow down intermediate conditions"
+                        "Data overflow was happened. Please narrow down intermediate conditions"
                     )
                 },
                 status=status.HTTP_400_BAD_REQUEST,
