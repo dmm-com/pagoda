@@ -456,7 +456,7 @@ class AdvancedSearchAPI(generics.GenericAPIView):
                 hint_entity_ids,
                 hint_attrs,
                 entry_limit,
-                hint_entry_name,
+                hint_entry,
                 hint_referral,
                 is_output_all,
                 offset=entry_offset,

@@ -6,7 +6,13 @@ from google.cloud.spanner_v1.database import Database
 from google.cloud.spanner_v1.instance import Instance
 from pydantic import BaseModel, Field
 
-from airone.lib.elasticsearch import AdvancedSearchResultRecord, AttrHint, FilterKey
+from airone.lib.elasticsearch import (
+    AdvancedSearchResultRecord,
+    AttrHint,
+    EntryFilterKey,
+    EntryHint,
+    FilterKey,
+)
 from airone.lib.types import AttrType
 from entity.models import EntityAttr
 from entry.api_v2.serializers import AdvancedSearchJoinAttrInfo
@@ -21,13 +27,15 @@ class SpannerOperation(Protocol):
         table: str,
         columns: tuple[str, ...],
         values: list[tuple[Any, ...]],
-    ) -> None: ...
+    ) -> None:
+        pass
 
     def delete(
         self,
         table: str,
         keyset: spanner_v1.KeySet,
-    ) -> None: ...
+    ) -> None:
+        pass
 
 
 class AdvancedSearchEntry(BaseModel):
@@ -304,7 +312,7 @@ class SpannerRepository:
         self,
         entity_ids: list[int],
         attribute_names: list[str],
-        entry_name_pattern: Optional[str] = None,
+        hint_entry: EntryHint | None = None,
         hint_attrs: list[AttrHint] = [],
         join_attrs: list[AdvancedSearchJoinAttrInfo] = [],
     ) -> tuple[str, dict[str, Any], dict[str, Any]]:
@@ -694,9 +702,19 @@ class SpannerRepository:
                         params[f"{attr_param_prefix}_name"] = attr_info.name
                         param_types[f"{attr_param_prefix}_name"] = spanner_v1.param_types.STRING
 
-        if entry_name_pattern:
-            conditions += " AND LOWER(e.Name) LIKE CONCAT('%', LOWER(@name_pattern), '%')"
-            params["name_pattern"] = entry_name_pattern
+        if hint_entry:
+            match (hint_entry.filter_key, hint_entry.exact_match):
+                case (EntryFilterKey.TEXT_CONTAINED, True):
+                    conditions += " AND e.Name = @name_pattern"
+                case (EntryFilterKey.TEXT_CONTAINED, False | None):
+                    conditions += " AND LOWER(e.Name) LIKE CONCAT('%', LOWER(@name_pattern), '%')"
+                case (EntryFilterKey.TEXT_NOT_CONTAINED, True):
+                    conditions += " AND e.Name != @name_pattern"
+                case (EntryFilterKey.TEXT_NOT_CONTAINED, False | None):
+                    conditions += (
+                        " AND NOT LOWER(e.Name) LIKE CONCAT('%', LOWER(@name_pattern), '%')"
+                    )
+            params["name_pattern"] = hint_entry.keyword
 
         return conditions, params, param_types
 
@@ -704,7 +722,7 @@ class SpannerRepository:
         self,
         entity_ids: list[int],
         attribute_names: list[str],
-        entry_name_pattern: Optional[str] = None,
+        hint_entry: EntryHint | None = None,
         limit: int = 100,
         offset: int = 0,
         hint_attrs: list[AttrHint] = [],
@@ -714,7 +732,7 @@ class SpannerRepository:
         # Note: join_attrs is passed as empty list to avoid duplicate conditions,
         # as we'll add join conditions separately with EXISTS clause
         conditions, params, param_types = self._build_search_query_conditions(
-            entity_ids, attribute_names, entry_name_pattern, hint_attrs, []
+            entity_ids, attribute_names, hint_entry, hint_attrs, []
         )
 
         query = f"""
@@ -742,7 +760,7 @@ class SpannerRepository:
         self,
         entity_ids: list[int],
         attribute_names: list[str],
-        entry_name_pattern: Optional[str] = None,
+        hint_entry: EntryHint | None = None,
         hint_attrs: list[AttrHint] = [],
         join_attrs: list[AdvancedSearchJoinAttrInfo] = [],
     ) -> int:
@@ -751,7 +769,7 @@ class SpannerRepository:
         # Note: Pass empty join_attrs here and add join conditions later as EXISTS clause
         # to avoid duplicate conditions and get accurate count
         conditions, params, param_types = self._build_search_query_conditions(
-            entity_ids, attribute_names, entry_name_pattern, hint_attrs, []
+            entity_ids, attribute_names, hint_entry, hint_attrs, []
         )
 
         # Build join attributes conditions if any

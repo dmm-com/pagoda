@@ -636,7 +636,7 @@ class AdvancedSearchService:
         hint_entity_ids: list[str],
         hint_attrs: list[AttrHint] = [],
         limit: int = CONFIG.MAX_LIST_ENTRIES,
-        entry_name: str | None = None,
+        hint_entry: EntryHint | None = None,
         hint_referral: str | None = None,
         is_output_all: bool = False,
         hint_referral_entity_id: int | None = None,
@@ -678,7 +678,7 @@ class AdvancedSearchService:
         total = repo.count_entries(
             entity_ids=entity_ids,
             attribute_names=attr_names,
-            entry_name_pattern=entry_name,
+            hint_entry=hint_entry,
             hint_attrs=hint_attrs,
             join_attrs=join_attrs,
         )
@@ -687,7 +687,7 @@ class AdvancedSearchService:
         entries = repo.search_entries(
             entity_ids=entity_ids,
             attribute_names=attr_names,
-            entry_name_pattern=entry_name,
+            hint_entry=hint_entry,
             limit=limit,
             offset=offset,
             hint_attrs=hint_attrs,
