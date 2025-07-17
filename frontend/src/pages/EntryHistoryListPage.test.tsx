@@ -34,7 +34,7 @@ const server = setupServer(
       count: 0,
       results: [],
     });
-  })
+  }),
 );
 
 beforeAll(() => server.listen());
@@ -51,7 +51,7 @@ test("should match snapshot", async () => {
     ],
     {
       initialEntries: [showEntryHistoryPath(2, 1)],
-    }
+    },
   );
   const result = await act(async () => {
     return render(<RouterProvider router={router} />, {

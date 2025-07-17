@@ -5,12 +5,14 @@ import { Link } from "react-router";
 
 import { RoleImportModal } from "../components/role/RoleImportModal";
 import { RoleList } from "../components/role/RoleList";
-import { aironeApiClient } from "../repository/AironeApiClient";
 
 import { AironeLink } from "components";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { PageHeader } from "components/common/PageHeader";
+import { usePageTitle } from "hooks/usePageTitle";
+import { aironeApiClient } from "repository/AironeApiClient";
 import { newRolePath, topPath } from "routes/Routes";
+import { TITLE_TEMPLATES } from "services";
 
 export const RoleListPage: FC = () => {
   const [openImportModal, setOpenImportModal] = useState(false);
@@ -18,6 +20,8 @@ export const RoleListPage: FC = () => {
   const handleExport = useCallback(async () => {
     await aironeApiClient.exportRoles("role.yaml");
   }, []);
+
+  usePageTitle(TITLE_TEMPLATES.roleList);
 
   return (
     <Box className="container-fluid">

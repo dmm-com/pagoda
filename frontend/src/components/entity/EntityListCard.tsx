@@ -78,13 +78,15 @@ export const EntityListCard: FC<Props> = ({ entity, setToggle }) => {
           <>
             <ClipboardCopyButton name={entity.name} />
 
-            <IconButton
-              onClick={(e) => {
-                setAnchorElem(e.currentTarget);
-              }}
-            >
-              <MoreVertIcon fontSize="small" />
-            </IconButton>
+            <Tooltip title="モデルの操作">
+              <IconButton
+                onClick={(e) => {
+                  setAnchorElem(e.currentTarget);
+                }}
+              >
+                <MoreVertIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
             <EntityControlMenu
               entityId={entity.id}
               anchorElem={anchorElem}

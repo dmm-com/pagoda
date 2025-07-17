@@ -165,7 +165,6 @@ exports[`should match snapshot 1`] = `
                 >
                   <button
                     class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-53g0n7-MuiButtonBase-root-MuiIconButton-root"
-                    id=":r0:"
                     tabindex="0"
                     type="button"
                   >
@@ -480,7 +479,6 @@ exports[`should match snapshot 1`] = `
               >
                 <button
                   class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-53g0n7-MuiButtonBase-root-MuiIconButton-root"
-                  id=":r0:"
                   tabindex="0"
                   type="button"
                 >

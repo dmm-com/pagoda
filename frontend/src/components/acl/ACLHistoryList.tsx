@@ -84,16 +84,16 @@ export const ACLHistoryList: FC<Props> = ({ histories }) => {
                                   </StyledTableCell>
                                   <StyledTableCell>
                                     {change.before != null
-                                      ? ACLTypeLabels[
+                                      ? (ACLTypeLabels[
                                           change.before as ACLType
-                                        ] ?? "不明"
+                                        ] ?? "不明")
                                       : "-"}
                                   </StyledTableCell>
                                   <StyledTableCell>
                                     {change.after != null
-                                      ? ACLTypeLabels[
+                                      ? (ACLTypeLabels[
                                           change.after as ACLType
-                                        ] ?? "不明"
+                                        ] ?? "不明")
                                       : "-"}
                                   </StyledTableCell>
                                 </>

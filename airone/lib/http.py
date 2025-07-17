@@ -2,10 +2,13 @@ import codecs
 import importlib
 import json
 import urllib.parse
+from io import StringIO
+from typing import Any, Callable, Dict, List, Optional, Tuple
 from urllib.parse import quote
 
 from django.conf import settings
-from django.http import HttpResponse, HttpResponseRedirect
+from django.db import models
+from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render as django_render
 from django.utils.encoding import smart_str
 
@@ -26,8 +29,8 @@ class DRFRequest(dict):
         self.user = user
 
 
-def http_get(func):
-    def wrapper(*args, **kwargs):
+def http_get(func: Callable[..., HttpResponse]) -> Callable[..., HttpResponse]:
+    def wrapper(*args: Any, **kwargs: Any) -> HttpResponse:
         request = args[0]
         if request.method != "GET":
             return HttpResponse("Invalid HTTP method is specified", status=400)
@@ -42,7 +45,9 @@ def http_get(func):
     return wrapper
 
 
-def get_obj_with_check_perm(user: User, model, object_id: int, permission_level):
+def get_obj_with_check_perm(
+    user: User, model: models.Model, object_id: int, permission_level: int
+) -> Tuple[Optional[Any], Optional[HttpResponse]]:
     target_obj = model.objects.filter(id=object_id).first()
     if not target_obj:
         return (None, HttpResponse("Failed to get entity of specified id", status=400))
@@ -58,8 +63,8 @@ def get_obj_with_check_perm(user: User, model, object_id: int, permission_level)
     return (airone_instance, None)
 
 
-def check_superuser(func):
-    def wrapper(*args, **kwargs):
+def check_superuser(func: Callable[..., HttpResponse]) -> Callable[..., HttpResponse]:
+    def wrapper(*args: Any, **kwargs: Any) -> HttpResponse:
         request = args[0]
 
         if not request.user.is_authenticated:
@@ -73,9 +78,11 @@ def check_superuser(func):
     return wrapper
 
 
-def http_post(validator=[]):
-    def _decorator(func):
-        def http_post_handler(*args, **kwargs):
+def http_post(
+    validator: List[Dict[str, Any]] = [],
+) -> Callable[[Callable[..., HttpResponse]], Callable[..., HttpResponse]]:
+    def _decorator(func: Callable[..., HttpResponse]) -> Callable[..., HttpResponse]:
+        def http_post_handler(*args: Any, **kwargs: Any) -> HttpResponse:
             request = args[0]
 
             if request.method != "POST":
@@ -99,8 +106,8 @@ def http_post(validator=[]):
     return _decorator
 
 
-def http_file_upload(func):
-    def get_uploaded_file_content(request):
+def http_file_upload(func: Callable[..., HttpResponse]) -> Callable[..., HttpResponse]:
+    def get_uploaded_file_content(request: HttpRequest) -> Optional[str]:
         """This returns uploaded file context whatever encoding type"""
 
         fp = request.FILES.get("file")
@@ -114,7 +121,9 @@ def http_file_upload(func):
             except Exception:
                 return None
 
-    def wrapper(*args, **kwargs):
+        return None
+
+    def wrapper(*args: Any, **kwargs: Any) -> HttpResponse:
         request = args[0]
 
         if request.method != "POST":
@@ -129,7 +138,7 @@ def http_file_upload(func):
     return wrapper
 
 
-def render(request, template, context={}):
+def render(request: HttpRequest, template: str, context: Dict[str, Any] = {}) -> HttpResponse:
     # added default parameters for navigate
     entity_objects = entity_models.Entity.objects.order_by("name").filter(is_active=True)
     context["navigator"] = {
@@ -208,9 +217,10 @@ def render(request, template, context={}):
     return django_render(request, template, context)
 
 
-def get_download_response(io_stream, fname, encode="utf-8"):
+def get_download_response(io_stream: StringIO, fname: str, encode: str = "utf-8") -> HttpResponse:
     response = HttpResponse(
-        io_stream.getvalue().encode(encode), content_type="application/force-download"
+        io_stream.getvalue().encode(encode, errors="replace"),
+        content_type="application/force-download",
     )
     response["Content-Disposition"] = 'attachment; filename="{fn}"'.format(
         fn=urllib.parse.quote(smart_str(fname))
@@ -218,7 +228,7 @@ def get_download_response(io_stream, fname, encode="utf-8"):
     return response
 
 
-def _is_valid(params, meta_info):
+def _is_valid(params: Dict[str, Any], meta_info: List[Dict[str, Any]]) -> bool:
     if not isinstance(params, dict):
         return False
     # These are existance checks of each parameters except for ones which has omittable parameter

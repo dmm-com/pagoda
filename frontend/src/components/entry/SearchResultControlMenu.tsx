@@ -7,22 +7,28 @@ import {
   Box,
   Button,
   Divider,
+  FormControlLabel,
   ListItemIcon,
   Menu,
   MenuItem,
+  Switch,
   TextField,
   Typography,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
+import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
 import { DesktopDatePicker } from "@mui/x-date-pickers/DesktopDatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import React, { ChangeEvent, FC } from "react";
+import React, { ChangeEvent, FC, useEffect, useState } from "react";
 
 import { AttrFilter } from "../../services/entry/AdvancedSearch";
+import { DateRangePicker } from "../common/DateRangePicker";
+import { DateTimeRangePicker } from "../common/DateTimeRangePicker";
 
 const StyledTextField = styled(TextField)({
   margin: "8px",
+  width: "calc(100% - 16px)",
 });
 
 const StyledBox = styled(Box)({
@@ -109,6 +115,18 @@ export const SearchResultControlMenu: FC<Props> = ({
     attrFilter?.filterKey ?? AdvancedSearchResultAttrInfoFilterKeyEnum.CLEARED;
   const keyword = attrFilter?.keyword ?? "";
 
+  // 日付範囲選択のための状態管理
+  const [isRange, setIsRange] = useState(false);
+
+  // 初期状態の設定
+  useEffect(() => {
+    if (keyword && keyword.includes("~")) {
+      setIsRange(true);
+    } else {
+      setIsRange(false);
+    }
+  }, [keyword]);
+
   return (
     <Menu
       open={Boolean(anchorElem)}
@@ -167,44 +185,75 @@ export const SearchResultControlMenu: FC<Props> = ({
         <Typography>重複</Typography>
       </MenuItem>
 
-      {/* date-like-type specific text selector */}
-      {(attrType === EntryAttributeTypeTypeEnum.DATE ||
-        attrType === EntryAttributeTypeTypeEnum.DATETIME) && (
+      {attrType === EntryAttributeTypeTypeEnum.DATE && (
         <Box>
           <StyledBox display="flex" flexDirection="column">
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={isRange}
+                  onChange={() => {
+                    setIsRange(!isRange);
+                  }}
+                  size="small"
+                />
+              }
+              label="範囲で指定する"
+            />
+
             <StyledTypography variant="caption">次を含む日付</StyledTypography>
             <LocalizationProvider dateAdapter={AdapterDateFns}>
-              <DesktopDatePicker
-                format="yyyy/MM/dd"
-                value={
-                  filterKey ===
-                  AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_CONTAINED
-                    ? keyword
-                      ? new Date(keyword)
+              {isRange ? (
+                <DateRangePicker
+                  initialStart={
+                    keyword.includes("~") ? keyword.split("~")[0] : undefined
+                  }
+                  initialEnd={
+                    keyword.includes("~") ? keyword.split("~")[1] : undefined
+                  }
+                  onApply={(start, end) => {
+                    handleSelectFilterConditions({
+                      ...attrFilter,
+                      filterKey:
+                        AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_CONTAINED,
+                      keyword: `${start}~${end}`,
+                    });
+                  }}
+                  onCancel={() => {}}
+                />
+              ) : (
+                <DesktopDatePicker
+                  format="yyyy/MM/dd"
+                  value={
+                    filterKey ===
+                    AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_CONTAINED
+                      ? keyword
+                        ? new Date(keyword)
+                        : null
                       : null
-                    : null
-                }
-                onChange={(date: Date | null) => {
-                  const settingDateValue = date
-                    ? new Date(
-                        date.getTime() - date.getTimezoneOffset() * 60000
-                      )
-                        .toISOString()
-                        .split("T")[0]
-                    : "";
-                  handleSelectFilterConditions({
-                    ...attrFilter,
-                    filterKey:
-                      AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_CONTAINED,
-                    keyword: settingDateValue,
-                  });
-                }}
-                slotProps={{
-                  textField: {
-                    size: "small",
-                  },
-                }}
-              />
+                  }
+                  onChange={(date: Date | null) => {
+                    const settingDateValue = date
+                      ? new Date(
+                          date.getTime() - date.getTimezoneOffset() * 60000,
+                        )
+                          .toISOString()
+                          .split("T")[0]
+                      : "";
+                    handleSelectFilterConditions({
+                      ...attrFilter,
+                      filterKey:
+                        AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_CONTAINED,
+                      keyword: settingDateValue,
+                    });
+                  }}
+                  slotProps={{
+                    textField: {
+                      size: "small",
+                    },
+                  }}
+                />
+              )}
             </LocalizationProvider>
           </StyledBox>
           <StyledBox display="flex" flexDirection="column">
@@ -212,37 +261,189 @@ export const SearchResultControlMenu: FC<Props> = ({
               次を含まない日付
             </StyledTypography>
             <LocalizationProvider dateAdapter={AdapterDateFns}>
-              <DesktopDatePicker
-                format="yyyy/MM/dd"
-                value={
-                  filterKey ===
-                  AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_NOT_CONTAINED
-                    ? keyword
-                      ? new Date(keyword)
+              {isRange ? (
+                <DateRangePicker
+                  initialStart={
+                    keyword.includes("~") ? keyword.split("~")[0] : undefined
+                  }
+                  initialEnd={
+                    keyword.includes("~") ? keyword.split("~")[1] : undefined
+                  }
+                  onApply={(start, end) => {
+                    handleSelectFilterConditions({
+                      ...attrFilter,
+                      filterKey:
+                        AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_NOT_CONTAINED,
+                      keyword: `${start}~${end}`,
+                    });
+                  }}
+                  onCancel={() => {}}
+                />
+              ) : (
+                <DesktopDatePicker
+                  format="yyyy/MM/dd"
+                  value={
+                    filterKey ===
+                    AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_NOT_CONTAINED
+                      ? keyword
+                        ? new Date(keyword)
+                        : null
                       : null
-                    : null
-                }
-                onChange={(date: Date | null) => {
-                  const settingDateValue = date
-                    ? new Date(
-                        date.getTime() - date.getTimezoneOffset() * 60000
-                      )
-                        .toISOString()
-                        .split("T")[0]
-                    : "";
-                  handleSelectFilterConditions({
-                    ...attrFilter,
-                    filterKey:
-                      AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_NOT_CONTAINED,
-                    keyword: settingDateValue,
-                  });
-                }}
-                slotProps={{
-                  textField: {
-                    size: "small",
-                  },
-                }}
-              />
+                  }
+                  onChange={(date: Date | null) => {
+                    const settingDateValue = date
+                      ? new Date(
+                          date.getTime() - date.getTimezoneOffset() * 60000,
+                        )
+                          .toISOString()
+                          .split("T")[0]
+                      : "";
+                    handleSelectFilterConditions({
+                      ...attrFilter,
+                      filterKey:
+                        AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_NOT_CONTAINED,
+                      keyword: settingDateValue,
+                    });
+                  }}
+                  slotProps={{
+                    textField: {
+                      size: "small",
+                    },
+                  }}
+                />
+              )}
+            </LocalizationProvider>
+          </StyledBox>
+        </Box>
+      )}
+
+      {attrType === EntryAttributeTypeTypeEnum.DATETIME && (
+        <Box>
+          <StyledBox display="flex" flexDirection="column">
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={isRange}
+                  onChange={() => {
+                    setIsRange(!isRange);
+                  }}
+                  size="small"
+                />
+              }
+              label="範囲指定"
+            />
+
+            <StyledTypography variant="caption">次を含む日時</StyledTypography>
+            <LocalizationProvider dateAdapter={AdapterDateFns}>
+              {isRange ? (
+                <DateTimeRangePicker
+                  ampm={false}
+                  initialStart={
+                    keyword.includes("~") ? keyword.split("~")[0] : undefined
+                  }
+                  initialEnd={
+                    keyword.includes("~") ? keyword.split("~")[1] : undefined
+                  }
+                  onApply={(start, end) => {
+                    handleSelectFilterConditions({
+                      ...attrFilter,
+                      filterKey:
+                        AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_CONTAINED,
+                      keyword: `${start}~${end}`,
+                    });
+                  }}
+                  onCancel={() => {}}
+                />
+              ) : (
+                <DateTimePicker
+                  format="yyyy/MM/dd HH:mm"
+                  ampm={false}
+                  value={
+                    filterKey ===
+                    AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_CONTAINED
+                      ? keyword
+                        ? new Date(keyword)
+                        : null
+                      : null
+                  }
+                  onAccept={(date: Date | null) => {
+                    const settingDateValue = date
+                      ? new Date(
+                          date.getTime() - date.getTimezoneOffset() * 60000,
+                        ).toISOString()
+                      : "";
+                    handleSelectFilterConditions({
+                      ...attrFilter,
+                      filterKey:
+                        AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_CONTAINED,
+                      keyword: settingDateValue,
+                    });
+                  }}
+                  slotProps={{
+                    textField: {
+                      size: "small",
+                    },
+                  }}
+                />
+              )}
+            </LocalizationProvider>
+          </StyledBox>
+          <StyledBox display="flex" flexDirection="column">
+            <StyledTypography variant="caption">
+              次を含まない日時
+            </StyledTypography>
+            <LocalizationProvider dateAdapter={AdapterDateFns}>
+              {isRange ? (
+                <DateTimeRangePicker
+                  ampm={false}
+                  initialStart={
+                    keyword.includes("~") ? keyword.split("~")[0] : undefined
+                  }
+                  initialEnd={
+                    keyword.includes("~") ? keyword.split("~")[1] : undefined
+                  }
+                  onApply={(start, end) => {
+                    handleSelectFilterConditions({
+                      ...attrFilter,
+                      filterKey:
+                        AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_NOT_CONTAINED,
+                      keyword: `${start}~${end}`,
+                    });
+                  }}
+                  onCancel={() => {}}
+                />
+              ) : (
+                <DateTimePicker
+                  format="yyyy/MM/dd HH:mm"
+                  ampm={false}
+                  value={
+                    filterKey ===
+                    AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_NOT_CONTAINED
+                      ? keyword
+                        ? new Date(keyword)
+                        : null
+                      : null
+                  }
+                  onAccept={(date: Date | null) => {
+                    const settingDateValue = date
+                      ? new Date(
+                          date.getTime() - date.getTimezoneOffset() * 60000,
+                        ).toISOString()
+                      : "";
+                    handleSelectFilterConditions({
+                      ...attrFilter,
+                      filterKey:
+                        AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_NOT_CONTAINED,
+                      keyword: settingDateValue,
+                    });
+                  }}
+                  slotProps={{
+                    textField: {
+                      size: "small",
+                    },
+                  }}
+                />
+              )}
             </LocalizationProvider>
           </StyledBox>
         </Box>
@@ -306,10 +507,10 @@ export const SearchResultControlMenu: FC<Props> = ({
                     : ""
                 }
                 onChange={handleChangeKeyword(
-                  AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_CONTAINED
+                  AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_CONTAINED,
                 )}
                 onKeyPress={handleKeyPressKeyword(
-                  AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_CONTAINED
+                  AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_CONTAINED,
                 )}
               />
             </Box>
@@ -324,10 +525,10 @@ export const SearchResultControlMenu: FC<Props> = ({
                     : ""
                 }
                 onChange={handleChangeKeyword(
-                  AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_NOT_CONTAINED
+                  AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_NOT_CONTAINED,
                 )}
                 onKeyPress={handleKeyPressKeyword(
-                  AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_NOT_CONTAINED
+                  AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_NOT_CONTAINED,
                 )}
               />
             </Box>

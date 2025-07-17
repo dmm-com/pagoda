@@ -3,8 +3,7 @@ import { Box } from "@mui/material";
 import React, { FC, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
-
-import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
+import { v4 as uuidv4 } from "uuid";
 
 import { Loading } from "components/common/Loading";
 import { PageHeader } from "components/common/PageHeader";
@@ -16,11 +15,14 @@ import {
   EntryFormProps,
 } from "components/entry/EntryForm";
 import { Schema, schema } from "components/entry/entryForm/EntryFormSchema";
+import { useAsyncWithThrow } from "hooks/useAsyncWithThrow";
 import { useFormNotification } from "hooks/useFormNotification";
+import { usePageTitle } from "hooks/usePageTitle";
 import { usePrompt } from "hooks/usePrompt";
 import { useTypedParams } from "hooks/useTypedParams";
 import { aironeApiClient } from "repository/AironeApiClient";
 import { entityEntriesPath, entryDetailsPath } from "routes/Routes";
+import { TITLE_TEMPLATES } from "services";
 import {
   extractAPIException,
   isResponseError,
@@ -33,11 +35,13 @@ import {
 interface Props {
   excludeAttrs?: string[];
   EntryForm?: FC<EntryFormProps>;
+  useUUID?: boolean;
 }
 
 export const EntryEditPage: FC<Props> = ({
   excludeAttrs = [],
   EntryForm = DefaultEntryForm,
+  useUUID = false,
 }) => {
   const { entityId, entryId } = useTypedParams<{
     entityId: number;
@@ -65,7 +69,7 @@ export const EntryEditPage: FC<Props> = ({
 
   usePrompt(
     isDirty && !isSubmitSuccessful,
-    "編集した内容は失われてしまいますが、このページを離れてもよろしいですか？"
+    "編集した内容は失われてしまいますが、このページを離れてもよろしいですか？",
   );
 
   const entity = useAsyncWithThrow(async () => {
@@ -84,8 +88,9 @@ export const EntryEditPage: FC<Props> = ({
         const entryInfo = formalizeEntryInfo(
           undefined,
           entity.value,
-          excludeAttrs
+          excludeAttrs,
         );
+        entryInfo.name = useUUID ? uuidv4() : "";
         reset(entryInfo);
         setInitialized(true);
       }
@@ -99,7 +104,7 @@ export const EntryEditPage: FC<Props> = ({
         const entryInfo = formalizeEntryInfo(
           entry.value,
           entity.value,
-          excludeAttrs
+          excludeAttrs,
         );
         reset(entryInfo);
         setInitialized(true);
@@ -116,6 +121,15 @@ export const EntryEditPage: FC<Props> = ({
       }
     }
   }, [isSubmitSuccessful]);
+
+  usePageTitle(
+    entity.loading || (entryId && entry.loading)
+      ? "読み込み中..."
+      : TITLE_TEMPLATES.entryEdit,
+    {
+      prefix: entry.value?.name ?? (entryId == null ? "新規作成" : undefined),
+    },
+  );
 
   const handleSubmitOnValid = async (entry: Schema) => {
     const updatedAttr = convertAttrsFormatCtoS(entry.attrs);
@@ -136,7 +150,7 @@ export const EntryEditPage: FC<Props> = ({
           (name, message) => {
             setError(name, { type: "custom", message: message });
             enqueueSubmitResult(false);
-          }
+          },
         );
       } else {
         enqueueSubmitResult(false);
@@ -193,7 +207,7 @@ export const EntryEditPage: FC<Props> = ({
           entity={{
             ...entity.value,
             attrs: entity.value.attrs.filter(
-              (attr) => !excludeAttrs.includes(attr.name)
+              (attr) => !excludeAttrs.includes(attr.name),
             ),
           }}
           control={control}

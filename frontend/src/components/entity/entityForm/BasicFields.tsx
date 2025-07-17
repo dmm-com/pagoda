@@ -14,8 +14,8 @@ import { Control, Controller } from "react-hook-form";
 import { Schema } from "./EntityFormSchema";
 
 import {
-  HeaderTableRow,
   HeaderTableCell,
+  HeaderTableRow,
   StyledTableRow,
 } from "components/common/Table";
 
@@ -73,6 +73,27 @@ export const BasicFields: FC<Props> = ({ control }) => {
                     {...field}
                     required
                     placeholder="備考"
+                    error={error != null}
+                    helperText={error?.message}
+                    size="small"
+                    fullWidth
+                  />
+                )}
+              />
+            </TableCell>
+          </StyledTableRow>
+          <StyledTableRow>
+            <TableCell>アイテム名の許可パターン</TableCell>
+            <TableCell>
+              <Controller
+                name="itemNamePattern"
+                control={control}
+                defaultValue=""
+                render={({ field, fieldState: { error } }) => (
+                  <TextField
+                    {...field}
+                    required
+                    placeholder="アイテム名の許可パターン"
                     error={error != null}
                     helperText={error?.message}
                     size="small"

@@ -24,6 +24,7 @@ describe("BasicFields", () => {
   const defaultValues: Schema = {
     name: "hoge",
     note: "fuga",
+    itemNamePattern: "",
     isToplevel: false,
     webhooks: [],
     attrs: [],
@@ -39,7 +40,7 @@ describe("BasicFields", () => {
         resolver: zodResolver(schema),
         mode: "onBlur",
         defaultValues,
-      })
+      }),
     );
 
     render(<BasicFields control={control} />, { wrapper: TestWrapper });

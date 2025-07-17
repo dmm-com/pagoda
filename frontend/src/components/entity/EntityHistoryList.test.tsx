@@ -74,7 +74,7 @@ describe("EntityHistoryList", () => {
         page={1}
         changePage={changePage}
       />,
-      { wrapper: TestWrapper }
+      { wrapper: TestWrapper },
     );
 
     const tableBody = screen.getAllByRole("rowgroup")[1];

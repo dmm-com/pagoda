@@ -43,25 +43,25 @@ export const RoleForm: FC<Props> = ({ control, setValue }) => {
   const adminGroups = useAsyncWithThrow(async () => {
     const _groups = await aironeApiClient.getGroups(1, adminGroupUserKeyword);
     return _groups.results?.map(
-      (group): RoleGroup => ({ id: group.id, name: group.name })
+      (group): RoleGroup => ({ id: group.id, name: group.name }),
     );
   }, [adminGroupUserKeyword]);
   const groups = useAsyncWithThrow(async () => {
     const _groups = await aironeApiClient.getGroups(1, groupUserKeyword);
     return _groups.results?.map(
-      (group): RoleGroup => ({ id: group.id, name: group.name })
+      (group): RoleGroup => ({ id: group.id, name: group.name }),
     );
   }, [groupUserKeyword]);
   const adminUsers = useAsyncWithThrow(async () => {
     const _users = await aironeApiClient.getUsers(1, adminUserKeyword);
     return _users.results?.map(
-      (user): RoleUser => ({ id: user.id, username: user.username })
+      (user): RoleUser => ({ id: user.id, username: user.username }),
     );
   }, [adminUserKeyword]);
   const users = useAsyncWithThrow(async () => {
     const _users = await aironeApiClient.getUsers(1, userKeyword);
     return _users.results?.map(
-      (user): RoleUser => ({ id: user.id, username: user.username })
+      (user): RoleUser => ({ id: user.id, username: user.username }),
     );
   }, [userKeyword]);
 
@@ -167,7 +167,7 @@ export const RoleForm: FC<Props> = ({ control, setValue }) => {
                               <>
                                 {(() => {
                                   const first = (error as FieldError[]).filter(
-                                    (e) => e.message != null
+                                    (e) => e.message != null,
                                   )?.[0];
                                   return (
                                     first != null && (
@@ -239,7 +239,7 @@ export const RoleForm: FC<Props> = ({ control, setValue }) => {
                               <>
                                 {(() => {
                                   const first = (error as FieldError[]).filter(
-                                    (e) => e.message != null
+                                    (e) => e.message != null,
                                   )?.[0];
                                   return (
                                     first != null && (
@@ -328,7 +328,7 @@ export const RoleForm: FC<Props> = ({ control, setValue }) => {
                               <>
                                 {(() => {
                                   const first = (error as FieldError[]).filter(
-                                    (e) => e.message != null
+                                    (e) => e.message != null,
                                   )?.[0];
                                   return (
                                     first != null && (
@@ -400,7 +400,7 @@ export const RoleForm: FC<Props> = ({ control, setValue }) => {
                               <>
                                 {(() => {
                                   const first = (error as FieldError[]).filter(
-                                    (e) => e.message != null
+                                    (e) => e.message != null,
                                   )?.[0];
                                   return (
                                     first != null && (

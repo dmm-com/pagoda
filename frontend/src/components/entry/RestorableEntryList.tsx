@@ -5,7 +5,6 @@ import {
   Card,
   CardActionArea,
   CardHeader,
-  Grid,
   IconButton,
   Modal,
   Paper,
@@ -17,10 +16,11 @@ import {
   TableRow,
   Typography,
 } from "@mui/material";
+import Grid from "@mui/material/Grid2";
 import { styled } from "@mui/material/styles";
 import { useSnackbar } from "notistack";
 import React, { FC, useState } from "react";
-import { useLocation, useNavigate } from "react-router";
+import { useNavigate } from "react-router";
 
 import { EntryAttributes } from "./EntryAttributes";
 
@@ -100,15 +100,10 @@ interface Props {
 }
 
 export const RestorableEntryList: FC<Props> = ({ entityId }) => {
-  const location = useLocation();
-  const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
+  const navigate = useNavigate();
 
-  const [page, changePage] = usePage();
-
-  const params = new URLSearchParams(location.search);
-
-  const [query, setQuery] = useState<string>(params.get("query") ?? "");
+  const { page, query, changePage, changeQuery } = usePage();
 
   const [openModal, setOpenModal] = useState(false);
   const [selectedEntryId, setSelectedEntryId] = useState<number>();
@@ -124,15 +119,7 @@ export const RestorableEntryList: FC<Props> = ({ entityId }) => {
     return await aironeApiClient.getEntry(selectedEntryId);
   }, [selectedEntryId]);
 
-  const handleChangeQuery = (newQuery?: string) => {
-    changePage(1);
-    setQuery(newQuery ?? "");
-
-    navigate({
-      pathname: location.pathname,
-      search: newQuery ? `?query=${newQuery}` : "",
-    });
-  };
+  const handleChangeQuery = changeQuery;
 
   const handleRestore = async (entryId: number) => {
     await aironeApiClient
@@ -141,8 +128,8 @@ export const RestorableEntryList: FC<Props> = ({ entityId }) => {
         enqueueSnackbar("アイテムの復旧が完了しました", {
           variant: "success",
         });
-        navigate(topPath(), { replace: true });
-        navigate(restoreEntryPath(entityId, query), { replace: true });
+        navigate(topPath());
+        navigate(restoreEntryPath(entityId, query));
       })
       .catch(() => {
         enqueueSnackbar("アイテムの復旧が失敗しました", {
@@ -162,7 +149,7 @@ export const RestorableEntryList: FC<Props> = ({ entityId }) => {
             onKeyPress={(e) => {
               e.key === "Enter" &&
                 handleChangeQuery(
-                  normalizeToMatch((e.target as HTMLInputElement).value ?? "")
+                  normalizeToMatch((e.target as HTMLInputElement).value ?? ""),
                 );
             }}
           />
@@ -176,7 +163,7 @@ export const RestorableEntryList: FC<Props> = ({ entityId }) => {
         <Grid container spacing={2} id="entry_list">
           {entries.value?.results?.map((entry) => {
             return (
-              <Grid item xs={4} key={entry.id}>
+              <Grid size={4} key={entry.id}>
                 <StyledCard>
                   <StyledCardHeader
                     title={

@@ -13,10 +13,10 @@ export const schema = schemaForType<Group>()(
         z.object({
           id: z.number(),
           username: z.string(),
-        })
+        }),
       )
       .default([]),
-  })
+  }),
 );
 
 export type Schema = z.infer<typeof schema>;

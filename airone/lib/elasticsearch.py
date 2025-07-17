@@ -10,7 +10,7 @@ from typing_extensions import TypedDict
 
 from airone.lib.acl import ACLType
 from airone.lib.log import Logger
-from airone.lib.types import AttrType
+from airone.lib.types import AttrType, BaseIntEnum
 from entity.models import Entity
 from entry.settings import CONFIG
 from user.models import User
@@ -42,13 +42,20 @@ class AdvancedSearchResults(BaseModel):
 
 
 @enum.unique
-class FilterKey(enum.IntEnum):
+class FilterKey(BaseIntEnum):
     CLEARED = 0
     EMPTY = 1
     NON_EMPTY = 2
     TEXT_CONTAINED = 3
     TEXT_NOT_CONTAINED = 4
     DUPLICATED = 5
+
+
+@enum.unique
+class EntryFilterKey(BaseIntEnum):
+    CLEARED = 0
+    TEXT_CONTAINED = 1
+    TEXT_NOT_CONTAINED = 2
 
 
 class AttrHint(BaseModel):
@@ -59,11 +66,18 @@ class AttrHint(BaseModel):
     exact_match: bool | None = None
 
 
+class EntryHint(BaseModel):
+    is_readable: bool | None = None
+    filter_key: EntryFilterKey | None = None
+    keyword: str | None = None
+    exact_match: bool | None = None
+
+
 class AttributeDocument(TypedDict):
     name: str
     type: int
     key: str
-    value: str | bool
+    value: str | bool | float | None
     date_value: str | None
     referral_id: str
     is_readable: bool
@@ -240,6 +254,10 @@ def make_query(
     entry_name: str | None,
     hint_referral: str | None = None,
     hint_referral_entity_id: int | None = None,
+    hint_entry: EntryHint | None = None,
+    allow_missing_attributes: bool = False,
+    exclude_referrals: list[int] = [],
+    include_referrals: list[int] = [],
 ) -> dict[str, Any]:
     """Create a search query for Elasticsearch.
 
@@ -259,6 +277,16 @@ def make_query(
         hint_referral_entity_id (int):
             - Limit result to the Entries that refer to Entry, which belongs to
               specified Entity.
+        allow_missing_attributes (bool, optional): Defaults to False.
+            If True, entries that do not have attributes specified in hint_attrs (without a keyword)
+            will be included in the search results.
+            If False, attributes specified in hint_attrs (without a keyword) must exist
+            in the entry.
+        exclude_referrals (list(int)): Default []
+            This has Model ID's list that want to exclude for referral items.
+        include_referrals (list(int)): Default []
+            If it's set, this method only targets items that are referred by
+            items of specified Models.
 
     Returns:
         dict[str, Any]: The created search query is returned.
@@ -282,10 +310,14 @@ def make_query(
                 keyword_infos = resp["aggregations"]["attr_aggs"]["attr_name_aggs"][
                     "attr_value_aggs"
                 ]["buckets"]
-                keyword_list = [x["key"] for x in keyword_infos]
-                hint_attr.keyword = CONFIG.OR_SEARCH_CHARACTER.join(
-                    ["^" + x + "$" for x in keyword_list]
-                )
+                if keyword_infos == []:
+                    # Since there are 0 duplicates, set a condition that will always be false.
+                    hint_attr.keyword = "a^"
+                else:
+                    keyword_list = [x["key"] for x in keyword_infos]
+                    hint_attr.keyword = CONFIG.OR_SEARCH_CHARACTER.join(
+                        ["^" + x + "$" for x in keyword_list]
+                    )
 
     # Making a query to send ElasticSearch by the specified parameters
     query: dict[str, Any] = {
@@ -303,31 +335,64 @@ def make_query(
     )
 
     # Included in query if refinement is entered for 'Name' in advanced search
-    if entry_name:
+    if hint_entry is not None:
+        pattern = _get_regex_pattern(hint_entry.keyword or "")
+        match getattr(hint_entry, "filter_key", None):
+            case EntryFilterKey.CLEARED:
+                # Don't perform any filter
+                pass
+            case EntryFilterKey.TEXT_CONTAINED:
+                should_clause = {"bool": {"must": [{"regexp": {"name": pattern}}]}}
+                query["query"]["bool"]["filter"].append({"bool": {"should": [should_clause]}})
+            case EntryFilterKey.TEXT_NOT_CONTAINED:
+                must_not_clause = {"bool": {"must": [{"regexp": {"name": pattern}}]}}
+                query["query"]["bool"]["filter"].append({"bool": {"must_not": [must_not_clause]}})
+            case _:
+                # NOTE: Unsupported filter key
+                pass
+    elif entry_name:
         query["query"]["bool"]["filter"].append(_make_entry_name_query(entry_name))
 
     if hint_referral:
         query["query"]["bool"]["filter"].append(_make_referral_query(hint_referral))
+
+    # These are filter results from Elasticsearch by referred item's Models
+    if exclude_referrals:
+        query["query"]["bool"]["filter"].append(_make_query_exclude_referrals(exclude_referrals))
+
+    if include_referrals:
+        query["query"]["bool"]["filter"].append(_make_query_include_referrals(include_referrals))
 
     if hint_referral_entity_id:
         query["query"]["bool"]["filter"].append(
             _make_referral_entity_query(hint_referral_entity_id)
         )
 
-    # Set the attribute name so that all the attributes specified in the attribute,
-    # to be searched can be used
-    if hint_attrs:
+    # Determine attributes for existence check
+    attr_existence_should_clauses: list[dict[str, Any]] = []
+    if allow_missing_attributes:
+        # For APIv2: Only attributes with specified keywords are subject to existence check
+        for hint in hint_attrs:
+            if hint.name and hint.keyword:
+                attr_existence_should_clauses.append({"term": {"attr.name": hint.name}})
+    else:
+        for hint in hint_attrs:
+            if hint.name:
+                attr_existence_should_clauses.append({"term": {"attr.name": hint.name}})
+
+    # Add attribute existence check condition (commonized)
+    if attr_existence_should_clauses:
+        nested_query_bool_part: dict[str, Any] = {"should": attr_existence_should_clauses}
+
+        # Add minimum_should_match only for APIv2
+        if allow_missing_attributes:
+            nested_query_bool_part["minimum_should_match"] = 1
+
         query["query"]["bool"]["filter"].append(
             {
                 "nested": {
                     "path": "attr",
-                    "query": {
-                        "bool": {
-                            "should": [
-                                {"term": {"attr.name": x.name}} for x in hint_attrs if x.name
-                            ]
-                        }
-                    },
+                    "query": {"bool": nested_query_bool_part},
                 }
             }
         )
@@ -444,7 +509,7 @@ def _get_regex_pattern(keyword: str) -> str:
 
     # Elasticsearch doesn't support anchor operators,
     begin = ".*"
-    if escaped[0] == "^":
+    if escaped and escaped[0] == "^":
         begin = ""
         escaped = escaped.lstrip("^")
 
@@ -530,6 +595,35 @@ def _make_entry_name_query(entry_name: str) -> dict[str, str]:
         entry_name_or_query["bool"]["should"].append(entry_name_and_query)
 
     return entry_name_or_query
+
+
+def _make_query_specific_referred_items(model_id: int) -> dict[str, dict]:
+    return {
+        "nested": {
+            "path": "referrals.schema",
+            "query": {"term": {"referrals.schema.id": model_id}},
+        }
+    }
+
+
+def _make_query_include_referrals(include_referrals: list[int]) -> dict[str, dict]:
+    return {
+        "bool": {
+            "should": [
+                _make_query_specific_referred_items(model_id) for model_id in include_referrals
+            ]
+        }
+    }
+
+
+def _make_query_exclude_referrals(exclude_referrals: list[int]) -> dict[str, dict]:
+    return {
+        "bool": {
+            "must_not": [
+                _make_query_specific_referred_items(model_id) for model_id in exclude_referrals
+            ]
+        }
+    }
 
 
 def _make_referral_query(referral_name: str) -> dict[str, str]:
@@ -804,7 +898,7 @@ def _make_an_attribute_filter(hint: AttrHint, keyword: str) -> dict[str, dict]:
        If the conversion result is not empty, create a 'regexp' query.
        If the conversion result is an empty string, search for data
            with an empty attribute value
-    4. After the above process, create a 'nested' query and return it.
+    # 4. After the above process, create a 'nested' query and return it.
 
     Args:
         hint (AttrHint): Dictionary of attribute names and search keywords to be processed
@@ -823,18 +917,22 @@ def _make_an_attribute_filter(hint: AttrHint, keyword: str) -> dict[str, dict]:
             "range": {"attr.date_value": {"format": "yyyy-MM-dd"}},
         }
         for range_check, date_obj in date_results:
-            timestr = date_obj.strftime("%Y-%m-%d")
             match range_check:
                 case "<":
                     # search of before date user specified
-                    date_cond["range"]["attr.date_value"]["lt"] = timestr
+                    date_cond["range"]["attr.date_value"]["lt"] = date_obj.strftime("%Y-%m-%d")
                 case ">":
                     # search of after date user specified
-                    date_cond["range"]["attr.date_value"]["gt"] = timestr
+                    date_cond["range"]["attr.date_value"]["gt"] = date_obj.strftime("%Y-%m-%d")
+                case "~":
+                    # search of date range user specified
+                    start_date, end_date = date_obj
+                    date_cond["range"]["attr.date_value"]["gte"] = start_date.strftime("%Y-%m-%d")
+                    date_cond["range"]["attr.date_value"]["lte"] = end_date.strftime("%Y-%m-%d")
                 case _:
                     # search of exact day
-                    date_cond["range"]["attr.date_value"]["gte"] = timestr
-                    date_cond["range"]["attr.date_value"]["lte"] = timestr
+                    date_cond["range"]["attr.date_value"]["gte"] = date_obj.strftime("%Y-%m-%d")
+                    date_cond["range"]["attr.date_value"]["lte"] = date_obj.strftime("%Y-%m-%d")
 
         str_cond = {"regexp": {"attr.value": _get_regex_pattern(keyword)}}
 
@@ -1051,6 +1149,10 @@ def make_search_results(
                 case AttrType.STRING | AttrType.TEXT | AttrType.BOOLEAN:
                     ret_attrinfo["value"] = attrinfo["value"]
 
+                case AttrType.NUMBER:
+                    # recognize empty string is None
+                    ret_attrinfo["value"] = attrinfo["value"] if attrinfo["value"] else None
+
                 case AttrType.DATE | AttrType.DATETIME:
                     ret_attrinfo["value"] = attrinfo["date_value"]
 
@@ -1129,11 +1231,72 @@ def make_search_results_for_simple(res: dict[str, Any]) -> dict[str, str]:
     return result
 
 
-def _is_date_check(value: str) -> tuple[str, datetime] | None:
+def _is_date_check(value: str) -> tuple[str, datetime | tuple[datetime, datetime]] | None:
+    def _parse_basic_iso8601(value: str) -> datetime | None:
+        """Parse a basic ISO 8601 formatted date string
+
+        Only supports YYYY-MM-DDThh:mm:ss format.
+        The 'T' character must be used as the separator between date and time.
+        Returns a datetime object if successful, None if parsing fails.
+        """
+        try:
+            return datetime.fromisoformat(value)
+        except ValueError:
+            return None
+
+    # First check for ISO 8601 format
+    operator = ""
+    iso_value = value
+
+    # Check if there's a comparison operator
+    if value and value[0] in ["<", ">"]:
+        operator = value[0]
+        iso_value = value[1:]
+
+    # Check if there's a date range
+    if "~" in iso_value:
+        date_parts = iso_value.split("~")
+        if len(date_parts) == 2:
+            start_datetime = _parse_basic_iso8601(date_parts[0].strip())
+            end_datetime = _parse_basic_iso8601(date_parts[1].strip())
+            if start_datetime and end_datetime:
+                # Ensure start date is not after end date
+                if start_datetime <= end_datetime:
+                    return "~", (start_datetime, end_datetime)
+
+    # Check for single ISO 8601 format
+    iso_datetime = _parse_basic_iso8601(iso_value)
+    if iso_datetime:
+        return operator, iso_datetime
+
+    # Check for legacy date format
     try:
         for delimiter in ["-", "/"]:
             date_format = "%%Y%(del)s%%m%(del)s%%d" % {"del": delimiter}
 
+            # Detect date range separated by tilde (~)
+            if "~" in value:
+                date_parts = value.split("~")
+                if len(date_parts) == 2:
+                    # Verify both dates have the same format
+                    start_date_match = re.match(
+                        r"^[0-9]{4}%(del)s[0-9]+%(del)s[0-9]+" % {"del": delimiter},
+                        date_parts[0].strip(),
+                    )
+                    end_date_match = re.match(
+                        r"^[0-9]{4}%(del)s[0-9]+%(del)s[0-9]+" % {"del": delimiter},
+                        date_parts[1].strip(),
+                    )
+
+                    if start_date_match and end_date_match:
+                        start_date = datetime.strptime(date_parts[0].strip(), date_format)
+                        end_date = datetime.strptime(date_parts[1].strip(), date_format)
+
+                        # Validate start date is not after end date
+                        if start_date <= end_date:
+                            return ("~", (start_date, end_date))
+
+            # Process existing date searches with < and > operators
             if re.match(r"^[<>]?[0-9]{4}%(del)s[0-9]+%(del)s[0-9]+" % {"del": delimiter}, value):
                 if value[0] in ["<", ">"]:
                     return (
@@ -1144,9 +1307,7 @@ def _is_date_check(value: str) -> tuple[str, datetime] | None:
                     return "", datetime.strptime(value.split(" ")[0], date_format)
 
     except ValueError:
-        # When datetime.strptie raised ValueError, it means value parameter maches date
-        # format but they are not date value. In this case, we should deal it with a
-        # string value.
+        # datetime.strptime raises ValueError when format matches but contains invalid date values
         return None
 
     return None

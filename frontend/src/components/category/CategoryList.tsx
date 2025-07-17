@@ -1,10 +1,11 @@
 import AddIcon from "@mui/icons-material/Add";
-import { Box, Button, Container, Grid, List, Typography } from "@mui/material";
+import { Box, Button, Container, List, Typography } from "@mui/material";
+import Grid from "@mui/material/Grid2";
 import React, { FC, useState } from "react";
-import { Link, useNavigate } from "react-router";
+import { Link } from "react-router";
 
 import { CategoryListHeader } from "components/category/CategoryListHeader";
-import { AironeLink } from "components/common";
+import { AironeLink, Loading } from "components/common";
 import { PaginationFooter } from "components/common/PaginationFooter";
 import { SearchBox } from "components/common/SearchBox";
 import { useAsyncWithThrow } from "hooks";
@@ -19,23 +20,12 @@ interface Props {
 }
 
 export const CategoryList: FC<Props> = ({ isEdit = false }) => {
-  const navigate = useNavigate();
   const [toggle, setToggle] = useState(false);
-
-  // variable to store search query
-  const params = new URLSearchParams(location.search);
-  const [query, setQuery] = useState<string>(params.get("query") ?? "");
-  const [page, changePage] = usePage();
+  const { page, query, changeQuery, changePage } = usePage();
 
   // request handler when user specify query
   const handleChangeQuery = (newQuery?: string) => {
-    changePage(1);
-    setQuery(newQuery ?? "");
-
-    navigate({
-      pathname: location.pathname,
-      search: newQuery ? `?query=${newQuery}` : "",
-    });
+    changeQuery(newQuery ?? "");
   };
 
   const categories = useAsyncWithThrow(async () => {
@@ -53,7 +43,7 @@ export const CategoryList: FC<Props> = ({ isEdit = false }) => {
             onKeyPress={(e) => {
               e.key === "Enter" &&
                 handleChangeQuery(
-                  normalizeToMatch((e.target as HTMLInputElement).value ?? "")
+                  normalizeToMatch((e.target as HTMLInputElement).value ?? ""),
                 );
             }}
           />
@@ -72,42 +62,46 @@ export const CategoryList: FC<Props> = ({ isEdit = false }) => {
       </Box>
 
       {/* Context of Category */}
-      <Grid container spacing={3}>
-        {categories.value?.results.map((category) => (
-          <Grid item md={4} key={category.id}>
-            <List
-              subheader={
-                <CategoryListHeader
-                  category={category}
-                  setToggle={() => setToggle(!toggle)}
-                  isEdit={isEdit}
-                />
-              }
-            >
-              <Box
-                sx={{
-                  display: "flex",
-                  flexDirection: "column",
-                  //overflowY: "scroll",
-                  //maxHeight: 300,
-                  ml: "40px",
-                }}
+      {categories.loading ? (
+        <Loading />
+      ) : (
+        <Grid container spacing={3}>
+          {categories.value?.results.map((category) => (
+            <Grid size={4} key={category.id}>
+              <List
+                subheader={
+                  <CategoryListHeader
+                    category={category}
+                    setToggle={() => setToggle(!toggle)}
+                    isEdit={isEdit}
+                  />
+                }
               >
-                {category.models.map((models) => (
-                  <Typography
-                    key={models.id}
-                    component={AironeLink}
-                    to={entityEntriesPath(models.id)}
-                    variant="body2"
-                  >
-                    {models.name}
-                  </Typography>
-                ))}
-              </Box>
-            </List>
-          </Grid>
-        ))}
-      </Grid>
+                <Box
+                  sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    //overflowY: "scroll",
+                    //maxHeight: 300,
+                    ml: "40px",
+                  }}
+                >
+                  {category.models.map((models) => (
+                    <Typography
+                      key={models.id}
+                      component={AironeLink}
+                      to={entityEntriesPath(models.id)}
+                      variant="body2"
+                    >
+                      {models.name}
+                    </Typography>
+                  ))}
+                </Box>
+              </List>
+            </Grid>
+          ))}
+        </Grid>
+      )}
       <PaginationFooter
         count={categories.value?.count ?? 0}
         maxRowCount={EntityListParam.MAX_ROW_COUNT}

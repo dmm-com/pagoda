@@ -82,7 +82,6 @@ exports[`UserListPage should match snapshot 1`] = `
                 >
                   <button
                     class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInfo MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInfo css-1ep9zj1-MuiButtonBase-root-MuiButton-root"
-                    id=":r0:"
                     tabindex="0"
                     type="button"
                   >
@@ -90,7 +89,6 @@ exports[`UserListPage should match snapshot 1`] = `
                   </button>
                   <button
                     class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInfo MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInfo css-1ep9zj1-MuiButtonBase-root-MuiButton-root"
-                    id=":r1:"
                     tabindex="0"
                     type="button"
                   >
@@ -174,7 +172,6 @@ exports[`UserListPage should match snapshot 1`] = `
                 class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary Mui-disabled MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary css-mdne71-MuiButtonBase-root-MuiButton-root"
                 data-discover="true"
                 href="/ui/users/new"
-                id=":r3:"
                 tabindex="-1"
               >
                 <svg
@@ -192,11 +189,11 @@ exports[`UserListPage should match snapshot 1`] = `
               </a>
             </div>
             <div
-              class="MuiGrid-root MuiGrid-container MuiGrid-spacing-xs-2 css-11nsb57-MuiGrid-root"
+              class="MuiGrid2-root MuiGrid2-container MuiGrid2-direction-xs-row MuiGrid2-spacing-xs-2 css-ubb9a5-MuiGrid2-root"
               id="user_list"
             >
               <div
-                class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-4 css-gj1fbr-MuiGrid-root"
+                class="MuiGrid2-root MuiGrid2-direction-xs-row MuiGrid2-grid-xs-4 css-17yh78r-MuiGrid2-root"
               >
                 <div
                   class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiCard-root css-uqzz15-MuiPaper-root-MuiCard-root"
@@ -211,33 +208,22 @@ exports[`UserListPage should match snapshot 1`] = `
                       <span
                         class="MuiTypography-root MuiTypography-h5 MuiCardHeader-title css-16xl4zq-MuiTypography-root"
                       >
-                        <a
-                          class="MuiButtonBase-root MuiCardActionArea-root css-coyn9m-MuiButtonBase-root-MuiCardActionArea-root"
-                          data-discover="true"
-                          href="/ui/users/1"
-                          tabindex="0"
+                        <p
+                          aria-label="user1"
+                          class="MuiTypography-root MuiTypography-body1 css-act3v7-MuiTypography-root"
+                          data-mui-internal-clone-element="true"
                         >
-                          <p
-                            aria-label="user1"
-                            class="MuiTypography-root MuiTypography-body1 css-act3v7-MuiTypography-root"
-                            data-mui-internal-clone-element="true"
-                          >
-                            user1
-                          </p>
-                          <span
-                            class="MuiCardActionArea-focusHighlight css-1h5un5t-MuiCardActionArea-focusHighlight"
-                          />
-                        </a>
+                          user1
+                        </p>
                       </span>
                     </div>
                     <div
                       class="MuiCardHeader-action css-116l9hl-MuiCardHeader-action"
                     >
                       <button
-                        aria-label="名前をコピーしました"
+                        aria-label="名前をコピーする"
                         class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-53g0n7-MuiButtonBase-root-MuiIconButton-root"
                         data-mui-internal-clone-element="true"
-                        id=":r6:"
                         tabindex="0"
                         type="button"
                       >
@@ -250,24 +236,6 @@ exports[`UserListPage should match snapshot 1`] = `
                         >
                           <path
                             d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2m0 16H8V7h11z"
-                          />
-                        </svg>
-                      </button>
-                      <button
-                        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-53g0n7-MuiButtonBase-root-MuiIconButton-root"
-                        id=":r7:"
-                        tabindex="0"
-                        type="button"
-                      >
-                        <svg
-                          aria-hidden="true"
-                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-120dh41-MuiSvgIcon-root"
-                          data-testid="MoreVertIcon"
-                          focusable="false"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2m0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2m0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2"
                           />
                         </svg>
                       </button>
@@ -435,7 +403,6 @@ exports[`UserListPage should match snapshot 1`] = `
               >
                 <button
                   class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInfo MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInfo css-1ep9zj1-MuiButtonBase-root-MuiButton-root"
-                  id=":r0:"
                   tabindex="0"
                   type="button"
                 >
@@ -443,7 +410,6 @@ exports[`UserListPage should match snapshot 1`] = `
                 </button>
                 <button
                   class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInfo MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInfo css-1ep9zj1-MuiButtonBase-root-MuiButton-root"
-                  id=":r1:"
                   tabindex="0"
                   type="button"
                 >
@@ -527,7 +493,6 @@ exports[`UserListPage should match snapshot 1`] = `
               class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary Mui-disabled MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary css-mdne71-MuiButtonBase-root-MuiButton-root"
               data-discover="true"
               href="/ui/users/new"
-              id=":r3:"
               tabindex="-1"
             >
               <svg
@@ -545,11 +510,11 @@ exports[`UserListPage should match snapshot 1`] = `
             </a>
           </div>
           <div
-            class="MuiGrid-root MuiGrid-container MuiGrid-spacing-xs-2 css-11nsb57-MuiGrid-root"
+            class="MuiGrid2-root MuiGrid2-container MuiGrid2-direction-xs-row MuiGrid2-spacing-xs-2 css-ubb9a5-MuiGrid2-root"
             id="user_list"
           >
             <div
-              class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-4 css-gj1fbr-MuiGrid-root"
+              class="MuiGrid2-root MuiGrid2-direction-xs-row MuiGrid2-grid-xs-4 css-17yh78r-MuiGrid2-root"
             >
               <div
                 class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiCard-root css-uqzz15-MuiPaper-root-MuiCard-root"
@@ -564,33 +529,22 @@ exports[`UserListPage should match snapshot 1`] = `
                     <span
                       class="MuiTypography-root MuiTypography-h5 MuiCardHeader-title css-16xl4zq-MuiTypography-root"
                     >
-                      <a
-                        class="MuiButtonBase-root MuiCardActionArea-root css-coyn9m-MuiButtonBase-root-MuiCardActionArea-root"
-                        data-discover="true"
-                        href="/ui/users/1"
-                        tabindex="0"
+                      <p
+                        aria-label="user1"
+                        class="MuiTypography-root MuiTypography-body1 css-act3v7-MuiTypography-root"
+                        data-mui-internal-clone-element="true"
                       >
-                        <p
-                          aria-label="user1"
-                          class="MuiTypography-root MuiTypography-body1 css-act3v7-MuiTypography-root"
-                          data-mui-internal-clone-element="true"
-                        >
-                          user1
-                        </p>
-                        <span
-                          class="MuiCardActionArea-focusHighlight css-1h5un5t-MuiCardActionArea-focusHighlight"
-                        />
-                      </a>
+                        user1
+                      </p>
                     </span>
                   </div>
                   <div
                     class="MuiCardHeader-action css-116l9hl-MuiCardHeader-action"
                   >
                     <button
-                      aria-label="名前をコピーしました"
+                      aria-label="名前をコピーする"
                       class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-53g0n7-MuiButtonBase-root-MuiIconButton-root"
                       data-mui-internal-clone-element="true"
-                      id=":r6:"
                       tabindex="0"
                       type="button"
                     >
@@ -603,24 +557,6 @@ exports[`UserListPage should match snapshot 1`] = `
                       >
                         <path
                           d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2m0 16H8V7h11z"
-                        />
-                      </svg>
-                    </button>
-                    <button
-                      class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-53g0n7-MuiButtonBase-root-MuiIconButton-root"
-                      id=":r7:"
-                      tabindex="0"
-                      type="button"
-                    >
-                      <svg
-                        aria-hidden="true"
-                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-120dh41-MuiSvgIcon-root"
-                        data-testid="MoreVertIcon"
-                        focusable="false"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2m0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2m0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2"
                         />
                       </svg>
                     </button>

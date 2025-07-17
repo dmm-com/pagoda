@@ -55,6 +55,9 @@ jobs:
   test:
     runs-on: ubuntu-24.04
     needs: setup_python
+    permissions:
+      contents: read
+      pull-requests: write
     strategy:
       fail-fast: false
       matrix:
@@ -119,9 +122,10 @@ jobs:
           poetry run coverage run manage.py test ${{ matrix.target }} --parallel 
           poetry run coverage report
           poetry run coverage xml
-      - name: coverage
-        uses: codecov/codecov-action@v3
+      - name: octocov
+        uses: k1LoW/octocov-action@v1
         with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          flags: core/${{ matrix.target }}
+          config: .octocov.yml
+          github-token: ${{ secrets.GITHUB_TOKEN }}
         continue-on-error: true
+

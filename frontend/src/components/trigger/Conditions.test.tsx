@@ -34,6 +34,7 @@ describe("Conditions", () => {
       isWritable: true,
       isMandatory: false,
       isDeleteInChain: false,
+      isSummarized: false,
       referral: [],
     })),
     webhooks: [],

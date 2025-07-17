@@ -42,6 +42,16 @@ TARGET_ATTR_TYPES = {
     if type not in [AttrType._NAMED, AttrType._ARRAY]
 }
 
+# Constants for reference hierarchy
+REFERENCE_DEPTH = 3
+ENTRIES_PER_LEVEL = 2
+
+
+class ReferenceLevel:
+    def __init__(self, entity: Entity, entries: list[Entry]):
+        self.entity = entity
+        self.entries = entries
+
 
 def _random_string(length=10) -> str:
     letters = string.ascii_letters
@@ -126,6 +136,67 @@ def _generate_entry(
         )
 
 
+def generate_reference_hierarchy(user: User, suffix: str) -> list[ReferenceLevel]:
+    levels: list[ReferenceLevel] = []
+
+    # First, create entities and entries for all levels
+    for level in range(1, REFERENCE_DEPTH + 1):
+        entity = Entity.objects.create(
+            name=f"Referred_Entity_L{level}_{suffix}",
+            is_active=True,
+            created_user=user,
+        )
+
+        # Add string attribute to the entity
+        string_attr = EntityAttr.objects.create(
+            parent_entity=entity,
+            name="Attr_string",
+            type=AttrType.STRING,
+            is_active=True,
+            created_user=user,
+        )
+
+        entries = [
+            Entry.objects.create(
+                schema=entity,
+                name=f"Referred_Entry_L{level}_{suffix}_{i}",
+                is_active=True,
+                created_user=user,
+            )
+            for i in range(ENTRIES_PER_LEVEL)
+        ]
+
+        # Set string attribute value for each entry
+        for entry in entries:
+            string_entry_attr = entry.add_attribute_from_base(string_attr, user)
+            string_entry_attr.add_value(user, f"string_value_{_random_string()}")
+
+        levels.append(ReferenceLevel(entity, entries))
+
+    # Set up reference relationships from upper to lower levels (L1->L2->L3->...)
+    # The lowest level has no reference
+    for level in range(REFERENCE_DEPTH - 1):
+        current_level = levels[level]
+        next_level = levels[level + 1]
+
+        # Add reference attribute to the current level's entity
+        attr = EntityAttr.objects.create(
+            parent_entity=current_level.entity,
+            name=f"ref_L{level + 2}",
+            type=AttrType.OBJECT,
+            is_active=True,
+            created_user=user,
+        )
+        attr.referral.add(next_level.entity)
+
+        # Set random reference to next level's entry for each current level entry
+        for entry in current_level.entries:
+            entry_attr = entry.add_attribute_from_base(attr, user)
+            entry_attr.add_value(user, random.choice(next_level.entries))
+
+    return levels
+
+
 def generate_testdata(num_entities: int, num_entries: int, suffix: str):
     user = User.objects.first()
     if not user:
@@ -133,24 +204,8 @@ def generate_testdata(num_entities: int, num_entries: int, suffix: str):
         user.set_password("password")
         user.save()
 
-    ref_entity = Entity.objects.create(
-        name=f"Referred_Entity_{suffix}", is_active=True, created_user=user
-    )
-    ref_entries = [
-        Entry.objects.create(
-            schema=ref_entity,
-            name=f"Referred_Entry_{suffix}_{i}",
-            is_active=True,
-            created_user=user,
-        )
-        for i in range(2)
-    ]
-    ref_groups = [
-        Group.objects.create(name=f"Referred_Group_{suffix}_{i}", is_active=True) for i in range(2)
-    ]
-    ref_roles = [
-        Role.objects.create(name=f"Referred_Role_{suffix}_{i}", is_active=True) for i in range(2)
-    ]
+    # Generate reference hierarchy instead of single reference entity
+    reference_levels = generate_reference_hierarchy(user, suffix)
 
     entities: list[Entity] = []
     for i in range(num_entities):
@@ -173,7 +228,15 @@ def generate_testdata(num_entities: int, num_entries: int, suffix: str):
                 AttrType.NAMED_OBJECT,
                 AttrType.ARRAY_NAMED_OBJECT,
             ]:
-                entity_attr.referral.add(ref_entity)
+                # Reference L1 entity for root entities
+                entity_attr.referral.add(reference_levels[0].entity)
+
+    ref_groups = [
+        Group.objects.create(name=f"Referred_Group_{suffix}_{i}", is_active=True) for i in range(2)
+    ]
+    ref_roles = [
+        Role.objects.create(name=f"Referred_Role_{suffix}_{i}", is_active=True) for i in range(2)
+    ]
 
     with ThreadPoolExecutor() as executor:
         futures: list[Future] = []
@@ -185,7 +248,7 @@ def generate_testdata(num_entities: int, num_entries: int, suffix: str):
                         entity,
                         user,
                         f"{i}_{j}_{suffix}",
-                        ref_entries,
+                        reference_levels[0].entries,  # Use L1 entries as referrals
                         ref_groups,
                         ref_roles,
                     )

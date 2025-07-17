@@ -38,14 +38,14 @@ const ElemBool: FC<{ attrValue: string | boolean }> = ({ attrValue }) => {
 const ElemString: FC<{ attrValue: string }> = ({ attrValue }) => {
   return (
     <Box>
-      {
-        // Separate line breaks with tags
-        attrValue?.split("\n").map((line, key) => (
-          <Box key={key}>{line}</Box>
-        ))
-      }
+      {// Separate line breaks with tags
+      attrValue?.split("\n").map((line, key) => <Box key={key}>{line}</Box>)}
     </Box>
   );
+};
+
+const ElemNumber: FC<{ attrValue: number | null }> = ({ attrValue }) => {
+  return <Box>{attrValue != null ? attrValue.toString() : ""}</Box>;
 };
 
 const ElemObject: FC<{
@@ -75,7 +75,7 @@ const ElemNamedObject: FC<{
           component={AironeLink}
           to={entryDetailsPath(
             attrValue.object.schema?.id ?? 0,
-            attrValue.object.id ?? 0
+            attrValue.object.id ?? 0,
           )}
         >
           {attrValue.object.name}
@@ -148,6 +148,15 @@ export const AttributeValue: FC<Props> = ({ attrInfo }) => {
         <StyledList>
           <StyledListItem>
             <ElemBool attrValue={attrInfo.value.asBoolean ?? false} />
+          </StyledListItem>
+        </StyledList>
+      );
+
+    case EntryAttributeTypeTypeEnum.NUMBER:
+      return (
+        <StyledList>
+          <StyledListItem>
+            <ElemNumber attrValue={attrInfo.value.asNumber ?? null} />
           </StyledListItem>
         </StyledList>
       );

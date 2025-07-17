@@ -65,7 +65,7 @@ export const AttributesFields: FC<Props> = ({
   });
 
   const [latestChangedIndex, setLatestChangedIndex] = useState<number | null>(
-    null
+    null,
   );
 
   const handleAppendAttribute = (index: number) => {
@@ -78,6 +78,7 @@ export const AttributesFields: FC<Props> = ({
       isWritable: true,
       referral: [],
       note: "",
+      defaultValue: undefined, // Explicitly initialize defaultValue
     });
   };
 
@@ -103,6 +104,7 @@ export const AttributesFields: FC<Props> = ({
             <HeaderTableCell width="300px">属性名</HeaderTableCell>
             <HeaderTableCell width="100px">属性説明</HeaderTableCell>
             <HeaderTableCell width="300px">型</HeaderTableCell>
+            <HeaderTableCell width="200px">デフォルト値</HeaderTableCell>
             <HeaderTableCell width="100px">必須</HeaderTableCell>
             <HeaderTableCell width="100px">関連削除</HeaderTableCell>
             <HeaderTableCell width="100px">並び替え</HeaderTableCell>

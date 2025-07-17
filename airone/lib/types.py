@@ -2,8 +2,14 @@ import enum
 from typing import Any
 
 
+class BaseIntEnum(enum.IntEnum):
+    @classmethod
+    def isin(cls, v):
+        return v in cls.__members__.values()
+
+
 @enum.unique
-class AttrType(enum.IntEnum):
+class AttrType(BaseIntEnum):
     OBJECT = 1 << 0
     STRING = 1 << 1
     TEXT = 1 << 2
@@ -12,6 +18,7 @@ class AttrType(enum.IntEnum):
     DATE = 1 << 5
     ROLE = 1 << 6
     DATETIME = 1 << 7
+    NUMBER = 1 << 8
     _ARRAY = 1 << 10
     _NAMED = 1 << 11
     NAMED_OBJECT = _NAMED | OBJECT
@@ -23,6 +30,7 @@ class AttrType(enum.IntEnum):
     ARRAY_ROLE = _ARRAY | ROLE
 
 
+# Mapping from string to AttrType enum values (backwards compatibility)
 AttrTypeValue = {
     "string": AttrType.STRING,
     "object": AttrType.OBJECT,
@@ -38,6 +46,7 @@ AttrTypeValue = {
     "boolean": AttrType.BOOLEAN,
     "date": AttrType.DATE,
     "datetime": AttrType.DATETIME,
+    "number": AttrType.NUMBER,
 }
 AttrDefaultValue: dict[int, Any] = {
     AttrType.OBJECT: None,
@@ -54,4 +63,5 @@ AttrDefaultValue: dict[int, Any] = {
     AttrType.DATE: None,
     AttrType.ROLE: None,
     AttrType.DATETIME: None,
+    AttrType.NUMBER: None,
 }

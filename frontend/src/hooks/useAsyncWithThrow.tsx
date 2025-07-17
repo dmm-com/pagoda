@@ -28,7 +28,7 @@ export declare type AsyncState<T> =
 // A thin wrapper of useAsync() in react-use, but it will throw an error
 export const useAsyncWithThrow = <T extends FunctionReturningPromise>(
   fn: T,
-  deps?: DependencyList
+  deps?: DependencyList,
 ): AsyncState<PromiseType<ReturnType<T>>> => {
   const raw = useAsync(fn, deps);
 

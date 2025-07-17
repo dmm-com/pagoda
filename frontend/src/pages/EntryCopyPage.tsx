@@ -38,7 +38,7 @@ export const EntryCopyPage: FC<Props> = ({ CopyForm = DefaultCopyForm }) => {
 
   usePrompt(
     edited && !submitted,
-    "編集した内容は失われてしまいますが、このページを離れてもよろしいですか？"
+    "編集した内容は失われてしまいますが、このページを離れてもよろしいですか？",
   );
 
   const entry = useAsyncWithThrow(async () => {
@@ -57,7 +57,14 @@ export const EntryCopyPage: FC<Props> = ({ CopyForm = DefaultCopyForm }) => {
   const handleCopy = async () => {
     setSubmitting(true);
     try {
-      await aironeApiClient.copyEntry(entryId, entries.split("\n"));
+      await aironeApiClient.copyEntry(
+        entryId,
+        entries
+          .split("\n")
+          .map((e) => e.trim())
+          .filter((e) => e.length > 0),
+      );
+
       setSubmitted(true);
       enqueueSnackbar("アイテムコピーのジョブ登録が成功しました", {
         variant: "success",
@@ -75,7 +82,7 @@ export const EntryCopyPage: FC<Props> = ({ CopyForm = DefaultCopyForm }) => {
   const handleCancel = () => {
     navigate(
       entryDetailsPath(entry.value?.schema?.id ?? 0, entry.value?.id ?? 0),
-      { replace: true }
+      { replace: true },
     );
   };
 

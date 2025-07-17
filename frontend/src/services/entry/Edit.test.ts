@@ -4,11 +4,15 @@
 
 import { EntryAttributeTypeTypeEnum } from "@dmm-com/airone-apiclient-typescript-fetch";
 
-import { formalizeEntryInfo, convertAttrsFormatCtoS } from "./Edit";
+import {
+  EntryAttributeValueType,
+  convertAttrsFormatCtoS,
+  formalizeEntryInfo,
+} from "./Edit";
 
 import {
-  EditableEntryAttrs,
   EditableEntryAttrValue,
+  EditableEntryAttrs,
 } from "components/entry/entryForm/EditableEntry";
 
 Object.defineProperty(window, "django_context", {
@@ -37,6 +41,7 @@ test("formalizeEntryInfo should return expect value", () => {
         isMandatory: true,
         isDeleteInChain: true,
         isWritable: true,
+        isSummarized: false,
         referral: [],
         note: "",
       },
@@ -48,6 +53,7 @@ test("formalizeEntryInfo should return expect value", () => {
         isMandatory: false,
         isDeleteInChain: true,
         isWritable: true,
+        isSummarized: false,
         referral: [],
         note: "",
       },
@@ -59,6 +65,7 @@ test("formalizeEntryInfo should return expect value", () => {
         isMandatory: true,
         isDeleteInChain: true,
         isWritable: true,
+        isSummarized: false,
         referral: [],
         note: "",
       },
@@ -83,17 +90,18 @@ test("formalizeEntryInfo should return expect value", () => {
         },
         type: 2,
         value: {
-          asArrayGroup: [],
-          asArrayNamedObject: [],
-          asArrayObject: [],
-          asArrayRole: [],
-          asArrayString: [],
-          asBoolean: false,
-          asGroup: undefined,
-          asNamedObject: { name: "", object: null },
-          asObject: undefined,
-          asRole: undefined,
           asString: "",
+          asBoolean: false,
+          asArrayString: [{ value: "" }],
+          asArrayObject: [],
+          asArrayGroup: [],
+          asArrayRole: [],
+          asArrayNamedObject: [{ name: "", object: null, _boolean: false }],
+          asNumber: null,
+          asObject: null,
+          asGroup: null,
+          asRole: null,
+          asNamedObject: { name: "", object: null },
         },
       },
       3: {
@@ -105,17 +113,18 @@ test("formalizeEntryInfo should return expect value", () => {
         },
         type: 1026,
         value: {
-          asArrayGroup: [],
-          asArrayNamedObject: [],
-          asArrayObject: [],
-          asArrayRole: [],
-          asArrayString: [],
-          asBoolean: false,
-          asGroup: undefined,
-          asNamedObject: { name: "", object: null },
-          asObject: undefined,
-          asRole: undefined,
           asString: "",
+          asBoolean: false,
+          asArrayString: [{ value: "" }],
+          asArrayObject: [],
+          asArrayGroup: [],
+          asArrayRole: [],
+          asArrayNamedObject: [{ name: "", object: null, _boolean: false }],
+          asNumber: null,
+          asObject: null,
+          asGroup: null,
+          asRole: null,
+          asNamedObject: { name: "", object: null },
         },
       },
       4: {
@@ -127,17 +136,18 @@ test("formalizeEntryInfo should return expect value", () => {
         },
         type: 3073,
         value: {
-          asArrayGroup: [],
-          asArrayNamedObject: [],
-          asArrayObject: [],
-          asArrayRole: [],
-          asArrayString: [],
-          asBoolean: false,
-          asGroup: undefined,
-          asNamedObject: { name: "", object: null },
-          asObject: undefined,
-          asRole: undefined,
           asString: "",
+          asBoolean: false,
+          asArrayString: [{ value: "" }],
+          asArrayObject: [],
+          asArrayGroup: [],
+          asArrayRole: [],
+          asArrayNamedObject: [{ name: "", object: null, _boolean: false }],
+          asNumber: null,
+          asObject: null,
+          asGroup: null,
+          asRole: null,
+          asNamedObject: { name: "", object: null },
         },
       },
     },
@@ -248,13 +258,94 @@ test("formalizeEntryInfo should return expect value", () => {
   });
 });
 
+test("formalizeEntryInfo should use defaultValue when creating new entry", () => {
+  const entity = {
+    id: 1,
+    name: "TestEntity",
+    note: "hoge",
+    status: 0,
+    isToplevel: true,
+    hasOngoingChanges: false,
+    attrs: [
+      {
+        id: 2,
+        index: 0,
+        name: "string_with_default",
+        type: EntryAttributeTypeTypeEnum.STRING,
+        isMandatory: true,
+        isDeleteInChain: true,
+        isWritable: true,
+        isSummarized: false,
+        referral: [],
+        note: "",
+        defaultValue: { asString: "default string value" },
+      },
+      {
+        id: 3,
+        index: 1,
+        name: "boolean_with_default",
+        type: EntryAttributeTypeTypeEnum.BOOLEAN,
+        isMandatory: false,
+        isDeleteInChain: true,
+        isWritable: true,
+        isSummarized: false,
+        referral: [],
+        note: "",
+        defaultValue: { asBoolean: true },
+      },
+      {
+        id: 4,
+        index: 2,
+        name: "text_with_default",
+        type: EntryAttributeTypeTypeEnum.TEXT,
+        isMandatory: false,
+        isDeleteInChain: true,
+        isWritable: true,
+        isSummarized: false,
+        referral: [],
+        note: "",
+        defaultValue: { asString: "default\ntext\nvalue" },
+      },
+      {
+        id: 5,
+        index: 3,
+        name: "string_without_default",
+        type: EntryAttributeTypeTypeEnum.STRING,
+        isMandatory: false,
+        isDeleteInChain: true,
+        isWritable: true,
+        isSummarized: false,
+        referral: [],
+        note: "",
+        defaultValue: null,
+      },
+    ],
+    webhooks: [],
+    isPublic: true,
+  };
+
+  const result = formalizeEntryInfo(undefined, entity, []);
+
+  // Check string attribute with default value
+  expect(result.attrs[2].value.asString).toBe("default string value");
+
+  // Check boolean attribute with default value
+  expect(result.attrs[3].value.asBoolean).toBe(true);
+
+  // Check text attribute with default value
+  expect(result.attrs[4].value.asString).toBe("default\ntext\nvalue");
+
+  // Check string attribute without default value (should use empty string)
+  expect(result.attrs[5].value.asString).toBe("");
+});
+
 test("convertAttrsFormatCtoS() returns expected value", () => {
   const cases: Array<{
     client_data: {
-      type: EntryAttributeTypeTypeEnum;
+      type: (typeof EntryAttributeTypeTypeEnum)[keyof typeof EntryAttributeTypeTypeEnum];
       value: EditableEntryAttrValue;
     };
-    expected_data: any;
+    expected_data: EntryAttributeValueType;
   }> = [
     // boolean
     {
@@ -275,6 +366,16 @@ test("convertAttrsFormatCtoS() returns expected value", () => {
         },
       },
       expected_data: "value",
+    },
+    // number
+    {
+      client_data: {
+        type: EntryAttributeTypeTypeEnum.NUMBER,
+        value: {
+          asNumber: 2,
+        },
+      },
+      expected_data: 2,
     },
     // object
     {
@@ -439,13 +540,120 @@ test("convertAttrsFormatCtoS() returns expected value", () => {
   });
 });
 
+test("formalizeEntryInfo should use defaultValue when creating new entry", () => {
+  const entity = {
+    id: 1,
+    name: "TestEntity",
+    note: "hoge",
+    status: 0,
+    isToplevel: true,
+    hasOngoingChanges: false,
+    attrs: [
+      {
+        id: 2,
+        index: 0,
+        name: "string_with_default",
+        type: EntryAttributeTypeTypeEnum.STRING,
+        isMandatory: true,
+        isDeleteInChain: true,
+        isWritable: true,
+        isSummarized: false,
+        referral: [],
+        note: "",
+        defaultValue: { asString: "default string value" },
+      },
+      {
+        id: 3,
+        index: 1,
+        name: "boolean_with_default",
+        type: EntryAttributeTypeTypeEnum.BOOLEAN,
+        isMandatory: false,
+        isDeleteInChain: true,
+        isWritable: true,
+        isSummarized: false,
+        referral: [],
+        note: "",
+        defaultValue: { asBoolean: true },
+      },
+      {
+        id: 4,
+        index: 2,
+        name: "text_with_default",
+        type: EntryAttributeTypeTypeEnum.TEXT,
+        isMandatory: false,
+        isDeleteInChain: true,
+        isWritable: true,
+        isSummarized: false,
+        referral: [],
+        note: "",
+        defaultValue: { asString: "default\ntext\nvalue" },
+      },
+      {
+        id: 5,
+        index: 3,
+        name: "string_without_default",
+        type: EntryAttributeTypeTypeEnum.STRING,
+        isMandatory: false,
+        isDeleteInChain: true,
+        isWritable: true,
+        isSummarized: false,
+        referral: [],
+        note: "",
+        defaultValue: null,
+      },
+    ],
+    webhooks: [],
+    isPublic: true,
+  };
+
+  const result = formalizeEntryInfo(undefined, entity, []);
+
+  // Check string attribute with default value
+  expect(result.attrs[2].value.asString).toBe("default string value");
+
+  // Check boolean attribute with default value
+  expect(result.attrs[3].value.asBoolean).toBe(true);
+
+  // Check text attribute with default value
+  expect(result.attrs[4].value.asString).toBe("default\ntext\nvalue");
+
+  // Check string attribute without default value (should use empty string)
+  expect(result.attrs[5].value.asString).toBe("");
+});
+
+test("convertAttrsFormatCtoS() should return expected value", () => {
+  const client_data: Record<string, EditableEntryAttrs> = {
+    key: {
+      index: 0,
+      type: EntryAttributeTypeTypeEnum.BOOLEAN,
+      isMandatory: true,
+      schema: {
+        id: 1,
+        name: "test",
+      },
+      value: {
+        asBoolean: true,
+      },
+    },
+  };
+
+  const sending_data = convertAttrsFormatCtoS(client_data);
+
+  expect(sending_data).toStrictEqual([
+    {
+      id: 1,
+      value: true,
+    },
+  ]);
+});
+
 test("convertAttrsFormatCtoS() returns expected value when nothing value", () => {
   const cases: Array<{
     client_data: {
-      type: EntryAttributeTypeTypeEnum;
+      type: (typeof EntryAttributeTypeTypeEnum)[keyof typeof EntryAttributeTypeTypeEnum];
       value: EditableEntryAttrValue;
     };
-    expected_data: any;
+    expected_data: EntryAttributeValueType;
   }> = [
     // boolean
     {
@@ -466,6 +674,16 @@ test("convertAttrsFormatCtoS() returns expected value when nothing value", () =>
         },
       },
       expected_data: "",
+    },
+    // number
+    {
+      client_data: {
+        type: EntryAttributeTypeTypeEnum.NUMBER,
+        value: {
+          asNumber: null,
+        },
+      },
+      expected_data: null,
     },
     // object
     {
@@ -584,4 +802,85 @@ test("convertAttrsFormatCtoS() returns expected value when nothing value", () =>
       },
     ]);
   });
+});
+
+test("formalizeEntryInfo should use defaultValue when creating new entry", () => {
+  const entity = {
+    id: 1,
+    name: "TestEntity",
+    note: "hoge",
+    status: 0,
+    isToplevel: true,
+    hasOngoingChanges: false,
+    attrs: [
+      {
+        id: 2,
+        index: 0,
+        name: "string_with_default",
+        type: EntryAttributeTypeTypeEnum.STRING,
+        isMandatory: true,
+        isDeleteInChain: true,
+        isWritable: true,
+        isSummarized: false,
+        referral: [],
+        note: "",
+        defaultValue: { asString: "default string value" },
+      },
+      {
+        id: 3,
+        index: 1,
+        name: "boolean_with_default",
+        type: EntryAttributeTypeTypeEnum.BOOLEAN,
+        isMandatory: false,
+        isDeleteInChain: true,
+        isWritable: true,
+        isSummarized: false,
+        referral: [],
+        note: "",
+        defaultValue: { asBoolean: true },
+      },
+      {
+        id: 4,
+        index: 2,
+        name: "text_with_default",
+        type: EntryAttributeTypeTypeEnum.TEXT,
+        isMandatory: false,
+        isDeleteInChain: true,
+        isWritable: true,
+        isSummarized: false,
+        referral: [],
+        note: "",
+        defaultValue: { asString: "default\ntext\nvalue" },
+      },
+      {
+        id: 5,
+        index: 3,
+        name: "string_without_default",
+        type: EntryAttributeTypeTypeEnum.STRING,
+        isMandatory: false,
+        isDeleteInChain: true,
+        isWritable: true,
+        isSummarized: false,
+        referral: [],
+        note: "",
+        defaultValue: null,
+      },
+    ],
+    webhooks: [],
+    isPublic: true,
+  };
+
+  const result = formalizeEntryInfo(undefined, entity, []);
+
+  // Check string attribute with default value
+  expect(result.attrs[2].value.asString).toBe("default string value");
+
+  // Check boolean attribute with default value
+  expect(result.attrs[3].value.asBoolean).toBe(true);
+
+  // Check text attribute with default value
+  expect(result.attrs[4].value.asString).toBe("default\ntext\nvalue");
+
+  // Check string attribute without default value (should use empty string)
+  expect(result.attrs[5].value.asString).toBe("");
 });

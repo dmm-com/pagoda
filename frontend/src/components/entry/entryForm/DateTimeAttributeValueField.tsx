@@ -53,7 +53,7 @@ export const DateTimeAttributeValueField: FC<Props> = ({
                   {
                     shouldDirty: true,
                     shouldValidate: true,
-                  }
+                  },
                 );
               }}
               slotProps={{

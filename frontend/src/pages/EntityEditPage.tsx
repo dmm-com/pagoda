@@ -13,15 +13,17 @@ import { EntityForm } from "components/entity/EntityForm";
 import { Schema, schema } from "components/entity/entityForm/EntityFormSchema";
 import { useAsyncWithThrow } from "hooks/useAsyncWithThrow";
 import { useFormNotification } from "hooks/useFormNotification";
+import { usePageTitle } from "hooks/usePageTitle";
 import { usePrompt } from "hooks/usePrompt";
 import { useTypedParams } from "hooks/useTypedParams";
 import { aironeApiClient } from "repository/AironeApiClient";
 import { entitiesPath, entityEntriesPath } from "routes/Routes";
+import { TITLE_TEMPLATES } from "services";
 import {
   extractAPIException,
   isResponseError,
 } from "services/AironeAPIErrorUtil";
-import { findDuplicateIndexes } from "services/entity/Edit";
+import { BaseAttributeTypes } from "services/Constants";
 
 export const EntityEditPage: FC = () => {
   const { entityId } = useTypedParams<{ entityId: number }>();
@@ -45,7 +47,7 @@ export const EntityEditPage: FC = () => {
 
   usePrompt(
     isDirty && !isSubmitSuccessful,
-    "編集した内容は失われてしまいますが、このページを離れてもよろしいですか？"
+    "編集した内容は失われてしまいますが、このページを離れてもよろしいですか？",
   );
 
   const entity = useAsyncWithThrow(async () => {
@@ -73,24 +75,48 @@ export const EntityEditPage: FC = () => {
     // Adjusted attributes for the API
     const attrs = entityForm.attrs
       .filter((attr) => attr.isWritable)
-      .map((attr, index) => ({
-        id: attr.id,
-        name: attr.name,
-        type: attr.type,
-        index: index,
-        isMandatory: attr.isMandatory,
-        isDeleteInChain: attr.isDeleteInChain,
-        isSummarized: attr.isSummarized,
-        referral: attr.referral.map((r) => r.id),
-        isDeleted: false,
-        note: attr.note,
-      }));
+      .map((attr, index) => {
+        // Convert defaultValue to appropriate type
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let processedDefaultValue: any | null = null;
+        if (attr.defaultValue != null) {
+          if (attr.type === BaseAttributeTypes.number) {
+            const numValue = Number(attr.defaultValue);
+            if (!isNaN(numValue)) {
+              processedDefaultValue = numValue;
+            }
+          } else if (attr.type === BaseAttributeTypes.bool) {
+            processedDefaultValue = Boolean(attr.defaultValue);
+          } else if (
+            attr.type === BaseAttributeTypes.string ||
+            attr.type === BaseAttributeTypes.text
+          ) {
+            processedDefaultValue = String(attr.defaultValue);
+          } else {
+            processedDefaultValue = attr.defaultValue;
+          }
+        }
+
+        return {
+          id: attr.id,
+          name: attr.name,
+          type: attr.type,
+          index: index,
+          isMandatory: attr.isMandatory,
+          isDeleteInChain: attr.isDeleteInChain,
+          isSummarized: attr.isSummarized,
+          referral: attr.referral.map((r) => r.id),
+          isDeleted: false,
+          note: attr.note,
+          defaultValue: processedDefaultValue,
+        };
+      });
 
     const deletedAttrs =
       entity.value?.attrs
         .filter(
           (attr) =>
-            !entityForm.attrs.some((attrForm) => attrForm.id === attr.id)
+            !entityForm.attrs.some((attrForm) => attrForm.id === attr.id),
         )
         .map((attr) => ({
           id: attr.id,
@@ -107,7 +133,7 @@ export const EntityEditPage: FC = () => {
           isVerified: false,
           headers: webhook.headers,
           isDeleted: false,
-        })
+        }),
       ) ?? [];
 
     const deletedWebhooks =
@@ -115,8 +141,8 @@ export const EntityEditPage: FC = () => {
         .filter(
           (webhook) =>
             !entityForm.webhooks.some(
-              (webhookForm) => webhookForm.id === webhook.id
-            )
+              (webhookForm) => webhookForm.id === webhook.id,
+            ),
         )
         .map((webhook) => ({
           id: webhook.id,
@@ -129,18 +155,20 @@ export const EntityEditPage: FC = () => {
         await aironeApiClient.createEntity(
           entityForm.name,
           entityForm.note,
+          entityForm.itemNamePattern,
           entityForm.isToplevel,
           attrs,
-          webhooks
+          webhooks,
         );
       } else {
         await aironeApiClient.updateEntity(
           entityId,
           entityForm.name,
           entityForm.note,
+          entityForm.itemNamePattern,
           entityForm.isToplevel,
           [...attrs, ...deletedAttrs],
-          [...webhooks, ...deletedWebhooks]
+          [...webhooks, ...deletedWebhooks],
         );
       }
       enqueueSubmitResult(true);
@@ -150,20 +178,9 @@ export const EntityEditPage: FC = () => {
           e,
           (message) => enqueueSubmitResult(false, `詳細: "${message}"`),
           (name, message) => {
-            switch (name) {
-              case "attrs":
-                findDuplicateIndexes(entityForm.attrs).forEach((index) => {
-                  setError(`attrs.${index}.name`, {
-                    type: "custom",
-                    message: message,
-                  });
-                });
-                break;
-              default:
-                setError(name, { type: "custom", message: message });
-            }
+            setError(name, { type: "custom", message: message });
             enqueueSubmitResult(false);
-          }
+          },
         );
       } else {
         enqueueSubmitResult(false);
@@ -171,8 +188,50 @@ export const EntityEditPage: FC = () => {
     }
   };
 
+  usePageTitle(
+    entity.loading || (entityId && entity.loading)
+      ? "読み込み中..."
+      : TITLE_TEMPLATES.entityEdit,
+    {
+      prefix: entity.value?.name ?? (entityId == null ? "新規作成" : undefined),
+    },
+  );
+
   useEffect(() => {
-    !entity.loading && entity.value != null && reset(entity.value);
+    if (!entity.loading && entity.value != null) {
+      // Convert entity data to form schema format, ensuring defaultValue is included
+      const formData: Schema = {
+        name: entity.value.name,
+        note: entity.value.note ?? "",
+        itemNamePattern: entity.value.itemNamePattern ?? "",
+        isToplevel: entity.value.isToplevel,
+        webhooks: entity.value.webhooks.map((webhook) => ({
+          ...webhook,
+          url: webhook.url ?? "",
+          label: webhook.label ?? "",
+          isEnabled: webhook.isEnabled ?? false,
+          headers: webhook.headers ?? [],
+        })),
+        attrs: entity.value.attrs.map((attr) => ({
+          ...attr,
+          name: attr.name ?? "",
+          note: attr.note ?? "",
+          referral: (attr.referral ?? []).map((ref) => ({
+            id: ref.id,
+            name: ref.name,
+          })),
+          defaultValue: attr.defaultValue as
+            | string
+            | number
+            | boolean
+            | null
+            | undefined,
+          isSummarized: attr.isSummarized,
+        })),
+      };
+
+      reset(formData);
+    }
   }, [entity.loading]);
 
   useEffect(() => {

@@ -38,7 +38,7 @@ const server = setupServer(
 
   http.get("http://localhost/entity/api/v2/attrs", () => {
     return HttpResponse.json(entityAttrs);
-  })
+  }),
 );
 
 beforeAll(() => server.listen());
@@ -50,7 +50,7 @@ beforeEach(async () => {
     render(
       <Router>
         <AdvancedSearchPage />
-      </Router>
+      </Router>,
     );
   });
 });
@@ -106,7 +106,7 @@ describe("AdvancedSearchPage", () => {
 
     if (elemInputEntity.parentNode instanceof HTMLElement) {
       const selectedEntity = within(elemInputEntity.parentNode).getAllByRole(
-        "button"
+        "button",
       );
       // right 1 is ArrowDropDownIcon.
       expect(selectedEntity).toHaveLength(1 + 1);
@@ -132,13 +132,12 @@ describe("AdvancedSearchPage", () => {
 
     fireEvent.click(options[1]);
 
-    const elemInputEntityAttr = await screen.findByPlaceholderText(
-      "属性を選択"
-    );
+    const elemInputEntityAttr =
+      await screen.findByPlaceholderText("属性を選択");
 
     if (elemInputEntityAttr.parentNode instanceof HTMLElement) {
       const selectedEntity = within(
-        elemInputEntityAttr.parentNode
+        elemInputEntityAttr.parentNode,
       ).getAllByRole("button");
       // right 1 is ArrowDropDownIcon.
       expect(selectedEntity).toHaveLength(1 + 1);
@@ -175,13 +174,12 @@ describe("AdvancedSearchPage", () => {
       fireEvent.click(options[0]);
     });
 
-    const elemInputEntityAttr = await screen.findByPlaceholderText(
-      "属性を選択"
-    );
+    const elemInputEntityAttr =
+      await screen.findByPlaceholderText("属性を選択");
 
     if (elemInputEntityAttr.parentNode instanceof HTMLElement) {
       const selectedEntity = within(
-        elemInputEntityAttr.parentNode
+        elemInputEntityAttr.parentNode,
       ).getAllByRole("button");
       // right 1 is ArrowDropDownIcon.
       expect(selectedEntity).toHaveLength(2 + 1);
@@ -200,9 +198,8 @@ describe("AdvancedSearchPage", () => {
     fireEvent.click(optionsEntity[0]);
     fireEvent.keyDown(elemInputEntity, { key: "Escape" });
 
-    const elemInputEntityAttr = await screen.findByPlaceholderText(
-      "属性を選択"
-    );
+    const elemInputEntityAttr =
+      await screen.findByPlaceholderText("属性を選択");
 
     await act(async () => {
       fireEvent.change(elemInputEntityAttr, { target: { value: "str" } });
@@ -223,9 +220,8 @@ describe("AdvancedSearchPage", () => {
     fireEvent.click(optionsEntity[0]);
     fireEvent.keyDown(elemInputEntity, { key: "Escape" });
 
-    const elemInputEntityAttr = await screen.findByPlaceholderText(
-      "属性を選択"
-    );
+    const elemInputEntityAttr =
+      await screen.findByPlaceholderText("属性を選択");
 
     await act(async () => {
       fireEvent.change(elemInputEntityAttr, { target: { value: "hoge" } });
@@ -247,9 +243,8 @@ describe("AdvancedSearchPage", () => {
       fireEvent.keyDown(elemInputEntity, { key: "Escape" });
     });
 
-    const elemInputEntityAttr = await screen.findByPlaceholderText(
-      "属性を選択"
-    );
+    const elemInputEntityAttr =
+      await screen.findByPlaceholderText("属性を選択");
 
     await act(async () => {
       fireEvent.change(elemInputEntityAttr, { target: { value: "str" } });
@@ -270,7 +265,7 @@ describe("AdvancedSearchPage", () => {
         "?entity=2" +
         "&is_all_entities=false" +
         "&has_referral=false" +
-        '&attrinfo=[{"name"%3A"str"%2C"filterKey"%3A0%2C"keyword"%3A""}]'
+        '&attrinfo=[{"name"%3A"str"%2C"filterKey"%3A0%2C"keyword"%3A""}]',
     );
   });
 });

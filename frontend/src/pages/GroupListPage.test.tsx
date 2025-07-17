@@ -36,7 +36,7 @@ const server = setupServer(
         children: [],
       },
     ]);
-  })
+  }),
 );
 
 beforeAll(() => server.listen());

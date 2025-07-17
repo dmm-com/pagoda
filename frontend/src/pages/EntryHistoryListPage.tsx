@@ -16,10 +16,10 @@ import { aironeApiClient } from "repository/AironeApiClient";
 export const EntryHistoryListPage: FC = () => {
   const { entryId } = useTypedParams<{ entityId: number; entryId: number }>();
 
-  const [page, changePage] = usePage();
+  const { page, changePage } = usePage();
 
   const [entryAnchorEl, setEntryAnchorEl] = useState<HTMLButtonElement | null>(
-    null
+    null,
   );
 
   const entry = useAsyncWithThrow(async () => {

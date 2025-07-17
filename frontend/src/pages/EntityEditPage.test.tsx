@@ -60,7 +60,7 @@ const server = setupServer(
   // getEntity
   http.get("http://localhost/entity/api/v2/1/", () => {
     return HttpResponse.json(entity);
-  })
+  }),
 );
 
 beforeAll(() => server.listen());
@@ -89,7 +89,7 @@ describe("EditEntityPage", () => {
       ],
       {
         initialEntries: ["/ui/entities/1"],
-      }
+      },
     );
     const result = await act(async () => {
       return render(<RouterProvider router={router} />, {

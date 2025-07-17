@@ -3,7 +3,7 @@ from datetime import date, datetime, timezone
 
 from django.conf import settings
 
-from airone.lib.elasticsearch import AttrHint, FilterKey
+from airone.lib.elasticsearch import AttrHint, EntryFilterKey, EntryHint, FilterKey
 from airone.lib.log import Logger
 from airone.lib.test import AironeTestCase
 from airone.lib.types import AttrType
@@ -58,6 +58,7 @@ class AdvancedSearchServiceTest(AironeTestCase):
             "group": AttrType.GROUP,
             "date": AttrType.DATE,
             "role": AttrType.ROLE,
+            "num": AttrType.NUMBER,
             "datetime": AttrType.DATETIME,
             "arr_str": AttrType.ARRAY_STRING,
             "arr_obj": AttrType.ARRAY_OBJECT,
@@ -459,6 +460,25 @@ class AdvancedSearchServiceTest(AironeTestCase):
             [x.entry["name"] for x in result.ret_values], ["dup-%s" % i for i in range(4)]
         )
 
+    def test_search_entries_with_duplicated_filter_key_without_duplicated_item(self):
+        entity = self.create_entity_with_all_type_attributes(self._user)
+
+        self.add_entry(self._user, "entry1", entity, values={"str": ""})
+        self.add_entry(self._user, "entry2", entity, values={"str": "hoge"})
+        self.add_entry(self._user, "entry3", entity, values={"str": "fuga"})
+
+        result = AdvancedSearchService.search_entries(
+            self._user,
+            [entity.id],
+            [
+                AttrHint(
+                    name="str",
+                    filter_key=FilterKey.DUPLICATED,
+                )
+            ],
+        )
+        self.assertEqual(result.ret_count, 0)
+
     def test_search_entries_with_text_not_contained_filter_key(self):
         entity = self.create_entity_with_all_type_attributes(self._user)
 
@@ -813,6 +833,43 @@ class AdvancedSearchServiceTest(AironeTestCase):
         )
         self.assertEqual(resp.ret_count, 1)
 
+    def test_search_entries_with_hint_entry(self):
+        user = User.objects.create(username="hintuser")
+        entity = Entity.objects.create(name="HintEntity", created_user=user)
+        attr = EntityAttr.objects.create(
+            name="hint_attr", type=AttrType.STRING, created_user=user, parent_entity=entity
+        )
+        entity.attrs.add(attr)
+        entry1 = Entry.objects.create(name="foo-entry", schema=entity, created_user=user)
+        entry1_attr = entry1.add_attribute_from_base(attr, user)
+        entry1_attr.add_value(user, "val1")
+        entry1.register_es()
+        entry2 = Entry.objects.create(name="bar-entry", schema=entity, created_user=user)
+        entry2_attr = entry2.add_attribute_from_base(attr, user)
+        entry2_attr.add_value(user, "val2")
+        entry2.register_es()
+
+        hint_entry = EntryHint(filter_key=EntryFilterKey.TEXT_CONTAINED, keyword="foo")
+        res = AdvancedSearchService.search_entries(
+            user=user,
+            hint_entity_ids=[entity.id],
+            hint_attrs=[],
+            hint_entry=hint_entry,
+        )
+        self.assertEqual(res.ret_count, 1)
+        self.assertTrue(any("foo" in v.entry["name"] for v in res.ret_values))
+
+        # use hint entry even if entry_name is specified
+        res2 = AdvancedSearchService.search_entries(
+            user=user,
+            hint_entity_ids=[entity.id],
+            hint_attrs=[],
+            entry_name="bar-entry",
+            hint_entry=hint_entry,
+        )
+        self.assertEqual(res2.ret_count, 1)
+        self.assertTrue(any("foo" in v.entry["name"] for v in res2.ret_values))
+
     def test_search_entries_for_simple(self):
         self._entity.attrs.add(self._attr.schema)
         self._entry.attrs.first().add_value(self._user, "hoge")
@@ -1069,6 +1126,92 @@ class AdvancedSearchServiceTest(AironeTestCase):
         self.assertEqual(res.ret_count, 0)
         self.assertEqual(len(res.ret_values), 0)
 
+    def test_search_entries_allow_missing_attributes(self):
+        # 1. Setup Entities
+        alpha_entity = Entity.objects.create(
+            name="AlphaEntityAllowMissing", created_user=self._user
+        )
+        beta_entity = Entity.objects.create(name="BetaEntityAllowMissing", created_user=self._user)
+
+        # 2. Setup EntityAttrs
+        # Common attribute for both AlphaEntity and BetaEntity
+        common_attr_alpha_schema = EntityAttr.objects.create(
+            name="common_attr",
+            type=AttrType.STRING,
+            created_user=self._user,
+            parent_entity=alpha_entity,
+        )
+        common_attr_beta_schema = EntityAttr.objects.create(
+            name="common_attr",
+            type=AttrType.STRING,
+            created_user=self._user,
+            parent_entity=beta_entity,
+        )
+
+        # Attribute only for AlphaEntity
+        alpha_only_attr_schema = EntityAttr.objects.create(
+            name="alpha_only_attr",
+            type=AttrType.STRING,
+            created_user=self._user,
+            parent_entity=alpha_entity,
+        )
+
+        # 3. Setup Entries and AttributeValues
+        # Entry for AlphaEntity
+        entry_a1 = Entry.objects.create(
+            name="entryA1_allow_missing", schema=alpha_entity, created_user=self._user
+        )
+        attr_a1_common = entry_a1.add_attribute_from_base(common_attr_alpha_schema, self._user)
+        attr_a1_common.add_value(self._user, "common_value_A")
+        attr_a1_alpha_only = entry_a1.add_attribute_from_base(alpha_only_attr_schema, self._user)
+        attr_a1_alpha_only.add_value(self._user, "alpha_specific_value")
+
+        # Entry for BetaEntity (does not have alpha_only_attr)
+        entry_b1 = Entry.objects.create(
+            name="entryB1_allow_missing", schema=beta_entity, created_user=self._user
+        )
+        attr_b1_common = entry_b1.add_attribute_from_base(common_attr_beta_schema, self._user)
+        attr_b1_common.add_value(self._user, "common_value_B")
+
+        # 4. Register entries to Elasticsearch
+        entry_a1.register_es()
+        entry_b1.register_es()
+
+        # 5. Perform search with allow_missing_attributes=True
+        hint_attrs = [
+            AttrHint(name="common_attr"),
+            AttrHint(name="alpha_only_attr"),  # This attribute is missing in BetaEntity
+        ]
+        entity_ids_list = [alpha_entity.id, beta_entity.id]
+
+        result = AdvancedSearchService.search_entries(
+            user=self._user,
+            hint_entity_ids=entity_ids_list,
+            hint_attrs=hint_attrs,
+            allow_missing_attributes=True,
+        )
+
+        # 6. Assertions
+        self.assertEqual(result.ret_count, 2, "Should return both entries")
+        self.assertEqual(len(result.ret_values), 2)
+
+        ret_entry_names = sorted([v.entry["name"] for v in result.ret_values])
+        self.assertEqual(ret_entry_names, ["entryA1_allow_missing", "entryB1_allow_missing"])
+
+        for ret_val in result.ret_values:
+            if ret_val.entry["name"] == "entryA1_allow_missing":
+                self.assertEqual(ret_val.entity["name"], "AlphaEntityAllowMissing")
+                self.assertIn("common_attr", ret_val.attrs)
+                self.assertEqual(ret_val.attrs["common_attr"]["value"], "common_value_A")
+                self.assertIn("alpha_only_attr", ret_val.attrs)
+                self.assertEqual(ret_val.attrs["alpha_only_attr"]["value"], "alpha_specific_value")
+            elif ret_val.entry["name"] == "entryB1_allow_missing":
+                self.assertEqual(ret_val.entity["name"], "BetaEntityAllowMissing")
+                self.assertIn("common_attr", ret_val.attrs)
+                self.assertEqual(ret_val.attrs["common_attr"]["value"], "common_value_B")
+                # BetaEntity does not have 'alpha_only_attr', so it should not be in its results.
+                self.assertNotIn("alpha_only_attr", ret_val.attrs)
+
     def test_search_entries_v2_with_all_attribute_types(self):
         """
         This tests all typed attribute values are retrieved by search_entries_v2
@@ -1086,6 +1229,7 @@ class AdvancedSearchServiceTest(AironeTestCase):
             "bool": True,
             "group": ref_groups[0],
             "date": date.today(),
+            "num": 123.45,
             "role": ref_roles[0],
             "datetime": datetime.now(timezone.utc),
             "arr_str": ["tmp01", "tmp02", "tmp03"],
@@ -1149,6 +1293,7 @@ class AdvancedSearchServiceTest(AironeTestCase):
                 ("group", {"id": ref_groups[0].id, "name": ref_groups[0].name}),
                 ("date", str(setting_value["date"])),
                 ("role", {"id": ref_roles[0].id, "name": ref_roles[0].name}),
+                ("num", 123.45),
                 ("datetime", setting_value["datetime"].isoformat()),
                 ("arr_str", setting_value["arr_str"]),
                 ("arr_obj", [{"id": x.id, "name": x.name} for x in setting_value["arr_obj"]]),

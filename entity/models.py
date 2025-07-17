@@ -1,4 +1,5 @@
-from typing import List
+import math
+from typing import Any, List, Optional, Union
 
 from django.conf import settings
 from django.db import models
@@ -6,6 +7,7 @@ from simple_history.models import HistoricalRecords
 
 from acl.models import ACLBase
 from airone.lib.acl import ACLObjType
+from airone.lib.types import AttrDefaultValue, AttrType
 from category.models import Category
 from webhook.models import Webhook
 
@@ -30,6 +32,7 @@ class EntityAttr(ACLBase):
     is_delete_in_chain = models.BooleanField(default=False)
 
     note = models.CharField(max_length=200, blank=True, default="")
+    default_value = models.JSONField(null=True, blank=True, default=None)
 
     history = HistoricalRecords(m2m_fields=[referral], excluded_fields=["status", "updated_time"])
 
@@ -37,13 +40,14 @@ class EntityAttr(ACLBase):
         super(ACLBase, self).__init__(*args, **kwargs)
         self.objtype = ACLObjType.EntityAttr
 
-    def is_updated(self, name, is_mandatory, is_delete_in_chain, index) -> bool:
+    def is_updated(self, name, is_mandatory, is_delete_in_chain, index, default_value=None) -> bool:
         # checks each parameters that are different between current object parameters
         if (
             self.name != name
             or self.is_mandatory != is_mandatory
             or self.is_delete_in_chain != is_delete_in_chain
             or self.index != int(index)
+            or self.default_value != default_value
         ):
             return True
         return False
@@ -60,10 +64,14 @@ class EntityAttr(ACLBase):
         finally:
             del self.skip_history_when_saving
 
-    def add_referral(self, referral):
+    def add_referral(
+        self, referral: Union["Entity", str, int, List[Union["Entity", str, int]]]
+    ) -> None:
         adding_referral = None
         if isinstance(referral, list):
-            [self.add_referral(x) for x in referral if x]
+            for x in referral:
+                if x:
+                    self.add_referral(x)
 
         elif isinstance(referral, str):
             adding_referral = Entity.objects.filter(name=referral, is_active=True).first()
@@ -79,7 +87,7 @@ class EntityAttr(ACLBase):
             self.referral.add(adding_referral)
 
     def save(self, *args, **kwargs) -> None:
-        max_attributes_per_entity: int | None = settings.MAX_ATTRIBUTES_PER_ENTITY
+        max_attributes_per_entity: Optional[int] = settings.MAX_ATTRIBUTES_PER_ENTITY
         if (
             max_attributes_per_entity
             and EntityAttr.objects.filter(parent_entity=self.parent_entity).count()
@@ -87,6 +95,38 @@ class EntityAttr(ACLBase):
         ):
             raise RuntimeError("The number of attributes per entity is over the limit")
         return super(EntityAttr, self).save(*args, **kwargs)
+
+    def get_default_value(self) -> Any:
+        """Returns custom default value if set, otherwise returns type-based default value"""
+        if self.default_value is not None:
+            return self.default_value
+        return AttrDefaultValue.get(self.type, None)
+
+    def validate_default_value(self, value: Any) -> bool:
+        """Validates if the given value is valid for this attribute type as default value"""
+        if value is None:
+            return True  # None is always valid
+
+        # Only String, Text, Boolean, Number types support custom default values, currently
+        supported_types = [AttrType.STRING, AttrType.TEXT, AttrType.BOOLEAN, AttrType.NUMBER]
+        if self.type not in supported_types:
+            return False
+
+        # Type-specific validation for supported types
+        if self.type == AttrType.STRING or self.type == AttrType.TEXT:
+            return isinstance(value, str)
+        elif self.type == AttrType.BOOLEAN:
+            return isinstance(value, bool)
+        elif self.type == AttrType.NUMBER:
+            # Only accept int/float types, but reject bool (bool is a subclass of int)
+            if not isinstance(value, (int, float)) or isinstance(value, bool):
+                return False
+            # Reject NaN and Infinity values
+            if isinstance(value, float) and (math.isnan(value) or math.isinf(value)):
+                return False
+            return True
+
+        return True
 
 
 class Entity(ACLBase):
@@ -104,18 +144,24 @@ class Entity(ACLBase):
     # The Category that groups Models according to their purpose (which is defined by User)
     categories = models.ManyToManyField(Category, default=[], related_name="models")
 
+    # This is a pattern for making Item that that is written by regex
+    item_name_pattern = models.CharField(max_length=400, blank=True)
+
     def __init__(self, *args, **kwargs):
         super(Entity, self).__init__(*args, **kwargs)
         self.objtype = ACLObjType.Entity
 
     def save(self, *args, **kwargs) -> None:
-        max_entities: int | None = settings.MAX_ENTITIES
+        max_entities: Optional[int] = settings.MAX_ENTITIES
         if max_entities and Entity.objects.count() >= max_entities:
             raise RuntimeError("The number of entities is over the limit")
         return super(Entity, self).save(*args, **kwargs)
 
-    def is_available(self, name: str, exclude_item_ids: List[int] = []) -> bool:
+    def is_available(self, name: str, exclude_item_ids: Optional[List[int]] = None) -> bool:
         from entry.models import AliasEntry, Entry
+
+        if exclude_item_ids is None:
+            exclude_item_ids = []
 
         if (
             Entry.objects.filter(name=name, schema=self, is_active=True)

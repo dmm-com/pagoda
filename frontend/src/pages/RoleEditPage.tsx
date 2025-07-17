@@ -5,8 +5,6 @@ import React, { FC, useCallback, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
 
-import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
-
 import { AironeLink } from "components";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { Loading } from "components/common/Loading";
@@ -14,15 +12,19 @@ import { PageHeader } from "components/common/PageHeader";
 import { SubmitButton } from "components/common/SubmitButton";
 import { RoleForm } from "components/role/RoleForm";
 import { Schema, schema } from "components/role/roleForm/RoleFormSchema";
+import { useAsyncWithThrow } from "hooks/useAsyncWithThrow";
 import { useFormNotification } from "hooks/useFormNotification";
+import { usePageTitle } from "hooks/usePageTitle";
 import { usePrompt } from "hooks/usePrompt";
 import { useTypedParams } from "hooks/useTypedParams";
 import { aironeApiClient } from "repository/AironeApiClient";
 import { rolesPath, topPath } from "routes/Routes";
+import { TITLE_TEMPLATES } from "services";
 import {
   extractAPIException,
   isResponseError,
 } from "services/AironeAPIErrorUtil";
+import { ForbiddenError } from "services/Exceptions";
 
 export const RoleEditPage: FC = () => {
   const { roleId } = useTypedParams<{ roleId?: number }>();
@@ -45,12 +47,18 @@ export const RoleEditPage: FC = () => {
 
   usePrompt(
     isDirty && !isSubmitSuccessful,
-    "編集した内容は失われてしまいますが、このページを離れてもよろしいですか？"
+    "編集した内容は失われてしまいますが、このページを離れてもよろしいですか？",
   );
 
   const role = useAsyncWithThrow(async () => {
     return roleId != null ? await aironeApiClient.getRole(roleId) : undefined;
   }, [roleId]);
+
+  useEffect(() => {
+    if (!role.loading && role.value && !role.value.isEditable) {
+      throw new ForbiddenError("Only admin can edit a role");
+    }
+  }, [role]);
 
   useEffect(() => {
     !role.loading && role.value != null && reset(role.value);
@@ -59,6 +67,10 @@ export const RoleEditPage: FC = () => {
   useEffect(() => {
     isSubmitSuccessful && navigate(rolesPath());
   }, [isSubmitSuccessful]);
+
+  usePageTitle(role.loading ? "読み込み中..." : TITLE_TEMPLATES.roleEdit, {
+    prefix: role.value?.name ?? (willCreate ? "新規作成" : undefined),
+  });
 
   const handleSubmitOnValid = useCallback(
     async (role: Schema) => {
@@ -85,14 +97,14 @@ export const RoleEditPage: FC = () => {
             (name, message) => {
               setError(name, { type: "custom", message: message });
               enqueueSubmitResult(false);
-            }
+            },
           );
         } else {
           enqueueSubmitResult(false);
         }
       }
     },
-    [roleId]
+    [roleId],
   );
 
   const handleCancel = async () => {

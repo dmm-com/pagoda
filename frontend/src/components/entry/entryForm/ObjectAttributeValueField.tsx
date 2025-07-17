@@ -11,7 +11,7 @@ import {
   Typography,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import React, { FC, useEffect } from "react";
+import React, { FC } from "react";
 import { Control, Controller, useFieldArray } from "react-hook-form";
 import { UseFormSetValue } from "react-hook-form/dist/types/form";
 
@@ -66,7 +66,7 @@ export const ObjectAttributeValueField: FC<
   }
 > = ({ multiple, attrId, control, setValue, isDisabled = false }) => {
   const handleChange = (
-    value: GetEntryAttrReferral | GetEntryAttrReferral[] | null
+    value: GetEntryAttrReferral | GetEntryAttrReferral[] | null,
   ) => {
     const newValue = (() => {
       if (value == null) {
@@ -95,7 +95,7 @@ export const ObjectAttributeValueField: FC<
       {
         shouldDirty: true,
         shouldValidate: true,
-      }
+      },
     );
   };
 
@@ -143,7 +143,7 @@ export const NamedObjectAttributeValueField: FC<
   withBoolean,
 }) => {
   const handleChange = (
-    value: GetEntryAttrReferral | GetEntryAttrReferral[] | null
+    value: GetEntryAttrReferral | GetEntryAttrReferral[] | null,
   ) => {
     const newValue = (() => {
       if (Array.isArray(value)) {
@@ -169,7 +169,7 @@ export const NamedObjectAttributeValueField: FC<
       {
         shouldDirty: true,
         shouldValidate: true,
-      }
+      },
     );
   };
 
@@ -259,12 +259,6 @@ export const ArrayNamedObjectAttributeValueField: FC<
     control,
     name: `attrs.${attrId}.value.asArrayNamedObject`,
   });
-
-  useEffect(() => {
-    if (fields.length === 0) {
-      handleClickAddListItem(0);
-    }
-  }, []);
 
   const handleClickAddListItem = (index: number) => {
     insert(index + 1, { name: "", object: null, _boolean: false });

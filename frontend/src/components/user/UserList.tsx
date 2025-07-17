@@ -6,16 +6,18 @@ import {
   Card,
   CardActionArea,
   CardHeader,
-  Grid,
   IconButton,
   Tooltip,
   Typography,
 } from "@mui/material";
+import Grid from "@mui/material/Grid2";
 import { styled } from "@mui/material/styles";
+import { useSnackbar } from "notistack";
 import React, { FC, useMemo, useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router";
+import { Link } from "react-router";
 
 import { UserControlMenu } from "./UserControlMenu";
+import { UserPasswordFormModal } from "./UserPasswordFormModal";
 
 import { ClipboardCopyButton } from "components/common/ClipboardCopyButton";
 import { Loading } from "components/common/Loading";
@@ -45,12 +47,8 @@ const UserName = styled(Typography)(({}) => ({
   whiteSpace: "nowrap",
 }));
 
-export const UserList: FC = ({}) => {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const [page, changePage] = usePage();
-  const params = new URLSearchParams(location.search);
-  const [query, setQuery] = useState<string>(params.get("query") ?? "");
+export const UserList: FC = () => {
+  const { page, query, changePage, changeQuery } = usePage();
   const [userAnchorEls, setUserAnchorEls] = useState<{
     [key: number]: HTMLButtonElement | null;
   }>({});
@@ -60,21 +58,30 @@ export const UserList: FC = ({}) => {
     return await aironeApiClient.getUsers(page, query);
   }, [page, query, toggle]);
 
-  const isSuperuser = useMemo(() => {
-    const serverContext = ServerContext.getInstance();
-    return (
-      serverContext?.user?.isSuperuser != null && serverContext.user.isSuperuser
-    );
-  }, []);
+  const serverContext = useMemo(() => ServerContext.getInstance(), []);
+  const currentUsername = useMemo(
+    () => serverContext?.user?.username,
+    [serverContext],
+  );
+  const isSuperuser = useMemo(
+    () => serverContext?.user?.isSuperuser === true,
+    [serverContext],
+  );
 
-  const handleChangeQuery = (newQuery?: string) => {
-    changePage(1);
-    setQuery(newQuery ?? "");
+  const handleChangeQuery = changeQuery;
 
-    navigate({
-      pathname: location.pathname,
-      search: newQuery ? `?query=${newQuery}` : "",
-    });
+  // 新規追加: パスワードモーダル制御用
+  const [passwordModalUserId, setPasswordModalUserId] = useState<number | null>(
+    null,
+  );
+  const { enqueueSnackbar } = useSnackbar();
+
+  const handleOpenPasswordModal = (userId: number) => {
+    setPasswordModalUserId(userId);
+  };
+
+  const handleClosePasswordModal = () => {
+    setPasswordModalUserId(null);
   };
 
   return (
@@ -84,11 +91,13 @@ export const UserList: FC = ({}) => {
           <SearchBox
             placeholder="ユーザを絞り込む"
             defaultValue={query}
-            onKeyPress={(e) => {
-              e.key === "Enter" &&
-                handleChangeQuery(
-                  normalizeToMatch((e.target as HTMLInputElement).value ?? "")
-                );
+            onKeyPress={(
+              e: React.KeyboardEvent<HTMLDivElement>,
+              value: string,
+            ) => {
+              if (e.key === "Enter") {
+                handleChangeQuery(normalizeToMatch(value));
+              }
             }}
           />
         </Box>
@@ -110,42 +119,60 @@ export const UserList: FC = ({}) => {
       ) : (
         <Grid container spacing={2} id="user_list">
           {users.value?.results?.map((user) => {
+            const isCurrentUser = user.username === currentUsername;
+            const isLinkVisible = isSuperuser || isCurrentUser;
+            const isMenuVisible = isSuperuser || isCurrentUser;
+
             return (
-              <Grid item xs={4} key={user.id}>
+              <Grid size={4} key={user.id}>
                 <Card sx={{ height: "100%" }}>
                   <StyledCardHeader
                     title={
-                      <CardActionArea component={Link} to={userPath(user.id)}>
+                      isLinkVisible ? (
+                        <CardActionArea component={Link} to={userPath(user.id)}>
+                          <Tooltip
+                            title={user.username}
+                            placement="bottom-start"
+                          >
+                            <UserName>{user.username}</UserName>
+                          </Tooltip>
+                        </CardActionArea>
+                      ) : (
                         <Tooltip title={user.username} placement="bottom-start">
                           <UserName>{user.username}</UserName>
                         </Tooltip>
-                      </CardActionArea>
+                      )
                     }
                     action={
                       <>
                         <ClipboardCopyButton name={user.username} />
-
-                        <IconButton
-                          onClick={(e) => {
-                            setUserAnchorEls({
-                              ...userAnchorEls,
-                              [user.id]: e.currentTarget,
-                            });
-                          }}
-                        >
-                          <MoreVertIcon fontSize="small" />
-                        </IconButton>
-                        <UserControlMenu
-                          user={user}
-                          anchorElem={userAnchorEls[user.id]}
-                          handleClose={(userId: number) =>
-                            setUserAnchorEls({
-                              ...userAnchorEls,
-                              [userId]: null,
-                            })
-                          }
-                          setToggle={() => setToggle(!toggle)}
-                        />
+                        {isMenuVisible && (
+                          <>
+                            <IconButton
+                              onClick={(e) => {
+                                setUserAnchorEls({
+                                  ...userAnchorEls,
+                                  [user.id]: e.currentTarget,
+                                });
+                              }}
+                            >
+                              <MoreVertIcon fontSize="small" />
+                            </IconButton>
+                            <UserControlMenu
+                              user={user}
+                              isSelf={isCurrentUser}
+                              anchorElem={userAnchorEls[user.id]}
+                              handleClose={(userId: number) =>
+                                setUserAnchorEls({
+                                  ...userAnchorEls,
+                                  [userId]: null,
+                                })
+                              }
+                              onClickEditPassword={handleOpenPasswordModal}
+                              setToggle={() => setToggle(!toggle)}
+                            />
+                          </>
+                        )}
                       </>
                     }
                   />
@@ -155,7 +182,20 @@ export const UserList: FC = ({}) => {
           })}
         </Grid>
       )}
-
+      {passwordModalUserId !== null && (
+        <UserPasswordFormModal
+          userId={passwordModalUserId}
+          openModal={true}
+          onClose={handleClosePasswordModal}
+          onSubmitSuccess={() => {
+            enqueueSnackbar("パスワードの変更が完了しました", {
+              variant: "success",
+            });
+            handleClosePasswordModal();
+            setToggle(!toggle);
+          }}
+        />
+      )}
       <PaginationFooter
         count={users.value?.count ?? 0}
         maxRowCount={UserListParam.MAX_ROW_COUNT}

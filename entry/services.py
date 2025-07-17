@@ -14,6 +14,7 @@ from airone.lib.elasticsearch import (
     AdvancedSearchResultRecordIdNamePair,
     AdvancedSearchResults,
     AttrHint,
+    EntryHint,
     FilterKey,
     execute_query,
     make_query,
@@ -50,6 +51,10 @@ class AdvancedSearchService:
         is_output_all: bool = False,
         hint_referral_entity_id: int | None = None,
         offset: int = 0,
+        hint_entry: EntryHint | None = None,
+        allow_missing_attributes: bool = False,
+        exclude_referrals: list[int] = [],
+        include_referrals: list[int] = [],
     ) -> AdvancedSearchResults:
         """Main method called from advanced search.
 
@@ -77,6 +82,18 @@ class AdvancedSearchService:
                 Flag to output all attribute values.
             offset (int): Defaults to 0.
                 The number of offset to get a part of a large amount of search results
+            hint_entry (AttrHint | None): Defaults to None.
+                Input value used to refine the entry.
+            allow_missing_attributes (bool, optional): Defaults to False.
+                If True, entries that do not have attributes specified in hint_attrs
+                (without a keyword) will be included in the search results.
+                If False, attributes specified in hint_attrs (without a keyword)
+                must exist in the entry.
+            exclude_referrals (list(int)): Default []
+                This has Model ID's list that want to exclude for referral items.
+            include_referrals (list(int)): Default []
+                If it's set, this method only targets items that are referred by
+                items of specified Models.
 
         Returns:
             AdvancedSearchResults: As a result of the search,
@@ -123,7 +140,15 @@ class AdvancedSearchService:
 
             # make query for elasticsearch to retrieve data user wants
             query = make_query(
-                entity, hint_attrs, entry_name, hint_referral, hint_referral_entity_id
+                entity,
+                hint_attrs,
+                entry_name,
+                hint_referral,
+                hint_referral_entity_id,
+                hint_entry,
+                allow_missing_attributes=allow_missing_attributes,
+                exclude_referrals=exclude_referrals,
+                include_referrals=include_referrals,
             )
 
             # sending request to elasticsearch with making query

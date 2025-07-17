@@ -8,6 +8,180 @@
 
 ### Fixed
 
+## v3.140.0
+
+### Added
+* Added number type attribute.
+  Contributed by @syucream
+
+## v3.139.0
+
+### Added
+* Added dynamic page titles with usePageTitle hook
+  Contributed by @tsunoda-takahiro
+
+## v3.138.0
+
+### Added
+* Support boolean, array_string attribute of ItemWalker
+  Contributed by @hinashi
+
+## v3.137.0
+
+### Added
+* Added new parameter "omitHeadline" to the SearchResults react component
+  Contributed by @userlocalhost
+
+## v3.136.0
+
+### Added
+* Enhance type hints.
+  Contributed by @syucream
+
+## v3.135.0
+
+### Changed
+* simplify job model.
+  Contributed by @syucream
+
+## v3.134.0
+
+### Added
+* Added new parameter `exclude_referrals` for advanced search.
+  Contributed by @userlocalhost
+
+### Changed
+* register Celery tasks with decorator pattern and cleanup task table.
+  Contributed by @syucream
+
+### Fixed
+* Fix modal closing when pressing Tab in UserControlMenu.
+  Contributed by @tsunoda-takahiro
+* Prevent users from deleting their own accounts.
+  Contributed by @tsunoda-takahiro
+* Fix snackbar not appearing after password reset by superuser.
+  Contributed by @tsunoda-takahiro
+
+## v3.133.0
+
+### Changed
+* Reorder attribute type dropdown and handle missing definitions.
+  Contributed by @tsunoda-takahiro
+
+### Fixed
+* Fixed an issue where the snackbar would disappear in restore entry.
+  Contributed by @hinashi
+* Fix entry filter clear button.
+  Contributed by @syucream
+* Fix handle empty string case in Elasticsearch regex pattern generation.
+  Contributed by @syucream
+* Fix layout and wrapping for entry history values.
+  Contributed by @tsunoda-takahiro
+
+## v3.132.0
+
+### Added
+* New confident feature "ItemWalker" that make uesr easy to make processing
+  to get Item that is reffered by another Item through attribute value with
+  less I/O (SQL) using Prefetch.
+  Contributed by @userlocalhost, @hinashi
+
+### Changed
+* Consolidate page and query state management in usePage hook.
+  Contributed by @syucream
+
+### Fixed
+* Enable real-time API search for group, role selection field.
+  Contributed by @tsunoda-takahiro
+
+## v3.131.0
+
+### Changed
+* Refactor entry name search to use EntryHint with filter keys.
+  Contributed by @syucream
+* Allow to match missing attributes ub advanced search.
+  Contributed by @syucream
+
+### Fixed
+* Fix breadcrumb label switching for group edit/create.
+  Contributed by @tsunoda-takahiro
+
+## v3.130.0
+
+### Changed
+* Support case-insensitive filter for group members.
+  Contributed by @tsunoda-takahiro
+* Update permission-based rendering in UserList.
+  Contributed by @tsunoda-takahiro
+* Add access control to RoleEditPage for non-editable roles.
+  Contributed by @tsunoda-takahiro
+
+### Fixed
+* Initialize array values in entry form fields and remove useEffect hooks.
+  Contributed by @syucream
+
+## v3.129.0
+
+### Changed
+* Disable group name links and menu for unauthorized users.
+  Contributed by @tsunoda-takahiro
+
+### Fixed
+* Fixed an error with invalid attrinfo parameter in entry searchAPI.
+  Contributed by @hinashi
+
+## v3.128.0
+
+### Added
+* Support range filter on advanced search.
+  Contributed by @syucream
+
+### Fixed
+* Fixed handle encoding errors in download response with errors=replace.
+  Contributed by @syucream
+* Fix copy error caused by empty lines in entry names.
+  Contributed by @tsunoda-takahiro
+
+## v3.127.0
+
+### Fixed
+* Fixed error with multiple entities in search_chain.
+  Contributed by @hinashi
+
+## v3.126.0
+
+### Added
+* Introduce datetime picker.
+  Contributed by @syucream
+
+### Fixed
+* Fixed failing refresh after filtering in advanced search.
+  Contributed by @hinashi
+
+## v3.125.0
+
+### Added
+* Added new feature "Item name pattern" that user can restrict Item(Entry) name in
+  accordance with its pattern(s), which are configured at Model.
+  Contributed by @hinashi, @userlocalhost
+* Enhance EntityEntryAPI to prefetch aliases for improved performance.
+  Contributed by @syucream
+
+## v3.124.0
+
+### Added
+* Added processing to be able to delete rest of Items as well as that are not checked
+  in the AdvancedPageResult page.
+  Contributed by @hinashi, @userlocalhost
+* Add tooltips to improve UI usability.
+  Contributed by @syucream
+
+## v3.123.0
+
+### Fixed
+* Fixed simple search results page
+  Contributed by @hinashi
+
 ## v3.122.0
 
 ### Changed

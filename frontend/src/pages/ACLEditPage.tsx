@@ -52,7 +52,7 @@ export const ACLEditPage: FC = () => {
 
   usePrompt(
     isDirty && !isSubmitSuccessful,
-    "編集した内容は失われてしまいますが、このページを離れてもよろしいですか？"
+    "編集した内容は失われてしまいますが、このページを離れてもよろしいですか？",
   );
 
   const acl = useAsyncWithThrow(async () => {
@@ -89,7 +89,7 @@ export const ACLEditPage: FC = () => {
       err.generalError &&
         enqueueSnackbar(err.generalError.message, { variant: "error" });
     },
-    [objectId]
+    [objectId],
   );
 
   const handleSubmitOnValid = useCallback(
@@ -105,12 +105,12 @@ export const ACLEditPage: FC = () => {
         aclForm.isPublic,
         aclSettings,
         aclForm.objtype,
-        aclForm.defaultPermission
+        aclForm.defaultPermission,
       );
 
       enqueueSnackbar("ACL設定の更新が成功しました", { variant: "success" });
     },
-    [objectId]
+    [objectId],
   );
 
   const handleCancel = async () => {
@@ -138,7 +138,7 @@ export const ACLEditPage: FC = () => {
             </Typography>
             <Typography color="textPrimary">{acl.value.name}</Typography>
             <Typography color="textPrimary">ACL設定</Typography>
-          </AironeBreadcrumbs>
+          </AironeBreadcrumbs>,
         );
         break;
       case ACLObjtypeEnum.Entity:
@@ -156,7 +156,7 @@ export const ACLEditPage: FC = () => {
                 entity={resp}
                 attr={acl.value?.name}
                 title="ACL設定"
-              />
+              />,
             );
           });
         }
@@ -188,7 +188,7 @@ export const ACLEditPage: FC = () => {
           isSubmitting={isSubmitting}
           handleSubmit={handleSubmit(
             handleSubmitOnValid,
-            handleSubmitOnInvalid
+            handleSubmitOnInvalid,
           )}
           handleCancel={handleCancel}
         />

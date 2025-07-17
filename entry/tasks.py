@@ -11,7 +11,7 @@ from rest_framework.exceptions import ValidationError
 from airone.celery import app
 from airone.lib import custom_view
 from airone.lib.acl import ACLType
-from airone.lib.elasticsearch import AdvancedSearchResultRecord, AttrHint
+from airone.lib.elasticsearch import AdvancedSearchResultRecord, AttrHint, EntryHint
 from airone.lib.event_notification import (
     notify_entry_create,
     notify_entry_delete,
@@ -21,6 +21,7 @@ from airone.lib.http import DRFRequest
 from airone.lib.job import (
     may_schedule_until_job_is_ready,
     may_schedule_until_job_is_ready_with_handlers,
+    register_job_task,
 )
 from airone.lib.log import Logger
 from airone.lib.types import AttrType
@@ -43,7 +44,7 @@ from entry.api_v2.serializers import (
 from entry.models import Attribute, Entry
 from entry.services import AdvancedSearchService
 from group.models import Group
-from job.models import Job, JobStatus
+from job.models import Job, JobOperation, JobStatus
 from role.models import Role
 from user.models import User
 
@@ -121,6 +122,14 @@ def _convert_data_value(attr: Attribute, info: dict):
                     return None
                 else:
                     return datetime.fromisoformat(recv_value)
+            case AttrType.NUMBER:
+                if recv_value is None or recv_value == "":
+                    return None
+                else:
+                    try:
+                        return float(recv_value)
+                    except (ValueError, TypeError):
+                        return None
             case _:
                 return recv_value
 
@@ -355,6 +364,7 @@ def _yaml_export_v2(
     return output
 
 
+@register_job_task(JobOperation.CREATE_ENTRY)
 @app.task(bind=True)
 @may_schedule_until_job_is_ready_with_handlers(
     on_cancelled=lambda job: Entry.objects.filter(id=job.target.id, is_active=True).first().delete()
@@ -426,6 +436,7 @@ def create_entry_attrs(self, job: Job) -> JobStatus | None:
     return JobStatus.DONE
 
 
+@register_job_task(JobOperation.EDIT_ENTRY)
 @app.task(bind=True)
 @may_schedule_until_job_is_ready
 def edit_entry_attrs(self, job: Job) -> JobStatus:
@@ -479,6 +490,7 @@ def edit_entry_attrs(self, job: Job) -> JobStatus:
     return JobStatus.DONE
 
 
+@register_job_task(JobOperation.DELETE_ENTRY)
 @app.task(bind=True)
 @may_schedule_until_job_is_ready
 def delete_entry(self, job: Job) -> JobStatus:
@@ -495,6 +507,7 @@ def delete_entry(self, job: Job) -> JobStatus:
     return JobStatus.DONE
 
 
+@register_job_task(JobOperation.RESTORE_ENTRY)
 @app.task(bind=True)
 @may_schedule_until_job_is_ready
 def restore_entry(self, job: Job):
@@ -519,6 +532,7 @@ def restore_entry(self, job: Job):
     return JobStatus.DONE
 
 
+@register_job_task(JobOperation.COPY_ENTRY)
 @app.task(bind=True)
 @may_schedule_until_job_is_ready
 def copy_entry(self, job: Job) -> tuple[JobStatus, str, None] | None:
@@ -544,6 +558,7 @@ def copy_entry(self, job: Job) -> tuple[JobStatus, str, None] | None:
     return JobStatus.DONE, "Copy completed [%5d/%5d]" % (total_count, total_count), None
 
 
+@register_job_task(JobOperation.DO_COPY_ENTRY)
 @app.task(bind=True)
 @may_schedule_until_job_is_ready
 def do_copy_entry(self, job: Job) -> tuple[JobStatus, str, None]:
@@ -580,6 +595,7 @@ def do_copy_entry(self, job: Job) -> tuple[JobStatus, str, None]:
     return JobStatus.DONE, "original entry: %s" % src_entry.name, dest_entry
 
 
+@register_job_task(JobOperation.IMPORT_ENTRY)
 @app.task(bind=True)
 @may_schedule_until_job_is_ready
 def import_entries(self, job: Job) -> tuple[JobStatus, str, None] | None:
@@ -591,6 +607,7 @@ def import_entries(self, job: Job) -> tuple[JobStatus, str, None] | None:
     return None
 
 
+@register_job_task(JobOperation.IMPORT_ENTRY_V2)
 @app.task(bind=True)
 @may_schedule_until_job_is_ready
 def import_entries_v2(self, job: Job) -> tuple[JobStatus, str, None] | None:
@@ -640,6 +657,7 @@ def import_entries_v2(self, job: Job) -> tuple[JobStatus, str, None] | None:
         return JobStatus.DONE, "Imported Entry count: %d" % total_count, None
 
 
+@register_job_task(JobOperation.EXPORT_ENTRY)
 @app.task(bind=True)
 @may_schedule_until_job_is_ready
 def export_entries(self, job: Job):
@@ -702,6 +720,7 @@ def export_entries(self, job: Job):
         job.set_cache(output.getvalue())
 
 
+@register_job_task(JobOperation.EXPORT_ENTRY_V2)
 @app.task(bind=True)
 @may_schedule_until_job_is_ready
 def export_entries_v2(self, job: Job):
@@ -768,6 +787,7 @@ def export_entries_v2(self, job: Job):
         job.set_cache(output.getvalue())
 
 
+@register_job_task(JobOperation.EXPORT_SEARCH_RESULT_V2)
 @app.task(bind=True)
 @may_schedule_until_job_is_ready
 def export_search_result_v2(self, job: Job):
@@ -778,7 +798,7 @@ def export_search_result_v2(self, job: Job):
 
     has_referral: bool = params.get("has_referral", False)
     referral_name: str | None = params.get("referral_name")
-    entry_name: str | None = params.get("entry_name")
+
     if has_referral and referral_name is None:
         referral_name = ""
 
@@ -790,13 +810,27 @@ def export_search_result_v2(self, job: Job):
     except ValidationError:
         return JobStatus.ERROR, "Invalid attrinfo"
 
+    hint_entry_raw = serializer.validated_data.get("hint_entry")
+    hint_entry: EntryHint | None = None
+    if hint_entry_raw and (
+        hint_entry_raw.get("filter_key") is not None or hint_entry_raw.get("keyword")
+    ):
+        hint_entry = EntryHint(
+            keyword=hint_entry_raw.get("keyword"),
+            filter_key=hint_entry_raw.get("filter_key"),
+        )
+
     resp = AdvancedSearchService.search_entries(
         user,
         params["entities"],
         hint_attrs,
         settings.ES_CONFIG["MAXIMUM_RESULTS_NUM"],
-        entry_name,
-        referral_name,
+        entry_name=None,
+        hint_referral=referral_name,
+        is_output_all=False,
+        hint_referral_entity_id=None,
+        offset=0,
+        hint_entry=hint_entry,
     )
 
     output: io.StringIO | None = None
@@ -811,6 +845,7 @@ def export_search_result_v2(self, job: Job):
         job.set_cache(output.getvalue())
 
 
+@register_job_task(JobOperation.REGISTER_REFERRALS)
 @app.task(bind=True)
 @may_schedule_until_job_is_ready
 def register_referrals(self, job: Job):
@@ -834,6 +869,7 @@ def _notify_event(
         return JobStatus.ERROR, str(e), None
 
 
+@register_job_task(JobOperation.UPDATE_DOCUMENT)
 @app.task(bind=True)
 @may_schedule_until_job_is_ready
 def update_es_documents(self, job: Job) -> JobStatus:
@@ -845,24 +881,28 @@ def update_es_documents(self, job: Job) -> JobStatus:
     return JobStatus.DONE
 
 
+@register_job_task(JobOperation.NOTIFY_CREATE_ENTRY)
 @app.task(bind=True)
 @may_schedule_until_job_is_ready
 def notify_create_entry(self, job: Job) -> tuple[JobStatus, str, None] | None:
     return _notify_event(notify_entry_create, job.target.id, job.user)
 
 
+@register_job_task(JobOperation.NOTIFY_UPDATE_ENTRY)
 @app.task(bind=True)
 @may_schedule_until_job_is_ready
 def notify_update_entry(self, job: Job) -> tuple[JobStatus, str, None] | None:
     return _notify_event(notify_entry_update, job.target.id, job.user)
 
 
+@register_job_task(JobOperation.NOTIFY_DELETE_ENTRY)
 @app.task(bind=True)
 @may_schedule_until_job_is_ready
 def notify_delete_entry(self, job: Job) -> tuple[JobStatus, str, None] | None:
     return _notify_event(notify_entry_delete, job.target.id, job.user)
 
 
+@register_job_task(JobOperation.CREATE_ENTRY_V2)
 @app.task(bind=True)
 @may_schedule_until_job_is_ready
 def create_entry_v2(self, job: Job) -> JobStatus:
@@ -875,6 +915,7 @@ def create_entry_v2(self, job: Job) -> JobStatus:
     return JobStatus.DONE
 
 
+@register_job_task(JobOperation.EDIT_ENTRY_V2)
 @app.task(bind=True)
 @may_schedule_until_job_is_ready
 def edit_entry_v2(self, job: Job) -> JobStatus:
@@ -893,6 +934,7 @@ def edit_entry_v2(self, job: Job) -> JobStatus:
     return JobStatus.DONE
 
 
+@register_job_task(JobOperation.DELETE_ENTRY_V2)
 @app.task(bind=True)
 @may_schedule_until_job_is_ready
 def delete_entry_v2(self, job: Job) -> JobStatus:

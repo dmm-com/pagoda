@@ -16,10 +16,12 @@ import { UserPasswordFormModal } from "components/user/UserPasswordFormModal";
 import { schema, Schema } from "components/user/userForm/UserFormSchema";
 import { useAsyncWithThrow } from "hooks/useAsyncWithThrow";
 import { useFormNotification } from "hooks/useFormNotification";
+import { usePageTitle } from "hooks/usePageTitle";
 import { usePrompt } from "hooks/usePrompt";
 import { useTypedParams } from "hooks/useTypedParams";
 import { aironeApiClient } from "repository/AironeApiClient";
-import { topPath, usersPath } from "routes/Routes";
+import { topPath, usersPath, loginPath } from "routes/Routes";
+import { TITLE_TEMPLATES } from "services";
 import {
   extractAPIException,
   isResponseError,
@@ -48,7 +50,7 @@ export const UserEditPage: FC = () => {
 
   usePrompt(
     isDirty && !isSubmitSuccessful,
-    "編集した内容は失われてしまいますが、このページを離れてもよろしいですか？"
+    "編集した内容は失われてしまいますが、このページを離れてもよろしいですか？",
   );
 
   const user = useAsyncWithThrow(async () => {
@@ -58,12 +60,23 @@ export const UserEditPage: FC = () => {
   }, [userId, shouldRefresh]);
 
   useEffect(() => {
-    !user.loading && reset(user.value);
+    if (!user.loading && user.value) {
+      reset({
+        username: user.value.username,
+        email: user.value.email,
+        isSuperuser: user.value.isSuperuser,
+        tokenLifetime: user.value.token?.lifetime ?? 0,
+      });
+    }
   }, [user.value]);
 
   useEffect(() => {
     isSubmitSuccessful && navigate(usersPath());
   }, [isSubmitSuccessful]);
+
+  usePageTitle(user.loading ? "読み込み中..." : TITLE_TEMPLATES.userEdit, {
+    prefix: user.value?.username ?? (willCreate ? "新規作成" : undefined),
+  });
 
   // These state variables and handlers are used for password reset feature
   const [openModal, setOpenModal] = useState(false);
@@ -96,14 +109,15 @@ export const UserEditPage: FC = () => {
           user.username,
           user.password ?? "",
           user.email,
-          user.isSuperuser
+          user.isSuperuser,
         );
       } else {
         await aironeApiClient.updateUser(
           userId ?? 0,
           user.username,
           user.email,
-          user.isSuperuser
+          user.isSuperuser,
+          user.tokenLifetime,
         );
       }
       enqueueSubmitResult(true);
@@ -115,7 +129,7 @@ export const UserEditPage: FC = () => {
           (name, message) => {
             setError(name, { type: "custom", message: message });
             enqueueSubmitResult(false);
-          }
+          },
         );
       } else {
         enqueueSubmitResult(false);
@@ -175,6 +189,17 @@ export const UserEditPage: FC = () => {
               userId={user.value?.id ?? 0}
               openModal={openModal}
               onClose={handleCloseModal}
+              onSubmitSuccess={() => {
+                enqueueSnackbar("パスワードを変更しました", {
+                  variant: "success",
+                });
+
+                if (user.value?.id === ServerContext.getInstance()?.user?.id) {
+                  navigate(loginPath(), { replace: true });
+                } else {
+                  navigate(usersPath(), { replace: true });
+                }
+              }}
             />
           </Box>
           <Box mx="4px">

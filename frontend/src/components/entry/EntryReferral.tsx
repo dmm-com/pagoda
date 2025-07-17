@@ -39,14 +39,14 @@ interface Props {
 }
 
 export const EntryReferral: FC<Props> = ({ entryId }) => {
-  const [page, changePage] = usePage();
+  const { page, changePage } = usePage();
   const [keywordQuery, setKeywordQuery] = useState("");
 
   const referredEntries = useAsyncWithThrow(async () => {
     return await aironeApiClient.getEntryReferral(
       entryId,
       page,
-      keywordQuery !== "" ? keywordQuery : undefined
+      keywordQuery !== "" ? keywordQuery : undefined,
     );
   }, [entryId, page, keywordQuery]);
 
@@ -56,7 +56,7 @@ export const EntryReferral: FC<Props> = ({ entryId }) => {
         referredEntries.value.results,
         referredEntries.value.count,
         Math.ceil(
-          (referredEntries.value.count ?? 0) / EntryReferralList.MAX_ROW_COUNT
+          (referredEntries.value.count ?? 0) / EntryReferralList.MAX_ROW_COUNT,
         ),
       ];
     }
@@ -75,7 +75,7 @@ export const EntryReferral: FC<Props> = ({ entryId }) => {
             if (e.key === "Enter") {
               changePage(1);
               setKeywordQuery(
-                normalizeToMatch((e.target as HTMLInputElement).value ?? "")
+                normalizeToMatch((e.target as HTMLInputElement).value ?? ""),
               );
             }
           }}

@@ -1,8 +1,5 @@
 import { Box, Button, Container, Typography } from "@mui/material";
 import React, { FC, useCallback, useState } from "react";
-import { useLocation, useNavigate } from "react-router";
-
-import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
 
 import { AironeLink } from "components";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
@@ -10,39 +7,28 @@ import { Loading } from "components/common/Loading";
 import { PageHeader } from "components/common/PageHeader";
 import { EntityImportModal } from "components/entity/EntityImportModal";
 import { EntityList } from "components/entity/EntityList";
+import { useAsyncWithThrow } from "hooks/useAsyncWithThrow";
 import { usePage } from "hooks/usePage";
+import { usePageTitle } from "hooks/usePageTitle";
 import { aironeApiClient } from "repository/AironeApiClient";
 import { topPath } from "routes/Routes";
+import { TITLE_TEMPLATES } from "services";
 
 export const EntityListPage: FC = () => {
-  const location = useLocation();
-  const navigate = useNavigate();
-
-  const [page, changePage] = usePage();
+  const { page, query, changePage, changeQuery } = usePage();
 
   const [openImportModal, setOpenImportModal] = useState(false);
-
-  const params = new URLSearchParams(location.search);
-  const [query, setQuery] = useState<string>(params.get("query") ?? "");
   const [toggle, setToggle] = useState(false);
 
   const entities = useAsyncWithThrow(async () => {
     return await aironeApiClient.getEntities(page, query);
   }, [page, query, toggle]);
 
-  const handleChangeQuery = (newQuery?: string) => {
-    changePage(1);
-    setQuery(newQuery ?? "");
-
-    navigate({
-      pathname: location.pathname,
-      search: newQuery ? `?query=${newQuery}` : "",
-    });
-  };
-
   const handleExport = useCallback(async () => {
     await aironeApiClient.exportEntities("entity.yaml");
   }, []);
+
+  usePageTitle(TITLE_TEMPLATES.entityList);
 
   return (
     <Box className="container-fluid">
@@ -87,7 +73,7 @@ export const EntityListPage: FC = () => {
             page={page}
             changePage={changePage}
             query={query}
-            handleChangeQuery={handleChangeQuery}
+            handleChangeQuery={changeQuery}
             setToggle={() => setToggle(!toggle)}
           />
         </Container>

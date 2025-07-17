@@ -1,5 +1,3 @@
-# Advanced Search
-
 Advanced Search is a powerful feature that allows you to search across multiple entities and their attributes with various search options and filters.
 
 ## Features

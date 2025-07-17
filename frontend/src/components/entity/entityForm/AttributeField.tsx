@@ -35,6 +35,25 @@ const StyledBox = styled(Box)(({ theme }) => ({
   gap: "8px",
 }));
 
+// Define the custom display order for attribute types
+const ATTRIBUTE_TYPE_ORDER = [
+  "string",
+  "array_string",
+  "object",
+  "array_object",
+  "named_object",
+  "array_named_object",
+  "group",
+  "array_group",
+  "role",
+  "array_role",
+  "text",
+  "boolean",
+  "number",
+  "date",
+  "datetime",
+];
+
 interface Props {
   control: Control<Schema>;
   setValue: UseFormSetValue<Schema>;
@@ -71,9 +90,9 @@ export const AttributeField: FC<Props> = ({
   const [openModal, setOpenModal] = useState(false);
 
   const attributeTypeMenuItems = useMemo(() => {
-    return Object.keys(AttributeTypes).map((typename, index) => (
-      <MenuItem key={index} value={AttributeTypes[typename].type}>
-        {AttributeTypes[typename].name}
+    return ATTRIBUTE_TYPE_ORDER.map((key) => (
+      <MenuItem key={key} value={AttributeTypes[key].type}>
+        {AttributeTypes[key].name}
       </MenuItem>
     ));
   }, []);
@@ -143,7 +162,7 @@ export const AttributeField: FC<Props> = ({
                   }
                   isOptionEqualToValue={(
                     option: { id: number; name: string },
-                    value: { id: number; name: string }
+                    value: { id: number; name: string },
                   ) => option.id === value.id}
                   renderInput={(params) => (
                     <TextField
@@ -166,6 +185,63 @@ export const AttributeField: FC<Props> = ({
             />
           )}
         </StyledBox>
+      </TableCell>
+
+      <TableCell>
+        <Controller
+          name={`attrs.${index}.defaultValue`}
+          control={control}
+          render={({ field }) => {
+            // Check if this attribute type supports default values
+            const isDefaultValueSupported =
+              attrType === AttributeTypes.string.type ||
+              attrType === AttributeTypes.text.type ||
+              attrType === AttributeTypes.boolean.type ||
+              attrType === AttributeTypes.number.type;
+
+            // Boolean type gets a checkbox
+            if (attrType === AttributeTypes.boolean.type) {
+              return (
+                <Checkbox
+                  checked={Boolean(field.value) ?? false}
+                  onChange={(e) => field.onChange(e.target.checked)}
+                  disabled={!isWritable}
+                />
+              );
+            }
+
+            // Number type gets a number input
+            if (attrType === AttributeTypes.number.type) {
+              return (
+                <TextField
+                  {...field}
+                  type="number"
+                  value={field.value ?? ""}
+                  placeholder="デフォルト値"
+                  size="small"
+                  fullWidth
+                  disabled={!isWritable}
+                />
+              );
+            }
+
+            // Text input for supported string types or disabled for unsupported types
+            return (
+              <TextField
+                {...field}
+                value={field.value ?? ""}
+                placeholder={
+                  isDefaultValueSupported
+                    ? "デフォルト値"
+                    : "この型では未サポート"
+                }
+                size="small"
+                fullWidth
+                disabled={!isWritable || !isDefaultValueSupported}
+              />
+            );
+          }}
+        />
       </TableCell>
 
       <TableCell>
@@ -227,7 +303,6 @@ export const AttributeField: FC<Props> = ({
         </IconButton>
       </TableCell>
 
-      {/* This is a button to add new Attribute */}
       <TableCell>
         <IconButton onClick={() => handleAppendAttribute(index ?? 0)}>
           <AddIcon />
@@ -262,7 +337,6 @@ export const AttributeField: FC<Props> = ({
       <TableCell />
       <TableCell />
       <TableCell />
-      {/* This is a button to add new Attribute */}
       <TableCell>
         <IconButton onClick={() => handleAppendAttribute(index ?? 0)}>
           <AddIcon />

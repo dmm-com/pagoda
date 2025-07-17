@@ -9,10 +9,8 @@ import {
   Typography,
 } from "@mui/material";
 import { useSnackbar } from "notistack";
-import React, { FC, useState } from "react";
+import React, { FC } from "react";
 import { useNavigate } from "react-router";
-
-import { UserPasswordFormModal } from "./UserPasswordFormModal";
 
 import { Confirmable } from "components/common/Confirmable";
 import { aironeApiClient } from "repository/AironeApiClient";
@@ -23,27 +21,21 @@ interface UserControlProps {
   user: UserList;
   anchorElem: HTMLButtonElement | null;
   handleClose: (userId: number) => void;
+  onClickEditPassword: (userId: number) => void;
   setToggle?: () => void;
+  isSelf?: boolean;
 }
 
 export const UserControlMenu: FC<UserControlProps> = ({
   user,
   anchorElem,
   handleClose,
+  onClickEditPassword,
   setToggle,
+  isSelf = false,
 }) => {
   const { enqueueSnackbar } = useSnackbar();
   const navigate = useNavigate();
-
-  const [openModal, setOpenModal] = useState(false);
-
-  const handleOpenModal = () => {
-    setOpenModal(true);
-  };
-
-  const handleCloseModal = () => {
-    setOpenModal(false);
-  };
 
   const handleDelete = async (user: UserList) => {
     try {
@@ -77,26 +69,28 @@ export const UserControlMenu: FC<UserControlProps> = ({
       }}
     >
       <Box sx={{ width: 150 }}>
-        <MenuItem onClick={handleOpenModal}>
+        <MenuItem
+          onClick={() => {
+            handleClose(user.id);
+            onClickEditPassword(user.id);
+          }}
+        >
           <Typography>パスワード編集</Typography>
         </MenuItem>
-        <Confirmable
-          componentGenerator={(handleOpen) => (
-            <MenuItem onClick={handleOpen} sx={{ justifyContent: "end" }}>
-              <ListItemText>削除</ListItemText>
-              <ListItemIcon>
-                <DeleteOutlineIcon />
-              </ListItemIcon>
-            </MenuItem>
-          )}
-          dialogTitle={`本当に削除しますか？(${user.username})`}
-          onClickYes={() => handleDelete(user)}
-        />
-        <UserPasswordFormModal
-          userId={user.id}
-          openModal={openModal}
-          onClose={handleCloseModal}
-        />
+        {!isSelf && (
+          <Confirmable
+            componentGenerator={(handleOpen) => (
+              <MenuItem onClick={handleOpen} sx={{ justifyContent: "end" }}>
+                <ListItemText>削除</ListItemText>
+                <ListItemIcon>
+                  <DeleteOutlineIcon />
+                </ListItemIcon>
+              </MenuItem>
+            )}
+            dialogTitle={`本当に削除しますか？(${user.username})`}
+            onClickYes={() => handleDelete(user)}
+          />
+        )}
       </Box>
     </Menu>
   );

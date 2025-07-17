@@ -1,21 +1,58 @@
 from datetime import datetime
+from typing import List, Optional
 
 import pytz
 from django.conf import settings
 from django.db.models import Q
-from pydantic import ValidationError
+from pydantic import BaseModel, Field, RootModel, ValidationError, field_validator
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from airone.exceptions import ElasticsearchException
 from airone.lib.acl import ACLType
-from airone.lib.elasticsearch import AttrHint
+from airone.lib.elasticsearch import (
+    AdvancedSearchResultRecord,
+    AdvancedSearchResults,
+    AttrHint,
+)
 from api_v1.entry.serializer import EntrySearchChainSerializer
 from entity.models import Entity
 from entry.models import Entry
 from entry.services import AdvancedSearchService
 from entry.settings import CONFIG as CONFIG_ENTRY
+
+
+class EntrySearchChainAPIResponse(BaseModel):
+    ret_count: int
+    ret_values: List[AdvancedSearchResultRecord]
+
+
+class EntrySearchAPIRequest(BaseModel):
+    entities: list[int | str]
+    entry_name: str = Field(default="", max_length=CONFIG_ENTRY.MAX_QUERY_SIZE)
+    referral: str | None = None
+    attrinfo: list = Field(default_factory=list)
+    is_output_all: bool = True
+    entry_limit: int = Field(default=CONFIG_ENTRY.MAX_LIST_ENTRIES, gt=0)
+
+    @field_validator("entities")
+    def validate_entities_not_empty(cls, v):
+        if not v or len(v) < 1:
+            raise ValueError("At least one entity is required")
+        return v
+
+    @field_validator("attrinfo")
+    def validate_attrinfo_keyword_length(cls, v):
+        for item in v:
+            if isinstance(item, dict) and "keyword" in item and item["keyword"]:
+                if len(item["keyword"]) > CONFIG_ENTRY.MAX_QUERY_SIZE:
+                    raise ValueError("Keyword length exceeds maximum allowed size")
+        return v
+
+
+class EntrySearchAPIResponse(BaseModel):
+    result: AdvancedSearchResults
 
 
 class EntrySearchChainAPI(APIView):
@@ -48,11 +85,16 @@ class EntrySearchChainAPI(APIView):
                     entry_name="|".join(["^%s$" % x["name"] for x in ret_data[i : i + 100]]),
                     is_output_all=True,
                 )
-                result["ret_values"].extend([x.dict() for x in entry_info.ret_values])
-            return Response(result, status=status.HTTP_200_OK)
+                result["ret_values"].extend([x.model_dump() for x in entry_info.ret_values])
+            return Response(
+                EntrySearchChainAPIResponse(**result).model_dump(), status=status.HTTP_200_OK
+            )
 
         else:
-            return Response({"ret_count": 0, "ret_values": []}, status=status.HTTP_200_OK)
+            return Response(
+                EntrySearchChainAPIResponse(ret_count=0, ret_values=[]).model_dump(),
+                status=status.HTTP_200_OK,
+            )
 
 
 class EntrySearchAPI(APIView):
@@ -62,21 +104,24 @@ class EntrySearchAPI(APIView):
                 "parameter must be in dictionary format", status=status.HTTP_400_BAD_REQUEST
             )
 
-        hint_entities = request.data.get("entities")
-        hint_entry_name = request.data.get("entry_name", "")
-        hint_referral = request.data.get("referral")
-        attrinfo = request.data.get("attrinfo", [])
-        is_output_all = request.data.get("is_output_all", True)
-        entry_limit = request.data.get("entry_limit", CONFIG_ENTRY.MAX_LIST_ENTRIES)
-
-        if (
-            not isinstance(hint_entities, list)
-            or not isinstance(hint_entry_name, str)
-            or not isinstance(attrinfo, list)
-            or not isinstance(is_output_all, bool)
-            or (hint_referral and not isinstance(hint_referral, str))
-            or not isinstance(entry_limit, int)
-        ):
+        try:
+            params = EntrySearchAPIRequest.model_validate(request.data)
+        except ValidationError as e:
+            errors = e.errors()
+            for error in errors:
+                if error.get("loc"):
+                    match error.get("loc")[0]:
+                        case "entities":
+                            return Response("The entities parameters are required", status=400)
+                        case "entry_name":
+                            return Response("Sending parameter is too large", status=400)
+                        case "attrinfo":
+                            return Response("Sending parameter is too large", status=400)
+                        case "entry_limit" if error.get("type") == "value_error.number.not_gt":
+                            return Response(
+                                "Entry limit must be greater than 0",
+                                status=status.HTTP_400_BAD_REQUEST,
+                            )
             return Response(
                 "The type of parameter is incorrect", status=status.HTTP_400_BAD_REQUEST
             )
@@ -89,30 +134,17 @@ class EntrySearchAPI(APIView):
                     filter_key=x.get("filter_key"),
                     exact_match=x.get("exact_match"),
                 )
-                for x in attrinfo
+                for x in params.attrinfo
             ]
-        except (TypeError, ValidationError):
+        except (TypeError, ValidationError, AttributeError):
             return Response(
                 "The type of parameter 'attrinfo' is incorrect",
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # forbid to input large size request
-        if len(hint_entry_name) > CONFIG_ENTRY.MAX_QUERY_SIZE:
-            return Response("Sending parameter is too large", status=400)
-
-        # check attribute params
-        for hint_attr in hint_attrs:
-            if hint_attr.keyword:
-                # forbid to input large size request
-                if len(hint_attr.keyword) > CONFIG_ENTRY.MAX_QUERY_SIZE:
-                    return Response("Sending parameter is too large", status=400)
-
         # check entities params
-        if not hint_entities:
-            return Response("The entities parameters are required", status=400)
         hint_entity_ids = []
-        for hint_entity in hint_entities:
+        for hint_entity in params.entities:
             entity = None
             if isinstance(hint_entity, int):
                 entity = Entity.objects.filter(id=hint_entity, is_active=True).first()
@@ -131,22 +163,40 @@ class EntrySearchAPI(APIView):
             request.user,
             hint_entity_ids,
             hint_attrs,
-            entry_limit,
-            hint_entry_name,
-            hint_referral,
-            is_output_all,
+            params.entry_limit,
+            params.entry_name,
+            params.referral,
+            params.is_output_all,
         )
 
-        return Response({"result": resp.dict()})
+        return Response(EntrySearchAPIResponse(result=resp).model_dump(), status=status.HTTP_200_OK)
+
+
+class EntryReferredResponse(BaseModel):
+    class Entity(BaseModel):
+        id: Optional[int] = None
+        name: Optional[str] = None
+
+    class ReferralEntry(BaseModel):
+        id: int
+        name: str
+        entity: Optional["EntryReferredResponse.Entity"] = None
+
+    class EntryReferred(BaseModel):
+        id: int
+        entity: "EntryReferredResponse.Entity"
+        referral: List["EntryReferredResponse.ReferralEntry"]
+
+    result: List[EntryReferred]
 
 
 class EntryReferredAPI(APIView):
     def get(self, request):
         # set each request parameters to description variables
-        param_entity = request.query_params.get("entity")
-        param_entry = request.query_params.get("entry")
-        param_target_entity = request.query_params.get("target_entity")
-        param_quiet = request.query_params.get("quiet")
+        param_entity: str | None = request.query_params.get("entity")
+        param_entry: str | None = request.query_params.get("entry")
+        param_target_entity: str | None = request.query_params.get("target_entity")
+        param_quiet: str | None = request.query_params.get("quiet")
 
         # validate input parameter
         if not param_entry:
@@ -162,26 +212,55 @@ class EntryReferredAPI(APIView):
 
         filter_entities = [param_target_entity] if param_target_entity else []
 
-        ret_data = []
-        for entry in Entry.objects.filter(query):
-            ret_data.append(
-                {
-                    "id": entry.id,
-                    "entity": {"id": entry.schema.id, "name": entry.schema.name},
-                    "referral": [
-                        {
-                            "id": x.id,
-                            "name": x.name,
-                            "entity": {}
-                            if param_quiet
-                            else {"id": x.schema.id, "name": x.schema.name},
-                        }
-                        for x in entry.get_referred_objects(filter_entities=filter_entities)
-                    ],
-                }
+        entries_data = [
+            EntryReferredResponse.EntryReferred(
+                id=entry.id,
+                entity=EntryReferredResponse.Entity(id=entry.schema.id, name=entry.schema.name),
+                referral=[
+                    EntryReferredResponse.ReferralEntry(
+                        id=referred_entry.id,
+                        name=referred_entry.name,
+                        entity=EntryReferredResponse.Entity()
+                        if param_quiet
+                        else EntryReferredResponse.Entity(
+                            id=referred_entry.schema.id, name=referred_entry.schema.name
+                        ),
+                    )
+                    for referred_entry in entry.get_referred_objects(
+                        filter_entities=filter_entities
+                    )
+                ],
             )
+            for entry in Entry.objects.filter(query)
+        ]
 
-        return Response({"result": ret_data})
+        return Response(EntryReferredResponse(result=entries_data).model_dump(exclude_none=True))
+
+
+class UpdateHistoryResponse(RootModel[List["UpdateHistoryResponse.ResponseItem"]]):
+    class Entity(BaseModel):
+        id: int
+        name: str
+
+    class Entry(BaseModel):
+        id: int
+        name: str
+
+    class AttributeHistory(BaseModel):
+        value: object
+        updated_at: datetime
+        updated_username: str
+        updated_userid: int
+
+    class Attribute(BaseModel):
+        id: int
+        name: str
+        history: List["UpdateHistoryResponse.AttributeHistory"]
+
+    class ResponseItem(BaseModel):
+        entity: "UpdateHistoryResponse.Entity"
+        entry: "UpdateHistoryResponse.Entry"
+        attribute: "UpdateHistoryResponse.Attribute"
 
 
 class UpdateHistory(APIView):
@@ -250,7 +329,7 @@ class UpdateHistory(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        results = []
+        results: List[UpdateHistoryResponse.ResponseItem] = []
         for entry in target_entries:
             attr = entry.attrs.filter(schema__name=p_attr, is_active=True).first()
             if not attr:
@@ -259,23 +338,35 @@ class UpdateHistory(APIView):
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
-            result = {
-                "entity": {"id": entry.schema.id, "name": entry.schema.name},
-                "entry": {"id": entry.id, "name": entry.name},
-                "attribute": {"id": attr.id, "name": attr.schema.name, "history": []},
-            }
+            history_items: List[UpdateHistoryResponse.AttributeHistory] = []
             for attrv in attr.values.filter(
                 created_time__gt=newer_than, created_time__lt=older_than
             ).order_by("-created_time")[: CONFIG_ENTRY.MAX_HISTORY_COUNT]:
-                result["attribute"]["history"].append(
-                    {
-                        "value": attrv.get_value(with_metainfo=True)["value"],
-                        "updated_at": attrv.created_time,
-                        "updated_username": attrv.created_user.username,
-                        "updated_userid": attrv.created_user.id,
-                    }
+                history_items.append(
+                    UpdateHistoryResponse.AttributeHistory(
+                        value=attrv.get_value(with_metainfo=True)["value"],
+                        updated_at=attrv.created_time,
+                        updated_username=attrv.created_user.username,
+                        updated_userid=attrv.created_user.id,
+                    )
                 )
 
-            results.append(result)
+            results.append(
+                UpdateHistoryResponse.ResponseItem(
+                    entity=UpdateHistoryResponse.Entity(
+                        id=entry.schema.id,
+                        name=entry.schema.name,
+                    ),
+                    entry=UpdateHistoryResponse.Entry(
+                        id=entry.id,
+                        name=entry.name,
+                    ),
+                    attribute=UpdateHistoryResponse.Attribute(
+                        id=attr.id,
+                        name=attr.schema.name,
+                        history=history_items,
+                    ),
+                )
+            )
 
-        return Response(results)
+        return Response(UpdateHistoryResponse(results).model_dump(mode="json"))

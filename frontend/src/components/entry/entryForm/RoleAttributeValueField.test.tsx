@@ -17,12 +17,21 @@ import {
 import React from "react";
 import { useForm } from "react-hook-form";
 
+import { aironeApiClient } from "../../../repository/AironeApiClient";
+
 import { schema, Schema } from "./EntryFormSchema";
 import { RoleAttributeValueField } from "./RoleAttributeValueField";
 
 import { TestWrapper } from "TestWrapper";
 
 import "@testing-library/jest-dom";
+
+// ✅ Mock the aironeApiClient module
+jest.mock("../../../repository/AironeApiClient", () => ({
+  aironeApiClient: {
+    getRoles: jest.fn(),
+  },
+}));
 
 describe("RoleAttributeValueField", () => {
   const defaultValues: Schema = {
@@ -88,6 +97,8 @@ describe("RoleAttributeValueField", () => {
   ];
 
   test("should provide role value editor", async () => {
+    (aironeApiClient.getRoles as jest.Mock).mockResolvedValue(roles);
+
     const {
       result: {
         current: { control, setValue, getValues },
@@ -97,18 +108,10 @@ describe("RoleAttributeValueField", () => {
         resolver: zodResolver(schema),
         mode: "onBlur",
         defaultValues,
-      })
+      }),
     );
 
-    /* eslint-disable */
-    jest
-      .spyOn(
-        require("../../../repository/AironeApiClient").aironeApiClient,
-        "getRoles"
-      )
-      .mockResolvedValue(Promise.resolve(roles));
-    /* eslint-enable */
-
+    // ✅ Render the field component
     await act(async () => {
       render(
         <RoleAttributeValueField
@@ -116,27 +119,30 @@ describe("RoleAttributeValueField", () => {
           control={control}
           setValue={setValue}
         />,
-        { wrapper: TestWrapper }
+        { wrapper: TestWrapper },
       );
     });
 
+    // ✅ Initial value should be "role1"
     expect(screen.getByRole("combobox")).toHaveValue("role1");
     expect(getValues("attrs.0.value.asRole")).toEqual({ id: 1, name: "role1" });
 
-    // Open the select options
+    // ✅ Open dropdown and select "role2"
     act(() => {
       screen.getByRole("button", { name: "Open" }).click();
     });
-    // Select "role2" element
     act(() => {
       within(screen.getByRole("presentation")).getByText("role2").click();
     });
 
+    // ✅ After selection, value should be updated to "role2"
     expect(screen.getByRole("combobox")).toHaveValue("role2");
     expect(getValues("attrs.0.value.asRole")).toEqual({ id: 2, name: "role2" });
   });
 
   test("should provide array-role value editor", async () => {
+    (aironeApiClient.getRoles as jest.Mock).mockResolvedValue(roles);
+
     const {
       result: {
         current: { control, setValue, getValues },
@@ -146,18 +152,10 @@ describe("RoleAttributeValueField", () => {
         resolver: zodResolver(schema),
         mode: "onBlur",
         defaultValues,
-      })
+      }),
     );
 
-    /* eslint-disable */
-    jest
-      .spyOn(
-        require("../../../repository/AironeApiClient").aironeApiClient,
-        "getRoles"
-      )
-      .mockResolvedValue(Promise.resolve(roles));
-    /* eslint-enable */
-
+    // ✅ Render the field component in multiple (array) mode
     await act(async () => {
       render(
         <RoleAttributeValueField
@@ -166,24 +164,25 @@ describe("RoleAttributeValueField", () => {
           setValue={setValue}
           multiple
         />,
-        { wrapper: TestWrapper }
+        { wrapper: TestWrapper },
       );
     });
 
+    // ✅ Initial selected role should be "role1"
     expect(screen.getByRole("button", { name: "role1" })).toBeInTheDocument();
     expect(getValues("attrs.1.value.asArrayRole")).toEqual([
       { id: 1, name: "role1" },
     ]);
 
-    // Open the select options
+    // ✅ Open dropdown and select "role2"
     act(() => {
       screen.getByRole("button", { name: "Open" }).click();
     });
-    // Select "role2" element
     act(() => {
       within(screen.getByRole("presentation")).getByText("role2").click();
     });
 
+    // ✅ Both "role1" and "role2" should now be selected
     expect(screen.getByRole("button", { name: "role1" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "role2" })).toBeInTheDocument();
 

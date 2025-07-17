@@ -28,7 +28,6 @@ exports[`should match snapshot 1`] = `
         >
           <button
             class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary css-1mkkyro-MuiButtonBase-root-MuiButton-root"
-            id=":r0:"
             tabindex="0"
             type="button"
           >
@@ -62,7 +61,6 @@ exports[`should match snapshot 1`] = `
       >
         <button
           class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary css-1mkkyro-MuiButtonBase-root-MuiButton-root"
-          id=":r0:"
           tabindex="0"
           type="button"
         >

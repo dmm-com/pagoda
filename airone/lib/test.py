@@ -35,6 +35,7 @@ class AironeTestCase(TestCase):
         {"name": "role", "type": AttrType.ROLE},
         {"name": "roles", "type": AttrType.ARRAY_ROLE},
         {"name": "datetime", "type": AttrType.DATETIME},
+        {"name": "num", "type": AttrType.NUMBER},
     ]
 
     TZ_INFO = timezone(settings.TIME_ZONE)
@@ -85,6 +86,7 @@ class AironeTestCase(TestCase):
         webhooks=[],
         is_public=True,
         default_permission=ACLType.Nothing.id,
+        item_name_pattern="",
     ):
         """
         This is a helper method to create Entity for test. This method has following parameters.
@@ -102,8 +104,13 @@ class AironeTestCase(TestCase):
           - ref : Entity that Entry can refer to
         """
         entity: Entity = Entity.objects.create(
-            name=name, created_user=user, is_public=is_public, default_permission=default_permission
+            name=name,
+            created_user=user,
+            is_public=is_public,
+            default_permission=default_permission,
+            item_name_pattern=item_name_pattern if item_name_pattern else "",
         )
+
         for index, attr_info in enumerate(attrs):
             entity_attr: EntityAttr = EntityAttr.objects.create(
                 **{

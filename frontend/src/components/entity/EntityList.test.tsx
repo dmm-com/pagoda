@@ -46,7 +46,7 @@ describe("EntityList", () => {
         changePage={changePage}
         handleChangeQuery={handleChangeQuery}
       />,
-      { wrapper: TestWrapper }
+      { wrapper: TestWrapper },
     );
 
     expect(screen.getByRole("link", { name: "entity1" })).toBeInTheDocument();
@@ -58,14 +58,14 @@ describe("EntityList", () => {
       fireEvent.change(screen.getByPlaceholderText("モデルを絞り込む"), {
         target: { value: "entity" },
       });
-      fireEvent.keyPress(screen.getByPlaceholderText("モデルを絞り込む"), {
+      fireEvent.keyDown(screen.getByPlaceholderText("モデルを絞り込む"), {
         key: "Enter",
-        code: 13,
+        code: "Enter",
         charCode: 13,
       });
     });
     expect(screen.getByPlaceholderText("モデルを絞り込む")).toHaveValue(
-      "entity"
+      "entity",
     );
     expect(handleChangeQuery).toBeCalled();
   });

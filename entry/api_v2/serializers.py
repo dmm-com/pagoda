@@ -1,3 +1,4 @@
+import re
 from datetime import date, datetime
 from typing import Any, Literal
 
@@ -18,7 +19,7 @@ from airone.lib.drf import (
     ObjectNotExistsError,
     RequiredParameterError,
 )
-from airone.lib.elasticsearch import FilterKey
+from airone.lib.elasticsearch import EntryFilterKey, FilterKey
 from airone.lib.log import Logger
 from airone.lib.types import AttrDefaultValue, AttrType
 from entity.api_v2.serializers import EntitySerializer
@@ -39,6 +40,8 @@ class ExportedEntryAttributeValueObject(BaseModel):
 
 ExportedEntryAttributePrimitiveValue = (
     str  # includes text, string, group, role
+    | int
+    | float
     | date
     | datetime
     | bool
@@ -129,6 +132,7 @@ class EntryAttributeValue(TypedDict, total=False):
     # date; use string instead
     as_role: EntryAttributeValueRole | None
     as_array_role: list[EntryAttributeValueRole]
+    as_number: float | None  # Added for AttrType.NUMBER
 
 
 class EntryAttributeType(TypedDict):
@@ -208,6 +212,7 @@ class EntryAttributeValueSerializer(serializers.Serializer):
     # date; use string instead
     as_role = EntryAttributeValueRoleSerializer(allow_null=True, required=False)
     as_array_role = serializers.ListField(child=EntryAttributeValueRoleSerializer(), required=False)
+    as_number = serializers.FloatField(allow_null=True, required=False)  # Added for AttrType.NUMBER
 
 
 class EntryAttributeTypeSerializer(serializers.Serializer):
@@ -275,9 +280,20 @@ class EntryBaseSerializer(serializers.ModelSerializer):
 
     def validate_name(self, name: str):
         if self.instance:
+            # case for creation
             schema = self.instance.schema
         else:
-            schema = self.get_initial()["schema"]
+            # case for creation
+            if isinstance(self.get_initial()["schema"], Entity):
+                schema = self.get_initial()["schema"]
+            elif isinstance(self.get_initial()["schema"], int):
+                schema = Entity.objects.filter(
+                    id=self.get_initial()["schema"], is_active=True
+                ).first()
+
+        if not schema:
+            # skip validation check when schema is None because this is name check processing
+            return name
 
         # Check there is another Item that has same name
         if name and Entry.objects.filter(name=name, schema=schema, is_active=True).exists():
@@ -286,6 +302,18 @@ class EntryBaseSerializer(serializers.ModelSerializer):
                 raise DuplicatedObjectExistsError("specified name(%s) already exists" % name)
         if "\t" in name:
             raise InvalidValueError("Names containing tab characters cannot be specified.")
+
+        # Check specified name is matched with Model.item_name_patten if it's configured
+        if schema.item_name_pattern is None:
+            # OK to be created or updated because there is no pattern to be regulated
+            pass
+        elif re.match(schema.item_name_pattern, name):
+            # OK to be created or updated
+            pass
+        else:
+            raise InvalidValueError(
+                'Specified name doesn\'t match configured pattern "%s"' % schema.item_name_pattern
+            )
 
         return name
 
@@ -417,9 +445,22 @@ class EntryCreateSerializer(EntryBaseSerializer):
 
             # make an initial AttributeValue object if the initial value is specified
             attr_data = [x for x in attrs_data if int(x["id"]) == entity_attr.id]
-            if not attr_data:
-                continue
-            attr.add_value(user, attr_data[0]["value"])
+            if attr_data:
+                # Use provided attribute value
+                attr.add_value(user, attr_data[0]["value"])
+            else:
+                # Check if entity attribute has a default value (only for supported types)
+                supported_types = [
+                    AttrType.STRING,
+                    AttrType.TEXT,
+                    AttrType.BOOLEAN,
+                    AttrType.NUMBER,
+                ]
+                if entity_attr.type in supported_types:
+                    default_value = entity_attr.get_default_value()
+                    if default_value is not None:
+                        # Apply default value from EntityAttr
+                        attr.add_value(user, default_value)
 
         if custom_view.is_custom("after_create_entry_v2", entity_name):
             custom_view.call_custom("after_create_entry_v2", entity_name, user, entry)
@@ -701,6 +742,12 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
                 case AttrType.BOOLEAN:
                     return {"as_boolean": attrv.boolean}
 
+                case AttrType.NUMBER:
+                    # attrv.get_value() should return a float or None for NUMBER type
+                    # based on previous model changes.
+                    val = attrv.get_value()
+                    return {"as_number": val}
+
                 case AttrType.DATE:
                     return {"as_string": attrv.date if attrv.date else ""}
 
@@ -773,6 +820,11 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
 
                 case AttrType.DATETIME:
                     return {"as_string": AttrDefaultValue[type]}
+
+                case AttrType.NUMBER:
+                    return {
+                        "as_number": AttrDefaultValue.get(type)
+                    }  # Use .get for safety, though type should exist
 
                 case _:
                     raise IncorrectTypeError(f"unexpected type: {type}")
@@ -1176,6 +1228,9 @@ class EntryHistoryAttributeValueSerializer(serializers.ModelSerializer):
             case AttrType.DATETIME:
                 return {"as_string": obj.datetime if obj.datetime else ""}
 
+            case AttrType.NUMBER:
+                return {"as_number": obj.get_value()}
+
             case _:
                 return {}
 
@@ -1258,9 +1313,36 @@ class AdvancedSearchJoinAttrInfoSerializer(serializers.Serializer):
     attrinfo = AdvancedSearchResultAttrInfoSerializer(many=True)
 
 
+class EntryHintSerializer(serializers.Serializer):
+    @extend_schema_field(
+        {
+            "type": "integer",
+            "enum": [k.value for k in EntryFilterKey],
+            "x-enum-varnames": [k.name for k in EntryFilterKey],
+        }
+    )
+    class EntryFilterKeyField(serializers.IntegerField):
+        pass
+
+    filter_key = EntryFilterKeyField(required=False)
+    keyword = serializers.CharField(
+        required=False, allow_blank=True, max_length=CONFIG_ENTRY.MAX_QUERY_SIZE
+    )
+    exact_match = serializers.BooleanField(required=False)
+
+    def validate_keyword(self, keyword: str) -> str:
+        if len(keyword) > CONFIG_ENTRY.MAX_QUERY_SIZE:
+            raise ValidationError("keyword is too long")
+        return keyword
+
+    def validate_filter_key(self, filter_key: int):
+        if filter_key not in [k.value for k in EntryFilterKey]:
+            raise ValidationError("filter key parameter is invalid value")
+        return filter_key
+
+
 class AdvancedSearchSerializer(serializers.Serializer):
     entities = serializers.ListField(child=serializers.IntegerField())
-    entry_name = serializers.CharField(allow_blank=True, default="")
     attrinfo = AdvancedSearchResultAttrInfoSerializer(many=True)
     join_attrs = AdvancedSearchJoinAttrInfoSerializer(many=True, required=False)
     has_referral = serializers.BooleanField(default=False)
@@ -1269,16 +1351,26 @@ class AdvancedSearchSerializer(serializers.Serializer):
     is_all_entities = serializers.BooleanField(default=False)
     entry_limit = serializers.IntegerField(default=CONFIG_ENTRY.MAX_LIST_ENTRIES)
     entry_offset = serializers.IntegerField(default=0)
-
-    def validate_entry_name(self, entry_name: str) -> str:
-        if len(entry_name) > CONFIG_ENTRY.MAX_QUERY_SIZE:
-            raise ValidationError("entry_name is too long")
-        return entry_name
+    hint_entry = EntryHintSerializer(required=False)
+    exclude_referrals = serializers.ListField(
+        child=serializers.IntegerField(), required=False, default=[]
+    )
+    include_referrals = serializers.ListField(
+        child=serializers.IntegerField(), required=False, default=[]
+    )
 
     def validate_attrs(self, attrs: list[dict[str, str]]) -> list[dict[str, str]]:
         if any([len(attr.get("keyword", "")) > CONFIG_ENTRY.MAX_QUERY_SIZE for attr in attrs]):
             raise ValidationError("keyword(s) in attrs are too large")
         return attrs
+
+    def validate_join_attrs(self, join_attrs: list[dict[str, str]]) -> list[dict[str, str]]:
+        # Check whether target is included in attrs
+        attr_names = [x["name"] for x in self.initial_data["attrinfo"]]
+        for join_attr in join_attrs:
+            if join_attr["name"] not in attr_names:
+                raise ValidationError("join_attr name is not included in attrs")
+        return join_attrs
 
 
 class AdvancedSearchResultValueAttrSerializer(serializers.Serializer):
@@ -1322,11 +1414,9 @@ class AdvancedSearchResultExportSerializer(serializers.Serializer):
     attrinfo = AdvancedSearchResultAttrInfoSerializer(many=True)
     has_referral = serializers.BooleanField(required=False)
     referral_name = serializers.CharField(required=False)
-    entry_name = serializers.CharField(
-        required=False, allow_blank=True, max_length=CONFIG_ENTRY.MAX_QUERY_SIZE
-    )
     is_all_entities = serializers.BooleanField(default=False)
     export_style = serializers.CharField()
+    hint_entry = EntryHintSerializer(required=False)
 
     def validate_entities(self, entities: list[int]) -> list[int]:
         if Entity.objects.filter(id__in=entities).count() != len(entities):

@@ -1,16 +1,25 @@
-import { Box, Button, Dialog, DialogActions, DialogTitle } from "@mui/material";
+import {
+  Box,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogTitle,
+  DialogContent,
+} from "@mui/material";
 import React, { ReactElement, FC, SyntheticEvent, useState } from "react";
 
 interface Props {
   componentGenerator: (handleOpen: () => void) => ReactElement;
   dialogTitle: string;
   onClickYes: (e: SyntheticEvent) => void;
+  content?: ReactElement;
 }
 
 export const Confirmable: FC<Props> = ({
   componentGenerator,
   dialogTitle,
   onClickYes,
+  content,
 }) => {
   const [open, setOpen] = useState(false);
 
@@ -37,6 +46,9 @@ export const Confirmable: FC<Props> = ({
         aria-describedby="alert-dialog-description"
       >
         <DialogTitle id="alert-dialog-title">{dialogTitle}</DialogTitle>
+        <DialogContent>
+          <>{content}</>
+        </DialogContent>
         <DialogActions>
           <Button onClick={handleConfirmed} color="primary" autoFocus>
             Yes

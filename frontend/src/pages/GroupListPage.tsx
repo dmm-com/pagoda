@@ -12,30 +12,37 @@ import { styled } from "@mui/material/styles";
 import React, { FC, useCallback, useMemo, useState } from "react";
 import { Link } from "react-router";
 
-import { SearchBox } from "../components/common/SearchBox";
 import { GroupControlMenu } from "../components/group/GroupControlMenu";
 import { GroupImportModal } from "../components/group/GroupImportModal";
 import { GroupTreeRoot } from "../components/group/GroupTreeRoot";
-import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
 
 import { AironeLink } from "components";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { Loading } from "components/common/Loading";
 import { PageHeader } from "components/common/PageHeader";
+import { SearchBox } from "components/common/SearchBox";
+import { useAsyncWithThrow } from "hooks/useAsyncWithThrow";
+import { usePageTitle } from "hooks/usePageTitle";
 import { aironeApiClient } from "repository/AironeApiClient";
 import { newGroupPath, topPath } from "routes/Routes";
+import { TITLE_TEMPLATES } from "services";
 import { ServerContext } from "services/ServerContext";
 
-const StyledBox = styled(Box)({
-  position: "absolute",
-  right: "16px",
-  top: "200px",
+const StyledContainer = styled(Container)({
+  paddingTop: "16px",
 });
 
-const StyledContainer = styled(Container)({
-  borderRight: "1px solid",
-  borderColor: "rgba(0, 0, 0, 0.12)",
-});
+const UserListPanel = styled(Box)(({ theme }) => ({
+  padding: theme.spacing(2),
+  [theme.breakpoints.up("md")]: {
+    width: "30%",
+    borderLeft: "1px solid rgba(0, 0, 0, 0.12)",
+  },
+  [theme.breakpoints.down("md")]: {
+    width: "100%",
+    marginTop: theme.spacing(2),
+  },
+}));
 
 export const GroupListPage: FC = () => {
   const [keyword, setKeyword] = useState("");
@@ -66,9 +73,11 @@ export const GroupListPage: FC = () => {
   }, [selectedGroupId]);
 
   const filteredUsersInGroup = useMemo(() => {
+    const keywordLower = keyword.toLowerCase();
     return (
-      usersInGroup.value?.filter((user) => user.username.includes(keyword)) ??
-      []
+      usersInGroup.value?.filter((user) =>
+        user.username.toLowerCase().includes(keywordLower),
+      ) ?? []
     );
   }, [usersInGroup, keyword]);
 
@@ -81,6 +90,8 @@ export const GroupListPage: FC = () => {
   }, []);
 
   const isSuperuser = ServerContext.getInstance()?.user?.isSuperuser ?? false;
+
+  usePageTitle(TITLE_TEMPLATES.groupList);
 
   return (
     <Box display="flex" flexDirection="column" flexGrow="1">
@@ -127,47 +138,58 @@ export const GroupListPage: FC = () => {
       {groupTrees.loading ? (
         <Loading />
       ) : (
-        <StyledContainer>
-          <Typography>
-            選択したいグループにチェックマークを入れてください。
-          </Typography>
-          <Divider sx={{ mt: "16px" }} />
-          <GroupTreeRoot
-            groupTrees={groupTrees.value ?? []}
-            selectedGroupId={selectedGroupId}
-            handleSelectGroupId={handleSelectGroupId}
-            setGroupAnchorEls={setGroupAnchorEls}
-          />
-          {groupAnchorEls != null && (
-            <GroupControlMenu
-              groupId={groupAnchorEls.groupId}
-              anchorElem={groupAnchorEls.el}
-              handleClose={() => setGroupAnchorEls(null)}
-              setToggle={() => setToggle(!toggle)}
+        <Box
+          display="flex"
+          flexDirection={{ xs: "column", md: "row" }}
+          flexGrow={1}
+          gap={2}
+          paddingBottom={4}
+        >
+          <Box flex={1}>
+            <StyledContainer>
+              <Typography>
+                選択したいグループにチェックマークを入れてください。
+              </Typography>
+              <Divider sx={{ mt: "16px" }} />
+              <GroupTreeRoot
+                groupTrees={groupTrees.value ?? []}
+                selectedGroupId={selectedGroupId}
+                handleSelectGroupId={handleSelectGroupId}
+                setGroupAnchorEls={setGroupAnchorEls}
+              />
+              {groupAnchorEls != null && (
+                <GroupControlMenu
+                  groupId={groupAnchorEls.groupId}
+                  anchorElem={groupAnchorEls.el}
+                  handleClose={() => setGroupAnchorEls(null)}
+                  setToggle={() => setToggle(!toggle)}
+                />
+              )}
+            </StyledContainer>
+          </Box>
+
+          <UserListPanel>
+            <Typography>
+              属するユーザ(計 {usersInGroup.value?.length ?? 0})
+            </Typography>
+            <SearchBox
+              placeholder="ユーザを絞り込む"
+              value={keyword}
+              onChange={(e) => {
+                setKeyword(e.target.value);
+              }}
             />
-          )}
-        </StyledContainer>
+            <List data-testid="GroupMember">
+              {filteredUsersInGroup.map((user, index) => (
+                <Box key={user.id}>
+                  {index !== 0 && <Divider />}
+                  <ListItem>{user.username}</ListItem>
+                </Box>
+              ))}
+            </List>
+          </UserListPanel>
+        </Box>
       )}
-      <StyledBox>
-        <Typography>
-          属するユーザ(計 {usersInGroup.value?.length ?? 0})
-        </Typography>
-        <SearchBox
-          placeholder="ユーザを絞り込む"
-          value={keyword}
-          onChange={(e) => {
-            setKeyword(e.target.value);
-          }}
-        />
-        <List data-testid="GroupMember">
-          {filteredUsersInGroup.map((user, index) => (
-            <Box key={user.id}>
-              {index !== 0 && <Divider />}
-              <ListItem>{user.username}</ListItem>
-            </Box>
-          ))}
-        </List>
-      </StyledBox>
     </Box>
   );
 };

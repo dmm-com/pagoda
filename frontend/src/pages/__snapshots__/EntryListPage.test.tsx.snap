@@ -211,7 +211,6 @@ exports[`EntryListPage should match snapshot 1`] = `
                 class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary css-sv12w-MuiButtonBase-root-MuiButton-root"
                 data-discover="true"
                 href="/ui/entities/1/entries/new"
-                id=":r2:"
                 tabindex="0"
               >
                 <svg
@@ -229,11 +228,11 @@ exports[`EntryListPage should match snapshot 1`] = `
               </a>
             </div>
             <div
-              class="MuiGrid-root MuiGrid-container MuiGrid-spacing-xs-2 css-11nsb57-MuiGrid-root"
+              class="MuiGrid2-root MuiGrid2-container MuiGrid2-direction-xs-row MuiGrid2-spacing-xs-2 css-ubb9a5-MuiGrid2-root"
               id="entry_list"
             >
               <div
-                class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-4 css-gj1fbr-MuiGrid-root"
+                class="MuiGrid2-root MuiGrid2-direction-xs-row MuiGrid2-grid-xs-4 css-17yh78r-MuiGrid2-root"
               >
                 <div
                   class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiCard-root css-1re93eb-MuiPaper-root-MuiCard-root"
@@ -271,10 +270,9 @@ exports[`EntryListPage should match snapshot 1`] = `
                       class="MuiCardHeader-action css-116l9hl-MuiCardHeader-action"
                     >
                       <button
-                        aria-label="名前をコピーしました"
+                        aria-label="名前をコピーする"
                         class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-53g0n7-MuiButtonBase-root-MuiIconButton-root"
                         data-mui-internal-clone-element="true"
-                        id=":r5:"
                         tabindex="0"
                         type="button"
                       >
@@ -291,8 +289,9 @@ exports[`EntryListPage should match snapshot 1`] = `
                         </svg>
                       </button>
                       <button
+                        aria-label="アイテムの操作"
                         class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-53g0n7-MuiButtonBase-root-MuiIconButton-root"
-                        id=":r6:"
+                        data-mui-internal-clone-element="true"
                         tabindex="0"
                         type="button"
                       >
@@ -313,7 +312,7 @@ exports[`EntryListPage should match snapshot 1`] = `
                 </div>
               </div>
               <div
-                class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-4 css-gj1fbr-MuiGrid-root"
+                class="MuiGrid2-root MuiGrid2-direction-xs-row MuiGrid2-grid-xs-4 css-17yh78r-MuiGrid2-root"
               >
                 <div
                   class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiCard-root css-1re93eb-MuiPaper-root-MuiCard-root"
@@ -351,10 +350,9 @@ exports[`EntryListPage should match snapshot 1`] = `
                       class="MuiCardHeader-action css-116l9hl-MuiCardHeader-action"
                     >
                       <button
-                        aria-label="名前をコピーしました"
+                        aria-label="名前をコピーする"
                         class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-53g0n7-MuiButtonBase-root-MuiIconButton-root"
                         data-mui-internal-clone-element="true"
-                        id=":r9:"
                         tabindex="0"
                         type="button"
                       >
@@ -371,8 +369,9 @@ exports[`EntryListPage should match snapshot 1`] = `
                         </svg>
                       </button>
                       <button
+                        aria-label="アイテムの操作"
                         class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-53g0n7-MuiButtonBase-root-MuiIconButton-root"
-                        id=":ra:"
+                        data-mui-internal-clone-element="true"
                         tabindex="0"
                         type="button"
                       >
@@ -393,7 +392,7 @@ exports[`EntryListPage should match snapshot 1`] = `
                 </div>
               </div>
               <div
-                class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-4 css-gj1fbr-MuiGrid-root"
+                class="MuiGrid2-root MuiGrid2-direction-xs-row MuiGrid2-grid-xs-4 css-17yh78r-MuiGrid2-root"
               >
                 <div
                   class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiCard-root css-1re93eb-MuiPaper-root-MuiCard-root"
@@ -431,10 +430,9 @@ exports[`EntryListPage should match snapshot 1`] = `
                       class="MuiCardHeader-action css-116l9hl-MuiCardHeader-action"
                     >
                       <button
-                        aria-label="名前をコピーしました"
+                        aria-label="名前をコピーする"
                         class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-53g0n7-MuiButtonBase-root-MuiIconButton-root"
                         data-mui-internal-clone-element="true"
-                        id=":rd:"
                         tabindex="0"
                         type="button"
                       >
@@ -451,8 +449,9 @@ exports[`EntryListPage should match snapshot 1`] = `
                         </svg>
                       </button>
                       <button
+                        aria-label="アイテムの操作"
                         class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-53g0n7-MuiButtonBase-root-MuiIconButton-root"
-                        id=":re:"
+                        data-mui-internal-clone-element="true"
                         tabindex="0"
                         type="button"
                       >
@@ -761,7 +760,6 @@ exports[`EntryListPage should match snapshot 1`] = `
               class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary css-sv12w-MuiButtonBase-root-MuiButton-root"
               data-discover="true"
               href="/ui/entities/1/entries/new"
-              id=":r2:"
               tabindex="0"
             >
               <svg
@@ -779,11 +777,11 @@ exports[`EntryListPage should match snapshot 1`] = `
             </a>
           </div>
           <div
-            class="MuiGrid-root MuiGrid-container MuiGrid-spacing-xs-2 css-11nsb57-MuiGrid-root"
+            class="MuiGrid2-root MuiGrid2-container MuiGrid2-direction-xs-row MuiGrid2-spacing-xs-2 css-ubb9a5-MuiGrid2-root"
             id="entry_list"
           >
             <div
-              class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-4 css-gj1fbr-MuiGrid-root"
+              class="MuiGrid2-root MuiGrid2-direction-xs-row MuiGrid2-grid-xs-4 css-17yh78r-MuiGrid2-root"
             >
               <div
                 class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiCard-root css-1re93eb-MuiPaper-root-MuiCard-root"
@@ -821,10 +819,9 @@ exports[`EntryListPage should match snapshot 1`] = `
                     class="MuiCardHeader-action css-116l9hl-MuiCardHeader-action"
                   >
                     <button
-                      aria-label="名前をコピーしました"
+                      aria-label="名前をコピーする"
                       class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-53g0n7-MuiButtonBase-root-MuiIconButton-root"
                       data-mui-internal-clone-element="true"
-                      id=":r5:"
                       tabindex="0"
                       type="button"
                     >
@@ -841,8 +838,9 @@ exports[`EntryListPage should match snapshot 1`] = `
                       </svg>
                     </button>
                     <button
+                      aria-label="アイテムの操作"
                       class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-53g0n7-MuiButtonBase-root-MuiIconButton-root"
-                      id=":r6:"
+                      data-mui-internal-clone-element="true"
                       tabindex="0"
                       type="button"
                     >
@@ -863,7 +861,7 @@ exports[`EntryListPage should match snapshot 1`] = `
               </div>
             </div>
             <div
-              class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-4 css-gj1fbr-MuiGrid-root"
+              class="MuiGrid2-root MuiGrid2-direction-xs-row MuiGrid2-grid-xs-4 css-17yh78r-MuiGrid2-root"
             >
               <div
                 class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiCard-root css-1re93eb-MuiPaper-root-MuiCard-root"
@@ -901,10 +899,9 @@ exports[`EntryListPage should match snapshot 1`] = `
                     class="MuiCardHeader-action css-116l9hl-MuiCardHeader-action"
                   >
                     <button
-                      aria-label="名前をコピーしました"
+                      aria-label="名前をコピーする"
                       class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-53g0n7-MuiButtonBase-root-MuiIconButton-root"
                       data-mui-internal-clone-element="true"
-                      id=":r9:"
                       tabindex="0"
                       type="button"
                     >
@@ -921,8 +918,9 @@ exports[`EntryListPage should match snapshot 1`] = `
                       </svg>
                     </button>
                     <button
+                      aria-label="アイテムの操作"
                       class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-53g0n7-MuiButtonBase-root-MuiIconButton-root"
-                      id=":ra:"
+                      data-mui-internal-clone-element="true"
                       tabindex="0"
                       type="button"
                     >
@@ -943,7 +941,7 @@ exports[`EntryListPage should match snapshot 1`] = `
               </div>
             </div>
             <div
-              class="MuiGrid-root MuiGrid-item MuiGrid-grid-xs-4 css-gj1fbr-MuiGrid-root"
+              class="MuiGrid2-root MuiGrid2-direction-xs-row MuiGrid2-grid-xs-4 css-17yh78r-MuiGrid2-root"
             >
               <div
                 class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiCard-root css-1re93eb-MuiPaper-root-MuiCard-root"
@@ -981,10 +979,9 @@ exports[`EntryListPage should match snapshot 1`] = `
                     class="MuiCardHeader-action css-116l9hl-MuiCardHeader-action"
                   >
                     <button
-                      aria-label="名前をコピーしました"
+                      aria-label="名前をコピーする"
                       class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-53g0n7-MuiButtonBase-root-MuiIconButton-root"
                       data-mui-internal-clone-element="true"
-                      id=":rd:"
                       tabindex="0"
                       type="button"
                     >
@@ -1001,8 +998,9 @@ exports[`EntryListPage should match snapshot 1`] = `
                       </svg>
                     </button>
                     <button
+                      aria-label="アイテムの操作"
                       class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-53g0n7-MuiButtonBase-root-MuiIconButton-root"
-                      id=":re:"
+                      data-mui-internal-clone-element="true"
                       tabindex="0"
                       type="button"
                     >

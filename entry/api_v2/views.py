@@ -1,3 +1,4 @@
+import json
 import re
 from collections import Counter
 from copy import deepcopy
@@ -25,7 +26,13 @@ from airone.lib.drf import (
     RequiredParameterError,
     YAMLParser,
 )
-from airone.lib.elasticsearch import AdvancedSearchResultRecord, AdvancedSearchResults, AttrHint
+from airone.lib.elasticsearch import (
+    AdvancedSearchResultRecord,
+    AdvancedSearchResults,
+    AttrHint,
+    EntryHint,
+    FilterKey,
+)
 from airone.lib.types import AttrDefaultValue, AttrType
 from api_v1.entry.serializer import EntrySearchChainSerializer
 from entity.models import Entity, EntityAttr
@@ -255,8 +262,14 @@ class AdvancedSearchAPI(generics.GenericAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
+        hint_entry = serializer.validated_data.get("hint_entry")
+        if hint_entry and (hint_entry.get("filter_key") is not None or hint_entry.get("keyword")):
+            hint_entry = EntryHint(
+                keyword=hint_entry.get("keyword"),
+                filter_key=hint_entry.get("filter_key"),
+            )
+
         hint_entities = serializer.validated_data["entities"]
-        hint_entry_name = serializer.validated_data["entry_name"]
         hint_attrs = [
             AttrHint(
                 name=x["name"],
@@ -267,7 +280,7 @@ class AdvancedSearchAPI(generics.GenericAPIView):
             for x in serializer.validated_data["attrinfo"]
         ]
         hint_referral = serializer.validated_data.get("referral_name")
-        has_referral = serializer.validated_data["has_referral"]
+        has_referral = serializer.validated_data.get("has_referral")
         is_output_all = serializer.validated_data["is_output_all"]
         is_all_entities = serializer.validated_data["is_all_entities"]
         entry_limit = serializer.validated_data["entry_limit"]
@@ -275,6 +288,8 @@ class AdvancedSearchAPI(generics.GenericAPIView):
         join_attrs = AdvancedSearchJoinAttrInfoList.model_validate(
             serializer.validated_data.get("join_attrs", [])
         ).root
+        exclude_referrals = serializer.validated_data["exclude_referrals"]
+        include_referrals = serializer.validated_data["include_referrals"]
 
         def _get_joined_resp(
             prev_results: list[AdvancedSearchResultRecord], join_attr: AdvancedSearchJoinAttrInfo
@@ -329,6 +344,8 @@ class AdvancedSearchAPI(generics.GenericAPIView):
                     hint_entity_ids.extend([x.id for x in attr.referral.all()])
 
                     # set Item name
+                    if join_attr.name not in result.attrs:
+                        continue
                     attrinfo = result.attrs[join_attr.name]
 
                     if attr.type == AttrType.OBJECT and attrinfo["value"]["name"] not in item_names:
@@ -374,25 +391,28 @@ class AdvancedSearchAPI(generics.GenericAPIView):
                     is_output_all=is_output_all,
                     hint_referral_entity_id=None,
                     offset=join_attr.offset,
+                    exclude_referrals=exclude_referrals,
+                    include_referrals=include_referrals,
                 ),
             )
 
         # === End of Function: _get_joined_resp() ===
 
         def _get_ref_id_from_es_result(attrinfo) -> list[int | None]:
-            match attrinfo["type"]:
-                case AttrType.OBJECT if attrinfo.get("value") is not None:
-                    return [attrinfo["value"].get("id")]
+            if attrinfo and attrinfo.get("value") is not None:
+                match attrinfo["type"]:
+                    case AttrType.OBJECT:
+                        return [attrinfo["value"].get("id")]
 
-                case AttrType.NAMED_OBJECT if attrinfo.get("value") is not None:
-                    [ref_info] = attrinfo["value"].values()
-                    return [ref_info.get("id")]
+                    case AttrType.NAMED_OBJECT:
+                        [ref_info] = attrinfo["value"].values()
+                        return [ref_info.get("id")]
 
-                case AttrType.ARRAY_OBJECT:
-                    return [x.get("id") for x in attrinfo["value"]]
+                    case AttrType.ARRAY_OBJECT:
+                        return [x.get("id") for x in attrinfo["value"]]
 
-                case AttrType.ARRAY_NAMED_OBJECT:
-                    return sum([[y["id"] for y in x.values()] for x in attrinfo["value"]], [])
+                    case AttrType.ARRAY_NAMED_OBJECT:
+                        return sum([[y["id"] for y in x.values()] for x in attrinfo["value"]], [])
 
             return []
 
@@ -448,10 +468,11 @@ class AdvancedSearchAPI(generics.GenericAPIView):
                 hint_entity_ids,
                 hint_attrs,
                 entry_limit,
-                hint_entry_name,
+                None,  # don't use in APIv2
                 hint_referral,
                 is_output_all,
                 offset=entry_offset,
+                # TODO rethink to support hint_entry
             )
         else:
             resp = AdvancedSearchService.search_entries(
@@ -459,10 +480,14 @@ class AdvancedSearchAPI(generics.GenericAPIView):
                 hint_entity_ids,
                 hint_attrs,
                 entry_limit,
-                hint_entry_name,
+                None,  # don't use in APIv2
                 hint_referral,
                 is_output_all,
                 offset=entry_offset,
+                hint_entry=hint_entry,
+                allow_missing_attributes=True,  # For APIv2, allow entries missing attributes
+                exclude_referrals=exclude_referrals,
+                include_referrals=include_referrals,
             )
 
         # save total population number
@@ -553,6 +578,8 @@ class AdvancedSearchAPI(generics.GenericAPIView):
                             return "as_array_role"
                     elif type & AttrType.STRING or type & AttrType.TEXT:
                         return "as_string"
+                    elif type & AttrType.NUMBER:
+                        return "as_number"
                     elif type & AttrType._NAMED:
                         return "as_named_object"
                     elif type & AttrType.OBJECT:
@@ -865,6 +892,8 @@ class EntryAttributeValueRestoreAPI(generics.UpdateAPIView):
         OpenApiParameter(
             "ids", {"type": "array", "items": {"type": "number"}}, OpenApiParameter.QUERY
         ),
+        OpenApiParameter("isAll", OpenApiTypes.BOOL, OpenApiParameter.QUERY),
+        OpenApiParameter("attrinfo", OpenApiTypes.STR, OpenApiParameter.QUERY),
     ],
 )
 class EntryBulkDeleteAPI(generics.DestroyAPIView):
@@ -872,8 +901,26 @@ class EntryBulkDeleteAPI(generics.DestroyAPIView):
     # Specifying serializer_class is necessary for passing processing
     # of npm run generate
     serializer_class = EntryUpdateSerializer
+    internal_limit = 10000
+
+    def _validate_attrinfo(self):
+        attrinfo_raw = self.request.query_params.get("attrinfo", "[]")
+        try:
+            json_loaded_value = json.loads(attrinfo_raw)
+            for info in json_loaded_value:
+                if not any(x in info for x in ["name", "filterKey", "keyword"]):
+                    raise RequiredParameterError("(00)Invalid attrinfo was specified")
+                if not FilterKey.isin(int(info["filterKey"])):
+                    raise RequiredParameterError("(01)Invalid attrinfo was specified")
+        except Exception as e:
+            raise RequiredParameterError(e)
+
+        return json_loaded_value
 
     def delete(self, request: Request, *args, **kwargs) -> Response:
+        # validate "attrinfo" parameter and save it before deleting item processing
+        attrinfo = self._validate_attrinfo()
+
         ids: list[str] = self.request.query_params.getlist("ids", [])
         if len(ids) == 0 or not all([id.isdecimal() for id in ids]):
             raise RequiredParameterError("some ids are invalid")
@@ -886,9 +933,42 @@ class EntryBulkDeleteAPI(generics.DestroyAPIView):
         if not all([user.has_permission(e, ACLType.Writable) for e in entries]):
             raise PermissionDenied("deleting some entries is not allowed")
 
+        # Run jobs that delete user specified Items
+        target_model = entries.first().schema if entries.first() else None
         for entry in entries:
             job: Job = Job.new_delete_entry_v2(user, entry)
             job.run()
+
+        # Run jobs that delete rest of Items of same Model
+        isAll: bool = self.request.query_params.get("isAll", False)
+        if isinstance(isAll, str):
+            isAll = isAll.lower() == "true"
+
+        if isAll and target_model is not None:
+            results = AdvancedSearchService.search_entries(
+                request.user,
+                hint_entity_ids=list(set([e.schema.id for e in entries])),
+                hint_attrs=[
+                    AttrHint(
+                        **{
+                            "name": x["name"],
+                            "filter_key": FilterKey(int(x["filterKey"])),
+                            "keyword": x["keyword"],
+                        }
+                    )
+                    for x in attrinfo
+                ],
+                limit=self.internal_limit,
+            )
+
+            entries = Entry.objects.filter(
+                id__in=[x.entry["id"] for x in results.ret_values],
+                schema=target_model,
+                is_active=True,
+            ).exclude(id__in=ids)
+            for entry in entries:
+                another_job: Job = Job.new_delete_entry_v2(user, entry)
+                another_job.run()
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 

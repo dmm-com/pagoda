@@ -21,7 +21,7 @@ type SelectorOption = "select-all" | "remove-all";
 interface Props<
   T,
   DisableClearable extends boolean | undefined = undefined,
-  FreeSolo extends boolean | undefined = undefined
+  FreeSolo extends boolean | undefined = undefined,
 > extends AutocompleteProps<
     T | SelectorOption,
     true,
@@ -41,14 +41,14 @@ interface Props<
 export const AutocompleteWithAllSelector = <
   T,
   DisableClearable extends boolean | undefined = undefined,
-  FreeSolo extends boolean | undefined = undefined
+  FreeSolo extends boolean | undefined = undefined,
 >({
   selectAllLabel,
   ...autocompleteProps
 }: Props<T | SelectorOption, DisableClearable, FreeSolo>) => {
   if (!autocompleteProps.multiple) {
     throw new Error(
-      "AutocompleteWithAllSelector supports only multiple options"
+      "AutocompleteWithAllSelector supports only multiple options",
     );
   }
 
@@ -91,14 +91,14 @@ export const AutocompleteWithAllSelector = <
     value: Array<
       T | AutocompleteFreeSoloValueMapping<FreeSolo> | SelectorOption
     >,
-    reason: AutocompleteChangeReason
+    reason: AutocompleteChangeReason,
   ): void => {
     if (onChange == null) return;
 
     if (value.find((v) => v === "select-all") != null) {
       const newValueBase = value.filter((v) => v !== "select-all");
       const newElements = filterOptionResult.current.results.filter(
-        (v) => !newValueBase.includes(v)
+        (v) => !newValueBase.includes(v),
       );
       return onChange(event, newValueBase.concat(newElements), reason);
     } else if (value.find((v) => v === "remove-all") != null) {
@@ -110,7 +110,7 @@ export const AutocompleteWithAllSelector = <
 
   const optionRenderer = (
     props: HTMLAttributes<HTMLLIElement>,
-    option: T | SelectorOption
+    option: T | SelectorOption,
   ) => {
     switch (option) {
       case "select-all":
@@ -128,7 +128,7 @@ export const AutocompleteWithAllSelector = <
 
   const filterOptions = (
     options: Array<T | SelectorOption>,
-    params: FilterOptionsState<T | SelectorOption>
+    params: FilterOptionsState<T | SelectorOption>,
   ): (T | SelectorOption)[] => {
     const filtered = filter(options, params);
 

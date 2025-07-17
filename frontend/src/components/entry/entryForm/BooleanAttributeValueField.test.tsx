@@ -48,7 +48,7 @@ describe("BooleanAttributeValueField", () => {
         resolver: zodResolver(schema),
         mode: "onBlur",
         defaultValues,
-      })
+      }),
     );
 
     render(<BooleanAttributeValueField attrId={0} control={control} />, {

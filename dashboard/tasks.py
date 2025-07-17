@@ -9,10 +9,10 @@ from natsort import natsorted
 
 from airone.celery import app
 from airone.lib.elasticsearch import AdvancedSearchResultRecord, AttrHint
-from airone.lib.job import may_schedule_until_job_is_ready
+from airone.lib.job import may_schedule_until_job_is_ready, register_job_task
 from airone.lib.types import AttrType
 from entry.services import AdvancedSearchService
-from job.models import Job
+from job.models import Job, JobOperation
 
 
 def _csv_export(
@@ -67,6 +67,7 @@ def _csv_export(
                     | AttrType.BOOLEAN
                     | AttrType.DATE
                     | AttrType.DATETIME
+                    | AttrType.NUMBER
                 ):
                     line_data.append(str(vval))
 
@@ -164,6 +165,7 @@ def _yaml_export(
     return output
 
 
+@register_job_task(JobOperation.EXPORT_SEARCH_RESULT)
 @app.task(bind=True)
 @may_schedule_until_job_is_ready
 def export_search_result(self, job: Job):

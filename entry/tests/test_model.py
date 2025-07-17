@@ -1,3 +1,4 @@
+import math
 from datetime import date, datetime, timezone
 from unittest import skip
 
@@ -11,7 +12,7 @@ from airone.lib.elasticsearch import AdvancedSearchResultRecord, AttrHint
 from airone.lib.test import AironeTestCase
 from airone.lib.types import AttrType
 from entity.models import Entity, EntityAttr
-from entry.models import Attribute, AttributeValue, Entry
+from entry.models import Attribute, AttributeValue, Entry, ItemWalker
 from entry.services import AdvancedSearchService
 from entry.settings import CONFIG
 from group.models import Group
@@ -64,6 +65,7 @@ class ModelTest(AironeTestCase):
                 "set_val": datetime(2018, 12, 31, 12, 34, 56, tzinfo=timezone.utc),
                 "exp_val": datetime(2018, 12, 31, 12, 34, 56, tzinfo=timezone.utc),
             },
+            {"name": "num", "set_val": 123.45, "exp_val": 123.45},
         ]
         if ref:
             attrinfo.append({"name": "obj", "set_val": ref, "exp_val": ref.name})
@@ -107,6 +109,7 @@ class ModelTest(AironeTestCase):
             "date": AttrType.DATE,
             "role": AttrType.ROLE,
             "datetime": AttrType.DATETIME,
+            "num": AttrType.NUMBER,
             "arr_str": AttrType.ARRAY_STRING,
             "arr_obj": AttrType.ARRAY_OBJECT,
             "arr_name": AttrType.ARRAY_NAMED_OBJECT,
@@ -238,6 +241,12 @@ class ModelTest(AironeTestCase):
         # check not to create multiple same Attribute objects by add_attribute_from_base method
         entry.add_attribute_from_base(attrbase, user)
         self.assertTrue(entry.attrs.filter(id=attr.id).exists())
+        self.assertEqual(entry.attrs.count(), 1)
+
+        # check that deleted attributes are restored
+        attr.delete()
+        entry.add_attribute_from_base(attrbase, user)
+        self.assertTrue(entry.attrs.filter(id=attr.id, is_active=True).exists())
         self.assertEqual(entry.attrs.count(), 1)
 
     def test_status_update_methods_of_attribute_value(self):
@@ -3855,6 +3864,7 @@ class ModelTest(AironeTestCase):
                 "referral_id": [""],
                 "date_value": ["2018-12-31T12:34:56+00:00"],
             },
+            "num": {"key": [""], "value": [123.45], "referral_id": [""]},
         }
         # check all attributes are expected ones
         self.assertEqual(
@@ -3947,6 +3957,11 @@ class ModelTest(AironeTestCase):
                     "datetime": {
                         "is_readable": True,
                         "type": AttrType.DATETIME,
+                        "value": None,
+                    },
+                    "num": {
+                        "is_readable": True,
+                        "type": AttrType.NUMBER,
                         "value": None,
                     },
                 },
@@ -4150,6 +4165,43 @@ class ModelTest(AironeTestCase):
 
         self.assertEqual(entry.get_attrv("attr-changed").value, "value")
 
+    def test_get_attrv_item(self):
+        model_ref = self.create_entity(self._user, "Ref")
+        model_test = self.create_entity(
+            self._user,
+            "Test Entity",
+            attrs=[
+                {"name": "str", "type": AttrType.STRING},
+                {"name": "obj", "type": AttrType.OBJECT},
+                {"name": "name", "type": AttrType.NAMED_OBJECT},
+                {"name": "arr_str", "type": AttrType.ARRAY_STRING},
+                {"name": "arr_obj", "type": AttrType.ARRAY_OBJECT},
+                {"name": "arr_name", "type": AttrType.ARRAY_NAMED_OBJECT},
+            ],
+        )
+
+        item_refs = [self.add_entry(self._user, "ref%d" % x, model_ref) for x in range(2)]
+        item_test = self.add_entry(
+            self._user,
+            "test",
+            model_test,
+            values={
+                "str": "foo",
+                "obj": item_refs[0],
+                "name": {"name": "hoge", "id": item_refs[1].id},
+                "arr_obj": item_refs,
+                "arr_name": [{"name": "hoge", "id": x.id} for x in item_refs],
+            },
+        )
+
+        # check AttributeValue.get_attrv_item() returns expected results
+        self.assertEqual(item_test.get_attrv_item("str"), None)
+        self.assertEqual(item_test.get_attrv_item("obj"), item_refs[0])
+        self.assertIsInstance(item_test.get_attrv_item("obj"), Entry)
+        self.assertEqual(item_test.get_attrv_item("name"), item_refs[1])
+        self.assertEqual(item_test.get_attrv_item("arr_obj"), item_refs)
+        self.assertEqual(item_test.get_attrv_item("arr_name"), item_refs)
+
     def test_inherit_individual_attribute_permissions_when_it_is_complemented(self):
         [user1, user2] = [User.objects.create(username=x) for x in ["u1", "u2"]]
         groups = [Group.objects.create(name=x) for x in ["g1", "g2"]]
@@ -4314,6 +4366,7 @@ class ModelTest(AironeTestCase):
             "arr_group": [],
             "role": None,
             "arr_role": [],
+            "num": None,
             "datetime": None,
         }
         for attr in entry.attrs.all():
@@ -5019,3 +5072,338 @@ class ModelTest(AironeTestCase):
         Entry.objects.create(
             name=f"entry-{max_entries}", created_user=self._user, schema=self._entity
         )
+
+    def test_item_walker(self):
+        # initialize models and items that spans each ones.
+        model_vlan = self.create_entity(self._user, "VLAN")
+        model_nw = self.create_entity(
+            self._user,
+            "Network",
+            attrs=[
+                {"name": "vlan", "type": AttrType.OBJECT},
+                {"name": "cidr", "type": AttrType.ARRAY_OBJECT},
+                {"name": "netmask", "type": AttrType.STRING},
+                {"name": "label", "type": AttrType.ARRAY_STRING},
+                {"name": "deleted", "type": AttrType.BOOLEAN},
+            ],
+        )
+        model_ip_type = self.create_entity(self._user, "IPType")
+        model_ip = self.create_entity(
+            self._user,
+            "IPAddress",
+            attrs=[
+                {"name": "nw", "type": AttrType.OBJECT},
+                {"name": "type", "type": AttrType.OBJECT},
+            ],
+        )
+        model_srv = self.create_entity(
+            self._user,
+            "Server",
+            attrs=[
+                {"name": "I/F", "type": AttrType.NAMED_OBJECT},
+            ],
+        )
+
+        # create items that have following referral structure
+        # ( item2.obj -> item1.obj -> item0 )
+        # ( item2.arr -> [item0, item1] )
+        item_vlan1 = self.add_entry(self._user, "vlan0001", model_vlan)
+        item_nw1 = self.add_entry(
+            self._user,
+            "192.168.0.0/16",
+            model_nw,
+            values={
+                "vlan": item_vlan1,
+                "netmask": "16",
+                "cidr": [],
+                "label": [],
+                "deleted": False,
+            },
+        )
+        item_nw2 = self.add_entry(
+            self._user,
+            "192.168.0.0/24",
+            model_nw,
+            values={
+                "vlan": item_vlan1,
+                "netmask": "24",
+                "cidr": [item_nw1],
+                "label": ["child", "24"],
+                "deleted": True,
+            },
+        )
+        item_ip_type = self.add_entry(self._user, "Shared", model_ip_type)
+        item_ip1 = self.add_entry(
+            self._user,
+            "192.168.0.1",
+            model_ip,
+            values={
+                "nw": item_nw2,
+                "type": item_ip_type,
+            },
+        )
+        item_srv1 = self.add_entry(
+            self._user,
+            "srv1000",
+            model_srv,
+            values={
+                "I/F": {"name": "eth0", "id": item_ip1},
+            },
+        )
+
+        # create ItemWalker instance to step each items along with prepared roadmap
+        iw = ItemWalker(
+            [item_srv1.id],
+            {
+                "I/F": {
+                    "nw": {
+                        "vlan": {},
+                        "netmask": {},
+                        "cidr": {
+                            "vlan": {},
+                            "netmask": {},
+                        },
+                        "label": {},
+                        "deleted": {},
+                    },
+                    "type": {},
+                },
+            },
+        )
+        for piw in iw.list:
+            # This tests basic feature of its item() method
+            self.assertEqual(piw.item, item_srv1)
+            self.assertEqual(piw.value, "")
+
+            # This tests getting neighbor items
+            self.assertEqual(item_srv1.get_attrv_item("I/F"), item_ip1)
+            self.assertEqual(piw["I/F"].item, item_ip1)
+            self.assertEqual(piw["I/F"].value, "eth0")
+
+            # This gets neighbor item's attribute value
+            self.assertEqual(piw["I/F"]["nw"].item, item_nw2)
+            self.assertEqual(piw["I/F"]["nw"].value, "")
+            self.assertEqual(piw["I/F"]["type"].item, item_ip_type)
+            self.assertEqual(piw["I/F"]["nw"]["netmask"].item, None)
+            self.assertEqual(piw["I/F"]["nw"]["netmask"].value, "24")
+            self.assertEqual(piw["I/F"]["nw"]["deleted"].boolean, True)
+
+            # This tests stepping another next item
+            self.assertEqual(piw["I/F"]["nw"]["vlan"].item, item_vlan1)
+
+            # This tests stepping another branched next item and its attribute value
+            # for ARRAY typed attribute "cidr"
+            self.assertEqual([x.item for x in piw["I/F"]["nw"]["cidr"]], [item_nw1])
+            self.assertEqual([x["netmask"].value for x in piw["I/F"]["nw"]["cidr"]], ["16"])
+
+            # This tests stepping another branched next item and its attribute value
+            # for ARRAY typed attribute "label"
+            self.assertEqual([x.value for x in piw["I/F"]["nw"]["label"]], ["child", "24"])
+
+    def test_item_walker_abnormal_way(self):
+        model = self.create_entity(
+            self._user, "Model", attrs=self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY
+        )
+        item = self.add_entry(self._user, "item0", model)
+        iw = ItemWalker(
+            [item.id],
+            {"ref": {}},
+        )
+        for piw in iw.list:
+            # check to raise KeyError when unexpected key was specified
+            with self.assertRaises(
+                KeyError, msg="Invalid attribute name was specified (InvalidAttr)"
+            ):
+                piw["InvalidAttr"]
+                piw["ref"]["InvalidAttr"]
+
+            # check to raise IndexError when when it's handled as array
+            with self.assertRaises(IndexError):
+                piw[0]
+                [x for x in piw]
+
+    def test_item_walker_with_empty_values(self):
+        model = self.create_entity(
+            self._user, "Model", attrs=self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY
+        )
+        item0 = self.add_entry(self._user, "item0", model)
+        item1 = self.add_entry(self._user, "item1", model, values={"ref": item0})
+
+        iw = ItemWalker(
+            [item1.id],
+            {
+                "ref": {
+                    "val": {},
+                    "vals": {},
+                    "ref": {},
+                    "refs": {},
+                    "name": {},
+                    "names": {},
+                    "bool": {},
+                }
+            },
+        )
+        # This refers each empty referral values
+        for piw in iw.list:
+            # check to get actual attribute values
+            self.assertEqual(piw["ref"].item, item0)
+            self.assertEqual(piw["ref"].value, "")
+            self.assertEqual(piw["ref"]["val"].item, None)
+            self.assertEqual(piw["ref"]["val"].value, "")
+            self.assertEqual(piw["ref"]["ref"].item, None)
+            self.assertEqual(piw["ref"]["ref"].value, "")
+            self.assertEqual(piw["ref"]["name"].item, None)
+            self.assertEqual(piw["ref"]["name"].value, "")
+            self.assertEqual(piw["ref"]["bool"].boolean, False)
+            self.assertEqual(piw["ref"]["vals"], [])
+            self.assertEqual(piw["ref"]["refs"], [])
+            self.assertEqual(piw["ref"]["names"], [])
+
+    def test_for_number_attr_and_value(self):
+        # Test setup: Create an entity and a user
+        user = User(username="test_number_user")
+        user.set_password("password")
+        user.save()
+        entity_schema = Entity.objects.create(name="NumberTestEntity", created_user=user)
+
+        # Create a NUMBER attribute schema
+        number_attr_schema = EntityAttr.objects.create(
+            name="NumericAttribute",
+            parent_entity=entity_schema,
+            type=AttrType.NUMBER,
+            created_user=user,
+            is_mandatory=False,
+        )
+
+        # Create an Entry
+        entry_instance = Entry.objects.create(
+            name="TestEntryForNumber", schema=entity_schema, created_user=user
+        )
+
+        # Create the Attribute instance for the entry
+        attribute_instance = Attribute.objects.create(
+            name=number_attr_schema.name,  # Use the name from the schema
+            parent_entry=entry_instance,
+            schema=number_attr_schema,
+            created_user=user,
+        )
+
+        # Test cases: (input_value, expected_stored_value_str,
+        #              expected_retrieved_value_float_or_none, should_raise_validation_error,
+        #              is_mandatory_test_case)
+        test_cases = [
+            (100, "100.0", 100.0, False, False),
+            (-10.5, "-10.5", -10.5, False, False),
+            (0, "0.0", 0.0, False, False),
+            ("123.45", "123.45", 123.45, False, False),
+            ("-0.99", "-0.99", -0.99, False, False),
+            ("0", "0.0", 0.0, False, False),
+            (None, "", None, False, False),  # Store as empty string, retrieve as None
+            ("", "", None, False, False),  # Store as empty string, retrieve as None
+            (
+                "  ",
+                "",
+                None,
+                True,
+                False,
+            ),  # Invalid: whitespace only string (should be caught by _validate_value or add_value)
+            ("abc", "", None, True, False),  # Invalid: non-numeric string
+            ("1.2.3", "", None, True, False),  # Invalid: multiple decimal points
+            (float("nan"), "", None, True, False),  # Invalid: NaN
+            (float("inf"), "", None, True, False),  # Invalid: Infinity
+            (float("-inf"), "", None, True, False),  # Invalid: Negative Infinity
+            ("", "", None, True, True),  # Invalid: Mandatory but empty
+            (None, "", None, True, True),  # Invalid: Mandatory but None
+        ]
+
+        for val_in, _, val_out, raises_error, is_mandatory in test_cases:
+            with self.subTest(input_value=val_in, is_mandatory=is_mandatory):
+                attribute_instance.schema.is_mandatory = is_mandatory
+                attribute_instance.schema.save()
+
+                if raises_error:
+                    with self.assertRaises(
+                        (ValueError, TypeError, Exception),
+                        msg=f"Failed for input: {val_in} (mandatory={is_mandatory})",
+                    ):
+                        # Test _validate_value (indirectly via add_value) and add_value logic
+                        # Forcing a clean slate for add_value by deleting previous
+                        # AttributeValue if it exists
+                        AttributeValue.objects.filter(parent_attr=attribute_instance).delete()
+                        attr_v = attribute_instance.add_value(user=user, value=val_in)
+                        # If add_value did not raise an error but was expected to,
+                        # this check might be needed.
+                        # For example, if _validate_value passes but _set_attrv should fail
+                        # or result in an unusable state.
+                        # The current model changes aim to make _validate_value stricter
+                        # for NaN/Inf.
+                        # If '  ' passes _validate_value, add_value should still treat it
+                        # as invalid or empty.
+                        if val_in == "  ":
+                            # Specific case where _validate_value might be lenient
+                            # but add_value should be strict
+                            # If add_value created an AttributeValue for '  ',
+                            # check its effective value.
+                            # Assuming '  ' should be treated as empty or invalid,
+                            # leading to None or error.
+                            if attr_v and attr_v.get_value() is not None:
+                                raise ValueError(
+                                    f"Input '{val_in}' should have resulted in None or error, "
+                                    f"but got {attr_v.get_value()}"
+                                )
+                else:
+                    # Test add_value and get_value
+                    AttributeValue.objects.filter(parent_attr=attribute_instance).delete()
+                    attr_v = attribute_instance.add_value(user=user, value=val_in)
+                    self.assertIsNotNone(
+                        attr_v, f"add_value returned None for valid input: {val_in}"
+                    )
+
+                    # Check stored string value (value in DB is attr_v.value)
+                    # For None/empty, we store ""
+                    expected_stored_val = (
+                        "" if val_in is None or val_in == "" else str(float(val_in))
+                    )
+                    # For NaN/Inf, they should have raised an error.
+                    # If not, this check is a fallback.
+                    if isinstance(val_in, float) and (math.isnan(val_in) or math.isinf(val_in)):
+                        # This case should be caught by raises_error=True path
+                        pass
+                    else:
+                        self.assertEqual(
+                            attr_v.value,
+                            expected_stored_val,
+                            f"Stored value mismatch for input: {val_in}",
+                        )
+
+                    retrieved = attr_v.get_value()
+                    if val_out is None:
+                        self.assertIsNone(
+                            retrieved, f"Retrieved value mismatch for input: {val_in}"
+                        )
+                    else:
+                        self.assertAlmostEqual(
+                            retrieved,
+                            val_out,
+                            places=5,
+                            msg=f"Retrieved value mismatch for input: {val_in}",
+                        )
+
+        # Clean up
+        AttributeValue.objects.filter(parent_attr=attribute_instance).delete()
+        # attribute_instance can be deleted if it's always created by get. If not, this is fine.
+        # number_attr_schema, entry_instance, entity_schema, user are created
+        # for this test method only.
+        # Depending on test runner and base class, explicit deletion might not
+        # be needed if transactions roll back.
+        # However, explicit cleanup is safer.
+        # Attribute.objects.filter(schema=number_attr_schema).delete()
+        # Alternative to instance delete
+        number_attr_schema.delete()
+        # This should cascade delete Attribute via on_delete=models.CASCADE
+        # on Attribute.schema
+        entry_instance.delete()
+        # This should cascade delete AttributeValue via on_delete=models.CASCADE
+        # on AttributeValue.parent_attr -> Attribute.entry
+        entity_schema.delete()
+        user.delete()

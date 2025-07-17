@@ -1,6 +1,8 @@
 import collections
 import json
-from typing import Any, TypedDict
+import math
+import re
+from typing import Any, List, Optional, TypedDict
 
 import requests
 from django.conf import settings
@@ -19,6 +21,30 @@ from entity.admin import EntityAttrResource, EntityResource
 from entity.models import Entity, EntityAttr
 from user.models import History, User
 from webhook.models import Webhook
+
+
+# Enhanced TypedDict definitions
+class EntityAttrReferralData(TypedDict):
+    """Type definition for EntityAttr referral data"""
+
+    id: int
+    name: str
+
+
+class EntityDetailAttribute(TypedDict):
+    """Enhanced type definition for Entity detail attributes"""
+
+    id: int
+    index: int
+    name: str
+    type: int
+    is_mandatory: bool
+    is_delete_in_chain: bool
+    is_summarized: bool
+    is_writable: bool
+    referral: List[EntityAttrReferralData]
+    note: str
+    default_value: Any
 
 
 class WebhookHeadersSerializer(serializers.Serializer):
@@ -58,7 +84,7 @@ class WebhookCreateUpdateSerializer(serializers.ModelSerializer):
         read_only_fields = ["is_verified"]
         extra_kwargs = {"url": {"required": False}}
 
-    def validate_id(self, id: int | None):
+    def validate_id(self, id: Optional[int]) -> Optional[int]:
         entity: Entity = self.parent.parent.instance
         if id is not None and not entity.webhooks.filter(id=id).exists():
             raise ObjectNotExistsError("Invalid id(%s) object does not exist" % id)
@@ -92,19 +118,74 @@ class EntityAttrCreateSerializer(serializers.ModelSerializer):
             "is_delete_in_chain",
             "created_user",
             "note",
+            "default_value",
         ]
 
-    def validate_type(self, type: int | None):
-        if type not in AttrTypeValue.values():
+    def validate_type(self, type: Optional[int]) -> Optional[int]:
+        if type is not None and type not in AttrTypeValue.values():
             raise ObjectNotExistsError("attrs type(%s) does not exist" % type)
 
         return type
+
+    def _validate_default_value_for_type(self, attr_type: int, default_value):
+        """
+        Validates that the default_value is appropriate for the given attribute type.
+        Returns the validated (and potentially converted) default value.
+        """
+        if default_value is None:
+            return None
+
+        # String and Text types
+        if attr_type in [AttrType.STRING, AttrType.TEXT]:
+            if not isinstance(default_value, str):
+                raise ValidationError(
+                    f"Default value must be a string for this attribute type, "
+                    f"got {type(default_value).__name__}"
+                )
+            return default_value
+
+        # Boolean type
+        elif attr_type == AttrType.BOOLEAN:
+            if isinstance(default_value, bool):
+                return default_value
+            raise ValidationError(
+                f"Default value must be a boolean for BOOLEAN type, "
+                f"got {type(default_value).__name__}"
+            )
+
+        # Number type
+        elif attr_type == AttrType.NUMBER:
+            if isinstance(default_value, (int, float)) and not isinstance(default_value, bool):
+                if math.isnan(default_value) or math.isinf(default_value):
+                    raise ValidationError("Default value cannot be NaN or Infinity for NUMBER type")
+                return default_value
+            raise ValidationError(
+                f"Default value must be a number for NUMBER type, "
+                f"got {type(default_value).__name__}"
+            )
+
+        return default_value
 
     def validate(self, attr: dict):
         referral = attr.get("referral", [])
 
         if attr["type"] & AttrType.OBJECT and not len(referral):
             raise RequiredParameterError("When specified object type, referral field is required")
+
+        # Only String, Text, Boolean, Number types support default values (MVP)
+        attr_type = attr.get("type")
+        default_value = attr.get("default_value")
+
+        if default_value is not None and attr_type is not None:
+            supported_types = [AttrType.STRING, AttrType.TEXT, AttrType.BOOLEAN, AttrType.NUMBER]
+            if attr_type not in supported_types:
+                # Clear default_value for unsupported types
+                attr["default_value"] = None
+            else:
+                # Validate and potentially convert the default value
+                attr["default_value"] = self._validate_default_value_for_type(
+                    attr_type, default_value
+                )
 
         return attr
 
@@ -126,22 +207,80 @@ class EntityAttrUpdateSerializer(serializers.ModelSerializer):
             "is_delete_in_chain",
             "is_deleted",
             "note",
+            "default_value",
         ]
         extra_kwargs = {"name": {"required": False}, "type": {"required": False}}
 
-    def validate_id(self, id: int):
+    def validate_id(self, id: int) -> int:
+        # Handle case when serializer is used directly (e.g., in tests)
+        if (
+            self.parent is None
+            or not hasattr(self.parent, "parent")
+            or self.parent.parent is None
+            or not hasattr(self.parent.parent, "instance")
+        ):
+            # When used directly, try to get the entity from the EntityAttr
+            entity_attr: Optional[EntityAttr] = EntityAttr.objects.filter(
+                id=id, is_active=True
+            ).first()
+            if not entity_attr:
+                raise ObjectNotExistsError("Invalid id(%s) object does not exist" % id)
+            return id
+
+        # Normal case when used as nested serializer
         entity: Entity = self.parent.parent.instance
-        entity_attr: EntityAttr | None = entity.attrs.filter(id=id, is_active=True).first()
-        if not entity_attr:
+        nested_entity_attr: Optional[EntityAttr] = entity.attrs.filter(
+            id=id, is_active=True
+        ).first()
+        if not nested_entity_attr:
             raise ObjectNotExistsError("Invalid id(%s) object does not exist" % id)
 
         return id
 
-    def validate_type(self, type: int | None):
-        if type not in AttrTypeValue.values():
+    def validate_type(self, type: Optional[int]) -> Optional[int]:
+        if type is not None and type not in AttrTypeValue.values():
             raise ObjectNotExistsError("attrs type(%s) does not exist" % type)
 
         return type
+
+    def _validate_default_value_for_type(self, attr_type: int, default_value):
+        """
+        Validates that the default_value is appropriate for the given attribute type.
+        Returns the validated (and potentially converted) default value.
+        """
+        if default_value is None:
+            return None
+
+        # String and Text types
+        if attr_type in [AttrType.STRING, AttrType.TEXT]:
+            if not isinstance(default_value, str):
+                raise ValidationError(
+                    f"Default value must be a string for this attribute type, "
+                    f"got {type(default_value).__name__}"
+                )
+            return default_value
+
+        # Boolean type
+        elif attr_type == AttrType.BOOLEAN:
+            if isinstance(default_value, bool):
+                return default_value
+            raise ValidationError(
+                f"Default value must be a boolean for BOOLEAN type, "
+                f"got {type(default_value).__name__}"
+            )
+
+        # Number type
+        elif attr_type == AttrType.NUMBER:
+            if isinstance(default_value, (int, float)) and not isinstance(default_value, bool):
+                if math.isnan(default_value) or math.isinf(default_value):
+                    raise ValidationError("Default value cannot be NaN or Infinity for NUMBER type")
+                return default_value
+            raise ValidationError(
+                f"Default value must be a number for NUMBER type, "
+                f"got {type(default_value).__name__}"
+            )
+
+        return default_value
 
     def validate(self, attr: dict):
         # case update EntityAttr
@@ -167,12 +306,33 @@ class EntityAttrUpdateSerializer(serializers.ModelSerializer):
                     "When specified object type, referral field is required"
                 )
 
+        # Only String, Text, Boolean, Number types support default values (MVP)
+        attr_type = attr.get("type")
+        default_value = attr.get("default_value")
+
+        # For updates, check existing attribute type if type is not being changed
+        if "id" in attr and attr_type is None:
+            entity_attr = EntityAttr.objects.get(id=attr["id"])
+            attr_type = entity_attr.type
+
+        if default_value is not None and attr_type is not None:
+            supported_types = [AttrType.STRING, AttrType.TEXT, AttrType.BOOLEAN, AttrType.NUMBER]
+            if attr_type not in supported_types:
+                # Clear default_value for unsupported types
+                attr["default_value"] = None
+            else:
+                # Validate and potentially convert the default value
+                attr["default_value"] = self._validate_default_value_for_type(
+                    attr_type, default_value
+                )
+
         return attr
 
 
 class EntityCreateData(TypedDict, total=False):
     name: str
     note: str
+    item_name_pattern: str
     is_toplevel: bool
     attrs: list[EntityAttrCreateSerializer]
     webhooks: WebhookCreateUpdateSerializer
@@ -183,6 +343,7 @@ class EntityUpdateData(TypedDict, total=False):
     id: int
     name: str
     note: str
+    item_name_pattern: str
     is_toplevel: bool
     attrs: list[EntityAttrUpdateSerializer]
     webhooks: WebhookCreateUpdateSerializer
@@ -200,6 +361,58 @@ class EntitySerializer(serializers.ModelSerializer):
     class Meta:
         model = Entity
         fields = ["id", "name", "is_public"]
+
+    def validate_item_name_pattern(self, item_name_pattern: str):
+        try:
+            re.compile(item_name_pattern)
+        except Exception:
+            raise ValidationError("Invalid regex pattern")
+
+        return item_name_pattern
+
+    def _validate_and_convert_default_value(self, attr_type: int, default_value):
+        """
+        Helper method to validate and convert default_value based on attribute type.
+        This implements the same logic as EntityAttrCreateSerializer.
+        """
+        if default_value is None:
+            return None
+
+        # Only certain types support default values
+        supported_types = [AttrType.STRING, AttrType.TEXT, AttrType.BOOLEAN, AttrType.NUMBER]
+        if attr_type not in supported_types:
+            return None
+
+        # String and Text types
+        if attr_type in [AttrType.STRING, AttrType.TEXT]:
+            if not isinstance(default_value, str):
+                raise ValidationError(
+                    f"Default value must be a string for this attribute type, "
+                    f"got {type(default_value).__name__}"
+                )
+            return default_value
+
+        # Boolean type
+        elif attr_type == AttrType.BOOLEAN:
+            if isinstance(default_value, bool):
+                return default_value
+            raise ValidationError(
+                f"Default value must be a boolean for BOOLEAN type, "
+                f"got {type(default_value).__name__}"
+            )
+
+        # Number type
+        elif attr_type == AttrType.NUMBER:
+            if isinstance(default_value, (int, float)) and not isinstance(default_value, bool):
+                if math.isnan(default_value) or math.isinf(default_value):
+                    raise ValidationError("Default value cannot be NaN or Infinity for NUMBER type")
+                return default_value
+            raise ValidationError(
+                f"Default value must be a number for NUMBER type, "
+                f"got {type(default_value).__name__}"
+            )
+
+        return default_value
 
     def _update_or_create(
         self,
@@ -220,6 +433,21 @@ class EntitySerializer(serializers.ModelSerializer):
 
         # create EntityAttr instances in associated with specifying data
         for attr_data in attrs_data:
+            # Apply type-specific validation and conversion for default_value
+            attr_type = attr_data.get("type")
+            default_value = attr_data.get("default_value")
+
+            if default_value is not None and attr_type is not None:
+                # Apply the same validation logic as in the serializer
+                try:
+                    converted_value = self._validate_and_convert_default_value(
+                        attr_type, default_value
+                    )
+                    attr_data["default_value"] = converted_value
+                except Exception:
+                    # If conversion fails, keep the original value
+                    pass
+
             # This is necessary not to pass invalid parameter to DRF DB-register
             attr_referrals = attr_data.pop("referral", [])
 
@@ -311,7 +539,7 @@ class EntityCreateSerializer(EntitySerializer):
 
     class Meta:
         model = Entity
-        fields = ["id", "name", "note", "is_toplevel", "attrs", "webhooks"]
+        fields = ["id", "name", "note", "item_name_pattern", "is_toplevel", "attrs", "webhooks"]
         extra_kwargs = {"note": {"write_only": True}}
 
     def validate_name(self, name: str):
@@ -353,6 +581,7 @@ class EntityCreateSerializer(EntitySerializer):
         entity = Entity.objects.create(
             name=validated_data.get("name"),
             note=validated_data.get("note", ""),
+            item_name_pattern=validated_data.get("item_name_pattern", ""),
             created_user=validated_data.get("created_user"),
         )
 
@@ -384,7 +613,7 @@ class EntityUpdateSerializer(EntitySerializer):
 
     class Meta:
         model = Entity
-        fields = ["id", "name", "note", "is_toplevel", "attrs", "webhooks"]
+        fields = ["id", "name", "note", "item_name_pattern", "is_toplevel", "attrs", "webhooks"]
         extra_kwargs = {"name": {"required": False}, "note": {"write_only": True}}
 
     def validate_name(self, name: str):
@@ -449,6 +678,11 @@ class EntityUpdateSerializer(EntitySerializer):
         if "note" in validated_data and entity.note != validated_data.get("note"):
             entity.note = validated_data.get("note")
             updated_fields.append("note")
+        if "item_name_pattern" in validated_data and entity.item_name_pattern != validated_data.get(
+            "item_name_pattern"
+        ):
+            entity.item_name_pattern = validated_data.get("item_name_pattern")
+            updated_fields.append("item_name_pattern")
         if len(updated_fields) > 0:
             entity.save(update_fields=updated_fields)
         else:
@@ -480,7 +714,7 @@ class EntityListSerializer(EntitySerializer):
 
     class Meta:
         model = Entity
-        fields = ["id", "name", "note", "status", "is_toplevel"]
+        fields = ["id", "name", "note", "item_name_pattern", "status", "is_toplevel"]
 
     def get_is_toplevel(self, obj: Entity) -> bool:
         return (obj.status & Entity.STATUS_TOP_LEVEL) != 0
@@ -493,20 +727,11 @@ class EntityDetailAttributeSerializer(serializers.Serializer):
     type = serializers.IntegerField()
     is_mandatory = serializers.BooleanField()
     is_delete_in_chain = serializers.BooleanField()
+    is_summarized = serializers.BooleanField()
     is_writable = serializers.BooleanField()
     referral = serializers.ListField(child=serializers.DictField())
     note = serializers.CharField()
-
-    class EntityDetailAttribute(TypedDict):
-        id: int
-        index: int
-        name: str
-        type: int
-        is_mandatory: bool
-        is_delete_in_chain: bool
-        is_writable: bool
-        referral: list[dict[str, Any]]
-        note: str
+    default_value = serializers.JSONField(required=False, allow_null=True)
 
 
 class EntityDetailSerializer(EntityListSerializer):
@@ -520,6 +745,7 @@ class EntityDetailSerializer(EntityListSerializer):
             "id",
             "name",
             "note",
+            "item_name_pattern",
             "status",
             "is_toplevel",
             "attrs",
@@ -529,10 +755,10 @@ class EntityDetailSerializer(EntityListSerializer):
         ]
 
     @extend_schema_field(serializers.ListField(child=EntityDetailAttributeSerializer()))
-    def get_attrs(self, obj: Entity) -> list[EntityDetailAttributeSerializer.EntityDetailAttribute]:
+    def get_attrs(self, obj: Entity) -> List[EntityDetailAttribute]:
         user = User.objects.get(id=self.context["request"].user.id)
 
-        attrinfo: list[EntityDetailAttributeSerializer.EntityDetailAttribute] = [
+        attrinfo: List[EntityDetailAttribute] = [
             {
                 "id": x.id,
                 "index": x.index,
@@ -540,15 +766,19 @@ class EntityDetailSerializer(EntityListSerializer):
                 "type": x.type,
                 "is_mandatory": x.is_mandatory,
                 "is_delete_in_chain": x.is_delete_in_chain,
+                "is_summarized": x.is_summarized,
                 "is_writable": user.has_permission(x, ACLType.Writable),
                 "referral": [
-                    {
-                        "id": r.id,
-                        "name": r.name,
-                    }
+                    EntityAttrReferralData(
+                        {
+                            "id": r.id,
+                            "name": r.name,
+                        }
+                    )
                     for r in x.referral.all()
                 ],
                 "note": x.note,
+                "default_value": x.default_value,
             }
             for x in obj.attrs.filter(is_active=True).prefetch_related("referral").order_by("index")
         ]
@@ -650,7 +880,7 @@ class EntityImportExportSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Entity
-        fields = ["id", "name", "note", "status", "created_user"]
+        fields = ["id", "name", "note", "item_name_pattern", "status", "created_user"]
 
     def to_representation(self, instance: Entity):
         ret = super().to_representation(instance)

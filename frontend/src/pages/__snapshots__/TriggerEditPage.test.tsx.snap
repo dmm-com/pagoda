@@ -102,7 +102,6 @@ exports[`EditTriggerPage should match snapshot 1`] = `
                   <button
                     class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary Mui-disabled MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary css-8fe6cp-MuiButtonBase-root-MuiButton-root"
                     disabled=""
-                    id=":r0:"
                     tabindex="-1"
                     type="button"
                   >
@@ -110,7 +109,6 @@ exports[`EditTriggerPage should match snapshot 1`] = `
                   </button>
                   <button
                     class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInfo MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInfo css-152i8rg-MuiButtonBase-root-MuiButton-root"
-                    id=":r1:"
                     tabindex="0"
                     type="button"
                   >
@@ -164,7 +162,6 @@ exports[`EditTriggerPage should match snapshot 1`] = `
                     <button
                       aria-label="Clear"
                       class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium MuiAutocomplete-clearIndicator css-1x7n7v0-MuiButtonBase-root-MuiIconButton-root-MuiAutocomplete-clearIndicator"
-                      id=":r5:"
                       tabindex="-1"
                       title="Clear"
                       type="button"
@@ -184,7 +181,6 @@ exports[`EditTriggerPage should match snapshot 1`] = `
                     <button
                       aria-label="Open"
                       class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium MuiAutocomplete-popupIndicator css-2y136s-MuiButtonBase-root-MuiIconButton-root-MuiAutocomplete-popupIndicator"
-                      id=":r4:"
                       tabindex="-1"
                       title="Open"
                       type="button"
@@ -290,7 +286,6 @@ exports[`EditTriggerPage should match snapshot 1`] = `
                   >
                     <button
                       class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-53g0n7-MuiButtonBase-root-MuiIconButton-root"
-                      id=":r6:"
                       tabindex="0"
                       type="button"
                     >
@@ -380,7 +375,6 @@ exports[`EditTriggerPage should match snapshot 1`] = `
                   >
                     <button
                       class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-53g0n7-MuiButtonBase-root-MuiIconButton-root"
-                      id=":r7:"
                       tabindex="0"
                       type="button"
                     >
@@ -503,7 +497,6 @@ exports[`EditTriggerPage should match snapshot 1`] = `
                 <button
                   class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary Mui-disabled MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary css-8fe6cp-MuiButtonBase-root-MuiButton-root"
                   disabled=""
-                  id=":r0:"
                   tabindex="-1"
                   type="button"
                 >
@@ -511,7 +504,6 @@ exports[`EditTriggerPage should match snapshot 1`] = `
                 </button>
                 <button
                   class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInfo MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInfo css-152i8rg-MuiButtonBase-root-MuiButton-root"
-                  id=":r1:"
                   tabindex="0"
                   type="button"
                 >
@@ -565,7 +557,6 @@ exports[`EditTriggerPage should match snapshot 1`] = `
                   <button
                     aria-label="Clear"
                     class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium MuiAutocomplete-clearIndicator css-1x7n7v0-MuiButtonBase-root-MuiIconButton-root-MuiAutocomplete-clearIndicator"
-                    id=":r5:"
                     tabindex="-1"
                     title="Clear"
                     type="button"
@@ -585,7 +576,6 @@ exports[`EditTriggerPage should match snapshot 1`] = `
                   <button
                     aria-label="Open"
                     class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium MuiAutocomplete-popupIndicator css-2y136s-MuiButtonBase-root-MuiIconButton-root-MuiAutocomplete-popupIndicator"
-                    id=":r4:"
                     tabindex="-1"
                     title="Open"
                     type="button"
@@ -691,7 +681,6 @@ exports[`EditTriggerPage should match snapshot 1`] = `
                 >
                   <button
                     class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-53g0n7-MuiButtonBase-root-MuiIconButton-root"
-                    id=":r6:"
                     tabindex="0"
                     type="button"
                   >
@@ -781,7 +770,6 @@ exports[`EditTriggerPage should match snapshot 1`] = `
                 >
                   <button
                     class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-53g0n7-MuiButtonBase-root-MuiIconButton-root"
-                    id=":r7:"
                     tabindex="0"
                     type="button"
                   >

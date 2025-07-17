@@ -41,30 +41,31 @@ export const BaseAttributeTypes = {
   date: 1 << 5,
   role: 1 << 6,
   datetime: 1 << 7,
+  number: 1 << 8,
   array: 1 << 10,
   named: 1 << 11,
 };
 
 export const AttributeTypes: Record<string, { name: string; type: number }> = {
-  object: {
-    name: "object",
-    type: BaseAttributeTypes.object,
-  },
   string: {
     name: "string",
     type: BaseAttributeTypes.string,
   },
-  named_object: {
-    name: "named_object",
-    type: BaseAttributeTypes.object | BaseAttributeTypes.named,
+  array_string: {
+    name: "array_string",
+    type: BaseAttributeTypes.string | BaseAttributeTypes.array,
+  },
+  object: {
+    name: "object",
+    type: BaseAttributeTypes.object,
   },
   array_object: {
     name: "array_object",
     type: BaseAttributeTypes.object | BaseAttributeTypes.array,
   },
-  array_string: {
-    name: "array_string",
-    type: BaseAttributeTypes.string | BaseAttributeTypes.array,
+  named_object: {
+    name: "named_object",
+    type: BaseAttributeTypes.object | BaseAttributeTypes.named,
   },
   array_named_object: {
     name: "array_named_object",
@@ -73,9 +74,17 @@ export const AttributeTypes: Record<string, { name: string; type: number }> = {
       BaseAttributeTypes.named |
       BaseAttributeTypes.array,
   },
+  group: {
+    name: "group",
+    type: BaseAttributeTypes.group,
+  },
   array_group: {
     name: "array_group",
     type: BaseAttributeTypes.group | BaseAttributeTypes.array,
+  },
+  role: {
+    name: "role",
+    type: BaseAttributeTypes.role,
   },
   array_role: {
     name: "array_role",
@@ -89,21 +98,17 @@ export const AttributeTypes: Record<string, { name: string; type: number }> = {
     name: "boolean",
     type: BaseAttributeTypes.bool,
   },
-  group: {
-    name: "group",
-    type: BaseAttributeTypes.group,
-  },
   date: {
     name: "date",
     type: BaseAttributeTypes.date,
   },
-  role: {
-    name: "role",
-    type: BaseAttributeTypes.role,
-  },
   datetime: {
     name: "datetime",
     type: BaseAttributeTypes.datetime,
+  },
+  number: {
+    name: "number",
+    type: BaseAttributeTypes.number,
   },
 };
 
@@ -170,11 +175,25 @@ export const ACLType = {
   Writable: 4,
   Full: 8,
 } as const;
-export type ACLType = typeof ACLType[keyof typeof ACLType];
+export type ACLType = (typeof ACLType)[keyof typeof ACLType];
 
 export const ACLTypeLabels: Record<ACLType, string> = {
   [ACLType.Nothing]: "権限なし",
   [ACLType.Readable]: "閲覧",
   [ACLType.Writable]: "閲覧・編集",
   [ACLType.Full]: "閲覧・編集・削除",
+};
+
+export const TITLE_TEMPLATES = {
+  userList: "User List",
+  userEdit: "EditUser",
+  groupList: "Group List",
+  groupEdit: "EditGroup",
+  roleList: "Role List",
+  roleEdit: "EditRole",
+  entryList: "Item List",
+  entryDetail: "Item Detail",
+  entryEdit: "EditItem",
+  entityList: "Model List",
+  entityEdit: "EditModel",
 };

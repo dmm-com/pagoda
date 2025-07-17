@@ -62,7 +62,7 @@ export const LoginPage: FC = () => {
           pathname: location.pathname,
           search: "?" + params.toString(),
         },
-        { replace: true }
+        { replace: true },
       );
     }
 
@@ -87,7 +87,7 @@ export const LoginPage: FC = () => {
       if (agreeWithServiceContract === true) {
         data.append(
           "extra_param",
-          JSON.stringify({ AGREE_TERM_OF_SERVICE: true })
+          JSON.stringify({ AGREE_TERM_OF_SERVICE: true }),
         );
       } else {
         // abort login process when user does not agree with Pagoda's service contract
