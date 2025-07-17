@@ -56,6 +56,11 @@ class ModelTest(AironeTestCase):
                 "exp_val": ["foo", "bar", "baz"],
             },
             {
+                "name": "arr_num",
+                "set_val": [123.45, 67.89, 0.123, -45.67],
+                "exp_val": [123.45, 67.89, 0.123, -45.67],
+            },
+            {
                 "name": "date",
                 "set_val": date(2018, 12, 31),
                 "exp_val": date(2018, 12, 31),
@@ -111,6 +116,7 @@ class ModelTest(AironeTestCase):
             "datetime": AttrType.DATETIME,
             "num": AttrType.NUMBER,
             "arr_str": AttrType.ARRAY_STRING,
+            "arr_num": AttrType.ARRAY_NUMBER,
             "arr_obj": AttrType.ARRAY_OBJECT,
             "arr_name": AttrType.ARRAY_NAMED_OBJECT,
             "arr_group": AttrType.ARRAY_GROUP,
@@ -621,6 +627,56 @@ class ModelTest(AironeTestCase):
         for v in [[], [None], None]:
             self.assertFalse(attr.is_updated(v))
 
+    def test_for_number_attr_and_value(self):
+        # create test target Attribute and empty AttributeValue for it
+        attr = self.make_attr("attr_number", AttrType.NUMBER)
+        attr.add_value(self._user, None)
+
+        # The cases when value will be updated
+        for v in [123.45, 67.89, -45.67, 0, 1e10, 1e-10, "123.45", "67"]:
+            self.assertTrue(attr.is_updated(v))
+
+        # The cases when value won't be updated
+        for v in [None]:
+            self.assertFalse(attr.is_updated(v))
+
+        # Test with existing value
+        attr.add_value(self._user, 123.45)
+        self.assertFalse(attr.is_updated(123.45))
+        self.assertTrue(attr.is_updated(67.89))
+
+    def test_for_array_number_attr_and_value(self):
+        # create test target Attribute and empty AttributeValue for it
+        attr = self.make_attr("attr_array_number", AttrType.ARRAY_NUMBER)
+        attr.add_value(self._user, None)
+
+        # The cases when value will be updated
+        for v in [
+            [123.45, 67.89],
+            [1, 2, 3],
+            [-123.45, -67.89],
+            [0, -0],
+            [1e10, 1e-10],
+            [123.45, None, 67.89],
+            ["123.45", "67.89"],
+        ]:
+            self.assertTrue(attr.is_updated(v))
+
+        # The cases when value won't be updated
+        for v in [[], [None], None]:
+            self.assertFalse(attr.is_updated(v))
+
+        # Test with existing value
+        attr.add_value(self._user, [123.45, 67.89])
+        self.assertFalse(attr.is_updated([123.45, 67.89]))
+        self.assertTrue(attr.is_updated([123.45, 99.99]))
+
+        # Test with None values - None is treated as "no value" so filtered out
+        attr.add_value(self._user, [123.45, None, 67.89])
+        self.assertFalse(attr.is_updated([123.45, None, 67.89]))  # Same values should not update
+        self.assertFalse(attr.is_updated([67.89, 123.45]))  # Order doesn't matter, None filtered
+        self.assertTrue(attr.is_updated([123.45, 67.89, 999]))  # Adding value should update
+
     def test_get_attribute_value_during_updating(self):
         user = User.objects.create(username="hoge")
 
@@ -1076,6 +1132,39 @@ class ModelTest(AironeTestCase):
         for v1, v2 in zip(orig_attrv.data_array.all(), cloned_attrv.data_array.all()):
             self.assertNotEqual(v1, v2)
             self.assertEqual(v1.value, v2.value)
+
+    def test_clone_attribute_typed_array_number(self):
+        attr = self.make_attr(name="attr", attrtype=AttrType.ARRAY_NUMBER)
+        attr.add_value(self._user, [float(i) + 0.5 for i in range(10)])
+        copy_entry = Entry.objects.create(
+            schema=self._entity, name="copy_entry", created_user=self._user
+        )
+        cloned_attr = attr.clone(self._user, parent_entry=copy_entry)
+
+        self.assertIsNotNone(cloned_attr)
+        self.assertNotEqual(cloned_attr.id, attr.id)
+        self.assertEqual(cloned_attr.name, attr.name)
+        self.assertEqual(attr.parent_entry, self._entry)
+        self.assertEqual(cloned_attr.parent_entry, copy_entry)
+        self.assertEqual(cloned_attr.values.count(), attr.values.count())
+        self.assertNotEqual(cloned_attr.values.last(), attr.values.last())
+
+        # checks that AttributeValues that parent_attr has also be cloned
+        orig_attrv = attr.values.last()
+        cloned_attrv = cloned_attr.values.last()
+
+        self.assertEqual(orig_attrv.data_array.count(), cloned_attrv.data_array.count())
+        for v1, v2 in zip(orig_attrv.data_array.all(), cloned_attrv.data_array.all()):
+            self.assertNotEqual(v1, v2)
+            # For number values, we need to handle float comparison properly
+            orig_val = v1.get_value()
+            cloned_val = v2.get_value()
+            if orig_val is None and cloned_val is None:
+                pass  # Both None, which is correct
+            elif orig_val is None or cloned_val is None:
+                self.fail(f"One value is None but the other isn't: {orig_val} vs {cloned_val}")
+            else:
+                self.assertAlmostEqual(orig_val, cloned_val, places=10)
 
     def test_clone_entry(self):
         test_entity = Entity.objects.create(name="E0", created_user=self._user)
@@ -3865,6 +3954,11 @@ class ModelTest(AironeTestCase):
                 "date_value": ["2018-12-31T12:34:56+00:00"],
             },
             "num": {"key": [""], "value": [123.45], "referral_id": [""]},
+            "arr_num": {
+                "key": ["", "", "", ""],
+                "value": [123.45, 67.89, 0.123, -45.67],
+                "referral_id": ["", "", "", ""],
+            },
         }
         # check all attributes are expected ones
         self.assertEqual(
@@ -3963,6 +4057,11 @@ class ModelTest(AironeTestCase):
                         "is_readable": True,
                         "type": AttrType.NUMBER,
                         "value": None,
+                    },
+                    "arr_num": {
+                        "is_readable": True,
+                        "type": AttrType.ARRAY_NUMBER,
+                        "value": [],
                     },
                 },
             ),
@@ -4364,6 +4463,7 @@ class ModelTest(AironeTestCase):
             "arr_obj": [],
             "arr_name": dict().values(),
             "arr_group": [],
+            "arr_num": [],
             "role": None,
             "arr_role": [],
             "num": None,
@@ -5259,151 +5359,264 @@ class ModelTest(AironeTestCase):
             self.assertEqual(piw["ref"]["refs"], [])
             self.assertEqual(piw["ref"]["names"], [])
 
-    def test_for_number_attr_and_value(self):
-        # Test setup: Create an entity and a user
-        user = User(username="test_number_user")
-        user.set_password("password")
-        user.save()
-        entity_schema = Entity.objects.create(name="NumberTestEntity", created_user=user)
-
-        # Create a NUMBER attribute schema
-        number_attr_schema = EntityAttr.objects.create(
-            name="NumericAttribute",
+    def test_array_number_attribute_value_storage_and_retrieval(self):
+        """Test comprehensive array number attribute value storage and retrieval"""
+        user = User.objects.create(username="test_array_number_user")
+        entity_schema = Entity.objects.create(name="test_array_number_entity", created_user=user)
+        array_number_attr_schema = EntityAttr.objects.create(
+            name="test_array_number_attr",
+            type=AttrType.ARRAY_NUMBER,
+            created_user=user,
             parent_entity=entity_schema,
-            type=AttrType.NUMBER,
-            created_user=user,
-            is_mandatory=False,
         )
 
-        # Create an Entry
         entry_instance = Entry.objects.create(
-            name="TestEntryForNumber", schema=entity_schema, created_user=user
+            name="test_array_number_entry", schema=entity_schema, created_user=user
         )
-
-        # Create the Attribute instance for the entry
         attribute_instance = Attribute.objects.create(
-            name=number_attr_schema.name,  # Use the name from the schema
-            parent_entry=entry_instance,
-            schema=number_attr_schema,
+            name="test_array_number_attr",
+            schema=array_number_attr_schema,
             created_user=user,
+            parent_entry=entry_instance,
         )
 
-        # Test cases: (input_value, expected_stored_value_str,
-        #              expected_retrieved_value_float_or_none, should_raise_validation_error,
-        #              is_mandatory_test_case)
+        # Test various array number scenarios
         test_cases = [
-            (100, "100.0", 100.0, False, False),
-            (-10.5, "-10.5", -10.5, False, False),
-            (0, "0.0", 0.0, False, False),
-            ("123.45", "123.45", 123.45, False, False),
-            ("-0.99", "-0.99", -0.99, False, False),
-            ("0", "0.0", 0.0, False, False),
-            (None, "", None, False, False),  # Store as empty string, retrieve as None
-            ("", "", None, False, False),  # Store as empty string, retrieve as None
-            (
-                "  ",
-                "",
-                None,
-                True,
-                False,
-            ),  # Invalid: whitespace only string (should be caught by _validate_value or add_value)
-            ("abc", "", None, True, False),  # Invalid: non-numeric string
-            ("1.2.3", "", None, True, False),  # Invalid: multiple decimal points
-            (float("nan"), "", None, True, False),  # Invalid: NaN
-            (float("inf"), "", None, True, False),  # Invalid: Infinity
-            (float("-inf"), "", None, True, False),  # Invalid: Negative Infinity
-            ("", "", None, True, True),  # Invalid: Mandatory but empty
-            (None, "", None, True, True),  # Invalid: Mandatory but None
+            # (input_value, expected_output)
+            ([123.45, 67.89, 0.123], [123.45, 67.89, 0.123]),  # Basic numbers
+            ([1, 2, 3], [1.0, 2.0, 3.0]),  # Integers converted to floats
+            ([-123.45, -67.89], [-123.45, -67.89]),  # Negative numbers
+            ([0, -0], [0.0, 0.0]),  # Zero values
+            ([1e10, 1e-10], [1e10, 1e-10]),  # Scientific notation
+            ([123.45, None, 67.89], [123.45, None, 67.89]),  # With null values
+            ([], []),  # Empty array
+            ([None, None], [None, None]),  # All null values
         ]
 
-        for val_in, _, val_out, raises_error, is_mandatory in test_cases:
-            with self.subTest(input_value=val_in, is_mandatory=is_mandatory):
-                attribute_instance.schema.is_mandatory = is_mandatory
-                attribute_instance.schema.save()
+        for input_val, expected_output in test_cases:
+            with self.subTest(input_value=input_val):
+                # Clear any existing values
+                AttributeValue.objects.filter(parent_attr=attribute_instance).delete()
 
-                if raises_error:
-                    with self.assertRaises(
-                        (ValueError, TypeError, Exception),
-                        msg=f"Failed for input: {val_in} (mandatory={is_mandatory})",
-                    ):
-                        # Test _validate_value (indirectly via add_value) and add_value logic
-                        # Forcing a clean slate for add_value by deleting previous
-                        # AttributeValue if it exists
-                        AttributeValue.objects.filter(parent_attr=attribute_instance).delete()
-                        attr_v = attribute_instance.add_value(user=user, value=val_in)
-                        # If add_value did not raise an error but was expected to,
-                        # this check might be needed.
-                        # For example, if _validate_value passes but _set_attrv should fail
-                        # or result in an unusable state.
-                        # The current model changes aim to make _validate_value stricter
-                        # for NaN/Inf.
-                        # If '  ' passes _validate_value, add_value should still treat it
-                        # as invalid or empty.
-                        if val_in == "  ":
-                            # Specific case where _validate_value might be lenient
-                            # but add_value should be strict
-                            # If add_value created an AttributeValue for '  ',
-                            # check its effective value.
-                            # Assuming '  ' should be treated as empty or invalid,
-                            # leading to None or error.
-                            if attr_v and attr_v.get_value() is not None:
-                                raise ValueError(
-                                    f"Input '{val_in}' should have resulted in None or error, "
-                                    f"but got {attr_v.get_value()}"
+                # Add the array number value
+                attribute_instance.add_value(user, input_val)
+
+                # Get the parent AttributeValue (container for array)
+                parent_attr_v = AttributeValue.objects.filter(
+                    parent_attr=attribute_instance, status=AttributeValue.STATUS_DATA_ARRAY_PARENT
+                ).first()
+                self.assertIsNotNone(
+                    parent_attr_v, f"Parent AttributeValue not found for input: {input_val}"
+                )
+
+                # Retrieve the value and compare
+                retrieved = parent_attr_v.get_value()
+                self.assertEqual(
+                    retrieved, expected_output, f"Retrieved value mismatch for input: {input_val}"
+                )
+
+                # Test individual array items
+                child_values = parent_attr_v.data_array.all().order_by("id")
+                if input_val:  # Non-empty array
+                    self.assertEqual(
+                        len(child_values),
+                        len(input_val),
+                        f"Child value count mismatch for input: {input_val}",
+                    )
+
+                    for i, child_value in enumerate(child_values):
+                        self.assertEqual(child_value.data_type, AttrType.ARRAY_NUMBER)
+                        # For array number child values, access the stored value directly
+                        if input_val[i] is None:
+                            # Check if the stored value is empty or None
+                            self.assertTrue(
+                                not child_value.value or child_value.value.strip() == "",
+                                f"Child value should be None/empty at index {i}",
+                            )
+                        else:
+                            # Convert the stored string value back to float for comparison
+                            if child_value.value and child_value.value.strip():
+                                child_retrieved = float(child_value.value)
+                                self.assertAlmostEqual(
+                                    child_retrieved,
+                                    expected_output[i],
+                                    places=10,
+                                    msg=f"Child value mismatch at index {i} for input: {input_val}",
                                 )
-                else:
-                    # Test add_value and get_value
-                    AttributeValue.objects.filter(parent_attr=attribute_instance).delete()
-                    attr_v = attribute_instance.add_value(user=user, value=val_in)
-                    self.assertIsNotNone(
-                        attr_v, f"add_value returned None for valid input: {val_in}"
+                            else:
+                                self.fail(
+                                    f"Expected value {expected_output[i]} but got empty/None "
+                                    f"at index {i}"
+                                )
+                else:  # Empty array
+                    self.assertEqual(
+                        len(child_values), 0, "Empty array should have no child values"
                     )
-
-                    # Check stored string value (value in DB is attr_v.value)
-                    # For None/empty, we store ""
-                    expected_stored_val = (
-                        "" if val_in is None or val_in == "" else str(float(val_in))
-                    )
-                    # For NaN/Inf, they should have raised an error.
-                    # If not, this check is a fallback.
-                    if isinstance(val_in, float) and (math.isnan(val_in) or math.isinf(val_in)):
-                        # This case should be caught by raises_error=True path
-                        pass
-                    else:
-                        self.assertEqual(
-                            attr_v.value,
-                            expected_stored_val,
-                            f"Stored value mismatch for input: {val_in}",
-                        )
-
-                    retrieved = attr_v.get_value()
-                    if val_out is None:
-                        self.assertIsNone(
-                            retrieved, f"Retrieved value mismatch for input: {val_in}"
-                        )
-                    else:
-                        self.assertAlmostEqual(
-                            retrieved,
-                            val_out,
-                            places=5,
-                            msg=f"Retrieved value mismatch for input: {val_in}",
-                        )
 
         # Clean up
         AttributeValue.objects.filter(parent_attr=attribute_instance).delete()
-        # attribute_instance can be deleted if it's always created by get. If not, this is fine.
-        # number_attr_schema, entry_instance, entity_schema, user are created
-        # for this test method only.
-        # Depending on test runner and base class, explicit deletion might not
-        # be needed if transactions roll back.
-        # However, explicit cleanup is safer.
-        # Attribute.objects.filter(schema=number_attr_schema).delete()
-        # Alternative to instance delete
-        number_attr_schema.delete()
-        # This should cascade delete Attribute via on_delete=models.CASCADE
-        # on Attribute.schema
+        array_number_attr_schema.delete()
         entry_instance.delete()
-        # This should cascade delete AttributeValue via on_delete=models.CASCADE
-        # on AttributeValue.parent_attr -> Attribute.entry
+        entity_schema.delete()
+        user.delete()
+
+    def test_array_number_edge_cases_and_validation(self):
+        """Test array number edge cases and validation scenarios"""
+        user = User.objects.create(username="test_array_number_edge_user")
+        entity_schema = Entity.objects.create(
+            name="test_array_number_edge_entity", created_user=user
+        )
+        array_number_attr_schema = EntityAttr.objects.create(
+            name="test_array_number_edge_attr",
+            type=AttrType.ARRAY_NUMBER,
+            created_user=user,
+            parent_entity=entity_schema,
+        )
+
+        entry_instance = Entry.objects.create(
+            name="test_array_number_edge_entry", schema=entity_schema, created_user=user
+        )
+        attribute_instance = Attribute.objects.create(
+            name="test_array_number_edge_attr",
+            schema=array_number_attr_schema,
+            created_user=user,
+            parent_entry=entry_instance,
+        )
+
+        # Test edge case values
+        edge_cases = [
+            # Very large numbers
+            ([1e100, -1e100], [1e100, -1e100]),
+            # Very small numbers
+            ([1e-100, -1e-100], [1e-100, -1e-100]),
+            # Mathematical constants
+            ([math.pi, math.e], [math.pi, math.e]),
+            # Mixed precision
+            ([1.123456789012345, 2.987654321098765], [1.123456789012345, 2.987654321098765]),
+        ]
+
+        for input_val, expected_output in edge_cases:
+            with self.subTest(input_value=input_val):
+                # Clear any existing values
+                AttributeValue.objects.filter(parent_attr=attribute_instance).delete()
+
+                # Add the array number value
+                attribute_instance.add_value(user, input_val)
+
+                # Get the parent AttributeValue
+                parent_attr_v = AttributeValue.objects.filter(
+                    parent_attr=attribute_instance, status=AttributeValue.STATUS_DATA_ARRAY_PARENT
+                ).first()
+                self.assertIsNotNone(parent_attr_v)
+
+                # Retrieve and verify
+                retrieved = parent_attr_v.get_value()
+                self.assertEqual(len(retrieved), len(expected_output))
+
+                for i, (actual, expected) in enumerate(zip(retrieved, expected_output)):
+                    self.assertAlmostEqual(
+                        actual,
+                        expected,
+                        places=10,
+                        msg=f"Edge case value mismatch at index {i} for input: {input_val}",
+                    )
+
+        # Clean up
+        AttributeValue.objects.filter(parent_attr=attribute_instance).delete()
+        array_number_attr_schema.delete()
+        entry_instance.delete()
+        entity_schema.delete()
+        user.delete()
+
+    def test_array_number_default_values(self):
+        """Test array number default value behavior"""
+        user = User.objects.create(username="test_array_number_default_user")
+        entity_schema = Entity.objects.create(
+            name="test_array_number_default_entity", created_user=user
+        )
+        array_number_attr_schema = EntityAttr.objects.create(
+            name="test_array_number_default_attr",
+            type=AttrType.ARRAY_NUMBER,
+            created_user=user,
+            parent_entity=entity_schema,
+        )
+
+        entry_instance = Entry.objects.create(
+            name="test_array_number_default_entry", schema=entity_schema, created_user=user
+        )
+        attribute_instance = Attribute.objects.create(
+            name="test_array_number_default_attr",
+            schema=array_number_attr_schema,
+            created_user=user,
+            parent_entry=entry_instance,
+        )
+
+        # Test that default value for array number is an empty list
+        default_value = AttributeValue.get_default_value(attribute_instance)
+        self.assertEqual(default_value, [])
+        self.assertIsInstance(default_value, list)
+
+        # Test that when no value is set, get_value returns the default
+        # Since no AttributeValue exists yet, this should return the default
+        attr_values = AttributeValue.objects.filter(parent_attr=attribute_instance)
+        self.assertEqual(attr_values.count(), 0, "No AttributeValue should exist initially")
+
+        # Clean up
+        array_number_attr_schema.delete()
+        entry_instance.delete()
+        entity_schema.delete()
+        user.delete()
+
+    def test_array_number_serialization_and_history(self):
+        """Test array number serialization and history formatting"""
+        user = User.objects.create(username="test_array_number_serial_user")
+        entity_schema = Entity.objects.create(
+            name="test_array_number_serial_entity", created_user=user
+        )
+        array_number_attr_schema = EntityAttr.objects.create(
+            name="test_array_number_serial_attr",
+            type=AttrType.ARRAY_NUMBER,
+            created_user=user,
+            parent_entity=entity_schema,
+        )
+
+        entry_instance = Entry.objects.create(
+            name="test_array_number_serial_entry", schema=entity_schema, created_user=user
+        )
+        attribute_instance = Attribute.objects.create(
+            name="test_array_number_serial_attr",
+            schema=array_number_attr_schema,
+            created_user=user,
+            parent_entry=entry_instance,
+        )
+
+        test_values = [123.45, 67.89, None, -45.67]
+        attribute_instance.add_value(user, test_values)
+
+        # Get the parent AttributeValue
+        parent_attr_v = AttributeValue.objects.filter(
+            parent_attr=attribute_instance, status=AttributeValue.STATUS_DATA_ARRAY_PARENT
+        ).first()
+        self.assertIsNotNone(parent_attr_v)
+
+        # Test serialization
+        serialized_value = parent_attr_v.get_value(serialize=True)
+        expected_serialized = [123.45, 67.89, None, -45.67]
+        self.assertEqual(serialized_value, expected_serialized)
+
+        # Test history formatting
+        history_value = parent_attr_v.format_for_history()
+        expected_history = [123.45, 67.89, None, -45.67]
+        self.assertEqual(history_value, expected_history)
+
+        # Test with metadata
+        value_with_meta = parent_attr_v.get_value(with_metainfo=True)
+        expected_meta = {"type": AttrType.ARRAY_NUMBER, "value": [123.45, 67.89, None, -45.67]}
+        self.assertEqual(value_with_meta, expected_meta)
+
+        # Clean up
+        AttributeValue.objects.filter(parent_attr=attribute_instance).delete()
+        array_number_attr_schema.delete()
+        entry_instance.delete()
         entity_schema.delete()
         user.delete()

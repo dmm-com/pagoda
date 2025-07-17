@@ -258,4 +258,100 @@ describe("AttributeValue", () => {
       within(screen.getAllByRole("listitem")[1]).getByRole("link"),
     ).toHaveTextContent("role2");
   });
+
+  test("should show number typed value", async () => {
+    const attrInfo = {
+      type: EntryAttributeTypeTypeEnum.NUMBER,
+      value: { asNumber: 42 },
+    };
+    render(<AttributeValue attrInfo={attrInfo} />, { wrapper: TestWrapper });
+
+    expect(screen.getAllByRole("listitem")).toHaveLength(1);
+    expect(within(screen.getByRole("listitem")).getByText("42")).toBeVisible();
+  });
+
+  test("should show number typed value with decimal", async () => {
+    const attrInfo = {
+      type: EntryAttributeTypeTypeEnum.NUMBER,
+      value: { asNumber: 123.45 },
+    };
+    render(<AttributeValue attrInfo={attrInfo} />, { wrapper: TestWrapper });
+
+    expect(screen.getAllByRole("listitem")).toHaveLength(1);
+    expect(
+      within(screen.getByRole("listitem")).getByText("123.45"),
+    ).toBeVisible();
+  });
+
+  test("should show number typed value with zero", async () => {
+    const attrInfo = {
+      type: EntryAttributeTypeTypeEnum.NUMBER,
+      value: { asNumber: 0 },
+    };
+    render(<AttributeValue attrInfo={attrInfo} />, { wrapper: TestWrapper });
+
+    expect(screen.getAllByRole("listitem")).toHaveLength(1);
+    expect(within(screen.getByRole("listitem")).getByText("0")).toBeVisible();
+  });
+
+  test("should show negative number typed value", async () => {
+    const attrInfo = {
+      type: EntryAttributeTypeTypeEnum.NUMBER,
+      value: { asNumber: -123 },
+    };
+    render(<AttributeValue attrInfo={attrInfo} />, { wrapper: TestWrapper });
+
+    expect(screen.getAllByRole("listitem")).toHaveLength(1);
+    expect(
+      within(screen.getByRole("listitem")).getByText("-123"),
+    ).toBeVisible();
+  });
+
+  test("should show array-number typed value", async () => {
+    const attrInfo = {
+      type: EntryAttributeTypeTypeEnum.ARRAY_NUMBER,
+      value: { asArrayNumber: [123, 456, 789] },
+    };
+    render(<AttributeValue attrInfo={attrInfo} />, { wrapper: TestWrapper });
+
+    expect(screen.getAllByRole("listitem")).toHaveLength(3);
+    expect(
+      within(screen.getAllByRole("listitem")[0]).getByText("123"),
+    ).toBeVisible();
+    expect(
+      within(screen.getAllByRole("listitem")[1]).getByText("456"),
+    ).toBeVisible();
+    expect(
+      within(screen.getAllByRole("listitem")[2]).getByText("789"),
+    ).toBeVisible();
+  });
+
+  test("should show array-number typed value with mixed numbers", async () => {
+    const attrInfo = {
+      type: EntryAttributeTypeTypeEnum.ARRAY_NUMBER,
+      value: { asArrayNumber: [0, -123, 456.78] },
+    };
+    render(<AttributeValue attrInfo={attrInfo} />, { wrapper: TestWrapper });
+
+    expect(screen.getAllByRole("listitem")).toHaveLength(3);
+    expect(
+      within(screen.getAllByRole("listitem")[0]).getByText("0"),
+    ).toBeVisible();
+    expect(
+      within(screen.getAllByRole("listitem")[1]).getByText("-123"),
+    ).toBeVisible();
+    expect(
+      within(screen.getAllByRole("listitem")[2]).getByText("456.78"),
+    ).toBeVisible();
+  });
+
+  test("should show empty array-number typed value", async () => {
+    const attrInfo = {
+      type: EntryAttributeTypeTypeEnum.ARRAY_NUMBER,
+      value: { asArrayNumber: [] },
+    };
+    render(<AttributeValue attrInfo={attrInfo} />, { wrapper: TestWrapper });
+
+    expect(screen.queryAllByRole("listitem")).toHaveLength(0);
+  });
 });

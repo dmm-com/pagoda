@@ -27,6 +27,7 @@ export type EditableEntryAttrValue = {
   asGroup?: EntryAttributeValueGroup | null;
   asRole?: EntryAttributeValueRole | null;
   asNumber?: number | null;
+  asArrayNumber?: Array<{ value: number | null }>;
 };
 
 export type EditableEntry = {

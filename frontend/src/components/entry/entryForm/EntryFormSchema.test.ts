@@ -173,6 +173,34 @@ describe("schema", () => {
           ],
         },
       },
+      number: {
+        type: EntryAttributeTypeTypeEnum.NUMBER,
+        index: 10,
+        isMandatory: false,
+        schema: {
+          id: 1,
+          name: "number",
+        },
+        value: {
+          asNumber: 42,
+        },
+      },
+      arrayNumber: {
+        type: EntryAttributeTypeTypeEnum.ARRAY_NUMBER,
+        index: 11,
+        isMandatory: false,
+        schema: {
+          id: 1,
+          name: "array_number",
+        },
+        value: {
+          asArrayNumber: [
+            {
+              value: 123,
+            },
+          ],
+        },
+      },
     },
   };
 
@@ -478,6 +506,155 @@ describe("schema", () => {
       EntryAttributeTypeTypeEnum.DATETIME,
     ].forEach((type) => {
       expect(() => schema.parse({ ...value, type })).toThrow();
+    });
+  });
+
+  test("validation succeeds for valid number values", () => {
+    const testCases = [
+      { value: 0 },
+      { value: 42 },
+      { value: -123 },
+      { value: 123.45 },
+      { value: -456.789 },
+      { value: null }, // null is allowed for non-mandatory fields
+    ];
+
+    testCases.forEach(({ value: numberValue }) => {
+      const value = {
+        ...baseValue,
+        attrs: {
+          number: {
+            ...baseValue.attrs.number,
+            value: {
+              asNumber: numberValue,
+            },
+          },
+        },
+      };
+
+      expect(() => schema.parse(value)).not.toThrow();
+    });
+  });
+
+  test("validation fails if number attr value is mandatory and null", () => {
+    const value = {
+      ...baseValue,
+      attrs: {
+        number: {
+          ...baseValue.attrs.number,
+          isMandatory: true,
+          value: {
+            asNumber: null,
+          },
+        },
+      },
+    };
+
+    expect(() => schema.parse(value)).toThrow();
+  });
+
+  test("validation succeeds for valid array-number values", () => {
+    const testCases = [
+      { value: [] }, // empty array for non-mandatory
+      { value: [{ value: 0 }] },
+      { value: [{ value: 42 }, { value: -123 }] },
+      { value: [{ value: 123.45 }, { value: -456.789 }] },
+      { value: [{ value: null }] }, // null values are allowed in array elements
+      { value: [{ value: 1 }, { value: null }, { value: 3 }] },
+    ];
+
+    testCases.forEach(({ value: arrayValue }) => {
+      const value = {
+        ...baseValue,
+        attrs: {
+          arrayNumber: {
+            ...baseValue.attrs.arrayNumber,
+            value: {
+              asArrayNumber: arrayValue,
+            },
+          },
+        },
+      };
+
+      expect(() => schema.parse(value)).not.toThrow();
+    });
+  });
+
+  test("validation fails if array-number attr value is mandatory and empty", () => {
+    const value = {
+      ...baseValue,
+      attrs: {
+        arrayNumber: {
+          ...baseValue.attrs.arrayNumber,
+          isMandatory: true,
+          value: {
+            asArrayNumber: [],
+          },
+        },
+      },
+    };
+
+    expect(() => schema.parse(value)).toThrow();
+  });
+
+  test("validation fails if array-number attr value is mandatory and contains only null values", () => {
+    const value = {
+      ...baseValue,
+      attrs: {
+        arrayNumber: {
+          ...baseValue.attrs.arrayNumber,
+          isMandatory: true,
+          value: {
+            asArrayNumber: [{ value: null }],
+          },
+        },
+      },
+    };
+
+    expect(() => schema.parse(value)).toThrow();
+  });
+
+  test("validation succeeds if array-number attr value is mandatory and contains at least one non-null value", () => {
+    const value = {
+      ...baseValue,
+      attrs: {
+        arrayNumber: {
+          ...baseValue.attrs.arrayNumber,
+          isMandatory: true,
+          value: {
+            asArrayNumber: [{ value: null }, { value: 42 }, { value: null }],
+          },
+        },
+      },
+    };
+
+    expect(() => schema.parse(value)).not.toThrow();
+  });
+
+  test("validation handles extreme number values", () => {
+    const testCases = [
+      { value: Number.MAX_SAFE_INTEGER },
+      { value: Number.MIN_SAFE_INTEGER },
+      { value: 1e10 },
+      { value: -1e10 },
+      { value: 0.000001 },
+      { value: -0.000001 },
+    ];
+
+    testCases.forEach(({ value: numberValue }) => {
+      const value = {
+        ...baseValue,
+        attrs: {
+          number: {
+            ...baseValue.attrs.number,
+            value: {
+              asNumber: numberValue,
+            },
+          },
+        },
+      };
+
+      expect(() => schema.parse(value)).not.toThrow();
     });
   });
 });

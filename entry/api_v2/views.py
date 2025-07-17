@@ -544,6 +544,8 @@ class AdvancedSearchAPI(generics.GenericAPIView):
                             return "as_array_group"
                         elif type & AttrType.ROLE:
                             return "as_array_role"
+                        elif type & AttrType.NUMBER:
+                            return "as_array_number"
                     elif type & AttrType.STRING or type & AttrType.TEXT:
                         return "as_string"
                     elif type & AttrType.NUMBER:
