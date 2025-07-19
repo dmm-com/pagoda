@@ -420,4 +420,197 @@ describe("EntryForm", () => {
       screen.getByRole("link", { name: /text-field/ }),
     ).toBeInTheDocument();
   });
+
+  describe("mandatory field validation error messages", () => {
+    test("should display error message for required string field", async () => {
+      const entityWithMandatoryString: EntityDetail = {
+        ...mockEntity,
+        attrs: [
+          {
+            id: 1,
+            name: "required-string",
+            type: EntryAttributeTypeTypeEnum.STRING,
+            index: 0,
+            isMandatory: true,
+            isWritable: true,
+            isDeleteInChain: false,
+            isSummarized: false,
+            note: "",
+            referral: [],
+          },
+        ],
+      };
+
+      const entryInfoWithEmptyString: Schema = {
+        name: "test entry",
+        schema: { id: 0, name: "testEntity" },
+        attrs: {
+          "1": {
+            type: EntryAttributeTypeTypeEnum.STRING,
+            index: 0,
+            isMandatory: true,
+            schema: { id: 1, name: "required-string" },
+            value: { asString: "" },
+          },
+        },
+      };
+
+      const {
+        result: {
+          current: { control, setValue },
+        },
+      } = renderHook(() =>
+        useForm<Schema>({
+          resolver: zodResolver(schema),
+          mode: "onBlur",
+          defaultValues: entryInfoWithEmptyString,
+        }),
+      );
+
+      render(
+        <EntryForm
+          entity={entityWithMandatoryString}
+          control={control}
+          setValue={setValue}
+        />,
+        { wrapper: TestWrapper },
+      );
+
+      // Get the string field and trigger blur to activate validation
+      const stringField = screen.getByDisplayValue("");
+
+      await act(async () => {
+        fireEvent.blur(stringField);
+      });
+
+      // Wait for the error message to appear
+      await waitFor(() => {
+        expect(screen.getByText("必須項目です")).toBeInTheDocument();
+      });
+
+      // The field should be marked as invalid
+      expect(stringField).toHaveAttribute("aria-invalid", "true");
+    });
+
+    test("should display error message for empty entry name", async () => {
+      const entryInfoWithEmptyName: Schema = {
+        name: "",
+        schema: { id: 0, name: "testEntity" },
+        attrs: {},
+      };
+
+      const {
+        result: {
+          current: { control, setValue },
+        },
+      } = renderHook(() =>
+        useForm<Schema>({
+          resolver: zodResolver(schema),
+          mode: "onBlur",
+          defaultValues: entryInfoWithEmptyName,
+        }),
+      );
+
+      render(
+        <EntryForm entity={mockEntity} control={control} setValue={setValue} />,
+        { wrapper: TestWrapper },
+      );
+
+      const nameField = document.getElementById(
+        "entry-name",
+      ) as HTMLInputElement;
+
+      await act(async () => {
+        fireEvent.blur(nameField);
+      });
+
+      // Wait for the error message to appear
+      await waitFor(() => {
+        expect(screen.getByText("アイテム名は必須です")).toBeInTheDocument();
+      });
+
+      // The field should be marked as invalid
+      expect(nameField).toHaveAttribute("aria-invalid", "true");
+    });
+
+    test("should clear error message when required field is filled", async () => {
+      const entityWithMandatoryString: EntityDetail = {
+        ...mockEntity,
+        attrs: [
+          {
+            id: 1,
+            name: "required-string",
+            type: EntryAttributeTypeTypeEnum.STRING,
+            index: 0,
+            isMandatory: true,
+            isWritable: true,
+            isDeleteInChain: false,
+            isSummarized: false,
+            note: "",
+            referral: [],
+          },
+        ],
+      };
+
+      const entryInfoWithEmptyString: Schema = {
+        name: "test entry",
+        schema: { id: 0, name: "testEntity" },
+        attrs: {
+          "1": {
+            type: EntryAttributeTypeTypeEnum.STRING,
+            index: 0,
+            isMandatory: true,
+            schema: { id: 1, name: "required-string" },
+            value: { asString: "" },
+          },
+        },
+      };
+
+      const {
+        result: {
+          current: { control, setValue },
+        },
+      } = renderHook(() =>
+        useForm<Schema>({
+          resolver: zodResolver(schema),
+          mode: "onBlur",
+          defaultValues: entryInfoWithEmptyString,
+        }),
+      );
+
+      render(
+        <EntryForm
+          entity={entityWithMandatoryString}
+          control={control}
+          setValue={setValue}
+        />,
+        { wrapper: TestWrapper },
+      );
+
+      const stringField = screen.getByDisplayValue("");
+
+      // First, trigger validation error
+      await act(async () => {
+        fireEvent.blur(stringField);
+      });
+
+      await waitFor(() => {
+        expect(screen.getByText("必須項目です")).toBeInTheDocument();
+      });
+
+      // Then fill the field and blur again
+      await act(async () => {
+        fireEvent.change(stringField, { target: { value: "filled value" } });
+        fireEvent.blur(stringField);
+      });
+
+      // Error message should disappear
+      await waitFor(() => {
+        expect(screen.queryByText("必須項目です")).not.toBeInTheDocument();
+      });
+
+      // The field should no longer be marked as invalid
+      expect(stringField).toHaveAttribute("aria-invalid", "false");
+    });
+  });
 });

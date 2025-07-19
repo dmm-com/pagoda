@@ -186,8 +186,14 @@ export const NamedObjectAttributeValueField: FC<
             }
             control={control}
             defaultValue=""
-            render={({ field }) => (
-              <TextField {...field} variant="standard" fullWidth />
+            render={({ field, fieldState: { error } }) => (
+              <TextField
+                {...field}
+                variant="standard"
+                fullWidth
+                error={error != null}
+                helperText={error?.message}
+              />
             )}
           />
         </NameBox>

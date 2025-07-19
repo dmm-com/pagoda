@@ -657,4 +657,261 @@ describe("schema", () => {
       expect(() => schema.parse(value)).not.toThrow();
     });
   });
+
+  describe("mandatory field validation error paths", () => {
+    test("string mandatory field error has correct path", () => {
+      const value = {
+        ...baseValue,
+        attrs: {
+          string: {
+            ...baseValue.attrs.string,
+            isMandatory: true,
+            value: {
+              asString: "",
+            },
+          },
+        },
+      };
+
+      const result = schema.safeParse(value);
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        const error = result.error.issues.find(
+          (issue) =>
+            issue.path.join(".") === "attrs.string.value.asString" &&
+            issue.message === "必須項目です",
+        );
+        expect(error).toBeDefined();
+      }
+    });
+
+    test("array string mandatory field error has correct path", () => {
+      const value = {
+        ...baseValue,
+        attrs: {
+          arrayString: {
+            ...baseValue.attrs.arrayString,
+            isMandatory: true,
+            value: {
+              asArrayString: [],
+            },
+          },
+        },
+      };
+
+      const result = schema.safeParse(value);
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        const error = result.error.issues.find(
+          (issue) =>
+            issue.path.join(".") ===
+              "attrs.arrayString.value.asArrayString.0.value" &&
+            issue.message === "必須項目です",
+        );
+        expect(error).toBeDefined();
+      }
+    });
+
+    test("object mandatory field error has correct path", () => {
+      const value = {
+        ...baseValue,
+        attrs: {
+          object: {
+            ...baseValue.attrs.object,
+            isMandatory: true,
+            value: {
+              asObject: null,
+            },
+          },
+        },
+      };
+
+      const result = schema.safeParse(value);
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        const error = result.error.issues.find(
+          (issue) =>
+            issue.path.join(".") === "attrs.object.value.asObject" &&
+            issue.message === "必須項目です",
+        );
+        expect(error).toBeDefined();
+      }
+    });
+
+    test("named object mandatory field error has correct paths", () => {
+      const value = {
+        ...baseValue,
+        attrs: {
+          namedObject: {
+            ...baseValue.attrs.namedObject,
+            isMandatory: true,
+            value: {
+              asNamedObject: {
+                name: "",
+                object: null,
+              },
+            },
+          },
+        },
+      };
+
+      const result = schema.safeParse(value);
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        const nameError = result.error.issues.find(
+          (issue) =>
+            issue.path.join(".") ===
+              "attrs.namedObject.value.asNamedObject.name" &&
+            issue.message === "必須項目です",
+        );
+        const objectError = result.error.issues.find(
+          (issue) =>
+            issue.path.join(".") ===
+              "attrs.namedObject.value.asNamedObject.object" &&
+            issue.message === "必須項目です",
+        );
+        expect(nameError).toBeDefined();
+        expect(objectError).toBeDefined();
+      }
+    });
+
+    test("array named object mandatory field error has correct paths", () => {
+      const value = {
+        ...baseValue,
+        attrs: {
+          arrayNamedObject: {
+            ...baseValue.attrs.arrayNamedObject,
+            isMandatory: true,
+            value: {
+              asArrayNamedObject: [],
+            },
+          },
+        },
+      };
+
+      const result = schema.safeParse(value);
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        const nameError = result.error.issues.find(
+          (issue) =>
+            issue.path.join(".") ===
+              "attrs.arrayNamedObject.value.asArrayNamedObject.0.name" &&
+            issue.message === "必須項目です",
+        );
+        const objectError = result.error.issues.find(
+          (issue) =>
+            issue.path.join(".") ===
+              "attrs.arrayNamedObject.value.asArrayNamedObject.0.object" &&
+            issue.message === "必須項目です",
+        );
+        expect(nameError).toBeDefined();
+        expect(objectError).toBeDefined();
+      }
+    });
+
+    test("number mandatory field error has correct path", () => {
+      const value = {
+        ...baseValue,
+        attrs: {
+          number: {
+            ...baseValue.attrs.number,
+            isMandatory: true,
+            value: {
+              asNumber: null,
+            },
+          },
+        },
+      };
+
+      const result = schema.safeParse(value);
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        const error = result.error.issues.find(
+          (issue) =>
+            issue.path.join(".") === "attrs.number.value.asNumber" &&
+            issue.message === "必須項目です",
+        );
+        expect(error).toBeDefined();
+      }
+    });
+
+    test("array number mandatory field error has correct path", () => {
+      const value = {
+        ...baseValue,
+        attrs: {
+          arrayNumber: {
+            ...baseValue.attrs.arrayNumber,
+            isMandatory: true,
+            value: {
+              asArrayNumber: [],
+            },
+          },
+        },
+      };
+
+      const result = schema.safeParse(value);
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        const error = result.error.issues.find(
+          (issue) =>
+            issue.path.join(".") ===
+              "attrs.arrayNumber.value.asArrayNumber.0.value" &&
+            issue.message === "必須項目です",
+        );
+        expect(error).toBeDefined();
+      }
+    });
+
+    test("group mandatory field error has correct path", () => {
+      const value = {
+        ...baseValue,
+        attrs: {
+          group: {
+            ...baseValue.attrs.group,
+            isMandatory: true,
+            value: {
+              asGroup: null,
+            },
+          },
+        },
+      };
+
+      const result = schema.safeParse(value);
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        const error = result.error.issues.find(
+          (issue) =>
+            issue.path.join(".") === "attrs.group.value.asGroup" &&
+            issue.message === "必須項目です",
+        );
+        expect(error).toBeDefined();
+      }
+    });
+
+    test("role mandatory field error has correct path", () => {
+      const value = {
+        ...baseValue,
+        attrs: {
+          role: {
+            ...baseValue.attrs.role,
+            isMandatory: true,
+            value: {
+              asRole: null,
+            },
+          },
+        },
+      };
+
+      const result = schema.safeParse(value);
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        const error = result.error.issues.find(
+          (issue) =>
+            issue.path.join(".") === "attrs.role.value.asRole" &&
+            issue.message === "必須項目です",
+        );
+        expect(error).toBeDefined();
+      }
+    });
+  });
 });
