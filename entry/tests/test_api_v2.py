@@ -1550,6 +1550,172 @@ class ViewTest(BaseViewTest):
         attrv = entry.attrs.get(schema=attr).get_latest_value()
         self.assertEqual(attrv.value, prev_attrv.value)
 
+    @patch("entry.tasks.edit_entry_v2.delay", Mock(side_effect=tasks.edit_entry_v2))
+    def test_restore_entry_attribute_value_all_types(self):
+        """Test restoring entry attribute values for all attribute types"""
+        # Create entry with all typed attributes
+        entry: Entry = self.add_entry(
+            self.user,
+            "entry",
+            self.entity,
+            values={
+                "val": "initial_string",
+                "ref": self.ref_entry.id,
+                "name": {"name": "initial_name", "id": self.ref_entry.id},
+                "bool": True,
+                "date": "2020-01-01",
+                "group": self.group.id,
+                "groups": [self.group.id],
+                "text": "initial_text",
+                "vals": ["initial1", "initial2"],
+                "nums": [1.1, 2.2],
+                "refs": [self.ref_entry.id],
+                "names": [
+                    {"name": "initial_name1", "id": self.ref_entry.id},
+                    {"name": "initial_name2", "id": self.ref_entry.id},
+                ],
+                "role": self.role.id,
+                "roles": [self.role.id],
+                "datetime": "2020-01-01T00:00:00",
+                "num": 42.0,
+            },
+        )
+
+        # Store original attribute values for later comparison
+        original_values = {}
+        for attr_name in [x["name"] for x in self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY]:
+            attr = entry.attrs.get(schema__name=attr_name)
+            original_values[attr_name] = attr.get_latest_value()
+
+        # Update all attributes with new values
+        attr_schemas = {
+            name: self.entity.attrs.get(name=name)
+            for name in [x["name"] for x in self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY]
+        }
+
+        # Create a second reference entry for updating
+        ref_entry2: Entry = self.add_entry(self.user, "r-1", self.ref_entity)
+        group2: Group = Group.objects.create(name="group1")
+        role2: Role = Role.objects.create(name="role1")
+
+        update_params = {
+            "name": "entry-updated",
+            "attrs": [
+                {"id": attr_schemas["val"].id, "value": "updated_string"},
+                {"id": attr_schemas["ref"].id, "value": ref_entry2.id},
+                {
+                    "id": attr_schemas["name"].id,
+                    "value": {"name": "updated_name", "id": ref_entry2.id},
+                },
+                {"id": attr_schemas["bool"].id, "value": False},
+                {"id": attr_schemas["date"].id, "value": "2021-12-31"},
+                {"id": attr_schemas["group"].id, "value": group2.id},
+                {"id": attr_schemas["groups"].id, "value": [group2.id]},
+                {"id": attr_schemas["text"].id, "value": "updated_text"},
+                {"id": attr_schemas["vals"].id, "value": ["updated1", "updated2", "updated3"]},
+                {"id": attr_schemas["nums"].id, "value": [3.3, 4.4, 5.5]},
+                {"id": attr_schemas["refs"].id, "value": [ref_entry2.id]},
+                {
+                    "id": attr_schemas["names"].id,
+                    "value": [
+                        {"name": "updated_name1", "id": ref_entry2.id},
+                        {"name": "updated_name2", "id": ref_entry2.id},
+                        {"name": "updated_name3", "id": ref_entry2.id},
+                    ],
+                },
+                {"id": attr_schemas["role"].id, "value": role2.id},
+                {"id": attr_schemas["roles"].id, "value": [role2.id]},
+                {"id": attr_schemas["datetime"].id, "value": "2021-12-31T23:59:59"},
+                {"id": attr_schemas["num"].id, "value": 84.0},
+            ],
+        }
+        resp = self.client.put(
+            "/entry/api/v2/%s/" % entry.id, json.dumps(update_params), "application/json"
+        )
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
+
+        # Now restore each attribute type and verify the restoration
+        failed_attrs = []
+
+        for attr_name, prev_attrv in original_values.items():
+            attr = entry.attrs.get(schema__name=attr_name)
+            attr_type = attr.schema.type
+
+            try:
+                # Restore to previous value
+                resp = self.client.patch(
+                    "/entry/api/v2/%s/attrv_restore/" % prev_attrv.id,
+                    json.dumps({}),
+                    "application/json",
+                )
+
+                if resp.status_code != 200:
+                    failed_attrs.append(f"{attr_name} (type: {attr_type}): HTTP {resp.status_code}")
+                    continue
+
+                # Verify the value was restored correctly by comparing get_value() results
+                prev_display_value = prev_attrv.get_value(with_metainfo=False)
+                restored_value = attr.get_latest_value()
+                restored_display_value = restored_value.get_value(with_metainfo=False)
+
+                if prev_display_value != restored_display_value:
+                    failed_attrs.append(
+                        f"{attr_name} (type: {attr_type}): "
+                        f"expected {prev_display_value}, got {restored_display_value}"
+                    )
+
+            except Exception as e:
+                failed_attrs.append(f"{attr_name} (type: {attr_type}): Exception - {str(e)}")
+
+        # Report all failures at once
+        if failed_attrs:
+            self.fail(
+                f"Restoration failed for {len(failed_attrs)} attributes:\n"
+                + "\n".join(f"  - {failure}" for failure in failed_attrs)
+            )
+
+    @patch("entry.tasks.edit_entry_v2.delay", Mock(side_effect=tasks.edit_entry_v2))
+    def test_restore_entry_attribute_value_with_none_referral(self):
+        """Test restoring NamedObject with None referral"""
+        # Create entry with NamedObject attribute without referral
+        entry: Entry = self.add_entry(
+            self.user,
+            "entry",
+            self.entity,
+            values={
+                "name": {"name": "name_without_ref", "id": None},
+            },
+        )
+
+        # Store original value
+        name_attr = entry.attrs.get(schema__name="name")
+        prev_attrv = name_attr.get_latest_value()
+
+        # Update with a referral
+        update_params = {
+            "attrs": [
+                {
+                    "id": self.entity.attrs.get(name="name").id,
+                    "value": {"name": "name_with_ref", "id": self.ref_entry.id},
+                },
+            ],
+        }
+        resp = self.client.put(
+            "/entry/api/v2/%s/" % entry.id, json.dumps(update_params), "application/json"
+        )
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
+
+        # Restore to previous value (without referral)
+        resp = self.client.patch(
+            "/entry/api/v2/%s/attrv_restore/" % prev_attrv.id, json.dumps({}), "application/json"
+        )
+        self.assertEqual(resp.status_code, 200)
+
+        # Verify restoration
+        restored_value = name_attr.get_latest_value()
+        self.assertEqual(restored_value.value, "name_without_ref")
+        self.assertIsNone(restored_value.referral)
+
     @mock.patch("entry.tasks.copy_entry.delay", mock.Mock(side_effect=tasks.copy_entry))
     def test_copy_entry(self):
         entry: Entry = self.add_entry(self.user, "entry", self.entity)
