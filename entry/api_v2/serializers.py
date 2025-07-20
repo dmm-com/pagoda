@@ -1085,6 +1085,34 @@ class AttributeSerializer(serializers.ModelSerializer):
         fields = ("id", "name")
 
 
+class EntryHistoryAttributeValueListSerializer(serializers.ListSerializer):
+    """Custom list serializer to prefetch previous values efficiently"""
+
+    def to_representation(self, data):
+        # Prefetch previous values for all items in the queryset
+        if hasattr(data, "__iter__"):
+            items = list(data)
+
+            # Build a mapping of previous values
+            prev_values_map = {}
+            for item in items:
+                # Get all values for the same parent_attr
+                same_attr_values = [v for v in items if v.parent_attr_id == item.parent_attr_id]
+                # Sort by created_time and find previous value
+                same_attr_values.sort(key=lambda x: x.created_time)
+                for i, val in enumerate(same_attr_values):
+                    if i > 0:
+                        prev_values_map[val.id] = same_attr_values[i - 1]
+                    else:
+                        prev_values_map[val.id] = None
+
+            # Attach previous values to each item
+            for item in items:
+                item._prefetched_previous_value = prev_values_map.get(item.id)
+
+        return super().to_representation(data)
+
+
 class EntryHistoryAttributeValueSerializer(serializers.ModelSerializer):
     type = serializers.IntegerField(source="data_type")
     created_user = serializers.CharField(source="created_user.username")
@@ -1105,6 +1133,7 @@ class EntryHistoryAttributeValueSerializer(serializers.ModelSerializer):
             "prev_id",
             "parent_attr",
         )
+        list_serializer_class = EntryHistoryAttributeValueListSerializer
 
     def _get_value(self, obj: AttributeValue) -> EntryAttributeValue:
         try:
@@ -1265,12 +1294,28 @@ class EntryHistoryAttributeValueSerializer(serializers.ModelSerializer):
 
     @extend_schema_field(EntryAttributeValueSerializer())
     def get_prev_value(self, obj: AttributeValue) -> EntryAttributeValue | None:
+        # Check if previous values are already prefetched
+        if hasattr(obj, "_prefetched_previous_value"):
+            prev_value = obj._prefetched_previous_value
+            if prev_value:
+                return self._get_value(prev_value)
+            return None
+
+        # Fallback to the original method if not prefetched
         prev_value = obj.get_preview_value()
         if prev_value:
             return self._get_value(prev_value)
         return None
 
     def get_prev_id(self, obj: AttributeValue) -> int | None:
+        # Check if previous values are already prefetched
+        if hasattr(obj, "_prefetched_previous_value"):
+            prev_value = obj._prefetched_previous_value
+            if prev_value:
+                return prev_value.id
+            return None
+
+        # Fallback to the original method if not prefetched
         prev_value = obj.get_preview_value()
         if prev_value:
             return prev_value.id
