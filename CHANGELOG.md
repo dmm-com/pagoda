@@ -8,6 +8,24 @@
 
 ### Fixed
 
+## v3.142.0
+
+### Added
+* Add validation error messages for mandatory fields in EntryForm and schema.
+  Contributed by @syucream
+
+### Fixed
+* Fix to restore named object's.
+  Contributed by @syucream
+
+## v3.141.0
+
+### Added
+* Added array number type attribute.
+  Contributed by @syucream
+* Add default value support.
+  Contributed by @syucream
+
 ## v3.140.0
 
 ### Added
