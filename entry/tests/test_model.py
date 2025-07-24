@@ -3743,7 +3743,7 @@ class ModelTest(AironeTestCase):
             entry = Entry.objects.create(name=entry_name, schema=entity, created_user=user)
             entry.register_es()
 
-        search_words = {"foo": 1, "bar&baz": 1, "foo|bar": 3, "foo|bar&baz": 2}
+        search_words = {"foo": 1, "bar&baz": 1, "foo|bar": 3, "foo|bar&baz": 2, "": 3}
         for word, count in search_words.items():
             ret = AdvancedSearchService.search_entries(user, [entity.id], entry_name=word)
             self.assertEqual(ret.ret_count, count)

@@ -870,6 +870,36 @@ class AdvancedSearchServiceTest(AironeTestCase):
         self.assertEqual(res2.ret_count, 1)
         self.assertTrue(any("foo" in v.entry["name"] for v in res2.ret_values))
 
+        # test OR condition statement (|) is work well
+        res3 = AdvancedSearchService.search_entries(
+            user=user,
+            hint_entity_ids=[entity.id],
+            hint_attrs=[],
+            hint_entry=EntryHint(filter_key=EntryFilterKey.TEXT_CONTAINED, keyword="foo|bar"),
+        )
+        self.assertEqual(res3.ret_count, 2)
+        self.assertTrue(
+            sorted(["foo-entry", "bar-entry"]), sorted([v.entry["name"] for v in res3.ret_values])
+        )
+
+        # test OR NOT condition statement is work well
+        res3 = AdvancedSearchService.search_entries(
+            user=user,
+            hint_entity_ids=[entity.id],
+            hint_attrs=[],
+            hint_entry=EntryHint(filter_key=EntryFilterKey.TEXT_NOT_CONTAINED, keyword="foo|bar"),
+        )
+        self.assertEqual(res3.ret_count, 0)
+
+        # test passing None object intentionally
+        res4 = AdvancedSearchService.search_entries(
+            user=user,
+            hint_entity_ids=[entity.id],
+            hint_attrs=[],
+            hint_entry=EntryHint(filter_key=EntryFilterKey.TEXT_CONTAINED, keyword=None),
+        )
+        self.assertEqual(res4.ret_count, 2)
+
     def test_search_entries_for_simple(self):
         self._entity.attrs.add(self._attr.schema)
         self._entry.attrs.first().add_value(self._user, "hoge")
