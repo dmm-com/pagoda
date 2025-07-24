@@ -335,18 +335,17 @@ def make_query(
     )
 
     # Included in query if refinement is entered for 'Name' in advanced search
-    if hint_entry is not None:
-        pattern = _get_regex_pattern(hint_entry.keyword or "")
+    if hint_entry is not None and hint_entry.keyword is not None:
+        # create Elasticsearch query considering with user specified regex pattern at the hint_entry
+        item_name_query = _make_entry_name_query(hint_entry.keyword)
         match getattr(hint_entry, "filter_key", None):
             case EntryFilterKey.CLEARED:
                 # Don't perform any filter
                 pass
             case EntryFilterKey.TEXT_CONTAINED:
-                should_clause = {"bool": {"must": [{"regexp": {"name": pattern}}]}}
-                query["query"]["bool"]["filter"].append({"bool": {"should": [should_clause]}})
+                query["query"]["bool"]["filter"].append(item_name_query)
             case EntryFilterKey.TEXT_NOT_CONTAINED:
-                must_not_clause = {"bool": {"must": [{"regexp": {"name": pattern}}]}}
-                query["query"]["bool"]["filter"].append({"bool": {"must_not": [must_not_clause]}})
+                query["query"]["bool"]["filter"].append({"bool": {"must_not": [item_name_query]}})
             case _:
                 # NOTE: Unsupported filter key
                 pass

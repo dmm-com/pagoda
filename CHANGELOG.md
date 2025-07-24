@@ -7,6 +7,8 @@
 ### Changed
 
 ### Fixed
+* Fixed problem hint_entry attitude that include user specified regex pattern ("|")
+  Contributed by @userlocalhost, @hinashi
 
 ## v3.140.0
 
