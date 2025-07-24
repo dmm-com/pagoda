@@ -50,6 +50,7 @@ const ATTRIBUTE_TYPE_ORDER = [
   "text",
   "boolean",
   "number",
+  "array_number",
   "date",
   "datetime",
 ];

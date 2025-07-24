@@ -1172,6 +1172,7 @@ def make_search_results(
                 case (
                     AttrType.ARRAY_OBJECT
                     | AttrType.ARRAY_STRING
+                    | AttrType.ARRAY_NUMBER
                     | AttrType.ARRAY_NAMED_OBJECT
                     | AttrType.ARRAY_NAMED_OBJECT_BOOLEAN
                     | AttrType.ARRAY_GROUP
@@ -1197,6 +1198,12 @@ def make_search_results(
 
                         case AttrType.ARRAY_STRING:
                             ret_attrinfo["value"].append(attrinfo["value"])
+
+                        case AttrType.ARRAY_NUMBER:
+                            # Convert string value to number, handle empty values as None
+                            ret_attrinfo["value"].append(
+                                attrinfo["value"] if attrinfo["value"] else None
+                            )
 
                         case AttrType.ARRAY_OBJECT | AttrType.ARRAY_GROUP | AttrType.ARRAY_ROLE:
                             ret_attrinfo["value"].append(

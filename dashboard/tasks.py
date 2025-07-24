@@ -81,6 +81,11 @@ def _csv_export(
                 case AttrType.ARRAY_STRING:
                     line_data.append("\n".join(natsorted(vval)))
 
+                case AttrType.ARRAY_NUMBER:
+                    line_data.append(
+                        "\n".join(natsorted([str(x) if x is not None else "" for x in vval]))
+                    )
+
                 case AttrType.ARRAY_OBJECT | AttrType.ARRAY_GROUP | AttrType.ARRAY_ROLE:
                     line_data.append("\n".join(natsorted([x["name"] for x in vval])))
 

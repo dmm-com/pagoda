@@ -250,6 +250,30 @@ describe("AttributeValue", () => {
           ],
         },
       },
+      "13": {
+        type: EntryAttributeTypeTypeEnum.NUMBER,
+        index: 13,
+        isMandatory: false,
+        schema: {
+          id: 1,
+          name: "number",
+        },
+        value: {
+          asNumber: 42,
+        },
+      },
+      "14": {
+        type: EntryAttributeTypeTypeEnum.ARRAY_NUMBER,
+        index: 14,
+        isMandatory: false,
+        schema: {
+          id: 1,
+          name: "array_number",
+        },
+        value: {
+          asArrayNumber: [{ value: 123 }, { value: 456 }],
+        },
+      },
     },
   };
 
@@ -372,6 +396,22 @@ describe("AttributeValue", () => {
         expect(screen.getByRole("combobox")).toBeInTheDocument();
         expect(screen.getByText("role1")).toBeInTheDocument();
         expect(screen.getByText("role2")).toBeInTheDocument();
+      },
+    },
+    {
+      name: "number",
+      type: EntryAttributeTypeTypeEnum.NUMBER,
+      schemaId: 13,
+      fn: () => {
+        expect(screen.getByRole("spinbutton")).toBeInTheDocument();
+      },
+    },
+    {
+      name: "array-number",
+      type: EntryAttributeTypeTypeEnum.ARRAY_NUMBER,
+      schemaId: 14,
+      fn: () => {
+        expect(screen.queryAllByRole("spinbutton")).toHaveLength(2);
       },
     },
   ];

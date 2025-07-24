@@ -180,63 +180,203 @@ export const schema = schemaForType<EditableEntry>()(
                 )
                 .optional(),
               asNumber: z.number().nullable().optional(),
+              asArrayNumber: z
+                .array(
+                  z.object({
+                    value: z.number().nullable(),
+                  }),
+                )
+                .optional(),
             }),
           })
-          .refine(
-            (value) => {
-              if (!value.isMandatory) {
-                return true;
-              }
+          .superRefine((value, ctx) => {
+            if (!value.isMandatory) {
+              return;
+            }
 
-              switch (value.type) {
-                case EntryAttributeTypeTypeEnum.STRING:
-                case EntryAttributeTypeTypeEnum.TEXT:
-                case EntryAttributeTypeTypeEnum.DATE:
-                case EntryAttributeTypeTypeEnum.DATETIME:
-                  return value.value.asString !== "";
-                case EntryAttributeTypeTypeEnum.ARRAY_STRING:
-                  return (
+            switch (value.type) {
+              case EntryAttributeTypeTypeEnum.STRING:
+              case EntryAttributeTypeTypeEnum.TEXT:
+              case EntryAttributeTypeTypeEnum.DATE:
+              case EntryAttributeTypeTypeEnum.DATETIME:
+                if (value.value.asString === "") {
+                  ctx.addIssue({
+                    code: z.ZodIssueCode.custom,
+                    message: "必須項目です",
+                    path: ["value", "asString"],
+                  });
+                }
+                break;
+              case EntryAttributeTypeTypeEnum.ARRAY_STRING:
+                if (
+                  !(
                     value.value.asArrayString?.some((v) => v.value !== "") ??
                     false
-                  );
-                case EntryAttributeTypeTypeEnum.OBJECT:
-                  return value.value.asObject != null;
-                case EntryAttributeTypeTypeEnum.ARRAY_OBJECT:
-                  return (
-                    value.value.asArrayObject?.some((v) => v != null) ?? false
-                  );
-                case EntryAttributeTypeTypeEnum.NAMED_OBJECT:
-                  return (
+                  )
+                ) {
+                  value.value.asArrayString?.forEach((_, index) => {
+                    ctx.addIssue({
+                      code: z.ZodIssueCode.custom,
+                      message: "必須項目です",
+                      path: ["value", "asArrayString", index, "value"],
+                    });
+                  });
+                  if (!value.value.asArrayString?.length) {
+                    ctx.addIssue({
+                      code: z.ZodIssueCode.custom,
+                      message: "必須項目です",
+                      path: ["value", "asArrayString", 0, "value"],
+                    });
+                  }
+                }
+                break;
+              case EntryAttributeTypeTypeEnum.OBJECT:
+                if (value.value.asObject == null) {
+                  ctx.addIssue({
+                    code: z.ZodIssueCode.custom,
+                    message: "必須項目です",
+                    path: ["value", "asObject"],
+                  });
+                }
+                break;
+              case EntryAttributeTypeTypeEnum.ARRAY_OBJECT:
+                if (
+                  !(value.value.asArrayObject?.some((v) => v != null) ?? false)
+                ) {
+                  ctx.addIssue({
+                    code: z.ZodIssueCode.custom,
+                    message: "必須項目です",
+                    path: ["value", "asArrayObject"],
+                  });
+                }
+                break;
+              case EntryAttributeTypeTypeEnum.NAMED_OBJECT:
+                if (
+                  !(
                     value.value.asNamedObject?.name !== "" ||
                     value.value.asNamedObject?.object != null
-                  );
-                case EntryAttributeTypeTypeEnum.ARRAY_NAMED_OBJECT:
-                  return (
+                  )
+                ) {
+                  ctx.addIssue({
+                    code: z.ZodIssueCode.custom,
+                    message: "必須項目です",
+                    path: ["value", "asNamedObject", "name"],
+                  });
+                  ctx.addIssue({
+                    code: z.ZodIssueCode.custom,
+                    message: "必須項目です",
+                    path: ["value", "asNamedObject", "object"],
+                  });
+                }
+                break;
+              case EntryAttributeTypeTypeEnum.ARRAY_NAMED_OBJECT:
+                if (
+                  !(
                     value.value.asArrayNamedObject?.some((v) => {
                       return v.name !== "" || v.object != null;
                     }) ?? false
-                  );
-                case EntryAttributeTypeTypeEnum.GROUP:
-                  return value.value.asGroup != null;
-                case EntryAttributeTypeTypeEnum.ARRAY_GROUP:
-                  return (
-                    value.value.asArrayGroup?.some((v) => v != null) ?? false
-                  );
-                case EntryAttributeTypeTypeEnum.ROLE:
-                  return value.value.asRole != null;
-                case EntryAttributeTypeTypeEnum.ARRAY_ROLE:
-                  return (
-                    value.value.asArrayRole?.some((v) => v != null) ?? false
-                  );
-                case EntryAttributeTypeTypeEnum.NUMBER:
-                  return value.value.asNumber != null;
-              }
-
-              return true;
-            },
-            // TODO specify path to feedback users error cause
-            "必須項目です",
-          )
+                  )
+                ) {
+                  value.value.asArrayNamedObject?.forEach((_, index) => {
+                    ctx.addIssue({
+                      code: z.ZodIssueCode.custom,
+                      message: "必須項目です",
+                      path: ["value", "asArrayNamedObject", index, "name"],
+                    });
+                    ctx.addIssue({
+                      code: z.ZodIssueCode.custom,
+                      message: "必須項目です",
+                      path: ["value", "asArrayNamedObject", index, "object"],
+                    });
+                  });
+                  if (!value.value.asArrayNamedObject?.length) {
+                    ctx.addIssue({
+                      code: z.ZodIssueCode.custom,
+                      message: "必須項目です",
+                      path: ["value", "asArrayNamedObject", 0, "name"],
+                    });
+                    ctx.addIssue({
+                      code: z.ZodIssueCode.custom,
+                      message: "必須項目です",
+                      path: ["value", "asArrayNamedObject", 0, "object"],
+                    });
+                  }
+                }
+                break;
+              case EntryAttributeTypeTypeEnum.GROUP:
+                if (value.value.asGroup == null) {
+                  ctx.addIssue({
+                    code: z.ZodIssueCode.custom,
+                    message: "必須項目です",
+                    path: ["value", "asGroup"],
+                  });
+                }
+                break;
+              case EntryAttributeTypeTypeEnum.ARRAY_GROUP:
+                if (
+                  !(value.value.asArrayGroup?.some((v) => v != null) ?? false)
+                ) {
+                  ctx.addIssue({
+                    code: z.ZodIssueCode.custom,
+                    message: "必須項目です",
+                    path: ["value", "asArrayGroup"],
+                  });
+                }
+                break;
+              case EntryAttributeTypeTypeEnum.ROLE:
+                if (value.value.asRole == null) {
+                  ctx.addIssue({
+                    code: z.ZodIssueCode.custom,
+                    message: "必須項目です",
+                    path: ["value", "asRole"],
+                  });
+                }
+                break;
+              case EntryAttributeTypeTypeEnum.ARRAY_ROLE:
+                if (
+                  !(value.value.asArrayRole?.some((v) => v != null) ?? false)
+                ) {
+                  ctx.addIssue({
+                    code: z.ZodIssueCode.custom,
+                    message: "必須項目です",
+                    path: ["value", "asArrayRole"],
+                  });
+                }
+                break;
+              case EntryAttributeTypeTypeEnum.NUMBER:
+                if (value.value.asNumber == null) {
+                  ctx.addIssue({
+                    code: z.ZodIssueCode.custom,
+                    message: "必須項目です",
+                    path: ["value", "asNumber"],
+                  });
+                }
+                break;
+              case EntryAttributeTypeTypeEnum.ARRAY_NUMBER:
+                if (
+                  !(
+                    value.value.asArrayNumber?.some((v) => v.value != null) ??
+                    false
+                  )
+                ) {
+                  value.value.asArrayNumber?.forEach((_, index) => {
+                    ctx.addIssue({
+                      code: z.ZodIssueCode.custom,
+                      message: "必須項目です",
+                      path: ["value", "asArrayNumber", index, "value"],
+                    });
+                  });
+                  if (!value.value.asArrayNumber?.length) {
+                    ctx.addIssue({
+                      code: z.ZodIssueCode.custom,
+                      message: "必須項目です",
+                      path: ["value", "asArrayNumber", 0, "value"],
+                    });
+                  }
+                }
+                break;
+            }
+          })
           .refine(({ value, type }) => {
             switch (type) {
               case EntryAttributeTypeTypeEnum.DATE:

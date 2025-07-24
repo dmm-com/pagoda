@@ -1,6 +1,6 @@
 import re
 from datetime import date, datetime
-from typing import Any, Literal
+from typing import Any, Dict, List, Literal, Union
 
 from django.db.models import Prefetch
 from drf_spectacular.utils import extend_schema_field, extend_schema_serializer
@@ -133,6 +133,7 @@ class EntryAttributeValue(TypedDict, total=False):
     as_role: EntryAttributeValueRole | None
     as_array_role: list[EntryAttributeValueRole]
     as_number: float | None  # Added for AttrType.NUMBER
+    as_array_number: list[float | None]  # Added for AttrType.ARRAY_NUMBER
 
 
 class EntryAttributeType(TypedDict):
@@ -213,6 +214,9 @@ class EntryAttributeValueSerializer(serializers.Serializer):
     as_role = EntryAttributeValueRoleSerializer(allow_null=True, required=False)
     as_array_role = serializers.ListField(child=EntryAttributeValueRoleSerializer(), required=False)
     as_number = serializers.FloatField(allow_null=True, required=False)  # Added for AttrType.NUMBER
+    as_array_number = serializers.ListField(
+        child=serializers.FloatField(allow_null=True), required=False
+    )
 
 
 class EntryAttributeTypeSerializer(serializers.Serializer):
@@ -644,6 +648,14 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
                         "as_array_string": [x.value for x in attrv.data_array.all()],
                     }
 
+                case AttrType.ARRAY_NUMBER:
+                    return {
+                        "as_array_number": [
+                            float(x.value) if x.value and x.value.strip() else None
+                            for x in attrv.data_array.all()
+                        ],
+                    }
+
                 case AttrType.ARRAY_OBJECT:
                     return {
                         "as_array_object": [
@@ -783,6 +795,11 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
                 case AttrType.ARRAY_STRING:
                     return {
                         "as_array_string": AttrDefaultValue[type],
+                    }
+
+                case AttrType.ARRAY_NUMBER:
+                    return {
+                        "as_array_number": AttrDefaultValue.get(type, []),
                     }
 
                 case AttrType.ARRAY_NAMED_OBJECT:
@@ -1100,6 +1117,14 @@ class EntryHistoryAttributeValueSerializer(serializers.ModelSerializer):
             case AttrType.ARRAY_STRING:
                 return {"as_array_string": [x.value for x in obj.data_array.all()]}
 
+            case AttrType.ARRAY_NUMBER:
+                return {
+                    "as_array_number": [
+                        float(x.value) if x.value and x.value.strip() else None
+                        for x in obj.data_array.all()
+                    ]
+                }
+
             case AttrType.ARRAY_OBJECT:
                 return {
                     "as_array_object": [
@@ -1274,7 +1299,54 @@ class EntryAttributeValueRestoreSerializer(serializers.ModelSerializer):
                 "user ({}) is not permitted for the recovery operation", user.username
             )
 
-        attr.add_value(user, instance.value)
+        value: Union[str, int, float, bool, Dict[str, Any], List[Any], None]
+
+        # Prepare value based on data_type
+        match instance.data_type:
+            case AttrType.STRING | AttrType.TEXT | AttrType.NUMBER:
+                value = instance.value
+            case AttrType.BOOLEAN:
+                value = instance.boolean
+            case AttrType.DATE:
+                value = instance.date.isoformat() if instance.date else None
+            case AttrType.DATETIME:
+                value = instance.datetime.isoformat() if instance.datetime else None
+            case AttrType.OBJECT:
+                value = instance.referral.id if instance.referral else None
+            case AttrType.GROUP:
+                value = instance.group.id if instance.group else None
+            case AttrType.ROLE:
+                value = instance.role.id if instance.role else None
+            case AttrType.NAMED_OBJECT:
+                value = {
+                    "name": instance.value if instance.value else "",
+                    "id": instance.referral.id if instance.referral else None,
+                }
+            case AttrType.ARRAY_STRING | AttrType.ARRAY_NUMBER:
+                array_data = list(instance.data_array.all())
+                value = [item.value for item in array_data]
+            case AttrType.ARRAY_OBJECT:
+                array_data = list(instance.data_array.all())
+                value = [item.referral.id for item in array_data if item.referral]
+            case AttrType.ARRAY_GROUP:
+                array_data = list(instance.data_array.all())
+                value = [item.group.id for item in array_data if item.group]
+            case AttrType.ARRAY_ROLE:
+                array_data = list(instance.data_array.all())
+                value = [item.role.id for item in array_data if item.role]
+            case AttrType.ARRAY_NAMED_OBJECT:
+                array_data = list(instance.data_array.all())
+                value = [
+                    {
+                        "name": item.value if item.value else "",
+                        "id": item.referral.id if item.referral else None,
+                    }
+                    for item in array_data
+                ]
+            case _:
+                value = instance.value
+
+        attr.add_value(user, value)
         entry.register_es()
 
         # running job to notify changing entry event
