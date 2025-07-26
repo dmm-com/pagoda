@@ -74,6 +74,8 @@ def _get_attribute_value(
     | list[Role]
     | date
     | datetime
+    | int
+    | list[int]
 ):
     extra = _random_string(10)
 
@@ -109,6 +111,10 @@ def _get_attribute_value(
             return random.sample(roles, k=random.randint(1, len(roles)))
         case AttrType.DATETIME:
             return datetime.now(tz=timezone.utc)
+        case AttrType.NUMBER:
+            return random.randint(1, 1000)
+        case AttrType.ARRAY_NUMBER:
+            return [random.randint(1, 1000) for _ in range(random.randint(1, 5))]
         case _:
             raise ValueError(f"Invalid data type: {type}")
 
