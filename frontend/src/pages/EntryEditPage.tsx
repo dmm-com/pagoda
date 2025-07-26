@@ -62,6 +62,7 @@ export const EntryEditPage: FC<Props> = ({
     setError,
     setValue,
     control,
+    trigger,
   } = useForm<Schema>({
     resolver: zodResolver(schema),
     mode: "onBlur",
@@ -121,6 +122,13 @@ export const EntryEditPage: FC<Props> = ({
       }
     }
   }, [isSubmitSuccessful]);
+
+  // Show the first validation feedback
+  useEffect(() => {
+    if (initialized) {
+      trigger();
+    }
+  }, [initialized]);
 
   usePageTitle(
     entity.loading || (entryId && entry.loading)

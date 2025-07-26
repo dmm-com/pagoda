@@ -18,6 +18,8 @@ import { UseFormSetValue } from "react-hook-form/dist/types/form";
 import { Schema } from "./EntryFormSchema";
 import { ReferralsAutocomplete } from "./ReferralsAutocomplete";
 
+import { getStagedErrorStyle } from "utils/styleUtils";
+
 const StyledList = styled(List)(({}) => ({
   padding: "0",
 }));
@@ -186,13 +188,14 @@ export const NamedObjectAttributeValueField: FC<
             }
             control={control}
             defaultValue=""
-            render={({ field, fieldState: { error } }) => (
+            render={({ field, fieldState: { error, isDirty } }) => (
               <TextField
                 {...field}
                 variant="standard"
                 fullWidth
                 error={error != null}
                 helperText={error?.message}
+                sx={getStagedErrorStyle(!!error, isDirty)}
               />
             )}
           />

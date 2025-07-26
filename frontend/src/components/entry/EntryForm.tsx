@@ -1,5 +1,6 @@
 import { EntityDetail } from "@dmm-com/airone-apiclient-typescript-fetch";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import KeyboardArrowUpRoundedIcon from "@mui/icons-material/KeyboardArrowUpRounded";
 import {
   Box,
@@ -16,11 +17,12 @@ import {
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import React, { FC } from "react";
-import { Control, Controller } from "react-hook-form";
+import { Control, Controller, useFormState } from "react-hook-form";
 import { UseFormSetValue } from "react-hook-form/dist/types/form";
 
 import { AttributeValueField } from "components/entry/entryForm/AttributeValueField";
 import { Schema } from "components/entry/entryForm/EntryFormSchema";
+import { getStagedErrorStyle } from "utils/styleUtils";
 
 const ChipBox = styled(Box)(({}) => ({
   display: "flex",
@@ -79,6 +81,10 @@ export const EntryForm: FC<EntryFormProps> = ({
   control,
   setValue,
 }) => {
+  const { errors } = useFormState({
+    control,
+  });
+
   const scrollToTop = () => {
     window.scrollTo({
       top: 0,
@@ -116,6 +122,9 @@ export const EntryForm: FC<EntryFormProps> = ({
           <HeaderTableRow>
             <HeaderTableCell>項目</HeaderTableCell>
             <HeaderTableCell>内容</HeaderTableCell>
+            <HeaderTableCell
+              sx={{ width: "30px", textAlign: "center" }}
+            ></HeaderTableCell>
           </HeaderTableRow>
         </TableHead>
         <TableBody>
@@ -131,7 +140,7 @@ export const EntryForm: FC<EntryFormProps> = ({
                 name="name"
                 control={control}
                 defaultValue=""
-                render={({ field, fieldState: { error } }) => (
+                render={({ field, fieldState: { error, isDirty } }) => (
                   <TextField
                     {...field}
                     id="entry-name"
@@ -140,9 +149,30 @@ export const EntryForm: FC<EntryFormProps> = ({
                     helperText={error?.message}
                     fullWidth
                     inputProps={{ "data-1p-ignore": true }}
+                    sx={getStagedErrorStyle(!!error, isDirty)}
                   />
                 )}
               />
+            </StyledTableCell>
+            <StyledTableCell sx={{ textAlign: "center" }}>
+              {!errors.name && (
+                <Controller
+                  name="name"
+                  control={control}
+                  render={({ field }) => (
+                    <>
+                      {field.value && (
+                        <CheckCircleIcon
+                          sx={{
+                            color: "#4caf50",
+                            fontSize: 20,
+                          }}
+                        />
+                      )}
+                    </>
+                  )}
+                />
+              )}
             </StyledTableCell>
           </TableRow>
           {entity.attrs
@@ -165,6 +195,32 @@ export const EntryForm: FC<EntryFormProps> = ({
                     />
                   ) : (
                     <Typography>Permission denied.</Typography>
+                  )}
+                </StyledTableCell>
+                <StyledTableCell sx={{ textAlign: "center" }}>
+                  {isWritable && !errors.attrs?.[id] && (
+                    <Controller
+                      name={`attrs.${id}.value`}
+                      control={control}
+                      render={() => {
+                        const shouldShowCheck = isMandatory
+                          ? !errors.attrs?.[id]
+                          : true;
+
+                        return (
+                          <>
+                            {shouldShowCheck && (
+                              <CheckCircleIcon
+                                sx={{
+                                  color: "#4caf50",
+                                  fontSize: 20,
+                                }}
+                              />
+                            )}
+                          </>
+                        );
+                      }}
+                    />
                   )}
                 </StyledTableCell>
               </TableRow>

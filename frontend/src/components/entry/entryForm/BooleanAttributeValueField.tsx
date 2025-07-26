@@ -1,8 +1,10 @@
-import { Checkbox } from "@mui/material";
+import { Box, Checkbox, FormHelperText } from "@mui/material";
 import React, { FC } from "react";
 import { Control, Controller } from "react-hook-form";
 
 import { Schema } from "./EntryFormSchema";
+
+import { getStagedHelperTextStyle } from "utils/styleUtils";
 
 interface Props {
   attrId: number;
@@ -20,12 +22,22 @@ export const BooleanAttributeValueField: FC<Props> = ({
       name={`attrs.${attrId}.value.asBoolean`}
       control={control}
       defaultValue={false}
-      render={({ field }) => (
-        <Checkbox
-          checked={field.value}
-          onChange={(e) => field.onChange(e.target.checked)}
-          disabled={isDisabled}
-        />
+      render={({ field, fieldState: { error, isDirty } }) => (
+        <Box>
+          <Checkbox
+            checked={field.value}
+            onChange={(e) => field.onChange(e.target.checked)}
+            disabled={isDisabled}
+          />
+          {error && (
+            <FormHelperText
+              error
+              sx={getStagedHelperTextStyle(!!error, isDirty)}
+            >
+              {error.message}
+            </FormHelperText>
+          )}
+        </Box>
       )}
     />
   );

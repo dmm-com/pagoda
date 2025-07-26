@@ -7,14 +7,14 @@ import { Control, useFieldArray, Controller } from "react-hook-form";
 
 import { Schema } from "./EntryFormSchema";
 
+import { getStagedErrorStyle } from "utils/styleUtils";
+
 const StyledList = styled(List)(({}) => ({
   padding: "0",
 }));
 
 const StyledBox = styled(Box)(({}) => ({
-  display: "flex",
   width: "100%",
-  gap: "0 12px",
 }));
 
 interface CommonProps {
@@ -49,7 +49,7 @@ export const StringAttributeValueField: FC<
         }
         control={control}
         defaultValue=""
-        render={({ field, fieldState: { error } }) => (
+        render={({ field, fieldState: { error, isDirty } }) => (
           <TextField
             {...field}
             variant="standard"
@@ -59,6 +59,7 @@ export const StringAttributeValueField: FC<
             multiline={multiline}
             minRows={multiline === true ? 5 : 1}
             disabled={isDisabled}
+            sx={getStagedErrorStyle(!!error, isDirty)}
           />
         )}
       />
