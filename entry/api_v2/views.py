@@ -214,7 +214,10 @@ class EntryAPI(viewsets.ModelViewSet):
                 parent_attrv__isnull=True,
             )
             .order_by("-created_time")
-            .select_related("parent_attr__schema", "created_user")
+            .select_related(
+                "parent_attr__schema", "created_user", "referral", "referral__entry__schema"
+            )
+            .prefetch_related("data_array__referral__entry__schema")
         )
 
         return super(EntryAPI, self).list(request, *args, **kwargs)
