@@ -7,6 +7,14 @@
 ### Changed
 
 ### Fixed
+
+## v3.143.0
+
+### Added
+* Improve form validation user feedback.
+  Contributed by @syucream
+
+### Fixed
 * Fixed problem hint_entry attitude that include user specified regex pattern ("|")
   Contributed by @userlocalhost, @hinashi
 
