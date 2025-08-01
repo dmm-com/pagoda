@@ -9,6 +9,8 @@ import { UseFormSetValue } from "react-hook-form/dist/types/form";
 
 import { Schema } from "./EntryFormSchema";
 
+import { getStagedErrorStyle } from "utils/styleUtils";
+
 const StyledBox = styled(Box)(({}) => ({
   display: "flex",
   flexDirection: "column",
@@ -39,7 +41,7 @@ export const DateTimeAttributeValueField: FC<Props> = ({
         name={`attrs.${attrId}.value.asString`}
         control={control}
         defaultValue=""
-        render={({ field, fieldState: { error } }) => (
+        render={({ field, fieldState: { error, isDirty } }) => (
           <LocalizationProvider dateAdapter={AdapterDateFns}>
             <DateTimePicker
               format="yyyy/MM/dd HH:mm:ss"
@@ -62,6 +64,7 @@ export const DateTimeAttributeValueField: FC<Props> = ({
                   helperText: error?.message,
                   size: "small",
                   fullWidth: false,
+                  sx: getStagedErrorStyle(!!error, isDirty),
                 },
               }}
               disabled={isDisabled}

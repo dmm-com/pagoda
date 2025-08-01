@@ -14,6 +14,8 @@ import { aironeApiClient } from "../../../repository/AironeApiClient";
 
 import { Schema } from "./EntryFormSchema";
 
+import { getStagedErrorStyle } from "utils/styleUtils";
+
 const StyledTypography = styled(Typography)(() => ({
   color: "rgba(0, 0, 0, 0.6)",
 }));
@@ -86,7 +88,7 @@ export const RoleAttributeValueField: FC<Props> = ({
               : `attrs.${attrId}.value.asRole`
           }
           control={control}
-          render={({ field, fieldState: { error } }) => (
+          render={({ field, fieldState: { error, isDirty } }) => (
             <Autocomplete<RoleOption, boolean>
               fullWidth
               multiple={multiple}
@@ -104,6 +106,7 @@ export const RoleAttributeValueField: FC<Props> = ({
                   helperText={error?.message}
                   size="small"
                   placeholder={multiple ? "" : "-NOT SET-"}
+                  sx={getStagedErrorStyle(!!error, isDirty)}
                   InputProps={{
                     ...params.InputProps,
                     endAdornment: (

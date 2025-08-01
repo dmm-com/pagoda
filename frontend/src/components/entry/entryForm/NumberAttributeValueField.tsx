@@ -4,6 +4,8 @@ import { Control, Controller } from "react-hook-form";
 
 import { Schema } from "./EntryFormSchema";
 
+import { getStagedErrorStyle } from "utils/styleUtils";
+
 interface Props {
   attrId: number;
   control: Control<Schema>;
@@ -20,7 +22,7 @@ export const NumberAttributeValueField: FC<Props> = ({
       name={`attrs.${attrId}.value.asNumber`}
       control={control}
       defaultValue={null}
-      render={({ field, fieldState: { error } }) => (
+      render={({ field, fieldState: { error, isDirty } }) => (
         <TextField
           {...field}
           type="number"
@@ -34,6 +36,7 @@ export const NumberAttributeValueField: FC<Props> = ({
             const value = e.target.value;
             field.onChange(value === "" ? null : Number(value));
           }}
+          sx={getStagedErrorStyle(!!error, isDirty)}
         />
       )}
     />

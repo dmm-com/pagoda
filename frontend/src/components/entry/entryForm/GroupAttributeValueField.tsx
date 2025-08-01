@@ -14,6 +14,8 @@ import { aironeApiClient } from "../../../repository/AironeApiClient";
 
 import { Schema } from "./EntryFormSchema";
 
+import { getStagedErrorStyle } from "utils/styleUtils";
+
 const StyledTypography = styled(Typography)(() => ({
   color: "rgba(0, 0, 0, 0.6)",
 }));
@@ -93,7 +95,7 @@ export const GroupAttributeValueField: FC<Props> = ({
               : `attrs.${attrId}.value.asGroup`
           }
           control={control}
-          render={({ field, fieldState: { error } }) => (
+          render={({ field, fieldState: { error, isDirty } }) => (
             <Autocomplete<GroupOption, boolean, false, false>
               fullWidth
               multiple={multiple}
@@ -111,6 +113,7 @@ export const GroupAttributeValueField: FC<Props> = ({
                   helperText={error?.message}
                   size="small"
                   placeholder={multiple ? "" : "-NOT SET-"}
+                  sx={getStagedErrorStyle(!!error, isDirty)}
                   InputProps={{
                     ...params.InputProps,
                     endAdornment: (
