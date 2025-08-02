@@ -9,7 +9,7 @@ import {
   Typography,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import React, { FC, useMemo, useState } from "react";
+import { FC, useMemo, useState } from "react";
 import { Link } from "react-router";
 
 import { useAsyncWithThrow } from "../../hooks/useAsyncWithThrow";

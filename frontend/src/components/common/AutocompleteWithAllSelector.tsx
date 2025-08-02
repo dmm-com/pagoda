@@ -8,7 +8,7 @@ import {
   FilterOptionsState,
 } from "@mui/material";
 import { AutocompleteProps } from "@mui/material/Autocomplete/Autocomplete";
-import React, {
+import {
   HTMLAttributes,
   SyntheticEvent,
   useEffect,

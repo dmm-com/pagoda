@@ -7,7 +7,7 @@ import {
   Typography,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import React, { FC, useCallback, useEffect, useState } from "react";
+import { FC, ReactNode, useCallback, useEffect, useState } from "react";
 import { ErrorBoundary, FallbackProps } from "react-error-boundary";
 import { useError } from "react-use";
 
@@ -116,7 +116,7 @@ const ErrorFallback: FC<FallbackProps> = ({ error, resetErrorBoundary }) => {
   }
 };
 
-const ErrorBridge: FC<{ children: React.ReactNode }> = ({ children }) => {
+const ErrorBridge: FC<{ children: ReactNode }> = ({ children }) => {
   const dispatchError = useError();
 
   const handleUnhandledRejection = useCallback(
@@ -145,9 +145,7 @@ const ErrorBridge: FC<{ children: React.ReactNode }> = ({ children }) => {
   return <>{children}</>;
 };
 
-export const ErrorHandler: FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
+export const ErrorHandler: FC<{ children: ReactNode }> = ({ children }) => {
   return (
     <ErrorBoundary FallbackComponent={ErrorFallback}>
       <ErrorBridge>{children}</ErrorBridge>

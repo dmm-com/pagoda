@@ -1,6 +1,6 @@
 import { Box, CircularProgress, Typography } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import React, { FC } from "react";
+import { FC } from "react";
 
 const LoadingBox = styled(Box)(({ theme }) => ({
   margin: "auto",

@@ -1,6 +1,6 @@
 import { Pagination, Stack, Typography } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import React, { FC } from "react";
+import { FC } from "react";
 
 import { CenterAlignedBox } from "components/common/FlexBox";
 

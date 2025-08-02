@@ -3,7 +3,6 @@
  */
 
 import { render } from "@testing-library/react";
-import React from "react";
 
 import { TestWrapper } from "TestWrapper";
 import { SearchResults } from "components/entry/SearchResults";

@@ -11,7 +11,7 @@ import {
   Typography,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import React, { FC, KeyboardEvent } from "react";
+import { FC, KeyboardEvent } from "react";
 
 import { AttrFilter } from "../../services/entry/AdvancedSearch";
 

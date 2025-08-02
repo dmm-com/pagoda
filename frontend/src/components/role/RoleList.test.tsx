@@ -4,7 +4,6 @@
 
 import { Role } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { act, render, screen, waitFor, within } from "@testing-library/react";
-import React from "react";
 
 import { RoleList } from "./RoleList";
 

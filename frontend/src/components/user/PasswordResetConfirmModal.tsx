@@ -1,6 +1,6 @@
 import { Box, Button, Input } from "@mui/material";
 import { useSnackbar } from "notistack";
-import React, { FC, useState } from "react";
+import { FC, useState } from "react";
 
 import { aironeApiClient } from "../../repository/AironeApiClient";
 import { AironeModal } from "../common/AironeModal";

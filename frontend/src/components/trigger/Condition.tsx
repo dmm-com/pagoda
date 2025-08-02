@@ -16,7 +16,7 @@ import {
   TextField,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import React, { FC } from "react";
+import { FC } from "react";
 import { Control, Controller, useWatch } from "react-hook-form";
 
 import { Schema } from "./TriggerFormSchema";

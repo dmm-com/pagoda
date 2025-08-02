@@ -1,5 +1,5 @@
 import { Box, Checkbox, Typography } from "@mui/material";
-import React, { FC, useState } from "react";
+import { FC, useState } from "react";
 
 import { AironeModal } from "../common/AironeModal";
 

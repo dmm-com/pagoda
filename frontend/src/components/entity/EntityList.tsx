@@ -2,7 +2,7 @@ import { PaginatedEntityListList } from "@dmm-com/airone-apiclient-typescript-fe
 import AddIcon from "@mui/icons-material/Add";
 import { Box, Button } from "@mui/material";
 import Grid from "@mui/material/Grid2";
-import React, { FC } from "react";
+import { FC } from "react";
 import { Link } from "react-router";
 
 import { EntityListCard } from "./EntityListCard";

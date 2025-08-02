@@ -2,7 +2,7 @@ import { EntryBase } from "@dmm-com/airone-apiclient-typescript-fetch";
 import AppsIcon from "@mui/icons-material/Apps";
 import { Box, Container, Grid, IconButton } from "@mui/material";
 import { useSnackbar } from "notistack";
-import React, { FC, useEffect, useState } from "react";
+import { FC, useEffect, useState } from "react";
 
 import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
 import { useTypedParams } from "../hooks/useTypedParams";
@@ -34,7 +34,7 @@ export const AliasEntryListPage: FC = ({}) => {
 
   const [entityAnchorEl, setEntityAnchorEl] =
     useState<HTMLButtonElement | null>(null);
-  const [openImportModal, setOpenImportModal] = React.useState(false);
+  const [openImportModal, setOpenImportModal] = useState(false);
 
   const [entries, setEntries] = useState<EntryBase[]>([]);
   const [totalCount, setTotalCount] = useState<number>(0);

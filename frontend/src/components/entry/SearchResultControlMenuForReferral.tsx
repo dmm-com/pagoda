@@ -11,7 +11,7 @@ import {
   Typography,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import React, { ChangeEvent, Dispatch, FC, useState } from "react";
+import { ChangeEvent, Dispatch, FC, KeyboardEvent, useState } from "react";
 
 import { AttrFilter } from "../../services/entry/AdvancedSearch";
 
@@ -46,7 +46,7 @@ export const SearchResultControlMenuForReferral: FC<Props> = ({
   handleSelectFilterConditions,
   handleClear,
 }) => {
-  const handleKeyPressKeyword = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyPressKeyword = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
       setFilterKey(AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_CONTAINED);
       handleSelectFilterConditions();

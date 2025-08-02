@@ -16,7 +16,7 @@ import {
   Typography,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import React, { FC } from "react";
+import { FC, useState } from "react";
 import { Control, Controller, useFieldArray } from "react-hook-form";
 
 import { Schema } from "./EntityFormSchema";
@@ -63,7 +63,7 @@ export const WebhookFields: FC<Props> = ({ control }) => {
     remove(index);
   };
 
-  const [openModalIndex, setOpenModalIndex] = React.useState(-1);
+  const [openModalIndex, setOpenModalIndex] = useState(-1);
   const handleOpenModal = (webhookIndex: number) => {
     setOpenModalIndex(webhookIndex);
   };

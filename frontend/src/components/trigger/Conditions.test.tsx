@@ -7,7 +7,7 @@ import {
   EntryAttributeTypeTypeEnum,
 } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { render, screen, within } from "@testing-library/react";
-import React, { FC } from "react";
+import { FC } from "react";
 import { useForm } from "react-hook-form";
 
 import { TestWrapper } from "../../TestWrapper";

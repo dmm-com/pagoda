@@ -1,7 +1,7 @@
 import AddIcon from "@mui/icons-material/Add";
 import { Box, Button, Container, List, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid2";
-import React, { FC, useState } from "react";
+import { FC, useState } from "react";
 import { Link } from "react-router";
 
 import { CategoryListHeader } from "components/category/CategoryListHeader";

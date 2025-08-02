@@ -6,7 +6,7 @@ import {
   DialogTitle,
   DialogContent,
 } from "@mui/material";
-import React, { ReactElement, FC, SyntheticEvent, useState } from "react";
+import { ReactElement, FC, SyntheticEvent, useState } from "react";
 
 interface Props {
   componentGenerator: (handleOpen: () => void) => ReactElement;

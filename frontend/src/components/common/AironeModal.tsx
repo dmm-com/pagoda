@@ -1,6 +1,6 @@
 import { Box, Modal, Typography } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import React, { FC, ReactNode } from "react";
+import { FC, ReactNode } from "react";
 
 const StyledModal = styled(Modal)(({}) => ({
   display: "flex",

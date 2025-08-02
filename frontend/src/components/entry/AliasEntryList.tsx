@@ -2,7 +2,7 @@ import { EntryBase } from "@dmm-com/airone-apiclient-typescript-fetch";
 import AddIcon from "@mui/icons-material/Add";
 import { Chip, Stack, TextField } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import React, { FC } from "react";
+import { FC, useState } from "react";
 
 const StyledTextField = styled(TextField)({
   background: "#F4F4F4",
@@ -22,7 +22,7 @@ export const AliasEntryList: FC<Props> = ({
   handleCreate,
   handleDelete,
 }) => {
-  const [isEdit, setIsEdit] = React.useState(false);
+  const [isEdit, setIsEdit] = useState(false);
 
   return (
     <Stack direction="row" spacing={1} alignItems="center" height="40px">

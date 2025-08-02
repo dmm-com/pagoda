@@ -17,7 +17,7 @@ import {
   Autocomplete,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import React, { FC, useMemo, useState } from "react";
+import { FC, useMemo, useState } from "react";
 import { Control, Controller, useWatch } from "react-hook-form";
 import { UseFormSetValue } from "react-hook-form/dist/types/form";
 import { Link } from "react-router";

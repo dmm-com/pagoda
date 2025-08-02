@@ -1,6 +1,6 @@
 import { Box, Button, Typography } from "@mui/material";
 import { DateTimePicker } from "@mui/x-date-pickers";
-import React, { FC, useEffect, useState } from "react";
+import { FC, useEffect, useState } from "react";
 
 interface DateTimeRangePickerProps {
   initialStart?: string;

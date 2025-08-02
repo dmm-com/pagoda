@@ -1,4 +1,4 @@
-import React, { FC } from "react";
+import { FC, ReactNode } from "react";
 
 import { NonTermsServiceAgreement } from "services/Exceptions";
 import { ServerContext } from "services/ServerContext";
@@ -7,7 +7,7 @@ function getCookieValue(key: string) {
   return ((document.cookie + ";").match(key + "=([^¥S;]*)") || [])[1];
 }
 
-export const CheckTerms: FC<{ children: React.ReactNode }> = ({ children }) => {
+export const CheckTerms: FC<{ children: ReactNode }> = ({ children }) => {
   const serverContext = ServerContext.getInstance();
 
   if (

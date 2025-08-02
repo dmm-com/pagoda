@@ -7,7 +7,6 @@ import {
   EntryAttributeTypeTypeEnum,
 } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { act, render, screen, within } from "@testing-library/react";
-import * as React from "react";
 
 import { TestWrapper } from "TestWrapper";
 import { EntryAttributes } from "components/entry/EntryAttributes";

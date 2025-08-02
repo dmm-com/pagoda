@@ -5,7 +5,7 @@
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { SnackbarProvider } from "notistack";
-import React from "react";
+import { FC, ReactNode } from "react";
 import { MemoryRouter } from "react-router";
 
 import { ImportForm } from "./ImportForm";
@@ -45,7 +45,7 @@ jest.mock("react-router", () => ({
   useNavigate: () => mockNavigate,
 }));
 
-const TestWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+const TestWrapper: FC<{ children: ReactNode }> = ({ children }) => {
   const theme = createTheme();
   return (
     <ThemeProvider theme={theme}>

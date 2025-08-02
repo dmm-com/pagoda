@@ -13,7 +13,7 @@ import {
 import Grid from "@mui/material/Grid2";
 import { styled } from "@mui/material/styles";
 import { useSnackbar } from "notistack";
-import React, { FC, useMemo, useState } from "react";
+import { FC, KeyboardEvent, useMemo, useState } from "react";
 import { Link } from "react-router";
 
 import { UserControlMenu } from "./UserControlMenu";
@@ -91,10 +91,7 @@ export const UserList: FC = () => {
           <SearchBox
             placeholder="ユーザを絞り込む"
             defaultValue={query}
-            onKeyPress={(
-              e: React.KeyboardEvent<HTMLDivElement>,
-              value: string,
-            ) => {
+            onKeyPress={(e: KeyboardEvent<HTMLDivElement>, value: string) => {
               if (e.key === "Enter") {
                 handleChangeQuery(normalizeToMatch(value));
               }

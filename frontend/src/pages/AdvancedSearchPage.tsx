@@ -13,7 +13,7 @@ import {
   Typography,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import React, { FC, SyntheticEvent, useMemo, useState } from "react";
+import { FC, SyntheticEvent, useMemo, useState } from "react";
 import { Link } from "react-router";
 
 import { AutocompleteWithAllSelector } from "../components/common/AutocompleteWithAllSelector";

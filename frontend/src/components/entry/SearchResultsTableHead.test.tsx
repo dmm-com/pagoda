@@ -5,7 +5,6 @@
 import { EntryAttributeTypeTypeEnum } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { Table, TableContainer } from "@mui/material";
 import { render, screen } from "@testing-library/react";
-import React from "react";
 import { useLocation, useNavigate } from "react-router";
 
 import { SearchResultsTableHead } from "./SearchResultsTableHead";

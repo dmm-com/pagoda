@@ -1,5 +1,5 @@
 import { Box, Button, Typography } from "@mui/material";
-import React, { FC } from "react";
+import { FC } from "react";
 
 import { loginPath } from "../routes/Routes";
 

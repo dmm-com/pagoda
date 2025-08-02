@@ -10,7 +10,7 @@ import {
   Typography,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import React, { FC, useState } from "react";
+import { FC, useState } from "react";
 import { Link } from "react-router";
 
 import { EntityControlMenu } from "./EntityControlMenu";
@@ -62,7 +62,7 @@ interface Props {
 
 export const EntityListCard: FC<Props> = ({ entity, setToggle }) => {
   const [anchorElem, setAnchorElem] = useState<HTMLButtonElement | null>(null);
-  const [openImportModal, setOpenImportModal] = React.useState(false);
+  const [openImportModal, setOpenImportModal] = useState(false);
 
   return (
     <StyledCard>

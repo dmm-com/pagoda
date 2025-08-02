@@ -3,7 +3,7 @@ import {
   AdvancedSearchResultAttrInfoFilterKeyEnum,
 } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { Autocomplete, Box, Button, TextField } from "@mui/material";
-import React, { FC, useState } from "react";
+import { FC, useState } from "react";
 import { useNavigate } from "react-router";
 
 import { AironeModal } from "components/common/AironeModal";
