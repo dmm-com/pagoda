@@ -52,9 +52,14 @@ def history(request, pk: int) -> HttpResponse:
     if not Entity.objects.filter(id=pk).exists():
         return HttpResponse("Failed to get entity of specified id", status=400)
 
-    # entity to be editted is given by url
+    # Entity to be edited is given by URL
     entity = Entity.objects.get(id=pk)
-    histories = History.objects.filter(target_obj=entity, is_detail=False).order_by("-time")
+    histories = (
+        History.objects.filter(target_obj=entity, is_detail=False)
+        .select_related("user", "target_obj")
+        .prefetch_related("details__user", "details__target_obj")
+        .order_by("-time")
+    )
 
     return JsonResponse(
         [
@@ -271,7 +276,6 @@ class EntityHistoryAPI(viewsets.ReadOnlyModelViewSet):
         entity = Entity.objects.get(id=self.kwargs.get("entity_id"))
         if not entity:
             raise Http404
-        # return entity.history.all()
 
         attrs = entity.attrs.all()
 
@@ -279,6 +283,34 @@ class EntityHistoryAPI(viewsets.ReadOnlyModelViewSet):
         entity_attr_histories = History.objects.filter(target_obj__in=attrs, is_detail=True)
 
         return entity_histories.union(entity_attr_histories).order_by("-time")
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+
+        # Solve N+1 problem by prefetching related objects
+        # Trade-off: Uses more memory and 2 queries instead of 1, but eliminates N+1 queries
+        history_ids = list(queryset.values_list("id", flat=True))
+
+        # Bulk fetch user and target_obj relations to avoid N+1 queries in serialization
+        histories_with_relations = History.objects.filter(id__in=history_ids).select_related(
+            "user", "target_obj"
+        )
+
+        # Create ID-based mapping for efficient lookup during serialization
+        history_cache = {h.id: h for h in histories_with_relations}
+
+        # Replace queryset results with cached objects and maintain time ordering
+        # Note: Sorting is done in Python, which may be slower for very large datasets
+        cached_histories = [history_cache[h_id] for h_id in history_ids if h_id in history_cache]
+        cached_histories.sort(key=lambda h: h.time, reverse=True)
+
+        page = self.paginate_queryset(cached_histories)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(cached_histories, many=True)
+        return Response(serializer.data)
 
 
 class EntityImportAPI(generics.GenericAPIView):
