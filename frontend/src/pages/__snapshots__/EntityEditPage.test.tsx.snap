@@ -261,7 +261,7 @@ exports[`EditEntityPage should match snapshot 1`] = `
                         <input
                           aria-invalid="false"
                           class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputSizeSmall css-1pzfmz2-MuiInputBase-input-MuiOutlinedInput-input"
-                          id=":r3:"
+                          id="«r3»"
                           name="note"
                           placeholder="備考"
                           required=""
@@ -307,7 +307,7 @@ exports[`EditEntityPage should match snapshot 1`] = `
                         <input
                           aria-invalid="false"
                           class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputSizeSmall css-1pzfmz2-MuiInputBase-input-MuiOutlinedInput-input"
-                          id=":r4:"
+                          id="«r4»"
                           name="itemNamePattern"
                           placeholder="アイテム名の許可パターン"
                           required=""
@@ -886,7 +886,7 @@ exports[`EditEntityPage should match snapshot 1`] = `
                       <input
                         aria-invalid="false"
                         class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputSizeSmall css-1pzfmz2-MuiInputBase-input-MuiOutlinedInput-input"
-                        id=":r3:"
+                        id="«r3»"
                         name="note"
                         placeholder="備考"
                         required=""
@@ -932,7 +932,7 @@ exports[`EditEntityPage should match snapshot 1`] = `
                       <input
                         aria-invalid="false"
                         class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputSizeSmall css-1pzfmz2-MuiInputBase-input-MuiOutlinedInput-input"
-                        id=":r4:"
+                        id="«r4»"
                         name="itemNamePattern"
                         placeholder="アイテム名の許可パターン"
                         required=""

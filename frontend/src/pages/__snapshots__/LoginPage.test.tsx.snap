@@ -45,7 +45,6 @@ exports[`should match snapshot 1`] = `
                   id="username"
                   name="username"
                   type="text"
-                  value=""
                 />
                 <fieldset
                   aria-hidden="true"
@@ -81,7 +80,6 @@ exports[`should match snapshot 1`] = `
                   id="password"
                   name="password"
                   type="password"
-                  value=""
                 />
                 <div
                   class="MuiInputAdornment-root MuiInputAdornment-positionEnd MuiInputAdornment-outlined MuiInputAdornment-sizeMedium css-elo8k2-MuiInputAdornment-root"
@@ -126,7 +124,6 @@ exports[`should match snapshot 1`] = `
                 id="next"
                 name="next"
                 type="hidden"
-                value=""
               />
             </div>
             <div
@@ -224,7 +221,6 @@ exports[`should match snapshot 1`] = `
                 id="username"
                 name="username"
                 type="text"
-                value=""
               />
               <fieldset
                 aria-hidden="true"
@@ -260,7 +256,6 @@ exports[`should match snapshot 1`] = `
                 id="password"
                 name="password"
                 type="password"
-                value=""
               />
               <div
                 class="MuiInputAdornment-root MuiInputAdornment-positionEnd MuiInputAdornment-outlined MuiInputAdornment-sizeMedium css-elo8k2-MuiInputAdornment-root"
@@ -305,7 +300,6 @@ exports[`should match snapshot 1`] = `
               id="next"
               name="next"
               type="hidden"
-              value=""
             />
           </div>
           <div

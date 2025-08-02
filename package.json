@@ -62,10 +62,9 @@
     "@mui/system": "^6.4.6",
     "@mui/x-date-pickers": "^7.27.1",
     "@testing-library/jest-dom": "^5.17.0",
-    "@testing-library/react": "^14.0.0",
+    "@testing-library/react": "^16.3.0",
     "@types/encoding-japanese": "^2.2.1",
     "@types/jest": "^29.5.14",
-    "@types/react-copy-to-clipboard": "^5.0.7",
     "@types/uuid": "^10.0.0",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",
@@ -88,11 +87,10 @@
     "material-ui-popup-state": "^5.3.3",
     "msw": "^2.7.3",
     "prettier": "^3.5.2",
-    "react": "^18.3.1",
-    "react-copy-to-clipboard": "^5.1.0",
-    "react-dom": "^18.3.1",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
     "react-error-boundary": "^5.0.0",
-    "react-hook-form": "^7.54.2",
+    "react-hook-form": "^7.62.0",
     "react-i18next": "^15.4.1",
     "react-use": "^17.6.0",
     "source-map-loader": "^4.0.2",
@@ -110,8 +108,8 @@
     "@emotion/styled": "^11.0.0",
     "@mui/material": "^6.0.0",
     "notistack": "^3.0.1",
-    "react": "^18.0.0",
-    "react-dom": "^18.0.0"
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1"
   },
   "dependencies": {
     "react-router": "^7.5.2"

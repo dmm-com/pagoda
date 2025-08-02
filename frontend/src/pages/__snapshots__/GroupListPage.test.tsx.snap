@@ -389,7 +389,7 @@ exports[`GroupListPage should match snapshot 1`] = `
                 <input
                   aria-invalid="false"
                   class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputAdornedStart css-2u11ia-MuiInputBase-input-MuiOutlinedInput-input"
-                  id=":r7:"
+                  id="«r7»"
                   placeholder="ユーザを絞り込む"
                   type="text"
                   value=""
@@ -805,7 +805,7 @@ exports[`GroupListPage should match snapshot 1`] = `
               <input
                 aria-invalid="false"
                 class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputAdornedStart css-2u11ia-MuiInputBase-input-MuiOutlinedInput-input"
-                id=":r7:"
+                id="«r7»"
                 placeholder="ユーザを絞り込む"
                 type="text"
                 value=""

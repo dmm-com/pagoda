@@ -199,7 +199,7 @@ exports[`should match snapshot 1`] = `
                     <input
                       aria-invalid="false"
                       class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputAdornedStart css-2u11ia-MuiInputBase-input-MuiOutlinedInput-input"
-                      id=":r1:"
+                      id="«r1»"
                       placeholder="アイテムを絞り込む"
                       type="text"
                       value=""
@@ -684,7 +684,7 @@ exports[`should match snapshot 1`] = `
                   <input
                     aria-invalid="false"
                     class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputAdornedStart css-2u11ia-MuiInputBase-input-MuiOutlinedInput-input"
-                    id=":r1:"
+                    id="«r1»"
                     placeholder="アイテムを絞り込む"
                     type="text"
                     value=""
