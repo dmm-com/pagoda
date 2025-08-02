@@ -1,7 +1,7 @@
 import AutorenewIcon from "@mui/icons-material/Autorenew";
 import { Box, Divider, Tooltip, Typography } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import React, { FC } from "react";
+import { FC, ReactNode } from "react";
 import { Link } from "react-router";
 
 import { jobsPath } from "routes/Routes";
@@ -46,7 +46,7 @@ interface Props {
   description?: string;
   targetId?: number;
   hasOngoingProcess?: boolean;
-  children?: React.ReactNode;
+  children?: ReactNode;
 }
 
 export const PageHeader: FC<Props> = ({

@@ -17,7 +17,7 @@ import { IconButtonTypeMap } from "@mui/material/IconButton/IconButton";
 import { OverridableComponent } from "@mui/material/OverridableComponent";
 import { styled } from "@mui/material/styles";
 import { useSnackbar } from "notistack";
-import React, { FC, useState } from "react";
+import { FC, useState } from "react";
 import { Link, useNavigate } from "react-router";
 
 import { useAsyncWithThrow } from "../../hooks/useAsyncWithThrow";

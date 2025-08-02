@@ -9,7 +9,7 @@ import {
   Typography,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import React, { FC } from "react";
+import { FC } from "react";
 
 import { AironeTableHeadCell } from "components/common/AironeTableHeadCell";
 import { AironeTableHeadRow } from "components/common/AironeTableHeadRow";

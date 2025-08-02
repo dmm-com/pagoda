@@ -2,7 +2,7 @@ import { ACLObjtypeEnum } from "@dmm-com/airone-apiclient-typescript-fetch";
 import AppsIcon from "@mui/icons-material/Apps";
 import { Box, Container, IconButton } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import React, { FC, useEffect, useState } from "react";
+import { FC, useEffect, useState } from "react";
 
 import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
 
@@ -25,7 +25,7 @@ export const ACLHistoryPage: FC = () => {
   const { objectId } = useTypedParams<{ objectId: number }>();
   const [breadcrumbs, setBreadcrumbs] = useState<JSX.Element>(<Box />);
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
-  const [openImportModal, setOpenImportModal] = React.useState(false);
+  const [openImportModal, setOpenImportModal] = useState(false);
 
   const acl = useAsyncWithThrow(async () => {
     return await aironeApiClient.getAcl(objectId);

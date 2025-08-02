@@ -6,7 +6,6 @@ import {
   waitFor,
   within,
 } from "@testing-library/react";
-import React from "react";
 
 import { AutocompleteWithAllSelector } from "./AutocompleteWithAllSelector";
 

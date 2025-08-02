@@ -8,7 +8,7 @@ import {
   Typography,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import React, { FC, useState } from "react";
+import { FC, useState } from "react";
 import { Control, useFieldArray } from "react-hook-form";
 import { UseFormSetValue } from "react-hook-form/dist/types/form";
 

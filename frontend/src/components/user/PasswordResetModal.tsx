@@ -1,6 +1,6 @@
 import { Box, Button, Input } from "@mui/material";
 import { useSnackbar } from "notistack";
-import React, { FC, useCallback, useState } from "react";
+import { FC, useCallback, useState } from "react";
 
 import { AironeModal } from "../common/AironeModal";
 

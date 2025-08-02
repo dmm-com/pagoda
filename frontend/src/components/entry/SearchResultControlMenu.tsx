@@ -20,7 +20,7 @@ import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
 import { DesktopDatePicker } from "@mui/x-date-pickers/DesktopDatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import React, { ChangeEvent, FC, useEffect, useState } from "react";
+import { ChangeEvent, FC, KeyboardEvent, useEffect, useState } from "react";
 
 import { AttrFilter } from "../../services/entry/AdvancedSearch";
 import { DateRangePicker } from "../common/DateRangePicker";
@@ -102,7 +102,7 @@ export const SearchResultControlMenu: FC<Props> = ({
 
   const handleKeyPressKeyword =
     (filterKey: AdvancedSearchResultAttrInfoFilterKeyEnum) =>
-    (e: React.KeyboardEvent<HTMLDivElement>) => {
+    (e: KeyboardEvent<HTMLDivElement>) => {
       if (e.key === "Enter") {
         handleSelectFilterConditions({
           ...attrFilter,

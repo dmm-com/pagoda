@@ -1,6 +1,6 @@
 import AppsIcon from "@mui/icons-material/Apps";
 import { Box, Container, IconButton } from "@mui/material";
-import React, { FC, useState } from "react";
+import { FC, useState } from "react";
 
 import { PageHeader } from "components/common/PageHeader";
 import { EntityBreadcrumbs } from "components/entity/EntityBreadcrumbs";
@@ -22,7 +22,7 @@ export const EntryListPage: FC<Props> = ({ canCreateEntry = true }) => {
 
   const [entityAnchorEl, setEntityAnchorEl] =
     useState<HTMLButtonElement | null>(null);
-  const [openImportModal, setOpenImportModal] = React.useState(false);
+  const [openImportModal, setOpenImportModal] = useState(false);
 
   const entity = useAsyncWithThrow(async () => {
     return await aironeApiClient.getEntity(entityId);

@@ -1,7 +1,7 @@
 import { Box, Button, Input, Typography } from "@mui/material";
 import Encoding from "encoding-japanese";
 import { useSnackbar } from "notistack";
-import React, { ChangeEvent, FC, useState } from "react";
+import { ChangeEvent, FC, useState } from "react";
 import { useNavigate } from "react-router";
 
 import {

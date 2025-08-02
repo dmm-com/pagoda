@@ -1,6 +1,6 @@
 import ReplayIcon from "@mui/icons-material/Replay";
 import { Box, Button, Container, Typography } from "@mui/material";
-import React, { FC, useMemo } from "react";
+import { FC, useMemo } from "react";
 import { useLocation } from "react-router";
 import { useToggle } from "react-use";
 

@@ -1,6 +1,6 @@
 import AppsIcon from "@mui/icons-material/Apps";
 import { Box, Container, IconButton } from "@mui/material";
-import React, { FC, useState } from "react";
+import { FC, useState } from "react";
 
 import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
 

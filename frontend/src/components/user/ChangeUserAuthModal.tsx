@@ -2,7 +2,7 @@ import { UserRetrieve } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { Box, Button, Input, Modal, Typography } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { useSnackbar } from "notistack";
-import React, { FC, useCallback, useState } from "react";
+import { FC, useCallback, useState } from "react";
 
 import { aironeApiClient } from "repository/AironeApiClient";
 

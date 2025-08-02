@@ -5,7 +5,6 @@
 import { render, screen, act, waitFor } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
-import React from "react";
 
 import { TestWrapper } from "TestWrapper";
 import { AdvancedSearchResultsPage } from "pages/AdvancedSearchResultsPage";

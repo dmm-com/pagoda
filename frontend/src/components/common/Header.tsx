@@ -19,7 +19,7 @@ import { OverridableComponent } from "@mui/material/OverridableComponent";
 import { styled } from "@mui/material/styles";
 import PopupState, { bindHover, bindMenu } from "material-ui-popup-state";
 import HoverMenu from "material-ui-popup-state/HoverMenu";
-import React, { FC, MouseEvent, useMemo, useState } from "react";
+import { FC, Fragment, MouseEvent, useMemo, useState } from "react";
 import { Link } from "react-router";
 import { useInterval } from "react-use";
 
@@ -190,7 +190,7 @@ export const Header: FC = () => {
               </Button>
               <PopupState variant="popover" popupId="basic">
                 {(popupState) => (
-                  <React.Fragment>
+                  <Fragment>
                     <Button {...bindHover(popupState)}>
                       {t("management")}
                       <KeyboardArrowDownIcon fontSize="small" />
@@ -209,7 +209,7 @@ export const Header: FC = () => {
                         {t("manageTriggers")}
                       </MenuItem>
                     </HoverMenu>
-                  </React.Fragment>
+                  </Fragment>
                 )}
               </PopupState>
 
@@ -218,7 +218,7 @@ export const Header: FC = () => {
               {serverContext?.extendedHeaderMenus.map((menu, index) => (
                 <PopupState variant="popover" popupId={menu.name} key={index}>
                   {(popupState) => (
-                    <React.Fragment>
+                    <Fragment>
                       <Button {...bindHover(popupState)}>
                         {menu.name}
                         <KeyboardArrowDownIcon fontSize="small" />
@@ -230,7 +230,7 @@ export const Header: FC = () => {
                           </MenuItem>
                         ))}
                       </HoverMenu>
-                    </React.Fragment>
+                    </Fragment>
                   )}
                 </PopupState>
               ))}

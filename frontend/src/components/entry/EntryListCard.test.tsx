@@ -4,7 +4,6 @@
 
 import { EntryBase } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { render } from "@testing-library/react";
-import React from "react";
 
 import { TestWrapper } from "TestWrapper";
 import { EntryListCard } from "components/entry/EntryListCard";

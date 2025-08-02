@@ -2,7 +2,6 @@
  * @jest-environment jsdom
  */
 import { render, screen, fireEvent } from "@testing-library/react";
-import React from "react";
 import { useForm } from "react-hook-form";
 
 import { AttributeNoteModal } from "./AttributeNoteModal";

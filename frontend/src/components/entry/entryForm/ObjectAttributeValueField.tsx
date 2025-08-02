@@ -11,7 +11,7 @@ import {
   Typography,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import React, { FC } from "react";
+import { FC } from "react";
 import { Control, Controller, useFieldArray } from "react-hook-form";
 import { UseFormSetValue } from "react-hook-form/dist/types/form";
 

@@ -4,7 +4,7 @@ import {
   AdvancedSearchResultAttrInfoFilterKeyEnum,
 } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { Autocomplete, Box, Button, Checkbox, TextField } from "@mui/material";
-import React, { Dispatch, FC, SetStateAction, useState } from "react";
+import { Dispatch, FC, SetStateAction, useState } from "react";
 import { useNavigate } from "react-router";
 
 import { formatAdvancedSearchParams } from "../../services/entry/AdvancedSearch";

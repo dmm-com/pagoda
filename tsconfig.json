@@ -4,7 +4,7 @@
     "allowJs": true,
     "target": "es5",
     "strict": true,
-    "jsx": "react",
+    "jsx": "react-jsx",
     "lib": ["dom", "dom.iterable", "es2019"],
     "esModuleInterop": true
   },

@@ -5,7 +5,6 @@
 import { EntryAttributeTypeTypeEnum } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { act, screen, render, renderHook } from "@testing-library/react";
-import React from "react";
 import { useForm } from "react-hook-form";
 
 import { DateAttributeValueField } from "./DateAttributeValueField";

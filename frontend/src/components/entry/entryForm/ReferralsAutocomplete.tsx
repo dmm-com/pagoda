@@ -5,7 +5,7 @@ import {
   AutocompleteInputChangeReason,
   TextField,
 } from "@mui/material";
-import React, { FC, useState, useCallback } from "react";
+import { FC, useState, useCallback } from "react";
 
 import { aironeApiClient } from "../../../repository/AironeApiClient";
 
