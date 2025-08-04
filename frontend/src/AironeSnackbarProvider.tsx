@@ -2,7 +2,7 @@ import CheckCircleOutlineOutlinedIcon from "@mui/icons-material/CheckCircleOutli
 import ErrorOutlinedIcon from "@mui/icons-material/ErrorOutlined";
 import { styled } from "@mui/material/styles";
 import { SnackbarProvider } from "notistack";
-import React, { FC } from "react";
+import { FC, ReactNode } from "react";
 
 const StyledSnackbarProvider = styled(SnackbarProvider)(({ theme }) => ({
   variantSuccess: {
@@ -13,7 +13,7 @@ const StyledSnackbarProvider = styled(SnackbarProvider)(({ theme }) => ({
   },
 }));
 
-export const AironeSnackbarProvider: FC<{ children: React.ReactNode }> = ({
+export const AironeSnackbarProvider: FC<{ children: ReactNode }> = ({
   children,
 }) => {
   return (

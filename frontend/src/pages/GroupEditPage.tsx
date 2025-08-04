@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod/dist/zod";
 import { Box, Container, Typography } from "@mui/material";
-import React, { FC, useEffect } from "react";
+import { FC, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
 

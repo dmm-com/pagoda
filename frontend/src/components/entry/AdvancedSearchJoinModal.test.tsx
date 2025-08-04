@@ -6,7 +6,6 @@ import {
   AdvancedSearchResultAttrInfoFilterKeyEnum,
 } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { render, screen, fireEvent } from "@testing-library/react";
-import React from "react";
 
 import { AdvancedSearchJoinModal } from "./AdvancedSearchJoinModal";
 

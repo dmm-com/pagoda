@@ -1,7 +1,7 @@
 import AddIcon from "@mui/icons-material/Add";
 import { Box, Button } from "@mui/material";
 import Grid from "@mui/material/Grid2";
-import React, { FC, useState } from "react";
+import { FC, useState } from "react";
 import { Link } from "react-router";
 
 import { EntryListCard } from "./EntryListCard";

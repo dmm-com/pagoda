@@ -4,7 +4,6 @@
 
 import { PaginatedEntityListList } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { act, fireEvent, render, screen } from "@testing-library/react";
-import React from "react";
 
 import { TestWrapper } from "TestWrapper";
 import { EntityList } from "components/entity/EntityList";

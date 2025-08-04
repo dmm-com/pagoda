@@ -9,7 +9,7 @@ import {
   Typography,
 } from "@mui/material";
 import { useSnackbar } from "notistack";
-import React, { FC } from "react";
+import { FC } from "react";
 import { useNavigate } from "react-router";
 
 import { Confirmable } from "components/common/Confirmable";

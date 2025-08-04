@@ -1,5 +1,5 @@
 import { TextField } from "@mui/material";
-import React, { FC } from "react";
+import { FC } from "react";
 import { Control, Controller } from "react-hook-form";
 
 import { Schema } from "./EntryFormSchema";

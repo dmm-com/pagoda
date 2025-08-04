@@ -7,7 +7,7 @@ import {
   Typography,
 } from "@mui/material";
 import { useSnackbar } from "notistack";
-import React, { FC } from "react";
+import { FC } from "react";
 import { Link, useNavigate } from "react-router";
 
 import { RateLimitedClickable } from "../common/RateLimitedClickable";

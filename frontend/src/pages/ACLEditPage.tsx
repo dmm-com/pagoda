@@ -6,7 +6,7 @@ import {
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Box, Container, Typography } from "@mui/material";
 import { useSnackbar } from "notistack";
-import React, { FC, useCallback, useEffect, useState } from "react";
+import { FC, useCallback, useEffect, useState } from "react";
 import { FieldErrors, useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
 

@@ -1,4 +1,4 @@
-import React, { FC } from "react";
+import { FC, ReactNode } from "react";
 import {
   createBrowserRouter,
   createRoutesFromElements,
@@ -83,7 +83,7 @@ const ErrorBridge: FC = () => {
 interface Props {
   customRoutes?: {
     path: string;
-    element: React.ReactNode;
+    element: ReactNode;
   }[];
 }
 

@@ -1,7 +1,7 @@
 import { Box, Button, TextField } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { useSnackbar } from "notistack";
-import React, { FC, useMemo, useState } from "react";
+import { FC, useMemo, useState } from "react";
 
 import { aironeApiClient } from "../../repository/AironeApiClient";
 import { AironeModal } from "../common/AironeModal";

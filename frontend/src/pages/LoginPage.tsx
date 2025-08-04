@@ -18,7 +18,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import React, { FC, useCallback, useEffect, useState } from "react";
+import { FC, FormEvent, useCallback, useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router";
 
 import { PasswordResetConfirmModal } from "../components/user/PasswordResetConfirmModal";
@@ -75,7 +75,7 @@ export const LoginPage: FC = () => {
     setShowPassword(!showPassword);
   };
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setIsAlert(false);
 

@@ -1,5 +1,5 @@
 import { Box, Button, Typography } from "@mui/material";
-import React, { FC, useCallback } from "react";
+import { FC, useCallback } from "react";
 
 import { topPath } from "../routes/Routes";
 

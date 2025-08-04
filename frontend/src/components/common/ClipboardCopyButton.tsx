@@ -1,6 +1,6 @@
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import { IconButton, Tooltip } from "@mui/material";
-import React, { FC, useState } from "react";
+import { FC, useState } from "react";
 
 interface Props {
   name: string;

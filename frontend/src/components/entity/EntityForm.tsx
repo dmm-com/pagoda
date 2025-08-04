@@ -1,7 +1,7 @@
 import { Entity } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { Box } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import React, { FC } from "react";
+import { FC } from "react";
 import { Control } from "react-hook-form";
 import { UseFormSetValue } from "react-hook-form/dist/types/form";
 

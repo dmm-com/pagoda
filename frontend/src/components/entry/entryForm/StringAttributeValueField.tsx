@@ -2,7 +2,7 @@ import AddIcon from "@mui/icons-material/Add";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import { Box, IconButton, List, ListItem, TextField } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import React, { FC } from "react";
+import { FC } from "react";
 import { Control, useFieldArray, Controller } from "react-hook-form";
 
 import { Schema } from "./EntryFormSchema";

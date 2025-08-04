@@ -20,7 +20,13 @@ import {
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { useSnackbar } from "notistack";
-import React, { BaseSyntheticEvent, FC, useCallback, useState } from "react";
+import {
+  BaseSyntheticEvent,
+  FC,
+  ReactNode,
+  useCallback,
+  useState,
+} from "react";
 import { Control, Controller } from "react-hook-form";
 
 import { ChangeUserAuthModal } from "./ChangeUserAuthModal";
@@ -45,7 +51,7 @@ interface ReadonlyProps {
   user: UserRetrieve;
 }
 
-const InputBox: FC<{ children: React.ReactNode }> = ({ children }) => {
+const InputBox: FC<{ children: ReactNode }> = ({ children }) => {
   return (
     <Box
       component="form"

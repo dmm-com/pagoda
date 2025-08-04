@@ -1,6 +1,6 @@
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { Checkbox, IconButton, ListItem, Typography } from "@mui/material";
-import React, { FC } from "react";
+import { FC, Fragment } from "react";
 
 import { GroupTree } from "../../repository/AironeApiClient";
 import { groupPath } from "../../routes/Routes";
@@ -32,7 +32,7 @@ export const GroupTreeItem: FC<Props> = ({
   return (
     <>
       {groupTrees.map((groupTree) => (
-        <React.Fragment key={groupTree.id}>
+        <Fragment key={groupTree.id}>
           <ListItem
             sx={{
               width: "100%",
@@ -75,7 +75,7 @@ export const GroupTreeItem: FC<Props> = ({
               setGroupAnchorEls={setGroupAnchorEls}
             />
           )}
-        </React.Fragment>
+        </Fragment>
       ))}
     </>
   );

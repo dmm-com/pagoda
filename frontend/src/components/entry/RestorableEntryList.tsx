@@ -19,7 +19,7 @@ import {
 import Grid from "@mui/material/Grid2";
 import { styled } from "@mui/material/styles";
 import { useSnackbar } from "notistack";
-import React, { FC, useState } from "react";
+import { FC, useState } from "react";
 import { useNavigate } from "react-router";
 
 import { EntryAttributes } from "./EntryAttributes";

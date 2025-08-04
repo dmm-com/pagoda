@@ -12,7 +12,7 @@ import {
   Typography,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import React, { FC, useEffect, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import { Control, Controller, useFieldArray, useWatch } from "react-hook-form";
 
 import { AironeModal } from "../../common/AironeModal";
