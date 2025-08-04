@@ -27,7 +27,6 @@ import {
   useCallback,
   useState,
 } from "react";
-import { CopyToClipboard } from "react-copy-to-clipboard";
 import { Control, Controller } from "react-hook-form";
 
 import { ChangeUserAuthModal } from "./ChangeUserAuthModal";
@@ -178,11 +177,18 @@ const ElemAccessTokenConfiguration: FC<Props & ReadonlyProps> = ({
 const ElemAccessToken: FC<ReadonlyProps> = ({ user }) => {
   const { enqueueSnackbar } = useSnackbar();
 
-  const handleCopy = useCallback(() => {
-    enqueueSnackbar("アクセストークンをクリップボードにコピーしました", {
-      variant: "success",
-    });
-  }, [enqueueSnackbar]);
+  const handleCopy = useCallback(async () => {
+    try {
+      await navigator.clipboard.writeText(user.token?.value ?? "");
+      enqueueSnackbar("アクセストークンをクリップボードにコピーしました", {
+        variant: "success",
+      });
+    } catch (error) {
+      enqueueSnackbar("クリップボードへのコピーに失敗しました", {
+        variant: "error",
+      });
+    }
+  }, [enqueueSnackbar, user.token?.value]);
 
   return (
     <StyledTableRow>
@@ -201,10 +207,13 @@ const ElemAccessToken: FC<ReadonlyProps> = ({ user }) => {
             value={user.token?.value}
             disabled
           />
-          <IconButton type="button" sx={{ p: "10px" }} aria-label="search">
-            <CopyToClipboard text={user.token?.value ?? ""} onCopy={handleCopy}>
-              <ContentCopyIcon />
-            </CopyToClipboard>
+          <IconButton
+            type="button"
+            sx={{ p: "10px" }}
+            aria-label="copy-token"
+            onClick={handleCopy}
+          >
+            <ContentCopyIcon />
           </IconButton>
         </InputBox>
       </TableCell>
