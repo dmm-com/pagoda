@@ -8,6 +8,12 @@
 
 ### Fixed
 
+## v3.144.0
+
+### Changed
+* Upgrade React version from 18 to 19
+  Contributed by @syucream
+
 ## v3.143.0
 
 ### Added
