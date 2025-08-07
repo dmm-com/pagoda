@@ -123,7 +123,7 @@ class Common(Configuration):
     USE_X_FORWARDED_PORT = True
 
     # https://docs.djangoproject.com/en/3.2/ref/settings/#session-cookie-secure
-    SESSION_COOKIE_SECURE = True
+    SESSION_COOKIE_SECURE = env.bool("AIRONE_SSL_ENABLE", True)
 
     # https://docs.djangoproject.com/en/3.2/ref/middleware/#http-strict-transport-security
     SECURE_HSTS_PRELOAD = True
