@@ -5945,3 +5945,241 @@ class ViewTest(BaseViewTest):
             status.HTTP_400_BAD_REQUEST,
             resp_create.content,
         )
+
+    def test_list_self_histories(self):
+        """Test list self histories endpoint - normal case"""
+        # Create an entry with initial name
+        initial_name = "initial_entry"
+        entry = self.add_entry(self.user, initial_name, self.entity)
+
+        # Update the entry name to create history records
+        entry.name = "updated_entry_1"
+        entry.save()
+
+        entry.name = "updated_entry_2"
+        entry.save()
+
+        # Make API request to list self histories
+        resp = self.client.get("/entry/api/v2/%s/self_histories/" % entry.id)
+
+        # Check response status and structure
+        self.assertEqual(resp.status_code, 200)
+        data = resp.json()
+        self.assertIn("count", data)
+        self.assertIn("results", data)
+
+        # Should have 3 history records (initial creation + 2 updates)
+        self.assertEqual(data["count"], 3)
+        self.assertEqual(len(data["results"]), 3)
+
+        # Debug: print all records to understand the order
+        for i, record in enumerate(data["results"]):
+            print(f"DEBUG: record[{i}] = {record}")
+
+        # Check the most recent record (should be at index 0 due to ordering by -history_date)
+        latest_record = data["results"][0]
+        self.assertEqual(latest_record["name"], "updated_entry_2")
+        self.assertEqual(latest_record["history_type"], "~")  # update
+
+        # Since simple_history doesn't automatically track users in tests,
+        # it will be None and serializer will return default value "システム"
+        self.assertEqual(latest_record["history_user"], "システム")
+        self.assertIn("history_id", latest_record)
+        self.assertIn("history_date", latest_record)
+
+        # Check second record
+        second_record = data["results"][1]
+        self.assertEqual(second_record["name"], "updated_entry_1")
+        self.assertEqual(second_record["prev_name"], "initial_entry")
+
+        # Check first record (creation)
+        first_record = data["results"][2]
+        self.assertEqual(first_record["name"], initial_name)
+        self.assertEqual(first_record["history_type"], "+")  # creation
+
+    def test_list_self_histories_without_permission(self):
+        """Test list self histories endpoint - permission check"""
+        # Create entry without permission
+        entry = self.add_entry(self.user, "test_entry", self.entity, {}, False)
+
+        # Test without any permission
+        resp = self.client.get("/entry/api/v2/%s/self_histories/" % entry.id)
+        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(
+            resp.json(),
+            {
+                "code": "AE-210000",
+                "message": "You do not have permission to perform this action.",
+            },
+        )
+
+        # Grant read permission
+        self.role.users.add(self.user)
+        entry.readable.roles.add(self.role)
+
+        # Should now work
+        resp = self.client.get("/entry/api/v2/%s/self_histories/" % entry.id)
+        self.assertEqual(resp.status_code, 200)
+
+    def test_list_self_histories_with_invalid_entry_id(self):
+        """Test list self histories endpoint - non-existent entry"""
+        non_existent_id = 9999999
+        resp = self.client.get("/entry/api/v2/%s/self_histories/" % non_existent_id)
+        self.assertEqual(resp.status_code, 404)
+
+    def test_restore_self_history(self):
+        """Test restore self history endpoint - normal case"""
+        # Create an entry with initial name
+        initial_name = "original_name"
+        entry = self.add_entry(self.user, initial_name, self.entity)
+
+        # Update the entry name to create history
+        entry.name = "modified_name"
+        entry.save()
+
+        # Get the history record for the original name
+        history_records = entry.history.all().order_by("-history_date")
+        original_history = None
+        for record in history_records:
+            if record.name == initial_name:
+                original_history = record
+                break
+
+        self.assertIsNotNone(original_history)
+
+        # Restore to original name using API
+        payload = {"history_id": original_history.history_id}
+        resp = self.client.post(
+            "/entry/api/v2/%s/restore_self_history/" % entry.id,
+            payload,
+            "application/json",
+        )
+
+        # Check response
+        self.assertEqual(resp.status_code, 200)
+        data = resp.json()
+        self.assertIn("message", data)
+        self.assertEqual(data["restored_name"], initial_name)
+
+        # Verify entry name was restored
+        entry.refresh_from_db()
+        self.assertEqual(entry.name, initial_name)
+
+    def test_restore_self_history_without_permission(self):
+        """Test restore self history endpoint - permission check"""
+        # Create entry without write permission
+        entry = self.add_entry(self.user, "test_entry", self.entity, {}, False)
+
+        # Grant only read permission
+        self.role.users.add(self.user)
+        entry.readable.roles.add(self.role)
+
+        # Get a history record
+        history_record = entry.history.first()
+
+        # Try to restore without write permission
+        payload = {"history_id": history_record.history_id}
+        resp = self.client.post(
+            "/entry/api/v2/%s/restore_self_history/" % entry.id,
+            payload,
+            "application/json",
+        )
+
+        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(
+            resp.json(),
+            {
+                "code": "AE-210000",
+                "message": "You do not have permission to perform this action.",
+            },
+        )
+
+    def test_restore_self_history_with_invalid_history_id(self):
+        """Test restore self history endpoint - non-existent history ID"""
+        entry = self.add_entry(self.user, "test_entry", self.entity)
+
+        # Use invalid history ID
+        payload = {"history_id": 9999999}
+        resp = self.client.post(
+            "/entry/api/v2/%s/restore_self_history/" % entry.id,
+            payload,
+            "application/json",
+        )
+
+        self.assertEqual(resp.status_code, 400)
+        response_data = resp.json()
+        self.assertIsInstance(response_data, list)
+        self.assertEqual(len(response_data), 1)
+        self.assertIn("指定された履歴が見つかりません", response_data[0]["message"])
+
+    def test_restore_self_history_with_duplicate_name(self):
+        """Test restore self history endpoint - duplicate name error"""
+        # Create two entries
+        entry1 = self.add_entry(self.user, "entry_1", self.entity)
+        entry2 = self.add_entry(self.user, "entry_2", self.entity)
+
+        # Update entry1 name
+        entry1.name = "entry_1_modified"
+        entry1.save()
+
+        # Get history record for original entry1 name
+        history_records = entry1.history.all()
+        original_history = None
+        for record in history_records:
+            if record.name == "entry_1":
+                original_history = record
+                break
+
+        # Now change entry2 name to "entry_1"
+        entry2.name = "entry_1"
+        entry2.save()
+
+        # Try to restore entry1 to "entry_1" - should fail due to duplicate
+        payload = {"history_id": original_history.history_id}
+        resp = self.client.post(
+            "/entry/api/v2/%s/restore_self_history/" % entry1.id,
+            payload,
+            "application/json",
+        )
+
+        self.assertEqual(resp.status_code, 400)
+        response_data = resp.json()
+        self.assertIsInstance(response_data, list)
+        self.assertEqual(len(response_data), 1)
+        self.assertIn("既に使用されています", response_data[0]["message"])
+
+    def test_restore_self_history_with_alias_conflict(self):
+        """Test restore self history endpoint - alias name conflict error"""
+        from entry.models import AliasEntry
+
+        # Create an entry
+        entry = self.add_entry(self.user, "original_name", self.entity)
+
+        # Update entry name
+        entry.name = "modified_name"
+        entry.save()
+
+        # Create alias with the original name
+        AliasEntry.objects.create(name="original_name", entry=entry)
+
+        # Get history record for the original name
+        history_records = entry.history.all()
+        original_history = None
+        for record in history_records:
+            if record.name == "original_name":
+                original_history = record
+                break
+
+        # Try to restore to original name - should fail due to alias conflict
+        payload = {"history_id": original_history.history_id}
+        resp = self.client.post(
+            "/entry/api/v2/%s/restore_self_history/" % entry.id,
+            payload,
+            "application/json",
+        )
+
+        self.assertEqual(resp.status_code, 400)
+        response_data = resp.json()
+        self.assertIsInstance(response_data, list)
+        self.assertEqual(len(response_data), 1)
+        self.assertIn("エイリアスで使用されています", response_data[0]["message"])
