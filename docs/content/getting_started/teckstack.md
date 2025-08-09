@@ -91,7 +91,7 @@ Pagoda comprises two UI systems:
   - openapi-generator - API type definition generation
 
 - **Backend**
-  - Poetry - Python dependency management
+  - uv - Python dependency management
 
 ## Architecture Components
 

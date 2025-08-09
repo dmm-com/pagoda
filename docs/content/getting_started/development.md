@@ -30,10 +30,10 @@ user@hostname:~$ cd pagoda
 user@hostname:~/pagoda$ python3 -m venv virtualenv
 user@hostname:~/pagoda$ source virtualenv/bin/activate
 (virtualenv) user@hostname:~/pagoda$ pip install pip --upgrade
-(virtualenv) user@hostname:~/pagoda$ pip install poetry
-(virtualenv) user@hostname:~/pagoda$ poetry install --only main
+(virtualenv) user@hostname:~/pagoda$ pip install uv
+(virtualenv) user@hostname:~/pagoda$ uv sync --only-group main
 # or, during development, install all
-(virtualenv) user@hostname:~/pagoda$ poetry install
+(virtualenv) user@hostname:~/pagoda$ uv sync
 ```
 
 ## Setting-up Backend with docker-compose
