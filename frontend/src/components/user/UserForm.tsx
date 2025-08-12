@@ -27,6 +27,7 @@ import {
   useCallback,
   useState,
 } from "react";
+import { CopyToClipboard } from "react-copy-to-clipboard";
 import { Control, Controller } from "react-hook-form";
 
 import { ChangeUserAuthModal } from "./ChangeUserAuthModal";
@@ -78,7 +79,7 @@ const ElemAuthenticationMethod: FC<ReadonlyProps> = ({ user }) => {
       </TableCell>
       <TableCell sx={{ width: "750px", p: "0px", wordBreak: "break-word" }}>
         {user.authenticateType ===
-        UserRetrieveAuthenticateTypeEnum.AUTH_TYPE_LOCAL ? (
+          UserRetrieveAuthenticateTypeEnum.AUTH_TYPE_LOCAL ? (
           <Box sx={{ m: 1 }}>
             <Box sx={{ my: 1 }}>ローカル認証</Box>
             <Button variant="outlined" onClick={() => setOpenModal(true)}>
@@ -177,18 +178,11 @@ const ElemAccessTokenConfiguration: FC<Props & ReadonlyProps> = ({
 const ElemAccessToken: FC<ReadonlyProps> = ({ user }) => {
   const { enqueueSnackbar } = useSnackbar();
 
-  const handleCopy = useCallback(async () => {
-    try {
-      await navigator.clipboard.writeText(user.token?.value ?? "");
-      enqueueSnackbar("アクセストークンをクリップボードにコピーしました", {
-        variant: "success",
-      });
-    } catch (error) {
-      enqueueSnackbar("クリップボードへのコピーに失敗しました", {
-        variant: "error",
-      });
-    }
-  }, [enqueueSnackbar, user.token?.value]);
+  const handleCopy = useCallback(() => {
+    enqueueSnackbar("アクセストークンをクリップボードにコピーしました", {
+      variant: "success",
+    });
+  }, [enqueueSnackbar]);
 
   return (
     <StyledTableRow>
@@ -207,13 +201,10 @@ const ElemAccessToken: FC<ReadonlyProps> = ({ user }) => {
             value={user.token?.value}
             disabled
           />
-          <IconButton
-            type="button"
-            sx={{ p: "10px" }}
-            aria-label="copy-token"
-            onClick={handleCopy}
-          >
-            <ContentCopyIcon />
+          <IconButton type="button" sx={{ p: "10px" }} aria-label="search">
+            <CopyToClipboard text={user.token?.value ?? ""} onCopy={handleCopy}>
+              <ContentCopyIcon />
+            </CopyToClipboard>
           </IconButton>
         </InputBox>
       </TableCell>
