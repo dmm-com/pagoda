@@ -1,7 +1,7 @@
 import { EntryRetrieve } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { Box, TextField, Typography } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import { FC } from "react";
+import React, { FC } from "react";
 
 const SampleBox = styled(Box)({
   width: "100%",

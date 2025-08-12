@@ -7,6 +7,7 @@ import {
   PaginatedEntryHistoryAttributeValueList,
 } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { act, render, screen, within } from "@testing-library/react";
+import React from "react";
 
 import { TestWrapper } from "TestWrapper";
 import { EntryHistoryList } from "components/entry/EntryHistoryList";

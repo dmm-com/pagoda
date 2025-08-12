@@ -4,6 +4,7 @@
 
 import { ACLHistory } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { render, screen, within } from "@testing-library/react";
+import React from "react";
 
 import { ACLHistoryList } from "./ACLHistoryList";
 

@@ -8,7 +8,7 @@ import {
   TableRow,
   Typography,
 } from "@mui/material";
-import { FC } from "react";
+import React, { FC } from "react";
 
 import { PaginationFooter } from "components/common/PaginationFooter";
 import { EntityHistoryListParam } from "services/Constants";

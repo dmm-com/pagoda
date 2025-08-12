@@ -6,6 +6,7 @@ import {
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { SxProps, Theme } from "@mui/system";
+import React from "react";
 
 type StyledTableRowProps = TableRowProps & {
   sx?: SxProps<Theme>;

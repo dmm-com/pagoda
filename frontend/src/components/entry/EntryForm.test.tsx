@@ -15,7 +15,7 @@ import {
   screen,
   waitFor,
 } from "@testing-library/react";
-import { FC, useEffect } from "react";
+import React, { FC } from "react";
 import { useForm } from "react-hook-form";
 
 import { Schema, schema } from "./entryForm/EntryFormSchema";
@@ -222,7 +222,7 @@ describe("EntryForm", () => {
 
       // Test helper to verify form state
       const nameValue = watch("name");
-      useEffect(() => {
+      React.useEffect(() => {
         if (nameValue === "updated entry name") {
           // Mark successful update for test verification
           document.body.setAttribute("data-name-updated", "true");

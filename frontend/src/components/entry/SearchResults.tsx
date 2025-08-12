@@ -22,7 +22,7 @@ import { ExtendButtonBaseTypeMap } from "@mui/material/ButtonBase/ButtonBase";
 import { IconButtonTypeMap } from "@mui/material/IconButton/IconButton";
 import { OverridableComponent } from "@mui/material/OverridableComponent";
 import { styled } from "@mui/material/styles";
-import { FC, useMemo } from "react";
+import React, { FC, useMemo } from "react";
 import { Link } from "react-router";
 
 import { SearchResultsTableHead } from "./SearchResultsTableHead";

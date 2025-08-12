@@ -7,6 +7,7 @@ import {
   EntryHintFilterKeyEnum,
 } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { render, screen } from "@testing-library/react";
+import React from "react";
 
 import { SearchResultControlMenuForEntry } from "./SearchResultControlMenuForEntry";
 

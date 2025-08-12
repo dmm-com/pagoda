@@ -20,13 +20,7 @@ import {
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { useSnackbar } from "notistack";
-import {
-  BaseSyntheticEvent,
-  FC,
-  ReactNode,
-  useCallback,
-  useState,
-} from "react";
+import React, { BaseSyntheticEvent, FC, useCallback, useState } from "react";
 import { Control, Controller } from "react-hook-form";
 
 import { ChangeUserAuthModal } from "./ChangeUserAuthModal";
@@ -51,7 +45,7 @@ interface ReadonlyProps {
   user: UserRetrieve;
 }
 
-const InputBox: FC<{ children: ReactNode }> = ({ children }) => {
+const InputBox: FC<{ children: React.ReactNode }> = ({ children }) => {
   return (
     <Box
       component="form"
@@ -78,7 +72,7 @@ const ElemAuthenticationMethod: FC<ReadonlyProps> = ({ user }) => {
       </TableCell>
       <TableCell sx={{ width: "750px", p: "0px", wordBreak: "break-word" }}>
         {user.authenticateType ===
-        UserRetrieveAuthenticateTypeEnum.AUTH_TYPE_LOCAL ? (
+          UserRetrieveAuthenticateTypeEnum.AUTH_TYPE_LOCAL ? (
           <Box sx={{ m: 1 }}>
             <Box sx={{ my: 1 }}>ローカル認証</Box>
             <Button variant="outlined" onClick={() => setOpenModal(true)}>

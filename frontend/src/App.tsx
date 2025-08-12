@@ -1,5 +1,5 @@
 import { ThemeProvider } from "@mui/material";
-import { StrictMode } from "react";
+import React, { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 
 import { AironeSnackbarProvider } from "AironeSnackbarProvider";

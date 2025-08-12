@@ -4,6 +4,7 @@
 
 import { EntryRetrieve } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { act, fireEvent, render, screen } from "@testing-library/react";
+import * as React from "react";
 
 import { TestWrapper } from "TestWrapper";
 import { CopyForm } from "components/entry/CopyForm";

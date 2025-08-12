@@ -1,6 +1,6 @@
 import { Box, Container } from "@mui/material";
 import { useSnackbar } from "notistack";
-import { FC, useState } from "react";
+import React, { FC, useState } from "react";
 import { useNavigate } from "react-router";
 
 import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";

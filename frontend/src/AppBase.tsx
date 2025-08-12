@@ -1,4 +1,4 @@
-import { FC, ReactNode } from "react";
+import React, { FC } from "react";
 
 import { ErrorHandler } from "ErrorHandler";
 import { CheckTerms } from "components/common/CheckTerms";
@@ -8,7 +8,7 @@ import "i18n/config";
 interface Props {
   customRoutes?: {
     path: string;
-    element: ReactNode;
+    element: React.ReactNode;
   }[];
 }
 

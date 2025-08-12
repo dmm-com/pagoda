@@ -1,10 +1,10 @@
 import { Box } from "@mui/material";
-import { FC, ReactNode, SyntheticEvent, useRef } from "react";
+import React, { FC, SyntheticEvent, useRef } from "react";
 
 interface Props {
   intervalSec: number;
   onClick: (e: SyntheticEvent) => void;
-  children: ReactNode;
+  children: React.ReactNode;
 }
 
 /**

@@ -1,6 +1,6 @@
 import { Button, CircularProgress } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import { FC, MouseEventHandler } from "react";
+import React, { FC } from "react";
 
 import { CenterAlignedBox } from "components/common/FlexBox";
 
@@ -12,8 +12,8 @@ interface Props {
   name: string;
   disabled: boolean;
   isSubmitting: boolean;
-  handleSubmit: MouseEventHandler<HTMLButtonElement>;
-  handleCancel?: MouseEventHandler<HTMLButtonElement>;
+  handleSubmit: React.MouseEventHandler<HTMLButtonElement>;
+  handleCancel?: React.MouseEventHandler<HTMLButtonElement>;
 }
 
 export const SubmitButton: FC<Props> = ({

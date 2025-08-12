@@ -1,6 +1,6 @@
 import { Box, Breadcrumbs } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import { FC, ReactNode } from "react";
+import React, { FC } from "react";
 
 const Frame = styled(Box)(({}) => ({
   width: "100%",
@@ -35,7 +35,7 @@ const BreadcrumbsBox = styled(Box)(({ theme }) => ({
   },
 }));
 
-export const AironeBreadcrumbs: FC<{ children: ReactNode }> = ({
+export const AironeBreadcrumbs: FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   return (

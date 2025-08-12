@@ -1,5 +1,5 @@
 import { Box, Typography } from "@mui/material";
-import { FC } from "react";
+import React, { FC } from "react";
 
 import { AironeLink } from "components";
 import { CategoryList } from "components/category/CategoryList";

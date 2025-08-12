@@ -8,7 +8,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { FC } from "react";
+import React, { FC } from "react";
 import { Control, Controller } from "react-hook-form";
 
 import { Schema } from "./EntityFormSchema";
