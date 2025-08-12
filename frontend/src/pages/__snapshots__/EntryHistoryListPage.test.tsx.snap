@@ -191,127 +191,271 @@ exports[`should match snapshot 1`] = `
         <div
           class="MuiContainer-root MuiContainer-maxWidthLg css-5c1adp-MuiContainer-root"
         >
-          <table
-            class="MuiTable-root css-1xwxv7r-MuiTable-root"
-            id="table_history_list"
-          >
-            <thead
-              class="MuiTableHead-root css-1a7iywq-MuiTableHead-root"
-            >
-              <tr
-                class="MuiTableRow-root MuiTableRow-head css-1wtsgsb-MuiTableRow-root"
-              >
-                <th
-                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-ljvtpv-MuiTableCell-root"
-                  scope="col"
-                  width="140px"
-                >
-                  項目
-                </th>
-                <th
-                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-ljvtpv-MuiTableCell-root"
-                  scope="col"
-                  width="300px"
-                >
-                  変更前
-                </th>
-                <th
-                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-ljvtpv-MuiTableCell-root"
-                  scope="col"
-                  width="300px"
-                >
-                  変更後
-                </th>
-                <th
-                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-ljvtpv-MuiTableCell-root"
-                  scope="col"
-                  width="80px"
-                >
-                  実行日時
-                </th>
-                <th
-                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-ljvtpv-MuiTableCell-root"
-                  scope="col"
-                  width="100px"
-                >
-                  実行者
-                </th>
-                <th
-                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-ljvtpv-MuiTableCell-root"
-                  scope="col"
-                  width="40px"
-                >
-                  復旧
-                </th>
-              </tr>
-            </thead>
-            <tbody
-              class="MuiTableBody-root css-gmh7jj-MuiTableBody-root"
-            />
-          </table>
           <div
-            class="MuiBox-root css-5hgm98"
-            id="pagination"
+            class="MuiBox-root css-1yjvs5a"
           >
-            <p
-              class="MuiTypography-root MuiTypography-body1 css-rizt0-MuiTypography-root"
+            <h6
+              class="MuiTypography-root MuiTypography-h6 css-ojiiiy-MuiTypography-root"
             >
-              0 - 0 / 0 件
-            </p>
-            <div
-              class="MuiStack-root css-1sazv7p-MuiStack-root"
+              アイテム変更履歴
+            </h6>
+            <table
+              class="MuiTable-root css-1xwxv7r-MuiTable-root"
+              id="table_self_history_list"
             >
-              <nav
-                aria-label="pagination navigation"
-                class="MuiPagination-root MuiPagination-text css-1xra8g6-MuiPagination-root"
+              <thead
+                class="MuiTableHead-root css-1a7iywq-MuiTableHead-root"
               >
-                <ul
-                  class="MuiPagination-ul css-1c5o7vy-MuiPagination-ul"
+                <tr
+                  class="MuiTableRow-root MuiTableRow-head css-1wtsgsb-MuiTableRow-root"
                 >
-                  <li>
-                    <button
-                      aria-label="Go to previous page"
-                      class="MuiButtonBase-root Mui-disabled MuiPaginationItem-root MuiPaginationItem-sizeMedium MuiPaginationItem-text MuiPaginationItem-circular MuiPaginationItem-colorPrimary MuiPaginationItem-textPrimary Mui-disabled MuiPaginationItem-previousNext css-1bug3cd-MuiButtonBase-root-MuiPaginationItem-root"
-                      disabled=""
-                      tabindex="-1"
-                      type="button"
-                    >
-                      <svg
-                        aria-hidden="true"
-                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium MuiPaginationItem-icon css-8uzxat-MuiSvgIcon-root-MuiPaginationItem-icon"
-                        data-testid="NavigateBeforeIcon"
-                        focusable="false"
-                        viewBox="0 0 24 24"
+                  <th
+                    class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-ljvtpv-MuiTableCell-root"
+                    scope="col"
+                    width="120px"
+                  >
+                    操作
+                  </th>
+                  <th
+                    class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-ljvtpv-MuiTableCell-root"
+                    scope="col"
+                    width="200px"
+                  >
+                    変更前のアイテム名
+                  </th>
+                  <th
+                    class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-ljvtpv-MuiTableCell-root"
+                    scope="col"
+                    width="200px"
+                  >
+                    変更後のアイテム名
+                  </th>
+                  <th
+                    class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-ljvtpv-MuiTableCell-root"
+                    scope="col"
+                    width="120px"
+                  >
+                    実行日時
+                  </th>
+                  <th
+                    class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-ljvtpv-MuiTableCell-root"
+                    scope="col"
+                    width="100px"
+                  >
+                    実行者
+                  </th>
+                  <th
+                    class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-ljvtpv-MuiTableCell-root"
+                    scope="col"
+                    width="60px"
+                  >
+                    復旧
+                  </th>
+                </tr>
+              </thead>
+              <tbody
+                class="MuiTableBody-root css-gmh7jj-MuiTableBody-root"
+              />
+            </table>
+            <div
+              class="MuiBox-root css-5hgm98"
+              id="pagination"
+            >
+              <p
+                class="MuiTypography-root MuiTypography-body1 css-rizt0-MuiTypography-root"
+              >
+                0 - 0 / 0 件
+              </p>
+              <div
+                class="MuiStack-root css-1sazv7p-MuiStack-root"
+              >
+                <nav
+                  aria-label="pagination navigation"
+                  class="MuiPagination-root MuiPagination-text css-1xra8g6-MuiPagination-root"
+                >
+                  <ul
+                    class="MuiPagination-ul css-1c5o7vy-MuiPagination-ul"
+                  >
+                    <li>
+                      <button
+                        aria-label="Go to previous page"
+                        class="MuiButtonBase-root Mui-disabled MuiPaginationItem-root MuiPaginationItem-sizeMedium MuiPaginationItem-text MuiPaginationItem-circular MuiPaginationItem-colorPrimary MuiPaginationItem-textPrimary Mui-disabled MuiPaginationItem-previousNext css-1bug3cd-MuiButtonBase-root-MuiPaginationItem-root"
+                        disabled=""
+                        tabindex="-1"
+                        type="button"
                       >
-                        <path
-                          d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"
-                        />
-                      </svg>
-                    </button>
-                  </li>
-                  <li>
-                    <button
-                      aria-label="Go to next page"
-                      class="MuiButtonBase-root Mui-disabled MuiPaginationItem-root MuiPaginationItem-sizeMedium MuiPaginationItem-text MuiPaginationItem-circular MuiPaginationItem-colorPrimary MuiPaginationItem-textPrimary Mui-disabled MuiPaginationItem-previousNext css-1bug3cd-MuiButtonBase-root-MuiPaginationItem-root"
-                      disabled=""
-                      tabindex="-1"
-                      type="button"
-                    >
-                      <svg
-                        aria-hidden="true"
-                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium MuiPaginationItem-icon css-8uzxat-MuiSvgIcon-root-MuiPaginationItem-icon"
-                        data-testid="NavigateNextIcon"
-                        focusable="false"
-                        viewBox="0 0 24 24"
+                        <svg
+                          aria-hidden="true"
+                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium MuiPaginationItem-icon css-8uzxat-MuiSvgIcon-root-MuiPaginationItem-icon"
+                          data-testid="NavigateBeforeIcon"
+                          focusable="false"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"
+                          />
+                        </svg>
+                      </button>
+                    </li>
+                    <li>
+                      <button
+                        aria-label="Go to next page"
+                        class="MuiButtonBase-root Mui-disabled MuiPaginationItem-root MuiPaginationItem-sizeMedium MuiPaginationItem-text MuiPaginationItem-circular MuiPaginationItem-colorPrimary MuiPaginationItem-textPrimary Mui-disabled MuiPaginationItem-previousNext css-1bug3cd-MuiButtonBase-root-MuiPaginationItem-root"
+                        disabled=""
+                        tabindex="-1"
+                        type="button"
                       >
-                        <path
-                          d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"
-                        />
-                      </svg>
-                    </button>
-                  </li>
-                </ul>
-              </nav>
+                        <svg
+                          aria-hidden="true"
+                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium MuiPaginationItem-icon css-8uzxat-MuiSvgIcon-root-MuiPaginationItem-icon"
+                          data-testid="NavigateNextIcon"
+                          focusable="false"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"
+                          />
+                        </svg>
+                      </button>
+                    </li>
+                  </ul>
+                </nav>
+              </div>
+            </div>
+          </div>
+          <hr
+            class="MuiDivider-root MuiDivider-fullWidth css-1ouqunm-MuiDivider-root"
+          />
+          <div
+            class="MuiBox-root css-0"
+          >
+            <h6
+              class="MuiTypography-root MuiTypography-h6 css-ojiiiy-MuiTypography-root"
+            >
+              属性変更履歴
+            </h6>
+            <table
+              class="MuiTable-root css-1xwxv7r-MuiTable-root"
+              id="table_history_list"
+            >
+              <thead
+                class="MuiTableHead-root css-1a7iywq-MuiTableHead-root"
+              >
+                <tr
+                  class="MuiTableRow-root MuiTableRow-head css-1wtsgsb-MuiTableRow-root"
+                >
+                  <th
+                    class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-ljvtpv-MuiTableCell-root"
+                    scope="col"
+                    width="140px"
+                  >
+                    項目
+                  </th>
+                  <th
+                    class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-ljvtpv-MuiTableCell-root"
+                    scope="col"
+                    width="300px"
+                  >
+                    変更前
+                  </th>
+                  <th
+                    class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-ljvtpv-MuiTableCell-root"
+                    scope="col"
+                    width="300px"
+                  >
+                    変更後
+                  </th>
+                  <th
+                    class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-ljvtpv-MuiTableCell-root"
+                    scope="col"
+                    width="80px"
+                  >
+                    実行日時
+                  </th>
+                  <th
+                    class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-ljvtpv-MuiTableCell-root"
+                    scope="col"
+                    width="100px"
+                  >
+                    実行者
+                  </th>
+                  <th
+                    class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-ljvtpv-MuiTableCell-root"
+                    scope="col"
+                    width="40px"
+                  >
+                    復旧
+                  </th>
+                </tr>
+              </thead>
+              <tbody
+                class="MuiTableBody-root css-gmh7jj-MuiTableBody-root"
+              />
+            </table>
+            <div
+              class="MuiBox-root css-5hgm98"
+              id="pagination"
+            >
+              <p
+                class="MuiTypography-root MuiTypography-body1 css-rizt0-MuiTypography-root"
+              >
+                0 - 0 / 0 件
+              </p>
+              <div
+                class="MuiStack-root css-1sazv7p-MuiStack-root"
+              >
+                <nav
+                  aria-label="pagination navigation"
+                  class="MuiPagination-root MuiPagination-text css-1xra8g6-MuiPagination-root"
+                >
+                  <ul
+                    class="MuiPagination-ul css-1c5o7vy-MuiPagination-ul"
+                  >
+                    <li>
+                      <button
+                        aria-label="Go to previous page"
+                        class="MuiButtonBase-root Mui-disabled MuiPaginationItem-root MuiPaginationItem-sizeMedium MuiPaginationItem-text MuiPaginationItem-circular MuiPaginationItem-colorPrimary MuiPaginationItem-textPrimary Mui-disabled MuiPaginationItem-previousNext css-1bug3cd-MuiButtonBase-root-MuiPaginationItem-root"
+                        disabled=""
+                        tabindex="-1"
+                        type="button"
+                      >
+                        <svg
+                          aria-hidden="true"
+                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium MuiPaginationItem-icon css-8uzxat-MuiSvgIcon-root-MuiPaginationItem-icon"
+                          data-testid="NavigateBeforeIcon"
+                          focusable="false"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"
+                          />
+                        </svg>
+                      </button>
+                    </li>
+                    <li>
+                      <button
+                        aria-label="Go to next page"
+                        class="MuiButtonBase-root Mui-disabled MuiPaginationItem-root MuiPaginationItem-sizeMedium MuiPaginationItem-text MuiPaginationItem-circular MuiPaginationItem-colorPrimary MuiPaginationItem-textPrimary Mui-disabled MuiPaginationItem-previousNext css-1bug3cd-MuiButtonBase-root-MuiPaginationItem-root"
+                        disabled=""
+                        tabindex="-1"
+                        type="button"
+                      >
+                        <svg
+                          aria-hidden="true"
+                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium MuiPaginationItem-icon css-8uzxat-MuiSvgIcon-root-MuiPaginationItem-icon"
+                          data-testid="NavigateNextIcon"
+                          focusable="false"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"
+                          />
+                        </svg>
+                      </button>
+                    </li>
+                  </ul>
+                </nav>
+              </div>
             </div>
           </div>
         </div>
@@ -505,127 +649,271 @@ exports[`should match snapshot 1`] = `
       <div
         class="MuiContainer-root MuiContainer-maxWidthLg css-5c1adp-MuiContainer-root"
       >
-        <table
-          class="MuiTable-root css-1xwxv7r-MuiTable-root"
-          id="table_history_list"
-        >
-          <thead
-            class="MuiTableHead-root css-1a7iywq-MuiTableHead-root"
-          >
-            <tr
-              class="MuiTableRow-root MuiTableRow-head css-1wtsgsb-MuiTableRow-root"
-            >
-              <th
-                class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-ljvtpv-MuiTableCell-root"
-                scope="col"
-                width="140px"
-              >
-                項目
-              </th>
-              <th
-                class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-ljvtpv-MuiTableCell-root"
-                scope="col"
-                width="300px"
-              >
-                変更前
-              </th>
-              <th
-                class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-ljvtpv-MuiTableCell-root"
-                scope="col"
-                width="300px"
-              >
-                変更後
-              </th>
-              <th
-                class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-ljvtpv-MuiTableCell-root"
-                scope="col"
-                width="80px"
-              >
-                実行日時
-              </th>
-              <th
-                class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-ljvtpv-MuiTableCell-root"
-                scope="col"
-                width="100px"
-              >
-                実行者
-              </th>
-              <th
-                class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-ljvtpv-MuiTableCell-root"
-                scope="col"
-                width="40px"
-              >
-                復旧
-              </th>
-            </tr>
-          </thead>
-          <tbody
-            class="MuiTableBody-root css-gmh7jj-MuiTableBody-root"
-          />
-        </table>
         <div
-          class="MuiBox-root css-5hgm98"
-          id="pagination"
+          class="MuiBox-root css-1yjvs5a"
         >
-          <p
-            class="MuiTypography-root MuiTypography-body1 css-rizt0-MuiTypography-root"
+          <h6
+            class="MuiTypography-root MuiTypography-h6 css-ojiiiy-MuiTypography-root"
           >
-            0 - 0 / 0 件
-          </p>
-          <div
-            class="MuiStack-root css-1sazv7p-MuiStack-root"
+            アイテム変更履歴
+          </h6>
+          <table
+            class="MuiTable-root css-1xwxv7r-MuiTable-root"
+            id="table_self_history_list"
           >
-            <nav
-              aria-label="pagination navigation"
-              class="MuiPagination-root MuiPagination-text css-1xra8g6-MuiPagination-root"
+            <thead
+              class="MuiTableHead-root css-1a7iywq-MuiTableHead-root"
             >
-              <ul
-                class="MuiPagination-ul css-1c5o7vy-MuiPagination-ul"
+              <tr
+                class="MuiTableRow-root MuiTableRow-head css-1wtsgsb-MuiTableRow-root"
               >
-                <li>
-                  <button
-                    aria-label="Go to previous page"
-                    class="MuiButtonBase-root Mui-disabled MuiPaginationItem-root MuiPaginationItem-sizeMedium MuiPaginationItem-text MuiPaginationItem-circular MuiPaginationItem-colorPrimary MuiPaginationItem-textPrimary Mui-disabled MuiPaginationItem-previousNext css-1bug3cd-MuiButtonBase-root-MuiPaginationItem-root"
-                    disabled=""
-                    tabindex="-1"
-                    type="button"
-                  >
-                    <svg
-                      aria-hidden="true"
-                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium MuiPaginationItem-icon css-8uzxat-MuiSvgIcon-root-MuiPaginationItem-icon"
-                      data-testid="NavigateBeforeIcon"
-                      focusable="false"
-                      viewBox="0 0 24 24"
+                <th
+                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-ljvtpv-MuiTableCell-root"
+                  scope="col"
+                  width="120px"
+                >
+                  操作
+                </th>
+                <th
+                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-ljvtpv-MuiTableCell-root"
+                  scope="col"
+                  width="200px"
+                >
+                  変更前のアイテム名
+                </th>
+                <th
+                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-ljvtpv-MuiTableCell-root"
+                  scope="col"
+                  width="200px"
+                >
+                  変更後のアイテム名
+                </th>
+                <th
+                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-ljvtpv-MuiTableCell-root"
+                  scope="col"
+                  width="120px"
+                >
+                  実行日時
+                </th>
+                <th
+                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-ljvtpv-MuiTableCell-root"
+                  scope="col"
+                  width="100px"
+                >
+                  実行者
+                </th>
+                <th
+                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-ljvtpv-MuiTableCell-root"
+                  scope="col"
+                  width="60px"
+                >
+                  復旧
+                </th>
+              </tr>
+            </thead>
+            <tbody
+              class="MuiTableBody-root css-gmh7jj-MuiTableBody-root"
+            />
+          </table>
+          <div
+            class="MuiBox-root css-5hgm98"
+            id="pagination"
+          >
+            <p
+              class="MuiTypography-root MuiTypography-body1 css-rizt0-MuiTypography-root"
+            >
+              0 - 0 / 0 件
+            </p>
+            <div
+              class="MuiStack-root css-1sazv7p-MuiStack-root"
+            >
+              <nav
+                aria-label="pagination navigation"
+                class="MuiPagination-root MuiPagination-text css-1xra8g6-MuiPagination-root"
+              >
+                <ul
+                  class="MuiPagination-ul css-1c5o7vy-MuiPagination-ul"
+                >
+                  <li>
+                    <button
+                      aria-label="Go to previous page"
+                      class="MuiButtonBase-root Mui-disabled MuiPaginationItem-root MuiPaginationItem-sizeMedium MuiPaginationItem-text MuiPaginationItem-circular MuiPaginationItem-colorPrimary MuiPaginationItem-textPrimary Mui-disabled MuiPaginationItem-previousNext css-1bug3cd-MuiButtonBase-root-MuiPaginationItem-root"
+                      disabled=""
+                      tabindex="-1"
+                      type="button"
                     >
-                      <path
-                        d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"
-                      />
-                    </svg>
-                  </button>
-                </li>
-                <li>
-                  <button
-                    aria-label="Go to next page"
-                    class="MuiButtonBase-root Mui-disabled MuiPaginationItem-root MuiPaginationItem-sizeMedium MuiPaginationItem-text MuiPaginationItem-circular MuiPaginationItem-colorPrimary MuiPaginationItem-textPrimary Mui-disabled MuiPaginationItem-previousNext css-1bug3cd-MuiButtonBase-root-MuiPaginationItem-root"
-                    disabled=""
-                    tabindex="-1"
-                    type="button"
-                  >
-                    <svg
-                      aria-hidden="true"
-                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium MuiPaginationItem-icon css-8uzxat-MuiSvgIcon-root-MuiPaginationItem-icon"
-                      data-testid="NavigateNextIcon"
-                      focusable="false"
-                      viewBox="0 0 24 24"
+                      <svg
+                        aria-hidden="true"
+                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium MuiPaginationItem-icon css-8uzxat-MuiSvgIcon-root-MuiPaginationItem-icon"
+                        data-testid="NavigateBeforeIcon"
+                        focusable="false"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"
+                        />
+                      </svg>
+                    </button>
+                  </li>
+                  <li>
+                    <button
+                      aria-label="Go to next page"
+                      class="MuiButtonBase-root Mui-disabled MuiPaginationItem-root MuiPaginationItem-sizeMedium MuiPaginationItem-text MuiPaginationItem-circular MuiPaginationItem-colorPrimary MuiPaginationItem-textPrimary Mui-disabled MuiPaginationItem-previousNext css-1bug3cd-MuiButtonBase-root-MuiPaginationItem-root"
+                      disabled=""
+                      tabindex="-1"
+                      type="button"
                     >
-                      <path
-                        d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"
-                      />
-                    </svg>
-                  </button>
-                </li>
-              </ul>
-            </nav>
+                      <svg
+                        aria-hidden="true"
+                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium MuiPaginationItem-icon css-8uzxat-MuiSvgIcon-root-MuiPaginationItem-icon"
+                        data-testid="NavigateNextIcon"
+                        focusable="false"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"
+                        />
+                      </svg>
+                    </button>
+                  </li>
+                </ul>
+              </nav>
+            </div>
+          </div>
+        </div>
+        <hr
+          class="MuiDivider-root MuiDivider-fullWidth css-1ouqunm-MuiDivider-root"
+        />
+        <div
+          class="MuiBox-root css-0"
+        >
+          <h6
+            class="MuiTypography-root MuiTypography-h6 css-ojiiiy-MuiTypography-root"
+          >
+            属性変更履歴
+          </h6>
+          <table
+            class="MuiTable-root css-1xwxv7r-MuiTable-root"
+            id="table_history_list"
+          >
+            <thead
+              class="MuiTableHead-root css-1a7iywq-MuiTableHead-root"
+            >
+              <tr
+                class="MuiTableRow-root MuiTableRow-head css-1wtsgsb-MuiTableRow-root"
+              >
+                <th
+                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-ljvtpv-MuiTableCell-root"
+                  scope="col"
+                  width="140px"
+                >
+                  項目
+                </th>
+                <th
+                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-ljvtpv-MuiTableCell-root"
+                  scope="col"
+                  width="300px"
+                >
+                  変更前
+                </th>
+                <th
+                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-ljvtpv-MuiTableCell-root"
+                  scope="col"
+                  width="300px"
+                >
+                  変更後
+                </th>
+                <th
+                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-ljvtpv-MuiTableCell-root"
+                  scope="col"
+                  width="80px"
+                >
+                  実行日時
+                </th>
+                <th
+                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-ljvtpv-MuiTableCell-root"
+                  scope="col"
+                  width="100px"
+                >
+                  実行者
+                </th>
+                <th
+                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-ljvtpv-MuiTableCell-root"
+                  scope="col"
+                  width="40px"
+                >
+                  復旧
+                </th>
+              </tr>
+            </thead>
+            <tbody
+              class="MuiTableBody-root css-gmh7jj-MuiTableBody-root"
+            />
+          </table>
+          <div
+            class="MuiBox-root css-5hgm98"
+            id="pagination"
+          >
+            <p
+              class="MuiTypography-root MuiTypography-body1 css-rizt0-MuiTypography-root"
+            >
+              0 - 0 / 0 件
+            </p>
+            <div
+              class="MuiStack-root css-1sazv7p-MuiStack-root"
+            >
+              <nav
+                aria-label="pagination navigation"
+                class="MuiPagination-root MuiPagination-text css-1xra8g6-MuiPagination-root"
+              >
+                <ul
+                  class="MuiPagination-ul css-1c5o7vy-MuiPagination-ul"
+                >
+                  <li>
+                    <button
+                      aria-label="Go to previous page"
+                      class="MuiButtonBase-root Mui-disabled MuiPaginationItem-root MuiPaginationItem-sizeMedium MuiPaginationItem-text MuiPaginationItem-circular MuiPaginationItem-colorPrimary MuiPaginationItem-textPrimary Mui-disabled MuiPaginationItem-previousNext css-1bug3cd-MuiButtonBase-root-MuiPaginationItem-root"
+                      disabled=""
+                      tabindex="-1"
+                      type="button"
+                    >
+                      <svg
+                        aria-hidden="true"
+                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium MuiPaginationItem-icon css-8uzxat-MuiSvgIcon-root-MuiPaginationItem-icon"
+                        data-testid="NavigateBeforeIcon"
+                        focusable="false"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"
+                        />
+                      </svg>
+                    </button>
+                  </li>
+                  <li>
+                    <button
+                      aria-label="Go to next page"
+                      class="MuiButtonBase-root Mui-disabled MuiPaginationItem-root MuiPaginationItem-sizeMedium MuiPaginationItem-text MuiPaginationItem-circular MuiPaginationItem-colorPrimary MuiPaginationItem-textPrimary Mui-disabled MuiPaginationItem-previousNext css-1bug3cd-MuiButtonBase-root-MuiPaginationItem-root"
+                      disabled=""
+                      tabindex="-1"
+                      type="button"
+                    >
+                      <svg
+                        aria-hidden="true"
+                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium MuiPaginationItem-icon css-8uzxat-MuiSvgIcon-root-MuiPaginationItem-icon"
+                        data-testid="NavigateNextIcon"
+                        focusable="false"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"
+                        />
+                      </svg>
+                    </button>
+                  </li>
+                </ul>
+              </nav>
+            </div>
           </div>
         </div>
       </div>
