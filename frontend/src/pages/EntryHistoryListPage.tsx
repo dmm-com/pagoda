@@ -17,7 +17,8 @@ import { aironeApiClient } from "repository/AironeApiClient";
 export const EntryHistoryListPage: FC = () => {
   const { entryId } = useTypedParams<{ entityId: number; entryId: number }>();
 
-  const { page: attributeHistoryPage, changePage: changeAttributeHistoryPage } = usePage();
+  const { page: attributeHistoryPage, changePage: changeAttributeHistoryPage } =
+    usePage();
   const { page: selfHistoryPage, changePage: changeSelfHistoryPage } =
     usePage();
 
@@ -32,7 +33,10 @@ export const EntryHistoryListPage: FC = () => {
   }, [entryId]);
 
   const histories = useAsyncWithThrow(async () => {
-    return await aironeApiClient.getEntryHistories(entryId, attributeHistoryPage);
+    return await aironeApiClient.getEntryHistories(
+      entryId,
+      attributeHistoryPage,
+    );
   }, [entryId, attributeHistoryPage]);
 
   const selfHistories = useAsyncWithThrow(async () => {
