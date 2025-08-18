@@ -1,6 +1,6 @@
 import { Box, Container } from "@mui/material";
 import { useSnackbar } from "notistack";
-import { FC, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 
 import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
@@ -10,8 +10,8 @@ import { Loading } from "components/common/Loading";
 import { PageHeader } from "components/common/PageHeader";
 import { SubmitButton } from "components/common/SubmitButton";
 import {
-  CopyForm as DefaultCopyForm,
   CopyFormProps,
+  CopyForm as DefaultCopyForm,
 } from "components/entry/CopyForm";
 import { EntryBreadcrumbs } from "components/entry/EntryBreadcrumbs";
 import { usePrompt } from "hooks/usePrompt";
@@ -41,6 +41,12 @@ export const EntryCopyPage: FC<Props> = ({ CopyForm = DefaultCopyForm }) => {
     "編集した内容は失われてしまいますが、このページを離れてもよろしいですか？",
   );
 
+  useEffect(() => {
+    if (submitted) {
+      navigate(entityEntriesPath(entityId), { replace: true });
+    }
+  }, [submitted]);
+
   const entry = useAsyncWithThrow(async () => {
     return await aironeApiClient.getEntry(entryId);
   }, [entryId]);
@@ -69,9 +75,6 @@ export const EntryCopyPage: FC<Props> = ({ CopyForm = DefaultCopyForm }) => {
       enqueueSnackbar("アイテムコピーのジョブ登録が成功しました", {
         variant: "success",
       });
-      setTimeout(() => {
-        navigate(entityEntriesPath(entityId), { replace: true });
-      }, 0.1);
     } catch {
       enqueueSnackbar("アイテムコピーのジョブ登録が失敗しました", {
         variant: "error",
