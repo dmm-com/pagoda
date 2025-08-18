@@ -51,6 +51,8 @@ from entry.api_v2.serializers import (
     EntryImportSerializer,
     EntryRetrieveSerializer,
     EntrySearchSerializer,
+    EntrySelfHistoryRestoreSerializer,
+    EntrySelfHistorySerializer,
     EntryUpdateSerializer,
     GetEntryAttrReferralSerializer,
 )
@@ -76,6 +78,8 @@ class EntryPermission(BasePermission):
             "copy": ACLType.Writable,
             "list_histories": ACLType.Readable,
             "list_alias": ACLType.Readable,
+            "list_self_histories": ACLType.Readable,
+            "restore_self_history": ACLType.Writable,
         }
 
         if not user.has_permission(obj, permisson.get(view.action)):
@@ -97,6 +101,8 @@ class EntryAPI(viewsets.ModelViewSet):
             "copy": EntryCopySerializer,
             "list_histories": EntryHistoryAttributeValueSerializer,
             "list_alias": EntryAliasSerializer,
+            "list_self_histories": EntrySelfHistorySerializer,
+            "restore_self_history": EntrySelfHistoryRestoreSerializer,
         }
         return serializer.get(self.action, EntryBaseSerializer)
 
@@ -221,6 +227,62 @@ class EntryAPI(viewsets.ModelViewSet):
         )
 
         return super(EntryAPI, self).list(request, *args, **kwargs)
+
+    @extend_schema(responses=EntrySelfHistorySerializer(many=True))
+    def list_self_histories(self, request: Request, *args, **kwargs) -> Response:
+        """List entry self history records"""
+        entry: Entry = self.get_object()
+
+        # Get historical records for the entry
+        self.queryset = entry.history.all().order_by("-history_date").select_related("history_user")
+
+        return super(EntryAPI, self).list(request, *args, **kwargs)
+
+    @extend_schema(request=EntrySelfHistoryRestoreSerializer)
+    def restore_self_history(self, request: Request, *args, **kwargs) -> Response:
+        """Restore entry to a previous state from history"""
+        entry: Entry = self.get_object()
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        history_id = serializer.validated_data["history_id"]
+
+        # Find the historical record
+        try:
+            historical_record = entry.history.get(history_id=history_id)
+        except entry.history.model.DoesNotExist:
+            raise ObjectNotExistsError("指定された履歴が見つかりません")
+
+        # Update entry name to the historical value
+        old_name = entry.name
+        entry.name = historical_record.name
+
+        # Check if name is available (not used by other active entries or aliases)
+        if entry.name != old_name:
+            if (
+                Entry.objects.filter(schema=entry.schema, name=entry.name, is_active=True)
+                .exclude(id=entry.id)
+                .exists()
+            ):
+                raise DuplicatedObjectExistsError(
+                    f"エントリ名 '{entry.name}' は既に使用されています"
+                )
+
+            if not entry.schema.is_available(entry.name):
+                raise DuplicatedObjectExistsError(
+                    f"エントリ名 '{entry.name}' はエイリアスで使用されています"
+                )
+
+        entry.save()
+
+        return Response(
+            {
+                "message": f"エントリ名を '{historical_record.name}' に復旧しました",
+                "restored_name": historical_record.name,
+            },
+            status=status.HTTP_200_OK,
+        )
 
 
 @extend_schema(

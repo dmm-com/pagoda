@@ -1579,3 +1579,53 @@ class AdvancedSearchResultExportSerializer(serializers.Serializer):
             params=self.validated_data,
         )
         job.run()
+
+
+class EntrySelfHistoryListSerializer(serializers.ListSerializer):
+    """Custom list serializer to prefetch previous names efficiently"""
+
+    def to_representation(self, data):
+        # Build a mapping of previous names
+        if hasattr(data, "__iter__"):
+            items = list(data)
+
+            # Sort items by history_date to build prev_name mapping
+            items.sort(key=lambda x: x.history_date)
+
+            # Attach previous names
+            for i, item in enumerate(items):
+                if i > 0:
+                    item._prefetched_prev_name = items[i - 1].name
+                else:
+                    item._prefetched_prev_name = None
+
+        return super().to_representation(data)
+
+
+class EntrySelfHistorySerializer(serializers.ModelSerializer):
+    """Serializer for Entry self history records using simple_history"""
+
+    history_user = serializers.CharField(source="history_user.username", default="システム")
+    prev_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Entry.history.model
+        fields = (
+            "history_id",
+            "name",
+            "prev_name",
+            "history_date",
+            "history_user",
+            "history_type",
+        )
+        list_serializer_class = EntrySelfHistoryListSerializer
+
+    def get_prev_name(self, obj) -> str | None:
+        """Get previous name from prefetched data"""
+        return getattr(obj, "_prefetched_prev_name", None)
+
+
+class EntrySelfHistoryRestoreSerializer(serializers.Serializer):
+    """Serializer for restoring Entry self history"""
+
+    history_id = serializers.IntegerField()
