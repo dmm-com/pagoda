@@ -23,19 +23,19 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.ref }}
           repository: ${{ github.event.pull_request.head.repo.full_name }}
-      - name: Install poetry
-        run: pipx install poetry
+      - name: Install uv
+        run: pipx install uv
       - uses: actions/setup-python@v4
         with:
           python-version: "3.11.5"
-          cache: "poetry"
+          cache: "pip"
       - name: apt-get
         run: |
           sudo apt-get update
           sudo apt-get install libldap2-dev libsasl2-dev libxmlsec1-dev libmysqlclient-dev pkg-config
-      - name: poetry install
+      - name: uv sync
         run: |
-          poetry install --no-ansi
+          uv sync --extra dev
       - uses: actions/setup-node@v3
         with:
           node-version: 16
@@ -47,7 +47,7 @@ jobs:
           NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
       - name: generate client
         run: |
-          poetry run npm run generate:client
+          uv run npm run generate:client
       - run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
