@@ -4954,6 +4954,50 @@ class ViewTest(BaseViewTest):
             },
         )
 
+    def test_advanced_search_chain_with_hint_item_name(self):
+        # This creates following items
+        #   * [hoge] item0 --> ref0
+        #   * [hoge] item1 --> ref0
+        #   * [fuga] item2 --> ref0
+        #   * [fuga] item3 --> ref1  (note: referring item is different)
+        item_refs = [self.add_entry(self.user, "ref%d" % i, self.ref_entity) for i in range(2)]
+        for item_index, (prefix, ref_index) in enumerate(
+            [("hoge", 0), ("hoge", 0), ("fuga", 0), ("fuga", 1)]
+        ):
+            self.add_entry(
+                self.user,
+                "[%s] item%d" % (prefix, item_index),
+                self.entity,
+                values={
+                    "ref": item_refs[ref_index],
+                },
+            )
+
+        # send search-chain request by ordinary parameter
+        params = {
+            "entities": [self.entity.id],
+            "attrs": [{"name": "ref", "value": "ref0"}],
+        }
+        resp = self.client.post(
+            "/entry/api/v2/advanced_search_chain/", json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(
+            [x["name"] for x in resp.json()], ["[hoge] item0", "[hoge] item1", "[fuga] item2"]
+        )
+
+        # send search-chain request with hint_item_name
+        params = {
+            "entities": [self.entity.id],
+            "hint_item_name": "hoge",
+            "attrs": [{"name": "ref", "value": "ref0"}],
+        }
+        resp = self.client.post(
+            "/entry/api/v2/advanced_search_chain/", json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual([x["name"] for x in resp.json()], ["[hoge] item0", "[hoge] item1"])
+
     def test_entry_history(self):
         values = {
             "val": {"value": "hoge", "result": {"as_string": "hoge"}},
