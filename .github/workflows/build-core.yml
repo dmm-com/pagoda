@@ -9,7 +9,7 @@ on:
       - "**/*.py"
       - "templates/**/*.html"
       - ".github/workflows/build-core.yml"
-      - "poetry.lock"
+      - "uv.lock"
 
 jobs:
   lint:
@@ -19,25 +19,25 @@ jobs:
         python-version: ["3.12.9"]
     steps:
       - uses: actions/checkout@v3
-      - name: Install poetry
-        run: pipx install poetry
+      - name: Install uv
+        run: pipx install uv
       - uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
-          cache: "poetry"
+          cache: "pip"
       - name: apt-get
         run: |
           sudo apt-get update
           sudo apt-get install libldap2-dev libsasl2-dev libxmlsec1-dev libmysqlclient-dev pkg-config
-      - name: poetry install
+      - name: uv sync
         run: |
-          poetry install --no-ansi
+          uv sync --extra dev
       - name: staticchecks
         run: |
           mv custom_view_sample custom_view
-          poetry run mypy ./
-          poetry run ruff check --output-format=github .
-          poetry run ruff format --check .
+          uv run mypy ./
+          uv run ruff check --output-format=github .
+          uv run ruff format --check .
 
   # set modules have python test code outputs.modules
   setup_python:
@@ -96,12 +96,12 @@ jobs:
           --health-retries=3
     steps:
       - uses: actions/checkout@v3
-      - name: Install poetry
-        run: pipx install poetry
+      - name: Install uv
+        run: pipx install uv
       - uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
-          cache: "poetry"
+          cache: "pip"
       - name: Install additional dependencies
         run: |
           sudo apt-get update
@@ -110,18 +110,18 @@ jobs:
         run: |
           mysql -protocol=tcp -uroot -h127.0.0.1 -ppassword -e "SET GLOBAL character_set_server=utf8; SET GLOBAL collation_server=utf8_general_ci; SET GLOBAL default_storage_engine=InnoDB;"
           mysql -protocol=tcp -uroot -h127.0.0.1 -ppassword -e "GRANT ALL ON *.* to airone@'%'"
-      - name: poetry install
+      - name: uv sync
         run: |
-          poetry install --no-ansi
+          uv sync --extra dev
       - name: test
         run: |
           mv custom_view_sample custom_view
-          poetry run python manage.py makemigrations
-          poetry run python manage.py migrate
-          poetry run python manage.py collectstatic
-          poetry run coverage run manage.py test ${{ matrix.target }} --parallel 
-          poetry run coverage report
-          poetry run coverage xml
+          uv run python manage.py makemigrations
+          uv run python manage.py migrate
+          uv run python manage.py collectstatic
+          uv run coverage run manage.py test ${{ matrix.target }} --parallel 
+          uv run coverage report
+          uv run coverage xml
       - name: octocov
         uses: k1LoW/octocov-action@v1
         with:

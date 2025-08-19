@@ -1168,6 +1168,57 @@ class AironeApiClient {
       },
     });
   }
+
+  async getEntrySelfHistories(
+    id: number,
+    page: number,
+  ): Promise<{
+    count?: number;
+    results?: Array<{
+      history_id: number;
+      name: string;
+      prev_name: string | null;
+      history_date: string;
+      history_user: string;
+      history_type: string;
+    }>;
+  }> {
+    const offset = (page - 1) * EntryHistoryListParam.MAX_ROW_COUNT;
+    const limit = EntryHistoryListParam.MAX_ROW_COUNT;
+    const response = await fetch(
+      `/entry/api/v2/${id}/self_histories/?offset=${offset}&limit=${limit}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      },
+    );
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return await response.json();
+  }
+
+  async restoreEntrySelfHistory(
+    entryId: number,
+    historyId: number,
+  ): Promise<void> {
+    const response = await fetch(
+      `/entry/api/v2/${entryId}/restore_self_history/`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCsrfToken(),
+        },
+        body: JSON.stringify({ history_id: historyId }),
+      },
+    );
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+  }
 }
 
 export const aironeApiClient = new AironeApiClient();

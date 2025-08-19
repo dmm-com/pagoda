@@ -46,6 +46,22 @@ urlpatterns = [
         ),
     ),
     path(
+        "<int:pk>/self_histories/",
+        views.EntryAPI.as_view(
+            {
+                "get": "list_self_histories",
+            }
+        ),
+    ),
+    path(
+        "<int:pk>/restore_self_history/",
+        views.EntryAPI.as_view(
+            {
+                "post": "restore_self_history",
+            }
+        ),
+    ),
+    path(
         "<int:pk>/alias/",
         views.EntryAPI.as_view(
             {
