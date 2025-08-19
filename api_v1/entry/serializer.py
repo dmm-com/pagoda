@@ -2,7 +2,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
 from airone.exceptions import ElasticsearchException
-from airone.lib.elasticsearch import AttrHint
+from airone.lib.elasticsearch import AttrHint, EntryHint, EntryFilterKey
 from airone.lib.log import Logger
 from entity.models import Entity, EntityAttr
 from entry.models import Entry
@@ -53,6 +53,7 @@ class EntrySearchChainSerializer(serializers.Serializer):
     attrs = serializers.ListField(child=AttrSerializer(), required=False)
     refers = serializers.ListField(child=ReferSerializer(), required=False)
     is_any = serializers.BooleanField(default=False)
+    hint_item_name = serializers.CharField(required=False)
 
     def validate_is_any(self, value):
         return value
@@ -269,7 +270,7 @@ class EntrySearchChainSerializer(serializers.Serializer):
         # The first return value (False) describe this result returned by NO-leaf-node
         return (False, accumulated_result)
 
-    def forward_search_entries(self, user, queries, entity_id_list, is_any):
+    def forward_search_entries(self, user, queries, entity_id_list, hint_item_name, is_any):
         # digging into the condition tree to get to leaf condition by depth-first search
         accumulated_result = []
 
@@ -292,6 +293,13 @@ class EntrySearchChainSerializer(serializers.Serializer):
                 )
             ]
 
+            hint_item = None
+            if hint_item_name:
+                hint_item = EntryHint(
+                    keyword=hint_item_name,
+                    filter_key=EntryFilterKey.TEXT_CONTAINED,
+                )
+
             # get Entry informations from result
             # NOTE: small limit(=1000) is workaround to prevent overload
             try:
@@ -300,6 +308,7 @@ class EntrySearchChainSerializer(serializers.Serializer):
                     entity_id_list,
                     hint_attrs,
                     limit=CONFIG.SEARCH_CHAIN_ACCEPTABLE_RESULT_COUNT,
+                    hint_entry=hint_item,
                 )
             except Exception as e:
                 Logger.warning("Search Chain API error:%s" % e)
@@ -363,7 +372,7 @@ class EntrySearchChainSerializer(serializers.Serializer):
             sub_query = query.get("attrs", [])
 
             (_, results) = self.forward_search_entries(
-                user, sub_query, query["entities"], query["is_any"]
+                user, sub_query, query["entities"], query.get("hint_item_name"), query["is_any"]
             )
             accumulated_result = self.merge_search_result(
                 accumulated_result, results, query["is_any"]
