@@ -2,7 +2,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
 from airone.exceptions import ElasticsearchException
-from airone.lib.elasticsearch import AttrHint, EntryHint, EntryFilterKey
+from airone.lib.elasticsearch import AttrHint, EntryFilterKey, EntryHint
 from airone.lib.log import Logger
 from entity.models import Entity, EntityAttr
 from entry.models import Entry
