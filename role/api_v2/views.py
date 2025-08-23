@@ -1,9 +1,11 @@
+from django.db.models import Prefetch
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, generics, serializers, status, viewsets
 from rest_framework.permissions import BasePermission, IsAuthenticated
 from rest_framework.response import Response
 
 from airone.lib.drf import YAMLParser, YAMLRenderer
+from group.models import Group
 from job.models import Job
 from role.api_v2.serializers import (
     RoleCreateUpdateSerializer,
@@ -29,7 +31,12 @@ class RolePermission(BasePermission):
 
 
 class RoleAPI(viewsets.ModelViewSet):
-    queryset = Role.objects.filter(is_active=True).prefetch_related("admin_users", "admin_groups")
+    queryset = Role.objects.filter(is_active=True).prefetch_related(
+        Prefetch("users", queryset=User.objects.filter(is_active=True)),
+        Prefetch("groups", queryset=Group.objects.filter(is_active=True)),
+        Prefetch("admin_users", queryset=User.objects.filter(is_active=True)),
+        Prefetch("admin_groups", queryset=Group.objects.filter(is_active=True)),
+    )
     permission_classes = [IsAuthenticated & RolePermission]
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter, filters.SearchFilter]
     search_fields = ["name"]
