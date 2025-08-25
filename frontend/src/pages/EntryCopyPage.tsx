@@ -71,6 +71,7 @@ export const EntryCopyPage: FC<Props> = ({ CopyForm = DefaultCopyForm }) => {
           .filter((e) => e.length > 0),
       );
 
+      setEdited(false);
       setSubmitted(true);
       enqueueSnackbar("アイテムコピーのジョブ登録が成功しました", {
         variant: "success",
