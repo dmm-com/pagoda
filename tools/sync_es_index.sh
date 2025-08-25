@@ -13,8 +13,8 @@ parse_argv() {
 }
 
 sync_es_index() {
-  ES_HOST_CURR=$(python3 -c "from airone import settings; print(settings.ES_CONFIG['NODES'][0])")
-  ES_INDEX=$(python3 -c "from airone import settings; print(settings.ES_CONFIG['INDEX'])")
+  ES_HOST_CURR=$(uv run python -c "from airone import settings; print(settings.ES_CONFIG['NODES'][0])")
+  ES_INDEX=$(uv run python -c "from airone import settings; print(settings.ES_CONFIG['INDEX'])")
 
   # wait until elasticsearch service would be available
   while ! nc -z ${ES_HOST_CURR/:/ }; do
@@ -22,7 +22,7 @@ sync_es_index() {
   done
 
   # clearup current ES and recreate index
-  cat <<EOS | python3 manage.py shell
+  cat <<EOS | uv run python manage.py shell
 from airone.lib.elasticsearch import ESS
 
 es = ESS()

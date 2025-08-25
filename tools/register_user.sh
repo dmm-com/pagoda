@@ -59,7 +59,7 @@ main() {
   fi
 
   # create user
-  cat <<EOS | python3 manage.py shell 2> /dev/null
+  cat <<EOS | uv run python manage.py shell 2> /dev/null
 from user.models import User
 
 user = User.objects.filter(username='${USERNAME}').first()
