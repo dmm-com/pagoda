@@ -6,6 +6,7 @@ from django.conf import settings
 from django.db.models import Q
 from pydantic import BaseModel, Field, RootModel, ValidationError, field_validator
 from rest_framework import status
+from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -191,7 +192,7 @@ class EntryReferredResponse(BaseModel):
 
 
 class EntryReferredAPI(APIView):
-    def get(self, request):
+    def get(self, request: Request) -> Response:
         # set each request parameters to description variables
         param_entity: str | None = request.query_params.get("entity")
         param_entry: str | None = request.query_params.get("entry")
@@ -264,7 +265,7 @@ class UpdateHistoryResponse(RootModel[List["UpdateHistoryResponse.ResponseItem"]
 
 
 class UpdateHistory(APIView):
-    def get(self, request):
+    def get(self, request: Request) -> Response:
         # validate whether mandatory parameters are specified
         p_attr = request.GET.get("attribute")
         if not p_attr:

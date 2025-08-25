@@ -2,7 +2,7 @@ import io
 from typing import Any, Dict
 
 import yaml
-from django.http import HttpResponse
+from django.http import HttpRequest, HttpResponse
 from django.http.response import JsonResponse
 
 from airone.lib.http import (
@@ -26,7 +26,7 @@ def index(request):
 
 @http_get
 @check_superuser
-def edit(request, group_id):
+def edit(request: HttpRequest, group_id: int) -> HttpResponse:
     if not Group.objects.filter(id=group_id).exists():
         return HttpResponse("Failed to get group of specified id", status=400)
 
