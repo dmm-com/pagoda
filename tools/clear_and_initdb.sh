@@ -7,21 +7,21 @@ do
 done
 
 # recreate database of MySQL
-db_host=$(python3 -c "from airone import settings; print(settings.DATABASES['default']['HOST'])")
-db_name=$(python3 -c "from airone import settings; print(settings.DATABASES['default']['NAME'])")
-db_user=$(python3 -c "from airone import settings; print(settings.DATABASES['default']['USER'])")
-db_pass=$(python3 -c "from airone import settings; print(settings.DATABASES['default']['PASSWORD'])")
+db_host=$(uv run python -c "from airone import settings; print(settings.DATABASES['default']['HOST'])")
+db_name=$(uv run python -c "from airone import settings; print(settings.DATABASES['default']['NAME'])")
+db_user=$(uv run python -c "from airone import settings; print(settings.DATABASES['default']['USER'])")
+db_pass=$(uv run python -c "from airone import settings; print(settings.DATABASES['default']['PASSWORD'])")
 
 echo "drop database ${db_name}" | mysql -u${db_user} -p${db_pass} -h${db_host}
 echo "create database ${db_name}" | mysql -u${db_user} -p${db_pass} -h${db_host}
 
 # re-construct database
-python3 manage.py makemigrations
-python3 manage.py migrate
+uv run python manage.py makemigrations
+uv run python manage.py migrate
 
 # create an user of auto complementer
-user_auto_complementer=$(python3 -c "from airone import settings; print(settings.AIRONE['AUTO_COMPLEMENT_USER'])")
-cat <<EOS | python3 manage.py shell
+user_auto_complementer=$(uv run python -c "from airone import settings; print(settings.AIRONE['AUTO_COMPLEMENT_USER'])")
+cat <<EOS | uv run python manage.py shell
 from user.models import User
 User.objects.create(username="${user_auto_complementer}")
 EOS
