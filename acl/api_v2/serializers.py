@@ -246,20 +246,33 @@ class ACLHistorySerializer(serializers.Serializer):
     @extend_schema_field(str)
     def get_name(self, history):
         if history.__class__.__name__ == "HistoricalHistoricalPermission":
-            obj = ACLBase.objects.filter(id=history.codename.split(".")[0]).first()
-            return obj.name if obj else ""
+            # Use cached ACLBase data to avoid duplicate queries
+            acl_base_cache = self.context.get("acl_base_cache", {})
+            acl_id = history.codename.split(".")[0]
+
+            if acl_id in acl_base_cache:
+                return acl_base_cache[acl_id]
+            else:
+                # Fallback to database query if not in cache
+                obj = ACLBase.objects.filter(id=acl_id).first()
+                return obj.name if obj else ""
         else:
             return history.name
 
     @extend_schema_field(ACLHistoryChangeSerializer(many=True))
     def get_changes(self, history):
         if history.__class__.__name__ == "HistoricalHistoricalPermission":
-            if history.prev_record:
-                delta = history.diff_against(history.prev_record, excluded_fields=["status"])
+            # Use cached prev_record to avoid DB queries
+            prev_record_cache = self.context.get("prev_record_cache", {})
+            cache_key = f"permission_{history.history_id}"
+            prev_record = prev_record_cache.get(cache_key)
+
+            if prev_record:
+                delta = history.diff_against(prev_record, excluded_fields=["status"])
                 if "roles" not in delta.changed_fields:
                     return []
 
-                before = {r.id: r for r in history.prev_record.roles.all()}
+                before = {r.id: r for r in prev_record.roles.all()}
                 after = {r.id: r for r in history.roles.all()}
                 return [
                     {
@@ -281,8 +294,17 @@ class ACLHistorySerializer(serializers.Serializer):
             else:
                 return []
         else:
-            if history.prev_record:
-                delta = history.diff_against(history.prev_record, excluded_fields=["status"])
+            # For regular historical records, use cached prev_record if available
+            prev_record_cache = self.context.get("prev_record_cache", {})
+            cache_key = f"acl_{history.history_id}"
+            prev_record = prev_record_cache.get(cache_key)
+
+            # Fallback to original method if not in cache
+            if prev_record is None:
+                prev_record = history.prev_record
+
+            if prev_record:
+                delta = history.diff_against(prev_record, excluded_fields=["status"])
                 return [
                     {
                         "action": "update",
