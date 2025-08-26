@@ -23,22 +23,25 @@ user@hostname:~$ sudo apt-get install libldap2-dev  libsasl2-dev libxmlsec1-dev 
 user@hostname:~$ brew install libxmlsec1 mysql-client pkg-config mysql-connector-python
 ```
 
+And it's necessary to install `uv` command that manages Python packages and isolates Pagoda related libraries from system use ones.
+```
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
 Then, you can install libraries on which Pagoda depends by following after cloning this repository. But we recommand you to setup pagoda on the separated environment using virtualenv not to pollute system-wide python environment.
 ```
 user@hostname:~$ git clone https://github.com/dmm-com/pagoda.git
 user@hostname:~$ cd pagoda
-user@hostname:~/pagoda$ python3 -m venv virtualenv
-user@hostname:~/pagoda$ source virtualenv/bin/activate
-(virtualenv) user@hostname:~/pagoda$ pip install pip --upgrade
-(virtualenv) user@hostname:~/pagoda$ pip install uv
-(virtualenv) user@hostname:~/pagoda$ uv sync --only-group main
-# or, during development, install all
-(virtualenv) user@hostname:~/pagoda$ uv sync
+user@hostname:~/pagoda$ uv sync
 ```
 
 ## Setting-up Backend with docker-compose
 
 Install docker-compose command.  
+```
+(TBD)
+```
+
 Run middlewares with docker-compose.
 
 ```
