@@ -370,15 +370,20 @@ class Job(models.Model):
 
     @classmethod
     def method_table(kls) -> dict[JobOperation | JobOperationCustom, TaskHandler]:
-        # previous custom-view feature to import modules that are located on the specific directory (custom_view)
+        # previous custom-view feature to import modules
+        # that are located on the specific directory (custom_view)
         for operation_num, task in CUSTOM_TASKS.items():
             custom_task = kls.get_task_module("custom_view.tasks")
             kls._METHOD_TABLE |= {operation_num: getattr(custom_task, task)}
 
-        # new feature to load modules that are specified in the PAGODA_CUSTOMS configuration in the airone/settings.py
+        # new feature to load modules that are specified in
+        # the PAGODA_CUSTOMS configuration in the airone/settings.py
         for custom_view in settings.PAGODA_CUSTOMS:
             # get unique module that provides Pagoda custom-view
-            pass
+            module_name = custom_view.split(".")[0]
+            custom_tasks = kls.get_task_module(f"{module_name}.lib.tasks")
+            for operation_num, task in custom_tasks.CUSTOM_TASKS:
+                kls._METHOD_TABLE |= {operation_num: task}
 
         return kls._METHOD_TABLE
 
