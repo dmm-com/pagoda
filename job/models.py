@@ -34,6 +34,7 @@ if os.path.exists(settings.BASE_DIR + "/custom_view"):
         CUSTOM_TASKS,
         JobOperationCustom,
     )
+
 else:
     CUSTOM_CANCELABLE_OPERATIONS = []
     CUSTOM_DOWNLOADABLE_OPERATIONS = []
@@ -369,9 +370,15 @@ class Job(models.Model):
 
     @classmethod
     def method_table(kls) -> dict[JobOperation | JobOperationCustom, TaskHandler]:
+        # previous custom-view feature to import modules that are located on the specific directory (custom_view)
         for operation_num, task in CUSTOM_TASKS.items():
             custom_task = kls.get_task_module("custom_view.tasks")
             kls._METHOD_TABLE |= {operation_num: getattr(custom_task, task)}
+
+        # new feature to load modules that are specified in the PAGODA_CUSTOMS configuration in the airone/settings.py
+        for custom_view in settings.PAGODA_CUSTOMS:
+            # get unique module that provides Pagoda custom-view
+            pass
 
         return kls._METHOD_TABLE
 
