@@ -35,20 +35,30 @@ user@hostname:~$ cd pagoda
 user@hostname:~/pagoda$ uv sync
 ```
 
-## Setting-up Backend with docker-compose
+Now, you have made Python environment for running Pagoda on your node. It'll be completed to run Pagoda when you install backend middlewares(MySQL, RabbitMQ and Elasticsearch).
 
-Install docker-compose command.  
-```
-(TBD)
-```
+There are two options to set them up.
 
-Run middlewares with docker-compose.
+## (Option1: Recommended) Setting-up backends using docker-compose
 
+Check `docker` command has already been installed by following command.
 ```
-user@hostname:~/pagoda$ docker-compose up
+$ which docker
 ```
 
-## (Setting-up Backend with manual)
+Whether there is no output, which means `docker` command has not been installed, you should install Docker engine (c.f. [Install Docker Engine -- dockerdocs](https://docs.docker.com/engine/install/))
+
+And you also have to install Docker Compose plugin (c.f. [Install the Docker Compose plugin -- dockerdocs](https://docs.docker.com/compose/install/linux/))
+
+Then, you can make middleware nodes (MySQL, RabbitMQ and Elasticsearch) by `docker compose` command as below.
+```
+user@hostname:~/pagoda$ docker compose up
+```
+
+Conguratulations, you completed to setup Pagoda execution environment.
+After initializing Pagoda, you can use it! Please move on to the [Initialize Pagoda configuratoin](#initialize-pagoda-configuratoin).
+
+## (Option2) Setting-up backends in manual
 
 And you have to install RabbitMQ for executing heavy processing as background task using [Celery](http://docs.celeryproject.org/).
 ```
