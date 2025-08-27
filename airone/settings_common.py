@@ -70,21 +70,30 @@ class Common(Configuration):
     if os.path.exists(BASE_DIR + "/custom_view"):
         INSTALLED_APPS.append("custom_view")
 
-    MIDDLEWARE = [
-        "django.middleware.security.SecurityMiddleware",
-        "whitenoise.middleware.WhiteNoiseMiddleware",
-        "airone.middleware.log.LoggingRequestMiddleware",
-        "django.contrib.sessions.middleware.SessionMiddleware",
-        "django.middleware.common.CommonMiddleware",
-        "django.middleware.csrf.CsrfViewMiddleware",
-        "django.contrib.auth.middleware.AuthenticationMiddleware",
-        "django.contrib.messages.middleware.MessageMiddleware",
-        "django.middleware.clickjacking.XFrameOptionsMiddleware",
-        "social_django.middleware.SocialAuthExceptionMiddleware",
-        "airone.middleware.db.AirOneReplicationMiddleware",
-        "airone.middleware.gate_keeper.URLGateKeeper",
-        "simple_history.middleware.HistoryRequestMiddleware",
-    ] + env.list("AIRONE_MIDDLEWARE", None, [])
+    PAGODA_CUSTOMS = [
+        "hoge.api_handler.APIHandlerMiddleware",
+    ]
+
+    MIDDLEWARE = (
+        [
+            "django.middleware.security.SecurityMiddleware",
+            "whitenoise.middleware.WhiteNoiseMiddleware",
+            "airone.middleware.log.LoggingRequestMiddleware",
+            "django.contrib.sessions.middleware.SessionMiddleware",
+            "django.middleware.common.CommonMiddleware",
+            "django.middleware.csrf.CsrfViewMiddleware",
+            "django.contrib.auth.middleware.AuthenticationMiddleware",
+            "django.contrib.messages.middleware.MessageMiddleware",
+            "django.middleware.clickjacking.XFrameOptionsMiddleware",
+            "social_django.middleware.SocialAuthExceptionMiddleware",
+            "airone.middleware.db.AirOneReplicationMiddleware",
+            "airone.middleware.gate_keeper.URLGateKeeper",
+            # "airone.middleware.hoge.APIHandlerMiddleware",
+            "simple_history.middleware.HistoryRequestMiddleware",
+        ]
+        + env.list("AIRONE_MIDDLEWARE", None, [])
+        + PAGODA_CUSTOMS
+    )
 
     # SECURITY WARNING: don't run with debug turned on in production!
     DEBUG = env.bool("AIRONE_DEBUG", False)
