@@ -43,19 +43,52 @@ There are two options to set them up.
 
 Check `docker` command has already been installed by following command.
 ```
-$ which docker
+$ sudo docker run hello-world
 ```
 
-Whether there is no output, which means `docker` command has not been installed, you should install Docker engine (c.f. [Install Docker Engine -- dockerdocs](https://docs.docker.com/engine/install/))
+When `docker` command has not been installed, you should install Docker engine (c.f. [Install Docker Engine -- dockerdocs](https://docs.docker.com/engine/install/))
 
 And you also have to install Docker Compose plugin (c.f. [Install the Docker Compose plugin -- dockerdocs](https://docs.docker.com/compose/install/linux/))
 
 Then, you can make middleware nodes (MySQL, RabbitMQ and Elasticsearch) by `docker compose` command as below.
 ```
-user@hostname:~/pagoda$ docker compose up
+user@hostname:~/pagoda$ sudo docker compose up -d
+```
+
+Then, you should make user for Pagoda (internally it was named as airone) to the Elasticsearch and MySQL as below.
+
+### for Elasticsearch
+
+You have to create user for Pagoda and set it administrative role at the Elasticsearch by following commands.
+```
+user@hostname:~$ sudo docker exec -it elasticsearch bin/elasticsearch-users useradd airone -p password
+user@hostname:~$ sudo docker exec -it elasticsearch bin/elasticsearch-users roles airone --add superuser
+```
+
+You can check whether specified user was created successfully and has proper role as below.
+```
+user@hostname:~$ sudo docker exec -it elasticsearch bin/elasticsearch-users list
+airone         : superuser
+```
+
+### for MySQL
+
+Login to the Docker node that MySQL is running by following code.
+```
+user@hostname:~$ sudo docker exec -it mysql mysql -uroot
+```
+
+Then, you should cerate database and user for Pagoda (internally called `airone`) in MySQL.
+```
+mysql> create database airone;
+mysql> create database test_airone;
+mysql> CREATE USER 'airone'@'%' IDENTIFIED BY 'password';
+mysql> GRANT ALL ON airone.* to airone@'%';
+mysql> GRANT ALL ON test_airone.* to airone@'%';
 ```
 
 Conguratulations, you completed to setup Pagoda execution environment.
+
 After initializing Pagoda, you can use it! Please move on to the [Initialize Pagoda configuratoin](#initialize-pagoda-configuratoin).
 
 ## (Option2) Setting-up backends in manual
@@ -83,6 +116,17 @@ Iincrease the number of Slave databases with the MySQL replication function.
 You can set database slave, with like this config:
 ```
 REPLICATED_DATABASE_SLAVES = ['slave1', 'slave2']
+```
+
+You should cerate database and user for pagoda in MySQL.
+```
+user@hostname:~$ mysql -u root -h 127.0.0.1
+
+mysql> create database airone;
+mysql> create database test_airone;
+mysql> CREATE USER 'airone'@'%' IDENTIFIED BY 'password';
+mysql> GRANT ALL ON airone.* to airone@'%';
+mysql> GRANT ALL ON test_airone.* to airone@'%';
 ```
 
 ### Setting-up Elasticsearch
@@ -118,6 +162,12 @@ After installing it, you have to change configuration to accept connecting from 
 You should set sysctl as below because Elasticsearch requires to expand virtual memory area.
 ```
 user@hostname:~$ sudo sysctl vm.max_map_count=262144
+```
+
+And you should create user and attach role in Elasticsearch.
+```
+bin/elasticsearch-users useradd airone -p password
+bin/elasticsearch-users roles airone --add superuser
 ```
 
 Finally, you can run ElasticSearch service like that.
@@ -201,38 +251,15 @@ This includes the configuration to proxy HTTP request to Pagoda and cache static
 
 ## Initialize Pagoda configuratoin
 
-You should create user and attach role in Elasticsearch.
-```
-bin/elasticsearch-users useradd airone
-bin/elasticsearch-users roles airone --add superuser
-```
-
-You should cerate database and user for pagoda in MySQL.
-```
-user@hostname:~$ mysql -u root -h 127.0.0.1
-
-mysql> create database airone;
-mysql> create database test_airone;
-mysql> CREATE USER 'airone'@'%' IDENTIFIED BY 'password';
-mysql> GRANT ALL ON airone.* to airone@'%';
-mysql> GRANT ALL ON test_airone.* to airone@'%';
-```
-
 This command makes database schema using the [django Migrations](https://docs.djangoproject.com/en/1.11/topics/migrations/), and makes default user account.
 ```
 user@hostname:~$ cd pagoda
-user@hostname:~/pagoda$ source virtualenv/bin/activate
-(virtualenv) user@hostname:~/pagoda$ tools/clear_and_initdb.sh
+user@hostname:~/pagoda$ tools/clear_and_initdb.sh
 ```
 
-(Optional) Please set the index as necessary.
+Then, you should create an initial user to login to the Pagoda. This creates user `demo`.
 ```
-mysql> CREATE INDEX permission_codename_idx ON auth_permission (codename);
-```
-
-Finally, you should create an initial user to login the system using `tools/register_user.sh`.
-```
-(virtualenv) user@hostname:~/pagoda$ tools/register_user.sh demo
+user@hostname:~/pagoda$ tools/register_user.sh demo
 Password:   ## input password of this user
 Succeed in register user (demo)
 ```
@@ -245,16 +272,21 @@ This creates following user.
 
 If you want to create an administrative user who can access all information regardless of ACL (Please refer the [User-Manual(TBD)](#)), you can do it with `-s, --superuser` option. This creates another user who takes privilege of this system.
 ```
-(virtualenv) user@hostname:~/pagoda$ tools/register_user.sh -s admin
+user@hostname:~/pagoda$ tools/register_user.sh -s admin
 Password:   ## input password of this user
 Succeed in register user (admin)
 ```
 
-This regists all entries which has been created in the database to the Elasticsearch.  
+Finally, this registers all entries which has been created in the database to the Elasticsearch.  
 You can do it just by following command. The configurations about the database to read and Elasticsearch to register are referred from airone/settings.py.
 
 ```
-(virtualenv) user@hostname:~/pagoda$ python tools/initialize_es_document.py
+user@hostname:~/pagoda$ python tools/initialize_es_document.py
+```
+
+(Optional) Please set the index as necessary.
+```
+mysql> CREATE INDEX permission_codename_idx ON auth_permission (codename);
 ```
 
 ## Run Pagoda
@@ -264,17 +296,17 @@ e.g.
 
 ```
 user@hostname:~$ cd pagoda
-user@hostname:~/pagoda$ source virtualenv/bin/activate
-(virtualenv) user@hostname:~/pagoda$ python manage.py runserver 0:8080
+user@hostname:~/pagoda$ uv run python manage.py runserver 0:8080
 ```
+
+Then, you can access to the Pagoda by `http://localhost:8080` from your browser.
 
 ## Run Celery
 
 In addition, you have to run Celery worker to execute background task as following.
 ```
 user@hostname:~$ cd pagoda
-user@hostname:~/pagoda$ source virtualenv/bin/activate
-(virtualenv) user@hostname:~/pagoda$ celery -A airone worker -l info
+user@hostname:~/pagoda$ uv run celery -A airone worker -l info
 ```
 
 ## Build the new UI with React
@@ -342,9 +374,8 @@ If you modify something in API client code, you need to publish it with the pack
 
 ```
 user@hostname:~$ cd pagoda
-user@hostname:~/pagoda$ source virtualenv/bin/activate
-(virtualenv) user@hostname:~/pagoda$ ruff format .
-(virtualenv) user@hostname:~/pagoda$ ruff check --fix .
+user@hostname:~/pagoda$ ruff format .
+user@hostname:~/pagoda$ ruff check --fix .
 
 user@hostname:~/pagoda$ npm run fix
 ```
@@ -353,13 +384,12 @@ user@hostname:~/pagoda$ npm run fix
 You can run tests for processing that is run by Django and Celery, which means backend processing, as below.
 ```
 user@hostname:~$ cd pagoda
-user@hostname:~/pagoda$ source virtualenv/bin/activate
-(virtualenv) user@hostname:~/pagoda$ python manage.py test
+user@hostname:~/pagoda$ python manage.py test
 ```
 
 When you want to run a specific test (`ModelTest.test_is_belonged_to_parent_group` in the file of `role/tests/test_model.py`) , you can do it as below.
 ```
-(virtualenv) user@hostname:~/pagoda$ python manage.py test role.tests.test_model.ModelTest.test_is_belonged_to_parent_group
+user@hostname:~/pagoda$ python manage.py test role.tests.test_model.ModelTest.test_is_belonged_to_parent_group
 ```
 
 ## Test for React processing
