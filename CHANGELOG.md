@@ -8,6 +8,12 @@
 
 ### Fixed
 
+## v3.145.0
+
+### Changed
+* Improve list roles APIv2
+  Contributed by @syucream
+
 ## v3.144.0
 
 ### Changed
