@@ -87,6 +87,11 @@ mysql> GRANT ALL ON airone.* to airone@'%';
 mysql> GRANT ALL ON test_airone.* to airone@'%';
 ```
 
+(Optional) Please set the index as necessary.
+```
+mysql> CREATE INDEX permission_codename_idx ON auth_permission (codename);
+```
+
 Conguratulations, you completed to setup Pagoda execution environment.
 
 After initializing Pagoda, you can use it! Please move on to the [Initialize Pagoda configuratoin](#initialize-pagoda-configuratoin).
@@ -127,6 +132,11 @@ mysql> create database test_airone;
 mysql> CREATE USER 'airone'@'%' IDENTIFIED BY 'password';
 mysql> GRANT ALL ON airone.* to airone@'%';
 mysql> GRANT ALL ON test_airone.* to airone@'%';
+```
+
+(Optional) Please set the index as necessary.
+```
+mysql> CREATE INDEX permission_codename_idx ON auth_permission (codename);
 ```
 
 ### Setting-up Elasticsearch
@@ -284,11 +294,6 @@ You can do it just by following command. The configurations about the database t
 user@hostname:~/pagoda$ python tools/initialize_es_document.py
 ```
 
-(Optional) Please set the index as necessary.
-```
-mysql> CREATE INDEX permission_codename_idx ON auth_permission (codename);
-```
-
 ## Run Pagoda
 You can start Pagoda as following and can browse from `http://hostname:8080/`  
 (Please change the `hostname` to the appropriate one on which you installed Pagoda).
@@ -303,7 +308,8 @@ Then, you can access to the Pagoda by `http://localhost:8080` from your browser.
 
 ## Run Celery
 
-In addition, you have to run Celery worker to execute background task as following.
+In addition, you have to run Celery worker to execute background task (e.g. updating item).
+Please open another terminal (or screen), then run it by following command.
 ```
 user@hostname:~$ cd pagoda
 user@hostname:~/pagoda$ uv run celery -A airone worker -l info
@@ -313,62 +319,63 @@ user@hostname:~/pagoda$ uv run celery -A airone worker -l info
 
 `/ui/` serves React-based new UI. Before you try it, you need to build `ui.js`:
 
-Install nvm command.  
-
-Install npm packages.
-```
-user@hostname:~$ nvm install 18.12.0
-user@hostname:~$ cd pagoda
-user@hostname:~/pagoda$ npm install
-```
-
-Build
-```
-user@hostname:~/pagoda$ npm run build
-
-(In development)
-user@hostname:~/pagoda$ npm run watch
-```
-
-If you have any change on API V2, you need to run this command before you build:
-
-```
-user@hostname:~/pagoda$ npm run generate:client
-
-(For Customview)
-user@hostname:~/pagoda$ npm run generate:custom_client
-```
-
-To customize UI:
-
-```
-user@hostname:~/pagoda$ cp -pi ./frontend/src/App.tsx ./frontend/src/customview/CustomApp.tsx
-(edit CustomApp.tsx)
-user@hostname:~/pagoda$ npm run build:custom
-```
-
-### API V2 client
+### Preparing build environemnt
 
 Prepare to install API client npm package published on GitHub Packages.
 `TOKEN` is a your GitHub PAT. Issue your PAT with checking [this doc](https://docs.github.com/ja/packages/working-with-a-github-packages-registry/working-with-the-npm-registry#github-packages-%E3%81%B8%E3%81%AE%E8%AA%8D%E8%A8%BC%E3%82%92%E8%A1%8C%E3%81%86).
 Then, you just perform `npm install` as usual.
 
 ```
-$ cat > .npmrc
-//npm.pkg.github.com/:_authToken=TOKEN
+user@hostname:~/pagoda$ export TOKEN="(FIXME: github personal access token)"
+user@hostname:~/pagoda$ cat <<EOS > .npmrc
+//npm.pkg.github.com/:_authToken=${TOKEN}
+EOS
 ```
+
+After [installing nvm command](https://github.com/nvm-sh/nvm?tab=readme-ov-file#installing-and-updating), please install npm packages as below.
+```
+user@hostname:~$ nvm install 20
+user@hostname:~$ cd pagoda
+user@hostname:~/pagoda$ npm install
+```
+
+### Building pagoda react components
+
+If you have any change on API V2, you need to run this command before you build:
+```
+user@hostname:~/pagoda$ npm run generate:client
+```
+
+Build Pagoda react component by following command.
+```
+(One time building)
+user@hostname:~/pagoda$ npm run build
+
+(In development)
+user@hostname:~/pagoda$ npm run watch
+```
+
+### API V2 client
 
 You can refer your local API client code before publishing it to GitHub Packages with following command.
 
 ```shell
-# generate the latest API client code on your local env
-$ npm run generate:client
-
-# refer the latest code temporarily
-$ npm run link:client
+user@hostname:~/pagoda$ npm run generate:client   # generate the latest API client code on your local env
+user@hostname:~/pagoda$ npm run link:client       # refer the latest code temporarily
 ```
 
 If you modify something in API client code, you need to publish it with the package release GitHub Actions workflow. It will be triggered by labeling `release-apiv2-client` to the pull request by repository owners.
+
+## For Custom-View Building Procedure
+
+When you want to ues Pagoda's Custom-View, you should run following command to build react environment considering CustomView.
+```
+user@hostname:~/pagoda$ npm run generate:custom_client
+
+user@hostname:~/pagoda$ cp -pi ./frontend/src/App.tsx ./frontend/src/customview/CustomApp.tsx
+(edit CustomApp.tsx)
+user@hostname:~/pagoda$ npm run build:custom
+```
 
 ## Auto-format
 
