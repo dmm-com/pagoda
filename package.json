@@ -4,6 +4,16 @@
   "description": "[![CircleCI](https://circleci.com/gh/dmm-com/airone.svg?style=svg&circle-token=2e12c068b0ed1bab9d0c2d72529d5ee1da9b53b4)](https://circleci.com/gh/dmm-com/airone)",
   "main": "frontend/dist/pagoda-core.js",
   "types": "frontend/dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./frontend/dist/index.d.ts",
+      "default": "./frontend/dist/pagoda-core.js"
+    },
+    "./plugins": {
+      "types": "./frontend/src/plugins/index.ts",
+      "default": "./frontend/src/plugins/index.ts"
+    }
+  },
   "directories": {
     "doc": "docs"
   },
@@ -13,6 +23,9 @@
     "build:development:analyze": "webpack build --entry ./frontend/src/App.tsx --mode development --analyze",
     "build:production": "webpack build --entry ./frontend/src/App.tsx --mode production",
     "build:production:analyze": "webpack build --entry ./frontend/src/App.tsx --mode production --analyze",
+    "build:with-plugins": "npm run build:with-plugins:development",
+    "build:with-plugins:development": "webpack build --entry ./frontend/src/AppWithPlugins.tsx --mode development",
+    "build:with-plugins:production": "webpack build --entry ./frontend/src/AppWithPlugins.tsx --mode production",
     "build:custom": "npm run build:custom_development",
     "build:custom_development": "webpack build --entry ./frontend/src/customview/CustomApp.tsx --mode development",
     "build:custom_production": "webpack build --entry ./frontend/src/customview/CustomApp.tsx --mode production",

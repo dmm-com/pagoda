@@ -1,0 +1,68 @@
+{
+  "name": "@airone/plugin-hello-world",
+  "version": "1.0.0",
+  "description": "Hello World plugin for Airone - demonstrates basic plugin functionality",
+  "main": "dist/index.js",
+  "module": "dist/index.esm.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "rollup -c",
+    "build:dev": "rollup -c --watch",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src/**/*.{ts,tsx}",
+    "clean": "rimraf dist"
+  },
+  "keywords": [
+    "airone",
+    "plugin",
+    "hello-world",
+    "example",
+    "demo"
+  ],
+  "author": "Airone Team",
+  "license": "MIT",
+  "peerDependencies": {
+    "@dmm-com/pagoda-core": "^1.1.0",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "@mui/material": "^6.0.0",
+    "@mui/icons-material": "^6.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.0",
+    "@types/jest": "^29.0.0",
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.0.0",
+    "@rollup/plugin-commonjs": "^26.0.0",
+    "@rollup/plugin-node-resolve": "^15.0.0",
+    "@rollup/plugin-typescript": "^12.0.0",
+    "eslint": "^8.0.0",
+    "eslint-plugin-react": "^7.0.0",
+    "eslint-plugin-react-hooks": "^4.0.0",
+    "jest": "^29.0.0",
+    "rimraf": "^5.0.0",
+    "rollup": "^4.0.0",
+    "rollup-plugin-dts": "^6.0.0",
+    "typescript": "^5.0.0"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/",
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dmm-com/airone.git",
+    "directory": "frontend/packages/plugin-hello-world"
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  }
+}

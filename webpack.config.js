@@ -11,13 +11,25 @@ module.exports = {
   },
   resolve: {
     extensions: [".webpack.js", ".web.js", ".ts", ".tsx", ".js"],
-    modules: [path.resolve('frontend/src'), 'node_modules'],
+    modules: [
+      path.resolve('frontend/src'), 
+      path.resolve('frontend/packages'),
+      'node_modules'
+    ],
+    alias: {
+      '@dmm-com/pagoda-core/plugins': path.resolve('frontend/src/plugins'),
+      '@dmm-com/pagoda-core': path.resolve('frontend/src'),
+    },
   },
   module: {
     rules: [
       {
         test: /\.tsx?$/,
         exclude: /node_modules/,
+        include: [
+          path.resolve('frontend/src'),
+          path.resolve('frontend/packages')
+        ],
         loader: 'ts-loader',
         options: {
           transpileOnly: true,
@@ -34,6 +46,10 @@ module.exports = {
       {
         test: /\.js$/,
         exclude: /node_modules/,
+        include: [
+          path.resolve('frontend/src'),
+          path.resolve('frontend/packages')
+        ],
         use: {
           loader: 'babel-loader',
           options: {
@@ -51,5 +67,8 @@ module.exports = {
     ]
   },
   ignoreWarnings: [/Failed to parse source map/],
-  plugins: [new ForkTsCheckerWebpackPlugin()]
+  plugins: [
+    // Temporarily disabled to check if JS bundling works
+    // new ForkTsCheckerWebpackPlugin()
+  ]
 };
