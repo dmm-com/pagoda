@@ -1,0 +1,38 @@
+{
+  "name": "pagoda-minimal-builder",
+  "version": "1.0.0",
+  "description": "Minimal builder for Pagoda core + plugins integration",
+  "main": "src/App.tsx",
+  "scripts": {
+    "build": "webpack --mode production",
+    "build:dev": "webpack --mode development",
+    "start": "webpack serve --mode development"
+  },
+  "keywords": [
+    "pagoda",
+    "minimal",
+    "builder",
+    "integration"
+  ],
+  "author": "Pagoda Team",
+  "license": "MIT",
+  "dependencies": {
+    "@dmm-com/pagoda-core": "file:../../..",
+    "pagoda-plugin-hello-world": "file:../../../../pagoda-plugin-hello-world",
+    "pagoda-plugin-dashboard": "file:../../../../pagoda-plugin-dashboard",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "@emotion/styled": "^11.11.0",
+    "@mui/material": "^6.4.6",
+    "notistack": "^3.0.1"
+  },
+  "devDependencies": {
+    "webpack": "^5.98.0",
+    "webpack-cli": "^4.10.0",
+    "webpack-dev-server": "^4.15.1",
+    "ts-loader": "^9.5.2",
+    "typescript": "^5.9.2",
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.0"
+  }
+}

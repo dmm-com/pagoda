@@ -14,7 +14,14 @@ module.exports = {
     modules: [
       path.resolve('frontend/src'), 
       'node_modules'
-    ]
+    ],
+    symlinks: true,
+    alias: {
+      'pagoda-plugin-hello-world': path.resolve(__dirname, 'node_modules/pagoda-plugin-hello-world'),
+      'pagoda-plugin-dashboard': path.resolve(__dirname, 'node_modules/pagoda-plugin-dashboard'),
+      'react': path.resolve(__dirname, 'node_modules/react'),
+      'react-dom': path.resolve(__dirname, 'node_modules/react-dom'),
+    }
   },
   module: {
     rules: [

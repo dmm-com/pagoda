@@ -68,7 +68,10 @@ export class EnhancedPluginLoader {
 
       return this.plugins;
     } catch (error) {
-      console.error("[ExternalPluginLoader] Failed to load external plugins:", error);
+      console.error(
+        "[ExternalPluginLoader] Failed to load external plugins:",
+        error,
+      );
       return [];
     }
   }
@@ -82,9 +85,9 @@ export class EnhancedPluginLoader {
     try {
       // Static imports to ensure webpack bundles correctly
       console.log(
-        "[ExternalPluginLoader] Loading npm plugin: airone-plugin-hello-world",
+        "[ExternalPluginLoader] Loading npm plugin: pagoda-plugin-hello-world",
       );
-      const helloWorldPlugin = require("airone-plugin-hello-world");
+      const helloWorldPlugin = require("pagoda-plugin-hello-world");
       const plugin1 = helloWorldPlugin.default || helloWorldPlugin;
 
       if (this.isValidPlugin(plugin1)) {
@@ -93,16 +96,16 @@ export class EnhancedPluginLoader {
       }
     } catch (error) {
       console.warn(
-        "[ExternalPluginLoader] Failed to load airone-plugin-hello-world:",
+        "[ExternalPluginLoader] Failed to load pagoda-plugin-hello-world:",
         error,
       );
     }
 
     try {
       console.log(
-        "[ExternalPluginLoader] Loading npm plugin: airone-plugin-dashboard",
+        "[ExternalPluginLoader] Loading npm plugin: pagoda-plugin-dashboard",
       );
-      const dashboardPlugin = require("airone-plugin-dashboard");
+      const dashboardPlugin = require("pagoda-plugin-dashboard");
       const plugin2 = dashboardPlugin.default || dashboardPlugin;
 
       if (this.isValidPlugin(plugin2)) {
@@ -111,7 +114,7 @@ export class EnhancedPluginLoader {
       }
     } catch (error) {
       console.warn(
-        "[ExternalPluginLoader] Failed to load airone-plugin-dashboard:",
+        "[ExternalPluginLoader] Failed to load pagoda-plugin-dashboard:",
         error,
       );
     }

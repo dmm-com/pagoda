@@ -116,8 +116,8 @@
     "webpack-bundle-analyzer": "^4.10.2",
     "webpack-cli": "^4.10.0",
     "zod": "^3.24.2",
-    "airone-plugin-hello-world": "file:../airone-plugin-hello-world",
-    "airone-plugin-dashboard": "file:../airone-plugin-dashboard"
+    "pagoda-plugin-hello-world": "file:../pagoda-plugin-hello-world",
+    "pagoda-plugin-dashboard": "file:../pagoda-plugin-dashboard"
   },
   "peerDependencies": {
     "@emotion/styled": "^11.0.0",
