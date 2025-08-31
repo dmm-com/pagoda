@@ -14,20 +14,15 @@ module.exports = {
     modules: [
       path.resolve('frontend/src'), 
       'node_modules'
-    ],
-    alias: {
-      '@dmm-com/pagoda-core/plugins': path.resolve('frontend/src/plugins'),
-      '@dmm-com/pagoda-core': path.resolve('frontend/src'),
-    },
+    ]
   },
   module: {
     rules: [
       {
         test: /\.tsx?$/,
-        exclude: /node_modules\/(?!airone-plugin-.*)/,
+        exclude: /node_modules/,
         include: [
-          path.resolve('frontend/src'),
-          /airone-plugin-.*/
+          path.resolve('frontend/src')
         ],
         loader: 'ts-loader',
         options: {

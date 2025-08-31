@@ -1,13 +1,12 @@
 import type { Plugin } from "../types";
 
 /**
- * Enhanced Plugin Loader
+ * External Plugin Loader
  *
- * Supports both local plugins (frontend/packages) and external npm modules
+ * Loads external npm modules as plugins only
  * Automatically discovers plugins using multiple strategies:
- * 1. Local plugins: frontend/packages/{plugin-name}/src/index.ts
- * 2. External npm plugins: node_modules/airone-plugin-{name}/index.js
- * 3. Scoped npm plugins: node_modules/@{scope}/airone-plugin-{name}/index.js
+ * 1. External npm plugins: node_modules/airone-plugin-{name}/index.js
+ * 2. Scoped npm plugins: node_modules/@{scope}/airone-plugin-{name}/index.js
  */
 export class EnhancedPluginLoader {
   private static instance: EnhancedPluginLoader | null = null;
@@ -33,10 +32,10 @@ export class EnhancedPluginLoader {
 
     try {
       console.log(
-        "[EnhancedPluginLoader] Starting comprehensive plugin discovery...",
+        "[ExternalPluginLoader] Starting external plugin discovery...",
       );
 
-      // Load plugins from npm modules only
+      // Load plugins from external npm modules only
       const [npmPlugins, scopedPlugins] = await Promise.all([
         this.loadNpmPlugins(),
         this.loadScopedNpmPlugins(),
@@ -54,7 +53,7 @@ export class EnhancedPluginLoader {
       });
 
       console.log(
-        `[EnhancedPluginLoader] Successfully loaded ${uniquePlugins.length} unique plugins:`,
+        `[ExternalPluginLoader] Successfully loaded ${uniquePlugins.length} unique external plugins:`,
         uniquePlugins.map((p) => ({
           id: p.id,
           name: p.name,
@@ -69,7 +68,7 @@ export class EnhancedPluginLoader {
 
       return this.plugins;
     } catch (error) {
-      console.error("[EnhancedPluginLoader] Failed to load plugins:", error);
+      console.error("[ExternalPluginLoader] Failed to load external plugins:", error);
       return [];
     }
   }
@@ -83,7 +82,7 @@ export class EnhancedPluginLoader {
     try {
       // Static imports to ensure webpack bundles correctly
       console.log(
-        "[EnhancedPluginLoader] Loading npm plugin: airone-plugin-hello-world",
+        "[ExternalPluginLoader] Loading npm plugin: airone-plugin-hello-world",
       );
       const helloWorldPlugin = require("airone-plugin-hello-world");
       const plugin1 = helloWorldPlugin.default || helloWorldPlugin;
@@ -94,14 +93,14 @@ export class EnhancedPluginLoader {
       }
     } catch (error) {
       console.warn(
-        "[EnhancedPluginLoader] Failed to load airone-plugin-hello-world:",
+        "[ExternalPluginLoader] Failed to load airone-plugin-hello-world:",
         error,
       );
     }
 
     try {
       console.log(
-        "[EnhancedPluginLoader] Loading npm plugin: airone-plugin-dashboard",
+        "[ExternalPluginLoader] Loading npm plugin: airone-plugin-dashboard",
       );
       const dashboardPlugin = require("airone-plugin-dashboard");
       const plugin2 = dashboardPlugin.default || dashboardPlugin;
@@ -112,7 +111,7 @@ export class EnhancedPluginLoader {
       }
     } catch (error) {
       console.warn(
-        "[EnhancedPluginLoader] Failed to load airone-plugin-dashboard:",
+        "[ExternalPluginLoader] Failed to load airone-plugin-dashboard:",
         error,
       );
     }
@@ -132,7 +131,7 @@ export class EnhancedPluginLoader {
     for (const pluginName of scopedPluginNames) {
       try {
         console.log(
-          `[EnhancedPluginLoader] Loading scoped npm plugin: ${pluginName}`,
+          `[ExternalPluginLoader] Loading scoped npm plugin: ${pluginName}`,
         );
         const pluginModule = await import(pluginName);
         const plugin = pluginModule.default || pluginModule;
@@ -143,7 +142,7 @@ export class EnhancedPluginLoader {
         }
       } catch (error) {
         console.warn(
-          `[EnhancedPluginLoader] Failed to load scoped npm plugin ${pluginName}:`,
+          `[ExternalPluginLoader] Failed to load scoped npm plugin ${pluginName}:`,
           error,
         );
       }
@@ -175,7 +174,7 @@ export class EnhancedPluginLoader {
     return plugins.filter((plugin) => {
       if (seen.has(plugin.id)) {
         console.warn(
-          `[EnhancedPluginLoader] Duplicate plugin ID detected: ${plugin.id} - skipping`,
+          `[ExternalPluginLoader] Duplicate plugin ID detected: ${plugin.id} - skipping`,
         );
         return false;
       }

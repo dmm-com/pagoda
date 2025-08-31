@@ -115,7 +115,9 @@
     "webpack": "^5.98.0",
     "webpack-bundle-analyzer": "^4.10.2",
     "webpack-cli": "^4.10.0",
-    "zod": "^3.24.2"
+    "zod": "^3.24.2",
+    "airone-plugin-hello-world": "file:../airone-plugin-hello-world",
+    "airone-plugin-dashboard": "file:../airone-plugin-dashboard"
   },
   "peerDependencies": {
     "@emotion/styled": "^11.0.0",
