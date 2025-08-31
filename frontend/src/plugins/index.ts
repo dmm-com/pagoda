@@ -8,9 +8,8 @@ export {
   createPluginRoute,
   createPluginComponent,
 } from "./utils";
-export { DynamicPluginLoader, loadAllPlugins, getLoadedPlugins } from "./utils";
 export {
   EnhancedPluginLoader,
-  loadAllPluginsEnhanced,
-  getLoadedPluginsEnhanced,
-} from "./utils";
+  loadAllPlugins,
+  getLoadedPlugins,
+} from "./utils/index";

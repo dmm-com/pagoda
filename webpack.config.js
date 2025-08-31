@@ -13,7 +13,6 @@ module.exports = {
     extensions: [".webpack.js", ".web.js", ".ts", ".tsx", ".js"],
     modules: [
       path.resolve('frontend/src'), 
-      path.resolve('frontend/packages'),
       'node_modules'
     ],
     alias: {
@@ -25,10 +24,10 @@ module.exports = {
     rules: [
       {
         test: /\.tsx?$/,
-        exclude: /node_modules/,
+        exclude: /node_modules\/(?!airone-plugin-.*)/,
         include: [
           path.resolve('frontend/src'),
-          path.resolve('frontend/packages')
+          /airone-plugin-.*/
         ],
         loader: 'ts-loader',
         options: {
@@ -47,8 +46,7 @@ module.exports = {
         test: /\.js$/,
         exclude: /node_modules/,
         include: [
-          path.resolve('frontend/src'),
-          path.resolve('frontend/packages')
+          path.resolve('frontend/src')
         ],
         use: {
           loader: 'babel-loader',

@@ -96,9 +96,9 @@ export const AppBase: FC<Props> = ({ customRoutes, plugins = [] }) => {
     "[AppBase] Plugin routes:",
     pluginRoutes.map((r) => ({
       path: r.path,
-      priority: r.priority,
-      layout: r.layout,
-      componentName: r.element?.name || "Unknown",
+      priority: (r as any).priority,
+      layout: (r as any).layout,
+      componentName: (r.element as any)?.name || "Unknown",
     })),
   );
 

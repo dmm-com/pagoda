@@ -1,13 +1,13 @@
-import type { Plugin } from '../types';
+import type { Plugin } from "../types";
 
 /**
  * Enhanced Plugin Loader
- * 
+ *
  * Supports both local plugins (frontend/packages) and external npm modules
  * Automatically discovers plugins using multiple strategies:
- * 1. Local plugins: frontend/packages/*/src/index.ts
- * 2. External npm plugins: node_modules/airone-plugin-*/index.js
- * 3. Scoped npm plugins: node_modules/@*/airone-plugin-*/index.js
+ * 1. Local plugins: frontend/packages/{plugin-name}/src/index.ts
+ * 2. External npm plugins: node_modules/airone-plugin-{name}/index.js
+ * 3. Scoped npm plugins: node_modules/@{scope}/airone-plugin-{name}/index.js
  */
 export class EnhancedPluginLoader {
   private static instance: EnhancedPluginLoader | null = null;
@@ -32,17 +32,18 @@ export class EnhancedPluginLoader {
     }
 
     try {
-      console.log('[EnhancedPluginLoader] Starting comprehensive plugin discovery...');
-      
-      // Load plugins from multiple sources in parallel
-      const [localPlugins, npmPlugins, scopedPlugins] = await Promise.all([
-        this.loadLocalPlugins(),
-        this.loadNpmPlugins(), 
-        this.loadScopedNpmPlugins()
+      console.log(
+        "[EnhancedPluginLoader] Starting comprehensive plugin discovery...",
+      );
+
+      // Load plugins from npm modules only
+      const [npmPlugins, scopedPlugins] = await Promise.all([
+        this.loadNpmPlugins(),
+        this.loadScopedNpmPlugins(),
       ]);
 
       // Combine and deduplicate plugins
-      const allPlugins = [...localPlugins, ...npmPlugins, ...scopedPlugins];
+      const allPlugins = [...npmPlugins, ...scopedPlugins];
       const uniquePlugins = this.deduplicatePlugins(allPlugins);
 
       // Sort plugins by priority (higher priority first)
@@ -52,126 +53,100 @@ export class EnhancedPluginLoader {
         return priorityB - priorityA;
       });
 
-      console.log(`[EnhancedPluginLoader] Successfully loaded ${uniquePlugins.length} unique plugins:`, 
-        uniquePlugins.map(p => ({ 
-          id: p.id, 
-          name: p.name, 
-          version: p.version, 
+      console.log(
+        `[EnhancedPluginLoader] Successfully loaded ${uniquePlugins.length} unique plugins:`,
+        uniquePlugins.map((p) => ({
+          id: p.id,
+          name: p.name,
+          version: p.version,
           priority: p.priority,
-          source: this.getPluginSource(p)
-        }))
+          source: this.getPluginSource(p),
+        })),
       );
 
       this.plugins = uniquePlugins;
       this.loaded = true;
-      
+
       return this.plugins;
     } catch (error) {
-      console.error('[EnhancedPluginLoader] Failed to load plugins:', error);
+      console.error("[EnhancedPluginLoader] Failed to load plugins:", error);
       return [];
     }
   }
 
   /**
-   * Load local plugins from frontend/packages/
+   * Load npm plugins using static imports
    */
-  private loadLocalPlugins(): Plugin[] {
+  private async loadNpmPlugins(): Promise<Plugin[]> {
     const plugins: Plugin[] = [];
-    
-    try {
-      // Use require.context for local plugins
-      const localContext = (require as any).context( // eslint-disable-line @typescript-eslint/no-explicit-any
-        '../../../packages',
-        true,
-        /^\.\/[^\/]+\/src\/index\.ts$/
-      );
 
-      localContext.keys().forEach((pluginPath: string) => {
-        try {
-          console.log(`[EnhancedPluginLoader] Loading local plugin: ${pluginPath}`);
-          const pluginModule = localContext(pluginPath);
-          const plugin = pluginModule.default || pluginModule;
-          
-          if (this.isValidPlugin(plugin)) {
-            plugin._source = 'local'; // Mark source
-            plugins.push(plugin as Plugin);
-          }
-        } catch (error) {
-          console.error(`[EnhancedPluginLoader] Failed to load local plugin ${pluginPath}:`, error);
-        }
-      });
+    try {
+      // Static imports to ensure webpack bundles correctly
+      console.log(
+        "[EnhancedPluginLoader] Loading npm plugin: airone-plugin-hello-world",
+      );
+      const helloWorldPlugin = require("airone-plugin-hello-world");
+      const plugin1 = helloWorldPlugin.default || helloWorldPlugin;
+
+      if (this.isValidPlugin(plugin1)) {
+        plugin1._source = "npm";
+        plugins.push(plugin1 as Plugin);
+      }
     } catch (error) {
-      console.warn('[EnhancedPluginLoader] Local plugins not available:', error);
+      console.warn(
+        "[EnhancedPluginLoader] Failed to load airone-plugin-hello-world:",
+        error,
+      );
+    }
+
+    try {
+      console.log(
+        "[EnhancedPluginLoader] Loading npm plugin: airone-plugin-dashboard",
+      );
+      const dashboardPlugin = require("airone-plugin-dashboard");
+      const plugin2 = dashboardPlugin.default || dashboardPlugin;
+
+      if (this.isValidPlugin(plugin2)) {
+        plugin2._source = "npm";
+        plugins.push(plugin2 as Plugin);
+      }
+    } catch (error) {
+      console.warn(
+        "[EnhancedPluginLoader] Failed to load airone-plugin-dashboard:",
+        error,
+      );
     }
 
     return plugins;
   }
 
   /**
-   * Load npm plugins matching pattern: airone-plugin-*
+   * Load scoped npm plugins using dynamic imports
    */
-  private loadNpmPlugins(): Plugin[] {
+  private async loadScopedNpmPlugins(): Promise<Plugin[]> {
     const plugins: Plugin[] = [];
-    
-    try {
-      // Use require.context for npm plugins
-      const npmContext = (require as any).context( // eslint-disable-line @typescript-eslint/no-explicit-any
-        '../../../node_modules',
-        true,
-        /^\.\/airone-plugin-[^\/]+\/index\.(js|ts)$/
-      );
 
-      npmContext.keys().forEach((pluginPath: string) => {
-        try {
-          console.log(`[EnhancedPluginLoader] Loading npm plugin: ${pluginPath}`);
-          const pluginModule = npmContext(pluginPath);
-          const plugin = pluginModule.default || pluginModule;
-          
-          if (this.isValidPlugin(plugin)) {
-            plugin._source = 'npm'; // Mark source
-            plugins.push(plugin as Plugin);
-          }
-        } catch (error) {
-          console.error(`[EnhancedPluginLoader] Failed to load npm plugin ${pluginPath}:`, error);
+    // List of known scoped plugins (in real scenario, this could be from config)
+    const scopedPluginNames: string[] = []; // Add scoped plugin names here if any
+
+    for (const pluginName of scopedPluginNames) {
+      try {
+        console.log(
+          `[EnhancedPluginLoader] Loading scoped npm plugin: ${pluginName}`,
+        );
+        const pluginModule = await import(pluginName);
+        const plugin = pluginModule.default || pluginModule;
+
+        if (this.isValidPlugin(plugin)) {
+          plugin._source = "scoped-npm"; // Mark source
+          plugins.push(plugin as Plugin);
         }
-      });
-    } catch (error) {
-      console.warn('[EnhancedPluginLoader] NPM plugins not available:', error);
-    }
-
-    return plugins;
-  }
-
-  /**
-   * Load scoped npm plugins matching pattern: @scope/airone-plugin-*
-   */
-  private loadScopedNpmPlugins(): Plugin[] {
-    const plugins: Plugin[] = [];
-    
-    try {
-      // Use require.context for scoped npm plugins
-      const scopedContext = (require as any).context( // eslint-disable-line @typescript-eslint/no-explicit-any
-        '../../../node_modules',
-        true,
-        /^\.\/\@[^\/]+\/airone-plugin-[^\/]+\/index\.(js|ts)$/
-      );
-
-      scopedContext.keys().forEach((pluginPath: string) => {
-        try {
-          console.log(`[EnhancedPluginLoader] Loading scoped npm plugin: ${pluginPath}`);
-          const pluginModule = scopedContext(pluginPath);
-          const plugin = pluginModule.default || pluginModule;
-          
-          if (this.isValidPlugin(plugin)) {
-            plugin._source = 'scoped-npm'; // Mark source
-            plugins.push(plugin as Plugin);
-          }
-        } catch (error) {
-          console.error(`[EnhancedPluginLoader] Failed to load scoped npm plugin ${pluginPath}:`, error);
-        }
-      });
-    } catch (error) {
-      console.warn('[EnhancedPluginLoader] Scoped NPM plugins not available:', error);
+      } catch (error) {
+        console.warn(
+          `[EnhancedPluginLoader] Failed to load scoped npm plugin ${pluginName}:`,
+          error,
+        );
+      }
     }
 
     return plugins;
@@ -180,13 +155,16 @@ export class EnhancedPluginLoader {
   /**
    * Validate plugin structure
    */
-  private isValidPlugin(plugin: any): boolean { // eslint-disable-line @typescript-eslint/no-explicit-any
-    return plugin && 
-           typeof plugin === 'object' && 
-           plugin.id && 
-           typeof plugin.id === 'string' &&
-           plugin.name &&
-           typeof plugin.name === 'string';
+  private isValidPlugin(plugin: any): boolean {
+    // eslint-disable-line @typescript-eslint/no-explicit-any
+    return (
+      plugin &&
+      typeof plugin === "object" &&
+      plugin.id &&
+      typeof plugin.id === "string" &&
+      plugin.name &&
+      typeof plugin.name === "string"
+    );
   }
 
   /**
@@ -194,9 +172,11 @@ export class EnhancedPluginLoader {
    */
   private deduplicatePlugins(plugins: Plugin[]): Plugin[] {
     const seen = new Set<string>();
-    return plugins.filter(plugin => {
+    return plugins.filter((plugin) => {
       if (seen.has(plugin.id)) {
-        console.warn(`[EnhancedPluginLoader] Duplicate plugin ID detected: ${plugin.id} - skipping`);
+        console.warn(
+          `[EnhancedPluginLoader] Duplicate plugin ID detected: ${plugin.id} - skipping`,
+        );
         return false;
       }
       seen.add(plugin.id);
@@ -207,8 +187,9 @@ export class EnhancedPluginLoader {
   /**
    * Get plugin source type
    */
-  private getPluginSource(plugin: any): string { // eslint-disable-line @typescript-eslint/no-explicit-any
-    return plugin._source || 'unknown';
+  private getPluginSource(plugin: any): string {
+    // eslint-disable-line @typescript-eslint/no-explicit-any
+    return plugin._source || "unknown";
   }
 
   /**
@@ -222,7 +203,7 @@ export class EnhancedPluginLoader {
    * Get plugin by ID
    */
   getPlugin(id: string): Plugin | undefined {
-    return this.plugins.find(p => p.id === id);
+    return this.plugins.find((p) => p.id === id);
   }
 
   /**

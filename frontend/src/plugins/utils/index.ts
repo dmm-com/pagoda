@@ -1,11 +1,6 @@
 // Plugin utilities
 export {
-  DynamicPluginLoader,
-  loadAllPlugins,
-  getLoadedPlugins,
-} from "./DynamicPluginLoader";
-export {
   EnhancedPluginLoader,
-  loadAllPluginsEnhanced,
-  getLoadedPluginsEnhanced,
+  loadAllPluginsEnhanced as loadAllPlugins,
+  getLoadedPluginsEnhanced as getLoadedPlugins,
 } from "./EnhancedPluginLoader";

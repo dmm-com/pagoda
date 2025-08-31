@@ -2,7 +2,7 @@ import { ThemeProvider } from "@mui/material";
 import { StrictMode, useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 
-import { loadAllPlugins } from "./plugins/utils/DynamicPluginLoader";
+import { loadAllPlugins } from "./plugins";
 
 import type { Plugin } from "plugins";
 
@@ -36,7 +36,7 @@ function AppWithDynamicPlugins() {
 
         console.log(
           "[Airone] Successfully loaded plugins:",
-          discoveredPlugins.map((p) => ({
+          discoveredPlugins.map((p: Plugin) => ({
             id: p.id,
             name: p.name,
             version: p.version,
@@ -47,7 +47,7 @@ function AppWithDynamicPlugins() {
         setPlugins(discoveredPlugins);
       } catch (error) {
         console.error("[Airone] Failed to load plugins:", error);
-        console.error("[Airone] Error details:", error.stack);
+        console.error("[Airone] Error details:", (error as Error).stack);
         // Continue with empty plugins array
         setPlugins([]);
       } finally {
@@ -74,7 +74,7 @@ function AppWithDynamicPlugins() {
         <div>
           <div>Loading plugins...</div>
           <div style={{ fontSize: "0.8em", color: "#666", marginTop: "8px" }}>
-            Scanning frontend/packages/ for available plugins
+            Scanning node_modules/ for external npm plugins
           </div>
         </div>
       </div>
