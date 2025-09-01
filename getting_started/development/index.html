@@ -4,22 +4,42 @@ Pagoda</span></a></div></header><main class="container flex flex-even"><aside cl
 user@hostname:~$ sudo apt-get install python3 python3-pip python3-venv
 </code></pre><p>You have to install libraries.</p><pre tabindex=0><code>user@hostname:~$ sudo apt-get install libldap2-dev  libsasl2-dev libxmlsec1-dev libmysqlclient-dev pkg-config
 </code></pre><p>(for macOS)</p><pre tabindex=0><code>user@hostname:~$ brew install libxmlsec1 mysql-client pkg-config mysql-connector-python
+</code></pre><p>And it&rsquo;s necessary to install <code>uv</code> command that manages Python packages and isolates Pagoda related libraries from system use ones.</p><pre tabindex=0><code>curl -LsSf https://astral.sh/uv/install.sh | sh
 </code></pre><p>Then, you can install libraries on which Pagoda depends by following after cloning this repository. But we recommand you to setup pagoda on the separated environment using virtualenv not to pollute system-wide python environment.</p><pre tabindex=0><code>user@hostname:~$ git clone https://github.com/dmm-com/pagoda.git
 user@hostname:~$ cd pagoda
-user@hostname:~/pagoda$ python3 -m venv virtualenv
-user@hostname:~/pagoda$ source virtualenv/bin/activate
-(virtualenv) user@hostname:~/pagoda$ pip install pip --upgrade
-(virtualenv) user@hostname:~/pagoda$ pip install uv
-(virtualenv) user@hostname:~/pagoda$ uv sync --only-group main
-# or, during development, install all
-(virtualenv) user@hostname:~/pagoda$ uv sync
-</code></pre><div class=gdoc-page__anchorwrap><h2 id=setting-up-backend-with-docker-compose>Setting-up Backend with docker-compose<a data-clipboard-text=https://dmm-com.github.io/pagoda/getting_started/development/#setting-up-backend-with-docker-compose class="gdoc-page__anchor gdoc-page__anchor--right clip" aria-label="Anchor Setting-up Backend with docker-compose" href=#setting-up-backend-with-docker-compose><svg class="icon link"><use xlink:href="#link"/></svg></a></h2></div><p>Install docker-compose command.<br>Run middlewares with docker-compose.</p><pre tabindex=0><code>user@hostname:~/pagoda$ docker-compose up
-</code></pre><div class=gdoc-page__anchorwrap><h2 id=setting-up-backend-with-manual>(Setting-up Backend with manual)<a data-clipboard-text=https://dmm-com.github.io/pagoda/getting_started/development/#setting-up-backend-with-manual class="gdoc-page__anchor gdoc-page__anchor--right clip" aria-label="Anchor (Setting-up Backend with manual)" href=#setting-up-backend-with-manual><svg class="icon link"><use xlink:href="#link"/></svg></a></h2></div><p>And you have to install RabbitMQ for executing heavy processing as background task using <a href=http://docs.celeryproject.org/>Celery</a>.</p><pre tabindex=0><code>user@hostname:~$ sudo apt-get install rabbitmq-server mysql-server python-dev libmysqlclient-dev
+user@hostname:~/pagoda$ uv sync
+</code></pre><p>Now, you have made Python environment for running Pagoda on your node. It&rsquo;ll be completed to run Pagoda when you install backend middlewares(MySQL, RabbitMQ and Elasticsearch).</p><p>There are two options to set them up.</p><div class=gdoc-page__anchorwrap><h2 id=option1-recommended-setting-up-backends-using-docker-compose>(Option1: Recommended) Setting-up backends using docker-compose<a data-clipboard-text=https://dmm-com.github.io/pagoda/getting_started/development/#option1-recommended-setting-up-backends-using-docker-compose class="gdoc-page__anchor gdoc-page__anchor--right clip" aria-label="Anchor (Option1: Recommended) Setting-up backends using docker-compose" href=#option1-recommended-setting-up-backends-using-docker-compose><svg class="icon link"><use xlink:href="#link"/></svg></a></h2></div><p>Check <code>docker</code> command has already been installed by following command.</p><pre tabindex=0><code>$ sudo docker run hello-world
+</code></pre><p>When <code>docker</code> command has not been installed, you should install Docker engine (c.f. <a href=https://docs.docker.com/engine/install/>Install Docker Engine &ndash; dockerdocs</a>)</p><p>It&rsquo;s necessary to be able to run docker command without <code>sudo</code> because some script expect to run it by non-priviledged level.</p><pre tabindex=0><code>### create docker group if it&#39;s necessary (it&#39;s OK to run this command when group &#39;docker&#39; already exists)
+$ sudo groupadd docker
+
+### belong current user to docker group
+$ sudo gpasswd -a $USER docker
+</code></pre><p>Then, you can make middleware nodes (MySQL, RabbitMQ and Elasticsearch) by <code>docker compose</code> command as below.</p><pre tabindex=0><code>user@hostname:~/pagoda$ sudo docker compose up -d
+</code></pre><p>Then, you should make user for Pagoda (internally it was named as airone) to the Elasticsearch and MySQL as below.</p><div class=gdoc-page__anchorwrap><h3 id=for-elasticsearch>for Elasticsearch<a data-clipboard-text=https://dmm-com.github.io/pagoda/getting_started/development/#for-elasticsearch class="gdoc-page__anchor gdoc-page__anchor--right clip" aria-label="Anchor for Elasticsearch" href=#for-elasticsearch><svg class="icon link"><use xlink:href="#link"/></svg></a></h3></div><p>You have to create user for Pagoda and set it administrative role at the Elasticsearch by following commands.</p><pre tabindex=0><code>user@hostname:~$ sudo docker exec -it elasticsearch bin/elasticsearch-users useradd airone -p password
+user@hostname:~$ sudo docker exec -it elasticsearch bin/elasticsearch-users roles airone --add superuser
+</code></pre><p>You can check whether specified user was created successfully and has proper role as below.</p><pre tabindex=0><code>user@hostname:~$ sudo docker exec -it elasticsearch bin/elasticsearch-users list
+airone         : superuser
+</code></pre><div class=gdoc-page__anchorwrap><h3 id=for-mysql>for MySQL<a data-clipboard-text=https://dmm-com.github.io/pagoda/getting_started/development/#for-mysql class="gdoc-page__anchor gdoc-page__anchor--right clip" aria-label="Anchor for MySQL" href=#for-mysql><svg class="icon link"><use xlink:href="#link"/></svg></a></h3></div><p>Login to the Docker node that MySQL is running by following code.</p><pre tabindex=0><code>user@hostname:~$ sudo docker exec -it mysql mysql -uroot
+</code></pre><p>Then, you should cerate database and user for Pagoda (internally called <code>airone</code>) in MySQL.</p><pre tabindex=0><code>mysql&gt; create database airone;
+mysql&gt; create database test_airone;
+mysql&gt; CREATE USER &#39;airone&#39;@&#39;%&#39; IDENTIFIED BY &#39;password&#39;;
+mysql&gt; GRANT ALL ON airone.* to airone@&#39;%&#39;;
+mysql&gt; GRANT ALL ON test_airone.* to airone@&#39;%&#39;;
+</code></pre><p>(Optional) Please set the index as necessary.</p><pre tabindex=0><code>mysql&gt; CREATE INDEX permission_codename_idx ON auth_permission (codename);
+</code></pre><p>Conguratulations, you completed to setup Pagoda execution environment.</p><p>After initializing Pagoda, you can use it! Please move on to the <a href=#initialize-pagoda-configuratoin>Initialize Pagoda configuratoin</a>.</p><div class=gdoc-page__anchorwrap><h2 id=option2-setting-up-backends-in-manual>(Option2) Setting-up backends in manual<a data-clipboard-text=https://dmm-com.github.io/pagoda/getting_started/development/#option2-setting-up-backends-in-manual class="gdoc-page__anchor gdoc-page__anchor--right clip" aria-label="Anchor (Option2) Setting-up backends in manual" href=#option2-setting-up-backends-in-manual><svg class="icon link"><use xlink:href="#link"/></svg></a></h2></div><p>And you have to install RabbitMQ for executing heavy processing as background task using <a href=http://docs.celeryproject.org/>Celery</a>.</p><pre tabindex=0><code>user@hostname:~$ sudo apt-get install rabbitmq-server mysql-server python-dev libmysqlclient-dev
 </code></pre><div class=gdoc-page__anchorwrap><h3 id=setting-up-mysql-configuration>Setting-up MySQL configuration<a data-clipboard-text=https://dmm-com.github.io/pagoda/getting_started/development/#setting-up-mysql-configuration class="gdoc-page__anchor gdoc-page__anchor--right clip" aria-label="Anchor Setting-up MySQL configuration" href=#setting-up-mysql-configuration><svg class="icon link"><use xlink:href="#link"/></svg></a></h3></div><p>Specifying character set of database is necessary. Please add following setting in the <code>mysqld.cnf</code> at <code>mysqld</code> section.</p><pre tabindex=0><code>[mysqld]
 ...
 character-set-server = utf8mb4
 </code></pre><p>Then, you should restart MySQL server to apply for this configuration.</p><pre tabindex=0><code>user@hostname:~$ sudo service mysql restart
 </code></pre><p>Iincrease the number of Slave databases with the MySQL replication function.<br>You can set database slave, with like this config:</p><pre tabindex=0><code>REPLICATED_DATABASE_SLAVES = [&#39;slave1&#39;, &#39;slave2&#39;]
+</code></pre><p>You should cerate database and user for pagoda in MySQL.</p><pre tabindex=0><code>user@hostname:~$ mysql -u root -h 127.0.0.1
+
+mysql&gt; create database airone;
+mysql&gt; create database test_airone;
+mysql&gt; CREATE USER &#39;airone&#39;@&#39;%&#39; IDENTIFIED BY &#39;password&#39;;
+mysql&gt; GRANT ALL ON airone.* to airone@&#39;%&#39;;
+mysql&gt; GRANT ALL ON test_airone.* to airone@&#39;%&#39;;
+</code></pre><p>(Optional) Please set the index as necessary.</p><pre tabindex=0><code>mysql&gt; CREATE INDEX permission_codename_idx ON auth_permission (codename);
 </code></pre><div class=gdoc-page__anchorwrap><h3 id=setting-up-elasticsearch>Setting-up Elasticsearch<a data-clipboard-text=https://dmm-com.github.io/pagoda/getting_started/development/#setting-up-elasticsearch class="gdoc-page__anchor gdoc-page__anchor--right clip" aria-label="Anchor Setting-up Elasticsearch" href=#setting-up-elasticsearch><svg class="icon link"><use xlink:href="#link"/></svg></a></h3></div><p>You have to setup JRE for executing elasticsearch.</p><pre tabindex=0><code>user@hostname:~$ sudo add-apt-repository ppa:linuxuprising/java
 user@hostname:~$ sudo apt-get update
 user@hostname:~$ sudo apt-get install -y oracle-java13-installer
@@ -37,6 +57,8 @@ user@hostname:~$ tar -xvf elasticsearch-7.17.6-linux-x86_64.tar.gz
 </span></span><span class=line><span class=cl> # Set a custom port for HTTP:
 </span></span><span class=line><span class=cl> #
 </span></span></code></pre></div><p>You should set sysctl as below because Elasticsearch requires to expand virtual memory area.</p><pre tabindex=0><code>user@hostname:~$ sudo sysctl vm.max_map_count=262144
+</code></pre><p>And you should create user and attach role in Elasticsearch.</p><pre tabindex=0><code>bin/elasticsearch-users useradd airone -p password
+bin/elasticsearch-users roles airone --add superuser
 </code></pre><p>Finally, you can run ElasticSearch service like that.</p><pre tabindex=0><code>user@hostname:~$ elasticsearch-7.17.6-linux-x86_64/bin/elasticsearch
 </code></pre><div class=gdoc-page__anchorwrap><h3 id=setting-up-email-configuration>Setting-up Email configuration<a data-clipboard-text=https://dmm-com.github.io/pagoda/getting_started/development/#setting-up-email-configuration class="gdoc-page__anchor gdoc-page__anchor--right clip" aria-label="Anchor Setting-up Email configuration" href=#setting-up-email-configuration><svg class="icon link"><use xlink:href="#link"/></svg></a></h3></div><p>This step is optional. You can skip it if you don&rsquo;t use email notifications.</p><p>Pagoda supports email based notification, now it&rsquo;s mainly used for password-reset. You can set email backend, with like this config:</p><pre tabindex=0><code>EMAIL_BACKEND = &#39;django.core.mail.backends.smtp.EmailBackend&#39;
 EMAIL_HOST = &#39;xxx&#39;
@@ -83,72 +105,57 @@ server {
   # set longer to wait background processing until 300s
   proxy_read_timeout 300;
 }
-</code></pre><p>This includes the configuration to proxy HTTP request to Pagoda and cache static files. The static file path indicates the static directory which is in the top of Pagoda local repository. If necessary, please fix this value depending on your environment.</p><div class=gdoc-page__anchorwrap><h2 id=initialize-pagoda-configuratoin>Initialize Pagoda configuratoin<a data-clipboard-text=https://dmm-com.github.io/pagoda/getting_started/development/#initialize-pagoda-configuratoin class="gdoc-page__anchor gdoc-page__anchor--right clip" aria-label="Anchor Initialize Pagoda configuratoin" href=#initialize-pagoda-configuratoin><svg class="icon link"><use xlink:href="#link"/></svg></a></h2></div><p>You should create user and attach role in Elasticsearch.</p><pre tabindex=0><code>bin/elasticsearch-users useradd airone
-bin/elasticsearch-users roles airone --add superuser
-</code></pre><p>You should cerate database and user for pagoda in MySQL.</p><pre tabindex=0><code>user@hostname:~$ mysql -u root -h 127.0.0.1
-
-mysql&gt; create database airone;
-mysql&gt; create database test_airone;
-mysql&gt; CREATE USER &#39;airone&#39;@&#39;%&#39; IDENTIFIED BY &#39;password&#39;;
-mysql&gt; GRANT ALL ON airone.* to airone@&#39;%&#39;;
-mysql&gt; GRANT ALL ON test_airone.* to airone@&#39;%&#39;;
-</code></pre><p>This command makes database schema using the <a href=https://docs.djangoproject.com/en/1.11/topics/migrations/>django Migrations</a>, and makes default user account.</p><pre tabindex=0><code>user@hostname:~$ cd pagoda
-user@hostname:~/pagoda$ source virtualenv/bin/activate
-(virtualenv) user@hostname:~/pagoda$ tools/clear_and_initdb.sh
-</code></pre><p>(Optional) Please set the index as necessary.</p><pre tabindex=0><code>mysql&gt; CREATE INDEX permission_codename_idx ON auth_permission (codename);
-</code></pre><p>Finally, you should create an initial user to login the system using <code>tools/register_user.sh</code>.</p><pre tabindex=0><code>(virtualenv) user@hostname:~/pagoda$ tools/register_user.sh demo
+</code></pre><p>This includes the configuration to proxy HTTP request to Pagoda and cache static files. The static file path indicates the static directory which is in the top of Pagoda local repository. If necessary, please fix this value depending on your environment.</p><div class=gdoc-page__anchorwrap><h2 id=initialize-pagoda-configuratoin>Initialize Pagoda configuratoin<a data-clipboard-text=https://dmm-com.github.io/pagoda/getting_started/development/#initialize-pagoda-configuratoin class="gdoc-page__anchor gdoc-page__anchor--right clip" aria-label="Anchor Initialize Pagoda configuratoin" href=#initialize-pagoda-configuratoin><svg class="icon link"><use xlink:href="#link"/></svg></a></h2></div><p>This command makes database schema using the <a href=https://docs.djangoproject.com/en/1.11/topics/migrations/>django Migrations</a>, and makes default user account.</p><pre tabindex=0><code>user@hostname:~$ cd pagoda
+user@hostname:~/pagoda$ tools/clear_and_initdb.sh
+</code></pre><p>Then, you should create an initial user to login to the Pagoda. This creates user <code>demo</code>.</p><pre tabindex=0><code>user@hostname:~/pagoda$ tools/register_user.sh demo
 Password:   ## input password of this user
 Succeed in register user (demo)
-</code></pre><p>This creates following user.</p><table><thead><tr><th style=text-align:left>Username</th><th style=text-align:left>Password</th></tr></thead><tbody><tr><td style=text-align:left>demo</td><td style=text-align:left>demo</td></tr></tbody></table><p>If you want to create an administrative user who can access all information regardless of ACL (Please refer the <a href=#>User-Manual(TBD)</a>), you can do it with <code>-s, --superuser</code> option. This creates another user who takes privilege of this system.</p><pre tabindex=0><code>(virtualenv) user@hostname:~/pagoda$ tools/register_user.sh -s admin
+</code></pre><p>This creates following user.</p><table><thead><tr><th style=text-align:left>Username</th><th style=text-align:left>Password</th></tr></thead><tbody><tr><td style=text-align:left>demo</td><td style=text-align:left>demo</td></tr></tbody></table><p>If you want to create an administrative user who can access all information regardless of ACL (Please refer the <a href=#>User-Manual(TBD)</a>), you can do it with <code>-s, --superuser</code> option. This creates another user who takes privilege of this system.</p><pre tabindex=0><code>user@hostname:~/pagoda$ tools/register_user.sh -s admin
 Password:   ## input password of this user
 Succeed in register user (admin)
-</code></pre><p>This regists all entries which has been created in the database to the Elasticsearch.<br>You can do it just by following command. The configurations about the database to read and Elasticsearch to register are referred from airone/settings.py.</p><pre tabindex=0><code>(virtualenv) user@hostname:~/pagoda$ python tools/initialize_es_document.py
+</code></pre><p>Finally, this registers all entries which has been created in the database to the Elasticsearch.<br>You can do it just by following command. The configurations about the database to read and Elasticsearch to register are referred from airone/settings.py.</p><pre tabindex=0><code>user@hostname:~/pagoda$ uv run python tools/initialize_es_document.py
 </code></pre><div class=gdoc-page__anchorwrap><h2 id=run-pagoda>Run Pagoda<a data-clipboard-text=https://dmm-com.github.io/pagoda/getting_started/development/#run-pagoda class="gdoc-page__anchor gdoc-page__anchor--right clip" aria-label="Anchor Run Pagoda" href=#run-pagoda><svg class="icon link"><use xlink:href="#link"/></svg></a></h2></div><p>You can start Pagoda as following and can browse from <code>http://hostname:8080/</code><br>(Please change the <code>hostname</code> to the appropriate one on which you installed Pagoda).
 e.g.</p><pre tabindex=0><code>user@hostname:~$ cd pagoda
-user@hostname:~/pagoda$ source virtualenv/bin/activate
-(virtualenv) user@hostname:~/pagoda$ python manage.py runserver 0:8080
-</code></pre><div class=gdoc-page__anchorwrap><h2 id=run-celery>Run Celery<a data-clipboard-text=https://dmm-com.github.io/pagoda/getting_started/development/#run-celery class="gdoc-page__anchor gdoc-page__anchor--right clip" aria-label="Anchor Run Celery" href=#run-celery><svg class="icon link"><use xlink:href="#link"/></svg></a></h2></div><p>In addition, you have to run Celery worker to execute background task as following.</p><pre tabindex=0><code>user@hostname:~$ cd pagoda
-user@hostname:~/pagoda$ source virtualenv/bin/activate
-(virtualenv) user@hostname:~/pagoda$ celery -A airone worker -l info
-</code></pre><div class=gdoc-page__anchorwrap><h2 id=build-the-new-ui-with-react>Build the new UI with React<a data-clipboard-text=https://dmm-com.github.io/pagoda/getting_started/development/#build-the-new-ui-with-react class="gdoc-page__anchor gdoc-page__anchor--right clip" aria-label="Anchor Build the new UI with React" href=#build-the-new-ui-with-react><svg class="icon link"><use xlink:href="#link"/></svg></a></h2></div><p><code>/ui/</code> serves React-based new UI. Before you try it, you need to build <code>ui.js</code>:</p><p>Install nvm command.</p><p>Install npm packages.</p><pre tabindex=0><code>user@hostname:~$ nvm install 18.12.0
+user@hostname:~/pagoda$ uv run python manage.py runserver 0:8080
+</code></pre><p>Then, you can access to the Pagoda by <code>http://localhost:8080</code> from your browser.</p><div class=gdoc-page__anchorwrap><h2 id=run-celery>Run Celery<a data-clipboard-text=https://dmm-com.github.io/pagoda/getting_started/development/#run-celery class="gdoc-page__anchor gdoc-page__anchor--right clip" aria-label="Anchor Run Celery" href=#run-celery><svg class="icon link"><use xlink:href="#link"/></svg></a></h2></div><p>In addition, you have to run Celery worker to execute background task (e.g. updating item).
+Please open another terminal (or screen), then run it by following command.</p><pre tabindex=0><code>user@hostname:~$ cd pagoda
+user@hostname:~/pagoda$ uv run celery -A airone worker -l info
+</code></pre><div class=gdoc-page__anchorwrap><h2 id=build-the-new-ui-with-react>Build the new UI with React<a data-clipboard-text=https://dmm-com.github.io/pagoda/getting_started/development/#build-the-new-ui-with-react class="gdoc-page__anchor gdoc-page__anchor--right clip" aria-label="Anchor Build the new UI with React" href=#build-the-new-ui-with-react><svg class="icon link"><use xlink:href="#link"/></svg></a></h2></div><p><code>/ui/</code> serves React-based new UI. Before you try it, you need to build <code>ui.js</code>:</p><div class=gdoc-page__anchorwrap><h3 id=preparing-build-environemnt>Preparing build environemnt<a data-clipboard-text=https://dmm-com.github.io/pagoda/getting_started/development/#preparing-build-environemnt class="gdoc-page__anchor gdoc-page__anchor--right clip" aria-label="Anchor Preparing build environemnt" href=#preparing-build-environemnt><svg class="icon link"><use xlink:href="#link"/></svg></a></h3></div><p>Prepare to install API client npm package published on GitHub Packages.
+<code>TOKEN</code> is a your GitHub PAT. Issue your PAT with checking <a href=https://docs.github.com/ja/packages/working-with-a-github-packages-registry/working-with-the-npm-registry#github-packages-%E3%81%B8%E3%81%AE%E8%AA%8D%E8%A8%BC%E3%82%92%E8%A1%8C%E3%81%86>this doc</a>. This requires only <code>read:packages</code> scope.
+Then, you just perform <code>npm install</code> as usual.</p><pre tabindex=0><code>user@hostname:~/pagoda$ export TOKEN=&#34;(FIXME: github personal access token)&#34;
+user@hostname:~/pagoda$ cat &lt;&lt;EOS &gt; .npmrc
+//npm.pkg.github.com/:_authToken=${TOKEN}
+EOS
+</code></pre><p>After <a href="https://github.com/nvm-sh/nvm?tab=readme-ov-file#installing-and-updating">installing nvm command</a>, please install npm packages as below.</p><pre tabindex=0><code>user@hostname:~$ nvm install 20
 user@hostname:~$ cd pagoda
 user@hostname:~/pagoda$ npm install
-</code></pre><p>Build</p><pre tabindex=0><code>user@hostname:~/pagoda$ npm run build
+</code></pre><div class=gdoc-page__anchorwrap><h3 id=building-pagoda-react-components>Building pagoda react components<a data-clipboard-text=https://dmm-com.github.io/pagoda/getting_started/development/#building-pagoda-react-components class="gdoc-page__anchor gdoc-page__anchor--right clip" aria-label="Anchor Building pagoda react components" href=#building-pagoda-react-components><svg class="icon link"><use xlink:href="#link"/></svg></a></h3></div><p>If you have any change on API V2, you need to run this command before you build:</p><pre tabindex=0><code>user@hostname:~/pagoda$ npm run generate:client
+</code></pre><p>Build Pagoda react component by following command.</p><pre tabindex=0><code>(One time building)
+user@hostname:~/pagoda$ npm run build
 
 (In development)
 user@hostname:~/pagoda$ npm run watch
-</code></pre><p>If you have any change on API V2, you need to run this command before you build:</p><pre tabindex=0><code>user@hostname:~/pagoda$ npm run generate:client
+</code></pre><div class=gdoc-page__anchorwrap><h3 id=api-v2-client>API V2 client<a data-clipboard-text=https://dmm-com.github.io/pagoda/getting_started/development/#api-v2-client class="gdoc-page__anchor gdoc-page__anchor--right clip" aria-label="Anchor API V2 client" href=#api-v2-client><svg class="icon link"><use xlink:href="#link"/></svg></a></h3></div><p>You can refer your local API client code before publishing it to GitHub Packages with following command.</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl>user@hostname:~/pagoda$ npm run generate:client   <span class=c1># generate the latest API client code on your local env</span>
+</span></span><span class=line><span class=cl>user@hostname:~/pagoda$ npm run link:client       <span class=c1># refer the latest code temporarily</span>
+</span></span></code></pre></div><p>If you modify something in API client code, you need to publish it with the package release GitHub Actions workflow. It will be triggered by labeling <code>release-apiv2-client</code> to the pull request by repository owners.</p><div class=gdoc-page__anchorwrap><h2 id=for-custom-view-building-procedure>For Custom-View Building Procedure<a data-clipboard-text=https://dmm-com.github.io/pagoda/getting_started/development/#for-custom-view-building-procedure class="gdoc-page__anchor gdoc-page__anchor--right clip" aria-label="Anchor For Custom-View Building Procedure" href=#for-custom-view-building-procedure><svg class="icon link"><use xlink:href="#link"/></svg></a></h2></div><p>When you want to ues Pagoda&rsquo;s Custom-View, you should run following command to build react environment considering CustomView.</p><pre tabindex=0><code>user@hostname:~/pagoda$ npm run generate:custom_client
 
-(For Customview)
-user@hostname:~/pagoda$ npm run generate:custom_client
-</code></pre><p>To customize UI:</p><pre tabindex=0><code>user@hostname:~/pagoda$ cp -pi ./frontend/src/App.tsx ./frontend/src/customview/CustomApp.tsx
+user@hostname:~/pagoda$ cp -pi ./frontend/src/App.tsx ./frontend/src/customview/CustomApp.tsx
 (edit CustomApp.tsx)
 user@hostname:~/pagoda$ npm run build:custom
-</code></pre><div class=gdoc-page__anchorwrap><h3 id=api-v2-client>API V2 client<a data-clipboard-text=https://dmm-com.github.io/pagoda/getting_started/development/#api-v2-client class="gdoc-page__anchor gdoc-page__anchor--right clip" aria-label="Anchor API V2 client" href=#api-v2-client><svg class="icon link"><use xlink:href="#link"/></svg></a></h3></div><p>Prepare to install API client npm package published on GitHub Packages.
-<code>TOKEN</code> is a your GitHub PAT. Issue your PAT with checking <a href=https://docs.github.com/ja/packages/working-with-a-github-packages-registry/working-with-the-npm-registry#github-packages-%E3%81%B8%E3%81%AE%E8%AA%8D%E8%A8%BC%E3%82%92%E8%A1%8C%E3%81%86>this doc</a>.
-Then, you just perform <code>npm install</code> as usual.</p><pre tabindex=0><code>$ cat &gt; .npmrc
-//npm.pkg.github.com/:_authToken=TOKEN
-</code></pre><p>You can refer your local API client code before publishing it to GitHub Packages with following command.</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl><span class=c1># generate the latest API client code on your local env</span>
-</span></span><span class=line><span class=cl>$ npm run generate:client
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl><span class=c1># refer the latest code temporarily</span>
-</span></span><span class=line><span class=cl>$ npm run link:client
-</span></span></code></pre></div><p>If you modify something in API client code, you need to publish it with the package release GitHub Actions workflow. It will be triggered by labeling <code>release-apiv2-client</code> to the pull request by repository owners.</p><div class=gdoc-page__anchorwrap><h2 id=auto-format>Auto-format<a data-clipboard-text=https://dmm-com.github.io/pagoda/getting_started/development/#auto-format class="gdoc-page__anchor gdoc-page__anchor--right clip" aria-label="Anchor Auto-format" href=#auto-format><svg class="icon link"><use xlink:href="#link"/></svg></a></h2></div><pre tabindex=0><code>user@hostname:~$ cd pagoda
-user@hostname:~/pagoda$ source virtualenv/bin/activate
-(virtualenv) user@hostname:~/pagoda$ ruff format .
-(virtualenv) user@hostname:~/pagoda$ ruff check --fix .
+</code></pre><div class=gdoc-page__anchorwrap><h2 id=auto-format>Auto-format<a data-clipboard-text=https://dmm-com.github.io/pagoda/getting_started/development/#auto-format class="gdoc-page__anchor gdoc-page__anchor--right clip" aria-label="Anchor Auto-format" href=#auto-format><svg class="icon link"><use xlink:href="#link"/></svg></a></h2></div><pre tabindex=0><code>user@hostname:~$ cd pagoda
+user@hostname:~/pagoda$ ruff format .
+user@hostname:~/pagoda$ ruff check --fix .
 
 user@hostname:~/pagoda$ npm run fix
 </code></pre><div class=gdoc-page__anchorwrap><h2 id=test-for-django-processing>Test for Django processing<a data-clipboard-text=https://dmm-com.github.io/pagoda/getting_started/development/#test-for-django-processing class="gdoc-page__anchor gdoc-page__anchor--right clip" aria-label="Anchor Test for Django processing" href=#test-for-django-processing><svg class="icon link"><use xlink:href="#link"/></svg></a></h2></div><p>You can run tests for processing that is run by Django and Celery, which means backend processing, as below.</p><pre tabindex=0><code>user@hostname:~$ cd pagoda
-user@hostname:~/pagoda$ source virtualenv/bin/activate
-(virtualenv) user@hostname:~/pagoda$ python manage.py test
-</code></pre><p>When you want to run a specific test (<code>ModelTest.test_is_belonged_to_parent_group</code> in the file of <code>role/tests/test_model.py</code>) , you can do it as below.</p><pre tabindex=0><code>(virtualenv) user@hostname:~/pagoda$ python manage.py test role.tests.test_model.ModelTest.test_is_belonged_to_parent_group
+user@hostname:~/pagoda$ python manage.py test
+</code></pre><p>When you want to run a specific test (<code>ModelTest.test_is_belonged_to_parent_group</code> in the file of <code>role/tests/test_model.py</code>) , you can do it as below.</p><pre tabindex=0><code>user@hostname:~/pagoda$ python manage.py test role.tests.test_model.ModelTest.test_is_belonged_to_parent_group
 </code></pre><div class=gdoc-page__anchorwrap><h2 id=test-for-react-processing>Test for React processing<a data-clipboard-text=https://dmm-com.github.io/pagoda/getting_started/development/#test-for-react-processing class="gdoc-page__anchor gdoc-page__anchor--right clip" aria-label="Anchor Test for React processing" href=#test-for-react-processing><svg class="icon link"><use xlink:href="#link"/></svg></a></h2></div><p>You can run test for processing that is run by Browser, wihch means frontend processing as below.</p><pre tabindex=0><code>user@hostname:~$ cd pagoda
 user@hostname:~/pagoda$ npm run test
 </code></pre><p>If you have any change on a page component, please re-build snapshots along with current implementaion as below.</p><pre tabindex=0><code>user@hostname:~/pagoda$ npm run test:update
 </code></pre><p>When you want to run individual test (e.g. frontend/src/components/user/UserList.test.tsx), you can do it by following command.</p><pre tabindex=0><code>user@hostname:~/pagoda$ npx jest -u frontend/src/components/user/UserList.test.tsx
 </code></pre><div class=gdoc-page__anchorwrap><h2 id=release-pagoda-core-package-for-custom-views>Release pagoda-core package for custom views<a data-clipboard-text=https://dmm-com.github.io/pagoda/getting_started/development/#release-pagoda-core-package-for-custom-views class="gdoc-page__anchor gdoc-page__anchor--right clip" aria-label="Anchor Release pagoda-core package for custom views" href=#release-pagoda-core-package-for-custom-views><svg class="icon link"><use xlink:href="#link"/></svg></a></h2></div><p>We publish the <code>pagoda-core</code> package to GitHub npm Registry for custom views.
 When you want to release a new version of the package, create a tag with the format <code>pagoda-core-x.y.z</code> (e.g. <code>pagoda-core-0.0.1</code>). The GitHub Actions workflow will automatically build and publish the package.</p><p>If you hope to try building the module:</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-sh data-lang=sh><span class=line><span class=cl>$ npm run build:lib
-</span></span></code></pre></div></article><div class="gdoc-page__footer flex flex-wrap justify-between"></div></div></main><footer class=gdoc-footer><div class="container flex flex-wrap"><span class=gdoc-footer__item>Copyright © since 2020, DMM.com LLC. All Rights Reserved.</span></div></footer></div><script defer src=https://dmm-com.github.io/pagoda/js/en.search.min.431f15e9e212eddfd72e283176adedc9fc85cdefa8f80d536b15f3fde0b939e6.js></script>
+</span></span></code></pre></div></article><div class="gdoc-page__footer flex flex-wrap justify-between"></div></div></main><footer class=gdoc-footer><div class="container flex flex-wrap"><span class=gdoc-footer__item>Copyright © since 2020, DMM.com LLC. All Rights Reserved.</span></div></footer></div><script defer src=https://dmm-com.github.io/pagoda/js/en.search.min.f3fd3bf0d66384526266bcdeea25a95e177084fd8d8d5d20c2096391f28a1959.js></script>
 <script defer src=https://dmm-com.github.io/pagoda/js/clipboard.min.js></script>
 <script>document.addEventListener("DOMContentLoaded",function(){var t=new ClipboardJS(".clip")})</script></body></html>
