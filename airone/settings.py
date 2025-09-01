@@ -4,7 +4,7 @@ from airone.settings_common import Common
 
 
 class Dev(Common):
-    pass
+    DEBUG = True
 
 
 class Prd(Common):

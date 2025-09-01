@@ -23,29 +23,87 @@ user@hostname:~$ sudo apt-get install libldap2-dev  libsasl2-dev libxmlsec1-dev 
 user@hostname:~$ brew install libxmlsec1 mysql-client pkg-config mysql-connector-python
 ```
 
+And it's necessary to install `uv` command that manages Python packages and isolates Pagoda related libraries from system use ones.
+```
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
 Then, you can install libraries on which Pagoda depends by following after cloning this repository. But we recommand you to setup pagoda on the separated environment using virtualenv not to pollute system-wide python environment.
 ```
 user@hostname:~$ git clone https://github.com/dmm-com/pagoda.git
 user@hostname:~$ cd pagoda
-user@hostname:~/pagoda$ python3 -m venv virtualenv
-user@hostname:~/pagoda$ source virtualenv/bin/activate
-(virtualenv) user@hostname:~/pagoda$ pip install pip --upgrade
-(virtualenv) user@hostname:~/pagoda$ pip install uv
-(virtualenv) user@hostname:~/pagoda$ uv sync --only-group main
-# or, during development, install all
-(virtualenv) user@hostname:~/pagoda$ uv sync
+user@hostname:~/pagoda$ uv sync
 ```
 
-## Setting-up Backend with docker-compose
+Now, you have made Python environment for running Pagoda on your node. It'll be completed to run Pagoda when you install backend middlewares(MySQL, RabbitMQ and Elasticsearch).
 
-Install docker-compose command.  
-Run middlewares with docker-compose.
+There are two options to set them up.
 
+## (Option1: Recommended) Setting-up backends using docker-compose
+
+Check `docker` command has already been installed by following command.
 ```
-user@hostname:~/pagoda$ docker-compose up
+$ sudo docker run hello-world
 ```
 
-## (Setting-up Backend with manual)
+When `docker` command has not been installed, you should install Docker engine (c.f. [Install Docker Engine -- dockerdocs](https://docs.docker.com/engine/install/))
+
+It's necessary to be able to run docker command without `sudo` because some script expect to run it by non-priviledged level.
+```
+### create docker group if it's necessary (it's OK to run this command when group 'docker' already exists)
+$ sudo groupadd docker
+
+### belong current user to docker group
+$ sudo gpasswd -a $USER docker
+```
+
+Then, you can make middleware nodes (MySQL, RabbitMQ and Elasticsearch) by `docker compose` command as below.
+```
+user@hostname:~/pagoda$ sudo docker compose up -d
+```
+
+Then, you should make user for Pagoda (internally it was named as airone) to the Elasticsearch and MySQL as below.
+
+### for Elasticsearch
+
+You have to create user for Pagoda and set it administrative role at the Elasticsearch by following commands.
+```
+user@hostname:~$ sudo docker exec -it elasticsearch bin/elasticsearch-users useradd airone -p password
+user@hostname:~$ sudo docker exec -it elasticsearch bin/elasticsearch-users roles airone --add superuser
+```
+
+You can check whether specified user was created successfully and has proper role as below.
+```
+user@hostname:~$ sudo docker exec -it elasticsearch bin/elasticsearch-users list
+airone         : superuser
+```
+
+### for MySQL
+
+Login to the Docker node that MySQL is running by following code.
+```
+user@hostname:~$ sudo docker exec -it mysql mysql -uroot
+```
+
+Then, you should cerate database and user for Pagoda (internally called `airone`) in MySQL.
+```
+mysql> create database airone;
+mysql> create database test_airone;
+mysql> CREATE USER 'airone'@'%' IDENTIFIED BY 'password';
+mysql> GRANT ALL ON airone.* to airone@'%';
+mysql> GRANT ALL ON test_airone.* to airone@'%';
+```
+
+(Optional) Please set the index as necessary.
+```
+mysql> CREATE INDEX permission_codename_idx ON auth_permission (codename);
+```
+
+Conguratulations, you completed to setup Pagoda execution environment.
+
+After initializing Pagoda, you can use it! Please move on to the [Initialize Pagoda configuratoin](#initialize-pagoda-configuratoin).
+
+## (Option2) Setting-up backends in manual
 
 And you have to install RabbitMQ for executing heavy processing as background task using [Celery](http://docs.celeryproject.org/).
 ```
@@ -70,6 +128,22 @@ Iincrease the number of Slave databases with the MySQL replication function.
 You can set database slave, with like this config:
 ```
 REPLICATED_DATABASE_SLAVES = ['slave1', 'slave2']
+```
+
+You should cerate database and user for pagoda in MySQL.
+```
+user@hostname:~$ mysql -u root -h 127.0.0.1
+
+mysql> create database airone;
+mysql> create database test_airone;
+mysql> CREATE USER 'airone'@'%' IDENTIFIED BY 'password';
+mysql> GRANT ALL ON airone.* to airone@'%';
+mysql> GRANT ALL ON test_airone.* to airone@'%';
+```
+
+(Optional) Please set the index as necessary.
+```
+mysql> CREATE INDEX permission_codename_idx ON auth_permission (codename);
 ```
 
 ### Setting-up Elasticsearch
@@ -105,6 +179,12 @@ After installing it, you have to change configuration to accept connecting from 
 You should set sysctl as below because Elasticsearch requires to expand virtual memory area.
 ```
 user@hostname:~$ sudo sysctl vm.max_map_count=262144
+```
+
+And you should create user and attach role in Elasticsearch.
+```
+bin/elasticsearch-users useradd airone -p password
+bin/elasticsearch-users roles airone --add superuser
 ```
 
 Finally, you can run ElasticSearch service like that.
@@ -188,38 +268,15 @@ This includes the configuration to proxy HTTP request to Pagoda and cache static
 
 ## Initialize Pagoda configuratoin
 
-You should create user and attach role in Elasticsearch.
-```
-bin/elasticsearch-users useradd airone
-bin/elasticsearch-users roles airone --add superuser
-```
-
-You should cerate database and user for pagoda in MySQL.
-```
-user@hostname:~$ mysql -u root -h 127.0.0.1
-
-mysql> create database airone;
-mysql> create database test_airone;
-mysql> CREATE USER 'airone'@'%' IDENTIFIED BY 'password';
-mysql> GRANT ALL ON airone.* to airone@'%';
-mysql> GRANT ALL ON test_airone.* to airone@'%';
-```
-
 This command makes database schema using the [django Migrations](https://docs.djangoproject.com/en/1.11/topics/migrations/), and makes default user account.
 ```
 user@hostname:~$ cd pagoda
-user@hostname:~/pagoda$ source virtualenv/bin/activate
-(virtualenv) user@hostname:~/pagoda$ tools/clear_and_initdb.sh
+user@hostname:~/pagoda$ tools/clear_and_initdb.sh
 ```
 
-(Optional) Please set the index as necessary.
+Then, you should create an initial user to login to the Pagoda. This creates user `demo`.
 ```
-mysql> CREATE INDEX permission_codename_idx ON auth_permission (codename);
-```
-
-Finally, you should create an initial user to login the system using `tools/register_user.sh`.
-```
-(virtualenv) user@hostname:~/pagoda$ tools/register_user.sh demo
+user@hostname:~/pagoda$ tools/register_user.sh demo
 Password:   ## input password of this user
 Succeed in register user (demo)
 ```
@@ -232,16 +289,16 @@ This creates following user.
 
 If you want to create an administrative user who can access all information regardless of ACL (Please refer the [User-Manual(TBD)](#)), you can do it with `-s, --superuser` option. This creates another user who takes privilege of this system.
 ```
-(virtualenv) user@hostname:~/pagoda$ tools/register_user.sh -s admin
+user@hostname:~/pagoda$ tools/register_user.sh -s admin
 Password:   ## input password of this user
 Succeed in register user (admin)
 ```
 
-This regists all entries which has been created in the database to the Elasticsearch.  
+Finally, this registers all entries which has been created in the database to the Elasticsearch.  
 You can do it just by following command. The configurations about the database to read and Elasticsearch to register are referred from airone/settings.py.
 
 ```
-(virtualenv) user@hostname:~/pagoda$ python tools/initialize_es_document.py
+user@hostname:~/pagoda$ uv run python tools/initialize_es_document.py
 ```
 
 ## Run Pagoda
@@ -251,87 +308,88 @@ e.g.
 
 ```
 user@hostname:~$ cd pagoda
-user@hostname:~/pagoda$ source virtualenv/bin/activate
-(virtualenv) user@hostname:~/pagoda$ python manage.py runserver 0:8080
+user@hostname:~/pagoda$ uv run python manage.py runserver 0:8080
 ```
+
+Then, you can access to the Pagoda by `http://localhost:8080` from your browser.
 
 ## Run Celery
 
-In addition, you have to run Celery worker to execute background task as following.
+In addition, you have to run Celery worker to execute background task (e.g. updating item).
+Please open another terminal (or screen), then run it by following command.
 ```
 user@hostname:~$ cd pagoda
-user@hostname:~/pagoda$ source virtualenv/bin/activate
-(virtualenv) user@hostname:~/pagoda$ celery -A airone worker -l info
+user@hostname:~/pagoda$ uv run celery -A airone worker -l info
 ```
 
 ## Build the new UI with React
 
 `/ui/` serves React-based new UI. Before you try it, you need to build `ui.js`:
 
-Install nvm command.  
+### Preparing build environemnt
 
-Install npm packages.
+Prepare to install API client npm package published on GitHub Packages.
+`TOKEN` is a your GitHub PAT. Issue your PAT with checking [this doc](https://docs.github.com/ja/packages/working-with-a-github-packages-registry/working-with-the-npm-registry#github-packages-%E3%81%B8%E3%81%AE%E8%AA%8D%E8%A8%BC%E3%82%92%E8%A1%8C%E3%81%86). This requires only `read:packages` scope.
+Then, you just perform `npm install` as usual.
+
 ```
-user@hostname:~$ nvm install 18.12.0
+user@hostname:~/pagoda$ export TOKEN="(FIXME: github personal access token)"
+user@hostname:~/pagoda$ cat <<EOS > .npmrc
+//npm.pkg.github.com/:_authToken=${TOKEN}
+EOS
+```
+
+After [installing nvm command](https://github.com/nvm-sh/nvm?tab=readme-ov-file#installing-and-updating), please install npm packages as below.
+```
+user@hostname:~$ nvm install 20
 user@hostname:~$ cd pagoda
 user@hostname:~/pagoda$ npm install
 ```
 
-Build
+### Building pagoda react components
+
+If you have any change on API V2, you need to run this command before you build:
 ```
+user@hostname:~/pagoda$ npm run generate:client
+```
+
+Build Pagoda react component by following command.
+```
+(One time building)
 user@hostname:~/pagoda$ npm run build
 
 (In development)
 user@hostname:~/pagoda$ npm run watch
 ```
 
-If you have any change on API V2, you need to run this command before you build:
+### API V2 client
 
+You can refer your local API client code before publishing it to GitHub Packages with following command.
+
+```shell
+user@hostname:~/pagoda$ npm run generate:client   # generate the latest API client code on your local env
+user@hostname:~/pagoda$ npm run link:client       # refer the latest code temporarily
 ```
-user@hostname:~/pagoda$ npm run generate:client
 
-(For Customview)
+If you modify something in API client code, you need to publish it with the package release GitHub Actions workflow. It will be triggered by labeling `release-apiv2-client` to the pull request by repository owners.
+
+## For Custom-View Building Procedure
+
+When you want to ues Pagoda's Custom-View, you should run following command to build react environment considering CustomView.
+```
 user@hostname:~/pagoda$ npm run generate:custom_client
-```
 
-To customize UI:
-
-```
 user@hostname:~/pagoda$ cp -pi ./frontend/src/App.tsx ./frontend/src/customview/CustomApp.tsx
 (edit CustomApp.tsx)
 user@hostname:~/pagoda$ npm run build:custom
 ```
 
-### API V2 client
-
-Prepare to install API client npm package published on GitHub Packages.
-`TOKEN` is a your GitHub PAT. Issue your PAT with checking [this doc](https://docs.github.com/ja/packages/working-with-a-github-packages-registry/working-with-the-npm-registry#github-packages-%E3%81%B8%E3%81%AE%E8%AA%8D%E8%A8%BC%E3%82%92%E8%A1%8C%E3%81%86).
-Then, you just perform `npm install` as usual.
-
-```
-$ cat > .npmrc
-//npm.pkg.github.com/:_authToken=TOKEN
-```
-
-You can refer your local API client code before publishing it to GitHub Packages with following command.
-
-```shell
-# generate the latest API client code on your local env
-$ npm run generate:client
-
-# refer the latest code temporarily
-$ npm run link:client
-```
-
-If you modify something in API client code, you need to publish it with the package release GitHub Actions workflow. It will be triggered by labeling `release-apiv2-client` to the pull request by repository owners.
-
 ## Auto-format
 
 ```
 user@hostname:~$ cd pagoda
-user@hostname:~/pagoda$ source virtualenv/bin/activate
-(virtualenv) user@hostname:~/pagoda$ ruff format .
-(virtualenv) user@hostname:~/pagoda$ ruff check --fix .
+user@hostname:~/pagoda$ ruff format .
+user@hostname:~/pagoda$ ruff check --fix .
 
 user@hostname:~/pagoda$ npm run fix
 ```
@@ -340,13 +398,12 @@ user@hostname:~/pagoda$ npm run fix
 You can run tests for processing that is run by Django and Celery, which means backend processing, as below.
 ```
 user@hostname:~$ cd pagoda
-user@hostname:~/pagoda$ source virtualenv/bin/activate
-(virtualenv) user@hostname:~/pagoda$ python manage.py test
+user@hostname:~/pagoda$ python manage.py test
 ```
 
 When you want to run a specific test (`ModelTest.test_is_belonged_to_parent_group` in the file of `role/tests/test_model.py`) , you can do it as below.
 ```
-(virtualenv) user@hostname:~/pagoda$ python manage.py test role.tests.test_model.ModelTest.test_is_belonged_to_parent_group
+user@hostname:~/pagoda$ python manage.py test role.tests.test_model.ModelTest.test_is_belonged_to_parent_group
 ```
 
 ## Test for React processing
