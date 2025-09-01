@@ -48,7 +48,14 @@ $ sudo docker run hello-world
 
 When `docker` command has not been installed, you should install Docker engine (c.f. [Install Docker Engine -- dockerdocs](https://docs.docker.com/engine/install/))
 
-And you also have to install Docker Compose plugin (c.f. [Install the Docker Compose plugin -- dockerdocs](https://docs.docker.com/compose/install/linux/))
+It's necessary to be able to run docker command without `sudo` because some script expect to run it by non-priviledged level.
+```
+### create docker group if it's necessary (it's OK to run this command when group 'docker' already exists)
+$ sudo groupadd docker
+
+### belong current user to docker group
+$ sudo gpasswd -a $USER docker
+```
 
 Then, you can make middleware nodes (MySQL, RabbitMQ and Elasticsearch) by `docker compose` command as below.
 ```
@@ -291,7 +298,7 @@ Finally, this registers all entries which has been created in the database to th
 You can do it just by following command. The configurations about the database to read and Elasticsearch to register are referred from airone/settings.py.
 
 ```
-user@hostname:~/pagoda$ python tools/initialize_es_document.py
+user@hostname:~/pagoda$ uv run python tools/initialize_es_document.py
 ```
 
 ## Run Pagoda
@@ -322,7 +329,7 @@ user@hostname:~/pagoda$ uv run celery -A airone worker -l info
 ### Preparing build environemnt
 
 Prepare to install API client npm package published on GitHub Packages.
-`TOKEN` is a your GitHub PAT. Issue your PAT with checking [this doc](https://docs.github.com/ja/packages/working-with-a-github-packages-registry/working-with-the-npm-registry#github-packages-%E3%81%B8%E3%81%AE%E8%AA%8D%E8%A8%BC%E3%82%92%E8%A1%8C%E3%81%86).
+`TOKEN` is a your GitHub PAT. Issue your PAT with checking [this doc](https://docs.github.com/ja/packages/working-with-a-github-packages-registry/working-with-the-npm-registry#github-packages-%E3%81%B8%E3%81%AE%E8%AA%8D%E8%A8%BC%E3%82%92%E8%A1%8C%E3%81%86). This requires only `read:packages` scope.
 Then, you just perform `npm install` as usual.
 
 ```
