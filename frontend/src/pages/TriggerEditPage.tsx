@@ -43,11 +43,11 @@ const StyledFlexColumnBox = styled(Box)({
   marginBottom: "48px",
 });
 
-const HeaderTableRow = styled(TableRow)(({ }) => ({
+const HeaderTableRow = styled(TableRow)(({}) => ({
   backgroundColor: "#455A64",
 }));
 
-const HeaderTableCell = styled(TableCell)(({ }) => ({
+const HeaderTableCell = styled(TableCell)(({}) => ({
   color: "#FFFFFF",
   boxSizing: "border-box",
 }));
@@ -116,33 +116,43 @@ export const TriggerEditPage: FC = () => {
     }
   }, [entityId]);
 
-  const convertConditions2ServerFormat = (trigger: Schema) => {
+  // --- Added: helper type to include isUnmatch (and hint) in outgoing conditions ---
+  type TriggerConditionUpdate = {
+    attrId: number;
+    cond: string;
+    isUnmatch?: boolean;
+    hint?: "json";
+  };
+
+  const convertConditions2ServerFormat = (trigger: Schema): TriggerConditionUpdate[] => {
     if (!entity.value) {
       return [];
     }
 
-    return trigger.conditions.flatMap((cond) => {
+    return trigger.conditions.flatMap((cond): TriggerConditionUpdate | TriggerConditionUpdate[] => {
       const attrInfo = entity.value?.attrs.find(
         (attr) => attr.id === cond.attr.id,
       );
 
+      const base = { attrId: cond.attr.id, isUnmatch: !!(cond as any).isUnmatch } as const;
+
       switch (attrInfo?.type) {
         case EntryAttributeTypeTypeEnum.STRING:
         case EntryAttributeTypeTypeEnum.ARRAY_STRING:
-          return { attrId: cond.attr.id, cond: cond.strCond ?? "" };
+          return { ...base, cond: cond.strCond ?? "" };
 
         case EntryAttributeTypeTypeEnum.BOOLEAN:
-          return { attrId: cond.attr.id, cond: String(cond.boolCond) };
+          return { ...base, cond: String(cond.boolCond) };
 
         case EntryAttributeTypeTypeEnum.OBJECT:
         case EntryAttributeTypeTypeEnum.ARRAY_OBJECT:
-          return { attrId: cond.attr.id, cond: String(cond.refCond?.id ?? 0) };
+          return { ...base, cond: String(cond.refCond?.id ?? 0) };
 
         case EntryAttributeTypeTypeEnum.NAMED_OBJECT:
         case EntryAttributeTypeTypeEnum.ARRAY_NAMED_OBJECT:
           return [
             {
-              attrId: cond.attr.id,
+              ...base,
               cond: JSON.stringify({
                 name: cond.strCond,
                 id: cond.refCond?.id ?? 0,
@@ -152,9 +162,9 @@ export const TriggerEditPage: FC = () => {
           ];
 
         default:
-          return { attrId: cond.attr.id, cond: "" };
+          return { ...base, cond: "" };
       }
-    });
+    }) as TriggerConditionUpdate[];
   };
 
   const convertActions2ServerFormat = (
@@ -242,9 +252,11 @@ export const TriggerEditPage: FC = () => {
       try {
         if (triggerId !== undefined) {
           await aironeApiClient.updateTrigger(triggerId, triggerCreateUpdate);
+          console.log("Trigger updated successfully", triggerCreateUpdate);
           enqueueSubmitResult(true);
         } else {
           await aironeApiClient.createTrigger(triggerCreateUpdate);
+          console.log("Trigger created successfully", triggerCreateUpdate);
           enqueueSubmitResult(true);
         }
       } catch (e) {
