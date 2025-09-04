@@ -882,3 +882,48 @@ class ModelTest(AironeTestCase):
         self.assertEqual(parent_cond.actions.count(), COUNT_ACTIONS)
         self.assertEqual(TriggerCondition.objects.filter(parent=parent_cond).count(), COUNT_CONDS)
         self.assertEqual(TriggerAction.objects.filter(condition=parent_cond).count(), COUNT_ACTIONS)
+
+    def test_register_actions_with_unmatch(self):
+        item_reserved = self.add_entry(self.user, "Reserved", self.entity_ref)
+        conditions = [
+            (self.entity.attrs.get(name=attrname).id, cond_value, is_unmatch)
+            for (attrname, cond_value, is_unmatch) in [
+                ("bool_action", True, False),
+                ("named_action", item_reserved, True),
+            ]
+        ]
+        parent_condition = TriggerCondition.register(
+            self.entity,
+            [
+                {"attr_id": model_attrid, "cond": cond_value, "is_unmatch": is_unmatch}
+                for (model_attrid, cond_value, is_unmatch) in conditions
+            ],
+            self.FULL_ACTION_CONFIGURATION_PARAMETERS_BUT_EMPTY,
+        )
+
+        # create an Entry with attribute values to check action processing
+        target_entry = self.add_entry(self.user, "test entry", self.entity)
+
+        # It won't return invoking action, because named_actions's value is not matched with its condition
+        actions = TriggerCondition.get_invoked_actions(
+            self.entity, [{"id": conditions[0][0], "value": True}]
+        )
+        self.assertEqual(len(actions), 0)
+
+        # It won't return invoking action, because it's necessary to match with all conditions
+        actions = TriggerCondition.get_invoked_actions(
+            self.entity, [
+                {"id": conditions[0][0], "value": False},
+                {"id": conditions[1][0], "value": item_reserved}
+            ]
+        )
+        self.assertEqual(len(actions), 0)
+
+        # It will return invoking action, because all expected attribute values are matched with conditions
+        actions = TriggerCondition.get_invoked_actions(
+            self.entity, [
+                {"id": conditions[0][0], "value": True},
+                {"id": conditions[1][0], "value": item_reserved}
+            ]
+        )
+        self.assertEqual(len(actions), 1)
