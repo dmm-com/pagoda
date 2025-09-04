@@ -45,6 +45,7 @@ class InputTriggerCondition(object):
         self.str_cond = ""
         self.ref_cond = None
         self.bool_cond = False
+        self.is_unmatch = False
 
     def parse_input_condition(self, input_condition, hint=None):
         def _convert_value_to_entry(value: Entry | int | str | Any):
@@ -188,6 +189,7 @@ class TriggerParent(models.Model):
                 "str_cond": input_cond.str_cond,
                 "ref_cond": input_cond.ref_cond,
                 "bool_cond": input_cond.bool_cond,
+                "is_unmatch": input_cond.is_unmatch,
             }
             if not TriggerCondition.objects.filter(**params).exists():
                 TriggerCondition.objects.create(**params)
@@ -247,6 +249,7 @@ class TriggerCondition(models.Model):
     str_cond = models.TextField(blank=True, null=True)
     ref_cond = models.ForeignKey("entry.Entry", on_delete=models.SET_NULL, null=True, blank=True)
     bool_cond = models.BooleanField(default=False)
+    is_unmatch = models.BooleanField(default=False)
 
     @property
     def ATTR_TYPE(self):
@@ -255,7 +258,7 @@ class TriggerCondition(models.Model):
     def is_same_condition(self, input_list: list[InputTriggerCondition]) -> bool:
         # This checks one of the InputCondition which is in input_list matches with this condition
         def _do_check_condition(input: InputTriggerCondition):
-            if self.attr.id == input.attr.id:
+            if self.attr.id == input.attr.id and self.is_unmatch == input.is_unmatch:
                 match self.ATTR_TYPE:
                     case AttrType.STRING | AttrType.TEXT | AttrType.ARRAY_STRING:
                         return self.str_cond == input.str_cond
