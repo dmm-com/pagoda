@@ -59,7 +59,7 @@ $ sudo gpasswd -a $USER docker
 
 Then, you can make middleware nodes (MySQL, RabbitMQ and Elasticsearch) by `docker compose` command as below.
 ```
-user@hostname:~/pagoda$ sudo docker compose up -d
+user@hostname:~/pagoda$ docker compose up -d
 ```
 
 Then, you should make user for Pagoda (internally it was named as airone) to the Elasticsearch and MySQL as below.
@@ -68,13 +68,13 @@ Then, you should make user for Pagoda (internally it was named as airone) to the
 
 You have to create user for Pagoda and set it administrative role at the Elasticsearch by following commands.
 ```
-user@hostname:~$ sudo docker exec -it elasticsearch bin/elasticsearch-users useradd airone -p password
-user@hostname:~$ sudo docker exec -it elasticsearch bin/elasticsearch-users roles airone --add superuser
+user@hostname:~$ docker exec -it elasticsearch bin/elasticsearch-users useradd airone -p password
+user@hostname:~$ docker exec -it elasticsearch bin/elasticsearch-users roles airone --add superuser
 ```
 
 You can check whether specified user was created successfully and has proper role as below.
 ```
-user@hostname:~$ sudo docker exec -it elasticsearch bin/elasticsearch-users list
+user@hostname:~$ docker exec -it elasticsearch bin/elasticsearch-users list
 airone         : superuser
 ```
 
@@ -82,7 +82,7 @@ airone         : superuser
 
 Login to the Docker node that MySQL is running by following code.
 ```
-user@hostname:~$ sudo docker exec -it mysql mysql -uroot
+user@hostname:~$ docker exec -it mysql mysql -uroot
 ```
 
 Then, you should cerate database and user for Pagoda (internally called `airone`) in MySQL.
