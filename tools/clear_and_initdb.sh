@@ -9,7 +9,7 @@ show_usage() {
 }
 
 parse_argv() {
-  IS_BEREMETAL="false"
+  IS_BAREMETAL="false"
 
   while (( "$#" )); do
     case "$1" in
