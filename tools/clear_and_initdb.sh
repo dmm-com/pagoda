@@ -45,7 +45,7 @@ main() {
   done
 
   db_name=$(uv run python -c "from airone import settings; print(settings.DATABASES['default']['NAME'])")
-  if [ ${IS_BEREMETAL} = "true" ]
+  if [ ${IS_BAREMETAL} = "true" ]
   then
     db_host=$(uv run python -c "from airone import settings; print(settings.DATABASES['default']['HOST'])")
     db_user=$(uv run python -c "from airone import settings; print(settings.DATABASES['default']['USER'])")
