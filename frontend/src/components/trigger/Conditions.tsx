@@ -30,6 +30,7 @@ export const Conditions: FC<Props> = ({ control, entity }) => {
       strCond: "",
       refCond: null,
       boolCond: undefined,
+      isUnmatch: false,
     });
   };
 
@@ -47,6 +48,7 @@ export const Conditions: FC<Props> = ({ control, entity }) => {
       ))}
       {fields.length === 0 && (
         <TableRow>
+          <TableCell />
           <TableCell />
           <TableCell />
           <TableCell />

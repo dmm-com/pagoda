@@ -24,17 +24,17 @@ import { Schema } from "./TriggerFormSchema";
 import { ReferralsAutocomplete } from "components/entry/entryForm/ReferralsAutocomplete";
 import { isSupportedType } from "services/trigger/Edit";
 
-const NamedObjectBox = styled(Box)(({}) => ({
+const NamedObjectBox = styled(Box)(({ }) => ({
   display: "flex",
   alignItems: "flex-end",
   gap: "0 12px",
   width: "100%",
 }));
-const FlexBox = styled(Box)(({}) => ({
+const FlexBox = styled(Box)(({ }) => ({
   display: "flex",
   flexDirection: "column",
 }));
-const NameBox = styled(Box)(({}) => ({
+const NameBox = styled(Box)(({ }) => ({
   width: "150px",
 }));
 
@@ -231,6 +231,18 @@ export const Condition: FC<Props> = ({
                   </MenuItem>
                 ))}
             </Select>
+          )}
+        />
+      </TableCell>
+      <TableCell>
+        <Controller
+          name={`conditions.${index}.isUnmatch`}
+          control={control}
+          render={({ field }) => (
+            <Checkbox
+              checked={field.value}
+              onChange={(e) => field.onChange(e.target.checked)}
+            />
           )}
         />
       </TableCell>
