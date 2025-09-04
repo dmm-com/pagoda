@@ -43,11 +43,11 @@ const StyledFlexColumnBox = styled(Box)({
   marginBottom: "48px",
 });
 
-const HeaderTableRow = styled(TableRow)(({}) => ({
+const HeaderTableRow = styled(TableRow)(({ }) => ({
   backgroundColor: "#455A64",
 }));
 
-const HeaderTableCell = styled(TableCell)(({}) => ({
+const HeaderTableCell = styled(TableCell)(({ }) => ({
   color: "#FFFFFF",
   boxSizing: "border-box",
 }));
@@ -377,7 +377,8 @@ export const TriggerEditPage: FC = () => {
                 <TableHead>
                   <HeaderTableRow>
                     <HeaderTableCell width="400px">属性名</HeaderTableCell>
-                    <HeaderTableCell width="400px">値</HeaderTableCell>
+                    <HeaderTableCell width="100px">NOT</HeaderTableCell>
+                    <HeaderTableCell width="300px">値</HeaderTableCell>
                     <HeaderTableCell width="100px">削除</HeaderTableCell>
                     <HeaderTableCell width="100px">追加</HeaderTableCell>
                   </HeaderTableRow>
