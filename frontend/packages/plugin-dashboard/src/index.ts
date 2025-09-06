@@ -64,7 +64,7 @@ export default dashboardPlugin;
 
 // Named exports for advanced usage
 export { EnhancedDashboard };
-export const createDashboardPlugin = (config?: any) => ({
+export const createDashboardPlugin = (config?: Record<string, unknown>) => ({
   ...dashboardPlugin,
   ...config,
 });

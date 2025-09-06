@@ -6,6 +6,7 @@ import {
   PluginConfig,
   PluginErrorHandler,
   ComponentPosition,
+  PluginAPI,
 } from "./types";
 
 class DefaultPluginErrorHandler implements PluginErrorHandler {
@@ -17,7 +18,7 @@ class DefaultPluginErrorHandler implements PluginErrorHandler {
     console.error(`[Airone Plugin] ${plugin.id} failed to initialize:`, error);
   }
 
-  onRuntimeError(plugin: Plugin, error: Error, context: any): void {
+  onRuntimeError(plugin: Plugin, error: Error, context: unknown): void {
     console.error(
       `[Airone Plugin] ${plugin.id} runtime error:`,
       error,
@@ -46,7 +47,7 @@ export class PluginRegistry implements IPluginRegistry {
   private initializedPlugins = new Set<string>();
   private config: PluginConfig | null = null;
   private errorHandler: PluginErrorHandler;
-  private apiFactory?: () => any; // PluginAPI factory
+  private apiFactory?: () => PluginAPI;
 
   constructor(errorHandler?: PluginErrorHandler) {
     this.errorHandler = errorHandler || new DefaultPluginErrorHandler();
@@ -56,7 +57,7 @@ export class PluginRegistry implements IPluginRegistry {
     this.config = config;
   }
 
-  setAPIFactory(factory: () => any): void {
+  setAPIFactory(factory: () => PluginAPI): void {
     this.apiFactory = factory;
   }
 
@@ -357,6 +358,3 @@ export class PluginRegistry implements IPluginRegistry {
     };
   }
 }
-
-// Default instance (singleton)
-const pluginRegistry = new PluginRegistry();

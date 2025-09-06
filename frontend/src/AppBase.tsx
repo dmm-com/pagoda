@@ -3,6 +3,7 @@ import { FC, ReactNode, useState, useEffect } from "react";
 import { ErrorHandler } from "ErrorHandler";
 import { CheckTerms } from "components/common/CheckTerms";
 import { PluginRegistry, PluginErrorBoundary, createPluginAPI } from "plugins";
+import { Plugin, PluginRoute } from "plugins/types";
 import { AppRouter } from "routes/AppRouter";
 import "i18n/config";
 
@@ -11,7 +12,7 @@ interface Props {
     path: string;
     element: ReactNode;
   }[];
-  plugins?: any[]; // External plugins to load
+  plugins?: Plugin[]; // External plugins to load
 }
 
 export const AppBase: FC<Props> = ({ customRoutes, plugins = [] }) => {
@@ -61,9 +62,12 @@ export const AppBase: FC<Props> = ({ customRoutes, plugins = [] }) => {
           pluginRouteData,
         );
 
-        const routes = pluginRouteData.map((route: any) => ({
+        const routes = pluginRouteData.map((route: PluginRoute) => ({
           path: route.path,
-          element: route.element,
+          element:
+            typeof route.element === "function"
+              ? route.element()
+              : route.element,
         }));
 
         console.log("[AppBase] 🛣️  Converted routes for React Router:", routes);
@@ -96,9 +100,10 @@ export const AppBase: FC<Props> = ({ customRoutes, plugins = [] }) => {
     "[AppBase] Plugin routes:",
     pluginRoutes.map((r) => ({
       path: r.path,
-      priority: (r as any).priority,
-      layout: (r as any).layout,
-      componentName: (r.element as any)?.name || "Unknown",
+      componentName:
+        (r.element as { displayName?: string; name?: string })?.displayName ||
+        (r.element as { displayName?: string; name?: string })?.name ||
+        "Unknown",
     })),
   );
 

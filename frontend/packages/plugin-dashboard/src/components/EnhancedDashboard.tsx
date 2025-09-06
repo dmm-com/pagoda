@@ -15,20 +15,27 @@ import {
   IconButton,
   Tooltip,
 } from "@mui/material";
-import {
-  Dashboard,
-  Speed,
-  Assessment,
-  Notifications,
-  Settings,
-  Refresh,
-  Timeline,
-  People,
-  Storage,
-} from "@mui/icons-material";
+import Dashboard from "@mui/icons-material/Dashboard";
+import Speed from "@mui/icons-material/Speed";
+import Assessment from "@mui/icons-material/Assessment";
+import Notifications from "@mui/icons-material/Notifications";
+import Settings from "@mui/icons-material/Settings";
+import Refresh from "@mui/icons-material/Refresh";
+import Timeline from "@mui/icons-material/Timeline";
+import People from "@mui/icons-material/People";
+import Storage from "@mui/icons-material/Storage";
+
+interface PluginAPI {
+  ui?: {
+    showNotification?: (message: string, type: string) => void;
+  };
+  routing?: {
+    navigate?: (path: string) => void;
+  };
+}
 
 interface EnhancedDashboardProps {
-  pluginAPI?: any; // Will be injected by the plugin system
+  pluginAPI?: PluginAPI; // Will be injected by the plugin system
 }
 
 const EnhancedDashboard: React.FC<EnhancedDashboardProps> = ({ pluginAPI }) => {
@@ -43,54 +50,54 @@ const EnhancedDashboard: React.FC<EnhancedDashboardProps> = ({ pluginAPI }) => {
   const recentActivities = [
     {
       user: "admin",
-      action: "エンティティ「ユーザー」を更新",
-      time: "5分前",
+      action: "Updated entity 'User'",
+      time: "5 minutes ago",
       type: "update",
     },
     {
       user: "user1",
-      action: "エントリー「テストデータ」を作成",
-      time: "12分前",
+      action: "Created entry 'Test Data'",
+      time: "12 minutes ago",
       type: "create",
     },
     {
       user: "user2",
-      action: "カテゴリ「プロジェクト」を編集",
-      time: "28分前",
+      action: "Edited category 'Project'",
+      time: "28 minutes ago",
       type: "edit",
     },
     {
       user: "admin",
-      action: "プラグイン「Dashboard」を有効化",
-      time: "1時間前",
+      action: "Enabled plugin 'Dashboard'",
+      time: "1 hour ago",
       type: "system",
     },
   ];
 
   const systemMetrics = [
     {
-      title: "アクティブエンティティ",
+      title: "Active Entities",
       value: stats.activeEntities,
       icon: <Dashboard />,
       trend: "+12%",
       color: "primary",
     },
     {
-      title: "ユーザーアクティビティ",
+      title: "User Activity",
       value: `${stats.userActivity}%`,
       icon: <People />,
       trend: "+5%",
       color: "success",
     },
     {
-      title: "システムパフォーマンス",
+      title: "System Performance",
       value: `${stats.systemPerformance}%`,
       icon: <Speed />,
       trend: "+2%",
       color: "info",
     },
     {
-      title: "データ処理",
+      title: "Data Processed",
       value: `${stats.dataProcessed}MB`,
       icon: <Storage />,
       trend: "+18%",
@@ -125,7 +132,7 @@ const EnhancedDashboard: React.FC<EnhancedDashboardProps> = ({ pluginAPI }) => {
     setLastRefresh(new Date());
 
     if (pluginAPI?.ui?.showNotification) {
-      pluginAPI.ui.showNotification("ダッシュボードを更新しました", "info");
+      pluginAPI.ui.showNotification("Dashboard refreshed", "info");
     }
 
     // Simulate API call
@@ -178,21 +185,21 @@ const EnhancedDashboard: React.FC<EnhancedDashboardProps> = ({ pluginAPI }) => {
           <Dashboard sx={{ fontSize: 32, color: "primary.main", mr: 2 }} />
           <Box>
             <Typography variant="h4" component="h1">
-              拡張ダッシュボード
+              Enhanced Dashboard
             </Typography>
             <Box sx={{ display: "flex", gap: 1, mt: 1 }}>
               <Chip label="Plugin Enhanced" size="small" color="secondary" />
-              <Chip label="リアルタイム更新" size="small" color="success" />
-              <Chip label="外部パッケージ" size="small" color="primary" />
+              <Chip label="Real-time Updates" size="small" color="success" />
+              <Chip label="External Package" size="small" color="primary" />
             </Box>
           </Box>
         </Box>
 
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
           <Typography variant="caption" color="text.secondary">
-            最終更新: {lastRefresh.toLocaleTimeString()}
+            Last Updated: {lastRefresh.toLocaleTimeString()}
           </Typography>
-          <Tooltip title="更新">
+          <Tooltip title="Refresh">
             <IconButton onClick={handleRefresh} size="small">
               <Refresh />
             </IconButton>
@@ -202,9 +209,9 @@ const EnhancedDashboard: React.FC<EnhancedDashboardProps> = ({ pluginAPI }) => {
 
       {/* Alert */}
       <Alert severity="info" sx={{ mb: 3 }}>
-        このダッシュボードは <strong>@airone/plugin-dashboard</strong>{" "}
-        パッケージによって
-        既存のダッシュボードルートをオーバーライドして拡張機能を提供しています。
+        This dashboard is provided by the{" "}
+        <strong>@airone/plugin-dashboard</strong> package, overriding the
+        existing dashboard route with enhanced features.
       </Alert>
 
       {/* System Metrics */}
@@ -235,7 +242,15 @@ const EnhancedDashboard: React.FC<EnhancedDashboardProps> = ({ pluginAPI }) => {
                       ? parseInt(metric.value.replace("%", ""))
                       : Math.min(100, (metric.value / 200) * 100)
                   }
-                  color={metric.color as any}
+                  color={
+                    metric.color as
+                      | "primary"
+                      | "secondary"
+                      | "success"
+                      | "error"
+                      | "info"
+                      | "warning"
+                  }
                   sx={{ height: 4, borderRadius: 2 }}
                 />
               </CardContent>
@@ -251,7 +266,7 @@ const EnhancedDashboard: React.FC<EnhancedDashboardProps> = ({ pluginAPI }) => {
             <CardContent>
               <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
                 <Timeline sx={{ mr: 1, color: "primary.main" }} />
-                <Typography variant="h6">最近のアクティビティ</Typography>
+                <Typography variant="h6">Recent Activities</Typography>
               </Box>
 
               {recentActivities.map((activity, index) => (
@@ -275,7 +290,7 @@ const EnhancedDashboard: React.FC<EnhancedDashboardProps> = ({ pluginAPI }) => {
                     </Avatar>
                     <Box sx={{ flexGrow: 1 }}>
                       <Typography variant="body2">
-                        <strong>{activity.user}</strong> が {activity.action}
+                        <strong>{activity.user}</strong> {activity.action}
                       </Typography>
                       <Typography variant="caption" color="text.secondary">
                         {activity.time}
@@ -284,7 +299,16 @@ const EnhancedDashboard: React.FC<EnhancedDashboardProps> = ({ pluginAPI }) => {
                     <Chip
                       label={activity.type}
                       size="small"
-                      color={getActivityColor(activity.type) as any}
+                      color={
+                        getActivityColor(activity.type) as
+                          | "default"
+                          | "primary"
+                          | "secondary"
+                          | "success"
+                          | "error"
+                          | "info"
+                          | "warning"
+                      }
                       variant="outlined"
                     />
                   </Box>
@@ -294,7 +318,7 @@ const EnhancedDashboard: React.FC<EnhancedDashboardProps> = ({ pluginAPI }) => {
             </CardContent>
             <CardActions>
               <Button size="small" startIcon={<Assessment />}>
-                すべて表示
+                View All
               </Button>
             </CardActions>
           </Card>
@@ -305,7 +329,7 @@ const EnhancedDashboard: React.FC<EnhancedDashboardProps> = ({ pluginAPI }) => {
           <Card>
             <CardContent>
               <Typography variant="h6" gutterBottom>
-                クイックアクション
+                Quick Actions
               </Typography>
               <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
                 <Button
@@ -315,13 +339,13 @@ const EnhancedDashboard: React.FC<EnhancedDashboardProps> = ({ pluginAPI }) => {
                   onClick={() => {
                     if (pluginAPI?.ui?.showNotification) {
                       pluginAPI.ui.showNotification(
-                        "通知設定を開きます",
+                        "Opening notification settings",
                         "info",
                       );
                     }
                   }}
                 >
-                  通知設定
+                  Notification Settings
                 </Button>
                 <Button
                   variant="outlined"
@@ -329,7 +353,7 @@ const EnhancedDashboard: React.FC<EnhancedDashboardProps> = ({ pluginAPI }) => {
                   fullWidth
                   onClick={handleNavigateToSettings}
                 >
-                  システム設定
+                  System Settings
                 </Button>
                 <Button
                   variant="contained"
@@ -338,13 +362,13 @@ const EnhancedDashboard: React.FC<EnhancedDashboardProps> = ({ pluginAPI }) => {
                   onClick={() => {
                     if (pluginAPI?.ui?.showNotification) {
                       pluginAPI.ui.showNotification(
-                        "レポート生成を開始しました",
+                        "Report generation started",
                         "success",
                       );
                     }
                   }}
                 >
-                  レポート生成
+                  Generate Report
                 </Button>
               </Box>
             </CardContent>
@@ -354,7 +378,7 @@ const EnhancedDashboard: React.FC<EnhancedDashboardProps> = ({ pluginAPI }) => {
           <Card sx={{ mt: 2 }}>
             <CardContent>
               <Typography variant="h6" gutterBottom>
-                プラグイン状態
+                Plugin Status
               </Typography>
               <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
                 <Box
@@ -365,7 +389,7 @@ const EnhancedDashboard: React.FC<EnhancedDashboardProps> = ({ pluginAPI }) => {
                   }}
                 >
                   <Typography variant="body2">Dashboard Plugin</Typography>
-                  <Chip label="アクティブ" size="small" color="success" />
+                  <Chip label="Active" size="small" color="success" />
                 </Box>
                 <Box
                   sx={{
@@ -374,8 +398,8 @@ const EnhancedDashboard: React.FC<EnhancedDashboardProps> = ({ pluginAPI }) => {
                     alignItems: "center",
                   }}
                 >
-                  <Typography variant="body2">ルートオーバーライド</Typography>
-                  <Chip label="有効" size="small" color="primary" />
+                  <Typography variant="body2">Route Override</Typography>
+                  <Chip label="Enabled" size="small" color="primary" />
                 </Box>
                 <Box
                   sx={{
@@ -384,8 +408,8 @@ const EnhancedDashboard: React.FC<EnhancedDashboardProps> = ({ pluginAPI }) => {
                     alignItems: "center",
                   }}
                 >
-                  <Typography variant="body2">リアルタイム更新</Typography>
-                  <Chip label="動作中" size="small" color="info" />
+                  <Typography variant="body2">Real-time Updates</Typography>
+                  <Chip label="Running" size="small" color="info" />
                 </Box>
               </Box>
             </CardContent>

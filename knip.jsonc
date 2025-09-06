@@ -1,7 +1,7 @@
 {
   "entry": ["frontend/src/App.tsx"],
   "project": ["**/*.{js,ts,jsx,tsx}"],
-  "ignore": ["docs/**/*.js", "static/**/*.js", "templates/**/*.js"],
+  "ignore": ["docs/**/*.js", "static/**/*.js", "templates/**/*.js", "frontend/packages/**/*"],
   "ignoreDependencies": [
     // CLI
     "webpack-bundle-analyzer"

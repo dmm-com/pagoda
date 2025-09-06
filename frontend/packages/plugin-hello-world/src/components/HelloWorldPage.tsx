@@ -10,15 +10,22 @@ import {
   Alert,
   Divider,
 } from "@mui/material";
-import {
-  EmojiEmotions,
-  Celebration,
-  Settings,
-  Info,
-} from "@mui/icons-material";
+import EmojiEmotions from "@mui/icons-material/EmojiEmotions";
+import Celebration from "@mui/icons-material/Celebration";
+import Settings from "@mui/icons-material/Settings";
+import Info from "@mui/icons-material/Info";
+
+interface PluginAPI {
+  ui?: {
+    showNotification?: (message: string, type: string) => void;
+  };
+  routing?: {
+    navigate?: (path: string) => void;
+  };
+}
 
 interface HelloWorldPageProps {
-  pluginAPI?: any; // Will be injected by the plugin system
+  pluginAPI?: PluginAPI; // Will be injected by the plugin system
 }
 
 const HelloWorldPage: React.FC<HelloWorldPageProps> = ({ pluginAPI }) => {
@@ -30,7 +37,7 @@ const HelloWorldPage: React.FC<HelloWorldPageProps> = ({ pluginAPI }) => {
     // Use plugin API if available
     if (pluginAPI?.ui?.showNotification) {
       pluginAPI.ui.showNotification(
-        `Hello World プラグインのボタンが ${clickCount + 1} 回クリックされました！`,
+        `Hello World plugin button clicked ${clickCount + 1} times!`,
         "success",
       );
     } else {
@@ -47,7 +54,7 @@ const HelloWorldPage: React.FC<HelloWorldPageProps> = ({ pluginAPI }) => {
   };
 
   const handleShowMessage = () => {
-    alert("プラグインからのメッセージ：Hello World! 🎉");
+    alert("Message from plugin: Hello World! 🎉");
   };
 
   return (
@@ -65,42 +72,39 @@ const HelloWorldPage: React.FC<HelloWorldPageProps> = ({ pluginAPI }) => {
               </Typography>
               <Box sx={{ display: "flex", gap: 1, mt: 1 }}>
                 <Chip label="v1.0.0" size="small" color="primary" />
-                <Chip
-                  label="サンプルプラグイン"
-                  size="small"
-                  color="secondary"
-                />
-                <Chip label="外部パッケージ" size="small" color="success" />
+                <Chip label="Sample Plugin" size="small" color="secondary" />
+                <Chip label="External Package" size="small" color="success" />
               </Box>
             </Box>
           </Box>
 
           <Alert severity="info" sx={{ mb: 3 }}>
             <Typography variant="body2">
-              これは <strong>@airone/plugin-hello-world</strong>{" "}
-              パッケージとして実装された 外部npmモジュール対応プラグインです。
+              This is an external npm module compatible plugin implemented as
+              the <strong>@airone/plugin-hello-world</strong> package.
             </Typography>
           </Alert>
 
           {/* Description */}
           <Typography variant="body1" paragraph>
-            このプラグインはAironeプラグインシステムのサンプル実装です。
-            外部npmパッケージとして配布可能で、以下の機能を提供します：
+            This plugin is a sample implementation of the Airone plugin system.
+            It can be distributed as an external npm package and provides the
+            following features:
           </Typography>
 
           <Box component="ul" sx={{ mb: 3, pl: 3 }}>
-            <li>独立したnpmパッケージとしての配布</li>
-            <li>カスタムルートの追加（/hello-world）</li>
-            <li>プラグインAPIを使用した通知機能</li>
-            <li>Material-UIテーマとの統合</li>
-            <li>エラーハンドリングとフォールバック</li>
+            <li>Distribution as an independent npm package</li>
+            <li>Adding custom routes (/hello-world)</li>
+            <li>Notification functionality using the plugin API</li>
+            <li>Integration with Material-UI theme</li>
+            <li>Error handling and fallback</li>
           </Box>
 
           <Divider sx={{ my: 3 }} />
 
           {/* Interactive Demo */}
           <Typography variant="h6" gutterBottom>
-            インタラクティブデモ
+            Interactive Demo
           </Typography>
 
           <Grid container spacing={2} sx={{ mb: 3 }}>
@@ -111,7 +115,7 @@ const HelloWorldPage: React.FC<HelloWorldPageProps> = ({ pluginAPI }) => {
                 startIcon={<Celebration />}
                 onClick={handleSampleAction}
               >
-                通知テスト ({clickCount})
+                Notification Test ({clickCount})
               </Button>
             </Grid>
 
@@ -122,7 +126,7 @@ const HelloWorldPage: React.FC<HelloWorldPageProps> = ({ pluginAPI }) => {
                 startIcon={<Info />}
                 onClick={handleShowMessage}
               >
-                メッセージ表示
+                Show Message
               </Button>
             </Grid>
 
@@ -133,7 +137,7 @@ const HelloWorldPage: React.FC<HelloWorldPageProps> = ({ pluginAPI }) => {
                 startIcon={<Settings />}
                 onClick={handleNavigateExample}
               >
-                ホームに移動
+                Go to Home
               </Button>
             </Grid>
           </Grid>
@@ -143,20 +147,20 @@ const HelloWorldPage: React.FC<HelloWorldPageProps> = ({ pluginAPI }) => {
             sx={{ mt: 4, p: 2, backgroundColor: "grey.100", borderRadius: 1 }}
           >
             <Typography variant="subtitle2" gutterBottom>
-              プラグイン情報:
+              Plugin Information:
             </Typography>
             <Typography
               variant="body2"
               component="pre"
               sx={{ fontFamily: "monospace", fontSize: "0.8rem" }}
             >
-              {`パッケージ名: @airone/plugin-hello-world
+              {`Package Name: @airone/plugin-hello-world
 ID: hello-world-plugin
-名前: Hello World Plugin
-バージョン: 1.0.0
-説明: プラグインシステムのデモ用サンプル
-配布方法: 外部npmパッケージ
-依存関係: @airone/core ^1.0.0`}
+Name: Hello World Plugin
+Version: 1.0.0
+Description: Sample plugin for demonstration
+Distribution: External npm package
+Dependencies: @airone/core ^1.0.0`}
             </Typography>
           </Box>
 
@@ -170,12 +174,12 @@ ID: hello-world-plugin
             }}
           >
             <Typography variant="subtitle2" gutterBottom>
-              プラグインAPI ステータス:
+              Plugin API Status:
             </Typography>
             <Typography variant="body2">
               {pluginAPI
-                ? "✅ プラグインAPIが利用可能です - 通知やナビゲーション機能が使用できます"
-                : "⚠️ プラグインAPIが利用できません - 基本機能のみ動作します"}
+                ? "✅ Plugin API is available - Notification and navigation features can be used"
+                : "⚠️ Plugin API is not available - Only basic features will work"}
             </Typography>
           </Box>
         </CardContent>

@@ -14,23 +14,13 @@ module.exports = {
     modules: [
       path.resolve('frontend/src'), 
       'node_modules'
-    ],
-    symlinks: true,
-    alias: {
-      'pagoda-plugin-hello-world': path.resolve(__dirname, 'node_modules/pagoda-plugin-hello-world'),
-      'pagoda-plugin-dashboard': path.resolve(__dirname, 'node_modules/pagoda-plugin-dashboard'),
-      'react': path.resolve(__dirname, 'node_modules/react'),
-      'react-dom': path.resolve(__dirname, 'node_modules/react-dom'),
-    }
+    ]
   },
   module: {
     rules: [
       {
         test: /\.tsx?$/,
         exclude: /node_modules/,
-        include: [
-          path.resolve('frontend/src')
-        ],
         loader: 'ts-loader',
         options: {
           transpileOnly: true,
@@ -47,9 +37,6 @@ module.exports = {
       {
         test: /\.js$/,
         exclude: /node_modules/,
-        include: [
-          path.resolve('frontend/src')
-        ],
         use: {
           loader: 'babel-loader',
           options: {
@@ -67,8 +54,5 @@ module.exports = {
     ]
   },
   ignoreWarnings: [/Failed to parse source map/],
-  plugins: [
-    // Temporarily disabled to check if JS bundling works
-    // new ForkTsCheckerWebpackPlugin()
-  ]
+  plugins: [new ForkTsCheckerWebpackPlugin()]
 };

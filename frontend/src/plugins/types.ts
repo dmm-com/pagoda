@@ -23,7 +23,7 @@ export interface Plugin {
   components?: PluginComponent[];
 
   // Configuration
-  config?: Record<string, any>;
+  config?: Record<string, unknown>;
   priority?: number; // For route priority control (smaller values = higher priority)
 }
 
@@ -60,7 +60,7 @@ export interface PluginComponent {
 export interface ComponentTrigger {
   type: "button" | "menu" | "hook" | "event";
   target?: string; // 配置対象の識別子
-  condition?: (context: any) => boolean;
+  condition?: (context: unknown) => boolean;
 }
 
 export interface ComponentPosition {
@@ -86,13 +86,49 @@ export interface PluginAPI {
   config: PluginConfigAPI;
 }
 
+// Temporary type definitions for services
+export interface APIClient {
+  get: (url: string, config?: unknown) => Promise<unknown>;
+  post: (url: string, data?: unknown, config?: unknown) => Promise<unknown>;
+  put: (url: string, data?: unknown, config?: unknown) => Promise<unknown>;
+  delete: (url: string, config?: unknown) => Promise<unknown>;
+}
+
+export interface Router {
+  navigate: (path: string, options?: NavigateOptions) => void;
+  location?: {
+    pathname: string;
+    search: string;
+    hash: string;
+    state: unknown;
+    key?: string;
+  };
+}
+
+export interface Theme {
+  palette: unknown;
+  spacing: (value: number) => string;
+}
+
+export interface I18n {
+  t: (key: string, options?: unknown) => string;
+  changeLanguage: (lng: string) => Promise<void>;
+}
+
+export interface NotificationService {
+  success: (message: string) => void;
+  error: (message: string) => void;
+  warning: (message: string) => void;
+  info: (message: string) => void;
+}
+
 export interface PluginServices {
   // Access to API client, router, theme, i18n, notification services
-  apiClient: any; // Actual types will be specified later
-  router: any;
-  theme: any;
-  i18n: any;
-  notification: any;
+  apiClient: APIClient;
+  router: Router;
+  theme: Theme;
+  i18n: I18n;
+  notification: NotificationService;
 }
 
 export interface PluginUIAPI {
@@ -118,15 +154,15 @@ export interface PluginRoutingAPI {
 }
 
 export interface PluginDataAPI {
-  get(endpoint: string, params?: any): Promise<any>;
-  post(endpoint: string, data?: any): Promise<any>;
-  put(endpoint: string, data?: any): Promise<any>;
-  delete(endpoint: string): Promise<any>;
+  get<T = unknown>(endpoint: string, params?: unknown): Promise<T>;
+  post<T = unknown>(endpoint: string, data?: unknown): Promise<T>;
+  put<T = unknown>(endpoint: string, data?: unknown): Promise<T>;
+  delete<T = unknown>(endpoint: string): Promise<T>;
 }
 
 export interface PluginConfigAPI {
-  get(key: string): any;
-  set(key: string, value: any): void;
+  get<T = unknown>(key: string): T;
+  set(key: string, value: unknown): void;
 }
 
 // Plugin registry interface
@@ -162,7 +198,7 @@ export interface PluginConfig {
     [pluginId: string]: {
       enabled: boolean;
       version?: string;
-      config?: Record<string, any>;
+      config?: Record<string, unknown>;
       priority?: number;
     };
   };
@@ -180,13 +216,13 @@ export interface PluginError {
   type: "load" | "init" | "runtime" | "dependency" | "permission";
   message: string;
   error?: Error;
-  context?: any;
+  context?: unknown;
 }
 
 export interface PluginErrorHandler {
   onLoadError(plugin: Plugin, error: Error): void;
   onInitError(plugin: Plugin, error: Error): void;
-  onRuntimeError(plugin: Plugin, error: Error, context: any): void;
+  onRuntimeError(plugin: Plugin, error: Error, context: unknown): void;
   onDependencyError(plugin: Plugin, missingDeps: string[]): void;
   onPermissionError(plugin: Plugin, action: string): void;
 }
@@ -215,8 +251,8 @@ export interface PluginDefinition {
   activate?: () => Promise<void> | void;
   deactivate?: () => Promise<void> | void;
   routes?: PluginRoute[];
-  config?: Record<string, any>;
+  config?: Record<string, unknown>;
 }
 
 // Plugin factory function type
-export type PluginFactory = (config?: any) => Plugin;
+export type PluginFactory = (config?: unknown) => Plugin;
