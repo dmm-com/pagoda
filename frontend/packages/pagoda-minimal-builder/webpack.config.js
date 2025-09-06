@@ -1,6 +1,25 @@
-const path = require("path");
+import path from "path";
+import { fileURLToPath } from "url";
+import pluginsConfig from "./plugins.config.js";
 
-module.exports = {
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+// Dynamically generate webpack aliases from plugin configuration
+const generatePluginAliases = () => {
+  const aliases = {
+    react: path.resolve(__dirname, "node_modules/react"),
+    "react-dom": path.resolve(__dirname, "node_modules/react-dom"),
+  };
+
+  // Add alias for each configured plugin
+  pluginsConfig.plugins.forEach((pluginName) => {
+    aliases[pluginName] = path.resolve(__dirname, "node_modules", pluginName);
+  });
+
+  return aliases;
+};
+
+export default {
   entry: "./src/App.tsx",
   output: {
     path: path.resolve(__dirname, "dist"),
@@ -23,12 +42,7 @@ module.exports = {
     extensions: [".webpack.js", ".web.js", ".ts", ".tsx", ".js"],
     modules: [path.resolve(__dirname, "src"), "node_modules"],
     symlinks: true,
-    alias: {
-      'pagoda-plugin-hello-world': path.resolve(__dirname, 'node_modules/pagoda-plugin-hello-world'),
-      'pagoda-plugin-dashboard': path.resolve(__dirname, 'node_modules/pagoda-plugin-dashboard'),
-      'react': path.resolve(__dirname, 'node_modules/react'),
-      'react-dom': path.resolve(__dirname, 'node_modules/react-dom'),
-    },
+    alias: generatePluginAliases(),
   },
   devServer: {
     static: {

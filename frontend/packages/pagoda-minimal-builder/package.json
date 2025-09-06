@@ -4,8 +4,11 @@
   "description": "Minimal builder for Pagoda core + plugins integration",
   "main": "src/App.tsx",
   "scripts": {
+    "prebuild": "node scripts/generate-plugin-imports.js",
     "build": "webpack --mode production",
+    "prebuild:dev": "node scripts/generate-plugin-imports.js",
     "build:dev": "webpack --mode development",
+    "prestart": "node scripts/generate-plugin-imports.js",
     "start": "webpack serve --mode development"
   },
   "keywords": [
@@ -16,15 +19,14 @@
   ],
   "author": "Pagoda Team",
   "license": "MIT",
+  "type": "module",
   "dependencies": {
     "@dmm-com/pagoda-core": "file:../../..",
     "pagoda-plugin-hello-world": "file:../../../../pagoda-plugin-hello-world",
     "pagoda-plugin-dashboard": "file:../../../../pagoda-plugin-dashboard",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
-    "@emotion/styled": "^11.11.0",
-    "@mui/material": "^6.4.6",
-    "notistack": "^3.0.1"
+    "@mui/material": "^6.4.6"
   },
   "devDependencies": {
     "webpack": "^5.98.0",

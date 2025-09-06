@@ -2,6 +2,8 @@
 
 This is a minimal builder example that demonstrates how to integrate Pagoda Core with external plugins to create a standalone UI application.
 
+> **Important**: This is the **officially recommended plugin integration method**. Pagoda Core itself does not include any plugins.
+
 ## Features
 
 - **Standalone Integration**: Uses `@dmm-com/pagoda-core` as an external npm package
@@ -56,15 +58,53 @@ npm run start
    - `pagoda-plugin-hello-world`: Sample hello world plugin
    - `pagoda-plugin-dashboard`: Sample dashboard plugin
 
-2. **Direct Plugin Imports**: Plugins are imported directly in `src/App.tsx`:
-   ```typescript
-   import helloWorldPlugin from "pagoda-plugin-hello-world";
-   import dashboardPlugin from "pagoda-plugin-dashboard";
-   
-   const plugins = [helloWorldPlugin, dashboardPlugin].filter(Boolean);
+2. **Configurable Plugin System**: Plugins are configured in `plugins.config.js`
+   ```javascript
+   // plugins.config.js
+   module.exports = {
+     plugins: [
+       'pagoda-plugin-hello-world',
+       'pagoda-plugin-dashboard',
+       'pagoda-plugin-custom-example',  // Add third-party plugin
+     ]
+   };
    ```
 
-3. **Bundle Generation**: Webpack creates a single `ui.js` file containing everything needed
+3. **Automatic Import Generation**: Import statements are automatically generated at build time
+   - `scripts/generate-plugin-imports.js` runs when `npm run build` is executed
+   - `src/generatedPlugins.ts` is auto-generated
+   - Add or remove plugins without editing source code
+
+4. **Bundle Generation**: Webpack creates a single `ui.js` file containing everything needed
+
+## Adding Third-Party Plugins
+
+Steps to add a new plugin:
+
+1. **Install the plugin**
+   ```bash
+   npm install your-plugin-name
+   # Or for local development
+   npm link your-plugin-name
+   ```
+
+2. **Edit `plugins.config.js`**
+   ```javascript
+   module.exports = {
+     plugins: [
+       'pagoda-plugin-hello-world',
+       'pagoda-plugin-dashboard',
+       'your-plugin-name',  // ← Add here
+     ]
+   };
+   ```
+
+3. **Build**
+   ```bash
+   npm run build
+   ```
+
+**No source code editing required!** Simply modify the configuration file to add plugins.
 
 ## Replicating in External Repositories
 
@@ -72,7 +112,7 @@ To use this pattern in your own repository:
 
 1. Copy this directory structure
 2. Update `package.json` dependencies to point to published npm packages
-3. Customize `src/App.tsx` as needed
+3. Edit `plugins.config.js` to include your desired plugins
 4. Run `npm install && npm run build`
 
 The result is a completely standalone `ui.js` that can be deployed anywhere.

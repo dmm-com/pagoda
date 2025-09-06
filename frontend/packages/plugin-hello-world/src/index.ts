@@ -108,7 +108,7 @@ export const metadata = {
 export { default as HelloWorldPage } from "./components/HelloWorldPage";
 
 // Plugin factory function for custom configurations
-export function createHelloWorldPlugin(customConfig?: Record<string, any>) {
+export function createHelloWorldPlugin(customConfig?: Record<string, unknown>) {
   return createPlugin({
     ...helloWorldPlugin,
     config: {

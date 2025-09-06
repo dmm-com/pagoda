@@ -16,6 +16,6 @@
     "emitDeclarationOnly": true,
     "isolatedModules": true
   },
-  "include": ["frontend/src/plugins/**/*"],
+  "include": ["frontend/src/**/*"],
   "exclude": ["node_modules", "**/*.test.ts", "**/*.test.tsx", "frontend/src/**/*.js"]
 } 

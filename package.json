@@ -23,9 +23,6 @@
     "build:development:analyze": "webpack build --entry ./frontend/src/App.tsx --mode development --analyze",
     "build:production": "webpack build --entry ./frontend/src/App.tsx --mode production",
     "build:production:analyze": "webpack build --entry ./frontend/src/App.tsx --mode production --analyze",
-    "build:with-plugins": "npm run build:with-plugins:development",
-    "build:with-plugins:development": "webpack build --entry ./frontend/src/AppWithPlugins.tsx --mode development",
-    "build:with-plugins:production": "webpack build --entry ./frontend/src/AppWithPlugins.tsx --mode production",
     "build:custom": "npm run build:custom_development",
     "build:custom_development": "webpack build --entry ./frontend/src/customview/CustomApp.tsx --mode development",
     "build:custom_production": "webpack build --entry ./frontend/src/customview/CustomApp.tsx --mode production",
@@ -115,9 +112,7 @@
     "webpack": "^5.98.0",
     "webpack-bundle-analyzer": "^4.10.2",
     "webpack-cli": "^4.10.0",
-    "zod": "^3.24.2",
-    "pagoda-plugin-hello-world": "file:../pagoda-plugin-hello-world",
-    "pagoda-plugin-dashboard": "file:../pagoda-plugin-dashboard"
+    "zod": "^3.24.2"
   },
   "peerDependencies": {
     "@emotion/styled": "^11.0.0",

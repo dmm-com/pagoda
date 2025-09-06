@@ -5,10 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Pagoda Minimal Builder Test</title>
     <style>
-      body { font-family: Arial, sans-serif; margin: 20px; }
-      #app { 
-        border: 2px solid #007acc; 
-        padding: 20px; 
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+      }
+      #app {
+        border: 2px solid #007acc;
+        padding: 20px;
         margin: 20px 0;
         min-height: 200px;
       }
@@ -25,36 +28,41 @@
     <h1>🚀 Pagoda Minimal Builder Test</h1>
     <div class="status">
       <p><strong>Status:</strong> Loading...</p>
-      <p><strong>Expected:</strong> コア機能 + 外部プラグイン (pagoda-plugin-hello-world, pagoda-plugin-dashboard) が読み込まれる</p>
+      <p>
+        <strong>Expected:</strong> Core functionality + external plugins
+        (pagoda-plugin-hello-world, pagoda-plugin-dashboard) will be loaded
+      </p>
     </div>
 
     <div id="app">
-      <div style="text-align: center; color: #666; padding: 50px;">
-        🔄 アプリケーションを初期化中...
+      <div style="text-align: center; color: #666; padding: 50px">
+        🔄 Initializing application...
       </div>
     </div>
 
     <div class="status">
-      <p><strong>ブラウザのコンソールを確認してください:</strong></p>
+      <p><strong>Check browser console:</strong></p>
       <ul>
-        <li>📦 [Pagoda Minimal Builder] Loading - WITH DIRECT PLUGIN IMPORTS</li>
+        <li>
+          📦 [Pagoda Minimal Builder] Loading - WITH DIRECT PLUGIN IMPORTS
+        </li>
         <li>[Pagoda Minimal Builder] Loaded 2 plugins: ...</li>
-        <li>プラグインが正常に動作し、React エラーが発生しないこと</li>
+        <li>Plugins should work correctly without React errors</li>
       </ul>
     </div>
 
     <script>
-      console.log('🔧 Test HTML loaded, ui.js will execute next...');
-      
+      console.log("🔧 Test HTML loaded, ui.js will execute next...");
+
       // Monitor for successful plugin loading
       const originalConsoleLog = console.log;
-      console.log = function(...args) {
+      console.log = function (...args) {
         originalConsoleLog.apply(console, arguments);
-        
-        const message = args.join(' ');
-        if (message.includes('Loaded') && message.includes('plugins')) {
-          document.querySelector('.status p').innerHTML = 
-            '<strong>Status:</strong> ✅ プラグイン読み込み成功！';
+
+        const message = args.join(" ");
+        if (message.includes("Loaded") && message.includes("plugins")) {
+          document.querySelector(".status p").innerHTML =
+            "<strong>Status:</strong> ✅ Plugins loaded successfully!";
         }
       };
     </script>

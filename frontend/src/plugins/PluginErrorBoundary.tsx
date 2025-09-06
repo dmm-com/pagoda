@@ -1,8 +1,9 @@
-import { ExpandLess, ExpandMore } from "@mui/icons-material";
+import ExpandLess from "@mui/icons-material/ExpandLess";
+import ExpandMore from "@mui/icons-material/ExpandMore";
 import { Alert, Box, Button, Collapse, Paper, Typography } from "@mui/material";
 import React, { Component, ErrorInfo, ReactNode } from "react";
 
-import { Plugin, PluginError, PluginErrorHandler } from "./types";
+import { Plugin, PluginErrorHandler } from "./types";
 
 interface Props {
   children: ReactNode;
@@ -49,14 +50,6 @@ export class PluginErrorBoundary extends Component<Props, State> {
 
     // Notify plugin error handler
     if (this.props.onError && this.props.plugin) {
-      const pluginError: PluginError = {
-        pluginId: this.props.plugin.id,
-        type: "runtime",
-        message: error.message,
-        error,
-        context: errorInfo,
-      };
-
       this.props.onError.onRuntimeError(this.props.plugin, error, errorInfo);
     }
 
@@ -104,7 +97,7 @@ export class PluginErrorBoundary extends Component<Props, State> {
               プラグインエラー
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              プラグイン "{pluginName}" (ID: {pluginId}, Version:{" "}
+              プラグイン &quot;{pluginName}&quot; (ID: {pluginId}, Version:{" "}
               {pluginVersion}) でエラーが発生しました。
               メインアプリケーションは正常に動作を続行します。
             </Typography>
@@ -197,12 +190,9 @@ interface PluginRouteErrorBoundaryProps {
   onError?: PluginErrorHandler;
 }
 
-const PluginRouteErrorBoundary: React.FC<PluginRouteErrorBoundaryProps> = ({
-  children,
-  plugin,
-  routePath,
-  onError,
-}) => {
+const PluginRouteErrorBoundary: React.FC<
+  PluginRouteErrorBoundaryProps
+> = ({ children, plugin, routePath, onError }) => {
   const fallback = (
     <Box sx={{ p: 4, textAlign: "center" }}>
       <Alert severity="error" sx={{ mb: 2, maxWidth: 600, mx: "auto" }}>
@@ -210,8 +200,8 @@ const PluginRouteErrorBoundary: React.FC<PluginRouteErrorBoundaryProps> = ({
           ページの読み込みに失敗しました
         </Typography>
         <Typography variant="body2">
-          プラグイン "{plugin?.name || "Unknown"}" のルート "{routePath}"
-          で問題が発生しました。
+          プラグイン &quot;{plugin?.name || "Unknown"}&quot; のルート &quot;
+          {routePath}&quot; で問題が発生しました。
           <br />
           プラグインID: {plugin?.id || "unknown"}
           <br />

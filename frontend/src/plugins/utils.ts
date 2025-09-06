@@ -1,6 +1,14 @@
 import { ReactNode } from "react";
 
-import { Plugin, PluginRoute, PluginAPI, PluginDefinition } from "./types";
+import {
+  Plugin,
+  PluginRoute,
+  PluginAPI,
+  PluginDefinition,
+  PluginComponent,
+  ComponentTrigger,
+  ComponentPosition,
+} from "./types";
 
 /**
  * Helper function for creating plugins
@@ -36,12 +44,10 @@ export function createPluginRoute(config: {
 export function createPluginComponent(config: {
   id: string;
   component: ReactNode | (() => ReactNode);
-  position?: string;
-  priority?: number;
-}): any {
+  trigger: ComponentTrigger;
+  position?: ComponentPosition;
+}): PluginComponent {
   return {
-    priority: 1000,
-    position: "default",
     ...config,
   };
 }

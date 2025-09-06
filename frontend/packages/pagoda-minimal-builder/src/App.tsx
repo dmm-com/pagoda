@@ -7,17 +7,16 @@ import { SnackbarProvider } from "notistack";
 import { AppBase } from "@dmm-com/pagoda-core";
 import { theme } from "@dmm-com/pagoda-core";
 
-// Import plugins directly
-import helloWorldPlugin from "pagoda-plugin-hello-world";
-import dashboardPlugin from "pagoda-plugin-dashboard";
+// Import generated plugin list
+import { configuredPlugins } from "./generatedPlugins";
 
-console.log("📦 [Pagoda Minimal Builder] Loading - WITH DIRECT PLUGIN IMPORTS");
+console.log("📦 [Pagoda Minimal Builder] Loading - WITH CONFIGURABLE PLUGINS");
 
-// Initialize with direct plugin imports
+// Initialize with configurable plugins
 const initializeApp = async () => {
   try {
-    // Use directly imported plugins
-    const plugins = [helloWorldPlugin, dashboardPlugin].filter(Boolean);
+    // Use plugins from generated imports
+    const plugins = configuredPlugins;
     console.log(
       `[Pagoda Minimal Builder] Loaded ${plugins.length} plugins:`,
       plugins.map((p) => ({ id: p.id, name: p.name })),
