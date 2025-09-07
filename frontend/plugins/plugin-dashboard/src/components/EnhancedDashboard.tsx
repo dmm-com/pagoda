@@ -150,8 +150,6 @@ const EnhancedDashboard: React.FC<EnhancedDashboardProps> = ({ pluginAPI }) => {
   const handleNavigateToSettings = () => {
     if (pluginAPI?.routing?.navigate) {
       pluginAPI.routing.navigate("/settings");
-    } else {
-      console.log("Navigate to settings requested");
     }
   };
 

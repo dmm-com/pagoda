@@ -554,7 +554,7 @@ const plugin: Plugin = {
 
 ### From Local Plugins
 
-If migrating from local plugins (frontend/packages):
+If migrating from local plugins (frontend/plugins):
 
 1. Create new npm package structure
 2. Move components to new project

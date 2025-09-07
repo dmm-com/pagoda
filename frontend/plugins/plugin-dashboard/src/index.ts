@@ -19,8 +19,6 @@ const dashboardPlugin = createPlugin({
   ],
 
   initialize: async (api) => {
-    console.log("[Enhanced Dashboard Plugin] Initializing...", api);
-
     // Temporarily disable UI notifications to fix API error
     // if (api.ui?.showNotification) {
     //   api.ui.showNotification('Enhanced Dashboard Plugin initialized', 'success');
@@ -31,30 +29,22 @@ const dashboardPlugin = createPlugin({
       await api.config.set("dashboard-plugin.initialized", true);
       await api.config.set("dashboard-plugin.version", "1.0.0");
     }
-
-    console.log("[Enhanced Dashboard Plugin] Initialized successfully");
   },
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   activate: async (api) => {
-    console.log("[Enhanced Dashboard Plugin] Activating...", api);
-
     // Temporarily disable UI notifications to fix API error
     // if (api.ui?.showNotification) {
     //   api.ui.showNotification('Enhanced Dashboard Plugin has been activated', 'info');
     // }
-
-    console.log("[Enhanced Dashboard Plugin] Activated successfully");
   },
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   deactivate: async (api) => {
-    console.log("[Enhanced Dashboard Plugin] Deactivating...", api);
-
     // Temporarily disable UI notifications to fix API error
     // if (api.ui?.showNotification) {
     //   api.ui.showNotification('Enhanced Dashboard Plugin has been deactivated', 'warning');
     // }
-
-    console.log("[Enhanced Dashboard Plugin] Deactivated successfully");
   },
 
   priority: 100, // High priority plugin

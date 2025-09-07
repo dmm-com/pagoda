@@ -36,8 +36,6 @@ ${imports.join("\n")}
 export const configuredPlugins = [
   ${pluginVariables.join(",\n  ")}
 ].filter(Boolean);
-
-console.log('[Generated Plugin Imports] Configured plugins:', configuredPlugins.map(p => p.id));
 `;
 };
 
@@ -46,5 +44,3 @@ const outputPath = path.join(__dirname, "..", "src", "generatedPlugins.ts");
 const content = generateContent();
 
 fs.writeFileSync(outputPath, content, "utf-8");
-console.log(`✅ Generated plugin imports at: ${outputPath}`);
-console.log(`   Included plugins: ${pluginsConfig.plugins.join(", ")}`);

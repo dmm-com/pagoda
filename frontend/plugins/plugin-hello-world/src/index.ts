@@ -8,8 +8,6 @@ import HelloWorldPage from "./components/HelloWorldPage";
 
 // Plugin initialization function
 const initializePlugin = async (api: PluginAPI) => {
-  console.log("[Hello World Plugin] Initializing...");
-
   // Save plugin configuration
   api.config.set("lastInitialized", new Date().toISOString());
   api.config.set("features", [
@@ -26,20 +24,18 @@ const initializePlugin = async (api: PluginAPI) => {
       "success",
     );
   } catch (error) {
-    console.log("[Hello World Plugin] Notification not available:", error);
+    // Notification not available
   }
-
-  console.log("[Hello World Plugin] Initialized successfully");
 };
 
 // Plugin activation function
 const activatePlugin = async () => {
-  console.log("[Hello World Plugin] Activated");
+  // Plugin activated
 };
 
 // Plugin deactivation function
 const deactivatePlugin = async () => {
-  console.log("[Hello World Plugin] Deactivated");
+  // Plugin deactivated
 };
 
 // Create the Hello World plugin

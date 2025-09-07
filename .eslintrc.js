@@ -3,7 +3,7 @@ const path = require('path');
 module.exports = {
   ignorePatterns: [
     'frontend/dist/',
-    'frontend/packages/*/dist/',
+    'frontend/plugins/*/dist/',
     '**/node_modules/',
     '**/*.min.js',
     'static/js/',

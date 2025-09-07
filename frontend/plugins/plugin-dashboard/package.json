@@ -42,7 +42,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/dmm-com/airone.git",
-    "directory": "frontend/packages/plugin-dashboard"
+    "directory": "frontend/plugins/plugin-dashboard"
   },
   "engines": {
     "node": ">=16.0.0",

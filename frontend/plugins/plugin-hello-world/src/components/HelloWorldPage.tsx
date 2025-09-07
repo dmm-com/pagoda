@@ -40,8 +40,6 @@ const HelloWorldPage: React.FC<HelloWorldPageProps> = ({ pluginAPI }) => {
         `Hello World plugin button clicked ${clickCount + 1} times!`,
         "success",
       );
-    } else {
-      console.log("Hello World Plugin: Button clicked!", clickCount + 1);
     }
   };
 
