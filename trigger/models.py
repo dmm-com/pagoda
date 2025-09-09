@@ -29,16 +29,19 @@ class InputTriggerCondition(object):
         # initialize each condition parameters
         self.initialize_condition()
 
+        self.is_unmatch = input.get("is_unmatch", False)
+
         # set each condition parameters by specified condition value
         self.parse_input_condition(input.get("cond"), input.get("hint"))
 
     def __repr__(self):
-        return "(attr:%s[%s]) str_cond:%s, ref_cond:%s, bool_cond:%s" % (
+        return "(attr:%s[%s]) str_cond:%s, ref_cond:%s, bool_cond:%s is_unmatch:%s" % (
             self.attr.name,
             self.attr.id,
             str(self.str_cond),
             str(self.ref_cond),
             str(self.bool_cond),
+            self.is_unmatch,
         )
 
     def initialize_condition(self):

@@ -892,7 +892,7 @@ class ModelTest(AironeTestCase):
                 ("named_action", item_reserved, True),
             ]
         ]
-        parent_condition = TriggerCondition.register(
+        TriggerCondition.register(
             self.entity,
             [
                 {"attr_id": model_attrid, "cond": cond_value, "is_unmatch": is_unmatch}
@@ -902,9 +902,10 @@ class ModelTest(AironeTestCase):
         )
 
         # create an Entry with attribute values to check action processing
-        target_entry = self.add_entry(self.user, "test entry", self.entity)
+        self.add_entry(self.user, "test entry", self.entity)
 
-        # It won't return invoking action, because named_actions's value is not matched with its condition
+        # It won't return invoking action, because named_actions's value is
+        # not matched with its condition
         actions = TriggerCondition.get_invoked_actions(
             self.entity, [{"id": conditions[0][0], "value": True}]
         )
@@ -912,18 +913,21 @@ class ModelTest(AironeTestCase):
 
         # It won't return invoking action, because it's necessary to match with all conditions
         actions = TriggerCondition.get_invoked_actions(
-            self.entity, [
+            self.entity,
+            [
                 {"id": conditions[0][0], "value": False},
-                {"id": conditions[1][0], "value": item_reserved}
-            ]
+                {"id": conditions[1][0], "value": item_reserved},
+            ],
         )
         self.assertEqual(len(actions), 0)
 
-        # It will return invoking action, because all expected attribute values are matched with conditions
+        # It will return invoking action, because all expected attribute values are
+        # matched with conditions
         actions = TriggerCondition.get_invoked_actions(
-            self.entity, [
+            self.entity,
+            [
                 {"id": conditions[0][0], "value": True},
-                {"id": conditions[1][0], "value": item_reserved}
-            ]
+                {"id": conditions[1][0], "value": item_reserved},
+            ],
         )
         self.assertEqual(len(actions), 1)
