@@ -2,11 +2,11 @@
  * @jest-environment jsdom
  */
 
-import { AdvancedSearchResultAttrInfoFilterKeyEnum } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { render, screen } from "@testing-library/react";
 
 import { SearchResultControlMenu } from "./SearchResultControlMenu";
 
+import { AdvancedSearchResultAttrInfoFilterKeyEnum } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { TestWrapper } from "TestWrapper";
 
 describe("SearchResultControlMenu", () => {

@@ -2,7 +2,6 @@
  * @jest-environment jsdom
  */
 
-import { EntryAttributeTypeTypeEnum } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   act,
@@ -20,6 +19,8 @@ import { TestWrapper } from "../../../TestWrapper";
 
 import { AttributeValueField } from "./AttributeValueField";
 import { schema, Schema } from "./EntryFormSchema";
+
+import { EntryAttributeTypeTypeEnum } from "@dmm-com/airone-apiclient-typescript-fetch";
 
 const server = setupServer(
   http.get("http://localhost/entry/api/v2/*/attr_referrals/", () => {

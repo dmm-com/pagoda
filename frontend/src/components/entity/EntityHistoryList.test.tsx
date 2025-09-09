@@ -2,11 +2,11 @@
  * @jest-environment jsdom
  */
 
-import { PaginatedEntityHistoryList } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { render, screen, within } from "@testing-library/react";
 
 import { EntityHistoryList, TargetOperation } from "./EntityHistoryList";
 
+import { PaginatedEntityHistoryList } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { TestWrapper } from "TestWrapper";
 
 describe("EntityHistoryList", () => {

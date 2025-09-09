@@ -1,4 +1,3 @@
-import { EntityList } from "@dmm-com/airone-apiclient-typescript-fetch";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import {
   Card,
@@ -15,6 +14,7 @@ import { Link } from "react-router";
 
 import { EntityControlMenu } from "./EntityControlMenu";
 
+import { EntityList } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { ClipboardCopyButton } from "components/common/ClipboardCopyButton";
 import { EntryImportModal } from "components/entry/EntryImportModal";
 import { entityEntriesPath } from "routes/Routes";

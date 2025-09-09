@@ -2,13 +2,14 @@
  * @jest-environment jsdom
  */
 
-import { JobSerializers } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { render, screen } from "@testing-library/react";
 
 import { TestWrapper } from "../../TestWrapper";
 import { JobOperations, JobStatuses } from "../../services/Constants";
 
 import { JobList } from "./JobList";
+
+import { JobSerializers } from "@dmm-com/airone-apiclient-typescript-fetch";
 
 describe("JobList", () => {
   test("should show appropriate links", async () => {

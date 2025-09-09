@@ -1,15 +1,15 @@
 /**
  * @jest-environment jsdom
  */
+import { render, screen, fireEvent } from "@testing-library/react";
+
+import { AdvancedSearchModal } from "./AdvancedSearchModal";
+
 import {
   AdvancedSearchResultAttrInfo,
   AdvancedSearchResultAttrInfoFilterKeyEnum,
   AdvancedSearchJoinAttrInfo,
 } from "@dmm-com/airone-apiclient-typescript-fetch";
-import { render, screen, fireEvent } from "@testing-library/react";
-
-import { AdvancedSearchModal } from "./AdvancedSearchModal";
-
 import { TestWrapper } from "TestWrapper";
 
 jest.mock("react-router", () => ({

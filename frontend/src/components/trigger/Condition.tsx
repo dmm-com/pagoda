@@ -1,8 +1,3 @@
-import {
-  EntityDetail,
-  EntryAttributeTypeTypeEnum,
-  GetEntryAttrReferral,
-} from "@dmm-com/airone-apiclient-typescript-fetch";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import {
@@ -21,20 +16,25 @@ import { Control, Controller, useWatch } from "react-hook-form";
 
 import { Schema } from "./TriggerFormSchema";
 
+import {
+  EntityDetail,
+  EntryAttributeTypeTypeEnum,
+  GetEntryAttrReferral,
+} from "@dmm-com/airone-apiclient-typescript-fetch";
 import { ReferralsAutocomplete } from "components/entry/entryForm/ReferralsAutocomplete";
 import { isSupportedType } from "services/trigger/Edit";
 
-const NamedObjectBox = styled(Box)(({ }) => ({
+const NamedObjectBox = styled(Box)(({}) => ({
   display: "flex",
   alignItems: "flex-end",
   gap: "0 12px",
   width: "100%",
 }));
-const FlexBox = styled(Box)(({ }) => ({
+const FlexBox = styled(Box)(({}) => ({
   display: "flex",
   flexDirection: "column",
 }));
-const NameBox = styled(Box)(({ }) => ({
+const NameBox = styled(Box)(({}) => ({
   width: "150px",
 }));
 

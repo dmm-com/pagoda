@@ -2,7 +2,6 @@
  * @jest-environment jsdom
  */
 
-import { EntryAttributeTypeTypeEnum } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { act, screen, render, renderHook } from "@testing-library/react";
 import { useForm } from "react-hook-form";
@@ -10,6 +9,7 @@ import { useForm } from "react-hook-form";
 import { DateTimeAttributeValueField } from "./DateTimeAttributeValueField";
 import { schema, Schema } from "./EntryFormSchema";
 
+import { EntryAttributeTypeTypeEnum } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { TestWrapper } from "TestWrapper";
 
 import "@testing-library/jest-dom";

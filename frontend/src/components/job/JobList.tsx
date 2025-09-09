@@ -1,4 +1,3 @@
-import { JobSerializers } from "@dmm-com/airone-apiclient-typescript-fetch";
 import {
   Box,
   Button,
@@ -25,6 +24,7 @@ import { AironeTableHeadCell } from "../common/AironeTableHeadCell";
 import { AironeTableHeadRow } from "../common/AironeTableHeadRow";
 import { Confirmable } from "../common/Confirmable";
 
+import { JobSerializers } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { AironeLink } from "components/common";
 
 const StyledTableRow = styled(TableRow)(({}) => ({

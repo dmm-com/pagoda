@@ -2,7 +2,6 @@
  * @jest-environment jsdom
  */
 
-import { Group } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   act,
@@ -18,6 +17,8 @@ import { schema } from "../entry/entryForm/EntryFormSchema";
 
 import { GroupForm } from "./GroupForm";
 import { Schema } from "./groupForm/GroupFormSchema";
+
+import { Group } from "@dmm-com/airone-apiclient-typescript-fetch";
 
 describe("GroupForm", () => {
   const groups = [

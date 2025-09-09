@@ -2,14 +2,14 @@
  * @jest-environment jsdom
  */
 
-import {
-  EntryHint,
-  EntryHintFilterKeyEnum,
-} from "@dmm-com/airone-apiclient-typescript-fetch";
 import { render, screen } from "@testing-library/react";
 
 import { SearchResultControlMenuForEntry } from "./SearchResultControlMenuForEntry";
 
+import {
+  EntryHint,
+  EntryHintFilterKeyEnum,
+} from "@dmm-com/airone-apiclient-typescript-fetch";
 import { TestWrapper } from "TestWrapper";
 
 describe("SearchResultControlMenuForEntry", () => {

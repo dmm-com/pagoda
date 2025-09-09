@@ -2,7 +2,6 @@
  * @jest-environment jsdom
  */
 
-import { UserRetrieveAuthenticateTypeEnum } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { zodResolver } from "@hookform/resolvers/zod/dist/zod";
 import { render, renderHook, screen } from "@testing-library/react";
 import { useForm } from "react-hook-form";
@@ -12,6 +11,8 @@ import { schema } from "../entry/entryForm/EntryFormSchema";
 
 import { UserForm } from "./UserForm";
 import { Schema } from "./userForm/UserFormSchema";
+
+import { UserRetrieveAuthenticateTypeEnum } from "@dmm-com/airone-apiclient-typescript-fetch";
 
 describe("UserForm", () => {
   Object.defineProperty(window, "django_context", {

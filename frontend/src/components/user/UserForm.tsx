@@ -1,7 +1,3 @@
-import {
-  UserRetrieve,
-  UserRetrieveAuthenticateTypeEnum,
-} from "@dmm-com/airone-apiclient-typescript-fetch";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import {
   Box,
@@ -32,6 +28,10 @@ import { Control, Controller } from "react-hook-form";
 import { ChangeUserAuthModal } from "./ChangeUserAuthModal";
 import { Schema } from "./userForm/UserFormSchema";
 
+import {
+  UserRetrieve,
+  UserRetrieveAuthenticateTypeEnum,
+} from "@dmm-com/airone-apiclient-typescript-fetch";
 import { ServerContext } from "services/ServerContext";
 
 const StyledTableRow = styled(TableRow)(() => ({

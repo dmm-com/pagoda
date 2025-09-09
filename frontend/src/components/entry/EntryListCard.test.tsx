@@ -2,9 +2,9 @@
  * @jest-environment jsdom
  */
 
-import { EntryBase } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { render } from "@testing-library/react";
 
+import { EntryBase } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { TestWrapper } from "TestWrapper";
 import { EntryListCard } from "components/entry/EntryListCard";
 

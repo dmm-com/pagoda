@@ -1,9 +1,3 @@
-import {
-  EntryAttributeTypeTypeEnum,
-  type TriggerAction,
-  TriggerActionValue,
-  type TriggerCondition,
-} from "@dmm-com/airone-apiclient-typescript-fetch";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
@@ -32,6 +26,12 @@ import { FC, useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { useAsync } from "react-use";
 
+import {
+  EntryAttributeTypeTypeEnum,
+  type TriggerAction,
+  TriggerActionValue,
+  type TriggerCondition,
+} from "@dmm-com/airone-apiclient-typescript-fetch";
 import { AironeLink } from "components";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { Confirmable } from "components/common/Confirmable";
@@ -132,6 +132,7 @@ const TriggerCondition: FC<{
 }> = ({ cond }) => {
   return (
     <StyledBox key={cond.id}>
+      <Box width="30px">{cond.isUnmatch && "NOT"}</Box>
       <Box>{cond.attr.name}</Box>
       <Divider orientation="vertical" flexItem />
       <ElemTriggerCondition cond={cond} />

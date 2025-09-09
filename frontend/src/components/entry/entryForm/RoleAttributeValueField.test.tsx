@@ -2,10 +2,6 @@
  * @jest-environment jsdom
  */
 
-import {
-  EntryAttributeTypeTypeEnum,
-  Role,
-} from "@dmm-com/airone-apiclient-typescript-fetch";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   act,
@@ -21,6 +17,10 @@ import { aironeApiClient } from "../../../repository/AironeApiClient";
 import { schema, Schema } from "./EntryFormSchema";
 import { RoleAttributeValueField } from "./RoleAttributeValueField";
 
+import {
+  EntryAttributeTypeTypeEnum,
+  Role,
+} from "@dmm-com/airone-apiclient-typescript-fetch";
 import { TestWrapper } from "TestWrapper";
 
 import "@testing-library/jest-dom";

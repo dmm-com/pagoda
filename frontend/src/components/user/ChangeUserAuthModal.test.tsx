@@ -2,15 +2,16 @@
  * @jest-environment jsdom
  */
 
-import {
-  UserRetrieve,
-  UserRetrieveAuthenticateTypeEnum,
-} from "@dmm-com/airone-apiclient-typescript-fetch";
 import { render, screen, waitFor } from "@testing-library/react";
 
 import { TestWrapper } from "../../TestWrapper";
 
 import { ChangeUserAuthModal } from "./ChangeUserAuthModal";
+
+import {
+  UserRetrieve,
+  UserRetrieveAuthenticateTypeEnum,
+} from "@dmm-com/airone-apiclient-typescript-fetch";
 
 describe("ChangeUserAuthModal", () => {
   const user: UserRetrieve = {

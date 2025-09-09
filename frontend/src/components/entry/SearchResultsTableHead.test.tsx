@@ -2,13 +2,13 @@
  * @jest-environment jsdom
  */
 
-import { EntryAttributeTypeTypeEnum } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { Table, TableContainer } from "@mui/material";
 import { render, screen } from "@testing-library/react";
 import { useLocation, useNavigate } from "react-router";
 
 import { SearchResultsTableHead } from "./SearchResultsTableHead";
 
+import { EntryAttributeTypeTypeEnum } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { TestWrapper } from "TestWrapper";
 
 // Mock react-router hooks

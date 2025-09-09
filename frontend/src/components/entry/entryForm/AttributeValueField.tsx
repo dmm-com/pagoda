@@ -1,4 +1,3 @@
-import { EntryAttributeTypeTypeEnum } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { FC } from "react";
 import { Control } from "react-hook-form";
 import { UseFormSetValue } from "react-hook-form/dist/types/form";
@@ -20,6 +19,8 @@ import {
   ArrayStringAttributeValueField,
   StringAttributeValueField,
 } from "./StringAttributeValueField";
+
+import { EntryAttributeTypeTypeEnum } from "@dmm-com/airone-apiclient-typescript-fetch";
 
 interface Props {
   control: Control<Schema>;

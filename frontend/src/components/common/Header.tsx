@@ -1,4 +1,3 @@
-import { JobSerializers } from "@dmm-com/airone-apiclient-typescript-fetch";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import PersonIcon from "@mui/icons-material/Person";
 import TaskIcon from "@mui/icons-material/Task";
@@ -25,6 +24,7 @@ import { useInterval } from "react-use";
 
 import { useTranslation } from "../../hooks/useTranslation";
 
+import { JobSerializers } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { SearchBox } from "components/common/SearchBox";
 import { useSimpleSearch } from "hooks/useSimpleSearch";
 import { aironeApiClient } from "repository/AironeApiClient";

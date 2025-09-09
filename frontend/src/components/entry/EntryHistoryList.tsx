@@ -1,4 +1,3 @@
-import { PaginatedEntryHistoryAttributeValueList } from "@dmm-com/airone-apiclient-typescript-fetch";
 import RestoreIcon from "@mui/icons-material/Restore";
 import {
   Box,
@@ -17,6 +16,7 @@ import { useNavigate } from "react-router";
 
 import { AttributeValue } from "./AttributeValue";
 
+import { PaginatedEntryHistoryAttributeValueList } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { Confirmable } from "components/common/Confirmable";
 import { PaginationFooter } from "components/common/PaginationFooter";
 import { aironeApiClient } from "repository/AironeApiClient";

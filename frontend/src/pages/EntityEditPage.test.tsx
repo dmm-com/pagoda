@@ -2,10 +2,6 @@
  * @jest-environment jsdom
  */
 
-import {
-  EntityDetail,
-  PaginatedEntityListList,
-} from "@dmm-com/airone-apiclient-typescript-fetch";
 import { act, render, screen, waitFor } from "@testing-library/react";
 import { HttpResponse, http } from "msw";
 import { setupServer } from "msw/node";
@@ -15,6 +11,10 @@ import { editEntityPath } from "../routes/Routes";
 
 import { EntityEditPage } from "./EntityEditPage";
 
+import {
+  EntityDetail,
+  PaginatedEntityListList,
+} from "@dmm-com/airone-apiclient-typescript-fetch";
 import { TestWrapperWithoutRoutes } from "TestWrapper";
 
 const entityList: PaginatedEntityListList = {

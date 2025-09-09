@@ -1,4 +1,3 @@
-import { PaginatedEntityListList } from "@dmm-com/airone-apiclient-typescript-fetch";
 import AddIcon from "@mui/icons-material/Add";
 import { Box, Button } from "@mui/material";
 import Grid from "@mui/material/Grid2";
@@ -7,6 +6,7 @@ import { Link } from "react-router";
 
 import { EntityListCard } from "./EntityListCard";
 
+import { PaginatedEntityListList } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { PaginationFooter } from "components/common/PaginationFooter";
 import { SearchBox } from "components/common/SearchBox";
 import { newEntityPath } from "routes/Routes";

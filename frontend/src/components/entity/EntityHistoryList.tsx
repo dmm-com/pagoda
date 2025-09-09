@@ -1,4 +1,3 @@
-import { PaginatedEntityHistoryList } from "@dmm-com/airone-apiclient-typescript-fetch";
 import {
   Box,
   Table,
@@ -10,6 +9,7 @@ import {
 } from "@mui/material";
 import { FC } from "react";
 
+import { PaginatedEntityHistoryList } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { PaginationFooter } from "components/common/PaginationFooter";
 import { EntityHistoryListParam } from "services/Constants";
 import { formatDateTime } from "services/DateUtil";

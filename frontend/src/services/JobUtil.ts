@@ -1,11 +1,11 @@
-import { JobSerializers } from "@dmm-com/airone-apiclient-typescript-fetch";
-
 import {
   LocalStorageKey,
   localStorageUtil,
 } from "../repository/LocalStorageUtil";
 
 import { JobOperations, JobStatuses } from "./Constants";
+
+import { JobSerializers } from "@dmm-com/airone-apiclient-typescript-fetch";
 
 export const jobStatusLabel = (jobStatus: number | undefined): string => {
   switch (jobStatus) {

@@ -246,7 +246,14 @@ exports[`EditTriggerPage should match snapshot 1`] = `
                   <th
                     class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-8816du-MuiTableCell-root"
                     scope="col"
-                    width="400px"
+                    width="100px"
+                  >
+                    NOT
+                  </th>
+                  <th
+                    class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-8816du-MuiTableCell-root"
+                    scope="col"
+                    width="300px"
                   >
                     値
                   </th>
@@ -272,6 +279,9 @@ exports[`EditTriggerPage should match snapshot 1`] = `
                 <tr
                   class="MuiTableRow-root css-1xtozoh-MuiTableRow-root"
                 >
+                  <td
+                    class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1dc80h3-MuiTableCell-root"
+                  />
                   <td
                     class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1dc80h3-MuiTableCell-root"
                   />
@@ -641,7 +651,14 @@ exports[`EditTriggerPage should match snapshot 1`] = `
                 <th
                   class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-8816du-MuiTableCell-root"
                   scope="col"
-                  width="400px"
+                  width="100px"
+                >
+                  NOT
+                </th>
+                <th
+                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-8816du-MuiTableCell-root"
+                  scope="col"
+                  width="300px"
                 >
                   値
                 </th>
@@ -667,6 +684,9 @@ exports[`EditTriggerPage should match snapshot 1`] = `
               <tr
                 class="MuiTableRow-root css-1xtozoh-MuiTableRow-root"
               >
+                <td
+                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1dc80h3-MuiTableCell-root"
+                />
                 <td
                   class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1dc80h3-MuiTableCell-root"
                 />

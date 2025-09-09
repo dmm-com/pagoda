@@ -1,6 +1,6 @@
-import { TriggerParent } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { z } from "zod";
 
+import { TriggerParent } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { schemaForType } from "services/ZodSchemaUtil";
 
 export const schema = schemaForType<TriggerParent>()(
