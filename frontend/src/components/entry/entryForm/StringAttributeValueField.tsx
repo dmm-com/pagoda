@@ -3,7 +3,7 @@ import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import { Box, IconButton, List, ListItem, TextField } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { FC } from "react";
-import { Control, useFieldArray, Controller } from "react-hook-form";
+import { Control, Controller, useFieldArray } from "react-hook-form";
 
 import { Schema } from "./EntryFormSchema";
 
@@ -14,7 +14,9 @@ const StyledList = styled(List)(({}) => ({
 }));
 
 const StyledBox = styled(Box)(({}) => ({
+  display: "flex",
   width: "100%",
+  gap: "0 12px",
 }));
 
 interface CommonProps {

@@ -6,6 +6,7 @@ import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import EditNoteIcon from "@mui/icons-material/EditNote";
 import GroupIcon from "@mui/icons-material/Group";
 import {
+  Autocomplete,
   Box,
   Button,
   Checkbox,
@@ -14,7 +15,6 @@ import {
   Select,
   TableCell,
   TextField,
-  Autocomplete,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { FC, useMemo, useState } from "react";
@@ -331,6 +331,7 @@ export const AttributeField: FC<Props> = ({
     </>
   ) : (
     <>
+      <TableCell />
       <TableCell />
       <TableCell />
       <TableCell />
