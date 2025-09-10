@@ -2,11 +2,11 @@
  * @jest-environment jsdom
  */
 
+import { EntityDetail } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { render, screen } from "@testing-library/react";
 
 import { EntityBreadcrumbs } from "./EntityBreadcrumbs";
 
-import { EntityDetail } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { TestWrapper } from "TestWrapper";
 
 // Mock the routes functions

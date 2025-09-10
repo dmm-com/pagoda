@@ -1,3 +1,4 @@
+import { EntryBase } from "@dmm-com/airone-apiclient-typescript-fetch";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import {
   Card,
@@ -11,7 +12,6 @@ import { styled } from "@mui/material/styles";
 import { FC, useState } from "react";
 import { Link } from "react-router";
 
-import { EntryBase } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { ClipboardCopyButton } from "components/common/ClipboardCopyButton";
 import { EntryControlMenu } from "components/entry/EntryControlMenu";
 import { entryDetailsPath } from "routes/Routes";

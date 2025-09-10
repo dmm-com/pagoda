@@ -2,11 +2,11 @@
  * @jest-environment jsdom
  */
 
+import { EntryAttributeTypeTypeEnum } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { render, screen, within } from "@testing-library/react";
 
 import { TestWrapper } from "../../TestWrapper";
 
-import { EntryAttributeTypeTypeEnum } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { AttributeValue } from "components/entry/AttributeValue";
 
 describe("AttributeValue", () => {

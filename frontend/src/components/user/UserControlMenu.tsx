@@ -1,3 +1,4 @@
+import { UserList } from "@dmm-com/airone-apiclient-typescript-fetch";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import {
   Box,
@@ -11,7 +12,6 @@ import { useSnackbar } from "notistack";
 import { FC } from "react";
 import { useNavigate } from "react-router";
 
-import { UserList } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { Confirmable } from "components/common/Confirmable";
 import { aironeApiClient } from "repository/AironeApiClient";
 import { topPath } from "routes/Routes";

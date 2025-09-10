@@ -1,8 +1,8 @@
+import { EntityDetail } from "@dmm-com/airone-apiclient-typescript-fetch";
 import LockIcon from "@mui/icons-material/Lock";
 import { Typography } from "@mui/material";
 import { FC } from "react";
 
-import { EntityDetail } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { AironeLink } from "components/common";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { FlexBox } from "components/common/FlexBox";

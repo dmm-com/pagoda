@@ -2,9 +2,9 @@
  * @jest-environment jsdom
  */
 
+import { PaginatedEntityListList } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { act, fireEvent, render, screen } from "@testing-library/react";
 
-import { PaginatedEntityListList } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { TestWrapper } from "TestWrapper";
 import { EntityList } from "components/entity/EntityList";
 

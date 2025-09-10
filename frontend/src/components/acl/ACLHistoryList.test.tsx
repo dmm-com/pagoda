@@ -2,11 +2,11 @@
  * @jest-environment jsdom
  */
 
+import { ACLHistory } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { render, screen, within } from "@testing-library/react";
 
 import { ACLHistoryList } from "./ACLHistoryList";
 
-import { ACLHistory } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { TestWrapper } from "TestWrapper";
 
 describe("ACLHistoryList", () => {

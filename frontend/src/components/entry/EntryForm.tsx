@@ -1,3 +1,4 @@
+import { EntityDetail } from "@dmm-com/airone-apiclient-typescript-fetch";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import KeyboardArrowUpRoundedIcon from "@mui/icons-material/KeyboardArrowUpRounded";
@@ -19,7 +20,6 @@ import { FC } from "react";
 import { Control, Controller, useFormState } from "react-hook-form";
 import { UseFormSetValue } from "react-hook-form/dist/types/form";
 
-import { EntityDetail } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { AttributeValueField } from "components/entry/entryForm/AttributeValueField";
 import { Schema } from "components/entry/entryForm/EntryFormSchema";
 import { getStagedErrorStyle } from "utils/styleUtils";

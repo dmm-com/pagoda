@@ -2,6 +2,10 @@
  * @jest-environment jsdom
  */
 
+import {
+  EntryAttributeTypeTypeEnum,
+  GetEntryAttrReferral,
+} from "@dmm-com/airone-apiclient-typescript-fetch";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   act,
@@ -20,10 +24,6 @@ import {
   ObjectAttributeValueField,
 } from "./ObjectAttributeValueField";
 
-import {
-  EntryAttributeTypeTypeEnum,
-  GetEntryAttrReferral,
-} from "@dmm-com/airone-apiclient-typescript-fetch";
 import { TestWrapper } from "TestWrapper";
 
 import "@testing-library/jest-dom";

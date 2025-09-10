@@ -1,8 +1,8 @@
+import { EntryAttributeTypeTypeEnum } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { z } from "zod";
 
 import { EditableEntry } from "./EditableEntry";
 
-import { EntryAttributeTypeTypeEnum } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { schemaForType } from "services/ZodSchemaUtil";
 
 // Function to detect 4-byte characters (characters outside the BMP - Basic Multilingual Plane)

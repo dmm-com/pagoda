@@ -1,3 +1,4 @@
+import { ACLObjtypeEnum } from "@dmm-com/airone-apiclient-typescript-fetch";
 import AppsIcon from "@mui/icons-material/Apps";
 import { Box, Container, IconButton } from "@mui/material";
 import { styled } from "@mui/material/styles";
@@ -5,7 +6,6 @@ import { FC, useEffect, useState } from "react";
 
 import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
 
-import { ACLObjtypeEnum } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { ACLHistoryList } from "components/acl/ACLHistoryList";
 import { Loading } from "components/common/Loading";
 import { PageHeader } from "components/common/PageHeader";

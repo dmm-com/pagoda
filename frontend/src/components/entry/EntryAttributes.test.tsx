@@ -2,12 +2,12 @@
  * @jest-environment jsdom
  */
 
-import { act, render, screen, within } from "@testing-library/react";
-
 import {
   EntryAttributeType,
   EntryAttributeTypeTypeEnum,
 } from "@dmm-com/airone-apiclient-typescript-fetch";
+import { act, render, screen, within } from "@testing-library/react";
+
 import { TestWrapper } from "TestWrapper";
 import { EntryAttributes } from "components/entry/EntryAttributes";
 

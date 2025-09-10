@@ -2,6 +2,10 @@
  * @jest-environment jsdom
  */
 
+import {
+  EntryAttributeTypeTypeEnum,
+  PaginatedGroupList,
+} from "@dmm-com/airone-apiclient-typescript-fetch";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   act,
@@ -15,10 +19,6 @@ import { useForm } from "react-hook-form";
 import { schema, Schema } from "./EntryFormSchema";
 import { GroupAttributeValueField } from "./GroupAttributeValueField";
 
-import {
-  EntryAttributeTypeTypeEnum,
-  PaginatedGroupList,
-} from "@dmm-com/airone-apiclient-typescript-fetch";
 import { TestWrapper } from "TestWrapper";
 
 import "@testing-library/jest-dom";

@@ -2,9 +2,9 @@
  * @jest-environment jsdom
  */
 
+import { EntityList } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { fireEvent, render, screen } from "@testing-library/react";
 
-import { EntityList } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { TestWrapper } from "TestWrapper";
 import { EntityListCard } from "components/entity/EntityListCard";
 

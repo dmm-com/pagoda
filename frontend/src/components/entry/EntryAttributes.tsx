@@ -1,3 +1,4 @@
+import { EntryAttributeType } from "@dmm-com/airone-apiclient-typescript-fetch";
 import {
   Paper,
   Table,
@@ -11,7 +12,6 @@ import {
 import { styled } from "@mui/material/styles";
 import { FC } from "react";
 
-import { EntryAttributeType } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { AttributeValue } from "components/entry/AttributeValue";
 
 interface Props {

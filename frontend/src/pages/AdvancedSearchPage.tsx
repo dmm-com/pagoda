@@ -1,4 +1,8 @@
 import {
+  AdvancedSearchResultAttrInfoFilterKeyEnum,
+  EntityList,
+} from "@dmm-com/airone-apiclient-typescript-fetch";
+import {
   Autocomplete,
   AutocompleteInputChangeReason,
   Box,
@@ -18,10 +22,6 @@ import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
 import { aironeApiClient } from "../repository/AironeApiClient";
 import { formatAdvancedSearchParams } from "../services/entry/AdvancedSearch";
 
-import {
-  AdvancedSearchResultAttrInfoFilterKeyEnum,
-  EntityList,
-} from "@dmm-com/airone-apiclient-typescript-fetch";
 import { AironeLink } from "components";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { advancedSearchResultPath, topPath } from "routes/Routes";

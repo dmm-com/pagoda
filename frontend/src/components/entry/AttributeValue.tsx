@@ -1,7 +1,3 @@
-import { Box, Checkbox, Divider, List, ListItem } from "@mui/material";
-import { styled } from "@mui/material/styles";
-import { FC } from "react";
-
 import {
   EntryAttributeTypeTypeEnum,
   EntryAttributeValue,
@@ -10,6 +6,10 @@ import {
   EntryAttributeValueObject,
   EntryAttributeValueRole,
 } from "@dmm-com/airone-apiclient-typescript-fetch";
+import { Box, Checkbox, Divider, List, ListItem } from "@mui/material";
+import { styled } from "@mui/material/styles";
+import { FC } from "react";
+
 import { AironeLink } from "components/common";
 import { entryDetailsPath, groupsPath, rolePath } from "routes/Routes";
 

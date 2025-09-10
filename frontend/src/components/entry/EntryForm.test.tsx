@@ -2,6 +2,10 @@
  * @jest-environment jsdom
  */
 
+import {
+  EntryAttributeTypeTypeEnum,
+  EntityDetail,
+} from "@dmm-com/airone-apiclient-typescript-fetch";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   act,
@@ -16,10 +20,6 @@ import { useForm } from "react-hook-form";
 
 import { Schema, schema } from "./entryForm/EntryFormSchema";
 
-import {
-  EntryAttributeTypeTypeEnum,
-  EntityDetail,
-} from "@dmm-com/airone-apiclient-typescript-fetch";
 import { TestWrapper } from "TestWrapper";
 import { EntryForm } from "components/entry/EntryForm";
 

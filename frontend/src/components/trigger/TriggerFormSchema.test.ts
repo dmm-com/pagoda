@@ -1,6 +1,6 @@
-import { Schema, schema } from "./TriggerFormSchema";
-
 import { EntryAttributeTypeTypeEnum } from "@dmm-com/airone-apiclient-typescript-fetch";
+
+import { Schema, schema } from "./TriggerFormSchema";
 
 describe("schema", () => {
   // A valid value

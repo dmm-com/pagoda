@@ -1,3 +1,4 @@
+import { EntityDetail } from "@dmm-com/airone-apiclient-typescript-fetch";
 import AddIcon from "@mui/icons-material/Add";
 import { IconButton, TableCell, TableRow } from "@mui/material";
 import { FC } from "react";
@@ -5,8 +6,6 @@ import { Control, useFieldArray } from "react-hook-form";
 
 import { Condition } from "./Condition";
 import { Schema } from "./TriggerFormSchema";
-
-import { EntityDetail } from "@dmm-com/airone-apiclient-typescript-fetch";
 
 interface Props {
   control: Control<Schema>;

@@ -1,9 +1,9 @@
+import { UserRetrieve } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { Box, Button, Input, Modal, Typography } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { useSnackbar } from "notistack";
 import { FC, useCallback, useState } from "react";
 
-import { UserRetrieve } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { aironeApiClient } from "repository/AironeApiClient";
 
 const StyledModal = styled(Modal)(({}) => ({

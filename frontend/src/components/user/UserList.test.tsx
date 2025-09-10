@@ -2,6 +2,7 @@
  * @jest-environment jsdom
  */
 
+import { PaginatedUserListList } from "@dmm-com/airone-apiclient-typescript-fetch";
 import {
   act,
   render,
@@ -13,7 +14,6 @@ import { createMemoryRouter, RouterProvider } from "react-router";
 
 import { UserList } from "./UserList";
 
-import { PaginatedUserListList } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { TestWrapper, TestWrapperWithoutRoutes } from "TestWrapper";
 import { aironeApiClient } from "repository/AironeApiClient";
 import { ServerContext } from "services/ServerContext";

@@ -2,14 +2,13 @@
  * @jest-environment jsdom
  */
 
+import { PaginatedEntityListList } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import { HttpResponse, http } from "msw";
 import { setupServer } from "msw/node";
 import { BrowserRouter as Router } from "react-router";
 
 import { AdvancedSearchPage } from "./AdvancedSearchPage";
-
-import { PaginatedEntityListList } from "@dmm-com/airone-apiclient-typescript-fetch";
 
 const entities: PaginatedEntityListList = {
   count: 2,

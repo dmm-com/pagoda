@@ -1,3 +1,4 @@
+import { GetEntryAttrReferral } from "@dmm-com/airone-apiclient-typescript-fetch";
 import {
   Autocomplete,
   AutocompleteChangeReason,
@@ -7,8 +8,6 @@ import {
 import { FC, useState, useCallback } from "react";
 
 import { aironeApiClient } from "../../../repository/AironeApiClient";
-
-import { GetEntryAttrReferral } from "@dmm-com/airone-apiclient-typescript-fetch";
 
 interface Props {
   attrId: number;

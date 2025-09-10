@@ -2,6 +2,7 @@
  * @jest-environment jsdom
  */
 
+import { EntryBase } from "@dmm-com/airone-apiclient-typescript-fetch";
 import {
   act,
   fireEvent,
@@ -11,7 +12,6 @@ import {
   within,
 } from "@testing-library/react";
 
-import { EntryBase } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { TestWrapper } from "TestWrapper";
 import { EntryList } from "components/entry/EntryList";
 import { aironeApiClient } from "repository/AironeApiClient";

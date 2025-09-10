@@ -1,3 +1,8 @@
+import {
+  EntityDetail,
+  EntryAttributeTypeTypeEnum,
+  GetEntryAttrReferral,
+} from "@dmm-com/airone-apiclient-typescript-fetch";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import {
@@ -16,11 +21,6 @@ import { Control, Controller, useWatch } from "react-hook-form";
 
 import { Schema } from "./TriggerFormSchema";
 
-import {
-  EntityDetail,
-  EntryAttributeTypeTypeEnum,
-  GetEntryAttrReferral,
-} from "@dmm-com/airone-apiclient-typescript-fetch";
 import { ReferralsAutocomplete } from "components/entry/entryForm/ReferralsAutocomplete";
 import { isSupportedType } from "services/trigger/Edit";
 

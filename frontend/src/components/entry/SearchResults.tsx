@@ -1,3 +1,8 @@
+import {
+  AdvancedSearchJoinAttrInfo,
+  AdvancedSearchResult,
+  EntryHint,
+} from "@dmm-com/airone-apiclient-typescript-fetch";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import {
   Box,
@@ -22,11 +27,6 @@ import { Link } from "react-router";
 
 import { SearchResultsTableHead } from "./SearchResultsTableHead";
 
-import {
-  AdvancedSearchJoinAttrInfo,
-  AdvancedSearchResult,
-  EntryHint,
-} from "@dmm-com/airone-apiclient-typescript-fetch";
 import { AironeLink } from "components/common";
 import { PaginationFooter } from "components/common/PaginationFooter";
 import { AttributeValue } from "components/entry/AttributeValue";

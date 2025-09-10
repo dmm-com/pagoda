@@ -1,3 +1,9 @@
+import {
+  AdvancedSearchJoinAttrInfo,
+  EntryAttributeTypeTypeEnum,
+  EntryHint,
+  EntryHintFilterKeyEnum,
+} from "@dmm-com/airone-apiclient-typescript-fetch";
 import AddIcon from "@mui/icons-material/Add";
 import CheckBoxOutlineBlankOutlinedIcon from "@mui/icons-material/CheckBoxOutlineBlankOutlined";
 import CheckBoxOutlinedIcon from "@mui/icons-material/CheckBoxOutlined";
@@ -29,12 +35,6 @@ import { SearchResultControlMenu } from "./SearchResultControlMenu";
 import { SearchResultControlMenuForEntry } from "./SearchResultControlMenuForEntry";
 import { SearchResultControlMenuForReferral } from "./SearchResultControlMenuForReferral";
 
-import {
-  AdvancedSearchJoinAttrInfo,
-  EntryAttributeTypeTypeEnum,
-  EntryHint,
-  EntryHintFilterKeyEnum,
-} from "@dmm-com/airone-apiclient-typescript-fetch";
 import { getIsFiltered } from "pages/AdvancedSearchResultsPage";
 import {
   AttrFilter,

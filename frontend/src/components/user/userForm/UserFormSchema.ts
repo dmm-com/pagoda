@@ -1,8 +1,7 @@
+import { UserRetrieve } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { z } from "zod";
 
 import { schemaForType } from "../../../services/ZodSchemaUtil";
-
-import { UserRetrieve } from "@dmm-com/airone-apiclient-typescript-fetch";
 
 interface User
   extends Pick<UserRetrieve, "username" | "email" | "isSuperuser"> {

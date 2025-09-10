@@ -1,3 +1,4 @@
+import { GetEntryAttrReferral } from "@dmm-com/airone-apiclient-typescript-fetch";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import {
@@ -17,7 +18,6 @@ import { UseFormSetValue } from "react-hook-form/dist/types/form";
 import { Schema } from "./EntryFormSchema";
 import { ReferralsAutocomplete } from "./ReferralsAutocomplete";
 
-import { GetEntryAttrReferral } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { getStagedErrorStyle } from "utils/styleUtils";
 
 const StyledList = styled(List)(({}) => ({

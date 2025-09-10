@@ -3,7 +3,6 @@
  */
 
 import { EntryBase } from "@dmm-com/airone-apiclient-typescript-fetch";
-
 import { render, screen, fireEvent } from "@testing-library/react";
 
 import "@testing-library/jest-dom";
