@@ -139,7 +139,7 @@ export const TriggerEditPage: FC = () => {
 
         const base = {
           attrId: cond.attr.id,
-          isUnmatch: !!(cond as any).isUnmatch,
+          isUnmatch: !!cond.isUnmatch,
         } as const;
 
         switch (attrInfo?.type) {
