@@ -210,7 +210,11 @@ class TriggerParent(models.Model):
         def _is_match(condition: TriggerCondition):
             for attr_info in [x for x in recv_attrs if x["attr_id"] == condition.attr.id]:
                 if condition.is_match_condition(attr_info["value"]):
-                    return True
+                    if not condition.is_unmatch:
+                        return True
+                else:
+                    if condition.is_unmatch:
+                        return True
 
             return False
 

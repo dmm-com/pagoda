@@ -419,6 +419,16 @@ class ModelTest(AironeTestCase):
                 "will_invoke": True,
             },
             {
+                "attrname": "bool_trigger",
+                "value": True,
+                "will_invoke": True,
+            },
+            {
+                "attrname": "bool_trigger",
+                "value": False,
+                "will_invoke": False,
+            },
+            {
                 "attrname": "named_trigger",
                 "value": {"name": "Open Sesame", "id": self.entry_refs[0].id},
                 "will_invoke": False,
@@ -884,50 +894,131 @@ class ModelTest(AironeTestCase):
         self.assertEqual(TriggerAction.objects.filter(condition=parent_cond).count(), COUNT_ACTIONS)
 
     def test_register_actions_with_unmatch(self):
-        item_reserved = self.add_entry(self.user, "Reserved", self.entity_ref)
-        conditions = [
-            (self.entity.attrs.get(name=attrname).id, cond_value, is_unmatch)
-            for (attrname, cond_value, is_unmatch) in [
-                ("bool_action", True, False),
-                ("named_action", item_reserved, True),
-            ]
+        self.add_entry(self.user, "test_entry", self.entity)
+
+        # register TriggerCondition and its Actions
+        settingTriggerAction = self.FULL_ACTION_CONFIGURATION_PARAMETERS.copy()[0]
+
+        # Case: is_unmatch is True
+        for cond_param in self.FULL_CONDITION_CONFIGURATION_PARAMETERS:
+            cond_param["is_unmatch"] = True
+            TriggerCondition.register(self.entity, [cond_param], [settingTriggerAction])
+
+        # These are testing parameters whether specifying "vlaue" could invoke TriggerCondition
+        # for each typed Attributes.
+
+        test_input_params = [
+            {"attrname": "str_trigger", "value": "", "will_invoke": True},
+            {"attrname": "str_trigger", "value": "Open Sesame", "will_invoke": True},
+            {"attrname": "str_trigger", "value": FAT_LADY_PASSWDS[0], "will_invoke": False},
+            {"attrname": "ref_trigger", "value": None, "will_invoke": True},
+            {
+                "attrname": "ref_trigger",
+                "value": self.entry_refs[0],
+                "will_invoke": True,
+            },
+            {
+                "attrname": "ref_trigger",
+                "value": self.entry_refs[2],
+                "will_invoke": False,
+            },
+            {
+                "attrname": "bool_trigger",
+                "value": True,
+                "will_invoke": False,
+            },
+            {
+                "attrname": "bool_trigger",
+                "value": False,
+                "will_invoke": True,
+            },
+            {
+                "attrname": "named_trigger",
+                "value": {"name": "Open Sesame", "id": self.entry_refs[0].id},
+                "will_invoke": True,
+            },
+            {
+                "attrname": "named_trigger",
+                "value": {"name": "", "id": self.entry_refs[0].id},
+                "will_invoke": True,
+            },
+            {
+                "attrname": "named_trigger",
+                "value": {"name": "Unexpected words", "id": None},
+                "will_invoke": True,
+            },
+            {
+                "attrname": "named_trigger",
+                "value": {"name": FAT_LADY_PASSWDS[0], "id": None},
+                "will_invoke": True,
+            },
+            {
+                "attrname": "named_trigger",
+                "value": {"name": "", "id": self.entry_refs[2].id},
+                "will_invoke": True,
+            },
+            {
+                "attrname": "named_trigger",
+                "value": {"name": FAT_LADY_PASSWDS[0], "id": self.entry_refs[2].id},
+                "will_invoke": False,
+            },
+            {
+                "attrname": "named_trigger2",
+                "value": {"name": FAT_LADY_PASSWDS[1], "id": None},
+                "will_invoke": True,
+            },
+            {
+                "attrname": "named_trigger2",
+                "value": {"name": "", "id": self.entry_refs[1].id},
+                "will_invoke": True,
+            },
+            {
+                "attrname": "named_trigger2",
+                "value": {"name": FAT_LADY_PASSWDS[1], "id": self.entry_refs[1].id},
+                "will_invoke": False,
+            },
+            {"attrname": "arr_str_trigger", "value": [""], "will_invoke": True},
+            {
+                "attrname": "arr_str_trigger",
+                "value": ["Open Sesame"],
+                "will_invoke": True,
+            },
+            {
+                "attrname": "arr_str_trigger",
+                "value": ["Open Sesame", FAT_LADY_PASSWDS[0]],
+                "will_invoke": False,
+            },
+            {"attrname": "arr_ref_trigger", "value": [], "will_invoke": True},
+            {
+                "attrname": "arr_ref_trigger",
+                "value": [self.entry_refs[0], self.entry_refs[1]],
+                "will_invoke": True,
+            },
+            {
+                "attrname": "arr_ref_trigger",
+                "value": self.entry_refs,
+                "will_invoke": False,
+            },
+            {
+                "attrname": "arr_named_trigger",
+                "value": [{"name": "Open Sesame", "id": self.entry_refs[0].id}],
+                "will_invoke": True,
+            },
+            {
+                "attrname": "arr_named_trigger",
+                "value": [
+                    {"name": "Open Sesame", "id": self.entry_refs[0].id},
+                    {"name": FAT_LADY_PASSWDS[0], "id": self.entry_refs[2].id},
+                ],
+                "will_invoke": False,
+            },
         ]
-        TriggerCondition.register(
-            self.entity,
-            [
-                {"attr_id": model_attrid, "cond": cond_value, "is_unmatch": is_unmatch}
-                for (model_attrid, cond_value, is_unmatch) in conditions
-            ],
-            self.FULL_ACTION_CONFIGURATION_PARAMETERS_BUT_EMPTY,
-        )
-
-        # create an Entry with attribute values to check action processing
-        self.add_entry(self.user, "test entry", self.entity)
-
-        # It won't return invoking action, because named_actions's value is
-        # not matched with its condition
-        actions = TriggerCondition.get_invoked_actions(
-            self.entity, [{"id": conditions[0][0], "value": True}]
-        )
-        self.assertEqual(len(actions), 0)
-
-        # It won't return invoking action, because it's necessary to match with all conditions
-        actions = TriggerCondition.get_invoked_actions(
-            self.entity,
-            [
-                {"id": conditions[0][0], "value": False},
-                {"id": conditions[1][0], "value": item_reserved},
-            ],
-        )
-        self.assertEqual(len(actions), 0)
-
-        # It will return invoking action, because all expected attribute values are
-        # matched with conditions
-        actions = TriggerCondition.get_invoked_actions(
-            self.entity,
-            [
-                {"id": conditions[0][0], "value": True},
-                {"id": conditions[1][0], "value": item_reserved},
-            ],
-        )
-        self.assertEqual(len(actions), 1)
+        for test_input_param in test_input_params:
+            attr = self.entity.attrs.get(name=test_input_param["attrname"])
+            actions = TriggerCondition.get_invoked_actions(
+                self.entity, [{"id": attr.id, "value": test_input_param["value"]}]
+            )
+            if test_input_param["will_invoke"]:
+                self.assertGreaterEqual(len(actions), 1)
+            else:
+                self.assertEqual(len(actions), 0)
