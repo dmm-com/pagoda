@@ -128,7 +128,7 @@ describe("Conditions", () => {
 
     const row1 = screen.queryAllByRole("row")[1];
     expect(within(row1).getByText("attr2")).toBeInTheDocument();
-    expect(within(row1).getByRole("checkbox")).toBeChecked();
+    expect(within(row1).getAllByRole("checkbox")[1]).toBeChecked();
 
     const row2 = screen.queryAllByRole("row")[2];
     expect(within(row2).getByText("attr3")).toBeInTheDocument();

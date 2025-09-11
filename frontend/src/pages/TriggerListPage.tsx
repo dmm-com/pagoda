@@ -132,6 +132,7 @@ const TriggerCondition: FC<{
 }> = ({ cond }) => {
   return (
     <StyledBox key={cond.id}>
+      <Box width="30px">{cond.isUnmatch && "NOT"}</Box>
       <Box>{cond.attr.name}</Box>
       <Divider orientation="vertical" flexItem />
       <ElemTriggerCondition cond={cond} />

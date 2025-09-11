@@ -74,6 +74,7 @@ class TriggerConditionSerializer(serializers.ModelSerializer):
             "str_cond",
             "ref_cond",
             "bool_cond",
+            "is_unmatch",
         ]
 
     def get_ref_cond(self, obj: TriggerCondition) -> EntryAttributeValueObject | None:
@@ -125,6 +126,7 @@ class TriggerConditionUpdateSerializer(serializers.Serializer):
     attr_id = serializers.IntegerField(required=True)
     cond = serializers.CharField(required=False, allow_blank=True)
     hint = serializers.CharField(required=False, allow_blank=True)
+    is_unmatch = serializers.BooleanField(required=False)
 
 
 class TriggerActionUpdateSerializer(serializers.Serializer):

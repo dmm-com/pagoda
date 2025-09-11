@@ -29,22 +29,26 @@ class InputTriggerCondition(object):
         # initialize each condition parameters
         self.initialize_condition()
 
+        self.is_unmatch = input.get("is_unmatch", False)
+
         # set each condition parameters by specified condition value
         self.parse_input_condition(input.get("cond"), input.get("hint"))
 
     def __repr__(self):
-        return "(attr:%s[%s]) str_cond:%s, ref_cond:%s, bool_cond:%s" % (
+        return "(attr:%s[%s]) str_cond:%s, ref_cond:%s, bool_cond:%s is_unmatch:%s" % (
             self.attr.name,
             self.attr.id,
             str(self.str_cond),
             str(self.ref_cond),
             str(self.bool_cond),
+            self.is_unmatch,
         )
 
     def initialize_condition(self):
         self.str_cond = ""
         self.ref_cond = None
         self.bool_cond = False
+        self.is_unmatch = False
 
     def parse_input_condition(self, input_condition, hint=None):
         def _convert_value_to_entry(value: Entry | int | str | Any):
@@ -188,6 +192,7 @@ class TriggerParent(models.Model):
                 "str_cond": input_cond.str_cond,
                 "ref_cond": input_cond.ref_cond,
                 "bool_cond": input_cond.bool_cond,
+                "is_unmatch": input_cond.is_unmatch,
             }
             if not TriggerCondition.objects.filter(**params).exists():
                 TriggerCondition.objects.create(**params)
@@ -205,7 +210,11 @@ class TriggerParent(models.Model):
         def _is_match(condition: TriggerCondition):
             for attr_info in [x for x in recv_attrs if x["attr_id"] == condition.attr.id]:
                 if condition.is_match_condition(attr_info["value"]):
-                    return True
+                    if not condition.is_unmatch:
+                        return True
+                else:
+                    if condition.is_unmatch:
+                        return True
 
             return False
 
@@ -247,6 +256,7 @@ class TriggerCondition(models.Model):
     str_cond = models.TextField(blank=True, null=True)
     ref_cond = models.ForeignKey("entry.Entry", on_delete=models.SET_NULL, null=True, blank=True)
     bool_cond = models.BooleanField(default=False)
+    is_unmatch = models.BooleanField(default=False)
 
     @property
     def ATTR_TYPE(self):
@@ -255,7 +265,7 @@ class TriggerCondition(models.Model):
     def is_same_condition(self, input_list: list[InputTriggerCondition]) -> bool:
         # This checks one of the InputCondition which is in input_list matches with this condition
         def _do_check_condition(input: InputTriggerCondition):
-            if self.attr.id == input.attr.id:
+            if self.attr.id == input.attr.id and self.is_unmatch == input.is_unmatch:
                 match self.ATTR_TYPE:
                     case AttrType.STRING | AttrType.TEXT | AttrType.ARRAY_STRING:
                         return self.str_cond == input.str_cond

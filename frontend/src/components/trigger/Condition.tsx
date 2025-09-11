@@ -235,6 +235,18 @@ export const Condition: FC<Props> = ({
         />
       </TableCell>
       <TableCell>
+        <Controller
+          name={`conditions.${index}.isUnmatch`}
+          control={control}
+          render={({ field }) => (
+            <Checkbox
+              checked={field.value}
+              onChange={(e) => field.onChange(e.target.checked)}
+            />
+          )}
+        />
+      </TableCell>
+      <TableCell>
         <ConditionValue
           index={index}
           control={control}
