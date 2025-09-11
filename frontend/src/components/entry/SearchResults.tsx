@@ -229,7 +229,7 @@ export const SearchResults: FC<Props> = ({
 
         {!disablePaginationFooter && (
           <PaginationFooter
-            count={results.count}
+            count={results.totalCount ?? results.count}
             maxRowCount={AdvancedSerarchResultListParam.MAX_ROW_COUNT}
             page={page}
             changePage={changePage}
