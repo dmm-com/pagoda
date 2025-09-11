@@ -265,10 +265,14 @@ export function convertAttrsFormatCtoS(
           };
 
         case EntryAttributeTypeTypeEnum.ARRAY_STRING:
-          return attrValue.asArrayString?.map((x) => x.value);
+          return attrValue.asArrayString
+            ?.filter((x) => x.value != "")
+            .map((x) => x.value);
 
         case EntryAttributeTypeTypeEnum.ARRAY_NUMBER:
-          return attrValue.asArrayNumber?.map((x) => x.value);
+          return attrValue.asArrayNumber
+            ?.filter((x) => x.value != null)
+            .map((x) => x.value);
 
         case EntryAttributeTypeTypeEnum.ARRAY_OBJECT:
           return attrValue.asArrayObject?.map((x) => x.id);
@@ -280,12 +284,14 @@ export function convertAttrsFormatCtoS(
           return attrValue.asArrayRole?.map((x) => x.id);
 
         case EntryAttributeTypeTypeEnum.ARRAY_NAMED_OBJECT:
-          return attrValue.asArrayNamedObject?.map((x) => {
-            return {
-              id: x.object?.id ?? null,
-              name: x.name,
-            };
-          });
+          return attrValue.asArrayNamedObject
+            ?.filter((x) => x.name != "" || x.object != null)
+            .map((x) => {
+              return {
+                id: x.object?.id ?? null,
+                name: x.name,
+              };
+            });
 
         case EntryAttributeTypeTypeEnum.ARRAY_NAMED_OBJECT_BOOLEAN:
           return (
