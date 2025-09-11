@@ -35,7 +35,7 @@ export const PaginationFooter: FC<Props> = ({
           count={Math.ceil(count / maxRowCount)}
           page={page}
           onChange={(_, newPage) => changePage(newPage)}
-          siblingCount={0}
+          siblingCount={1}
           boundaryCount={1}
           color="primary"
         />
