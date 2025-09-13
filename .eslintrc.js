@@ -1,7 +1,13 @@
 const path = require('path');
 
 module.exports = {
-  ignorePatterns: ['frontend/dist/'],
+  ignorePatterns: [
+    'frontend/dist/',
+    'frontend/plugins/*/dist/',
+    '**/node_modules/',
+    '**/*.min.js',
+    'static/js/',
+  ],
   plugins: ['import', 'unused-imports', 'react', '@typescript-eslint'],
   settings: {
     'import/resolver': {
