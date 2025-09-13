@@ -6,8 +6,6 @@ import { AironeSnackbarProvider } from "AironeSnackbarProvider";
 import { AppBase } from "AppBase";
 import { theme } from "Theme";
 
-console.log("📦 [App] Loading - VANILLA VERSION (NO PLUGINS)");
-
 const container = document.getElementById("app");
 if (container == null) {
   throw new Error("failed to initializer React app.");

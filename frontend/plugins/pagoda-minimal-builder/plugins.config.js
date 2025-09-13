@@ -16,7 +16,7 @@ export default {
   plugins: [
     // Default plugins
     "pagoda-plugin-hello-world",
-    // 'pagoda-plugin-dashboard',
+    "pagoda-plugin-dashboard",
 
     // Add custom plugins here
     // "pagoda-plugin-custom-example", // Third-party plugin example (uncomment when installed)

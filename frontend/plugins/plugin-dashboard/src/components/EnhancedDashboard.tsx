@@ -34,7 +34,7 @@ interface PluginAPI {
   };
 }
 
-interface EnhancedDashboardProps {
+export interface EnhancedDashboardProps {
   pluginAPI?: PluginAPI; // Will be injected by the plugin system
 }
 

@@ -10,8 +10,9 @@
       "default": "./frontend/dist/pagoda-core.js"
     },
     "./plugins": {
-      "types": "./frontend/src/plugins/index.ts",
-      "default": "./frontend/src/plugins/index.ts"
+      "types": "./frontend/dist/plugins/index.d.ts",
+      "import": "./frontend/dist/plugins/index.d.ts",
+      "require": "./frontend/dist/plugins/index.d.ts"
     }
   },
   "directories": {

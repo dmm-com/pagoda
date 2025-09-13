@@ -24,7 +24,7 @@ interface PluginAPI {
   };
 }
 
-interface HelloWorldPageProps {
+export interface HelloWorldPageProps {
   pluginAPI?: PluginAPI; // Will be injected by the plugin system
 }
 

@@ -4,7 +4,6 @@
   "description": "Enhanced dashboard plugin for Airone - demonstrates route override functionality",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "type": "module",
   "files": [
     "dist",
     "src"
