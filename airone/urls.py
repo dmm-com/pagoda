@@ -52,3 +52,12 @@ for extension in settings.AIRONE["EXTENSIONS"]:
     urlpatterns.append(
         re_path(r"^extension/%s" % extension, include(("%s.urls" % extension, extension)))
     )
+
+# Conditionally add plugin URL patterns
+if settings.AIRONE.get("PLUGINS", {}).get("ENABLED", False):
+    try:
+        from airone.plugins.integration import plugin_integration
+        urlpatterns.extend(plugin_integration.get_url_patterns())
+    except ImportError:
+        # Skip if plugin system is not available
+        pass
