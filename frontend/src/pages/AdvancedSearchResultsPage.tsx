@@ -19,7 +19,7 @@ import {
   Typography,
 } from "@mui/material";
 import { useSnackbar } from "notistack";
-import { FC, useEffect, useMemo, useState } from "react";
+import { FC, useEffect, useMemo, useState, useRef } from "react";
 import { useLocation } from "react-router";
 
 import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
@@ -129,6 +129,7 @@ export const AdvancedSearchResultsPage: FC = () => {
   const location = useLocation();
   const { enqueueSnackbar } = useSnackbar();
   const { page, changePage } = usePage();
+  const requestIdRef = useRef(0);
 
   const [openModal, setOpenModal] = useState(false);
   const [bulkOperationEntryIds, setBulkOperationEntryIds] = useState<
@@ -164,8 +165,11 @@ export const AdvancedSearchResultsPage: FC = () => {
   });
 
   useEffect(() => {
-    const sendSearchRequest = () => {
-      return aironeApiClient.advancedSearch(
+    const myId = ++requestIdRef.current;
+    setSearchResults((prev) => ({ ...prev, isInProcessing: true }));
+
+    aironeApiClient
+      .advancedSearch(
         entityIds,
         attrInfo,
         joinAttrs,
@@ -176,42 +180,44 @@ export const AdvancedSearchResultsPage: FC = () => {
         AdvancedSerarchResultListParam.MAX_ROW_COUNT,
         0,
         hintEntry,
-      );
-    };
+      )
+      .then((results) => {
+        if (myId !== requestIdRef.current) return;
 
-    // show loading indicator
-    setSearchResults({ ...searchResults, isInProcessing: true });
-
-    sendSearchRequest().then((results) => {
-      if (joinAttrs.length > 0) {
-        if (page == 1) {
-          setSearchResults({
-            count: results.count,
-            values: results.values,
-            page: page,
-            totalCount: results.totalCount,
-            isInProcessing: false,
+        if (joinAttrs.length > 0) {
+          setSearchResults((prev) => {
+            if (page === 1) {
+              return {
+                count: results.count,
+                values: results.values,
+                page,
+                totalCount: results.totalCount,
+                isInProcessing: false,
+              };
+            }
+            return {
+              ...prev,
+              count: prev.count + results.count,
+              values: prev.values.concat(results.values),
+              page,
+              totalCount: results.totalCount,
+              isInProcessing: false,
+            };
           });
         } else {
           setSearchResults({
-            ...searchResults,
-            count: searchResults.count + results.count,
-            values: searchResults.values.concat(results.values),
-            page: page,
+            count: results.count,
+            values: results.values,
+            page,
             totalCount: results.totalCount,
             isInProcessing: false,
           });
         }
-      } else {
-        setSearchResults({
-          count: results.count,
-          values: results.values,
-          page: page,
-          totalCount: results.totalCount,
-          isInProcessing: false,
-        });
-      }
-    });
+      })
+      .catch(() => {
+        if (myId !== requestIdRef.current) return;
+        setSearchResults((prev) => ({ ...prev, isInProcessing: false }));
+      });
   }, [page, toggle, location.search]);
 
   const handleExport = async (exportStyle: "yaml" | "csv") => {
