@@ -1,13 +1,13 @@
-# AirOne Hello World Plugin
+# Pagoda Hello World Plugin
 
-A sample external plugin demonstrating the AirOne plugin system capabilities.
+A sample external plugin demonstrating the Pagoda plugin system capabilities.
 
 ## Features
 
 - **API Endpoints**: Provides REST API endpoints under `/api/v2/plugins/hello-world-plugin/`
 - **Hook Integration**: Demonstrates how to extend core functionality through hooks
 - **External Package**: Shows how to create plugins as separate Python packages
-- **Core Library Usage**: Uses `airone.libs` to access AirOne core functionality
+- **Core Library Usage**: Uses `pagoda-plugin-sdk` to access Pagoda core functionality
 
 ## Installation
 
@@ -15,7 +15,7 @@ A sample external plugin demonstrating the AirOne plugin system capabilities.
 
 ```bash
 # Navigate to the plugin directory
-cd external_plugins/airone-hello-world-plugin
+cd plugin/examples/pagoda-hello-world-plugin
 
 # Install the plugin in editable mode
 pip install -e .
@@ -25,18 +25,23 @@ pip install -e .
 
 ```bash
 # Install from local directory
-pip install external_plugins/airone-hello-world-plugin/
+pip install plugin/examples/pagoda-hello-world-plugin/
 
-# Or install from a remote repository (future)
-# pip install airone-hello-world-plugin
+# Or install from a remote repository
+pip install git+https://github.com/user/pagoda-hello-world-plugin.git
 ```
 
 ## Configuration
 
-Ensure that the AirOne plugin system is enabled:
+Enable the plugin explicitly using the environment variable:
 
 ```bash
-export AIRONE_PLUGINS_ENABLED=true
+export ENABLED_PLUGINS=hello-world
+```
+
+For multiple plugins:
+```bash
+export ENABLED_PLUGINS=hello-world,another-plugin
 ```
 
 ## API Endpoints
@@ -90,10 +95,10 @@ The plugin demonstrates hook integration with:
 ### Project Structure
 
 ```
-airone-hello-world-plugin/
-├── setup.py                    # Package configuration
+pagoda-hello-world-plugin/
+├── pyproject.toml              # Modern package configuration
 ├── README.md                   # This file
-└── airone_hello_world_plugin/  # Main package
+└── pagoda_hello_world_plugin/  # Main package
     ├── __init__.py             # Package exports
     ├── plugin.py               # Main plugin class
     ├── apps.py                 # Django app configuration
@@ -108,32 +113,45 @@ airone-hello-world-plugin/
 
 - Django >= 3.2
 - Django REST Framework >= 3.12
-- AirOne core system (for accessing `airone.libs`)
+- pagoda-plugin-sdk >= 1.0.0
 
-**Important**: This plugin imports from `airone.libs` which provides the core functionality for external plugins. The plugin must be installed in the same Python environment as AirOne to access these libraries.
+**Important**: This plugin uses the `pagoda-plugin-sdk` which provides the core functionality for external plugins. The plugin must be installed in the same Python environment as the host application to access these libraries.
 
 ### Plugin Discovery
 
-This plugin uses Python entry points for automatic discovery:
+This plugin uses Python entry points for discovery:
 
-```python
-entry_points={
-    'airone.plugins': [
-        'hello-world = airone_hello_world_plugin:HelloWorldPlugin',
-    ],
-}
+```toml
+[project.entry-points."pagoda.plugins"]
+hello-world = "pagoda_hello_world_plugin.plugin:HelloWorldPlugin"
 ```
 
 ## License
 
-MIT License - See the main AirOne project for details.
+MIT License - See the main Pagoda project for details.
 
 ## Contributing
 
 This is a sample plugin for demonstration purposes. For real plugin development:
 
 1. Fork this plugin as a template
-2. Rename the package and update metadata in `setup.py`
-3. Implement your specific functionality
-4. Test thoroughly with your AirOne installation
-5. Package and distribute as needed
+2. Rename the package and update metadata in `pyproject.toml`
+3. Update the entry point name in `[project.entry-points."pagoda.plugins"]`
+4. Implement your specific functionality
+5. Test thoroughly with your Pagoda installation using `ENABLED_PLUGINS=your-plugin`
+6. Package and distribute as needed
+
+### Quick Development Setup
+
+```bash
+# Clone and setup
+git clone https://github.com/user/my-plugin-repo.git
+cd my-plugin-repo
+
+# Install in development mode
+pip install -e .
+
+# Test with host application
+export ENABLED_PLUGINS=my-plugin
+python manage.py runserver
+```

@@ -1,6 +1,6 @@
-# AirOne Plugin Examples
+# Pagoda Plugin Examples
 
-This directory contains example plugins demonstrating how to create external plugins for AirOne using the pagoda-plugin-sdk framework.
+This directory contains example plugins demonstrating how to create external plugins for Pagoda applications using the pagoda-plugin-sdk framework.
 
 ## Plugin Development Workflow
 
@@ -24,7 +24,7 @@ For real plugin development, create a **separate repository** with this structur
 ```
 your-plugin/
 ├── README.md
-├── setup.py                    # Package configuration
+├── pyproject.toml              # Modern package configuration
 ├── Makefile                    # Development commands
 ├── your_plugin_package/
 │   ├── __init__.py
@@ -42,14 +42,14 @@ your-plugin/
 #### Step 1: Initialize Plugin Project
 ```bash
 # Create new directory for your plugin
-mkdir my-airone-plugin
-cd my-airone-plugin
+mkdir my-pagoda-plugin
+cd my-pagoda-plugin
 
 # Copy structure from example
-cp -r airone-hello-world-plugin/* .
+cp -r pagoda-hello-world-plugin/* .
 
 # Customize for your plugin
-# - Update setup.py
+# - Update pyproject.toml
 # - Rename directories/modules
 # - Implement your plugin logic
 ```
@@ -65,9 +65,9 @@ python -c "from your_plugin.plugin import YourPlugin; print('✓ Plugin loads')"
 
 #### Step 3: Integration Testing
 ```bash
-# Test with AirOne (from AirOne repository root)
-export AIRONE_PLUGINS_ENABLED=true
-poetry run python manage.py shell -c "
+# Test with Pagoda application (from application repository root)
+export ENABLED_PLUGINS=your-plugin
+python manage.py shell -c "
 from airone.plugins.registry import plugin_registry
 from your_plugin.plugin import YourPlugin
 plugin = plugin_registry.register(YourPlugin)
@@ -77,11 +77,15 @@ print(f'✓ Plugin registered: {plugin.name}')
 
 #### Step 4: Distribution
 ```bash
-# Build distribution
+# Build distribution (using modern tools)
 python -m build
+# Or using uv (recommended)
+uv build
 
 # Publish to PyPI (or private repository)
 twine upload dist/*
+# Or using uv
+uv publish
 ```
 
 ### 4. Plugin Structure Explanation
@@ -108,27 +112,30 @@ class YourPlugin(Plugin):
     }
 ```
 
-#### setup.py
-```python
-setup(
-    name='your-airone-plugin',
-    version='1.0.0',
-    packages=find_packages(),
-    install_requires=[
-        'pagoda-plugin-sdk>=1.0.0',  # Core dependency
-        'Django>=3.2',
-    ],
-    entry_points={
-        'airone_plugins': [
-            'your-plugin = your_plugin_package.plugin:YourPlugin',
-        ],
-    },
-)
+#### pyproject.toml
+```toml
+[project]
+name = "your-pagoda-plugin"
+version = "1.0.0"
+description = "Your Pagoda Plugin"
+dependencies = [
+    "pagoda-plugin-sdk>=1.0.0",  # Core dependency
+    "Django>=3.2",
+    "djangorestframework>=3.12",
+]
+requires-python = ">=3.8"
+
+[project.entry-points."pagoda.plugins"]
+your-plugin = "your_plugin_package.plugin:YourPlugin"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 ```
 
 ## Available Examples
 
-### airone-hello-world-plugin
+### pagoda-hello-world-plugin
 A basic example demonstrating:
 - Plugin registration
 - Hook system integration
@@ -145,17 +152,17 @@ python -m pytest tests/
 
 ### Integration Testing
 ```bash
-# Test with AirOne
-cd /path/to/airone
-export AIRONE_PLUGINS_ENABLED=true
-poetry run python manage.py test --settings=airone.settings_test
+# Test with Pagoda application
+cd /path/to/pagoda-app
+export ENABLED_PLUGINS=your-plugin
+python manage.py test --settings=airone.settings_test
 ```
 
 ### Manual Testing
 ```bash
-# Start AirOne with your plugin
-export AIRONE_PLUGINS_ENABLED=true
-poetry run python manage.py runserver
+# Start application with your plugin
+export ENABLED_PLUGINS=your-plugin
+python manage.py runserver
 
 # Check plugin status
 curl http://localhost:8000/api/v2/plugins/your-plugin/status
@@ -169,7 +176,7 @@ curl http://localhost:8000/api/v2/plugins/your-plugin/status
 twine upload dist/*
 
 # Users install with:
-pip install your-airone-plugin
+pip install your-pagoda-plugin
 ```
 
 ### 2. GitHub Releases
@@ -188,7 +195,7 @@ pip install https://github.com/you/your-plugin/releases/download/v1.0.0/your_plu
 twine upload --repository-url https://your-repo.com/simple dist/*
 
 # Users install with:
-pip install --index-url https://your-repo.com/simple your-airone-plugin
+pip install --index-url https://your-repo.com/simple your-pagoda-plugin
 ```
 
 ## Best Practices
@@ -196,5 +203,5 @@ pip install --index-url https://your-repo.com/simple your-airone-plugin
 1. **Version pinning**: Pin pagoda-plugin-sdk version in setup.py
 2. **Testing**: Include comprehensive tests
 3. **Documentation**: Add clear README and API documentation
-4. **Compatibility**: Test with supported AirOne versions
+4. **Compatibility**: Test with supported Pagoda application versions
 5. **Security**: Follow security best practices for hooks and API endpoints

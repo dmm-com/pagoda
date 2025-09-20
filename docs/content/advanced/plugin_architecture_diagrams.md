@@ -9,8 +9,8 @@ weight: 1
 
 ```mermaid
 graph TB
-    subgraph "Layer 1: Core Framework (pagoda-core)"
-        PC[pagoda-core Package]
+    subgraph "Layer 1: Core Framework (pagoda-plugin-sdk)"
+        PC[pagoda-plugin-sdk Package]
         PI[Plugin Interfaces]
         PB[Base Plugin Class]
         CH[Common Hooks]
@@ -25,13 +25,13 @@ graph TB
         DJ[Django App Config]
     end
 
-    subgraph "Layer 3: AirOne Host Application"
+    subgraph "Layer 3: Pagoda Host Application"
         AB[Auth Bridge]
         DB[Data Bridge]
         HB[Hook Bridge]
         BM[Bridge Manager]
         UI[URL Integration]
-        AS[AirOne Settings]
+        AS[Pagoda Settings]
     end
 
     PC --> EP
@@ -57,20 +57,20 @@ graph TB
 ```mermaid
 sequenceDiagram
     participant ENV as Environment
-    participant AI as AirOne Init
+    participant AI as Pagoda Init
     participant PD as Plugin Discovery
     participant PR as Plugin Registry
     participant BM as Bridge Manager
     participant DU as Django URLs
 
-    ENV->>AI: AIRONE_PLUGINS_ENABLED=true
+    ENV->>AI: ENABLED_PLUGINS=hello-world
     AI->>PD: Start plugin discovery
 
     par External Plugin Discovery
-        PD->>PD: pkg_resources.iter_entry_points('airone.plugins')
+        PD->>PD: pkg_resources.iter_entry_points('pagoda.plugins')
         PD->>PR: Register external plugins
     and Example Plugin Discovery
-        PD->>PD: Scan plugin_examples/ directory
+        PD->>PD: Scan plugin/examples/ directory
         PD->>PR: Register example plugins
     end
 
@@ -88,8 +88,8 @@ sequenceDiagram
 ```mermaid
 graph LR
     subgraph "Hook Registration"
-        PC[pagoda-core<br/>COMMON_HOOKS]
-        AH[AirOne Specific<br/>Hooks]
+        PC[pagoda-plugin-sdk<br/>COMMON_HOOKS]
+        AH[Pagoda Specific<br/>Hooks]
         HR[Hook Registry<br/>42 total hooks]
     end
 
@@ -130,7 +130,7 @@ graph TB
         AUTH[Authentication]
     end
 
-    subgraph "AirOne Core"
+    subgraph "Pagoda Core"
         URLS[Django URLs]
         MW[Middleware]
         APIV2[API v2 Router]
@@ -150,7 +150,7 @@ graph TB
         HB[Hook Bridge]
     end
 
-    subgraph "AirOne Backend"
+    subgraph "Pagoda Backend"
         MODELS[Django Models]
         PERMS[Permissions]
         HOOKS[Hook System]
@@ -188,7 +188,7 @@ graph TB
 graph TD
     subgraph "Development Environment"
         DEV[Developer Machine]
-        PC[pagoda-core install]
+        PC[pagoda-plugin-sdk install]
         PE[Plugin Examples]
         IDE[IDE/Editor]
     end
@@ -245,7 +245,7 @@ graph LR
         DEPS[Dependencies]
     end
 
-    subgraph "AirOne Instance"
+    subgraph "Pagoda Instance"
         DJANGO[Django Application]
         SETTINGS[Settings Integration]
         INSTALLED[Installed Apps]
@@ -291,21 +291,21 @@ graph LR
 ```mermaid
 sequenceDiagram
     participant C as Client
-    participant AirOne as AirOne Server
+    participant Pagoda as Pagoda Server
     participant PluginAPI as Plugin API View
     participant Bridge as Bridge Manager
     participant DB as Database
 
-    C->>AirOne: GET /api/v2/plugins/my-plugin/hello/
-    AirOne->>AirOne: Authentication check
-    AirOne->>PluginAPI: Route to plugin endpoint
+    C->>Pagoda: GET /api/v2/plugins/my-plugin/hello/
+    Pagoda->>Pagoda: Authentication check
+    Pagoda->>PluginAPI: Route to plugin endpoint
     PluginAPI->>PluginAPI: Plugin logic execution
     PluginAPI->>Bridge: Request data via bridge
     Bridge->>DB: Execute database query
     DB-->>Bridge: Return data
     Bridge-->>PluginAPI: Formatted data
-    PluginAPI-->>AirOne: API response
-    AirOne-->>C: JSON response
+    PluginAPI-->>Pagoda: API response
+    Pagoda-->>C: JSON response
 
     Note over C,DB: Complete plugin API request flow
 ```
@@ -315,13 +315,13 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant User as User Action
-    participant AirOne as AirOne Core
+    participant Pagoda as Pagoda Core
     participant Django as Django Signal
     participant HookBridge as Hook Bridge
     participant Plugin as Plugin Handler
 
-    User->>AirOne: Create Entry
-    AirOne->>Django: post_save signal
+    User->>Pagoda: Create Entry
+    Pagoda->>Django: post_save signal
     Django->>HookBridge: entry.after_create hook
     HookBridge->>HookBridge: Find registered callbacks
 
@@ -332,8 +332,8 @@ sequenceDiagram
     end
 
     HookBridge-->>Django: All results
-    Django-->>AirOne: Hook execution complete
-    AirOne-->>User: Entry created successfully
+    Django-->>Pagoda: Hook execution complete
+    Pagoda-->>User: Entry created successfully
 
     Note over User,Plugin: Plugin hook execution on entry creation
 ```
@@ -469,4 +469,4 @@ graph TB
     style ISOL fill:#e8f5e8
 ```
 
-この3層アーキテクチャ設計により、AirOneは完全に独立したプラグインエコシステムを提供し、安全で拡張可能なプラットフォームを実現しています。プラグイン開発者は標準化されたインターフェースを通じて、AirOneの核心機能にアクセスしながら、独自の価値を提供できます。
+Through this 3-layer architecture design, Pagoda provides a completely independent plugin ecosystem, realizing a secure and extensible platform. Plugin developers can provide unique value while accessing Pagoda's core functionality through standardized interfaces.

@@ -3,86 +3,86 @@ title: Plugin Development Quick Start Guide
 weight: 2
 ---
 
-## 5分で始めるプラグイン開発
+## Plugin Development in 5 Minutes
 
-このガイドは、AirOneプラグインシステムを使って最初のプラグインを作成・動作確認するまでの最短手順を提供します。
+This guide provides the shortest steps to create and verify your first plugin using the Pagoda plugin system.
 
-### ステップ 1: 環境準備 (2分)
+### Step 1: Environment Setup (2 minutes)
 
-#### 1.1 AirOne環境でのpagoda-core準備
+#### 1.1 Setting up pagoda-plugin-sdk in Pagoda Environment
 
 ```bash
-cd /path/to/airone
+cd /path/to/pagoda
 
-# pagoda-coreの開発版インストール
-cd pagoda-core/
+# Install development version of pagoda-plugin-sdk
+cd plugin/sdk/
 make install-dev
 
 # インストール確認
-python -c "import pagoda_core; print('✓ pagoda-core ready')"
+python -c "import pagoda_plugin_sdk; print('✓ pagoda-plugin-sdk ready')"
 ```
 
-#### 1.2 サンプルプラグインで動作確認
+#### 1.2 Verify Operation with Sample Plugin
 
 ```bash
-# プラグイン有効化してサーバー起動
-AIRONE_PLUGINS_ENABLED=true poetry run python manage.py runserver 8080 &
+# Enable plugin and start server
+ENABLED_PLUGINS=hello-world python manage.py runserver 8080 &
 
-# 別ターミナルで動作確認
+# Verify operation in separate terminal
 curl http://localhost:8080/api/v2/plugins/hello-world-plugin/test/
 ```
 
-**期待するレスポンス:**
+**Expected Response:**
 ```json
 {
-  "message": "External Hello World Plugin is working via pagoda-core!",
+  "message": "External Hello World Plugin is working via pagoda-plugin-sdk!",
   "plugin": {
     "id": "hello-world-plugin",
     "name": "Hello World Plugin",
     "version": "1.0.0",
     "type": "external",
-    "core": "pagoda-core"
+    "core": "pagoda-plugin-sdk"
   }
 }
 ```
 
-✅ **ここまで正常に動作すれば環境準備完了です！**
+✅ **If everything works correctly up to this point, environment setup is complete!**
 
-### ステップ 2: 最初のプラグイン作成 (3分)
+### Step 2: Creating Your First Plugin (3 minutes)
 
-#### 2.1 プラグインプロジェクト作成
+#### 2.1 Create Plugin Project
 
 ```bash
-# 作業ディレクトリ作成
+# Create working directory
 mkdir my-first-plugin
 cd my-first-plugin
 
-# サンプルからコピーして開始
-cp -r ../airone/plugin_examples/airone-hello-world-plugin/* .
+# Copy from sample to start
+cp -r ../plugin/examples/pagoda-hello-world-plugin/* .
 
-# プラグイン名をカスタマイズ
-sed -i 's/hello-world-plugin/my-first-plugin/g' setup.py
-sed -i 's/airone_hello_world_plugin/my_first_plugin/g' setup.py
+# Customize plugin name
+sed -i 's/hello-world-plugin/my-first-plugin/g' pyproject.toml
+sed -i 's/pagoda_hello_world_plugin/my_first_plugin/g' pyproject.toml
 ```
 
-#### 2.2 プラグイン構造をリネーム
+#### 2.2 Rename Plugin Structure
 
 ```bash
-# ディレクトリ・ファイル名変更
-mv airone_hello_world_plugin my_first_plugin
+# Change directory and file names
+mv pagoda_hello_world_plugin my_first_plugin
 ```
 
-#### 2.3 プラグインクラスをカスタマイズ
+#### 2.3 Customize Plugin Class
 
 ```python
 # my_first_plugin/plugin.py
-from pagoda_core import Plugin
+from pagoda_plugin_sdk import Plugin
 
 class MyFirstPlugin(Plugin):
     id = "my-first-plugin"
     name = "My First Plugin"
     version = "1.0.0"
-    description = "My very first AirOne plugin"
+    description = "My very first Pagoda plugin"
     author = "Your Name"
 
     django_apps = ["my_first_plugin"]
@@ -93,14 +93,14 @@ class MyFirstPlugin(Plugin):
     }
 ```
 
-#### 2.4 APIエンドポイントをカスタマイズ
+#### 2.4 Customize API Endpoints
 
 ```python
 # my_first_plugin/api_v2/views.py
 from datetime import datetime
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
-from pagoda_core import PluginAPIViewMixin
+from pagoda_plugin_sdk import PluginAPIViewMixin
 
 class MyFirstView(PluginAPIViewMixin):
     permission_classes = [AllowAny]
@@ -132,7 +132,7 @@ urlpatterns = [
 ]
 ```
 
-#### 2.5 フックハンドラーをカスタマイズ
+#### 2.5 Customize Hook Handlers
 
 ```python
 # my_first_plugin/hooks.py
@@ -141,67 +141,67 @@ import logging
 logger = logging.getLogger(__name__)
 
 def after_entry_create(sender, instance, created, **kwargs):
-    """Entry作成後に実行されるフック"""
+    """Hook executed after Entry creation"""
     if created:
         logger.info(f"🎉 New entry created via My First Plugin: {instance.name}")
         print(f"My First Plugin detected new entry: {instance.name}")
 ```
 
-### ステップ 3: プラグインテスト・インストール
+### Step 3: Plugin Testing & Installation
 
-#### 3.1 プラグインのインストール
+#### 3.1 Plugin Installation
 
 ```bash
-# 開発用インストール
-poetry run pip install -e .
+# Development installation
+pip install -e .
 
 # インストール確認
-poetry run python -c "
+python -c "
 from my_first_plugin.plugin import MyFirstPlugin
 plugin = MyFirstPlugin()
 print(f'✓ Plugin ready: {plugin.name} v{plugin.version}')
 "
 ```
 
-#### 3.2 AirOneでのテスト
+#### 3.2 Testing with Pagoda
 
 ```bash
-# AirOneサーバー再起動（新プラグイン認識のため）
+# Restart Pagoda server (to recognize new plugin)
 pkill -f "manage.py runserver"
-AIRONE_PLUGINS_ENABLED=true poetry run python manage.py runserver 8080 &
+ENABLED_PLUGINS=my-first-plugin python manage.py runserver 8080 &
 
-# プラグインエンドポイントテスト
+# Test plugin endpoint
 curl http://localhost:8080/api/v2/plugins/my-first-plugin/test/
 ```
 
-**成功時のログ:**
+**Logs on Success:**
 ```
 [INFO] Registered plugin: my-first-plugin v1.0.0
 [INFO] Registered 1 hooks for plugin my-first-plugin
 [INFO] Plugin discovery completed. Found 2 plugins.
 ```
 
-## 実践的トラブルシューティング
+## Practical Troubleshooting
 
-### 問題 1: 404エラー - プラグインが見つからない
+### Issue 1: 404 Error - Plugin Not Found
 
-**症状:**
+**Symptoms:**
 ```bash
 curl http://localhost:8080/api/v2/plugins/my-plugin/test/
 # 404 Not Found
 ```
 
-**診断手順:**
+**Diagnostic Steps:**
 
 ```bash
 # 1. プラグインシステムが有効か確認
-poetry run python manage.py shell -c "
+python manage.py shell -c "
 from django.conf import settings
-print('Plugin system enabled:', settings.AIRONE.get('PLUGINS', {}).get('ENABLED', False))
+print('Plugin system enabled:', bool(getattr(settings, 'ENABLED_PLUGINS', [])))
 "
 
 # 2. プラグイン登録状況確認
-AIRONE_PLUGINS_ENABLED=true poetry run python manage.py shell -c "
+ENABLED_PLUGINS=my-first-plugin python manage.py shell -c "
 from airone.plugins.integration import plugin_integration
 plugin_integration.initialize()
 plugins = plugin_integration.get_enabled_plugins()
@@ -210,9 +210,9 @@ for p in plugins:
 "
 
 # 3. Entry points確認
-poetry run python -c "
+python -c "
 import pkg_resources
-entries = list(pkg_resources.iter_entry_points('airone.plugins'))
+entries = list(pkg_resources.iter_entry_points('pagoda.plugins'))
 print(f'Found {len(entries)} entry points:')
 for ep in entries:
     print(f'  {ep.name} -> {ep.module_name}')
@@ -222,19 +222,19 @@ for ep in entries:
 **解決法:**
 ```bash
 # 最も多い原因: 環境変数不足
-❌ poetry run python manage.py runserver
-✅ AIRONE_PLUGINS_ENABLED=true poetry run python manage.py runserver
+❌ python manage.py runserver
+✅ ENABLED_PLUGINS=my-first-plugin python manage.py runserver
 
 # 次に多い原因: プラグインが未インストール
-poetry run pip install -e .
+pip install -e .
 
 # Entry pointsパス間違い
-# setup.pyを確認して正しいパス指定に修正
+# pyproject.tomlを確認して正しいパス指定に修正
 ```
 
 ### 問題 2: Import エラー - モジュールが見つからない
 
-**症状:**
+**Symptoms:**
 ```
 [ERROR] Failed to load external plugin: No module named 'my_plugin'
 ```
@@ -243,7 +243,7 @@ poetry run pip install -e .
 
 ```bash
 # 1. プラグインが正しくインストールされているか
-poetry run pip list | grep my-plugin
+pip list | grep my-plugin
 
 # 2. モジュール構造を確認
 tree my-plugin/
@@ -255,22 +255,19 @@ tree my-plugin/
 #     └── plugin.py
 
 # 3. Entry pointsパスを確認・修正
-# setup.py内で:
-entry_points={
-    'airone.plugins': [
-        'my-plugin = my_plugin.plugin:MyPlugin',  # ← 正確なパス
-    ],
-}
+# pyproject.toml内で:
+[project.entry-points."pagoda.plugins"]
+my-plugin = "my_plugin.plugin:MyPlugin"  # ← 正確なパス
 
 # 4. 再インストール
 pip uninstall -y my-plugin
 rm -rf build/ dist/ *.egg-info/
-poetry run pip install -e .
+pip install -e .
 ```
 
 ### 問題 3: Hook実行エラー
 
-**症状:**
+**Symptoms:**
 ```
 [ERROR] Hook entry.after_create failed: missing required arguments
 ```
@@ -317,11 +314,11 @@ class PluginB(Plugin):
             return data
 ```
 
-### ブリッジ経由でのAirOneデータアクセス
+### ブリッジ経由でのPagodaデータアクセス
 
 ```python
-# プラグインからAirOneデータにアクセス
-from pagoda_core import PluginAPIViewMixin
+# プラグインからPagodaデータにアクセス
+from pagoda_plugin_sdk import PluginAPIViewMixin
 
 class DataAccessView(PluginAPIViewMixin):
     def get(self, request):
@@ -399,47 +396,44 @@ def should_process(instance):
 
 ### PyPI配布用設定
 
-```python
-# setup.py - 本格版
-from setuptools import setup, find_packages
+```toml
+# pyproject.toml - 本格版
+[project]
+name = "my-pagoda-plugin"
+version = "1.0.0"
+authors = [
+    {name = "Your Name", email = "you@example.com"},
+]
+description = "A powerful Pagoda plugin"
+readme = "README.md"
+requires-python = ">=3.8"
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Framework :: Django",
+]
+dependencies = [
+    "pagoda-plugin-sdk>=1.0.0,<2.0.0",
+    "Django>=3.2",
+    "djangorestframework>=3.12",
+]
 
-with open("README.md", "r", encoding="utf-8") as fh:
-    long_description = fh.read()
+[project.urls]
+Homepage = "https://github.com/youruser/my-pagoda-plugin"
 
-setup(
-    name="my-airone-plugin",
-    version="1.0.0",
-    author="Your Name",
-    author_email="you@example.com",
-    description="A powerful AirOne plugin",
-    long_description=long_description,
-    long_description_content_type="text/markdown",
-    url="https://github.com/youruser/my-airone-plugin",
-    packages=find_packages(),
-    classifiers=[
-        "Development Status :: 5 - Production/Stable",
-        "Intended Audience :: Developers",
-        "License :: OSI Approved :: MIT License",
-        "Operating System :: OS Independent",
-        "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.8",
-        "Programming Language :: Python :: 3.9",
-        "Programming Language :: Python :: 3.10",
-        "Programming Language :: Python :: 3.11",
-        "Framework :: Django",
-    ],
-    python_requires=">=3.8",
-    install_requires=[
-        "pagoda-core>=1.0.0,<2.0.0",
-        "Django>=3.2",
-        "djangorestframework>=3.12",
-    ],
-    entry_points={
-        "airone.plugins": [
-            "my-plugin = my_plugin.plugin:MyPlugin",
-        ],
-    },
-)
+[project.entry-points."pagoda.plugins"]
+my-plugin = "my_plugin.plugin:MyPlugin"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 ```
 
 ### 継続的インテグレーション
@@ -467,7 +461,7 @@ jobs:
 
     - name: Install dependencies
       run: |
-        pip install pagoda-core
+        pip install pagoda-plugin-sdk
         pip install -e .
         pip install pytest
 

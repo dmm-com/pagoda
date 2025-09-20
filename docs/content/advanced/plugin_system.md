@@ -5,15 +5,15 @@ weight: 0
 
 ## Overview
 
-AirOneのプラグインシステムは、**3層アーキテクチャ**により完全に独立した外部プラグインによる拡張を可能にします。このシステムは、コア機能からプラグインを分離し、安定した拡張ポイントを提供します。
+Pagoda's plugin system enables extension through completely independent external plugins using a **3-layer architecture**. This system separates plugins from core functionality and provides stable extension points.
 
-### 3層アーキテクチャ
+### 3-Layer Architecture
 
 ```
 ┌─────────────────┐    ┌──────────────────┐    ┌──────────────────┐
 │   Core Layer    │    │   Plugin Layer   │    │Extended App Layer│
 │                 │    │                  │    │                  │
-│   pagoda-core   │◄───│  External Plugin │◄───│     AirOne       │
+│pagoda-plugin-sdk│◄───│  External Plugin │◄───│     Pagoda       │
 │                 │    │                  │    │                  │
 │ • Interfaces    │    │ • Plugin Logic   │    │ • Bridge Impl.   │
 │ • Base Classes  │    │ • API Endpoints  │    │ • URL Integration│
@@ -23,38 +23,38 @@ AirOneのプラグインシステムは、**3層アーキテクチャ**により
 
 ### Core Capabilities
 
-プラグインによって以下の拡張が可能です：
+Plugins enable the following extensions:
 
-- **API v2エンドポイント**: RESTfulなAPI拡張
-- **フックベース拡張**: コア操作への介入・拡張
-- **カスタムビジネスロジック**: 独自の処理とデータ操作
-- **認証・認可統合**: AirOneの権限システム活用
+- **API v2 Endpoints**: RESTful API extensions
+- **Hook-Based Extensions**: Intervention and extension of core operations
+- **Custom Business Logic**: Unique processing and data manipulation
+- **Authentication & Authorization Integration**: Utilizing Pagoda's permission system
 
 ## Architecture Deep Dive
 
-### Layer 1: pagoda-core (Core Framework)
+### Layer 1: pagoda-plugin-sdk (Core Framework)
 
-独立したPyPIパッケージとして提供される基盤層：
+Foundation layer provided as an independent PyPI package:
 
 ```python
-# pagoda_core provides:
-from pagoda_core import Plugin, PluginAPIViewMixin
-from pagoda_core.interfaces import AuthInterface, DataInterface, HookInterface
-from pagoda_core.interfaces import COMMON_HOOKS
+# pagoda_plugin_sdk provides:
+from pagoda_plugin_sdk import Plugin, PluginAPIViewMixin
+from pagoda_plugin_sdk.interfaces import AuthInterface, DataInterface, HookInterface
+from pagoda_plugin_sdk.interfaces import COMMON_HOOKS
 ```
 
-**特徴:**
-- PyPI経由で配布可能
-- Django/DRFに依存するが、AirOneに依存しない
-- 標準化されたインターフェース定義
-- 27個の共通フック定義
+**Features:**
+- Distributable via PyPI
+- Depends on Django/DRF but not on Pagoda application
+- Standardized interface definitions
+- 27 common hook definitions
 
 ### Layer 2: External Plugin (Independent Extension)
 
-pagoda-coreのみに依存する完全独立プラグイン：
+Completely independent plugin that depends only on pagoda-plugin-sdk:
 
 ```python
-from pagoda_core import Plugin
+from pagoda_plugin_sdk import Plugin
 
 class MyPlugin(Plugin):
     id = "my-plugin"
@@ -67,19 +67,19 @@ class MyPlugin(Plugin):
     }
 ```
 
-### Layer 3: AirOne (Host Application)
+### Layer 3: Pagoda Application (Host Application)
 
-ブリッジパターンでインターフェースを具体実装に接続：
+Connects interfaces to concrete implementations using the bridge pattern:
 
 ```python
-# AirOne provides concrete implementations
-from airone.plugins.bridge import AirOneAuthBridge, AirOneDataBridge, AirOneHookBridge
+# Pagoda provides concrete implementations
+from airone.plugins.bridge import PagodaAuthBridge, PagodaDataBridge, PagodaHookBridge
 from airone.plugins.bridge_manager import bridge_manager
 
-# Bridges connect generic interfaces to AirOne specifics
-bridge_manager.auth    # -> AirOneAuthBridge
-bridge_manager.data    # -> AirOneDataBridge
-bridge_manager.hooks   # -> AirOneHookBridge
+# Bridges connect generic interfaces to Pagoda specifics
+bridge_manager.auth    # -> PagodaAuthBridge
+bridge_manager.data    # -> PagodaDataBridge
+bridge_manager.hooks   # -> PagodaHookBridge
 ```
 
 ## Getting Started
@@ -87,40 +87,47 @@ bridge_manager.hooks   # -> AirOneHookBridge
 ### Prerequisites
 
 ```bash
-# pagoda-core のインストール (プラグイン開発用)
-pip install pagoda-core
+# Install pagoda-plugin-sdk (for plugin development)
+pip install pagoda-plugin-sdk
 
-# または開発版 (ローカル開発時)
-cd pagoda-core/
-make install-dev
+# Or development version (for local development)
+cd plugin/sdk/
+pip install -e .
 ```
 
-### Enabling Plugin System
+### Plugin Enablement
 
-デフォルトでは無効になっています。有効化するには：
+The plugin system loads only manually specified plugins:
 
 ```bash
-export AIRONE_PLUGINS_ENABLED=true
+# Enable a single plugin
+export ENABLED_PLUGINS=my-plugin
+
+# Enable multiple plugins (comma-separated)
+export ENABLED_PLUGINS=my-plugin,another-plugin
 ```
 
 ### Starting Server with Plugins
 
 ```bash
-# Poetry環境での起動
-AIRONE_PLUGINS_ENABLED=true poetry run python manage.py runserver
+# Start with uv environment (recommended)
+ENABLED_PLUGINS=my-plugin uv run python manage.py runserver
 
-# 環境変数設定後の起動
-export AIRONE_PLUGINS_ENABLED=true
-poetry run python manage.py runserver
+# Start with pip environment
+ENABLED_PLUGINS=my-plugin python manage.py runserver
+
+# Start after setting environment variable
+export ENABLED_PLUGINS=my-plugin
+python manage.py runserver
 ```
 
-**重要**: `AIRONE_PLUGINS_ENABLED=true` の設定なしでは、プラグインのURLパターンが統合されず404エラーになります。
+**Important**: Only plugins explicitly specified in `ENABLED_PLUGINS` are loaded. If none are specified, the plugin system is disabled.
 
 ## Verifying Plugin Operation
 
 ### Startup Logs
 
-プラグインシステムが正常動作している場合のログ：
+Logs when the plugin system is operating normally:
 
 ```
 [INFO] Initializing plugin system...
@@ -128,7 +135,7 @@ poetry run python manage.py runserver
 [INFO] Loaded external plugin: hello-world
 [INFO] Registered plugin: hello-world-plugin v1.0.0
 [INFO] Connected Entry model signals to hook system
-[INFO] AirOne bridge manager initialized successfully
+[INFO] Pagoda bridge manager initialized successfully
 [INFO] Registered 2 hooks for plugin hello-world-plugin
 [INFO] Plugin discovery completed. Found 1 plugins.
 [INFO] Plugin system initialized successfully
@@ -136,13 +143,13 @@ poetry run python manage.py runserver
 
 ### Testing Plugin APIs
 
-サンプルプラグインのAPIエンドポイント：
+Sample plugin API endpoints:
 
 ```bash
-# 認証不要テストエンドポイント（動作確認用）
+# Authentication-free test endpoint (for verification)
 curl http://localhost:8000/api/v2/plugins/hello-world-plugin/test/
 
-# 認証必要エンドポイント
+# Authentication-required endpoints
 curl -H "Authorization: Token YOUR_TOKEN" \
      http://localhost:8000/api/v2/plugins/hello-world-plugin/hello/
 
@@ -182,64 +189,64 @@ curl -H "Authorization: Token YOUR_TOKEN" \
 #### 1. Create Plugin Structure
 
 ```bash
-mkdir my-airone-plugin
-cd my-airone-plugin
+mkdir my-pagoda-plugin
+cd my-pagoda-plugin
 
 # Copy from example
-cp -r ../airone/plugin_examples/airone-hello-world-plugin/* .
+cp -r ../plugin/examples/pagoda-hello-world-plugin/* .
 ```
 
 #### 2. Plugin Package Structure
 
 ```
-my-airone-plugin/
-├── setup.py                    # PyPI配布用設定
-├── Makefile                    # 開発用コマンド
-├── README.md                   # プラグイン説明書
-└── my_plugin_package/          # メインパッケージ
+my-pagoda-plugin/
+├── pyproject.toml              # Modern package configuration
+├── Makefile                    # Development commands
+├── README.md                   # Plugin documentation
+└── my_plugin_package/          # Main package
     ├── __init__.py
-    ├── plugin.py               # プラグインクラス定義
-    ├── hooks.py                # フックハンドラー
-    ├── apps.py                 # Django app設定
-    └── api_v2/                 # API エンドポイント
+    ├── plugin.py               # Plugin class definition
+    ├── hooks.py                # Hook handlers
+    ├── apps.py                 # Django app configuration
+    └── api_v2/                 # API endpoints
         ├── __init__.py
-        ├── urls.py             # URL設定
-        └── views.py            # API view実装
+        ├── urls.py             # URL configuration
+        └── views.py            # API view implementation
 ```
 
-#### 3. setup.py Configuration
+#### 3. pyproject.toml Configuration
 
-```python
-from setuptools import setup, find_packages
+```toml
+[project]
+name = "my-pagoda-plugin"
+version = "1.0.0"
+description = "My Pagoda Plugin"
+dependencies = [
+    "pagoda-plugin-sdk>=1.0.0",  # Core dependency only
+    "Django>=3.2",
+    "djangorestframework>=3.12",
+]
+requires-python = ">=3.8"
 
-setup(
-    name='my-airone-plugin',
-    version='1.0.0',
-    packages=find_packages(),
-    install_requires=[
-        'pagoda-core>=1.0.0',  # Core dependency only
-        'Django>=3.2',
-        'djangorestframework>=3.12',
-    ],
-    entry_points={
-        'airone.plugins': [
-            'my-plugin = my_plugin_package.plugin:MyPlugin',  # 正確なパス指定
-        ],
-    },
-)
+[project.entry-points."pagoda.plugins"]
+my-plugin = "my_plugin_package.plugin:MyPlugin"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 ```
 
 #### 4. Plugin Class Implementation
 
 ```python
-from pagoda_core import Plugin
+from pagoda_plugin_sdk import Plugin
 
 class MyPlugin(Plugin):
     # Required metadata
     id = "my-plugin"
     name = "My Plugin"
     version = "1.0.0"
-    description = "My custom AirOne plugin"
+    description = "My custom Pagoda plugin"
     author = "Your Name"
 
     # Django integration
@@ -263,7 +270,7 @@ from datetime import datetime
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 
-from pagoda_core import PluginAPIViewMixin
+from pagoda_plugin_sdk import PluginAPIViewMixin
 
 class MyAPIView(PluginAPIViewMixin):
     permission_classes = [AllowAny]  # For testing
@@ -282,17 +289,17 @@ class MyAPIView(PluginAPIViewMixin):
 
 ### Development Commands
 
-プラグインディレクトリでの開発用Makeコマンド：
+Development Make commands in plugin directory:
 
 ```bash
-make help              # 利用可能コマンド表示
-make dev-setup         # 開発環境セットアップ
-make install-dev       # 開発モードインストール
-make test              # プラグインテスト
-make test-integration  # AirOne統合テスト
-make build             # 配布パッケージビルド
-make publish-test      # TestPyPI公開
-make publish           # PyPI公開
+make help              # Show available commands
+make dev-setup         # Set up development environment
+make install-dev       # Install in development mode
+make test              # Run plugin tests
+make test-integration  # Run Pagoda integration tests
+make build             # Build distribution packages
+make publish-test      # Publish to TestPyPI
+make publish           # Publish to PyPI
 ```
 
 ### Distribution Strategies
@@ -300,18 +307,18 @@ make publish           # PyPI公開
 #### 1. PyPI Distribution
 
 ```bash
-# ビルドして公開
+# Build and publish
 make build
 make publish
 
 # ユーザー側でインストール
-pip install my-airone-plugin
+pip install my-pagoda-plugin
 ```
 
 #### 2. GitHub Releases
 
 ```bash
-# タグ作成・リリース
+# Create tag and release
 git tag v1.0.0
 git push origin v1.0.0
 
@@ -322,29 +329,29 @@ pip install https://github.com/user/my-plugin/releases/download/v1.0.0/my_plugin
 #### 3. Development Installation
 
 ```bash
-# 開発用editable install
+# Development editable install
 pip install -e .
 
-# Poetry環境での開発用インストール
-poetry run pip install -e .
+# Development install in Poetry environment
+pip install -e .
 ```
 
 ## Sample Plugin Reference
 
 ### Available Example
 
-`plugin_examples/airone-hello-world-plugin/` に完全なサンプルプラグインがあります：
+A complete sample plugin is available at `plugin/examples/pagoda-hello-world-plugin/`:
 
-**エンドポイント:**
-- `GET /api/v2/plugins/hello-world-plugin/test/` - 認証不要テスト
-- `GET /api/v2/plugins/hello-world-plugin/hello/` - 基本Hello API
-- `POST /api/v2/plugins/hello-world-plugin/hello/` - カスタムメッセージAPI
-- `GET /api/v2/plugins/hello-world-plugin/greet/<name>/` - パーソナライズ挨拶
-- `GET /api/v2/plugins/hello-world-plugin/status/` - プラグインステータス
+**Endpoints:**
+- `GET /api/v2/plugins/hello-world-plugin/test/` - Authentication-free test
+- `GET /api/v2/plugins/hello-world-plugin/hello/` - Basic Hello API
+- `POST /api/v2/plugins/hello-world-plugin/hello/` - Custom message API
+- `GET /api/v2/plugins/hello-world-plugin/greet/<name>/` - Personalized greeting
+- `GET /api/v2/plugins/hello-world-plugin/status/` - Plugin status
 
-**フック:**
-- `entry.after_create` - Entry作成後処理
-- `entry.before_update` - Entry更新前処理
+**Hooks:**
+- `entry.after_create` - Post-Entry creation processing
+- `entry.before_update` - Pre-Entry update processing
 
 ## Configuration
 
@@ -352,24 +359,30 @@ poetry run pip install -e .
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `AIRONE_PLUGINS_ENABLED` | `false` | プラグインシステム有効化 |
+| `ENABLED_PLUGINS` | `[]` | List of plugins to enable (comma-separated) |
 
 ### Django Settings Integration
 
 ```python
 # airone/settings_common.py
-AIRONE_PLUGINS_ENABLED = env.bool("AIRONE_PLUGINS_ENABLED", False)
+ENABLED_PLUGINS = env.list("ENABLED_PLUGINS", default=[])
 
-AIRONE = {
-    "PLUGINS": {
-        "ENABLED": AIRONE_PLUGINS_ENABLED,
-    }
-}
+# Plugin system is automatically enabled if any plugins are specified
+PLUGINS_ENABLED = bool(ENABLED_PLUGINS)
 
 # Plugin apps are dynamically added to INSTALLED_APPS
-if AIRONE_PLUGINS_ENABLED:
+if PLUGINS_ENABLED:
     INSTALLED_APPS.extend(plugin_integration.get_installed_apps())
 ```
+
+### Manual Plugin Control
+
+The plugin system adopts explicit control:
+
+- **No Automatic Discovery**: Does not automatically load available plugins
+- **Explicit Specification**: Only loads plugins specified in `ENABLED_PLUGINS`
+- **Security**: Prevents loading of unintended plugins
+- **Controllability**: Easy plugin control in development and production environments
 
 ## Troubleshooting
 
@@ -377,39 +390,43 @@ if AIRONE_PLUGINS_ENABLED:
 
 #### 1. 404 Error on Plugin Endpoints
 
-**症状**: `curl http://localhost:8000/api/v2/plugins/my-plugin/test/` が404
+**Symptoms**: `curl http://localhost:8000/api/v2/plugins/my-plugin/test/` returns 404
 
-**原因と解決法**:
+**Causes and Solutions**:
 
 ```bash
-# 原因1: プラグインシステム無効
-❌ poetry run python manage.py runserver
-✅ AIRONE_PLUGINS_ENABLED=true poetry run python manage.py runserver
+# Cause 1: Plugin not specified
+❌ python manage.py runserver
+✅ ENABLED_PLUGINS=my-plugin python manage.py runserver
 
-# 原因2: プラグイン未インストール（poetry環境）
+# Cause 2: Plugin not installed
 ❌ pip install -e plugin_examples/my-plugin/
-✅ cd plugin_examples/my-plugin/ && poetry run pip install -e .
+✅ cd plugin_examples/my-plugin/ && pip install -e .
 
-# 原因3: Entry pointsパス間違い
+# Cause 3: Incorrect Entry points path
 ❌ 'my-plugin = my_plugin:MyPlugin'
 ✅ 'my-plugin = my_plugin.plugin:MyPlugin'
+
+# Cause 4: Incorrect Entry points group name
+❌ [project.entry-points."airone.plugins"]
+✅ [project.entry-points."pagoda.plugins"]
 ```
 
 #### 2. Plugin Discovery Failures
 
-**ログ例**:
+**Log Example**:
 ```
 [ERROR] Failed to load external plugin my-plugin: No module named 'my_plugin'
 [INFO] Plugin discovery completed. Found 0 plugins.
 ```
 
-**解決手順**:
+**Resolution Steps**:
 
-1. **Entry points確認**:
+1. **Check Entry points**:
 ```bash
-poetry run python -c "
+python -c "
 import pkg_resources
-for ep in pkg_resources.iter_entry_points('airone.plugins'):
+for ep in pkg_resources.iter_entry_points('pagoda.plugins'):
     print(f'{ep.name} -> {ep.module_name}:{ep.attrs[0]}')
     try:
         plugin_class = ep.load()
@@ -429,7 +446,7 @@ pip install -e .
 
 3. **パスとモジュール確認**:
 ```bash
-poetry run python -c "
+python -c "
 import sys
 sys.path.insert(0, 'plugin_examples/my-plugin')
 from my_plugin.plugin import MyPlugin
@@ -468,7 +485,7 @@ make install-dev
 
 # プラグイン開発用インストール
 cd ../plugin_examples/my-plugin/
-poetry run pip install -e .
+pip install -e .
 
 # 統合テスト実行
 make test-integration
@@ -478,7 +495,7 @@ make test-integration
 
 ```bash
 # プラグイン状態確認
-AIRONE_PLUGINS_ENABLED=true poetry run python manage.py shell -c "
+ENABLED_PLUGINS=hello-world python manage.py shell -c "
 from airone.plugins.integration import plugin_integration
 plugin_integration.initialize()
 print(f'Plugins: {plugin_integration.get_enabled_plugin_count()}')
@@ -487,7 +504,7 @@ for plugin in plugin_integration.get_enabled_plugins():
 "
 
 # URL解決テスト
-poetry run python -c "
+python -c "
 import django
 django.setup()
 from django.urls import get_resolver
@@ -497,7 +514,7 @@ print(f'✓ URL resolved: {match.func}')
 "
 
 # Hook統計取得
-poetry run python -c "
+python -c "
 from airone.plugins.bridge_manager import bridge_manager
 bridge_manager.initialize()
 stats = bridge_manager.hooks.get_hook_statistics()
@@ -512,7 +529,7 @@ print(f'Registered hooks: {stats[\"registered_hooks\"]}')
 
 ```
 1. External Plugin Discovery (Entry Points)
-   ├─ pkg_resources.iter_entry_points('airone.plugins')
+   ├─ pkg_resources.iter_entry_points('pagoda.plugins')
    ├─ Load plugin class from entry point
    └─ Register with plugin_registry
 
@@ -531,18 +548,18 @@ print(f'Registered hooks: {stats[\"registered_hooks\"]}')
 ### Hook System Architecture
 
 ```python
-# Core Layer: 27 common hooks + AirOne specific hooks (42 total)
+# Core Layer: 27 common hooks + Pagoda specific hooks (42 total)
 COMMON_HOOKS = [
     "entity.before_create", "entity.after_create",
     "entry.before_create", "entry.after_create",
     # ... 23 more
 ]
 
-# AirOne Layer: Concrete implementation
-class AirOneHookBridge(HookInterface):
+# Pagoda Layer: Concrete implementation
+class PagodaHookBridge(HookInterface):
     def __init__(self):
         self._hooks = {}
-        self._available_hooks = COMMON_HOOKS + AIRONE_SPECIFIC_HOOKS
+        self._available_hooks = COMMON_HOOKS + PAGODA_SPECIFIC_HOOKS
 
     def execute_hook(self, hook_name, *args, **kwargs):
         # Execute all registered callbacks with error handling
@@ -556,14 +573,14 @@ class DataInterface(ABC):
     @abstractmethod
     def get_entity(self, entity_id): pass
 
-# Concrete Implementation (AirOne)
-class AirOneDataBridge(DataInterface):
+# Concrete Implementation (Pagoda)
+class PagodaDataBridge(DataInterface):
     def get_entity(self, entity_id):
         from entity.models import Entity
         return Entity.objects.get(id=entity_id)
 
 # Plugin Usage
-bridge_manager.data.get_entity(123)  # → AirOne Entity instance
+bridge_manager.data.get_entity(123)  # → Pagoda Entity instance
 ```
 
 ## Best Practices
@@ -571,7 +588,7 @@ bridge_manager.data.get_entity(123)  # → AirOne Entity instance
 ### 1. Plugin Development
 
 - **Version Pinning**: `pagoda-core>=1.0.0,<2.0.0` で互換性保証
-- **Testing**: 単体テスト + AirOne統合テスト の両方実装
+- **Testing**: 単体テスト + Pagoda統合テスト の両方実装
 - **Documentation**: README + API仕様書 を含める
 - **Error Handling**: フックとAPIで適切な例外処理
 - **Security**: 認証・認可の適切な実装
@@ -580,7 +597,7 @@ bridge_manager.data.get_entity(123)  # → AirOne Entity instance
 
 - **Semantic Versioning**: `major.minor.patch` で適切なバージョニング
 - **Changelog**: リリースノート・変更履歴の維持
-- **Compatibility**: サポートするAirOne/pagoda-coreバージョンの明記
+- **Compatibility**: サポートするPagoda/pagoda-plugin-sdkバージョンの明記
 - **Dependencies**: 最小限の依存関係に抑制
 
 ### 3. Production Deployment
@@ -590,4 +607,4 @@ bridge_manager.data.get_entity(123)  # → AirOne Entity instance
 - **Rollback Strategy**: プラグイン無効化手順の準備
 - **Performance**: フック処理の性能影響評価
 
-この3層アーキテクチャにより、AirOneから完全に独立したプラグインシステムが実現されています。プラグイン開発者は `pagoda-core` のみに依存して、安全で再利用可能なプラグインを作成できます。
+この3層アーキテクチャにより、Pagodaから完全に独立したプラグインシステムが実現されています。プラグイン開発者は `pagoda-plugin-sdk` のみに依存して、安全で再利用可能なプラグインを作成できます。

@@ -71,7 +71,56 @@ External plugins should:
 1. Depend only on `pagoda-plugin-sdk`
 2. Use provided interfaces for host application interaction
 3. Be installable as independent Python packages
-4. Define entry points for automatic discovery
+4. Define entry points using `pagoda.plugins` group
+5. Be explicitly enabled via the `ENABLED_PLUGINS` environment variable
+
+### Plugin Registration and Discovery
+
+Plugins are discovered through Python entry points using the `pagoda.plugins` group. The host application will only load plugins that are explicitly specified in the `ENABLED_PLUGINS` environment variable.
+
+**Entry Points Configuration (pyproject.toml):**
+```toml
+[project.entry-points."pagoda.plugins"]
+my-plugin = "my_plugin.plugin:MyPlugin"
+```
+
+**Plugin Enablement:**
+```bash
+# Enable single plugin
+export ENABLED_PLUGINS=my-plugin
+
+# Enable multiple plugins (comma-separated)
+export ENABLED_PLUGINS=my-plugin,another-plugin
+
+# Run application
+python manage.py runserver
+```
+
+### Remote Plugin Installation
+
+Plugins can be distributed and installed from various sources:
+
+**From PyPI:**
+```bash
+pip install my-plugin-package
+```
+
+**From Git Repository:**
+```bash
+pip install git+https://github.com/user/my-plugin-repo.git
+```
+
+**From Git Repository with Subdirectory:**
+```bash
+pip install git+https://github.com/user/monorepo.git#subdirectory=path/to/plugin
+```
+
+**Using uv (recommended for development):**
+```bash
+uv pip install git+https://github.com/user/my-plugin-repo.git
+```
+
+After installation, enable the plugin using the environment variable as shown above.
 
 ## Development
 
@@ -145,27 +194,28 @@ make install-dev
 ### 2. Create Plugin Structure
 
 ```bash
-mkdir my-airone-plugin
-cd my-airone-plugin
+mkdir my-pagoda-plugin
+cd my-pagoda-plugin
 
-# Create setup.py
-cat > setup.py << EOF
-from setuptools import setup, find_packages
+# Create pyproject.toml (recommended)
+cat > pyproject.toml << EOF
+[project]
+name = "my-pagoda-plugin"
+version = "1.0.0"
+description = "My Pagoda Plugin"
+dependencies = [
+    "pagoda-plugin-sdk>=1.0.0",
+    "Django>=3.2",
+    "djangorestframework>=3.12",
+]
+requires-python = ">=3.8"
 
-setup(
-    name='my-airone-plugin',
-    version='1.0.0',
-    packages=find_packages(),
-    install_requires=[
-        'pagoda-plugin-sdk>=1.0.0',
-        'Django>=3.2',
-    ],
-    entry_points={
-        'airone_plugins': [
-            'my-plugin = my_plugin.plugin:MyPlugin',
-        ],
-    },
-)
+[project.entry-points."pagoda.plugins"]
+my-plugin = "my_plugin.plugin:MyPlugin"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 EOF
 ```
 
@@ -193,12 +243,16 @@ class MyPlugin(Plugin):
 pip install -e .
 
 # Test with host application (e.g., AirOne)
-export AIRONE_PLUGINS_ENABLED=true
+export ENABLED_PLUGINS=my-plugin
 python manage.py test
 
-# Build and publish
+# Build and publish (using modern build tools)
 python -m build
 twine upload dist/*
+
+# Or using uv (recommended)
+uv build
+uv publish
 ```
 
 ## Host Application Integration
