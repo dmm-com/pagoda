@@ -11,9 +11,9 @@ class HelloWorldPluginConfig(AppConfig):
     """Django application configuration for Hello World Plugin"""
 
     default_auto_field = "django.db.models.BigAutoField"
-    name = "airone_hello_world_plugin"
-    label = "airone_hello_world_plugin"
-    verbose_name = "AirOne Hello World Plugin (External)"
+    name = "pagoda_hello_world_plugin"
+    label = "pagoda_hello_world_plugin"
+    verbose_name = "Pagoda Hello World Plugin (External)"
 
     def ready(self):
         """Initialize the plugin when Django is ready

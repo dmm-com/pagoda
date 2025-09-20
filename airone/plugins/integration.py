@@ -22,13 +22,14 @@ class PluginIntegration:
     def is_plugins_enabled(self) -> bool:
         """Check if plugins are enabled
 
-        Controlled by the environment variable AIRONE_PLUGINS_ENABLED.
+        Automatically enabled if any plugins are specified in ENABLED_PLUGINS.
         Default is False (disabled).
 
         Returns:
             True if plugins are enabled
         """
-        return getattr(settings, "AIRONE_PLUGINS_ENABLED", False)
+        enabled_plugins = getattr(settings, "ENABLED_PLUGINS", [])
+        return bool(enabled_plugins)
 
     def initialize(self):
         """Initialize the plugin system
@@ -53,36 +54,8 @@ class PluginIntegration:
             return []
 
         self.initialize()
-        apps = plugin_registry.get_installed_apps()
+        return plugin_registry.get_installed_apps()
 
-        # Special handling for sample plugins
-        sample_apps = []
-        for plugin in plugin_registry.get_enabled_plugins():
-            if self._is_sample_plugin(plugin.id):
-                # For sample plugins, adjust to proper path
-                for app in plugin.django_apps:
-                    if app == plugin.id.replace("-", "_"):
-                        sample_app = f"plugin_samples.{app}.{app}"
-                        sample_apps.append(sample_app)
-                        logger.debug(f"Added sample plugin app: {sample_app}")
-
-        # Combine with external plugin apps
-        external_apps = [app for app in apps if not self._is_sample_app(app)]
-
-        return external_apps + sample_apps
-
-    def _is_sample_plugin(self, plugin_id: str) -> bool:
-        """Determine if a plugin is a sample plugin"""
-        # Determination based on sample plugin naming conventions
-        sample_plugin_patterns = [
-            "hello-world-plugin",
-            "entry-analytics-plugin",
-        ]
-        return any(plugin_id.startswith(pattern) for pattern in sample_plugin_patterns)
-
-    def _is_sample_app(self, app_name: str) -> bool:
-        """Determine if an app is a sample plugin app"""
-        return app_name.startswith("plugin_samples.")
 
     def get_url_patterns(self) -> List[Any]:
         """Get URL patterns

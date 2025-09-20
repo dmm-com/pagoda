@@ -1,6 +1,6 @@
 version = 1
-revision = 2
-requires-python = ">=3.12"
+revision = 3
+requires-python = ">=3.12, <4.0"
 
 [[package]]
 name = "airone"
@@ -30,6 +30,8 @@ dependencies = [
     { name = "mock" },
     { name = "mysqlclient" },
     { name = "natsort" },
+    { name = "pagoda-hello-world-plugin" },
+    { name = "pagoda-plugin-sdk" },
     { name = "pydantic" },
     { name = "python-ldap" },
     { name = "python3-saml" },
@@ -62,7 +64,7 @@ requires-dist = [
     { name = "celery", specifier = "==5.3.6" },
     { name = "coverage", marker = "extra == 'dev'", specifier = ">=7.3.0" },
     { name = "ddtrace", specifier = "==2.1.1" },
-    { name = "django", specifier = "==4.2.22" },
+    { name = "django", specifier = "==4.2.24" },
     { name = "django-configurations", specifier = "==2.5" },
     { name = "django-debug-toolbar", specifier = "==3.2.4" },
     { name = "django-environ", specifier = "==0.9.0" },
@@ -73,7 +75,7 @@ requires-dist = [
     { name = "django-storages", specifier = "==1.14.1" },
     { name = "djangorestframework", specifier = "==3.15.2" },
     { name = "drf-spectacular", specifier = "==0.26.4" },
-    { name = "elasticsearch", specifier = "==7.17.6" },
+    { name = "elasticsearch", specifier = "==8.17.0" },
     { name = "flower", specifier = "==1.2.0" },
     { name = "gunicorn", specifier = "==23.0.0" },
     { name = "kombu", specifier = "==5.3.4" },
@@ -84,6 +86,8 @@ requires-dist = [
     { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.15.0" },
     { name = "mysqlclient", specifier = "==2.2.0" },
     { name = "natsort", specifier = "==5.3.3" },
+    { name = "pagoda-hello-world-plugin", editable = "plugin/examples/pagoda-hello-world-plugin" },
+    { name = "pagoda-plugin-sdk", editable = "plugin/sdk" },
     { name = "pydantic", specifier = ">=2.10.6" },
     { name = "python-ldap", specifier = "==3.4.0" },
     { name = "python3-saml", specifier = "==1.12.0" },
@@ -571,16 +575,16 @@ wheels = [
 
 [[package]]
 name = "django"
-version = "4.2.22"
+version = "4.2.24"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "asgiref" },
     { name = "sqlparse" },
     { name = "tzdata", marker = "sys_platform == 'win32'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/56/9e/37b909fa1c5e46ddb42ec37ec600a575d25dc47a6de86a1fce782a4a44ad/django-4.2.22.tar.gz", hash = "sha256:e726764b094407c313adba5e2e866ab88f00436cad85c540a5bf76dc0a912c9e", size = 10427236, upload-time = "2025-06-04T13:53:41.332Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/ca/1a/3b7d8722a4c605078808b9839a6cf207f7aa763655bcf165fa219bedb39e/django-4.2.24.tar.gz", hash = "sha256:40cd7d3f53bc6cd1902eadce23c337e97200888df41e4a73b42d682f23e71d80", size = 10452798, upload-time = "2025-09-03T13:14:05.643Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/dc/17/6afcbac3575992b22fda1ae7fffcdff15ff24d1aff69b3d36876bc0a47eb/django-4.2.22-py3-none-any.whl", hash = "sha256:0a32773b5b7f4e774a155ee253ab24a841fed7e9e9061db08bf2ce9711da404d", size = 7993908, upload-time = "2025-06-04T13:53:33.923Z" },
+    { url = "https://files.pythonhosted.org/packages/1a/71/1cfb7cdd51270cf7df26f4ee4df4294b06a110e04bec553301d2b2617f24/django-4.2.24-py3-none-any.whl", hash = "sha256:a6527112c58821a0dfc5ab73013f0bdd906539790a17196658e36e66af43c350", size = 7993901, upload-time = "2025-09-03T13:13:51.365Z" },
 ]
 
 [[package]]
@@ -703,16 +707,28 @@ wheels = [
 ]
 
 [[package]]
-name = "elasticsearch"
-version = "7.17.6"
+name = "elastic-transport"
+version = "8.17.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "certifi" },
     { name = "urllib3" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/8f/17/67c6d8f0d205d9c765ee114c5323dce70da16b15bdb8d7087aa692a0ff23/elasticsearch-7.17.6.tar.gz", hash = "sha256:f4b779fc2a035904b97bef0542110372efd94aa7ab2c13749af73158c08be110", size = 247549, upload-time = "2022-08-25T16:55:26.085Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/6a/54/d498a766ac8fa475f931da85a154666cc81a70f8eb4a780bc8e4e934e9ac/elastic_transport-8.17.1.tar.gz", hash = "sha256:5edef32ac864dca8e2f0a613ef63491ee8d6b8cfb52881fa7313ba9290cac6d2", size = 73425, upload-time = "2025-03-13T07:28:30.776Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/42/05/eac555094ec3e94461661ddcf2d4bf98bbfadf44e38d65e4981aa3dc7984/elasticsearch-7.17.6-py2.py3-none-any.whl", hash = "sha256:2c3400c9e9c7fee46c4732fb32b933577aebb07b5e94df025f6ff1a30d2397d0", size = 385816, upload-time = "2022-08-25T16:55:13.895Z" },
+    { url = "https://files.pythonhosted.org/packages/cf/cd/b71d5bc74cde7fc6fd9b2ff9389890f45d9762cbbbf81dc5e51fd7588c4a/elastic_transport-8.17.1-py3-none-any.whl", hash = "sha256:192718f498f1d10c5e9aa8b9cf32aed405e469a7f0e9d6a8923431dbb2c59fb8", size = 64969, upload-time = "2025-03-13T07:28:29.031Z" },
+]
+
+[[package]]
+name = "elasticsearch"
+version = "8.17.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "elastic-transport" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/38/57/f61579940df4771971aede5b355f64c758f56d8cc9bd4407d669c2f0dd2f/elasticsearch-8.17.0.tar.gz", hash = "sha256:c1069bf2204ba8fab29ff00b2ce6b37324b2cc6ff593283b97df43426ec13053", size = 460268, upload-time = "2024-12-16T06:30:00.731Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/1e/82/832ff4bdb53429af0025f5032c8b4f3ba18915e08ce16fc55aa09e900e26/elasticsearch-8.17.0-py3-none-any.whl", hash = "sha256:15965240fe297279f0e68b260936d9ced9606aa7ef8910b9b56727f96ef00d5b", size = 571182, upload-time = "2024-12-16T06:29:53.828Z" },
 ]
 
 [[package]]
@@ -1056,6 +1072,38 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/a1/d4/1fc4078c65507b51b96ca8f8c3ba19e6a61c8253c72794544580a7b6c24d/packaging-25.0.tar.gz", hash = "sha256:d443872c98d677bf60f6a1f2f8c1cb748e8fe762d2bf9d3148b5599295b0fc4f", size = 165727, upload-time = "2025-04-19T11:48:59.673Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/20/12/38679034af332785aac8774540895e234f4d07f7545804097de4b666afd8/packaging-25.0-py3-none-any.whl", hash = "sha256:29572ef2b1f17581046b3a2227d5c611fb25ec70ca1ba8554b24b0e69331a484", size = 66469, upload-time = "2025-04-19T11:48:57.875Z" },
+]
+
+[[package]]
+name = "pagoda-hello-world-plugin"
+version = "1.0.0"
+source = { editable = "plugin/examples/pagoda-hello-world-plugin" }
+dependencies = [
+    { name = "django" },
+    { name = "djangorestframework" },
+    { name = "pagoda-plugin-sdk" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "django", specifier = ">=3.2" },
+    { name = "djangorestframework", specifier = ">=3.12" },
+    { name = "pagoda-plugin-sdk", editable = "plugin/sdk" },
+]
+
+[[package]]
+name = "pagoda-plugin-sdk"
+version = "1.0.0a1"
+source = { editable = "plugin/sdk" }
+dependencies = [
+    { name = "django" },
+    { name = "djangorestframework" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "django", specifier = ">=3.2" },
+    { name = "djangorestframework", specifier = ">=3.12" },
 ]
 
 [[package]]

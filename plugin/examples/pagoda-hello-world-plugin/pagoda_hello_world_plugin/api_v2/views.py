@@ -1,7 +1,7 @@
 """
 API views for Hello World Plugin
 
-Demonstrates how external plugins can create API endpoints using AirOne's core libraries.
+Demonstrates how external plugins can create API endpoints using Pagoda's core libraries.
 """
 
 from datetime import datetime
@@ -133,8 +133,8 @@ class StatusView(PluginAPIViewMixin):
                     "core": "pagoda-core",
                 },
                 "system": {
-                    "django_app": "airone_hello_world_plugin",
-                    "package_name": "airone-hello-world-plugin",
+                    "django_app": "pagoda_hello_world_plugin",
+                    "package_name": "pagoda-hello-world-plugin",
                     "endpoints": [
                         "/api/v2/plugins/hello-world-plugin/hello/",
                         "/api/v2/plugins/hello-world-plugin/greet/<name>/",

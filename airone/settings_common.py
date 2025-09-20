@@ -38,18 +38,8 @@ class Common(Configuration):
     # Application definition
 
     # Plugin system configuration
-    AIRONE_PLUGINS_ENABLED = env.bool("AIRONE_PLUGINS_ENABLED", False)
+    ENABLED_PLUGINS = env.list("ENABLED_PLUGINS", default=[])
 
-    def _get_plugin_apps(self):
-        """Get plugin apps (lazy evaluation)"""
-        if not self.AIRONE_PLUGINS_ENABLED:
-            return []
-
-        try:
-            from airone.plugins.integration import plugin_integration
-            return plugin_integration.get_installed_apps()
-        except ImportError:
-            return []
 
     INSTALLED_APPS = [
         "common",
@@ -85,14 +75,7 @@ class Common(Configuration):
     if os.path.exists(BASE_DIR + "/custom_view"):
         INSTALLED_APPS.append("custom_view")
 
-    # Dynamically add plugin apps
-    if AIRONE_PLUGINS_ENABLED:
-        try:
-            # Direct addition of sample plugins (initial implementation)
-            if os.path.exists(BASE_DIR + "/plugin_samples/hello_world_plugin"):
-                INSTALLED_APPS.append("plugin_samples.hello_world_plugin.hello_world_plugin")
-        except Exception:
-            pass
+    # Plugin apps will be added dynamically during runtime
 
     MIDDLEWARE = [
         "django.middleware.security.SecurityMiddleware",
@@ -288,7 +271,7 @@ class Common(Configuration):
         # )),
         # Plugin system configuration
         "PLUGINS": {
-            "ENABLED": AIRONE_PLUGINS_ENABLED,
+            "ENABLED": bool(ENABLED_PLUGINS),
         }
     }
 

@@ -36,14 +36,14 @@ def get_airone_settings(key: str = None, default: Any = None) -> Any:
     if key is None:
         # Return subset of settings that plugins are allowed to access
         return {
-            "AIRONE_PLUGINS_ENABLED": getattr(settings, 'AIRONE_PLUGINS_ENABLED', False),
+            "ENABLED_PLUGINS": getattr(settings, 'ENABLED_PLUGINS', []),
             "DEBUG": getattr(settings, 'DEBUG', False),
             "VERSION": get_airone_version(),
         }
 
     # Allowed settings for plugins
     allowed_settings = [
-        'AIRONE_PLUGINS_ENABLED',
+        'ENABLED_PLUGINS',
         'DEBUG',
         'TIME_ZONE',
         'LANGUAGE_CODE',

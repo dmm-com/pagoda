@@ -1,7 +1,7 @@
 """
 Hook implementations for Hello World Plugin
 
-Demonstrates how external plugins can extend AirOne's core functionality through hooks.
+Demonstrates how external plugins can extend Pagoda's core functionality through hooks.
 """
 
 import logging
