@@ -23,7 +23,7 @@ description = ""
 authors = [{name = "Hiroyasu OHYAMA"}]
 license = {text = "GPLv2"}
 readme = "README.md"
-requires-python = ">=3.12,<4.0"
+requires-python = ">=3.12"
 dependencies = [
     "boto3==1.26.114",
     "celery==5.3.6",
@@ -40,7 +40,7 @@ dependencies = [
     "djangorestframework==3.15.2",
     "markdown>=3.7",
     "drf-spectacular==0.26.4",
-    "elasticsearch==8.17.0",
+    "elasticsearch==7.17.6",
     "flower==1.2.0",
     "gunicorn==23.0.0",
     "kombu==5.3.4",
