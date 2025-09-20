@@ -37,6 +37,10 @@ class Common(Configuration):
 
     # Application definition
 
+    # Plugin system configuration
+    ENABLED_PLUGINS = env.list("ENABLED_PLUGINS", default=[])
+
+
     INSTALLED_APPS = [
         "common",
         "user",
@@ -67,8 +71,11 @@ class Common(Configuration):
         "category",
     ]
 
+    # Existing custom_view support
     if os.path.exists(BASE_DIR + "/custom_view"):
         INSTALLED_APPS.append("custom_view")
+
+    # Plugin apps will be added dynamically during runtime
 
     MIDDLEWARE = [
         "django.middleware.security.SecurityMiddleware",
@@ -262,6 +269,10 @@ class Common(Configuration):
         #        }
         #    ]),
         # )),
+        # Plugin system configuration
+        "PLUGINS": {
+            "ENABLED": bool(ENABLED_PLUGINS),
+        }
     }
 
     # flags to enable/disable AirOne core features
@@ -492,3 +503,4 @@ class Common(Configuration):
     MAX_USERS: int | None = env.int("AIRONE_MAX_USERS", None)
     MAX_GROUPS: int | None = env.int("AIRONE_MAX_GROUPS", None)
     MAX_ROLES: int | None = env.int("AIRONE_MAX_ROLES", None)
+

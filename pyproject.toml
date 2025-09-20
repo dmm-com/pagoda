@@ -58,7 +58,13 @@ dependencies = [
     "uritemplate==3.0.1",
     "whitenoise==5.2.0",
     "pydantic>=2.10.6",
+    "pagoda-plugin-sdk",
+    "pagoda-hello-world-plugin",
 ]
+
+[tool.uv.sources]
+pagoda-plugin-sdk = { path = "./plugin/sdk", editable = true }
+pagoda-hello-world-plugin = { path = "./plugin/examples/pagoda-hello-world-plugin", editable = true }
 
 [project.optional-dependencies]
 dev = [
