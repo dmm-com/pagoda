@@ -1,5 +1,4 @@
 import logging
-import os
 from importlib import import_module
 from pathlib import Path
 
@@ -37,7 +36,7 @@ def discover_external_plugins():
         # Import pkg_resources (planned migration to importlib.metadata in the future)
         import pkg_resources
 
-        for entry_point in pkg_resources.iter_entry_points('airone.plugins'):
+        for entry_point in pkg_resources.iter_entry_points("airone.plugins"):
             try:
                 plugin_class = entry_point.load()
                 plugin_registry.register(plugin_class)
@@ -67,7 +66,7 @@ def discover_sample_plugins():
     logger.debug(f"Discovering sample plugins in: {examples_dir}")
 
     for plugin_dir in examples_dir.iterdir():
-        if plugin_dir.is_dir() and not plugin_dir.name.startswith('.'):
+        if plugin_dir.is_dir() and not plugin_dir.name.startswith("."):
             try:
                 load_example_plugin(plugin_dir)
             except Exception as e:
@@ -84,7 +83,7 @@ def load_example_plugin(plugin_dir: Path):
 
     # For plugin_examples structure: airone-hello-world-plugin/airone_hello_world_plugin/plugin.py
     # Convert plugin directory name to module name
-    module_dir_name = plugin_name.replace('-', '_')
+    module_dir_name = plugin_name.replace("-", "_")
     plugin_module_path = plugin_dir / module_dir_name / "plugin.py"
 
     if not plugin_module_path.exists():
@@ -93,6 +92,7 @@ def load_example_plugin(plugin_dir: Path):
 
     # Add plugin directory to path temporarily
     import sys
+
     plugin_path = str(plugin_dir)
     path_added = False
     if plugin_path not in sys.path:
@@ -108,11 +108,12 @@ def load_example_plugin(plugin_dir: Path):
         # Find plugin class
         for attr_name in dir(plugin_module):
             attr = getattr(plugin_module, attr_name)
-            if (isinstance(attr, type) and
-                hasattr(attr, 'id') and
-                attr_name.endswith('Plugin') and
-                attr_name != 'Plugin'):  # Exclude base class
-
+            if (
+                isinstance(attr, type)
+                and hasattr(attr, "id")
+                and attr_name.endswith("Plugin")
+                and attr_name != "Plugin"
+            ):  # Exclude base class
                 plugin_registry.register(attr)
                 logger.info(f"Loaded example plugin: {plugin_name}")
                 return
@@ -136,6 +137,7 @@ def ensure_plugin_examples_in_path():
     importing of example plugins.
     """
     import sys
+
     base_dir = Path(__file__).parent.parent.parent
     examples_dir = str(base_dir / "plugin_examples")
 

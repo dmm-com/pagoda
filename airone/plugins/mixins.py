@@ -9,6 +9,6 @@ External plugins should use airone.libs.mixins.
 from ..libs.mixins import PluginAPIViewMixin, PluginJobMixin
 
 __all__ = [
-    'PluginAPIViewMixin',
-    'PluginJobMixin',
+    "PluginAPIViewMixin",
+    "PluginJobMixin",
 ]

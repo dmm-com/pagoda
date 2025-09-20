@@ -11,7 +11,7 @@ from .data import AirOneDataBridge
 from .hooks import AirOneHookBridge
 
 __all__ = [
-    'AirOneAuthBridge',
-    'AirOneDataBridge',
-    'AirOneHookBridge',
+    "AirOneAuthBridge",
+    "AirOneDataBridge",
+    "AirOneHookBridge",
 ]

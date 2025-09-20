@@ -14,6 +14,7 @@ except ImportError as e:
 if settings.AIRONE.get("PLUGINS", {}).get("ENABLED", False):
     try:
         from airone.plugins.integration import plugin_integration
+
         urlpatterns.extend(plugin_integration.get_api_v2_patterns())
     except ImportError as e:
         Logger.warn(f"Plugin system not available: {e}")

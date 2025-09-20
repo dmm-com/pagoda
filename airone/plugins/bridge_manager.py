@@ -57,6 +57,7 @@ class AirOneBridgeManager:
         """
         if not self._initialized:
             self.initialize()
+        assert self._auth_bridge is not None, "Auth bridge should be initialized"
         return self._auth_bridge
 
     @property
@@ -68,6 +69,7 @@ class AirOneBridgeManager:
         """
         if not self._initialized:
             self.initialize()
+        assert self._data_bridge is not None, "Data bridge should be initialized"
         return self._data_bridge
 
     @property
@@ -79,6 +81,7 @@ class AirOneBridgeManager:
         """
         if not self._initialized:
             self.initialize()
+        assert self._hook_bridge is not None, "Hook bridge should be initialized"
         return self._hook_bridge
 
     def get_service_info(self) -> Dict[str, Any]:
@@ -102,7 +105,9 @@ class AirOneBridgeManager:
             "hook_bridge": {
                 "class": self._hook_bridge.__class__.__name__,
                 "available": self._hook_bridge is not None,
-                "available_hooks": len(self._hook_bridge.get_available_hooks()) if self._hook_bridge else 0,
+                "available_hooks": len(self._hook_bridge.get_available_hooks())
+                if self._hook_bridge
+                else 0,
                 "registered_hooks": len(self._hook_bridge._hooks) if self._hook_bridge else 0,
             },
             "initialized": self._initialized,
@@ -117,7 +122,7 @@ class AirOneBridgeManager:
         if not self._initialized:
             self.initialize()
 
-        if not hasattr(plugin, 'hooks') or not plugin.hooks:
+        if not hasattr(plugin, "hooks") or not plugin.hooks:
             return
 
         hooks_registered = 0
@@ -148,7 +153,7 @@ class AirOneBridgeManager:
         Args:
             plugin: Plugin instance with hooks to unregister
         """
-        if not self._initialized or not hasattr(plugin, 'hooks') or not plugin.hooks:
+        if not self._initialized or not hasattr(plugin, "hooks") or not plugin.hooks:
             return
 
         hooks_unregistered = 0

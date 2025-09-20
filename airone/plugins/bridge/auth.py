@@ -31,7 +31,7 @@ class AirOneAuthBridge(AuthInterface):
         Returns:
             Dictionary containing user information
         """
-        user = getattr(request, 'user', None)
+        user = getattr(request, "user", None)
 
         if not user or not user.is_authenticated:
             return {
@@ -45,15 +45,21 @@ class AirOneAuthBridge(AuthInterface):
             return {
                 "id": user.id,
                 "username": user.username,
-                "email": getattr(user, 'email', ''),
-                "first_name": getattr(user, 'first_name', ''),
-                "last_name": getattr(user, 'last_name', ''),
+                "email": getattr(user, "email", ""),
+                "first_name": getattr(user, "first_name", ""),
+                "last_name": getattr(user, "last_name", ""),
                 "is_authenticated": True,
                 "is_staff": user.is_staff,
                 "is_superuser": user.is_superuser,
-                "date_joined": user.date_joined.isoformat() if hasattr(user, 'date_joined') and user.date_joined else None,
-                "last_login": user.last_login.isoformat() if hasattr(user, 'last_login') and user.last_login else None,
-                "groups": list(user.groups.values_list('name', flat=True)) if hasattr(user, 'groups') else [],
+                "date_joined": user.date_joined.isoformat()
+                if hasattr(user, "date_joined") and user.date_joined
+                else None,
+                "last_login": user.last_login.isoformat()
+                if hasattr(user, "last_login") and user.last_login
+                else None,
+                "groups": list(user.groups.values_list("name", flat=True))
+                if hasattr(user, "groups")
+                else [],
             }
         except Exception as e:
             logger.error(f"Error getting user info: {e}")
@@ -78,14 +84,14 @@ class AirOneAuthBridge(AuthInterface):
             return False
 
         try:
-            if hasattr(user, 'has_perm'):
-                return user.has_perm(permission)
+            if hasattr(user, "has_perm"):
+                return bool(user.has_perm(permission))
 
             # Handle user ID case
             if isinstance(user, (int, str)):
                 try:
                     user_obj = User.objects.get(id=user)
-                    return user_obj.has_perm(permission)
+                    return bool(user_obj.has_perm(permission))
                 except User.DoesNotExist:
                     return False
 
@@ -107,14 +113,14 @@ class AirOneAuthBridge(AuthInterface):
             return []
 
         try:
-            if hasattr(user, 'groups'):
-                return list(user.groups.values_list('name', flat=True))
+            if hasattr(user, "groups"):
+                return list(user.groups.values_list("name", flat=True))
 
             # Handle user ID case
             if isinstance(user, (int, str)):
                 try:
                     user_obj = User.objects.get(id=user)
-                    return list(user_obj.groups.values_list('name', flat=True))
+                    return list(user_obj.groups.values_list("name", flat=True))
                 except User.DoesNotExist:
                     return []
 
@@ -138,6 +144,7 @@ class AirOneAuthBridge(AuthInterface):
         try:
             # Try to use Django REST Framework token authentication
             from rest_framework.authtoken.models import Token
+
             try:
                 token_obj = Token.objects.get(key=token)
                 return token_obj.user
@@ -175,10 +182,10 @@ class AirOneAuthBridge(AuthInterface):
             # This would integrate with AirOne's ACL system
 
             # For now, just check if user is staff/superuser for object access
-            if hasattr(user, 'is_superuser') and user.is_superuser:
+            if hasattr(user, "is_superuser") and user.is_superuser:
                 return True
 
-            if hasattr(user, 'is_staff') and user.is_staff:
+            if hasattr(user, "is_staff") and user.is_staff:
                 return True
 
             # Add AirOne-specific ACL logic here
@@ -203,12 +210,12 @@ class AirOneAuthBridge(AuthInterface):
             # For now, return basic roles based on Django user flags
             roles = []
 
-            if hasattr(user, 'is_superuser') and user.is_superuser:
-                roles.append('superuser')
-            elif hasattr(user, 'is_staff') and user.is_staff:
-                roles.append('staff')
+            if hasattr(user, "is_superuser") and user.is_superuser:
+                roles.append("superuser")
+            elif hasattr(user, "is_staff") and user.is_staff:
+                roles.append("staff")
             else:
-                roles.append('user')
+                roles.append("user")
 
             # Add AirOne-specific role logic here if available
 

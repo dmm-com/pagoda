@@ -1,10 +1,11 @@
 import logging
 from collections import defaultdict
-from typing import Any, Dict, List, Optional, Type
+from typing import Any, Dict, List, Optional, Type, cast
 
-from django.urls import path, include
+from django.urls import include, path
+from pagoda_plugin_sdk.plugin import Plugin
 
-from ..libs.base import Plugin, PluginError, PluginValidationError
+from ..libs.base import PluginError
 
 logger = logging.getLogger(__name__)
 
@@ -41,6 +42,7 @@ class HookRegistry:
                 # Dynamically import and execute callback function
                 module_path, func_name = callback_path.rsplit(".", 1)
                 from importlib import import_module
+
                 module = import_module(module_path)
                 callback = getattr(module, func_name)
                 result = callback(*args, **kwargs)
@@ -91,6 +93,7 @@ class PluginRegistry:
         # Register hooks with bridge manager (new system)
         try:
             from .bridge_manager import bridge_manager
+
             bridge_manager.register_plugin_hooks(plugin)
         except ImportError:
             logger.debug("Bridge manager not available for hook registration")
@@ -128,11 +131,13 @@ class PluginRegistry:
     def _register_api_v2_patterns(self, plugin: Plugin):
         """Register plugin API v2 patterns"""
         if plugin.api_v2_patterns:
-            self._api_v2_patterns.append({
-                "plugin_id": plugin.id,
-                "patterns": plugin.api_v2_patterns,
-                "prefix": f"plugins/{plugin.id}/",
-            })
+            self._api_v2_patterns.append(
+                {
+                    "plugin_id": plugin.id,
+                    "patterns": plugin.api_v2_patterns,
+                    "prefix": f"plugins/{plugin.id}/",
+                }
+            )
             logger.debug(f"Registered API v2 patterns for plugin {plugin.id}")
 
     def get_plugin(self, plugin_id: str) -> Optional[Plugin]:
@@ -214,9 +219,7 @@ class PluginRegistry:
         patterns = []
         for plugin in self.get_enabled_plugins():
             if plugin.url_patterns:
-                patterns.append(
-                    path(f"plugins/{plugin.id}/", include(plugin.url_patterns))
-                )
+                patterns.append(path(f"plugins/{plugin.id}/", include(plugin.url_patterns)))
         return patterns
 
     def get_api_v2_patterns(self) -> List[Any]:
@@ -229,9 +232,7 @@ class PluginRegistry:
         for pattern_config in self._api_v2_patterns:
             plugin = self._plugins[pattern_config["plugin_id"]]
             if plugin.is_enabled():
-                patterns.append(
-                    path(pattern_config["prefix"], include(pattern_config["patterns"]))
-                )
+                patterns.append(path(pattern_config["prefix"], include(pattern_config["patterns"])))
         return patterns
 
     def get_job_operations(self) -> Dict[int, Dict[str, Any]]:
@@ -258,7 +259,7 @@ class PluginRegistry:
         Returns:
             List of execution results from each callback
         """
-        return self._hooks.call(hook_name, *args, **kwargs)
+        return cast(List[Any], self._hooks.call(hook_name, *args, **kwargs))
 
 
 # Global registry instance

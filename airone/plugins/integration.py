@@ -1,5 +1,4 @@
 import logging
-import os
 from typing import Any, List
 
 from django.conf import settings
@@ -29,7 +28,7 @@ class PluginIntegration:
         Returns:
             True if plugins are enabled
         """
-        return getattr(settings, 'AIRONE_PLUGINS_ENABLED', False)
+        return getattr(settings, "AIRONE_PLUGINS_ENABLED", False)
 
     def initialize(self):
         """Initialize the plugin system
@@ -62,7 +61,7 @@ class PluginIntegration:
             if self._is_sample_plugin(plugin.id):
                 # For sample plugins, adjust to proper path
                 for app in plugin.django_apps:
-                    if app == plugin.id.replace('-', '_'):
+                    if app == plugin.id.replace("-", "_"):
                         sample_app = f"plugin_samples.{app}.{app}"
                         sample_apps.append(sample_app)
                         logger.debug(f"Added sample plugin app: {sample_app}")
