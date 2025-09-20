@@ -114,11 +114,12 @@ jobs:
           # Set package name based on repository owner
           if [[ "${REPO_OWNER}" == "dmm-com" ]]; then
             PACKAGE_NAME="dmm-com-pagoda-plugin-sdk"
-            REGISTRY_URL="https://pypi.pkg.github.com/dmm-com/"
           else
             PACKAGE_NAME="${REPO_OWNER}-pagoda-plugin-sdk"
-            REGISTRY_URL="https://pypi.pkg.github.com/${REPO_OWNER}/"
           fi
+
+          # GitHub Packages Python registry URL
+          REGISTRY_URL="https://pypi.pkg.github.com/${REPO_OWNER}/"
 
           echo "Python package name: ${PACKAGE_NAME}"
           echo "Registry URL: ${REGISTRY_URL}"
@@ -146,7 +147,8 @@ jobs:
           grep 'name = ' pyproject.toml
 
           # Update package name to include organization namespace for GitHub Packages
-          sed -i 's/name = "pagoda-plugin-sdk"/name = "${{ steps.repo_info.outputs.package_name }}"/' pyproject.toml
+          PACKAGE_NAME="${{ steps.repo_info.outputs.package_name }}"
+          sed -i "s/name = \"pagoda-plugin-sdk\"/name = \"${PACKAGE_NAME}\"/" pyproject.toml
 
           # Show updated package name
           echo "Updated pyproject.toml name:"
@@ -158,6 +160,14 @@ jobs:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          echo "Publishing ${{ steps.repo_info.outputs.package_name }} to GitHub Packages"
+          echo "Registry URL: ${{ steps.repo_info.outputs.registry_url }}"
+
+          # Verify package name was updated correctly
+          echo "Final package configuration:"
+          grep 'name = ' pyproject.toml
+
+          # Upload to GitHub Packages
           python -m twine upload \
             --repository-url ${{ steps.repo_info.outputs.registry_url }} \
             --verbose \
