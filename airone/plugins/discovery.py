@@ -1,5 +1,7 @@
 import logging
+
 from django.conf import settings
+
 from .registry import plugin_registry
 
 logger = logging.getLogger(__name__)

@@ -56,7 +56,6 @@ class PluginIntegration:
         self.initialize()
         return plugin_registry.get_installed_apps()
 
-
     def get_url_patterns(self) -> List[Any]:
         """Get URL patterns
 
@@ -84,39 +83,6 @@ class PluginIntegration:
 
         self.initialize()
         return plugin_registry.get_api_v2_patterns()
-
-    def get_job_operations(self) -> dict:
-        """Get plugin job operations
-
-        Returns an empty dictionary if plugins are disabled.
-
-        Returns:
-            Dictionary of plugin job operations
-        """
-        if not self.is_plugins_enabled():
-            return {}
-
-        self.initialize()
-        return plugin_registry.get_job_operations()
-
-    def call_hook(self, hook_name: str, *args, **kwargs) -> List[Any]:
-        """Execute plugin hooks
-
-        Returns an empty list if plugins are disabled.
-
-        Args:
-            hook_name: Hook name
-            *args: Positional arguments to pass to hooks
-            **kwargs: Keyword arguments to pass to hooks
-
-        Returns:
-            List of execution results from each callback
-        """
-        if not self.is_plugins_enabled():
-            return []
-
-        self.initialize()
-        return plugin_registry.call_hook(hook_name, *args, **kwargs)
 
     def get_plugin_count(self) -> int:
         """Get the number of registered plugins

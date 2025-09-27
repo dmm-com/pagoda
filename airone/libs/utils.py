@@ -5,7 +5,8 @@ Provides utility functions that plugins can use to interact with AirOne core fun
 """
 
 import logging
-from typing import Dict, Any, Optional
+from typing import Any, Dict, Optional
+
 from django.conf import settings
 
 logger = logging.getLogger(__name__)
@@ -21,7 +22,7 @@ def get_airone_version() -> str:
     return "1.0.0"  # Placeholder
 
 
-def get_airone_settings(key: str = None, default: Any = None) -> Any:
+def get_airone_settings(key: Optional[str] = None, default: Any = None) -> Any:
     """Get AirOne configuration settings
 
     Provides safe access to AirOne settings for plugins.
@@ -36,17 +37,17 @@ def get_airone_settings(key: str = None, default: Any = None) -> Any:
     if key is None:
         # Return subset of settings that plugins are allowed to access
         return {
-            "ENABLED_PLUGINS": getattr(settings, 'ENABLED_PLUGINS', []),
-            "DEBUG": getattr(settings, 'DEBUG', False),
+            "ENABLED_PLUGINS": getattr(settings, "ENABLED_PLUGINS", []),
+            "DEBUG": getattr(settings, "DEBUG", False),
             "VERSION": get_airone_version(),
         }
 
     # Allowed settings for plugins
     allowed_settings = [
-        'ENABLED_PLUGINS',
-        'DEBUG',
-        'TIME_ZONE',
-        'LANGUAGE_CODE',
+        "ENABLED_PLUGINS",
+        "DEBUG",
+        "TIME_ZONE",
+        "LANGUAGE_CODE",
     ]
 
     if key not in allowed_settings:
@@ -56,7 +57,7 @@ def get_airone_settings(key: str = None, default: Any = None) -> Any:
     return getattr(settings, key, default)
 
 
-def log_plugin_activity(plugin_id: str, action: str, details: Dict[str, Any] = None):
+def log_plugin_activity(plugin_id: str, action: str, details: Optional[Dict[str, Any]] = None):
     """Log plugin activity
 
     Provides centralized logging for plugin activities.

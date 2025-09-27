@@ -4,7 +4,8 @@ AirOne Authentication Utilities for Plugins
 Provides authentication and user management utilities for external plugins.
 """
 
-from typing import Dict, Any, Optional
+from typing import Any, Dict
+
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
@@ -71,4 +72,4 @@ def get_user_groups(user) -> list:
     if not user or not user.is_authenticated:
         return []
 
-    return list(user.groups.values_list('name', flat=True))
+    return list(user.groups.values_list("name", flat=True))

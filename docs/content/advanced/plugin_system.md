@@ -259,8 +259,6 @@ class MyPlugin(Plugin):
         "entry.before_update": "my_plugin_package.hooks.before_update",
     }
 
-    # Job operations (optional)
-    job_operations = {}
 ```
 
 #### 5. API View Implementation
