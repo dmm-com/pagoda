@@ -88,7 +88,7 @@ class PluginAPIView(PluginAPIViewMixin):
         Returns:
             Appropriate error response
         """
-        plugin_id = getattr(self, "plugin_id", "unknown")
+        plugin_id = getattr(self, "plugin_id", None) or "unknown"
         logger.error(f"Plugin API error in {plugin_id}: {exc}")
 
         # Handle plugin-specific exceptions
@@ -218,7 +218,7 @@ class PluginViewSet(viewsets.ModelViewSet):
         Returns:
             Appropriate error response
         """
-        plugin_id = getattr(self, "plugin_id", "unknown")
+        plugin_id = getattr(self, "plugin_id", None) or "unknown"
         action = getattr(self, "action", "unknown")
         logger.error(f"Plugin ViewSet error in {plugin_id}.{action}: {exc}")
 
