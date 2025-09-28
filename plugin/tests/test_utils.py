@@ -5,9 +5,14 @@ Tests the utility functions and classes defined in the pagoda_plugin_sdk.utils m
 including validation, formatting, sanitization, and logging utilities.
 """
 
+import sys
 import unittest
 from datetime import datetime
+from pathlib import Path
 from unittest.mock import patch
+
+# Add the SDK directory to Python path
+sys.path.insert(0, str(Path(__file__).parent.parent / "sdk"))
 
 from pagoda_plugin_sdk.utils import (
     PluginLogger,

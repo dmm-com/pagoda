@@ -44,6 +44,12 @@ except ImportError:
         pass
 
 
+# Add the SDK directory to Python path
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).parent.parent / "sdk"))
+
 from pagoda_plugin_sdk.api.base import PluginAPIView, PluginViewSet
 from pagoda_plugin_sdk.exceptions import PluginError, PluginValidationError
 

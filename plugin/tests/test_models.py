@@ -5,8 +5,13 @@ Tests the model protocols defined in pagoda_plugin_sdk.interfaces.models
 to ensure they work correctly with different implementations.
 """
 
+import sys
 import unittest
 from datetime import datetime
+from pathlib import Path
+
+# Add the SDK directory to Python path
+sys.path.insert(0, str(Path(__file__).parent.parent / "sdk"))
 
 from pagoda_plugin_sdk.interfaces.models import (
     EntityProtocol,

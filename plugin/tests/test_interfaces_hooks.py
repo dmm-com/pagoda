@@ -5,7 +5,12 @@ Tests the HookInterface protocol and its implementations
 to ensure proper hook registration, execution, and management functionality.
 """
 
+import sys
 import unittest
+from pathlib import Path
+
+# Add the SDK directory to Python path
+sys.path.insert(0, str(Path(__file__).parent.parent / "sdk"))
 
 from pagoda_plugin_sdk.interfaces.hooks import COMMON_HOOKS, HookInterface
 

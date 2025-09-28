@@ -5,8 +5,13 @@ Tests the DataInterface protocol and its implementations
 to ensure proper data access functionality for entities, entries, and attributes.
 """
 
+import sys
 import unittest
+from pathlib import Path
 from unittest.mock import Mock
+
+# Add the SDK directory to Python path
+sys.path.insert(0, str(Path(__file__).parent.parent / "sdk"))
 
 from pagoda_plugin_sdk.exceptions import DataAccessError
 from pagoda_plugin_sdk.interfaces.data import DataInterface

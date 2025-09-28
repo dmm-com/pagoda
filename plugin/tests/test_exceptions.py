@@ -5,7 +5,12 @@ Tests the exception hierarchy and behavior of custom exceptions
 defined in the pagoda_plugin_sdk.exceptions module.
 """
 
+import sys
 import unittest
+from pathlib import Path
+
+# Add the SDK directory to Python path
+sys.path.insert(0, str(Path(__file__).parent.parent / "sdk"))
 
 from pagoda_plugin_sdk.exceptions import (
     AuthenticationError,
