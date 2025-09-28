@@ -5,7 +5,6 @@ Tests the utility functions and classes defined in the pagoda_plugin_sdk.utils m
 including validation, formatting, sanitization, and logging utilities.
 """
 
-import logging
 import unittest
 from datetime import datetime
 from unittest.mock import patch

@@ -47,9 +47,11 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - id: modules
+        name: Set test modules
         run: |
           mv custom_view_sample custom_view
           modules=$(ls -d */tests/ | sed 's/\/tests\///' | jq -Rsc 'split("\n")[:-1]')
+          echo "Generated matrix JSON: $modules"
           echo "targets=$modules" >> $GITHUB_OUTPUT
 
   test:

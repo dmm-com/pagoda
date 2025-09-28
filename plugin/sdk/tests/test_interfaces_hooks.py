@@ -6,7 +6,6 @@ to ensure proper hook registration, execution, and management functionality.
 """
 
 import unittest
-from unittest.mock import Mock
 
 from pagoda_plugin_sdk.interfaces.hooks import COMMON_HOOKS, HookInterface
 

@@ -7,7 +7,7 @@ including plugin context management, exception handling, and request processing.
 
 import unittest
 from typing import TYPE_CHECKING
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import Mock, patch
 
 if TYPE_CHECKING:
     from rest_framework import status
@@ -357,7 +357,7 @@ class TestPluginViewSet(unittest.TestCase):
             mock_create.return_value = Response({"id": 1})
             mock_request = Mock(spec=Request)
 
-            result = viewset.create(mock_request)
+            viewset.create(mock_request)
 
             mock_logger.info.assert_called_once_with("Plugin test-plugin creating new instance")
             mock_create.assert_called_once_with(mock_request)
@@ -375,7 +375,7 @@ class TestPluginViewSet(unittest.TestCase):
             mock_update.return_value = Response({"id": 1})
             mock_request = Mock(spec=Request)
 
-            result = viewset.update(mock_request)
+            viewset.update(mock_request)
 
             mock_logger.info.assert_called_once_with("Plugin test-plugin updating instance")
             mock_update.assert_called_once_with(mock_request)
@@ -393,7 +393,7 @@ class TestPluginViewSet(unittest.TestCase):
             mock_destroy.return_value = Response(status=status.HTTP_204_NO_CONTENT)
             mock_request = Mock(spec=Request)
 
-            result = viewset.destroy(mock_request)
+            viewset.destroy(mock_request)
 
             mock_logger.info.assert_called_once_with("Plugin test-plugin deleting instance")
             mock_destroy.assert_called_once_with(mock_request)
