@@ -8,7 +8,7 @@ import logging
 from typing import Any, Dict, List, Optional
 
 from django.contrib.auth import get_user_model
-from pagoda_core.interfaces import AuthInterface
+from pagoda_plugin_sdk.interfaces import AuthInterface
 
 User = get_user_model()
 logger = logging.getLogger(__name__)

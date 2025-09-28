@@ -7,8 +7,8 @@ Implements pagoda_core.interfaces.DataInterface with AirOne-specific logic.
 import logging
 from typing import Any, Dict, List, Optional, Union
 
-from pagoda_core.exceptions import DataAccessError
-from pagoda_core.interfaces import DataInterface
+from pagoda_plugin_sdk.exceptions import DataAccessError
+from pagoda_plugin_sdk.interfaces import DataInterface
 
 logger = logging.getLogger(__name__)
 

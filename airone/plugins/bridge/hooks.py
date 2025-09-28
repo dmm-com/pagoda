@@ -7,7 +7,7 @@ Implements pagoda_core.interfaces.HookInterface with AirOne-specific logic.
 import logging
 from typing import Any, Callable, Dict, List
 
-from pagoda_core.interfaces import COMMON_HOOKS, HookInterface
+from pagoda_plugin_sdk.interfaces import COMMON_HOOKS, HookInterface
 
 logger = logging.getLogger(__name__)
 
