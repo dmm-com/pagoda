@@ -2,32 +2,110 @@
 Tests for model interfaces and protocols.
 
 Tests the model protocols defined in pagoda_plugin_sdk.interfaces.models
-to ensure they work correctly with different implementations.
+and the new Protocol-based model injection system.
 """
 
 import sys
 import unittest
 from datetime import datetime
 from pathlib import Path
+from unittest.mock import MagicMock
 
 # Add the SDK directory to Python path
 sys.path.insert(0, str(Path(__file__).parent.parent / "sdk"))
 
-from pagoda_plugin_sdk.interfaces.models import (
-    EntityProtocol,
-    EntryProtocol,
-    UserProtocol,
-    serialize_entity,
-    serialize_entry,
-    serialize_user,
-    validate_entity_protocol,
-    validate_entry_protocol,
-    validate_user_protocol,
-)
+import pagoda_plugin_sdk.models as sdk_models
+from pagoda_plugin_sdk.protocols import EntityProtocol, EntryProtocol, UserProtocol
+
+
+# Helper functions for testing (moved from interfaces.models)
+def validate_entity_protocol(obj) -> bool:
+    """Validate if an object conforms to EntityProtocol"""
+    try:
+        return isinstance(obj, EntityProtocol)
+    except (AttributeError, TypeError):
+        return False
+
+
+def validate_entry_protocol(obj) -> bool:
+    """Validate if an object conforms to EntryProtocol"""
+    try:
+        return isinstance(obj, EntryProtocol)
+    except (AttributeError, TypeError):
+        return False
+
+
+def validate_user_protocol(obj) -> bool:
+    """Validate if an object conforms to UserProtocol"""
+    try:
+        return isinstance(obj, UserProtocol)
+    except (AttributeError, TypeError):
+        return False
+
+
+def serialize_entity(entity: EntityProtocol) -> dict:
+    """Serialize an entity object to dictionary"""
+    return {
+        "id": entity.id,
+        "name": entity.name,
+        "note": entity.note,
+        "is_active": entity.is_active,
+        "created_time": entity.created_time.isoformat() if entity.created_time else None,
+        "created_user": entity.created_user.username if entity.created_user else None,
+    }
+
+
+def serialize_entry(entry: EntryProtocol) -> dict:
+    """Serialize an entry object to dictionary"""
+    return {
+        "id": entry.id,
+        "name": entry.name,
+        "note": entry.note,
+        "is_active": entry.is_active,
+        "schema": serialize_entity(entry.schema),
+        "created_time": entry.created_time.isoformat() if entry.created_time else None,
+        "created_user": entry.created_user.username if entry.created_user else None,
+        "updated_time": entry.updated_time.isoformat() if entry.updated_time else None,
+    }
+
+
+def serialize_user(user: UserProtocol) -> dict:
+    """Serialize a user object to dictionary"""
+    return {
+        "id": user.id,
+        "username": user.username,
+        "email": user.email,
+        "first_name": user.first_name,
+        "last_name": user.last_name,
+        "is_active": user.is_active,
+        "is_superuser": user.is_superuser,
+        "date_joined": user.date_joined.isoformat() if user.date_joined else None,
+    }
+
+
+class MockEntityManager:
+    """Mock entity manager for testing"""
+
+    def filter(self, **kwargs):
+        return []
+
+    def get(self, **kwargs):
+        return MockEntity()
+
+    def create(self, **kwargs):
+        return MockEntity()
+
+    def all(self):
+        return []
+
+    def count(self):
+        return 0
 
 
 class MockEntity:
     """Mock entity class for testing EntityProtocol"""
+
+    objects = MockEntityManager()
 
     def __init__(self):
         self.id = 1
@@ -39,6 +117,12 @@ class MockEntity:
 
     def __str__(self):
         return self.name
+
+    def save(self, **kwargs):
+        pass
+
+    def delete(self):
+        pass
 
 
 class MockUser:
@@ -58,8 +142,29 @@ class MockUser:
         return self.username
 
 
+class MockEntryManager:
+    """Mock entry manager for testing"""
+
+    def filter(self, **kwargs):
+        return []
+
+    def get(self, **kwargs):
+        return MockEntry()
+
+    def create(self, **kwargs):
+        return MockEntry()
+
+    def all(self):
+        return []
+
+    def count(self):
+        return 0
+
+
 class MockEntry:
     """Mock entry class for testing EntryProtocol"""
+
+    objects = MockEntryManager()
 
     def __init__(self):
         self.id = 1
@@ -73,6 +178,21 @@ class MockEntry:
 
     def __str__(self):
         return self.name
+
+    def save(self, **kwargs):
+        pass
+
+    def delete(self):
+        pass
+
+    def get_attrs(self, **kwargs):
+        return {}
+
+    def set_attrs(self, user, **kwargs):
+        pass
+
+    def may_permitted(self, user, permission):
+        return True
 
 
 class InvalidMockEntity:
@@ -186,6 +306,219 @@ class TestModelProtocols(unittest.TestCase):
         user.date_joined = None
         result = serialize_user(user)
         self.assertIsNone(result["date_joined"])
+
+
+class TestModelInjection(unittest.TestCase):
+    """Test cases for Protocol-based model injection system"""
+
+    def setUp(self):
+        """Set up test fixtures"""
+        # Save original state
+        self.original_entity = sdk_models.Entity
+        self.original_entry = sdk_models.Entry
+        self.original_user = sdk_models.User
+        self.original_attribute_value = sdk_models.AttributeValue
+        self.original_entity_attr = getattr(sdk_models, "EntityAttr", None)
+        self.original_attribute = getattr(sdk_models, "Attribute", None)
+
+    def tearDown(self):
+        """Clean up after tests"""
+        # Restore original state
+        sdk_models.Entity = self.original_entity
+        sdk_models.Entry = self.original_entry
+        sdk_models.User = self.original_user
+        sdk_models.AttributeValue = self.original_attribute_value
+        if hasattr(sdk_models, "EntityAttr"):
+            sdk_models.EntityAttr = self.original_entity_attr
+        if hasattr(sdk_models, "Attribute"):
+            sdk_models.Attribute = self.original_attribute
+
+    def test_initial_state_is_none(self):
+        """Test that models are initially None"""
+        # Reset to initial state
+        sdk_models.Entity = None
+        sdk_models.Entry = None
+
+        self.assertIsNone(sdk_models.Entity)
+        self.assertIsNone(sdk_models.Entry)
+
+    def test_model_injection(self):
+        """Test that models can be injected"""
+        # Create mock models
+        mock_entity = MagicMock()
+        mock_entry = MagicMock()
+
+        # Inject models
+        sdk_models.Entity = mock_entity
+        sdk_models.Entry = mock_entry
+
+        # Verify injection
+        self.assertEqual(sdk_models.Entity, mock_entity)
+        self.assertEqual(sdk_models.Entry, mock_entry)
+
+    def test_model_access_after_injection(self):
+        """Test that injected models can be used"""
+        # Create mock model with objects manager
+        mock_entity = MagicMock()
+        mock_objects = MagicMock()
+        mock_entity.objects = mock_objects
+
+        # Inject model
+        sdk_models.Entity = mock_entity
+
+        # Use the model
+        sdk_models.Entity.objects.filter(is_active=True)
+
+        # Verify the call was made
+        mock_objects.filter.assert_called_once_with(is_active=True)
+
+    def test_entity_attr_model_access(self):
+        """Test that EntityAttr model can be used"""
+        # Create mock model with objects manager
+        mock_entity_attr = MagicMock()
+        mock_objects = MagicMock()
+        mock_entity_attr.objects = mock_objects
+
+        # Inject model
+        sdk_models.EntityAttr = mock_entity_attr
+
+        # Use the model
+        sdk_models.EntityAttr.objects.filter(is_active=True)
+
+        # Verify the call was made
+        mock_objects.filter.assert_called_once_with(is_active=True)
+
+    def test_attribute_model_access(self):
+        """Test that Attribute model can be used"""
+        # Create mock model with objects manager
+        mock_attribute = MagicMock()
+        mock_objects = MagicMock()
+        mock_attribute.objects = mock_objects
+
+        # Inject model
+        sdk_models.Attribute = mock_attribute
+
+        # Use the model
+        sdk_models.Attribute.objects.filter(is_active=True)
+
+        # Verify the call was made
+        mock_objects.filter.assert_called_once_with(is_active=True)
+
+    def test_error_handling_for_uninitialized_models(self):
+        """Test error handling when models are not initialized"""
+        # Reset to None
+        sdk_models.Entity = None
+
+        # When Entity is None, accessing it returns None, not an error
+        # The error occurs when trying to use the __getattr__ function
+        # which is only called for attributes that don't exist
+        entity_value = sdk_models.Entity
+        self.assertIsNone(entity_value)
+
+        # However, __getattr__ function can still be tested with a non-existent model
+        with self.assertRaises(AttributeError) as context:
+            _ = getattr(sdk_models, "NonExistentModel")
+
+        self.assertIn("module", str(context.exception))
+        self.assertIn("has no attribute", str(context.exception))
+
+    def test_is_initialized_function(self):
+        """Test the is_initialized utility function"""
+        # Reset all models
+        sdk_models.Entity = None
+        sdk_models.Entry = None
+        sdk_models.User = None
+        sdk_models.AttributeValue = None
+        sdk_models.EntityAttr = None
+        sdk_models.Attribute = None
+
+        # Should not be initialized
+        self.assertFalse(sdk_models.is_initialized())
+
+        # Inject one model
+        sdk_models.Entity = MagicMock()
+
+        # Should be initialized
+        self.assertTrue(sdk_models.is_initialized())
+
+    def test_get_available_models_function(self):
+        """Test the get_available_models utility function"""
+        # Reset all models
+        sdk_models.Entity = None
+        sdk_models.Entry = None
+        sdk_models.User = None
+        sdk_models.AttributeValue = None
+        sdk_models.EntityAttr = None
+        sdk_models.Attribute = None
+
+        # Should be empty
+        self.assertEqual(sdk_models.get_available_models(), [])
+
+        # Inject some models
+        sdk_models.Entity = MagicMock()
+        sdk_models.Entry = MagicMock()
+        sdk_models.EntityAttr = MagicMock()
+        sdk_models.Attribute = MagicMock()
+
+        # Should contain the injected models
+        available = sdk_models.get_available_models()
+        self.assertIn("Entity", available)
+        self.assertIn("Entry", available)
+        self.assertIn("EntityAttr", available)
+        self.assertIn("Attribute", available)
+        self.assertNotIn("User", available)
+        self.assertNotIn("AttributeValue", available)
+
+    def test_protocol_integration_mock(self):
+        """Test the Protocol-based model access with mocks"""
+
+        # Create mock model matching EntityProtocol
+        class MockEntityWithProtocol:
+            def __init__(self):
+                self.id = 1
+                self.name = "Protocol Test Entity"
+                self.note = "Testing protocol"
+                self.is_active = True
+                self.created_time = datetime.now()
+                self.created_user = None
+
+            class objects:
+                @staticmethod
+                def filter(**kwargs):
+                    return [MockEntityWithProtocol()]
+
+                @staticmethod
+                def all():
+                    return [MockEntityWithProtocol()]
+
+                @staticmethod
+                def count():
+                    return 1
+
+            def save(self):
+                pass
+
+            def delete(self):
+                pass
+
+            def __str__(self):
+                return self.name
+
+        # Inject the mock
+        sdk_models.Entity = MockEntityWithProtocol
+
+        # Use as if it's the real model
+        Entity = sdk_models.Entity
+        entities = Entity.objects.filter(is_active=True)
+
+        # Verify it works
+        self.assertEqual(len(entities), 1)
+        self.assertEqual(entities[0].name, "Protocol Test Entity")
+
+        # Natural import style test
+        from pagoda_plugin_sdk.models import Entity as ImportedEntity
+
+        self.assertEqual(ImportedEntity, MockEntityWithProtocol)
 
 
 if __name__ == "__main__":

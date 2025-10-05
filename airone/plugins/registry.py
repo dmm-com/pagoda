@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 class PluginRegistry:
     """Plugin registration and management system"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._plugins: Dict[str, "Plugin"] = {}
         self._api_v2_patterns: List[Dict[str, Any]] = []
 
@@ -49,20 +49,12 @@ class PluginRegistry:
         self._plugins[plugin.id] = plugin
         logger.info(f"Registered plugin: {plugin.id} v{plugin.version}")
 
-        # Register hooks with bridge manager (new system)
-        try:
-            from .bridge_manager import bridge_manager
-
-            bridge_manager.register_plugin_hooks(plugin)
-        except ImportError:
-            logger.debug("Bridge manager not available for hook registration")
-
         # Register API v2 patterns
         self._register_api_v2_patterns(plugin)
 
         return plugin
 
-    def _register_api_v2_patterns(self, plugin: Plugin):
+    def _register_api_v2_patterns(self, plugin: Plugin) -> None:
         """Register plugin API v2 patterns"""
         if plugin.api_v2_patterns:
             self._api_v2_patterns.append(

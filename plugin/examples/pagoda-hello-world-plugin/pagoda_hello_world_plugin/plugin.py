@@ -35,12 +35,6 @@ class HelloWorldPlugin(Plugin):
     # API v2 endpoint configuration
     api_v2_patterns = "pagoda_hello_world_plugin.api_v2.urls"
 
-    # Hook configurations (dictionary format for plugin registry)
-    hooks = {
-        "entry.after_create": "pagoda_hello_world_plugin.hooks.after_entry_create",
-        "entry.before_update": "pagoda_hello_world_plugin.hooks.before_entry_update",
-    }
-
     def __init__(self):
         """Initialize the Hello World plugin"""
         super().__init__()

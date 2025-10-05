@@ -32,9 +32,6 @@ class Plugin:
     url_patterns: Optional[str] = None
     api_v2_patterns: Optional[str] = None
 
-    # Hooks (hook_name: handler_path)
-    hooks: Dict[str, str] = {}
-
     def __init__(self):
         """Initialize the plugin instance"""
         self.validate()
@@ -81,7 +78,6 @@ class Plugin:
             "django_apps": self.django_apps,
             "url_patterns": self.url_patterns,
             "api_v2_patterns": self.api_v2_patterns,
-            "hooks": list(self.hooks.keys()),
         }
 
     def __str__(self) -> str:

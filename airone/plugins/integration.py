@@ -39,8 +39,37 @@ class PluginIntegration:
         if not self.initialized and self.is_plugins_enabled():
             logger.info("Initializing plugin system...")
             discover_plugins()
+            self._inject_models()
             self.initialized = True
             logger.info("Plugin system initialized successfully")
+
+    def _inject_models(self):
+        """Inject real models into the plugin SDK"""
+        try:
+            # Import real models from AirOne
+            # Import plugin SDK models module
+            import pagoda_plugin_sdk.models as sdk_models
+
+            from entity.models import Entity, EntityAttr
+            from entry.models import Attribute, AttributeValue, Entry
+            from user.models import User
+
+            # Inject real models
+            sdk_models.Entity = Entity
+            sdk_models.Entry = Entry
+            sdk_models.User = User
+            sdk_models.AttributeValue = AttributeValue
+            sdk_models.EntityAttr = EntityAttr
+            sdk_models.Attribute = Attribute
+
+            logger.info("Successfully injected models into plugin SDK")
+
+        except ImportError as e:
+            logger.error(f"Failed to inject models into plugin SDK: {e}")
+            raise
+        except Exception as e:
+            logger.error(f"Unexpected error during model injection: {e}")
+            raise
 
     def get_installed_apps(self) -> List[str]:
         """Get list of apps to add to Django INSTALLED_APPS

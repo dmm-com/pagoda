@@ -13,20 +13,6 @@ from .exceptions import (
     PluginSecurityError,
     PluginValidationError,
 )
-from .interfaces import (
-    AuthInterface,
-    DataInterface,
-    EntityDict,
-    EntityProtocol,
-    EntryDict,
-    EntryProtocol,
-    HookInterface,
-    UserDict,
-    UserProtocol,
-    serialize_entity,
-    serialize_entry,
-    serialize_user,
-)
 from .plugin import Plugin
 from .utils import get_pagoda_version
 
@@ -35,16 +21,16 @@ from .utils import get_pagoda_version
 def _lazy_import_mixins():
     """Lazy import of Django-dependent mixins"""
     try:
-        from .mixins import PluginAPIViewMixin, PluginJobMixin
+        from .mixins import PluginAPIViewMixin
 
-        return PluginAPIViewMixin, PluginJobMixin
+        return PluginAPIViewMixin
     except ImportError as e:
         if "django" in str(e).lower() or "rest_framework" in str(e).lower():
             raise ImportError(
                 "Django and Django REST Framework are required "
-                "to use PluginAPIViewMixin and PluginJobMixin. "
+                "to use PluginAPIViewMixin. "
                 "Please install Django and djangorestframework, "
-                "or import these mixins directly when Django is configured."
+                "or import this mixin directly when Django is configured."
             )
         raise
 
@@ -79,12 +65,8 @@ def _lazy_import_api():
 
 # Define lazy properties for mixins and API components
 def __getattr__(name):
-    if name in ("PluginAPIViewMixin", "PluginJobMixin"):
-        mixin_classes = _lazy_import_mixins()
-        if name == "PluginAPIViewMixin":
-            return mixin_classes[0]
-        elif name == "PluginJobMixin":
-            return mixin_classes[1]
+    if name == "PluginAPIViewMixin":
+        return _lazy_import_mixins()
     elif name in (
         "PluginViewSet",
         "PluginAPIView",
@@ -118,27 +100,12 @@ __all__ = [
     "PluginSecurityError",
     # Mixins for plugin development
     "PluginAPIViewMixin",
-    "PluginJobMixin",
     # API components (Django REST Framework dependent)
     "PluginViewSet",
     "PluginAPIView",
     "PluginPagination",
     "PluginPermission",
     "PluginSerializerMixin",
-    # Interfaces for host application interaction
-    "AuthInterface",
-    "DataInterface",
-    "HookInterface",
-    # Model protocols
-    "EntityProtocol",
-    "EntryProtocol",
-    "UserProtocol",
-    "EntityDict",
-    "EntryDict",
-    "UserDict",
-    "serialize_entity",
-    "serialize_entry",
-    "serialize_user",
     # Utilities
     "get_pagoda_version",
 ]
