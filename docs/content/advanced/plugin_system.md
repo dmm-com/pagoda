@@ -39,15 +39,15 @@ Foundation layer provided as an independent PyPI package:
 ```python
 # pagoda_plugin_sdk provides:
 from pagoda_plugin_sdk import Plugin, PluginAPIViewMixin
-from pagoda_plugin_sdk.interfaces import AuthInterface, DataInterface, HookInterface
-from pagoda_plugin_sdk.interfaces import COMMON_HOOKS
+from pagoda_plugin_sdk.models import Entity, Entry, User
+from pagoda_plugin_sdk.protocols import EntityProtocol, EntryProtocol, UserProtocol
 ```
 
 **Features:**
 - Distributable via PyPI
 - Depends on Django/DRF but not on Pagoda application
-- Standardized interface definitions
-- 27 common hook definitions
+- Type-safe Protocol definitions for host models
+- Model injection mechanism for accessing host application data
 
 ### Layer 2: External Plugin (Independent Extension)
 
@@ -69,17 +69,201 @@ class MyPlugin(Plugin):
 
 ### Layer 3: Pagoda Application (Host Application)
 
-Connects interfaces to concrete implementations using the bridge pattern:
+Injects concrete model implementations into the plugin SDK:
 
 ```python
-# Pagoda provides concrete implementations
-from airone.plugins.bridge import PagodaAuthBridge, PagodaDataBridge, PagodaHookBridge
-from airone.plugins.bridge_manager import bridge_manager
+# Pagoda injects actual models into the plugin SDK
+from airone.plugins.integration import plugin_integration
 
-# Bridges connect generic interfaces to Pagoda specifics
-bridge_manager.auth    # -> PagodaAuthBridge
-bridge_manager.data    # -> PagodaDataBridge
-bridge_manager.hooks   # -> PagodaHookBridge
+# During initialization, real models are injected
+plugin_integration.initialize()  # Injects Entity, Entry, User, etc.
+
+# Plugins can then access models through the SDK
+from pagoda_plugin_sdk.models import Entity, Entry, User
+```
+
+## Model Access through Protocols
+
+### Overview
+
+Plugins access host application models through a safe injection mechanism. The SDK provides Protocol-based type definitions that ensure type safety without creating implementation dependencies.
+
+### Protocol Definitions
+
+The SDK defines type-safe protocols for all major models:
+
+```python
+from pagoda_plugin_sdk.protocols import (
+    EntityProtocol,
+    EntryProtocol,
+    UserProtocol,
+    EntityAttrProtocol,
+    AttributeProtocol,
+    AttributeValueProtocol,
+)
+```
+
+**Available Protocols:**
+
+- `EntityProtocol` - Schema definition (Entity model)
+- `EntryProtocol` - Data entry (Entry model)
+- `UserProtocol` - User account
+- `EntityAttrProtocol` - Entity attribute definition
+- `AttributeProtocol` - Entry attribute
+- `AttributeValueProtocol` - Attribute value
+
+### Model Injection Mechanism
+
+Models are injected by the host application during initialization:
+
+```python
+# In Pagoda application startup
+from airone.plugins.integration import plugin_integration
+
+# Initialize plugin system and inject models
+plugin_integration.initialize()  # Automatically injects real models
+```
+
+The injection process:
+
+1. Pagoda application starts
+2. Plugin system initializes
+3. Real Django models are injected into `pagoda_plugin_sdk.models`
+4. Plugins can safely access models through the SDK
+
+### Accessing Models in Plugins
+
+**Basic Model Access:**
+
+```python
+from pagoda_plugin_sdk.models import Entity, Entry, User
+
+def my_plugin_view(request):
+    # Type-safe Entity access
+    entities = Entity.objects.filter(is_active=True)
+
+    # Type-safe Entry access
+    entries = Entry.objects.filter(schema__name="MyEntity")
+
+    # Access with relationships
+    for entry in entries:
+        entity_name = entry.schema.name  # Type-safe attribute access
+        creator = entry.created_user.username
+```
+
+**Checking Model Availability:**
+
+```python
+from pagoda_plugin_sdk import models
+
+# Check if models are initialized
+if models.is_initialized():
+    from pagoda_plugin_sdk.models import Entity
+    entities = Entity.objects.all()
+else:
+    # Handle case where plugin system is not initialized
+    raise RuntimeError("Plugin system not initialized")
+
+# Get list of available models
+available = models.get_available_models()  # ['Entity', 'Entry', 'User', ...]
+```
+
+**Model CRUD Operations:**
+
+```python
+from pagoda_plugin_sdk.models import Entity, Entry
+
+# Create
+entity = Entity.objects.create(
+    name="New Entity",
+    note="Created by plugin",
+    created_user=request.user
+)
+
+# Read
+entity = Entity.objects.get(id=123)
+entries = Entry.objects.filter(schema=entity, is_active=True)
+
+# Update
+entity.note = "Updated by plugin"
+entity.save()
+
+# Delete (soft delete)
+entity.is_active = False
+entity.save()
+```
+
+**Using Entry-Specific Methods:**
+
+```python
+from pagoda_plugin_sdk.models import Entry
+
+# Get entry with attributes
+entry = Entry.objects.get(id=456)
+
+# Use Entry's custom methods (defined in EntryProtocol)
+attrs = entry.get_attrs()  # Get all attributes as dict
+entry.set_attrs(user=request.user, name="value", age=30)
+
+# Permission checking
+if entry.may_permitted(request.user, some_permission):
+    # Perform operation
+    pass
+```
+
+### Type Safety Benefits
+
+Using Protocols provides several advantages:
+
+1. **IDE Autocomplete**: Full IntelliSense support in modern IDEs
+2. **Type Checking**: Static type checkers (mypy) can verify correctness
+3. **No Import Errors**: No circular dependency issues
+4. **Documentation**: Protocol definitions serve as API documentation
+
+**Example with Type Hints:**
+
+```python
+from typing import List
+from pagoda_plugin_sdk.models import Entity, Entry
+from pagoda_plugin_sdk.protocols import EntityProtocol, EntryProtocol
+
+def get_entries_for_entity(entity: EntityProtocol) -> List[EntryProtocol]:
+    """Get all active entries for a given entity
+
+    Args:
+        entity: Entity to query entries for
+
+    Returns:
+        List of active Entry instances
+    """
+    return Entry.objects.filter(schema=entity, is_active=True)
+```
+
+### Error Handling
+
+Always handle cases where models might not be available:
+
+```python
+from pagoda_plugin_sdk.models import Entity
+from rest_framework.response import Response
+from rest_framework import status
+
+def my_view(request):
+    try:
+        if Entity is None:
+            return Response(
+                {"error": "Entity model not available"},
+                status=status.HTTP_503_SERVICE_UNAVAILABLE
+            )
+
+        entities = Entity.objects.filter(is_active=True)
+        # Process entities...
+
+    except Exception as e:
+        return Response(
+            {"error": str(e)},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
 ```
 
 ## Getting Started
@@ -309,7 +493,7 @@ make publish           # Publish to PyPI
 make build
 make publish
 
-# ユーザー側でインストール
+# Users install the plugin
 pip install my-pagoda-plugin
 ```
 
@@ -320,7 +504,7 @@ pip install my-pagoda-plugin
 git tag v1.0.0
 git push origin v1.0.0
 
-# ユーザー側でインストール
+# Users install from GitHub release
 pip install https://github.com/user/my-plugin/releases/download/v1.0.0/my_plugin-1.0.0-py3-none-any.whl
 ```
 
@@ -346,10 +530,35 @@ A complete sample plugin is available at `plugin/examples/pagoda-hello-world-plu
 - `POST /api/v2/plugins/hello-world-plugin/hello/` - Custom message API
 - `GET /api/v2/plugins/hello-world-plugin/greet/<name>/` - Personalized greeting
 - `GET /api/v2/plugins/hello-world-plugin/status/` - Plugin status
+- `GET /api/v2/plugins/hello-world-plugin/entities/` - List all entities (demonstrates model access)
+- `GET /api/v2/plugins/hello-world-plugin/entities/<id>/` - Get entity details
+- `GET /api/v2/plugins/hello-world-plugin/entries/` - List entries with filtering
+- `GET /api/v2/plugins/hello-world-plugin/entries/<id>/` - Get entry with attributes
 
-**Hooks:**
-- `entry.after_create` - Post-Entry creation processing
-- `entry.before_update` - Pre-Entry update processing
+**Model Access Examples:**
+
+The sample plugin demonstrates how to access host application models:
+
+```python
+from pagoda_plugin_sdk import PluginAPIViewMixin
+from pagoda_plugin_sdk.models import Entity, Entry
+
+class EntityListView(PluginAPIViewMixin):
+    def get(self, request):
+        # Type-safe entity access
+        entities = Entity.objects.filter(is_active=True)
+
+        entity_list = [
+            {
+                "id": entity.id,
+                "name": entity.name,
+                "note": entity.note,
+            }
+            for entity in entities
+        ]
+
+        return Response({"entities": entity_list})
+```
 
 ## Configuration
 
@@ -434,7 +643,7 @@ for ep in pkg_resources.iter_entry_points('pagoda.plugins'):
 "
 ```
 
-2. **プラグイン再インストール**:
+2. **Reinstall Plugin**:
 ```bash
 cd my-plugin/
 pip uninstall -y my-plugin
@@ -442,7 +651,7 @@ rm -rf build/ dist/ *.egg-info/
 pip install -e .
 ```
 
-3. **パスとモジュール確認**:
+3. **Check Path and Module**:
 ```bash
 python -c "
 import sys
@@ -454,45 +663,45 @@ print(f'✓ Direct import works: {MyPlugin().name}')
 
 #### 3. Hook Execution Errors
 
-**ログ例**:
+**Log Example**:
 ```
 [ERROR] Hook entry.after_create failed: after_entry_create() missing required arguments
 ```
 
-**解決法**: フックハンドラーのシグネチャを正しく実装
+**Solution**: Implement correct hook handler signature
 ```python
-# ❌ 間違い
+# ❌ Wrong
 def after_entry_create():
     pass
 
-# ✅ 正解
+# ✅ Correct
 def after_entry_create(sender, instance, created, **kwargs):
-    # senderはDjangoモデルクラス
-    # instanceは作成されたEntryインスタンス
-    # createdは新規作成フラグ
+    # sender is Django model class
+    # instance is the created Entry instance
+    # created is a boolean flag for new creation
     print(f"New entry created: {instance.name}")
 ```
 
 #### 4. Plugin Development Environment Issues
 
-**Poetry環境での開発**:
+**Development with Poetry**:
 ```bash
-# pagoda-coreが見つからない
+# If pagoda-core is not found
 cd pagoda-core/
 make install-dev
 
-# プラグイン開発用インストール
+# Install plugin for development
 cd ../plugin_examples/my-plugin/
 pip install -e .
 
-# 統合テスト実行
+# Run integration tests
 make test-integration
 ```
 
 ### Debug Commands
 
 ```bash
-# プラグイン状態確認
+# Check plugin status
 ENABLED_PLUGINS=hello-world python manage.py shell -c "
 from airone.plugins.integration import plugin_integration
 plugin_integration.initialize()
@@ -501,7 +710,7 @@ for plugin in plugin_integration.get_enabled_plugins():
     print(f'  - {plugin.name} ({plugin.id}) v{plugin.version}')
 "
 
-# URL解決テスト
+# Test URL resolution
 python -c "
 import django
 django.setup()
@@ -511,7 +720,7 @@ match = resolver.resolve('/api/v2/plugins/hello-world-plugin/test/')
 print(f'✓ URL resolved: {match.func}')
 "
 
-# Hook統計取得
+# Get hook statistics
 python -c "
 from airone.plugins.bridge_manager import bridge_manager
 bridge_manager.initialize()
@@ -563,46 +772,50 @@ class PagodaHookBridge(HookInterface):
         # Execute all registered callbacks with error handling
 ```
 
-### Bridge Pattern Implementation
+### Model Injection Implementation
 
 ```python
-# Generic Interface (pagoda-core)
-class DataInterface(ABC):
-    @abstractmethod
-    def get_entity(self, entity_id): pass
+# Host application injects models during initialization
+# airone/plugins/integration.py
+def _inject_models(self):
+    import pagoda_plugin_sdk.models as sdk_models
+    from entity.models import Entity, EntityAttr
+    from entry.models import Entry, Attribute, AttributeValue
+    from user.models import User
 
-# Concrete Implementation (Pagoda)
-class PagodaDataBridge(DataInterface):
-    def get_entity(self, entity_id):
-        from entity.models import Entity
-        return Entity.objects.get(id=entity_id)
+    # Inject real models into SDK
+    sdk_models.Entity = Entity
+    sdk_models.Entry = Entry
+    sdk_models.User = User
+    # ... other models
 
-# Plugin Usage
-bridge_manager.data.get_entity(123)  # → Pagoda Entity instance
+# Plugin accesses models safely
+from pagoda_plugin_sdk.models import Entity
+entities = Entity.objects.all()  # → Pagoda Entity instances
 ```
 
 ## Best Practices
 
 ### 1. Plugin Development
 
-- **Version Pinning**: `pagoda-core>=1.0.0,<2.0.0` で互換性保証
-- **Testing**: 単体テスト + Pagoda統合テスト の両方実装
-- **Documentation**: README + API仕様書 を含める
-- **Error Handling**: フックとAPIで適切な例外処理
-- **Security**: 認証・認可の適切な実装
+- **Version Pinning**: Ensure compatibility with `pagoda-core>=1.0.0,<2.0.0`
+- **Testing**: Implement both unit tests and Pagoda integration tests
+- **Documentation**: Include README and API specifications
+- **Error Handling**: Implement proper exception handling in hooks and APIs
+- **Security**: Implement proper authentication and authorization
 
 ### 2. Distribution
 
-- **Semantic Versioning**: `major.minor.patch` で適切なバージョニング
-- **Changelog**: リリースノート・変更履歴の維持
-- **Compatibility**: サポートするPagoda/pagoda-plugin-sdkバージョンの明記
-- **Dependencies**: 最小限の依存関係に抑制
+- **Semantic Versioning**: Use appropriate `major.minor.patch` versioning
+- **Changelog**: Maintain release notes and change history
+- **Compatibility**: Clearly specify supported Pagoda/pagoda-plugin-sdk versions
+- **Dependencies**: Keep dependencies to a minimum
 
 ### 3. Production Deployment
 
-- **Environment Isolation**: プラグイン毎の仮想環境分離
-- **Monitoring**: プラグインエラーのログ監視
-- **Rollback Strategy**: プラグイン無効化手順の準備
-- **Performance**: フック処理の性能影響評価
+- **Environment Isolation**: Isolate virtual environments per plugin
+- **Monitoring**: Monitor plugin error logs
+- **Rollback Strategy**: Prepare procedures for disabling plugins
+- **Performance**: Evaluate performance impact of hook processing
 
-この3層アーキテクチャにより、Pagodaから完全に独立したプラグインシステムが実現されています。プラグイン開発者は `pagoda-plugin-sdk` のみに依存して、安全で再利用可能なプラグインを作成できます。
+This 3-layer architecture realizes a plugin system completely independent from Pagoda. Plugin developers can create safe and reusable plugins depending only on `pagoda-plugin-sdk`.

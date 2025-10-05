@@ -294,6 +294,290 @@ def after_entry_create(sender, instance, created, **kwargs):
         print(f"New entry: {instance.name}")
 ```
 
+## Accessing Host Application Models
+
+### Overview
+
+Plugins can access Pagoda's models (Entity, Entry, User, etc.) through the plugin SDK's model injection mechanism. This provides type-safe access to host application data.
+
+### Basic Model Import
+
+```python
+# Import models from the plugin SDK
+from pagoda_plugin_sdk.models import Entity, Entry, User
+
+class MyPluginView(PluginAPIViewMixin):
+    def get(self, request):
+        # Access models directly
+        entities = Entity.objects.filter(is_active=True)
+        entries = Entry.objects.filter(schema__name="MyEntity")
+```
+
+### Entity Access Examples
+
+**List All Entities:**
+
+```python
+from pagoda_plugin_sdk.models import Entity
+from rest_framework.response import Response
+
+class EntityListView(PluginAPIViewMixin):
+    def get(self, request):
+        # Get all active entities
+        entities = Entity.objects.filter(is_active=True)
+
+        # Convert to response format
+        entity_list = []
+        for entity in entities:
+            entity_list.append({
+                "id": entity.id,
+                "name": entity.name,
+                "note": entity.note,
+                "created_user": entity.created_user.username if entity.created_user else None,
+            })
+
+        return Response({"entities": entity_list, "count": len(entity_list)})
+```
+
+**Get Entity Details:**
+
+```python
+from pagoda_plugin_sdk.models import Entity
+
+class EntityDetailView(PluginAPIViewMixin):
+    def get(self, request, entity_id):
+        try:
+            entity = Entity.objects.get(id=entity_id, is_active=True)
+
+            return Response({
+                "id": entity.id,
+                "name": entity.name,
+                "note": entity.note,
+                "is_active": entity.is_active,
+                "created_time": entity.created_time.isoformat() if entity.created_time else None,
+            })
+        except Entity.DoesNotExist:
+            return Response(
+                {"error": f"Entity {entity_id} not found"},
+                status=404
+            )
+```
+
+### Entry Access Examples
+
+**List Entries with Filtering:**
+
+```python
+from pagoda_plugin_sdk.models import Entry
+
+class EntryListView(PluginAPIViewMixin):
+    def get(self, request):
+        # Get query parameters
+        entity_id = request.GET.get("entity_id")
+        limit = request.GET.get("limit", 100)
+
+        # Build query
+        queryset = Entry.objects.filter(is_active=True)
+
+        if entity_id:
+            queryset = queryset.filter(schema_id=entity_id)
+
+        # Limit results
+        entries = queryset[:int(limit)]
+
+        # Format response
+        entry_list = []
+        for entry in entries:
+            entry_list.append({
+                "id": entry.id,
+                "name": entry.name,
+                "entity": {
+                    "id": entry.schema.id,
+                    "name": entry.schema.name,
+                } if entry.schema else None,
+                "created_user": entry.created_user.username if entry.created_user else None,
+            })
+
+        return Response({
+            "entries": entry_list,
+            "count": len(entry_list),
+            "filters": {"entity_id": entity_id, "limit": limit}
+        })
+```
+
+**Get Entry with Attributes:**
+
+```python
+from pagoda_plugin_sdk.models import Entry
+
+class EntryDetailView(PluginAPIViewMixin):
+    def get(self, request, entry_id):
+        try:
+            entry = Entry.objects.get(id=entry_id, is_active=True)
+
+            # Use Entry's custom method to get attributes
+            attrs = entry.get_attrs()
+
+            return Response({
+                "id": entry.id,
+                "name": entry.name,
+                "entity": {
+                    "id": entry.schema.id,
+                    "name": entry.schema.name,
+                },
+                "attributes": attrs,  # All entry attributes
+                "created_time": entry.created_time.isoformat() if entry.created_time else None,
+            })
+        except Entry.DoesNotExist:
+            return Response(
+                {"error": f"Entry {entry_id} not found"},
+                status=404
+            )
+```
+
+### Working with Relationships
+
+```python
+from pagoda_plugin_sdk.models import Entity, Entry
+
+class EntityEntriesView(PluginAPIViewMixin):
+    def get(self, request, entity_id):
+        """Get an entity and all its entries"""
+        try:
+            # Get entity
+            entity = Entity.objects.get(id=entity_id, is_active=True)
+
+            # Get all entries for this entity
+            entries = Entry.objects.filter(
+                schema=entity,
+                is_active=True
+            ).select_related('created_user')
+
+            # Format response
+            return Response({
+                "entity": {
+                    "id": entity.id,
+                    "name": entity.name,
+                },
+                "entries": [
+                    {
+                        "id": e.id,
+                        "name": e.name,
+                        "created_user": e.created_user.username,
+                    }
+                    for e in entries
+                ],
+                "total_entries": entries.count()
+            })
+        except Entity.DoesNotExist:
+            return Response({"error": "Entity not found"}, status=404)
+```
+
+### Model Availability Check
+
+Always check if models are available before using them:
+
+```python
+from pagoda_plugin_sdk.models import Entity
+from pagoda_plugin_sdk import models
+
+class SafeModelView(PluginAPIViewMixin):
+    def get(self, request):
+        # Check if plugin system is initialized
+        if not models.is_initialized():
+            return Response(
+                {"error": "Plugin system not initialized"},
+                status=503
+            )
+
+        # Check specific model
+        if Entity is None:
+            return Response(
+                {"error": "Entity model not available"},
+                status=503
+            )
+
+        # Safe to use models
+        entities = Entity.objects.all()
+        return Response({"count": entities.count()})
+```
+
+### Type-Safe Model Usage
+
+Use Protocol types for better type safety:
+
+```python
+from typing import List
+from pagoda_plugin_sdk.models import Entity, Entry
+from pagoda_plugin_sdk.protocols import EntityProtocol, EntryProtocol
+
+def process_entity(entity: EntityProtocol) -> dict:
+    """Process entity with type safety
+
+    Args:
+        entity: Entity instance (type-safe)
+
+    Returns:
+        Processed entity data
+    """
+    return {
+        "id": entity.id,
+        "name": entity.name,
+        "note": entity.note,
+    }
+
+def get_entity_entries(entity: EntityProtocol) -> List[EntryProtocol]:
+    """Get entries for entity with type hints
+
+    Args:
+        entity: Entity to get entries for
+
+    Returns:
+        List of Entry instances
+    """
+    return Entry.objects.filter(schema=entity, is_active=True)
+```
+
+### Error Handling Best Practices
+
+```python
+from pagoda_plugin_sdk.models import Entity, Entry
+from rest_framework.response import Response
+from rest_framework import status
+
+class RobustModelView(PluginAPIViewMixin):
+    def get(self, request, entity_id):
+        try:
+            # Model availability check
+            if Entity is None or Entry is None:
+                return Response(
+                    {"error": "Models not available"},
+                    status=status.HTTP_503_SERVICE_UNAVAILABLE
+                )
+
+            # Get entity
+            entity = Entity.objects.get(id=entity_id, is_active=True)
+
+            # Get entries
+            entries = Entry.objects.filter(schema=entity, is_active=True)
+
+            return Response({
+                "entity": {"id": entity.id, "name": entity.name},
+                "entry_count": entries.count()
+            })
+
+        except Entity.DoesNotExist:
+            return Response(
+                {"error": f"Entity {entity_id} not found"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except Exception as e:
+            return Response(
+                {"error": "Internal error", "detail": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+```
+
 ## 高度な開発テクニック
 
 ### プラグイン間通信
@@ -314,19 +598,35 @@ class PluginB(Plugin):
             return data
 ```
 
-### ブリッジ経由でのPagodaデータアクセス
+### モデル注入を使ったデータアクセス
 
 ```python
 # プラグインからPagodaデータにアクセス
 from pagoda_plugin_sdk import PluginAPIViewMixin
+from pagoda_plugin_sdk.models import Entity, Entry
 
 class DataAccessView(PluginAPIViewMixin):
-    def get(self, request):
-        # Bridge経由でEntityデータ取得
+    def get(self, request, entity_id):
+        # 型安全なモデルアクセス
         try:
-            from airone.plugins.bridge_manager import bridge_manager
-            entity = bridge_manager.data.get_entity(123)
-            return Response({"entity": entity})
+            if Entity is None:
+                return Response(
+                    {"error": "Entity model not available"},
+                    status=503
+                )
+
+            entity = Entity.objects.get(id=entity_id, is_active=True)
+            entries = Entry.objects.filter(schema=entity, is_active=True)
+
+            return Response({
+                "entity": {
+                    "id": entity.id,
+                    "name": entity.name,
+                },
+                "entry_count": entries.count()
+            })
+        except Entity.DoesNotExist:
+            return Response({"error": "Entity not found"}, status=404)
         except Exception as e:
             return Response({"error": str(e)}, status=500)
 ```

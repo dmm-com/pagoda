@@ -26,12 +26,11 @@ graph TB
     end
 
     subgraph "Layer 3: Pagoda Host Application"
-        AB[Auth Bridge]
-        DB[Data Bridge]
-        HB[Hook Bridge]
-        BM[Bridge Manager]
+        MI[Model Injection]
+        PI_SYS[Plugin Integration]
         UI[URL Integration]
         AS[Pagoda Settings]
+        DM[Django Models]
     end
 
     PC --> EP
@@ -40,16 +39,16 @@ graph TB
     CH --> EP
     AM --> EP
 
-    EP --> AB
-    EP --> DB
-    EP --> HB
-    EP --> BM
+    EP --> MI
+    EP --> PI_SYS
     EP --> UI
     EP --> AS
+    DM --> MI
+    MI --> PC
 
     style PC fill:#e1f5fe
     style EP fill:#f3e5f5
-    style AB fill:#e8f5e8
+    style MI fill:#e8f5e8
 ```
 
 ### Plugin Discovery & Registration Flow
@@ -60,7 +59,7 @@ sequenceDiagram
     participant AI as Pagoda Init
     participant PD as Plugin Discovery
     participant PR as Plugin Registry
-    participant BM as Bridge Manager
+    participant MI as Model Injection
     participant DU as Django URLs
 
     ENV->>AI: ENABLED_PLUGINS=hello-world
@@ -74,8 +73,8 @@ sequenceDiagram
         PD->>PR: Register example plugins
     end
 
-    PR->>BM: Initialize bridge manager
-    BM->>BM: Setup Auth/Data/Hook bridges
+    PR->>MI: Initialize model injection
+    MI->>MI: Inject Entity, Entry, User models
     PR->>PR: Register plugin hooks
     PR->>DU: Integrate URL patterns
     DU->>AI: Plugin endpoints available
@@ -143,11 +142,9 @@ graph TB
         PL[Plugin Logic]
     end
 
-    subgraph "Bridge Layer"
-        BM[Bridge Manager]
-        AB[Auth Bridge]
-        DB[Data Bridge]
-        HB[Hook Bridge]
+    subgraph "Model Access Layer"
+        MI[Model Injection]
+        SDK_MODELS[SDK Models]
     end
 
     subgraph "Pagoda Backend"
@@ -165,18 +162,16 @@ graph TB
     PAM --> PV
     PV --> PL
 
-    PL --> BM
-    BM --> AB
-    BM --> DB
-    BM --> HB
+    PL --> SDK_MODELS
+    SDK_MODELS --> MI
+    MI --> MODELS
 
-    AB --> PERMS
-    DB --> MODELS
-    HB --> HOOKS
+    PV --> PERMS
+    PV --> HOOKS
 
     style CL fill:#ffebee
     style PL fill:#f3e5f5
-    style BM fill:#e8f5e8
+    style MI fill:#e8f5e8
     style MODELS fill:#e3f2fd
 ```
 
@@ -293,21 +288,21 @@ sequenceDiagram
     participant C as Client
     participant Pagoda as Pagoda Server
     participant PluginAPI as Plugin API View
-    participant Bridge as Bridge Manager
+    participant SDK_MODELS as SDK Models
     participant DB as Database
 
-    C->>Pagoda: GET /api/v2/plugins/my-plugin/hello/
+    C->>Pagoda: GET /api/v2/plugins/my-plugin/entities/
     Pagoda->>Pagoda: Authentication check
     Pagoda->>PluginAPI: Route to plugin endpoint
     PluginAPI->>PluginAPI: Plugin logic execution
-    PluginAPI->>Bridge: Request data via bridge
-    Bridge->>DB: Execute database query
-    DB-->>Bridge: Return data
-    Bridge-->>PluginAPI: Formatted data
+    PluginAPI->>SDK_MODELS: Access Entity model
+    SDK_MODELS->>DB: Execute database query
+    DB-->>SDK_MODELS: Return data
+    SDK_MODELS-->>PluginAPI: Entity instances
     PluginAPI-->>Pagoda: API response
     Pagoda-->>C: JSON response
 
-    Note over C,DB: Complete plugin API request flow
+    Note over C,DB: Complete plugin API request flow with model access
 ```
 
 ### Plugin Hook Execution Flow
@@ -469,4 +464,4 @@ graph TB
     style ISOL fill:#e8f5e8
 ```
 
-Through this 3-layer architecture design, Pagoda provides a completely independent plugin ecosystem, realizing a secure and extensible platform. Plugin developers can provide unique value while accessing Pagoda's core functionality through standardized interfaces.
+Through this 3-layer architecture design with Protocol-based model injection, Pagoda provides a completely independent plugin ecosystem, realizing a secure and extensible platform. Plugin developers can provide unique value while accessing Pagoda's core models through type-safe Protocol definitions, without creating implementation dependencies.
