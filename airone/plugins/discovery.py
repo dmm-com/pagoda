@@ -14,7 +14,7 @@ def discover_plugins():
     """
     logger.info("Starting plugin discovery...")
 
-    # 外部パッケージからプラグインを発見
+    # Discover plugins from external packages
     discover_external_plugins()
 
     discovered_plugins = plugin_registry.get_all_plugins()

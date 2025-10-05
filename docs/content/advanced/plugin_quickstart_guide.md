@@ -18,7 +18,7 @@ cd /path/to/pagoda
 cd plugin/sdk/
 make install-dev
 
-# インストール確認
+# Verify installation
 python -c "import pagoda_plugin_sdk; print('✓ pagoda-plugin-sdk ready')"
 ```
 
@@ -155,7 +155,7 @@ def after_entry_create(sender, instance, created, **kwargs):
 # Development installation
 pip install -e .
 
-# インストール確認
+# Verify installation
 python -c "
 from my_first_plugin.plugin import MyFirstPlugin
 plugin = MyFirstPlugin()
@@ -194,13 +194,13 @@ curl http://localhost:8080/api/v2/plugins/my-plugin/test/
 **Diagnostic Steps:**
 
 ```bash
-# 1. プラグインシステムが有効か確認
+# 1. Check if plugin system is enabled
 python manage.py shell -c "
 from django.conf import settings
 print('Plugin system enabled:', bool(getattr(settings, 'ENABLED_PLUGINS', [])))
 "
 
-# 2. プラグイン登録状況確認
+# 2. Check plugin registration status
 ENABLED_PLUGINS=my-first-plugin python manage.py shell -c "
 from airone.plugins.integration import plugin_integration
 plugin_integration.initialize()
@@ -209,7 +209,7 @@ for p in plugins:
     print(f'Plugin: {p.id} - {p.name}')
 "
 
-# 3. Entry points確認
+# 3. Check entry points
 python -c "
 import pkg_resources
 entries = list(pkg_resources.iter_entry_points('pagoda.plugins'))
@@ -219,76 +219,76 @@ for ep in entries:
 "
 ```
 
-**解決法:**
+**Solutions:**
 ```bash
-# 最も多い原因: 環境変数不足
+# Most common cause: Missing environment variable
 ❌ python manage.py runserver
 ✅ ENABLED_PLUGINS=my-first-plugin python manage.py runserver
 
-# 次に多い原因: プラグインが未インストール
+# Second most common cause: Plugin not installed
 pip install -e .
 
-# Entry pointsパス間違い
-# pyproject.tomlを確認して正しいパス指定に修正
+# Entry points path error
+# Check pyproject.toml and fix the path specification
 ```
 
-### 問題 2: Import エラー - モジュールが見つからない
+### Issue 2: Import Error - Module Not Found
 
 **Symptoms:**
 ```
 [ERROR] Failed to load external plugin: No module named 'my_plugin'
 ```
 
-**診断・解決手順:**
+**Diagnostic & Resolution Steps:**
 
 ```bash
-# 1. プラグインが正しくインストールされているか
+# 1. Check if plugin is installed correctly
 pip list | grep my-plugin
 
-# 2. モジュール構造を確認
+# 2. Check module structure
 tree my-plugin/
-# 期待される構造:
+# Expected structure:
 # my-plugin/
 # ├── setup.py
 # └── my_plugin/
 #     ├── __init__.py
 #     └── plugin.py
 
-# 3. Entry pointsパスを確認・修正
-# pyproject.toml内で:
+# 3. Check and fix entry points path
+# In pyproject.toml:
 [project.entry-points."pagoda.plugins"]
-my-plugin = "my_plugin.plugin:MyPlugin"  # ← 正確なパス
+my-plugin = "my_plugin.plugin:MyPlugin"  # ← Exact path
 
-# 4. 再インストール
+# 4. Reinstall
 pip uninstall -y my-plugin
 rm -rf build/ dist/ *.egg-info/
 pip install -e .
 ```
 
-### 問題 3: Hook実行エラー
+### Issue 3: Hook Execution Error
 
 **Symptoms:**
 ```
 [ERROR] Hook entry.after_create failed: missing required arguments
 ```
 
-**解決法:**
+**Solutions:**
 ```python
-# ❌ 間違ったシグネチャ
+# ❌ Incorrect signature
 def after_entry_create():
     pass
 
-# ❌ 引数不足
+# ❌ Missing arguments
 def after_entry_create(instance):
     pass
 
-# ✅ 正しいシグネチャ
+# ✅ Correct signature
 def after_entry_create(sender, instance, created, **kwargs):
     """
-    sender: Djangoモデルクラス (entry.models.Entry)
-    instance: 作成されたEntryインスタンス
-    created: 新規作成フラグ (True/False)
-    **kwargs: その他のDjango signal引数
+    sender: Django model class (entry.models.Entry)
+    instance: Created Entry instance
+    created: New creation flag (True/False)
+    **kwargs: Other Django signal arguments
     """
     if created:
         print(f"New entry: {instance.name}")
@@ -578,17 +578,17 @@ class RobustModelView(PluginAPIViewMixin):
             )
 ```
 
-## 高度な開発テクニック
+## Advanced Development Techniques
 
-### プラグイン間通信
+### Inter-Plugin Communication
 
 ```python
-# プラグインA: データ提供
+# Plugin A: Data provider
 class PluginA(Plugin):
     def get_shared_data(self):
         return {"key": "value"}
 
-# プラグインB: データ消費
+# Plugin B: Data consumer
 class PluginB(Plugin):
     def use_shared_data(self):
         from airone.plugins.registry import plugin_registry
@@ -598,16 +598,16 @@ class PluginB(Plugin):
             return data
 ```
 
-### モデル注入を使ったデータアクセス
+### Data Access Using Model Injection
 
 ```python
-# プラグインからPagodaデータにアクセス
+# Access Pagoda data from plugin
 from pagoda_plugin_sdk import PluginAPIViewMixin
 from pagoda_plugin_sdk.models import Entity, Entry
 
 class DataAccessView(PluginAPIViewMixin):
     def get(self, request, entity_id):
-        # 型安全なモデルアクセス
+        # Type-safe model access
         try:
             if Entity is None:
                 return Response(
@@ -631,16 +631,16 @@ class DataAccessView(PluginAPIViewMixin):
             return Response({"error": str(e)}, status=500)
 ```
 
-### 条件付きフック実行
+### Conditional Hook Execution
 
 ```python
 def conditional_hook(sender, instance, **kwargs):
-    # 特定の条件でのみ実行
+    # Execute only under specific conditions
     if instance.name.startswith("special_"):
-        # 特別な処理
+        # Special processing
         logger.info(f"Special entry detected: {instance.name}")
 
-        # 外部API呼び出し例
+        # Example of external API call
         import requests
         try:
             response = requests.post("https://api.example.com/notify", {
@@ -652,52 +652,52 @@ def conditional_hook(sender, instance, **kwargs):
             logger.error(f"Failed to notify external API: {e}")
 ```
 
-## パフォーマンス最適化
+## Performance Optimization
 
-### 非同期フック実行
+### Asynchronous Hook Execution
 
 ```python
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
 
 def async_hook_handler(sender, instance, **kwargs):
-    """重い処理を非同期で実行"""
+    """Execute heavy processing asynchronously"""
     def heavy_processing():
-        # 重い処理（外部API、ファイル処理など）
+        # Heavy processing (external API, file processing, etc.)
         import time
-        time.sleep(2)  # 例: 重い処理のシミュレーション
+        time.sleep(2)  # Example: Simulate heavy processing
         logger.info(f"Heavy processing completed for {instance.name}")
 
-    # バックグラウンドで実行
+    # Execute in background
     executor = ThreadPoolExecutor(max_workers=2)
     executor.submit(heavy_processing)
 ```
 
-### フック実行の条件分岐
+### Conditional Hook Branching
 
 ```python
 def optimized_hook(sender, instance, **kwargs):
-    # 不要な処理をスキップ
+    # Skip unnecessary processing
     if not should_process(instance):
         return
 
-    # 必要な場合のみ重い処理を実行
+    # Execute heavy processing only when necessary
     if instance.name.endswith("_important"):
         heavy_processing(instance)
     else:
         light_processing(instance)
 
 def should_process(instance):
-    # 処理が必要かどうかの判定
+    # Determine if processing is necessary
     return hasattr(instance, 'special_flag') and instance.special_flag
 ```
 
-## 本格的な配布準備
+## Production Distribution Preparation
 
-### PyPI配布用設定
+### PyPI Distribution Configuration
 
 ```toml
-# pyproject.toml - 本格版
+# pyproject.toml - Production version
 [project]
 name = "my-pagoda-plugin"
 version = "1.0.0"
@@ -736,7 +736,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 ```
 
-### 継続的インテグレーション
+### Continuous Integration
 
 ```yaml
 # .github/workflows/test.yml
@@ -774,4 +774,4 @@ jobs:
         python -c "from my_plugin.plugin import MyPlugin; print('✓ Plugin loads successfully')"
 ```
 
-このクイックスタートガイドに従うことで、初心者でも5分でプラグイン開発を開始し、実践的な問題解決スキルを身につけることができます。さらに詳しい情報は、メインのPlugin Systemドキュメントとアーキテクチャ図を参照してください。
+By following this quick start guide, even beginners can start plugin development in 5 minutes and gain practical problem-solving skills. For more detailed information, refer to the main Plugin System documentation and architecture diagrams.
