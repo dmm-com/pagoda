@@ -21,10 +21,14 @@ class HookManager:
     legacy custom_view hooks.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the hook manager"""
         self._hooks: Dict[str, List[Dict[str, Any]]] = {}
-        self._stats = {"total_registered": 0, "total_executed": 0, "total_failed": 0}
+        self._stats: Dict[str, int] = {
+            "total_registered": 0,
+            "total_executed": 0,
+            "total_failed": 0,
+        }
 
     def register_hook(
         self,

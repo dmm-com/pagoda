@@ -6,6 +6,8 @@ build-backend = "hatchling.build"
 allow_untyped_globals = true
 follow_imports = "silent"
 ignore_missing_imports = true
+explicit_package_bases = true
+mypy_path = "."
 
 [tool.ruff]
 # Pyflakes (F), pycodestyle (E, W), isort (I)
