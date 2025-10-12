@@ -77,6 +77,10 @@ mv pagoda_hello_world_plugin my_first_plugin
 ```python
 # my_first_plugin/plugin.py
 from pagoda_plugin_sdk import Plugin
+from pagoda_plugin_sdk.decorators import entry_hook
+import logging
+
+logger = logging.getLogger(__name__)
 
 class MyFirstPlugin(Plugin):
     id = "my-first-plugin"
@@ -88,9 +92,11 @@ class MyFirstPlugin(Plugin):
     django_apps = ["my_first_plugin"]
     api_v2_patterns = "my_first_plugin.api_v2.urls"
 
-    hooks = {
-        "entry.after_create": "my_first_plugin.hooks.after_entry_create",
-    }
+    @entry_hook("after_create")
+    def log_entry_create(self, entity_name, user, entry, **kwargs):
+        """Hook executed after Entry creation"""
+        logger.info(f"New entry created: {entry.name} in entity {entity_name} by {user.username}")
+        print(f"My First Plugin detected new entry: {entry.name}")
 ```
 
 #### 2.4 Customize API Endpoints
@@ -130,21 +136,6 @@ urlpatterns = [
     path("test/", views.MyFirstView.as_view(), name="test"),
     path("hello/", views.MyFirstView.as_view(), name="hello"),
 ]
-```
-
-#### 2.5 Customize Hook Handlers
-
-```python
-# my_first_plugin/hooks.py
-import logging
-
-logger = logging.getLogger(__name__)
-
-def after_entry_create(sender, instance, created, **kwargs):
-    """Hook executed after Entry creation"""
-    if created:
-        logger.info(f"🎉 New entry created via My First Plugin: {instance.name}")
-        print(f"My First Plugin detected new entry: {instance.name}")
 ```
 
 ### Step 3: Plugin Testing & Installation
@@ -274,24 +265,25 @@ pip install -e .
 
 **Solutions:**
 ```python
-# ❌ Incorrect signature
-def after_entry_create():
+# ❌ Incorrect signature (missing self and entity_name)
+@entry_hook("after_create")
+def log_entry_create(user, entry):
     pass
 
-# ❌ Missing arguments
-def after_entry_create(instance):
+# ❌ Missing decorator
+def log_entry_create(self, entity_name, user, entry, **kwargs):
     pass
 
-# ✅ Correct signature
-def after_entry_create(sender, instance, created, **kwargs):
+# ✅ Correct signature with decorator
+@entry_hook("after_create")
+def log_entry_create(self, entity_name, user, entry, **kwargs):
     """
-    sender: Django model class (entry.models.Entry)
-    instance: Created Entry instance
-    created: New creation flag (True/False)
-    **kwargs: Other Django signal arguments
+    entity_name: Name of the entity
+    user: User who created the entry
+    entry: The created Entry instance
+    **kwargs: Additional context
     """
-    if created:
-        print(f"New entry: {instance.name}")
+    logger.info(f"New entry: {entry.name} in entity {entity_name}")
 ```
 
 ## Accessing Host Application Models
@@ -634,17 +626,19 @@ class DataAccessView(PluginAPIViewMixin):
 ### Conditional Hook Execution
 
 ```python
-def conditional_hook(sender, instance, **kwargs):
+@entry_hook("after_create")
+def conditional_hook(self, entity_name, user, entry, **kwargs):
     # Execute only under specific conditions
-    if instance.name.startswith("special_"):
+    if entry.name.startswith("special_"):
         # Special processing
-        logger.info(f"Special entry detected: {instance.name}")
+        logger.info(f"Special entry detected: {entry.name}")
 
         # Example of external API call
         import requests
         try:
             response = requests.post("https://api.example.com/notify", {
-                "entry_name": instance.name,
+                "entry_name": entry.name,
+                "entity_name": entity_name,
                 "plugin": "my-first-plugin"
             }, timeout=5)
             logger.info(f"External API notified: {response.status_code}")
@@ -660,13 +654,14 @@ def conditional_hook(sender, instance, **kwargs):
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
 
-def async_hook_handler(sender, instance, **kwargs):
+@entry_hook("after_create")
+def async_hook_handler(self, entity_name, user, entry, **kwargs):
     """Execute heavy processing asynchronously"""
     def heavy_processing():
         # Heavy processing (external API, file processing, etc.)
         import time
         time.sleep(2)  # Example: Simulate heavy processing
-        logger.info(f"Heavy processing completed for {instance.name}")
+        logger.info(f"Heavy processing completed for {entry.name}")
 
     # Execute in background
     executor = ThreadPoolExecutor(max_workers=2)
@@ -676,20 +671,21 @@ def async_hook_handler(sender, instance, **kwargs):
 ### Conditional Hook Branching
 
 ```python
-def optimized_hook(sender, instance, **kwargs):
+@entry_hook("after_create")
+def optimized_hook(self, entity_name, user, entry, **kwargs):
     # Skip unnecessary processing
-    if not should_process(instance):
+    if not self.should_process(entry):
         return
 
     # Execute heavy processing only when necessary
-    if instance.name.endswith("_important"):
-        heavy_processing(instance)
+    if entry.name.endswith("_important"):
+        self.heavy_processing(entry)
     else:
-        light_processing(instance)
+        self.light_processing(entry)
 
-def should_process(instance):
+def should_process(self, entry):
     # Determine if processing is necessary
-    return hasattr(instance, 'special_flag') and instance.special_flag
+    return hasattr(entry, 'special_flag') and entry.special_flag
 ```
 
 ## Production Distribution Preparation

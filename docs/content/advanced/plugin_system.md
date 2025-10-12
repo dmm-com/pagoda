@@ -55,6 +55,7 @@ Completely independent plugin that depends only on pagoda-plugin-sdk:
 
 ```python
 from pagoda_plugin_sdk import Plugin
+from pagoda_plugin_sdk.decorators import entry_hook
 
 class MyPlugin(Plugin):
     id = "my-plugin"
@@ -62,9 +63,11 @@ class MyPlugin(Plugin):
     version = "1.0.0"
     django_apps = ["my_plugin"]
     api_v2_patterns = "my_plugin.api_v2.urls"
-    hooks = {
-        "entry.after_create": "my_plugin.hooks.after_create",
-    }
+
+    @entry_hook("after_create")
+    def log_entry_create(self, entity_name, user, entry, **kwargs):
+        """Called after an entry is created"""
+        logger.info(f"Entry created: {entry.name}")
 ```
 
 ### Layer 3: Pagoda Application (Host Application)
@@ -424,6 +427,10 @@ build-backend = "hatchling.build"
 
 ```python
 from pagoda_plugin_sdk import Plugin
+from pagoda_plugin_sdk.decorators import entry_hook
+import logging
+
+logger = logging.getLogger(__name__)
 
 class MyPlugin(Plugin):
     # Required metadata
@@ -437,11 +444,17 @@ class MyPlugin(Plugin):
     django_apps = ["my_plugin_package"]
     api_v2_patterns = "my_plugin_package.api_v2.urls"
 
-    # Hook registrations
-    hooks = {
-        "entry.after_create": "my_plugin_package.hooks.after_create",
-        "entry.before_update": "my_plugin_package.hooks.before_update",
-    }
+    # Hook handlers using decorators
+    @entry_hook("after_create")
+    def log_after_create(self, entity_name, user, entry, **kwargs):
+        """Called after an entry is created"""
+        logger.info(f"Entry created: {entry.name} in {entity_name}")
+
+    @entry_hook("before_update")
+    def log_before_update(self, entity_name, user, validated_data, entry, **kwargs):
+        """Called before an entry is updated"""
+        logger.info(f"Entry updating: {entry.name}")
+        return validated_data
 
 ```
 
@@ -665,21 +678,30 @@ print(f'✓ Direct import works: {MyPlugin().name}')
 
 **Log Example**:
 ```
-[ERROR] Hook entry.after_create failed: after_entry_create() missing required arguments
+[ERROR] Hook entry.after_create failed: missing required arguments
 ```
 
-**Solution**: Implement correct hook handler signature
+**Solution**: Implement correct hook handler signature with decorator
 ```python
-# ❌ Wrong
-def after_entry_create():
+# ❌ Wrong (missing decorator)
+def log_after_create(self, entity_name, user, entry, **kwargs):
+    pass
+
+# ❌ Wrong (incorrect signature)
+@entry_hook("after_create")
+def log_after_create(user, entry):
     pass
 
 # ✅ Correct
-def after_entry_create(sender, instance, created, **kwargs):
-    # sender is Django model class
-    # instance is the created Entry instance
-    # created is a boolean flag for new creation
-    print(f"New entry created: {instance.name}")
+@entry_hook("after_create")
+def log_after_create(self, entity_name, user, entry, **kwargs):
+    """
+    entity_name: Name of the entity
+    user: User who created the entry
+    entry: The created Entry instance
+    **kwargs: Additional context
+    """
+    logger.info(f"New entry created: {entry.name} in {entity_name}")
 ```
 
 #### 4. Plugin Development Environment Issues
