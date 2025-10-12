@@ -32,8 +32,30 @@ class Plugin:
     url_patterns: Optional[str] = None
     api_v2_patterns: Optional[str] = None
 
-    # Hook definitions: maps hook names to handler method names
-    hooks: Dict[str, str] = {}
+    def __init_subclass__(cls, **kwargs):
+        """Automatically detect and register decorated hook methods"""
+        super().__init_subclass__(**kwargs)
+
+        # Scan for decorated methods
+        cls._hook_handlers = []
+        for attr_name in dir(cls):
+            # Skip private/magic methods
+            if attr_name.startswith("_"):
+                continue
+
+            attr = getattr(cls, attr_name)
+            # Check if method has hook metadata from decorator
+            if callable(attr) and hasattr(attr, "_hook_metadata"):
+                metadata = attr._hook_metadata
+                cls._hook_handlers.append(
+                    {
+                        "hook_name": metadata["hook_name"],
+                        "entity": metadata.get("entity"),
+                        "priority": metadata.get("priority", 100),
+                        "method_name": attr_name,
+                        "handler": attr,
+                    }
+                )
 
     def __init__(self):
         """Initialize the plugin instance"""
@@ -71,6 +93,12 @@ class Plugin:
         Returns:
             Dictionary containing plugin information
         """
+        # Extract unique hook names from registered handlers
+        hook_names = set()
+        if hasattr(self.__class__, "_hook_handlers"):
+            for handler_info in self.__class__._hook_handlers:
+                hook_names.add(handler_info["hook_name"])
+
         return {
             "id": self.id,
             "name": self.name,
@@ -81,7 +109,7 @@ class Plugin:
             "django_apps": self.django_apps,
             "url_patterns": self.url_patterns,
             "api_v2_patterns": self.api_v2_patterns,
-            "hooks": list(self.hooks.keys()),
+            "hooks": list(hook_names),
         }
 
     def __str__(self) -> str:

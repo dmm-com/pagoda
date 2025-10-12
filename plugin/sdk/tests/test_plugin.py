@@ -12,6 +12,7 @@ from pathlib import Path
 # Add the SDK directory to Python path
 sys.path.insert(0, str(Path(__file__).parent.parent / "sdk"))
 
+from pagoda_plugin_sdk.decorators import entry_hook
 from pagoda_plugin_sdk.exceptions import PluginValidationError
 from pagoda_plugin_sdk.plugin import Plugin
 
@@ -28,7 +29,11 @@ class ValidTestPlugin(Plugin):
     django_apps = ["test_app"]
     url_patterns = "test_urls"
     api_v2_patterns = "test_api_urls"
-    hooks = {"entry.after_create": "test_handler"}
+
+    @entry_hook("after_create")
+    def test_handler(self):
+        """Test hook handler"""
+        pass
 
 
 class TestPlugin(unittest.TestCase):
@@ -47,7 +52,8 @@ class TestPlugin(unittest.TestCase):
         self.assertEqual(plugin.django_apps, ["test_app"])
         self.assertEqual(plugin.url_patterns, "test_urls")
         self.assertEqual(plugin.api_v2_patterns, "test_api_urls")
-        self.assertEqual(plugin.hooks, {"entry.after_create": "test_handler"})
+        # Hooks are now auto-detected via decorators, check via get_info()
+        self.assertIn("entry.after_create", plugin.get_info()["hooks"])
 
     def test_missing_plugin_id_raises_error(self):
         """Test that missing plugin ID raises PluginValidationError"""
@@ -211,7 +217,8 @@ class TestPlugin(unittest.TestCase):
         self.assertEqual(plugin.django_apps, [])
         self.assertIsNone(plugin.url_patterns)
         self.assertIsNone(plugin.api_v2_patterns)
-        self.assertEqual(plugin.hooks, {})
+        # Hooks are auto-detected, so minimal plugin has no hooks
+        self.assertEqual(plugin.get_info()["hooks"], [])
 
     def test_validate_method_can_be_called_separately(self):
         """Test that validate() method can be called separately"""
