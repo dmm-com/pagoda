@@ -77,7 +77,12 @@ mv pagoda_hello_world_plugin my_first_plugin
 ```python
 # my_first_plugin/plugin.py
 from pagoda_plugin_sdk import Plugin
-from pagoda_plugin_sdk.decorators import entry_hook
+from pagoda_plugin_sdk.decorators import (
+    entry_hook,
+    entity_hook,
+    validation_hook,
+    get_attrs_hook
+)
 import logging
 
 logger = logging.getLogger(__name__)
@@ -92,12 +97,99 @@ class MyFirstPlugin(Plugin):
     django_apps = ["my_first_plugin"]
     api_v2_patterns = "my_first_plugin.api_v2.urls"
 
+    # Entry Lifecycle Hooks
     @entry_hook("after_create")
     def log_entry_create(self, entity_name, user, entry, **kwargs):
-        """Hook executed after Entry creation"""
+        """Hook executed after Entry creation (all entities)"""
         logger.info(f"New entry created: {entry.name} in entity {entity_name} by {user.username}")
         print(f"My First Plugin detected new entry: {entry.name}")
+
+    @entry_hook("after_create", entity="customer", priority=50)
+    def log_customer_create(self, entity_name, user, entry, **kwargs):
+        """Hook executed only for 'customer' entity with high priority"""
+        logger.info(f"Customer entry created: {entry.name}")
+        # Perform customer-specific processing
+
+    @entry_hook("before_update")
+    def modify_entry_before_update(self, entity_name, user, validated_data, entry, **kwargs):
+        """Hook executed before Entry update - can modify data"""
+        logger.info(f"Entry updating: {entry.name}")
+        # You can modify validated_data before update
+        # validated_data["name"] = validated_data["name"].upper()
+        return validated_data
+
+    # Entity Lifecycle Hooks
+    @entity_hook("after_create")
+    def log_entity_create(self, user, entity, **kwargs):
+        """Hook executed after Entity creation"""
+        logger.info(f"New entity created: {entity.name} by {user.username}")
+
+    @entity_hook("before_update")
+    def modify_entity_before_update(self, user, validated_data, entity, **kwargs):
+        """Hook executed before Entity update - can modify data"""
+        logger.info(f"Entity updating: {entity.name}")
+        return validated_data
+
+    # Validation Hook
+    @validation_hook()
+    def validate_entry_name(self, user, schema_name, name, attrs, instance, **kwargs):
+        """Custom validation for entry creation/update
+
+        Raises ValueError to reject invalid entries
+        """
+        # Example: Reject entries with forbidden words
+        forbidden_words = ["forbidden", "banned", "illegal"]
+        if any(word in name.lower() for word in forbidden_words):
+            raise ValueError(f"Entry name cannot contain forbidden words")
+
+        # Example: Validate minimum name length
+        if len(name) < 3:
+            raise ValueError("Entry name must be at least 3 characters")
+
+    # Data Access Hooks
+    @get_attrs_hook("entry")
+    def add_custom_entry_metadata(self, entry, attrinfo, is_retrieve, **kwargs):
+        """Add custom metadata to entry attributes"""
+        logger.info(f"Getting entry attrs for: {entry.name}")
+
+        # Add custom metadata to each attribute
+        for attr in attrinfo:
+            attr["plugin_processed"] = True
+            attr["processed_by"] = "my-first-plugin"
+
+        return attrinfo
+
+    @get_attrs_hook("entity")
+    def add_custom_entity_metadata(self, entity, attrinfo, **kwargs):
+        """Add custom metadata to entity attributes"""
+        logger.info(f"Getting entity attrs for: {entity.name}")
+
+        # Add plugin-specific information
+        for attr in attrinfo:
+            attr["plugin_version"] = self.version
+
+        return attrinfo
 ```
+
+**Decorator Types and Usage:**
+
+1. **`@entry_hook(hook_name, entity=None, priority=100)`**
+   - For Entry lifecycle events
+   - Supports entity-specific filtering
+   - Can modify data in "before" hooks
+
+2. **`@entity_hook(hook_name, priority=100)`**
+   - For Entity lifecycle events
+   - Can modify data in "before" hooks
+
+3. **`@validation_hook(priority=100)`**
+   - For entry validation
+   - Raise `ValueError` to reject invalid data
+
+4. **`@get_attrs_hook(target, priority=100)`**
+   - For modifying data before returning to client
+   - Target must be "entry" or "entity"
+   - Must return modified attrinfo list
 
 #### 2.4 Customize API Endpoints
 
@@ -284,6 +376,143 @@ def log_entry_create(self, entity_name, user, entry, **kwargs):
     **kwargs: Additional context
     """
     logger.info(f"New entry: {entry.name} in entity {entity_name}")
+```
+
+### Issue 4: Entity Filtering Not Working
+
+**Symptoms:**
+Hook decorated with `entity="customer"` is being called for all entities.
+
+**Diagnostic Steps:**
+```python
+# Check if entity parameter is specified correctly
+@entry_hook("after_create", entity="customer")  # ✅ Correct
+def handle_customer(self, entity_name, user, entry, **kwargs):
+    pass
+
+# Common mistakes:
+@entry_hook("after_create", entity_name="customer")  # ❌ Wrong parameter name
+@entry_hook("after_create", entity=["customer"])     # ❌ Should be string, not list
+```
+
+**Solution:**
+```python
+# Verify entity name matches exactly (case-sensitive)
+@entry_hook("after_create", entity="Customer")  # Won't match "customer"
+@entry_hook("after_create", entity="customer")  # ✅ Correct
+
+# Check entity name in hook handler for debugging
+@entry_hook("after_create")
+def debug_entity_name(self, entity_name, user, entry, **kwargs):
+    logger.info(f"Entity name received: '{entity_name}'")
+    # Use this to verify the actual entity name
+```
+
+### Issue 5: Wrong Decorator for Hook Type
+
+**Symptoms:**
+```
+[ERROR] Hook validation failed: unexpected arguments
+```
+
+**Solutions:**
+
+Each decorator is designed for specific hook types:
+
+```python
+# ❌ Wrong decorator for validation hook
+@entry_hook("validate")
+def validate_entry(self, user, schema_name, name, attrs, instance, **kwargs):
+    pass
+
+# ✅ Correct decorator
+@validation_hook()
+def validate_entry(self, user, schema_name, name, attrs, instance, **kwargs):
+    pass
+
+# ❌ Wrong decorator for data access hook
+@entry_hook("get_attrs")
+def modify_attrs(self, entry, attrinfo, is_retrieve, **kwargs):
+    pass
+
+# ✅ Correct decorator
+@get_attrs_hook("entry")
+def modify_attrs(self, entry, attrinfo, is_retrieve, **kwargs):
+    return attrinfo
+```
+
+**Correct Decorator Usage:**
+- `@entry_hook()` - For entry lifecycle (create, update, delete, restore)
+- `@entity_hook()` - For entity lifecycle (create, update)
+- `@validation_hook()` - For entry validation only
+- `@get_attrs_hook()` - For data access hooks (entry/entity get_attrs)
+
+### Issue 6: Hook Priority Not Working as Expected
+
+**Symptoms:**
+Hooks are executing in unexpected order despite setting priority values.
+
+**Solution:**
+```python
+# Remember: Lower priority number = Higher priority (executes first)
+class MyPlugin(Plugin):
+    @entry_hook("after_create", priority=50)   # Executes FIRST
+    def first_handler(self, entity_name, user, entry, **kwargs):
+        pass
+
+    @entry_hook("after_create", priority=100)  # Executes SECOND (default)
+    def second_handler(self, entity_name, user, entry, **kwargs):
+        pass
+
+    @entry_hook("after_create", priority=150)  # Executes LAST
+    def third_handler(self, entity_name, user, entry, **kwargs):
+        pass
+```
+
+**Debugging Priority Issues:**
+```python
+# Add logging to verify execution order
+@entry_hook("after_create", priority=50)
+def handler_a(self, entity_name, user, entry, **kwargs):
+    logger.info(f"Handler A executing (priority 50)")
+
+@entry_hook("after_create", priority=100)
+def handler_b(self, entity_name, user, entry, **kwargs):
+    logger.info(f"Handler B executing (priority 100)")
+
+# Check logs to verify execution order:
+# [INFO] Handler A executing (priority 50)
+# [INFO] Handler B executing (priority 100)
+```
+
+### Issue 7: Data Access Hook Not Returning Modified Data
+
+**Symptoms:**
+```
+[ERROR] get_attrs_hook must return attrinfo list
+```
+
+**Solution:**
+```python
+# ❌ Forgot to return modified attrinfo
+@get_attrs_hook("entry")
+def modify_attrs(self, entry, attrinfo, is_retrieve, **kwargs):
+    for attr in attrinfo:
+        attr["custom_field"] = "value"
+    # Missing return statement!
+
+# ✅ Correct: Always return the modified attrinfo
+@get_attrs_hook("entry")
+def modify_attrs(self, entry, attrinfo, is_retrieve, **kwargs):
+    for attr in attrinfo:
+        attr["custom_field"] = "value"
+    return attrinfo  # Must return!
+
+# ✅ Even if no modifications, return the original
+@get_attrs_hook("entry")
+def no_modification(self, entry, attrinfo, is_retrieve, **kwargs):
+    logger.info("Hook called but no changes needed")
+    return attrinfo  # Still must return!
 ```
 
 ## Accessing Host Application Models

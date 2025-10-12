@@ -776,45 +776,368 @@ print(f'Registered hooks: {stats[\"registered_hooks\"]}')
 
 ### Hook System Architecture
 
+The plugin system provides a comprehensive hook system with 17 standard hooks organized into four categories:
+
+#### Available Hook Types
+
+**1. Entry Lifecycle Hooks**
+- `entry.before_create` - Called before an entry is created
+- `entry.after_create` - Called after an entry is created
+- `entry.before_update` - Called before an entry is updated
+- `entry.after_update` - Called after an entry is updated
+- `entry.before_delete` - Called before an entry is deleted
+- `entry.before_restore` - Called before an entry is restored
+- `entry.after_restore` - Called after an entry is restored
+
+**2. Entity Lifecycle Hooks**
+- `entity.before_create` - Called before an entity is created
+- `entity.after_create` - Called after an entity is created
+- `entity.before_update` - Called before an entity is updated
+- `entity.after_update` - Called after an entity is updated
+
+**3. Validation Hooks**
+- `entry.validate` - Custom validation for entry creation/update
+
+**4. Data Access Hooks**
+- `entry.get_attrs` - Modify entry attributes before returning to client
+- `entity.get_attrs` - Modify entity attributes before returning to client
+
+#### Hook Decorators
+
+The plugin SDK provides four decorators for registering hook handlers:
+
+**1. `@entry_hook(hook_name, entity=None, priority=100)`**
+
+For Entry lifecycle hooks. Supports entity-specific filtering.
+
 ```python
-# Core Layer: 27 common hooks + Pagoda specific hooks (42 total)
-COMMON_HOOKS = [
-    "entity.before_create", "entity.after_create",
-    "entry.before_create", "entry.after_create",
-    # ... 23 more
-]
+from pagoda_plugin_sdk.decorators import entry_hook
 
-# Pagoda Layer: Concrete implementation
-class PagodaHookBridge(HookInterface):
-    def __init__(self):
-        self._hooks = {}
-        self._available_hooks = COMMON_HOOKS + PAGODA_SPECIFIC_HOOKS
+class MyPlugin(Plugin):
+    # Apply to all entities
+    @entry_hook("after_create")
+    def log_all_entries(self, entity_name, user, entry, **kwargs):
+        logger.info(f"Entry created: {entry.name}")
 
-    def execute_hook(self, hook_name, *args, **kwargs):
-        # Execute all registered callbacks with error handling
+    # Apply only to specific entity
+    @entry_hook("after_create", entity="customer")
+    def log_customer_only(self, entity_name, user, entry, **kwargs):
+        logger.info(f"Customer entry created: {entry.name}")
 ```
+
+**2. `@entity_hook(hook_name, priority=100)`**
+
+For Entity lifecycle hooks.
+
+```python
+from pagoda_plugin_sdk.decorators import entity_hook
+
+class MyPlugin(Plugin):
+    @entity_hook("after_create")
+    def log_entity_create(self, user, entity, **kwargs):
+        logger.info(f"Entity created: {entity.name}")
+```
+
+**3. `@validation_hook(priority=100)`**
+
+For entry validation (entry.validate hook).
+
+```python
+from pagoda_plugin_sdk.decorators import validation_hook
+
+class MyPlugin(Plugin):
+    @validation_hook()
+    def validate_entry(self, user, schema_name, name, attrs, instance, **kwargs):
+        if "forbidden" in name.lower():
+            raise ValueError("Name cannot contain 'forbidden'")
+```
+
+**4. `@get_attrs_hook(target, priority=100)`**
+
+For data access hooks. Target must be either "entry" or "entity".
+
+```python
+from pagoda_plugin_sdk.decorators import get_attrs_hook
+
+class MyPlugin(Plugin):
+    @get_attrs_hook("entry")
+    def modify_entry_attrs(self, entry, attrinfo, is_retrieve, **kwargs):
+        # Add custom field
+        for attr in attrinfo:
+            attr["custom_flag"] = True
+        return attrinfo
+
+    @get_attrs_hook("entity")
+    def modify_entity_attrs(self, entity, attrinfo, **kwargs):
+        return attrinfo
+```
+
+#### Entity Filtering
+
+Entry hooks support entity-specific filtering using the `entity` parameter:
+
+```python
+class MyPlugin(Plugin):
+    # Runs only for "product" entity
+    @entry_hook("after_create", entity="product")
+    def handle_product_create(self, entity_name, user, entry, **kwargs):
+        # Only called when a product entry is created
+        pass
+
+    # Runs for all entities
+    @entry_hook("after_create")
+    def handle_any_create(self, entity_name, user, entry, **kwargs):
+        # Called for all entry creations
+        pass
+```
+
+When both entity-specific and generic hooks are registered, both will be executed in priority order.
+
+#### Hook Priority System
+
+Hooks are executed in priority order (lower number = higher priority, default is 100):
+
+```python
+class MyPlugin(Plugin):
+    # Runs first (priority 50)
+    @entry_hook("after_create", priority=50)
+    def first_handler(self, entity_name, user, entry, **kwargs):
+        logger.info("Runs first")
+
+    # Runs second (default priority 100)
+    @entry_hook("after_create")
+    def second_handler(self, entity_name, user, entry, **kwargs):
+        logger.info("Runs second")
+
+    # Runs last (priority 150)
+    @entry_hook("after_create", priority=150)
+    def third_handler(self, entity_name, user, entry, **kwargs):
+        logger.info("Runs last")
+```
+
+This is useful for ensuring proper execution order when multiple plugins handle the same hook.
+
+#### Hook Signatures
+
+Each hook type has a specific signature:
+
+**Entry Lifecycle Hooks:**
+```python
+def handler(self, entity_name: str, user: User, entry: Entry, **kwargs) -> None:
+    # For after_create, after_update, after_delete, after_restore
+    pass
+
+def handler(self, entity_name: str, user: User, validated_data: dict, **kwargs) -> dict:
+    # For before_create - can modify data
+    return validated_data
+
+def handler(self, entity_name: str, user: User, validated_data: dict, entry: Entry, **kwargs) -> dict:
+    # For before_update - can modify data
+    return validated_data
+
+def handler(self, entity_name: str, user: User, entry: Entry, **kwargs) -> None:
+    # For before_delete, before_restore
+    pass
+```
+
+**Entity Lifecycle Hooks:**
+```python
+def handler(self, user: User, entity: Entity, **kwargs) -> None:
+    # For after_create, after_update
+    pass
+
+def handler(self, user: User, validated_data: dict, **kwargs) -> dict:
+    # For before_create - can modify data
+    return validated_data
+
+def handler(self, user: User, validated_data: dict, entity: Entity, **kwargs) -> dict:
+    # For before_update - can modify data
+    return validated_data
+```
+
+**Validation Hook:**
+```python
+def handler(self, user: User, schema_name: str, name: str,
+            attrs: list, instance: Optional[Entry], **kwargs) -> None:
+    # Raise ValueError or ValidationError to reject
+    if invalid_condition:
+        raise ValueError("Validation error message")
+```
+
+**Data Access Hooks:**
+```python
+def handler(self, entry: Entry, attrinfo: list, is_retrieve: bool, **kwargs) -> list:
+    # For entry.get_attrs - must return modified attrinfo
+    return attrinfo
+
+def handler(self, entity: Entity, attrinfo: list, **kwargs) -> list:
+    # For entity.get_attrs - must return modified attrinfo
+    return attrinfo
+```
+
+#### Backward Compatibility
+
+The hook system maintains backward compatibility with the legacy custom_view system through hook name aliases:
+
+```python
+# Legacy custom_view hook names are automatically mapped to standard names
+HOOK_ALIASES = {
+    "before_create_entry_v2": "entry.before_create",
+    "after_create_entry_v2": "entry.after_create",
+    "before_update_entry_v2": "entry.before_update",
+    "after_update_entry_v2": "entry.after_update",
+    "before_delete_entry_v2": "entry.before_delete",
+    "validate_entry": "entry.validate",
+    "get_entry_attr": "entry.get_attrs",
+    "get_entity_attr": "entity.get_attrs",
+    # ... and more
+}
+```
+
+This allows existing custom_view implementations to work with the new plugin system without modification.
+
+#### Hook Execution Implementation
+
+```python
+# Pagoda Hook Manager implementation
+class HookManager:
+    def execute_hook(self, hook_name, *args, entity_name=None, **kwargs):
+        # 1. Normalize hook name (handle aliases)
+        # 2. Get all registered handlers
+        # 3. Filter by entity if specified
+        # 4. Sort by priority
+        # 5. Execute each handler with error isolation
+        # 6. Collect and return results
+```
+
+Key features:
+- **Error Isolation**: One plugin's failure doesn't affect others
+- **Priority Ordering**: Handlers execute in priority order
+- **Entity Filtering**: Entity-specific hooks run only for matching entities
+- **Flexible Signatures**: Different hook types have different signatures
 
 ### Model Injection Implementation
 
+The host application (Pagoda) injects concrete model implementations into the plugin SDK during initialization. This allows plugins to access Pagoda's data models without creating direct dependencies.
+
+#### Injected Models
+
+The following six models are automatically injected:
+
+1. **Entity** - Schema definition (from `entity.models.Entity`)
+2. **EntityAttr** - Entity attribute definition (from `entity.models.EntityAttr`)
+3. **Entry** - Data entry (from `entry.models.Entry`)
+4. **Attribute** - Entry attribute (from `entry.models.Attribute`)
+5. **AttributeValue** - Attribute value (from `entry.models.AttributeValue`)
+6. **User** - User account (from `user.models.User`)
+
+#### Injection Process
+
 ```python
-# Host application injects models during initialization
 # airone/plugins/integration.py
-def _inject_models(self):
-    import pagoda_plugin_sdk.models as sdk_models
-    from entity.models import Entity, EntityAttr
-    from entry.models import Entry, Attribute, AttributeValue
-    from user.models import User
+class PluginIntegration:
+    def _inject_models(self):
+        """Inject real models into the plugin SDK"""
+        try:
+            # Import real models from Pagoda
+            import pagoda_plugin_sdk.models as sdk_models
+            from entity.models import Entity, EntityAttr
+            from entry.models import Entry, Attribute, AttributeValue
+            from user.models import User
 
-    # Inject real models into SDK
-    sdk_models.Entity = Entity
-    sdk_models.Entry = Entry
-    sdk_models.User = User
-    # ... other models
+            # Inject real models into SDK namespace
+            sdk_models.Entity = Entity
+            sdk_models.Entry = Entry
+            sdk_models.User = User
+            sdk_models.AttributeValue = AttributeValue
+            sdk_models.EntityAttr = EntityAttr
+            sdk_models.Attribute = Attribute
 
-# Plugin accesses models safely
-from pagoda_plugin_sdk.models import Entity
-entities = Entity.objects.all()  # → Pagoda Entity instances
+            logger.info("Successfully injected models into plugin SDK")
+        except ImportError as e:
+            logger.error(f"Failed to inject models into plugin SDK: {e}")
+            raise
 ```
+
+#### Initialization Sequence
+
+```
+1. Pagoda Application Startup
+   └─ settings_common.py loads ENABLED_PLUGINS from environment
+
+2. Plugin System Initialization
+   ├─ PluginIntegration.initialize() is called
+   ├─ discover_plugins() finds and registers plugins
+   └─ _inject_models() injects real models into SDK
+
+3. Plugin Access
+   └─ Plugins can now safely import and use models
+```
+
+#### Using Injected Models in Plugins
+
+```python
+# In plugin code
+from pagoda_plugin_sdk.models import Entity, Entry, User
+
+class MyPlugin(Plugin):
+    @entry_hook("after_create")
+    def handle_entry_create(self, entity_name, user, entry, **kwargs):
+        # Direct access to model methods
+        entity = entry.schema  # Access related Entity
+        creator = entry.created_user  # Access related User
+        attrs = entry.get_attrs()  # Call Entry methods
+
+        # Query operations
+        all_entries = Entry.objects.filter(schema=entity)
+        active_users = User.objects.filter(is_active=True)
+```
+
+#### Type Safety with Protocols
+
+The SDK provides Protocol definitions for type checking without creating implementation dependencies:
+
+```python
+from pagoda_plugin_sdk.protocols import (
+    EntityProtocol,
+    EntryProtocol,
+    UserProtocol,
+    EntityAttrProtocol,
+    AttributeProtocol,
+    AttributeValueProtocol,
+)
+
+def process_entry(entry: EntryProtocol) -> dict:
+    """Type-safe entry processing with IDE support"""
+    return {
+        "id": entry.id,
+        "name": entry.name,
+        "schema": entry.schema.name,  # Full IntelliSense support
+    }
+```
+
+#### Checking Model Availability
+
+Always check if models are available before using them:
+
+```python
+from pagoda_plugin_sdk import models
+from pagoda_plugin_sdk.models import Entity
+
+def safe_operation():
+    # Check if plugin system is initialized
+    if not models.is_initialized():
+        raise RuntimeError("Plugin system not initialized")
+
+    # Check specific model
+    if Entity is None:
+        raise RuntimeError("Entity model not available")
+
+    # Safe to proceed
+    entities = Entity.objects.all()
+```
+
+This injection mechanism ensures that plugins remain independent of Pagoda's implementation while still having full access to its data models.
 
 ## Best Practices
 

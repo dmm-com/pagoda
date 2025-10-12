@@ -87,28 +87,28 @@ sequenceDiagram
 ```mermaid
 graph LR
     subgraph "Hook Registration"
-        PC[pagoda-plugin-sdk<br/>COMMON_HOOKS]
-        AH[Pagoda Specific<br/>Hooks]
-        HR[Hook Registry<br/>42 total hooks]
+        PC[pagoda-plugin-sdk<br/>17 Standard Hooks]
+        AH[Legacy Aliases<br/>HOOK_ALIASES]
+        HR[Hook Manager<br/>Registry]
     end
 
     subgraph "Plugin Implementation"
         PH[Plugin Hook<br/>Handlers]
-        EP[Entry Points<br/>Configuration]
+        DEC[Decorators<br/>@entry_hook, etc.]
     end
 
     subgraph "Execution Flow"
         DS[Django Signals]
         HE[Hook Executor]
         CB[Plugin Callbacks]
-        ER[Error Recovery]
+        ER[Error Isolation]
     end
 
     PC --> HR
     AH --> HR
     HR --> HE
 
-    EP --> PH
+    DEC --> PH
     PH --> CB
 
     DS --> HE
@@ -118,6 +118,170 @@ graph LR
     style PC fill:#e1f5fe
     style PH fill:#f3e5f5
     style HE fill:#e8f5e8
+```
+
+### Hook Manager Detailed Architecture
+
+```mermaid
+graph TB
+    subgraph "Hook Registration Phase"
+        PLUGIN[Plugin Class]
+        DECO[Decorator Metadata]
+        SCAN[__init_subclass__<br/>Auto-scan]
+        META[_hook_handlers<br/>List]
+    end
+
+    subgraph "Hook Manager"
+        REG[register_hook]
+        HOOKS[_hooks Dict<br/>hook_name -> handlers]
+        SORT[Priority Sorting]
+    end
+
+    subgraph "Hook Execution Phase"
+        EXEC[execute_hook]
+        NORM[Normalize Name<br/>Handle Aliases]
+        FILT[Entity Filter]
+        PRIOR[Priority Order]
+        CALL[Call Handlers]
+        ERR[Error Handling]
+    end
+
+    PLUGIN --> DECO
+    DECO --> SCAN
+    SCAN --> META
+
+    META --> REG
+    REG --> HOOKS
+    HOOKS --> SORT
+
+    EXEC --> NORM
+    NORM --> FILT
+    FILT --> PRIOR
+    PRIOR --> CALL
+    CALL --> ERR
+
+    style PLUGIN fill:#e1f5fe
+    style HOOKS fill:#f3e5f5
+    style EXEC fill:#fff3e0
+    style ERR fill:#ffebee
+```
+
+### Hook Execution Flow with Entity Filtering
+
+```mermaid
+sequenceDiagram
+    participant App as Application
+    participant HM as Hook Manager
+    participant P1 as Plugin A<br/>(entity="customer")
+    participant P2 as Plugin B<br/>(all entities)
+    participant P3 as Plugin C<br/>(entity="customer")
+
+    App->>HM: execute_hook("entry.after_create", entity_name="customer")
+    HM->>HM: Normalize hook name
+    HM->>HM: Get handlers for "entry.after_create"
+    HM->>HM: Filter by entity="customer"
+
+    Note over HM: Found 3 handlers:<br/>Plugin A (priority 50, entity="customer")<br/>Plugin B (priority 100, all entities)<br/>Plugin C (priority 150, entity="customer")
+
+    HM->>P1: Execute (priority 50)
+    P1-->>HM: Success
+
+    HM->>P2: Execute (priority 100)
+    P2-->>HM: Success
+
+    HM->>P3: Execute (priority 150)
+    P3-->>HM: Success
+
+    HM-->>App: All handlers executed
+
+    Note over App,HM: If entity_name="product",<br/>only Plugin B would be called
+```
+
+### Decorator-Based Hook Registration
+
+```mermaid
+graph TB
+    subgraph "Plugin Definition"
+        CLASS[Plugin Class<br/>MyPlugin]
+        DEC1[@entry_hook<br/>"after_create"]
+        DEC2[@entity_hook<br/>"after_create"]
+        DEC3[@validation_hook]
+        DEC4[@get_attrs_hook<br/>"entry"]
+        METHOD1[handler method 1]
+        METHOD2[handler method 2]
+        METHOD3[handler method 3]
+        METHOD4[handler method 4]
+    end
+
+    subgraph "Metaclass Processing"
+        INIT[__init_subclass__]
+        SCAN[Scan class methods]
+        CHECK[Check for _hook_metadata]
+        COLLECT[Collect to _hook_handlers]
+    end
+
+    subgraph "Registration"
+        INST[Plugin Instance]
+        REG[registry.register]
+        HOOK_REG[Register each hook]
+        HM[Hook Manager]
+    end
+
+    CLASS --> DEC1 --> METHOD1
+    CLASS --> DEC2 --> METHOD2
+    CLASS --> DEC3 --> METHOD3
+    CLASS --> DEC4 --> METHOD4
+
+    METHOD1 --> INIT
+    METHOD2 --> INIT
+    METHOD3 --> INIT
+    METHOD4 --> INIT
+
+    INIT --> SCAN
+    SCAN --> CHECK
+    CHECK --> COLLECT
+
+    COLLECT --> INST
+    INST --> REG
+    REG --> HOOK_REG
+    HOOK_REG --> HM
+
+    style CLASS fill:#e1f5fe
+    style INIT fill:#f3e5f5
+    style HM fill:#e8f5e8
+```
+
+### Priority-Based Execution Order
+
+```mermaid
+graph LR
+    subgraph "Hook: entry.after_create"
+        H1[Plugin A<br/>priority: 50<br/>entity: customer]
+        H2[Plugin B<br/>priority: 75<br/>entity: *]
+        H3[Plugin C<br/>priority: 100<br/>entity: customer]
+        H4[Plugin D<br/>priority: 100<br/>entity: *]
+        H5[Plugin E<br/>priority: 150<br/>entity: customer]
+    end
+
+    subgraph "Execution Sequence"
+        E1[1st: Plugin A<br/>priority 50]
+        E2[2nd: Plugin B<br/>priority 75]
+        E3[3rd: Plugin C<br/>priority 100]
+        E4[4th: Plugin D<br/>priority 100]
+        E5[5th: Plugin E<br/>priority 150]
+    end
+
+    H1 -.lower priority<br/>executes first.-> E1
+    H2 --> E2
+    H3 --> E3
+    H4 --> E4
+    H5 -.higher priority<br/>executes last.-> E5
+
+    style H1 fill:#c8e6c9
+    style H2 fill:#c8e6c9
+    style H3 fill:#fff9c4
+    style H4 fill:#fff9c4
+    style H5 fill:#ffcdd2
 ```
 
 ### API Integration Architecture
