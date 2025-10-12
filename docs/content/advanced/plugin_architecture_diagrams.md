@@ -94,7 +94,7 @@ graph LR
 
     subgraph "Plugin Implementation"
         PH[Plugin Hook<br/>Handlers]
-        DEC[Decorators<br/>@entry_hook, etc.]
+        DEC["Decorators<br/>entry_hook, entity_hook"]
     end
 
     subgraph "Execution Flow"
@@ -203,10 +203,10 @@ sequenceDiagram
 graph TB
     subgraph "Plugin Definition"
         CLASS[Plugin Class<br/>MyPlugin]
-        DEC1[@entry_hook<br/>"after_create"]
-        DEC2[@entity_hook<br/>"after_create"]
-        DEC3[@validation_hook]
-        DEC4[@get_attrs_hook<br/>"entry"]
+        DEC1["entry_hook<br/>after_create"]
+        DEC2["entity_hook<br/>after_create"]
+        DEC3["validation_hook"]
+        DEC4["get_attrs_hook<br/>entry"]
         METHOD1[handler method 1]
         METHOD2[handler method 2]
         METHOD3[handler method 3]

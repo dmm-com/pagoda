@@ -9,26 +9,57 @@ This guide provides the shortest steps to create and verify your first plugin us
 
 ### Step 1: Environment Setup (2 minutes)
 
-#### 1.1 Setting up pagoda-plugin-sdk in Pagoda Environment
+#### 1.1 Install pagoda-plugin-sdk
 
+Navigate to the Pagoda repository and install the plugin SDK:
+
+**Option A: Using pip (standard)**
 ```bash
-cd /path/to/pagoda
-
-# Install development version of pagoda-plugin-sdk
-cd plugin/sdk/
-make install-dev
+cd /path/to/pagoda/plugin/sdk
+pip install -e .
 
 # Verify installation
 python -c "import pagoda_plugin_sdk; print('✓ pagoda-plugin-sdk ready')"
 ```
 
-#### 1.2 Verify Operation with Sample Plugin
+**Option B: Using uv (recommended - faster)**
+```bash
+cd /path/to/pagoda/plugin/sdk
+uv pip install -e .
+
+# Verify installation
+python -c "import pagoda_plugin_sdk; print('✓ pagoda-plugin-sdk ready')"
+```
+
+#### 1.2 Install and Test Sample Plugin
+
+Install the hello-world sample plugin to verify your environment:
 
 ```bash
-# Enable plugin and start server
-ENABLED_PLUGINS=hello-world python manage.py runserver 8080 &
+# Navigate to sample plugin directory
+cd ../examples/pagoda-hello-world-plugin
 
-# Verify operation in separate terminal
+# Install sample plugin (choose one)
+pip install -e .          # Using pip
+# OR
+uv pip install -e .       # Using uv
+
+# Verify plugin installation
+python -c "from pagoda_hello_world_plugin.plugin import HelloWorldPlugin; print('✓ Sample plugin ready')"
+```
+
+#### 1.3 Test Plugin with Pagoda
+
+Start the Pagoda server with the sample plugin enabled:
+
+```bash
+# Navigate back to Pagoda root
+cd ../../..
+
+# Start server with plugin enabled
+ENABLED_PLUGINS=hello-world python manage.py runserver 8080
+
+# In another terminal, test the plugin endpoint
 curl http://localhost:8080/api/v2/plugins/hello-world-plugin/test/
 ```
 
@@ -42,35 +73,95 @@ curl http://localhost:8080/api/v2/plugins/hello-world-plugin/test/
     "version": "1.0.0",
     "type": "external",
     "core": "pagoda-plugin-sdk"
+  },
+  "test": "no-auth",
+  "user": {
+    "username": "anonymous",
+    "is_authenticated": false
   }
 }
 ```
 
 ✅ **If everything works correctly up to this point, environment setup is complete!**
 
+**Common Issues:**
+- If `ENABLED_PLUGINS` is not set, plugins won't be loaded
+- Plugin entry point name must match: `hello-world` in environment variable maps to entry point in `pyproject.toml`
+- Both SDK and plugin must be installed in the same Python environment
+
 ### Step 2: Creating Your First Plugin (3 minutes)
 
-#### 2.1 Create Plugin Project
+#### 2.1 Create Plugin Project Structure
+
+Create a new directory for your plugin outside the Pagoda repository:
 
 ```bash
-# Create working directory
+# Create plugin project directory
 mkdir my-first-plugin
 cd my-first-plugin
 
-# Copy from sample to start
-cp -r ../plugin/examples/pagoda-hello-world-plugin/* .
-
-# Customize plugin name
-sed -i 's/hello-world-plugin/my-first-plugin/g' pyproject.toml
-sed -i 's/pagoda_hello_world_plugin/my_first_plugin/g' pyproject.toml
+# Create package directory structure
+mkdir -p my_first_plugin/api_v2
+touch my_first_plugin/__init__.py
+touch my_first_plugin/plugin.py
+touch my_first_plugin/apps.py
+touch my_first_plugin/api_v2/__init__.py
+touch my_first_plugin/api_v2/urls.py
+touch my_first_plugin/api_v2/views.py
+touch README.md
 ```
 
-#### 2.2 Rename Plugin Structure
-
-```bash
-# Change directory and file names
-mv pagoda_hello_world_plugin my_first_plugin
+Your plugin structure should look like:
 ```
+my-first-plugin/
+├── README.md
+├── pyproject.toml           (create in next step)
+└── my_first_plugin/
+    ├── __init__.py
+    ├── plugin.py
+    ├── apps.py
+    └── api_v2/
+        ├── __init__.py
+        ├── urls.py
+        └── views.py
+```
+
+#### 2.2 Configure pyproject.toml
+
+Create `pyproject.toml` with the following content:
+
+```toml
+[project]
+name = "my-first-plugin"
+version = "1.0.0"
+description = "My First Pagoda Plugin"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [
+    {name = "Your Name", email = "you@example.com"}
+]
+dependencies = [
+    "pagoda-plugin-sdk",
+    "Django>=3.2",
+    "djangorestframework>=3.12",
+]
+requires-python = ">=3.8"
+
+[project.entry-points."pagoda.plugins"]
+my-first = "my_first_plugin.plugin:MyFirstPlugin"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["my_first_plugin"]
+```
+
+**Important Notes:**
+- Entry point name (`my-first`) is what you'll use in `ENABLED_PLUGINS`
+- Entry point value must point to your plugin class: `package.module:ClassName`
+- Build backend is `hatchling` (modern, fast Python packager)
 
 #### 2.3 Customize Plugin Class
 
@@ -232,36 +323,108 @@ urlpatterns = [
 
 ### Step 3: Plugin Testing & Installation
 
-#### 3.1 Plugin Installation
+#### 3.1 Install Your Plugin in Development Mode
+
+Navigate to your plugin directory and install it:
+
+**Option A: Using pip**
+```bash
+cd /path/to/my-first-plugin
+pip install -e .
+```
+
+**Option B: Using uv (recommended)**
+```bash
+cd /path/to/my-first-plugin
+uv pip install -e .
+```
+
+#### 3.2 Verify Plugin Installation
+
+Check that your plugin can be imported and instantiated:
 
 ```bash
-# Development installation
-pip install -e .
-
-# Verify installation
 python -c "
 from my_first_plugin.plugin import MyFirstPlugin
 plugin = MyFirstPlugin()
 print(f'✓ Plugin ready: {plugin.name} v{plugin.version}')
+print(f'  ID: {plugin.id}')
+print(f'  Django apps: {plugin.django_apps}')
+print(f'  API patterns: {plugin.api_v2_patterns}')
 "
 ```
 
-#### 3.2 Testing with Pagoda
+**Expected Output:**
+```
+✓ Plugin ready: My First Plugin v1.0.0
+  ID: my-first-plugin
+  Django apps: ['my_first_plugin']
+  API patterns: my_first_plugin.api_v2.urls
+```
+
+#### 3.3 Test with Pagoda Application
+
+Start Pagoda with your plugin enabled:
 
 ```bash
-# Restart Pagoda server (to recognize new plugin)
-pkill -f "manage.py runserver"
-ENABLED_PLUGINS=my-first-plugin python manage.py runserver 8080 &
+# Navigate to Pagoda repository
+cd /path/to/pagoda
 
-# Test plugin endpoint
-curl http://localhost:8080/api/v2/plugins/my-first-plugin/test/
+# Start server with plugin enabled
+ENABLED_PLUGINS=my-first python manage.py runserver 8080
 ```
 
-**Logs on Success:**
+**Expected Logs on Success:**
 ```
+[INFO] Initializing plugin system...
+[INFO] Starting plugin discovery...
+[INFO] Loaded external plugin: my-first
 [INFO] Registered plugin: my-first-plugin v1.0.0
-[INFO] Registered 1 hooks for plugin my-first-plugin
-[INFO] Plugin discovery completed. Found 2 plugins.
+[INFO] Successfully injected models into plugin SDK
+[INFO] Registered 6 hook(s) for plugin 'my-first-plugin'
+[INFO] Plugin discovery completed. Found 1 plugins.
+[INFO] Plugin system initialized successfully
+```
+
+#### 3.4 Test Plugin API Endpoints
+
+In another terminal, test your plugin's endpoints:
+
+```bash
+# Test the no-auth endpoint
+curl http://localhost:8080/api/v2/plugins/my-first/test/
+
+# Test authenticated endpoint (requires valid token)
+curl -H "Authorization: Token YOUR_TOKEN" \
+     http://localhost:8080/api/v2/plugins/my-first/hello/
+```
+
+**Expected Response:**
+```json
+{
+  "message": "Hello from My First Plugin!",
+  "plugin": {
+    "id": "my-first-plugin",
+    "name": "My First Plugin",
+    "version": "1.0.0"
+  },
+  "custom_data": {
+    "greeting": "Welcome to plugin development!",
+    "tips": "Check the documentation for advanced features"
+  },
+  "timestamp": "2025-10-12T12:34:56.789012"
+}
+```
+
+#### 3.5 Test Hook Execution
+
+Create a test entity and entry to see your hooks in action:
+
+```bash
+# Watch server logs for hook messages
+# You should see log messages like:
+# [INFO] [My First Plugin] Entry created: 'test-entry' in entity 'TestEntity' by admin
+# [INFO] [My First Plugin] Getting entry attrs for: 'test-entry'
 ```
 
 ## Practical Troubleshooting
@@ -919,53 +1082,136 @@ def should_process(self, entry):
 
 ## Production Distribution Preparation
 
-### PyPI Distribution Configuration
+### Building Your Plugin
+
+Before distributing your plugin, you need to build it into a distributable package.
+
+#### Option A: Using build tool (standard)
+
+```bash
+# Install build tool if not already installed
+pip install build
+
+# Build distribution packages
+python -m build
+
+# This creates:
+# dist/my_first_plugin-1.0.0-py3-none-any.whl  (wheel package)
+# dist/my_first_plugin-1.0.0.tar.gz            (source distribution)
+```
+
+#### Option B: Using uv (recommended - faster)
+
+```bash
+# Build with uv
+uv build
+
+# Creates the same dist/ files
+```
+
+### Publishing Your Plugin
+
+#### To PyPI (Public)
+
+```bash
+# Install twine if needed
+pip install twine
+
+# Upload to PyPI
+python -m twine upload dist/*
+
+# Or using uv
+uv publish
+```
+
+#### To TestPyPI (For Testing)
+
+```bash
+# Upload to TestPyPI first to test
+python -m twine upload --repository testpypi dist/*
+
+# Test installation from TestPyPI
+pip install --index-url https://test.pypi.org/simple/ my-first-plugin
+```
+
+#### To GitHub Releases
+
+```bash
+# Create a git tag
+git tag v1.0.0
+git push origin v1.0.0
+
+# Upload wheel file to GitHub release
+# Users can install with:
+# pip install https://github.com/you/my-plugin/releases/download/v1.0.0/my_first_plugin-1.0.0-py3-none-any.whl
+```
+
+### Production-Ready pyproject.toml
+
+Update your `pyproject.toml` with complete metadata for production:
 
 ```toml
-# pyproject.toml - Production version
 [project]
-name = "my-pagoda-plugin"
+name = "my-first-plugin"
 version = "1.0.0"
-authors = [
-    {name = "Your Name", email = "you@example.com"},
-]
-description = "A powerful Pagoda plugin"
+description = "A production-ready Pagoda plugin"
 readme = "README.md"
-requires-python = ">=3.8"
+license = {text = "MIT"}
+authors = [
+    {name = "Your Name", email = "you@example.com"}
+]
+keywords = ["pagoda", "plugin", "yourfeature"]
 classifiers = [
-    "Development Status :: 5 - Production/Stable",
+    "Development Status :: 4 - Beta",
+    "Environment :: Web Environment",
+    "Framework :: Django",
+    "Framework :: Django :: 3.2",
+    "Framework :: Django :: 4.0",
+    "Framework :: Django :: 4.1",
+    "Framework :: Django :: 4.2",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
+    "Programming Language :: Python",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
-    "Framework :: Django",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Internet :: WWW/HTTP",
 ]
 dependencies = [
     "pagoda-plugin-sdk>=1.0.0,<2.0.0",
     "Django>=3.2",
     "djangorestframework>=3.12",
 ]
+requires-python = ">=3.8"
 
 [project.urls]
-Homepage = "https://github.com/youruser/my-pagoda-plugin"
+Homepage = "https://github.com/youruser/my-first-plugin"
+Documentation = "https://my-plugin-docs.example.com"
+Repository = "https://github.com/youruser/my-first-plugin.git"
+Issues = "https://github.com/youruser/my-first-plugin/issues"
+Changelog = "https://github.com/youruser/my-first-plugin/blob/main/CHANGELOG.md"
 
 [project.entry-points."pagoda.plugins"]
-my-plugin = "my_plugin.plugin:MyPlugin"
+my-first = "my_first_plugin.plugin:MyFirstPlugin"
 
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["my_first_plugin"]
 ```
 
-### Continuous Integration
+### Continuous Integration with GitHub Actions
+
+Create `.github/workflows/test.yml`:
 
 ```yaml
-# .github/workflows/test.yml
-name: Test Plugin
+name: Test and Build Plugin
 
 on: [push, pull_request]
 
@@ -974,29 +1220,120 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.8, 3.9, "3.10", 3.11]
+        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v4
+      with:
+        version: "latest"
 
     - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: ${{ matrix.python-version }}
+      run: uv python install ${{ matrix.python-version }}
 
     - name: Install dependencies
       run: |
-        pip install pagoda-plugin-sdk
-        pip install -e .
-        pip install pytest
+        uv pip install pagoda-plugin-sdk
+        uv pip install -e .
+        uv pip install pytest
 
     - name: Run tests
       run: |
-        pytest tests/
+        uv run pytest tests/
 
     - name: Test plugin loading
       run: |
-        python -c "from my_plugin.plugin import MyPlugin; print('✓ Plugin loads successfully')"
+        uv run python -c "from my_first_plugin.plugin import MyFirstPlugin; print('✓ Plugin loads successfully')"
+
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v4
+
+    - name: Build package
+      run: uv build
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: dist
+        path: dist/
+
+    - name: Publish to PyPI
+      if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
+      env:
+        UV_PUBLISH_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
+      run: uv publish
 ```
 
-By following this quick start guide, even beginners can start plugin development in 5 minutes and gain practical problem-solving skills. For more detailed information, refer to the main Plugin System documentation and architecture diagrams.
+### Version Management Best Practices
+
+1. **Update version in pyproject.toml**
+   ```toml
+   version = "1.0.1"  # Semantic versioning
+   ```
+
+2. **Create git tag**
+   ```bash
+   git tag v1.0.1
+   git push origin v1.0.1
+   ```
+
+3. **Maintain CHANGELOG.md**
+   ```markdown
+   # Changelog
+
+   ## [1.0.1] - 2025-10-12
+   ### Fixed
+   - Bug fix description
+
+   ## [1.0.0] - 2025-10-01
+   ### Added
+   - Initial release
+   ```
+
+### Installation Instructions for Users
+
+Once published, users can install your plugin:
+
+```bash
+# From PyPI
+pip install my-first-plugin
+
+# From Git repository
+pip install git+https://github.com/youruser/my-first-plugin.git
+
+# From Git tag
+pip install git+https://github.com/youruser/my-first-plugin.git@v1.0.0
+
+# Using uv (faster)
+uv pip install my-first-plugin
+```
+
+Then enable it in their Pagoda installation:
+```bash
+export ENABLED_PLUGINS=my-first
+python manage.py runserver
+```
+
+## Summary
+
+By following this quick start guide, you can create a working Pagoda plugin in 5 minutes:
+
+1. ✅ Install pagoda-plugin-sdk
+2. ✅ Create plugin structure with pyproject.toml
+3. ✅ Implement plugin with decorators (@entry_hook, @entity_hook, etc.)
+4. ✅ Test with development installation
+5. ✅ Build and distribute with uv or pip
+
+For more detailed information, refer to:
+- [Plugin System Documentation](plugin_system.md) - Complete reference
+- [Plugin Architecture Diagrams](plugin_architecture_diagrams.md) - Visual architecture
