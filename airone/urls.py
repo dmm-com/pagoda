@@ -3,6 +3,7 @@ from django.urls import include, re_path
 
 from airone import views
 from airone.auth import view as auth_view
+from airone.plugins.integration import plugin_integration
 from api_v1.urls import urlpatterns as api_v1_urlpatterns
 
 urlpatterns = [
@@ -52,3 +53,7 @@ for extension in settings.AIRONE["EXTENSIONS"]:
     urlpatterns.append(
         re_path(r"^extension/%s" % extension, include(("%s.urls" % extension, extension)))
     )
+
+# Conditionally add plugin URL patterns
+if settings.AIRONE.get("PLUGINS", {}).get("ENABLED", False):
+    urlpatterns.extend(plugin_integration.get_url_patterns())

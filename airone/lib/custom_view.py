@@ -4,6 +4,8 @@ from pathlib import Path
 from django.conf import settings
 from django.http import HttpResponse
 
+from airone.plugins.hook_manager import hook_manager
+
 # to cache custom view
 CUSTOM_VIEW = {}
 BASE_DIR = settings.PROJECT_PATH + "/../custom_view"
@@ -40,15 +42,20 @@ def is_custom(handler_name: str, entity_name: str | None = None) -> bool:
     if entity_name:
         spec_name = entity_name
         filepath = "%s/views/%s.py" % (BASE_DIR, entity_name)
-        if not Path(filepath).is_file():
-            return False
+        if Path(filepath).is_file() and _does_custom_method_defined(
+            handler_name, spec_name, filepath
+        ):
+            return True
     else:
         spec_name = "entity"
         filepath = "%s/entity.py" % BASE_DIR
-        if not Path(filepath).is_file():
-            return False
+        if Path(filepath).is_file() and _does_custom_method_defined(
+            handler_name, spec_name, filepath
+        ):
+            return True
 
-    return _does_custom_method_defined(handler_name, spec_name, filepath)
+    # Check if any plugin hooks are registered for this handler
+    return hook_manager.has_hook(handler_name, entity_name)
 
 
 def call_custom(handler_name: str, spec_name: str | None = None, *args, **kwargs):
@@ -57,7 +64,14 @@ def call_custom(handler_name: str, spec_name: str | None = None, *args, **kwargs
     else:
         filepath = "%s/views/%s.py" % (BASE_DIR, spec_name)
 
+    # Priority 1: Execute custom_view file-based handler if available
     if _isin_cache(filepath, handler_name):
         return CUSTOM_VIEW[filepath][handler_name](*args, **kwargs)
-    else:
-        return HttpResponse("Custom view of %s doesn't exist" % handler_name, status=500)
+
+    # Priority 2: Execute plugin hooks if custom_view is not available
+    results = hook_manager.execute_hook(handler_name, *args, entity_name=spec_name, **kwargs)
+    if results:
+        # Return the last result (if multiple plugins registered)
+        return results[-1]
+
+    return HttpResponse("Custom view of %s doesn't exist" % handler_name, status=500)
