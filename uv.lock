@@ -2,6 +2,9 @@ version = 1
 revision = 3
 requires-python = ">=3.12"
 
+[manifest]
+overrides = [{ name = "pagoda-plugin-sdk", editable = "plugin/sdk" }]
+
 [[package]]
 name = "airone"
 version = "3.73.0"
@@ -30,7 +33,6 @@ dependencies = [
     { name = "mock" },
     { name = "mysqlclient" },
     { name = "natsort" },
-    { name = "pagoda-hello-world-plugin" },
     { name = "pagoda-plugin-sdk" },
     { name = "pydantic" },
     { name = "python-ldap" },
@@ -56,6 +58,10 @@ dev = [
     { name = "types-pytz" },
     { name = "types-pyyaml" },
     { name = "types-requests" },
+]
+plugins = [
+    { name = "pagoda-echo-plugin" },
+    { name = "pagoda-hello-world-plugin" },
 ]
 
 [package.metadata]
@@ -86,7 +92,8 @@ requires-dist = [
     { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.15.0" },
     { name = "mysqlclient", specifier = "==2.2.0" },
     { name = "natsort", specifier = "==5.3.3" },
-    { name = "pagoda-hello-world-plugin", editable = "plugin/examples/pagoda-hello-world-plugin" },
+    { name = "pagoda-echo-plugin", marker = "extra == 'plugins'", git = "https://github.com/syucream/pagoda-backend-plugin-example" },
+    { name = "pagoda-hello-world-plugin", marker = "extra == 'plugins'", editable = "plugin/examples/pagoda-hello-world-plugin" },
     { name = "pagoda-plugin-sdk", editable = "plugin/sdk" },
     { name = "pydantic", specifier = ">=2.10.6" },
     { name = "python-ldap", specifier = "==3.4.0" },
@@ -106,7 +113,7 @@ requires-dist = [
     { name = "uritemplate", specifier = "==3.0.1" },
     { name = "whitenoise", specifier = "==5.2.0" },
 ]
-provides-extras = ["dev"]
+provides-extras = ["dev", "plugins"]
 
 [[package]]
 name = "amqp"
@@ -1060,6 +1067,16 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/a1/d4/1fc4078c65507b51b96ca8f8c3ba19e6a61c8253c72794544580a7b6c24d/packaging-25.0.tar.gz", hash = "sha256:d443872c98d677bf60f6a1f2f8c1cb748e8fe762d2bf9d3148b5599295b0fc4f", size = 165727, upload-time = "2025-04-19T11:48:59.673Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/20/12/38679034af332785aac8774540895e234f4d07f7545804097de4b666afd8/packaging-25.0-py3-none-any.whl", hash = "sha256:29572ef2b1f17581046b3a2227d5c611fb25ec70ca1ba8554b24b0e69331a484", size = 66469, upload-time = "2025-04-19T11:48:57.875Z" },
+]
+
+[[package]]
+name = "pagoda-echo-plugin"
+version = "1.0.0"
+source = { git = "https://github.com/syucream/pagoda-backend-plugin-example#fcb8b696e447ffc5bd1f19d77d2f6a5937db56d1" }
+dependencies = [
+    { name = "django" },
+    { name = "djangorestframework" },
+    { name = "pagoda-plugin-sdk" },
 ]
 
 [[package]]

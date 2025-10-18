@@ -61,12 +61,15 @@ dependencies = [
     "whitenoise==5.2.0",
     "pydantic>=2.10.6",
     "pagoda-plugin-sdk",
-    "pagoda-hello-world-plugin",
 ]
 
 [tool.uv.sources]
 pagoda-plugin-sdk = { path = "./plugin/sdk", editable = true }
 pagoda-hello-world-plugin = { path = "./plugin/examples/pagoda-hello-world-plugin", editable = true }
+pagoda-echo-plugin = { git = "https://github.com/syucream/pagoda-backend-plugin-example" }
+
+[tool.uv]
+override-dependencies = ["pagoda-plugin-sdk"]
 
 [project.optional-dependencies]
 dev = [
@@ -80,4 +83,8 @@ dev = [
     "ruff>=0.9.9",
     "tblib>=3.0.0",
     "lxml-html-clean>=0.4.0",
+]
+plugins = [
+    "pagoda-hello-world-plugin",
+    "pagoda-echo-plugin",
 ]

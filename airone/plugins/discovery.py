@@ -24,7 +24,7 @@ def discover_plugins():
 def discover_external_plugins():
     """Discover plugins from external packages
 
-    Uses the 'airone.plugins' group in entry points to discover
+    Uses the 'pagoda.plugins' group in entry points to discover
     plugins installed as external packages. Only loads plugins
     specified in ENABLED_PLUGINS setting.
     """
