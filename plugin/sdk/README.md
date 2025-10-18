@@ -20,10 +20,14 @@ Pagoda Plugin SDK implements a clean separation between the core framework, plug
 ## Installation
 
 ```bash
-# For plugin development
-pip install pagoda-plugin-sdk
+# From Git repository (recommended for plugin development)
+pip install git+https://github.com/dmm-com/pagoda.git#subdirectory=plugin/sdk
+
+# Or using uv (faster)
+uv pip install git+https://github.com/dmm-com/pagoda.git#subdirectory=plugin/sdk
 
 # For local development (from source)
+cd /path/to/pagoda/plugin/sdk
 pip install -e .
 ```
 
@@ -183,11 +187,11 @@ git push origin v1.0.1
 ### 1. Install pagoda-plugin-sdk
 
 ```bash
-# Option A: From PyPI (recommended)
-pip install pagoda-plugin-sdk
+# Option A: From Git repository (recommended)
+pip install git+https://github.com/dmm-com/pagoda.git#subdirectory=plugin/sdk
 
 # Option B: From source (development)
-cd pagoda-plugin-sdk
+cd /path/to/pagoda/plugin/sdk
 make install-dev
 ```
 
@@ -204,7 +208,7 @@ name = "my-pagoda-plugin"
 version = "1.0.0"
 description = "My Pagoda Plugin"
 dependencies = [
-    "pagoda-plugin-sdk>=1.0.0",
+    "pagoda-plugin-sdk @ git+https://github.com/dmm-com/pagoda.git#subdirectory=plugin/sdk",
     "Django>=3.2",
     "djangorestframework>=3.12",
 ]

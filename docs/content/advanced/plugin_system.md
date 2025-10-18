@@ -274,11 +274,14 @@ def my_view(request):
 ### Prerequisites
 
 ```bash
-# Install pagoda-plugin-sdk (for plugin development)
-pip install pagoda-plugin-sdk
+# Install pagoda-plugin-sdk from Git repository (recommended)
+pip install git+https://github.com/dmm-com/pagoda.git#subdirectory=plugin/sdk
 
-# Or development version (for local development)
-cd plugin/sdk/
+# Or using uv (faster)
+uv pip install git+https://github.com/dmm-com/pagoda.git#subdirectory=plugin/sdk
+
+# Or from local source (for SDK development)
+cd /path/to/pagoda/plugin/sdk
 pip install -e .
 ```
 
@@ -409,7 +412,7 @@ name = "my-pagoda-plugin"
 version = "1.0.0"
 description = "My Pagoda Plugin"
 dependencies = [
-    "pagoda-plugin-sdk>=1.0.0",  # Core dependency only
+    "pagoda-plugin-sdk @ git+https://github.com/dmm-com/pagoda.git#subdirectory=plugin/sdk",
     "Django>=3.2",
     "djangorestframework>=3.12",
 ]

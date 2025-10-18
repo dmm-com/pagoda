@@ -11,20 +11,26 @@ This guide provides the shortest steps to create and verify your first plugin us
 
 #### 1.1 Install pagoda-plugin-sdk
 
-Navigate to the Pagoda repository and install the plugin SDK:
+Install the plugin SDK from the Git repository:
 
-**Option A: Using pip (standard)**
+**Option A: From Git repository (recommended)**
 ```bash
-cd /path/to/pagoda/plugin/sdk
-pip install -e .
+# Using pip
+pip install git+https://github.com/dmm-com/pagoda.git#subdirectory=plugin/sdk
+
+# Or using uv (faster)
+uv pip install git+https://github.com/dmm-com/pagoda.git#subdirectory=plugin/sdk
 
 # Verify installation
 python -c "import pagoda_plugin_sdk; print('✓ pagoda-plugin-sdk ready')"
 ```
 
-**Option B: Using uv (recommended - faster)**
+**Option B: From local source (for SDK development)**
 ```bash
 cd /path/to/pagoda/plugin/sdk
+pip install -e .
+
+# Or using uv
 uv pip install -e .
 
 # Verify installation
@@ -141,7 +147,7 @@ authors = [
     {name = "Your Name", email = "you@example.com"}
 ]
 dependencies = [
-    "pagoda-plugin-sdk",
+    "pagoda-plugin-sdk @ git+https://github.com/dmm-com/pagoda.git#subdirectory=plugin/sdk",
     "Django>=3.2",
     "djangorestframework>=3.12",
 ]
@@ -1182,7 +1188,7 @@ classifiers = [
     "Topic :: Internet :: WWW/HTTP",
 ]
 dependencies = [
-    "pagoda-plugin-sdk>=1.0.0,<2.0.0",
+    "pagoda-plugin-sdk @ git+https://github.com/dmm-com/pagoda.git#subdirectory=plugin/sdk",
     "Django>=3.2",
     "djangorestframework>=3.12",
 ]
@@ -1235,7 +1241,7 @@ jobs:
 
     - name: Install dependencies
       run: |
-        uv pip install pagoda-plugin-sdk
+        uv pip install git+https://github.com/dmm-com/pagoda.git#subdirectory=plugin/sdk
         uv pip install -e .
         uv pip install pytest
 
