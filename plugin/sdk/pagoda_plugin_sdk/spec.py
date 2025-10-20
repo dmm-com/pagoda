@@ -1,5 +1,3 @@
-from typing import Any, List
-
 # This describes Model's specification that a Plugin requires (a.k.a. AdaptedEntity before)
 class ModelSpec(object):
     def __init__(self, name=None, attrs={}, inheritance=None, exclude_attrs=[]):
@@ -40,20 +38,24 @@ class ModelSpec(object):
     def get_attrname(self, name):
         return self.get_attrs()[name]["name"]
 
-    @classmethod
-    def get(kls, entity_key):
-        return MODEL_SPEC[entity_key]
 
-    @classmethod
-    def get_by_entity_name(kls, entity_name):
-        for adapted_entity in kls.get_actual_entities():
-            if adapted_entity.name == entity_name:
-                return adapted_entity
-
-    @classmethod
-    def get_actual_entities(kls):
-        return [x for x in MODEL_SPEC.values() if x.name is not None]
-
-    @classmethod
-    def get_inherited_entities(kls, inheritance_name: str) -> List[str]:
-        return [x.name for x in kls.get_actual_entities() if x.is_inherited(inheritance_name)]
+# NOTE: we have to consider to re-design about following structure that refers
+#       MODEL_SPEC object fomr this class.
+#
+#    @classmethod
+#    def get(kls, entity_key):
+#        return MODEL_SPEC[entity_key]
+#
+#    @classmethod
+#    def get_by_entity_name(kls, entity_name):
+#        for adapted_entity in kls.get_actual_entities():
+#            if adapted_entity.name == entity_name:
+#                return adapted_entity
+#
+#    @classmethod
+#    def get_actual_entities(kls):
+#        return [x for x in MODEL_SPEC.values() if x.name is not None]
+#
+#    @classmethod
+#    def get_inherited_entities(kls, inheritance_name: str) -> List[str]:
+#        return [x.name for x in kls.get_actual_entities() if x.is_inherited(inheritance_name)]

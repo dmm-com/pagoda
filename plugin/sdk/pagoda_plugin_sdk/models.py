@@ -13,6 +13,7 @@ from .protocols import (
     EntityAttrProtocol,
     EntityProtocol,
     EntryProtocol,
+    JobProtocol,
     UserProtocol,
 )
 
@@ -23,6 +24,7 @@ User: Optional[Type[UserProtocol]] = None
 AttributeValue: Optional[Type[AttributeValueProtocol]] = None
 EntityAttr: Optional[Type[EntityAttrProtocol]] = None
 Attribute: Optional[Type[AttributeProtocol]] = None
+Job: Optional[Type[JobProtocol]] = None
 
 
 def __getattr__(name: str):
@@ -36,6 +38,7 @@ def __getattr__(name: str):
         "AttributeValue": AttributeValue,
         "EntityAttr": EntityAttr,
         "Attribute": Attribute,
+        "Job": Job,
     }
 
     if name in available_models:
@@ -57,7 +60,7 @@ def is_initialized() -> bool:
     Returns:
         True if at least one model has been injected, False otherwise
     """
-    return any([Entity, Entry, User, AttributeValue, EntityAttr, Attribute])
+    return any([Entity, Entry, User, AttributeValue, EntityAttr, Attribute, Job])
 
 
 def get_available_models() -> list[str]:
@@ -79,4 +82,6 @@ def get_available_models() -> list[str]:
         available.append("EntityAttr")
     if Attribute is not None:
         available.append("Attribute")
+    if Job is not None:
+        available.append("Job")
     return available

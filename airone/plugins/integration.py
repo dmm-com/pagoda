@@ -52,6 +52,7 @@ class PluginIntegration:
 
             from entity.models import Entity, EntityAttr
             from entry.models import Attribute, AttributeValue, Entry
+            from job.models import Job
             from user.models import User
 
             # Inject real models
@@ -61,6 +62,7 @@ class PluginIntegration:
             sdk_models.AttributeValue = AttributeValue
             sdk_models.EntityAttr = EntityAttr
             sdk_models.Attribute = Attribute
+            sdk_models.Job = Job
 
             logger.info("Successfully injected models into plugin SDK")
 
