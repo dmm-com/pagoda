@@ -6,6 +6,7 @@ from celery import Celery
 from django.conf import settings
 
 from airone.lib.log import Logger
+from airone.plugins.integration import plugin_integration
 
 # set the default Django settings module for the 'celery' program.
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "airone.settings")
@@ -29,6 +30,13 @@ app.config_from_object("django.conf:settings", namespace="CELERY")
 
 # Load task modules from all registered Django app configs.
 app.autodiscover_tasks()
+
+# Initialize plugin system for Celery worker
+if settings.AIRONE.get("PLUGINS", {}).get("ENABLED", False):
+    try:
+        plugin_integration.initialize()
+    except Exception as e:
+        Logger.error(f"Failed to initialize plugin system: {e}", exc_info=True)
 
 # Recognize tasks explicitly
 import dashboard.tasks  # noqa: F401, E402

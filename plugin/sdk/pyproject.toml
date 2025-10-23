@@ -1,0 +1,60 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pagoda-plugin-sdk"
+version = "1.0.0-alpha.1"
+description = "Plugin SDK for Pagoda plugin development"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [
+    {name = "Pagoda Development Team", email = "dev@pagoda.pw"}
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Web Environment",
+    "Framework :: Django",
+    "Framework :: Django :: 3.2",
+    "Framework :: Django :: 4.0",
+    "Framework :: Django :: 4.1",
+    "Framework :: Django :: 4.2",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Internet :: WWW/HTTP",
+    "Topic :: Internet :: WWW/HTTP :: Dynamic Content",
+    "Topic :: Software Development :: Libraries :: Application Frameworks",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+keywords = ["pagoda", "plugin", "framework", "django", "rest", "api"]
+dependencies = [
+    "Django>=3.2",
+    "djangorestframework>=3.12",
+]
+requires-python = ">=3.8"
+
+[project.urls]
+Homepage = "https://github.com/syucream/airone"
+Documentation = "https://airone.readthedocs.io/"
+Repository = "https://github.com/syucream/airone.git"
+Issues = "https://github.com/syucream/airone/issues"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["pagoda_plugin_sdk*"]
+
+[tool.setuptools.package-data]
+pagoda_plugin_sdk = ["py.typed"]
+
+# GitHub Packages configuration
+[[tool.twine.repositories]]
+name = "github"
+url = "https://pypi.pkg.github.com/syucream/"
