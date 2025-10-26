@@ -70,11 +70,16 @@ class Common(Configuration):
         "category",
     ]
 
-    # Existing custom_view support
+    # Existing custom_view support (maintained with legacy CUSTOM_TASKS)
     if os.path.exists(BASE_DIR + "/custom_view"):
         INSTALLED_APPS.append("custom_view")
 
-    # Plugin apps will be added dynamically during runtime
+    # Auto-add plugins from ENABLED_PLUGINS
+    # Convention: "foo-bar" → "pagoda_foo_bar_plugin"
+    for plugin_name in ENABLED_PLUGINS:
+        plugin_module = "pagoda_" + plugin_name.replace("-", "_") + "_plugin"
+        if plugin_module not in INSTALLED_APPS:
+            INSTALLED_APPS.append(plugin_module)
 
     MIDDLEWARE = [
         "django.middleware.security.SecurityMiddleware",
@@ -502,3 +507,12 @@ class Common(Configuration):
     MAX_USERS: int | None = env.int("AIRONE_MAX_USERS", None)
     MAX_GROUPS: int | None = env.int("AIRONE_MAX_GROUPS", None)
     MAX_ROLES: int | None = env.int("AIRONE_MAX_ROLES", None)
+
+    # プラグインのジョブ操作 ID レンジ割り当て
+    # 一度割り当てたレンジを変更するとタスク履歴の挙動が壊れるため、既存設定の変更は慎重に
+    # フォーマット: "plugin-id": (range_start, range_end)
+    # 例: "hello-world": (5000, 5099) → 100個のタスク分を確保
+    # Note: custom_view は従来の CUSTOM_TASKS 定数で管理されているため、ここには記載しない
+    PLUGIN_OPERATION_ID_CONFIG: dict[str, tuple[int, int]] = {
+        "hello-world": (5000, 5099),
+    }

@@ -8,6 +8,7 @@ from . import views
 
 urlpatterns = [
     path("hello/", views.HelloView.as_view(), name="hello"),
+    path("task/", views.TaskView.as_view(), name="task"),
     path("greet/<str:name>/", views.GreetView.as_view(), name="greet"),
     path("status/", views.StatusView.as_view(), name="status"),
     path("test/", views.TestView.as_view(), name="test"),  # For authentication-free testing

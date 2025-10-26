@@ -6,6 +6,9 @@ Demonstrates how external plugins can create API endpoints using Pagoda's core l
 
 from datetime import datetime
 
+from airone.lib.plugin_task import PluginTaskRegistry
+from job.models import Job
+
 # Import from Pagoda Plugin SDK libraries (fully independent)
 from pagoda_plugin_sdk import PluginAPIViewMixin
 from pagoda_plugin_sdk.models import Entity, Entry
@@ -17,7 +20,7 @@ from rest_framework.response import Response
 class HelloView(PluginAPIViewMixin):
     """Simple Hello World API
 
-    Demonstrates basic GET/POST request handling in external plugins.
+    Demonstrates how external plugins can create API endpoints using Pagoda's core libraries.
     """
 
     def get(self, request):
@@ -32,7 +35,7 @@ class HelloView(PluginAPIViewMixin):
             {
                 "message": "Hello from External Hello World Plugin (via pagoda-core)!",
                 "plugin": {
-                    "id": "hello-world-plugin",
+                    "id": "hello-world",
                     "name": "Hello World Plugin",
                     "version": "1.0.0",
                     "type": "external",
@@ -44,8 +47,15 @@ class HelloView(PluginAPIViewMixin):
             }
         )
 
+
+class TaskView(PluginAPIViewMixin):
+    """Task execution endpoint for Hello World Plugin
+
+    Queues and executes the hello_world_task.
+    """
+
     def post(self, request):
-        """Execute Hello World job with custom message
+        """Execute Hello World task with custom message
 
         Request body:
             message (str): Custom message (optional)
@@ -56,21 +66,50 @@ class HelloView(PluginAPIViewMixin):
             "is_authenticated": request.user.is_authenticated,
         }
 
-        response_data = {
-            "message": f"External plugin task would be queued with message: '{message}'",
-            "plugin": {
-                "id": "hello-world-plugin",
-                "name": "Hello World Plugin",
-                "version": "1.0.0",
-                "type": "external",
-                "core": "pagoda-core",
-            },
-            "user": user_info,
-            "pagoda_core_version": "1.0.0",
-            "timestamp": datetime.now().isoformat(),
-        }
+        try:
+            operation_id = PluginTaskRegistry.get_operation_id("hello-world", "hello_world_task")
 
-        return Response(response_data, status=status.HTTP_201_CREATED)
+            job = Job._create_new_job(
+                user=request.user,
+                target=None,
+                operation=operation_id,
+                text=f"Hello World task: {message}",
+                params={"message": message},
+            )
+            job.run()
+
+            response_data = {
+                "message": "Hello World task queued successfully",
+                "task_message": message,
+                "job_id": job.id,
+                "job_status": job.status,
+                "plugin": {
+                    "id": "hello-world",
+                    "name": "Hello World Plugin",
+                    "version": "1.0.0",
+                    "type": "external",
+                    "core": "pagoda-core",
+                },
+                "user": user_info,
+                "pagoda_core_version": "1.0.0",
+                "timestamp": datetime.now().isoformat(),
+            }
+
+            return Response(response_data, status=status.HTTP_201_CREATED)
+
+        except Exception as e:
+            return Response(
+                {
+                    "error": "Failed to queue task",
+                    "message": str(e),
+                    "plugin": {
+                        "id": "hello-world",
+                        "name": "Hello World Plugin",
+                    },
+                    "timestamp": datetime.now().isoformat(),
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
 
 class GreetView(PluginAPIViewMixin):
@@ -94,7 +133,7 @@ class GreetView(PluginAPIViewMixin):
             {
                 "greeting": f"Hello, {name}! Welcome to Pagoda via External Plugin!",
                 "plugin": {
-                    "id": "hello-world-plugin",
+                    "id": "hello-world",
                     "name": "Hello World Plugin",
                     "version": "1.0.0",
                     "type": "external",
@@ -124,7 +163,7 @@ class StatusView(PluginAPIViewMixin):
         return Response(
             {
                 "plugin": {
-                    "id": "hello-world-plugin",
+                    "id": "hello-world",
                     "name": "Hello World Plugin",
                     "version": "1.0.0",
                     "type": "external",
@@ -166,7 +205,7 @@ class TestView(PluginAPIViewMixin):
             {
                 "message": "External Hello World Plugin is working via pagoda-core!",
                 "plugin": {
-                    "id": "hello-world-plugin",
+                    "id": "hello-world",
                     "name": "Hello World Plugin",
                     "version": "1.0.0",
                     "type": "external",
@@ -203,7 +242,7 @@ class EntityListView(PluginAPIViewMixin):
                         "error": "Entity model not available",
                         "message": "Plugin system may not be initialized",
                         "plugin": {
-                            "id": "hello-world-plugin",
+                            "id": "hello-world",
                             "name": "Hello World Plugin",
                         },
                         "timestamp": datetime.now().isoformat(),
@@ -239,7 +278,7 @@ class EntityListView(PluginAPIViewMixin):
                     "entities": entity_list,
                     "count": entities.count(),
                     "plugin": {
-                        "id": "hello-world-plugin",
+                        "id": "hello-world",
                         "name": "Hello World Plugin",
                         "version": "1.0.0",
                         "type": "external",
@@ -256,7 +295,7 @@ class EntityListView(PluginAPIViewMixin):
                     "error": "Failed to retrieve entities",
                     "message": str(e),
                     "plugin": {
-                        "id": "hello-world-plugin",
+                        "id": "hello-world",
                         "name": "Hello World Plugin",
                     },
                     "timestamp": datetime.now().isoformat(),
@@ -310,7 +349,7 @@ class EntityDetailView(PluginAPIViewMixin):
                 {
                     "entity": entity_data,
                     "plugin": {
-                        "id": "hello-world-plugin",
+                        "id": "hello-world",
                         "name": "Hello World Plugin",
                         "version": "1.0.0",
                         "type": "external",
@@ -422,7 +461,7 @@ class EntryListView(PluginAPIViewMixin):
                         "limit": limit,
                     },
                     "plugin": {
-                        "id": "hello-world-plugin",
+                        "id": "hello-world",
                         "name": "Hello World Plugin",
                         "version": "1.0.0",
                         "type": "external",
@@ -439,7 +478,7 @@ class EntryListView(PluginAPIViewMixin):
                     "error": "Failed to retrieve entries",
                     "message": str(e),
                     "plugin": {
-                        "id": "hello-world-plugin",
+                        "id": "hello-world",
                         "name": "Hello World Plugin",
                     },
                     "timestamp": datetime.now().isoformat(),
@@ -504,7 +543,7 @@ class EntryDetailView(PluginAPIViewMixin):
                 {
                     "entry": entry_data,
                     "plugin": {
-                        "id": "hello-world-plugin",
+                        "id": "hello-world",
                         "name": "Hello World Plugin",
                         "version": "1.0.0",
                         "type": "external",

@@ -15,6 +15,7 @@ from django.db import models
 from acl.models import ACLBase
 from airone.lib import auto_complement
 from airone.lib.log import Logger
+from airone.lib.plugin_task import PluginTaskRegistry
 from airone.lib.types import BaseIntEnum
 from entity.models import Entity
 from entry.models import Entry
@@ -369,9 +370,24 @@ class Job(models.Model):
 
     @classmethod
     def method_table(kls) -> dict[JobOperation | JobOperationCustom, TaskHandler]:
+        # Legacy custom_view support (backward compatibility)
         for operation_num, task in CUSTOM_TASKS.items():
-            custom_task = kls.get_task_module("custom_view.tasks")
-            kls._METHOD_TABLE |= {operation_num: getattr(custom_task, task)}
+            if operation_num not in kls._METHOD_TABLE:
+                custom_task = kls.get_task_module("custom_view.tasks")
+                kls._METHOD_TABLE[operation_num] = getattr(custom_task, task)
+
+        # Plugin registry support
+        try:
+            for operation_id, (
+                module_path,
+                func_name,
+            ) in PluginTaskRegistry.get_all_tasks().items():
+                if operation_id not in kls._METHOD_TABLE:
+                    module = kls.get_task_module(module_path)
+                    kls._METHOD_TABLE[operation_id] = getattr(module, func_name)
+        except Exception as e:
+            # Skip if plugin registry is not initialized
+            Logger.warning(f"Plugin registry initialization failed: {e}")
 
         return kls._METHOD_TABLE
 
