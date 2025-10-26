@@ -11,7 +11,10 @@ module.exports = {
   },
   resolve: {
     extensions: [".webpack.js", ".web.js", ".ts", ".tsx", ".js"],
-    modules: [path.resolve('frontend/src'), 'node_modules'],
+    modules: [
+      path.resolve('frontend/src'), 
+      'node_modules'
+    ]
   },
   module: {
     rules: [

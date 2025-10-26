@@ -4,6 +4,17 @@
   "description": "[![CircleCI](https://circleci.com/gh/dmm-com/airone.svg?style=svg&circle-token=2e12c068b0ed1bab9d0c2d72529d5ee1da9b53b4)](https://circleci.com/gh/dmm-com/airone)",
   "main": "frontend/dist/pagoda-core.js",
   "types": "frontend/dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./frontend/dist/index.d.ts",
+      "default": "./frontend/dist/pagoda-core.js"
+    },
+    "./plugins": {
+      "types": "./frontend/dist/plugins/index.d.ts",
+      "import": "./frontend/dist/plugins/index.d.ts",
+      "require": "./frontend/dist/plugins/index.d.ts"
+    }
+  },
   "directories": {
     "doc": "docs"
   },
@@ -96,7 +107,7 @@
     "source-map-loader": "^4.0.2",
     "ts-jest": "^29.2.6",
     "ts-loader": "^9.5.2",
-    "typescript": "^5.8.2",
+    "typescript": "^5.9.2",
     "undici": "^5.29.0",
     "uuid": "^11.1.0",
     "webpack": "^5.98.0",
