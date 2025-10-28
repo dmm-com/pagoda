@@ -2794,6 +2794,16 @@ class PrefetchedItemWrapper(object):
 
         return False
 
+    @property
+    def date(self) -> date | None:
+        if self.attrv is not None:
+            return self.attrv.date
+
+    @property
+    def datetime(self) -> datetime | None:
+        if self.attrv is not None:
+            return self.attrv.datetime
+
 
 class ItemWalker(object):
     @classmethod
