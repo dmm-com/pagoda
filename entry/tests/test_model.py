@@ -5185,6 +5185,7 @@ class ModelTest(AironeTestCase):
                 {"name": "netmask", "type": AttrType.STRING},
                 {"name": "label", "type": AttrType.ARRAY_STRING},
                 {"name": "deleted", "type": AttrType.BOOLEAN},
+                {"name": "created_at", "type": AttrType.DATE},
             ],
         )
         model_ip_type = self.create_entity(self._user, "IPType")
@@ -5194,6 +5195,7 @@ class ModelTest(AironeTestCase):
             attrs=[
                 {"name": "nw", "type": AttrType.OBJECT},
                 {"name": "type", "type": AttrType.OBJECT},
+                {"name": "created_at", "type": AttrType.DATETIME},
             ],
         )
         model_srv = self.create_entity(
@@ -5218,6 +5220,7 @@ class ModelTest(AironeTestCase):
                 "cidr": [],
                 "label": [],
                 "deleted": False,
+                "created_at": None,
             },
         )
         item_nw2 = self.add_entry(
@@ -5230,6 +5233,7 @@ class ModelTest(AironeTestCase):
                 "cidr": [item_nw1],
                 "label": ["child", "24"],
                 "deleted": True,
+                "created_at": date(2025, 10, 28),
             },
         )
         item_ip_type = self.add_entry(self._user, "Shared", model_ip_type)
@@ -5240,6 +5244,7 @@ class ModelTest(AironeTestCase):
             values={
                 "nw": item_nw2,
                 "type": item_ip_type,
+                "created_at": datetime(2025, 10, 28, 10, 0, 0, tzinfo=timezone.utc),
             },
         )
         item_srv1 = self.add_entry(
@@ -5265,8 +5270,10 @@ class ModelTest(AironeTestCase):
                         },
                         "label": {},
                         "deleted": {},
+                        "created_at": {},
                     },
                     "type": {},
+                    "created_at": {},
                 },
             },
         )
@@ -5287,6 +5294,15 @@ class ModelTest(AironeTestCase):
             self.assertEqual(piw["I/F"]["nw"]["netmask"].item, None)
             self.assertEqual(piw["I/F"]["nw"]["netmask"].value, "24")
             self.assertEqual(piw["I/F"]["nw"]["deleted"].boolean, True)
+
+            # check date and datetime values can be retrieved expectedly
+            self.assertEqual(
+                piw["I/F"]["created_at"].datetime,
+                datetime(2025, 10, 28, 10, 0, 0, tzinfo=timezone.utc),
+            )
+            self.assertEqual(piw["I/F"]["nw"]["created_at"].date, date(2025, 10, 28))
+            self.assertIsNone(piw["I/F"]["created_at"].date)
+            self.assertIsNone(piw["I/F"]["nw"]["created_at"].datetime)
 
             # This tests stepping another next item
             self.assertEqual(piw["I/F"]["nw"]["vlan"].item, item_vlan1)

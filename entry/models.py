@@ -2784,15 +2784,25 @@ class PrefetchedItemWrapper(object):
     def value(self) -> str:
         if self.attrv is not None:
             return self.attrv.value
-
         return ""
 
     @property
     def boolean(self) -> bool:
         if self.attrv is not None:
             return self.attrv.boolean
-
         return False
+
+    @property
+    def date(self) -> date | None:
+        if self.attrv is not None:
+            return self.attrv.date
+        return None
+
+    @property
+    def datetime(self) -> datetime | None:
+        if self.attrv is not None:
+            return self.attrv.datetime
+        return None
 
 
 class ItemWalker(object):
