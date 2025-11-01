@@ -327,6 +327,258 @@ urlpatterns = [
 ]
 ```
 
+#### 2.5 Add Asynchronous Job Tasks (Optional)
+
+If your plugin needs to run long-running operations (e.g., data export, batch processing, external API calls), you can define Celery job tasks that integrate with Airone's Job system.
+
+**Step 1: Create config.py with operation definitions**
+
+```python
+# my_first_plugin/config.py
+import enum
+from airone.lib.plugin_task import PluginTaskConfig
+
+class MyFirstPluginOperation(int, enum.Enum):
+    """Operation offsets for job tasks"""
+    PROCESS_DATA = 0  # offset within allocated range
+
+PLUGIN_TASK_CONFIG = PluginTaskConfig(
+    plugin_id="my-first-plugin",
+    module_path="my_first_plugin.tasks",
+    tasks={
+        "process_data": (MyFirstPluginOperation.PROCESS_DATA, "process_data"),
+    },
+    # Optional: specify task behavior
+    cancelable_operations=["process_data"],  # Allow user cancellation
+)
+```
+
+**Step 2: Create tasks.py with task implementation**
+
+```python
+# my_first_plugin/tasks.py
+import logging
+import time
+from airone.celery import app
+from airone.lib.plugin_task import register_plugin_job_task
+from job.models import Job, JobStatus
+from my_first_plugin.config import MyFirstPluginOperation
+
+logger = logging.getLogger(__name__)
+
+@register_plugin_job_task(MyFirstPluginOperation.PROCESS_DATA)
+@app.task(bind=True)
+def process_data(self, job_id: int):
+    """Example background job task"""
+    try:
+        job = Job.objects.get(id=job_id)
+    except Job.DoesNotExist:
+        logger.error(f"Job {job_id} not found")
+        return
+
+    # Check if job was canceled by user
+    if job.is_canceled():
+        logger.info(f"Job {job_id} was canceled")
+        return
+
+    # Check if job is ready to proceed
+    if not job.proceed_if_ready():
+        logger.warning(f"Job {job_id} is not ready")
+        return
+
+    # Update status to processing
+    job.update(JobStatus.PROCESSING)
+
+    try:
+        # Get job parameters
+        params = job.params
+        input_data = params.get("input")
+
+        logger.info(f"Processing job {job_id} with input: {input_data}")
+
+        # Example: Simulate long-running operation
+        time.sleep(5)
+
+        # Update status to done
+        job.update(JobStatus.DONE)
+        logger.info(f"Job {job_id} completed successfully")
+
+    except Exception as e:
+        logger.error(f"Job {job_id} failed: {e}", exc_info=True)
+        job.update(JobStatus.ERROR)
+```
+
+**Step 3: Register tasks in apps.py**
+
+Update your apps.py to register the task configuration:
+
+```python
+# my_first_plugin/apps.py
+import logging
+from django.apps import AppConfig
+from airone.lib.plugin_task import PluginTaskRegistry
+
+logger = logging.getLogger(__name__)
+
+class MyFirstPluginConfig(AppConfig):
+    default_auto_field = "django.db.models.BigAutoField"
+    name = "my_first_plugin"
+
+    def ready(self):
+        """Called when Django app is ready"""
+        from my_first_plugin.config import PLUGIN_TASK_CONFIG
+
+        # Register plugin tasks
+        PluginTaskRegistry.register(PLUGIN_TASK_CONFIG)
+        logger.info("Plugin tasks registered successfully")
+```
+
+**Step 4: Create API endpoint to trigger job**
+
+Add a new view to trigger the background job:
+
+```python
+# my_first_plugin/api_v2/views.py (add this class)
+from rest_framework.response import Response
+from rest_framework import status
+from pagoda_plugin_sdk import PluginAPIViewMixin
+from airone.lib.plugin_task import PluginTaskRegistry
+from job.models import Job
+
+class ProcessDataView(PluginAPIViewMixin):
+    def post(self, request):
+        """Trigger background data processing job"""
+        try:
+            # Get operation_id from registry
+            operation_id = PluginTaskRegistry.get_operation_id(
+                "my-first-plugin",
+                "process_data"
+            )
+
+            # Create new job
+            job = Job._create_new_job(
+                user=request.user,
+                target=None,
+                operation=operation_id,
+                text="Processing data",
+                params={
+                    "input": request.data.get("input"),
+                },
+            )
+
+            # Queue job for execution
+            job.run()
+
+            return Response({
+                "message": "Task queued successfully",
+                "job_id": job.id,
+            }, status=status.HTTP_201_CREATED)
+
+        except Exception as e:
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+```
+
+Update urls.py to add the new endpoint:
+
+```python
+# my_first_plugin/api_v2/urls.py
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path("test/", views.MyFirstView.as_view(), name="test"),
+    path("hello/", views.MyFirstView.as_view(), name="hello"),
+    path("process/", views.ProcessDataView.as_view(), name="process"),  # New
+]
+```
+
+**Step 5: Configure operation_id range in settings**
+
+In Airone's settings, allocate an operation_id range for your plugin:
+
+```python
+# In airone/settings_common.py or set as environment variable
+PLUGIN_OPERATION_ID_CONFIG = {
+    "my-first-plugin": (6000, 6099),  # Allocate 100 operation IDs
+}
+```
+
+Or set via environment variable:
+
+```bash
+export PLUGIN_OPERATION_ID_CONFIG='{"my-first-plugin": [6000, 6099]}'
+```
+
+**Step 6: Test with Celery worker**
+
+To test job tasks, you need to run both a Celery worker and the Django server:
+
+```bash
+# Terminal 1: Start Celery worker
+poetry run celery -A airone worker -l info
+
+# Terminal 2: Start Django server
+ENABLED_PLUGINS=my-first python manage.py runserver
+
+# Terminal 3: Test the job endpoint
+curl -X POST http://localhost:8080/api/v2/plugins/my-first/process/ \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Token YOUR_TOKEN" \
+  -d '{"input": "test data"}'
+```
+
+**Expected Response:**
+
+```json
+{
+  "message": "Task queued successfully",
+  "job_id": 123
+}
+```
+
+**Check job status:**
+
+```bash
+curl http://localhost:8080/api/v2/jobs/123/ \
+  -H "Authorization: Token YOUR_TOKEN"
+```
+
+**Response:**
+
+```json
+{
+  "id": 123,
+  "user": {"id": 1, "username": "admin"},
+  "text": "Processing data",
+  "status": "DONE",
+  "operation": 6000,
+  "created_at": "2025-11-01T12:00:00Z",
+  "updated_at": "2025-11-01T12:00:05Z"
+}
+```
+
+**Troubleshooting Job Tasks:**
+
+| Issue | Cause | Solution |
+|-------|-------|----------|
+| Task not executing | Celery worker not running | Start Celery worker: `poetry run celery -A airone worker -l info` |
+| Operation ID error | Range not configured | Add plugin to `PLUGIN_OPERATION_ID_CONFIG` |
+| Import error | Registry not called | Ensure `PluginTaskRegistry.register()` is in `apps.py` ready() |
+| Job status stuck at PREPARING | Task handler not found | Check decorator `@register_plugin_job_task(offset)` is present |
+
+**Job Task Best Practices:**
+
+1. **Always check job status**: Use `job.is_canceled()` and `job.proceed_if_ready()`
+2. **Update status appropriately**: PROCESSING when starting, DONE/ERROR when finished
+3. **Handle errors gracefully**: Catch exceptions and update to ERROR status
+4. **Use meaningful job text**: Help users understand what the job is doing
+5. **Test with Celery**: Always test with a running Celery worker
+
+For more details on job tasks, see the [Plugin System Documentation](plugin_system.md#asynchronous-job-tasks).
+
 ### Step 3: Plugin Testing & Installation
 
 #### 3.1 Install Your Plugin in Development Mode
