@@ -70,11 +70,16 @@ class Common(Configuration):
         "category",
     ]
 
-    # Existing custom_view support
+    # Existing custom_view support (maintained with legacy CUSTOM_TASKS)
     if os.path.exists(BASE_DIR + "/custom_view"):
         INSTALLED_APPS.append("custom_view")
 
-    # Plugin apps will be added dynamically during runtime
+    # Auto-add plugins from ENABLED_PLUGINS
+    # Convention: "foo-bar" → "pagoda_foo_bar_plugin"
+    for plugin_name in ENABLED_PLUGINS:
+        plugin_module = "pagoda_" + plugin_name.replace("-", "_") + "_plugin"
+        if plugin_module not in INSTALLED_APPS:
+            INSTALLED_APPS.append(plugin_module)
 
     MIDDLEWARE = [
         "django.middleware.security.SecurityMiddleware",
@@ -502,3 +507,20 @@ class Common(Configuration):
     MAX_USERS: int | None = env.int("AIRONE_MAX_USERS", None)
     MAX_GROUPS: int | None = env.int("AIRONE_MAX_GROUPS", None)
     MAX_ROLES: int | None = env.int("AIRONE_MAX_ROLES", None)
+
+    # Plugin job operation ID range assignment
+    # Changing an assigned range will break task history behavior, so modify existing settings
+    # carefully
+    # Format: "plugin-id": (range_start, range_end)
+    # Example: "hello-world": (5000, 5099) → reserves 100 task slots
+    # Note: custom_view is managed by the legacy CUSTOM_TASKS constant and not listed here
+    # Environment variable example: PLUGIN_OPERATION_ID_CONFIG='{"hello-world": [5000, 5099]}'
+    _raw_plugin_config = json.loads(
+        env.str(
+            "PLUGIN_OPERATION_ID_CONFIG",
+            json.dumps({}),
+        )
+    )
+    PLUGIN_OPERATION_ID_CONFIG: dict[str, tuple[int, int]] = {
+        plugin_id: tuple(range_values) for plugin_id, range_values in _raw_plugin_config.items()
+    }

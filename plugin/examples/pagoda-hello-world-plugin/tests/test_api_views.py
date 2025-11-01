@@ -508,5 +508,85 @@ class TestEntryDetailView(TestCase):
         self.assertIn("error", response.data)
 
 
+class TestHelloViewCeleryTask(TestCase):
+    """Test cases for HelloView Celery task integration"""
+
+    def setUp(self):
+        """Set up test fixtures"""
+        self.factory = RequestFactory()
+        self.view = HelloView.as_view()
+
+    @patch("pagoda_hello_world_plugin.api_v2.views.PluginTaskRegistry")
+    @patch("pagoda_hello_world_plugin.api_v2.views.Job")
+    def test_post_queues_task_successfully(self, mock_job_class, mock_registry):
+        """Test that POST request queues a Celery task"""
+        mock_job = Mock()
+        mock_job.id = 1
+        mock_job.status = 1
+        mock_job_class._create_new_job.return_value = mock_job
+
+        mock_registry.get_operation_id.return_value = 5001
+
+        request = self.factory.post(
+            "/api/v2/plugins/hello-world-plugin/hello/",
+            data={"message": "Test message"},
+            content_type="application/json",
+        )
+        request.user = Mock()
+        request.user.username = "test_user"
+        request.user.is_authenticated = True
+
+        response = self.view(request)
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertIn("job_id", response.data)
+        self.assertEqual(response.data["job_id"], 1)
+        self.assertIn("task_message", response.data)
+        self.assertEqual(response.data["task_message"], "Test message")
+
+        mock_job_class._create_new_job.assert_called_once()
+        mock_job.run.assert_called_once()
+
+    @patch("pagoda_hello_world_plugin.api_v2.views.PluginTaskRegistry")
+    @patch("pagoda_hello_world_plugin.api_v2.views.Job")
+    def test_post_with_registry_error(self, mock_job_class, mock_registry):
+        """Test error handling when PluginTaskRegistry fails"""
+        mock_registry.get_operation_id.side_effect = ValueError("Operation not found")
+
+        request = self.factory.post(
+            "/api/v2/plugins/hello-world-plugin/hello/",
+            data={"message": "Test"},
+            content_type="application/json",
+        )
+        request.user = Mock()
+        request.user.is_authenticated = True
+
+        response = self.view(request)
+
+        self.assertEqual(response.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR)
+        self.assertIn("error", response.data)
+        self.assertIn("Failed to queue task", response.data["error"])
+
+    @patch("pagoda_hello_world_plugin.api_v2.views.PluginTaskRegistry")
+    @patch("pagoda_hello_world_plugin.api_v2.views.Job")
+    def test_post_with_job_creation_error(self, mock_job_class, mock_registry):
+        """Test error handling when Job creation fails"""
+        mock_registry.get_operation_id.return_value = 5001
+        mock_job_class._create_new_job.side_effect = Exception("Database error")
+
+        request = self.factory.post(
+            "/api/v2/plugins/hello-world-plugin/hello/",
+            data={"message": "Test"},
+            content_type="application/json",
+        )
+        request.user = Mock()
+        request.user.is_authenticated = True
+
+        response = self.view(request)
+
+        self.assertEqual(response.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR)
+        self.assertIn("error", response.data)
+
+
 if __name__ == "__main__":
     unittest.main()
