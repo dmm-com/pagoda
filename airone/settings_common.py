@@ -508,11 +508,19 @@ class Common(Configuration):
     MAX_GROUPS: int | None = env.int("AIRONE_MAX_GROUPS", None)
     MAX_ROLES: int | None = env.int("AIRONE_MAX_ROLES", None)
 
-    # プラグインのジョブ操作 ID レンジ割り当て
-    # 一度割り当てたレンジを変更するとタスク履歴の挙動が壊れるため、既存設定の変更は慎重に
-    # フォーマット: "plugin-id": (range_start, range_end)
-    # 例: "hello-world": (5000, 5099) → 100個のタスク分を確保
-    # Note: custom_view は従来の CUSTOM_TASKS 定数で管理されているため、ここには記載しない
+    # Plugin job operation ID range assignment
+    # Changing an assigned range will break task history behavior, so modify existing settings
+    # carefully
+    # Format: "plugin-id": (range_start, range_end)
+    # Example: "hello-world": (5000, 5099) → reserves 100 task slots
+    # Note: custom_view is managed by the legacy CUSTOM_TASKS constant and not listed here
+    # Environment variable example: PLUGIN_OPERATION_ID_CONFIG='{"hello-world": [5000, 5099]}'
+    _raw_plugin_config = json.loads(
+        env.str(
+            "PLUGIN_OPERATION_ID_CONFIG",
+            json.dumps({}),
+        )
+    )
     PLUGIN_OPERATION_ID_CONFIG: dict[str, tuple[int, int]] = {
-        "hello-world": (5000, 5099),
+        plugin_id: tuple(range_values) for plugin_id, range_values in _raw_plugin_config.items()
     }
