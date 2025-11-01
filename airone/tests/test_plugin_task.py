@@ -94,7 +94,7 @@ class TestPluginTaskRegistry(TestCase):
         with self.assertRaises(ValueError) as ctx:
             PluginTaskRegistry.register(config)
 
-        self.assertIn("既に登録されています", str(ctx.exception))
+        self.assertIn("is already registered", str(ctx.exception))
 
     def test_get_all_configs(self):
         """Get all plugin configurations"""
@@ -149,7 +149,7 @@ class TestPluginTaskRegistry(TestCase):
                 PluginTaskRegistry.validate_all()
 
             self.assertIn("missing_plugin", str(ctx.exception))
-            self.assertIn("登録されていません", str(ctx.exception))
+            self.assertIn("not registered", str(ctx.exception))
 
     def test_validate_all_offset_exceeds_range(self):
         """Offset exceeds range"""
@@ -168,7 +168,7 @@ class TestPluginTaskRegistry(TestCase):
             with self.assertRaises(ImproperlyConfigured) as ctx:
                 PluginTaskRegistry.validate_all()
 
-            self.assertIn("レンジサイズ", str(ctx.exception))
+            self.assertIn("exceeds range size", str(ctx.exception))
 
     def test_validate_all_invalid_operation_id_range(self):
         """Invalid operation_id range"""
@@ -187,7 +187,7 @@ class TestPluginTaskRegistry(TestCase):
             with self.assertRaises(ImproperlyConfigured) as ctx:
                 PluginTaskRegistry.validate_all()
 
-            self.assertIn("不正です", str(ctx.exception))
+            self.assertIn("is invalid", str(ctx.exception))
 
     def test_validate_all_custom_view_range_conflict(self):
         """Conflict with custom_view reserved range"""
@@ -206,7 +206,7 @@ class TestPluginTaskRegistry(TestCase):
             with self.assertRaises(ImproperlyConfigured) as ctx:
                 PluginTaskRegistry.validate_all()
 
-            self.assertIn("不正です", str(ctx.exception))
+            self.assertIn("is invalid", str(ctx.exception))
 
     def test_validate_all_duplicate_operation_id(self):
         """Duplicate operation_id when ranges overlap between plugins"""
@@ -232,7 +232,7 @@ class TestPluginTaskRegistry(TestCase):
             with self.assertRaises(ImproperlyConfigured) as ctx:
                 PluginTaskRegistry.validate_all()
 
-            self.assertIn("既に他の操作で使用されています", str(ctx.exception))
+            self.assertIn("is already in use", str(ctx.exception))
 
     @override_settings(
         PLUGIN_OPERATION_ID_CONFIG={
@@ -276,7 +276,7 @@ class TestPluginTaskRegistry(TestCase):
         with self.assertRaises(ValueError) as ctx:
             PluginTaskRegistry.get_operation_id("test_plugin", "unknown_operation")
 
-        self.assertIn("見つかりません", str(ctx.exception))
+        self.assertIn("not found", str(ctx.exception))
 
     @override_settings(
         PLUGIN_OPERATION_ID_CONFIG={
