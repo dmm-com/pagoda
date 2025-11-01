@@ -6,15 +6,15 @@ Demonstrates how external plugins can create API endpoints using Pagoda's core l
 
 from datetime import datetime
 
-from airone.lib.plugin_task import PluginTaskRegistry
-from job.models import Job
-
 # Import from Pagoda Plugin SDK libraries (fully independent)
 from pagoda_plugin_sdk import PluginAPIViewMixin
 from pagoda_plugin_sdk.models import Entity, Entry
 from rest_framework import status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
+
+from airone.lib.plugin_task import PluginTaskRegistry
+from job.models import Job
 
 
 class HelloView(PluginAPIViewMixin):

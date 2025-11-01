@@ -8,8 +8,9 @@ import logging
 
 from django.apps import AppConfig
 
-from .config import PLUGIN_TASK_CONFIG
 from airone.lib.plugin_task import PluginTaskRegistry
+
+from .config import PLUGIN_TASK_CONFIG
 
 
 class HelloWorldPluginConfig(AppConfig):

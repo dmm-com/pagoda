@@ -2,8 +2,8 @@
 Tests for Hello World Plugin Celery tasks
 """
 
-from unittest.mock import Mock, patch, call
 import inspect
+from unittest.mock import Mock, call, patch
 
 from django.test import TestCase
 
