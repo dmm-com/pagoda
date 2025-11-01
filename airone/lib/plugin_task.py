@@ -15,7 +15,7 @@ Operation ID Allocation Ranges:
 
 from dataclasses import dataclass, field
 from importlib import import_module
-from typing import Any, Callable
+from typing import Any, Callable, TypeAlias
 
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
@@ -25,7 +25,7 @@ from airone.lib.log import Logger
 logger = Logger
 
 
-TaskHandler: Callable[[Any, Any], Any] = Callable[[Any, Any], Any]
+TaskHandler: TypeAlias = Callable[[Any, Any], Any]
 
 
 @dataclass
@@ -346,7 +346,7 @@ def register_plugin_job_task(offset: int) -> Callable:
     """
 
     def decorator(func: TaskHandler) -> TaskHandler:
-        func._offset = offset
+        func._offset = offset  # type: ignore[attr-defined]
         logger.info(f"Plugin task '{func.__module__}.{func.__name__}' (offset={offset}) decorated")
         return func
 

@@ -125,7 +125,7 @@ class Job(models.Model):
     _TASK_MODULE: dict[str, Any] = {}
 
     # This hash table describes operation status value and operation processing
-    _METHOD_TABLE: dict[JobOperation | JobOperationCustom, TaskHandler] = {}
+    _METHOD_TABLE: dict[int, TaskHandler] = {}
 
     # In some jobs sholdn't make user aware of existence because of user experience
     # (e.g. re-registrating elasticsearch data of entries which refer to changed name entry).
@@ -369,7 +369,7 @@ class Job(models.Model):
         return kls._TASK_MODULE[component]
 
     @classmethod
-    def method_table(kls) -> dict[JobOperation | JobOperationCustom, TaskHandler]:
+    def method_table(kls) -> dict[int, TaskHandler]:
         # Legacy custom_view support (backward compatibility)
         for operation_num, task in CUSTOM_TASKS.items():
             if operation_num not in kls._METHOD_TABLE:
@@ -393,7 +393,7 @@ class Job(models.Model):
 
     @classmethod
     def register_method_table(
-        kls, operation: JobOperation | JobOperationCustom, method: TaskHandler
+        kls, operation: int | JobOperation | JobOperationCustom, method: TaskHandler
     ):
         # Raise error if trying to register a handler that's already registered
         if operation in kls._METHOD_TABLE:
