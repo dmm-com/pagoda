@@ -6227,3 +6227,23 @@ class ViewTest(BaseViewTest):
         self.assertIsInstance(response_data, list)
         self.assertEqual(len(response_data), 1)
         self.assertIn("エイリアスで使用されています", response_data[0]["message"])
+
+    @patch("entry.tasks.bulk_update_entries.delay", Mock(side_effect=tasks.bulk_update_entries))
+    def test_bulk_update_items(self):
+        # Create items for bulk updating
+        items = [self.add_entry(self.user, "item-%s" % i, self.entity) for i in range(3)]
+
+        # Make parameters for sending server
+        attrs = {name: self.entity.attrs.get(name=name, is_active=True) for name in ["val"]}
+        params = {
+            "item_ids": [x.id for x in items],
+            "attrs": [{"id": attrs["val"].id, "value": "updated"}],
+        }
+        resp = self.client.put(
+            "/entry/api/v2/bulk/",
+            params,
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 202)
+
+        # TODO: check items are pudate expectedly

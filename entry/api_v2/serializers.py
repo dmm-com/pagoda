@@ -7,6 +7,7 @@ from drf_spectacular.utils import extend_schema_field, extend_schema_serializer
 from pydantic import BaseModel, RootModel
 from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied, ValidationError
+from rest_framework.decorators import api_view
 from typing_extensions import TypedDict
 
 from acl.models import ACLBase
@@ -494,6 +495,11 @@ class EntryUpdateData(TypedDict, total=False):
     attrs: list[AttributeDataSerializer]
     delay_trigger: bool
     call_stacks: list[int]
+
+
+class EntryBulkUpdateSerializer(serializers.Serializer):
+    item_ids = serializers.ListField(child=serializers.IntegerField(), write_only=True)
+    attrs = serializers.ListField(child=AttributeDataSerializer(), write_only=True, required=False)
 
 
 class EntryUpdateSerializer(EntryBaseSerializer):

@@ -11,6 +11,7 @@ from rest_framework import generics, serializers, status, viewsets
 from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import BasePermission, IsAuthenticated
+from rest_framework.decorators import api_view
 from rest_framework.request import Request
 from rest_framework.response import Response
 
@@ -54,6 +55,7 @@ from entry.api_v2.serializers import (
     EntrySelfHistoryRestoreSerializer,
     EntrySelfHistorySerializer,
     EntryUpdateSerializer,
+    EntryBulkUpdateSerializer,
     GetEntryAttrReferralSerializer,
 )
 from entry.models import AliasEntry, Attribute, AttributeValue, Entry
@@ -909,6 +911,21 @@ class EntryAttributeValueRestoreAPI(generics.UpdateAPIView):
     queryset = AttributeValue.objects.all()
     serializer_class = EntryAttributeValueRestoreSerializer
     permission_classes = [IsAuthenticated]
+
+
+class EntryBulkUpdateAPI(generics.UpdateAPIView):
+    serializer_class = EntryBulkUpdateSerializer
+
+    def update(self, request: Request, *args, **kwargs) -> Response:
+        user: User = request.user
+
+        serializer = EntryBulkUpdateSerializer(data=request.data, context={"_user": user})
+        serializer.is_valid(raise_exception=True)
+
+        job = Job.new_bulk_edit_entry_v2(user, params=request.data)
+        job.run()
+
+        return Response(status=status.HTTP_202_ACCEPTED)
 
 
 @extend_schema(

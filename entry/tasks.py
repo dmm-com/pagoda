@@ -954,3 +954,11 @@ def delete_entry_v2(self, job: Job) -> JobStatus:
         custom_view.call_custom("after_delete_entry_v2", entry.schema.name, job.user, entry)
 
     return JobStatus.DONE
+
+
+@register_job_task(JobOperation.BULK_EDIT_ENTRY)
+@app.task(bind=True)
+@may_schedule_until_job_is_ready
+def bulk_update_entries(self, job: Job) -> JobStatus:
+    # TODO: implement it
+    return JobStatus.DONE

@@ -84,6 +84,7 @@ class JobOperation(BaseIntEnum):
     EDIT_ENTRY_V2 = 28
     DELETE_ENTRY_V2 = 29
     IMPORT_ROLE_V2 = 30
+    BULK_EDIT_ENTRY = 31
 
 
 @enum.unique
@@ -672,4 +673,10 @@ class Job(models.Model):
     def new_role_import_v2(kls, user: User, text="", params: dict | None = None) -> "Job":
         return kls._create_new_job(
             user=user, target=None, operation=JobOperation.IMPORT_ROLE_V2, text=text, params=params
+        )
+
+    @classmethod
+    def new_bulk_edit_entry_v2(kls, user: User, params: dict = {}) -> "Job":
+        return kls._create_new_job(
+            user=user, target=None, operation=JobOperation.BULK_EDIT_ENTRY, text="", params=params
         )
