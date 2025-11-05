@@ -7,7 +7,6 @@ from drf_spectacular.utils import extend_schema_field, extend_schema_serializer
 from pydantic import BaseModel, RootModel
 from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied, ValidationError
-from rest_framework.decorators import api_view
 from typing_extensions import TypedDict
 
 from acl.models import ACLBase

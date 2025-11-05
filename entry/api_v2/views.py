@@ -11,7 +11,6 @@ from rest_framework import generics, serializers, status, viewsets
 from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import BasePermission, IsAuthenticated
-from rest_framework.decorators import api_view
 from rest_framework.request import Request
 from rest_framework.response import Response
 
@@ -46,6 +45,7 @@ from entry.api_v2.serializers import (
     EntryAliasSerializer,
     EntryAttributeValueRestoreSerializer,
     EntryBaseSerializer,
+    EntryBulkUpdateSerializer,
     EntryCopySerializer,
     EntryExportSerializer,
     EntryHistoryAttributeValueSerializer,
@@ -55,7 +55,6 @@ from entry.api_v2.serializers import (
     EntrySelfHistoryRestoreSerializer,
     EntrySelfHistorySerializer,
     EntryUpdateSerializer,
-    EntryBulkUpdateSerializer,
     GetEntryAttrReferralSerializer,
 )
 from entry.models import AliasEntry, Attribute, AttributeValue, Entry

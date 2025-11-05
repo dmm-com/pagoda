@@ -6234,10 +6234,16 @@ class ViewTest(BaseViewTest):
         items = [self.add_entry(self.user, "item-%s" % i, self.entity) for i in range(3)]
 
         # Make parameters for sending server
-        attrs = {name: self.entity.attrs.get(name=name, is_active=True) for name in ["val"]}
+        attrs = {
+            name: self.entity.attrs.get(name=name, is_active=True)
+            for name in ["val", "ref"]
+        }
         params = {
             "item_ids": [x.id for x in items],
-            "attrs": [{"id": attrs["val"].id, "value": "updated"}],
+            "attrs": [
+                {"id": attrs["val"].id, "value": "updated"},
+                {"id": attrs["ref"].id, "value": self.ref_entry.id},
+            ],
         }
         resp = self.client.put(
             "/entry/api/v2/bulk/",
@@ -6246,4 +6252,8 @@ class ViewTest(BaseViewTest):
         )
         self.assertEqual(resp.status_code, 202)
 
-        # TODO: check items are pudate expectedly
+        # Check items are pudate expectedly
+        self.assertEqual(len(items), 3)
+        for item in items:
+            self.assertEqual(item.get_attrv("val").value, "updated")
+            self.assertEqual(item.get_attrv_item("ref"), self.ref_entry)

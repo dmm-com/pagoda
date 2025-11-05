@@ -960,5 +960,18 @@ def delete_entry_v2(self, job: Job) -> JobStatus:
 @app.task(bind=True)
 @may_schedule_until_job_is_ready
 def bulk_update_entries(self, job: Job) -> JobStatus:
-    # TODO: implement it
+    job_params = json.loads(job.params)
+
+    # update multiple items with specified attribute values
+    for item in Entry.objects.filter(id__in=job_params.get("item_ids")):
+        params = {
+            "name": item.name,
+            "attrs": job_params.get("attrs", []),
+        }
+        serializer = EntryUpdateSerializer(
+            instance=item, data=params, context={"_user": job.user}
+        )
+        if serializer.is_valid():
+            serializer.update(item, serializer.validated_data)
+
     return JobStatus.DONE
