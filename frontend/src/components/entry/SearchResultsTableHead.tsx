@@ -30,6 +30,7 @@ import {
 } from "react";
 import { useLocation, useNavigate } from "react-router";
 
+import { AdvancedSearchEditModal } from "./AdvancedSearchEditModal";
 import { AdvancedSearchJoinModal } from "./AdvancedSearchJoinModal";
 import { SearchResultControlMenu } from "./SearchResultControlMenu";
 import { SearchResultControlMenuForEntry } from "./SearchResultControlMenuForEntry";
@@ -90,6 +91,13 @@ export const SearchResultsTableHead: FC<Props> = ({
   const navigate = useNavigate();
   const [checked, setChecked] = useState(false);
 
+  /* These are used for AdvancedSearchEditModal component */
+  const [openEditModal, setOpenEditModal] = useState(false);
+  const [editTargetAttrname, setEditTargetAttrname] = useState("");
+  const [editTargetAttrinfo, setEditTargetAttrinfo] = useState(
+    {} as AttrFilter,
+  );
+
   const [hintEntry, setHintEntry] = useState<EntryHint>(
     defaultEntryFilter ?? {
       filterKey: EntryHintFilterKeyEnum.CLEARED,
@@ -146,57 +154,57 @@ export const SearchResultsTableHead: FC<Props> = ({
 
   const handleSelectFilterConditions =
     (attrName?: string) =>
-    (
-      attrFilter?: AttrFilter,
-      overwriteReferral?: string,
-      overwriteHintEntry?: EntryHint,
-    ) => {
-      const _attrsFilter =
-        attrName != null && attrFilter != null
-          ? { ...attrsFilter, [attrName]: attrFilter }
-          : attrsFilter;
+      (
+        attrFilter?: AttrFilter,
+        overwriteReferral?: string,
+        overwriteHintEntry?: EntryHint,
+      ) => {
+        const _attrsFilter =
+          attrName != null && attrFilter != null
+            ? { ...attrsFilter, [attrName]: attrFilter }
+            : attrsFilter;
 
-      const effectiveHintEntry = overwriteHintEntry ?? hintEntry;
-      const hintEntryParam =
-        effectiveHintEntry.keyword && effectiveHintEntry.keyword.length > 0
-          ? {
+        const effectiveHintEntry = overwriteHintEntry ?? hintEntry;
+        const hintEntryParam =
+          effectiveHintEntry.keyword && effectiveHintEntry.keyword.length > 0
+            ? {
               filterKey: effectiveHintEntry.filterKey,
               keyword: effectiveHintEntry.keyword,
             }
-          : undefined;
+            : undefined;
 
-      const newParams = formatAdvancedSearchParams({
-        attrsFilter: Object.keys(_attrsFilter)
-          .filter((k) => _attrsFilter[k]?.joinedAttrname === undefined)
-          .reduce((a, k) => ({ ...a, [k]: _attrsFilter[k] }), {}),
-        referralName: overwriteReferral ?? referralFilter,
-        hintEntry: hintEntryParam,
-        baseParams: new URLSearchParams(location.search),
-        joinAttrs: Object.keys(_attrsFilter)
-          .filter((k) => _attrsFilter[k]?.joinedAttrname !== undefined)
-          .map((k) => ({
-            name: _attrsFilter[k]?.baseAttrname ?? "",
-            attrinfo: Object.keys(_attrsFilter)
-              .filter(
-                (j) =>
-                  _attrsFilter[j].baseAttrname === _attrsFilter[k].baseAttrname,
-              )
-              .map((j) => ({
-                name: _attrsFilter[j]?.joinedAttrname ?? "",
-                filterKey: _attrsFilter[j].filterKey,
-                keyword: _attrsFilter[j].keyword,
-              })),
-          }))
-          // This removes duplicates
-          .filter((v, i, a) => a.findIndex((t) => t.name === v.name) === i),
-      });
+        const newParams = formatAdvancedSearchParams({
+          attrsFilter: Object.keys(_attrsFilter)
+            .filter((k) => _attrsFilter[k]?.joinedAttrname === undefined)
+            .reduce((a, k) => ({ ...a, [k]: _attrsFilter[k] }), {}),
+          referralName: overwriteReferral ?? referralFilter,
+          hintEntry: hintEntryParam,
+          baseParams: new URLSearchParams(location.search),
+          joinAttrs: Object.keys(_attrsFilter)
+            .filter((k) => _attrsFilter[k]?.joinedAttrname !== undefined)
+            .map((k) => ({
+              name: _attrsFilter[k]?.baseAttrname ?? "",
+              attrinfo: Object.keys(_attrsFilter)
+                .filter(
+                  (j) =>
+                    _attrsFilter[j].baseAttrname === _attrsFilter[k].baseAttrname,
+                )
+                .map((j) => ({
+                  name: _attrsFilter[j]?.joinedAttrname ?? "",
+                  filterKey: _attrsFilter[j].filterKey,
+                  keyword: _attrsFilter[j].keyword,
+                })),
+            }))
+            // This removes duplicates
+            .filter((v, i, a) => a.findIndex((t) => t.name === v.name) === i),
+        });
 
-      // simply reload with the new params
-      navigate({
-        pathname: location.pathname,
-        search: "?" + newParams.toString(),
-      });
-    };
+        // simply reload with the new params
+        navigate({
+          pathname: location.pathname,
+          search: "?" + newParams.toString(),
+        });
+      };
 
   const handleUpdateAttrFilter =
     (attrName: string) => (attrFilter: AttrFilter) => {
@@ -253,6 +261,7 @@ export const SearchResultsTableHead: FC<Props> = ({
                   handleClose={() => setEntryMenuEls(null)}
                   hintEntryDispatcher={hintEntryDispatcher}
                   handleSelectFilterConditions={handleSelectFilterConditions()}
+                  setOpenEditModal={setOpenEditModal}
                 />
               </>
             )}
@@ -307,6 +316,7 @@ export const SearchResultsTableHead: FC<Props> = ({
                     </StyledIconButton>
                   </Tooltip>
                   <SearchResultControlMenu
+                    attrname={attrName}
                     attrFilter={attrsFilter[attrName]}
                     anchorElem={attributeMenuEls[attrName]}
                     handleClose={() =>
@@ -320,6 +330,9 @@ export const SearchResultsTableHead: FC<Props> = ({
                     )}
                     handleUpdateAttrFilter={handleUpdateAttrFilter(attrName)}
                     attrType={attrTypes[attrName]}
+                    setOpenEditModal={setOpenEditModal}
+                    setEditTargetAttrname={setEditTargetAttrname}
+                    setEditTargetAttrinfo={setEditTargetAttrinfo}
                   />
                 </>
               )}
@@ -363,6 +376,13 @@ export const SearchResultsTableHead: FC<Props> = ({
           </StyledTableCell>
         )}
       </TableRow>
+
+      <AdvancedSearchEditModal
+        openModal={openEditModal}
+        handleClose={() => setOpenEditModal(false)}
+        targetAttrname={editTargetAttrname}
+        targetAttrinfo={editTargetAttrinfo}
+      ></AdvancedSearchEditModal>
     </TableHead>
   );
 };

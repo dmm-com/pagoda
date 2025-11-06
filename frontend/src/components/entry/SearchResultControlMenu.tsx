@@ -3,6 +3,7 @@ import {
   EntryAttributeTypeTypeEnum,
 } from "@dmm-com/airone-apiclient-typescript-fetch";
 import Check from "@mui/icons-material/Check";
+import EditNoteIcon from "@mui/icons-material/EditNote";
 import {
   Box,
   Button,
@@ -40,21 +41,29 @@ const StyledTypography = styled(Typography)(({}) => ({
 }));
 
 interface Props {
+  attrname: string;
   attrFilter: AttrFilter;
   anchorElem: HTMLButtonElement | null;
   handleUpdateAttrFilter: (filter: AttrFilter) => void;
   handleSelectFilterConditions: (attrFilter: AttrFilter) => void;
   handleClose: () => void;
   attrType?: number;
+  setOpenEditModal: (willOpen: boolean) => void;
+  setEditTargetAttrname?: (attrname: string) => void;
+  setEditTargetAttrinfo?: (attrninfo: AttrFilter) => void;
 }
 
 export const SearchResultControlMenu: FC<Props> = ({
+  attrname,
   attrFilter,
   anchorElem,
   handleUpdateAttrFilter,
   handleSelectFilterConditions,
   handleClose,
   attrType,
+  setOpenEditModal,
+  setEditTargetAttrname,
+  setEditTargetAttrinfo,
 }) => {
   const handleClick = (key: AdvancedSearchResultAttrInfoFilterKeyEnum) => {
     // If the selected filter is the same, remove the filter.
@@ -134,7 +143,7 @@ export const SearchResultControlMenu: FC<Props> = ({
       anchorEl={anchorElem}
     >
       <Box pl="16px" py="8px">
-        <Typography>絞り込み条件</Typography>
+        <Typography>絞り込み条件(01)</Typography>
       </Box>
       <StyledBox>
         <Button
@@ -534,6 +543,24 @@ export const SearchResultControlMenu: FC<Props> = ({
             </Box>
           </Box>
         )}
+      <Divider />
+      <Box pl="16px" py="8px">
+        <Typography>その他機能</Typography>
+      </Box>
+      <StyledBox>
+        <Button
+          variant="outlined"
+          fullWidth
+          startIcon={<EditNoteIcon />}
+          onClick={() => {
+            setEditTargetAttrname && setEditTargetAttrname(attrname);
+            setEditTargetAttrinfo && setEditTargetAttrinfo(attrFilter);
+            setOpenEditModal(true);
+          }}
+        >
+          <Typography>属性を一括更新</Typography>
+        </Button>
+      </StyledBox>
     </Menu>
   );
 };

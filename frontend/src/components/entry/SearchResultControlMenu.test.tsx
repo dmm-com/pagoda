@@ -11,6 +11,7 @@ import { TestWrapper } from "TestWrapper";
 
 describe("SearchResultControlMenu", () => {
   const defaultProps = {
+    attrname: "testAttr",
     attrFilter: {
       filterKey: AdvancedSearchResultAttrInfoFilterKeyEnum.CLEARED,
       keyword: "",
@@ -19,6 +20,7 @@ describe("SearchResultControlMenu", () => {
     handleUpdateAttrFilter: jest.fn(),
     handleSelectFilterConditions: jest.fn(),
     handleClose: jest.fn(),
+    setOpenEditModal: jest.fn(),
   };
 
   beforeEach(() => {

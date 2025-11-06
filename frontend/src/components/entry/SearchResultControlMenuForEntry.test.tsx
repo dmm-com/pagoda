@@ -22,6 +22,7 @@ describe("SearchResultControlMenuForEntry", () => {
     handleClose: jest.fn(),
     hintEntryDispatcher: jest.fn(),
     handleSelectFilterConditions: jest.fn(),
+    setOpenEditModal: jest.fn(),
   };
 
   beforeEach(() => {

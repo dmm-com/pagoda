@@ -2,6 +2,7 @@ import {
   EntryHint,
   EntryHintFilterKeyEnum,
 } from "@dmm-com/airone-apiclient-typescript-fetch";
+import EditNoteIcon from "@mui/icons-material/EditNote";
 import {
   Box,
   Button,
@@ -29,6 +30,7 @@ interface Props {
     overwriteReferral?: string,
     overwriteHintEntry?: EntryHint,
   ) => void;
+  setOpenEditModal: (willOpen: boolean) => void;
 }
 
 export const SearchResultControlMenuForEntry: FC<Props> = ({
@@ -37,6 +39,7 @@ export const SearchResultControlMenuForEntry: FC<Props> = ({
   handleClose,
   hintEntryDispatcher,
   handleSelectFilterConditions,
+  setOpenEditModal,
 }) => {
   const handleKeyPressKeyword = (e: KeyboardEvent<HTMLDivElement>) => {
     if (e.key === "Enter") {
@@ -70,7 +73,7 @@ export const SearchResultControlMenuForEntry: FC<Props> = ({
             );
           }}
         >
-          <Typography>クリア</Typography>
+          <Typography>クリア(01)</Typography>
         </Button>
       </StyledBox>
       <Divider />
@@ -109,6 +112,22 @@ export const SearchResultControlMenuForEntry: FC<Props> = ({
           }
           onKeyPress={handleKeyPressKeyword}
         />
+      </StyledBox>
+      <Divider />
+      <Box pl="16px" py="8px">
+        <Typography>その他機能</Typography>
+      </Box>
+      <StyledBox>
+        <Button
+          variant="outlined"
+          fullWidth
+          startIcon={<EditNoteIcon />}
+          onClick={() => {
+            setOpenEditModal(true);
+          }}
+        >
+          <Typography>属性を一括更新</Typography>
+        </Button>
       </StyledBox>
     </Menu>
   );
