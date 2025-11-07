@@ -17,6 +17,7 @@ import {
   EntityApiV2ListRequest,
   EntityAttrCreate,
   EntityAttrUpdate,
+  EntityAttrIDandName,
   EntityDetail,
   EntryAlias,
   EntryApi,
@@ -341,7 +342,7 @@ class AironeApiClient {
     entityIds: number[],
     searchAllEntities = false,
     referralAttr: string = "",
-  ): Promise<Array<string>> {
+  ): Promise<Array<EntityAttrIDandName>> {
     return await this.entity.entityApiV2AttrsList({
       entityIds: searchAllEntities
         ? ""

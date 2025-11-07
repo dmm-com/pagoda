@@ -67,6 +67,7 @@ describe("SearchResultsTableHead", () => {
     searchAllEntities: false,
     joinAttrs: stableJoinAttrs,
     handleChangeAllBulkOperationEntryIds: jest.fn(),
+    entityAttrs: [],
   };
 
   // Helper function to render the component properly wrapped in a Table

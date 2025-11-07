@@ -170,7 +170,7 @@ export const AdvancedSearchPage: FC = () => {
 
           <AutocompleteWithAllSelector
             selectAllLabel="すべて選択"
-            options={attrs.value ?? []}
+            options={attrs.value?.map((x) => x.name) ?? []}
             value={selectedAttrs}
             inputValue={attrName}
             disabled={attrs.loading}

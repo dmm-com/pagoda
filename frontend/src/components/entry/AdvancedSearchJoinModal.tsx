@@ -83,7 +83,7 @@ export const AdvancedSearchJoinModal: FC<Props> = ({
       onClose={handleClose}
     >
       <Autocomplete
-        options={referralAttrs.value ?? []}
+        options={referralAttrs.value?.map((x) => x.name) ?? []}
         value={selectedAttrNames}
         onChange={(_, value: Array<string>) => {
           setSelectedAttrNames(value);

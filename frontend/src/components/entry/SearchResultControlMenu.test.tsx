@@ -21,6 +21,7 @@ describe("SearchResultControlMenu", () => {
     handleSelectFilterConditions: jest.fn(),
     handleClose: jest.fn(),
     setOpenEditModal: jest.fn(),
+    entityAttrs: [],
   };
 
   beforeEach(() => {

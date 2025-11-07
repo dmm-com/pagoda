@@ -1,50 +1,65 @@
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Box, Button } from "@mui/material";
 import { FC } from "react";
+import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
 
-import { AttrFilter } from "../../services/entry/AdvancedSearch";
-
 import { AironeModal } from "components/common/AironeModal";
+import { AttributeValueField } from "components/entry/entryForm/AttributeValueField";
+import { Schema, schema } from "components/entry/entryForm/EntryFormSchema";
+import { AttrFilter } from "services/entry/AdvancedSearch";
+import { getEntryAttributeValue } from "utils/common";
 
 interface Props {
   openModal: boolean;
   handleClose: () => void;
-  targetAttrname?: string;
+  targetAttrID: number;
+  targetAttrtype: number;
+  targetAttrname: string;
   targetAttrinfo?: AttrFilter;
 }
 
 export const AdvancedSearchEditModal: FC<Props> = ({
   openModal,
   handleClose,
+  targetAttrID,
   targetAttrname,
+  targetAttrtype,
   targetAttrinfo,
 }) => {
   const navigate = useNavigate();
+  const attrValue = getEntryAttributeValue(targetAttrtype);
 
-  const handleSubmit = () => {
-    console.log(
-      "[onix/handleSubmit(00)] targetAttrname: ",
-      targetAttrname,
-      " targetAttrinfo: ",
-      targetAttrinfo,
-    );
-    handleClose();
-  };
+  const {
+    formState: { isValid, isDirty, isSubmitting, isSubmitSuccessful },
+    handleSubmit,
+    reset,
+    setError,
+    setValue,
+    control,
+    trigger,
+  } = useForm<Schema>({
+    resolver: zodResolver(schema),
+    mode: "onBlur",
+  });
 
   return (
     <AironeModal
-      title={"結合するアイテムの属性名"}
+      title={"一括更新する（変更後の）値に更新"}
       open={openModal}
       onClose={handleClose}
     >
+      <Box sx={{ width: "100%", margin: "20px 0" }}>
+        <AttributeValueField
+          control={control}
+          setValue={setValue}
+          type={targetAttrtype}
+          schemaId={targetAttrID}
+        />
+      </Box>
       <Box display="flex" justifyContent="flex-end" my="8px">
-        <Button
-          variant="contained"
-          color="secondary"
-          sx={{ mx: "4px" }}
-          onClick={handleSubmit}
-        >
-          保存
+        <Button variant="contained" color="secondary" sx={{ mx: "4px" }}>
+          更新
         </Button>
         <Button
           variant="outlined"

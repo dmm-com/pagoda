@@ -49,7 +49,12 @@ jest.mock("react-router", () => ({
 }));
 jest
   .spyOn(aironeApiClient, "getEntityAttrs")
-  .mockResolvedValue(["attrA", "attrB", "attrC"]);
+  //.mockResolvedValue(["attrA", "attrB", "attrC"]);
+  .mockResolvedValue([
+    { name: "attrA", id: 1 },
+    { name: "attrB", id: 2 },
+    { name: "attrC", id: 3 },
+  ]);
 
 describe("AdvancedSearchJoinModal", () => {
   test("should render modal with title and buttons", () => {

@@ -1,6 +1,7 @@
 import {
   AdvancedSearchResultAttrInfoFilterKeyEnum,
   EntryAttributeTypeTypeEnum,
+  EntityAttrIDandName,
 } from "@dmm-com/airone-apiclient-typescript-fetch";
 import Check from "@mui/icons-material/Check";
 import EditNoteIcon from "@mui/icons-material/EditNote";
@@ -49,7 +50,10 @@ interface Props {
   handleClose: () => void;
   attrType?: number;
   setOpenEditModal: (willOpen: boolean) => void;
+  entityAttrs: EntityAttrIDandName[];
+  setEditTargetAttrID?: (attrID: number) => void;
   setEditTargetAttrname?: (attrname: string) => void;
+  setEditTargetAttrtype?: (attrtype: number) => void;
   setEditTargetAttrinfo?: (attrninfo: AttrFilter) => void;
 }
 
@@ -62,7 +66,10 @@ export const SearchResultControlMenu: FC<Props> = ({
   handleClose,
   attrType,
   setOpenEditModal,
+  entityAttrs,
+  setEditTargetAttrID,
   setEditTargetAttrname,
+  setEditTargetAttrtype,
   setEditTargetAttrinfo,
 }) => {
   const handleClick = (key: AdvancedSearchResultAttrInfoFilterKeyEnum) => {
@@ -553,7 +560,12 @@ export const SearchResultControlMenu: FC<Props> = ({
           fullWidth
           startIcon={<EditNoteIcon />}
           onClick={() => {
+            setEditTargetAttrID &&
+              setEditTargetAttrID(
+                entityAttrs.find((attr) => attr.name === attrname)?.id ?? 0,
+              );
             setEditTargetAttrname && setEditTargetAttrname(attrname);
+            setEditTargetAttrtype && setEditTargetAttrtype(attrType ?? 0);
             setEditTargetAttrinfo && setEditTargetAttrinfo(attrFilter);
             setOpenEditModal(true);
           }}
