@@ -968,9 +968,7 @@ def bulk_update_entries(self, job: Job) -> JobStatus:
             "name": item.name,
             "attrs": job_params.get("attrs", []),
         }
-        serializer = EntryUpdateSerializer(
-            instance=item, data=params, context={"_user": job.user}
-        )
+        serializer = EntryUpdateSerializer(instance=item, data=params, context={"_user": job.user})
         if serializer.is_valid():
             serializer.update(item, serializer.validated_data)
 

@@ -6234,10 +6234,7 @@ class ViewTest(BaseViewTest):
         items = [self.add_entry(self.user, "item-%s" % i, self.entity) for i in range(3)]
 
         # Make parameters for sending server
-        attrs = {
-            name: self.entity.attrs.get(name=name, is_active=True)
-            for name in ["val", "ref"]
-        }
+        attrs = {name: self.entity.attrs.get(name=name, is_active=True) for name in ["val", "ref"]}
         params = {
             "item_ids": [x.id for x in items],
             "attrs": [
