@@ -9,6 +9,7 @@ import { AttributeValueField } from "components/entry/entryForm/AttributeValueFi
 import { Schema, schema } from "components/entry/entryForm/EntryFormSchema";
 import { AttrFilter } from "services/entry/AdvancedSearch";
 import { getEntryAttributeValue } from "utils/common";
+import { useSnackbar } from "notistack";
 
 interface Props {
   openModal: boolean;
@@ -29,6 +30,9 @@ export const AdvancedSearchEditModal: FC<Props> = ({
 }) => {
   const navigate = useNavigate();
   const attrValue = getEntryAttributeValue(targetAttrtype);
+  const { enqueueSnackbar } = useSnackbar();
+  const query = new URLSearchParams(location.search);
+  console.log("[onix/AdvancedSearchEditModal] URLParams.entity:", query.get("entity"));
 
   const {
     formState: { isValid, isDirty, isSubmitting, isSubmitSuccessful },
@@ -38,10 +42,21 @@ export const AdvancedSearchEditModal: FC<Props> = ({
     setValue,
     control,
     trigger,
+    getValues,
   } = useForm<Schema>({
     resolver: zodResolver(schema),
     mode: "onBlur",
   });
+
+  const handleUpdateAttributeValue = () => {
+    // TODO: call API to update attribute value in bulk
+    enqueueSnackbar(`属性「${targetAttrname}」の一括更新のジョブを実行しました（順次結果が反映されます）。`, {
+      variant: "success",
+    });
+
+    // Close this modal
+    handleClose();
+  }
 
   return (
     <AironeModal
@@ -58,7 +73,10 @@ export const AdvancedSearchEditModal: FC<Props> = ({
         />
       </Box>
       <Box display="flex" justifyContent="flex-end" my="8px">
-        <Button variant="contained" color="secondary" sx={{ mx: "4px" }}>
+        <Button
+          variant="contained" color="secondary" sx={{ mx: "4px" }}
+          onClick={handleUpdateAttributeValue}
+        >
           更新
         </Button>
         <Button
