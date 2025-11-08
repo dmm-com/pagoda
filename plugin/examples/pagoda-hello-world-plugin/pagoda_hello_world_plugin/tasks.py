@@ -7,16 +7,15 @@ Celery integration.
 
 import logging
 
-from airone.celery import app
-from airone.lib.plugin_task import register_plugin_job_task
-from job.models import Job, JobStatus
+from pagoda_plugin_sdk.tasks import Job, JobStatus, celery_app, register_plugin_job_task
+
 from pagoda_hello_world_plugin.config import HelloWorldPluginOperation
 
 logger = logging.getLogger("airone.plugins.hello_world")
 
 
 @register_plugin_job_task(HelloWorldPluginOperation.HELLO_WORLD_TASK)
-@app.task(bind=True)
+@celery_app.task(bind=True)
 def hello_world_task(self, job_id: int):
     """Hello World task - does nothing but demonstrate task execution
 

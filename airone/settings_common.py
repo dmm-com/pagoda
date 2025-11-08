@@ -76,10 +76,14 @@ class Common(Configuration):
 
     # Auto-add plugins from ENABLED_PLUGINS
     # Convention: "foo-bar" → "pagoda_foo_bar_plugin"
+    # NOTE: Plugins must be registered before 'job' app to ensure their ready() is called
+    # before PluginTaskRegistry.validate_all() in job/apps.py
+    job_index = INSTALLED_APPS.index("job") if "job" in INSTALLED_APPS else len(INSTALLED_APPS)
     for plugin_name in ENABLED_PLUGINS:
         plugin_module = "pagoda_" + plugin_name.replace("-", "_") + "_plugin"
         if plugin_module not in INSTALLED_APPS:
-            INSTALLED_APPS.append(plugin_module)
+            INSTALLED_APPS.insert(job_index, plugin_module)
+            job_index += 1  # Keep job at the same relative position
 
     MIDDLEWARE = [
         "django.middleware.security.SecurityMiddleware",

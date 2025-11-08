@@ -7,8 +7,7 @@ Configures the plugin as a Django application.
 import logging
 
 from django.apps import AppConfig
-
-from airone.lib.plugin_task import PluginTaskRegistry
+from pagoda_plugin_sdk.tasks import PluginTaskRegistry
 
 from .config import PLUGIN_TASK_CONFIG
 

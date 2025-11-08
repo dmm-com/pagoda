@@ -7,7 +7,7 @@ for use with Airone's plugin task registry system.
 
 import enum
 
-from airone.lib.plugin_task import PluginTaskConfig
+from pagoda_plugin_sdk.tasks import PluginTaskConfig
 
 
 class HelloWorldPluginOperation(int, enum.Enum):

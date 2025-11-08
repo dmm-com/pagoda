@@ -63,7 +63,41 @@ def _lazy_import_api():
         raise
 
 
-# Define lazy properties for mixins and API components
+def _lazy_import_tasks():
+    """Lazy import of task-related components"""
+    try:
+        from .tasks import (
+            Job,
+            JobOperation,
+            JobStatus,
+            JobTarget,
+            PluginTaskConfig,
+            PluginTaskRegistry,
+            celery_app,
+            register_plugin_job_task,
+        )
+
+        return (
+            celery_app,
+            PluginTaskRegistry,
+            PluginTaskConfig,
+            register_plugin_job_task,
+            Job,
+            JobStatus,
+            JobOperation,
+            JobTarget,
+        )
+    except ImportError as e:
+        if "airone" in str(e).lower() or "celery" in str(e).lower() or "job" in str(e).lower():
+            raise ImportError(
+                "Task components require the host application to be installed. "
+                "These components are only available when the plugin is running "
+                "within the AirOne environment."
+            )
+        raise
+
+
+# Define lazy properties for mixins, API components, and task components
 def __getattr__(name):
     if name == "PluginAPIViewMixin":
         return _lazy_import_mixins()
@@ -84,6 +118,29 @@ def __getattr__(name):
         ]
         if name in api_names:
             return api_classes[api_names.index(name)]
+    elif name in (
+        "celery_app",
+        "PluginTaskRegistry",
+        "PluginTaskConfig",
+        "register_plugin_job_task",
+        "Job",
+        "JobStatus",
+        "JobOperation",
+        "JobTarget",
+    ):
+        task_classes = _lazy_import_tasks()
+        task_names = [
+            "celery_app",
+            "PluginTaskRegistry",
+            "PluginTaskConfig",
+            "register_plugin_job_task",
+            "Job",
+            "JobStatus",
+            "JobOperation",
+            "JobTarget",
+        ]
+        if name in task_names:
+            return task_classes[task_names.index(name)]
     raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
 
 
@@ -106,6 +163,15 @@ __all__ = [
     "PluginPagination",
     "PluginPermission",
     "PluginSerializerMixin",
+    # Task components (host application dependent)
+    "celery_app",
+    "PluginTaskRegistry",
+    "PluginTaskConfig",
+    "register_plugin_job_task",
+    "Job",
+    "JobStatus",
+    "JobOperation",
+    "JobTarget",
     # Utilities
     "get_pagoda_version",
 ]
