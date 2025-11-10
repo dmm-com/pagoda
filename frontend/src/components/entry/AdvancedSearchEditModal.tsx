@@ -7,26 +7,26 @@ import { useNavigate } from "react-router";
 import { AironeModal } from "components/common/AironeModal";
 import { AttributeValueField } from "components/entry/entryForm/AttributeValueField";
 import { Schema, schema } from "components/entry/entryForm/EntryFormSchema";
-import { AttrFilter } from "services/entry/AdvancedSearch";
+import { AttrsFilter } from "services/entry/AdvancedSearch";
 import { getEntryAttributeValue } from "utils/common";
 import { useSnackbar } from "notistack";
 
 interface Props {
   openModal: boolean;
   handleClose: () => void;
+  attrsFilter: AttrsFilter;
   targetAttrID: number;
   targetAttrtype: number;
   targetAttrname: string;
-  targetAttrinfo?: AttrFilter;
 }
 
 export const AdvancedSearchEditModal: FC<Props> = ({
   openModal,
   handleClose,
+  attrsFilter,
   targetAttrID,
   targetAttrname,
   targetAttrtype,
-  targetAttrinfo,
 }) => {
   const navigate = useNavigate();
   const attrValue = getEntryAttributeValue(targetAttrtype);
@@ -49,10 +49,25 @@ export const AdvancedSearchEditModal: FC<Props> = ({
   });
 
   const handleUpdateAttributeValue = () => {
+    // create parameters to send API for bulk update
+    const settingValue = getValues().attrs?.[targetAttrID]?.value
+    const sendingAttrsFilter = Object.keys(attrsFilter).map((key) => {
+      return {
+        name: key,
+        ...attrsFilter[key as keyof AttrsFilter],
+      }
+    });
+    console.log("[onix/AdvancedSearchEditModal.handleSubmit(10)] targetAttrID:", targetAttrID);
+    console.log("[onix/AdvancedSearchEditModal.handleSubmit(10)] sendingAttrsFilter:", sendingAttrsFilter);
+    console.log("[onix/AdvancedSearchEditModal.handleSubmit(10)] settingValue:", settingValue);
+
     // TODO: call API to update attribute value in bulk
     enqueueSnackbar(`属性「${targetAttrname}」の一括更新のジョブを実行しました（順次結果が反映されます）。`, {
       variant: "success",
     });
+
+    // Reset input context
+    reset();
 
     // Close this modal
     handleClose();
