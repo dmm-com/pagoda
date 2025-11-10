@@ -343,7 +343,7 @@ export const AdvancedSearchResultsPage: FC = () => {
             content={
               bulkOperationEntryIds.length ==
                 AdvancedSerarchResultListParam.MAX_ROW_COUNT &&
-              joinAttrs.length == 0 ? (
+                joinAttrs.length == 0 ? (
                 <FormControlLabel
                   sx={
                     attrInfo.some((x) => isAttrInfoSet(x))
@@ -447,7 +447,7 @@ export const AdvancedSearchResultsPage: FC = () => {
       <AdvancedSearchModal
         openModal={openModal}
         setOpenModal={setOpenModal}
-        attrNames={entityAttrs.value?.map((x) => x.name) ?? []}
+        attrNames={Array.from(new Set(entityAttrs.value?.map((x) => x.name) ?? []))}
         initialAttrNames={attrInfo.map(
           (e: AdvancedSearchResultAttrInfo) => e.name,
         )}

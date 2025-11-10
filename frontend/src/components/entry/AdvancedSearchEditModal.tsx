@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Box, Button } from "@mui/material";
-import { FC } from "react";
+import { FC, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
 
@@ -10,6 +10,7 @@ import { Schema, schema } from "components/entry/entryForm/EntryFormSchema";
 import { AttrsFilter } from "services/entry/AdvancedSearch";
 import { getEntryAttributeValue } from "utils/common";
 import { useSnackbar } from "notistack";
+import { extractAdvancedSearchParams } from "services/entry/AdvancedSearch";
 
 interface Props {
   openModal: boolean;
@@ -35,6 +36,15 @@ export const AdvancedSearchEditModal: FC<Props> = ({
   console.log("[onix/AdvancedSearchEditModal] URLParams.entity:", query.get("entity"));
 
   const {
+    hasReferral,
+    referralName,
+    hintEntry,
+  } = useMemo(() => {
+    const params = new URLSearchParams(location.search);
+    return extractAdvancedSearchParams(params);
+  }, [location.search]);
+
+  const {
     formState: { isValid, isDirty, isSubmitting, isSubmitSuccessful },
     handleSubmit,
     reset,
@@ -57,6 +67,8 @@ export const AdvancedSearchEditModal: FC<Props> = ({
         ...attrsFilter[key as keyof AttrsFilter],
       }
     });
+    console.log("[onix/AdvancedSearchEditModal.handleSubmit(10)] hintEntry:", hintEntry);
+    console.log("[onix/AdvancedSearchEditModal.handleSubmit(10)] referralName:", referralName);
     console.log("[onix/AdvancedSearchEditModal.handleSubmit(10)] targetAttrID:", targetAttrID);
     console.log("[onix/AdvancedSearchEditModal.handleSubmit(10)] sendingAttrsFilter:", sendingAttrsFilter);
     console.log("[onix/AdvancedSearchEditModal.handleSubmit(10)] settingValue:", settingValue);

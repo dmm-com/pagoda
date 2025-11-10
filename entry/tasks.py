@@ -962,14 +962,6 @@ def delete_entry_v2(self, job: Job) -> JobStatus:
 def bulk_update_entries(self, job: Job) -> JobStatus:
     job_params = json.loads(job.params)
 
-    # update multiple items with specified attribute values
-    for item in Entry.objects.filter(id__in=job_params.get("item_ids")):
-        params = {
-            "name": item.name,
-            "attrs": job_params.get("attrs", []),
-        }
-        serializer = EntryUpdateSerializer(instance=item, data=params, context={"_user": job.user})
-        if serializer.is_valid():
-            serializer.update(item, serializer.validated_data)
+    # TODO: update items in associated with job_params
 
     return JobStatus.DONE

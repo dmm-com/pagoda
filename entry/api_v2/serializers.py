@@ -496,11 +496,6 @@ class EntryUpdateData(TypedDict, total=False):
     call_stacks: list[int]
 
 
-class EntryBulkUpdateSerializer(serializers.Serializer):
-    item_ids = serializers.ListField(child=serializers.IntegerField(), write_only=True)
-    attrs = serializers.ListField(child=AttributeDataSerializer(), write_only=True, required=False)
-
-
 class EntryUpdateSerializer(EntryBaseSerializer):
     attrs = serializers.ListField(child=AttributeDataSerializer(), write_only=True, required=False)
 
@@ -1634,3 +1629,13 @@ class EntrySelfHistoryRestoreSerializer(serializers.Serializer):
     """Serializer for restoring Entry self history"""
 
     history_id = serializers.IntegerField()
+
+
+class EntryBulkUpdateSerializer(serializers.Serializer):
+#    item_ids = serializers.ListField(child=serializers.IntegerField(), write_only=True)
+#    attrs = serializers.ListField(child=AttributeDataSerializer(), write_only=True, required=False)
+    value = EntryAttributeValueSerializer()
+    attrid = serializers.IntegerField(required=True)
+    attrinfo = AdvancedSearchResultAttrInfoSerializer(many=True)
+    referral_name = serializers.CharField(required=False, allow_blank=True)
+    hint_entry = EntryHintSerializer(required=False)
