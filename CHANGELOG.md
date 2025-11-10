@@ -8,6 +8,36 @@
 
 ### Fixed
 
+## v3.153.0
+
+### Added
+* This supports AttributeValue.date and .datetime for ItemWalker
+  Contributed by @userlocalhost
+
+## v3.152.0
+
+### Fixed
+* Fixed empty values ​​could not be registered with the array_named_object_boolean attribute
+  Contributed by @hinashi
+
+## v3.151.0
+
+### Added
+* Support backend plugin system roughly
+  Contributed by @syucream
+
+## v3.147.0
+
+### Fixed
+* Stabilize pagination: dedupe requests and prevent stale overwrite
+  Contributed by @tsunoda-takahiro
+
+## v3.146.0
+
+### Added
+* Added is_unmatch option in trigger conditions
+  Contributed by @userlocalhost, @hinashi
+
 ## v3.145.0
 
 ### Changed
