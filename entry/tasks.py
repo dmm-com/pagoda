@@ -962,6 +962,37 @@ def delete_entry_v2(self, job: Job) -> JobStatus:
 def bulk_update_entries(self, job: Job) -> JobStatus:
     job_params = json.loads(job.params)
 
-    # TODO: update items in associated with job_params
+    # get target items from ES by job_params.attr_info parameter
+    resp = AdvancedSearchService.search_entries(
+        user=job.user,
+        hint_entity_ids=[job_params["modelid"]],
+        hint_attrs=[AttrHint(**x) for x in job_params.get("attrinfo", [])],
+        hint_entry=EntryHint(**job_params.get("hint_entry"))
+        if job_params.get("hint_entry")
+        else None,
+    )
+
+    # update each items in accordance with job_params.value parameter
+    context = {"request": DRFRequest(job.user)}
+    for record in resp.ret_values:
+        entry = Entry.objects.get(id=record.entry["id"])
+        updating_data = {"attrs": []}
+        if job_params.get("value"):
+            updating_data["attrs"].append(
+                {
+                    "id": job_params.get("value")["id"],
+                    "value": job_params.get("value")["value"],
+                }
+            )
+
+        serializer = EntryUpdateSerializer(instance=entry, data=updating_data, context=context)
+        if serializer.is_valid():
+            serializer.save()
+        else:
+            return (
+                JobStatus.ERROR,
+                "Validation error during bulk update (%s)" % serializer.error_messages,
+                None,
+            )
 
     return JobStatus.DONE

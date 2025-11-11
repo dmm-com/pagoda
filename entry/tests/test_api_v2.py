@@ -11,7 +11,7 @@ import yaml
 from rest_framework import status
 from rest_framework.exceptions import ValidationError
 
-from airone.lib.elasticsearch import AttrHint, EntryFilterKey
+from airone.lib.elasticsearch import AttrHint, EntryFilterKey, FilterKey
 from airone.lib.log import Logger
 from airone.lib.test import AironeViewTest
 from airone.lib.types import (
@@ -6231,16 +6231,29 @@ class ViewTest(BaseViewTest):
     @patch("entry.tasks.bulk_update_entries.delay", Mock(side_effect=tasks.bulk_update_entries))
     def test_bulk_update_items(self):
         # Create items for bulk updating
-        items = [self.add_entry(self.user, "item-%s" % i, self.entity) for i in range(3)]
+        for index, str_val in enumerate(["foo", "bar", "baz"]):
+            ref_item = self.add_entry(self.user, "ref-%s" % str_val, self.entity)
+
+            self.add_entry(
+                self.user,
+                "item-%s" % index,
+                self.entity,
+                values={
+                    "val": str_val,
+                    "ref": ref_item,
+                },
+            )
 
         # Make parameters for sending server
-        attrs = {name: self.entity.attrs.get(name=name, is_active=True) for name in ["val", "ref"]}
+        updating_attr = self.entity.attrs.get(name="val")
+
         params = {
-            "item_ids": [x.id for x in items],
-            "attrs": [
-                {"id": attrs["val"].id, "value": "updated"},
-                {"id": attrs["ref"].id, "value": self.ref_entry.id},
-            ],
+            "value": {"id": updating_attr.id, "value": "updated"},
+            "attrid": updating_attr.id,
+            "modelid": self.entity.id,
+            "attrinfo": [{"name": "val", "filter_key": FilterKey.TEXT_CONTAINED, "keyword": "ba"}],
+            "referral_name": "",
+            "hint_entry": {"filter_key": EntryFilterKey.TEXT_CONTAINED, "keyword": "item"},
         }
         resp = self.client.put(
             "/entry/api/v2/bulk/",
@@ -6250,7 +6263,17 @@ class ViewTest(BaseViewTest):
         self.assertEqual(resp.status_code, 202)
 
         # Check items are pudate expectedly
-        self.assertEqual(len(items), 3)
-        for item in items:
-            self.assertEqual(item.get_attrv("val").value, "updated")
-            self.assertEqual(item.get_attrv_item("ref"), self.ref_entry)
+        expected_values = [
+            ("item-0", "foo", "ref-foo"),
+            ("item-1", "updated", "ref-bar"),  # this one should be updated from bar to updated
+            ("item-2", "updated", "ref-baz"),  # this one should be updated from baz to updated
+        ]
+
+        for itemname, expected_value, ref_itemname in expected_values:
+            item = Entry.objects.get(name=itemname, schema=self.entity)
+            self.assertEqual(item.get_attrv("val").value, expected_value)
+            self.assertEqual(item.get_attrv_item("ref").name, ref_itemname)
+
+    @patch("entry.tasks.bulk_update_entries.delay", Mock(side_effect=tasks.bulk_update_entries))
+    def test_bulk_update_items_with_referral_name_filter(self):
+        pass

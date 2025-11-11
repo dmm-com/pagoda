@@ -1632,9 +1632,8 @@ class EntrySelfHistoryRestoreSerializer(serializers.Serializer):
 
 
 class EntryBulkUpdateSerializer(serializers.Serializer):
-#    item_ids = serializers.ListField(child=serializers.IntegerField(), write_only=True)
-#    attrs = serializers.ListField(child=AttributeDataSerializer(), write_only=True, required=False)
-    value = EntryAttributeValueSerializer()
+    modelid = serializers.IntegerField(required=True)
+    value = AttributeDataSerializer()
     attrid = serializers.IntegerField(required=True)
     attrinfo = AdvancedSearchResultAttrInfoSerializer(many=True)
     referral_name = serializers.CharField(required=False, allow_blank=True)
