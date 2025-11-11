@@ -1,16 +1,16 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Box, Button } from "@mui/material";
+import { useSnackbar } from "notistack";
 import { FC, useMemo } from "react";
 import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router";
 
 import { AironeModal } from "components/common/AironeModal";
 import { AttributeValueField } from "components/entry/entryForm/AttributeValueField";
+import { EditableEntryAttrs } from "components/entry/entryForm/EditableEntry";
 import { Schema, schema } from "components/entry/entryForm/EntryFormSchema";
 import { AttrsFilter } from "services/entry/AdvancedSearch";
-import { getEntryAttributeValue } from "utils/common";
-import { useSnackbar } from "notistack";
 import { extractAdvancedSearchParams } from "services/entry/AdvancedSearch";
+import { convertAttrsFormatCtoS } from "services/entry/Edit";
 
 interface Props {
   openModal: boolean;
@@ -29,61 +29,64 @@ export const AdvancedSearchEditModal: FC<Props> = ({
   targetAttrname,
   targetAttrtype,
 }) => {
-  const navigate = useNavigate();
-  const attrValue = getEntryAttributeValue(targetAttrtype);
   const { enqueueSnackbar } = useSnackbar();
-  const query = new URLSearchParams(location.search);
-  console.log("[onix/AdvancedSearchEditModal] URLParams.entity:", query.get("entity"));
 
-  const {
-    hasReferral,
-    referralName,
-    hintEntry,
-  } = useMemo(() => {
+  const { referralName, hintEntry } = useMemo(() => {
     const params = new URLSearchParams(location.search);
     return extractAdvancedSearchParams(params);
   }, [location.search]);
 
-  const {
-    formState: { isValid, isDirty, isSubmitting, isSubmitSuccessful },
-    handleSubmit,
-    reset,
-    setError,
-    setValue,
-    control,
-    trigger,
-    getValues,
-  } = useForm<Schema>({
+  const { reset, setValue, control, getValues } = useForm<Schema>({
     resolver: zodResolver(schema),
     mode: "onBlur",
   });
 
   const handleUpdateAttributeValue = () => {
     // create parameters to send API for bulk update
-    const settingValue = getValues().attrs?.[targetAttrID]?.value
+    const settingValue = {
+      [targetAttrID]: {
+        index: 0,
+        type: targetAttrtype,
+        value: getValues().attrs?.[targetAttrID]?.value,
+        schema: { id: targetAttrID },
+      } as EditableEntryAttrs,
+    };
     const sendingAttrsFilter = Object.keys(attrsFilter).map((key) => {
       return {
         name: key,
         ...attrsFilter[key as keyof AttrsFilter],
-      }
+      };
     });
-    console.log("[onix/AdvancedSearchEditModal.handleSubmit(10)] hintEntry:", hintEntry);
-    console.log("[onix/AdvancedSearchEditModal.handleSubmit(10)] referralName:", referralName);
-    console.log("[onix/AdvancedSearchEditModal.handleSubmit(10)] targetAttrID:", targetAttrID);
-    console.log("[onix/AdvancedSearchEditModal.handleSubmit(10)] sendingAttrsFilter:", sendingAttrsFilter);
-    console.log("[onix/AdvancedSearchEditModal.handleSubmit(10)] settingValue:", settingValue);
+
+    console.log("[onix/handleSubmit(10)] attrsFilter:", attrsFilter);
+    console.log("[onix/handleSubmit(10)] hintEntry:", hintEntry);
+    console.log("[onix/handleSubmit(10)] referralName:", referralName);
+    console.log("[onix/handleSubmit(10)] targetAttrID:", targetAttrID);
+    console.log(
+      "[onix/handleSubmit(10)] sendingAttrsFilter:",
+      sendingAttrsFilter,
+    );
+    console.log("[onix/handleSubmit(10)] settingValue:", settingValue);
+    console.log("[onix/handleSubmit(10)] getValues():", getValues());
+    console.log(
+      "[onix/handleSubmit(10)] convertedValues(val):",
+      convertAttrsFormatCtoS(settingValue),
+    );
 
     // TODO: call API to update attribute value in bulk
-    enqueueSnackbar(`属性「${targetAttrname}」の一括更新のジョブを実行しました（順次結果が反映されます）。`, {
-      variant: "success",
-    });
+    enqueueSnackbar(
+      `属性「${targetAttrname}」の一括更新のジョブを実行しました（順次結果が反映されます）。`,
+      {
+        variant: "success",
+      },
+    );
 
     // Reset input context
     reset();
 
     // Close this modal
     handleClose();
-  }
+  };
 
   return (
     <AironeModal
@@ -101,7 +104,9 @@ export const AdvancedSearchEditModal: FC<Props> = ({
       </Box>
       <Box display="flex" justifyContent="flex-end" my="8px">
         <Button
-          variant="contained" color="secondary" sx={{ mx: "4px" }}
+          variant="contained"
+          color="secondary"
+          sx={{ mx: "4px" }}
           onClick={handleUpdateAttributeValue}
         >
           更新

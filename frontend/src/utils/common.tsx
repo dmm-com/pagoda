@@ -5,6 +5,7 @@ import {
 
 export const getEntryAttributeValue = (
   type: number,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   value?: any,
 ): EntryAttributeValue => {
   const respValue: EntryAttributeValue = {} as EntryAttributeValue;

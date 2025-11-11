@@ -37,7 +37,7 @@ const StyledBox = styled(Box)({
   margin: "8px",
 });
 
-const StyledTypography = styled(Typography)(({ }) => ({
+const StyledTypography = styled(Typography)(({}) => ({
   color: "rgba(0, 0, 0, 0.6)",
 }));
 
@@ -106,24 +106,24 @@ export const SearchResultControlMenu: FC<Props> = ({
 
   const handleChangeKeyword =
     (filterKey: AdvancedSearchResultAttrInfoFilterKeyEnum) =>
-      (e: ChangeEvent<HTMLInputElement>) => {
-        handleUpdateAttrFilter({
-          ...attrFilter,
-          keyword: e.target.value,
-          filterKey,
-        });
-      };
+    (e: ChangeEvent<HTMLInputElement>) => {
+      handleUpdateAttrFilter({
+        ...attrFilter,
+        keyword: e.target.value,
+        filterKey,
+      });
+    };
 
   const handleKeyPressKeyword =
     (filterKey: AdvancedSearchResultAttrInfoFilterKeyEnum) =>
-      (e: KeyboardEvent<HTMLDivElement>) => {
-        if (e.key === "Enter") {
-          handleSelectFilterConditions({
-            ...attrFilter,
-            filterKey,
-          });
-        }
-      };
+    (e: KeyboardEvent<HTMLDivElement>) => {
+      if (e.key === "Enter") {
+        handleSelectFilterConditions({
+          ...attrFilter,
+          filterKey,
+        });
+      }
+    };
 
   const filterKey =
     attrFilter?.filterKey ?? AdvancedSearchResultAttrInfoFilterKeyEnum.CLEARED;
@@ -233,14 +233,14 @@ export const SearchResultControlMenu: FC<Props> = ({
                       keyword: `${start}~${end}`,
                     });
                   }}
-                  onCancel={() => { }}
+                  onCancel={() => {}}
                 />
               ) : (
                 <DesktopDatePicker
                   format="yyyy/MM/dd"
                   value={
                     filterKey ===
-                      AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_CONTAINED
+                    AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_CONTAINED
                       ? keyword
                         ? new Date(keyword)
                         : null
@@ -249,10 +249,10 @@ export const SearchResultControlMenu: FC<Props> = ({
                   onChange={(date: Date | null) => {
                     const settingDateValue = date
                       ? new Date(
-                        date.getTime() - date.getTimezoneOffset() * 60000,
-                      )
-                        .toISOString()
-                        .split("T")[0]
+                          date.getTime() - date.getTimezoneOffset() * 60000,
+                        )
+                          .toISOString()
+                          .split("T")[0]
                       : "";
                     handleSelectFilterConditions({
                       ...attrFilter,
@@ -291,14 +291,14 @@ export const SearchResultControlMenu: FC<Props> = ({
                       keyword: `${start}~${end}`,
                     });
                   }}
-                  onCancel={() => { }}
+                  onCancel={() => {}}
                 />
               ) : (
                 <DesktopDatePicker
                   format="yyyy/MM/dd"
                   value={
                     filterKey ===
-                      AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_NOT_CONTAINED
+                    AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_NOT_CONTAINED
                       ? keyword
                         ? new Date(keyword)
                         : null
@@ -307,10 +307,10 @@ export const SearchResultControlMenu: FC<Props> = ({
                   onChange={(date: Date | null) => {
                     const settingDateValue = date
                       ? new Date(
-                        date.getTime() - date.getTimezoneOffset() * 60000,
-                      )
-                        .toISOString()
-                        .split("T")[0]
+                          date.getTime() - date.getTimezoneOffset() * 60000,
+                        )
+                          .toISOString()
+                          .split("T")[0]
                       : "";
                     handleSelectFilterConditions({
                       ...attrFilter,
@@ -366,7 +366,7 @@ export const SearchResultControlMenu: FC<Props> = ({
                       keyword: `${start}~${end}`,
                     });
                   }}
-                  onCancel={() => { }}
+                  onCancel={() => {}}
                 />
               ) : (
                 <DateTimePicker
@@ -374,7 +374,7 @@ export const SearchResultControlMenu: FC<Props> = ({
                   ampm={false}
                   value={
                     filterKey ===
-                      AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_CONTAINED
+                    AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_CONTAINED
                       ? keyword
                         ? new Date(keyword)
                         : null
@@ -383,8 +383,8 @@ export const SearchResultControlMenu: FC<Props> = ({
                   onAccept={(date: Date | null) => {
                     const settingDateValue = date
                       ? new Date(
-                        date.getTime() - date.getTimezoneOffset() * 60000,
-                      ).toISOString()
+                          date.getTime() - date.getTimezoneOffset() * 60000,
+                        ).toISOString()
                       : "";
                     handleSelectFilterConditions({
                       ...attrFilter,
@@ -424,7 +424,7 @@ export const SearchResultControlMenu: FC<Props> = ({
                       keyword: `${start}~${end}`,
                     });
                   }}
-                  onCancel={() => { }}
+                  onCancel={() => {}}
                 />
               ) : (
                 <DateTimePicker
@@ -432,7 +432,7 @@ export const SearchResultControlMenu: FC<Props> = ({
                   ampm={false}
                   value={
                     filterKey ===
-                      AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_NOT_CONTAINED
+                    AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_NOT_CONTAINED
                       ? keyword
                         ? new Date(keyword)
                         : null
@@ -441,8 +441,8 @@ export const SearchResultControlMenu: FC<Props> = ({
                   onAccept={(date: Date | null) => {
                     const settingDateValue = date
                       ? new Date(
-                        date.getTime() - date.getTimezoneOffset() * 60000,
-                      ).toISOString()
+                          date.getTime() - date.getTimezoneOffset() * 60000,
+                        ).toISOString()
                       : "";
                     handleSelectFilterConditions({
                       ...attrFilter,
@@ -478,10 +478,10 @@ export const SearchResultControlMenu: FC<Props> = ({
           >
             {filterKey ===
               AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_CONTAINED && (
-                <ListItemIcon>
-                  <Check />
-                </ListItemIcon>
-              )}
+              <ListItemIcon>
+                <Check />
+              </ListItemIcon>
+            )}
             <Typography>true のみ</Typography>
           </MenuItem>
           <MenuItem
@@ -496,10 +496,10 @@ export const SearchResultControlMenu: FC<Props> = ({
           >
             {filterKey ===
               AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_NOT_CONTAINED && (
-                <ListItemIcon>
-                  <Check />
-                </ListItemIcon>
-              )}
+              <ListItemIcon>
+                <Check />
+              </ListItemIcon>
+            )}
             <Typography>false のみ</Typography>
           </MenuItem>
         </Box>
@@ -516,7 +516,7 @@ export const SearchResultControlMenu: FC<Props> = ({
                 placeholder="次を含むテキスト"
                 value={
                   filterKey ===
-                    AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_CONTAINED
+                  AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_CONTAINED
                     ? keyword
                     : ""
                 }
@@ -534,7 +534,7 @@ export const SearchResultControlMenu: FC<Props> = ({
                 placeholder="次を含まないテキスト"
                 value={
                   filterKey ===
-                    AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_NOT_CONTAINED
+                  AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_NOT_CONTAINED
                     ? keyword
                     : ""
                 }
