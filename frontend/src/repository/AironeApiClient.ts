@@ -428,6 +428,26 @@ class AironeApiClient {
     );
   }
 
+  async bulkUpdateEntries(
+    modelid: number,
+    value: AttributeData,
+    attrinfo?: Array<AdvancedSearchResultAttrInfo>,
+    referralName?: string,
+    hintEntry?: EntryHint,
+  ): Promise<void> {
+    await this.entry.entryApiV2BulkUpdate(
+      {
+        entryBulkUpdate: { modelid, value, attrinfo, referralName, hintEntry },
+      },
+      {
+        headers: {
+          "Content-Type": "application/json;charset=utf-8",
+          "X-CSRFToken": getCsrfToken(),
+        },
+      },
+    );
+  }
+
   async restoreEntry(id: number): Promise<void> {
     return await this.entry.entryApiV2RestoreCreate(
       { id },

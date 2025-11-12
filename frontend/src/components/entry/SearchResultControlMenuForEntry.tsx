@@ -2,7 +2,6 @@ import {
   EntryHint,
   EntryHintFilterKeyEnum,
 } from "@dmm-com/airone-apiclient-typescript-fetch";
-import EditNoteIcon from "@mui/icons-material/EditNote";
 import {
   Box,
   Button,

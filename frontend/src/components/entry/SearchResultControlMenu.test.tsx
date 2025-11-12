@@ -36,6 +36,9 @@ describe("SearchResultControlMenu", () => {
     );
 
     expect(screen.getByText("絞り込み条件")).toBeInTheDocument();
+    expect(screen.getByText("クリア")).toBeInTheDocument();
+    expect(screen.getByText("その他機能")).toBeInTheDocument();
+    expect(screen.getByText("属性を一括更新")).toBeInTheDocument();
   });
 
   test("should not render menu when anchorElem is null", () => {

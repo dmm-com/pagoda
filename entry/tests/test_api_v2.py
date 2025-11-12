@@ -6246,7 +6246,6 @@ class ViewTest(BaseViewTest):
 
         params = {
             "value": {"id": updating_attr.id, "value": "updated"},
-            "attrid": updating_attr.id,
             "modelid": self.entity.id,
             "attrinfo": [{"name": "val", "filter_key": FilterKey.TEXT_CONTAINED, "keyword": "ba"}],
             "hint_entry": {"filter_key": EntryFilterKey.TEXT_CONTAINED, "keyword": "item"},
@@ -6287,7 +6286,6 @@ class ViewTest(BaseViewTest):
         updating_attr = self.entity.attrs.get(name="val")
         params = {
             "value": {"id": updating_attr.id, "value": "updated"},
-            "attrid": updating_attr.id,
             "modelid": self.entity.id,
             "referral_name": "ba",  # this would be matched with "bar" and "baz"
         }

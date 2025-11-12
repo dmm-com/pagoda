@@ -391,6 +391,7 @@ export const SearchResultsTableHead: FC<Props> = ({
             });
           }
         }}
+        modelIds={entityIds}
         attrsFilter={attrsFilter}
         targetAttrID={editTargetAttrID}
         targetAttrname={editTargetAttrname}

@@ -924,7 +924,7 @@ class EntryBulkUpdateAPI(generics.UpdateAPIView):
         job = Job.new_bulk_edit_entry_v2(user, params=request.data)
         job.run()
 
-        return Response(status=status.HTTP_202_ACCEPTED)
+        return Response({}, status=status.HTTP_202_ACCEPTED)
 
 
 @extend_schema(

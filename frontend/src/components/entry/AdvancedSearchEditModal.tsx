@@ -8,6 +8,7 @@ import { AironeModal } from "components/common/AironeModal";
 import { AttributeValueField } from "components/entry/entryForm/AttributeValueField";
 import { EditableEntryAttrs } from "components/entry/entryForm/EditableEntry";
 import { Schema, schema } from "components/entry/entryForm/EntryFormSchema";
+import { aironeApiClient } from "repository/AironeApiClient";
 import { AttrsFilter } from "services/entry/AdvancedSearch";
 import { extractAdvancedSearchParams } from "services/entry/AdvancedSearch";
 import { convertAttrsFormatCtoS } from "services/entry/Edit";
@@ -15,6 +16,7 @@ import { convertAttrsFormatCtoS } from "services/entry/Edit";
 interface Props {
   openModal: boolean;
   handleClose: () => void;
+  modelIds: number[];
   attrsFilter: AttrsFilter;
   targetAttrID: number;
   targetAttrtype: number;
@@ -24,6 +26,7 @@ interface Props {
 export const AdvancedSearchEditModal: FC<Props> = ({
   openModal,
   handleClose,
+  modelIds,
   attrsFilter,
   targetAttrID,
   targetAttrname,
@@ -58,34 +61,32 @@ export const AdvancedSearchEditModal: FC<Props> = ({
       };
     });
 
-    console.log("[onix/handleSubmit(10)] attrsFilter:", attrsFilter);
-    console.log("[onix/handleSubmit(10)] hintEntry:", hintEntry);
-    console.log("[onix/handleSubmit(10)] referralName:", referralName);
-    console.log("[onix/handleSubmit(10)] targetAttrID:", targetAttrID);
-    console.log(
-      "[onix/handleSubmit(10)] sendingAttrsFilter:",
-      sendingAttrsFilter,
-    );
-    console.log("[onix/handleSubmit(10)] settingValue:", settingValue);
-    console.log("[onix/handleSubmit(10)] getValues():", getValues());
-    console.log(
-      "[onix/handleSubmit(10)] convertedValues(val):",
-      convertAttrsFormatCtoS(settingValue),
-    );
+    // The aironeApiClient.bulkUpdateEntries would be called only one time in most cases.
+    // because it's rare that multiple Models are specified for advanced search page.
+    modelIds.forEach((modelId: number) => {
+      aironeApiClient
+        .bulkUpdateEntries(
+          modelId,
+          convertAttrsFormatCtoS(settingValue)[0],
+          sendingAttrsFilter,
+          referralName,
+          hintEntry,
+        )
+        .then((response) => {
+          enqueueSnackbar(
+            `属性「${targetAttrname}」の一括更新のジョブを実行しました（順次結果が反映されます）。`,
+            {
+              variant: "success",
+            },
+          );
 
-    // TODO: call API to update attribute value in bulk
-    enqueueSnackbar(
-      `属性「${targetAttrname}」の一括更新のジョブを実行しました（順次結果が反映されます）。`,
-      {
-        variant: "success",
-      },
-    );
+          // Reset input context
+          reset();
 
-    // Reset input context
-    reset();
-
-    // Close this modal
-    handleClose();
+          // Close this modal
+          handleClose();
+        });
+    });
   };
 
   return (
