@@ -1,11 +1,11 @@
 /**
  * @jest-environment jsdom
  */
-import {
-  EntryAttributeTypeTypeEnum,
-} from "@dmm-com/airone-apiclient-typescript-fetch";
+import { EntryAttributeTypeTypeEnum } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { render, screen } from "@testing-library/react";
+
 import { AdvancedSearchEditModal } from "./AdvancedSearchEditModal";
+
 import { TestWrapper } from "TestWrapper";
 
 jest.mock("hooks/useAsyncWithThrow", () => ({
@@ -21,7 +21,7 @@ describe("AdvancedSearchEditModal", () => {
     render(
       <AdvancedSearchEditModal
         openModal={true}
-        handleClose={() => { }}
+        handleClose={() => {}}
         modelIds={[1]}
         attrsFilter={{}}
         targetAttrID={10}
@@ -30,7 +30,9 @@ describe("AdvancedSearchEditModal", () => {
       />,
       { wrapper: TestWrapper },
     );
-    expect(screen.getByText("一括更新する（変更後の）値に更新")).toBeInTheDocument();
+    expect(
+      screen.getByText("一括更新する（変更後の）値に更新"),
+    ).toBeInTheDocument();
     expect(screen.getByText("更新")).toBeInTheDocument();
     expect(screen.getByText("キャンセル")).toBeInTheDocument();
   });

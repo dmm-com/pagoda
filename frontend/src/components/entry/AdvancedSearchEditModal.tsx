@@ -72,7 +72,7 @@ export const AdvancedSearchEditModal: FC<Props> = ({
           referralName,
           hintEntry,
         )
-        .then((response) => {
+        .then(() => {
           enqueueSnackbar(
             `属性「${targetAttrname}」の一括更新のジョブを実行しました（順次結果が反映されます）。`,
             {

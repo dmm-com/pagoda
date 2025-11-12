@@ -8,6 +8,7 @@ import yaml
 from django.conf import settings
 from rest_framework.exceptions import ValidationError
 
+from acl.models import ACLBase
 from airone.celery import app
 from airone.lib import custom_view
 from airone.lib.acl import ACLType
@@ -959,7 +960,7 @@ def delete_entry_v2(self, job: Job) -> JobStatus:
 @register_job_task(JobOperation.BULK_EDIT_ENTRY)
 @app.task(bind=True)
 @may_schedule_until_job_is_ready
-def bulk_update_entries(self, job: Job) -> JobStatus:
+def bulk_update_entries(self, job: Job) -> JobStatus | tuple[JobStatus, str, ACLBase | None]:
     job_params = json.loads(job.params)
 
     # get target items from ES by job_params.attr_info parameter
@@ -977,7 +978,7 @@ def bulk_update_entries(self, job: Job) -> JobStatus:
     context = {"request": DRFRequest(job.user)}
     for record in resp.ret_values:
         entry = Entry.objects.get(id=record.entry["id"])
-        updating_data = {"attrs": []}
+        updating_data: dict[str, list] = {"attrs": []}
         if job_params.get("value"):
             updating_data["attrs"].append(
                 {
