@@ -28,7 +28,10 @@ const entities: PaginatedEntityListList = {
   ],
 };
 
-const entityAttrs: Array<string> = ["str", "obj"];
+const entityAttrs: Array<object> = [
+  { id: 1, name: "str" },
+  { id: 2, name: "obj" },
+];
 
 const server = setupServer(
   http.get("http://localhost/entity/api/v2/", () => {
