@@ -970,6 +970,7 @@ def bulk_update_entries(self, job: Job) -> JobStatus:
         hint_entry=EntryHint(**job_params.get("hint_entry"))
         if job_params.get("hint_entry")
         else None,
+        hint_referral=job_params.get("referral_name"),
     )
 
     # update each items in accordance with job_params.value parameter

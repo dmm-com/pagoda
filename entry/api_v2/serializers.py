@@ -1635,6 +1635,6 @@ class EntryBulkUpdateSerializer(serializers.Serializer):
     modelid = serializers.IntegerField(required=True)
     value = AttributeDataSerializer()
     attrid = serializers.IntegerField(required=True)
-    attrinfo = AdvancedSearchResultAttrInfoSerializer(many=True)
+    attrinfo = AdvancedSearchResultAttrInfoSerializer(many=True, required=False)
     referral_name = serializers.CharField(required=False, allow_blank=True)
     hint_entry = EntryHintSerializer(required=False)
