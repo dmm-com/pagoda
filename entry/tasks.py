@@ -972,11 +972,22 @@ def bulk_update_entries(self, job: Job) -> JobStatus | tuple[JobStatus, str, ACL
         if job_params.get("hint_entry")
         else None,
         hint_referral=job_params.get("referral_name"),
+        limit=999999,
     )
 
     # update each items in accordance with job_params.value parameter
     context = {"request": DRFRequest(job.user)}
-    for record in resp.ret_values:
+    total_count = resp.ret_count
+    for index, record in enumerate(resp.ret_values):
+        job.text = "Now updating... (progress: [%5d/%5d])" % (index + 1, total_count)
+        job.save(update_fields=["text"])
+
+        # abort processing when job is canceled
+        if job.is_canceled():
+            job.status = JobStatus.CANCELED
+            job.save(update_fields=["status"])
+            return None
+
         entry = Entry.objects.get(id=record.entry["id"])
         updating_data: dict[str, list] = {"attrs": []}
         if job_params.get("value"):
@@ -997,4 +1008,6 @@ def bulk_update_entries(self, job: Job) -> JobStatus | tuple[JobStatus, str, ACL
                 None,
             )
 
+    job.text = "Bulk update completed [%5d/%5d]" % (total_count, total_count)
+    job.save(update_fields=["text"])
     return JobStatus.DONE

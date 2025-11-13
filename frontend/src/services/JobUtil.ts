@@ -75,6 +75,8 @@ export const jobOperationLabel = (jobOperation: number | undefined): string => {
       return "コピー";
     case JobOperations.RESTORE_ENTRY:
       return "復旧";
+    case JobOperations.BULK_EDIT_ENTRY:
+      return "一括更新";
     default:
       return "不明";
   }

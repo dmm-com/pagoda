@@ -1627,6 +1627,7 @@ class EntrySelfHistorySerializer(serializers.ModelSerializer):
 
 class EntrySelfHistoryRestoreSerializer(serializers.Serializer):
     """Serializer for restoring Entry self history"""
+
     history_id = serializers.IntegerField()
 
 

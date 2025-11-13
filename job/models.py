@@ -151,6 +151,7 @@ class Job(models.Model):
         JobOperation.REGISTER_REFERRALS,
         JobOperation.EXPORT_SEARCH_RESULT,
         JobOperation.EXPORT_SEARCH_RESULT_V2,
+        JobOperation.BULK_EDIT_ENTRY,
     ] + CUSTOM_CANCELABLE_OPERATIONS
 
     PARALLELIZABLE_OPERATIONS: list[JobOperation | JobOperationCustom] = [
