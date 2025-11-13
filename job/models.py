@@ -676,7 +676,7 @@ class Job(models.Model):
         )
 
     @classmethod
-    def new_bulk_edit_entry_v2(kls, user: User, params: dict = {}) -> "Job":
+    def new_bulk_edit_entry_v2(kls, user: User, target: Entity, params: dict = {}) -> "Job":
         return kls._create_new_job(
-            user=user, target=None, operation=JobOperation.BULK_EDIT_ENTRY, text="", params=params
+            user=user, target=target, operation=JobOperation.BULK_EDIT_ENTRY, text="", params=params
         )

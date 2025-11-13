@@ -921,7 +921,11 @@ class EntryBulkUpdateAPI(generics.UpdateAPIView):
         serializer = EntryBulkUpdateSerializer(data=request.data, context={"_user": user})
         serializer.is_valid(raise_exception=True)
 
-        job = Job.new_bulk_edit_entry_v2(user, params=request.data)
+        model = Entity.objects.filter(id=request.data.get("modelid"), is_active=True).first()
+        if not model:
+            return Response("There is no model that is specified by modelid.", status=400)
+
+        job = Job.new_bulk_edit_entry_v2(user, model, params=request.data)
         job.run()
 
         return Response({}, status=status.HTTP_202_ACCEPTED)
