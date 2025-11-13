@@ -6306,3 +6306,50 @@ class ViewTest(BaseViewTest):
         for itemname, expected_value in expected_values:
             item = Entry.objects.get(name=itemname, schema=self.entity)
             self.assertEqual(item.get_attrv("val").value, expected_value)
+
+    @patch.object(Job, "is_canceled", Mock(return_value=True))
+    @patch("entry.tasks.bulk_update_entries.delay", Mock(side_effect=tasks.bulk_update_entries))
+    def test_bulk_update_items_with_canceled(self):
+        """
+        This tests bulk update when the job is canceled during processing.
+        """
+        # Create items for bulk updating
+        for index, str_val in enumerate(["foo", "bar", "baz"]):
+            self.add_entry(
+                self.user,
+                "item-%s" % index,
+                self.entity,
+                values={
+                    "val": str_val,
+                },
+            )
+
+        # Make parameters for sending server
+        updating_attr = self.entity.attrs.get(name="val")
+
+        params = {
+            "value": {"id": updating_attr.id, "value": "updated"},
+            "modelid": self.entity.id,
+            "attrinfo": [],
+        }
+        resp = self.client.put(
+            "/entry/api/v2/bulk/",
+            params,
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 202)
+
+        # Check items are not updated due to cancellation
+        expected_values = [
+            # These won't be updated because the job is canceled
+            ("item-0", "foo"),
+            ("item-1", "bar"),
+            ("item-2", "baz"),
+        ]
+        for itemname, expected_value in expected_values:
+            item = Entry.objects.get(name=itemname, schema=self.entity)
+            self.assertEqual(item.get_attrv("val").value, expected_value)
+
+        # check job text shows expected message
+        job = Job.objects.filter(operation=JobOperation.BULK_EDIT_ENTRY).last()
+        self.assertEqual(job.text, "Now updating... (progress: [    1/    3])")
