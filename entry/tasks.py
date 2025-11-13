@@ -960,7 +960,7 @@ def delete_entry_v2(self, job: Job) -> JobStatus:
 @register_job_task(JobOperation.BULK_EDIT_ENTRY)
 @app.task(bind=True)
 @may_schedule_until_job_is_ready
-def bulk_update_entries(self, job: Job) -> JobStatus | tuple[JobStatus, str, ACLBase | None]:
+def bulk_update_entries(self, job: Job) -> JobStatus | tuple[JobStatus, str, ACLBase | None] | None:
     job_params = json.loads(job.params)
 
     # get target items from ES by job_params.attr_info parameter
