@@ -2,6 +2,7 @@ import {
   AdvancedSearchJoinAttrInfo,
   AdvancedSearchResult,
   EntryHint,
+  EntityAttrIDandName,
 } from "@dmm-com/airone-apiclient-typescript-fetch";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import {
@@ -76,6 +77,7 @@ interface Props {
   isReadonly?: boolean;
   isNarrowDown?: boolean;
   omitHeadline?: boolean;
+  entityAttrs: EntityAttrIDandName[];
 }
 
 export const SearchResults: FC<Props> = ({
@@ -95,6 +97,7 @@ export const SearchResults: FC<Props> = ({
   isReadonly = false,
   isNarrowDown = true,
   omitHeadline = false,
+  entityAttrs = [],
 }) => {
   // NOTE attrTypes are guessed by the first element on the results. So if it has no appropriate attr,
   // the type guess doesn't work well. We should improve attr type API if more accurate type is needed.
@@ -131,6 +134,7 @@ export const SearchResults: FC<Props> = ({
         <TableContainer component={Paper}>
           <Table id="table_result_list">
             <SearchResultsTableHead
+              entityAttrs={entityAttrs}
               hasReferral={hasReferral}
               attrTypes={attrTypes}
               defaultEntryFilter={defaultEntryFilter}

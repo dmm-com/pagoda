@@ -45,6 +45,7 @@ from entry.api_v2.serializers import (
     EntryAliasSerializer,
     EntryAttributeValueRestoreSerializer,
     EntryBaseSerializer,
+    EntryBulkUpdateSerializer,
     EntryCopySerializer,
     EntryExportSerializer,
     EntryHistoryAttributeValueSerializer,
@@ -909,6 +910,25 @@ class EntryAttributeValueRestoreAPI(generics.UpdateAPIView):
     queryset = AttributeValue.objects.all()
     serializer_class = EntryAttributeValueRestoreSerializer
     permission_classes = [IsAuthenticated]
+
+
+class EntryBulkUpdateAPI(generics.UpdateAPIView):
+    serializer_class = EntryBulkUpdateSerializer
+
+    def update(self, request: Request, *args, **kwargs) -> Response:
+        user: User = request.user
+
+        serializer = EntryBulkUpdateSerializer(data=request.data, context={"_user": user})
+        serializer.is_valid(raise_exception=True)
+
+        model = Entity.objects.filter(id=request.data.get("modelid"), is_active=True).first()
+        if not model:
+            return Response("There is no model that is specified by modelid.", status=400)
+
+        job = Job.new_bulk_edit_entry_v2(user, model, params=request.data)
+        job.run()
+
+        return Response({}, status=status.HTTP_202_ACCEPTED)
 
 
 @extend_schema(

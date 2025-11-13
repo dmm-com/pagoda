@@ -11,7 +11,7 @@ import yaml
 from rest_framework import status
 from rest_framework.exceptions import ValidationError
 
-from airone.lib.elasticsearch import AttrHint, EntryFilterKey
+from airone.lib.elasticsearch import AttrHint, EntryFilterKey, FilterKey
 from airone.lib.log import Logger
 from airone.lib.test import AironeViewTest
 from airone.lib.types import (
@@ -6227,3 +6227,129 @@ class ViewTest(BaseViewTest):
         self.assertIsInstance(response_data, list)
         self.assertEqual(len(response_data), 1)
         self.assertIn("エイリアスで使用されています", response_data[0]["message"])
+
+    @patch("entry.tasks.bulk_update_entries.delay", Mock(side_effect=tasks.bulk_update_entries))
+    def test_bulk_update_items(self):
+        # Create items for bulk updating
+        for index, str_val in enumerate(["foo", "bar", "baz"]):
+            self.add_entry(
+                self.user,
+                "item-%s" % index,
+                self.entity,
+                values={
+                    "val": str_val,
+                },
+            )
+
+        # Make parameters for sending server
+        updating_attr = self.entity.attrs.get(name="val")
+
+        params = {
+            "value": {"id": updating_attr.id, "value": "updated"},
+            "modelid": self.entity.id,
+            "attrinfo": [{"name": "val", "filter_key": FilterKey.TEXT_CONTAINED, "keyword": "ba"}],
+            "hint_entry": {"filter_key": EntryFilterKey.TEXT_CONTAINED, "keyword": "item"},
+        }
+        resp = self.client.put(
+            "/entry/api/v2/bulk/",
+            params,
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 202)
+
+        # Check items are pudate expectedly
+        expected_values = [
+            ("item-0", "foo"),
+            ("item-1", "updated"),  # this one should be updated from bar to updated
+            ("item-2", "updated"),  # this one should be updated from baz to updated
+        ]
+
+        for itemname, expected_value in expected_values:
+            item = Entry.objects.get(name=itemname, schema=self.entity)
+            self.assertEqual(item.get_attrv("val").value, expected_value)
+
+    @patch("entry.tasks.bulk_update_entries.delay", Mock(side_effect=tasks.bulk_update_entries))
+    def test_bulk_update_items_with_referral_name_filter(self):
+        """
+        This tests bulk update when referral_name filter is used for advanced search.
+        """
+        # Create items that are referred by other items
+        target_items = [self.add_entry(self.user, f"item-{i}", self.entity) for i in range(3)]
+        [
+            self.add_entry(
+                self.user, "refering-item-%s" % v, self.entity, values={"ref": target_items[i]}
+            )
+            for (i, v) in enumerate(["foo", "bar", "baz"])
+        ]
+
+        # Make parameters for sending server
+        updating_attr = self.entity.attrs.get(name="val")
+        params = {
+            "value": {"id": updating_attr.id, "value": "updated"},
+            "modelid": self.entity.id,
+            "referral_name": "ba",  # this would be matched with "bar" and "baz"
+        }
+        resp = self.client.put(
+            "/entry/api/v2/bulk/",
+            params,
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 202)
+
+        # Check items are pudate expectedly
+        expected_values = [
+            ("item-0", ""),
+            ("item-1", "updated"),  # this one should be updated from bar to updated
+            ("item-2", "updated"),  # this one should be updated from baz to updated
+        ]
+
+        for itemname, expected_value in expected_values:
+            item = Entry.objects.get(name=itemname, schema=self.entity)
+            self.assertEqual(item.get_attrv("val").value, expected_value)
+
+    @patch.object(Job, "is_canceled", Mock(return_value=True))
+    @patch("entry.tasks.bulk_update_entries.delay", Mock(side_effect=tasks.bulk_update_entries))
+    def test_bulk_update_items_with_canceled(self):
+        """
+        This tests bulk update when the job is canceled during processing.
+        """
+        # Create items for bulk updating
+        for index, str_val in enumerate(["foo", "bar", "baz"]):
+            self.add_entry(
+                self.user,
+                "item-%s" % index,
+                self.entity,
+                values={
+                    "val": str_val,
+                },
+            )
+
+        # Make parameters for sending server
+        updating_attr = self.entity.attrs.get(name="val")
+
+        params = {
+            "value": {"id": updating_attr.id, "value": "updated"},
+            "modelid": self.entity.id,
+            "attrinfo": [],
+        }
+        resp = self.client.put(
+            "/entry/api/v2/bulk/",
+            params,
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 202)
+
+        # Check items are not updated due to cancellation
+        expected_values = [
+            # These won't be updated because the job is canceled
+            ("item-0", "foo"),
+            ("item-1", "bar"),
+            ("item-2", "baz"),
+        ]
+        for itemname, expected_value in expected_values:
+            item = Entry.objects.get(name=itemname, schema=self.entity)
+            self.assertEqual(item.get_attrv("val").value, expected_value)
+
+        # check job text shows expected message
+        job = Job.objects.filter(operation=JobOperation.BULK_EDIT_ENTRY).last()
+        self.assertEqual(job.text, "Now updating... (progress: [    1/    3])")

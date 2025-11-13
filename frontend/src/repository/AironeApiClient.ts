@@ -17,6 +17,7 @@ import {
   EntityApiV2ListRequest,
   EntityAttrCreate,
   EntityAttrUpdate,
+  EntityAttrIDandName,
   EntityDetail,
   EntryAlias,
   EntryApi,
@@ -341,7 +342,7 @@ class AironeApiClient {
     entityIds: number[],
     searchAllEntities = false,
     referralAttr: string = "",
-  ): Promise<Array<string>> {
+  ): Promise<Array<EntityAttrIDandName>> {
     return await this.entity.entityApiV2AttrsList({
       entityIds: searchAllEntities
         ? ""
@@ -418,6 +419,26 @@ class AironeApiClient {
   ): Promise<void> {
     return await this.entry.entryApiV2BulkDeleteDestroy(
       { attrinfo, ids, isAll },
+      {
+        headers: {
+          "Content-Type": "application/json;charset=utf-8",
+          "X-CSRFToken": getCsrfToken(),
+        },
+      },
+    );
+  }
+
+  async bulkUpdateEntries(
+    modelid: number,
+    value: AttributeData,
+    attrinfo?: Array<AdvancedSearchResultAttrInfo>,
+    referralName?: string,
+    hintEntry?: EntryHint,
+  ): Promise<void> {
+    await this.entry.entryApiV2BulkUpdate(
+      {
+        entryBulkUpdate: { modelid, value, attrinfo, referralName, hintEntry },
+      },
       {
         headers: {
           "Content-Type": "application/json;charset=utf-8",

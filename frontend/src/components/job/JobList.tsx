@@ -171,6 +171,7 @@ export const JobList: FC<Props> = ({ jobs }) => {
                   case JobOperations.DELETE_ENTITY_V2:
                   case JobOperations.IMPORT_ENTRY_V2:
                   case JobOperations.EXPORT_ENTRY_V2:
+                  case JobOperations.BULK_EDIT_ENTRY:
                     return (
                       <Typography
                         component={AironeLink}

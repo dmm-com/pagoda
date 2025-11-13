@@ -278,6 +278,11 @@ export const ArrayNamedObjectAttributeValueField: FC<
     fields.length === 1 && handleClickAddListItem(0);
   };
 
+  /* insert empty value if it's necessary */
+  if (fields.length === 0) {
+    insert(0, { name: "", object: null, _boolean: false });
+  }
+
   return (
     <StyledList>
       {fields.map((field, index) => (

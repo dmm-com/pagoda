@@ -8,6 +8,7 @@ import yaml
 from django.conf import settings
 from rest_framework.exceptions import ValidationError
 
+from acl.models import ACLBase
 from airone.celery import app
 from airone.lib import custom_view
 from airone.lib.acl import ACLType
@@ -953,4 +954,60 @@ def delete_entry_v2(self, job: Job) -> JobStatus:
     if custom_view.is_custom("after_delete_entry_v2", entry.schema.name):
         custom_view.call_custom("after_delete_entry_v2", entry.schema.name, job.user, entry)
 
+    return JobStatus.DONE
+
+
+@register_job_task(JobOperation.BULK_EDIT_ENTRY)
+@app.task(bind=True)
+@may_schedule_until_job_is_ready
+def bulk_update_entries(self, job: Job) -> JobStatus | tuple[JobStatus, str, ACLBase | None] | None:
+    job_params = json.loads(job.params)
+
+    # get target items from ES by job_params.attr_info parameter
+    resp = AdvancedSearchService.search_entries(
+        user=job.user,
+        hint_entity_ids=[job_params["modelid"]],
+        hint_attrs=[AttrHint(**x) for x in job_params.get("attrinfo", [])],
+        hint_entry=EntryHint(**job_params.get("hint_entry"))
+        if job_params.get("hint_entry")
+        else None,
+        hint_referral=job_params.get("referral_name"),
+        limit=999999,
+    )
+
+    # update each items in accordance with job_params.value parameter
+    context = {"request": DRFRequest(job.user)}
+    total_count = resp.ret_count
+    for index, record in enumerate(resp.ret_values):
+        job.text = "Now updating... (progress: [%5d/%5d])" % (index + 1, total_count)
+        job.save(update_fields=["text"])
+
+        # abort processing when job is canceled
+        if job.is_canceled():
+            job.status = JobStatus.CANCELED
+            job.save(update_fields=["status"])
+            return None
+
+        entry = Entry.objects.get(id=record.entry["id"])
+        updating_data: dict[str, list] = {"attrs": []}
+        if job_params.get("value"):
+            updating_data["attrs"].append(
+                {
+                    "id": job_params.get("value")["id"],
+                    "value": job_params.get("value")["value"],
+                }
+            )
+
+        serializer = EntryUpdateSerializer(instance=entry, data=updating_data, context=context)
+        if serializer.is_valid():
+            serializer.save()
+        else:
+            return (
+                JobStatus.ERROR,
+                "Validation error during bulk update (%s)" % serializer.error_messages,
+                None,
+            )
+
+    job.text = "Bulk update completed [%5d/%5d]" % (total_count, total_count)
+    job.save(update_fields=["text"])
     return JobStatus.DONE

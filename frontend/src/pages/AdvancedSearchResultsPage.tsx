@@ -417,6 +417,7 @@ export const AdvancedSearchResultsPage: FC = () => {
             searchAllEntities={searchAllEntities}
             joinAttrs={joinAttrs}
             disablePaginationFooter={joinAttrs.length > 0}
+            entityAttrs={entityAttrs.value ?? []}
           />
 
           {/* show button to show continuous search results manually when joinAttrs are specified */}
@@ -446,7 +447,9 @@ export const AdvancedSearchResultsPage: FC = () => {
       <AdvancedSearchModal
         openModal={openModal}
         setOpenModal={setOpenModal}
-        attrNames={entityAttrs.value ?? []}
+        attrNames={Array.from(
+          new Set(entityAttrs.value?.map((x) => x.name) ?? []),
+        )}
         initialAttrNames={attrInfo.map(
           (e: AdvancedSearchResultAttrInfo) => e.name,
         )}

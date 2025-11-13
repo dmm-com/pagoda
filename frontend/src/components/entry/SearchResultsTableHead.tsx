@@ -3,6 +3,7 @@ import {
   EntryAttributeTypeTypeEnum,
   EntryHint,
   EntryHintFilterKeyEnum,
+  EntityAttrIDandName,
 } from "@dmm-com/airone-apiclient-typescript-fetch";
 import AddIcon from "@mui/icons-material/Add";
 import CheckBoxOutlineBlankOutlinedIcon from "@mui/icons-material/CheckBoxOutlineBlankOutlined";
@@ -30,6 +31,7 @@ import {
 } from "react";
 import { useLocation, useNavigate } from "react-router";
 
+import { AdvancedSearchEditModal } from "./AdvancedSearchEditModal";
 import { AdvancedSearchJoinModal } from "./AdvancedSearchJoinModal";
 import { SearchResultControlMenu } from "./SearchResultControlMenu";
 import { SearchResultControlMenuForEntry } from "./SearchResultControlMenuForEntry";
@@ -70,6 +72,7 @@ interface Props {
   isReadonly?: boolean;
   isNarrowDown?: boolean;
   omitHeadline?: boolean;
+  entityAttrs: EntityAttrIDandName[];
 }
 
 export const SearchResultsTableHead: FC<Props> = ({
@@ -85,10 +88,17 @@ export const SearchResultsTableHead: FC<Props> = ({
   isReadonly = false,
   isNarrowDown = true,
   omitHeadline = false,
+  entityAttrs = [],
 }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const [checked, setChecked] = useState(false);
+
+  /* These are used for AdvancedSearchEditModal component */
+  const [openEditModal, setOpenEditModal] = useState(false);
+  const [editTargetAttrID, setEditTargetAttrID] = useState(0);
+  const [editTargetAttrname, setEditTargetAttrname] = useState("");
+  const [editTargetAttrtype, setEditTargetAttrtype] = useState(0);
 
   const [hintEntry, setHintEntry] = useState<EntryHint>(
     defaultEntryFilter ?? {
@@ -307,6 +317,7 @@ export const SearchResultsTableHead: FC<Props> = ({
                     </StyledIconButton>
                   </Tooltip>
                   <SearchResultControlMenu
+                    attrname={attrName}
                     attrFilter={attrsFilter[attrName]}
                     anchorElem={attributeMenuEls[attrName]}
                     handleClose={() =>
@@ -320,6 +331,11 @@ export const SearchResultsTableHead: FC<Props> = ({
                     )}
                     handleUpdateAttrFilter={handleUpdateAttrFilter(attrName)}
                     attrType={attrTypes[attrName]}
+                    setOpenEditModal={setOpenEditModal}
+                    entityAttrs={entityAttrs}
+                    setEditTargetAttrID={setEditTargetAttrID}
+                    setEditTargetAttrname={setEditTargetAttrname}
+                    setEditTargetAttrtype={setEditTargetAttrtype}
                   />
                 </>
               )}
@@ -363,6 +379,24 @@ export const SearchResultsTableHead: FC<Props> = ({
           </StyledTableCell>
         )}
       </TableRow>
+
+      <AdvancedSearchEditModal
+        openModal={openEditModal}
+        handleClose={() => {
+          setOpenEditModal(false);
+          if (editTargetAttrname) {
+            setAttributeMenuEls({
+              ...attributeMenuEls,
+              [editTargetAttrname]: null,
+            });
+          }
+        }}
+        modelIds={entityIds}
+        attrsFilter={attrsFilter}
+        targetAttrID={editTargetAttrID}
+        targetAttrname={editTargetAttrname}
+        targetAttrtype={editTargetAttrtype}
+      ></AdvancedSearchEditModal>
     </TableHead>
   );
 };
