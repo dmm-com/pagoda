@@ -217,63 +217,6 @@ class PluginPageNumberPagination(PageNumberPagination):
         return super().paginate_queryset(queryset, request, view)
 
 
-class PluginCursorPagination:
-    """Cursor-based pagination for plugins
-
-    Provides cursor-based pagination for large datasets where
-    consistent ordering and performance are critical.
-
-    Note: This is a simplified implementation. For production use,
-    consider using DRF's CursorPagination as a base class.
-
-    Usage:
-        class MyPluginViewSet(PluginViewSet):
-            pagination_class = PluginCursorPagination
-    """
-
-    page_size = 100
-    cursor_query_param = "cursor"
-    ordering = "-created_time"  # Default ordering field
-
-    def __init__(self):
-        logger.warning(
-            "PluginCursorPagination is a placeholder implementation. "
-            "For production use, extend DRF's CursorPagination."
-        )
-
-    def paginate_queryset(self, queryset, request, view=None):
-        """Placeholder for cursor pagination
-
-        Args:
-            queryset: The queryset to paginate
-            request: The request object
-            view: The view being used
-
-        Returns:
-            Limited queryset (simplified implementation)
-        """
-        # This is a simplified implementation
-        # In practice, you would implement proper cursor logic
-        return queryset[: self.page_size]
-
-    def get_paginated_response(self, data: Any) -> Response:
-        """Return response with cursor pagination metadata
-
-        Args:
-            data: The serialized page data
-
-        Returns:
-            Response object with cursor pagination metadata
-        """
-        return Response(
-            {
-                "next": None,  # Would implement cursor logic here
-                "previous": None,  # Would implement cursor logic here
-                "results": data,
-            }
-        )
-
-
 class PluginNoPagination:
     """No pagination class for plugins
 

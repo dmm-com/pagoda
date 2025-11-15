@@ -7,6 +7,7 @@ and integration with host application data models.
 """
 
 import logging
+from datetime import datetime
 from typing import Any, Dict, List, Optional, cast
 
 from rest_framework import serializers
@@ -379,8 +380,6 @@ class PluginErrorSerializer(Serializer):
 
         # Add timestamp if not provided
         if "timestamp" not in data or not data["timestamp"]:
-            from datetime import datetime
-
             data["timestamp"] = datetime.now().isoformat()
 
         return data
