@@ -1,5 +1,6 @@
 import functools
 import inspect
+import logging
 import os
 import sys
 from typing import List
@@ -74,6 +75,14 @@ class AironeTestCase(TestCase):
         self._es.recreate_index()
 
     def tearDown(self):
+        # Clean up Elasticsearch test index
+        if hasattr(self, "_es") and self._es:
+            try:
+                self._es.indices.delete(index=self._es._index, ignore=[400, 404])
+            except Exception as e:
+                # Don't fail the test due to cleanup errors
+                logging.warning(f"Failed to cleanup ES index {self._es._index}: {e}")
+
         for fname in os.listdir(settings.MEDIA_ROOT):
             os.unlink(os.path.join(settings.MEDIA_ROOT, fname))
 
