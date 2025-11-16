@@ -2172,7 +2172,9 @@ class Entry(ACLBase):
         return {"name": self.name, "attrs": attrinfo}
 
     # NOTE: Type-Write
-    def get_es_document(self, entity_attrs=None) -> EntryDocument:
+    def get_es_document(
+        self, entity_attrs: models.QuerySet["EntityAttr"] | None = None
+    ) -> EntryDocument:
         """This processing registers entry information to Elasticsearch"""
 
         # This inner method truncates value in taking multi-byte in account

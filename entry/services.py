@@ -139,7 +139,7 @@ class AdvancedSearchService:
             # sending request to elasticsearch with making query
             resp = execute_query(query, limit, offset)
 
-            if "status" in resp and resp["status"] == 404:
+            if resp.status == 404:
                 continue
 
             tmp_hint_attrs = [attr.model_copy(deep=True) for attr in hint_attrs]
@@ -229,7 +229,7 @@ class AdvancedSearchService:
 
         resp = execute_query(query, limit)
 
-        if "status" in resp and resp["status"] == 404:
+        if resp.status == 404:
             return {
                 "ret_count": 0,
                 "ret_values": [],

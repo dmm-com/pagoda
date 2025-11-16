@@ -5,7 +5,7 @@ from typing import Any, NotRequired
 
 from django.conf import settings
 from elasticsearch import Elasticsearch
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, ValidationError
 from typing_extensions import TypedDict
 
 from airone.lib.acl import ACLType
@@ -14,6 +14,16 @@ from airone.lib.types import AttrType, BaseIntEnum
 from entity.models import Entity
 from entry.settings import CONFIG
 from user.models import User
+
+
+# Elasticsearch Response Type Definitions (Pydantic Models)
+class ESHitsTotal(BaseModel):
+    """Elasticsearch hits total structure"""
+
+    value: int
+    relation: str = "eq"
+
+    model_config = {"extra": "allow"}
 
 
 class AdvancedSearchResultRecordIdNamePair(TypedDict):
@@ -89,6 +99,37 @@ class EntryDocument(TypedDict):
     attr: list[AttributeDocument]
     referrals: list[dict[str, str | int | dict[str, str | int]]]
     is_readable: bool
+
+
+# Elasticsearch Response Type Definitions (continued after EntryDocument)
+class ESHit(BaseModel):
+    """Elasticsearch hit structure"""
+
+    id: str = Field(alias="_id")
+    source: EntryDocument = Field(alias="_source")
+    sort: list[str] | None = None
+    inner_hits: dict[str, Any] | None = None
+
+    model_config = {"extra": "allow", "populate_by_name": True}
+
+
+class ESHits(BaseModel):
+    """Elasticsearch hits structure"""
+
+    total: ESHitsTotal
+    hits: list[ESHit]
+
+    model_config = {"extra": "allow"}
+
+
+class ESResponse(BaseModel):
+    """Elasticsearch response structure"""
+
+    hits: ESHits
+    aggregations: dict[str, Any] | None = None
+    status: int | None = None
+
+    model_config = {"extra": "allow"}
 
 
 class ESS(Elasticsearch):
@@ -307,9 +348,11 @@ def make_query(
                 aggs_query = _make_aggs_query(hint_attr.name)
                 # TODO Set to 1 for convenience
                 resp = execute_query(aggs_query, 1)
-                keyword_infos = resp["aggregations"]["attr_aggs"]["attr_name_aggs"][
-                    "attr_value_aggs"
-                ]["buckets"]
+                keyword_infos = (
+                    resp.aggregations["attr_aggs"]["attr_name_aggs"]["attr_value_aggs"]["buckets"]
+                    if resp.aggregations
+                    else []
+                )
                 if keyword_infos == []:
                     # Since there are 0 duplicates, set a condition that will always be false.
                     hint_attr.keyword = "a^"
@@ -981,7 +1024,7 @@ def _make_an_attribute_filter(hint: AttrHint, keyword: str) -> dict[str, dict]:
 
 def execute_query(
     query: dict[str, Any], size: int | None = None, offset: int | None = None
-) -> dict[str, Any]:
+) -> ESResponse:
     """Run a search query.
 
     Args:
@@ -993,7 +1036,7 @@ def execute_query(
         Exception: If query execution fails, output error details.
 
     Returns:
-        dict[str, Any]: Search execution result
+        ESResponse: Search execution result
 
     """
     kwargs = {
@@ -1010,12 +1053,23 @@ def execute_query(
     except Exception as e:
         raise (e)
 
-    return res
+    # Validate response with Pydantic
+    # In DEBUG mode: strict validation (raises exception on error)
+    # In production: log warning and return raw response
+    if settings.DEBUG:
+        return ESResponse.model_validate(res)
+    else:
+        try:
+            return ESResponse.model_validate(res)
+        except ValidationError as e:
+            Logger.warning(f"Elasticsearch response validation failed: {e}")
+            # Return raw response in production to avoid breaking the application
+            return res  # type: ignore[return-value]
 
 
 def make_search_results(
     user: User,
-    res: dict[str, Any],
+    res: ESResponse,
     hint_attrs: list[AttrHint],
     hint_referral: str | None,
     limit: int,
@@ -1044,8 +1098,10 @@ def make_search_results(
     5. When all entries have been processed, the search results are returned.
 
     Args:
-        res (`str`, optional): Search results for Elasticsearch
-        hint_attrs (list(AttrHint)):  A list of search strings and attribute sets
+        user (User): User performing the search
+        res (ESResponse): Search results from Elasticsearch
+        hint_attrs (list[AttrHint]): A list of search strings and attribute sets
+        hint_referral (str | None): Referral filter condition
         limit (int): Maximum number of search results to return
 
     Returns:
@@ -1057,21 +1113,19 @@ def make_search_results(
 
     # set numbers of found entries
     results = AdvancedSearchResults(
-        ret_count=res["hits"]["total"]["value"],
+        ret_count=res.hits.total.value,
         ret_values=[],
     )
 
     # get django objects from the hit information from Elasticsearch
-    hit_entry_ids = [x["_id"] for x in res["hits"]["hits"]]
+    hit_entry_ids = [x.id for x in res.hits.hits]
     hit_entries = Entry.objects.filter(id__in=hit_entry_ids, is_active=True).select_related(
         "schema"
     )
 
     hit_infos: dict = {}
     for entry in hit_entries[:limit]:
-        hit_infos[entry] = [x["_source"] for x in res["hits"]["hits"] if int(x["_id"]) == entry.id][
-            0
-        ]
+        hit_infos[entry] = [x.source for x in res.hits.hits if int(x.id) == entry.id][0]
 
     for entry, entry_info in sorted(hit_infos.items(), key=lambda x: x[0].name):
         record = AdvancedSearchResultRecord(
@@ -1082,7 +1136,7 @@ def make_search_results(
         )
 
         if hint_referral is not None:
-            record.referrals = entry_info.get("referrals", [])
+            record.referrals = entry_info["referrals"] or []
 
         # Check for has permission to Entry. But it will be omitted when user is None.
         if (
@@ -1215,22 +1269,23 @@ def make_search_results(
     return results
 
 
-def make_search_results_for_simple(res: dict[str, Any]) -> dict[str, str]:
-    result = {
-        "ret_count": res["hits"]["total"]["value"],
+def make_search_results_for_simple(res: ESResponse) -> dict[str, Any]:
+    result: dict[str, Any] = {
+        "ret_count": res.hits.total.value,
         "ret_values": [],
     }
 
-    for resp_entry in res["hits"]["hits"]:
+    for resp_entry in res.hits.hits:
         ret_value = {
-            "id": resp_entry["_id"],
-            "name": resp_entry["_source"]["name"],
-            "schema": resp_entry["_source"]["entity"],
+            "id": resp_entry.id,
+            "name": resp_entry.source["name"],
+            "schema": resp_entry.source["entity"],
         }
 
-        for resp_entry_attr in resp_entry["inner_hits"]["attr"]["hits"]["hits"]:
-            ret_value["attr"] = resp_entry_attr["_source"]["name"]
-            break
+        if resp_entry.inner_hits and "attr" in resp_entry.inner_hits:
+            attr_hits = resp_entry.inner_hits["attr"]["hits"]["hits"]
+            if attr_hits:
+                ret_value["attr"] = attr_hits[0]["_source"]["name"]
 
         result["ret_values"].append(ret_value)
 
@@ -1325,3 +1380,58 @@ def _is_date(value: str) -> list | None:
 
     # If result is not empty and all value is date, this returns the result
     return result if result and all(result) else None
+
+
+# Type Guard Functions
+def is_es_response(value: Any) -> bool:
+    """Type guard to check if a value is a valid ESResponse
+
+    Args:
+        value: Value to check
+
+    Returns:
+        bool: True if the value is a valid ESResponse structure
+
+    """
+    if not isinstance(value, dict):
+        return False
+
+    if "hits" not in value:
+        return False
+
+    hits = value["hits"]
+    if not isinstance(hits, dict):
+        return False
+
+    if "total" not in hits or "hits" not in hits:
+        return False
+
+    if not isinstance(hits["total"], dict):
+        return False
+
+    if "value" not in hits["total"]:
+        return False
+
+    if not isinstance(hits["hits"], list):
+        return False
+
+    return True
+
+
+def is_valid_query(value: Any) -> bool:
+    """Type guard to check if a value is a valid Elasticsearch query
+
+    Args:
+        value: Value to check
+
+    Returns:
+        bool: True if the value is a valid query structure
+
+    """
+    if not isinstance(value, dict):
+        return False
+
+    if "query" not in value:
+        return False
+
+    return isinstance(value["query"], dict)

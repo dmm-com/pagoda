@@ -1,7 +1,7 @@
 from django.test import TestCase
 
 from airone.lib import elasticsearch
-from airone.lib.elasticsearch import AdvancedSearchResultRecord, AttrHint
+from airone.lib.elasticsearch import AdvancedSearchResultRecord, AttrHint, ESResponse
 from airone.lib.types import AttrType
 from entity.models import Entity, EntityAttr
 from entry.models import Attribute, AttributeValue, Entry
@@ -472,7 +472,7 @@ class ElasticSearchTest(TestCase):
                 "hits": [
                     {
                         "_type": "entry",
-                        "_id": entry.id,
+                        "_id": str(entry.id),
                         "_source": {
                             "entity": {"id": entry.id, "name": entry.name},
                             "name": entry.name,
@@ -482,10 +482,12 @@ class ElasticSearchTest(TestCase):
                                     "type": attr.schema.type,
                                     "key": "",
                                     "value": attr_value.value,
+                                    "date_value": None,
                                     "referral_id": "",
                                     "is_readable": True,
                                 }
                             ],
+                            "referrals": [],
                             "is_readable": True,
                         },
                         "sort": [entry.name],
@@ -493,6 +495,7 @@ class ElasticSearchTest(TestCase):
                 ],
             }
         }
+        res = ESResponse.model_validate(res)
 
         hint_attrs = [
             AttrHint(name="test_attr", keyword="", is_readable=True),
@@ -549,13 +552,16 @@ class ElasticSearchTest(TestCase):
                 "hits": [
                     {
                         "_type": "entry",
-                        "_id": entry.id,
+                        "_id": str(entry.id),
                         "_source": {
                             "name": entry.name,
                             "entity": {
                                 "id": entry.schema.id,
                                 "name": entry.schema.name,
                             },
+                            "attr": [],
+                            "referrals": [],
+                            "is_readable": True,
                         },
                         "inner_hits": {
                             "attr": {
@@ -564,7 +570,7 @@ class ElasticSearchTest(TestCase):
                                     "hits": [
                                         {
                                             "_type": "entry",
-                                            "_id": entry.id,
+                                            "_id": str(entry.id),
                                             "_source": {"name": attr.name},
                                         }
                                     ],
@@ -575,6 +581,7 @@ class ElasticSearchTest(TestCase):
                 ],
             }
         }
+        res = ESResponse.model_validate(res)
 
         results = elasticsearch.make_search_results_for_simple(res)
 
@@ -583,7 +590,7 @@ class ElasticSearchTest(TestCase):
             results["ret_values"],
             [
                 {
-                    "id": entry.id,
+                    "id": str(entry.id),
                     "name": entry.name,
                     "schema": {
                         "id": entry.schema.id,
@@ -606,11 +613,12 @@ class ElasticSearchTest(TestCase):
                 "hits": [
                     {
                         "_type": "entry",
-                        "_id": entry.id,
+                        "_id": str(entry.id),
                         "_source": {
                             "entity": {"id": entry.id, "name": entry.name},
                             "name": entry.name,
                             "attr": [],
+                            "referrals": [],
                             "is_readable": True,
                         },
                         "sort": [entry.name],
@@ -619,6 +627,7 @@ class ElasticSearchTest(TestCase):
                 ],
             }
         }
+        res = ESResponse.model_validate(res)
 
         # 1 to 10
         results = elasticsearch.make_search_results(self._user, res, [], "", limit=10)
