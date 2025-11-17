@@ -534,6 +534,405 @@ pip install -e .
 pip install -e .
 ```
 
+## Asynchronous Job Tasks
+
+Plugins can define asynchronous Celery tasks that integrate with Airone's Job system for executing long-running operations in the background.
+
+### Overview
+
+The plugin job task system enables:
+
+- **Background Execution**: Run time-consuming operations without blocking API responses
+- **Job UI Integration**: Unified progress tracking through Airone's Job management interface
+- **Operation Tracking**: Audit trail of who executed what and when
+- **Status Management**: Automatic handling of job lifecycle states
+
+### Operation ID Allocation
+
+Each job task requires a unique operation ID for tracking and execution.
+
+**ID Range Allocation:**
+
+- **1-99**: Core operations (reserved for Airone core)
+- **100-199**: custom_view operations (reserved for legacy custom views)
+- **200-9999**: Plugin operations (available for plugin use)
+- **10000+**: Reserved for future use
+
+**Configuration:**
+
+Operation ID ranges are configured in Airone settings or via environment variable:
+
+```python
+# In airone/settings_common.py or as environment variable
+PLUGIN_OPERATION_ID_CONFIG = {
+    "hello-world": (5000, 5099),      # Plugin ID: (range_start, range_end)
+    "my-plugin": (6000, 6099),
+}
+```
+
+Each plugin is allocated a range (e.g., 100 IDs from 5000 to 5099). Task operations use offsets within this range:
+
+```python
+# Actual operation_id = range_start + offset
+# Example: hello-world plugin with offset 0 → operation_id = 5000
+```
+
+### Implementing Plugin Tasks
+
+Plugin job tasks follow a four-step implementation pattern:
+
+#### 1. Define Operation Offsets (config.py)
+
+Create a configuration file defining task offsets and metadata:
+
+```python
+# my_plugin/config.py
+import enum
+from airone.lib.plugin_task import PluginTaskConfig
+
+class MyPluginOperation(int, enum.Enum):
+    """Operation offsets for my-plugin tasks"""
+    TASK_A = 0  # offset within allocated range
+    TASK_B = 1
+    TASK_C = 2
+
+PLUGIN_TASK_CONFIG = PluginTaskConfig(
+    plugin_id="my-plugin",
+    module_path="my_plugin.tasks",
+    tasks={
+        # "operation_name": (offset, "function_name")
+        "task_a": (MyPluginOperation.TASK_A, "task_a"),
+        "task_b": (MyPluginOperation.TASK_B, "task_b"),
+    },
+    # Optional: specify task behavior
+    hidden_operations=["task_b"],      # Hide from UI
+    cancelable_operations=["task_a"],  # Allow user cancellation
+)
+```
+
+#### 2. Implement Celery Task (tasks.py)
+
+Create the task implementation with proper decorators:
+
+```python
+# my_plugin/tasks.py
+import logging
+from airone.celery import app
+from airone.lib.plugin_task import register_plugin_job_task
+from job.models import Job, JobStatus
+from my_plugin.config import MyPluginOperation
+
+logger = logging.getLogger(__name__)
+
+@register_plugin_job_task(MyPluginOperation.TASK_A)
+@app.task(bind=True)
+def task_a(self, job_id: int):
+    """Example job task implementation"""
+    try:
+        job = Job.objects.get(id=job_id)
+    except Job.DoesNotExist:
+        logger.error(f"Job {job_id} not found")
+        return
+
+    # Check if job was canceled by user
+    if job.is_canceled():
+        logger.info(f"Job {job_id} was canceled")
+        return
+
+    # Check if job is ready to proceed
+    if not job.proceed_if_ready():
+        logger.warning(f"Job {job_id} is not ready")
+        return
+
+    # Update status to processing
+    job.update(JobStatus.PROCESSING)
+
+    try:
+        # Your long-running task logic here
+        params = job.params  # Access job parameters
+        logger.info(f"Processing job {job_id} with params: {params}")
+
+        # Example: process data
+        import time
+        time.sleep(10)  # Simulate long operation
+
+        # Update status to done
+        job.update(JobStatus.DONE)
+        logger.info(f"Job {job_id} completed successfully")
+
+    except Exception as e:
+        logger.error(f"Job {job_id} failed: {e}", exc_info=True)
+        job.update(JobStatus.ERROR)
+```
+
+**Key Implementation Points:**
+
+- **Double Decorator**: Use both `@register_plugin_job_task(offset)` and `@app.task(bind=True)`
+- **Status Checks**: Always check `is_canceled()` and `proceed_if_ready()`
+- **Status Updates**: Update job status to PROCESSING, DONE, or ERROR
+- **Error Handling**: Catch exceptions and update status to ERROR
+
+#### 3. Register in AppConfig (apps.py)
+
+Register the plugin's task configuration during Django initialization:
+
+```python
+# my_plugin/apps.py
+import logging
+from django.apps import AppConfig
+from airone.lib.plugin_task import PluginTaskRegistry
+
+logger = logging.getLogger(__name__)
+
+class MyPluginConfig(AppConfig):
+    default_auto_field = "django.db.models.BigAutoField"
+    name = "my_plugin"
+
+    def ready(self):
+        """Called when Django app is ready"""
+        from my_plugin.config import PLUGIN_TASK_CONFIG
+
+        # Register plugin tasks with global registry
+        PluginTaskRegistry.register(PLUGIN_TASK_CONFIG)
+        logger.info("Plugin tasks registered successfully")
+```
+
+#### 4. Trigger Job from API (api_v2/views.py)
+
+Create an API endpoint to trigger the job:
+
+```python
+# my_plugin/api_v2/views.py
+from rest_framework.response import Response
+from rest_framework import status
+from pagoda_plugin_sdk import PluginAPIViewMixin
+from airone.lib.plugin_task import PluginTaskRegistry
+from job.models import Job
+
+class TaskView(PluginAPIViewMixin):
+    def post(self, request):
+        """Trigger a background job task"""
+        try:
+            # Get operation_id from registry
+            operation_id = PluginTaskRegistry.get_operation_id(
+                "my-plugin",
+                "task_a"
+            )
+
+            # Create new job
+            job = Job._create_new_job(
+                user=request.user,
+                target=None,  # Optional: ACL object for permission checks
+                operation=operation_id,
+                text="Task A Processing",
+                params={
+                    "input_data": request.data.get("input"),
+                    "options": request.data.get("options", {}),
+                },
+            )
+
+            # Queue job for execution
+            job.run()
+
+            return Response({
+                "message": "Task queued successfully",
+                "job_id": job.id,
+            }, status=status.HTTP_201_CREATED)
+
+        except Exception as e:
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+```
+
+### Job Lifecycle
+
+Jobs follow a standard lifecycle with automatic state transitions:
+
+```
+API Request
+    ↓
+Job._create_new_job()
+    ↓ (status = PREPARING)
+    ↓
+job.run()
+    ↓ (Celery task queued)
+    ↓
+Task Handler executes
+    ↓ (status = PROCESSING)
+    ↓
+Business logic execution
+    ↓
+    ├─ Success → status = DONE
+    └─ Failure → status = ERROR
+
+User can cancel → status = CANCELED
+```
+
+**Job Status Values:**
+
+- `PREPARING`: Job created, waiting to start
+- `PROCESSING`: Task is currently executing
+- `DONE`: Task completed successfully
+- `ERROR`: Task failed with an error
+- `CANCELED`: User canceled the job
+
+### Best Practices
+
+#### 1. Always Check Job Status
+
+```python
+@app.task(bind=True)
+def my_task(self, job_id: int):
+    job = Job.objects.get(id=job_id)
+
+    # Check if user canceled
+    if job.is_canceled():
+        return
+
+    # Check if dependencies are met
+    if not job.proceed_if_ready():
+        return
+
+    # Proceed with task...
+```
+
+#### 2. Update Status Appropriately
+
+```python
+# When starting work
+job.update(JobStatus.PROCESSING)
+
+# When successful
+job.update(JobStatus.DONE)
+
+# When failed
+job.update(JobStatus.ERROR)
+```
+
+#### 3. Handle Errors Gracefully
+
+```python
+try:
+    # Task logic
+    result = perform_operation()
+    job.update(JobStatus.DONE)
+except SpecificException as e:
+    logger.error(f"Specific error: {e}")
+    job.update(JobStatus.ERROR)
+except Exception as e:
+    logger.error(f"Unexpected error: {e}", exc_info=True)
+    job.update(JobStatus.ERROR)
+```
+
+#### 4. Use Meaningful Job Text
+
+```python
+# Good: Descriptive job text
+job = Job._create_new_job(
+    user=request.user,
+    operation=operation_id,
+    text=f"Processing {entity_name} export ({len(entries)} entries)",
+)
+
+# Bad: Generic text
+job = Job._create_new_job(
+    user=request.user,
+    operation=operation_id,
+    text="Processing",
+)
+```
+
+#### 5. Test with Celery Worker
+
+Always test plugin tasks with a running Celery worker:
+
+```bash
+# Terminal 1: Start Celery worker
+poetry run celery -A airone worker -l info
+
+# Terminal 2: Start Django server
+ENABLED_PLUGINS=my-plugin python manage.py runserver
+
+# Terminal 3: Trigger task
+curl -X POST http://localhost:8000/api/v2/plugins/my-plugin/task/ \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Token YOUR_TOKEN" \
+  -d '{"input": "test data"}'
+```
+
+### Validation at Startup
+
+Django automatically validates all plugin operation IDs during startup:
+
+```python
+# In airone/job/apps.py
+class JobConfig(AppConfig):
+    def ready(self):
+        PluginTaskRegistry.validate_all()
+```
+
+**Validation Checks:**
+
+1. **Range Conflicts**: Ensures no overlap between plugin ID ranges
+2. **Offset Bounds**: Verifies all offsets are within allocated range
+3. **Missing Registration**: Detects plugins without registry entries
+
+**Example Validation Error:**
+
+```
+django.core.exceptions.ImproperlyConfigured: Plugin 'my-plugin' operation 'task_a'
+with offset 150 exceeds allocated range (6000, 6099). Maximum offset is 99.
+```
+
+If validation fails, Django will not start, preventing deployment of misconfigured plugins.
+
+### Checking Job Status
+
+Users can check job status through the standard Job API:
+
+```bash
+# Get job details
+curl http://localhost:8000/api/v2/jobs/<job_id>/ \
+  -H "Authorization: Token YOUR_TOKEN"
+```
+
+**Response:**
+
+```json
+{
+  "id": 123,
+  "user": {"id": 1, "username": "admin"},
+  "text": "Task A Processing",
+  "status": "DONE",
+  "operation": 6000,
+  "created_at": "2025-11-01T12:00:00Z",
+  "updated_at": "2025-11-01T12:00:10Z"
+}
+```
+
+### Complete Example
+
+For a complete working example, see the hello-world-plugin implementation at:
+
+```
+plugin/examples/pagoda-hello-world-plugin/
+├── pagoda_hello_world_plugin/
+│   ├── config.py           # Operation offset definitions
+│   ├── tasks.py            # Celery task implementations
+│   ├── apps.py             # Task registry registration
+│   └── api_v2/
+│       └── views.py        # API endpoint for job creation
+```
+
+The example demonstrates:
+- Operation offset enumeration
+- Task implementation with proper decorators
+- Registry registration in AppConfig
+- API endpoint for triggering jobs
+- Status checking and error handling
+
 ## Sample Plugin Reference
 
 ### Available Example

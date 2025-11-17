@@ -10,6 +10,7 @@ from typing import Any, Dict
 # Import from Pagoda Plugin SDK libraries (fully independent)
 from pagoda_plugin_sdk import PluginAPIViewMixin
 from pagoda_plugin_sdk.models import Entity, Entry
+from pagoda_plugin_sdk.tasks import Job, PluginTaskRegistry
 from rest_framework import status
 from rest_framework.permissions import AllowAny
 from rest_framework.request import Request
@@ -107,7 +108,7 @@ def _build_entry_data(entry: Any) -> Dict[str, Any]:
 class HelloView(PluginAPIViewMixin):
     """Simple Hello World API
 
-    Demonstrates basic GET/POST request handling in external plugins.
+    Demonstrates how external plugins can create API endpoints using Pagoda's core libraries.
     """
 
     def get(self, request: Request) -> Response:
@@ -122,23 +123,59 @@ class HelloView(PluginAPIViewMixin):
             }
         )
 
+
+class TaskView(PluginAPIViewMixin):
+    """Task execution endpoint for Hello World Plugin
+
+    Queues and executes the hello_world_task.
+    """
+
     def post(self, request: Request) -> Response:
-        """Execute Hello World job with custom message
+        """Execute Hello World task with custom message
 
         Request body:
             message (str): Custom message (optional)
         """
         message = request.data.get("message", "Hello World!")
 
-        response_data = {
-            "message": f"External plugin task would be queued with message: '{message}'",
-            "plugin": _get_plugin_metadata(),
-            "user": _get_user_info(request),
-            "pagoda_core_version": "1.0.0",
-            "timestamp": datetime.now().isoformat(),
-        }
+        try:
+            operation_id = PluginTaskRegistry.get_operation_id("hello-world", "hello_world_task")
 
-        return Response(response_data, status=status.HTTP_201_CREATED)
+            job = Job._create_new_job(
+                user=request.user,
+                target=None,
+                operation=operation_id,
+                text=f"Hello World task: {message}",
+                params={"message": message},
+            )
+            job.run()
+
+            response_data = {
+                "message": "Hello World task queued successfully",
+                "task_message": message,
+                "job_id": job.id,
+                "job_status": job.status,
+                "plugin": _get_plugin_metadata(),
+                "user": _get_user_info(request),
+                "pagoda_core_version": "1.0.0",
+                "timestamp": datetime.now().isoformat(),
+            }
+
+            return Response(response_data, status=status.HTTP_201_CREATED)
+
+        except Exception as e:
+            return Response(
+                {
+                    "error": "Failed to queue task",
+                    "message": str(e),
+                    "plugin": {
+                        "id": "hello-world",
+                        "name": "Hello World Plugin",
+                    },
+                    "timestamp": datetime.now().isoformat(),
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
 
 class GreetView(PluginAPIViewMixin):

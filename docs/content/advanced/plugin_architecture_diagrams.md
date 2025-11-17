@@ -497,6 +497,169 @@ sequenceDiagram
     Note over User,Plugin: Plugin hook execution on entry creation
 ```
 
+### Plugin Job Task Execution Flow
+
+```mermaid
+sequenceDiagram
+    participant API as Plugin API View
+    participant Registry as PluginTaskRegistry
+    participant Job as Job Model
+    participant Celery as Celery Queue
+    participant Worker as Celery Worker
+    participant Task as Plugin Task Handler
+
+    API->>Registry: get_operation_id("plugin-id", "task_name")
+    Registry-->>API: operation_id (e.g., 5001)
+
+    API->>Job: _create_new_job(user, operation_id, params)
+    Job->>Job: Set status = PREPARING
+    Job-->>API: Job instance
+
+    API->>Job: run()
+    Job->>Registry: get_task_handler(operation_id)
+    Registry-->>Job: Task function reference
+    Job->>Celery: Queue task with job_id
+    Job->>Job: Set status = PROCESSING (queued)
+    Job-->>API: Task queued
+
+    Celery->>Worker: Dispatch task to worker
+    Worker->>Task: Execute task(job_id)
+
+    Task->>Job: objects.get(id=job_id)
+    Task->>Task: Check is_canceled()
+    Task->>Task: Check proceed_if_ready()
+    Task->>Job: update(JobStatus.PROCESSING)
+
+    alt Task Success
+        Task->>Task: Execute business logic
+        Task->>Job: update(JobStatus.DONE)
+    else Task Failure
+        Task->>Task: Exception caught
+        Task->>Job: update(JobStatus.ERROR)
+    end
+
+    Note over API,Task: User can check job status via Job API<br/>GET /api/v2/jobs/{job_id}/
+```
+
+### Plugin Operation ID Validation Flow
+
+```mermaid
+graph TB
+    subgraph "Django Startup"
+        START[Django Initialization]
+        JOB_APP[job/apps.py<br/>JobConfig.ready]
+    end
+
+    subgraph "PluginTaskRegistry.validate_all"
+        LOAD_ENV[Load PLUGIN_OPERATION_ID_CONFIG<br/>from environment/settings]
+        GET_PLUGINS[Get all registered plugins<br/>from _plugin_configs]
+        CHECK_RANGES[Validate ID ranges<br/>for each plugin]
+        CHECK_OFFSETS[Validate task offsets<br/>within ranges]
+        CHECK_CONFLICTS[Check ID conflicts<br/>between plugins]
+        BUILD_MAPS[Build operation_id mappings<br/>_operation_id_map]
+    end
+
+    subgraph "Validation Checks"
+        RANGE_CHECK{Range valid?}
+        OFFSET_CHECK{Offsets valid?}
+        CONFLICT_CHECK{No conflicts?}
+    end
+
+    subgraph "Results"
+        SUCCESS[Validation Success<br/>Django starts normally]
+        FAIL_RANGE[ImproperlyConfigured<br/>Invalid range]
+        FAIL_OFFSET[ImproperlyConfigured<br/>Offset exceeds range]
+        FAIL_CONFLICT[ImproperlyConfigured<br/>ID conflict detected]
+        ABORT[Django Startup Aborted]
+    end
+
+    START --> JOB_APP
+    JOB_APP --> LOAD_ENV
+    LOAD_ENV --> GET_PLUGINS
+    GET_PLUGINS --> CHECK_RANGES
+
+    CHECK_RANGES --> RANGE_CHECK
+    RANGE_CHECK -->|Invalid| FAIL_RANGE
+    RANGE_CHECK -->|Valid| CHECK_OFFSETS
+
+    CHECK_OFFSETS --> OFFSET_CHECK
+    OFFSET_CHECK -->|Exceeds| FAIL_OFFSET
+    OFFSET_CHECK -->|Valid| CHECK_CONFLICTS
+
+    CHECK_CONFLICTS --> CONFLICT_CHECK
+    CONFLICT_CHECK -->|Conflict| FAIL_CONFLICT
+    CONFLICT_CHECK -->|No conflict| BUILD_MAPS
+
+    BUILD_MAPS --> SUCCESS
+
+    FAIL_RANGE --> ABORT
+    FAIL_OFFSET --> ABORT
+    FAIL_CONFLICT --> ABORT
+
+    style START fill:#e1f5fe
+    style SUCCESS fill:#e8f5e8
+    style FAIL_RANGE fill:#ffebee
+    style FAIL_OFFSET fill:#ffebee
+    style FAIL_CONFLICT fill:#ffebee
+    style ABORT fill:#ffcdd2
+```
+
+### Job Model method_table Architecture
+
+```mermaid
+graph LR
+    subgraph "Static Task Registration"
+        CORE[Core Tasks<br/>@register_job_task<br/>IDs: 1-99]
+        CORE_DECORATOR[Decorator stores<br/>operation -> method<br/>in _METHOD_TABLE]
+    end
+
+    subgraph "Dynamic Task Registration"
+        CUSTOM[custom_view Tasks<br/>CUSTOM_TASKS dict<br/>IDs: 100-199]
+        PLUGIN[Plugin Tasks<br/>PluginTaskRegistry<br/>IDs: 200-9999]
+        PLUGIN_CONFIG[Plugin config files<br/>PluginTaskConfig]
+    end
+
+    subgraph "method_table classmethod"
+        BUILD[Build _METHOD_TABLE<br/>if not exists]
+        MERGE_CUSTOM[Merge CUSTOM_TASKS]
+        MERGE_PLUGIN[Get all tasks from<br/>PluginTaskRegistry]
+        IMPORT[Dynamic import<br/>get_task_module]
+        MAP[Map operation_id<br/>to task handler]
+    end
+
+    subgraph "Task Execution"
+        JOB_RUN[job.run]
+        LOOKUP[Lookup handler from<br/>method_table]
+        GET_HANDLER[Get task handler<br/>by operation_id]
+        EXECUTE[Execute task.delay<br/>with job_id]
+        CELERY[Celery worker<br/>executes task]
+    end
+
+    CORE --> CORE_DECORATOR
+    CORE_DECORATOR --> BUILD
+
+    CUSTOM --> MERGE_CUSTOM
+    PLUGIN_CONFIG --> PLUGIN
+    PLUGIN --> MERGE_PLUGIN
+
+    BUILD --> MERGE_CUSTOM
+    MERGE_CUSTOM --> MERGE_PLUGIN
+    MERGE_PLUGIN --> IMPORT
+    IMPORT --> MAP
+    MAP --> LOOKUP
+
+    JOB_RUN --> GET_HANDLER
+    GET_HANDLER --> LOOKUP
+    LOOKUP --> EXECUTE
+    EXECUTE --> CELERY
+
+    style CORE fill:#e1f5fe
+    style CUSTOM fill:#fff3e0
+    style PLUGIN fill:#f3e5f5
+    style BUILD fill:#e8f5e8
+    style CELERY fill:#e3f2fd
+```
+
 ## Error Handling & Recovery
 
 ### Plugin Error Isolation
