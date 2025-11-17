@@ -85,6 +85,7 @@ class JobOperation(BaseIntEnum):
     EDIT_ENTRY_V2 = 28
     DELETE_ENTRY_V2 = 29
     IMPORT_ROLE_V2 = 30
+    BULK_EDIT_ENTRY = 31
 
 
 @enum.unique
@@ -151,6 +152,7 @@ class Job(models.Model):
         JobOperation.REGISTER_REFERRALS,
         JobOperation.EXPORT_SEARCH_RESULT,
         JobOperation.EXPORT_SEARCH_RESULT_V2,
+        JobOperation.BULK_EDIT_ENTRY,
     ] + CUSTOM_CANCELABLE_OPERATIONS
 
     PARALLELIZABLE_OPERATIONS: list[JobOperation | JobOperationCustom] = [
@@ -688,4 +690,10 @@ class Job(models.Model):
     def new_role_import_v2(kls, user: User, text="", params: dict | None = None) -> "Job":
         return kls._create_new_job(
             user=user, target=None, operation=JobOperation.IMPORT_ROLE_V2, text=text, params=params
+        )
+
+    @classmethod
+    def new_bulk_edit_entry_v2(kls, user: User, target: Entity, params: dict = {}) -> "Job":
+        return kls._create_new_job(
+            user=user, target=target, operation=JobOperation.BULK_EDIT_ENTRY, text="", params=params
         )

@@ -1629,3 +1629,11 @@ class EntrySelfHistoryRestoreSerializer(serializers.Serializer):
     """Serializer for restoring Entry self history"""
 
     history_id = serializers.IntegerField()
+
+
+class EntryBulkUpdateSerializer(serializers.Serializer):
+    modelid = serializers.IntegerField(required=True)
+    value = AttributeDataSerializer()
+    attrinfo = AdvancedSearchResultAttrInfoSerializer(many=True, required=False)
+    referral_name = serializers.CharField(required=False, allow_blank=True)
+    hint_entry = EntryHintSerializer(required=False)

@@ -75,7 +75,7 @@ class ACLBase(models.Model):
                 ret.append(HistoricalDifference(change.field, change.old, change.new))
 
         except AttributeError as e:
-            Logger.warn(str(e))
+            Logger.warning(str(e))
 
         return ret
 

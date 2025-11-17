@@ -169,6 +169,7 @@ export const JobOperations = {
   CREATE_ENTRY_V2: 27,
   EDIT_ENTRY_V2: 28,
   DELETE_ENTRY_V2: 29,
+  BULK_EDIT_ENTRY: 31,
 };
 
 export const JobRefreshIntervalMilliSec = 60 * 1000;

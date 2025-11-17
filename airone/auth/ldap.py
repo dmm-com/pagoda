@@ -32,7 +32,7 @@ class LDAPBackend(object):
             return None
 
         if not hasattr(settings, "AUTH_CONFIG"):
-            Logger.warn('"AUTH_CONFIG" parameter is necessary in airone/settings.py')
+            Logger.warning('"AUTH_CONFIG" parameter is necessary in airone/settings.py')
             return None
 
         # If local authentication fails, check it with LDAP server.

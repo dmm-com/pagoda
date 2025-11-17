@@ -42,7 +42,9 @@ Repository = "https://github.com/syucream/airone.git"
 Issues = "https://github.com/syucream/airone/issues"
 
 [tool.uv.sources]
-pagoda-plugin-sdk = { path = "../../../plugin/sdk", editable = true }
+# enable it on sdk development
+pagoda-plugin-sdk = { git = "https://github.com/dmm-com/pagoda.git", tag = "v3.153.0", subdirectory = "plugin/sdk" }
+# pagoda-plugin-sdk = { path = "../../../plugin/sdk", editable = true }
 
 [build-system]
 requires = ["hatchling"]

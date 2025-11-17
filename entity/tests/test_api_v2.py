@@ -3673,23 +3673,46 @@ class ViewTest(AironeViewTest):
         )
 
         # get partially
+        def order_by_id(x):
+            return x["id"]
+
         resp = self.client.get(
             "/entity/api/v2/attrs?entity_ids=%s" % ",".join([str(x.id) for x in entities[:2]])
         )
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(resp.json(), ["bar", "foo", "fuga", "hoge"])
+        self.assertEqual(
+            sorted(resp.json(), key=order_by_id),
+            sorted(
+                sum(
+                    [[{"id": a.id, "name": a.name} for a in m.attrs.all()] for m in entities[:2]],
+                    [],
+                ),
+                key=order_by_id,
+            ),
+        )
 
         resp = self.client.get(
             "/entity/api/v2/attrs?entity_ids=%s&referral_attr=%s" % (entity3.id, "puyo")
         )
         self.assertEqual(resp.status_code, 200)
         # order in the list is non-deterministic and it's not necessary
-        self.assertEqual(sorted(resp.json()), sorted(["foo", "bar", "fuga"]))
+        self.assertEqual(
+            sorted(resp.json(), key=order_by_id),
+            sorted(
+                [{"id": a.id, "name": a.name} for a in entities[0].attrs.all()], key=order_by_id
+            ),
+        )
 
         # get all attribute infomations are returned collectly
         resp = self.client.get("/entity/api/v2/attrs")
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(resp.json(), ["bar", "foo", "fuga", "hoge", "puyo"])
+        self.assertEqual(
+            sorted(resp.json(), key=order_by_id),
+            sorted(
+                sum([[{"id": a.id, "name": a.name} for a in m.attrs.all()] for m in entities], []),
+                key=order_by_id,
+            ),
+        )
 
         # invalid entity_id(s)
         resp = self.client.get("/entity/api/v2/attrs?entity_ids=9999")

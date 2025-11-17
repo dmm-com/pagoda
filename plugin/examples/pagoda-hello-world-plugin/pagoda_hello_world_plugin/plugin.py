@@ -5,6 +5,7 @@ Demonstrates how to create external plugins using the Pagoda plugin system.
 """
 
 import logging
+from typing import Any, Dict, List, Optional
 
 # Import from Pagoda Plugin SDK libraries (fully independent)
 from pagoda_plugin_sdk import Plugin
@@ -37,7 +38,7 @@ class HelloWorldPlugin(Plugin):
     # API v2 endpoint configuration
     api_v2_patterns = "pagoda_hello_world_plugin.api_v2.urls"
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the Hello World plugin"""
         super().__init__()
         logger.info(f"Initialized {self.name} v{self.version}")
@@ -45,7 +46,7 @@ class HelloWorldPlugin(Plugin):
     # Entry Lifecycle Hooks - Entity-specific for 'helloworld'
 
     @entry_hook("after_create", entity="helloworld")
-    def log_helloworld_create(self, entity_name, user, entry, **kwargs):
+    def log_helloworld_create(self, entity_name: str, user: Any, entry: Any, **kwargs: Any) -> None:
         """Called after an entry is created in 'helloworld' entity
 
         Args:
@@ -60,7 +61,9 @@ class HelloWorldPlugin(Plugin):
         )
 
     @entry_hook("before_update", entity="helloworld")
-    def log_helloworld_before_update(self, entity_name, user, validated_data, entry, **kwargs):
+    def log_helloworld_before_update(
+        self, entity_name: str, user: Any, validated_data: Dict[str, Any], entry: Any, **kwargs: Any
+    ) -> Dict[str, Any]:
         """Called before an entry is updated in 'helloworld' entity
 
         Args:
@@ -80,7 +83,9 @@ class HelloWorldPlugin(Plugin):
         return validated_data
 
     @entry_hook("after_update", entity="helloworld")
-    def log_helloworld_after_update(self, entity_name, user, entry, **kwargs):
+    def log_helloworld_after_update(
+        self, entity_name: str, user: Any, entry: Any, **kwargs: Any
+    ) -> None:
         """Called after an entry is updated in 'helloworld' entity
 
         Args:
@@ -97,7 +102,7 @@ class HelloWorldPlugin(Plugin):
     # Entry Lifecycle Hooks - Apply to all entities
 
     @entry_hook("before_delete")
-    def log_entry_delete(self, entity_name, user, entry, **kwargs):
+    def log_entry_delete(self, entity_name: str, user: Any, entry: Any, **kwargs: Any) -> None:
         """Called before an entry is deleted (all entities)
 
         Args:
@@ -114,7 +119,15 @@ class HelloWorldPlugin(Plugin):
     # Entry Validation Hook
 
     @validation_hook()
-    def validate_entry(self, user, schema_name, name, attrs, instance, **kwargs):
+    def validate_entry(
+        self,
+        user: Any,
+        schema_name: str,
+        name: str,
+        attrs: List[Any],
+        instance: Optional[Any],
+        **kwargs: Any,
+    ) -> None:
         """Custom validation for entry creation/update
 
         Args:
@@ -137,7 +150,9 @@ class HelloWorldPlugin(Plugin):
     # Entry Data Access Hook
 
     @get_attrs_hook("entry")
-    def get_entry_attrs(self, entry, attrinfo, is_retrieve, **kwargs):
+    def get_entry_attrs(
+        self, entry: Any, attrinfo: List[Any], is_retrieve: bool, **kwargs: Any
+    ) -> List[Any]:
         """Modify entry attributes before returning to client
 
         Args:
@@ -158,7 +173,7 @@ class HelloWorldPlugin(Plugin):
     # Entity Lifecycle Hooks
 
     @entity_hook("after_create")
-    def log_entity_create(self, user, entity, **kwargs):
+    def log_entity_create(self, user: Any, entity: Any, **kwargs: Any) -> None:
         """Called after an entity is created
 
         Args:
@@ -169,7 +184,9 @@ class HelloWorldPlugin(Plugin):
         logger.info(f"[Hello World Plugin] Entity created: '{entity.name}' by {user.username}")
 
     @entity_hook("before_update")
-    def log_entity_before_update(self, user, validated_data, entity, **kwargs):
+    def log_entity_before_update(
+        self, user: Any, validated_data: Dict[str, Any], entity: Any, **kwargs: Any
+    ) -> Dict[str, Any]:
         """Called before an entity is updated
 
         Args:
@@ -185,7 +202,7 @@ class HelloWorldPlugin(Plugin):
         return validated_data
 
     @entity_hook("after_update")
-    def log_entity_after_update(self, user, entity, **kwargs):
+    def log_entity_after_update(self, user: Any, entity: Any, **kwargs: Any) -> None:
         """Called after an entity is updated
 
         Args:
@@ -198,7 +215,7 @@ class HelloWorldPlugin(Plugin):
     # Entity Data Access Hook
 
     @get_attrs_hook("entity")
-    def get_entity_attrs(self, entity, attrinfo, **kwargs):
+    def get_entity_attrs(self, entity: Any, attrinfo: List[Any], **kwargs: Any) -> List[Any]:
         """Modify entity attributes before returning to client
 
         Args:

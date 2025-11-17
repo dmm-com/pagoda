@@ -300,13 +300,15 @@ export function convertAttrsFormatCtoS(
               object: EntryAttributeValueObject;
               _boolean: boolean;
             }[]
-          )?.map((x) => {
-            return {
-              id: x.object?.id ?? null,
-              name: x.name,
-              boolean: x._boolean,
-            };
-          });
+          )
+            ?.filter((x) => x.name != "" || x.object != null || x._boolean)
+            .map((x) => {
+              return {
+                id: x.object?.id ?? null,
+                name: x.name,
+                boolean: x._boolean,
+              };
+            });
 
         default:
           throw new Error(`unknown attribute type ${attrType}`);

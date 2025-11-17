@@ -379,10 +379,20 @@ class EntityAttrNameAPI(generics.GenericAPIView):
 
         # multiple parent_entity case
         if len(entity_attrs.values_list("parent_entity_id", flat=True).distinct()) > 1:
-            return entity_attrs.values_list("name", flat=True).order_by("name").distinct()
+            values_list = (
+                entity_attrs.values_list("name", "id", flat=False).order_by("name").distinct()
+            )
         # single parent_entity case
         else:
-            return entity_attrs.values_list("name", flat=True).order_by("index", "pk")
+            values_list = entity_attrs.values_list("name", "id", flat=False).order_by("index", "pk")
+
+        return [
+            {
+                "id": attrid,
+                "name": attrname,
+            }
+            for (attrname, attrid) in values_list
+        ]
 
     def get(self, request: Request) -> Response:
         queryset = self.get_queryset()

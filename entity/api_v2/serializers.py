@@ -911,5 +911,10 @@ class EntityImportExportRootSerializer(serializers.Serializer):
         _do_import(EntityAttrResource, self.validated_data["EntityAttr"])
 
 
+class EntityAttrIDandNameSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    name = serializers.CharField()
+
+
 class EntityAttrNameSerializer(serializers.ListSerializer):
-    child = serializers.CharField()
+    child = EntityAttrIDandNameSerializer()
