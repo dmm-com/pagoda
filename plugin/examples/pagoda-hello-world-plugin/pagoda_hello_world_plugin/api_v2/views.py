@@ -129,6 +129,7 @@ class TaskView(PluginAPIViewMixin):
 
     Queues and executes the hello_world_task.
     """
+
     def post(self, request: Request) -> Response:
         """Execute Hello World task with custom message
 
@@ -154,14 +155,8 @@ class TaskView(PluginAPIViewMixin):
                 "task_message": message,
                 "job_id": job.id,
                 "job_status": job.status,
-                "plugin": {
-                    "id": "hello-world",
-                    "name": "Hello World Plugin",
-                    "version": "1.0.0",
-                    "type": "external",
-                    "core": "pagoda-core",
-                },
-                "user": user_info,
+                "plugin": _get_plugin_metadata(),
+                "user": _get_user_info(request),
                 "pagoda_core_version": "1.0.0",
                 "timestamp": datetime.now().isoformat(),
             }
