@@ -428,6 +428,154 @@ Pagoda</span></a></div></header><main class="container flex flex-even"><aside cl
     Pagoda--&gt;&gt;User: Entry created successfully
 
     Note over User,Plugin: Plugin hook execution on entry creation
+</code></pre><div class=gdoc-page__anchorwrap><h3 id=plugin-job-task-execution-flow>Plugin Job Task Execution Flow<a data-clipboard-text=https://dmm-com.github.io/pagoda/advanced/plugin_architecture_diagrams/#plugin-job-task-execution-flow class="gdoc-page__anchor gdoc-page__anchor--right clip" aria-label="Anchor Plugin Job Task Execution Flow" href=#plugin-job-task-execution-flow><svg class="icon link"><use xlink:href="#link"/></svg></a></h3></div><pre tabindex=0><code class=language-mermaid data-lang=mermaid>sequenceDiagram
+    participant API as Plugin API View
+    participant Registry as PluginTaskRegistry
+    participant Job as Job Model
+    participant Celery as Celery Queue
+    participant Worker as Celery Worker
+    participant Task as Plugin Task Handler
+
+    API-&gt;&gt;Registry: get_operation_id(&#34;plugin-id&#34;, &#34;task_name&#34;)
+    Registry--&gt;&gt;API: operation_id (e.g., 5001)
+
+    API-&gt;&gt;Job: _create_new_job(user, operation_id, params)
+    Job-&gt;&gt;Job: Set status = PREPARING
+    Job--&gt;&gt;API: Job instance
+
+    API-&gt;&gt;Job: run()
+    Job-&gt;&gt;Registry: get_task_handler(operation_id)
+    Registry--&gt;&gt;Job: Task function reference
+    Job-&gt;&gt;Celery: Queue task with job_id
+    Job-&gt;&gt;Job: Set status = PROCESSING (queued)
+    Job--&gt;&gt;API: Task queued
+
+    Celery-&gt;&gt;Worker: Dispatch task to worker
+    Worker-&gt;&gt;Task: Execute task(job_id)
+
+    Task-&gt;&gt;Job: objects.get(id=job_id)
+    Task-&gt;&gt;Task: Check is_canceled()
+    Task-&gt;&gt;Task: Check proceed_if_ready()
+    Task-&gt;&gt;Job: update(JobStatus.PROCESSING)
+
+    alt Task Success
+        Task-&gt;&gt;Task: Execute business logic
+        Task-&gt;&gt;Job: update(JobStatus.DONE)
+    else Task Failure
+        Task-&gt;&gt;Task: Exception caught
+        Task-&gt;&gt;Job: update(JobStatus.ERROR)
+    end
+
+    Note over API,Task: User can check job status via Job API&lt;br/&gt;GET /api/v2/jobs/{job_id}/
+</code></pre><div class=gdoc-page__anchorwrap><h3 id=plugin-operation-id-validation-flow>Plugin Operation ID Validation Flow<a data-clipboard-text=https://dmm-com.github.io/pagoda/advanced/plugin_architecture_diagrams/#plugin-operation-id-validation-flow class="gdoc-page__anchor gdoc-page__anchor--right clip" aria-label="Anchor Plugin Operation ID Validation Flow" href=#plugin-operation-id-validation-flow><svg class="icon link"><use xlink:href="#link"/></svg></a></h3></div><pre tabindex=0><code class=language-mermaid data-lang=mermaid>graph TB
+    subgraph &#34;Django Startup&#34;
+        START[Django Initialization]
+        JOB_APP[job/apps.py&lt;br/&gt;JobConfig.ready]
+    end
+
+    subgraph &#34;PluginTaskRegistry.validate_all&#34;
+        LOAD_ENV[Load PLUGIN_OPERATION_ID_CONFIG&lt;br/&gt;from environment/settings]
+        GET_PLUGINS[Get all registered plugins&lt;br/&gt;from _plugin_configs]
+        CHECK_RANGES[Validate ID ranges&lt;br/&gt;for each plugin]
+        CHECK_OFFSETS[Validate task offsets&lt;br/&gt;within ranges]
+        CHECK_CONFLICTS[Check ID conflicts&lt;br/&gt;between plugins]
+        BUILD_MAPS[Build operation_id mappings&lt;br/&gt;_operation_id_map]
+    end
+
+    subgraph &#34;Validation Checks&#34;
+        RANGE_CHECK{Range valid?}
+        OFFSET_CHECK{Offsets valid?}
+        CONFLICT_CHECK{No conflicts?}
+    end
+
+    subgraph &#34;Results&#34;
+        SUCCESS[Validation Success&lt;br/&gt;Django starts normally]
+        FAIL_RANGE[ImproperlyConfigured&lt;br/&gt;Invalid range]
+        FAIL_OFFSET[ImproperlyConfigured&lt;br/&gt;Offset exceeds range]
+        FAIL_CONFLICT[ImproperlyConfigured&lt;br/&gt;ID conflict detected]
+        ABORT[Django Startup Aborted]
+    end
+
+    START --&gt; JOB_APP
+    JOB_APP --&gt; LOAD_ENV
+    LOAD_ENV --&gt; GET_PLUGINS
+    GET_PLUGINS --&gt; CHECK_RANGES
+
+    CHECK_RANGES --&gt; RANGE_CHECK
+    RANGE_CHECK --&gt;|Invalid| FAIL_RANGE
+    RANGE_CHECK --&gt;|Valid| CHECK_OFFSETS
+
+    CHECK_OFFSETS --&gt; OFFSET_CHECK
+    OFFSET_CHECK --&gt;|Exceeds| FAIL_OFFSET
+    OFFSET_CHECK --&gt;|Valid| CHECK_CONFLICTS
+
+    CHECK_CONFLICTS --&gt; CONFLICT_CHECK
+    CONFLICT_CHECK --&gt;|Conflict| FAIL_CONFLICT
+    CONFLICT_CHECK --&gt;|No conflict| BUILD_MAPS
+
+    BUILD_MAPS --&gt; SUCCESS
+
+    FAIL_RANGE --&gt; ABORT
+    FAIL_OFFSET --&gt; ABORT
+    FAIL_CONFLICT --&gt; ABORT
+
+    style START fill:#e1f5fe
+    style SUCCESS fill:#e8f5e8
+    style FAIL_RANGE fill:#ffebee
+    style FAIL_OFFSET fill:#ffebee
+    style FAIL_CONFLICT fill:#ffebee
+    style ABORT fill:#ffcdd2
+</code></pre><div class=gdoc-page__anchorwrap><h3 id=job-model-method_table-architecture>Job Model method_table Architecture<a data-clipboard-text=https://dmm-com.github.io/pagoda/advanced/plugin_architecture_diagrams/#job-model-method_table-architecture class="gdoc-page__anchor gdoc-page__anchor--right clip" aria-label="Anchor Job Model method_table Architecture" href=#job-model-method_table-architecture><svg class="icon link"><use xlink:href="#link"/></svg></a></h3></div><pre tabindex=0><code class=language-mermaid data-lang=mermaid>graph LR
+    subgraph &#34;Static Task Registration&#34;
+        CORE[Core Tasks&lt;br/&gt;@register_job_task&lt;br/&gt;IDs: 1-99]
+        CORE_DECORATOR[Decorator stores&lt;br/&gt;operation -&gt; method&lt;br/&gt;in _METHOD_TABLE]
+    end
+
+    subgraph &#34;Dynamic Task Registration&#34;
+        CUSTOM[custom_view Tasks&lt;br/&gt;CUSTOM_TASKS dict&lt;br/&gt;IDs: 100-199]
+        PLUGIN[Plugin Tasks&lt;br/&gt;PluginTaskRegistry&lt;br/&gt;IDs: 200-9999]
+        PLUGIN_CONFIG[Plugin config files&lt;br/&gt;PluginTaskConfig]
+    end
+
+    subgraph &#34;method_table classmethod&#34;
+        BUILD[Build _METHOD_TABLE&lt;br/&gt;if not exists]
+        MERGE_CUSTOM[Merge CUSTOM_TASKS]
+        MERGE_PLUGIN[Get all tasks from&lt;br/&gt;PluginTaskRegistry]
+        IMPORT[Dynamic import&lt;br/&gt;get_task_module]
+        MAP[Map operation_id&lt;br/&gt;to task handler]
+    end
+
+    subgraph &#34;Task Execution&#34;
+        JOB_RUN[job.run]
+        LOOKUP[Lookup handler from&lt;br/&gt;method_table]
+        GET_HANDLER[Get task handler&lt;br/&gt;by operation_id]
+        EXECUTE[Execute task.delay&lt;br/&gt;with job_id]
+        CELERY[Celery worker&lt;br/&gt;executes task]
+    end
+
+    CORE --&gt; CORE_DECORATOR
+    CORE_DECORATOR --&gt; BUILD
+
+    CUSTOM --&gt; MERGE_CUSTOM
+    PLUGIN_CONFIG --&gt; PLUGIN
+    PLUGIN --&gt; MERGE_PLUGIN
+
+    BUILD --&gt; MERGE_CUSTOM
+    MERGE_CUSTOM --&gt; MERGE_PLUGIN
+    MERGE_PLUGIN --&gt; IMPORT
+    IMPORT --&gt; MAP
+    MAP --&gt; LOOKUP
+
+    JOB_RUN --&gt; GET_HANDLER
+    GET_HANDLER --&gt; LOOKUP
+    LOOKUP --&gt; EXECUTE
+    EXECUTE --&gt; CELERY
+
+    style CORE fill:#e1f5fe
+    style CUSTOM fill:#fff3e0
+    style PLUGIN fill:#f3e5f5
+    style BUILD fill:#e8f5e8
+    style CELERY fill:#e3f2fd
 </code></pre><div class=gdoc-page__anchorwrap><h2 id=error-handling--recovery>Error Handling & Recovery<a data-clipboard-text=https://dmm-com.github.io/pagoda/advanced/plugin_architecture_diagrams/#error-handling--recovery class="gdoc-page__anchor gdoc-page__anchor--right clip" aria-label="Anchor Error Handling & Recovery" href=#error-handling--recovery><svg class="icon link"><use xlink:href="#link"/></svg></a></h2></div><div class=gdoc-page__anchorwrap><h3 id=plugin-error-isolation>Plugin Error Isolation<a data-clipboard-text=https://dmm-com.github.io/pagoda/advanced/plugin_architecture_diagrams/#plugin-error-isolation class="gdoc-page__anchor gdoc-page__anchor--right clip" aria-label="Anchor Plugin Error Isolation" href=#plugin-error-isolation><svg class="icon link"><use xlink:href="#link"/></svg></a></h3></div><pre tabindex=0><code class=language-mermaid data-lang=mermaid>graph TD
     subgraph &#34;Error Sources&#34;
         PE[Plugin Error]
@@ -540,6 +688,6 @@ Pagoda</span></a></div></header><main class="container flex flex-even"><aside cl
     style AUTH fill:#ffebee
     style SAND fill:#fff3e0
     style ISOL fill:#e8f5e8
-</code></pre><p>Through this 3-layer architecture design with Protocol-based model injection, Pagoda provides a completely independent plugin ecosystem, realizing a secure and extensible platform. Plugin developers can provide unique value while accessing Pagoda&rsquo;s core models through type-safe Protocol definitions, without creating implementation dependencies.</p></article><div class="gdoc-page__footer flex flex-wrap justify-between"></div></div></main><footer class=gdoc-footer><div class="container flex flex-wrap"><span class=gdoc-footer__item>Copyright © since 2020, DMM.com LLC. All Rights Reserved.</span></div></footer></div><script defer src=https://dmm-com.github.io/pagoda/js/en.search.min.603711a6b7727707ed3fee07d3956e1dacc2b964441de7ba9ef928cf96d7d945.js></script>
+</code></pre><p>Through this 3-layer architecture design with Protocol-based model injection, Pagoda provides a completely independent plugin ecosystem, realizing a secure and extensible platform. Plugin developers can provide unique value while accessing Pagoda&rsquo;s core models through type-safe Protocol definitions, without creating implementation dependencies.</p></article><div class="gdoc-page__footer flex flex-wrap justify-between"></div></div></main><footer class=gdoc-footer><div class="container flex flex-wrap"><span class=gdoc-footer__item>Copyright © since 2020, DMM.com LLC. All Rights Reserved.</span></div></footer></div><script defer src=https://dmm-com.github.io/pagoda/js/en.search.min.abc0fee762de6a1eea5940e529cef4e17a2caf4b769e8c115939a84a60740fde.js></script>
 <script defer src=https://dmm-com.github.io/pagoda/js/clipboard.min.js></script>
 <script>document.addEventListener("DOMContentLoaded",function(){var t=new ClipboardJS(".clip")})</script></body></html>
