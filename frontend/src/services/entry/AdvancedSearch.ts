@@ -25,6 +25,8 @@ export interface AdvancedSearchParams {
   searchAllEntities: boolean;
   hasReferral: boolean;
   referralName: string;
+  referralIncludeModelIds: number[];
+  referralExcludeModelIds: number[];
   attrInfo: AdvancedSearchResultAttrInfo[];
   joinAttrs: AdvancedSearchJoinAttrInfo[];
   hintEntry?: EntryHint;
@@ -35,6 +37,8 @@ const AdvancedSearchParamKey = {
   SEARCH_ALL_ENTITIES: "is_all_entities",
   HAS_REFERRAL: "has_referral",
   REFERRAL_NAME: "referral_name",
+  REFERRAL_INCLUDE_MODEL_IDS: "referral_include_model_ids",
+  REFERRAL_EXCLUDE_MODEL_IDS: "referral_exclude_model_ids",
   ATTR_INFO: "attrinfo",
   PAGE: "page",
   JOIN_ATTRS: "join_attrs",
@@ -84,6 +88,8 @@ export function formatAdvancedSearchParams({
   searchAllEntities,
   hasReferral,
   referralName,
+  referralIncludeModelIds,
+  referralExcludeModelIds,
   baseParams,
   joinAttrs,
   hintEntry,
@@ -93,6 +99,8 @@ export function formatAdvancedSearchParams({
   searchAllEntities?: boolean;
   hasReferral?: boolean;
   referralName?: string;
+  referralIncludeModelIds?: string[];
+  referralExcludeModelIds?: string[];
   baseParams?: URLSearchParams;
   joinAttrs?: JoinAttr[];
   hintEntry?: EntryHint;
@@ -116,6 +124,20 @@ export function formatAdvancedSearchParams({
 
   if (referralName != null) {
     params.set("referral_name", referralName);
+  }
+
+  if (referralIncludeModelIds != null) {
+    params.delete("referral_include_model_ids");
+    referralIncludeModelIds.forEach((id) => {
+      params.append("referral_include_model_ids", id);
+    });
+  }
+
+  if (referralExcludeModelIds != null) {
+    params.delete("referral_exclude_model_ids");
+    referralExcludeModelIds.forEach((id) => {
+      params.append("referral_exclude_model_ids", id);
+    });
   }
 
   if (attrsFilter != null) {
@@ -162,6 +184,10 @@ export function extractAdvancedSearchParams(
   const searchAllEntities = params.get("is_all_entities") === "true";
   const hasReferral = params.get("has_referral") === "true";
   const referralName = params.get("referral_name") ?? "";
+  const referralIncludeModelIds =
+    params.getAll("referral_include_model_ids")?.map((id) => Number(id)) ?? [];
+  const referralExcludeModelIds =
+    params.getAll("referral_exclude_model_ids")?.map((id) => Number(id)) ?? [];
   const attrInfo: AdvancedSearchResultAttrInfo[] = JSON.parse(
     params.get("attrinfo") ?? "[]",
   );
@@ -179,6 +205,8 @@ export function extractAdvancedSearchParams(
     searchAllEntities,
     hasReferral,
     referralName,
+    referralIncludeModelIds,
+    referralExcludeModelIds,
     attrInfo,
     joinAttrs,
     hintEntry,
