@@ -1,8 +1,8 @@
 import {
   AdvancedSearchJoinAttrInfo,
   AdvancedSearchResult,
-  EntryHint,
   EntityAttrIDandName,
+  EntryHint,
 } from "@dmm-com/airone-apiclient-typescript-fetch";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import {
@@ -67,6 +67,8 @@ interface Props {
   hasReferral: boolean;
   defaultEntryFilter?: EntryHint;
   defaultReferralFilter?: string;
+  defaultReferralIncludeModelIds?: number[];
+  defaultReferralExcludeModelIds?: number[];
   defaultAttrsFilter?: AttrsFilter;
   bulkOperationEntryIds: Array<number>;
   setBulkOperationEntryIds: (entryIds: Array<number>) => void;
@@ -87,6 +89,8 @@ export const SearchResults: FC<Props> = ({
   hasReferral,
   defaultEntryFilter,
   defaultReferralFilter,
+  defaultReferralIncludeModelIds,
+  defaultReferralExcludeModelIds,
   defaultAttrsFilter = {},
   bulkOperationEntryIds,
   setBulkOperationEntryIds,
@@ -139,6 +143,8 @@ export const SearchResults: FC<Props> = ({
               attrTypes={attrTypes}
               defaultEntryFilter={defaultEntryFilter}
               defaultReferralFilter={defaultReferralFilter}
+              defaultReferralIncludeModelIds={defaultReferralIncludeModelIds}
+              defaultReferralExcludeModelIds={defaultReferralExcludeModelIds}
               defaultAttrsFilter={defaultAttrsFilter}
               entityIds={entityIds}
               searchAllEntities={searchAllEntities}
@@ -212,16 +218,24 @@ export const SearchResults: FC<Props> = ({
                   {hasReferral && (
                     <TableCell>
                       <List>
-                        {result.referrals?.map((referral) => (
-                          <ListItem key={referral.id}>
-                            <Box
-                              component={AironeLink}
-                              to={entryDetailsPath(0, referral.id)}
-                            >
-                              {referral.name}
-                            </Box>
-                          </ListItem>
-                        ))}
+                        {result.referrals
+                          ?.filter(
+                            (referral) =>
+                              !defaultReferralIncludeModelIds?.length ||
+                              defaultReferralIncludeModelIds?.includes(
+                                referral.schema.id,
+                              ),
+                          )
+                          .map((referral) => (
+                            <ListItem key={referral.id}>
+                              <Box
+                                component={AironeLink}
+                                to={entryDetailsPath(0, referral.id)}
+                              >
+                                {referral.name}
+                              </Box>
+                            </ListItem>
+                          ))}
                       </List>
                     </TableCell>
                   )}

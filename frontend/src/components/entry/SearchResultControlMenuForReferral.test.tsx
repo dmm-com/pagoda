@@ -20,9 +20,13 @@ Object.defineProperty(window, "location", {
 describe("SearchResultControlMenuForReferral", () => {
   const defaultProps = {
     referralFilter: "",
+    referralIncludeModelIds: [],
+    referralExcludeModelIds: [],
     anchorElem: null,
     handleClose: jest.fn(),
     referralFilterDispatcher: jest.fn(),
+    referralIncludeModelIdsDispatcher: jest.fn(),
+    referralExcludeModelIdsDispatcher: jest.fn(),
     handleSelectFilterConditions: jest.fn(),
     handleClear: jest.fn(),
   };

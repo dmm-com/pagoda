@@ -1,6 +1,10 @@
-import { AdvancedSearchResultAttrInfoFilterKeyEnum } from "@dmm-com/airone-apiclient-typescript-fetch";
+import {
+  AdvancedSearchResultAttrInfoFilterKeyEnum,
+  EntityList,
+} from "@dmm-com/airone-apiclient-typescript-fetch";
 import Check from "@mui/icons-material/Check";
 import {
+  Autocomplete,
   Box,
   Button,
   Divider,
@@ -12,8 +16,11 @@ import {
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { ChangeEvent, Dispatch, FC, KeyboardEvent, useState } from "react";
+import { useAsync } from "react-use";
 
-import { AttrFilter } from "../../services/entry/AdvancedSearch";
+import { handleSelectFilterConditionsParams } from "./SearchResultsTableHead";
+
+import { aironeApiClient } from "repository";
 
 const StyledTextField = styled(TextField)({
   margin: "8px",
@@ -25,31 +32,38 @@ const StyledBox = styled(Box)({
 
 interface Props {
   referralFilter: string;
+  referralIncludeModelIds: number[];
+  referralExcludeModelIds: number[];
   anchorElem: HTMLButtonElement | null;
   handleClose: () => void;
   referralFilterDispatcher: Dispatch<
     ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   >;
+  referralIncludeModelIdsDispatcher: Dispatch<number[]>;
+  referralExcludeModelIdsDispatcher: Dispatch<number[]>;
   handleSelectFilterConditions: (
-    attrFilter?: AttrFilter,
-    overwriteEntryName?: string | undefined,
-    overwriteReferral?: string | undefined,
+    params: handleSelectFilterConditionsParams,
   ) => void;
-  handleClear: () => void;
 }
 
 export const SearchResultControlMenuForReferral: FC<Props> = ({
   referralFilter,
+  referralIncludeModelIds,
+  referralExcludeModelIds,
   anchorElem,
   handleClose,
   referralFilterDispatcher,
+  referralIncludeModelIdsDispatcher,
+  referralExcludeModelIdsDispatcher,
   handleSelectFilterConditions,
-  handleClear,
 }) => {
+  const entities = useAsync(async () => {
+    return await aironeApiClient.getEntities();
+  });
   const handleKeyPressKeyword = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
       setFilterKey(AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_CONTAINED);
-      handleSelectFilterConditions();
+      handleSelectFilterConditions({});
     }
   };
 
@@ -73,26 +87,26 @@ export const SearchResultControlMenuForReferral: FC<Props> = ({
   const handleFilter = (key: AdvancedSearchResultAttrInfoFilterKeyEnum) => {
     // If the same filter item is selected, the filter is cleared.
     if (filterKey === key) {
-      _handleClear();
+      setFilterKey(AdvancedSearchResultAttrInfoFilterKeyEnum.CLEARED);
+      handleSelectFilterConditions({
+        overwriteReferral: "",
+        overwriteReferralIncludeModelIds: [],
+        overwriteReferralExcludeModelIds: [],
+      });
       return;
     }
 
     switch (key) {
       case AdvancedSearchResultAttrInfoFilterKeyEnum.EMPTY:
         setFilterKey(AdvancedSearchResultAttrInfoFilterKeyEnum.EMPTY);
-        handleSelectFilterConditions(undefined, undefined, "\\");
+        handleSelectFilterConditions({ overwriteReferral: "\\" });
         break;
 
       case AdvancedSearchResultAttrInfoFilterKeyEnum.NON_EMPTY:
         setFilterKey(AdvancedSearchResultAttrInfoFilterKeyEnum.NON_EMPTY);
-        handleSelectFilterConditions(undefined, undefined, "*");
+        handleSelectFilterConditions({ overwriteReferral: "*" });
         break;
     }
-  };
-
-  const _handleClear = () => {
-    setFilterKey(AdvancedSearchResultAttrInfoFilterKeyEnum.CLEARED);
-    handleClear();
   };
 
   return (
@@ -102,7 +116,18 @@ export const SearchResultControlMenuForReferral: FC<Props> = ({
       anchorEl={anchorElem}
     >
       <StyledBox>
-        <Button variant="outlined" fullWidth onClick={_handleClear}>
+        <Button
+          variant="outlined"
+          fullWidth
+          onClick={() => {
+            setFilterKey(AdvancedSearchResultAttrInfoFilterKeyEnum.CLEARED);
+            handleSelectFilterConditions({
+              overwriteReferral: "",
+              overwriteReferralIncludeModelIds: [],
+              overwriteReferralExcludeModelIds: [],
+            });
+          }}
+        >
           <Typography>クリア</Typography>
         </Button>
       </StyledBox>
@@ -137,6 +162,56 @@ export const SearchResultControlMenuForReferral: FC<Props> = ({
         value={referralFilter}
         onChange={referralFilterDispatcher}
         onKeyPress={handleKeyPressKeyword}
+      />
+      <Autocomplete
+        options={entities.value?.results ?? []}
+        getOptionLabel={(option: EntityList) => option.name}
+        value={entities.value?.results.filter((entity) =>
+          referralIncludeModelIds.includes(entity.id),
+        )}
+        isOptionEqualToValue={(option, value) => option.id === value.id}
+        disabled={entities.loading}
+        onChange={(_, value) => {
+          referralIncludeModelIdsDispatcher(value.map((v) => v.id));
+          handleSelectFilterConditions({
+            overwriteReferralIncludeModelIds: value.map((v) => String(v.id)),
+          });
+        }}
+        renderInput={(params) => (
+          <TextField
+            {...params}
+            variant="outlined"
+            placeholder="次のモデルを含む"
+            size="small"
+          />
+        )}
+        multiple
+        sx={{ m: "8px", maxWidth: "250px" }}
+      />
+      <Autocomplete
+        options={entities.value?.results ?? []}
+        getOptionLabel={(option: EntityList) => option.name}
+        value={entities.value?.results.filter((entity) =>
+          referralExcludeModelIds.includes(entity.id),
+        )}
+        isOptionEqualToValue={(option, value) => option.id === value.id}
+        disabled={entities.loading}
+        onChange={(_, value) => {
+          referralExcludeModelIdsDispatcher(value.map((v) => v.id));
+          handleSelectFilterConditions({
+            overwriteReferralExcludeModelIds: value.map((v) => String(v.id)),
+          });
+        }}
+        renderInput={(params) => (
+          <TextField
+            {...params}
+            variant="outlined"
+            placeholder="次のモデルを含む"
+            size="small"
+          />
+        )}
+        multiple
+        sx={{ m: "8px", maxWidth: "250px" }}
       />
     </Menu>
   );

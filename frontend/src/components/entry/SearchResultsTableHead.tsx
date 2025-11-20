@@ -1,9 +1,9 @@
 import {
   AdvancedSearchJoinAttrInfo,
+  EntityAttrIDandName,
   EntryAttributeTypeTypeEnum,
   EntryHint,
   EntryHintFilterKeyEnum,
-  EntityAttrIDandName,
 } from "@dmm-com/airone-apiclient-typescript-fetch";
 import AddIcon from "@mui/icons-material/Add";
 import CheckBoxOutlineBlankOutlinedIcon from "@mui/icons-material/CheckBoxOutlineBlankOutlined";
@@ -64,6 +64,8 @@ interface Props {
   attrTypes: Record<string, number>;
   defaultEntryFilter?: EntryHint;
   defaultReferralFilter?: string;
+  defaultReferralIncludeModelIds?: number[];
+  defaultReferralExcludeModelIds?: number[];
   defaultAttrsFilter?: AttrsFilter;
   entityIds: number[];
   searchAllEntities: boolean;
@@ -75,11 +77,21 @@ interface Props {
   entityAttrs: EntityAttrIDandName[];
 }
 
+export interface handleSelectFilterConditionsParams {
+  attrFilter?: AttrFilter;
+  overwriteReferral?: string;
+  overwriteReferralIncludeModelIds?: string[];
+  overwriteReferralExcludeModelIds?: string[];
+  overwriteHintEntry?: EntryHint;
+}
+
 export const SearchResultsTableHead: FC<Props> = ({
   hasReferral,
   attrTypes,
   defaultEntryFilter,
   defaultReferralFilter,
+  defaultReferralIncludeModelIds,
+  defaultReferralExcludeModelIds,
   defaultAttrsFilter = {},
   entityIds,
   searchAllEntities,
@@ -121,6 +133,16 @@ export const SearchResultsTableHead: FC<Props> = ({
     ) => event.target.value,
     defaultReferralFilter ?? "",
   );
+  const [referralIncludeModelIds, referralIncludeModelIdsDispatcher] =
+    useReducer(
+      (_state: Array<number>, value: Array<number>) => value,
+      defaultReferralIncludeModelIds ?? [],
+    );
+  const [referralExcludeModelIds, referralExcludeModelIdsDispatcher] =
+    useReducer(
+      (_state: Array<number>, value: Array<number>) => value,
+      defaultReferralExcludeModelIds ?? [],
+    );
   const [attrsFilter, setAttrsFilter] = useState<AttrsFilter>(
     defaultAttrsFilter ?? {},
   );
@@ -156,11 +178,13 @@ export const SearchResultsTableHead: FC<Props> = ({
 
   const handleSelectFilterConditions =
     (attrName?: string) =>
-    (
-      attrFilter?: AttrFilter,
-      overwriteReferral?: string,
-      overwriteHintEntry?: EntryHint,
-    ) => {
+    ({
+      attrFilter,
+      overwriteReferral,
+      overwriteReferralIncludeModelIds,
+      overwriteReferralExcludeModelIds,
+      overwriteHintEntry,
+    }: handleSelectFilterConditionsParams) => {
       const _attrsFilter =
         attrName != null && attrFilter != null
           ? { ...attrsFilter, [attrName]: attrFilter }
@@ -180,6 +204,12 @@ export const SearchResultsTableHead: FC<Props> = ({
           .filter((k) => _attrsFilter[k]?.joinedAttrname === undefined)
           .reduce((a, k) => ({ ...a, [k]: _attrsFilter[k] }), {}),
         referralName: overwriteReferral ?? referralFilter,
+        referralIncludeModelIds:
+          overwriteReferralIncludeModelIds ??
+          referralIncludeModelIds.map(String),
+        referralExcludeModelIds:
+          overwriteReferralExcludeModelIds ??
+          referralExcludeModelIds.map(String),
         hintEntry: hintEntryParam,
         baseParams: new URLSearchParams(location.search),
         joinAttrs: Object.keys(_attrsFilter)
@@ -352,7 +382,9 @@ export const SearchResultsTableHead: FC<Props> = ({
                     setReferralMenuEls(e.currentTarget);
                   }}
                 >
-                  {defaultReferralFilter ? (
+                  {defaultReferralFilter ||
+                  defaultReferralIncludeModelIds?.length ||
+                  defaultReferralExcludeModelIds?.length ? (
                     <FilterAltIcon />
                   ) : (
                     <FilterListIcon />
@@ -361,19 +393,18 @@ export const SearchResultsTableHead: FC<Props> = ({
               </Tooltip>
               <SearchResultControlMenuForReferral
                 referralFilter={referralFilter}
+                referralIncludeModelIds={referralIncludeModelIds}
+                referralExcludeModelIds={referralExcludeModelIds}
                 anchorElem={referralMenuEls}
                 handleClose={() => setReferralMenuEls(null)}
                 referralFilterDispatcher={referralFilterDispatcher}
-                handleSelectFilterConditions={(
-                  attrFilter,
-                  overwriteEntryName,
-                  overwriteReferral,
-                ) =>
-                  handleSelectFilterConditions()(attrFilter, overwriteReferral)
+                referralIncludeModelIdsDispatcher={
+                  referralIncludeModelIdsDispatcher
                 }
-                handleClear={() =>
-                  handleSelectFilterConditions()(undefined, "")
+                referralExcludeModelIdsDispatcher={
+                  referralExcludeModelIdsDispatcher
                 }
+                handleSelectFilterConditions={handleSelectFilterConditions()}
               />
             </HeaderBox>
           </StyledTableCell>

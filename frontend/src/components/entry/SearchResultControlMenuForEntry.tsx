@@ -13,7 +13,7 @@ import {
 import { styled } from "@mui/material/styles";
 import { FC, KeyboardEvent } from "react";
 
-import { AttrFilter } from "../../services/entry/AdvancedSearch";
+import { handleSelectFilterConditionsParams } from "./SearchResultsTableHead";
 
 const StyledBox = styled(Box)({
   margin: "8px",
@@ -25,9 +25,7 @@ interface Props {
   handleClose: () => void;
   hintEntryDispatcher: (entry: Partial<EntryHint>) => void;
   handleSelectFilterConditions: (
-    attrFilter?: AttrFilter,
-    overwriteReferral?: string,
-    overwriteHintEntry?: EntryHint,
+    param: handleSelectFilterConditionsParams,
   ) => void;
 }
 
@@ -40,7 +38,7 @@ export const SearchResultControlMenuForEntry: FC<Props> = ({
 }) => {
   const handleKeyPressKeyword = (e: KeyboardEvent<HTMLDivElement>) => {
     if (e.key === "Enter") {
-      handleSelectFilterConditions();
+      handleSelectFilterConditions({});
     }
   };
 
@@ -63,11 +61,9 @@ export const SearchResultControlMenuForEntry: FC<Props> = ({
               keyword: "",
             };
             hintEntryDispatcher(clearedHintEntry);
-            handleSelectFilterConditions(
-              undefined,
-              undefined,
-              clearedHintEntry,
-            );
+            handleSelectFilterConditions({
+              overwriteHintEntry: clearedHintEntry,
+            });
           }}
         >
           <Typography>クリア</Typography>

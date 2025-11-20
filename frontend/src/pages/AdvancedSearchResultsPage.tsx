@@ -19,7 +19,7 @@ import {
   Typography,
 } from "@mui/material";
 import { useSnackbar } from "notistack";
-import { FC, useEffect, useMemo, useState, useRef } from "react";
+import { FC, useEffect, useMemo, useRef, useState } from "react";
 import { useLocation } from "react-router";
 
 import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
@@ -143,6 +143,8 @@ export const AdvancedSearchResultsPage: FC = () => {
     searchAllEntities,
     hasReferral,
     referralName,
+    referralIncludeModelIds,
+    referralExcludeModelIds,
     attrInfo,
     joinAttrs,
     hintEntry,
@@ -180,6 +182,8 @@ export const AdvancedSearchResultsPage: FC = () => {
         AdvancedSerarchResultListParam.MAX_ROW_COUNT,
         0,
         hintEntry,
+        referralExcludeModelIds,
+        referralIncludeModelIds,
       )
       .then((results) => {
         if (myId !== requestIdRef.current) return;
@@ -374,6 +378,8 @@ export const AdvancedSearchResultsPage: FC = () => {
             hasReferral={hasReferral}
             defaultEntryFilter={hintEntry}
             defaultReferralFilter={referralName}
+            defaultReferralIncludeModelIds={referralIncludeModelIds}
+            defaultReferralExcludeModelIds={referralExcludeModelIds}
             defaultAttrsFilter={
               // make defaultAttrFilter to make fabric contexts of joinAttrs into the one of attrinfo
               // for considering order of showing attribute by userdefined one and connection of

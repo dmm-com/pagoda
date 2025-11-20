@@ -1,7 +1,7 @@
 import {
   AdvancedSearchResultAttrInfoFilterKeyEnum,
-  EntryAttributeTypeTypeEnum,
   EntityAttrIDandName,
+  EntryAttributeTypeTypeEnum,
 } from "@dmm-com/airone-apiclient-typescript-fetch";
 import Check from "@mui/icons-material/Check";
 import EditNoteIcon from "@mui/icons-material/EditNote";
@@ -28,6 +28,8 @@ import { AttrFilter } from "../../services/entry/AdvancedSearch";
 import { DateRangePicker } from "../common/DateRangePicker";
 import { DateTimeRangePicker } from "../common/DateTimeRangePicker";
 
+import { handleSelectFilterConditionsParams } from "./SearchResultsTableHead";
+
 const StyledTextField = styled(TextField)({
   margin: "8px",
   width: "calc(100% - 16px)",
@@ -46,7 +48,9 @@ interface Props {
   attrFilter: AttrFilter;
   anchorElem: HTMLButtonElement | null;
   handleUpdateAttrFilter: (filter: AttrFilter) => void;
-  handleSelectFilterConditions: (attrFilter: AttrFilter) => void;
+  handleSelectFilterConditions: (
+    params: handleSelectFilterConditionsParams,
+  ) => void;
   handleClose: () => void;
   attrType?: number;
   setOpenEditModal: (willOpen: boolean) => void;
@@ -74,8 +78,10 @@ export const SearchResultControlMenu: FC<Props> = ({
     // If the selected filter is the same, remove the filter.
     if (attrFilter.filterKey === key) {
       handleSelectFilterConditions({
-        ...attrFilter,
-        filterKey: AdvancedSearchResultAttrInfoFilterKeyEnum.CLEARED,
+        attrFilter: {
+          ...attrFilter,
+          filterKey: AdvancedSearchResultAttrInfoFilterKeyEnum.CLEARED,
+        },
       });
       return;
     }
@@ -90,15 +96,19 @@ export const SearchResultControlMenu: FC<Props> = ({
       case AdvancedSearchResultAttrInfoFilterKeyEnum.EMPTY:
       case AdvancedSearchResultAttrInfoFilterKeyEnum.NON_EMPTY:
         handleSelectFilterConditions({
-          ...attrFilter,
-          filterKey: key,
+          attrFilter: {
+            ...attrFilter,
+            filterKey: key,
+          },
         });
         break;
       case AdvancedSearchResultAttrInfoFilterKeyEnum.CLEARED:
         handleSelectFilterConditions({
-          ...attrFilter,
-          filterKey: key,
-          keyword: "",
+          attrFilter: {
+            ...attrFilter,
+            filterKey: key,
+            keyword: "",
+          },
         });
         break;
     }
@@ -119,8 +129,10 @@ export const SearchResultControlMenu: FC<Props> = ({
     (e: KeyboardEvent<HTMLDivElement>) => {
       if (e.key === "Enter") {
         handleSelectFilterConditions({
-          ...attrFilter,
-          filterKey,
+          attrFilter: {
+            ...attrFilter,
+            filterKey,
+          },
         });
       }
     };
@@ -227,10 +239,12 @@ export const SearchResultControlMenu: FC<Props> = ({
                   }
                   onApply={(start, end) => {
                     handleSelectFilterConditions({
-                      ...attrFilter,
-                      filterKey:
-                        AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_CONTAINED,
-                      keyword: `${start}~${end}`,
+                      attrFilter: {
+                        ...attrFilter,
+                        filterKey:
+                          AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_CONTAINED,
+                        keyword: `${start}~${end}`,
+                      },
                     });
                   }}
                   onCancel={() => {}}
@@ -255,10 +269,12 @@ export const SearchResultControlMenu: FC<Props> = ({
                           .split("T")[0]
                       : "";
                     handleSelectFilterConditions({
-                      ...attrFilter,
-                      filterKey:
-                        AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_CONTAINED,
-                      keyword: settingDateValue,
+                      attrFilter: {
+                        ...attrFilter,
+                        filterKey:
+                          AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_CONTAINED,
+                        keyword: settingDateValue,
+                      },
                     });
                   }}
                   slotProps={{
@@ -285,10 +301,12 @@ export const SearchResultControlMenu: FC<Props> = ({
                   }
                   onApply={(start, end) => {
                     handleSelectFilterConditions({
-                      ...attrFilter,
-                      filterKey:
-                        AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_NOT_CONTAINED,
-                      keyword: `${start}~${end}`,
+                      attrFilter: {
+                        ...attrFilter,
+                        filterKey:
+                          AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_NOT_CONTAINED,
+                        keyword: `${start}~${end}`,
+                      },
                     });
                   }}
                   onCancel={() => {}}
@@ -313,10 +331,12 @@ export const SearchResultControlMenu: FC<Props> = ({
                           .split("T")[0]
                       : "";
                     handleSelectFilterConditions({
-                      ...attrFilter,
-                      filterKey:
-                        AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_NOT_CONTAINED,
-                      keyword: settingDateValue,
+                      attrFilter: {
+                        ...attrFilter,
+                        filterKey:
+                          AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_NOT_CONTAINED,
+                        keyword: settingDateValue,
+                      },
                     });
                   }}
                   slotProps={{
@@ -360,10 +380,12 @@ export const SearchResultControlMenu: FC<Props> = ({
                   }
                   onApply={(start, end) => {
                     handleSelectFilterConditions({
-                      ...attrFilter,
-                      filterKey:
-                        AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_CONTAINED,
-                      keyword: `${start}~${end}`,
+                      attrFilter: {
+                        ...attrFilter,
+                        filterKey:
+                          AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_CONTAINED,
+                        keyword: `${start}~${end}`,
+                      },
                     });
                   }}
                   onCancel={() => {}}
@@ -387,10 +409,12 @@ export const SearchResultControlMenu: FC<Props> = ({
                         ).toISOString()
                       : "";
                     handleSelectFilterConditions({
-                      ...attrFilter,
-                      filterKey:
-                        AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_CONTAINED,
-                      keyword: settingDateValue,
+                      attrFilter: {
+                        ...attrFilter,
+                        filterKey:
+                          AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_CONTAINED,
+                        keyword: settingDateValue,
+                      },
                     });
                   }}
                   slotProps={{
@@ -418,10 +442,12 @@ export const SearchResultControlMenu: FC<Props> = ({
                   }
                   onApply={(start, end) => {
                     handleSelectFilterConditions({
-                      ...attrFilter,
-                      filterKey:
-                        AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_NOT_CONTAINED,
-                      keyword: `${start}~${end}`,
+                      attrFilter: {
+                        ...attrFilter,
+                        filterKey:
+                          AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_NOT_CONTAINED,
+                        keyword: `${start}~${end}`,
+                      },
                     });
                   }}
                   onCancel={() => {}}
@@ -445,10 +471,12 @@ export const SearchResultControlMenu: FC<Props> = ({
                         ).toISOString()
                       : "";
                     handleSelectFilterConditions({
-                      ...attrFilter,
-                      filterKey:
-                        AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_NOT_CONTAINED,
-                      keyword: settingDateValue,
+                      attrFilter: {
+                        ...attrFilter,
+                        filterKey:
+                          AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_NOT_CONTAINED,
+                        keyword: settingDateValue,
+                      },
                     });
                   }}
                   slotProps={{
@@ -469,10 +497,12 @@ export const SearchResultControlMenu: FC<Props> = ({
           <MenuItem
             onClick={() =>
               handleSelectFilterConditions({
-                ...attrFilter,
-                filterKey:
-                  AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_CONTAINED,
-                keyword: "true",
+                attrFilter: {
+                  ...attrFilter,
+                  filterKey:
+                    AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_CONTAINED,
+                  keyword: "true",
+                },
               })
             }
           >
@@ -487,10 +517,12 @@ export const SearchResultControlMenu: FC<Props> = ({
           <MenuItem
             onClick={() =>
               handleSelectFilterConditions({
-                ...attrFilter,
-                filterKey:
-                  AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_NOT_CONTAINED,
-                keyword: "true",
+                attrFilter: {
+                  ...attrFilter,
+                  filterKey:
+                    AdvancedSearchResultAttrInfoFilterKeyEnum.TEXT_NOT_CONTAINED,
+                  keyword: "true",
+                },
               })
             }
           >
