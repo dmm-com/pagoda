@@ -1,0 +1,50 @@
+{
+  "name": "@airone/plugin-hello-world",
+  "version": "1.0.0",
+  "description": "Hello World plugin for Airone - demonstrates basic plugin functionality",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "airone",
+    "plugin",
+    "hello-world",
+    "example",
+    "demo"
+  ],
+  "author": "Airone Team",
+  "license": "MIT",
+  "peerDependencies": {
+    "@dmm-com/pagoda-core": "file:../../..",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "@mui/material": "^5.11.3",
+    "@mui/icons-material": "^5.11.3"
+  },
+  "devDependencies": {
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.0",
+    "typescript": "^5.0.0"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/",
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dmm-com/airone.git",
+    "directory": "frontend/plugins/plugin-hello-world"
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  }
+}
