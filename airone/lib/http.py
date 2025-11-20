@@ -11,6 +11,7 @@ from django.db import models
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render as django_render
 from django.utils.encoding import smart_str
+from django.utils.http import MAX_URL_LENGTH
 
 from airone.lib.acl import ACLObjType
 from airone.lib.types import AttrType, AttrTypeValue
@@ -36,9 +37,10 @@ def http_get(func: Callable[..., HttpResponse]) -> Callable[..., HttpResponse]:
             return HttpResponse("Invalid HTTP method is specified", status=400)
 
         if not request.user.is_authenticated:
-            return HttpResponseSeeOther(
-                "/auth/login?next=%s?%s" % (request.path, quote(request.GET.urlencode()))
-            )
+            redirect_url = "/auth/login?next=%s?%s" % (request.path, quote(request.GET.urlencode()))
+            if len(redirect_url) > MAX_URL_LENGTH:
+                redirect_url = "/auth/login?next=%s" % (request.path)
+            return HttpResponseSeeOther(redirect_url)
 
         return func(*args, **kwargs)
 
