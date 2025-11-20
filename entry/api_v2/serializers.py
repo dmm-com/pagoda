@@ -4,7 +4,8 @@ from typing import Any, Dict, List, Literal, Union
 
 from django.db.models import Prefetch
 from drf_spectacular.utils import extend_schema_field, extend_schema_serializer
-from pydantic import BaseModel, RootModel
+from pydantic import BaseModel, RootModel, field_validator
+from pydantic import ValidationError as PydanticValidationError
 from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from typing_extensions import TypedDict
@@ -322,6 +323,19 @@ class EntryBaseSerializer(serializers.ModelSerializer):
         return name
 
     def _validate(self, schema: Entity, name: str, attrs: list[dict[str, Any]]):
+        # Perform basic validation using Pydantic for better type safety
+        try:
+            # Validate attributes structure
+            for attr in attrs:
+                AttributeData(**attr)
+        except PydanticValidationError as e:
+            # Convert Pydantic validation errors to DRF validation errors
+            errors = []
+            for error in e.errors():
+                field = ".".join(str(loc) for loc in error["loc"])
+                errors.append(f"{field}: {error['msg']}")
+            raise IncorrectTypeError("; ".join(errors))
+
         user: User | None = None
         if "request" in self.context:
             user = self.context["request"].user
@@ -383,7 +397,21 @@ class EntrySearchSerializer(EntryBaseSerializer):
         ]
 
 
-@extend_schema_field({})
+# Pydantic models for request validation
+class AttributeData(BaseModel):
+    """Pydantic model for attribute data validation."""
+
+    id: int
+    value: Any = None
+
+    @field_validator("id")
+    @classmethod
+    def validate_id(cls, v: int) -> int:
+        if v <= 0:
+            raise ValueError("Attribute ID must be positive")
+        return v
+
+
 class AttributeValueField(serializers.Field):
     def to_internal_value(self, data):
         return data
@@ -969,7 +997,7 @@ class EntryImportEntitySerializer(serializers.Serializer):
                     # it will pick wrong entry if there are multiple entries with same name
                     if isinstance(val, str):
                         if len(refs) >= 2:
-                            Logger.warn(
+                            Logger.warning(
                                 "ambiguous object given: entry name(%s), entity names(%s)",
                                 val,
                                 [x.name for x in refs],

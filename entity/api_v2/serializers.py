@@ -8,6 +8,8 @@ import requests
 from django.conf import settings
 from django.core.validators import URLValidator
 from drf_spectacular.utils import extend_schema_field
+from pydantic import BaseModel, model_validator
+from pydantic import ValidationError as PydanticValidationError
 from requests.exceptions import ConnectionError
 from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied, ValidationError
@@ -45,6 +47,64 @@ class EntityDetailAttribute(TypedDict):
     referral: List[EntityAttrReferralData]
     note: str
     default_value: Any
+
+
+# Pydantic models for request validation
+class EntityAttrCreateRequest(BaseModel):
+    """Pydantic model for entity attribute creation with default_value validation."""
+
+    name: str
+    type: int
+    is_mandatory: bool = False
+    is_delete_in_chain: bool = False
+    is_summarized: bool = False
+    referral: list[int] = []
+    note: str = ""
+    default_value: Any = None
+    index: int | None = None
+
+    @model_validator(mode="after")
+    def validate_default_value_for_type(self):
+        """Validate that default_value is appropriate for the attribute type."""
+        if self.default_value is None:
+            return self
+
+        # Only String, Text, Boolean, Number types support default values
+        supported_types = [AttrType.STRING, AttrType.TEXT, AttrType.BOOLEAN, AttrType.NUMBER]
+        if self.type not in supported_types:
+            # Clear default_value for unsupported types
+            self.default_value = None
+            return self
+
+        # String and Text types
+        if self.type in [AttrType.STRING, AttrType.TEXT]:
+            if not isinstance(self.default_value, str):
+                raise ValueError(
+                    f"Default value must be a string for this attribute type, "
+                    f"got {type(self.default_value).__name__}"
+                )
+
+        # Boolean type
+        elif self.type == AttrType.BOOLEAN:
+            if not isinstance(self.default_value, bool):
+                raise ValueError(
+                    f"Default value must be a boolean for BOOLEAN type, "
+                    f"got {type(self.default_value).__name__}"
+                )
+
+        # Number type
+        elif self.type == AttrType.NUMBER:
+            if not isinstance(self.default_value, (int, float)) or isinstance(
+                self.default_value, bool
+            ):
+                raise ValueError(
+                    f"Default value must be a number for NUMBER type, "
+                    f"got {type(self.default_value).__name__}"
+                )
+            if math.isnan(self.default_value) or math.isinf(self.default_value):
+                raise ValueError("Default value cannot be NaN or Infinity for NUMBER type")
+
+        return self
 
 
 class WebhookHeadersSerializer(serializers.Serializer):
@@ -167,24 +227,46 @@ class EntityAttrCreateSerializer(serializers.ModelSerializer):
         return default_value
 
     def validate(self, attr: dict):
-        referral = attr.get("referral", [])
+        # Use Pydantic model for comprehensive validation
+        # Prepare data for Pydantic validation
+        pydantic_data = attr.copy()
 
-        if attr["type"] & AttrType.OBJECT and not len(referral):
-            raise RequiredParameterError("When specified object type, referral field is required")
+        # Convert referral from QuerySet/list of objects to list of IDs if needed
+        if "referral" in pydantic_data:
+            referral = pydantic_data["referral"]
+            if hasattr(referral, "values_list"):
+                # It's a QuerySet
+                pydantic_data["referral"] = list(referral.values_list("id", flat=True))
+            elif isinstance(referral, list) and referral and hasattr(referral[0], "id"):
+                # It's a list of model instances
+                pydantic_data["referral"] = [obj.id for obj in referral]
 
-        # Only String, Text, Boolean, Number types support default values (MVP)
-        attr_type = attr.get("type")
-        default_value = attr.get("default_value")
+        try:
+            validated = EntityAttrCreateRequest(**pydantic_data)
+            # Update attr with validated values (including cleared default_value if needed)
+            attr["default_value"] = validated.default_value
+        except PydanticValidationError as e:
+            # Convert Pydantic validation errors to DRF validation errors
+            errors = []
+            for error in e.errors():
+                field = ".".join(str(loc) for loc in error["loc"])
+                # Clean up Pydantic error message format (remove "Value error, " prefix)
+                msg = error["msg"]
+                if msg.startswith("Value error, "):
+                    msg = msg.replace("Value error, ", "", 1)
+                # Add field name only if it's not empty
+                if field:
+                    errors.append(f"{field}: {msg}")
+                else:
+                    errors.append(msg)
+            raise ValidationError("; ".join(errors))
 
-        if default_value is not None and attr_type is not None:
-            supported_types = [AttrType.STRING, AttrType.TEXT, AttrType.BOOLEAN, AttrType.NUMBER]
-            if attr_type not in supported_types:
-                # Clear default_value for unsupported types
-                attr["default_value"] = None
-            else:
-                # Validate and potentially convert the default value
-                attr["default_value"] = self._validate_default_value_for_type(
-                    attr_type, default_value
+        # Additional validation for referral field (after Pydantic validation)
+        if "type" in attr:
+            referral = attr.get("referral", [])
+            if attr["type"] & AttrType.OBJECT and not len(referral):
+                raise RequiredParameterError(
+                    "When specified object type, referral field is required"
                 )
 
         return attr
