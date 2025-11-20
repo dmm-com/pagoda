@@ -23,11 +23,11 @@
   "author": "Airone Team",
   "license": "MIT",
   "peerDependencies": {
-    "@dmm-com/pagoda-core": "^1.1.0",
+    "@dmm-com/pagoda-core": "file:../../..",
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
-    "@mui/material": "^6.0.0",
-    "@mui/icons-material": "^6.0.0"
+    "@mui/material": "^5.11.3",
+    "@mui/icons-material": "^5.11.3"
   },
   "devDependencies": {
     "@types/react": "^18.0.0",

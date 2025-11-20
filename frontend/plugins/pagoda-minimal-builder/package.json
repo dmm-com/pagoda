@@ -22,8 +22,8 @@
   "type": "module",
   "dependencies": {
     "@dmm-com/pagoda-core": "file:../../..",
-    "pagoda-plugin-hello-world": "file:../../../../pagoda-plugin-hello-world",
-    "pagoda-plugin-dashboard": "file:../../../../pagoda-plugin-dashboard",
+    "pagoda-plugin-hello-world": "file:../plugin-hello-world",
+    "pagoda-plugin-dashboard": "file:../plugin-dashboard",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "@mui/material": "^6.4.6"
