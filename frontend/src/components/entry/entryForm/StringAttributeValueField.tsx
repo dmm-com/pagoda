@@ -107,6 +107,11 @@ export const ArrayStringAttributeValueField: FC<CommonProps> = ({
     fields.length === 1 && handleClickAddListItem(0);
   };
 
+  /* insert empty value if it's necessary */
+  if (fields.length === 0) {
+    handleClickAddListItem(-1);
+  }
+
   return (
     <StyledList>
       {fields.map((field, index) => (

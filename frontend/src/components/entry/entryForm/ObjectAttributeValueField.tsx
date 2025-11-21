@@ -280,7 +280,7 @@ export const ArrayNamedObjectAttributeValueField: FC<
 
   /* insert empty value if it's necessary */
   if (fields.length === 0) {
-    insert(0, { name: "", object: null, _boolean: false });
+    handleClickAddListItem(-1);
   }
 
   return (

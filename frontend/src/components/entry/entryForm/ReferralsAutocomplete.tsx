@@ -106,7 +106,7 @@ export const ReferralsAutocomplete: FC<Props> = ({
       multiple={multiple}
       loading={loading}
       options={options}
-      value={value}
+      value={value ?? (multiple ? [] : null)}
       inputValue={inputValue}
       getOptionLabel={(option) => option?.name ?? "-NOT SET-"}
       isOptionEqualToValue={(option, value) => option.id === value.id}
