@@ -43,7 +43,7 @@ class PluginSerializerMixin:
     def _setup_plugin_context(self):
         """Setup plugin context for the serializer"""
         # Get plugin context from request if available
-        request = getattr(self, "context", {}).get("request")  # type: ignore[attr-defined]
+        request = getattr(self, "context", {}).get("request")
         if request and hasattr(request, "plugin_context"):
             self.plugin_context = request.plugin_context
         else:
@@ -127,7 +127,7 @@ class PluginSerializerMixin:
         Returns:
             True if metadata should be included
         """
-        request = getattr(self, "context", {}).get("request")  # type: ignore[attr-defined]
+        request = getattr(self, "context", {}).get("request")
         if request:
             return request.GET.get("include_plugin_meta", "").lower() in ("true", "1", "yes")
         return False
@@ -142,7 +142,7 @@ class PluginSerializerMixin:
             Created instance
         """
         # Add plugin context to creation if supported by model
-        meta = getattr(self, "Meta", None)  # type: ignore[attr-defined]
+        meta = getattr(self, "Meta", None)
         if meta and hasattr(meta.model, "created_by_plugin"):
             validated_data["created_by_plugin"] = self.plugin_context.get("plugin_id")
 

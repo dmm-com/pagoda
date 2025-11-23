@@ -3,6 +3,7 @@ import re
 from collections import Counter
 from copy import deepcopy
 from datetime import datetime, timedelta
+from typing import Any
 
 from django.db.models import Prefetch, Q
 from drf_spectacular.types import OpenApiTypes
@@ -295,7 +296,7 @@ class searchAPI(viewsets.ReadOnlyModelViewSet):
     serializer_class = EntrySearchSerializer
 
     def get_queryset(self):
-        queryset = []
+        queryset: list[Any] = []
         query = self.request.query_params.get("query", None)
 
         if not query:
@@ -567,7 +568,7 @@ class AdvancedSearchAPI(generics.GenericAPIView):
                 # This get referral Item-ID from joined search result
                 ref_list = _get_ref_id_from_es_result(ref_info)
                 for ref_id in ref_list:
-                    if ref_id and ref_id in joined_resp_info:  # type: ignore
+                    if ref_id and ref_id in joined_resp_info:
                         # join valid value
                         resp_result.attrs |= joined_resp_info[ref_id]
 

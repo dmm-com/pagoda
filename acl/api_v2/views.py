@@ -72,9 +72,9 @@ class ACLHistoryAPI(generics.ListAPIView):
         # 1. Bulk fetch ACL history data (including history_user information)
         acl_history = list(instance.history.select_related("history_user").all())
         codename_query = (
-            Q(codename="%s.%s" % (instance.id, ACLType.Full.id))  # type: ignore
-            | Q(codename="%s.%s" % (instance.id, ACLType.Writable.id))  # type: ignore
-            | Q(codename="%s.%s" % (instance.id, ACLType.Readable.id))  # type: ignore
+            Q(codename="%s.%s" % (instance.id, ACLType.Full.id))
+            | Q(codename="%s.%s" % (instance.id, ACLType.Writable.id))
+            | Q(codename="%s.%s" % (instance.id, ACLType.Readable.id))
         )
         # Also fetch Entity attribute history with same optimization
         if instance.objtype == ACLObjType.Entity:
@@ -86,9 +86,9 @@ class ACLHistoryAPI(generics.ListAPIView):
             )
             for attr in attrs:
                 codename_query |= (
-                    Q(codename="%s.%s" % (attr.id, ACLType.Full.id))  # type: ignore
-                    | Q(codename="%s.%s" % (attr.id, ACLType.Writable.id))  # type: ignore
-                    | Q(codename="%s.%s" % (attr.id, ACLType.Readable.id))  # type: ignore
+                    Q(codename="%s.%s" % (attr.id, ACLType.Full.id))
+                    | Q(codename="%s.%s" % (attr.id, ACLType.Writable.id))
+                    | Q(codename="%s.%s" % (attr.id, ACLType.Readable.id))
                 )
 
         # 2. Bulk fetch Permission history data (including related information)

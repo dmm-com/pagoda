@@ -1093,7 +1093,7 @@ dependencies = [
 requires-dist = [
     { name = "django", specifier = ">=3.2" },
     { name = "djangorestframework", specifier = ">=3.12" },
-    { name = "pagoda-plugin-sdk", editable = "plugin/sdk" },
+    { name = "pagoda-plugin-sdk", git = "https://github.com/dmm-com/pagoda.git?subdirectory=plugin%2Fsdk&tag=v3.153.0" },
 ]
 
 [[package]]
