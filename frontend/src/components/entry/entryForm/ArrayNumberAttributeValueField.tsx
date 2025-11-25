@@ -104,6 +104,10 @@ export const ArrayNumberAttributeValueField: FC<CommonProps> = ({
     fields.length === 1 && handleClickAddListItem(0);
   };
 
+  if (fields.length === 0) {
+    handleClickAddListItem(-1);
+  }
+
   return (
     <StyledList>
       {fields.map((field, index) => (
