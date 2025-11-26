@@ -11,7 +11,6 @@ class Prd(Common):
     pass
 
 
-class DRFSpectacularCustomView(Common):
+class DRFSpectacularExcludeCustomView(Common):
     SPECTACULAR_SETTINGS = deepcopy(Common.SPECTACULAR_SETTINGS)
-    SPECTACULAR_SETTINGS["PREPROCESSING_HOOKS"]\
-        .remove("airone.spectacular.exclude_customview_hook")  # type: ignore
+    SPECTACULAR_SETTINGS["PREPROCESSING_HOOKS"].append("airone.spectacular.exclude_customview_hook")  # type: ignore
