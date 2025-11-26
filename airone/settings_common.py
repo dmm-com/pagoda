@@ -465,10 +465,7 @@ class Common(Configuration):
     }
 
     SPECTACULAR_SETTINGS = {
-        "PREPROCESSING_HOOKS": [
-            "airone.spectacular.exclude_customview_hook",
-            "airone.spectacular.filter_apiv2_hook",
-        ],
+        "PREPROCESSING_HOOKS": [],
         # to omit drf_spectacular.hooks.postprocess_schema_enums
         "POSTPROCESSING_HOOKS": [],
     }

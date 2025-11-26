@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.urls import include, re_path
+from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
 from airone import views
 from airone.auth import view as auth_view
@@ -17,6 +18,12 @@ urlpatterns = [
     re_path(r"^entry/", include(("entry.urls", "entry"))),
     re_path(r"^api/v1/", include(api_v1_urlpatterns)),
     re_path(r"^api/v2/", include(("api_v2.urls", "api_v2"))),
+    re_path(r"^api/schema/", SpectacularAPIView.as_view(), name="schema"),
+    re_path(
+        r"^api/docs/",
+        SpectacularSwaggerView.as_view(url_name="schema"),
+        name="swagger-ui",
+    ),
     re_path(r"^job/", include(("job.urls", "job"))),
     re_path(r"^auth/sso/", include("social_django.urls", namespace="social")),
     re_path(

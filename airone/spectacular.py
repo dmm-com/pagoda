@@ -12,14 +12,3 @@ def exclude_customview_hook(endpoints):
         if "/custom/" not in path:
             result.append((path, path_regex, method, callback))
     return result
-
-
-def filter_apiv2_hook(endpoints):
-    """This excludes API endpoints for AirOne API(v1). React views refer to only
-    AirOne API(v2). So it's not necessary to generate API(v1)'s OpenAPI schema.
-    """
-    result = []
-    for path, path_regex, method, callback in endpoints:
-        if "/api/v2/" in path:
-            result.append((path, path_regex, method, callback))
-    return result
