@@ -464,7 +464,7 @@ class Common(Configuration):
         "EXCEPTION_HANDLER": "airone.lib.drf.custom_exception_handler",
     }
 
-    SPECTACULAR_SETTINGS = {
+    SPECTACULAR_SETTINGS: dict[str, list[str]] = {
         "PREPROCESSING_HOOKS": [],
         # to omit drf_spectacular.hooks.postprocess_schema_enums
         "POSTPROCESSING_HOOKS": [],
