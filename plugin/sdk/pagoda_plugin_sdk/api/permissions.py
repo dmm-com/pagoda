@@ -166,7 +166,7 @@ class PluginACLPermission(PluginPermission):
         acl_checker = self.get_acl_checker(request, view)
         if not acl_checker:
             logger.warning("No ACL checker available, falling back to default permission")
-            return bool(super().check_object_permission(user, obj, permission, request, view))  # type: ignore[misc]
+            return bool(super().check_object_permission(user, obj, permission, request, view))
 
         # Check permission using ACL system
         try:

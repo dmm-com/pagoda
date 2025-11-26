@@ -9,6 +9,7 @@ Tests the behavior of various hooks including:
 """
 
 import unittest
+from typing import Any
 from unittest.mock import MagicMock, patch
 
 from pagoda_hello_world_plugin.plugin import HelloWorldPlugin
@@ -281,7 +282,7 @@ class TestGetAttrsHooks(unittest.TestCase):
     @patch("pagoda_hello_world_plugin.plugin.logger")
     def test_get_entity_attrs_empty_list(self, mock_logger):
         """Test get_attrs hook for entity with empty attribute list"""
-        attrinfo = []
+        attrinfo: list[Any] = []
 
         result = self.plugin.get_entity_attrs(entity=self.mock_entity, attrinfo=attrinfo)
 

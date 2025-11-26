@@ -222,7 +222,7 @@ def do_delete(request, group_id, recv_data):
 def export(request):
     output = io.StringIO()
 
-    data = {
+    data: dict[str, list[dict[str, Any]]] = {
         "Group": [],
         "User": [],
     }
