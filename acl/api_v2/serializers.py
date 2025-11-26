@@ -164,13 +164,13 @@ class ACLSerializer(serializers.ModelSerializer):
 
         permissions = {
             "full": HistoricalPermission.objects.get(
-                codename="%s.%d" % (instance.id, ACLType.Full.id)  # type: ignore
+                codename="%s.%d" % (instance.id, ACLType.Full.id)
             ),
             "writable": HistoricalPermission.objects.get(
-                codename="%s.%d" % (instance.id, ACLType.Writable.id)  # type: ignore
+                codename="%s.%d" % (instance.id, ACLType.Writable.id)
             ),
             "readable": HistoricalPermission.objects.get(
-                codename="%s.%d" % (instance.id, ACLType.Readable.id)  # type: ignore
+                codename="%s.%d" % (instance.id, ACLType.Readable.id)
             ),
         }
 

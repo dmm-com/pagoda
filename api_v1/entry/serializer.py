@@ -1,3 +1,5 @@
+from typing import Any
+
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
@@ -166,7 +168,7 @@ class EntrySearchChainSerializer(serializers.Serializer):
             """
             This removes duplication items, that have same Entry-ID with other ones,from item_list
             """
-            returned_items = []
+            returned_items: list[dict[str, Any]] = []
             for item in item_list:
                 if item["id"] not in [x["id"] for x in returned_items]:
                     returned_items.append(item)
@@ -191,7 +193,7 @@ class EntrySearchChainSerializer(serializers.Serializer):
 
     def backward_search_entries(self, user, queries, entity_id_list, is_any):
         # digging into the condition tree to get to leaf condition by depth-first search
-        accumulated_result = []
+        accumulated_result: list[dict[str, Any]] = []
 
         def _do_backward_search(sub_query, sub_query_result):
             # make query to search Entries using AdvancedSearchService.search_entries()
@@ -272,7 +274,7 @@ class EntrySearchChainSerializer(serializers.Serializer):
 
     def forward_search_entries(self, user, queries, entity_id_list, hint_item_name, is_any):
         # digging into the condition tree to get to leaf condition by depth-first search
-        accumulated_result = []
+        accumulated_result: list[dict[str, Any]] = []
 
         def _do_forward_search(sub_query, sub_query_result):
             # make query to search Entries using AdvancedSearchService.search_entries()
@@ -365,7 +367,7 @@ class EntrySearchChainSerializer(serializers.Serializer):
         if query is None:
             query = self.validated_data
 
-        accumulated_result = []
+        accumulated_result: list[dict[str, Any]] = []
         is_leaf = True
         if len(query.get("attrs", [])) > 0:
             is_leaf = False

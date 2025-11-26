@@ -1,6 +1,7 @@
 import collections
 import io
 import re
+from typing import Any
 
 import yaml
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
@@ -315,7 +316,7 @@ def do_create(request, recv_data):
 def export(request):
     output = io.StringIO()
 
-    data = {"Entity": [], "EntityAttr": []}
+    data: dict[str, list[dict[str, Any]]] = {"Entity": [], "EntityAttr": []}
 
     entities = get_permitted_objects(request.user, Entity, ACLType.Readable)
     for entity in entities:

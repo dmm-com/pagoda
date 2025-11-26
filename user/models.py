@@ -68,7 +68,7 @@ class User(AbstractUser):
         if is_direct_belonging:
             return self.airone_groups
         else:
-            parent_groups = []
+            parent_groups: list[Group] = []
             for group in self.airone_groups:
                 _scan_superior_groups(group, parent_groups)
 
