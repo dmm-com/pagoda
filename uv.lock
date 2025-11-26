@@ -67,7 +67,7 @@ plugins = [
 [package.metadata]
 requires-dist = [
     { name = "boto3", specifier = "==1.26.114" },
-    { name = "celery", specifier = "==5.3.6" },
+    { name = "celery", specifier = "==5.5.3" },
     { name = "coverage", marker = "extra == 'dev'", specifier = ">=7.3.0" },
     { name = "ddtrace", specifier = "==2.1.1" },
     { name = "django", specifier = "==4.2.26" },
@@ -84,7 +84,7 @@ requires-dist = [
     { name = "elasticsearch", specifier = "==7.17.6" },
     { name = "flower", specifier = "==1.2.0" },
     { name = "gunicorn", specifier = "==23.0.0" },
-    { name = "kombu", specifier = "==5.3.4" },
+    { name = "kombu", specifier = "==5.5.4" },
     { name = "lxml-html-clean", specifier = "==0.4.0" },
     { name = "lxml-html-clean", marker = "extra == 'dev'", specifier = ">=0.4.0" },
     { name = "markdown", specifier = ">=3.7" },
@@ -249,7 +249,7 @@ wheels = [
 
 [[package]]
 name = "celery"
-version = "5.3.6"
+version = "5.5.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "billiard" },
@@ -259,12 +259,11 @@ dependencies = [
     { name = "click-repl" },
     { name = "kombu" },
     { name = "python-dateutil" },
-    { name = "tzdata" },
     { name = "vine" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/99/72/45a2d2f9b45ccc6e80e2168ce169d17bf06a98711c192d7b53d5a8accf77/celery-5.3.6.tar.gz", hash = "sha256:870cc71d737c0200c397290d730344cc991d13a057534353d124c9380267aab9", size = 1544498, upload-time = "2023-11-22T15:16:33.646Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/bb/7d/6c289f407d219ba36d8b384b42489ebdd0c84ce9c413875a8aae0c85f35b/celery-5.5.3.tar.gz", hash = "sha256:6c972ae7968c2b5281227f01c3a3f984037d21c5129d07bf3550cc2afc6b10a5", size = 1667144, upload-time = "2025-06-01T11:08:12.563Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/37/c2/4c8a67a4d98a6fcd55dbdd79b641f945d7f59637c3e885c4abbda3c431f6/celery-5.3.6-py3-none-any.whl", hash = "sha256:9da4ea0118d232ce97dff5ed4974587fb1c0ff5c10042eb15278487cdd27d1af", size = 422035, upload-time = "2023-11-22T15:16:19.555Z" },
+    { url = "https://files.pythonhosted.org/packages/c9/af/0dcccc7fdcdf170f9a1585e5e96b6fb0ba1749ef6be8c89a6202284759bd/celery-5.5.3-py3-none-any.whl", hash = "sha256:0b5761a07057acee94694464ca482416b959568904c9dfa41ce8413a7d65d525", size = 438775, upload-time = "2025-06-01T11:08:09.94Z" },
 ]
 
 [[package]]
@@ -867,15 +866,17 @@ wheels = [
 
 [[package]]
 name = "kombu"
-version = "5.3.4"
+version = "5.5.4"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "amqp" },
+    { name = "packaging" },
+    { name = "tzdata" },
     { name = "vine" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/f1/24/f88282626d5f5b720fed5a8d1a609a504569b93465cbbfe8e7c049fba54e/kombu-5.3.4.tar.gz", hash = "sha256:0bb2e278644d11dea6272c17974a3dbb9688a949f3bb60aeb5b791329c44fadc", size = 437599, upload-time = "2023-11-16T16:32:18.005Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/0f/d3/5ff936d8319ac86b9c409f1501b07c426e6ad41966fedace9ef1b966e23f/kombu-5.5.4.tar.gz", hash = "sha256:886600168275ebeada93b888e831352fe578168342f0d1d5833d88ba0d847363", size = 461992, upload-time = "2025-06-01T10:19:22.281Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/a8/cc/24160d61e8c44bd76a775017c0859a403db471ddbd701e725fdf2becafa6/kombu-5.3.4-py3-none-any.whl", hash = "sha256:63bb093fc9bb80cfb3a0972336a5cec1fa7ac5f9ef7e8237c6bf8dda9469313e", size = 199975, upload-time = "2023-11-16T16:32:07.524Z" },
+    { url = "https://files.pythonhosted.org/packages/ef/70/a07dcf4f62598c8ad579df241af55ced65bed76e42e45d3c368a6d82dbc1/kombu-5.5.4-py3-none-any.whl", hash = "sha256:a12ed0557c238897d8e518f1d1fdf84bd1516c5e305af2dacd85c2015115feb8", size = 210034, upload-time = "2025-06-01T10:19:20.436Z" },
 ]
 
 [[package]]
@@ -1093,7 +1094,7 @@ dependencies = [
 requires-dist = [
     { name = "django", specifier = ">=3.2" },
     { name = "djangorestframework", specifier = ">=3.12" },
-    { name = "pagoda-plugin-sdk", editable = "plugin/sdk" },
+    { name = "pagoda-plugin-sdk", git = "https://github.com/dmm-com/pagoda.git?subdirectory=plugin%2Fsdk&tag=v3.153.0" },
 ]
 
 [[package]]

@@ -28,7 +28,7 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "boto3==1.26.114",
-    "celery==5.3.6",
+    "celery==5.5.3",
     "django-configurations==2.5",
     "ddtrace==2.1.1",
     "django-debug-toolbar==3.2.4",
@@ -45,7 +45,7 @@ dependencies = [
     "elasticsearch==7.17.6",
     "flower==1.2.0",
     "gunicorn==23.0.0",
-    "kombu==5.3.4",
+    "kombu==5.5.4",
     "lxml_html_clean==0.4.0",
     "mock==2.0.0",
     "mysqlclient==2.2.0",
