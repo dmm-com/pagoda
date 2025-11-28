@@ -41,7 +41,9 @@ class AironeModelResource(ModelResource):
         # the case of instance is updated
         elif self._is_updated(instance, original):
             # the case user try to update but he doen't have writable permition
-            if not self.request_user.has_permission(instance, ACLType.Writable):
+            if not self.request_user or not self.request_user.has_permission(
+                instance, ACLType.Writable
+            ):
                 return True
 
             # the case user try to change params which are disallow to update

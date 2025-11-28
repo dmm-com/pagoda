@@ -25,25 +25,19 @@ ignore_errors = true
 # TODO: Remove files from this list as they are fixed
 [[tool.mypy.overrides]]
 module = [
-    "acl.views",
+    # Remaining - to be fixed in future PRs:
     "airone.lib.custom_view",
-    "airone.lib.resources",
-    "airone.views",
     "api_v1.entity.views",
     "api_v1.entry.views",
-    "api_v1.views",
     "entity.views",
-    "entry.api_v1.views",
     "entry.models",
     "entry.views",
     "group.models",
     "group.views",
     "job.models",
     "plugin.sdk.pagoda_plugin_sdk.plugin",
-    "role.views",
     "user.models",
     "webhook.api_v1.views",
-    "webhook.views",
 ]
 ignore_errors = true
 

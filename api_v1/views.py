@@ -1,4 +1,5 @@
 from copy import deepcopy
+from typing import Any
 
 from django.db.models import Q
 from rest_framework import status
@@ -37,7 +38,7 @@ class EntryAPI(APIView):
             )
 
         # set target entry information to response data
-        resp_data = {
+        resp_data: dict[str, Any] = {
             "updated_attrs": {},  # This describes updated attribute values
             "is_created": False,  # This sets true when target entry will be created in this
             # processing
