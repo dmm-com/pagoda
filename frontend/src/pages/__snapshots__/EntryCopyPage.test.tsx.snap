@@ -250,8 +250,8 @@ exports[`should match snapshot 1`] = `
               <label
                 class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeMedium MuiInputLabel-outlined MuiFormLabel-colorPrimary Mui-disabled MuiFormLabel-filled MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeMedium MuiInputLabel-outlined css-113d811-MuiFormLabel-root-MuiInputLabel-root"
                 data-shrink="true"
-                for="«r3»"
-                id="«r3»-label"
+                for="_r_3_"
+                id="_r_3_-label"
               >
                 コピーするアイテム名
               </label>
@@ -262,7 +262,7 @@ exports[`should match snapshot 1`] = `
                   aria-invalid="false"
                   class="MuiInputBase-input MuiOutlinedInput-input Mui-disabled MuiInputBase-inputMultiline css-w4nesw-MuiInputBase-input-MuiOutlinedInput-input"
                   disabled=""
-                  id="«r3»"
+                  id="_r_3_"
                   style="height: 0px; overflow: hidden;"
                 >
                   vm0001
@@ -544,8 +544,8 @@ vm0006
             <label
               class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeMedium MuiInputLabel-outlined MuiFormLabel-colorPrimary Mui-disabled MuiFormLabel-filled MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-sizeMedium MuiInputLabel-outlined css-113d811-MuiFormLabel-root-MuiInputLabel-root"
               data-shrink="true"
-              for="«r3»"
-              id="«r3»-label"
+              for="_r_3_"
+              id="_r_3_-label"
             >
               コピーするアイテム名
             </label>
@@ -556,7 +556,7 @@ vm0006
                 aria-invalid="false"
                 class="MuiInputBase-input MuiOutlinedInput-input Mui-disabled MuiInputBase-inputMultiline css-w4nesw-MuiInputBase-input-MuiOutlinedInput-input"
                 disabled=""
-                id="«r3»"
+                id="_r_3_"
                 style="height: 0px; overflow: hidden;"
               >
                 vm0001

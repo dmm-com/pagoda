@@ -261,7 +261,7 @@ exports[`EditEntityPage should match snapshot 1`] = `
                         <input
                           aria-invalid="false"
                           class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputSizeSmall css-1pzfmz2-MuiInputBase-input-MuiOutlinedInput-input"
-                          id="«r3»"
+                          id="_r_3_"
                           name="note"
                           placeholder="備考"
                           required=""
@@ -307,7 +307,7 @@ exports[`EditEntityPage should match snapshot 1`] = `
                         <input
                           aria-invalid="false"
                           class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputSizeSmall css-1pzfmz2-MuiInputBase-input-MuiOutlinedInput-input"
-                          id="«r4»"
+                          id="_r_4_"
                           name="itemNamePattern"
                           placeholder="アイテム名の許可パターン"
                           required=""
@@ -889,7 +889,7 @@ exports[`EditEntityPage should match snapshot 1`] = `
                       <input
                         aria-invalid="false"
                         class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputSizeSmall css-1pzfmz2-MuiInputBase-input-MuiOutlinedInput-input"
-                        id="«r3»"
+                        id="_r_3_"
                         name="note"
                         placeholder="備考"
                         required=""
@@ -935,7 +935,7 @@ exports[`EditEntityPage should match snapshot 1`] = `
                       <input
                         aria-invalid="false"
                         class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputSizeSmall css-1pzfmz2-MuiInputBase-input-MuiOutlinedInput-input"
-                        id="«r4»"
+                        id="_r_4_"
                         name="itemNamePattern"
                         placeholder="アイテム名の許可パターン"
                         required=""
