@@ -245,7 +245,7 @@ def get_attr_referrals(request, attr_id):
 
 @http_get
 def get_entry_history(request, entry_id):
-    params = {"index": None, "count": None}
+    params: dict[str, int | None] = {"index": None, "count": None}
 
     for key in params.keys():
         try:

@@ -14,7 +14,7 @@ from .models import ACLBase
 @http_get
 def index(request, obj_id):
     aclbase_obj, error = get_obj_with_check_perm(request.user, ACLBase, obj_id, ACLType.Full)
-    if error:
+    if error or not aclbase_obj:
         return error
     target_obj = aclbase_obj.get_subclass_object()
 

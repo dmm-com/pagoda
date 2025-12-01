@@ -6,7 +6,7 @@ from entity.models import Entity
 @http_get
 def list_webhook(request, entity_id):
     entity, error = get_obj_with_check_perm(request.user, Entity, entity_id, ACLType.Full)
-    if error:
+    if error or not entity:
         return error
 
     return render(
