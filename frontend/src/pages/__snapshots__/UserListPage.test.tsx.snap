@@ -144,7 +144,7 @@ exports[`UserListPage should match snapshot 1`] = `
                     <input
                       aria-invalid="false"
                       class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputAdornedStart css-2u11ia-MuiInputBase-input-MuiOutlinedInput-input"
-                      id="«r2»"
+                      id="_r_2_"
                       placeholder="ユーザを絞り込む"
                       type="text"
                       value=""
@@ -465,7 +465,7 @@ exports[`UserListPage should match snapshot 1`] = `
                   <input
                     aria-invalid="false"
                     class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputAdornedStart css-2u11ia-MuiInputBase-input-MuiOutlinedInput-input"
-                    id="«r2»"
+                    id="_r_2_"
                     placeholder="ユーザを絞り込む"
                     type="text"
                     value=""

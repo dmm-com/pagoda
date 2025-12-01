@@ -219,7 +219,7 @@ exports[`EditUserPage should match snapshot 1`] = `
                             <input
                               aria-invalid="false"
                               class="MuiInputBase-input MuiOutlinedInput-input css-16wblaj-MuiInputBase-input-MuiOutlinedInput-input"
-                              id="«r5»"
+                              id="_r_5_"
                               name="username"
                               placeholder="ユーザ名を入力してください"
                               type="text"
@@ -268,7 +268,7 @@ exports[`EditUserPage should match snapshot 1`] = `
                             <input
                               aria-invalid="false"
                               class="MuiInputBase-input MuiOutlinedInput-input css-16wblaj-MuiInputBase-input-MuiOutlinedInput-input"
-                              id="«r6»"
+                              id="_r_6_"
                               name="email"
                               placeholder="メールアドレスを入力してください"
                               type="email"
@@ -317,7 +317,7 @@ exports[`EditUserPage should match snapshot 1`] = `
                             <input
                               aria-invalid="false"
                               class="MuiInputBase-input MuiOutlinedInput-input css-16wblaj-MuiInputBase-input-MuiOutlinedInput-input"
-                              id="«r7»"
+                              id="_r_7_"
                               name="password"
                               placeholder="パスワードを入力してください"
                               type="password"
@@ -566,7 +566,7 @@ exports[`EditUserPage should match snapshot 1`] = `
                           <input
                             aria-invalid="false"
                             class="MuiInputBase-input MuiOutlinedInput-input css-16wblaj-MuiInputBase-input-MuiOutlinedInput-input"
-                            id="«r5»"
+                            id="_r_5_"
                             name="username"
                             placeholder="ユーザ名を入力してください"
                             type="text"
@@ -615,7 +615,7 @@ exports[`EditUserPage should match snapshot 1`] = `
                           <input
                             aria-invalid="false"
                             class="MuiInputBase-input MuiOutlinedInput-input css-16wblaj-MuiInputBase-input-MuiOutlinedInput-input"
-                            id="«r6»"
+                            id="_r_6_"
                             name="email"
                             placeholder="メールアドレスを入力してください"
                             type="email"
@@ -664,7 +664,7 @@ exports[`EditUserPage should match snapshot 1`] = `
                           <input
                             aria-invalid="false"
                             class="MuiInputBase-input MuiOutlinedInput-input css-16wblaj-MuiInputBase-input-MuiOutlinedInput-input"
-                            id="«r7»"
+                            id="_r_7_"
                             name="password"
                             placeholder="パスワードを入力してください"
                             type="password"
