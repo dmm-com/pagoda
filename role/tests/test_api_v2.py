@@ -222,7 +222,8 @@ class ViewTest(AironeViewTest):
         role = Role.objects.filter(name="test-role").first()
 
         # login user is not belonging to both admin_users and admin_groups,
-        # and the user is not superuser
+        # and the user is not superuser.
+        # Since the user cannot see roles they don't belong to, it returns 404.
         self.guest_login()
         params = {
             **base_params,
@@ -230,7 +231,7 @@ class ViewTest(AironeViewTest):
             "admin_groups": [self.group2.id],
         }
         resp = self.client.put(f"/role/api/v2/{role.id}", json.dumps(params), "application/json")
-        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(resp.status_code, 404)
 
     def test_delete(self):
         admin = self.admin_login()
@@ -267,10 +268,11 @@ class ViewTest(AironeViewTest):
         role = Role.objects.filter(name="test-role").first()
 
         # login user is not belonging to both admin_users and admin_groups,
-        # and the user is not superuser
+        # and the user is not superuser.
+        # Since the user cannot see roles they don't belong to, it returns 404.
         self.guest_login()
         resp = self.client.delete(f"/role/api/v2/{role.id}")
-        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(resp.status_code, 404)
 
     @patch("role.tasks.import_role_v2.delay", Mock(side_effect=tasks.import_role_v2))
     def test_import(self):
@@ -426,3 +428,131 @@ class ViewTest(AironeViewTest):
             [x["name"] for x in resp.json()],
             ["role-c", "role-b", "role-a"],
         )
+
+    def test_list_roles_filtered_by_user_membership(self):
+        """Test that regular users can only see roles they belong to."""
+        guest = self.guest_login()
+
+        # Create roles with different memberships
+        role_direct_user = self._create_role("role-direct-user")
+        role_direct_user.users.add(guest)
+
+        role_admin_user = self._create_role("role-admin-user")
+        role_admin_user.admin_users.add(guest)
+
+        role_via_group = self._create_role("role-via-group")
+        role_via_group.groups.add(self.group1)
+        guest.groups.add(self.group1)
+
+        role_via_admin_group = self._create_role("role-via-admin-group")
+        role_via_admin_group.admin_groups.add(self.group2)
+        guest.groups.add(self.group2)
+
+        role_not_related = self._create_role("role-not-related")
+        role_not_related.users.add(self.user1)
+
+        # Request role list
+        resp = self.client.get("/role/api/v2/")
+        self.assertEqual(resp.status_code, 200)
+
+        role_names = [x["name"] for x in resp.json()]
+
+        # Verify user can see roles they belong to
+        self.assertIn("role-direct-user", role_names)
+        self.assertIn("role-admin-user", role_names)
+        self.assertIn("role-via-group", role_names)
+        self.assertIn("role-via-admin-group", role_names)
+
+        # Verify user cannot see roles they don't belong to
+        self.assertNotIn("role-not-related", role_names)
+
+    def test_list_roles_superuser_sees_all(self):
+        """Test that superusers can see all roles."""
+        self.admin_login()
+
+        # Create roles with various memberships
+        role1 = self._create_role("role-for-user1")
+        role1.users.add(self.user1)
+
+        role2 = self._create_role("role-for-user2")
+        role2.users.add(self.user2)
+
+        self._create_role("role-no-members")
+
+        # Request role list
+        resp = self.client.get("/role/api/v2/")
+        self.assertEqual(resp.status_code, 200)
+
+        role_names = [x["name"] for x in resp.json()]
+
+        # Superuser should see all roles
+        self.assertIn("role-for-user1", role_names)
+        self.assertIn("role-for-user2", role_names)
+        self.assertIn("role-no-members", role_names)
+
+    def test_list_roles_no_duplicate_results(self):
+        """Test that roles are not duplicated when user matches multiple criteria."""
+        guest = self.guest_login()
+        guest.groups.add(self.group1)
+
+        # Create a role where user matches multiple criteria
+        role = self._create_role("role-multi-match")
+        role.users.add(guest)
+        role.admin_users.add(guest)
+        role.groups.add(self.group1)
+        role.admin_groups.add(self.group1)
+
+        # Request role list
+        resp = self.client.get("/role/api/v2/")
+        self.assertEqual(resp.status_code, 200)
+
+        role_names = [x["name"] for x in resp.json()]
+
+        # Role should appear only once despite multiple matches
+        self.assertEqual(role_names.count("role-multi-match"), 1)
+
+    def test_export_roles_filtered_by_user_membership(self):
+        """Test that regular users can only export roles they belong to."""
+        guest = self.guest_login()
+
+        # Create roles with different memberships
+        role_direct_user = self._create_role("role-direct-user")
+        role_direct_user.users.add(guest)
+
+        role_not_related = self._create_role("role-not-related")
+        role_not_related.users.add(self.user1)
+
+        # Request role export
+        resp = self.client.get("/role/api/v2/export")
+        self.assertEqual(resp.status_code, 200)
+
+        data = yaml.safe_load(resp.content.decode("utf-8"))
+        role_names = [x["name"] for x in data]
+
+        # Verify user can export roles they belong to
+        self.assertIn("role-direct-user", role_names)
+
+        # Verify user cannot export roles they don't belong to
+        self.assertNotIn("role-not-related", role_names)
+
+    def test_export_roles_superuser_sees_all(self):
+        """Test that superusers can export all roles."""
+        self.admin_login()
+
+        # Create roles with various memberships
+        role1 = self._create_role("role-for-user1")
+        role1.users.add(self.user1)
+
+        role2 = self._create_role("role-for-user2")
+        role2.users.add(self.user2)
+
+        # Request role export
+        resp = self.client.get("/role/api/v2/export")
+        self.assertEqual(resp.status_code, 200)
+
+        data = yaml.safe_load(resp.content.decode("utf-8"))
+        role_names = [x["name"] for x in data]
+
+        # Superuser should be able to export all roles
+        self.assertIn("role-for-user1", role_names)
+        self.assertIn("role-for-user2", role_names)
