@@ -79,7 +79,7 @@ def create(request):
 @http_get
 def edit(request, entity_id):
     entity, error = get_obj_with_check_perm(request.user, Entity, entity_id, ACLType.Writable)
-    if error:
+    if error or entity is None:
         return error
 
     # when an entity in referral attribute is deleted
@@ -150,7 +150,7 @@ def edit(request, entity_id):
 )
 def do_edit(request, entity_id, recv_data):
     entity, error = get_obj_with_check_perm(request.user, Entity, entity_id, ACLType.Writable)
-    if error:
+    if error or entity is None:
         return error
 
     # validation checks
@@ -353,7 +353,7 @@ def export(request):
 @http_post([])
 def do_delete(request, entity_id, recv_data):
     entity, error = get_obj_with_check_perm(request.user, Entity, entity_id, ACLType.Full)
-    if error:
+    if error or entity is None:
         return error
 
     if not entity.is_active:
@@ -410,7 +410,7 @@ def dashboard(request, entity_id):
     entity = Entity.objects.get(id=entity_id)
     total_entry_count = Entry.objects.filter(schema=entity, is_active=True).count()
 
-    summarized_data = {}
+    summarized_data: dict[EntityAttr, dict[str, Any]] = {}
     for attr in EntityAttr.objects.filter(parent_entity=entity, is_active=True, is_summarized=True):
         summarized_data[attr] = {
             "referral_count": [

@@ -113,7 +113,7 @@ def _validate_input(recv_data, obj):
 @http_get
 def index(request, entity_id):
     entity, error = get_obj_with_check_perm(request.user, Entity, entity_id, ACLType.Readable)
-    if error:
+    if error or entity is None:
         return error
 
     page = request.GET.get("page", 1)
@@ -162,7 +162,7 @@ def index(request, entity_id):
 @http_get
 def create(request, entity_id):
     entity, error = get_obj_with_check_perm(request.user, Entity, entity_id, ACLType.Writable)
-    if error:
+    if error or entity is None:
         return error
 
     if custom_view.is_custom("create_entry_without_context", entity.name):
@@ -224,7 +224,7 @@ def create(request, entity_id):
 def do_create(request, entity_id, recv_data):
     # get objects to be referred in the following processing
     entity, error = get_obj_with_check_perm(request.user, Entity, entity_id, ACLType.Writable)
-    if error:
+    if error or entity is None:
         return error
 
     # checks that a same name entry corresponding to the entity is existed, or not.
@@ -276,7 +276,7 @@ def do_create(request, entity_id, recv_data):
 @http_get
 def edit(request, entry_id):
     entry, error = get_obj_with_check_perm(request.user, Entry, entry_id, ACLType.Writable)
-    if error:
+    if error or entry is None:
         return error
 
     # prevent to show edit page under the creating processing
@@ -329,7 +329,7 @@ def edit(request, entry_id):
 )
 def do_edit(request, entry_id, recv_data):
     entry, error = get_obj_with_check_perm(request.user, Entry, entry_id, ACLType.Writable)
-    if error:
+    if error or entry is None:
         return error
 
     # checks that a same name entry corresponding to the entity is existed.
@@ -392,7 +392,7 @@ def do_edit(request, entry_id, recv_data):
 @http_get
 def show(request, entry_id):
     entry, error = get_obj_with_check_perm(request.user, Entry, entry_id, ACLType.Readable)
-    if error:
+    if error or entry is None:
         return error
 
     if entry.get_status(Entry.STATUS_CREATING):
@@ -419,7 +419,7 @@ def show(request, entry_id):
 @http_get
 def history(request, entry_id):
     entry, error = get_obj_with_check_perm(request.user, Entry, entry_id, ACLType.Readable)
-    if error:
+    if error or entry is None:
         return error
 
     if entry.get_status(Entry.STATUS_CREATING):
@@ -440,7 +440,7 @@ def history(request, entry_id):
 @http_get
 def refer(request, entry_id):
     entry, error = get_obj_with_check_perm(request.user, Entry, entry_id, ACLType.Readable)
-    if error:
+    if error or entry is None:
         return error
 
     if entry.get_status(Entry.STATUS_CREATING):
@@ -570,7 +570,7 @@ def do_import_data(request, entity_id: int, context):
 @http_post([])  # check only that request is POST, id will be given by url
 def do_delete(request, entry_id, recv_data):
     entry, error = get_obj_with_check_perm(request.user, Entry, entry_id, ACLType.Writable)
-    if error:
+    if error or entry is None:
         return error
 
     if custom_view.is_custom("do_delete_entry", entry.schema.name):
@@ -618,7 +618,7 @@ def do_delete(request, entry_id, recv_data):
 @http_get
 def copy(request, entry_id):
     entry, error = get_obj_with_check_perm(request.user, Entry, entry_id, ACLType.Writable)
-    if error:
+    if error or entry is None:
         return error
 
     # prevent to show edit page under the creating processing
@@ -649,7 +649,7 @@ def copy(request, entry_id):
 )
 def do_copy(request, entry_id, recv_data):
     entry, error = get_obj_with_check_perm(request.user, Entry, entry_id, ACLType.Writable)
-    if error:
+    if error or entry is None:
         return error
 
     ret = []
@@ -709,7 +709,7 @@ def do_copy(request, entry_id, recv_data):
 @http_get
 def restore(request, entity_id):
     entity, error = get_obj_with_check_perm(request.user, Entity, entity_id, ACLType.Writable)
-    if error:
+    if error or entity is None:
         return error
 
     page = request.GET.get("page", 1)
@@ -749,7 +749,7 @@ def restore(request, entity_id):
 @http_post([])
 def do_restore(request, entry_id, recv_data):
     entry, error = get_obj_with_check_perm(request.user, Entry, entry_id, ACLType.Writable)
-    if error:
+    if error or entry is None:
         return error
 
     if entry.is_active:
