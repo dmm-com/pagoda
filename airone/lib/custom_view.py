@@ -21,6 +21,8 @@ def _does_custom_method_defined(method_name, spec_name, filepath):
         return True
 
     spec = importlib.util.spec_from_file_location(spec_name, filepath)
+    if spec is None or spec.loader is None:
+        return False
     model = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(model)
 
