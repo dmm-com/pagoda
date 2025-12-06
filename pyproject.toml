@@ -20,22 +20,23 @@ warn_redundant_casts = true
 module = ["*.tests.*", "*/tests/*"]
 ignore_errors = true
 
-# Temporarily exclude files with remaining type errors (118 errors in 19 files)
+# Temporarily exclude files with remaining type errors
 # These will be fixed incrementally in future PRs
 # TODO: Remove files from this list as they are fixed
 [[tool.mypy.overrides]]
 module = [
+    # PR #3 targets (removed from exclusion):
+    # "api_v1.entity.views",
+    # "entry.models",
+    # "group.models",
+    # "job.models",
+    # "plugin.sdk.pagoda_plugin_sdk.plugin",
     # Remaining - to be fixed in future PRs:
     "airone.lib.custom_view",
-    "api_v1.entity.views",
     "api_v1.entry.views",
     "entity.views",
-    "entry.models",
     "entry.views",
-    "group.models",
     "group.views",
-    "job.models",
-    "plugin.sdk.pagoda_plugin_sdk.plugin",
     "user.models",
     "webhook.api_v1.views",
 ]
