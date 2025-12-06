@@ -232,6 +232,7 @@ export const AdvancedSearchResultsPage: FC = () => {
         hasReferral,
         searchAllEntities,
         exportStyle,
+        hintEntry,
       );
       enqueueSnackbar("エクスポートジョブの登録に成功しました", {
         variant: "success",
