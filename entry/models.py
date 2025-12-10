@@ -1651,6 +1651,8 @@ class Attribute(ACLBase):
         # restore referral object that isn't referred from any objects if it's necessary
         if self.schema.is_delete_in_chain and self.schema.type & AttrType.OBJECT:
             attrv = self.get_latest_value()
+            if not attrv:
+                return
 
             if self.is_array():
                 [_may_restore_referral(x.referral) for x in attrv.data_array.all()]

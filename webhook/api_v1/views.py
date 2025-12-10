@@ -27,7 +27,7 @@ urllib3.disable_warnings(InsecureRequestWarning)
 )
 def set_webhook(request, entity_id, recv_data):
     entity, error = get_obj_with_check_perm(request.user, Entity, entity_id, ACLType.Full)
-    if error:
+    if error or entity is None:
         return error
 
     if not entity.is_active:
@@ -67,13 +67,11 @@ def set_webhook(request, entity_id, recv_data):
     try:
         resp = requests.post(
             recv_data["webhook_url"],
-            **{
-                "headers": {
-                    x["header_key"]: x["header_value"] for x in recv_data.get("request_headers", [])
-                },
-                "data": json.dumps({}),
-                "verify": False,
+            headers={
+                x["header_key"]: x["header_value"] for x in recv_data.get("request_headers", [])
             },
+            data=json.dumps({}),
+            verify=False,
         )
 
         # The is_verified parameter will be set True,

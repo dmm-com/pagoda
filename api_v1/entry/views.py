@@ -78,7 +78,7 @@ class EntrySearchChainAPI(APIView):
             # output all Attributes of returned Entries. This divides input entry names for
             # search processing into 100 pieces to prevent hung-up
             # while AdvancedSearchService.search_entries() because of big input data.
-            result = {"ret_count": len(ret_data), "ret_values": []}
+            ret_values: list = []
             for i in range(0, len(ret_data), 100):
                 entry_info = AdvancedSearchService.search_entries(
                     request.user,
@@ -86,9 +86,12 @@ class EntrySearchChainAPI(APIView):
                     entry_name="|".join(["^%s$" % x["name"] for x in ret_data[i : i + 100]]),
                     is_output_all=True,
                 )
-                result["ret_values"].extend([x.model_dump() for x in entry_info.ret_values])
+                ret_values.extend(entry_info.ret_values)
             return Response(
-                EntrySearchChainAPIResponse(**result).model_dump(), status=status.HTTP_200_OK
+                EntrySearchChainAPIResponse(
+                    ret_count=len(ret_data), ret_values=ret_values
+                ).model_dump(),
+                status=status.HTTP_200_OK,
             )
 
         else:
@@ -110,8 +113,9 @@ class EntrySearchAPI(APIView):
         except ValidationError as e:
             errors = e.errors()
             for error in errors:
-                if error.get("loc"):
-                    match error.get("loc")[0]:
+                loc = error.get("loc")
+                if loc:
+                    match loc[0]:
                         case "entities":
                             return Response("The entities parameters are required", status=400)
                         case "entry_name":

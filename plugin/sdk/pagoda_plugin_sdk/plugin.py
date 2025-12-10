@@ -5,7 +5,7 @@ All plugins must inherit from the Plugin class defined here.
 This provides the foundation for plugin discovery, validation, and lifecycle management.
 """
 
-from typing import Any, Dict, List, Optional
+from typing import Any, ClassVar, Dict, List, Optional
 
 from .exceptions import PluginValidationError
 
@@ -31,6 +31,9 @@ class Plugin:
     django_apps: List[str] = []
     url_patterns: Optional[str] = None
     api_v2_patterns: Optional[str] = None
+
+    # Hook handlers - populated by __init_subclass__
+    _hook_handlers: ClassVar[List[Dict[str, Any]]] = []
 
     def __init_subclass__(cls, **kwargs):
         """Automatically detect and register decorated hook methods"""

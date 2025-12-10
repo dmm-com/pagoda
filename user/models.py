@@ -203,11 +203,13 @@ class User(AbstractUser):
         Override Model.delete method of Django
         """
         self.is_active = False
+        current_username: str = self.username  # type: ignore[has-type]
         self.username = "%s_deleted_%s" % (
-            self.username,
+            current_username,
             datetime.now().strftime("%Y%m%d_%H%M%S"),
         )
-        self.email = "deleted__%s" % (self.email)
+        current_email: str = self.email  # type: ignore[has-type]
+        self.email = "deleted__%s" % (current_email)
         for social_auth in self.social_auth.all():
             social_auth.delete()
         self.save()

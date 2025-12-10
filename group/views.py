@@ -133,7 +133,7 @@ def do_edit(request, group_id, recv_data):
 @http_get
 @check_superuser
 def create(request):
-    context = {
+    context: Dict[str, Any] = {
         "default_group_id": 0,
         "submit_ref": "/group/do_create",
     }

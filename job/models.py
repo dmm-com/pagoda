@@ -306,9 +306,11 @@ class Job(models.Model):
         # initiate job processing
         method = method_table[self.operation]
         if will_delay:
-            return method.delay(self.id)
+            # method is a Celery task with .delay() method
+            return method.delay(self.id)  # type: ignore[attr-defined]
         else:
-            return method(self.id)
+            # Celery task can be called with job_id only (user comes from Job)
+            return method(self.id)  # type: ignore[call-arg]
 
     @classmethod
     def _create_new_job(

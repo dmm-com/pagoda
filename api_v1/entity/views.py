@@ -1,5 +1,3 @@
-from functools import reduce
-
 from pydantic import BaseModel
 from rest_framework import status
 from rest_framework.response import Response
@@ -18,11 +16,13 @@ class EntityAttrsAPI(APIView):
             Entity.objects.filter(id=x, is_active=True).first() for x in entity_ids.split(",") if x
         ]
 
-        def get_attrs_of_specific_entities():
-            return reduce(
-                lambda x, y: set(x) & set(y),
-                [[a.name for a in e.attrs.filter(is_active=True)] for e in entities],
-            )
+        def get_attrs_of_specific_entities() -> set[str]:
+            # Compute intersection of attribute names across entities
+            attr_lists = [[a.name for a in e.attrs.filter(is_active=True)] for e in entities]
+            result: set[str] = set(attr_lists[0]) if attr_lists else set()
+            for attr_list in attr_lists[1:]:
+                result &= set(attr_list)
+            return result
 
         def get_attrs_of_all_entities() -> set[str]:
             return set([x.name for x in EntityAttr.objects.filter(is_active=True)])

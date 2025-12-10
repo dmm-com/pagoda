@@ -39,8 +39,9 @@ class Group(DjangoGroup):
             child_group.save(update_fields=["parent_group"])
 
         self.is_active = False
+        current_name: str = self.name  # type: ignore[has-type]
         self.name = "%s_deleted_%s" % (
-            self.name,
+            current_name,
             datetime.now().strftime("%Y%m%d_%H%M%S"),
         )
         self.save()
