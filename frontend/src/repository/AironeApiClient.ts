@@ -880,6 +880,7 @@ class AironeApiClient {
     hasReferral: boolean,
     isAllEntities: boolean,
     format: "yaml" | "csv",
+    hintEntry?: EntryHint,
   ): Promise<void> {
     await this.entry.entryApiV2AdvancedSearchResultExportCreate(
       {
@@ -889,6 +890,7 @@ class AironeApiClient {
           hasReferral: hasReferral,
           isAllEntities: isAllEntities,
           exportStyle: format,
+          hintEntry: hintEntry,
         },
       },
       {
