@@ -106,6 +106,8 @@ class JobListAPI(viewsets.ModelViewSet):
                 )
                 | Q(operation=JobOperation.DELETE_ENTITY, target__isnull=False)
                 | Q(operation=JobOperation.DELETE_ENTRY, target__isnull=False)
+                | Q(operation=JobOperation.DELETE_ENTITY_V2, target__isnull=False)
+                | Q(operation=JobOperation.DELETE_ENTRY_V2, target__isnull=False)
             ),
         )
 

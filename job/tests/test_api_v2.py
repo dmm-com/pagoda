@@ -63,6 +63,45 @@ class ViewTest(AironeViewTest):
         self.assertEqual(body["count"], 1)
         self.assertEqual(body["results"][0]["operation"], JobOperation.DELETE_ENTRY)
 
+    def test_get_jobs_deleted_target_v2_entry(self):
+        """Test that DELETE_ENTRY_V2 jobs are visible even when target is_active=False"""
+        user = self.guest_login()
+
+        entity = Entity.objects.create(name="entity", created_user=user)
+        entry = Entry.objects.create(name="entry", created_user=user, schema=entity)
+
+        # Create delete job v2 and mark entry as deleted (is_active=False)
+        entry.is_active = False
+        entry.save()
+        Job.new_delete_entry_v2(user, entry)
+
+        resp = self.client.get(f"/job/api/v2/jobs?limit={_TEST_MAX_LIST_VIEW + 100}&offset=0")
+        self.assertEqual(resp.status_code, 200)
+
+        # Confirm that the delete job v2 can be obtained even when entry.is_active=False
+        body = resp.json()
+        self.assertEqual(body["count"], 1)
+        self.assertEqual(body["results"][0]["operation"], JobOperation.DELETE_ENTRY_V2)
+
+    def test_get_jobs_deleted_target_v2_entity(self):
+        """Test that DELETE_ENTITY_V2 jobs are visible even when target is_active=False"""
+        user = self.guest_login()
+
+        entity = Entity.objects.create(name="entity", created_user=user)
+
+        # Create delete job v2 and mark entity as deleted (is_active=False)
+        entity.is_active = False
+        entity.save()
+        Job.new_delete_entity_v2(user, entity)
+
+        resp = self.client.get(f"/job/api/v2/jobs?limit={_TEST_MAX_LIST_VIEW + 100}&offset=0")
+        self.assertEqual(resp.status_code, 200)
+
+        # Confirm that the delete job v2 can be obtained even when entity.is_active=False
+        body = resp.json()
+        self.assertEqual(body["count"], 1)
+        self.assertEqual(body["results"][0]["operation"], JobOperation.DELETE_ENTITY_V2)
+
     def test_get_non_target_job(self):
         user = self.guest_login()
 
