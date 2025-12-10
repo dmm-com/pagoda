@@ -1,4 +1,4 @@
-from django.db.models import Prefetch
+from django.db.models import Prefetch, Q, QuerySet
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, generics, serializers, status, viewsets
 from rest_framework.permissions import BasePermission, IsAuthenticated
@@ -18,6 +18,20 @@ from role.models import Role
 from user.models import User
 
 
+def get_permitted_roles(user: User, base_queryset: QuerySet[Role]) -> QuerySet[Role]:
+    """Return roles that the user is permitted to see."""
+    if user.is_superuser:
+        return base_queryset
+
+    user_group_ids = [g.id for g in user.belonging_groups()]
+    return base_queryset.filter(
+        Q(users=user)
+        | Q(admin_users=user)
+        | Q(groups__id__in=user_group_ids)
+        | Q(admin_groups__id__in=user_group_ids)
+    ).distinct()
+
+
 class RolePermission(BasePermission):
     def has_object_permission(self, request, view, obj: Role):
         current_user: User = request.user
@@ -32,16 +46,20 @@ class RolePermission(BasePermission):
 
 
 class RoleAPI(viewsets.ModelViewSet):
-    queryset = Role.objects.filter(is_active=True).prefetch_related(
-        Prefetch("users", queryset=User.objects.filter(is_active=True)),
-        Prefetch("groups", queryset=Group.objects.filter(is_active=True)),
-        Prefetch("admin_users", queryset=User.objects.filter(is_active=True)),
-        Prefetch("admin_groups", queryset=Group.objects.filter(is_active=True)),
-    )
+    queryset = Role.objects.filter(is_active=True)
     permission_classes = [IsAuthenticated & RolePermission]
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter, filters.SearchFilter]
     search_fields = ["name"]
     ordering = ["name"]
+
+    def get_queryset(self):
+        base_queryset = Role.objects.filter(is_active=True).prefetch_related(
+            Prefetch("users", queryset=User.objects.filter(is_active=True)),
+            Prefetch("groups", queryset=Group.objects.filter(is_active=True)),
+            Prefetch("admin_users", queryset=User.objects.filter(is_active=True)),
+            Prefetch("admin_groups", queryset=Group.objects.filter(is_active=True)),
+        )
+        return get_permitted_roles(self.request.user, base_queryset)
 
     def get_serializer_class(self):
         serializer = {
@@ -79,3 +97,6 @@ class RoleExportAPI(generics.ListAPIView):
     serializer_class = RoleImportExportChildSerializer
     renderer_classes = [YAMLRenderer]
     permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return get_permitted_roles(self.request.user, Role.objects.filter(is_active=True))
