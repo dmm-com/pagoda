@@ -4,8 +4,5 @@ module.exports = {
     [
       "@babel/preset-env", { "targets": { "node": "current" } }
     ]
-  ],
-  "plugins": [
-    "transform-class-properties"
   ]
 };
