@@ -33,13 +33,14 @@ describe("JobList", () => {
       wrapper: TestWrapper,
     });
 
-    // 23 operations should have a link to their target, like to an entity
+    // 35 links: 23 operations have a link to their target (entity),
+    // plus 12 entry operations have an additional link to the target entry
     // NOTE: Possible links on the screen are links to a target or download links
     expect(
       screen.queryAllByRole("link", {
         name: (content) => !content.includes("Download"),
       }),
-    ).toHaveLength(23);
+    ).toHaveLength(35);
 
     // 4 export operations should have a download link
     expect(
