@@ -1,7 +1,9 @@
 import { JobSerializers } from "@dmm-com/airone-apiclient-typescript-fetch";
+import Download from "@mui/icons-material/Download";
 import {
   Box,
   Button,
+  IconButton,
   MenuItem,
   Select,
   Table,
@@ -9,6 +11,7 @@ import {
   TableCell,
   TableHead,
   TableRow,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
@@ -17,7 +20,7 @@ import { FC, useState } from "react";
 import { useNavigate } from "react-router";
 
 import { aironeApiClient } from "../../repository/AironeApiClient";
-import { entityEntriesPath } from "../../routes/Routes";
+import { entityEntriesPath, entryDetailsPath } from "../../routes/Routes";
 import { JobOperations, JobStatuses } from "../../services/Constants";
 import { formatDateTime } from "../../services/DateUtil";
 import { jobOperationLabel, jobStatusLabel } from "../../services/JobUtil";
@@ -140,6 +143,9 @@ export const JobList: FC<Props> = ({ jobs }) => {
           <AironeTableHeadCell sx={{ width: "160px" }}>
             対象モデル
           </AironeTableHeadCell>
+          <AironeTableHeadCell sx={{ width: "160px" }}>
+            対象アイテム
+          </AironeTableHeadCell>
           <AironeTableHeadCell sx={{ width: "120px" }}>
             状況
           </AironeTableHeadCell>
@@ -206,6 +212,37 @@ export const JobList: FC<Props> = ({ jobs }) => {
               })()}
             </TableCell>
             <TableCell>
+              {(() => {
+                switch (job.operation) {
+                  case JobOperations.CREATE_ENTRY:
+                  case JobOperations.EDIT_ENTRY:
+                  case JobOperations.DELETE_ENTRY:
+                  case JobOperations.COPY_ENTRY:
+                  case JobOperations.RESTORE_ENTRY:
+                  case JobOperations.NOTIFY_CREATE_ENTRY:
+                  case JobOperations.NOTIFY_UPDATE_ENTRY:
+                  case JobOperations.NOTIFY_DELETE_ENTRY:
+                  case JobOperations.DO_COPY_ENTRY:
+                  case JobOperations.CREATE_ENTRY_V2:
+                  case JobOperations.EDIT_ENTRY_V2:
+                  case JobOperations.DELETE_ENTRY_V2:
+                    return (
+                      <Typography
+                        component={AironeLink}
+                        to={entryDetailsPath(
+                          job.target?.schemaId ?? 0,
+                          job.target?.id ?? 0,
+                        )}
+                      >
+                        {job.target?.name ?? ""}
+                      </Typography>
+                    );
+                  default:
+                    return <Typography />;
+                }
+              })()}
+            </TableCell>
+            <TableCell>
               <Box display="flex" flexDirection="column">
                 <Box display="flex" alignItems="center" flexDirection="row">
                   {jobStatusIcons(job.status)}
@@ -264,11 +301,11 @@ export const JobList: FC<Props> = ({ jobs }) => {
                 job.operation == JobOperations.EXPORT_ENTRY_V2 ||
                 job.operation == JobOperations.EXPORT_SEARCH_RESULT_V2) &&
               job.status == JobStatuses.DONE ? (
-                <Box display="flex" gap="8px">
+                <Box display="flex" gap="4px" alignItems="center">
                   <Select
                     defaultValue="utf-8"
                     size="small"
-                    sx={{ width: "120px" }}
+                    sx={{ width: "100px" }}
                     onChange={(e) =>
                       setEncodes({ ...encodes, [job.id]: e.target.value })
                     }
@@ -276,15 +313,17 @@ export const JobList: FC<Props> = ({ jobs }) => {
                     <MenuItem value="utf-8">UTF-8</MenuItem>
                     <MenuItem value="shift_jis">Shift_JIS</MenuItem>
                   </Select>
-                  <Button
-                    href={`/job/api/v2/${job.id}/download?encode=${
-                      encodes[job.id] ? encodes[job.id] : "utf-8"
-                    }`}
-                    variant="contained"
-                    size="small"
-                  >
-                    Download
-                  </Button>
+                  <Tooltip title="Download">
+                    <IconButton
+                      href={`/job/api/v2/${job.id}/download?encode=${
+                        encodes[job.id] ? encodes[job.id] : "utf-8"
+                      }`}
+                      color="primary"
+                      size="small"
+                    >
+                      <Download />
+                    </IconButton>
+                  </Tooltip>
                 </Box>
               ) : (
                 <Typography>{job.text}</Typography>

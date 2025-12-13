@@ -121,6 +121,12 @@ exports[`JobListPage should match snapshot 1`] = `
                   対象モデル
                 </th>
                 <th
+                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-543kl5-MuiTableCell-root"
+                  scope="col"
+                >
+                  対象アイテム
+                </th>
+                <th
                   class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-h7gopu-MuiTableCell-root"
                   scope="col"
                 >
@@ -166,6 +172,17 @@ exports[`JobListPage should match snapshot 1`] = `
                     data-discover="true"
                     href="/ui/entities/0/entries"
                   />
+                </td>
+                <td
+                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1dc80h3-MuiTableCell-root"
+                >
+                  <a
+                    class="MuiTypography-root MuiTypography-body1 css-1rk5fdy-MuiTypography-root"
+                    data-discover="true"
+                    href="/ui/entities/0/entries/1/details"
+                  >
+                    target1
+                  </a>
                 </td>
                 <td
                   class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1dc80h3-MuiTableCell-root"
@@ -258,6 +275,17 @@ exports[`JobListPage should match snapshot 1`] = `
                     data-discover="true"
                     href="/ui/entities/0/entries"
                   />
+                </td>
+                <td
+                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1dc80h3-MuiTableCell-root"
+                >
+                  <a
+                    class="MuiTypography-root MuiTypography-body1 css-1rk5fdy-MuiTypography-root"
+                    data-discover="true"
+                    href="/ui/entities/0/entries/2/details"
+                  >
+                    target2
+                  </a>
                 </td>
                 <td
                   class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1dc80h3-MuiTableCell-root"
@@ -519,6 +547,12 @@ exports[`JobListPage should match snapshot 1`] = `
                 対象モデル
               </th>
               <th
+                class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-543kl5-MuiTableCell-root"
+                scope="col"
+              >
+                対象アイテム
+              </th>
+              <th
                 class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-h7gopu-MuiTableCell-root"
                 scope="col"
               >
@@ -564,6 +598,17 @@ exports[`JobListPage should match snapshot 1`] = `
                   data-discover="true"
                   href="/ui/entities/0/entries"
                 />
+              </td>
+              <td
+                class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1dc80h3-MuiTableCell-root"
+              >
+                <a
+                  class="MuiTypography-root MuiTypography-body1 css-1rk5fdy-MuiTypography-root"
+                  data-discover="true"
+                  href="/ui/entities/0/entries/1/details"
+                >
+                  target1
+                </a>
               </td>
               <td
                 class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1dc80h3-MuiTableCell-root"
@@ -656,6 +701,17 @@ exports[`JobListPage should match snapshot 1`] = `
                   data-discover="true"
                   href="/ui/entities/0/entries"
                 />
+              </td>
+              <td
+                class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1dc80h3-MuiTableCell-root"
+              >
+                <a
+                  class="MuiTypography-root MuiTypography-body1 css-1rk5fdy-MuiTypography-root"
+                  data-discover="true"
+                  href="/ui/entities/0/entries/2/details"
+                >
+                  target2
+                </a>
               </td>
               <td
                 class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1dc80h3-MuiTableCell-root"
