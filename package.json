@@ -80,7 +80,6 @@
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",
     "babel-loader": "^8.4.1",
-    "babel-plugin-transform-class-properties": "^6.24.1",
     "encoding-japanese": "^2.2.0",
     "eslint": "^8.57.1",
     "eslint-import-resolver-webpack": "^0.13.10",
