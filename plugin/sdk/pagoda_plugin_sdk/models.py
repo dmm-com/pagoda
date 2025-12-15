@@ -33,6 +33,7 @@ _EXPORTED_NAMES = [
     "PluginSchemaConfig",
 ]
 
+
 def __getattr__(name: str):
     """Handle access to model attributes with proper error messages"""
     # return specified component component from _cache when it's existed
@@ -40,9 +41,7 @@ def __getattr__(name: str):
         return _cache[name]
 
     if name in ("PluginSchemaConfig"):
-        from airone.lib.plugin_model import (
-            PluginSchemaConfig
-        )
+        from airone.lib.plugin_model import PluginSchemaConfig
 
         _cache["PluginSchemaConfig"] = PluginSchemaConfig
         return _cache[name]
@@ -147,21 +146,3 @@ class PluginSchema(object):
 
     def get_attrname(self, name):
         return self.get_attrs()[name]["name"]
-
-    @classmethod
-    def get(kls, entity_key):
-        return ADAPTED_ENTITY[entity_key]
-
-    @classmethod
-    def get_by_entity_name(kls, entity_name):
-        for adapted_entity in kls.get_actual_entities():
-            if adapted_entity.name == entity_name:
-                return adapted_entity
-
-    @classmethod
-    def get_actual_entities(kls):
-        return [x for x in ADAPTED_ENTITY.values() if x.name is not None]
-
-    @classmethod
-    def get_inherited_entities(kls, inheritance_name: str) -> List[str]:
-        return [x.name for x in kls.get_actual_entities() if x.is_inherited(inheritance_name)]

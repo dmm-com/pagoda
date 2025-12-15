@@ -1,19 +1,23 @@
+from dataclasses import dataclass
+
 from django.conf import settings
+from pagoda_plugin_sdk.models import PluginSchema
 
 
 @dataclass
 class PluginSchemaConfig:
-    """Data class for managing plugin model structure configuration
-    """
+    """Data class for managing plugin model structure configuration"""
 
     plugin_id: str
-    module_path: str
+    schema: dict[str, PluginSchema]
 
     # This reserved models has expected model name for each Plugins
     # (This is seems to be AdaptedEntity of obsoleted CustomView)
-    schema = None
+    # schema = None
 
     reserved_models = []
+
+
 #    reserved_models = [
 #        {"name": "データセンタ"},
 #        {"name": "フロア"},
