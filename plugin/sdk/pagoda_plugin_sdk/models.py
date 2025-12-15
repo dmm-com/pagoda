@@ -26,9 +26,26 @@ EntityAttr: Optional[Type[EntityAttrProtocol]] = None
 Attribute: Optional[Type[AttributeProtocol]] = None
 Job: Optional[Type[JobProtocol]] = None
 
+# Cache for lazy-loaded components
+_cache = {}
+
+_EXPORTED_NAMES = [
+    "PluginSchemaConfig",
+]
 
 def __getattr__(name: str):
     """Handle access to model attributes with proper error messages"""
+    # return specified component component from _cache when it's existed
+    if name in _cache:
+        return _cache[name]
+
+    if name in ("PluginSchemaConfig"):
+        from airone.lib.plugin_model import (
+            PluginSchemaConfig
+        )
+
+        _cache["PluginSchemaConfig"] = PluginSchemaConfig
+        return _cache[name]
 
     # Map of available models
     available_models = {
@@ -52,6 +69,11 @@ def __getattr__(name: str):
         return model
 
     raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
+
+
+def __dir__():
+    """Return list of available attributes for dir() and autocomplete"""
+    return _EXPORTED_NAMES
 
 
 def is_initialized() -> bool:
@@ -85,3 +107,61 @@ def get_available_models() -> List[str]:
     if Job is not None:
         available.append("Job")
     return available
+
+
+class PluginSchema(object):
+    def __init__(self, name=None, attrs={}, inheritance=None, exclude_attrs=[]):
+        self.name = name
+        self.attrs = attrs
+        self.inheritance = inheritance
+        self.exclude_attrs = exclude_attrs
+
+    def get_attrs(self):
+        returned_attrs = self.attrs
+        if self.inheritance:
+            inheritances = []
+            if isinstance(self.inheritance, str):
+                inheritances = [self.inheritance]
+            elif isinstance(self.inheritance, list):
+                inheritances = self.inheritance
+
+            for ae_name_key in inheritances:
+                inherited_adapted_entity = PluginSchema.get(ae_name_key)
+
+                # This merges with inherited PluginSchema's attrs
+                returned_attrs = dict(returned_attrs, **inherited_adapted_entity.get_attrs())
+
+        # This excludes attrs which are explicitly set to exclude
+        return {k: v for k, v in returned_attrs.items() if k not in self.exclude_attrs}
+
+    def is_inherited(self, ae_name) -> bool:
+        if isinstance(self.inheritance, str):
+            return ae_name == self.inheritance
+        elif isinstance(self.inheritance, list):
+            return ae_name in self.inheritance
+
+        return False
+
+    def get_attr(self, name):
+        return self.get_attrs()[name]
+
+    def get_attrname(self, name):
+        return self.get_attrs()[name]["name"]
+
+    @classmethod
+    def get(kls, entity_key):
+        return ADAPTED_ENTITY[entity_key]
+
+    @classmethod
+    def get_by_entity_name(kls, entity_name):
+        for adapted_entity in kls.get_actual_entities():
+            if adapted_entity.name == entity_name:
+                return adapted_entity
+
+    @classmethod
+    def get_actual_entities(kls):
+        return [x for x in ADAPTED_ENTITY.values() if x.name is not None]
+
+    @classmethod
+    def get_inherited_entities(kls, inheritance_name: str) -> List[str]:
+        return [x.name for x in kls.get_actual_entities() if x.is_inherited(inheritance_name)]
