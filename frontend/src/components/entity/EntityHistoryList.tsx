@@ -1,4 +1,7 @@
-import { PaginatedEntityHistoryList } from "@dmm-com/airone-apiclient-typescript-fetch";
+import {
+  EntityHistoryChange,
+  PaginatedEntityHistoryList,
+} from "@dmm-com/airone-apiclient-typescript-fetch";
 import {
   Box,
   Table,
@@ -13,6 +16,45 @@ import { FC } from "react";
 import { PaginationFooter } from "components/common/PaginationFooter";
 import { EntityHistoryListParam } from "services/Constants";
 import { formatDateTime } from "services/DateUtil";
+
+/**
+ * Format a single change value for display.
+ */
+const formatChangeValue = (value: unknown): string => {
+  if (value === null || value === undefined) {
+    return "-";
+  }
+  if (typeof value === "boolean") {
+    return value ? "true" : "false";
+  }
+  if (typeof value === "object") {
+    return JSON.stringify(value);
+  }
+  return String(value);
+};
+
+/**
+ * Format changes for display in the before/after columns.
+ */
+const formatChanges = (
+  changes: EntityHistoryChange[] | undefined,
+  type: "before" | "after",
+): JSX.Element => {
+  if (!changes || changes.length === 0) {
+    return <Typography>-</Typography>;
+  }
+
+  return (
+    <Box>
+      {changes.map((change, idx) => (
+        <Typography key={idx} variant="body2">
+          <strong>{change.target}:</strong>{" "}
+          {formatChangeValue(type === "before" ? change.before : change.after)}
+        </Typography>
+      ))}
+    </Box>
+  );
+};
 
 const Operations = {
   ADD: 1 << 0,
@@ -90,25 +132,39 @@ export const EntityHistoryList: FC<Props> = ({
               <TableCell>
                 {(() => {
                   switch (history.operation) {
+                    case TargetOperation.ADD_ENTITY:
                     case TargetOperation.ADD_ATTR:
-                      return <Typography />;
+                      // No "before" value for create operations
+                      return <Typography>-</Typography>;
                     case TargetOperation.DEL_ATTR:
                       return (
                         <Typography>
                           {history.targetObj.replace(/_deleted_.*/, "")}
                         </Typography>
                       );
+                    case TargetOperation.MOD_ENTITY:
+                    case TargetOperation.DEL_ENTITY:
+                    case TargetOperation.MOD_ATTR:
+                      // Use changes from simple-history
+                      return formatChanges(history.changes, "before");
                     default:
-                      return <Typography>TBD</Typography>;
+                      return <Typography>-</Typography>;
                   }
                 })()}
               </TableCell>
               <TableCell>
                 {(() => {
                   switch (history.operation) {
+                    case TargetOperation.ADD_ENTITY:
+                      // Use changes from simple-history for create
+                      return formatChanges(history.changes, "after");
                     case TargetOperation.ADD_ATTR:
                       return <Typography>{history.targetObj}</Typography>;
                     case TargetOperation.MOD_ATTR:
+                      // Use changes from simple-history
+                      if (history.changes && history.changes.length > 0) {
+                        return formatChanges(history.changes, "after");
+                      }
                       return <Typography>{history.targetObj}</Typography>;
                     case TargetOperation.DEL_ATTR:
                       return (
@@ -116,8 +172,12 @@ export const EntityHistoryList: FC<Props> = ({
                           {history.targetObj.replace(/_deleted_.*/, "")}
                         </Typography>
                       );
+                    case TargetOperation.MOD_ENTITY:
+                    case TargetOperation.DEL_ENTITY:
+                      // Use changes from simple-history
+                      return formatChanges(history.changes, "after");
                     default:
-                      return <Typography>TBD</Typography>;
+                      return <Typography>-</Typography>;
                   }
                 })()}
               </TableCell>

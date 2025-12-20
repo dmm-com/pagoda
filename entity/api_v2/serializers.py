@@ -875,17 +875,187 @@ class EntityDetailSerializer(EntityListSerializer):
         return (obj.status & Entity.STATUS_CREATING) > 0 or (obj.status & Entity.STATUS_EDITING) > 0
 
 
+class EntityHistoryChangeSerializer(serializers.Serializer):
+    """Serializer for individual change items in entity history."""
+
+    action = serializers.CharField()
+    target = serializers.CharField()
+    before = serializers.JSONField(allow_null=True)
+    after = serializers.JSONField(allow_null=True)
+
+
 class EntityHistorySerializer(serializers.ModelSerializer):
+    """Extended serializer with simple-history changes for entity history."""
+
     username = serializers.SerializerMethodField()
     target_obj = serializers.CharField(source="target_obj.name")
+    changes = serializers.SerializerMethodField()
 
     class Meta:
         model = History
-        fields = ["operation", "time", "username", "text", "target_obj", "is_detail"]
-        read_only_fields = ["operation", "time", "username", "text", "target_obj", "is_detail"]
+        fields = ["operation", "time", "username", "text", "target_obj", "is_detail", "changes"]
+        read_only_fields = [
+            "operation",
+            "time",
+            "username",
+            "text",
+            "target_obj",
+            "is_detail",
+            "changes",
+        ]
 
     def get_username(self, obj: History) -> str:
         return obj.user.username
+
+    @extend_schema_field(EntityHistoryChangeSerializer(many=True))
+    def get_changes(self, obj: History) -> List[dict]:
+        """
+        Get changes from simple-history records.
+
+        Uses cached historical records passed from view to avoid N+1 queries.
+        """
+        historical_cache = self.context.get("historical_cache", {})
+        prev_record_cache = self.context.get("prev_record_cache", {})
+
+        target_obj_id = obj.target_obj_id
+        operation = obj.operation
+        history_time = obj.time
+
+        # Determine which historical record to use based on operation type
+        if operation & History.TARGET_ENTITY:
+            return self._get_entity_changes(
+                target_obj_id, history_time, operation, historical_cache, prev_record_cache
+            )
+        elif operation & History.TARGET_ATTR:
+            return self._get_attr_changes(
+                target_obj_id, history_time, operation, historical_cache, prev_record_cache
+            )
+
+        return []
+
+    def _get_entity_changes(
+        self,
+        entity_id: int,
+        history_time,
+        operation: int,
+        historical_cache: dict,
+        prev_record_cache: dict,
+    ) -> List[dict]:
+        """Get changes for Entity operations."""
+        cache_key = f"entity_{entity_id}"
+        historicals = historical_cache.get(cache_key, [])
+
+        if not historicals:
+            return []
+
+        # Find the historical record closest to the History time
+        historical = self._find_closest_historical(historicals, history_time)
+        if not historical:
+            return []
+
+        # For create operation (ADD_ENTITY)
+        if operation == History.ADD_ENTITY:
+            return [
+                {
+                    "action": "create",
+                    "target": field,
+                    "before": None,
+                    "after": getattr(historical, field, ""),
+                }
+                for field in ["name", "note"]
+                if getattr(historical, field, None)
+            ]
+
+        # For update/delete operations, find the previous record
+        prev_record = self._find_prev_record(historicals, historical)
+        if prev_record:
+            delta = historical.diff_against(prev_record, excluded_fields=["status", "updated_time"])
+            action = "delete" if operation == History.DEL_ENTITY else "update"
+            return [
+                {
+                    "action": action,
+                    "target": change.field,
+                    "before": change.old,
+                    "after": change.new,
+                }
+                for change in delta.changes
+            ]
+
+        return []
+
+    def _get_attr_changes(
+        self,
+        attr_id: int,
+        history_time,
+        operation: int,
+        historical_cache: dict,
+        prev_record_cache: dict,
+    ) -> List[dict]:
+        """Get changes for EntityAttr operations."""
+        cache_key = f"attr_{attr_id}"
+        historicals = historical_cache.get(cache_key, [])
+
+        if not historicals:
+            return []
+
+        # Find the historical record closest to the History time
+        historical = self._find_closest_historical(historicals, history_time)
+        if not historical:
+            return []
+
+        # For create operation (ADD_ATTR)
+        if operation == History.ADD_ATTR:
+            return [
+                {
+                    "action": "create",
+                    "target": field,
+                    "before": None,
+                    "after": getattr(historical, field, ""),
+                }
+                for field in ["name", "type", "is_mandatory", "note"]
+                if getattr(historical, field, None) is not None
+            ]
+
+        # For update/delete operations, find the previous record
+        prev_record = self._find_prev_record(historicals, historical)
+        if prev_record:
+            delta = historical.diff_against(prev_record, excluded_fields=["status", "updated_time"])
+            action = "delete" if operation == History.DEL_ATTR else "update"
+            return [
+                {
+                    "action": action,
+                    "target": change.field,
+                    "before": change.old,
+                    "after": change.new,
+                }
+                for change in delta.changes
+            ]
+
+        return []
+
+    def _find_closest_historical(self, historicals: list, target_time) -> Optional[Any]:
+        """Find the historical record closest to the target time."""
+        if not historicals:
+            return None
+
+        # historicals are ordered by -history_date (newest first)
+        # Find the first record that is <= target_time
+        for h in historicals:
+            if h.history_date <= target_time:
+                return h
+
+        # If all records are after target_time, return the oldest one
+        return historicals[-1] if historicals else None
+
+    def _find_prev_record(self, historicals: list, current: Any) -> Optional[Any]:
+        """Find the previous record in the historical list."""
+        try:
+            idx = historicals.index(current)
+            if idx + 1 < len(historicals):
+                return historicals[idx + 1]
+        except ValueError:
+            pass
+        return None
 
 
 """
