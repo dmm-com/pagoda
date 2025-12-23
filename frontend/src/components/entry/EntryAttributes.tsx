@@ -35,12 +35,14 @@ const HeaderTableCell = styled(TableCell)(({ theme }) => ({
 }));
 
 const AttrNameTableCell = styled(TableCell)(() => ({
-  width: "200px",
+  width: "30%",
+  minWidth: "180px",
+  maxWidth: "320px",
   wordBreak: "break-word",
 }));
 
 const AttrValueTableCell = styled(TableCell)(() => ({
-  width: "950px",
+  width: "70%",
   wordBreak: "break-word",
 }));
 
