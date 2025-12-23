@@ -4072,3 +4072,243 @@ class ViewTest(AironeViewTest):
                 or "boolean" in error_msg.lower(),
                 f"Error message doesn't indicate boolean type issue: {error_msg}",
             )
+
+
+class EntityHistoryAPITest(AironeViewTest):
+    """Tests for EntityHistoryAPI with simple-history changes support."""
+
+    def setUp(self):
+        super().setUp()
+        self.user = self.guest_login()
+
+    def _create_entity_via_api(self, name, attrs=None):
+        """Helper to create entity via API with synchronous task execution."""
+        params = {"name": name}
+        if attrs:
+            params["attrs"] = attrs
+        resp = self.client.post("/entity/api/v2/", json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
+        return Entity.objects.get(name=name)
+
+    @mock.patch(
+        "entity.tasks.create_entity_v2.delay", mock.Mock(side_effect=tasks.create_entity_v2)
+    )
+    def test_get_entity_history_returns_changes_field(self):
+        """Test that EntityHistory API returns changes field in response."""
+        # Create an entity via API
+        entity = self._create_entity_via_api("test-entity-history")
+
+        # Get history
+        resp = self.client.get(f"/entity/api/v2/{entity.id}/histories/")
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+
+        data = resp.json()
+        self.assertIn("results", data)
+        # Should have at least one history record (from creation)
+        self.assertGreater(len(data["results"]), 0)
+        # Each history record should have a changes field
+        for history in data["results"]:
+            self.assertIn("changes", history)
+            self.assertIsInstance(history["changes"], list)
+
+    @mock.patch(
+        "entity.tasks.create_entity_v2.delay", mock.Mock(side_effect=tasks.create_entity_v2)
+    )
+    def test_add_entity_history_has_create_changes(self):
+        """Test that ADD_ENTITY operation includes creation changes."""
+        # Create an entity via API
+        entity = self._create_entity_via_api("new-entity-create")
+
+        # Get history
+        resp = self.client.get(f"/entity/api/v2/{entity.id}/histories/")
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+
+        data = resp.json()
+        # Find the ADD_ENTITY history
+        add_entity_histories = [h for h in data["results"] if h["operation"] == History.ADD_ENTITY]
+        self.assertGreater(len(add_entity_histories), 0)
+
+        history = add_entity_histories[0]
+        self.assertIn("changes", history)
+        # ADD_ENTITY should have changes with action "create"
+        if history["changes"]:
+            for change in history["changes"]:
+                self.assertEqual(change["action"], "create")
+                self.assertIn("target", change)
+                self.assertIn("before", change)
+                self.assertIn("after", change)
+
+    @mock.patch(
+        "entity.tasks.create_entity_v2.delay", mock.Mock(side_effect=tasks.create_entity_v2)
+    )
+    @mock.patch("entity.tasks.edit_entity_v2.delay", mock.Mock(side_effect=tasks.edit_entity_v2))
+    def test_mod_entity_history_has_update_changes(self):
+        """Test that MOD_ENTITY operation includes before/after changes."""
+        # Create an entity via API
+        entity = self._create_entity_via_api("entity-to-modify")
+        original_name = entity.name
+
+        # Update the entity name
+        resp = self.client.put(
+            f"/entity/api/v2/{entity.id}/",
+            json.dumps({"name": "modified-entity-name"}),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
+
+        # Get history
+        resp = self.client.get(f"/entity/api/v2/{entity.id}/histories/")
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+
+        data = resp.json()
+        # Find the MOD_ENTITY history
+        mod_entity_histories = [h for h in data["results"] if h["operation"] == History.MOD_ENTITY]
+        self.assertGreater(len(mod_entity_histories), 0)
+
+        history = mod_entity_histories[0]
+        self.assertIn("changes", history)
+
+        # MOD_ENTITY should have changes with action "update" and before/after values
+        if history["changes"]:
+            name_changes = [c for c in history["changes"] if c["target"] == "name"]
+            if name_changes:
+                change = name_changes[0]
+                self.assertEqual(change["action"], "update")
+                self.assertEqual(change["before"], original_name)
+                self.assertEqual(change["after"], "modified-entity-name")
+
+    @mock.patch(
+        "entity.tasks.create_entity_v2.delay", mock.Mock(side_effect=tasks.create_entity_v2)
+    )
+    @mock.patch("entity.tasks.edit_entity_v2.delay", mock.Mock(side_effect=tasks.edit_entity_v2))
+    def test_add_attr_history_has_create_changes(self):
+        """Test that ADD_ATTR operation includes creation changes."""
+        # Create an entity without attrs via API
+        entity = self._create_entity_via_api("entity-for-attr")
+
+        # Add an attribute
+        resp = self.client.put(
+            f"/entity/api/v2/{entity.id}/",
+            json.dumps(
+                {
+                    "attrs": [
+                        {
+                            "name": "new-attr",
+                            "type": AttrType.STRING,
+                        }
+                    ]
+                }
+            ),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
+
+        # Get history
+        resp = self.client.get(f"/entity/api/v2/{entity.id}/histories/")
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+
+        data = resp.json()
+        # Find the ADD_ATTR history
+        add_attr_histories = [h for h in data["results"] if h["operation"] == History.ADD_ATTR]
+        self.assertGreater(len(add_attr_histories), 0)
+
+        history = add_attr_histories[0]
+        self.assertIn("changes", history)
+        # ADD_ATTR should have changes with action "create"
+        if history["changes"]:
+            for change in history["changes"]:
+                self.assertEqual(change["action"], "create")
+
+    @mock.patch(
+        "entity.tasks.create_entity_v2.delay", mock.Mock(side_effect=tasks.create_entity_v2)
+    )
+    @mock.patch("entity.tasks.edit_entity_v2.delay", mock.Mock(side_effect=tasks.edit_entity_v2))
+    def test_mod_attr_history_has_update_changes(self):
+        """Test that MOD_ATTR operation includes before/after changes."""
+        # Create an entity with an attribute via API
+        entity = self._create_entity_via_api(
+            "entity-with-attr",
+            attrs=[{"name": "attr-to-modify", "type": AttrType.STRING}],
+        )
+        attr = entity.attrs.get(name="attr-to-modify")
+
+        # Update the attribute (change is_mandatory)
+        resp = self.client.put(
+            f"/entity/api/v2/{entity.id}/",
+            json.dumps(
+                {
+                    "attrs": [
+                        {
+                            "id": attr.id,
+                            "is_mandatory": True,
+                        }
+                    ]
+                }
+            ),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
+
+        # Get history
+        resp = self.client.get(f"/entity/api/v2/{entity.id}/histories/")
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+
+        data = resp.json()
+        # Find the MOD_ATTR history
+        mod_attr_histories = [h for h in data["results"] if h["operation"] == History.MOD_ATTR]
+        self.assertGreater(len(mod_attr_histories), 0)
+
+        history = mod_attr_histories[0]
+        self.assertIn("changes", history)
+
+        # MOD_ATTR should have changes with action "update"
+        if history["changes"]:
+            for change in history["changes"]:
+                self.assertEqual(change["action"], "update")
+                self.assertIn("before", change)
+                self.assertIn("after", change)
+
+    @mock.patch(
+        "entity.tasks.create_entity_v2.delay", mock.Mock(side_effect=tasks.create_entity_v2)
+    )
+    def test_history_changes_field_is_list(self):
+        """Test that changes field is always a list."""
+        # Create an entity via API
+        entity = self._create_entity_via_api("test-entity-list")
+
+        # Get history
+        resp = self.client.get(f"/entity/api/v2/{entity.id}/histories/")
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+
+        data = resp.json()
+        # All histories should have changes field as list
+        for history in data["results"]:
+            self.assertIn("changes", history)
+            self.assertIsInstance(history["changes"], list)
+
+    @mock.patch(
+        "entity.tasks.create_entity_v2.delay", mock.Mock(side_effect=tasks.create_entity_v2)
+    )
+    @mock.patch("entity.tasks.edit_entity_v2.delay", mock.Mock(side_effect=tasks.edit_entity_v2))
+    def test_history_pagination_with_changes(self):
+        """Test that pagination works correctly with changes field."""
+        # Create an entity via API
+        entity = self._create_entity_via_api("entity-pagination")
+
+        # Update it multiple times
+        for i in range(5):
+            self.client.put(
+                f"/entity/api/v2/{entity.id}/",
+                json.dumps({"name": f"entity-pagination-{i}"}),
+                "application/json",
+            )
+
+        # Get history with limit
+        resp = self.client.get(f"/entity/api/v2/{entity.id}/histories/?limit=3")
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+
+        data = resp.json()
+        self.assertEqual(len(data["results"]), 3)
+        # Each result should have changes field
+        for history in data["results"]:
+            self.assertIn("changes", history)
