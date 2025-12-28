@@ -215,6 +215,29 @@ exports[`EntryEditPage should match snapshot 1`] = `
                 アイテム名
               </span>
             </a>
+            <a
+              class="MuiButtonBase-root MuiChip-root MuiChip-outlined MuiChip-sizeMedium MuiChip-colorDefault MuiChip-clickable MuiChip-clickableColorDefault MuiChip-outlinedDefault css-soe3uv-MuiButtonBase-root-MuiChip-root"
+              href="#attrs-attr1"
+              id="chip_attr1"
+              tabindex="0"
+            >
+              <svg
+                aria-hidden="true"
+                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium MuiChip-icon MuiChip-iconMedium MuiChip-iconColorDefault css-1umw9bq-MuiSvgIcon-root"
+                data-testid="ArrowDropDownIcon"
+                focusable="false"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  d="m7 10 5 5 5-5z"
+                />
+              </svg>
+              <span
+                class="MuiChip-label MuiChip-labelMedium css-16cgrcw-MuiChip-label"
+              >
+                attr1
+              </span>
+            </a>
           </div>
           <table
             class="MuiTable-root css-1xwxv7r-MuiTable-root"
@@ -305,6 +328,36 @@ exports[`EntryEditPage should match snapshot 1`] = `
                     />
                   </svg>
                 </td>
+              </tr>
+              <tr
+                class="MuiTableRow-root css-1xtozoh-MuiTableRow-root"
+              >
+                <td
+                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1egp9pz-MuiTableCell-root"
+                  id="attrs-attr1"
+                >
+                  <div
+                    class="MuiBox-root css-yeouz0"
+                  >
+                    <p
+                      class="MuiTypography-root MuiTypography-body1 css-zaqce3-MuiTypography-root"
+                    >
+                      attr1
+                    </p>
+                  </div>
+                </td>
+                <td
+                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1egp9pz-MuiTableCell-root"
+                >
+                  <p
+                    class="MuiTypography-root MuiTypography-body1 css-rizt0-MuiTypography-root"
+                  >
+                    Permission denied.
+                  </p>
+                </td>
+                <td
+                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1t1g30f-MuiTableCell-root"
+                />
               </tr>
             </tbody>
           </table>
@@ -545,6 +598,29 @@ exports[`EntryEditPage should match snapshot 1`] = `
               アイテム名
             </span>
           </a>
+          <a
+            class="MuiButtonBase-root MuiChip-root MuiChip-outlined MuiChip-sizeMedium MuiChip-colorDefault MuiChip-clickable MuiChip-clickableColorDefault MuiChip-outlinedDefault css-soe3uv-MuiButtonBase-root-MuiChip-root"
+            href="#attrs-attr1"
+            id="chip_attr1"
+            tabindex="0"
+          >
+            <svg
+              aria-hidden="true"
+              class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium MuiChip-icon MuiChip-iconMedium MuiChip-iconColorDefault css-1umw9bq-MuiSvgIcon-root"
+              data-testid="ArrowDropDownIcon"
+              focusable="false"
+              viewBox="0 0 24 24"
+            >
+              <path
+                d="m7 10 5 5 5-5z"
+              />
+            </svg>
+            <span
+              class="MuiChip-label MuiChip-labelMedium css-16cgrcw-MuiChip-label"
+            >
+              attr1
+            </span>
+          </a>
         </div>
         <table
           class="MuiTable-root css-1xwxv7r-MuiTable-root"
@@ -635,6 +711,36 @@ exports[`EntryEditPage should match snapshot 1`] = `
                   />
                 </svg>
               </td>
+            </tr>
+            <tr
+              class="MuiTableRow-root css-1xtozoh-MuiTableRow-root"
+            >
+              <td
+                class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1egp9pz-MuiTableCell-root"
+                id="attrs-attr1"
+              >
+                <div
+                  class="MuiBox-root css-yeouz0"
+                >
+                  <p
+                    class="MuiTypography-root MuiTypography-body1 css-zaqce3-MuiTypography-root"
+                  >
+                    attr1
+                  </p>
+                </div>
+              </td>
+              <td
+                class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1egp9pz-MuiTableCell-root"
+              >
+                <p
+                  class="MuiTypography-root MuiTypography-body1 css-rizt0-MuiTypography-root"
+                >
+                  Permission denied.
+                </p>
+              </td>
+              <td
+                class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1t1g30f-MuiTableCell-root"
+              />
             </tr>
           </tbody>
         </table>
