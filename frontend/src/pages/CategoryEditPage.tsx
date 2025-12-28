@@ -26,7 +26,9 @@ import {
 } from "services/AironeAPIErrorUtil";
 
 export const CategoryEditPage: FC = () => {
-  const { categoryId } = useTypedParams<{ categoryId?: number }>();
+  const { categoryId } = useTypedParams<{ categoryId?: number }>({
+    allowEmpty: true,
+  });
   const willCreate = categoryId == null;
 
   const navigate = useNavigate();

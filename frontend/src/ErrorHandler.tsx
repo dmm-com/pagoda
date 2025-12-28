@@ -125,6 +125,7 @@ const ErrorBridge: FC<{ children: ReactNode }> = ({ children }) => {
         const httpError = toError(event.reason);
         if (httpError != null) {
           dispatchError(httpError);
+          return;
         }
       }
       dispatchError(event.reason);
