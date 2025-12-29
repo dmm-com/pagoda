@@ -21,7 +21,7 @@ const entity = {
   webhooks: [],
 };
 const histories = {
-  count: 1,
+  count: 2,
   results: [
     {
       operation: 1,
@@ -30,6 +30,7 @@ const histories = {
       target_obj: "aaa",
       text: "text",
       is_detail: false,
+      changes: [],
     },
     {
       operation: 1,
@@ -38,6 +39,7 @@ const histories = {
       target_obj: "bbb",
       text: "text",
       is_detail: false,
+      changes: [],
     },
   ],
 };

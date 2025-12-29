@@ -1,3 +1,5 @@
+from typing import List
+
 from django.db.models import F
 from django.http import Http404
 from django.http.response import HttpResponse, JsonResponse
@@ -304,13 +306,66 @@ class EntityHistoryAPI(viewsets.ReadOnlyModelViewSet):
         cached_histories = [history_cache[h_id] for h_id in history_ids if h_id in history_cache]
         cached_histories.sort(key=lambda h: h.time, reverse=True)
 
+        # Build simple-history caches for diff calculation
+        entity_id = self.kwargs.get("entity_id")
+        entity = Entity.objects.get(id=entity_id)
+        historical_cache = self._build_historical_cache(entity, cached_histories)
+
+        # Build serializer context with historical caches
+        serializer_context = {
+            "request": request,
+            "historical_cache": historical_cache,
+        }
+
         page = self.paginate_queryset(cached_histories)
         if page is not None:
-            serializer = self.get_serializer(page, many=True)
+            serializer = self.get_serializer(page, many=True, context=serializer_context)
             return self.get_paginated_response(serializer.data)
 
-        serializer = self.get_serializer(cached_histories, many=True)
+        serializer = self.get_serializer(cached_histories, many=True, context=serializer_context)
         return Response(serializer.data)
+
+    def _build_historical_cache(self, entity: Entity, histories: List[History]) -> dict:
+        """
+        Build cache for simple-history records to avoid N+1 queries.
+
+        Returns a dict with keys like:
+        - "entity_{id}": list of HistoricalEntity records
+        - "attr_{id}": list of HistoricalEntityAttr records
+        """
+        historical_cache = {}
+
+        # Cache Entity historical records
+        entity_historicals = list(
+            entity.history.select_related("history_user").order_by("-history_date")
+        )
+        historical_cache[f"entity_{entity.id}"] = entity_historicals
+
+        # Collect all EntityAttr IDs from the histories
+        attr_ids = set()
+        for h in histories:
+            if h.operation & History.TARGET_ATTR:
+                attr_ids.add(h.target_obj_id)
+
+        # Cache EntityAttr historical records
+        for attr_id in attr_ids:
+            try:
+                attr = EntityAttr.objects.get(id=attr_id)
+                attr_historicals = list(
+                    attr.history.select_related("history_user").order_by("-history_date")
+                )
+                historical_cache[f"attr_{attr_id}"] = attr_historicals
+            except EntityAttr.DoesNotExist:
+                # Attr may have been deleted, but we can still try to get historical records
+                # via the historical model directly
+                attr_historicals = list(
+                    EntityAttr.history.filter(id=attr_id)
+                    .select_related("history_user")
+                    .order_by("-history_date")
+                )
+                historical_cache[f"attr_{attr_id}"] = attr_historicals
+
+        return historical_cache
 
 
 class EntityImportAPI(generics.GenericAPIView):
