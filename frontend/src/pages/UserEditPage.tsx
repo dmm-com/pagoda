@@ -29,7 +29,7 @@ import {
 import { ServerContext } from "services/ServerContext";
 
 export const UserEditPage: FC = () => {
-  const { userId } = useTypedParams<{ userId?: number }>();
+  const { userId } = useTypedParams<{ userId?: number }>({ allowEmpty: true });
   const willCreate = userId == null;
 
   const navigate = useNavigate();

@@ -27,7 +27,7 @@ import {
 import { ForbiddenError } from "services/Exceptions";
 
 export const RoleEditPage: FC = () => {
-  const { roleId } = useTypedParams<{ roleId?: number }>();
+  const { roleId } = useTypedParams<{ roleId?: number }>({ allowEmpty: true });
   const willCreate = roleId == null;
 
   const navigate = useNavigate();

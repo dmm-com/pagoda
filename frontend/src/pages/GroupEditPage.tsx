@@ -26,7 +26,9 @@ import { ForbiddenError } from "services/Exceptions";
 import { ServerContext } from "services/ServerContext";
 
 export const GroupEditPage: FC = () => {
-  const { groupId } = useTypedParams<{ groupId?: number }>();
+  const { groupId } = useTypedParams<{ groupId?: number }>({
+    allowEmpty: true,
+  });
   const willCreate = groupId == null;
 
   const navigate = useNavigate();
