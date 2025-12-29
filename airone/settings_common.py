@@ -523,3 +523,6 @@ class Common(Configuration):
     PLUGIN_OPERATION_ID_CONFIG: dict[str, tuple[int, int]] = {
         plugin_id: tuple(range_values) for plugin_id, range_values in _raw_plugin_config.items()
     }
+
+    # This describes model data-structure (seems like AdaptedEntity of custom-view)
+    PLUGIN_SCHEMA_MAP: dict[str, list] = {}
