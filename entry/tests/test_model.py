@@ -98,55 +98,6 @@ class ModelTest(AironeTestCase):
 
         return attrinfo
 
-    def create_entity_with_all_type_attributes(self, user, ref_entity=None):
-        """
-        This is a test helper method to add attributes of all attribute-types
-        to specified entity.
-        """
-        entity = Entity.objects.create(name="all_attr_entity", created_user=user)
-        attr_info = {
-            "str": AttrType.STRING,
-            "text": AttrType.TEXT,
-            "obj": AttrType.OBJECT,
-            "name": AttrType.NAMED_OBJECT,
-            "bool": AttrType.BOOLEAN,
-            "group": AttrType.GROUP,
-            "date": AttrType.DATE,
-            "role": AttrType.ROLE,
-            "datetime": AttrType.DATETIME,
-            "num": AttrType.NUMBER,
-            "arr_str": AttrType.ARRAY_STRING,
-            "arr_num": AttrType.ARRAY_NUMBER,
-            "arr_obj": AttrType.ARRAY_OBJECT,
-            "arr_name": AttrType.ARRAY_NAMED_OBJECT,
-            "arr_group": AttrType.ARRAY_GROUP,
-            "arr_role": AttrType.ARRAY_ROLE,
-        }
-        for attr_name, attr_type in attr_info.items():
-            attr = EntityAttr.objects.create(
-                name=attr_name, type=attr_type, created_user=user, parent_entity=entity
-            )
-
-            if attr_type & AttrType.OBJECT and ref_entity:
-                attr.referral.add(ref_entity)
-
-        return entity
-
-    def make_attr(self, name, attrtype=AttrType.STRING, user=None, entity=None, entry=None):
-        entity_attr = EntityAttr.objects.create(
-            name=name,
-            type=attrtype,
-            created_user=(user and user or self._user),
-            parent_entity=(entity and entity or self._entity),
-        )
-
-        return Attribute.objects.create(
-            name=name,
-            schema=entity_attr,
-            created_user=(user and user or self._user),
-            parent_entry=(entry and entry or self._entry),
-        )
-
     def test_make_attribute_value(self):
         AttributeValue(value="hoge", created_user=self._user, parent_attr=self._attr).save()
 
