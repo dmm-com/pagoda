@@ -41,65 +41,6 @@ class AdvancedSearchServiceTest(AironeTestCase):
         self._complement_user.set_password(settings.AIRONE["AUTO_COMPLEMENT_USER"])
         self._complement_user.save()
 
-    def create_entity_with_all_type_attributes(
-        self, user: User, ref_entity: Entity | None = None
-    ) -> Entity:
-        """
-        This is a test helper method to add attributes of all attribute-types
-        to specified entity.
-        """
-        entity = Entity.objects.create(name="all_attr_entity", created_user=user)
-        attr_info = {
-            "str": AttrType.STRING,
-            "text": AttrType.TEXT,
-            "obj": AttrType.OBJECT,
-            "name": AttrType.NAMED_OBJECT,
-            "bool": AttrType.BOOLEAN,
-            "group": AttrType.GROUP,
-            "date": AttrType.DATE,
-            "role": AttrType.ROLE,
-            "num": AttrType.NUMBER,
-            "datetime": AttrType.DATETIME,
-            "arr_str": AttrType.ARRAY_STRING,
-            "arr_obj": AttrType.ARRAY_OBJECT,
-            "arr_name": AttrType.ARRAY_NAMED_OBJECT,
-            "arr_group": AttrType.ARRAY_GROUP,
-            "arr_role": AttrType.ARRAY_ROLE,
-        }
-        for attr_name, attr_type in attr_info.items():
-            attr = EntityAttr.objects.create(
-                name=attr_name, type=attr_type, created_user=user, parent_entity=entity
-            )
-
-            if attr_type & AttrType.OBJECT and ref_entity:
-                attr.referral.add(ref_entity)
-
-            entity.attrs.add(attr)
-
-        return entity
-
-    def make_attr(
-        self,
-        name: str,
-        attrtype: AttrType = AttrType.STRING,
-        user: User | None = None,
-        entity: Entity | None = None,
-        entry: Entry | None = None,
-    ) -> Attribute:
-        entity_attr = EntityAttr.objects.create(
-            name=name,
-            type=attrtype,
-            created_user=(user and user or self._user),
-            parent_entity=(entity and entity or self._entity),
-        )
-
-        return Attribute.objects.create(
-            name=name,
-            schema=entity_attr,
-            created_user=(user and user or self._user),
-            parent_entry=(entry and entry or self._entry),
-        )
-
     def test_search_entries(self):
         user = User.objects.create(username="hoge")
 

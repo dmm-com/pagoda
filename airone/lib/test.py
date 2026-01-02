@@ -13,7 +13,7 @@ from airone.lib.acl import ACLType
 from airone.lib.types import AttrType
 from category.models import Category
 from entity.models import Entity, EntityAttr
-from entry.models import Entry
+from entry.models import Attribute, Entry
 from user.models import User
 from webhook.models import Webhook
 
@@ -181,6 +181,60 @@ class AironeTestCase(TestCase):
                 model.categories.add(category)
 
         return category
+
+    def create_entity_with_all_type_attributes(
+        self, user: User, ref_entity: Entity | None = None
+    ) -> Entity:
+        """Create entity with all 16 attribute types for comprehensive testing."""
+        entity = Entity.objects.create(name="all_attr_entity", created_user=user)
+        attr_info = {
+            "str": AttrType.STRING,
+            "text": AttrType.TEXT,
+            "obj": AttrType.OBJECT,
+            "name": AttrType.NAMED_OBJECT,
+            "bool": AttrType.BOOLEAN,
+            "group": AttrType.GROUP,
+            "date": AttrType.DATE,
+            "role": AttrType.ROLE,
+            "datetime": AttrType.DATETIME,
+            "num": AttrType.NUMBER,
+            "arr_str": AttrType.ARRAY_STRING,
+            "arr_num": AttrType.ARRAY_NUMBER,
+            "arr_obj": AttrType.ARRAY_OBJECT,
+            "arr_name": AttrType.ARRAY_NAMED_OBJECT,
+            "arr_group": AttrType.ARRAY_GROUP,
+            "arr_role": AttrType.ARRAY_ROLE,
+        }
+        for attr_name, attr_type in attr_info.items():
+            attr = EntityAttr.objects.create(
+                name=attr_name, type=attr_type, created_user=user, parent_entity=entity
+            )
+            if attr_type & AttrType.OBJECT and ref_entity:
+                attr.referral.add(ref_entity)
+            entity.attrs.add(attr)
+        return entity
+
+    def make_attr(
+        self,
+        name: str,
+        attrtype: AttrType = AttrType.STRING,
+        user: User | None = None,
+        entity: Entity | None = None,
+        entry: Entry | None = None,
+    ) -> Attribute:
+        """Create EntityAttr and Attribute for testing."""
+        entity_attr = EntityAttr.objects.create(
+            name=name,
+            type=attrtype,
+            created_user=user or getattr(self, "_user", None),
+            parent_entity=entity or getattr(self, "_entity", None),
+        )
+        return Attribute.objects.create(
+            name=name,
+            schema=entity_attr,
+            created_user=user or getattr(self, "_user", None),
+            parent_entry=entry or getattr(self, "_entry", None),
+        )
 
     def _do_login(self, uname, is_superuser=False) -> User:
         # create test user to authenticate
