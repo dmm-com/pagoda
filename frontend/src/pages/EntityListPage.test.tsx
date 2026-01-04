@@ -2,44 +2,45 @@
  * @jest-environment jsdom
  */
 
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, fireEvent } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 
 import { TestWrapper } from "TestWrapper";
 import { EntityListPage } from "pages/EntityListPage";
 
+const mockEntities = {
+  count: 3,
+  next: null,
+  previous: null,
+  results: [
+    {
+      id: 1,
+      name: "Entity A",
+      note: "Test note for entity A",
+      is_toplevel: true,
+      attrs: [],
+    },
+    {
+      id: 2,
+      name: "Entity B",
+      note: "",
+      is_toplevel: false,
+      attrs: [],
+    },
+    {
+      id: 3,
+      name: "Entity C",
+      note: "",
+      is_toplevel: false,
+      attrs: [],
+    },
+  ],
+};
+
 const server = setupServer(
-  // getEntities
   http.get("http://localhost/entity/api/v2/", () => {
-    return HttpResponse.json({
-      count: 3,
-      next: null,
-      previous: null,
-      results: [
-        {
-          id: 1,
-          name: "aaa",
-          note: "",
-          is_toplevel: false,
-          attrs: [],
-        },
-        {
-          id: 2,
-          name: "aaaaa",
-          note: "",
-          is_toplevel: false,
-          attrs: [],
-        },
-        {
-          id: 3,
-          name: "bbbbb",
-          note: "",
-          is_toplevel: false,
-          attrs: [],
-        },
-      ],
-    });
+    return HttpResponse.json(mockEntities);
   }),
 );
 
@@ -48,6 +49,13 @@ afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 
 describe("EntityListPage", () => {
+  const renderPage = async () => {
+    render(<EntityListPage />, { wrapper: TestWrapper });
+    await waitFor(() => {
+      expect(screen.queryByTestId("loading")).not.toBeInTheDocument();
+    });
+  };
+
   test("should match snapshot", async () => {
     const result = render(<EntityListPage />, {
       wrapper: TestWrapper,
@@ -57,5 +65,100 @@ describe("EntityListPage", () => {
     });
 
     expect(result).toMatchSnapshot();
+  });
+
+  describe("rendering", () => {
+    test("should render page header with title", async () => {
+      await renderPage();
+
+      const titles = screen.getAllByText("モデル一覧");
+      expect(titles.length).toBeGreaterThan(0);
+    });
+
+    test("should render breadcrumbs with Top link", async () => {
+      await renderPage();
+
+      expect(screen.getByText("Top")).toBeInTheDocument();
+    });
+
+    test("should render entity names from API response", async () => {
+      await renderPage();
+
+      expect(screen.getByText("Entity A")).toBeInTheDocument();
+      expect(screen.getByText("Entity B")).toBeInTheDocument();
+      expect(screen.getByText("Entity C")).toBeInTheDocument();
+    });
+  });
+
+  describe("export/import buttons", () => {
+    test("should render export button", async () => {
+      await renderPage();
+
+      expect(
+        screen.getByRole("button", { name: /エクスポート/i }),
+      ).toBeInTheDocument();
+    });
+
+    test("should render import button", async () => {
+      await renderPage();
+
+      expect(
+        screen.getByRole("button", { name: /インポート/i }),
+      ).toBeInTheDocument();
+    });
+
+    test("should open import modal when import button is clicked", async () => {
+      await renderPage();
+
+      const importButton = screen.getByRole("button", { name: /インポート/i });
+      fireEvent.click(importButton);
+
+      await waitFor(() => {
+        expect(screen.getByText("モデルのインポート")).toBeInTheDocument();
+      });
+    });
+  });
+
+  describe("loading state", () => {
+    test("should show loading indicator while fetching entities", async () => {
+      server.use(
+        http.get("http://localhost/entity/api/v2/", async () => {
+          await new Promise((resolve) => setTimeout(resolve, 100));
+          return HttpResponse.json(mockEntities);
+        }),
+      );
+
+      render(<EntityListPage />, { wrapper: TestWrapper });
+
+      expect(screen.getByTestId("loading")).toBeInTheDocument();
+    });
+  });
+
+  describe("empty state", () => {
+    test("should render empty list when no entities returned", async () => {
+      server.use(
+        http.get("http://localhost/entity/api/v2/", () => {
+          return HttpResponse.json({
+            count: 0,
+            next: null,
+            previous: null,
+            results: [],
+          });
+        }),
+      );
+
+      await renderPage();
+
+      expect(screen.queryByText("Entity A")).not.toBeInTheDocument();
+    });
+  });
+
+  describe("entity links", () => {
+    test("should render entity names as links", async () => {
+      await renderPage();
+
+      const entityLink = screen.getByText("Entity A").closest("a");
+      expect(entityLink).toHaveAttribute("href");
+    });
   });
 });

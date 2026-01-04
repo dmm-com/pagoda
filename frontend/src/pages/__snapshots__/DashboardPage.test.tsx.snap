@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`should match snapshot 1`] = `
+exports[`DashboardPage should match snapshot 1`] = `
 {
   "asFragment": [Function],
   "baseElement": <body>
@@ -108,7 +108,58 @@ exports[`should match snapshot 1`] = `
                     <div
                       class="MuiTypography-root MuiTypography-h6 css-1miy0lu-MuiTypography-root"
                     >
-                      aaa
+                      Category A
+                    </div>
+                  </div>
+                </div>
+                <div
+                  class="MuiBox-root css-1kcxdgd"
+                >
+                  <a
+                    class="MuiTypography-root MuiTypography-body2 css-14btd25-MuiTypography-root"
+                    data-discover="true"
+                    href="/ui/entities/10/entries"
+                  >
+                    Model 1
+                  </a>
+                </div>
+              </ul>
+            </div>
+            <div
+              class="MuiGrid2-root MuiGrid2-direction-xs-row MuiGrid2-grid-xs-4 css-17yh78r-MuiGrid2-root"
+            >
+              <ul
+                class="MuiList-root MuiList-padding MuiList-subheader css-h1es49-MuiList-root"
+              >
+                <div
+                  class="MuiBox-root css-rmkz11"
+                >
+                  <div
+                    class="MuiBox-root css-l7h7cx"
+                  >
+                    <div
+                      class="MuiBox-root css-ku8je2"
+                    >
+                      <svg
+                        aria-hidden="true"
+                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-l3h2k7-MuiSvgIcon-root"
+                        data-testid="TurnedInTwoToneIcon"
+                        focusable="false"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          d="M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2m0 14.97-4.21-1.81-.79-.34-.79.34L7 17.97V5h10z"
+                        />
+                        <path
+                          d="m7 17.97 4.21-1.81.79-.34.79.34L17 17.97V5H7z"
+                          opacity=".3"
+                        />
+                      </svg>
+                    </div>
+                    <div
+                      class="MuiTypography-root MuiTypography-h6 css-1miy0lu-MuiTypography-root"
+                    >
+                      Category B
                     </div>
                   </div>
                 </div>
@@ -151,56 +202,28 @@ exports[`should match snapshot 1`] = `
                     <div
                       class="MuiTypography-root MuiTypography-h6 css-1miy0lu-MuiTypography-root"
                     >
-                      aaaaa
+                      Category C
                     </div>
                   </div>
                 </div>
                 <div
                   class="MuiBox-root css-1kcxdgd"
-                />
-              </ul>
-            </div>
-            <div
-              class="MuiGrid2-root MuiGrid2-direction-xs-row MuiGrid2-grid-xs-4 css-17yh78r-MuiGrid2-root"
-            >
-              <ul
-                class="MuiList-root MuiList-padding MuiList-subheader css-h1es49-MuiList-root"
-              >
-                <div
-                  class="MuiBox-root css-rmkz11"
                 >
-                  <div
-                    class="MuiBox-root css-l7h7cx"
+                  <a
+                    class="MuiTypography-root MuiTypography-body2 css-14btd25-MuiTypography-root"
+                    data-discover="true"
+                    href="/ui/entities/20/entries"
                   >
-                    <div
-                      class="MuiBox-root css-ku8je2"
-                    >
-                      <svg
-                        aria-hidden="true"
-                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-l3h2k7-MuiSvgIcon-root"
-                        data-testid="TurnedInTwoToneIcon"
-                        focusable="false"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          d="M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2m0 14.97-4.21-1.81-.79-.34-.79.34L7 17.97V5h10z"
-                        />
-                        <path
-                          d="m7 17.97 4.21-1.81.79-.34.79.34L17 17.97V5H7z"
-                          opacity=".3"
-                        />
-                      </svg>
-                    </div>
-                    <div
-                      class="MuiTypography-root MuiTypography-h6 css-1miy0lu-MuiTypography-root"
-                    >
-                      bbbbb
-                    </div>
-                  </div>
+                    Model 2
+                  </a>
+                  <a
+                    class="MuiTypography-root MuiTypography-body2 css-14btd25-MuiTypography-root"
+                    data-discover="true"
+                    href="/ui/entities/30/entries"
+                  >
+                    Model 3
+                  </a>
                 </div>
-                <div
-                  class="MuiBox-root css-1kcxdgd"
-                />
               </ul>
             </div>
           </div>
@@ -388,7 +411,58 @@ exports[`should match snapshot 1`] = `
                   <div
                     class="MuiTypography-root MuiTypography-h6 css-1miy0lu-MuiTypography-root"
                   >
-                    aaa
+                    Category A
+                  </div>
+                </div>
+              </div>
+              <div
+                class="MuiBox-root css-1kcxdgd"
+              >
+                <a
+                  class="MuiTypography-root MuiTypography-body2 css-14btd25-MuiTypography-root"
+                  data-discover="true"
+                  href="/ui/entities/10/entries"
+                >
+                  Model 1
+                </a>
+              </div>
+            </ul>
+          </div>
+          <div
+            class="MuiGrid2-root MuiGrid2-direction-xs-row MuiGrid2-grid-xs-4 css-17yh78r-MuiGrid2-root"
+          >
+            <ul
+              class="MuiList-root MuiList-padding MuiList-subheader css-h1es49-MuiList-root"
+            >
+              <div
+                class="MuiBox-root css-rmkz11"
+              >
+                <div
+                  class="MuiBox-root css-l7h7cx"
+                >
+                  <div
+                    class="MuiBox-root css-ku8je2"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-l3h2k7-MuiSvgIcon-root"
+                      data-testid="TurnedInTwoToneIcon"
+                      focusable="false"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2m0 14.97-4.21-1.81-.79-.34-.79.34L7 17.97V5h10z"
+                      />
+                      <path
+                        d="m7 17.97 4.21-1.81.79-.34.79.34L17 17.97V5H7z"
+                        opacity=".3"
+                      />
+                    </svg>
+                  </div>
+                  <div
+                    class="MuiTypography-root MuiTypography-h6 css-1miy0lu-MuiTypography-root"
+                  >
+                    Category B
                   </div>
                 </div>
               </div>
@@ -431,56 +505,28 @@ exports[`should match snapshot 1`] = `
                   <div
                     class="MuiTypography-root MuiTypography-h6 css-1miy0lu-MuiTypography-root"
                   >
-                    aaaaa
+                    Category C
                   </div>
                 </div>
               </div>
               <div
                 class="MuiBox-root css-1kcxdgd"
-              />
-            </ul>
-          </div>
-          <div
-            class="MuiGrid2-root MuiGrid2-direction-xs-row MuiGrid2-grid-xs-4 css-17yh78r-MuiGrid2-root"
-          >
-            <ul
-              class="MuiList-root MuiList-padding MuiList-subheader css-h1es49-MuiList-root"
-            >
-              <div
-                class="MuiBox-root css-rmkz11"
               >
-                <div
-                  class="MuiBox-root css-l7h7cx"
+                <a
+                  class="MuiTypography-root MuiTypography-body2 css-14btd25-MuiTypography-root"
+                  data-discover="true"
+                  href="/ui/entities/20/entries"
                 >
-                  <div
-                    class="MuiBox-root css-ku8je2"
-                  >
-                    <svg
-                      aria-hidden="true"
-                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-l3h2k7-MuiSvgIcon-root"
-                      data-testid="TurnedInTwoToneIcon"
-                      focusable="false"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        d="M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2m0 14.97-4.21-1.81-.79-.34-.79.34L7 17.97V5h10z"
-                      />
-                      <path
-                        d="m7 17.97 4.21-1.81.79-.34.79.34L17 17.97V5H7z"
-                        opacity=".3"
-                      />
-                    </svg>
-                  </div>
-                  <div
-                    class="MuiTypography-root MuiTypography-h6 css-1miy0lu-MuiTypography-root"
-                  >
-                    bbbbb
-                  </div>
-                </div>
+                  Model 2
+                </a>
+                <a
+                  class="MuiTypography-root MuiTypography-body2 css-14btd25-MuiTypography-root"
+                  data-discover="true"
+                  href="/ui/entities/30/entries"
+                >
+                  Model 3
+                </a>
               </div>
-              <div
-                class="MuiBox-root css-1kcxdgd"
-              />
             </ul>
           </div>
         </div>

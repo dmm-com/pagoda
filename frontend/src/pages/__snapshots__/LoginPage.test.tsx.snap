@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`should match snapshot 1`] = `
+exports[`LoginPage should match snapshot 1`] = `
 {
   "asFragment": [Function],
   "baseElement": <body>
@@ -18,7 +18,9 @@ exports[`should match snapshot 1`] = `
           </h1>
           <h6
             class="MuiTypography-root MuiTypography-subtitle2 css-1x7r71z-MuiTypography-root"
-          />
+          >
+            Test Subtitle
+          </h6>
           <div
             class="MuiBox-root css-4ubqiz"
           />
@@ -124,6 +126,7 @@ exports[`should match snapshot 1`] = `
                 id="next"
                 name="next"
                 type="hidden"
+                value="/ui/"
               />
             </div>
             <div
@@ -131,6 +134,7 @@ exports[`should match snapshot 1`] = `
             >
               <a
                 class="MuiTypography-root MuiTypography-inherit MuiLink-root MuiLink-underlineAlways css-dyqp89-MuiTypography-root-MuiLink-root"
+                href="https://example.com/note"
               >
                 <svg
                   aria-hidden="true"
@@ -145,7 +149,9 @@ exports[`should match snapshot 1`] = `
                 </svg>
                 <p
                   class="MuiTypography-root MuiTypography-body1 css-1jk1uaa-MuiTypography-root"
-                />
+                >
+                  Note Description
+                </p>
               </a>
               <a
                 class="MuiTypography-root MuiTypography-inherit MuiLink-root MuiLink-underlineAlways css-dyqp89-MuiTypography-root-MuiLink-root"
@@ -194,7 +200,9 @@ exports[`should match snapshot 1`] = `
         </h1>
         <h6
           class="MuiTypography-root MuiTypography-subtitle2 css-1x7r71z-MuiTypography-root"
-        />
+        >
+          Test Subtitle
+        </h6>
         <div
           class="MuiBox-root css-4ubqiz"
         />
@@ -300,6 +308,7 @@ exports[`should match snapshot 1`] = `
               id="next"
               name="next"
               type="hidden"
+              value="/ui/"
             />
           </div>
           <div
@@ -307,6 +316,7 @@ exports[`should match snapshot 1`] = `
           >
             <a
               class="MuiTypography-root MuiTypography-inherit MuiLink-root MuiLink-underlineAlways css-dyqp89-MuiTypography-root-MuiLink-root"
+              href="https://example.com/note"
             >
               <svg
                 aria-hidden="true"
@@ -321,7 +331,9 @@ exports[`should match snapshot 1`] = `
               </svg>
               <p
                 class="MuiTypography-root MuiTypography-body1 css-1jk1uaa-MuiTypography-root"
-              />
+              >
+                Note Description
+              </p>
             </a>
             <a
               class="MuiTypography-root MuiTypography-inherit MuiLink-root MuiLink-underlineAlways css-dyqp89-MuiTypography-root-MuiLink-root"

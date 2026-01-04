@@ -214,11 +214,11 @@ exports[`EntityListPage should match snapshot 1`] = `
                           tabindex="0"
                         >
                           <h6
-                            aria-label="aaa"
+                            aria-label="Entity A"
                             class="MuiTypography-root MuiTypography-h6 css-2se6a-MuiTypography-root"
                             data-mui-internal-clone-element="true"
                           >
-                            aaa
+                            Entity A
                           </h6>
                           <span
                             class="MuiCardActionArea-focusHighlight css-1h5un5t-MuiCardActionArea-focusHighlight"
@@ -274,7 +274,9 @@ exports[`EntityListPage should match snapshot 1`] = `
                   >
                     <p
                       class="MuiTypography-root MuiTypography-body1 css-1htf4m3-MuiTypography-root"
-                    />
+                    >
+                      Test note for entity A
+                    </p>
                   </div>
                 </div>
               </div>
@@ -301,11 +303,11 @@ exports[`EntityListPage should match snapshot 1`] = `
                           tabindex="0"
                         >
                           <h6
-                            aria-label="aaaaa"
+                            aria-label="Entity B"
                             class="MuiTypography-root MuiTypography-h6 css-2se6a-MuiTypography-root"
                             data-mui-internal-clone-element="true"
                           >
-                            aaaaa
+                            Entity B
                           </h6>
                           <span
                             class="MuiCardActionArea-focusHighlight css-1h5un5t-MuiCardActionArea-focusHighlight"
@@ -388,11 +390,11 @@ exports[`EntityListPage should match snapshot 1`] = `
                           tabindex="0"
                         >
                           <h6
-                            aria-label="bbbbb"
+                            aria-label="Entity C"
                             class="MuiTypography-root MuiTypography-h6 css-2se6a-MuiTypography-root"
                             data-mui-internal-clone-element="true"
                           >
-                            bbbbb
+                            Entity C
                           </h6>
                           <span
                             class="MuiCardActionArea-focusHighlight css-1h5un5t-MuiCardActionArea-focusHighlight"
@@ -744,11 +746,11 @@ exports[`EntityListPage should match snapshot 1`] = `
                         tabindex="0"
                       >
                         <h6
-                          aria-label="aaa"
+                          aria-label="Entity A"
                           class="MuiTypography-root MuiTypography-h6 css-2se6a-MuiTypography-root"
                           data-mui-internal-clone-element="true"
                         >
-                          aaa
+                          Entity A
                         </h6>
                         <span
                           class="MuiCardActionArea-focusHighlight css-1h5un5t-MuiCardActionArea-focusHighlight"
@@ -804,7 +806,9 @@ exports[`EntityListPage should match snapshot 1`] = `
                 >
                   <p
                     class="MuiTypography-root MuiTypography-body1 css-1htf4m3-MuiTypography-root"
-                  />
+                  >
+                    Test note for entity A
+                  </p>
                 </div>
               </div>
             </div>
@@ -831,11 +835,11 @@ exports[`EntityListPage should match snapshot 1`] = `
                         tabindex="0"
                       >
                         <h6
-                          aria-label="aaaaa"
+                          aria-label="Entity B"
                           class="MuiTypography-root MuiTypography-h6 css-2se6a-MuiTypography-root"
                           data-mui-internal-clone-element="true"
                         >
-                          aaaaa
+                          Entity B
                         </h6>
                         <span
                           class="MuiCardActionArea-focusHighlight css-1h5un5t-MuiCardActionArea-focusHighlight"
@@ -918,11 +922,11 @@ exports[`EntityListPage should match snapshot 1`] = `
                         tabindex="0"
                       >
                         <h6
-                          aria-label="bbbbb"
+                          aria-label="Entity C"
                           class="MuiTypography-root MuiTypography-h6 css-2se6a-MuiTypography-root"
                           data-mui-internal-clone-element="true"
                         >
-                          bbbbb
+                          Entity C
                         </h6>
                         <span
                           class="MuiCardActionArea-focusHighlight css-1h5un5t-MuiCardActionArea-focusHighlight"
