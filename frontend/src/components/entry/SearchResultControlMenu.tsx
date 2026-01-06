@@ -54,6 +54,7 @@ interface Props {
   handleClose: () => void;
   attrType?: number;
   setOpenEditModal: (willOpen: boolean) => void;
+  isDisabledEditModal: boolean;
   entityAttrs: EntityAttrIDandName[];
   setEditTargetAttrID?: (attrID: number) => void;
   setEditTargetAttrname?: (attrname: string) => void;
@@ -69,6 +70,7 @@ export const SearchResultControlMenu: FC<Props> = ({
   handleClose,
   attrType,
   setOpenEditModal,
+  isDisabledEditModal,
   entityAttrs,
   setEditTargetAttrID,
   setEditTargetAttrname,
@@ -589,6 +591,7 @@ export const SearchResultControlMenu: FC<Props> = ({
           variant="outlined"
           fullWidth
           startIcon={<EditNoteIcon />}
+          disabled={isDisabledEditModal}
           onClick={() => {
             setEditTargetAttrID &&
               setEditTargetAttrID(
