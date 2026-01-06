@@ -113,7 +113,9 @@ describe("EntityHistoryList", () => {
 
     // MOD_ENTITY: shows "変更" and changes in before/after columns
     expect(within(historyRows[1]).queryByText("変更")).toBeInTheDocument();
-    expect(within(historyRows[1]).queryByText("old_entity1")).toBeInTheDocument();
+    expect(
+      within(historyRows[1]).queryByText("old_entity1"),
+    ).toBeInTheDocument();
 
     // ADD_ATTR: shows "属性追加" and targetObj
     expect(within(historyRows[2]).queryByText("属性追加")).toBeInTheDocument();
