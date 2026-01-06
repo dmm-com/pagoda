@@ -216,10 +216,10 @@ export const TriggerEditPage: FC = () => {
         case EntryAttributeTypeTypeEnum.NAMED_OBJECT:
           return action.values.map((val) => ({
             attrId: action.attr.id,
-            value: {
+            value: JSON.stringify({
               name: val.strCond,
               id: val.refCond?.id ?? 0,
-            },
+            }),
           }));
 
         case EntryAttributeTypeTypeEnum.ARRAY_OBJECT:
@@ -236,10 +236,12 @@ export const TriggerEditPage: FC = () => {
           return [
             {
               attrId: action.attr.id,
-              values: action.values.map((val) => ({
-                name: val.strCond,
-                id: val.refCond?.id ?? 0,
-              })),
+              values: action.values.map((val) =>
+                JSON.stringify({
+                  name: val.strCond,
+                  id: val.refCond?.id ?? 0,
+                }),
+              ),
             },
           ];
       }

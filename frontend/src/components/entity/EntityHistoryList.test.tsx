@@ -20,6 +20,9 @@ describe("EntityHistoryList", () => {
         text: "entity1",
         targetObj: "entity1",
         isDetail: false,
+        changes: [
+          { action: "create", target: "name", before: null, after: "entity1" },
+        ],
       },
       {
         operation: TargetOperation.MOD_ENTITY,
@@ -28,6 +31,14 @@ describe("EntityHistoryList", () => {
         text: "entity1",
         targetObj: "entity1",
         isDetail: false,
+        changes: [
+          {
+            action: "update",
+            target: "name",
+            before: "old_entity1",
+            after: "entity1",
+          },
+        ],
       },
       {
         operation: TargetOperation.ADD_ATTR,
@@ -36,6 +47,9 @@ describe("EntityHistoryList", () => {
         text: "entity1",
         targetObj: "attr1",
         isDetail: false,
+        changes: [
+          { action: "create", target: "name", before: null, after: "attr1" },
+        ],
       },
       {
         operation: TargetOperation.MOD_ATTR,
@@ -44,6 +58,14 @@ describe("EntityHistoryList", () => {
         text: "entity1",
         targetObj: "attr1",
         isDetail: false,
+        changes: [
+          {
+            action: "update",
+            target: "is_mandatory",
+            before: false,
+            after: true,
+          },
+        ],
       },
       {
         operation: TargetOperation.DEL_ATTR,
@@ -52,6 +74,7 @@ describe("EntityHistoryList", () => {
         text: "entity1",
         targetObj: "attr1_deleted_20200105000000",
         isDetail: false,
+        changes: [],
       },
       {
         operation: TargetOperation.DEL_ENTITY,
@@ -60,6 +83,9 @@ describe("EntityHistoryList", () => {
         text: "entity1",
         targetObj: "entity1",
         isDetail: false,
+        changes: [
+          { action: "delete", target: "name", before: "entity1", after: null },
+        ],
       },
     ],
   };
@@ -79,14 +105,37 @@ describe("EntityHistoryList", () => {
     const tableBody = screen.getAllByRole("rowgroup")[1];
     const historyRows = within(tableBody).getAllByRole("row");
     expect(historyRows).toHaveLength(6);
+
+    // ADD_ENTITY: shows "作成" and changes in after column
     expect(within(historyRows[0]).queryByText("作成")).toBeInTheDocument();
+    expect(within(historyRows[0]).queryByText("name:")).toBeInTheDocument();
+    expect(within(historyRows[0]).queryByText("entity1")).toBeInTheDocument();
+
+    // MOD_ENTITY: shows "変更" and changes in before/after columns
     expect(within(historyRows[1]).queryByText("変更")).toBeInTheDocument();
+    expect(
+      within(historyRows[1]).queryByText("old_entity1"),
+    ).toBeInTheDocument();
+
+    // ADD_ATTR: shows "属性追加" and targetObj
     expect(within(historyRows[2]).queryByText("属性追加")).toBeInTheDocument();
     expect(within(historyRows[2]).queryByText("attr1")).toBeInTheDocument();
+
+    // MOD_ATTR: shows "属性変更" and changes from simple-history
     expect(within(historyRows[3]).queryByText("属性変更")).toBeInTheDocument();
-    expect(within(historyRows[3]).queryByText("attr1")).toBeInTheDocument();
+    // The changes display shows "is_mandatory" as a target field and "true" as the after value
+    expect(
+      within(historyRows[3]).queryAllByText(/is_mandatory/).length,
+    ).toBeGreaterThan(0);
+    expect(
+      within(historyRows[3]).queryAllByText(/true/).length,
+    ).toBeGreaterThan(0);
+
+    // DEL_ATTR: shows "属性削除" and targetObj (with _deleted_ suffix removed)
     expect(within(historyRows[4]).queryByText("属性削除")).toBeInTheDocument();
     expect(within(historyRows[4]).queryAllByText("attr1")).toHaveLength(2);
+
+    // DEL_ENTITY: shows "削除" and changes
     expect(within(historyRows[5]).queryByText("削除")).toBeInTheDocument();
   });
 });

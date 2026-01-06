@@ -315,9 +315,10 @@ export function convertAttrsFormatCtoS(
       }
     }
 
+    const value = getAttrValue(attr.type, attr.value);
     return {
       id: attr.schema.id,
-      value: getAttrValue(attr.type, attr.value),
-    };
+      value: value === undefined ? null : value,
+    } as AttributeData;
   });
 }
