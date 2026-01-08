@@ -65,7 +65,9 @@ const StyledTableBody = styled(TableBody)({
 });
 
 export const TriggerEditPage: FC = () => {
-  const { triggerId } = useTypedParams<{ triggerId: number }>();
+  const { triggerId } = useTypedParams<{ triggerId?: number }>({
+    allowEmpty: true,
+  });
   const willCreate = triggerId === undefined;
 
   const navigate = useNavigate();
