@@ -1,3 +1,4 @@
+import { AttributeData } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Box, Button } from "@mui/material";
 import { useSnackbar } from "notistack";
@@ -9,8 +10,10 @@ import { AttributeValueField } from "components/entry/entryForm/AttributeValueFi
 import { EditableEntryAttrs } from "components/entry/entryForm/EditableEntry";
 import { Schema, schema } from "components/entry/entryForm/EntryFormSchema";
 import { aironeApiClient } from "repository/AironeApiClient";
-import { AttrsFilter } from "services/entry/AdvancedSearch";
-import { extractAdvancedSearchParams } from "services/entry/AdvancedSearch";
+import {
+  AttrsFilter,
+  extractAdvancedSearchParams,
+} from "services/entry/AdvancedSearch";
 import { convertAttrsFormatCtoS } from "services/entry/Edit";
 
 interface Props {
@@ -61,13 +64,11 @@ export const AdvancedSearchEditModal: FC<Props> = ({
       };
     });
 
-    // The aironeApiClient.bulkUpdateEntries would be called only one time in most cases.
-    // because it's rare that multiple Models are specified for advanced search page.
-    modelIds.forEach((modelId: number) => {
-      aironeApiClient
+    const bulkUpdateEntries = (modelId: number, value: AttributeData) => {
+      return aironeApiClient
         .bulkUpdateEntries(
           modelId,
-          convertAttrsFormatCtoS(settingValue)[0],
+          value,
           sendingAttrsFilter,
           referralName,
           hintEntry,
@@ -86,6 +87,31 @@ export const AdvancedSearchEditModal: FC<Props> = ({
           // Close this modal
           handleClose();
         });
+    };
+    // The aironeApiClient.bulkUpdateEntries would be called only one time in most cases.
+    // because it's rare that multiple Models are specified for advanced search page.
+    modelIds.forEach((modelId: number) => {
+      // In case multiple Models are specified, fetch the attribute schema for each Model
+      if (modelIds.length > 1) {
+        aironeApiClient.getEntityAttrs([modelId], false).then((entityAttrs) => {
+          const targetAttr = entityAttrs.find(
+            (attr) => attr.name === targetAttrname,
+          );
+          if (targetAttr) {
+            bulkUpdateEntries(
+              modelId,
+              convertAttrsFormatCtoS({
+                [targetAttr.id]: {
+                  ...settingValue[targetAttrID],
+                  schema: { id: targetAttr.id },
+                } as EditableEntryAttrs,
+              })[0],
+            );
+          }
+        });
+      } else {
+        bulkUpdateEntries(modelId, convertAttrsFormatCtoS(settingValue)[0]);
+      }
     });
   };
 

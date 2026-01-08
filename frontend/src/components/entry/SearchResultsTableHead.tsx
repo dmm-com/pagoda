@@ -362,6 +362,9 @@ export const SearchResultsTableHead: FC<Props> = ({
                     handleUpdateAttrFilter={handleUpdateAttrFilter(attrName)}
                     attrType={attrTypes[attrName]}
                     setOpenEditModal={setOpenEditModal}
+                    isDisabledEditModal={
+                      searchAllEntities || joinAttrs.length > 0
+                    }
                     entityAttrs={entityAttrs}
                     setEditTargetAttrID={setEditTargetAttrID}
                     setEditTargetAttrname={setEditTargetAttrname}

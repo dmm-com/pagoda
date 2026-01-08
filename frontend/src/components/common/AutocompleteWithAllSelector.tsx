@@ -8,13 +8,7 @@ import {
   FilterOptionsState,
 } from "@mui/material";
 import { AutocompleteProps } from "@mui/material/Autocomplete/Autocomplete";
-import {
-  HTMLAttributes,
-  SyntheticEvent,
-  useEffect,
-  useMemo,
-  useRef,
-} from "react";
+import { SyntheticEvent, useEffect, useMemo, useRef } from "react";
 
 type SelectorOption = "select-all" | "remove-all";
 
@@ -109,20 +103,25 @@ export const AutocompleteWithAllSelector = <
   };
 
   const optionRenderer = (
-    props: HTMLAttributes<HTMLLIElement>,
+    props: React.HTMLAttributes<HTMLLIElement> & { key: React.Key },
     option: T | SelectorOption,
   ) => {
+    const { key, ...optionProps } = props;
     switch (option) {
       case "select-all":
       case "remove-all":
         return (
-          <li {...props}>
+          <li key={key} {...optionProps}>
             <Checkbox checked={allSelected} />
             <Box>{selectAllLabel}</Box>
           </li>
         );
       default:
-        return <li {...props}>{option as string}</li>;
+        return (
+          <li key={key} {...optionProps}>
+            {option as string}
+          </li>
+        );
     }
   };
 
