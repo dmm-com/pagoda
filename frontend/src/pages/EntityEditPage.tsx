@@ -26,7 +26,9 @@ import {
 import { BaseAttributeTypes } from "services/Constants";
 
 export const EntityEditPage: FC = () => {
-  const { entityId } = useTypedParams<{ entityId: number }>();
+  const { entityId } = useTypedParams<{
+    entityId?: number;
+  }>({ allowEmpty: true });
 
   const willCreate = entityId === undefined;
 
