@@ -3,20 +3,21 @@
  */
 
 import {
+  act,
+  fireEvent,
   render,
   screen,
-  act,
   waitFor,
-  fireEvent,
 } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import { createMemoryRouter, RouterProvider } from "react-router";
 
+import { EntryDetailsPage } from "./EntryDetailsPage";
 import { EntryEditPage } from "./EntryEditPage";
 
 import { TestWrapperWithoutRoutes } from "TestWrapper";
-import { entryEditPath, newEntryPath } from "routes/Routes";
+import { entryDetailsPath, entryEditPath, newEntryPath } from "routes/Routes";
 
 const mockEntity = {
   id: 2,
@@ -98,6 +99,10 @@ describe("EntryEditPage", () => {
         {
           path: newEntryPath(":entityId"),
           element: <EntryEditPage />,
+        },
+        {
+          path: entryDetailsPath(":entityId", ":entryId"),
+          element: <EntryDetailsPage />,
         },
       ],
       {

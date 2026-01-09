@@ -122,6 +122,6 @@
     "react-dom": "^19.2.0"
   },
   "dependencies": {
-    "react-router": "^7.5.2"
+    "react-router": "^7.12.0"
   }
 }
