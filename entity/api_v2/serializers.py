@@ -448,6 +448,10 @@ class EntitySerializer(serializers.ModelSerializer):
 
     @extend_schema_field(serializers.IntegerField(read_only=True))
     def get_permission(self, obj: Entity) -> int:
+        # Handle case when obj is a dict (already serialized or nested data)
+        if isinstance(obj, dict):
+            return ACLType.Nothing.value
+
         request = self.context.get("request")
         if request:
             return get_permission_level(request.user, obj)

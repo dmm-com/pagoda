@@ -11,7 +11,7 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.exceptions import ValidationError
 
-from acl.models import ACLBase
+from acl.models import ACLBase, ACLType
 from airone.lib.log import Logger
 from airone.lib.test import AironeViewTest
 from airone.lib.types import AttrType
@@ -75,6 +75,7 @@ class ViewTest(AironeViewTest):
                 "webhooks": [],
                 "is_public": True,
                 "has_ongoing_changes": False,
+                "permission": ACLType.Full.value,
             },
         )
 
@@ -502,6 +503,7 @@ class ViewTest(AironeViewTest):
                         "item_name_pattern": "",
                         "name": "ref_entity",
                         "note": "",
+                        "permission": ACLType.Full.value,
                         "status": 0,
                     },
                     {
@@ -510,6 +512,7 @@ class ViewTest(AironeViewTest):
                         "item_name_pattern": "",
                         "name": "test-entity",
                         "note": "",
+                        "permission": ACLType.Full.value,
                         "status": 0,
                     },
                 ],
@@ -2889,6 +2892,7 @@ class ViewTest(AironeViewTest):
                         "id": self.entity.id,
                         "name": "test-entity",
                         "is_public": self.entity.is_public,
+                        "permission": ACLType.Full.value,
                     }
                     for x in resp_results
                 ]
