@@ -31,6 +31,10 @@ class CategoryAPI(viewsets.ModelViewSet):
         return serializer.get(self.action, CategoryListSerializer)
 
     def get_queryset(self):
+        # Return empty queryset for DRF Spectacular schema generation
+        if getattr(self, "swagger_fake_view", False):
+            return Category.objects.none()
+
         # get items that has permission to read
         targets = []
         for category in Category.objects.filter(is_active=True):
