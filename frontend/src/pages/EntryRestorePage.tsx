@@ -45,6 +45,7 @@ export const EntryRestorePage: FC = () => {
             anchorElem={entityAnchorEl}
             handleClose={() => setEntityAnchorEl(null)}
             setOpenImportModal={setOpenImportModal}
+            permission={entity.value?.permission}
           />
           <EntryImportModal
             openImportModal={openImportModal}

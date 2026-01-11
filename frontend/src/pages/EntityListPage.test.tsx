@@ -8,6 +8,7 @@ import { setupServer } from "msw/node";
 
 import { TestWrapper } from "TestWrapper";
 import { EntityListPage } from "pages/EntityListPage";
+import { ACLType } from "services/ACLUtil";
 
 const mockEntities = {
   count: 3,
@@ -20,6 +21,7 @@ const mockEntities = {
       note: "Test note for entity A",
       is_toplevel: true,
       attrs: [],
+      permission: ACLType.Full,
     },
     {
       id: 2,
@@ -27,6 +29,7 @@ const mockEntities = {
       note: "",
       is_toplevel: false,
       attrs: [],
+      permission: ACLType.Full,
     },
     {
       id: 3,
@@ -34,6 +37,7 @@ const mockEntities = {
       note: "",
       is_toplevel: false,
       attrs: [],
+      permission: ACLType.Full,
     },
   ],
 };

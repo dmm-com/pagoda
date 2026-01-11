@@ -93,6 +93,7 @@ export const EntityListCard: FC<Props> = ({ entity, setToggle }) => {
               handleClose={() => setAnchorElem(null)}
               setOpenImportModal={setOpenImportModal}
               setToggle={setToggle}
+              permission={entity.permission}
             />
           </>
         }

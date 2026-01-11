@@ -11,6 +11,7 @@ import { FC } from "react";
 import { useForm } from "react-hook-form";
 
 import { TestWrapper } from "../../TestWrapper";
+import { ACLType } from "services/ACLUtil";
 
 import { Conditions } from "./Conditions";
 import { Schema } from "./TriggerFormSchema";
@@ -20,6 +21,7 @@ describe("Conditions", () => {
     id: 1,
     name: "entity1",
     isToplevel: false,
+    permission: ACLType.Full,
     attrs: [
       EntryAttributeTypeTypeEnum.STRING,
       EntryAttributeTypeTypeEnum.BOOLEAN,
@@ -47,6 +49,7 @@ describe("Conditions", () => {
       id: 1,
       name: "entity1",
       isPublic: true,
+      permission: ACLType.Full,
     },
     conditions: [
       {

@@ -14,6 +14,7 @@ import {
 
 import { TestWrapper } from "TestWrapper";
 import { EntryList } from "components/entry/EntryList";
+import { ACLType } from "services/ACLUtil";
 import { aironeApiClient } from "repository/AironeApiClient";
 
 afterEach(() => {
@@ -28,11 +29,13 @@ describe("EntryList", () => {
       schema: {
         id: 1,
         name: "test-entity",
+        permission: ACLType.Full,
       },
       deletedUser: null,
       isActive: true,
       updatedTime: new Date("2024-01-01T00:00:00Z"),
       aliases: [],
+      permission: ACLType.Full,
     },
     {
       id: 2,
@@ -40,11 +43,13 @@ describe("EntryList", () => {
       schema: {
         id: 1,
         name: "test-entity",
+        permission: ACLType.Full,
       },
       deletedUser: null,
       isActive: true,
       updatedTime: new Date("2024-01-01T00:00:00Z"),
       aliases: [],
+      permission: ACLType.Full,
     },
   ];
 

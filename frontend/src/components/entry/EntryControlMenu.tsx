@@ -23,6 +23,7 @@ import {
   entryDetailsPath,
   aclHistoryPath,
 } from "routes/Routes";
+import { canEdit, canModifyACL } from "services/ACLUtil";
 
 interface EntryControlProps {
   entityId: number;
@@ -37,6 +38,8 @@ interface EntryControlProps {
   customACLPath?: string;
   customHistoryPath?: string;
   customACLHistoryPath?: string;
+  permission?: number;
+  entityPermission?: number;
 }
 
 export const EntryControlMenu: FC<EntryControlProps> = ({
@@ -52,6 +55,8 @@ export const EntryControlMenu: FC<EntryControlProps> = ({
   customACLPath,
   customHistoryPath,
   customACLHistoryPath,
+  permission,
+  entityPermission,
 }) => {
   const { enqueueSnackbar } = useSnackbar();
   const navigate = useNavigate();
@@ -98,28 +103,34 @@ export const EntryControlMenu: FC<EntryControlProps> = ({
         >
           <Typography>詳細</Typography>
         </MenuItem>
-        <MenuItem
-          component={Link}
-          to={
-            customEditPath ? customEditPath : entryEditPath(entityId, entryId)
-          }
-        >
-          <Typography>編集</Typography>
-        </MenuItem>
-        <MenuItem
-          component={Link}
-          to={
-            customCopyPath ? customCopyPath : copyEntryPath(entityId, entryId)
-          }
-        >
-          <Typography>コピー</Typography>
-        </MenuItem>
-        <MenuItem
-          component={Link}
-          to={customACLPath ? customACLPath : aclPath(entryId)}
-        >
-          <Typography>ACL 設定</Typography>
-        </MenuItem>
+        {(permission === undefined || canEdit(permission)) && (
+          <MenuItem
+            component={Link}
+            to={
+              customEditPath ? customEditPath : entryEditPath(entityId, entryId)
+            }
+          >
+            <Typography>編集</Typography>
+          </MenuItem>
+        )}
+        {(entityPermission === undefined || canEdit(entityPermission)) && (
+          <MenuItem
+            component={Link}
+            to={
+              customCopyPath ? customCopyPath : copyEntryPath(entityId, entryId)
+            }
+          >
+            <Typography>コピー</Typography>
+          </MenuItem>
+        )}
+        {(permission === undefined || canModifyACL(permission)) && (
+          <MenuItem
+            component={Link}
+            to={customACLPath ? customACLPath : aclPath(entryId)}
+          >
+            <Typography>ACL 設定</Typography>
+          </MenuItem>
+        )}
         <MenuItem
           component={Link}
           to={
@@ -141,18 +152,20 @@ export const EntryControlMenu: FC<EntryControlProps> = ({
         >
           <Typography>ACL 変更履歴</Typography>
         </MenuItem>
-        <Confirmable
-          componentGenerator={(handleOpen) => (
-            <MenuItem onClick={handleOpen} sx={{ justifyContent: "end" }}>
-              <ListItemText>削除</ListItemText>
-              <ListItemIcon>
-                <DeleteOutlineIcon />
-              </ListItemIcon>
-            </MenuItem>
-          )}
-          dialogTitle="本当に削除しますか？"
-          onClickYes={() => handleDelete(entryId)}
-        />
+        {(permission === undefined || canEdit(permission)) && (
+          <Confirmable
+            componentGenerator={(handleOpen) => (
+              <MenuItem onClick={handleOpen} sx={{ justifyContent: "end" }}>
+                <ListItemText>削除</ListItemText>
+                <ListItemIcon>
+                  <DeleteOutlineIcon />
+                </ListItemIcon>
+              </MenuItem>
+            )}
+            dialogTitle="本当に削除しますか？"
+            onClickYes={() => handleDelete(entryId)}
+          />
+        )}
       </Box>
     </Menu>
   );

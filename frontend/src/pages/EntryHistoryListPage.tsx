@@ -64,6 +64,8 @@ export const EntryHistoryListPage: FC = () => {
             entryId={entryId}
             anchorElem={entryAnchorEl}
             handleClose={() => setEntryAnchorEl(null)}
+            permission={entry.value?.permission}
+            entityPermission={entry.value?.schema?.permission}
           />
         </Box>
       </PageHeader>

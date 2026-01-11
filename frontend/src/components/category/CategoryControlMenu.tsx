@@ -18,12 +18,14 @@ import {
   listCategoryPath,
   topPath,
 } from "routes/Routes";
+import { canEdit, canModifyACL } from "services/ACLUtil";
 
 interface Props {
   categoryId: number;
   anchorElem: HTMLButtonElement | null;
   handleClose: (categoryId: number) => void;
   setToggle?: () => void;
+  permission?: number;
 }
 
 export const CategoryControlMenu: FC<Props> = ({
@@ -31,6 +33,7 @@ export const CategoryControlMenu: FC<Props> = ({
   anchorElem,
   handleClose,
   setToggle,
+  permission,
 }) => {
   const { enqueueSnackbar } = useSnackbar();
   const navigate = useNavigate();
@@ -68,24 +71,30 @@ export const CategoryControlMenu: FC<Props> = ({
         horizontal: "right",
       }}
     >
-      <MenuItem component={Link} to={editCategoryPath(categoryId)}>
-        <Typography>編集</Typography>
-      </MenuItem>
-      <MenuItem component={Link} to={aclPath(categoryId)}>
-        <Typography>ACL 設定</Typography>
-      </MenuItem>
-      <Confirmable
-        componentGenerator={(handleOpen) => (
-          <MenuItem onClick={handleOpen}>
-            <ListItemText>削除</ListItemText>
-            <ListItemIcon>
-              <DeleteOutlineIcon />
-            </ListItemIcon>
-          </MenuItem>
-        )}
-        dialogTitle="本当に削除しますか？"
-        onClickYes={() => handleDelete(categoryId)}
-      />
+      {(permission === undefined || canEdit(permission)) && (
+        <MenuItem component={Link} to={editCategoryPath(categoryId)}>
+          <Typography>編集</Typography>
+        </MenuItem>
+      )}
+      {(permission === undefined || canModifyACL(permission)) && (
+        <MenuItem component={Link} to={aclPath(categoryId)}>
+          <Typography>ACL 設定</Typography>
+        </MenuItem>
+      )}
+      {(permission === undefined || canModifyACL(permission)) && (
+        <Confirmable
+          componentGenerator={(handleOpen) => (
+            <MenuItem onClick={handleOpen}>
+              <ListItemText>削除</ListItemText>
+              <ListItemIcon>
+                <DeleteOutlineIcon />
+              </ListItemIcon>
+            </MenuItem>
+          )}
+          dialogTitle="本当に削除しますか？"
+          onClickYes={() => handleDelete(categoryId)}
+        />
+      )}
     </Menu>
   );
 };

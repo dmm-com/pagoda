@@ -73,6 +73,8 @@ export const EntryListCard: FC<Props> = ({ entityId, entry, setToggle }) => {
               anchorElem={anchorElem}
               handleClose={() => setAnchorElem(null)}
               setToggle={setToggle}
+              permission={entry.permission}
+              entityPermission={entry.schema?.permission}
             />
           </>
         }

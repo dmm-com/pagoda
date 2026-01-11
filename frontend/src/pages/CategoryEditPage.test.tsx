@@ -8,6 +8,7 @@ import { setupServer } from "msw/node";
 import { createMemoryRouter, RouterProvider } from "react-router";
 
 import { TestWrapperWithoutRoutes } from "TestWrapper";
+import { ACLType } from "services/ACLUtil";
 import { CategoryEditPage } from "pages/CategoryEditPage";
 import { editCategoryPath } from "routes/Routes";
 
@@ -40,6 +41,7 @@ const server = setupServer(
           hasOngoingChanges: false,
           attrs: [],
           webhooks: [],
+          permission: ACLType.Full,
         },
         {
           id: 2,
@@ -49,6 +51,7 @@ const server = setupServer(
           hasOngoingChanges: false,
           attrs: [],
           webhooks: [],
+          permission: ACLType.Full,
         },
         {
           id: 3,
@@ -58,6 +61,7 @@ const server = setupServer(
           hasOngoingChanges: false,
           attrs: [],
           webhooks: [],
+          permission: ACLType.Full,
         },
       ],
     });

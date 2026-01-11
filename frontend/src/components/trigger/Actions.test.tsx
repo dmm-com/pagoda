@@ -11,6 +11,7 @@ import { FC } from "react";
 import { useForm } from "react-hook-form";
 
 import { TestWrapper } from "../../TestWrapper";
+import { ACLType } from "services/ACLUtil";
 
 import { Actions } from "./Actions";
 import { Schema } from "./TriggerFormSchema";
@@ -20,6 +21,7 @@ describe("ActionForm", () => {
     id: 1,
     name: "entity1",
     isToplevel: false,
+    permission: ACLType.Full,
     attrs: [
       EntryAttributeTypeTypeEnum.STRING,
       EntryAttributeTypeTypeEnum.ARRAY_STRING,
@@ -50,6 +52,7 @@ describe("ActionForm", () => {
       id: 1,
       name: "entity1",
       isPublic: true,
+      permission: ACLType.Full,
     },
     conditions: [],
     actions: [

@@ -6,6 +6,7 @@ import { FC, useState } from "react";
 
 import { CategoryControlMenu } from "components/category/CategoryControlMenu";
 import { BetweenAlignedBox, FlexBox } from "components/common/FlexBox";
+import { canEdit } from "services/ACLUtil";
 
 interface Props {
   category: CategoryList;
@@ -36,7 +37,7 @@ export const CategoryListHeader: FC<Props> = ({
       </FlexBox>
 
       {/* Category control menu */}
-      {isEdit && (
+      {isEdit && canEdit(category.permission) && (
         <FlexBox sx={{ marginInlineStart: "40px" }}>
           <IconButton
             onClick={(e) => {
@@ -50,6 +51,7 @@ export const CategoryListHeader: FC<Props> = ({
             anchorElem={categoryAnchorEl}
             handleClose={() => setCategoryAnchorEl(null)}
             setToggle={setToggle}
+            permission={category.permission}
           />
         </FlexBox>
       )}

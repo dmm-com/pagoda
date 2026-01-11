@@ -300,6 +300,7 @@ export const TriggerEditPage: FC = () => {
         {
           id: entity.value.id,
           name: entity.value.name,
+          permission: entity.value.permission,
         },
         {
           shouldValidate: true,

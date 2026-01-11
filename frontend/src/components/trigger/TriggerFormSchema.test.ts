@@ -1,5 +1,7 @@
 import { EntryAttributeTypeTypeEnum } from "@dmm-com/airone-apiclient-typescript-fetch";
 
+import { ACLType } from "services/ACLUtil";
+
 import { Schema, schema } from "./TriggerFormSchema";
 
 describe("schema", () => {
@@ -10,6 +12,7 @@ describe("schema", () => {
       id: 1,
       name: "entity1",
       isPublic: true,
+      permission: ACLType.Full,
     },
     conditions: [
       {

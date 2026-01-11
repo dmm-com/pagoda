@@ -10,7 +10,7 @@ import { Schema } from "./aclForm/ACLFormSchema";
 
 import { TestWrapper } from "TestWrapper";
 import { ACLForm } from "components/acl/ACLForm";
-import { ACLType } from "services/Constants";
+import { ACLType } from "services/ACLUtil";
 
 test("should render a component with essential props", function () {
   const Wrapper: FC = () => {

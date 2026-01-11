@@ -7,6 +7,7 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { TestWrapper } from "TestWrapper";
 import { EntryControlMenu } from "components/entry/EntryControlMenu";
 import { aironeApiClient } from "repository/AironeApiClient";
+import { ACLType } from "services/ACLUtil";
 
 // Mock API client
 jest.mock("repository/AironeApiClient", () => ({
@@ -241,6 +242,128 @@ describe("EntryControlMenu", () => {
 
       await waitFor(() => {
         expect(aironeApiClient.destroyEntry).not.toHaveBeenCalled();
+      });
+    });
+  });
+
+  describe("permission-based visibility", () => {
+    describe("when permission is Readable", () => {
+      test("edit menu should not be displayed", () => {
+        render(
+          <EntryControlMenu {...defaultProps} permission={ACLType.Readable} />,
+          { wrapper: TestWrapper },
+        );
+
+        expect(screen.queryByText("編集")).not.toBeInTheDocument();
+      });
+
+      test("delete menu should not be displayed", () => {
+        render(
+          <EntryControlMenu {...defaultProps} permission={ACLType.Readable} />,
+          { wrapper: TestWrapper },
+        );
+
+        expect(screen.queryByText("削除")).not.toBeInTheDocument();
+      });
+
+      test("ACL menu should not be displayed", () => {
+        render(
+          <EntryControlMenu {...defaultProps} permission={ACLType.Readable} />,
+          { wrapper: TestWrapper },
+        );
+
+        expect(screen.queryByText("ACL 設定")).not.toBeInTheDocument();
+      });
+
+      test("detail and history menus should still be displayed", () => {
+        render(
+          <EntryControlMenu {...defaultProps} permission={ACLType.Readable} />,
+          { wrapper: TestWrapper },
+        );
+
+        expect(screen.getByText("詳細")).toBeInTheDocument();
+        expect(screen.getByText("変更履歴")).toBeInTheDocument();
+        expect(screen.getByText("ACL 変更履歴")).toBeInTheDocument();
+      });
+    });
+
+    describe("when permission is Writable", () => {
+      test("edit and delete menus should be displayed", () => {
+        render(
+          <EntryControlMenu {...defaultProps} permission={ACLType.Writable} />,
+          { wrapper: TestWrapper },
+        );
+
+        expect(screen.getByText("編集")).toBeInTheDocument();
+        expect(screen.getByText("削除")).toBeInTheDocument();
+      });
+
+      test("ACL menu should not be displayed", () => {
+        render(
+          <EntryControlMenu {...defaultProps} permission={ACLType.Writable} />,
+          { wrapper: TestWrapper },
+        );
+
+        expect(screen.queryByText("ACL 設定")).not.toBeInTheDocument();
+      });
+    });
+
+    describe("when permission is Full", () => {
+      test("all operation menus should be displayed", () => {
+        render(
+          <EntryControlMenu {...defaultProps} permission={ACLType.Full} />,
+          { wrapper: TestWrapper },
+        );
+
+        expect(screen.getByText("詳細")).toBeInTheDocument();
+        expect(screen.getByText("編集")).toBeInTheDocument();
+        expect(screen.getByText("コピー")).toBeInTheDocument();
+        expect(screen.getByText("ACL 設定")).toBeInTheDocument();
+        expect(screen.getByText("変更履歴")).toBeInTheDocument();
+        expect(screen.getByText("ACL 変更履歴")).toBeInTheDocument();
+        expect(screen.getByText("削除")).toBeInTheDocument();
+      });
+    });
+
+    describe("when permission is undefined", () => {
+      test("all menus should be displayed (backward compatibility)", () => {
+        render(<EntryControlMenu {...defaultProps} permission={undefined} />, {
+          wrapper: TestWrapper,
+        });
+
+        expect(screen.getByText("詳細")).toBeInTheDocument();
+        expect(screen.getByText("編集")).toBeInTheDocument();
+        expect(screen.getByText("コピー")).toBeInTheDocument();
+        expect(screen.getByText("ACL 設定")).toBeInTheDocument();
+        expect(screen.getByText("削除")).toBeInTheDocument();
+      });
+    });
+
+    describe("entityPermission-based copy menu visibility", () => {
+      test("copy menu should not be displayed when entityPermission is Readable", () => {
+        render(
+          <EntryControlMenu
+            {...defaultProps}
+            permission={ACLType.Full}
+            entityPermission={ACLType.Readable}
+          />,
+          { wrapper: TestWrapper },
+        );
+
+        expect(screen.queryByText("コピー")).not.toBeInTheDocument();
+      });
+
+      test("copy menu should be displayed when entityPermission is Writable", () => {
+        render(
+          <EntryControlMenu
+            {...defaultProps}
+            permission={ACLType.Full}
+            entityPermission={ACLType.Writable}
+          />,
+          { wrapper: TestWrapper },
+        );
+
+        expect(screen.getByText("コピー")).toBeInTheDocument();
       });
     });
   });

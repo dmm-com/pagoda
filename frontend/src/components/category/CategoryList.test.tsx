@@ -7,6 +7,7 @@ import { act, render, screen } from "@testing-library/react";
 import { CategoryList } from "./CategoryList";
 
 import { TestWrapper } from "TestWrapper";
+import { ACLType } from "services/ACLUtil";
 import { aironeApiClient } from "repository/AironeApiClient";
 
 // Setup API mocks
@@ -26,18 +27,20 @@ describe("CategoryList", () => {
             id: 1,
             name: "テストカテゴリ1",
             models: [
-              { id: 101, name: "モデル1" },
-              { id: 102, name: "モデル2" },
+              { id: 101, name: "モデル1", permission: ACLType.Full },
+              { id: 102, name: "モデル2", permission: ACLType.Full },
             ],
             note: "",
             priority: 0,
+            permission: ACLType.Full,
           },
           {
             id: 2,
             name: "テストカテゴリ2",
-            models: [{ id: 201, name: "モデル3" }],
+            models: [{ id: 201, name: "モデル3", permission: ACLType.Full }],
             note: "",
             priority: 0,
+            permission: ACLType.Full,
           },
         ],
       });
@@ -75,9 +78,10 @@ describe("CategoryList", () => {
         {
           id: 1,
           name: "テストカテゴリ1",
-          models: [{ id: 101, name: "モデル1" }],
+          models: [{ id: 101, name: "モデル1", permission: ACLType.Full }],
           note: "",
           priority: 0,
+          permission: ACLType.Full,
         },
       ],
     });
