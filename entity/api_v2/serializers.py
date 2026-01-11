@@ -15,7 +15,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied, ValidationError
 
 from airone.lib import custom_view, drf
-from airone.lib.acl import ACLType
+from airone.lib.acl import ACLType, get_permission_level
 from airone.lib.drf import DuplicatedObjectExistsError, ObjectNotExistsError, RequiredParameterError
 from airone.lib.log import Logger
 from airone.lib.types import AttrType, AttrTypeValue
@@ -440,9 +440,18 @@ class EntityAttrSerializer(serializers.ModelSerializer):
 
 
 class EntitySerializer(serializers.ModelSerializer):
+    permission = serializers.SerializerMethodField()
+
     class Meta:
         model = Entity
-        fields = ["id", "name", "is_public"]
+        fields = ["id", "name", "is_public", "permission"]
+
+    @extend_schema_field(serializers.IntegerField(read_only=True))
+    def get_permission(self, obj: Entity) -> int:
+        request = self.context.get("request")
+        if request:
+            return get_permission_level(request.user, obj)
+        return ACLType.Nothing.value
 
     def validate_item_name_pattern(self, item_name_pattern: str):
         try:
@@ -793,13 +802,18 @@ class EntityUpdateSerializer(EntitySerializer):
 
 class EntityListSerializer(EntitySerializer):
     is_toplevel = serializers.SerializerMethodField(method_name="get_is_toplevel")
+    permission = serializers.SerializerMethodField()
 
     class Meta:
         model = Entity
-        fields = ["id", "name", "note", "item_name_pattern", "status", "is_toplevel"]
+        fields = ["id", "name", "note", "item_name_pattern", "status", "is_toplevel", "permission"]
 
     def get_is_toplevel(self, obj: Entity) -> bool:
         return (obj.status & Entity.STATUS_TOP_LEVEL) != 0
+
+    def get_permission(self, obj: Entity) -> int:
+        user = self.context["request"].user
+        return get_permission_level(user, obj)
 
 
 class EntityDetailAttributeSerializer(serializers.Serializer):
@@ -834,6 +848,7 @@ class EntityDetailSerializer(EntityListSerializer):
             "webhooks",
             "is_public",
             "has_ongoing_changes",
+            "permission",
         ]
 
     @extend_schema_field(serializers.ListField(child=EntityDetailAttributeSerializer()))
