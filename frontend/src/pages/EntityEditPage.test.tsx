@@ -16,6 +16,7 @@ import { editEntityPath } from "../routes/Routes";
 import { EntityEditPage } from "./EntityEditPage";
 
 import { TestWrapperWithoutRoutes } from "TestWrapper";
+import { ACLType } from "services/ACLUtil";
 
 const entityList: PaginatedEntityListList = {
   count: 3,
@@ -25,18 +26,21 @@ const entityList: PaginatedEntityListList = {
       name: "aaa",
       note: "",
       isToplevel: false,
+      permission: ACLType.Full,
     },
     {
       id: 2,
       name: "aaaaa",
       note: "",
       isToplevel: false,
+      permission: ACLType.Full,
     },
     {
       id: 3,
       name: "bbbbb",
       note: "",
       isToplevel: false,
+      permission: ACLType.Full,
     },
   ],
 };
@@ -49,6 +53,7 @@ const entity: EntityDetail = {
   hasOngoingChanges: false,
   attrs: [],
   webhooks: [],
+  permission: ACLType.Full,
 };
 
 const server = setupServer(

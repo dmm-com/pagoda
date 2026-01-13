@@ -1,4 +1,8 @@
-import { ACLObjtypeEnum } from "@dmm-com/airone-apiclient-typescript-fetch";
+import {
+  ACLObjtypeEnum,
+  EntityDetail,
+  EntryRetrieve,
+} from "@dmm-com/airone-apiclient-typescript-fetch";
 import AppsIcon from "@mui/icons-material/Apps";
 import { Box, Container, IconButton } from "@mui/material";
 import { styled } from "@mui/material/styles";
@@ -26,6 +30,10 @@ export const ACLHistoryPage: FC = () => {
   const [breadcrumbs, setBreadcrumbs] = useState<JSX.Element>(<Box />);
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
   const [openImportModal, setOpenImportModal] = useState(false);
+  const [entityDetail, setEntityDetail] = useState<EntityDetail | null>(null);
+  const [entryRetrieve, setEntryRetrieve] = useState<EntryRetrieve | null>(
+    null,
+  );
 
   const acl = useAsyncWithThrow(async () => {
     return await aironeApiClient.getAcl(objectId);
@@ -45,6 +53,7 @@ export const ACLHistoryPage: FC = () => {
             anchorElem={anchorEl}
             handleClose={() => setAnchorEl(null)}
             setOpenImportModal={setOpenImportModal}
+            permission={entityDetail?.permission}
           />
         );
       case ACLObjtypeEnum.Entry:
@@ -55,6 +64,8 @@ export const ACLHistoryPage: FC = () => {
               entryId={acl.value.id}
               anchorElem={anchorEl}
               handleClose={() => setAnchorEl(null)}
+              permission={entryRetrieve?.permission}
+              entityPermission={entryRetrieve?.schema?.permission}
             />
           );
         }
@@ -67,6 +78,7 @@ export const ACLHistoryPage: FC = () => {
     switch (acl.value.objtype) {
       case ACLObjtypeEnum.Entity:
         aironeApiClient.getEntity(objectId).then((resp) => {
+          setEntityDetail(resp);
           setBreadcrumbs(
             <EntityBreadcrumbs entity={resp} title="ACL変更履歴" />,
           );
@@ -74,6 +86,7 @@ export const ACLHistoryPage: FC = () => {
         break;
       case ACLObjtypeEnum.Entry:
         aironeApiClient.getEntry(objectId).then((resp) => {
+          setEntryRetrieve(resp);
           setBreadcrumbs(<EntryBreadcrumbs entry={resp} title="ACL変更履歴" />);
         });
         break;

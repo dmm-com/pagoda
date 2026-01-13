@@ -9,6 +9,7 @@ import { setupServer } from "msw/node";
 import { DashboardPage } from "./DashboardPage";
 
 import { TestWrapper } from "TestWrapper";
+import { ACLType } from "services/ACLUtil";
 
 const mockCategories = {
   count: 3,
@@ -21,6 +22,7 @@ const mockCategories = {
       note: "First category",
       models: [{ id: 10, name: "Model 1" }],
       priority: 20,
+      permission: ACLType.Full,
     },
     {
       id: 2,
@@ -28,6 +30,7 @@ const mockCategories = {
       note: "",
       models: [],
       priority: 10,
+      permission: ACLType.Full,
     },
     {
       id: 3,
@@ -38,6 +41,7 @@ const mockCategories = {
         { id: 30, name: "Model 3" },
       ],
       priority: 0,
+      permission: ACLType.Full,
     },
   ],
 };

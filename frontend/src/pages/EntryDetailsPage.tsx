@@ -152,6 +152,8 @@ export const EntryDetailsPage: FC<Props> = ({
               entryId={entryId}
               anchorElem={entryAnchorEl}
               handleClose={() => setEntryAnchorEl(null)}
+              permission={entry.value?.permission}
+              entityPermission={entry.value?.schema?.permission}
             />
           </MenuBox>
         </ChipBox>

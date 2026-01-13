@@ -48,6 +48,7 @@ export const EntityHistoryPage: FC = () => {
             anchorElem={entityAnchorEl}
             handleClose={() => setEntityAnchorEl(null)}
             setOpenImportModal={setOpenImportModal}
+            permission={entity.value?.permission}
           />
         </Box>
       </PageHeader>

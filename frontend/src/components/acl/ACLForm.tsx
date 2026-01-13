@@ -15,7 +15,7 @@ import { Control, Controller, useFieldArray } from "react-hook-form";
 import { UseFormWatch } from "react-hook-form/dist/types/form";
 
 import { Schema } from "components/acl/aclForm/ACLFormSchema";
-import { ACLType, ACLTypeLabels } from "services/Constants";
+import { ACLType, ACLTypeLabels } from "services/ACLUtil";
 
 interface Props {
   control: Control<Schema>;

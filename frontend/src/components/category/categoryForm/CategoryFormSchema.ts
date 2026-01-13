@@ -13,10 +13,13 @@ export const schema = schemaForType<CategoryList>()(
         z.object({
           id: z.number(),
           name: z.string(),
+          isPublic: z.boolean().optional(),
+          permission: z.number(),
         }),
       )
       .default([]),
     priority: z.coerce.number(),
+    permission: z.number().default(8),
   }),
 );
 

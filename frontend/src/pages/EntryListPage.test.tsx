@@ -11,6 +11,7 @@ import { EntryListPage } from "./EntryListPage";
 
 import { TestWrapperWithoutRoutes } from "TestWrapper";
 import { entityEntriesPath } from "routes/Routes";
+import { ACLType } from "services/ACLUtil";
 
 const server = setupServer(
   // getEntity
@@ -22,6 +23,7 @@ const server = setupServer(
       is_toplevel: false,
       attrs: [],
       webhooks: [],
+      permission: ACLType.Full,
     });
   }),
   // getEntries
@@ -34,23 +36,26 @@ const server = setupServer(
         {
           id: 1,
           name: "aaa",
-          schema: null,
+          schema: { id: 1, name: "aaa", permission: ACLType.Full },
           is_active: true,
           aliases: [],
+          permission: ACLType.Full,
         },
         {
           id: 2,
           name: "aaaaa",
-          schema: null,
+          schema: { id: 1, name: "aaa", permission: ACLType.Full },
           is_active: true,
           aliases: [],
+          permission: ACLType.Full,
         },
         {
           id: 3,
           name: "bbbbb",
-          schema: null,
+          schema: { id: 1, name: "aaa", permission: ACLType.Full },
           is_active: true,
           aliases: [],
+          permission: ACLType.Full,
         },
       ],
     });

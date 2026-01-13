@@ -2,12 +2,14 @@
  * @jest-environment jsdom
  */
 
-import { EntryBase } from "@dmm-com/airone-apiclient-typescript-fetch";
-import { render, screen, fireEvent } from "@testing-library/react";
-
 import "@testing-library/jest-dom";
 
+import { EntryBase } from "@dmm-com/airone-apiclient-typescript-fetch";
+import { fireEvent, render, screen } from "@testing-library/react";
+
 import { AliasEntryList } from "./AliasEntryList";
+
+import { ACLType } from "services/ACLUtil";
 
 const mockHandleCreate = jest.fn();
 const mockHandleDelete = jest.fn();
@@ -15,7 +17,7 @@ const mockHandleDelete = jest.fn();
 const mockEntryBase: EntryBase = {
   id: 123,
   name: "Test Entry",
-  schema: { id: 1, name: "Mock Schema" },
+  schema: { id: 1, name: "Mock Schema", permission: ACLType.Full },
   isActive: true,
   deletedUser: null,
   updatedTime: new Date(),
@@ -23,6 +25,7 @@ const mockEntryBase: EntryBase = {
     { id: 1, name: "Alias One", entry: 123 },
     { id: 2, name: "Alias Two", entry: 123 },
   ],
+  permission: ACLType.Full,
 };
 
 // Helper function to render the component

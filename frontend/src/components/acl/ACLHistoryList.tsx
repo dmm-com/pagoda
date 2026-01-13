@@ -13,7 +13,7 @@ import { FC } from "react";
 
 import { AironeTableHeadCell } from "components/common/AironeTableHeadCell";
 import { AironeTableHeadRow } from "components/common/AironeTableHeadRow";
-import { ACLType, ACLTypeLabels } from "services/Constants";
+import { ACLType, ACLTypeLabels } from "services/ACLUtil";
 import { formatDateTime } from "services/DateUtil";
 
 const StyledTableCell = styled(TableCell)(({}) => ({

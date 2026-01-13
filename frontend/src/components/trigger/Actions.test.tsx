@@ -15,11 +15,14 @@ import { TestWrapper } from "../../TestWrapper";
 import { Actions } from "./Actions";
 import { Schema } from "./TriggerFormSchema";
 
+import { ACLType } from "services/ACLUtil";
+
 describe("ActionForm", () => {
   const entity: EntityDetail = {
     id: 1,
     name: "entity1",
     isToplevel: false,
+    permission: ACLType.Full,
     attrs: [
       EntryAttributeTypeTypeEnum.STRING,
       EntryAttributeTypeTypeEnum.ARRAY_STRING,
@@ -50,6 +53,7 @@ describe("ActionForm", () => {
       id: 1,
       name: "entity1",
       isPublic: true,
+      permission: ACLType.Full,
     },
     conditions: [],
     actions: [

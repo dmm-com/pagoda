@@ -1,5 +1,7 @@
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
+from airone.lib.acl import ACLType, get_permission_level
 from category.models import Category
 from entity.models import Entity
 
@@ -9,18 +11,31 @@ from entity.models import Entity
 # Renamed to CategoryEntitySerializer to avoid DRF Spectacular component name collision.
 class CategoryEntitySerializer(serializers.ModelSerializer):
     id = serializers.IntegerField()
+    permission = serializers.SerializerMethodField()
 
     class Meta:
         model = Entity
-        fields = ["id", "name", "is_public"]
+        fields = ["id", "name", "is_public", "permission"]
+
+    @extend_schema_field(serializers.IntegerField(read_only=True))
+    def get_permission(self, obj: Entity) -> int:
+        request = self.context.get("request")
+        if request:
+            return get_permission_level(request.user, obj)
+        return ACLType.Nothing.value
 
 
 class CategoryListSerializer(serializers.ModelSerializer):
     models = CategoryEntitySerializer(many=True)
+    permission = serializers.SerializerMethodField()
 
     class Meta:
         model = Category
-        fields = ["id", "name", "note", "models", "priority"]
+        fields = ["id", "name", "note", "models", "priority", "permission"]
+
+    def get_permission(self, obj: Category) -> int:
+        user = self.context["request"].user
+        return get_permission_level(user, obj)
 
 
 class CategoryCreateSerializer(serializers.ModelSerializer):

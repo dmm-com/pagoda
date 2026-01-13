@@ -2,87 +2,124 @@
  * @jest-environment jsdom
  */
 
-import { render, screen, fireEvent } from "@testing-library/react";
+import { CategoryList } from "@dmm-com/airone-apiclient-typescript-fetch";
+import { render, screen } from "@testing-library/react";
 
 import { CategoryListHeader } from "./CategoryListHeader";
 
 import { TestWrapper } from "TestWrapper";
+import { ACLType } from "services/ACLUtil";
 
 describe("CategoryListHeader", () => {
-  // dummy category data for testing
-  const mockCategory = {
+  const createCategory = (permission: number): CategoryList => ({
     id: 1,
     name: "Test Category",
+    note: "Test note",
     models: [],
-    note: "",
-    priority: 0,
+    priority: 1,
+    permission,
+  });
+
+  const defaultProps = {
+    setToggle: jest.fn(),
   };
 
-  test("should render category name", () => {
-    render(
-      <CategoryListHeader
-        category={mockCategory}
-        isEdit={false}
-        setToggle={() => {}}
-      />,
-      { wrapper: TestWrapper },
-    );
+  describe("rendering", () => {
+    test("should render category name", () => {
+      render(
+        <CategoryListHeader
+          {...defaultProps}
+          category={createCategory(ACLType.Full)}
+          isEdit={true}
+        />,
+        { wrapper: TestWrapper },
+      );
 
-    // category name should be displayed
-    expect(screen.getByText("Test Category")).toBeInTheDocument();
+      expect(screen.getByText("Test Category")).toBeInTheDocument();
+    });
   });
 
-  test("should not render control menu when isEdit is false", () => {
-    const { container } = render(
-      <CategoryListHeader
-        category={mockCategory}
-        isEdit={false}
-        setToggle={() => {}}
-      />,
-      { wrapper: TestWrapper },
-    );
+  describe("menu button visibility", () => {
+    describe("when isEdit is true", () => {
+      test("menu button should be displayed when permission is Writable", () => {
+        render(
+          <CategoryListHeader
+            {...defaultProps}
+            category={createCategory(ACLType.Writable)}
+            isEdit={true}
+          />,
+          { wrapper: TestWrapper },
+        );
 
-    // MoreVertIcon button should not be present
-    const iconButtons = container.querySelectorAll("button");
-    expect(iconButtons.length).toBe(0);
-  });
+        expect(screen.getByRole("button")).toBeInTheDocument();
+      });
 
-  test("should render control menu when isEdit is true", () => {
-    const { container } = render(
-      <CategoryListHeader
-        category={mockCategory}
-        isEdit={true}
-        setToggle={() => {}}
-      />,
-      { wrapper: TestWrapper },
-    );
+      test("menu button should be displayed when permission is Full", () => {
+        render(
+          <CategoryListHeader
+            {...defaultProps}
+            category={createCategory(ACLType.Full)}
+            isEdit={true}
+          />,
+          { wrapper: TestWrapper },
+        );
 
-    // MoreVertIcon button should be present
-    const iconButtons = container.querySelectorAll("button");
-    expect(iconButtons.length).toBe(1);
-  });
+        expect(screen.getByRole("button")).toBeInTheDocument();
+      });
 
-  test("clicking the menu button should open the CategoryControlMenu", () => {
-    render(
-      <CategoryListHeader
-        category={mockCategory}
-        isEdit={true}
-        setToggle={() => {}}
-      />,
-      { wrapper: TestWrapper },
-    );
+      test("menu button should not be displayed when permission is Readable", () => {
+        render(
+          <CategoryListHeader
+            {...defaultProps}
+            category={createCategory(ACLType.Readable)}
+            isEdit={true}
+          />,
+          { wrapper: TestWrapper },
+        );
 
-    // Find and click the menu button
-    const menuButton = screen.getByRole("button");
-    fireEvent.click(menuButton);
+        expect(screen.queryByRole("button")).not.toBeInTheDocument();
+      });
 
-    // Verify that the menu is open (an element with role="menu" exists)
-    const menu = screen.getByRole("menu");
-    expect(menu).toBeInTheDocument();
+      test("menu button should not be displayed when permission is Nothing", () => {
+        render(
+          <CategoryListHeader
+            {...defaultProps}
+            category={createCategory(ACLType.Nothing)}
+            isEdit={true}
+          />,
+          { wrapper: TestWrapper },
+        );
 
-    // Verify menu items
-    expect(screen.getByText("編集")).toBeInTheDocument();
-    expect(screen.getByText("ACL 設定")).toBeInTheDocument();
-    expect(screen.getByText("削除")).toBeInTheDocument();
+        expect(screen.queryByRole("button")).not.toBeInTheDocument();
+      });
+    });
+
+    describe("when isEdit is false", () => {
+      test("menu button should not be displayed even with Full permission", () => {
+        render(
+          <CategoryListHeader
+            {...defaultProps}
+            category={createCategory(ACLType.Full)}
+            isEdit={false}
+          />,
+          { wrapper: TestWrapper },
+        );
+
+        expect(screen.queryByRole("button")).not.toBeInTheDocument();
+      });
+
+      test("menu button should not be displayed with Writable permission", () => {
+        render(
+          <CategoryListHeader
+            {...defaultProps}
+            category={createCategory(ACLType.Writable)}
+            isEdit={false}
+          />,
+          { wrapper: TestWrapper },
+        );
+
+        expect(screen.queryByRole("button")).not.toBeInTheDocument();
+      });
+    });
   });
 });

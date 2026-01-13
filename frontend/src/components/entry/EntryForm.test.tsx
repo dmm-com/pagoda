@@ -22,6 +22,7 @@ import { Schema, schema } from "./entryForm/EntryFormSchema";
 
 import { TestWrapper } from "TestWrapper";
 import { EntryForm } from "components/entry/EntryForm";
+import { ACLType } from "services/ACLUtil";
 
 describe("EntryForm", () => {
   const mockEntity: EntityDetail = {
@@ -30,6 +31,7 @@ describe("EntryForm", () => {
     note: "",
     isToplevel: false,
     hasOngoingChanges: false,
+    permission: ACLType.Full,
     attrs: [
       {
         id: 1,

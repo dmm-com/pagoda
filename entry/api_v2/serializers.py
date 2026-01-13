@@ -13,7 +13,7 @@ from typing_extensions import TypedDict
 
 from acl.models import ACLBase
 from airone.lib import custom_view, drf
-from airone.lib.acl import ACLType
+from airone.lib.acl import ACLType, get_permission_level
 from airone.lib.drf import (
     DuplicatedObjectExistsError,
     IncorrectTypeError,
@@ -265,6 +265,7 @@ class EntryBaseSerializer(serializers.ModelSerializer):
     schema = EntitySerializer(read_only=True)
     deleted_user = UserBaseSerializer(read_only=True, allow_null=True)
     aliases = EntryAliasSerializer(many=True, read_only=True)
+    permission = serializers.SerializerMethodField()
 
     class Meta:
         model = Entry
@@ -277,12 +278,20 @@ class EntryBaseSerializer(serializers.ModelSerializer):
             "deleted_time",
             "updated_time",
             "aliases",
+            "permission",
         ]
         extra_kwargs = {
             "id": {"read_only": True},
             "name": {"read_only": True},
             "is_active": {"read_only": True},
         }
+
+    @extend_schema_field(serializers.IntegerField(read_only=True))
+    def get_permission(self, obj: Entry) -> int:
+        request = self.context.get("request")
+        if request:
+            return get_permission_level(request.user, obj)
+        return ACLType.Nothing.value
 
     def validate_name(self, name: str):
         if self.instance:
@@ -648,6 +657,7 @@ class PrivilegedEntryUpdateSerializer(EntryUpdateSerializer):
 class EntryRetrieveSerializer(EntryBaseSerializer):
     attrs = serializers.SerializerMethodField()
     schema = EntitySerializer()
+    permission = serializers.SerializerMethodField()
 
     class Meta:
         model = Entry
@@ -660,8 +670,13 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
             "deleted_time",
             "attrs",
             "is_public",
+            "permission",
         ]
         read_only_fields = ["is_active"]
+
+    def get_permission(self, obj: Entry) -> int:
+        user = self.context["request"].user
+        return get_permission_level(user, obj)
 
     @extend_schema_field(serializers.ListField(child=EntryAttributeTypeSerializer()))
     def get_attrs(self, obj: Entry) -> list[EntryAttributeType]:

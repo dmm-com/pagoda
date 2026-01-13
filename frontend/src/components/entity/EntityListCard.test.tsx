@@ -7,6 +7,7 @@ import { fireEvent, render, screen } from "@testing-library/react";
 
 import { TestWrapper } from "TestWrapper";
 import { EntityListCard } from "components/entity/EntityListCard";
+import { ACLType } from "services/ACLUtil";
 
 describe("EntityListCard", () => {
   const entity: EntityList = {
@@ -14,6 +15,7 @@ describe("EntityListCard", () => {
     name: "TestEntity",
     note: "This is a test entity.",
     isToplevel: true,
+    permission: ACLType.Full,
   };
 
   test("should render entity", () => {

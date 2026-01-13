@@ -25,6 +25,7 @@ import {
   entityEntriesPath,
   aclHistoryPath,
 } from "routes/Routes";
+import { canEdit, canModifyACL } from "services/ACLUtil";
 
 type ExportFormatType = "YAML" | "CSV";
 
@@ -34,6 +35,7 @@ interface Props {
   handleClose: (entityId: number) => void;
   setOpenImportModal: (isOpened: boolean) => void;
   setToggle?: () => void;
+  permission?: number;
 }
 
 export const EntityControlMenu: FC<Props> = ({
@@ -42,6 +44,7 @@ export const EntityControlMenu: FC<Props> = ({
   handleClose,
   setOpenImportModal,
   setToggle,
+  permission,
 }) => {
   const { enqueueSnackbar } = useSnackbar();
   const navigate = useNavigate();
@@ -98,12 +101,16 @@ export const EntityControlMenu: FC<Props> = ({
       <MenuItem component={Link} to={listAliasPath(entityId)}>
         <Typography>エイリアス一覧</Typography>
       </MenuItem>
-      <MenuItem component={Link} to={editEntityPath(entityId)}>
-        <Typography>編集</Typography>
-      </MenuItem>
-      <MenuItem component={Link} to={aclPath(entityId)}>
-        <Typography>ACL 設定</Typography>
-      </MenuItem>
+      {(permission === undefined || canEdit(permission)) && (
+        <MenuItem component={Link} to={editEntityPath(entityId)}>
+          <Typography>編集</Typography>
+        </MenuItem>
+      )}
+      {(permission === undefined || canModifyACL(permission)) && (
+        <MenuItem component={Link} to={aclPath(entityId)}>
+          <Typography>ACL 設定</Typography>
+        </MenuItem>
+      )}
       <MenuItem component={Link} to={entityHistoryPath(entityId)}>
         <Typography>変更履歴</Typography>
       </MenuItem>
@@ -126,24 +133,28 @@ export const EntityControlMenu: FC<Props> = ({
           <Typography>エクスポート(CSV)</Typography>
         </MenuItem>
       </RateLimitedClickable>
-      <MenuItem onClick={() => setOpenImportModal(true)}>
-        <Typography>インポート</Typography>
-      </MenuItem>
+      {(permission === undefined || canEdit(permission)) && (
+        <MenuItem onClick={() => setOpenImportModal(true)}>
+          <Typography>インポート</Typography>
+        </MenuItem>
+      )}
       <MenuItem component={Link} to={restoreEntryPath(entityId)}>
         <Typography>削除アイテムの復旧</Typography>
       </MenuItem>
-      <Confirmable
-        componentGenerator={(handleOpen) => (
-          <MenuItem onClick={handleOpen}>
-            <ListItemText>削除</ListItemText>
-            <ListItemIcon>
-              <DeleteOutlineIcon />
-            </ListItemIcon>
-          </MenuItem>
-        )}
-        dialogTitle="本当に削除しますか？"
-        onClickYes={() => handleDelete(entityId)}
-      />
+      {(permission === undefined || canModifyACL(permission)) && (
+        <Confirmable
+          componentGenerator={(handleOpen) => (
+            <MenuItem onClick={handleOpen}>
+              <ListItemText>削除</ListItemText>
+              <ListItemIcon>
+                <DeleteOutlineIcon />
+              </ListItemIcon>
+            </MenuItem>
+          )}
+          dialogTitle="本当に削除しますか？"
+          onClickYes={() => handleDelete(entityId)}
+        />
+      )}
     </Menu>
   );
 };

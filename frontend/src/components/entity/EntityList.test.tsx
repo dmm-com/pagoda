@@ -7,6 +7,7 @@ import { act, fireEvent, render, screen } from "@testing-library/react";
 
 import { TestWrapper } from "TestWrapper";
 import { EntityList } from "components/entity/EntityList";
+import { ACLType } from "services/ACLUtil";
 
 describe("EntityList", () => {
   const entities: PaginatedEntityListList = {
@@ -17,18 +18,21 @@ describe("EntityList", () => {
         name: "entity1",
         note: "entity1",
         isToplevel: false,
+        permission: ACLType.Full,
       },
       {
         id: 2,
         name: "entity2",
         note: "entity2",
         isToplevel: false,
+        permission: ACLType.Full,
       },
       {
         id: 3,
         name: "entity3",
         note: "entity3",
         isToplevel: false,
+        permission: ACLType.Full,
       },
     ],
   };

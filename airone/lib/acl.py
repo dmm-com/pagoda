@@ -2,7 +2,7 @@ import enum
 
 from airone.lib.types import BaseIntEnum
 
-__all__ = ["ACLType", "ACLObjType"]
+__all__ = ["ACLType", "ACLObjType", "get_permission_level"]
 
 
 @enum.unique
@@ -58,3 +58,23 @@ def get_permitted_objects(user, model, permission_level):
     return [
         x for x in model.objects.all() if user.has_permission(x, permission_level) and x.is_active
     ]
+
+
+def get_permission_level(user, obj) -> int:
+    """Returns the highest permission level the user has on the object.
+
+    Args:
+        user: User object to check permissions for
+        obj: ACLBase subclass object to check permissions against
+
+    Returns:
+        int: The highest permission level (1=Nothing, 2=Readable, 4=Writable, 8=Full)
+    """
+    if user.has_permission(obj, ACLType.Full):
+        return ACLType.Full.value
+    elif user.has_permission(obj, ACLType.Writable):
+        return ACLType.Writable.value
+    elif user.has_permission(obj, ACLType.Readable):
+        return ACLType.Readable.value
+    else:
+        return ACLType.Nothing.value

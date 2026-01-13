@@ -14,6 +14,7 @@ import {
   EditableEntryAttrValue,
   EditableEntryAttrs,
 } from "components/entry/entryForm/EditableEntry";
+import { ACLType } from "services/ACLUtil";
 
 Object.defineProperty(window, "django_context", {
   value: {
@@ -32,6 +33,7 @@ test("formalizeEntryInfo should return expect value", () => {
     status: 0,
     isToplevel: true,
     hasOngoingChanges: false,
+    permission: ACLType.Full,
     attrs: [
       {
         id: 2,
@@ -162,9 +164,11 @@ test("formalizeEntryInfo should return expect value", () => {
     schema: {
       id: 1,
       name: "TestEnttity",
+      permission: ACLType.Full,
     },
     isActive: true,
     deletedUser: null,
+    permission: ACLType.Full,
     attrs: [
       {
         id: 20,
@@ -269,6 +273,7 @@ test("formalizeEntryInfo should use defaultValue when creating new entry", () =>
     status: 0,
     isToplevel: true,
     hasOngoingChanges: false,
+    permission: ACLType.Full,
     attrs: [
       {
         id: 2,
@@ -561,6 +566,7 @@ test("formalizeEntryInfo should use defaultValue when creating new entry", () =>
     status: 0,
     isToplevel: true,
     hasOngoingChanges: false,
+    permission: ACLType.Full,
     attrs: [
       {
         id: 2,
@@ -835,6 +841,7 @@ test("formalizeEntryInfo should use defaultValue when creating new entry", () =>
     status: 0,
     isToplevel: true,
     hasOngoingChanges: false,
+    permission: ACLType.Full,
     attrs: [
       {
         id: 2,

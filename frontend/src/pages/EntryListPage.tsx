@@ -12,6 +12,7 @@ import { usePageTitle } from "hooks/usePageTitle";
 import { useTypedParams } from "hooks/useTypedParams";
 import { aironeApiClient } from "repository/AironeApiClient";
 import { TITLE_TEMPLATES } from "services";
+import { canEdit } from "services/ACLUtil";
 
 interface Props {
   canCreateEntry?: boolean;
@@ -56,12 +57,20 @@ export const EntryListPage: FC<Props> = ({ canCreateEntry = true }) => {
             anchorElem={entityAnchorEl}
             handleClose={() => setEntityAnchorEl(null)}
             setOpenImportModal={setOpenImportModal}
+            permission={entity.value?.permission}
           />
         </Box>
       </PageHeader>
 
       <Container>
-        <EntryList entityId={entityId} canCreateEntry={canCreateEntry} />
+        <EntryList
+          entityId={entityId}
+          canCreateEntry={
+            canCreateEntry &&
+            (entity.value?.permission === undefined ||
+              canEdit(entity.value?.permission))
+          }
+        />
       </Container>
       <EntryImportModal
         openImportModal={openImportModal}
