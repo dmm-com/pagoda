@@ -2,13 +2,12 @@
  * @jest-environment jsdom
  */
 
-import { render, screen, fireEvent } from "@testing-library/react";
-
 import "@testing-library/jest-dom";
 
-import { AliasEntryList } from "./AliasEntryList";
-
 import { EntryBase } from "@dmm-com/airone-apiclient-typescript-fetch";
+import { fireEvent, render, screen } from "@testing-library/react";
+
+import { AliasEntryList } from "./AliasEntryList";
 
 import { ACLType } from "services/ACLUtil";
 
