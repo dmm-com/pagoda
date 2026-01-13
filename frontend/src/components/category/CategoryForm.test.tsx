@@ -16,9 +16,9 @@ import { CategoryForm } from "./CategoryForm";
 import { Schema, schema } from "./categoryForm/CategoryFormSchema";
 
 import { TestWrapper } from "TestWrapper";
-import { ACLType } from "services/ACLUtil";
 import * as useAsyncWithThrowModule from "hooks/useAsyncWithThrow";
 import { aironeApiClient } from "repository/AironeApiClient";
+import { ACLType } from "services/ACLUtil";
 
 // Mock data
 const mockEntities = {

@@ -4,8 +4,6 @@
 
 import { EntryAttributeTypeTypeEnum } from "@dmm-com/airone-apiclient-typescript-fetch";
 
-import { ACLType } from "services/ACLUtil";
-
 import {
   EntryAttributeValueType,
   convertAttrsFormatCtoS,
@@ -16,6 +14,7 @@ import {
   EditableEntryAttrValue,
   EditableEntryAttrs,
 } from "components/entry/entryForm/EditableEntry";
+import { ACLType } from "services/ACLUtil";
 
 Object.defineProperty(window, "django_context", {
   value: {

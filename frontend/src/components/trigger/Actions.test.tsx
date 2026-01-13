@@ -11,10 +11,11 @@ import { FC } from "react";
 import { useForm } from "react-hook-form";
 
 import { TestWrapper } from "../../TestWrapper";
-import { ACLType } from "services/ACLUtil";
 
 import { Actions } from "./Actions";
 import { Schema } from "./TriggerFormSchema";
+
+import { ACLType } from "services/ACLUtil";
 
 describe("ActionForm", () => {
   const entity: EntityDetail = {

@@ -9,6 +9,7 @@ import "@testing-library/jest-dom";
 import { AliasEntryList } from "./AliasEntryList";
 
 import { EntryBase } from "@dmm-com/airone-apiclient-typescript-fetch";
+
 import { ACLType } from "services/ACLUtil";
 
 const mockHandleCreate = jest.fn();

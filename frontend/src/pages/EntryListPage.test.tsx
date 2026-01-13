@@ -10,8 +10,8 @@ import { createMemoryRouter, RouterProvider } from "react-router";
 import { EntryListPage } from "./EntryListPage";
 
 import { TestWrapperWithoutRoutes } from "TestWrapper";
-import { ACLType } from "services/ACLUtil";
 import { entityEntriesPath } from "routes/Routes";
+import { ACLType } from "services/ACLUtil";
 
 const server = setupServer(
   // getEntity

@@ -8,9 +8,9 @@ import { setupServer } from "msw/node";
 import { createMemoryRouter, RouterProvider } from "react-router";
 
 import { TestWrapperWithoutRoutes } from "TestWrapper";
-import { ACLType } from "services/ACLUtil";
 import { CategoryEditPage } from "pages/CategoryEditPage";
 import { editCategoryPath } from "routes/Routes";
+import { ACLType } from "services/ACLUtil";
 
 const server = setupServer(
   // getCategory

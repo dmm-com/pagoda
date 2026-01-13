@@ -31,7 +31,9 @@ export const ACLHistoryPage: FC = () => {
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
   const [openImportModal, setOpenImportModal] = useState(false);
   const [entityDetail, setEntityDetail] = useState<EntityDetail | null>(null);
-  const [entryRetrieve, setEntryRetrieve] = useState<EntryRetrieve | null>(null);
+  const [entryRetrieve, setEntryRetrieve] = useState<EntryRetrieve | null>(
+    null,
+  );
 
   const acl = useAsyncWithThrow(async () => {
     return await aironeApiClient.getAcl(objectId);

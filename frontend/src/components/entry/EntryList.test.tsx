@@ -14,8 +14,8 @@ import {
 
 import { TestWrapper } from "TestWrapper";
 import { EntryList } from "components/entry/EntryList";
-import { ACLType } from "services/ACLUtil";
 import { aironeApiClient } from "repository/AironeApiClient";
+import { ACLType } from "services/ACLUtil";
 
 afterEach(() => {
   jest.clearAllMocks();

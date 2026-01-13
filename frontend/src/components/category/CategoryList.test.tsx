@@ -7,8 +7,8 @@ import { act, render, screen } from "@testing-library/react";
 import { CategoryList } from "./CategoryList";
 
 import { TestWrapper } from "TestWrapper";
-import { ACLType } from "services/ACLUtil";
 import { aironeApiClient } from "repository/AironeApiClient";
+import { ACLType } from "services/ACLUtil";
 
 // Setup API mocks
 beforeEach(() => {

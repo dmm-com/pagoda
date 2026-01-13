@@ -9,8 +9,8 @@ import { createMemoryRouter, RouterProvider } from "react-router";
 
 import { TestWrapperWithoutRoutes } from "TestWrapper";
 import { ListCategoryPage } from "pages/ListCategoryPage";
-import { ACLType } from "services/ACLUtil";
 import { listCategoryPath } from "routes/Routes";
+import { ACLType } from "services/ACLUtil";
 
 const server = setupServer(
   // GET /category/api/v2/
@@ -26,8 +26,18 @@ const server = setupServer(
           note: "サンプルカテゴリ1",
           priority: 1,
           models: [
-            { id: 1, name: "Entity1", is_public: true, permission: ACLType.Full },
-            { id: 2, name: "Entity2", is_public: true, permission: ACLType.Full },
+            {
+              id: 1,
+              name: "Entity1",
+              is_public: true,
+              permission: ACLType.Full,
+            },
+            {
+              id: 2,
+              name: "Entity2",
+              is_public: true,
+              permission: ACLType.Full,
+            },
           ],
           permission: ACLType.Full,
         },
@@ -36,7 +46,14 @@ const server = setupServer(
           name: "category2",
           note: "サンプルカテゴリ2",
           priority: 2,
-          models: [{ id: 3, name: "Entity3", is_public: true, permission: ACLType.Full }],
+          models: [
+            {
+              id: 3,
+              name: "Entity3",
+              is_public: true,
+              permission: ACLType.Full,
+            },
+          ],
           permission: ACLType.Full,
         },
       ],
