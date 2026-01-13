@@ -1,5 +1,7 @@
 from typing import Any, TypedDict
 
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
@@ -12,7 +14,6 @@ from entity.api_v2.serializers import (
 )
 from entity.models import Entity, EntityAttr
 from entry.api_v2.serializers import (
-    AttributeValueField,
     EntryAttributeValueObject,
 )
 from trigger.models import (
@@ -129,10 +130,19 @@ class TriggerConditionUpdateSerializer(serializers.Serializer):
     is_unmatch = serializers.BooleanField(required=False)
 
 
+@extend_schema_field(OpenApiTypes.ANY)
+class AnyField(serializers.Field):
+    def to_internal_value(self, data):
+        return data
+
+    def to_representation(self, value):
+        return value
+
+
 class TriggerActionUpdateSerializer(serializers.Serializer):
     attr_id = serializers.IntegerField(required=True)
-    values = serializers.ListField(child=AttributeValueField(allow_null=True), required=False)
-    value = AttributeValueField(allow_null=True, required=False)
+    values = serializers.ListField(child=AnyField(allow_null=True), required=False)
+    value = AnyField(allow_null=True, required=False)
 
 
 class TriggerParentBaseSerializer(serializers.ModelSerializer):
