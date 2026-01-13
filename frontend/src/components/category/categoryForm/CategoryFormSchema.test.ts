@@ -4,6 +4,8 @@
 
 import { schema, Schema } from "./CategoryFormSchema";
 
+import { ACLType } from "services/ACLUtil";
+
 describe("schema", () => {
   const baseValue: Schema = {
     id: 1,
@@ -13,13 +15,16 @@ describe("schema", () => {
       {
         id: 1,
         name: "Model 1",
+        permission: ACLType.Full,
       },
       {
         id: 2,
         name: "Model 2",
+        permission: ACLType.Full,
       },
     ],
     priority: 10,
+    permission: ACLType.Full,
   };
 
   test("validation succeeds for a valid value", () => {
@@ -90,6 +95,7 @@ describe("schema", () => {
       name: "Test Category",
       models: [],
       priority: 10,
+      permission: ACLType.Full,
     };
 
     expect(schema.parse(partialValue)).toEqual(expectedValue);

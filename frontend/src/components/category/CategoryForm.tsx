@@ -1,3 +1,4 @@
+import { Entity } from "@dmm-com/airone-apiclient-typescript-fetch";
 import {
   Autocomplete,
   Box,
@@ -108,15 +109,21 @@ export const CategoryForm: FC<Props> = ({ control, setValue }) => {
                   control={control}
                   defaultValue={[]}
                   render={({ field }) => (
-                    <Autocomplete
+                    <Autocomplete<Entity, true>
                       {...field}
-                      options={entities.value?.results ?? []}
+                      options={
+                        entities.value?.results.map((e) => ({
+                          id: e.id,
+                          name: e.name,
+                          permission: e.permission,
+                        })) ?? []
+                      }
                       disabled={entities.loading}
                       getOptionLabel={(option) => option.name}
                       isOptionEqualToValue={(option, value) =>
                         option.id === value.id
                       }
-                      onChange={(_e, value: { id: number; name: string }[]) => {
+                      onChange={(_e, value: Entity[]) => {
                         setValue("models", value, {
                           shouldDirty: true,
                           shouldValidate: true,

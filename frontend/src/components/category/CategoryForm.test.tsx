@@ -18,14 +18,15 @@ import { Schema, schema } from "./categoryForm/CategoryFormSchema";
 import { TestWrapper } from "TestWrapper";
 import * as useAsyncWithThrowModule from "hooks/useAsyncWithThrow";
 import { aironeApiClient } from "repository/AironeApiClient";
+import { ACLType } from "services/ACLUtil";
 
 // Mock data
 const mockEntities = {
   count: 3,
   results: [
-    { id: 1, name: "モデル1", isToplevel: true },
-    { id: 2, name: "モデル2", isToplevel: true },
-    { id: 3, name: "モデル3", isToplevel: false },
+    { id: 1, name: "モデル1", isToplevel: true, permission: ACLType.Full },
+    { id: 2, name: "モデル2", isToplevel: true, permission: ACLType.Full },
+    { id: 3, name: "モデル3", isToplevel: false, permission: ACLType.Full },
   ],
 };
 
@@ -36,6 +37,7 @@ const defaultValues: Schema = {
   note: "",
   models: [],
   priority: 0,
+  permission: ACLType.Full,
 };
 
 beforeEach(() => {

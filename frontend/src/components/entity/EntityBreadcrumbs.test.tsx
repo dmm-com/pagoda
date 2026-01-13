@@ -8,6 +8,7 @@ import { render, screen } from "@testing-library/react";
 import { EntityBreadcrumbs } from "./EntityBreadcrumbs";
 
 import { TestWrapper } from "TestWrapper";
+import { ACLType } from "services/ACLUtil";
 
 // Mock the routes functions
 jest.mock("routes/Routes", () => ({
@@ -26,6 +27,7 @@ describe("EntityBreadcrumbs", () => {
     hasOngoingChanges: false,
     attrs: [],
     webhooks: [],
+    permission: ACLType.Full,
   };
 
   test("renders basic breadcrumbs without entity, attr, or title", () => {

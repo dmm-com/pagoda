@@ -11,6 +11,7 @@ import yaml
 from rest_framework import status
 from rest_framework.exceptions import ValidationError
 
+from acl.models import ACLType
 from airone.lib.elasticsearch import AttrHint, EntryFilterKey, FilterKey
 from airone.lib.log import Logger
 from airone.lib.test import AironeViewTest
@@ -129,7 +130,12 @@ class ViewTest(BaseViewTest):
         self.assertEqual(resp_data["name"], entry.name)
         self.assertEqual(
             resp_data["schema"],
-            {"id": entry.schema.id, "name": entry.schema.name, "is_public": entry.schema.is_public},
+            {
+                "id": entry.schema.id,
+                "name": entry.schema.name,
+                "is_public": entry.schema.is_public,
+                "permission": ACLType.Full.value,
+            },
         )
 
         self.assertEqual(
@@ -627,7 +633,12 @@ class ViewTest(BaseViewTest):
         self.assertEqual(resp_data["name"], entry.name)
         self.assertEqual(
             resp_data["schema"],
-            {"id": entry.schema.id, "name": entry.schema.name, "is_public": entry.schema.is_public},
+            {
+                "id": entry.schema.id,
+                "name": entry.schema.name,
+                "is_public": entry.schema.is_public,
+                "permission": ACLType.Full.value,
+            },
         )
 
         self.assertEqual(
@@ -2214,12 +2225,14 @@ class ViewTest(BaseViewTest):
                     "id": entry.schema.id,
                     "name": entry.schema.name,
                     "is_public": True,
+                    "permission": ACLType.Full.value,
                 },
                 "aliases": [],
                 "is_active": True,
                 "deleted_user": None,
                 "deleted_time": None,
                 "updated_time": entry.updated_time.astimezone(self.TZ_INFO).isoformat(),
+                "permission": ACLType.Full.value,
             },
         )
 
@@ -4912,12 +4925,14 @@ class ViewTest(BaseViewTest):
                         "id": entry.schema.id,
                         "name": "test-entity",
                         "is_public": True,
+                        "permission": ACLType.Nothing.value,
                     },
                     "aliases": [],
                     "is_active": True,
                     "deleted_user": None,
                     "deleted_time": None,
                     "updated_time": entry.updated_time.astimezone(self.TZ_INFO).isoformat(),
+                    "permission": ACLType.Nothing.value,
                 },
             ],
         )

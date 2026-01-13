@@ -7,6 +7,7 @@ import { act, fireEvent, render, screen } from "@testing-library/react";
 
 import { TestWrapper } from "TestWrapper";
 import { CopyForm } from "components/entry/CopyForm";
+import { ACLType } from "services/ACLUtil";
 
 describe("CopyForm", () => {
   const entry: EntryRetrieve = {
@@ -15,11 +16,13 @@ describe("CopyForm", () => {
     schema: {
       id: 2,
       name: "bbb",
+      permission: ACLType.Full,
     },
     attrs: [],
     deletedUser: null,
     isActive: true,
     isPublic: true,
+    permission: ACLType.Full,
   };
 
   test("should set copied entries", function () {

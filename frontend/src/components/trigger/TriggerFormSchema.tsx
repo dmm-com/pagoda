@@ -10,6 +10,7 @@ export const schema = schemaForType<TriggerParent>()(
       id: z.number().min(1, "モデルは必須です"),
       name: z.string(),
       isPublic: z.boolean().optional(),
+      permission: z.number(),
     }),
     conditions: z
       .array(

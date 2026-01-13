@@ -35,8 +35,16 @@ class ViewTest(AironeViewTest):
                     "id": x.id,
                     "name": x.name,
                     "note": x.note,
-                    "models": [{"id": model.id, "name": model.name, "is_public": True}],
+                    "models": [
+                        {
+                            "id": model.id,
+                            "name": model.name,
+                            "is_public": True,
+                            "permission": ACLType.Full.value,
+                        }
+                    ],
                     "priority": x.priority,
+                    "permission": ACLType.Full.value,
                 }
                 for x in categories
             ],
@@ -80,8 +88,17 @@ class ViewTest(AironeViewTest):
                 "id": category.id,
                 "name": category.name,
                 "note": category.note,
-                "models": [{"id": x.id, "name": x.name, "is_public": True} for x in models],
+                "models": [
+                    {
+                        "id": x.id,
+                        "name": x.name,
+                        "is_public": True,
+                        "permission": ACLType.Full.value,
+                    }
+                    for x in models
+                ],
                 "priority": category.priority,
+                "permission": ACLType.Full.value,
             },
         )
 

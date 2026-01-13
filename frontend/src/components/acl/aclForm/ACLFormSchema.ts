@@ -4,7 +4,7 @@ import {
 } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { z } from "zod";
 
-import { ACLType, ACLTypeLabels } from "../../../services/Constants";
+import { ACLType, ACLTypeLabels } from "../../../services/ACLUtil";
 import { schemaForType } from "../../../services/ZodSchemaUtil";
 
 /*

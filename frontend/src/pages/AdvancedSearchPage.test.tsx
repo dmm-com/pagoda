@@ -10,6 +10,8 @@ import { BrowserRouter as Router } from "react-router";
 
 import { AdvancedSearchPage } from "./AdvancedSearchPage";
 
+import { ACLType } from "services/ACLUtil";
+
 const entities: PaginatedEntityListList = {
   count: 2,
   next: null,
@@ -19,11 +21,13 @@ const entities: PaginatedEntityListList = {
       id: 1,
       name: "entity1",
       isToplevel: false,
+      permission: ACLType.Full,
     },
     {
       id: 2,
       name: "entity2",
       isToplevel: false,
+      permission: ACLType.Full,
     },
   ],
 };

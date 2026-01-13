@@ -7,6 +7,7 @@ import { render } from "@testing-library/react";
 
 import { TestWrapper } from "TestWrapper";
 import { EntryListCard } from "components/entry/EntryListCard";
+import { ACLType } from "services/ACLUtil";
 
 afterEach(() => {
   jest.clearAllMocks();
@@ -19,11 +20,13 @@ test("should render a component with essential props", function () {
     schema: {
       id: 2,
       name: "TestEntity",
+      permission: ACLType.Full,
     },
     deletedUser: null,
     isActive: true,
     updatedTime: new Date(),
     aliases: [],
+    permission: ACLType.Full,
   };
 
   expect(() =>
