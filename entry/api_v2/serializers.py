@@ -3,6 +3,7 @@ from datetime import date, datetime
 from typing import Any, Dict, List, Literal, Union
 
 from django.db.models import Prefetch
+from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema_field, extend_schema_serializer
 from pydantic import BaseModel, RootModel, field_validator
 from pydantic import ValidationError as PydanticValidationError
@@ -421,9 +422,15 @@ class AttributeData(BaseModel):
         return v
 
 
+@extend_schema_field(OpenApiTypes.ANY)
 class AttributeValueField(serializers.Field):
+    """A flexible field that accepts any value type for attribute values."""
+
     def to_internal_value(self, data):
         return data
+
+    def to_representation(self, value):
+        return value
 
 
 class AttributeDataSerializer(serializers.Serializer):

@@ -8,7 +8,8 @@ from entity.models import Entity
 
 # We bordered the situation that ID parameter would be readonly via OpenAPI generate
 # when EntitySerializer, which is defined in the entity.api_v2.serializers, was specified.
-class EntitySerializer(serializers.ModelSerializer):
+# Renamed to CategoryEntitySerializer to avoid DRF Spectacular component name collision.
+class CategoryEntitySerializer(serializers.ModelSerializer):
     id = serializers.IntegerField()
     permission = serializers.SerializerMethodField()
 
@@ -25,7 +26,7 @@ class EntitySerializer(serializers.ModelSerializer):
 
 
 class CategoryListSerializer(serializers.ModelSerializer):
-    models = EntitySerializer(many=True)
+    models = CategoryEntitySerializer(many=True)
     permission = serializers.SerializerMethodField()
 
     class Meta:
@@ -39,7 +40,7 @@ class CategoryListSerializer(serializers.ModelSerializer):
 
 class CategoryCreateSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(required=False, read_only=True)
-    models = EntitySerializer(many=True)
+    models = CategoryEntitySerializer(many=True)
 
     class Meta:
         model = Category
@@ -62,7 +63,7 @@ class CategoryCreateSerializer(serializers.ModelSerializer):
 
 
 class CategoryUpdateSerializer(serializers.ModelSerializer):
-    models = EntitySerializer(many=True)
+    models = CategoryEntitySerializer(many=True)
 
     class Meta:
         model = Category
