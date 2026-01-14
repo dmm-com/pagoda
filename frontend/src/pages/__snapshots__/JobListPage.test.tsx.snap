@@ -103,7 +103,7 @@ exports[`JobListPage should match snapshot 1`] = `
           </div>
         </div>
         <div
-          class="MuiContainer-root MuiContainer-maxWidthLg css-5c1adp-MuiContainer-root"
+          class="MuiContainer-root MuiContainer-maxWidthXl css-hhdjsd-MuiContainer-root"
         >
           <table
             class="MuiTable-root css-1xwxv7r-MuiTable-root"
@@ -529,7 +529,7 @@ exports[`JobListPage should match snapshot 1`] = `
         </div>
       </div>
       <div
-        class="MuiContainer-root MuiContainer-maxWidthLg css-5c1adp-MuiContainer-root"
+        class="MuiContainer-root MuiContainer-maxWidthXl css-hhdjsd-MuiContainer-root"
       >
         <table
           class="MuiTable-root css-1xwxv7r-MuiTable-root"
