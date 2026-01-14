@@ -57,7 +57,7 @@ export const JobListPage: FC = () => {
       {jobs.loading ? (
         <Loading />
       ) : (
-        <Container>
+        <Container maxWidth="xl">
           <JobList jobs={jobs.value?.results ?? []} />
           <PaginationFooter
             count={jobs.value?.count ?? 0}
