@@ -70,6 +70,7 @@ class ReferralEntry(BaseModel):
 
 
 class ExportedEntry(BaseModel):
+    id: int
     name: str
     attrs: list[ExportedEntryAttribute]
     referrals: list[ReferralEntry] | None = None
@@ -996,6 +997,7 @@ class EntryImportAttributeSerializer(serializers.Serializer):
 
 
 class EntryImportEntriesSerializer(serializers.Serializer):
+    id = serializers.IntegerField(required=False)
     name = serializers.CharField()
     attrs = serializers.ListField(child=EntryImportAttributeSerializer(), required=False)
 
