@@ -2993,10 +2993,54 @@ class ViewTest(BaseViewTest):
         # There is no created item, and only one item has been updated
         self.assertEqual(Entry.objects.filter(schema=model, is_active=True).count(), 1)
 
+        # check importing job was done successfully
+        job = Job.objects.filter(operation=JobOperation.IMPORT_ENTRY_V2).last()
+        self.assertEqual(job.status, JobStatus.DONE)
+
         # check target item has been updated back to the exported state
         item.refresh_from_db()
         self.assertEqual(item.name, "OriginalItem")
         self.assertEqual(item.get_attrv("val").value, "initial value")
+
+    @patch("entry.tasks.notify_update_entry.delay", Mock(side_effect=tasks.notify_update_entry))
+    @patch("entry.tasks.import_entries_v2.delay", Mock(side_effect=tasks.import_entries_v2))
+    @patch("entry.tasks.export_entries_v2.delay", Mock(side_effect=tasks.export_entries_v2))
+    def test_import_update_entry_with_id_prevent_duplicated_name(self):
+        """
+        This tests import processing to update item as duplicated name is prevented.
+        """
+        # create initial item
+        model = self.create_entity(
+            self.user, "TestModel", attrs=[{"name": "val", "type": AttrType.STRING}]
+        )
+        [self.add_entry(self.user, "item-%s" % x, model) for x in range(2)]
+
+        # export Items that includes the created one
+        resp = self.client.post(
+            "/entry/api/v2/%d/export/" % model.id, json.dumps({}), "application/json"
+        )
+        self.assertEqual(resp.status_code, 200)
+        exported_data = yaml.load(Job.objects.last().get_cache(), Loader=yaml.SafeLoader)
+
+        # update exported data to make duplicated name situation on import processing
+        exported_data[0]["entries"][0]["name"] = "item-1"  # same as items[1].name
+
+        # import exported data again
+        resp = self.client.post(
+            "/entry/api/v2/import/?force=true", exported_data, "application/yaml"
+        )
+        self.assertEqual(resp.status_code, 200)
+
+        # Check importing job was failed due to duplicated name
+        job = Job.objects.filter(operation=JobOperation.IMPORT_ENTRY_V2).last()
+        self.assertEqual(job.status, JobStatus.WARNING)
+        self.assertEqual(job.text, "Imported Entry count: 2, Failed import Entry: ['item-1']")
+
+        # Check each Items have individual names has after importing processing
+        self.assertEqual(
+            [x.name for x in Entry.objects.filter(schema=model, is_active=True)],
+            ["item-0", "item-1"],
+        )
 
     @patch("entry.tasks.import_entries_v2.delay", Mock(side_effect=tasks.import_entries_v2))
     def test_import_multi_entity(self):
