@@ -639,7 +639,7 @@ def import_entries_v2(self, job: Job) -> tuple[JobStatus, str, None] | None:
             entry = Entry.objects.filter(id=entry_data["id"], schema=entity, is_active=True).first()
 
         if not entry:
-            entry: Entry | None = Entry.objects.filter(
+            entry = Entry.objects.filter(
                 name=entry_data["name"], schema=entity, is_active=True
             ).first()
 

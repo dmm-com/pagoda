@@ -4859,7 +4859,7 @@ class ViewTest(BaseViewTest):
         "entry.tasks.export_search_result_v2.delay", Mock(side_effect=tasks.export_search_result_v2)
     )
     def test_export_with_all_entities(self):
-        self.add_entry(self.user, "Entry", self.entity, values={"val": "hoge"})
+        test_item = self.add_entry(self.user, "Entry", self.entity, values={"val": "hoge"})
 
         resp = self.client.post(
             "/entry/api/v2/advanced_search_result_export/",
@@ -4907,15 +4907,21 @@ class ViewTest(BaseViewTest):
                 {
                     "entity": "ref_entity",
                     "entries": [
-                        {"attrs": [{"name": "val", "value": ""}], "name": "r-0", "referrals": None}
+                        {
+                            "id": self.ref_entry.id,
+                            "name": "r-0",
+                            "attrs": [{"name": "val", "value": ""}],
+                            "referrals": None,
+                        }
                     ],
                 },
                 {
                     "entity": "test-entity",
                     "entries": [
                         {
-                            "attrs": [{"name": "val", "value": "hoge"}],
+                            "id": test_item.id,
                             "name": "Entry",
+                            "attrs": [{"name": "val", "value": "hoge"}],
                             "referrals": None,
                         }
                     ],
