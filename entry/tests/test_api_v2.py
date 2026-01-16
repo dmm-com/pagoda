@@ -2276,6 +2276,7 @@ class ViewTest(BaseViewTest):
         self.assertEqual(len(entity_data["entries"]), 1)
         entry_data = entity_data["entries"][0]
         self.assertEqual(entry_data["name"], "fuga")
+        self.assertEqual(entry_data["id"], entry.id)
         self.assertTrue("attrs" in entry_data)
 
         attrs_data = entry_data["attrs"]
@@ -2957,6 +2958,45 @@ class ViewTest(BaseViewTest):
         for attr_name in result.ret_values[0].attrs:
             if "value" in result.ret_values[0].attrs[attr_name]:
                 self.assertEqual(result.ret_values[0].attrs[attr_name]["value"], attrs[attr_name])
+
+    @patch("entry.tasks.notify_update_entry.delay", Mock(side_effect=tasks.notify_update_entry))
+    @patch("entry.tasks.import_entries_v2.delay", Mock(side_effect=tasks.import_entries_v2))
+    @patch("entry.tasks.export_entries_v2.delay", Mock(side_effect=tasks.export_entries_v2))
+    def test_import_update_entry_with_id(self):
+        """
+        This tests updating processing works correctly when entry ID is specified in import data.
+        """
+        # create initial item
+        model = self.create_entity(
+            self.user, "TestModel", attrs=[{"name": "val", "type": AttrType.STRING}]
+        )
+        item = self.add_entry(self.user, "OriginalItem", model, values={"val": "initial value"})
+
+        # export Items that includes the created one
+        resp = self.client.post(
+            "/entry/api/v2/%d/export/" % model.id, json.dumps({}), "application/json"
+        )
+        self.assertEqual(resp.status_code, 200)
+        exported_data = yaml.load(Job.objects.last().get_cache(), Loader=yaml.SafeLoader)
+
+        # then, change the "item" that would be updated by subsequent import processing
+        item.name = "ChangedItem"
+        item.attrs.get(name="val").add_value(self.user, "changed value")
+        item.save()
+
+        # import exported data again
+        resp = self.client.post(
+            "/entry/api/v2/import/?force=true", exported_data, "application/yaml"
+        )
+        self.assertEqual(resp.status_code, 200)
+
+        # There is no created item, and only one item has been updated
+        self.assertEqual(Entry.objects.filter(schema=model, is_active=True).count(), 1)
+
+        # check target item has been updated back to the exported state
+        item.refresh_from_db()
+        self.assertEqual(item.name, "OriginalItem")
+        self.assertEqual(item.get_attrv("val").value, "initial value")
 
     @patch("entry.tasks.import_entries_v2.delay", Mock(side_effect=tasks.import_entries_v2))
     def test_import_multi_entity(self):
