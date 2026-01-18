@@ -132,7 +132,7 @@ class ESS(Elasticsearch):
         return super(ESS, self).search(index=self._index, *args, **kwargs)
 
     def recreate_index(self) -> None:
-        self.indices.delete(index=self._index, ignore=[400, 404])
+        self.indices.delete(index=self._index, ignore_unavailable=True)
         self.indices.create(
             index=self._index,
             ignore=400,

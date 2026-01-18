@@ -81,7 +81,7 @@ requires-dist = [
     { name = "django-storages", specifier = "==1.14.1" },
     { name = "djangorestframework", specifier = "==3.15.2" },
     { name = "drf-spectacular", specifier = "==0.29.0" },
-    { name = "elasticsearch", specifier = "==7.17.6" },
+    { name = "elasticsearch", specifier = "==8.17.0" },
     { name = "flower", specifier = "==1.2.0" },
     { name = "gunicorn", specifier = "==23.0.0" },
     { name = "kombu", specifier = "==5.5.4" },
@@ -716,16 +716,28 @@ wheels = [
 ]
 
 [[package]]
-name = "elasticsearch"
-version = "7.17.6"
+name = "elastic-transport"
+version = "8.17.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "certifi" },
     { name = "urllib3" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/8f/17/67c6d8f0d205d9c765ee114c5323dce70da16b15bdb8d7087aa692a0ff23/elasticsearch-7.17.6.tar.gz", hash = "sha256:f4b779fc2a035904b97bef0542110372efd94aa7ab2c13749af73158c08be110", size = 247549, upload-time = "2022-08-25T16:55:26.085Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/6a/54/d498a766ac8fa475f931da85a154666cc81a70f8eb4a780bc8e4e934e9ac/elastic_transport-8.17.1.tar.gz", hash = "sha256:5edef32ac864dca8e2f0a613ef63491ee8d6b8cfb52881fa7313ba9290cac6d2", size = 73425, upload-time = "2025-03-13T07:28:30.776Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/42/05/eac555094ec3e94461661ddcf2d4bf98bbfadf44e38d65e4981aa3dc7984/elasticsearch-7.17.6-py2.py3-none-any.whl", hash = "sha256:2c3400c9e9c7fee46c4732fb32b933577aebb07b5e94df025f6ff1a30d2397d0", size = 385816, upload-time = "2022-08-25T16:55:13.895Z" },
+    { url = "https://files.pythonhosted.org/packages/cf/cd/b71d5bc74cde7fc6fd9b2ff9389890f45d9762cbbbf81dc5e51fd7588c4a/elastic_transport-8.17.1-py3-none-any.whl", hash = "sha256:192718f498f1d10c5e9aa8b9cf32aed405e469a7f0e9d6a8923431dbb2c59fb8", size = 64969, upload-time = "2025-03-13T07:28:29.031Z" },
+]
+
+[[package]]
+name = "elasticsearch"
+version = "8.17.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "elastic-transport" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/38/57/f61579940df4771971aede5b355f64c758f56d8cc9bd4407d669c2f0dd2f/elasticsearch-8.17.0.tar.gz", hash = "sha256:c1069bf2204ba8fab29ff00b2ce6b37324b2cc6ff593283b97df43426ec13053", size = 460268, upload-time = "2024-12-16T06:30:00.731Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/1e/82/832ff4bdb53429af0025f5032c8b4f3ba18915e08ce16fc55aa09e900e26/elasticsearch-8.17.0-py3-none-any.whl", hash = "sha256:15965240fe297279f0e68b260936d9ced9606aa7ef8910b9b56727f96ef00d5b", size = 571182, upload-time = "2024-12-16T06:29:53.828Z" },
 ]
 
 [[package]]
