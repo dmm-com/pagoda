@@ -24,6 +24,7 @@
     "@dmm-com/pagoda-core": "file:../../..",
     "pagoda-plugin-hello-world": "file:../plugin-hello-world",
     "pagoda-plugin-dashboard": "file:../plugin-dashboard",
+    "pagoda-plugin-entity-sample": "file:../plugin-entity-sample",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "@mui/material": "^6.4.6"

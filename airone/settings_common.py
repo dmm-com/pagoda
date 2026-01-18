@@ -279,6 +279,18 @@ class Common(Configuration):
         "PLUGINS": {
             "ENABLED": bool(ENABLED_PLUGINS),
         },
+        # Entity-specific plugin view routing configuration
+        # Format: { "entityId": { "plugin": "plugin-id", "pages": ["entry.list"] } }
+        #
+        # TEST CONFIG: Entity ID "9681" uses sample plugin for entry.list page.
+        # Change the ID to match your test entity, or set ENTITY_PLUGIN_VIEWS env var.
+        # To disable: set ENTITY_PLUGIN_VIEWS='{}'
+        "ENTITY_PLUGIN_VIEWS": json.loads(
+            env.str(
+                "ENTITY_PLUGIN_VIEWS",
+                json.dumps({"9681": {"plugin": "sample", "pages": ["entry.list"]}}),
+            )
+        ),
     }
 
     # flags to enable/disable AirOne core features
