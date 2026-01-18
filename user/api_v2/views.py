@@ -92,7 +92,7 @@ class UserTokenAPI(viewsets.ModelViewSet):
 class UserImportAPI(generics.GenericAPIView):
     parser_classes = [YAMLParser]
     permission_classes = [IsAuthenticated]
-    serializer_class = Serializer
+    serializer_class = UserImportSerializer
 
     def post(self, request: Request) -> Response:
         import_datas = request.data

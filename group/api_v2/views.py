@@ -58,7 +58,7 @@ class GroupTreeAPI(viewsets.ReadOnlyModelViewSet):
 class GroupImportAPI(generics.GenericAPIView):
     parser_classes = [YAMLParser]
     permission_classes = [IsAuthenticated]
-    serializer_class = serializers.Serializer
+    serializer_class = GroupImportSerializer
 
     def post(self, request: Request) -> Response:
         import_datas = request.data

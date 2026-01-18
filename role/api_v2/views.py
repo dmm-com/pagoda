@@ -1,6 +1,6 @@
 from django.db.models import Prefetch, Q, QuerySet
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters, generics, serializers, status, viewsets
+from rest_framework import filters, generics, status, viewsets
 from rest_framework.permissions import BasePermission, IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -71,7 +71,7 @@ class RoleAPI(viewsets.ModelViewSet):
 
 class RoleImportAPI(generics.GenericAPIView):
     parser_classes = [YAMLParser]
-    serializer_class = serializers.Serializer
+    serializer_class = RoleImportSerializer
 
     def post(self, request: Request) -> Response:
         import_datas = request.data

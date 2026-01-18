@@ -38,6 +38,25 @@ jobs:
           uv run mypy ./
           uv run ruff check --output-format=github .
           uv run ruff format --check .
+      - name: Check OpenAPI schema generation
+        run: |
+          # Use the same configuration as npm run generate:client
+          export DJANGO_CONFIGURATION=DRFSpectacularExcludeCustomView
+
+          # Check for errors (fail the build)
+          errors=$(uv run python manage.py spectacular 2>&1 > /dev/null | grep -i ERROR || true)
+          if [ -n "$errors" ]; then
+            echo "::error::OpenAPI schema generation errors:"
+            echo "$errors"
+            exit 1
+          fi
+
+          # Check for warnings (report but don't fail - for gradual cleanup)
+          warnings=$(uv run python manage.py spectacular 2>&1 > /dev/null | grep -i WARN || true)
+          if [ -n "$warnings" ]; then
+            echo "::warning::OpenAPI schema generation warnings:"
+            echo "$warnings"
+          fi
 
   # set modules have python test code outputs.modules
   setup_python:
