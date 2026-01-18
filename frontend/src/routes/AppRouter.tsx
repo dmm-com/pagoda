@@ -18,6 +18,8 @@ import { NotFoundErrorPage } from "../pages/NotFoundErrorPage";
 import { RoleEditPage } from "../pages/RoleEditPage";
 import { RoleListPage } from "../pages/RoleListPage";
 
+import { EntityAwareRoute } from "./EntityAwareRoute";
+
 import { Header } from "components/common/Header";
 import { ACLEditPage } from "pages/ACLEditPage";
 import { AdvancedSearchPage } from "pages/AdvancedSearchPage";
@@ -38,6 +40,7 @@ import { TriggerEditPage } from "pages/TriggerEditPage";
 import { TriggerListPage } from "pages/TriggerListPage";
 import { UserEditPage } from "pages/UserEditPage";
 import { UserListPage } from "pages/UserListPage";
+import { Plugin } from "plugins";
 import {
   aclHistoryPath,
   aclPath,
@@ -85,9 +88,13 @@ interface Props {
     path: string;
     element: ReactNode;
   }[];
+  pluginMap?: Map<string, Plugin>;
 }
 
-export const AppRouter: FC<Props> = ({ customRoutes }) => {
+export const AppRouter: FC<Props> = ({
+  customRoutes,
+  pluginMap = new Map(),
+}) => {
   const router = createBrowserRouter(
     createRoutesFromElements(
       <Route errorElement={<ErrorBridge />}>
@@ -140,7 +147,13 @@ export const AppRouter: FC<Props> = ({ customRoutes }) => {
           />
           <Route
             path={entityEntriesPath(":entityId")}
-            element={<EntryListPage />}
+            element={
+              <EntityAwareRoute
+                pageType="entry.list"
+                defaultComponent={EntryListPage}
+                pluginMap={pluginMap}
+              />
+            }
           />
           <Route
             path={entityHistoryPath(":entityId")}

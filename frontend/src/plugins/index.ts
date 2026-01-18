@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import { FC, ReactNode } from "react";
 
 // Simple plugin interface
 export interface Plugin {
@@ -30,3 +30,42 @@ export interface ExtendedAppBaseProps {
 export const extractRoutes = (plugins: Plugin[]): CustomRoute[] => {
   return plugins.flatMap((plugin) => plugin.routes);
 };
+
+// ============================================================================
+// Entity View Plugin Types (Phase 1: entry.list only)
+// ============================================================================
+
+/**
+ * Page types that can be overridden by plugins
+ * Phase 1: Only "entry.list" is supported
+ */
+export type EntityPageType = "entry.list";
+
+/**
+ * Configuration for a single entity-to-plugin mapping
+ * Key is entityId (as string) for O(1) lookup
+ */
+export interface EntityPluginMapping {
+  plugin: string;
+  pages: EntityPageType[];
+}
+
+/**
+ * Full configuration object for entity plugin views
+ * Key is the entity ID (as string) for direct O(1) lookup
+ */
+export type EntityPluginViewsConfig = Record<string, EntityPluginMapping>;
+
+/**
+ * Extended plugin interface with entity page support
+ */
+export interface EntityViewPlugin extends Plugin {
+  entityPages?: Partial<Record<EntityPageType, FC>>;
+}
+
+/**
+ * Type guard to check if a plugin has entity page support
+ */
+export function isEntityViewPlugin(plugin: Plugin): plugin is EntityViewPlugin {
+  return "entityPages" in plugin && plugin.entityPages !== undefined;
+}

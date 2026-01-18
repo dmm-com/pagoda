@@ -1,3 +1,5 @@
+import { EntityPluginViewsConfig } from "../plugins";
+
 class User {
   id: number;
   username: string;
@@ -47,6 +49,7 @@ export class ServerContext {
   }[];
   headerColor?: string;
   flags: Record<FlagKey, boolean>;
+  entityPluginViews: EntityPluginViewsConfig;
 
   private static _instance: ServerContext | undefined;
 
@@ -85,6 +88,8 @@ export class ServerContext {
     this.flags = (context.flags as Record<FlagKey, boolean>) ?? {
       webhook: true,
     };
+    this.entityPluginViews =
+      (context.entityPluginViews as EntityPluginViewsConfig) ?? {};
   }
 
   static getInstance() {

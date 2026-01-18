@@ -1,4 +1,4 @@
-import { FC, ReactNode } from "react";
+import { FC, ReactNode, useMemo } from "react";
 
 import { ErrorHandler } from "ErrorHandler";
 import { CheckTerms } from "components/common/CheckTerms";
@@ -17,10 +17,16 @@ interface Props {
 export const AppBase: FC<Props> = ({ customRoutes, plugins = [] }) => {
   const allCustomRoutes = [...(customRoutes || []), ...extractRoutes(plugins)];
 
+  // Convert plugins array to Map for O(1) lookup
+  const pluginMap = useMemo(
+    () => new Map(plugins.map((p) => [p.id, p])),
+    [plugins],
+  );
+
   return (
     <ErrorHandler>
       <CheckTerms>
-        <AppRouter customRoutes={allCustomRoutes} />
+        <AppRouter customRoutes={allCustomRoutes} pluginMap={pluginMap} />
       </CheckTerms>
     </ErrorHandler>
   );
