@@ -209,8 +209,11 @@ class Common(Configuration):
     STATIC_URL = "/static/"
     STATICFILES_DIRS = [
         os.path.join(BASE_DIR, "static"),
-        os.path.join(BASE_DIR, "custom_view/static"),
     ]
+    # Add custom_view/static only if the directory exists (same pattern as line 74-75)
+    _custom_static = os.path.join(BASE_DIR, "custom_view/static")
+    if os.path.exists(_custom_static):
+        STATICFILES_DIRS.append(_custom_static)
     STATIC_ROOT = os.path.join(BASE_DIR, "static_root")
     MEDIA_ROOT = env.str("AIRONE_FILE_STORE_PATH", "/tmp/airone_app")
 
@@ -463,6 +466,10 @@ class Common(Configuration):
         "PAGE_SIZE": 30,
         "EXCEPTION_HANDLER": "airone.lib.drf.custom_exception_handler",
     }
+
+    # Silence rest_framework.W001 warning
+    # PAGE_SIZE is used by views with explicit pagination_class settings
+    SILENCED_SYSTEM_CHECKS = ["rest_framework.W001"]
 
     SPECTACULAR_SETTINGS: dict[str, list[str]] = {
         "PREPROCESSING_HOOKS": [],

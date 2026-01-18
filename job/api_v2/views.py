@@ -4,7 +4,7 @@ import io
 from django.db.models import Q, QuerySet
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, extend_schema
-from rest_framework import generics, serializers, status, viewsets
+from rest_framework import generics, status, viewsets
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -134,8 +134,9 @@ class JobListAPI(viewsets.ModelViewSet):
         return context
 
 
+@extend_schema(request=None, responses={200: OpenApiTypes.STR})
 class JobRerunAPI(generics.UpdateAPIView):
-    serializer_class = serializers.Serializer
+    serializer_class = None
 
     def get_queryset(self):
         return Job.objects.filter(user=self.request.user)

@@ -148,8 +148,8 @@ class EntityAPI(viewsets.ModelViewSet):
     def get_serializer_class(self):
         serializer = {
             "list": EntityListSerializer,
-            "create": serializers.Serializer,
-            "update": serializers.Serializer,
+            "create": EntityCreateSerializer,
+            "update": EntityUpdateSerializer,
         }
         return serializer.get(self.action, EntityDetailSerializer)
 
@@ -243,7 +243,7 @@ class EntityEntryAPI(viewsets.ModelViewSet):
 
     def get_serializer_class(self):
         serializer = {
-            "create": serializers.Serializer,
+            "create": EntryCreateSerializer,
         }
         return serializer.get(self.action, EntryBaseSerializer)
 
@@ -370,7 +370,7 @@ class EntityHistoryAPI(viewsets.ReadOnlyModelViewSet):
 
 class EntityImportAPI(generics.GenericAPIView):
     parser_classes = [YAMLParser]
-    serializer_class = serializers.Serializer
+    serializer_class = EntityImportExportRootSerializer
 
     def post(self, request: Request) -> Response:
         import_datas = request.data
