@@ -8,7 +8,7 @@ from typing import Any
 from django.db.models import Prefetch, Q
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, extend_schema
-from rest_framework import generics, serializers, status, viewsets
+from rest_framework import generics, status, viewsets
 from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import BasePermission, IsAuthenticated
@@ -98,8 +98,7 @@ class EntryAPI(viewsets.ModelViewSet):
     def get_serializer_class(self):
         serializer = {
             "retrieve": EntryRetrieveSerializer,
-            "update": serializers.Serializer,
-            "restore": serializers.Serializer,
+            "update": EntryUpdateSerializer,
             "copy": EntryCopySerializer,
             "list_histories": EntryHistoryAttributeValueSerializer,
             "list_alias": EntryAliasSerializer,
@@ -138,6 +137,7 @@ class EntryAPI(viewsets.ModelViewSet):
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+    @extend_schema(request=None)
     def restore(self, request: Request, *args, **kwargs) -> Response:
         entry: Entry = self.get_object()
 
@@ -852,7 +852,7 @@ class EntryAttrReferralsAPI(viewsets.ReadOnlyModelViewSet):
 )
 class EntryImportAPI(generics.GenericAPIView):
     parser_classes = [YAMLParser]
-    serializer_class = serializers.Serializer
+    serializer_class = EntryImportSerializer
 
     def get_queryset(self):
         import_data = self.request.data
