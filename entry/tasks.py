@@ -312,6 +312,7 @@ def _yaml_export_v2(
     resp_data: List[ExportedEntityEntries] = []
     for index, entry_info in enumerate(values):
         data = ExportedEntry(
+            id=entry_info.entry["id"],
             name=entry_info.entry["name"],
             attrs=[],
         )
@@ -631,9 +632,17 @@ def import_entries_v2(self, job: Job) -> tuple[JobStatus, str, None] | None:
             return None
 
         entry_data["schema"] = entity
-        entry: Entry | None = Entry.objects.filter(
-            name=entry_data["name"], schema=entity, is_active=True
-        ).first()
+
+        # Identify the Item to be updated
+        entry: Entry | None = None
+        if entry_data.get("id") is not None:
+            entry = Entry.objects.filter(id=entry_data["id"], schema=entity, is_active=True).first()
+
+        if not entry:
+            entry = Entry.objects.filter(
+                name=entry_data["name"], schema=entity, is_active=True
+            ).first()
+
         if entry:
             serializer = EntryUpdateSerializer(instance=entry, data=entry_data, context=context)
         else:
