@@ -12,6 +12,12 @@ from category.models import Category
 from webhook.models import Webhook
 
 
+class ItemNameType(models.TextChoices):
+    USER = ("US", "USER")  # Specify Item name manually by user
+    UUID = ("ID", "UUID")  # Specify Item name automatically by system using UUID
+    ATTR = ("AT", "Attribute")  # Specify Item name automatically by system using Attribute
+
+
 class EntityAttr(ACLBase):
     # This parameter is needed to make a relationship to the corresponding Entity at importing
     parent_entity = models.ForeignKey("Entity", related_name="attrs", on_delete=models.DO_NOTHING)
@@ -35,6 +41,12 @@ class EntityAttr(ACLBase):
     default_value = models.JSONField(null=True, blank=True, default=None)
 
     history = HistoricalRecords(m2m_fields=[referral], excluded_fields=["status", "updated_time"])
+
+    # These fields describes the configuration of specifying Item name from Attriute
+    # Only used when ItemNameType.ATTR is selected for Entity.item_name_type
+    name_order = models.IntegerField(default=0, blank=True)
+    name_prefix = models.CharField(max_length=20, blank=True, default="")
+    name_postfix = models.CharField(max_length=20, blank=True, default="")
 
     def __init__(self, *args, **kwargs):
         super(ACLBase, self).__init__(*args, **kwargs)
@@ -146,6 +158,9 @@ class Entity(ACLBase):
 
     # This is a pattern for making Item that that is written by regex
     item_name_pattern = models.CharField(max_length=400, blank=True)
+
+    # This represents how to specify Item name
+    item_name_type = models.CharField(choices=ItemNameType, default=ItemNameType.USER)
 
     def __init__(self, *args, **kwargs):
         super(Entity, self).__init__(*args, **kwargs)

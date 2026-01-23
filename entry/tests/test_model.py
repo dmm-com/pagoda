@@ -11,7 +11,7 @@ from airone.lib.drf import ExceedLimitError
 from airone.lib.elasticsearch import AdvancedSearchResultRecord, AttrHint
 from airone.lib.test import AironeTestCase
 from airone.lib.types import AttrType
-from entity.models import Entity, EntityAttr
+from entity.models import Entity, EntityAttr, ItemNameType
 from entry.models import Attribute, AttributeValue, Entry, ItemWalker
 from entry.services import AdvancedSearchService
 from entry.settings import CONFIG
@@ -5587,3 +5587,38 @@ class ModelTest(AironeTestCase):
         entry_instance.delete()
         entity_schema.delete()
         user.delete()
+
+    def test_autoname_method(self):
+        model_lb = self.create_entity(self._user, "LB")
+        model_lb_sg = self.create_entity(
+            self._user,
+            "LBServiceGroup",
+            attrs=[
+                {
+                    "name": "LB",
+                    "type": AttrType.OBJECT,
+                    "ref": model_lb,
+                    "name_order": 1,
+                    "name_prefix": "[",
+                    "name_postfix": "]",
+                },
+                {"name": "label", "type": AttrType.STRING},
+                {"name": "domain", "type": AttrType.STRING, "name_order": 2, "name_prefix": " "},
+                {"name": "port", "type": AttrType.NUMBER, "name_order": 3, "name_prefix": ":"},
+            ],
+            item_name_type=ItemNameType.ATTR,
+        )
+
+        lb1 = self.add_entry(self._user, "LB0001", model_lb)
+        lb_sg1 = self.add_entry(
+            self._user,
+            "TestLB but this is not set, actually :)",
+            model_lb_sg,
+            values={
+                "LB": lb1,
+                "label": "This is a test LB ServiceGroup",
+                "domain": "pagoda-test.example.com",
+                "port": 80,
+            },
+        )
+        self.assertEqual(lb_sg1.autoname, "[LB0001] pagoda-test.example.com:80")
