@@ -996,12 +996,13 @@ def execute_query(
         dict[str, Any]: Search execution result
 
     """
+    # Include sort in body for compatibility with both ES7 and ES8 servers
+    query_with_sort = {**query, "sort": [{"name.keyword": "asc"}]}
     kwargs = {
         "size": min(size, 500000) if size else settings.ES_CONFIG["MAXIMUM_RESULTS_NUM"],
         "from_": offset,
-        "body": query,
+        "body": query_with_sort,
         "ignore": [404],
-        "sort": ["name.keyword:asc"],
         "track_total_hits": True,
     }
 
