@@ -997,11 +997,13 @@ def execute_query(
 
     """
     # Include sort in body for compatibility with both ES7 and ES8 servers
-    query_with_sort = {**query, "sort": [{"name.keyword": "asc"}]}
+    # Only add default sort if not already specified in the query
+    if "sort" not in query:
+        query = {**query, "sort": [{"name.keyword": "asc"}]}
     kwargs = {
         "size": min(size, 500000) if size else settings.ES_CONFIG["MAXIMUM_RESULTS_NUM"],
         "from_": offset,
-        "body": query_with_sort,
+        "body": query,
         "ignore": [404],
         "track_total_hits": True,
     }
