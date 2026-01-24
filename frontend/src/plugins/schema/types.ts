@@ -6,33 +6,30 @@
  */
 
 /**
- * Simplified entity structure for validation purposes.
- * This is derived from the API EntityDetail response but contains only
- * the fields needed for schema validation.
+ * Attribute information in object form.
+ * Converted from the attrs array for easy Zod schema validation.
  */
-export interface EntityStructure {
-  id: number;
-  name: string;
-  attrs: EntityAttrStructure[];
-}
-
-/**
- * Simplified entity attribute structure for validation.
- */
-export interface EntityAttrStructure {
-  id: number;
-  name: string;
+interface AttrInfo {
   type: number;
   isMandatory: boolean;
-  referral: EntityReferral[];
+  referral: string[]; // Simplified to names only
 }
 
 /**
- * Entity referral structure for attributes that reference other entities.
+ * Attribute record - key is attribute name, value is attribute info.
+ * This is the format that plugins validate against using Zod schemas.
+ *
+ * @example
+ * ```typescript
+ * // Converted from entity.attrs array:
+ * {
+ *   hostname: { type: 2, isMandatory: true, referral: [] },
+ *   location: { type: 1, isMandatory: false, referral: ["DC1", "DC2"] }
+ * }
+ * ```
  */
-export interface EntityReferral {
-  id: number;
-  name: string;
+export interface AttrRecord {
+  [attrName: string]: AttrInfo;
 }
 
 /**
@@ -67,31 +64,3 @@ export const AttrType = {
   ARRAY_GROUP: 1040, // _ARRAY | GROUP
   ARRAY_ROLE: 1088, // _ARRAY | ROLE
 } as const;
-
-/**
- * Type representing all possible AttrType values
- */
-type AttrTypeValue = (typeof AttrType)[keyof typeof AttrType];
-
-/**
- * Human-readable names for attribute types
- */
-export const AttrTypeNames: Record<number, string> = {
-  [AttrType.OBJECT]: "Object",
-  [AttrType.STRING]: "String",
-  [AttrType.TEXT]: "Text",
-  [AttrType.BOOLEAN]: "Boolean",
-  [AttrType.GROUP]: "Group",
-  [AttrType.DATE]: "Date",
-  [AttrType.ROLE]: "Role",
-  [AttrType.DATETIME]: "DateTime",
-  [AttrType.NUMBER]: "Number",
-  [AttrType.NAMED_OBJECT]: "Named Object",
-  [AttrType.ARRAY_OBJECT]: "Array of Objects",
-  [AttrType.ARRAY_STRING]: "Array of Strings",
-  [AttrType.ARRAY_NUMBER]: "Array of Numbers",
-  [AttrType.ARRAY_NAMED_OBJECT]: "Array of Named Objects",
-  [AttrType.ARRAY_NAMED_OBJECT_BOOLEAN]: "Array of Named Objects with Boolean",
-  [AttrType.ARRAY_GROUP]: "Array of Groups",
-  [AttrType.ARRAY_ROLE]: "Array of Roles",
-};

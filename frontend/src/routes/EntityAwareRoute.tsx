@@ -6,7 +6,7 @@ import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
 import { usePluginMappings } from "../hooks/usePluginMappings";
 import { SchemaValidationErrorPage } from "../pages/SchemaValidationErrorPage";
 import { EntityPageType, Plugin, isEntityViewPlugin } from "../plugins";
-import { toEntityStructure, validateEntityStructure } from "../plugins/schema";
+import { toAttrRecord } from "../plugins/schema";
 import { aironeApiClient } from "../repository/AironeApiClient";
 
 interface Props {
@@ -22,10 +22,11 @@ interface Props {
  * Renders plugin-provided component if entity has an override configured,
  * otherwise renders the default component.
  *
- * When a plugin defines an entitySchema, this component will:
+ * When a plugin defines an attrSchema, this component will:
  * 1. Fetch the entity details
- * 2. Validate the entity structure against the schema
- * 3. Show an error page if validation fails
+ * 2. Convert attrs to AttrRecord format
+ * 3. Validate using Zod's safeParse
+ * 4. Show an error page if validation fails
  */
 export const EntityAwareRoute: FC<Props> = ({
   pageType,
@@ -52,8 +53,8 @@ export const EntityAwareRoute: FC<Props> = ({
       return { shouldFetchEntity: false, plugin: null, mapping };
     }
 
-    // Only fetch entity if plugin has an entitySchema
-    const shouldFetchEntity = !!plugin.entitySchema;
+    // Only fetch entity if plugin has an attrSchema
+    const shouldFetchEntity = !!plugin.attrSchema;
     return { shouldFetchEntity, plugin, mapping };
   }, [entityId, config, pageType, pluginMap]);
 
@@ -67,17 +68,22 @@ export const EntityAwareRoute: FC<Props> = ({
 
   // Validate entity against plugin schema
   const validationResult = useMemo(() => {
-    if (!plugin || !isEntityViewPlugin(plugin) || !plugin.entitySchema) {
-      return { success: true, errors: [] };
+    if (!plugin || !isEntityViewPlugin(plugin) || !plugin.attrSchema) {
+      return { success: true as const, errors: [] };
     }
 
     if (!entityState.value) {
       // Still loading or no entity to validate
-      return { success: true, errors: [] };
+      return { success: true as const, errors: [] };
     }
 
-    const structure = toEntityStructure(entityState.value);
-    return validateEntityStructure(structure, plugin.entitySchema);
+    // Convert to AttrRecord and validate with Zod's safeParse
+    const attrRecord = toAttrRecord(entityState.value);
+    const result = plugin.attrSchema.safeParse(attrRecord);
+
+    return result.success
+      ? { success: true as const, errors: [] }
+      : { success: false as const, errors: result.error.issues };
   }, [plugin, entityState.value]);
 
   // No entityId in URL - render default
@@ -107,7 +113,7 @@ export const EntityAwareRoute: FC<Props> = ({
   }
 
   // If plugin has schema, wait for entity to load
-  if (plugin.entitySchema && entityState.loading) {
+  if (plugin.attrSchema && entityState.loading) {
     return (
       <Box
         display="flex"

@@ -1,8 +1,6 @@
 import { FC, ReactNode } from "react";
 import { z } from "zod";
 
-import { EntityStructure } from "./schema/types";
-
 // Simple plugin interface
 export interface Plugin {
   id: string;
@@ -65,26 +63,31 @@ export type EntityPluginViewsConfig = Record<string, EntityPluginMapping>;
 export interface EntityViewPlugin extends Plugin {
   entityPages?: Partial<Record<EntityPageType, FC>>;
   /**
-   * Zod schema for validating entity structure requirements.
+   * Zod schema for validating entity attribute requirements.
    *
-   * When provided, the entity structure will be validated against this schema
+   * When provided, the entity attributes will be validated against this schema
    * before rendering the plugin's page. If validation fails, an error page
    * will be displayed instead of the plugin component.
    *
+   * The schema validates against an AttrRecord object (attribute name -> info).
+   * You only need to specify the attributes you want to validate.
+   *
    * @example
    * ```typescript
-   * import { baseEntitySchema, requireAttr, AttrType } from "plugins/schema";
+   * import { z } from "zod";
+   * import { AttrType } from "plugins/schema";
    *
    * const myPlugin: EntityViewPlugin = {
-   *   entitySchema: baseEntitySchema.refine(
-   *     (entity) => requireAttr("hostname", AttrType.STRING)(entity.attrs),
-   *     { message: "hostname attribute is required" }
-   *   ),
+   *   attrSchema: z.object({
+   *     hostname: z.object({ type: z.literal(AttrType.STRING) }),
+   *     ip_address: z.object({ type: z.literal(AttrType.STRING) }),
+   *   }),
    *   // ...
    * };
    * ```
    */
-  entitySchema?: z.ZodType<EntityStructure>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  attrSchema?: z.ZodType<any>;
 }
 
 /**

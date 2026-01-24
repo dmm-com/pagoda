@@ -18,32 +18,14 @@ interface PluginRoute {
   element: ReactNode;
 }
 
-interface EntityReferral {
-  id: number;
-  name: string;
-}
-
-interface EntityAttrStructure {
-  id: number;
-  name: string;
-  type: number;
-  isMandatory: boolean;
-  referral: EntityReferral[];
-}
-
-interface EntityStructure {
-  id: number;
-  name: string;
-  attrs: EntityAttrStructure[];
-}
-
 interface EntityViewPlugin {
   id: string;
   name: string;
   version: string;
   routes: PluginRoute[];
   entityPages?: Partial<Record<EntityPageType, FC>>;
-  entitySchema?: z.ZodType<EntityStructure>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  attrSchema?: z.ZodType<any>;
 }
 
 // ============================================================================
@@ -71,60 +53,30 @@ const AttrType = {
 } as const;
 
 // ============================================================================
-// Schema helpers
+// Entity Attribute Schema Definition (Simplified!)
 // ============================================================================
 
 /**
- * Helper: Check if entity has an attribute with specific name and type
- */
-const hasAttr =
-  (name: string, type: number | number[]) =>
-  (attrs: EntityAttrStructure[]): boolean => {
-    const types = Array.isArray(type) ? type : [type];
-    return attrs.some((a) => a.name === name && types.includes(a.type));
-  };
-
-// ============================================================================
-// Entity Schema Definition
-// ============================================================================
-
-/**
- * Base schema for entity attributes
- */
-const entityAttrSchema = z.object({
-  id: z.number(),
-  name: z.string(),
-  type: z.number(),
-  isMandatory: z.boolean(),
-  referral: z.array(
-    z.object({
-      id: z.number(),
-      name: z.string(),
-    }),
-  ),
-});
-
-/**
- * Sample entity schema demonstrating attribute requirements
+ * Sample attribute schema demonstrating attribute requirements
  *
  * This schema requires the entity to have a "name" attribute of STRING type.
  * When this schema validation fails, the plugin page will not be rendered
  * and an error page will be shown instead.
  *
+ * With the new simplified approach, you just define the required attributes
+ * as a pure Zod schema - no helper functions needed!
+ *
  * Example requirements you might add:
  * - Required attributes: hostname, ip_address, status
  * - Specific attribute types: STRING, OBJECT, ARRAY_STRING
- * - Referral requirements: location must reference "Datacenter" entity
  */
-const sampleEntitySchema = z
-  .object({
-    id: z.number(),
-    name: z.string(),
-    attrs: z.array(entityAttrSchema),
-  })
-  .refine((entity) => hasAttr("name", AttrType.STRING)(entity.attrs), {
-    message: 'Required attribute "name" (STRING type) is missing',
-  });
+const sampleAttrSchema = z.object({
+  // Require "hostname" attribute with STRING type
+  // This will fail for entities without this attribute
+  hostname: z.object({
+    type: z.literal(AttrType.STRING),
+  }),
+});
 
 // ============================================================================
 // Plugin Definition
@@ -135,9 +87,9 @@ const sampleEntitySchema = z
  *
  * This plugin demonstrates:
  * 1. Entity page overrides (entry.list)
- * 2. Entity schema validation (entitySchema)
+ * 2. Entity attribute schema validation (attrSchema)
  *
- * The entitySchema ensures the target entity has the required structure
+ * The attrSchema ensures the target entity has the required attributes
  * before the plugin page is rendered.
  */
 const sampleEntityPlugin: EntityViewPlugin = {
@@ -153,11 +105,11 @@ const sampleEntityPlugin: EntityViewPlugin = {
     "entry.list": () => React.createElement(SampleEntryListPage),
   },
 
-  // Entity schema validation
-  entitySchema: sampleEntitySchema,
+  // Entity attribute schema validation (simplified!)
+  attrSchema: sampleAttrSchema,
 };
 
 export default sampleEntityPlugin;
 
-// Export schema and helpers for testing/documentation purposes
-export { sampleEntitySchema, AttrType, hasAttr };
+// Export schema and AttrType for testing/documentation purposes
+export { sampleAttrSchema, AttrType };

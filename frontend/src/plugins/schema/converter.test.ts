@@ -1,6 +1,6 @@
 import { EntityDetail } from "@dmm-com/airone-apiclient-typescript-fetch";
 
-import { toEntityStructure } from "./converter";
+import { toAttrRecord } from "./converter";
 import { AttrType } from "./types";
 
 /**
@@ -43,8 +43,8 @@ function createAttr(partial: {
   };
 }
 
-describe("toEntityStructure", () => {
-  it("should convert basic entity structure", () => {
+describe("toAttrRecord", () => {
+  it("should convert basic entity attributes to object format", () => {
     const apiEntity = createEntityDetail({
       id: 1,
       name: "NetworkDevice",
@@ -60,24 +60,18 @@ describe("toEntityStructure", () => {
       ],
     });
 
-    const result = toEntityStructure(apiEntity);
+    const result = toAttrRecord(apiEntity);
 
     expect(result).toEqual({
-      id: 1,
-      name: "NetworkDevice",
-      attrs: [
-        {
-          id: 101,
-          name: "hostname",
-          type: AttrType.STRING,
-          isMandatory: true,
-          referral: [],
-        },
-      ],
+      hostname: {
+        type: AttrType.STRING,
+        isMandatory: true,
+        referral: [],
+      },
     });
   });
 
-  it("should convert entity with referral attributes", () => {
+  it("should convert entity with referral attributes (names only)", () => {
     const apiEntity = createEntityDetail({
       id: 1,
       name: "Server",
@@ -94,12 +88,10 @@ describe("toEntityStructure", () => {
       ],
     });
 
-    const result = toEntityStructure(apiEntity);
+    const result = toAttrRecord(apiEntity);
 
-    expect(result.attrs[0].referral).toEqual([
-      { id: 10, name: "Datacenter" },
-      { id: 11, name: "Office" },
-    ]);
+    // Referral should contain only names, not full objects
+    expect(result.location.referral).toEqual(["Datacenter", "Office"]);
   });
 
   it("should handle entity with multiple attributes", () => {
@@ -120,21 +112,13 @@ describe("toEntityStructure", () => {
       ],
     });
 
-    const result = toEntityStructure(apiEntity);
+    const result = toAttrRecord(apiEntity);
 
-    expect(result.attrs).toHaveLength(4);
-    expect(result.attrs.map((a) => a.name)).toEqual([
-      "name",
-      "version",
-      "port",
-      "enabled",
-    ]);
-    expect(result.attrs.map((a) => a.type)).toEqual([
-      AttrType.STRING,
-      AttrType.STRING,
-      AttrType.NUMBER,
-      AttrType.BOOLEAN,
-    ]);
+    expect(Object.keys(result)).toEqual(["name", "version", "port", "enabled"]);
+    expect(result.name.type).toBe(AttrType.STRING);
+    expect(result.version.type).toBe(AttrType.STRING);
+    expect(result.port.type).toBe(AttrType.NUMBER);
+    expect(result.enabled.type).toBe(AttrType.BOOLEAN);
   });
 
   it("should handle entity with no attributes", () => {
@@ -144,13 +128,9 @@ describe("toEntityStructure", () => {
       attrs: [],
     });
 
-    const result = toEntityStructure(apiEntity);
+    const result = toAttrRecord(apiEntity);
 
-    expect(result).toEqual({
-      id: 3,
-      name: "EmptyEntity",
-      attrs: [],
-    });
+    expect(result).toEqual({});
   });
 
   it("should handle undefined referral by defaulting to empty array", () => {
@@ -174,9 +154,9 @@ describe("toEntityStructure", () => {
       ],
     });
 
-    const result = toEntityStructure(apiEntity);
+    const result = toAttrRecord(apiEntity);
 
-    expect(result.attrs[0].referral).toEqual([]);
+    expect(result.someAttr.referral).toEqual([]);
   });
 
   it("should handle array type attributes", () => {
@@ -194,43 +174,11 @@ describe("toEntityStructure", () => {
       ],
     });
 
-    const result = toEntityStructure(apiEntity);
+    const result = toAttrRecord(apiEntity);
 
-    expect(result.attrs[0].type).toBe(AttrType.ARRAY_STRING);
-    expect(result.attrs[1].type).toBe(AttrType.ARRAY_OBJECT);
-    expect(result.attrs[1].referral).toEqual([{ id: 100, name: "Server" }]);
-  });
-
-  it("should strip extra fields from API response", () => {
-    const apiEntity = createEntityDetail({
-      id: 6,
-      name: "FullEntity",
-      note: "This note should be stripped",
-      isToplevel: true,
-      isPublic: false,
-      attrs: [
-        createAttr({
-          id: 601,
-          name: "field",
-          type: AttrType.STRING,
-          isMandatory: true,
-        }),
-      ],
-    });
-
-    const result = toEntityStructure(apiEntity);
-
-    // Result should only have id, name, attrs
-    expect(Object.keys(result)).toEqual(["id", "name", "attrs"]);
-
-    // Attr should only have id, name, type, isMandatory, referral
-    expect(Object.keys(result.attrs[0])).toEqual([
-      "id",
-      "name",
-      "type",
-      "isMandatory",
-      "referral",
-    ]);
+    expect(result.tags.type).toBe(AttrType.ARRAY_STRING);
+    expect(result.servers.type).toBe(AttrType.ARRAY_OBJECT);
+    expect(result.servers.referral).toEqual(["Server"]);
   });
 
   it("should preserve isMandatory flag correctly", () => {
@@ -253,9 +201,27 @@ describe("toEntityStructure", () => {
       ],
     });
 
-    const result = toEntityStructure(apiEntity);
+    const result = toAttrRecord(apiEntity);
 
-    expect(result.attrs[0].isMandatory).toBe(true);
-    expect(result.attrs[1].isMandatory).toBe(false);
+    expect(result.required.isMandatory).toBe(true);
+    expect(result.optional.isMandatory).toBe(false);
+  });
+
+  it("should create record keyed by attribute name for easy lookup", () => {
+    const apiEntity = createEntityDetail({
+      id: 8,
+      name: "LookupTest",
+      attrs: [
+        createAttr({ id: 801, name: "hostname", type: AttrType.STRING }),
+        createAttr({ id: 802, name: "ip_address", type: AttrType.STRING }),
+      ],
+    });
+
+    const result = toAttrRecord(apiEntity);
+
+    // Direct key access should work
+    expect(result["hostname"]).toBeDefined();
+    expect(result["ip_address"]).toBeDefined();
+    expect(result["nonexistent"]).toBeUndefined();
   });
 });
