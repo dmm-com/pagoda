@@ -1,4 +1,7 @@
 import { FC, ReactNode } from "react";
+import { z } from "zod";
+
+import { EntityStructure } from "./schema/types";
 
 // Simple plugin interface
 export interface Plugin {
@@ -61,6 +64,27 @@ export type EntityPluginViewsConfig = Record<string, EntityPluginMapping>;
  */
 export interface EntityViewPlugin extends Plugin {
   entityPages?: Partial<Record<EntityPageType, FC>>;
+  /**
+   * Zod schema for validating entity structure requirements.
+   *
+   * When provided, the entity structure will be validated against this schema
+   * before rendering the plugin's page. If validation fails, an error page
+   * will be displayed instead of the plugin component.
+   *
+   * @example
+   * ```typescript
+   * import { baseEntitySchema, requireAttr, AttrType } from "plugins/schema";
+   *
+   * const myPlugin: EntityViewPlugin = {
+   *   entitySchema: baseEntitySchema.refine(
+   *     (entity) => requireAttr("hostname", AttrType.STRING)(entity.attrs),
+   *     { message: "hostname attribute is required" }
+   *   ),
+   *   // ...
+   * };
+   * ```
+   */
+  entitySchema?: z.ZodType<EntityStructure>;
 }
 
 /**

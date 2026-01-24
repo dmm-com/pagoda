@@ -289,6 +289,170 @@ module.exports = {
 };
 ```
 
+## Entity Schema Validation
+
+Plugins can define requirements for entity structure using Zod schemas. When a plugin specifies an `entitySchema`, the system validates that the target entity meets these requirements before rendering the plugin's page.
+
+### Why Use Entity Schema Validation?
+
+- **Prevent Runtime Errors**: Ensure required attributes exist before your plugin code runs
+- **Clear Error Messages**: Users see exactly what's missing when an entity doesn't match
+- **Type Safety**: Schema validation provides TypeScript type inference
+- **Self-Documenting**: The schema serves as documentation for entity requirements
+
+### Defining an Entity Schema
+
+Use the `entitySchema` property in your `EntityViewPlugin` to define requirements:
+
+```typescript
+import { z } from "zod";
+
+// AttrType constants (matching airone/lib/types.py)
+const AttrType = {
+  OBJECT: 1,
+  STRING: 2,
+  TEXT: 4,
+  BOOLEAN: 8,
+  GROUP: 16,
+  NUMBER: 256,
+  ARRAY_STRING: 1026,
+  ARRAY_OBJECT: 1025,
+  // ... other types
+} as const;
+
+// Helper to check for required attributes
+const hasAttr = (name: string, type: number | number[]) =>
+  (attrs: EntityAttrStructure[]) => {
+    const types = Array.isArray(type) ? type : [type];
+    return attrs.some(a => a.name === name && types.includes(a.type));
+  };
+
+// Define the entity schema
+const networkDeviceSchema = z.object({
+  id: z.number(),
+  name: z.string(),
+  attrs: z.array(z.object({
+    id: z.number(),
+    name: z.string(),
+    type: z.number(),
+    isMandatory: z.boolean(),
+    referral: z.array(z.object({ id: z.number(), name: z.string() })),
+  }))
+})
+.refine(
+  (entity) => hasAttr("hostname", AttrType.STRING)(entity.attrs),
+  { message: "hostname attribute (STRING type) is required" }
+)
+.refine(
+  (entity) => hasAttr("ip_address", AttrType.STRING)(entity.attrs),
+  { message: "ip_address attribute (STRING type) is required" }
+);
+
+// Use in plugin
+const plugin: EntityViewPlugin = {
+  id: "network-tools",
+  name: "Network Tools Plugin",
+  version: "1.0.0",
+  routes: [],
+  entityPages: {
+    "entry.list": NetworkDeviceList,
+  },
+  entitySchema: networkDeviceSchema,  // Enable validation
+};
+```
+
+### Using Schema Helpers (from pagoda-core)
+
+The frontend provides helper functions to simplify schema creation:
+
+```typescript
+import {
+  AttrType,
+  baseEntitySchema,
+  requireAttr,
+  requireReferral,
+  createEntitySchema,
+} from "plugins/schema";
+
+// Method 1: Using baseEntitySchema with refine
+const schema1 = baseEntitySchema
+  .refine(
+    (entity) => requireAttr("hostname", AttrType.STRING)(entity.attrs),
+    { message: "hostname attribute is required" }
+  )
+  .refine(
+    (entity) => requireReferral("location", ["Datacenter"])(entity.attrs),
+    { message: "location must reference Datacenter entity" }
+  );
+
+// Method 2: Using createEntitySchema helper
+const schema2 = createEntitySchema([
+  { name: "hostname", type: AttrType.STRING },
+  { name: "ip_address", type: AttrType.STRING },
+  { name: "location", type: AttrType.OBJECT, referrals: ["Datacenter"] },
+]);
+```
+
+### Validation Flow
+
+When schema validation is enabled:
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant Router as EntityAwareRoute
+    participant API as Airone API
+    participant Validator as Schema Validator
+    participant Plugin as Plugin Page
+
+    User->>Router: Navigate to entity page
+    Router->>Router: Find plugin with entitySchema
+    Router->>API: Fetch entity details
+    API-->>Router: EntityDetail response
+    Router->>Validator: Validate against schema
+
+    alt Validation passes
+        Validator-->>Router: success: true
+        Router->>Plugin: Render plugin page
+    else Validation fails
+        Validator-->>Router: success: false, errors: [...]
+        Router->>User: Show SchemaValidationErrorPage
+    end
+```
+
+### Error Page
+
+When validation fails, users see a clear error page showing:
+
+- Which entity failed validation
+- Which plugin defined the requirements
+- Specific validation errors with helpful messages
+
+This allows administrators to either:
+1. Update the entity to meet the plugin's requirements
+2. Remove the plugin mapping for this entity
+
+### AttrType Reference
+
+| Type | Value | Description |
+|------|-------|-------------|
+| `OBJECT` | 1 | Reference to another entry |
+| `STRING` | 2 | Single-line text |
+| `TEXT` | 4 | Multi-line text |
+| `BOOLEAN` | 8 | True/false value |
+| `GROUP` | 16 | Reference to a group |
+| `DATE` | 32 | Date value |
+| `ROLE` | 64 | Reference to a role |
+| `DATETIME` | 128 | Date and time value |
+| `NUMBER` | 256 | Numeric value |
+| `NAMED_OBJECT` | 2049 | Named reference to entry |
+| `ARRAY_OBJECT` | 1025 | Array of entry references |
+| `ARRAY_STRING` | 1026 | Array of strings |
+| `ARRAY_NUMBER` | 1280 | Array of numbers |
+| `ARRAY_NAMED_OBJECT` | 3073 | Array of named references |
+| `ARRAY_GROUP` | 1040 | Array of group references |
+| `ARRAY_ROLE` | 1088 | Array of role references |
+
 ## Routing Flow
 
 ### Decision Logic
@@ -389,6 +553,7 @@ export type EntityPluginViewsConfig = Record<string, EntityPluginMapping>;
 // Plugin interface with entity pages
 export interface EntityViewPlugin extends Plugin {
   entityPages?: Partial<Record<EntityPageType, FC>>;
+  entitySchema?: z.ZodType<EntityStructure>;  // Optional schema validation
 }
 
 // Type guard function
