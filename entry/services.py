@@ -2,6 +2,7 @@ from typing import Any
 
 from django.conf import settings
 from django.db.models import Prefetch
+from elasticsearch import NotFoundError
 
 from airone.lib.acl import ACLType
 from airone.lib.elasticsearch import (
@@ -239,7 +240,7 @@ class AdvancedSearchService:
 
     @classmethod
     def get_all_es_docs(kls) -> dict[str, Any]:
-        return ESS().search(body={"query": {"match_all": {}}}, ignore=[404])
+        return ESS().search(body={"query": {"match_all": {}}})
 
     @classmethod
     def update_documents(kls, entity: Entity, is_update: bool = False):
@@ -315,6 +316,9 @@ class AdvancedSearchService:
         for entry_id in set(entry_ids_from_es) - set(entry_ids_from_db):
             if not is_update:
                 Logger.warning("Delete elasticsearch document (entry_id: %s)" % entry.id)
-            es.delete(id=entry_id, ignore=[404])
+            try:
+                es.delete(id=entry_id)
+            except NotFoundError:
+                pass
 
         es.indices.refresh()

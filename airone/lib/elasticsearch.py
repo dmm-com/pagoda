@@ -1000,8 +1000,7 @@ def execute_query(
         "size": min(size, 500000) if size else settings.ES_CONFIG["MAXIMUM_RESULTS_NUM"],
         "from_": offset,
         "body": query,
-        "ignore": [404],
-        "sort": ["name.keyword:asc"],
+        "sort": [{"name.keyword": "asc"}],
         "track_total_hits": True,
     }
 
