@@ -90,12 +90,13 @@ jobs:
         ports:
           - 5672:5672
       elasticsearch:
-        image: docker.elastic.co/elasticsearch/elasticsearch:7.17.28
+        image: docker.elastic.co/elasticsearch/elasticsearch:8.17.0
         ports:
           - 9200:9200
         env:
           discovery.type: single-node
           ES_JAVA_OPTS: -Xms512m -Xmx512m
+          xpack.security.enabled: false
         options: >-
           --health-cmd "curl http://localhost:9200/_cluster/health"
           --health-interval 10s
