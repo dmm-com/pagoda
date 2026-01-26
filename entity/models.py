@@ -146,6 +146,9 @@ class Entity(ACLBase):
     STATUS_CREATING = 1 << 1
     STATUS_EDITING = 1 << 2
 
+    # This describes which Attribute types are selectable when itm_name_type is ATTR
+    ITEM_NAME_SELECTABLE_TYPES = [AttrType.STRING, AttrType.OBJECT]
+
     note = models.CharField(max_length=200, blank=True)
 
     # This indicates informatoin where to send request for notification
@@ -160,7 +163,9 @@ class Entity(ACLBase):
     item_name_pattern = models.CharField(max_length=400, blank=True)
 
     # This represents how to specify Item name
-    item_name_type = models.CharField(choices=ItemNameType, default=ItemNameType.USER)
+    item_name_type = models.CharField(
+        choices=ItemNameType.choices, max_length=10, default=ItemNameType.USER
+    )
 
     def __init__(self, *args, **kwargs):
         super(Entity, self).__init__(*args, **kwargs)

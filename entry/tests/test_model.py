@@ -5604,7 +5604,17 @@ class ModelTest(AironeTestCase):
                 },
                 {"name": "label", "type": AttrType.STRING},
                 {"name": "domain", "type": AttrType.STRING, "name_order": 2, "name_prefix": " "},
-                {"name": "port", "type": AttrType.NUMBER, "name_order": 3, "name_prefix": ":"},
+                {"name": "port", "type": AttrType.STRING, "name_order": 3, "name_prefix": ":"},
+                {
+                    "name": "number",
+                    "type": AttrType.NUMBER,
+                    "name_order": 4,
+                },  # This should be ignored
+                {
+                    "name": "dict",
+                    "type": AttrType.NAMED_OBJECT,
+                    "name_order": 5,
+                },  # This should be ignored
             ],
             item_name_type=ItemNameType.ATTR,
         )
@@ -5619,6 +5629,8 @@ class ModelTest(AironeTestCase):
                 "label": "This is a test LB ServiceGroup",
                 "domain": "pagoda-test.example.com",
                 "port": 80,
+                "number": 100,
+                "dict": {"name": "TestDict", "id": lb1},
             },
         )
         self.assertEqual(lb_sg1.autoname, "[LB0001] pagoda-test.example.com:80")

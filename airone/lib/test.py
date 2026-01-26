@@ -12,7 +12,7 @@ from pytz import timezone
 from airone.lib.acl import ACLType
 from airone.lib.types import AttrType
 from category.models import Category
-from entity.models import Entity, EntityAttr
+from entity.models import Entity, EntityAttr, ItemNameType
 from entry.models import Attribute, Entry
 from user.models import User
 from webhook.models import Webhook
@@ -123,6 +123,7 @@ class AironeTestCase(TestCase):
             is_public=is_public,
             default_permission=default_permission,
             item_name_pattern=item_name_pattern if item_name_pattern else "",
+            item_name_type=item_name_type if item_name_type else ItemNameType.USER,
         )
 
         for index, attr_info in enumerate(attrs):

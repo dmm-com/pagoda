@@ -1687,6 +1687,10 @@ class Entry(ACLBase):
                 if attrv is None:
                     continue
 
+                # ignore unexpected attribute types
+                if attr.schema.type not in Entity.ITEM_NAME_SELECTABLE_TYPES:
+                    continue
+
                 username += attr.schema.name_prefix + attrv.get_value() + attr.schema.name_postfix
 
             return username
