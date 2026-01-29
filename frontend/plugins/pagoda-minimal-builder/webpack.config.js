@@ -30,7 +30,7 @@ export default {
     rules: [
       {
         test: /\.tsx?$/,
-        exclude: /node_modules/,
+        exclude: /node_modules\/(?!@dmm-com\/pagoda-core)/,
         loader: "ts-loader",
         options: {
           transpileOnly: true,
