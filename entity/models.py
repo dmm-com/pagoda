@@ -44,7 +44,7 @@ class EntityAttr(ACLBase):
 
     # These fields describes the configuration of specifying Item name from Attriute
     # Only used when ItemNameType.ATTR is selected for Entity.item_name_type
-    name_order = models.IntegerField(default=0, blank=True)
+    name_order = models.IntegerField(default=0)
     name_prefix = models.CharField(max_length=20, blank=True, default="")
     name_postfix = models.CharField(max_length=20, blank=True, default="")
 
