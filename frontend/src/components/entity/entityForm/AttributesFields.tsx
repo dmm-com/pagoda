@@ -79,6 +79,9 @@ export const AttributesFields: FC<Props> = ({
       referral: [],
       note: "",
       defaultValue: undefined, // Explicitly initialize defaultValue
+      nameOrder: "0",
+      namePrefix: "",
+      namePostfix: "",
     });
   };
 
@@ -102,15 +105,12 @@ export const AttributesFields: FC<Props> = ({
         <TableHead>
           <HeaderTableRow>
             <HeaderTableCell width="300px">属性名</HeaderTableCell>
-            <HeaderTableCell width="100px">属性説明</HeaderTableCell>
             <HeaderTableCell width="300px">型</HeaderTableCell>
             <HeaderTableCell width="200px">デフォルト値</HeaderTableCell>
-            <HeaderTableCell width="100px">必須</HeaderTableCell>
-            <HeaderTableCell width="100px">関連削除</HeaderTableCell>
             <HeaderTableCell width="100px">並び替え</HeaderTableCell>
             <HeaderTableCell width="100px">削除</HeaderTableCell>
             <HeaderTableCell width="100px">追加</HeaderTableCell>
-            <HeaderTableCell width="100px">ACL設定</HeaderTableCell>
+            <HeaderTableCell width="100px">詳細</HeaderTableCell>
           </HeaderTableRow>
         </TableHead>
         <StyledTableBody>

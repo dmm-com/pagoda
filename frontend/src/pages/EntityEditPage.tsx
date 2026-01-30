@@ -111,6 +111,9 @@ export const EntityEditPage: FC = () => {
           isDeleted: false,
           note: attr.note,
           defaultValue: processedDefaultValue,
+          nameOrder: Number(attr.nameOrder),
+          namePrefix: attr.namePrefix,
+          namePostfix: attr.namePostfix,
         };
       });
 
@@ -229,6 +232,9 @@ export const EntityEditPage: FC = () => {
             | null
             | undefined,
           isSummarized: attr.isSummarized,
+          nameOrder: attr.nameOrder?.toString() ?? "0",
+          namePrefix: attr.namePrefix ?? "",
+          namePostfix: attr.namePostfix ?? "",
         })),
       };
 

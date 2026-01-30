@@ -181,6 +181,9 @@ class EditEntityV2Attr(BaseModel):
     note: Optional[str] = None
     default_value: Optional[str | bool | int | float] = None
     is_deleted: bool = False
+    name_order: Optional[int] = 0 # for internal use only
+    name_prefix: Optional[str] = ""  # for internal use only
+    name_postfix: Optional[str] = ""  # for internal use only
 
     @model_validator(mode="after")
     def validate_attr_fields(self):

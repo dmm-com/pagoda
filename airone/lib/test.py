@@ -12,7 +12,7 @@ from pytz import timezone
 from airone.lib.acl import ACLType
 from airone.lib.types import AttrType
 from category.models import Category
-from entity.models import Entity, EntityAttr
+from entity.models import Entity, EntityAttr, ItemNameType
 from entry.models import Attribute, Entry
 from user.models import User
 from webhook.models import Webhook
@@ -97,6 +97,7 @@ class AironeTestCase(TestCase):
         is_public=True,
         default_permission=ACLType.Nothing.id,
         item_name_pattern="",
+        item_name_type=None,
     ):
         """
         This is a helper method to create Entity for test. This method has following parameters.
@@ -112,6 +113,9 @@ class AironeTestCase(TestCase):
           - default_permission: same parameter of creating EntityAttr
                                 [ACLType.Nothing.id by default]
           - ref : Entity that Entry can refer to
+          - name_order: number of name order when ItemNameType.ATTR is set
+          - name_prefix: prefix string when ItemNameType.ATTR is set
+          - name_postfix: postfix string when ItemNameType.ATTR is set
         """
         entity: Entity = Entity.objects.create(
             name=name,
@@ -119,6 +123,7 @@ class AironeTestCase(TestCase):
             is_public=is_public,
             default_permission=default_permission,
             item_name_pattern=item_name_pattern if item_name_pattern else "",
+            item_name_type=item_name_type if item_name_type else ItemNameType.USER,
         )
 
         for index, attr_info in enumerate(attrs):
@@ -132,6 +137,9 @@ class AironeTestCase(TestCase):
                     "default_permission": attr_info.get("default_permission", ACLType.Nothing.id),
                     "parent_entity": entity,
                     "created_user": user,
+                    "name_order": attr_info.get("name_order", 0),
+                    "name_prefix": attr_info.get("name_prefix", ""),
+                    "name_postfix": attr_info.get("name_postfix", ""),
                 }
             )
 

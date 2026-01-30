@@ -323,13 +323,16 @@ class AironeApiClient {
   }
 
   async importEntities(data: string | ArrayBuffer): Promise<void> {
-    return await this.entity.entityApiV2ImportCreate({
-      headers: {
-        "Content-Type": "application/yaml",
-        "X-CSRFToken": getCsrfToken(),
+    return await this.entity.entityApiV2ImportCreate(
+      { entityImportExportRoot: { entity: [], entityAttr: [] } },
+      {
+        headers: {
+          "Content-Type": "application/yaml",
+          "X-CSRFToken": getCsrfToken(),
+        },
+        body: new Blob([data]),
       },
-      body: new Blob([data]),
-    });
+    );
   }
 
   async exportEntities(filename: string): Promise<void> {
@@ -582,13 +585,16 @@ class AironeApiClient {
   }
 
   async importGroups(data: string | ArrayBuffer): Promise<void> {
-    return await this.group.groupApiV2GroupsImportCreate({
-      headers: {
-        "Content-Type": "application/yaml",
-        "X-CSRFToken": getCsrfToken(),
+    return await this.group.groupApiV2GroupsImportCreate(
+      { groupImport: { id: 0, name: "" } },
+      {
+        headers: {
+          "Content-Type": "application/yaml",
+          "X-CSRFToken": getCsrfToken(),
+        },
+        body: new Blob([data]),
       },
-      body: new Blob([data]),
-    });
+    );
   }
 
   async exportGroups(filename: string): Promise<void> {
@@ -652,13 +658,16 @@ class AironeApiClient {
   }
 
   async importRoles(data: string | ArrayBuffer): Promise<void> {
-    await this.role.roleApiV2ImportCreate({
-      headers: {
-        "Content-Type": "application/yaml",
-        "X-CSRFToken": getCsrfToken(),
+    await this.role.roleApiV2ImportCreate(
+      { roleImportExportChild: [] },
+      {
+        headers: {
+          "Content-Type": "application/yaml",
+          "X-CSRFToken": getCsrfToken(),
+        },
+        body: new Blob([data]),
       },
-      body: new Blob([data]),
-    });
+    );
   }
 
   async exportRoles(filename: string): Promise<void> {
@@ -987,13 +996,16 @@ class AironeApiClient {
   }
 
   async importUsers(data: string | ArrayBuffer): Promise<void> {
-    return await this.user.userApiV2ImportCreate({
-      headers: {
-        "Content-Type": "application/yaml",
-        "X-CSRFToken": getCsrfToken(),
+    return await this.user.userApiV2ImportCreate(
+      { userImportChild: [] },
+      {
+        headers: {
+          "Content-Type": "application/yaml",
+          "X-CSRFToken": getCsrfToken(),
+        },
+        body: new Blob([data]),
       },
-      body: new Blob([data]),
-    });
+    );
   }
 
   async exportUsers(filename: string): Promise<void> {
@@ -1120,7 +1132,8 @@ class AironeApiClient {
   ): Promise<void> {
     return await this.entry.entryApiV2ImportCreate(
       {
-        force,
+        entryImportEntity: [],
+        force: force,
       },
       {
         headers: {

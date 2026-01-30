@@ -71,6 +71,9 @@ export const schema = z.object({
           defaultValue: z
             .union([z.string(), z.number(), z.boolean(), z.null()])
             .optional(),
+          nameOrder: z.string().default("0"),
+          namePrefix: z.string().default(""),
+          namePostfix: z.string().default(""),
         })
         .refine(
           (attr) => {
