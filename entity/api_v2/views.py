@@ -372,6 +372,7 @@ class EntityImportAPI(generics.GenericAPIView):
     parser_classes = [YAMLParser]
     serializer_class = EntityImportExportRootSerializer
 
+    @extend_schema(responses={200: None})
     def post(self, request: Request) -> Response:
         import_datas = request.data
         serializer = EntityImportExportRootSerializer(
