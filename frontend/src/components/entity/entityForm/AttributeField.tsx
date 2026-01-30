@@ -2,22 +2,21 @@ import { Entity } from "@dmm-com/airone-apiclient-typescript-fetch";
 import AddIcon from "@mui/icons-material/Add";
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
+import BadgeIcon from "@mui/icons-material/Badge";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import EditNoteIcon from "@mui/icons-material/EditNote";
 import GroupIcon from "@mui/icons-material/Group";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import {
   Autocomplete,
-  Avatar,
   Box,
-  Button,
   Checkbox,
   Divider,
   IconButton,
   List,
   ListItem,
-  ListItemAvatar,
   ListItemButton,
+  ListItemIcon,
   ListItemText,
   Menu,
   MenuItem,
@@ -32,6 +31,7 @@ import { Control, Controller, useWatch } from "react-hook-form";
 import { UseFormSetValue } from "react-hook-form/dist/types/form";
 import { Link } from "react-router";
 
+import { AttributeAutoNameConfigModal } from "./AttributeAutoNameConfigModal";
 import { AttributeNoteModal } from "./AttributeNoteModal";
 import { Schema } from "./EntityFormSchema";
 
@@ -99,7 +99,7 @@ export const AttributeField: FC<Props> = ({
   });
 
   const [openModal, setOpenModal] = useState(false);
-  const [openDetailModal, setOpenDetailModal] = useState(false);
+  const [openAutoNameConfigModal, setOpenAutoNameConfigModal] = useState(false);
   const [attrMenuElem, setAttrMenuElem] = useState<HTMLButtonElement | null>(
     null,
   );
@@ -115,7 +115,8 @@ export const AttributeField: FC<Props> = ({
   const isObjectLikeType = ((attrType ?? 0) & AttributeTypes.object.type) > 0;
 
   const handleCloseModal = () => setOpenModal(false);
-  const handleCloseDetailModal = () => setOpenDetailModal(false);
+  const handleCloseAutoNameConfigModal = () =>
+    setOpenAutoNameConfigModal(false);
 
   return index != null ? (
     <>
@@ -257,23 +258,6 @@ export const AttributeField: FC<Props> = ({
         />
       </TableCell>
 
-      {/* Is mandatory */}
-      <TableCell>
-        <Controller
-          name={`attrs.${index}.isMandatory`}
-          control={control}
-          defaultValue={false}
-          render={({ field }) => (
-            <Checkbox
-              id="mandatory"
-              disabled={!isWritable}
-              checked={field.value}
-              onChange={(e) => field.onChange(e.target.checked)}
-            />
-          )}
-        />
-      </TableCell>
-
       {/* Change Attribute order to be shown at Item detail page */}
       <TableCell>
         <Box display="flex" flexDirection="column">
@@ -310,18 +294,6 @@ export const AttributeField: FC<Props> = ({
         </IconButton>
       </TableCell>
 
-      {/* Button ACL Configuration */}
-      <TableCell>
-        <Button
-          variant="contained"
-          color="primary"
-          startIcon={<GroupIcon />}
-          component={Link}
-          to={aclPath(attrId ?? 0)}
-          disabled={attrId == null || !isWritable}
-        />
-      </TableCell>
-
       {/* Icon other settings */}
       <TableCell>
         <Tooltip title="詳細">
@@ -343,31 +315,54 @@ export const AttributeField: FC<Props> = ({
           >
             {/* Open modal for setting Attribute description */}
             <ListItemButton onClick={() => setOpenModal(true)}>
-              <ListItemAvatar>
-                <Avatar>
-                  <EditNoteIcon />
-                </Avatar>
-              </ListItemAvatar>
+              <ListItemIcon>
+                <EditNoteIcon />
+              </ListItemIcon>
               <ListItemText primary="属性説明" secondary="属性の説明文を設定" />
+            </ListItemButton>
+
+            {/* Open modal for setting Attribute auto-naming configuration */}
+            <ListItemButton onClick={() => setOpenAutoNameConfigModal(true)}>
+              <ListItemIcon>
+                <BadgeIcon />
+              </ListItemIcon>
+              <ListItemText
+                primary="自動命名"
+                secondary="属性値からアイテム名を自動設定"
+              />
+            </ListItemButton>
+
+            {/* Button ACL Configuration */}
+            <ListItemButton
+              component={Link}
+              to={aclPath(attrId ?? 0)}
+              disabled={attrId == null || !isWritable}
+            >
+              <ListItemIcon>
+                <GroupIcon />
+              </ListItemIcon>
+              <ListItemText primary="ACL設定" secondary="属性の権限を設定" />
             </ListItemButton>
 
             <Divider />
 
             {/* Set mandatory Attribute */}
             <ListItem>
-              <Controller
-                name={`attrs.${index}.isMandatory`}
-                control={control}
-                defaultValue={false}
-                render={({ field }) => (
-                  <Checkbox
-                    id="mandatory"
-                    disabled={!isWritable}
-                    checked={field.value}
-                    onChange={(e) => field.onChange(e.target.checked)}
-                  />
-                )}
-              />
+              <ListItemIcon>
+                <Controller
+                  name={`attrs.${index}.isMandatory`}
+                  control={control}
+                  defaultValue={false}
+                  render={({ field }) => (
+                    <Checkbox
+                      id="mandatory"
+                      disabled={!isWritable}
+                      checked={field.value}
+                      onChange={(e) => field.onChange(e.target.checked)}
+                    />
+                  )}
+                />
+              </ListItemIcon>
               <ListItemText
                 primary="必須設定"
                 secondary="属性値の設定を必須化"
@@ -376,19 +371,21 @@ export const AttributeField: FC<Props> = ({
 
             {/* Checkbox delete Item when related Item is deleted */}
             <ListItem>
-              <Controller
-                name={`attrs.${index}.isDeleteInChain`}
-                control={control}
-                defaultValue={false}
-                render={({ field }) => (
-                  <Checkbox
-                    id="delete_in_chain"
-                    disabled={!isWritable}
-                    checked={field.value}
-                    onChange={(e) => field.onChange(e.target.checked)}
-                  />
-                )}
-              />
+              <ListItemIcon>
+                <Controller
+                  name={`attrs.${index}.isDeleteInChain`}
+                  control={control}
+                  defaultValue={false}
+                  render={({ field }) => (
+                    <Checkbox
+                      id="delete_in_chain"
+                      disabled={!isWritable}
+                      checked={field.value}
+                      onChange={(e) => field.onChange(e.target.checked)}
+                    />
+                  )}
+                />
+              </ListItemIcon>
               <ListItemText
                 primary="関連削除"
                 secondary="参照アイテムの削除に連動"
@@ -405,10 +402,16 @@ export const AttributeField: FC<Props> = ({
           control={control}
         />
       )}
+      {openAutoNameConfigModal && (
+        <AttributeAutoNameConfigModal
+          index={index}
+          handleCloseModal={handleCloseAutoNameConfigModal}
+          control={control}
+        />
+      )}
     </>
   ) : (
     <>
-      <TableCell />
       <TableCell />
       <TableCell />
       <TableCell />
@@ -419,7 +422,6 @@ export const AttributeField: FC<Props> = ({
           <AddIcon />
         </IconButton>
       </TableCell>
-      <TableCell />
       <TableCell />
     </>
   );

@@ -47,6 +47,9 @@ class EntityDetailAttribute(TypedDict):
     referral: List[EntityAttrReferralData]
     note: str
     default_value: Any
+    name_order: int
+    name_prefix: str
+    name_postfix: str
 
 
 # Pydantic models for request validation
@@ -290,6 +293,9 @@ class EntityAttrUpdateSerializer(serializers.ModelSerializer):
             "is_deleted",
             "note",
             "default_value",
+            "name_order",
+            "name_prefix",
+            "name_postfix",
         ]
         extra_kwargs = {"name": {"required": False}, "type": {"required": False}}
 
@@ -832,6 +838,9 @@ class EntityDetailAttributeSerializer(serializers.Serializer):
     referral = serializers.ListField(child=serializers.DictField())
     note = serializers.CharField()
     default_value = serializers.JSONField(required=False, allow_null=True)
+    name_order = serializers.IntegerField(default=0)
+    name_prefix = serializers.CharField(default="")
+    name_postfix = serializers.CharField(default="")
 
 
 class EntityDetailSerializer(EntityListSerializer):
@@ -880,6 +889,9 @@ class EntityDetailSerializer(EntityListSerializer):
                 ],
                 "note": x.note,
                 "default_value": x.default_value,
+                "name_order": x.name_order,
+                "name_prefix": x.name_prefix,
+                "name_postfix": x.name_postfix,
             }
             for x in obj.attrs.filter(is_active=True).prefetch_related("referral").order_by("index")
         ]
