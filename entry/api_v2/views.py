@@ -98,7 +98,7 @@ class EntryAPI(PluginOverrideMixin, viewsets.ModelViewSet):
     """Entry API ViewSet with plugin override support.
 
     Plugin overrides are automatically handled by PluginOverrideMixin.
-    Configure overrides via ENTITY_PLUGIN_OVERRIDES environment variable.
+    Configure overrides via BACKEND_PLUGIN_ENTITY_OVERRIDES environment variable.
     """
 
     queryset = Entry.objects.all()

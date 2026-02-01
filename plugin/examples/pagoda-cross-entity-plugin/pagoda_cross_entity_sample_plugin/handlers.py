@@ -31,7 +31,7 @@ class ServiceHandlers:
     behavior for configured entities. Each handler method is decorated with
     @override_operation to register it with the override system.
 
-    The entity-to-handler mapping is configured via ENTITY_PLUGIN_OVERRIDES
+    The entity-to-handler mapping is configured via BACKEND_PLUGIN_ENTITY_OVERRIDES
     environment variable, allowing flexible ID-based configuration.
 
     The handlers implement cross-entity operations that:
@@ -80,7 +80,7 @@ class ServiceHandlers:
                 ]
             }
 
-        Configuration params (from ENTITY_PLUGIN_OVERRIDES):
+        Configuration params (from BACKEND_PLUGIN_ENTITY_OVERRIDES):
             - configuration_entity_id: ID of the Configuration entity
         """
         user = context.user
@@ -264,7 +264,7 @@ class ServiceHandlers:
         Query params:
             cascade: If "true", also delete cascade-enabled related entries
 
-        Configuration params (from ENTITY_PLUGIN_OVERRIDES):
+        Configuration params (from BACKEND_PLUGIN_ENTITY_OVERRIDES):
             - cascade_delete: Default cascade behavior
         """
         user = context.user

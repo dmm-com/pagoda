@@ -73,7 +73,7 @@ def override_operation(
     during plugin registration to set up the override handler.
 
     Unlike override_entry_operation, this decorator does NOT require
-    an entity parameter. Entity binding is done via ENTITY_PLUGIN_OVERRIDES
+    an entity parameter. Entity binding is done via BACKEND_PLUGIN_ENTITY_OVERRIDES
     configuration.
 
     Args:
@@ -140,7 +140,7 @@ def override_entry_operation(
 
     .. deprecated::
         Use :func:`override_operation` instead. Entity binding should be
-        done via ENTITY_PLUGIN_OVERRIDES configuration.
+        done via BACKEND_PLUGIN_ENTITY_OVERRIDES configuration.
 
     This decorator attaches metadata to the method that will be used
     during plugin registration to set up the override handler.
@@ -155,7 +155,7 @@ def override_entry_operation(
     """
     warnings.warn(
         "override_entry_operation is deprecated. Use override_operation instead. "
-        "Entity binding should be done via ENTITY_PLUGIN_OVERRIDES configuration.",
+        "Entity binding should be done via BACKEND_PLUGIN_ENTITY_OVERRIDES configuration.",
         DeprecationWarning,
         stacklevel=2,
     )

@@ -45,16 +45,16 @@ class PluginIntegration:
             logger.info("Plugin system initialized successfully")
 
     def _load_override_config(self):
-        """Load override registrations from ENTITY_PLUGIN_OVERRIDES config."""
+        """Load override registrations from BACKEND_PLUGIN_ENTITY_OVERRIDES config."""
         try:
             from .override_manager import override_registry
 
-            # Get ENTITY_PLUGIN_OVERRIDES from AIRONE settings
+            # Get BACKEND_PLUGIN_ENTITY_OVERRIDES from AIRONE settings
             airone_settings = getattr(settings, "AIRONE", {})
-            override_config = airone_settings.get("ENTITY_PLUGIN_OVERRIDES", {})
+            override_config = airone_settings.get("BACKEND_PLUGIN_ENTITY_OVERRIDES", {})
 
             if not override_config:
-                logger.debug("No ENTITY_PLUGIN_OVERRIDES configured")
+                logger.debug("No BACKEND_PLUGIN_ENTITY_OVERRIDES configured")
                 return
 
             # Create a simple plugin registry adapter

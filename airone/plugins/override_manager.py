@@ -344,7 +344,7 @@ class OverrideRegistry:
         """Load override registrations from settings configuration.
 
         Args:
-            settings_config: Dictionary from ENTITY_PLUGIN_OVERRIDES setting
+            settings_config: Dictionary from BACKEND_PLUGIN_ENTITY_OVERRIDES setting
                 Format: {
                     "42": {
                         "plugin": "cross-entity-sample",

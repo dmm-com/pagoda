@@ -282,29 +282,29 @@ class Common(Configuration):
         "PLUGINS": {
             "ENABLED": bool(ENABLED_PLUGINS),
         },
-        # Entity-specific plugin view routing configuration
+        # Frontend plugin entity override configuration
         # Format: { "entityId": { "plugin": "plugin-id", "pages": ["entry.list"] } }
         #
         # TEST CONFIG: Entity ID "9681" uses sample plugin for entry.list page.
-        # Change the ID to match your test entity, or set ENTITY_PLUGIN_VIEWS env var.
-        # To disable: set ENTITY_PLUGIN_VIEWS='{}'
-        "ENTITY_PLUGIN_VIEWS": json.loads(
+        # Change the ID to match your test entity, or set FRONTEND_PLUGIN_ENTITY_OVERRIDES env var.
+        # To disable: set FRONTEND_PLUGIN_ENTITY_OVERRIDES='{}'
+        "FRONTEND_PLUGIN_ENTITY_OVERRIDES": json.loads(
             env.str(
-                "ENTITY_PLUGIN_VIEWS",
+                "FRONTEND_PLUGIN_ENTITY_OVERRIDES",
                 json.dumps({"9681": {"plugin": "sample", "pages": ["entry.list"]}}),
             )
         ),
-        # Entity-specific plugin backend operation override configuration
+        # Backend plugin entity override configuration
         # Format: { "entityId": { "plugin": "plugin-id", "operations": ["create", "update"],
         #                         "params": { "key": "value" } } }
         #
         # Example: Override Service entity (ID 42) with cross-entity-sample plugin
-        # ENTITY_PLUGIN_OVERRIDES='{"42":{"plugin":"cross-entity-sample",
+        # BACKEND_PLUGIN_ENTITY_OVERRIDES='{"42":{"plugin":"cross-entity-sample",
         #   "operations":["create","update"],"params":{"configuration_entity_id":99}}}'
-        # To disable: set ENTITY_PLUGIN_OVERRIDES='{}'
-        "ENTITY_PLUGIN_OVERRIDES": json.loads(
+        # To disable: set BACKEND_PLUGIN_ENTITY_OVERRIDES='{}'
+        "BACKEND_PLUGIN_ENTITY_OVERRIDES": json.loads(
             env.str(
-                "ENTITY_PLUGIN_OVERRIDES",
+                "BACKEND_PLUGIN_ENTITY_OVERRIDES",
                 json.dumps({}),
             )
         ),

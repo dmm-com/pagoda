@@ -4,8 +4,8 @@ Cross-Entity Sample Plugin class.
 This plugin demonstrates cross-entity operations in AirOne using the
 pagoda-plugin-sdk with the ID-based endpoint override pattern.
 
-Configure via ENTITY_PLUGIN_OVERRIDES environment variable:
-    ENTITY_PLUGIN_OVERRIDES='{"42":{"plugin":"cross-entity-sample","operations":["create","retrieve","update","delete"],"params":{"configuration_entity_id":99}}}'
+Configure via BACKEND_PLUGIN_ENTITY_OVERRIDES environment variable:
+    BACKEND_PLUGIN_ENTITY_OVERRIDES='{"42":{"plugin":"cross-entity-sample","operations":["create","retrieve","update","delete"],"params":{"configuration_entity_id":99}}}'
 """
 
 from typing import Any, Callable, Dict, List, Optional, Set
@@ -24,12 +24,12 @@ class CrossEntityPlugin(Plugin):
     that span multiple entities.
 
     Key Features:
-    - Override entity CRUD operations (configured via ENTITY_PLUGIN_OVERRIDES)
+    - Override entity CRUD operations (configured via BACKEND_PLUGIN_ENTITY_OVERRIDES)
     - Automatic creation of related Configuration entries
     - Atomic cross-entity transactions
     - Permission pre-checking for all affected entries
 
-    Configuration (ENTITY_PLUGIN_OVERRIDES):
+    Configuration (BACKEND_PLUGIN_ENTITY_OVERRIDES):
         {
             "<entity_id>": {
                 "plugin": "cross-entity-sample",

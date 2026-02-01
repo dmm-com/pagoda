@@ -122,12 +122,12 @@ class PluginRegistry:
         """Register plugin entry operation override handlers.
 
         NOTE: With the new ID-based override system, handlers are registered via
-        ENTITY_PLUGIN_OVERRIDES environment variable configuration, not via
+        BACKEND_PLUGIN_ENTITY_OVERRIDES environment variable configuration, not via
         decorator scanning. This method now only logs info about available handlers.
 
         The old @override_entry_operation(entity="...", operation="...") decorator
         is deprecated. Use @override_operation("...") instead and configure
-        entity mappings via ENTITY_PLUGIN_OVERRIDES.
+        entity mappings via BACKEND_PLUGIN_ENTITY_OVERRIDES.
 
         Args:
             plugin: Plugin instance whose override handlers should be registered
@@ -155,7 +155,7 @@ class PluginRegistry:
                 logger.warning(
                     f"Plugin '{plugin.id}' uses deprecated @override_entry_operation "
                     f"decorator with entity='{entity}'. Migrate to @override_operation "
-                    f"and use ENTITY_PLUGIN_OVERRIDES configuration."
+                    f"and use BACKEND_PLUGIN_ENTITY_OVERRIDES configuration."
                 )
             else:
                 # New-style decorator without entity
@@ -164,7 +164,7 @@ class PluginRegistry:
         if new_style_count > 0:
             logger.info(
                 f"Plugin '{plugin.id}' has {new_style_count} override handler(s). "
-                f"Configure via ENTITY_PLUGIN_OVERRIDES to enable."
+                f"Configure via BACKEND_PLUGIN_ENTITY_OVERRIDES to enable."
             )
         if deprecated_count > 0:
             logger.warning(

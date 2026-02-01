@@ -51,10 +51,10 @@ export interface EntityPluginMapping {
 }
 
 /**
- * Full configuration object for entity plugin views
+ * Full configuration object for frontend plugin entity overrides
  * Key is the entity ID (as string) for direct O(1) lookup
  */
-export type EntityPluginViewsConfig = Record<string, EntityPluginMapping>;
+export type FrontendPluginEntityOverridesConfig = Record<string, EntityPluginMapping>;
 
 /**
  * Extended plugin interface with entity page support
