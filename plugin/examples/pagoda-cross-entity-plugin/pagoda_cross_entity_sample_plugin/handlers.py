@@ -171,26 +171,21 @@ class ServiceHandlers:
         )
 
         try:
-            # Build response with entry data - include distinctive plugin markers
-            response_data = {
-                "id": entry.id,
-                "name": entry.name,
-                "schema": {
-                    "id": entry.schema.id,
-                    "name": entry.schema.name,
-                },
-                "is_active": entry.is_active,
-                # Distinctive plugin information to show override is active
-                "_plugin_override": {
-                    "active": True,
-                    "plugin_id": context.plugin_id,
-                    "plugin_version": "3.0.0",
-                    "message": "This response was handled by cross-entity-sample plugin!",
-                    "params": context.params,
-                },
-                # Add timestamp to show this is dynamic
-                "_retrieved_at": datetime.now().isoformat(),
+            # Use the standard serializer to generate correct response format
+            from entry.api_v2.serializers import EntryRetrieveSerializer
+
+            serializer = EntryRetrieveSerializer(entry, context={"request": context.request})
+            response_data = serializer.data
+
+            # Add plugin-specific fields
+            response_data["_plugin_override"] = {
+                "active": True,
+                "plugin_id": context.plugin_id,
+                "plugin_version": "3.0.0",
+                "message": "This response was handled by cross-entity-sample plugin!",
+                "params": context.params,
             }
+            response_data["_retrieved_at"] = datetime.now().isoformat()
 
             return success_response(response_data)
 
