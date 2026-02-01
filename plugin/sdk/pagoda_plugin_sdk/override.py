@@ -344,7 +344,7 @@ def error_response(
     Returns:
         DRF Response object
     """
-    data = {"error": message}
+    data: Dict[str, Any] = {"error": message}
     if details:
         data["details"] = details
 

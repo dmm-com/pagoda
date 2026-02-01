@@ -1,6 +1,9 @@
 import { useMemo } from "react";
 
-import { EntityPageType, FrontendPluginEntityOverridesConfig } from "../plugins";
+import {
+  EntityPageType,
+  FrontendPluginEntityOverridesConfig,
+} from "../plugins";
 import { ServerContext } from "../services/ServerContext";
 
 /**

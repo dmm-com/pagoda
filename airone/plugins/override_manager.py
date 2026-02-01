@@ -325,7 +325,7 @@ class OverrideRegistry:
         Returns:
             List of all OverrideRegistration objects
         """
-        result = []
+        result: List[OverrideRegistration] = []
         for operations in self._handlers.values():
             result.extend(operations.values())
         return result

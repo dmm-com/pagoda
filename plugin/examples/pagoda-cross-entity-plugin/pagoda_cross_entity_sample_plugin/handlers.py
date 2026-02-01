@@ -9,6 +9,7 @@ Updated to use the new ID-based override system with OverrideContext.
 """
 
 import logging
+from datetime import datetime
 
 from pagoda_plugin_sdk.override import (
     OverrideContext,
@@ -188,7 +189,7 @@ class ServiceHandlers:
                     "params": context.params,
                 },
                 # Add timestamp to show this is dynamic
-                "_retrieved_at": __import__("datetime").datetime.now().isoformat(),
+                "_retrieved_at": datetime.now().isoformat(),
             }
 
             return success_response(response_data)

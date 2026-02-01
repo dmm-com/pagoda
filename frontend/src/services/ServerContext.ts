@@ -89,7 +89,8 @@ export class ServerContext {
       webhook: true,
     };
     this.frontendPluginEntityOverrides =
-      (context.frontendPluginEntityOverrides as FrontendPluginEntityOverridesConfig) ?? {};
+      (context.frontendPluginEntityOverrides as FrontendPluginEntityOverridesConfig) ??
+      {};
   }
 
   static getInstance() {

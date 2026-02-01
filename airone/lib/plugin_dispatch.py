@@ -6,50 +6,13 @@ Entry API operations to plugin override handlers when configured.
 """
 
 import logging
-from dataclasses import dataclass, field
 from typing import Any, Dict, Optional
 
+from pagoda_plugin_sdk.override import OverrideContext
 from rest_framework.request import Request
 from rest_framework.response import Response
 
 logger = logging.getLogger(__name__)
-
-
-@dataclass
-class OverrideContext:
-    """Context object passed to override handlers.
-
-    This provides a convenient way to access common data and utilities
-    within override handlers.
-
-    Attributes:
-        request: DRF Request object
-        user: User instance
-        entity: Entity instance
-        entry: Entry instance (for retrieve/update/delete operations)
-        data: Request data dict (for create/update operations)
-        params: Plugin-specific validated parameters
-        plugin_id: ID of the plugin handling this request
-        operation: Operation type string
-    """
-
-    request: Any  # DRF Request
-    user: Any  # User instance
-    entity: Any  # Entity instance
-    plugin_id: str
-    operation: str
-    entry: Optional[Any] = None  # Entry instance
-    data: Optional[Dict[str, Any]] = None  # Request data
-    params: Any = field(default_factory=dict)  # Validated params (could be dict or Pydantic model)
-
-    @property
-    def is_authenticated(self) -> bool:
-        """Check if the user is authenticated."""
-        return self.user and self.user.is_authenticated
-
-    def get_request_data(self) -> Dict[str, Any]:
-        """Get the request data as a dictionary."""
-        return dict(self.request.data) if self.request.data else {}
 
 
 class PluginOverrideMixin:
@@ -80,6 +43,10 @@ class PluginOverrideMixin:
         - params: Plugin-specific parameters from configuration
     """
 
+    # Type hints for attributes provided by ViewSet (for mypy)
+    action: str
+    kwargs: Dict[str, Any]
+
     # Actions that can be overridden by plugins
     plugin_override_actions = {"create", "retrieve", "update", "destroy", "list"}
 
@@ -91,6 +58,38 @@ class PluginOverrideMixin:
         "destroy": "delete",
         "list": "list",
     }
+
+    # Cache for entry lookup to avoid N+1 queries
+    _cached_entry_for_override: Optional[Any] = None
+
+    def _get_cached_entry(self) -> Optional[Any]:
+        """Get entry with caching to avoid N+1 queries.
+
+        This method caches the entry lookup result for the duration of
+        the request to avoid multiple database queries in _get_target_entity_id
+        and _get_entry_for_action.
+
+        Returns:
+            Entry instance or None
+        """
+        if self._cached_entry_for_override is not None:
+            return self._cached_entry_for_override
+
+        pk = self.kwargs.get("pk")
+        if pk:
+            from entry.models import Entry
+
+            self._cached_entry_for_override = (
+                Entry.objects.filter(pk=pk).select_related("schema").first()
+            )
+        return self._cached_entry_for_override
+
+    def _clear_entry_cache(self) -> None:
+        """Clear the entry cache.
+
+        Call this at the end of a request if needed.
+        """
+        self._cached_entry_for_override = None
 
     def _get_override_registration(self, entity_id: int, operation: str):
         """Get override registration for an entity/operation if available.
@@ -127,15 +126,9 @@ class PluginOverrideMixin:
         # For entry operations, try to get from the entry's schema
         if hasattr(self, "get_object") and self.action in ("retrieve", "update", "destroy"):
             try:
-                # Don't call get_object yet - it does permission checks
-                # Instead, get the entry from kwargs and lookup
-                pk = self.kwargs.get("pk")
-                if pk:
-                    from entry.models import Entry
-
-                    entry = Entry.objects.filter(pk=pk).select_related("schema").first()
-                    if entry:
-                        return entry.schema.id
+                entry = self._get_cached_entry()
+                if entry:
+                    return entry.schema.id
             except Exception:
                 pass
 
@@ -162,8 +155,10 @@ class PluginOverrideMixin:
         except Exception:
             return None
 
-    def _get_entry_for_action(self):
+    def _get_entry_for_action(self) -> Optional[Any]:
         """Get the Entry instance for retrieve/update/destroy actions.
+
+        Uses the cached entry to avoid N+1 queries.
 
         Returns:
             Entry instance or None
@@ -171,15 +166,7 @@ class PluginOverrideMixin:
         if self.action not in ("retrieve", "update", "destroy"):
             return None
 
-        try:
-            pk = self.kwargs.get("pk")
-            if pk:
-                from entry.models import Entry
-
-                return Entry.objects.select_related("schema").get(pk=pk)
-        except Exception:
-            pass
-        return None
+        return self._get_cached_entry()
 
     def _build_override_context(
         self,
@@ -229,7 +216,7 @@ class PluginOverrideMixin:
                         logger.error(f"Override handler error for entity {entity_id}/create: {e}")
                         raise
 
-        return super().create(request, *args, **kwargs)
+        return super().create(request, *args, **kwargs)  # type: ignore[misc]
 
     def retrieve(self, request: Request, *args, **kwargs) -> Response:
         """Handle retrieve action with plugin override support."""
@@ -245,7 +232,7 @@ class PluginOverrideMixin:
                     logger.error(f"Override handler error for entity {entity_id}/retrieve: {e}")
                     raise
 
-        return super().retrieve(request, *args, **kwargs)
+        return super().retrieve(request, *args, **kwargs)  # type: ignore[misc]
 
     def update(self, request: Request, *args, **kwargs) -> Response:
         """Handle update action with plugin override support."""
@@ -261,7 +248,7 @@ class PluginOverrideMixin:
                     logger.error(f"Override handler error for entity {entity_id}/update: {e}")
                     raise
 
-        return super().update(request, *args, **kwargs)
+        return super().update(request, *args, **kwargs)  # type: ignore[misc]
 
     def destroy(self, request: Request, *args, **kwargs) -> Response:
         """Handle destroy action with plugin override support."""
@@ -277,7 +264,7 @@ class PluginOverrideMixin:
                     logger.error(f"Override handler error for entity {entity_id}/delete: {e}")
                     raise
 
-        return super().destroy(request, *args, **kwargs)
+        return super().destroy(request, *args, **kwargs)  # type: ignore[misc]
 
     def list(self, request: Request, *args, **kwargs) -> Response:
         """Handle list action with plugin override support."""
@@ -294,4 +281,4 @@ class PluginOverrideMixin:
                         logger.error(f"Override handler error for entity {entity_id}/list: {e}")
                         raise
 
-        return super().list(request, *args, **kwargs)
+        return super().list(request, *args, **kwargs)  # type: ignore[misc]
