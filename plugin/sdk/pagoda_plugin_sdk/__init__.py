@@ -97,7 +97,170 @@ def _lazy_import_tasks():
         raise
 
 
-# Define lazy properties for mixins, API components, and task components
+def _lazy_import_cross_entity():
+    """Lazy import of cross-entity operation components"""
+    try:
+        from .cross_entity import (
+            ACLType,
+            AtomicOperationContext,
+            BatchPermissionChecker,
+            CircularReferenceError,
+            CompletenessStatus,
+            CompositeEntry,
+            CrossEntityOperation,
+            EntityRelationship,
+            EntryNotAccessibleError,
+            EntryPermission,
+            IncompleteCompositeError,
+            OperationEntry,
+            OperationLog,
+            OperationResult,
+            OperationStatus,
+            OperationType,
+            PermissionCheckResult,
+            PermissionDeniedError,
+            RelationshipRegistry,
+            RelationType,
+            TransactionError,
+            atomic_operation,
+            check_permissions,
+        )
+
+        return {
+            "EntityRelationship": EntityRelationship,
+            "RelationType": RelationType,
+            "RelationshipRegistry": RelationshipRegistry,
+            "CircularReferenceError": CircularReferenceError,
+            "CompositeEntry": CompositeEntry,
+            "CompletenessStatus": CompletenessStatus,
+            "IncompleteCompositeError": IncompleteCompositeError,
+            "EntryNotAccessibleError": EntryNotAccessibleError,
+            "ACLType": ACLType,
+            "BatchPermissionChecker": BatchPermissionChecker,
+            "EntryPermission": EntryPermission,
+            "PermissionCheckResult": PermissionCheckResult,
+            "PermissionDeniedError": PermissionDeniedError,
+            "check_permissions": check_permissions,
+            "CrossEntityOperation": CrossEntityOperation,
+            "OperationType": OperationType,
+            "OperationStatus": OperationStatus,
+            "OperationEntry": OperationEntry,
+            "OperationResult": OperationResult,
+            "atomic_operation": atomic_operation,
+            "AtomicOperationContext": AtomicOperationContext,
+            "OperationLog": OperationLog,
+            "TransactionError": TransactionError,
+        }
+    except ImportError as e:
+        if "django" in str(e).lower():
+            raise ImportError(
+                "Cross-entity components require Django to be installed. "
+                "Please install Django or import these components directly "
+                "when Django is configured."
+            )
+        raise
+
+
+def _lazy_import_override():
+    """Lazy import of entry operation override components"""
+    try:
+        from .override import (
+            OverrideContext,
+            OverrideMeta,
+            OverrideOperation,
+            accepted_response,
+            collect_override_handlers,
+            create_override_context,
+            created_response,
+            error_response,
+            get_override_meta,
+            has_override_meta,
+            no_content_response,
+            not_found_response,
+            override_entry_operation,
+            override_operation,
+            permission_denied_response,
+            success_response,
+            validation_error_response,
+        )
+
+        return {
+            "override_operation": override_operation,
+            "override_entry_operation": override_entry_operation,
+            "OverrideOperation": OverrideOperation,
+            "OverrideMeta": OverrideMeta,
+            "OverrideContext": OverrideContext,
+            "get_override_meta": get_override_meta,
+            "has_override_meta": has_override_meta,
+            "collect_override_handlers": collect_override_handlers,
+            "create_override_context": create_override_context,
+            "success_response": success_response,
+            "created_response": created_response,
+            "accepted_response": accepted_response,
+            "no_content_response": no_content_response,
+            "error_response": error_response,
+            "not_found_response": not_found_response,
+            "permission_denied_response": permission_denied_response,
+            "validation_error_response": validation_error_response,
+        }
+    except ImportError as e:
+        if "rest_framework" in str(e).lower():
+            raise ImportError(
+                "Override components require Django REST Framework. "
+                "Please install djangorestframework or import directly when configured."
+            )
+        raise
+
+
+# Cross-entity component names
+_CROSS_ENTITY_NAMES = [
+    "EntityRelationship",
+    "RelationType",
+    "RelationshipRegistry",
+    "CircularReferenceError",
+    "CompositeEntry",
+    "CompletenessStatus",
+    "IncompleteCompositeError",
+    "EntryNotAccessibleError",
+    "ACLType",
+    "BatchPermissionChecker",
+    "EntryPermission",
+    "PermissionCheckResult",
+    "PermissionDeniedError",
+    "check_permissions",
+    "CrossEntityOperation",
+    "OperationType",
+    "OperationStatus",
+    "OperationEntry",
+    "OperationResult",
+    "atomic_operation",
+    "AtomicOperationContext",
+    "OperationLog",
+    "TransactionError",
+]
+
+_OVERRIDE_NAMES = [
+    "override_operation",
+    "override_entry_operation",
+    "OverrideOperation",
+    "OverrideMeta",
+    "OverrideContext",
+    "get_override_meta",
+    "has_override_meta",
+    "collect_override_handlers",
+    "create_override_context",
+    "success_response",
+    "created_response",
+    "accepted_response",
+    "no_content_response",
+    "error_response",
+    "not_found_response",
+    "permission_denied_response",
+    "validation_error_response",
+]
+
+
+# Define lazy properties for mixins, API components, task components, and cross-entity
 def __getattr__(name):
     if name == "PluginAPIViewMixin":
         return _lazy_import_mixins()
@@ -141,6 +304,12 @@ def __getattr__(name):
         ]
         if name in task_names:
             return task_classes[task_names.index(name)]
+    elif name in _CROSS_ENTITY_NAMES:
+        cross_entity_classes = _lazy_import_cross_entity()
+        return cross_entity_classes[name]
+    elif name in _OVERRIDE_NAMES:
+        override_components = _lazy_import_override()
+        return override_components[name]
     raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
 
 
@@ -172,6 +341,48 @@ __all__ = [
     "JobStatus",
     "JobOperation",
     "JobTarget",
+    # Cross-entity components (Django dependent)
+    "EntityRelationship",
+    "RelationType",
+    "RelationshipRegistry",
+    "CircularReferenceError",
+    "CompositeEntry",
+    "CompletenessStatus",
+    "IncompleteCompositeError",
+    "EntryNotAccessibleError",
+    "ACLType",
+    "BatchPermissionChecker",
+    "EntryPermission",
+    "PermissionCheckResult",
+    "PermissionDeniedError",
+    "check_permissions",
+    "CrossEntityOperation",
+    "OperationType",
+    "OperationStatus",
+    "OperationEntry",
+    "OperationResult",
+    "atomic_operation",
+    "AtomicOperationContext",
+    "OperationLog",
+    "TransactionError",
+    # Entry operation override components
+    "override_operation",
+    "override_entry_operation",
+    "OverrideOperation",
+    "OverrideMeta",
+    "OverrideContext",
+    "get_override_meta",
+    "has_override_meta",
+    "collect_override_handlers",
+    "create_override_context",
+    "success_response",
+    "created_response",
+    "accepted_response",
+    "no_content_response",
+    "error_response",
+    "not_found_response",
+    "permission_denied_response",
+    "validation_error_response",
     # Utilities
     "get_pagoda_version",
 ]

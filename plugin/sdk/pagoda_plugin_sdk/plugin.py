@@ -5,7 +5,7 @@ All plugins must inherit from the Plugin class defined here.
 This provides the foundation for plugin discovery, validation, and lifecycle management.
 """
 
-from typing import Any, ClassVar, Dict, List, Optional
+from typing import Any, Callable, ClassVar, Dict, List, Optional, Type
 
 from .exceptions import PluginValidationError
 
@@ -31,6 +31,10 @@ class Plugin:
     django_apps: List[str] = []
     url_patterns: Optional[str] = None
     api_v2_patterns: Optional[str] = None
+
+    # Plugin-specific parameter model for override configuration
+    # Subclasses can set this to a Pydantic BaseModel class for validation
+    params_model: ClassVar[Optional[Type[Any]]] = None
 
     # Hook handlers - populated by __init_subclass__
     _hook_handlers: ClassVar[List[Dict[str, Any]]] = []
@@ -90,6 +94,66 @@ class Plugin:
             if not app or not isinstance(app, str):
                 raise PluginValidationError("Django app names must be non-empty strings")
 
+    def validate_params(self, params: Dict[str, Any]) -> Any:
+        """Validate plugin parameters using the params_model if defined.
+
+        If params_model is defined (a Pydantic BaseModel), the params will
+        be validated and returned as a model instance. Otherwise, the raw
+        dict is returned.
+
+        Args:
+            params: Raw parameter dictionary from configuration
+
+        Returns:
+            Validated params (Pydantic model instance or dict)
+
+        Raises:
+            ValidationError: If params don't match the model schema
+        """
+        if self.params_model is None:
+            return params
+
+        # Assumes params_model is a Pydantic BaseModel
+        return self.params_model(**params)
+
+    def get_handler(self, operation: str) -> Optional[Callable]:
+        """Get the override handler for a specific operation.
+
+        This method scans the plugin instance for methods decorated with
+        @override_operation and returns the handler for the specified operation.
+
+        Args:
+            operation: Operation type string ("create", "retrieve", etc.)
+
+        Returns:
+            Handler callable if found, None otherwise
+        """
+        # Import here to avoid circular imports
+        try:
+            from .override import OVERRIDE_META_ATTR
+        except ImportError:
+            return None
+
+        operation_lower = operation.lower()
+
+        for attr_name in dir(self):
+            if attr_name.startswith("_"):
+                continue
+
+            try:
+                attr = getattr(self, attr_name)
+            except AttributeError:
+                continue
+
+            if not callable(attr):
+                continue
+
+            meta = getattr(attr, OVERRIDE_META_ATTR, None)
+            if meta and meta.operation == operation_lower:
+                return attr
+
+        return None
+
     def get_info(self) -> Dict[str, Any]:
         """Get plugin metadata
 
@@ -102,6 +166,25 @@ class Plugin:
             for handler_info in self.__class__._hook_handlers:
                 hook_names.add(handler_info["hook_name"])
 
+        # Collect override operations
+        override_operations = []
+        try:
+            from .override import OVERRIDE_META_ATTR
+
+            for attr_name in dir(self):
+                if attr_name.startswith("_"):
+                    continue
+                try:
+                    attr = getattr(self, attr_name)
+                except AttributeError:
+                    continue
+                if callable(attr):
+                    meta = getattr(attr, OVERRIDE_META_ATTR, None)
+                    if meta:
+                        override_operations.append(meta.operation)
+        except ImportError:
+            pass
+
         return {
             "id": self.id,
             "name": self.name,
@@ -113,6 +196,8 @@ class Plugin:
             "url_patterns": self.url_patterns,
             "api_v2_patterns": self.api_v2_patterns,
             "hooks": list(hook_names),
+            "override_operations": override_operations,
+            "has_params_model": self.params_model is not None,
         }
 
     def __str__(self) -> str:

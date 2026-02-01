@@ -154,16 +154,18 @@ Configure entity-plugin mappings in `settings_common.py` or via environment vari
 AIRONE = {
     # ... other settings ...
 
-    # Entity-specific plugin view routing configuration
+    # Frontend plugin entity override configuration
     # Format: { "entityId": { "plugin": "plugin-id", "pages": ["entry.list"] } }
-    "ENTITY_PLUGIN_VIEWS": json.loads(
+    "FRONTEND_PLUGIN_ENTITY_OVERRIDES": json.loads(
         env.str(
-            "ENTITY_PLUGIN_VIEWS",
+            "FRONTEND_PLUGIN_ENTITY_OVERRIDES",
             json.dumps({}),  # Default: no overrides
         )
     ),
 }
 ```
+
+> **Note**: The configuration key was renamed from `ENTITY_PLUGIN_VIEWS` to `FRONTEND_PLUGIN_ENTITY_OVERRIDES` to clearly distinguish it from backend override configuration (`BACKEND_PLUGIN_ENTITY_OVERRIDES`).
 
 ### Configuration Format
 
@@ -186,12 +188,12 @@ AIRONE = {
 
 **Single Entity Override:**
 ```bash
-export ENTITY_PLUGIN_VIEWS='{"42": {"plugin": "network-tools", "pages": ["entry.list"]}}'
+export FRONTEND_PLUGIN_ENTITY_OVERRIDES='{"42": {"plugin": "network-tools", "pages": ["entry.list"]}}'
 ```
 
 **Multiple Entity Overrides:**
 ```bash
-export ENTITY_PLUGIN_VIEWS='{
+export FRONTEND_PLUGIN_ENTITY_OVERRIDES='{
   "42": {"plugin": "network-tools", "pages": ["entry.list"]},
   "100": {"plugin": "asset-manager", "pages": ["entry.list"]},
   "255": {"plugin": "custom-dashboard", "pages": ["entry.list"]}
@@ -200,7 +202,7 @@ export ENTITY_PLUGIN_VIEWS='{
 
 **Disable All Overrides:**
 ```bash
-export ENTITY_PLUGIN_VIEWS='{}'
+export FRONTEND_PLUGIN_ENTITY_OVERRIDES='{}'
 ```
 
 ## Plugin Development
@@ -569,7 +571,7 @@ export function isEntityViewPlugin(plugin: Plugin): plugin is EntityViewPlugin {
 1. **Set up the configuration:**
    ```bash
    # In your Django settings or environment
-   export ENTITY_PLUGIN_VIEWS='{"9681": {"plugin": "sample", "pages": ["entry.list"]}}'
+   export FRONTEND_PLUGIN_ENTITY_OVERRIDES='{"9681": {"plugin": "sample", "pages": ["entry.list"]}}'
    ```
 
 2. **Build the frontend with plugins:**
@@ -595,7 +597,7 @@ export function isEntityViewPlugin(plugin: Plugin): plugin is EntityViewPlugin {
 5. **Check console for configuration:**
    ```javascript
    // In browser console
-   console.log(window.django_context.entityPluginViews);
+   console.log(window.django_context.frontendPluginEntityOverrides);
    // Output: {"9681": {"plugin": "sample", "pages": ["entry.list"]}}
    ```
 
@@ -605,7 +607,7 @@ If the custom view is not displayed:
 
 1. **Check configuration is loaded:**
    ```javascript
-   window.django_context.entityPluginViews
+   window.django_context.frontendPluginEntityOverrides
    ```
 
 2. **Verify plugin is registered:**
