@@ -77,6 +77,7 @@ dependencies = [
 [tool.uv.sources]
 pagoda-plugin-sdk = { path = "./plugin/sdk", editable = true }
 pagoda-hello-world-plugin = { path = "./plugin/examples/pagoda-hello-world-plugin", editable = true }
+pagoda-cross-entity-sample-plugin = { path = "./plugin/examples/pagoda-cross-entity-plugin", editable = true }
 pagoda-echo-plugin = { git = "https://github.com/syucream/pagoda-backend-plugin-example" }
 
 [tool.uv]
@@ -97,5 +98,6 @@ dev = [
 ]
 plugins = [
     "pagoda-hello-world-plugin",
+    "pagoda-cross-entity-sample-plugin",
     "pagoda-echo-plugin",
 ]

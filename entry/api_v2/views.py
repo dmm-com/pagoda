@@ -1,4 +1,5 @@
 import json
+import logging
 import re
 from collections import Counter
 from copy import deepcopy
@@ -33,6 +34,7 @@ from airone.lib.elasticsearch import (
     EntryHint,
     FilterKey,
 )
+from airone.lib.plugin_dispatch import PluginOverrideMixin
 from airone.lib.types import AttrType
 from api_v1.entry.serializer import EntrySearchChainSerializer
 from entity.models import Entity, EntityAttr
@@ -68,6 +70,8 @@ from job.models import Job, JobOperation, JobStatus
 from role.models import Role
 from user.models import User
 
+logger = logging.getLogger(__name__)
+
 
 class EntryPermission(BasePermission):
     def has_object_permission(self, request: Request, view, obj) -> bool:
@@ -90,7 +94,13 @@ class EntryPermission(BasePermission):
         return True
 
 
-class EntryAPI(viewsets.ModelViewSet):
+class EntryAPI(PluginOverrideMixin, viewsets.ModelViewSet):
+    """Entry API ViewSet with plugin override support.
+
+    Plugin overrides are automatically handled by PluginOverrideMixin.
+    Configure overrides via ENTITY_PLUGIN_OVERRIDES environment variable.
+    """
+
     queryset = Entry.objects.all()
     permission_classes = [IsAuthenticated & EntryPermission]
     pagination_class = LimitOffsetPagination
@@ -107,10 +117,49 @@ class EntryAPI(viewsets.ModelViewSet):
         }
         return serializer.get(self.action, EntryBaseSerializer)
 
+    def retrieve(self, request: Request, *args, **kwargs) -> Response:
+        # Check for plugin override first
+        # Note: We explicitly call mixin methods here because this method overrides
+        # PluginOverrideMixin.retrieve() in the MRO
+        entry: Entry = self.get_object()
+        entity_id = entry.schema.id
+        registration = self._get_override_registration(entity_id, "retrieve")
+        if registration:
+            context = self._build_override_context(request, registration, entry.schema, entry)
+            logger.info(
+                f"Dispatching retrieve to plugin {registration.plugin_id} for entry {entry.id}"
+            )
+            try:
+                return registration.handler(context)
+            except Exception as e:
+                logger.error(f"Override handler error for entity {entity_id}/retrieve: {e}")
+                raise
+
+        # Default behavior (no plugin override) - use serializer
+        serializer = self.get_serializer(entry)
+        return Response(serializer.data)
+
     @extend_schema(request=EntryUpdateSerializer)
     def update(self, request: Request, *args, **kwargs) -> Response:
-        user: User = request.user
+        # Check for plugin override first
+        # Note: We explicitly call mixin methods here because this method overrides
+        # PluginOverrideMixin.update() in the MRO
         entry: Entry = self.get_object()
+        entity_id = entry.schema.id
+        registration = self._get_override_registration(entity_id, "update")
+        if registration:
+            context = self._build_override_context(request, registration, entry.schema, entry)
+            logger.info(
+                f"Dispatching update to plugin {registration.plugin_id} for entry {entry.id}"
+            )
+            try:
+                return registration.handler(context)
+            except Exception as e:
+                logger.error(f"Override handler error for entity {entity_id}/update: {e}")
+                raise
+
+        # Default behavior (no plugin override)
+        user: User = request.user
 
         serializer = EntryUpdateSerializer(
             instance=entry, data=request.data, context={"_user": user}
@@ -123,7 +172,24 @@ class EntryAPI(viewsets.ModelViewSet):
         return Response(status=status.HTTP_202_ACCEPTED)
 
     def destroy(self, request: Request, *args, **kwargs) -> Response:
+        # Check for plugin override first
+        # Note: We explicitly call mixin methods here because this method overrides
+        # PluginOverrideMixin.destroy() in the MRO
         entry: Entry = self.get_object()
+        entity_id = entry.schema.id
+        registration = self._get_override_registration(entity_id, "delete")
+        if registration:
+            context = self._build_override_context(request, registration, entry.schema, entry)
+            logger.info(
+                f"Dispatching delete to plugin {registration.plugin_id} for entry {entry.id}"
+            )
+            try:
+                return registration.handler(context)
+            except Exception as e:
+                logger.error(f"Override handler error for entity {entity_id}/delete: {e}")
+                raise
+
+        # Default behavior (no plugin override)
         if not entry.is_active:
             raise ObjectNotExistsError("specified entry has already been deleted")
 

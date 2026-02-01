@@ -1,3 +1,4 @@
+import logging
 from typing import List
 
 from django.db.models import F
@@ -16,6 +17,7 @@ from rest_framework.response import Response
 from airone.lib.acl import ACLType, get_permitted_objects
 from airone.lib.drf import ObjectNotExistsError, YAMLParser, YAMLRenderer
 from airone.lib.http import http_get
+from airone.lib.plugin_dispatch import PluginOverrideMixin
 from entity.api_v2.serializers import (
     EntityAttrNameSerializer,
     EntityCreateSerializer,
@@ -30,6 +32,8 @@ from entry.api_v2.serializers import EntryBaseSerializer, EntryCreateSerializer
 from entry.models import Entry
 from job.models import Job
 from user.models import History, User
+
+logger = logging.getLogger(__name__)
 
 
 # distutils.util.strtoboolの代替実装
@@ -232,7 +236,13 @@ class AliasSearchFilter(filters.SearchFilter):
         OpenApiParameter("with_alias", OpenApiTypes.STR, OpenApiParameter.QUERY),
     ],
 )
-class EntityEntryAPI(viewsets.ModelViewSet):
+class EntityEntryAPI(PluginOverrideMixin, viewsets.ModelViewSet):
+    """Entity Entry API ViewSet with plugin override support.
+
+    Plugin overrides are automatically handled by PluginOverrideMixin.
+    Configure overrides via ENTITY_PLUGIN_OVERRIDES environment variable.
+    """
+
     queryset = Entry.objects.all()
     pagination_class = PageNumberPagination
     permission_classes = [IsAuthenticated & EntityPermission]
@@ -257,7 +267,28 @@ class EntityEntryAPI(viewsets.ModelViewSet):
 
     @extend_schema(request=EntryCreateSerializer)
     def create(self, request: Request, entity_id: int) -> Response:
+        # Check for plugin override first
+        # Note: We explicitly call mixin methods here because this method overrides
+        # PluginOverrideMixin.create() in the MRO
+        registration = self._get_override_registration(entity_id, "create")
+        if registration:
+            entity = self._get_entity(entity_id)
+            if entity:
+                context = self._build_override_context(request, registration, entity)
+                logger.info(
+                    f"Dispatching create to plugin {registration.plugin_id} for entity {entity_id}"
+                )
+                try:
+                    return registration.handler(context)
+                except Exception as e:
+                    logger.error(f"Override handler error for entity {entity_id}/create: {e}")
+                    raise
+
+        # Default behavior (no plugin override)
         user: User = request.user
+
+        # Set schema to entity_id and let the serializer validate it
+        # This allows proper validation error response for non-existent entities
         request.data["schema"] = entity_id
 
         serializer = EntryCreateSerializer(data=request.data, context={"_user": user})

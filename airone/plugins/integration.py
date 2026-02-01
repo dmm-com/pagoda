@@ -40,8 +40,32 @@ class PluginIntegration:
             logger.info("Initializing plugin system...")
             discover_plugins()
             self._inject_models()
+            self._load_override_config()
             self.initialized = True
             logger.info("Plugin system initialized successfully")
+
+    def _load_override_config(self):
+        """Load override registrations from ENTITY_PLUGIN_OVERRIDES config."""
+        try:
+            from .override_manager import override_registry
+
+            # Get ENTITY_PLUGIN_OVERRIDES from AIRONE settings
+            airone_settings = getattr(settings, "AIRONE", {})
+            override_config = airone_settings.get("ENTITY_PLUGIN_OVERRIDES", {})
+
+            if not override_config:
+                logger.debug("No ENTITY_PLUGIN_OVERRIDES configured")
+                return
+
+            # Create a simple plugin registry adapter
+            class PluginRegistryAdapter:
+                def get(self, plugin_id):
+                    return plugin_registry.get_plugin(plugin_id)
+
+            override_registry.load_from_settings(override_config, PluginRegistryAdapter())
+
+        except Exception as e:
+            logger.error(f"Failed to load override configuration: {e}", exc_info=True)
 
     def _inject_models(self):
         """Inject real models into the plugin SDK"""

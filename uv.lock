@@ -60,6 +60,7 @@ dev = [
     { name = "types-requests" },
 ]
 plugins = [
+    { name = "pagoda-cross-entity-sample-plugin" },
     { name = "pagoda-echo-plugin" },
     { name = "pagoda-hello-world-plugin" },
 ]
@@ -92,6 +93,7 @@ requires-dist = [
     { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.15.0" },
     { name = "mysqlclient", specifier = "==2.2.0" },
     { name = "natsort", specifier = "==5.3.3" },
+    { name = "pagoda-cross-entity-sample-plugin", marker = "extra == 'plugins'", editable = "plugin/examples/pagoda-cross-entity-plugin" },
     { name = "pagoda-echo-plugin", marker = "extra == 'plugins'", git = "https://github.com/syucream/pagoda-backend-plugin-example" },
     { name = "pagoda-hello-world-plugin", marker = "extra == 'plugins'", editable = "plugin/examples/pagoda-hello-world-plugin" },
     { name = "pagoda-plugin-sdk", editable = "plugin/sdk" },
@@ -1072,6 +1074,17 @@ sdist = { url = "https://files.pythonhosted.org/packages/a1/d4/1fc4078c65507b51b
 wheels = [
     { url = "https://files.pythonhosted.org/packages/20/12/38679034af332785aac8774540895e234f4d07f7545804097de4b666afd8/packaging-25.0-py3-none-any.whl", hash = "sha256:29572ef2b1f17581046b3a2227d5c611fb25ec70ca1ba8554b24b0e69331a484", size = 66469, upload-time = "2025-04-19T11:48:57.875Z" },
 ]
+
+[[package]]
+name = "pagoda-cross-entity-sample-plugin"
+version = "1.0.0"
+source = { editable = "plugin/examples/pagoda-cross-entity-plugin" }
+dependencies = [
+    { name = "pagoda-plugin-sdk" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "pagoda-plugin-sdk", specifier = ">=1.0.0a1" }]
 
 [[package]]
 name = "pagoda-echo-plugin"

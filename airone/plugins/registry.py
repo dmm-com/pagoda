@@ -58,6 +58,9 @@ class PluginRegistry:
         # Register plugin hooks
         self._register_hooks(plugin)
 
+        # Register override handlers
+        self._register_override_handlers(plugin)
+
         return plugin
 
     def _register_api_v2_patterns(self, plugin: Plugin) -> None:
@@ -114,6 +117,60 @@ class PluginRegistry:
 
         if registered_count > 0:
             logger.info(f"Registered {registered_count} hook(s) for plugin '{plugin.id}'")
+
+    def _register_override_handlers(self, plugin: "Plugin") -> None:
+        """Register plugin entry operation override handlers.
+
+        NOTE: With the new ID-based override system, handlers are registered via
+        ENTITY_PLUGIN_OVERRIDES environment variable configuration, not via
+        decorator scanning. This method now only logs info about available handlers.
+
+        The old @override_entry_operation(entity="...", operation="...") decorator
+        is deprecated. Use @override_operation("...") instead and configure
+        entity mappings via ENTITY_PLUGIN_OVERRIDES.
+
+        Args:
+            plugin: Plugin instance whose override handlers should be registered
+        """
+        try:
+            from pagoda_plugin_sdk.override import collect_override_handlers
+        except ImportError:
+            logger.debug("pagoda_plugin_sdk.override not available, skipping override registration")
+            return
+
+        handlers = collect_override_handlers(plugin)
+        if not handlers:
+            return
+
+        # Log available handlers (actual registration is done via load_from_settings)
+        new_style_count = 0
+        deprecated_count = 0
+
+        for handler_info in handlers:
+            entity = handler_info.get("entity")
+
+            if entity is not None:
+                # Old-style decorator with entity name - deprecated
+                deprecated_count += 1
+                logger.warning(
+                    f"Plugin '{plugin.id}' uses deprecated @override_entry_operation "
+                    f"decorator with entity='{entity}'. Migrate to @override_operation "
+                    f"and use ENTITY_PLUGIN_OVERRIDES configuration."
+                )
+            else:
+                # New-style decorator without entity
+                new_style_count += 1
+
+        if new_style_count > 0:
+            logger.info(
+                f"Plugin '{plugin.id}' has {new_style_count} override handler(s). "
+                f"Configure via ENTITY_PLUGIN_OVERRIDES to enable."
+            )
+        if deprecated_count > 0:
+            logger.warning(
+                f"Plugin '{plugin.id}' has {deprecated_count} deprecated handler(s) "
+                f"that need migration to the new ID-based system."
+            )
 
     def _load_handler(self, handler_path: str) -> Callable:
         """Load handler function from module path

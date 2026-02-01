@@ -294,6 +294,20 @@ class Common(Configuration):
                 json.dumps({"9681": {"plugin": "sample", "pages": ["entry.list"]}}),
             )
         ),
+        # Entity-specific plugin backend operation override configuration
+        # Format: { "entityId": { "plugin": "plugin-id", "operations": ["create", "update"],
+        #                         "params": { "key": "value" } } }
+        #
+        # Example: Override Service entity (ID 42) with cross-entity-sample plugin
+        # ENTITY_PLUGIN_OVERRIDES='{"42":{"plugin":"cross-entity-sample",
+        #   "operations":["create","update"],"params":{"configuration_entity_id":99}}}'
+        # To disable: set ENTITY_PLUGIN_OVERRIDES='{}'
+        "ENTITY_PLUGIN_OVERRIDES": json.loads(
+            env.str(
+                "ENTITY_PLUGIN_OVERRIDES",
+                json.dumps({}),
+            )
+        ),
     }
 
     # flags to enable/disable AirOne core features
