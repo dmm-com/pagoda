@@ -107,7 +107,7 @@ class EntryAPI(viewsets.ModelViewSet):
         }
         return serializer.get(self.action, EntryBaseSerializer)
 
-    @extend_schema(request=EntryUpdateSerializer)
+    @extend_schema(request=EntryUpdateSerializer, responses={202: None})
     def update(self, request: Request, *args, **kwargs) -> Response:
         user: User = request.user
         entry: Entry = self.get_object()
