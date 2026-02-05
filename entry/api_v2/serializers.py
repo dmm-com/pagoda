@@ -511,6 +511,9 @@ class EntryCreateSerializer(EntryBaseSerializer):
                         # Apply default value from EntityAttr
                         attr.add_value(user, default_value)
 
+        # for updating its name from attribute values
+        entry.save_autoname()
+
         if custom_view.is_custom("after_create_entry_v2", entity_name):
             custom_view.call_custom("after_create_entry_v2", entity_name, user, entry)
 
@@ -615,6 +618,9 @@ class EntryUpdateSerializer(EntryBaseSerializer):
 
             attr.add_value(user, attr_data[0]["value"])
             is_updated = True
+
+        # Updating its name from attribute values if it's necessary
+        entry.save_autoname()
 
         if custom_view.is_custom("after_update_entry_v2", entity_name):
             custom_view.call_custom("after_update_entry_v2", entity_name, user, entry)

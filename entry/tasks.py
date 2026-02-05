@@ -578,6 +578,11 @@ def do_copy_entry(self, job: Job) -> tuple[JobStatus, str, None]:
     dest_entry = Entry.objects.filter(schema=src_entry.schema, name=params["new_name"]).first()
     if not dest_entry:
         dest_entry = src_entry.clone(job.user, name=params["new_name"])
+
+        # for updating its name from attribute values
+        dest_entry.save_autoname()
+
+        # update item name pj
         dest_entry.register_es()
 
     if custom_view.is_custom("after_copy_entry", src_entry.schema.name):

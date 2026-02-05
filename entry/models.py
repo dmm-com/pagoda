@@ -1700,6 +1700,13 @@ class Entry(ACLBase):
 
         return self.name
 
+    def save_autoname(self):
+        """This method saves auto-generated name according to the Entity settings"""
+        autoname = self.autoname
+        if self.name != autoname:
+            self.name = autoname
+            self.save(update_fields=["name"])
+
     def add_alias(self, name):
         # validate name that is not duplicated with other Item names and Aliases in this model
         if not self.schema.is_available(name):
