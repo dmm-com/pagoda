@@ -6070,6 +6070,49 @@ class ViewTest(BaseViewTest):
         item_sg.refresh_from_db()
         self.assertEqual(item_sg.name, "[LB0001] test.example.com:8080")
 
+    @patch("entry.tasks.import_entries_v2.delay", Mock(side_effect=tasks.import_entries_v2))
+    def test_import_update_items_for_autoname(self):
+        (model_lb, model_sg) = self._create_lb_models_for_autoname()
+
+        item_lbs = [self.add_entry(self.user, "LB%04d" % x, model_lb) for x in range(3)]
+
+        importing_params = [
+            {
+                "entity": model_sg.name,
+                "entries": [
+                    {
+                        "name": "ShouldBeChanged",
+                        "attrs": [
+                            {"name": "LB", "value": item_lbs[index].name},
+                            {"name": "port", "value": port},
+                            {"name": "domain", "value": domain},
+                        ],
+                    }
+                    for index, (domain, port) in enumerate(
+                        [
+                            ("hoge.example.com", "8080"),
+                            ("fuga.example.com", "9090"),
+                            ("puyo.example.com", "10000"),
+                        ]
+                    )
+                ],
+            }
+        ]
+        resp = self.client.post(
+            "/entry/api/v2/import/", yaml.dump(importing_params), "application/yaml"
+        )
+        self.assertEqual(resp.status_code, 200)
+
+        # check Item name is determined by its attribute values
+        self.assertEqual(
+            [
+                "[LB0000] hoge.example.com:8080",
+                "[LB0001] fuga.example.com:9090",
+                "[LB0002] puyo.example.com:10000",
+            ],
+            [x.name for x in Entry.objects.filter(schema=model_sg).order_by("id")],
+        )
+
     @patch("entry.tasks.create_entry_v2.delay", Mock(side_effect=tasks.create_entry_v2))
     def test_array_number_with_null_values(self):
         """Test array number with null/None values"""
