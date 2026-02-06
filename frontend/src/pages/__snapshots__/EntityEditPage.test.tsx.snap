@@ -509,13 +509,6 @@ exports[`EditEntityPage should match snapshot 1`] = `
                 <th
                   class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-8816du-MuiTableCell-root"
                   scope="col"
-                  width="100px"
-                >
-                  属性説明
-                </th>
-                <th
-                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-8816du-MuiTableCell-root"
-                  scope="col"
                   width="300px"
                 >
                   型
@@ -526,20 +519,6 @@ exports[`EditEntityPage should match snapshot 1`] = `
                   width="200px"
                 >
                   デフォルト値
-                </th>
-                <th
-                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-8816du-MuiTableCell-root"
-                  scope="col"
-                  width="100px"
-                >
-                  必須
-                </th>
-                <th
-                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-8816du-MuiTableCell-root"
-                  scope="col"
-                  width="100px"
-                >
-                  関連削除
                 </th>
                 <th
                   class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-8816du-MuiTableCell-root"
@@ -567,7 +546,7 @@ exports[`EditEntityPage should match snapshot 1`] = `
                   scope="col"
                   width="100px"
                 >
-                  ACL設定
+                  詳細
                 </th>
               </tr>
             </thead>
@@ -577,15 +556,6 @@ exports[`EditEntityPage should match snapshot 1`] = `
               <tr
                 class="MuiTableRow-root css-1xtozoh-MuiTableRow-root"
               >
-                <td
-                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1dc80h3-MuiTableCell-root"
-                />
-                <td
-                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1dc80h3-MuiTableCell-root"
-                />
-                <td
-                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1dc80h3-MuiTableCell-root"
-                />
                 <td
                   class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1dc80h3-MuiTableCell-root"
                 />
@@ -1137,13 +1107,6 @@ exports[`EditEntityPage should match snapshot 1`] = `
               <th
                 class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-8816du-MuiTableCell-root"
                 scope="col"
-                width="100px"
-              >
-                属性説明
-              </th>
-              <th
-                class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-8816du-MuiTableCell-root"
-                scope="col"
                 width="300px"
               >
                 型
@@ -1154,20 +1117,6 @@ exports[`EditEntityPage should match snapshot 1`] = `
                 width="200px"
               >
                 デフォルト値
-              </th>
-              <th
-                class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-8816du-MuiTableCell-root"
-                scope="col"
-                width="100px"
-              >
-                必須
-              </th>
-              <th
-                class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-8816du-MuiTableCell-root"
-                scope="col"
-                width="100px"
-              >
-                関連削除
               </th>
               <th
                 class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-8816du-MuiTableCell-root"
@@ -1195,7 +1144,7 @@ exports[`EditEntityPage should match snapshot 1`] = `
                 scope="col"
                 width="100px"
               >
-                ACL設定
+                詳細
               </th>
             </tr>
           </thead>
@@ -1205,15 +1154,6 @@ exports[`EditEntityPage should match snapshot 1`] = `
             <tr
               class="MuiTableRow-root css-1xtozoh-MuiTableRow-root"
             >
-              <td
-                class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1dc80h3-MuiTableCell-root"
-              />
-              <td
-                class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1dc80h3-MuiTableCell-root"
-              />
-              <td
-                class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1dc80h3-MuiTableCell-root"
-              />
               <td
                 class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1dc80h3-MuiTableCell-root"
               />
