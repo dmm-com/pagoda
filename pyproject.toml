@@ -49,7 +49,7 @@ dependencies = [
     "django-replicated==2.7",
     "django-simple-history==3.11.0",
     "django-storages==1.14.1",
-    "django==4.2.27",
+    "django==4.2.28",
     "djangorestframework==3.15.2",
     "markdown>=3.7",
     "drf-spectacular==0.29.0",
