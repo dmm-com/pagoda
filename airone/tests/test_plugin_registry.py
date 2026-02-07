@@ -79,13 +79,13 @@ class TestPluginRegistry(unittest.TestCase):
 
         self.registry.register(TestPlugin)
 
-        plugin = self.registry.get_plugin("test-plugin")
+        plugin = self.registry.get("test-plugin")
         self.assertIsNotNone(plugin)
         self.assertEqual(plugin.id, "test-plugin")
 
     def test_get_plugin_not_found(self):
         """Test retrieving non-existent plugin returns None"""
-        plugin = self.registry.get_plugin("non-existent")
+        plugin = self.registry.get("non-existent")
         self.assertIsNone(plugin)
 
     def test_get_all_plugins(self):

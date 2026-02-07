@@ -2,7 +2,7 @@ import importlib
 import logging
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Type
 
-from django.urls import include, path
+from django.urls import URLResolver, include, path
 from pagoda_plugin_sdk.exceptions import PluginError
 
 from .hook_manager import hook_manager
@@ -57,9 +57,6 @@ class PluginRegistry:
 
         # Register plugin hooks
         self._register_hooks(plugin)
-
-        # Register override handlers
-        self._register_override_handlers(plugin)
 
         return plugin
 
@@ -118,60 +115,6 @@ class PluginRegistry:
         if registered_count > 0:
             logger.info(f"Registered {registered_count} hook(s) for plugin '{plugin.id}'")
 
-    def _register_override_handlers(self, plugin: "Plugin") -> None:
-        """Register plugin entry operation override handlers.
-
-        NOTE: With the new ID-based override system, handlers are registered via
-        BACKEND_PLUGIN_ENTITY_OVERRIDES environment variable configuration, not via
-        decorator scanning. This method now only logs info about available handlers.
-
-        The old @override_entry_operation(entity="...", operation="...") decorator
-        is deprecated. Use @override_operation("...") instead and configure
-        entity mappings via BACKEND_PLUGIN_ENTITY_OVERRIDES.
-
-        Args:
-            plugin: Plugin instance whose override handlers should be registered
-        """
-        try:
-            from pagoda_plugin_sdk.override import collect_override_handlers
-        except ImportError:
-            logger.debug("pagoda_plugin_sdk.override not available, skipping override registration")
-            return
-
-        handlers = collect_override_handlers(plugin)
-        if not handlers:
-            return
-
-        # Log available handlers (actual registration is done via load_from_settings)
-        new_style_count = 0
-        deprecated_count = 0
-
-        for handler_info in handlers:
-            entity = handler_info.get("entity")
-
-            if entity is not None:
-                # Old-style decorator with entity name - deprecated
-                deprecated_count += 1
-                logger.warning(
-                    f"Plugin '{plugin.id}' uses deprecated @override_entry_operation "
-                    f"decorator with entity='{entity}'. Migrate to @override_operation "
-                    f"and use BACKEND_PLUGIN_ENTITY_OVERRIDES configuration."
-                )
-            else:
-                # New-style decorator without entity
-                new_style_count += 1
-
-        if new_style_count > 0:
-            logger.info(
-                f"Plugin '{plugin.id}' has {new_style_count} override handler(s). "
-                f"Configure via BACKEND_PLUGIN_ENTITY_OVERRIDES to enable."
-            )
-        if deprecated_count > 0:
-            logger.warning(
-                f"Plugin '{plugin.id}' has {deprecated_count} deprecated handler(s) "
-                f"that need migration to the new ID-based system."
-            )
-
     def _load_handler(self, handler_path: str) -> Callable:
         """Load handler function from module path
 
@@ -203,7 +146,7 @@ class PluginRegistry:
 
         return getattr(module, func_name)
 
-    def get_plugin(self, plugin_id: str) -> Optional["Plugin"]:
+    def get(self, plugin_id: str) -> Optional["Plugin"]:
         """Get a plugin by ID
 
         Args:
@@ -241,25 +184,25 @@ class PluginRegistry:
             apps.extend(plugin.django_apps)
         return apps
 
-    def get_url_patterns(self) -> List[Any]:
+    def get_url_patterns(self) -> List[URLResolver]:
         """Get URL patterns
 
         Returns:
             List of URL patterns from enabled plugins
         """
-        patterns = []
+        patterns: List[URLResolver] = []
         for plugin in self.get_enabled_plugins():
             if plugin.url_patterns:
                 patterns.append(path(f"plugins/{plugin.id}/", include(plugin.url_patterns)))
         return patterns
 
-    def get_api_v2_patterns(self) -> List[Any]:
+    def get_api_v2_patterns(self) -> List[URLResolver]:
         """Get API v2 URL patterns
 
         Returns:
             List of API v2 URL patterns from enabled plugins
         """
-        patterns = []
+        patterns: List[URLResolver] = []
         for pattern_config in self._api_v2_patterns:
             patterns.append(path(pattern_config["prefix"], include(pattern_config["patterns"])))
         return patterns

@@ -7,10 +7,10 @@ efficiently before executing operations.
 
 from dataclasses import dataclass, field
 from enum import IntEnum
-from typing import TYPE_CHECKING, Any, List, Optional, Union
+from typing import TYPE_CHECKING, List, Optional, Union
 
 if TYPE_CHECKING:
-    from pagoda_plugin_sdk.protocols import EntryProtocol, UserProtocol
+    from pagoda_plugin_sdk.protocols import EntityProtocol, EntryProtocol, UserProtocol
 
 
 class ACLType(IntEnum):
@@ -219,7 +219,7 @@ class BatchPermissionChecker:
         # Fallback: assume permission granted if we can't check
         return True
 
-    def _check_entity_create_permission(self, entity: Any) -> bool:
+    def _check_entity_create_permission(self, entity: "EntityProtocol") -> bool:
         """Check if user can create entries in an entity."""
         if hasattr(entity, "may_permitted"):
             return entity.may_permitted(self.user, ACLType.Writable)

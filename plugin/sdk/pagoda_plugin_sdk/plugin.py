@@ -5,9 +5,13 @@ All plugins must inherit from the Plugin class defined here.
 This provides the foundation for plugin discovery, validation, and lifecycle management.
 """
 
-from typing import Any, Callable, ClassVar, Dict, List, Optional, Type
+from typing import TYPE_CHECKING, Any, Callable, ClassVar, Dict, List, Optional, Type
 
 from .exceptions import PluginValidationError
+from .override import OVERRIDE_META_ATTR
+
+if TYPE_CHECKING:
+    from pydantic import BaseModel
 
 
 class Plugin:
@@ -34,7 +38,7 @@ class Plugin:
 
     # Plugin-specific parameter model for override configuration
     # Subclasses can set this to a Pydantic BaseModel class for validation
-    params_model: ClassVar[Optional[Type[Any]]] = None
+    params_model: ClassVar[Optional[Type["BaseModel"]]] = None
 
     # Hook handlers - populated by __init_subclass__
     _hook_handlers: ClassVar[List[Dict[str, Any]]] = []
@@ -94,7 +98,7 @@ class Plugin:
             if not app or not isinstance(app, str):
                 raise PluginValidationError("Django app names must be non-empty strings")
 
-    def validate_params(self, params: Dict[str, Any]) -> Any:
+    def validate_params(self, params: Dict[str, Any]) -> Dict[str, Any] | "BaseModel":
         """Validate plugin parameters using the params_model if defined.
 
         If params_model is defined (a Pydantic BaseModel), the params will
@@ -128,12 +132,6 @@ class Plugin:
         Returns:
             Handler callable if found, None otherwise
         """
-        # Import here to avoid circular imports
-        try:
-            from .override import OVERRIDE_META_ATTR
-        except ImportError:
-            return None
-
         operation_lower = operation.lower()
 
         for attr_name in dir(self):
@@ -154,7 +152,7 @@ class Plugin:
 
         return None
 
-    def get_info(self) -> Dict[str, Any]:
+    def get_info(self) -> Dict[str, str | bool | List[str] | None]:
         """Get plugin metadata
 
         Returns:
@@ -168,22 +166,17 @@ class Plugin:
 
         # Collect override operations
         override_operations = []
-        try:
-            from .override import OVERRIDE_META_ATTR
-
-            for attr_name in dir(self):
-                if attr_name.startswith("_"):
-                    continue
-                try:
-                    attr = getattr(self, attr_name)
-                except AttributeError:
-                    continue
-                if callable(attr):
-                    meta = getattr(attr, OVERRIDE_META_ATTR, None)
-                    if meta:
-                        override_operations.append(meta.operation)
-        except ImportError:
-            pass
+        for attr_name in dir(self):
+            if attr_name.startswith("_"):
+                continue
+            try:
+                attr = getattr(self, attr_name)
+            except AttributeError:
+                continue
+            if callable(attr):
+                meta = getattr(attr, OVERRIDE_META_ATTR, None)
+                if meta:
+                    override_operations.append(meta.operation)
 
         return {
             "id": self.id,

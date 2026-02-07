@@ -286,9 +286,8 @@ def atomic_operation(
     """
     # Create a dummy user if none provided (for testing)
     if user is None:
-        from dataclasses import dataclass as dc
 
-        @dc
+        @dataclass
         class DummyUser:
             id: int = 0
 

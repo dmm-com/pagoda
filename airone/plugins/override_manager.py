@@ -10,7 +10,17 @@ Changed to ID-based registration with parameter support.
 import logging
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Callable, Dict, List, Optional, Set
+from typing import TYPE_CHECKING, Any, Callable, Dict, Optional, Protocol
+
+if TYPE_CHECKING:
+    from pagoda_plugin_sdk.plugin import Plugin
+
+
+class PluginRegistryProtocol(Protocol):
+    """Protocol for plugin registry lookup."""
+
+    def get(self, plugin_id: str) -> Optional["Plugin"]: ...
+
 
 logger = logging.getLogger(__name__)
 
@@ -72,12 +82,6 @@ class OverrideConflictError(Exception):
             f"already registered by plugin '{existing_plugin}', "
             f"cannot register for plugin '{new_plugin}'"
         )
-
-
-class OverrideNotFoundError(Exception):
-    """Raised when a referenced override handler is not found."""
-
-    pass
 
 
 @dataclass
@@ -160,101 +164,6 @@ class OverrideRegistry:
             f"operation='{operation.value}', plugin='{plugin_id}'"
         )
 
-    def unregister(
-        self,
-        entity_id: int,
-        operation: OperationType,
-        plugin_id: str,
-    ) -> bool:
-        """Unregister an override handler.
-
-        Args:
-            entity_id: ID of the entity
-            operation: Operation type
-            plugin_id: ID of the plugin (must match the registered plugin)
-
-        Returns:
-            True if unregistered, False if not found
-        """
-        if entity_id not in self._handlers:
-            return False
-
-        if operation not in self._handlers[entity_id]:
-            return False
-
-        existing = self._handlers[entity_id][operation]
-        if existing.plugin_id != plugin_id:
-            logger.warning(
-                f"Cannot unregister override for {entity_id}/{operation.value}: "
-                f"registered by {existing.plugin_id}, not {plugin_id}"
-            )
-            return False
-
-        del self._handlers[entity_id][operation]
-
-        # Clean up empty entity entry
-        if not self._handlers[entity_id]:
-            del self._handlers[entity_id]
-
-        logger.info(
-            f"Unregistered override: entity_id={entity_id}, "
-            f"operation='{operation.value}', plugin='{plugin_id}'"
-        )
-        return True
-
-    def unregister_plugin(self, plugin_id: str) -> int:
-        """Unregister all overrides for a plugin.
-
-        Args:
-            plugin_id: ID of the plugin
-
-        Returns:
-            Number of overrides unregistered
-        """
-        count = 0
-        entities_to_clean = []
-
-        for entity_id, operations in self._handlers.items():
-            ops_to_remove = []
-            for operation, registration in operations.items():
-                if registration.plugin_id == plugin_id:
-                    ops_to_remove.append(operation)
-                    count += 1
-
-            for op in ops_to_remove:
-                del operations[op]
-
-            if not operations:
-                entities_to_clean.append(entity_id)
-
-        for entity_id in entities_to_clean:
-            del self._handlers[entity_id]
-
-        if count > 0:
-            logger.info(f"Unregistered {count} overrides for plugin '{plugin_id}'")
-
-        return count
-
-    def get_handler(
-        self,
-        entity_id: int,
-        operation: OperationType,
-    ) -> Optional[Callable]:
-        """Get the override handler for an entity operation.
-
-        Args:
-            entity_id: ID of the entity
-            operation: Operation type
-
-        Returns:
-            Handler callable if found, None otherwise
-        """
-        if entity_id not in self._handlers:
-            return None
-
-        registration = self._handlers[entity_id].get(operation)
-        return registration.handler if registration else None
-
     def get_registration(
         self,
         entity_id: int,
@@ -273,63 +182,6 @@ class OverrideRegistry:
             return None
         return self._handlers[entity_id].get(operation)
 
-    def has_override(
-        self,
-        entity_id: int,
-        operation: Optional[OperationType] = None,
-    ) -> bool:
-        """Check if an entity has any overrides.
-
-        Args:
-            entity_id: ID of the entity
-            operation: Specific operation to check (optional)
-
-        Returns:
-            True if override exists
-        """
-        if entity_id not in self._handlers:
-            return False
-
-        if operation is None:
-            return bool(self._handlers[entity_id])
-
-        return operation in self._handlers[entity_id]
-
-    def get_overridden_entity_ids(self) -> Set[int]:
-        """Get all entity IDs that have overrides.
-
-        Returns:
-            Set of entity IDs
-        """
-        return set(self._handlers.keys())
-
-    def get_plugin_overrides(self, plugin_id: str) -> List[OverrideRegistration]:
-        """Get all overrides registered by a plugin.
-
-        Args:
-            plugin_id: ID of the plugin
-
-        Returns:
-            List of OverrideRegistration objects
-        """
-        result = []
-        for operations in self._handlers.values():
-            for registration in operations.values():
-                if registration.plugin_id == plugin_id:
-                    result.append(registration)
-        return result
-
-    def get_all_registrations(self) -> List[OverrideRegistration]:
-        """Get all override registrations.
-
-        Returns:
-            List of all OverrideRegistration objects
-        """
-        result: List[OverrideRegistration] = []
-        for operations in self._handlers.values():
-            result.extend(operations.values())
-        return result
-
     def clear(self) -> None:
         """Clear all registrations."""
         self._handlers.clear()
@@ -338,8 +190,8 @@ class OverrideRegistry:
 
     def load_from_settings(
         self,
-        settings_config: Dict[str, Any],
-        plugin_registry: Any,
+        settings_config: Dict[str, Dict[str, Any]],
+        plugin_registry: PluginRegistryProtocol,
     ) -> None:
         """Load override registrations from settings configuration.
 
@@ -415,30 +267,9 @@ class OverrideRegistry:
                 )
 
         self._initialized = True
-        count = len(self.get_all_registrations())
+        count = sum(len(ops) for ops in self._handlers.values())
         logger.info(f"Loaded {count} override registrations from settings")
-
-    def validate_conflicts(self) -> List[str]:
-        """Validate that there are no undetected conflicts.
-
-        This is mainly for debugging and testing purposes.
-
-        Returns:
-            List of conflict descriptions (empty if no conflicts)
-        """
-        # Currently conflicts are detected at registration time,
-        # so this always returns empty. Kept for future extensibility.
-        return []
 
 
 # Global registry instance
 override_registry = OverrideRegistry()
-
-
-def get_override_registry() -> OverrideRegistry:
-    """Get the global override registry instance.
-
-    Returns:
-        The global OverrideRegistry instance
-    """
-    return override_registry

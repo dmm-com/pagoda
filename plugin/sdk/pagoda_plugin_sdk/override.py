@@ -18,14 +18,18 @@ Example:
             return Response({"id": entry.id}, status=202)
 """
 
-import warnings
 from dataclasses import dataclass, field
-from enum import Enum
 from functools import wraps
-from typing import Any, Callable, Dict, List, Optional, TypeVar, Union
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, TypeVar
 
 from rest_framework import status
+from rest_framework.request import Request
 from rest_framework.response import Response
+
+if TYPE_CHECKING:
+    from entity.models import Entity
+    from entry.models import Entry
+    from user.models import User
 
 # Type variable for decorated methods
 F = TypeVar("F", bound=Callable[..., Any])
@@ -33,15 +37,7 @@ F = TypeVar("F", bound=Callable[..., Any])
 # Attribute name for storing override metadata on decorated methods
 OVERRIDE_META_ATTR = "_override_meta"
 
-
-class OverrideOperation(Enum):
-    """Operation types that can be overridden."""
-
-    CREATE = "create"
-    RETRIEVE = "retrieve"
-    UPDATE = "update"
-    DELETE = "delete"
-    LIST = "list"
+_VALID_OPERATIONS = {"create", "retrieve", "update", "delete", "list"}
 
 
 @dataclass
@@ -49,18 +45,14 @@ class OverrideMeta:
     """Metadata for an override handler method."""
 
     operation: str
-    entity: Optional[str] = None  # Deprecated - kept for backward compatibility
     priority: int = 0
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> Dict[str, str | int]:
         """Convert to dictionary."""
-        result = {
+        return {
             "operation": self.operation,
             "priority": self.priority,
         }
-        if self.entity:
-            result["entity"] = self.entity
-        return result
 
 
 def override_operation(
@@ -72,9 +64,7 @@ def override_operation(
     This decorator attaches metadata to the method that will be used
     during plugin registration to set up the override handler.
 
-    Unlike override_entry_operation, this decorator does NOT require
-    an entity parameter. Entity binding is done via BACKEND_PLUGIN_ENTITY_OVERRIDES
-    configuration.
+    Entity binding is done via BACKEND_PLUGIN_ENTITY_OVERRIDES configuration.
 
     Args:
         operation: Operation type to override ("create", "retrieve", "update", "delete", "list")
@@ -106,10 +96,10 @@ def override_operation(
         - data: Request data dict (for create/update)
         - params: Plugin-specific parameters from configuration
     """
-    # Validate operation
-    valid_operations = [op.value for op in OverrideOperation]
-    if operation.lower() not in valid_operations:
-        raise ValueError(f"Invalid operation: {operation}. Valid operations: {valid_operations}")
+    if operation.lower() not in _VALID_OPERATIONS:
+        raise ValueError(
+            f"Invalid operation: {operation}. Valid operations: {sorted(_VALID_OPERATIONS)}"
+        )
 
     def decorator(method: F) -> F:
         # Attach metadata to the method
@@ -129,131 +119,6 @@ def override_operation(
         return wrapper  # type: ignore
 
     return decorator
-
-
-def override_entry_operation(
-    entity: str,
-    operation: str,
-    priority: int = 0,
-) -> Callable[[F], F]:
-    """Decorator to mark a plugin method as an entry operation override.
-
-    .. deprecated::
-        Use :func:`override_operation` instead. Entity binding should be
-        done via BACKEND_PLUGIN_ENTITY_OVERRIDES configuration.
-
-    This decorator attaches metadata to the method that will be used
-    during plugin registration to set up the override handler.
-
-    Args:
-        entity: Name of the entity to override (DEPRECATED - use config instead)
-        operation: Operation type to override ("create", "retrieve", "update", "delete", "list")
-        priority: Priority for future use (not currently implemented)
-
-    Returns:
-        Decorated method with override metadata attached
-    """
-    warnings.warn(
-        "override_entry_operation is deprecated. Use override_operation instead. "
-        "Entity binding should be done via BACKEND_PLUGIN_ENTITY_OVERRIDES configuration.",
-        DeprecationWarning,
-        stacklevel=2,
-    )
-
-    # Validate operation
-    valid_operations = [op.value for op in OverrideOperation]
-    if operation.lower() not in valid_operations:
-        raise ValueError(f"Invalid operation: {operation}. Valid operations: {valid_operations}")
-
-    def decorator(method: F) -> F:
-        # Attach metadata to the method
-        meta = OverrideMeta(
-            entity=entity,
-            operation=operation.lower(),
-            priority=priority,
-        )
-        setattr(method, OVERRIDE_META_ATTR, meta)
-
-        @wraps(method)
-        def wrapper(*args, **kwargs):
-            return method(*args, **kwargs)
-
-        # Copy the metadata to the wrapper
-        setattr(wrapper, OVERRIDE_META_ATTR, meta)
-
-        return wrapper  # type: ignore
-
-    return decorator
-
-
-def get_override_meta(method: Callable) -> Optional[OverrideMeta]:
-    """Get override metadata from a decorated method.
-
-    Args:
-        method: The method to check
-
-    Returns:
-        OverrideMeta if the method is decorated, None otherwise
-    """
-    return getattr(method, OVERRIDE_META_ATTR, None)
-
-
-def has_override_meta(method: Callable) -> bool:
-    """Check if a method has override metadata.
-
-    Args:
-        method: The method to check
-
-    Returns:
-        True if the method is decorated with @override_operation or @override_entry_operation
-    """
-    return hasattr(method, OVERRIDE_META_ATTR)
-
-
-def collect_override_handlers(plugin_instance: Any) -> List[Dict[str, Any]]:
-    """Collect all override handlers from a plugin instance.
-
-    Args:
-        plugin_instance: The plugin instance to scan
-
-    Returns:
-        List of handler info dictionaries:
-        [
-            {
-                "entity": "Service",  # Optional, may be None for new-style handlers
-                "operation": "create",
-                "handler": <bound method>,
-                "priority": 0,
-            },
-            ...
-        ]
-    """
-    handlers = []
-
-    for attr_name in dir(plugin_instance):
-        if attr_name.startswith("_"):
-            continue
-
-        try:
-            attr = getattr(plugin_instance, attr_name)
-        except AttributeError:
-            continue
-
-        if not callable(attr):
-            continue
-
-        meta = get_override_meta(attr)
-        if meta is not None:
-            handlers.append(
-                {
-                    "entity": meta.entity,  # May be None for new-style handlers
-                    "operation": meta.operation,
-                    "handler": attr,
-                    "priority": meta.priority,
-                }
-            )
-
-    return handlers
 
 
 # Response helper functions for override handlers
@@ -386,7 +251,7 @@ def permission_denied_response(
 
 
 def validation_error_response(
-    errors: Union[Dict[str, Any], List[str], str],
+    errors: Dict[str, Any] | List[str] | str,
 ) -> Response:
     """Create a validation error response.
 
@@ -423,22 +288,14 @@ class OverrideContext:
         operation: Operation type string
     """
 
-    request: Any  # DRF Request
-    user: Any  # User instance
-    entity: Any  # Entity instance
+    request: Request
+    user: "User"
+    entity: "Entity"
     plugin_id: str
     operation: str
-    entry: Optional[Any] = None  # Entry instance
-    data: Optional[Dict[str, Any]] = None  # Request data
-    params: Any = field(default_factory=dict)  # Validated params
-
-    # Deprecated fields kept for backward compatibility
-    entity_name: Optional[str] = None  # Use entity.name instead
-
-    def __post_init__(self):
-        """Initialize deprecated fields for backward compatibility."""
-        if self.entity_name is None and self.entity:
-            self.entity_name = self.entity.name
+    entry: Optional["Entry"] = None
+    data: Optional[Dict[str, Any]] = None
+    params: Dict[str, Any] = field(default_factory=dict)
 
     @property
     def is_authenticated(self) -> bool:
@@ -450,41 +307,3 @@ class OverrideContext:
         if self.data:
             return dict(self.data)
         return dict(self.request.data) if self.request.data else {}
-
-
-def create_override_context(
-    request: Any,
-    plugin_id: str,
-    entity_name: str,
-    operation: str,
-    entity: Optional[Any] = None,
-    entry: Optional[Any] = None,
-    data: Optional[Dict[str, Any]] = None,
-    params: Optional[Any] = None,
-) -> OverrideContext:
-    """Create an OverrideContext for a handler.
-
-    Args:
-        request: DRF Request object
-        plugin_id: ID of the plugin
-        entity_name: Name of the entity being operated on (deprecated)
-        operation: Operation type
-        entity: Entity instance (optional)
-        entry: Entry instance (optional)
-        data: Request data (optional)
-        params: Plugin-specific parameters (optional)
-
-    Returns:
-        OverrideContext instance
-    """
-    return OverrideContext(
-        request=request,
-        user=request.user,
-        entity=entity,
-        entry=entry,
-        data=data,
-        params=params or {},
-        plugin_id=plugin_id,
-        operation=operation,
-        entity_name=entity_name,
-    )

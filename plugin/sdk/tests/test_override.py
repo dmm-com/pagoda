@@ -6,7 +6,6 @@ the decorator, metadata handling, and response helpers.
 """
 
 import unittest
-import warnings
 from unittest.mock import MagicMock
 
 # Check if Django is configured for response helper tests
@@ -22,34 +21,16 @@ from pagoda_plugin_sdk.override import (
     OVERRIDE_META_ATTR,
     OverrideContext,
     OverrideMeta,
-    OverrideOperation,
     accepted_response,
-    collect_override_handlers,
-    create_override_context,
     created_response,
     error_response,
-    get_override_meta,
-    has_override_meta,
     no_content_response,
     not_found_response,
-    override_entry_operation,
     override_operation,
     permission_denied_response,
     success_response,
     validation_error_response,
 )
-
-
-class TestOverrideOperation(unittest.TestCase):
-    """Tests for OverrideOperation enum."""
-
-    def test_operation_values(self):
-        """Test all operation values are correct."""
-        self.assertEqual(OverrideOperation.CREATE.value, "create")
-        self.assertEqual(OverrideOperation.RETRIEVE.value, "retrieve")
-        self.assertEqual(OverrideOperation.UPDATE.value, "update")
-        self.assertEqual(OverrideOperation.DELETE.value, "delete")
-        self.assertEqual(OverrideOperation.LIST.value, "list")
 
 
 class TestOverrideMeta(unittest.TestCase):
@@ -58,14 +39,6 @@ class TestOverrideMeta(unittest.TestCase):
     def test_meta_creation(self):
         """Test creating OverrideMeta with new-style (operation only)."""
         meta = OverrideMeta(operation="create", priority=5)
-        self.assertIsNone(meta.entity)
-        self.assertEqual(meta.operation, "create")
-        self.assertEqual(meta.priority, 5)
-
-    def test_meta_creation_with_entity(self):
-        """Test creating OverrideMeta with entity (deprecated style)."""
-        meta = OverrideMeta(entity="Service", operation="create", priority=5)
-        self.assertEqual(meta.entity, "Service")
         self.assertEqual(meta.operation, "create")
         self.assertEqual(meta.priority, 5)
 
@@ -74,19 +47,10 @@ class TestOverrideMeta(unittest.TestCase):
         meta = OverrideMeta(operation="create")
         self.assertEqual(meta.priority, 0)
 
-    def test_to_dict_without_entity(self):
-        """Test conversion to dictionary without entity."""
+    def test_to_dict(self):
+        """Test conversion to dictionary."""
         meta = OverrideMeta(operation="create", priority=10)
         result = meta.to_dict()
-        self.assertNotIn("entity", result)
-        self.assertEqual(result["operation"], "create")
-        self.assertEqual(result["priority"], 10)
-
-    def test_to_dict_with_entity(self):
-        """Test conversion to dictionary with entity."""
-        meta = OverrideMeta(entity="Service", operation="create", priority=10)
-        result = meta.to_dict()
-        self.assertEqual(result["entity"], "Service")
         self.assertEqual(result["operation"], "create")
         self.assertEqual(result["priority"], 10)
 
@@ -104,7 +68,6 @@ class TestOverrideOperationDecorator(unittest.TestCase):
         self.assertTrue(hasattr(my_handler, OVERRIDE_META_ATTR))
         meta = getattr(my_handler, OVERRIDE_META_ATTR)
         self.assertIsInstance(meta, OverrideMeta)
-        self.assertIsNone(meta.entity)
         self.assertEqual(meta.operation, "create")
 
     def test_decorator_preserves_function(self):
@@ -124,7 +87,7 @@ class TestOverrideOperationDecorator(unittest.TestCase):
         def my_handler(self, context):
             return "response"
 
-        meta = get_override_meta(my_handler)
+        meta = getattr(my_handler, OVERRIDE_META_ATTR)
         self.assertEqual(meta.priority, 10)
 
     def test_decorator_invalid_operation(self):
@@ -144,124 +107,8 @@ class TestOverrideOperationDecorator(unittest.TestCase):
         def my_handler(self, context):
             return "response"
 
-        meta = get_override_meta(my_handler)
-        self.assertEqual(meta.operation, "create")
-
-
-class TestOverrideEntryOperationDecorator(unittest.TestCase):
-    """Tests for @override_entry_operation decorator (deprecated)."""
-
-    def test_decorator_issues_deprecation_warning(self):
-        """Test decorator issues deprecation warning."""
-        with warnings.catch_warnings(record=True) as w:
-            warnings.simplefilter("always")
-
-            @override_entry_operation(entity="Service", operation="create")
-            def my_handler(self, request, entity, data):
-                return "response"
-
-            self.assertEqual(len(w), 1)
-            self.assertTrue(issubclass(w[0].category, DeprecationWarning))
-            self.assertIn("deprecated", str(w[0].message).lower())
-
-    def test_decorator_attaches_metadata(self):
-        """Test decorator attaches metadata to function."""
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore", DeprecationWarning)
-
-            @override_entry_operation(entity="Service", operation="create")
-            def my_handler(self, request, entity, data):
-                return "response"
-
-        self.assertTrue(hasattr(my_handler, OVERRIDE_META_ATTR))
         meta = getattr(my_handler, OVERRIDE_META_ATTR)
-        self.assertIsInstance(meta, OverrideMeta)
-        self.assertEqual(meta.entity, "Service")
         self.assertEqual(meta.operation, "create")
-
-
-class TestMetadataHelpers(unittest.TestCase):
-    """Tests for metadata helper functions."""
-
-    def test_get_override_meta_exists(self):
-        """Test getting metadata from decorated function."""
-
-        @override_operation("create")
-        def my_handler(self, context):
-            return "response"
-
-        meta = get_override_meta(my_handler)
-        self.assertIsNotNone(meta)
-        self.assertEqual(meta.operation, "create")
-
-    def test_get_override_meta_not_exists(self):
-        """Test getting metadata from undecorated function."""
-
-        def plain_function():
-            pass
-
-        meta = get_override_meta(plain_function)
-        self.assertIsNone(meta)
-
-    def test_has_override_meta_true(self):
-        """Test has_override_meta returns True for decorated."""
-
-        @override_operation("create")
-        def my_handler(self, context):
-            return "response"
-
-        self.assertTrue(has_override_meta(my_handler))
-
-    def test_has_override_meta_false(self):
-        """Test has_override_meta returns False for undecorated."""
-
-        def plain_function():
-            pass
-
-        self.assertFalse(has_override_meta(plain_function))
-
-
-class TestCollectOverrideHandlers(unittest.TestCase):
-    """Tests for collect_override_handlers function."""
-
-    def test_collect_from_class_instance(self):
-        """Test collecting handlers from a class instance."""
-
-        class MyPlugin:
-            @override_operation("create")
-            def handle_create(self, context):
-                return "create"
-
-            @override_operation("update")
-            def handle_update(self, context):
-                return "update"
-
-            def normal_method(self):
-                pass
-
-        plugin = MyPlugin()
-        handlers = collect_override_handlers(plugin)
-
-        self.assertEqual(len(handlers), 2)
-
-        # Check handler info structure
-        operations = {h["operation"] for h in handlers}
-        self.assertEqual(operations, {"create", "update"})
-
-        # New-style handlers should have entity=None
-        for h in handlers:
-            self.assertIsNone(h["entity"])
-
-    def test_collect_empty_class(self):
-        """Test collecting from class with no override handlers."""
-
-        class EmptyPlugin:
-            def normal_method(self):
-                pass
-
-        plugin = EmptyPlugin()
-        handlers = collect_override_handlers(plugin)
-        self.assertEqual(handlers, [])
 
 
 @unittest.skipUnless(DJANGO_CONFIGURED, "Django not configured")
@@ -400,8 +247,6 @@ class TestOverrideContext(unittest.TestCase):
         self.assertEqual(context.entity, mock_entity)
         self.assertEqual(context.data, {"name": "test"})
         self.assertEqual(context.params, {"config_id": 99})
-        # entity_name should be auto-populated from entity
-        self.assertEqual(context.entity_name, "TestEntity")
 
     def test_context_with_entry(self):
         """Test context with entry for retrieve/update/delete operations."""
@@ -486,39 +331,6 @@ class TestOverrideContext(unittest.TestCase):
 
         data = context.get_request_data()
         self.assertEqual(data, {"key": "value"})
-
-
-class TestCreateOverrideContext(unittest.TestCase):
-    """Tests for create_override_context function."""
-
-    def test_create_context(self):
-        """Test creating context via helper function."""
-        mock_request = MagicMock()
-        mock_user = MagicMock()
-        mock_request.user = mock_user
-        mock_entity = MagicMock()
-        mock_entry = MagicMock()
-
-        context = create_override_context(
-            request=mock_request,
-            plugin_id="my-plugin",
-            entity_name="Service",
-            operation="update",
-            entity=mock_entity,
-            entry=mock_entry,
-            data={"name": "test"},
-            params={"config_id": 99},
-        )
-
-        self.assertIsInstance(context, OverrideContext)
-        self.assertEqual(context.plugin_id, "my-plugin")
-        self.assertEqual(context.entity_name, "Service")
-        self.assertEqual(context.operation, "update")
-        self.assertEqual(context.user, mock_user)
-        self.assertEqual(context.entity, mock_entity)
-        self.assertEqual(context.entry, mock_entry)
-        self.assertEqual(context.data, {"name": "test"})
-        self.assertEqual(context.params, {"config_id": 99})
 
 
 if __name__ == "__main__":

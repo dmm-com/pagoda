@@ -105,8 +105,9 @@ class TestOverrideRegistry(unittest.TestCase):
             plugin_id="test-plugin",
         )
 
-        retrieved = self.registry.get_handler(42, OperationType.CREATE)
-        self.assertEqual(retrieved, handler)
+        registration = self.registry.get_registration(42, OperationType.CREATE)
+        self.assertIsNotNone(registration)
+        self.assertEqual(registration.handler, handler)
 
     def test_register_with_params(self):
         """Test registering handler with params."""
@@ -142,14 +143,10 @@ class TestOverrideRegistry(unittest.TestCase):
             plugin_id="test-plugin",
         )
 
-        self.assertEqual(
-            self.registry.get_handler(42, OperationType.CREATE),
-            create_handler,
-        )
-        self.assertEqual(
-            self.registry.get_handler(42, OperationType.UPDATE),
-            update_handler,
-        )
+        create_reg = self.registry.get_registration(42, OperationType.CREATE)
+        update_reg = self.registry.get_registration(42, OperationType.UPDATE)
+        self.assertEqual(create_reg.handler, create_handler)
+        self.assertEqual(update_reg.handler, update_handler)
 
     def test_register_same_operation_different_entities(self):
         """Test registering same operation for different entities."""
@@ -169,14 +166,10 @@ class TestOverrideRegistry(unittest.TestCase):
             plugin_id="plugin-b",
         )
 
-        self.assertEqual(
-            self.registry.get_handler(42, OperationType.CREATE),
-            handler_42,
-        )
-        self.assertEqual(
-            self.registry.get_handler(99, OperationType.CREATE),
-            handler_99,
-        )
+        reg_42 = self.registry.get_registration(42, OperationType.CREATE)
+        reg_99 = self.registry.get_registration(99, OperationType.CREATE)
+        self.assertEqual(reg_42.handler, handler_42)
+        self.assertEqual(reg_99.handler, handler_99)
 
     def test_register_conflict_raises_error(self):
         """Test that registering conflicting handler raises error."""
@@ -204,24 +197,6 @@ class TestOverrideRegistry(unittest.TestCase):
         self.assertEqual(error.existing_plugin, "plugin-a")
         self.assertEqual(error.new_plugin, "plugin-b")
 
-    def test_get_handler_not_found(self):
-        """Test getting handler for non-existent registration."""
-        result = self.registry.get_handler(999, OperationType.CREATE)
-        self.assertIsNone(result)
-
-    def test_get_handler_entity_exists_operation_not(self):
-        """Test getting handler when entity exists but operation doesn't."""
-        handler = MagicMock()
-        self.registry.register(
-            entity_id=42,
-            operation=OperationType.CREATE,
-            handler=handler,
-            plugin_id="test-plugin",
-        )
-
-        result = self.registry.get_handler(42, OperationType.UPDATE)
-        self.assertIsNone(result)
-
     def test_get_registration(self):
         """Test getting full registration info."""
         handler = MagicMock()
@@ -243,10 +218,13 @@ class TestOverrideRegistry(unittest.TestCase):
         self.assertEqual(reg.params, params)
         self.assertEqual(reg.priority, 5)
 
-    def test_has_override_entity_level(self):
-        """Test checking if entity has any overrides."""
-        self.assertFalse(self.registry.has_override(42))
+    def test_get_registration_not_found(self):
+        """Test getting registration for non-existent entity returns None."""
+        result = self.registry.get_registration(999, OperationType.CREATE)
+        self.assertIsNone(result)
 
+    def test_get_registration_entity_exists_operation_not(self):
+        """Test getting registration when entity exists but operation doesn't."""
         handler = MagicMock()
         self.registry.register(
             entity_id=42,
@@ -255,158 +233,8 @@ class TestOverrideRegistry(unittest.TestCase):
             plugin_id="test-plugin",
         )
 
-        self.assertTrue(self.registry.has_override(42))
-
-    def test_has_override_operation_level(self):
-        """Test checking if specific operation has override."""
-        handler = MagicMock()
-        self.registry.register(
-            entity_id=42,
-            operation=OperationType.CREATE,
-            handler=handler,
-            plugin_id="test-plugin",
-        )
-
-        self.assertTrue(self.registry.has_override(42, OperationType.CREATE))
-        self.assertFalse(self.registry.has_override(42, OperationType.UPDATE))
-
-    def test_unregister_success(self):
-        """Test unregistering an override."""
-        handler = MagicMock()
-        self.registry.register(
-            entity_id=42,
-            operation=OperationType.CREATE,
-            handler=handler,
-            plugin_id="test-plugin",
-        )
-
-        result = self.registry.unregister(42, OperationType.CREATE, "test-plugin")
-        self.assertTrue(result)
-        self.assertIsNone(self.registry.get_handler(42, OperationType.CREATE))
-
-    def test_unregister_wrong_plugin(self):
-        """Test unregistering with wrong plugin ID fails."""
-        handler = MagicMock()
-        self.registry.register(
-            entity_id=42,
-            operation=OperationType.CREATE,
-            handler=handler,
-            plugin_id="plugin-a",
-        )
-
-        result = self.registry.unregister(42, OperationType.CREATE, "plugin-b")
-        self.assertFalse(result)
-        # Original handler should still be there
-        self.assertEqual(
-            self.registry.get_handler(42, OperationType.CREATE),
-            handler,
-        )
-
-    def test_unregister_not_found(self):
-        """Test unregistering non-existent override."""
-        result = self.registry.unregister(999, OperationType.CREATE, "test")
-        self.assertFalse(result)
-
-    def test_unregister_plugin(self):
-        """Test unregistering all overrides for a plugin."""
-        handler1 = MagicMock()
-        handler2 = MagicMock()
-        handler3 = MagicMock()
-
-        self.registry.register(
-            entity_id=42,
-            operation=OperationType.CREATE,
-            handler=handler1,
-            plugin_id="plugin-a",
-        )
-        self.registry.register(
-            entity_id=42,
-            operation=OperationType.UPDATE,
-            handler=handler2,
-            plugin_id="plugin-a",
-        )
-        self.registry.register(
-            entity_id=99,
-            operation=OperationType.CREATE,
-            handler=handler3,
-            plugin_id="plugin-b",
-        )
-
-        count = self.registry.unregister_plugin("plugin-a")
-        self.assertEqual(count, 2)
-
-        self.assertIsNone(self.registry.get_handler(42, OperationType.CREATE))
-        self.assertIsNone(self.registry.get_handler(42, OperationType.UPDATE))
-        self.assertEqual(
-            self.registry.get_handler(99, OperationType.CREATE),
-            handler3,
-        )
-
-    def test_get_overridden_entity_ids(self):
-        """Test getting all entity IDs with overrides."""
-        self.assertEqual(self.registry.get_overridden_entity_ids(), set())
-
-        handler = MagicMock()
-        self.registry.register(
-            entity_id=42,
-            operation=OperationType.CREATE,
-            handler=handler,
-            plugin_id="test-plugin",
-        )
-        self.registry.register(
-            entity_id=99,
-            operation=OperationType.UPDATE,
-            handler=handler,
-            plugin_id="test-plugin",
-        )
-
-        entity_ids = self.registry.get_overridden_entity_ids()
-        self.assertEqual(entity_ids, {42, 99})
-
-    def test_get_plugin_overrides(self):
-        """Test getting all overrides for a specific plugin."""
-        handler = MagicMock()
-        self.registry.register(
-            entity_id=42,
-            operation=OperationType.CREATE,
-            handler=handler,
-            plugin_id="plugin-a",
-        )
-        self.registry.register(
-            entity_id=42,
-            operation=OperationType.UPDATE,
-            handler=handler,
-            plugin_id="plugin-a",
-        )
-        self.registry.register(
-            entity_id=99,
-            operation=OperationType.CREATE,
-            handler=handler,
-            plugin_id="plugin-b",
-        )
-
-        overrides = self.registry.get_plugin_overrides("plugin-a")
-        self.assertEqual(len(overrides), 2)
-        self.assertTrue(all(o.plugin_id == "plugin-a" for o in overrides))
-
-    def test_get_all_registrations(self):
-        """Test getting all registrations."""
-        handler = MagicMock()
-        self.registry.register(
-            entity_id=42,
-            operation=OperationType.CREATE,
-            handler=handler,
-            plugin_id="plugin-a",
-        )
-        self.registry.register(
-            entity_id=99,
-            operation=OperationType.UPDATE,
-            handler=handler,
-            plugin_id="plugin-b",
-        )
-
-        all_regs = self.registry.get_all_registrations()
-        self.assertEqual(len(all_regs), 2)
+        result = self.registry.get_registration(42, OperationType.UPDATE)
+        self.assertIsNone(result)
 
     def test_clear(self):
         """Test clearing all registrations."""
@@ -420,8 +248,7 @@ class TestOverrideRegistry(unittest.TestCase):
 
         self.registry.clear()
 
-        self.assertIsNone(self.registry.get_handler(42, OperationType.CREATE))
-        self.assertEqual(self.registry.get_overridden_entity_ids(), set())
+        self.assertIsNone(self.registry.get_registration(42, OperationType.CREATE))
 
 
 class TestOverrideConflictError(unittest.TestCase):
@@ -486,9 +313,10 @@ class TestLoadFromSettings(unittest.TestCase):
         self.registry.load_from_settings(settings_config, mock_plugin_registry)
 
         # Verify registrations were created
-        self.assertTrue(self.registry.has_override(42, OperationType.CREATE))
-        self.assertTrue(self.registry.has_override(42, OperationType.UPDATE))
-        self.assertEqual(len(self.registry.get_all_registrations()), 2)
+        create_reg = self.registry.get_registration(42, OperationType.CREATE)
+        update_reg = self.registry.get_registration(42, OperationType.UPDATE)
+        self.assertIsNotNone(create_reg)
+        self.assertIsNotNone(update_reg)
 
     def test_load_from_settings_missing_plugin(self):
         """Test load_from_settings handles missing plugin gracefully."""
@@ -504,7 +332,7 @@ class TestLoadFromSettings(unittest.TestCase):
 
         # Should not raise, just log warning
         self.registry.load_from_settings(settings_config, mock_plugin_registry)
-        self.assertEqual(len(self.registry.get_all_registrations()), 0)
+        self.assertIsNone(self.registry.get_registration(42, OperationType.CREATE))
 
     def test_load_from_settings_invalid_entity_id(self):
         """Test load_from_settings handles invalid entity ID gracefully."""
@@ -519,7 +347,8 @@ class TestLoadFromSettings(unittest.TestCase):
 
         # Should not raise, just log warning
         self.registry.load_from_settings(settings_config, mock_plugin_registry)
-        self.assertEqual(len(self.registry.get_all_registrations()), 0)
+        # No registrations should exist
+        self.assertIsNone(self.registry.get_registration(42, OperationType.CREATE))
 
 
 if __name__ == "__main__":

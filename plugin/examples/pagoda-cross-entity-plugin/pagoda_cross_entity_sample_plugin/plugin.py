@@ -11,6 +11,7 @@ Configure via BACKEND_PLUGIN_ENTITY_OVERRIDES environment variable:
 from typing import Any, Callable, Dict, List, Optional, Set
 
 from pagoda_plugin_sdk import Plugin
+from pagoda_plugin_sdk.cross_entity.relationships import EntityRelationship
 
 from pagoda_cross_entity_sample_plugin.handlers import ServiceHandlers
 from pagoda_cross_entity_sample_plugin.relationships import get_plugin_relationships
@@ -66,7 +67,7 @@ class CrossEntityPlugin(Plugin):
             "delete": self._handlers.handle_delete,
         }
 
-    def get_relationships(self) -> List:
+    def get_relationships(self) -> List[EntityRelationship]:
         """Get entity relationship definitions for this plugin.
 
         Returns:
@@ -103,37 +104,3 @@ class CrossEntityPlugin(Plugin):
             Handler callable or None if not supported
         """
         return self._operation_handlers.get(operation.lower())
-
-
-# For backward compatibility with the old system, also expose handlers
-# via the class-level mechanism
-def _register_override_methods():
-    """Register override handler methods on the plugin class.
-
-    This ensures handlers can be discovered by both old and new systems.
-    """
-    from pagoda_plugin_sdk.override import OVERRIDE_META_ATTR
-
-    # Get all handler methods from ServiceHandlers
-    for attr_name in dir(ServiceHandlers):
-        if attr_name.startswith("_"):
-            continue
-
-        attr = getattr(ServiceHandlers, attr_name, None)
-        if attr is None or not callable(attr):
-            continue
-
-        if hasattr(attr, OVERRIDE_META_ATTR):
-            # Create a wrapper that will be bound to the plugin instance
-            def make_wrapper(method_name):
-                def wrapper(self, *args, **kwargs):
-                    return getattr(self._handlers, method_name)(*args, **kwargs)
-
-                # Copy the override metadata
-                setattr(wrapper, OVERRIDE_META_ATTR, getattr(attr, OVERRIDE_META_ATTR))
-                return wrapper
-
-            setattr(CrossEntityPlugin, attr_name, make_wrapper(attr_name))
-
-
-_register_override_methods()
