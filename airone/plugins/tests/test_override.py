@@ -52,7 +52,6 @@ class TestOverrideRegistration(unittest.TestCase):
             handler=handler,
             plugin_id="test-plugin",
             params={"config_id": 99},
-            priority=10,
         )
 
         self.assertEqual(reg.entity_id, 42)
@@ -60,7 +59,6 @@ class TestOverrideRegistration(unittest.TestCase):
         self.assertEqual(reg.handler, handler)
         self.assertEqual(reg.plugin_id, "test-plugin")
         self.assertEqual(reg.params, {"config_id": 99})
-        self.assertEqual(reg.priority, 10)
 
     def test_registration_default_params(self):
         """Test registration with default empty params."""
@@ -207,7 +205,6 @@ class TestOverrideRegistry(unittest.TestCase):
             handler=handler,
             plugin_id="test-plugin",
             params=params,
-            priority=5,
         )
 
         reg = self.registry.get_registration(42, OperationType.CREATE)
@@ -216,7 +213,6 @@ class TestOverrideRegistry(unittest.TestCase):
         self.assertEqual(reg.operation, OperationType.CREATE)
         self.assertEqual(reg.plugin_id, "test-plugin")
         self.assertEqual(reg.params, params)
-        self.assertEqual(reg.priority, 5)
 
     def test_get_registration_not_found(self):
         """Test getting registration for non-existent entity returns None."""

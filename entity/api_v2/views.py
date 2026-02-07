@@ -267,24 +267,12 @@ class EntityEntryAPI(PluginOverrideMixin, viewsets.ModelViewSet):
 
     @extend_schema(request=EntryCreateSerializer, responses={202: None})
     def create(self, request: Request, entity_id: int) -> Response:
-        # Check for plugin override first
-        # Note: We explicitly call mixin methods here because this method overrides
-        # PluginOverrideMixin.create() in the MRO
-        registration = self._get_override_registration(entity_id, "create")
-        if registration:
-            entity = self._get_entity(entity_id)
-            if entity:
-                context = self._build_override_context(request, registration, entity)
-                logger.info(
-                    f"Dispatching create to plugin {registration.plugin_id} for entity {entity_id}"
-                )
-                try:
-                    return registration.handler(context)
-                except Exception as e:
-                    logger.error(f"Override handler error for entity {entity_id}/create: {e}")
-                    raise
+        entity = Entity.objects.filter(id=entity_id).first()
+        if entity:
+            response = self._dispatch_override(request, "create", entity.id, entity)
+            if response is not None:
+                return response
 
-        # Default behavior (no plugin override)
         user: User = request.user
 
         # Set schema to entity_id and let the serializer validate it

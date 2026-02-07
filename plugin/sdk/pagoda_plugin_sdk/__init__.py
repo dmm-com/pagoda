@@ -98,32 +98,13 @@ def _lazy_import_tasks():
 
 
 def _lazy_import_cross_entity():
-    """Lazy import of cross-entity operation components"""
+    """Lazy import of cross-entity relationship components"""
     try:
         from .cross_entity import (
-            ACLType,
-            AtomicOperationContext,
-            BatchPermissionChecker,
             CircularReferenceError,
-            CompletenessStatus,
-            CompositeEntry,
-            CrossEntityOperation,
             EntityRelationship,
-            EntryNotAccessibleError,
-            EntryPermission,
-            IncompleteCompositeError,
-            OperationEntry,
-            OperationLog,
-            OperationResult,
-            OperationStatus,
-            OperationType,
-            PermissionCheckResult,
-            PermissionDeniedError,
             RelationshipRegistry,
             RelationType,
-            TransactionError,
-            atomic_operation,
-            check_permissions,
         )
 
         return {
@@ -131,25 +112,6 @@ def _lazy_import_cross_entity():
             "RelationType": RelationType,
             "RelationshipRegistry": RelationshipRegistry,
             "CircularReferenceError": CircularReferenceError,
-            "CompositeEntry": CompositeEntry,
-            "CompletenessStatus": CompletenessStatus,
-            "IncompleteCompositeError": IncompleteCompositeError,
-            "EntryNotAccessibleError": EntryNotAccessibleError,
-            "ACLType": ACLType,
-            "BatchPermissionChecker": BatchPermissionChecker,
-            "EntryPermission": EntryPermission,
-            "PermissionCheckResult": PermissionCheckResult,
-            "PermissionDeniedError": PermissionDeniedError,
-            "check_permissions": check_permissions,
-            "CrossEntityOperation": CrossEntityOperation,
-            "OperationType": OperationType,
-            "OperationStatus": OperationStatus,
-            "OperationEntry": OperationEntry,
-            "OperationResult": OperationResult,
-            "atomic_operation": atomic_operation,
-            "AtomicOperationContext": AtomicOperationContext,
-            "OperationLog": OperationLog,
-            "TransactionError": TransactionError,
         }
     except ImportError as e:
         if "django" in str(e).lower():
@@ -200,31 +162,11 @@ def _lazy_import_override():
         raise
 
 
-# Cross-entity component names
 _CROSS_ENTITY_NAMES = [
     "EntityRelationship",
     "RelationType",
     "RelationshipRegistry",
     "CircularReferenceError",
-    "CompositeEntry",
-    "CompletenessStatus",
-    "IncompleteCompositeError",
-    "EntryNotAccessibleError",
-    "ACLType",
-    "BatchPermissionChecker",
-    "EntryPermission",
-    "PermissionCheckResult",
-    "PermissionDeniedError",
-    "check_permissions",
-    "CrossEntityOperation",
-    "OperationType",
-    "OperationStatus",
-    "OperationEntry",
-    "OperationResult",
-    "atomic_operation",
-    "AtomicOperationContext",
-    "OperationLog",
-    "TransactionError",
 ]
 
 _OVERRIDE_NAMES = [
@@ -323,30 +265,11 @@ __all__ = [
     "JobStatus",
     "JobOperation",
     "JobTarget",
-    # Cross-entity components (Django dependent)
+    # Cross-entity components
     "EntityRelationship",
     "RelationType",
     "RelationshipRegistry",
     "CircularReferenceError",
-    "CompositeEntry",
-    "CompletenessStatus",
-    "IncompleteCompositeError",
-    "EntryNotAccessibleError",
-    "ACLType",
-    "BatchPermissionChecker",
-    "EntryPermission",
-    "PermissionCheckResult",
-    "PermissionDeniedError",
-    "check_permissions",
-    "CrossEntityOperation",
-    "OperationType",
-    "OperationStatus",
-    "OperationEntry",
-    "OperationResult",
-    "atomic_operation",
-    "AtomicOperationContext",
-    "OperationLog",
-    "TransactionError",
     # Entry operation override components
     "override_operation",
     "OverrideMeta",

@@ -54,7 +54,6 @@ class OverrideRegistration:
     handler: Callable
     plugin_id: str
     params: Dict[str, Any] = field(default_factory=dict)
-    priority: int = 0
 
     def __repr__(self) -> str:
         return (
@@ -119,7 +118,6 @@ class OverrideRegistry:
         handler: Callable,
         plugin_id: str,
         params: Optional[Dict[str, Any]] = None,
-        priority: int = 0,
     ) -> None:
         """Register an override handler for an entity operation.
 
@@ -129,7 +127,6 @@ class OverrideRegistry:
             handler: Callable that handles the operation
             plugin_id: ID of the plugin registering the override
             params: Plugin-specific parameters (validated by plugin)
-            priority: Priority for future use (not currently implemented)
 
         Raises:
             OverrideConflictError: If another plugin already registered
@@ -154,7 +151,6 @@ class OverrideRegistry:
             handler=handler,
             plugin_id=plugin_id,
             params=params or {},
-            priority=priority,
         )
 
         self._handlers[entity_id][operation] = registration

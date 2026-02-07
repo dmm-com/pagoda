@@ -43,20 +43,27 @@ class Plugin:
     # Hook handlers - populated by __init_subclass__
     _hook_handlers: ClassVar[List[Dict[str, Any]]] = []
 
+    # Override handlers mapping: operation -> method_name, populated by __init_subclass__
+    _override_handlers: ClassVar[Dict[str, str]] = {}
+
     def __init_subclass__(cls, **kwargs):
-        """Automatically detect and register decorated hook methods"""
+        """Automatically detect and register decorated hook and override methods"""
         super().__init_subclass__(**kwargs)
 
         # Scan for decorated methods
         cls._hook_handlers = []
+        cls._override_handlers = {}
         for attr_name in dir(cls):
             # Skip private/magic methods
             if attr_name.startswith("_"):
                 continue
 
             attr = getattr(cls, attr_name)
+            if not callable(attr):
+                continue
+
             # Check if method has hook metadata from decorator
-            if callable(attr) and hasattr(attr, "_hook_metadata"):
+            if hasattr(attr, "_hook_metadata"):
                 metadata = attr._hook_metadata
                 cls._hook_handlers.append(
                     {
@@ -67,6 +74,11 @@ class Plugin:
                         "handler": attr,
                     }
                 )
+
+            # Check if method has override metadata from @override_operation
+            meta = getattr(attr, OVERRIDE_META_ATTR, None)
+            if meta:
+                cls._override_handlers[meta.operation] = attr_name
 
     def __init__(self):
         """Initialize the plugin instance"""
@@ -123,8 +135,7 @@ class Plugin:
     def get_handler(self, operation: str) -> Optional[Callable]:
         """Get the override handler for a specific operation.
 
-        This method scans the plugin instance for methods decorated with
-        @override_operation and returns the handler for the specified operation.
+        Uses the pre-built _override_handlers mapping for O(1) lookup.
 
         Args:
             operation: Operation type string ("create", "retrieve", etc.)
@@ -132,24 +143,9 @@ class Plugin:
         Returns:
             Handler callable if found, None otherwise
         """
-        operation_lower = operation.lower()
-
-        for attr_name in dir(self):
-            if attr_name.startswith("_"):
-                continue
-
-            try:
-                attr = getattr(self, attr_name)
-            except AttributeError:
-                continue
-
-            if not callable(attr):
-                continue
-
-            meta = getattr(attr, OVERRIDE_META_ATTR, None)
-            if meta and meta.operation == operation_lower:
-                return attr
-
+        method_name = self._override_handlers.get(operation.lower())
+        if method_name:
+            return getattr(self, method_name, None)
         return None
 
     def get_info(self) -> Dict[str, str | bool | List[str] | None]:
@@ -164,19 +160,7 @@ class Plugin:
             for handler_info in self.__class__._hook_handlers:
                 hook_names.add(handler_info["hook_name"])
 
-        # Collect override operations
-        override_operations = []
-        for attr_name in dir(self):
-            if attr_name.startswith("_"):
-                continue
-            try:
-                attr = getattr(self, attr_name)
-            except AttributeError:
-                continue
-            if callable(attr):
-                meta = getattr(attr, OVERRIDE_META_ATTR, None)
-                if meta:
-                    override_operations.append(meta.operation)
+        override_operations = list(self._override_handlers.keys())
 
         return {
             "id": self.id,

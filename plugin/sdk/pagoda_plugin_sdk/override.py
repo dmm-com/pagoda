@@ -45,20 +45,15 @@ class OverrideMeta:
     """Metadata for an override handler method."""
 
     operation: str
-    priority: int = 0
 
-    def to_dict(self) -> Dict[str, str | int]:
+    def to_dict(self) -> Dict[str, str]:
         """Convert to dictionary."""
         return {
             "operation": self.operation,
-            "priority": self.priority,
         }
 
 
-def override_operation(
-    operation: str,
-    priority: int = 0,
-) -> Callable[[F], F]:
+def override_operation(operation: str) -> Callable[[F], F]:
     """Decorator to mark a plugin method as an entry operation override.
 
     This decorator attaches metadata to the method that will be used
@@ -68,7 +63,6 @@ def override_operation(
 
     Args:
         operation: Operation type to override ("create", "retrieve", "update", "delete", "list")
-        priority: Priority for future use (not currently implemented)
 
     Returns:
         Decorated method with override metadata attached
@@ -77,13 +71,7 @@ def override_operation(
         class MyPlugin(Plugin):
             @override_operation("create")
             def handle_create(self, context: OverrideContext):
-                with atomic_operation(context.user) as op:
-                    entry = op.create_entry(
-                        entity_id=context.entity.id,
-                        name=context.data["name"],
-                        attrs=context.data.get("attrs", {}),
-                    )
-                    return accepted_response({"id": entry.id})
+                return accepted_response({"id": entry.id})
 
     Handler signature:
         - All operations: (self, context: OverrideContext) -> Response
@@ -102,20 +90,14 @@ def override_operation(
         )
 
     def decorator(method: F) -> F:
-        # Attach metadata to the method
-        meta = OverrideMeta(
-            operation=operation.lower(),
-            priority=priority,
-        )
+        meta = OverrideMeta(operation=operation.lower())
         setattr(method, OVERRIDE_META_ATTR, meta)
 
         @wraps(method)
         def wrapper(*args, **kwargs):
             return method(*args, **kwargs)
 
-        # Copy the metadata to the wrapper
         setattr(wrapper, OVERRIDE_META_ATTR, meta)
-
         return wrapper  # type: ignore
 
     return decorator

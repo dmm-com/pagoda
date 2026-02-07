@@ -7,7 +7,6 @@ In this example, we define a Service entity that has related Configurations.
 
 from pagoda_plugin_sdk.cross_entity import (
     EntityRelationship,
-    RelationshipRegistry,
     RelationType,
 )
 
@@ -43,15 +42,3 @@ def get_plugin_relationships():
         SERVICE_CONFIGURATION_RELATIONSHIP,
         SERVICE_ENVIRONMENT_RELATIONSHIP,
     ]
-
-
-def create_relationship_registry():
-    """Create a relationship registry with all plugin relationships.
-
-    Returns:
-        RelationshipRegistry with registered relationships
-    """
-    registry = RelationshipRegistry()
-    for rel in get_plugin_relationships():
-        registry.register(rel)
-    return registry

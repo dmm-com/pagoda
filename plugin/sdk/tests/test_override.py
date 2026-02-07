@@ -37,22 +37,16 @@ class TestOverrideMeta(unittest.TestCase):
     """Tests for OverrideMeta dataclass."""
 
     def test_meta_creation(self):
-        """Test creating OverrideMeta with new-style (operation only)."""
-        meta = OverrideMeta(operation="create", priority=5)
-        self.assertEqual(meta.operation, "create")
-        self.assertEqual(meta.priority, 5)
-
-    def test_meta_default_priority(self):
-        """Test default priority is 0."""
+        """Test creating OverrideMeta with operation."""
         meta = OverrideMeta(operation="create")
-        self.assertEqual(meta.priority, 0)
+        self.assertEqual(meta.operation, "create")
 
     def test_to_dict(self):
         """Test conversion to dictionary."""
-        meta = OverrideMeta(operation="create", priority=10)
+        meta = OverrideMeta(operation="create")
         result = meta.to_dict()
         self.assertEqual(result["operation"], "create")
-        self.assertEqual(result["priority"], 10)
+        self.assertNotIn("priority", result)
 
 
 class TestOverrideOperationDecorator(unittest.TestCase):
@@ -79,16 +73,6 @@ class TestOverrideOperationDecorator(unittest.TestCase):
 
         result = my_handler(None, "test-context")
         self.assertEqual(result, "updated test-context")
-
-    def test_decorator_with_priority(self):
-        """Test decorator with custom priority."""
-
-        @override_operation("create", priority=10)
-        def my_handler(self, context):
-            return "response"
-
-        meta = getattr(my_handler, OVERRIDE_META_ATTR)
-        self.assertEqual(meta.priority, 10)
 
     def test_decorator_invalid_operation(self):
         """Test decorator raises error for invalid operation."""
