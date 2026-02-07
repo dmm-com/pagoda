@@ -171,7 +171,7 @@ class EntityAPI(viewsets.ModelViewSet):
 
         return Entity.objects.filter(**filter_condition).exclude(**exclude_condition)
 
-    @extend_schema(request=EntityCreateSerializer)
+    @extend_schema(request=EntityCreateSerializer, responses={202: None})
     def create(self, request: Request, *args, **kwargs) -> Response:
         user: User = request.user
 
@@ -184,7 +184,7 @@ class EntityAPI(viewsets.ModelViewSet):
 
         return Response(status=status.HTTP_202_ACCEPTED)
 
-    @extend_schema(request=EntityUpdateSerializer)
+    @extend_schema(request=EntityUpdateSerializer, responses={202: None})
     def update(self, request: Request, *args, **kwargs) -> Response:
         user: User = request.user
         entity: Entity = self.get_object()
@@ -265,7 +265,7 @@ class EntityEntryAPI(PluginOverrideMixin, viewsets.ModelViewSet):
             self.queryset.filter(schema=entity).select_related("schema").prefetch_related("aliases")
         )
 
-    @extend_schema(request=EntryCreateSerializer)
+    @extend_schema(request=EntryCreateSerializer, responses={202: None})
     def create(self, request: Request, entity_id: int) -> Response:
         # Check for plugin override first
         # Note: We explicitly call mixin methods here because this method overrides
@@ -403,6 +403,7 @@ class EntityImportAPI(generics.GenericAPIView):
     parser_classes = [YAMLParser]
     serializer_class = EntityImportExportRootSerializer
 
+    @extend_schema(responses={200: None})
     def post(self, request: Request) -> Response:
         import_datas = request.data
         serializer = EntityImportExportRootSerializer(

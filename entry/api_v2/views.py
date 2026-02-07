@@ -139,7 +139,7 @@ class EntryAPI(PluginOverrideMixin, viewsets.ModelViewSet):
         serializer = self.get_serializer(entry)
         return Response(serializer.data)
 
-    @extend_schema(request=EntryUpdateSerializer)
+    @extend_schema(request=EntryUpdateSerializer, responses={202: None})
     def update(self, request: Request, *args, **kwargs) -> Response:
         # Check for plugin override first
         # Note: We explicitly call mixin methods here because this method overrides
@@ -203,7 +203,7 @@ class EntryAPI(PluginOverrideMixin, viewsets.ModelViewSet):
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-    @extend_schema(request=None)
+    @extend_schema(request=None, responses={201: None})
     def restore(self, request: Request, *args, **kwargs) -> Response:
         entry: Entry = self.get_object()
 
@@ -911,11 +911,6 @@ class EntryAttrReferralsAPI(viewsets.ReadOnlyModelViewSet):
             raise IncorrectTypeError(f"unsupported attr type: {entity_attr.type}")
 
 
-@extend_schema(
-    parameters=[
-        OpenApiParameter("force", OpenApiTypes.BOOL, OpenApiParameter.QUERY, default=False),
-    ],
-)
 class EntryImportAPI(generics.GenericAPIView):
     parser_classes = [YAMLParser]
     serializer_class = EntryImportSerializer
@@ -925,6 +920,14 @@ class EntryImportAPI(generics.GenericAPIView):
         entity_names = [d["entity"] for d in import_data]
         return Entity.objects.filter(name__in=entity_names, is_active=True)
 
+    @extend_schema(
+        parameters=[
+            OpenApiParameter("force", OpenApiTypes.BOOL, OpenApiParameter.QUERY, default=False),
+        ],
+        responses={
+            200: None,
+        },
+    )
     def post(self, request: Request) -> Response:
         import_datas = request.data
         user: User = request.user
