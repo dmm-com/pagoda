@@ -5,10 +5,28 @@ This module defines the relationships between entities that this plugin manages.
 In this example, we define a Service entity that has related Configurations.
 """
 
-from pagoda_plugin_sdk.cross_entity import (
-    EntityRelationship,
-    RelationType,
-)
+from dataclasses import dataclass
+from enum import Enum
+
+
+class RelationType(str, Enum):
+    """Types of relationships between entities."""
+
+    COMPOSITION = "composition"
+    REFERENCE = "reference"
+
+
+@dataclass
+class EntityRelationship:
+    """Defines a relationship between two entities."""
+
+    source_entity: str
+    target_entity: str
+    relation_type: RelationType
+    attribute_name: str
+    cascade_delete: bool = False
+    required: bool = False
+
 
 # Define relationships for the sample plugin
 # Service -> Configuration (composition: configurations are part of a service)

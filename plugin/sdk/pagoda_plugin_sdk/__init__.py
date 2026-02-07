@@ -97,32 +97,6 @@ def _lazy_import_tasks():
         raise
 
 
-def _lazy_import_cross_entity():
-    """Lazy import of cross-entity relationship components"""
-    try:
-        from .cross_entity import (
-            CircularReferenceError,
-            EntityRelationship,
-            RelationshipRegistry,
-            RelationType,
-        )
-
-        return {
-            "EntityRelationship": EntityRelationship,
-            "RelationType": RelationType,
-            "RelationshipRegistry": RelationshipRegistry,
-            "CircularReferenceError": CircularReferenceError,
-        }
-    except ImportError as e:
-        if "django" in str(e).lower():
-            raise ImportError(
-                "Cross-entity components require Django to be installed. "
-                "Please install Django or import these components directly "
-                "when Django is configured."
-            )
-        raise
-
-
 def _lazy_import_override():
     """Lazy import of entry operation override components"""
     try:
@@ -162,13 +136,6 @@ def _lazy_import_override():
         raise
 
 
-_CROSS_ENTITY_NAMES = [
-    "EntityRelationship",
-    "RelationType",
-    "RelationshipRegistry",
-    "CircularReferenceError",
-]
-
 _OVERRIDE_NAMES = [
     "override_operation",
     "OverrideMeta",
@@ -184,7 +151,7 @@ _OVERRIDE_NAMES = [
 ]
 
 
-# Define lazy properties for mixins, API components, task components, and cross-entity
+# Define lazy properties for mixins, API components, and task components
 def __getattr__(name):
     if name == "PluginAPIViewMixin":
         return _lazy_import_mixins()
@@ -228,9 +195,6 @@ def __getattr__(name):
         ]
         if name in task_names:
             return task_classes[task_names.index(name)]
-    elif name in _CROSS_ENTITY_NAMES:
-        cross_entity_classes = _lazy_import_cross_entity()
-        return cross_entity_classes[name]
     elif name in _OVERRIDE_NAMES:
         override_components = _lazy_import_override()
         return override_components[name]
@@ -265,11 +229,6 @@ __all__ = [
     "JobStatus",
     "JobOperation",
     "JobTarget",
-    # Cross-entity components
-    "EntityRelationship",
-    "RelationType",
-    "RelationshipRegistry",
-    "CircularReferenceError",
     # Entry operation override components
     "override_operation",
     "OverrideMeta",

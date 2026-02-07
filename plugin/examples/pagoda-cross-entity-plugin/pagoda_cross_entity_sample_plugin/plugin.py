@@ -11,10 +11,12 @@ Configure via BACKEND_PLUGIN_ENTITY_OVERRIDES environment variable:
 from typing import Any, Callable, Dict, List, Optional, Set
 
 from pagoda_plugin_sdk import Plugin
-from pagoda_plugin_sdk.cross_entity.relationships import EntityRelationship
 
 from pagoda_cross_entity_sample_plugin.handlers import ServiceHandlers
-from pagoda_cross_entity_sample_plugin.relationships import get_plugin_relationships
+from pagoda_cross_entity_sample_plugin.relationships import (
+    EntityRelationship,
+    get_plugin_relationships,
+)
 
 
 class CrossEntityPlugin(Plugin):
