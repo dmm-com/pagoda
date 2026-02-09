@@ -5634,3 +5634,24 @@ class ModelTest(AironeTestCase):
             },
         )
         self.assertEqual(lb_sg1.autoname, "[LB0001] pagoda-test.example.com:80")
+
+    def test_save_autoname_with_duplicated_values(self):
+        model = self.create_entity(
+            self._user,
+            "Auto Save",
+            attrs=[
+                {"name": "a1", "type": AttrType.STRING, "name_order": 1},
+                {"name": "a2", "type": AttrType.STRING, "name_order": 2, "name_prefix": "-"},
+            ],
+            item_name_type=ItemNameType.ATTR,
+        )
+
+        items = [
+            self.add_entry(self._user, x, model, values={"a1": "foo", "a2": "bar"})
+            for x in range(3)
+        ]
+        [x.save_autoname() for x in items]
+
+        self.assertEqual(items[0].name, "foo-bar")
+        self.assertRegex(items[1].name, r"^foo-bar -- duplicate of ID:%s -- " % str(items[0].id))
+        self.assertRegex(items[2].name, r"^foo-bar -- duplicate of ID:%s -- " % str(items[0].id))

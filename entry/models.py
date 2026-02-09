@@ -1704,7 +1704,19 @@ class Entry(ACLBase):
         """This method saves auto-generated name according to the Entity settings"""
         autoname = self.autoname
         if self.name != autoname:
-            self.name = autoname
+            # check duplication
+            duplicated_item = Entry.objects.filter(
+                schema=self.schema, name=autoname, is_active=True
+            ).first()
+            if duplicated_item:
+                self.name = "%s -- duplicate of ID:%s -- %s" % (
+                    autoname,
+                    str(duplicated_item.id),
+                    str(uuid.uuid4()),
+                )
+            else:
+                self.name = autoname
+
             self.save(update_fields=["name"])
 
     def add_alias(self, name):

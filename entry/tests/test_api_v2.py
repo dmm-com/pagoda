@@ -1767,8 +1767,19 @@ class ViewTest(BaseViewTest):
         )
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(
-            Entry.objects.filter(name=item_sg.autoname, schema=model_sg, is_active=True).count(),
-            3,
+            Entry.objects.filter(name=item_sg.autoname, schema=model_sg, is_active=True).count(), 1
+        )
+        self.assertEqual(
+            Entry.objects.filter(name=item_sg.autoname, schema=model_sg, is_active=True).first().id,
+            item_sg.id,
+        )
+        self.assertEqual(
+            Entry.objects.filter(
+                name__contains="%s -- duplicate of ID:%s --" % (item_sg.autoname, item_sg.id),
+                schema=model_sg,
+                is_active=True,
+            ).count(),
+            2,
         )
 
     def test_copy_entry_without_permission(self):
