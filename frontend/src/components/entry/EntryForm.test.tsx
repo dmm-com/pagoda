@@ -122,7 +122,12 @@ describe("EntryForm", () => {
         defaultValues: entryInfo,
       });
       return (
-        <EntryForm entity={mockEntity} control={control} setValue={setValue} skipItemName={false} />
+        <EntryForm
+          entity={mockEntity}
+          control={control}
+          setValue={setValue}
+          skipItemName={false}
+        />
       );
     };
 
@@ -139,7 +144,12 @@ describe("EntryForm", () => {
         defaultValues: entryInfo,
       });
       return (
-        <EntryForm entity={mockEntity} control={control} setValue={setValue} skipItemName={false} />
+        <EntryForm
+          entity={mockEntity}
+          control={control}
+          setValue={setValue}
+          skipItemName={false}
+        />
       );
     };
 
@@ -156,7 +166,12 @@ describe("EntryForm", () => {
         defaultValues: entryInfo,
       });
       return (
-        <EntryForm entity={mockEntity} control={control} setValue={setValue} skipItemName={false} />
+        <EntryForm
+          entity={mockEntity}
+          control={control}
+          setValue={setValue}
+          skipItemName={false}
+        />
       );
     };
 
@@ -183,7 +198,12 @@ describe("EntryForm", () => {
         defaultValues: entryInfo,
       });
       return (
-        <EntryForm entity={mockEntity} control={control} setValue={setValue} skipItemName={false} />
+        <EntryForm
+          entity={mockEntity}
+          control={control}
+          setValue={setValue}
+          skipItemName={false}
+        />
       );
     };
 
@@ -204,7 +224,12 @@ describe("EntryForm", () => {
         defaultValues: entryInfo,
       });
       return (
-        <EntryForm entity={mockEntity} control={control} setValue={setValue} skipItemName={false} />
+        <EntryForm
+          entity={mockEntity}
+          control={control}
+          setValue={setValue}
+          skipItemName={false}
+        />
       );
     };
 
@@ -232,7 +257,12 @@ describe("EntryForm", () => {
       }, [nameValue]);
 
       return (
-        <EntryForm entity={mockEntity} control={control} setValue={setValue} skipItemName={false} />
+        <EntryForm
+          entity={mockEntity}
+          control={control}
+          setValue={setValue}
+          skipItemName={false}
+        />
       );
     };
 
@@ -269,7 +299,12 @@ describe("EntryForm", () => {
         defaultValues: entryInfo,
       });
       return (
-        <EntryForm entity={mockEntity} control={control} setValue={setValue} skipItemName={false} />
+        <EntryForm
+          entity={mockEntity}
+          control={control}
+          setValue={setValue}
+          skipItemName={false}
+        />
       );
     };
 
@@ -304,7 +339,12 @@ describe("EntryForm", () => {
     );
 
     render(
-      <EntryForm entity={mockEntity} control={control} setValue={setValue} skipItemName={false} />,
+      <EntryForm
+        entity={mockEntity}
+        control={control}
+        setValue={setValue}
+        skipItemName={false}
+      />,
       { wrapper: TestWrapper },
     );
 
@@ -333,7 +373,12 @@ describe("EntryForm", () => {
         defaultValues: entryInfo,
       });
       return (
-        <EntryForm entity={mockEntity} control={control} setValue={setValue} skipItemName={false} />
+        <EntryForm
+          entity={mockEntity}
+          control={control}
+          setValue={setValue}
+          skipItemName={false}
+        />
       );
     };
 
@@ -516,7 +561,12 @@ describe("EntryForm", () => {
       );
 
       render(
-        <EntryForm entity={mockEntity} control={control} setValue={setValue} skipItemName={false} />,
+        <EntryForm
+          entity={mockEntity}
+          control={control}
+          setValue={setValue}
+          skipItemName={false}
+        />,
         { wrapper: TestWrapper },
       );
 

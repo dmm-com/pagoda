@@ -694,7 +694,15 @@ class ViewTest(AironeViewTest):
         resp = self.client.post("/entity/api/v2/", json.dumps(params), "application/json")
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(
-            resp.json(), {"item_name_type": [{"code": "AE-999999", "message": '"None of the ItemNameType" is not a valid choice.'}]}
+            resp.json(),
+            {
+                "item_name_type": [
+                    {
+                        "code": "AE-999999",
+                        "message": '"None of the ItemNameType" is not a valid choice.',
+                    }
+                ]
+            },
         )
 
         # name param

@@ -24,38 +24,38 @@ import { AttributeValueField } from "components/entry/entryForm/AttributeValueFi
 import { Schema } from "components/entry/entryForm/EntryFormSchema";
 import { getStagedErrorStyle } from "utils/styleUtils";
 
-const ChipBox = styled(Box)(({ }) => ({
+const ChipBox = styled(Box)(({}) => ({
   display: "flex",
   flexWrap: "wrap",
   gap: "12px",
   marginBottom: "20px",
 }));
 
-const StyledTableCell = styled(TableCell)(({ }) => ({
+const StyledTableCell = styled(TableCell)(({}) => ({
   /* an anchor link adjusted fixed headers etc. */
   scrollMarginTop: "180px",
   padding: "8px 16px",
 }));
 
-const StyledTypography = styled(Typography)(({ }) => ({
+const StyledTypography = styled(Typography)(({}) => ({
   flexGrow: 1,
 }));
 
-const HeaderTableRow = styled(TableRow)(({ }) => ({
+const HeaderTableRow = styled(TableRow)(({}) => ({
   backgroundColor: "#455A64",
 }));
 
-const HeaderTableCell = styled(TableCell)(({ }) => ({
+const HeaderTableCell = styled(TableCell)(({}) => ({
   color: "#FFFFFF",
   width: "384px",
 }));
 
-const TableBox = styled(Box)(({ }) => ({
+const TableBox = styled(Box)(({}) => ({
   display: "flex",
   alignItems: "center",
 }));
 
-const RequiredLabel = styled(Typography)(({ }) => ({
+const RequiredLabel = styled(Typography)(({}) => ({
   border: "0.5px solid gray",
   borderRadius: 16,
   color: "white",
@@ -63,7 +63,7 @@ const RequiredLabel = styled(Typography)(({ }) => ({
   padding: "0 8px",
 }));
 
-const BottomBox = styled(Box)(({ }) => ({
+const BottomBox = styled(Box)(({}) => ({
   display: "flex",
   justifyContent: "flex-end",
   margin: "12px 0",

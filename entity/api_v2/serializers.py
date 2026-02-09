@@ -648,7 +648,16 @@ class EntityCreateSerializer(EntitySerializer):
 
     class Meta:
         model = Entity
-        fields = ["id", "name", "note", "item_name_pattern", "item_name_type", "is_toplevel", "attrs", "webhooks"]
+        fields = [
+            "id",
+            "name",
+            "note",
+            "item_name_pattern",
+            "item_name_type",
+            "is_toplevel",
+            "attrs",
+            "webhooks",
+        ]
         extra_kwargs = {"note": {"write_only": True}}
 
     def validate_name(self, name: str):
@@ -723,7 +732,16 @@ class EntityUpdateSerializer(EntitySerializer):
 
     class Meta:
         model = Entity
-        fields = ["id", "name", "note", "item_name_pattern", "item_name_type", "is_toplevel", "attrs", "webhooks"]
+        fields = [
+            "id",
+            "name",
+            "note",
+            "item_name_pattern",
+            "item_name_type",
+            "is_toplevel",
+            "attrs",
+            "webhooks",
+        ]
         extra_kwargs = {"name": {"required": False}, "note": {"write_only": True}}
 
     def validate_name(self, name: str):
@@ -831,7 +849,16 @@ class EntityListSerializer(EntitySerializer):
 
     class Meta:
         model = Entity
-        fields = ["id", "name", "note", "item_name_pattern", "item_name_type", "status", "is_toplevel", "permission"]
+        fields = [
+            "id",
+            "name",
+            "note",
+            "item_name_pattern",
+            "item_name_type",
+            "status",
+            "is_toplevel",
+            "permission",
+        ]
 
     def get_is_toplevel(self, obj: Entity) -> bool:
         return (obj.status & Entity.STATUS_TOP_LEVEL) != 0

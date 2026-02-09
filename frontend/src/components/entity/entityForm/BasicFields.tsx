@@ -1,7 +1,4 @@
 import {
-  EntityCreateItemNameTypeEnum,
-} from "@dmm-com/airone-apiclient-typescript-fetch";
-import {
   Box,
   Checkbox,
   FormControl,
@@ -14,7 +11,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { FC, useState } from "react";
+import { FC } from "react";
 import { Control, Controller, useWatch } from "react-hook-form";
 
 import { Schema } from "./EntityFormSchema";
@@ -98,7 +95,10 @@ export const BasicFields: FC<Props> = ({ control }) => {
                 control={control}
                 defaultValue="US"
                 render={({ field, fieldState: { error } }) => {
-                  const itemNameType = useWatch({ control, name: "itemNameType" });
+                  const itemNameType = useWatch({
+                    control,
+                    name: "itemNameType",
+                  });
 
                   return (
                     <FormControl sx={{ m: 0, minWidth: 120 }} size="small">
@@ -111,17 +111,23 @@ export const BasicFields: FC<Props> = ({ control }) => {
                       >
                         <MenuItem value={"US"}>利用者が手動で設定</MenuItem>
                         <MenuItem value={"ID"}>UUIDに自動で設定</MenuItem>
-                        <MenuItem value={"AT"}>属性値に応じて自動で設定</MenuItem>
+                        <MenuItem value={"AT"}>
+                          属性値に応じて自動で設定
+                        </MenuItem>
                       </Select>
                     </FormControl>
-                  )
+                  );
                 }}
               />
             </TableCell>
           </StyledTableRow>
           <StyledTableRow>
             <TableCell>
-              <Typography color={currItemNameType !== "US" ? "text.disabled" : "text.primary"}>
+              <Typography
+                color={
+                  currItemNameType !== "US" ? "text.disabled" : "text.primary"
+                }
+              >
                 アイテム名の許可パターン
               </Typography>
             </TableCell>
@@ -142,7 +148,6 @@ export const BasicFields: FC<Props> = ({ control }) => {
                       size="small"
                       fullWidth
                     />
-
                   );
                 }}
               />
