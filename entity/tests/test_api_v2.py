@@ -16,7 +16,7 @@ from airone.lib.log import Logger
 from airone.lib.test import AironeViewTest
 from airone.lib.types import AttrType
 from entity import tasks
-from entity.models import Entity, EntityAttr
+from entity.models import Entity, EntityAttr, ItemNameType
 from entry.models import Entry
 from entry.tasks import create_entry_v2
 from group.models import Group
@@ -68,6 +68,7 @@ class ViewTest(AironeViewTest):
                 "id": self.entity.id,
                 "is_toplevel": False,
                 "item_name_pattern": "",
+                "item_name_type": "US",
                 "name": "test-entity",
                 "note": "",
                 "status": 0,
@@ -552,6 +553,7 @@ class ViewTest(AironeViewTest):
                         "id": self.ref_entity.id,
                         "is_toplevel": False,
                         "item_name_pattern": "",
+                        "item_name_type": "US",
                         "name": "ref_entity",
                         "note": "",
                         "permission": ACLType.Full.value,
@@ -561,6 +563,7 @@ class ViewTest(AironeViewTest):
                         "id": self.entity.id,
                         "is_toplevel": False,
                         "item_name_pattern": "",
+                        "item_name_type": "US",
                         "name": "test-entity",
                         "note": "",
                         "permission": ACLType.Full.value,
@@ -616,6 +619,7 @@ class ViewTest(AironeViewTest):
         params = {
             "name": "entity1",
             "note": "hoge",
+            "item_name_type": ItemNameType.ATTR.value,
             "is_toplevel": True,
             "attrs": [
                 {
@@ -646,6 +650,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(entity.name, "entity1")
         self.assertEqual(entity.note, "hoge")
         self.assertEqual(entity.status, Entity.STATUS_TOP_LEVEL)
+        self.assertEqual(entity.item_name_type, ItemNameType.ATTR.value)
         self.assertEqual(entity.created_user, self.user)
 
         self.assertEqual(entity.attrs.count(), 1)
@@ -682,6 +687,14 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(
             resp.json(), {"name": [{"code": "AE-113000", "message": "This field is required."}]}
+        )
+
+        # test for setting invalid item_name_type parameter
+        params = {"name": "hoge", "item_name_type": "None of the ItemNameType"}
+        resp = self.client.post("/entity/api/v2/", json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.json(), {"item_name_type": [{"code": "AE-999999", "message": '"None of the ItemNameType" is not a valid choice.'}]}
         )
 
         # name param

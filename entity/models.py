@@ -15,7 +15,7 @@ from webhook.models import Webhook
 class ItemNameType(models.TextChoices):
     USER = ("US", "USER")  # Specify Item name manually by user
     UUID = ("ID", "UUID")  # Specify Item name automatically by system using UUID
-    ATTR = ("AT", "Attribute")  # Specify Item name automatically by system using Attribute
+    ATTR = ("AT", "ATTR")  # Specify Item name automatically by system using Attribute
 
 
 class EntityAttr(ACLBase):

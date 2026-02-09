@@ -161,6 +161,7 @@ export const EntityEditPage: FC = () => {
           entityForm.name,
           entityForm.note,
           entityForm.itemNamePattern,
+          entityForm.itemNameType,
           entityForm.isToplevel,
           attrs,
           webhooks,
@@ -171,6 +172,7 @@ export const EntityEditPage: FC = () => {
           entityForm.name,
           entityForm.note,
           entityForm.itemNamePattern,
+          entityForm.itemNameType,
           entityForm.isToplevel,
           [...attrs, ...deletedAttrs],
           [...webhooks, ...deletedWebhooks],
@@ -209,6 +211,7 @@ export const EntityEditPage: FC = () => {
         name: entity.value.name,
         note: entity.value.note ?? "",
         itemNamePattern: entity.value.itemNamePattern ?? "",
+        itemNameType: entity.value.itemNameType ?? "US",
         isToplevel: entity.value.isToplevel,
         webhooks: entity.value.webhooks.map((webhook) => ({
           ...webhook,

@@ -13,6 +13,7 @@ describe("schema", () => {
     name: "entity",
     note: "note",
     itemNamePattern: "",
+    itemNameType: "US",
     isToplevel: false,
     webhooks: [
       {

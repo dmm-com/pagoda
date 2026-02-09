@@ -24,38 +24,38 @@ import { AttributeValueField } from "components/entry/entryForm/AttributeValueFi
 import { Schema } from "components/entry/entryForm/EntryFormSchema";
 import { getStagedErrorStyle } from "utils/styleUtils";
 
-const ChipBox = styled(Box)(({}) => ({
+const ChipBox = styled(Box)(({ }) => ({
   display: "flex",
   flexWrap: "wrap",
   gap: "12px",
   marginBottom: "20px",
 }));
 
-const StyledTableCell = styled(TableCell)(({}) => ({
+const StyledTableCell = styled(TableCell)(({ }) => ({
   /* an anchor link adjusted fixed headers etc. */
   scrollMarginTop: "180px",
   padding: "8px 16px",
 }));
 
-const StyledTypography = styled(Typography)(({}) => ({
+const StyledTypography = styled(Typography)(({ }) => ({
   flexGrow: 1,
 }));
 
-const HeaderTableRow = styled(TableRow)(({}) => ({
+const HeaderTableRow = styled(TableRow)(({ }) => ({
   backgroundColor: "#455A64",
 }));
 
-const HeaderTableCell = styled(TableCell)(({}) => ({
+const HeaderTableCell = styled(TableCell)(({ }) => ({
   color: "#FFFFFF",
   width: "384px",
 }));
 
-const TableBox = styled(Box)(({}) => ({
+const TableBox = styled(Box)(({ }) => ({
   display: "flex",
   alignItems: "center",
 }));
 
-const RequiredLabel = styled(Typography)(({}) => ({
+const RequiredLabel = styled(Typography)(({ }) => ({
   border: "0.5px solid gray",
   borderRadius: 16,
   color: "white",
@@ -63,7 +63,7 @@ const RequiredLabel = styled(Typography)(({}) => ({
   padding: "0 8px",
 }));
 
-const BottomBox = styled(Box)(({}) => ({
+const BottomBox = styled(Box)(({ }) => ({
   display: "flex",
   justifyContent: "flex-end",
   margin: "12px 0",
@@ -74,12 +74,14 @@ export interface EntryFormProps {
   entity: EntityDetail;
   control: Control<Schema>;
   setValue: UseFormSetValue<Schema>;
+  skipItemName: boolean;
 }
 
 export const EntryForm: FC<EntryFormProps> = ({
   entity,
   control,
   setValue,
+  skipItemName,
 }) => {
   const { errors } = useFormState({
     control,
@@ -128,53 +130,55 @@ export const EntryForm: FC<EntryFormProps> = ({
           </HeaderTableRow>
         </TableHead>
         <TableBody>
-          <TableRow>
-            <StyledTableCell>
-              <TableBox>
-                <StyledTypography id="name">アイテム名</StyledTypography>
-                <RequiredLabel>必須</RequiredLabel>
-              </TableBox>
-            </StyledTableCell>
-            <StyledTableCell>
-              <Controller
-                name="name"
-                control={control}
-                defaultValue=""
-                render={({ field, fieldState: { error, isDirty } }) => (
-                  <TextField
-                    {...field}
-                    id="entry-name"
-                    variant="standard"
-                    error={error != null}
-                    helperText={error?.message}
-                    fullWidth
-                    inputProps={{ "data-1p-ignore": true }}
-                    sx={getStagedErrorStyle(!!error, isDirty)}
-                  />
-                )}
-              />
-            </StyledTableCell>
-            <StyledTableCell sx={{ textAlign: "center" }}>
-              {!errors.name && (
+          {!skipItemName && (
+            <TableRow>
+              <StyledTableCell>
+                <TableBox>
+                  <StyledTypography id="name">アイテム名</StyledTypography>
+                  <RequiredLabel>必須</RequiredLabel>
+                </TableBox>
+              </StyledTableCell>
+              <StyledTableCell>
                 <Controller
                   name="name"
                   control={control}
-                  render={({ field }) => (
-                    <>
-                      {field.value && (
-                        <CheckCircleIcon
-                          sx={{
-                            color: "#4caf50",
-                            fontSize: 20,
-                          }}
-                        />
-                      )}
-                    </>
+                  defaultValue=""
+                  render={({ field, fieldState: { error, isDirty } }) => (
+                    <TextField
+                      {...field}
+                      id="entry-name"
+                      variant="standard"
+                      error={error != null}
+                      helperText={error?.message}
+                      fullWidth
+                      inputProps={{ "data-1p-ignore": true }}
+                      sx={getStagedErrorStyle(!!error, isDirty)}
+                    />
                   )}
                 />
-              )}
-            </StyledTableCell>
-          </TableRow>
+              </StyledTableCell>
+              <StyledTableCell sx={{ textAlign: "center" }}>
+                {!errors.name && (
+                  <Controller
+                    name="name"
+                    control={control}
+                    render={({ field }) => (
+                      <>
+                        {field.value && (
+                          <CheckCircleIcon
+                            sx={{
+                              color: "#4caf50",
+                              fontSize: 20,
+                            }}
+                          />
+                        )}
+                      </>
+                    )}
+                  />
+                )}
+              </StyledTableCell>
+            </TableRow>
+          )}
           {entity.attrs
             .sort((a, b) => a.index - b.index)
             .map(({ id, name, type, isMandatory, isWritable }) => (

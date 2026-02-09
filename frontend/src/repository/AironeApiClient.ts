@@ -18,6 +18,7 @@ import {
   EntityAttrCreate,
   EntityAttrUpdate,
   EntityAttrIDandName,
+  EntityCreateItemNameTypeEnum,
   EntityDetail,
   EntryAlias,
   EntryApi,
@@ -222,17 +223,17 @@ class AironeApiClient {
   ): Promise<PaginatedEntityListList> {
     const params: EntityApiV2ListRequest = page
       ? {
-          offset: (page - 1) * EntityListParam.MAX_ROW_COUNT,
-          limit: EntityListParam.MAX_ROW_COUNT,
-          search: search,
-          isToplevel: isToplevel,
-        }
+        offset: (page - 1) * EntityListParam.MAX_ROW_COUNT,
+        limit: EntityListParam.MAX_ROW_COUNT,
+        search: search,
+        isToplevel: isToplevel,
+      }
       : {
-          // Any better way to get all the entities?
-          limit: Number.MAX_SAFE_INTEGER,
-          search: search,
-          isToplevel: isToplevel,
-        };
+        // Any better way to get all the entities?
+        limit: Number.MAX_SAFE_INTEGER,
+        search: search,
+        isToplevel: isToplevel,
+      };
 
     return await this.entity.entityApiV2List(params);
   }
@@ -245,6 +246,7 @@ class AironeApiClient {
     name: string,
     note: string,
     itemNamePattern: string,
+    itemNameType: EntityCreateItemNameTypeEnum,
     isToplevel: boolean,
     attrs: Array<EntityAttrCreate>,
     webhooks: Array<WebhookCreateUpdate>,
@@ -255,6 +257,7 @@ class AironeApiClient {
           name: name,
           note: note,
           itemNamePattern: itemNamePattern,
+          itemNameType: itemNameType,
           isToplevel: isToplevel,
           attrs: attrs,
           webhooks: webhooks,
@@ -274,6 +277,7 @@ class AironeApiClient {
     name: string,
     note: string,
     itemNamePattern: string,
+    itemNameType: EntityCreateItemNameTypeEnum,
     isToplevel: boolean,
     attrs: Array<EntityAttrUpdate>,
     webhooks: Array<WebhookCreateUpdate>,
@@ -285,6 +289,7 @@ class AironeApiClient {
           name: name,
           note: note,
           itemNamePattern: itemNamePattern,
+          itemNameType: itemNameType,
           isToplevel: isToplevel,
           attrs: attrs,
           webhooks: webhooks,
@@ -684,16 +689,16 @@ class AironeApiClient {
     return await this.category.categoryApiV2List(
       page
         ? {
-            limit: EntityListParam.MAX_ROW_COUNT,
-            offset: (page - 1) * EntityListParam.MAX_ROW_COUNT,
-            ordering: ordering,
-            search: search,
-          }
+          limit: EntityListParam.MAX_ROW_COUNT,
+          offset: (page - 1) * EntityListParam.MAX_ROW_COUNT,
+          ordering: ordering,
+          search: search,
+        }
         : {
-            limit: EntityListParam.MAX_ROW_COUNT,
-            ordering: ordering,
-            search: search,
-          },
+          limit: EntityListParam.MAX_ROW_COUNT,
+          ordering: ordering,
+          search: search,
+        },
     );
   }
 

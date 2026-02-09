@@ -24,6 +24,7 @@ describe("BasicFields", () => {
     name: "hoge",
     note: "fuga",
     itemNamePattern: "",
+    itemNameType: "US",
     isToplevel: false,
     webhooks: [],
     attrs: [],

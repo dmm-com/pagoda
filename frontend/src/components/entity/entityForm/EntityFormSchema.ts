@@ -23,6 +23,7 @@ export const schema = z.object({
       },
       { message: "正規表現として正しい文字列を入力してください" },
     ),
+  itemNameType: z.enum(["US", "ID", "AT"]).default("US"),
   isToplevel: z.boolean().default(false),
   webhooks: z
     .array(
