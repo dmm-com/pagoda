@@ -1,13 +1,16 @@
 import { useMemo } from "react";
 
-import { EntityPageType, EntityPluginViewsConfig } from "../plugins";
+import {
+  EntityPageType,
+  FrontendPluginEntityOverridesConfig,
+} from "../plugins";
 import { ServerContext } from "../services/ServerContext";
 
 /**
  * Return type for usePluginMappings hook
  */
 export interface UsePluginMappingsResult {
-  config: EntityPluginViewsConfig;
+  config: FrontendPluginEntityOverridesConfig;
   hasOverride: (entityId: number, pageType: EntityPageType) => boolean;
 }
 
@@ -17,7 +20,7 @@ export interface UsePluginMappingsResult {
  */
 export const usePluginMappings = (): UsePluginMappingsResult => {
   const serverContext = ServerContext.getInstance();
-  const config = serverContext?.entityPluginViews ?? {};
+  const config = serverContext?.frontendPluginEntityOverrides ?? {};
 
   const hasOverride = useMemo(() => {
     return (entityId: number, pageType: EntityPageType): boolean => {

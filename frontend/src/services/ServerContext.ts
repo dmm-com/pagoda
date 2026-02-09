@@ -1,4 +1,4 @@
-import { EntityPluginViewsConfig } from "../plugins";
+import { FrontendPluginEntityOverridesConfig } from "../plugins";
 
 class User {
   id: number;
@@ -49,7 +49,7 @@ export class ServerContext {
   }[];
   headerColor?: string;
   flags: Record<FlagKey, boolean>;
-  entityPluginViews: EntityPluginViewsConfig;
+  frontendPluginEntityOverrides: FrontendPluginEntityOverridesConfig;
 
   private static _instance: ServerContext | undefined;
 
@@ -88,8 +88,9 @@ export class ServerContext {
     this.flags = (context.flags as Record<FlagKey, boolean>) ?? {
       webhook: true,
     };
-    this.entityPluginViews =
-      (context.entityPluginViews as EntityPluginViewsConfig) ?? {};
+    this.frontendPluginEntityOverrides =
+      (context.frontendPluginEntityOverrides as FrontendPluginEntityOverridesConfig) ??
+      {};
   }
 
   static getInstance() {

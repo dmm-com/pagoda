@@ -2,7 +2,7 @@ import importlib
 import logging
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Type
 
-from django.urls import include, path
+from django.urls import URLResolver, include, path
 from pagoda_plugin_sdk.exceptions import PluginError
 
 from .hook_manager import hook_manager
@@ -146,7 +146,7 @@ class PluginRegistry:
 
         return getattr(module, func_name)
 
-    def get_plugin(self, plugin_id: str) -> Optional["Plugin"]:
+    def get(self, plugin_id: str) -> Optional["Plugin"]:
         """Get a plugin by ID
 
         Args:
@@ -184,25 +184,25 @@ class PluginRegistry:
             apps.extend(plugin.django_apps)
         return apps
 
-    def get_url_patterns(self) -> List[Any]:
+    def get_url_patterns(self) -> List[URLResolver]:
         """Get URL patterns
 
         Returns:
             List of URL patterns from enabled plugins
         """
-        patterns = []
+        patterns: List[URLResolver] = []
         for plugin in self.get_enabled_plugins():
             if plugin.url_patterns:
                 patterns.append(path(f"plugins/{plugin.id}/", include(plugin.url_patterns)))
         return patterns
 
-    def get_api_v2_patterns(self) -> List[Any]:
+    def get_api_v2_patterns(self) -> List[URLResolver]:
         """Get API v2 URL patterns
 
         Returns:
             List of API v2 URL patterns from enabled plugins
         """
-        patterns = []
+        patterns: List[URLResolver] = []
         for pattern_config in self._api_v2_patterns:
             patterns.append(path(pattern_config["prefix"], include(pattern_config["patterns"])))
         return patterns

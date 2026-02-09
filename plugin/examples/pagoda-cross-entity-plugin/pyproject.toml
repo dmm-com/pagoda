@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pagoda-cross-entity-sample-plugin"
+version = "1.0.0"
+description = "Example plugin demonstrating cross-entity operations in AirOne"
+readme = "README.md"
+requires-python = ">=3.12"
+license = {text = "MIT"}
+authors = [
+    {name = "AirOne Team"}
+]
+dependencies = [
+    "pagoda-plugin-sdk>=1.0.0a1",
+]
+
+[project.entry-points."pagoda.plugins"]
+cross-entity-sample = "pagoda_cross_entity_sample_plugin:CrossEntityPlugin"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["pagoda_cross_entity_sample_plugin*"]

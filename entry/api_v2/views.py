@@ -1,4 +1,5 @@
 import json
+import logging
 import re
 from collections import Counter
 from copy import deepcopy
@@ -33,6 +34,7 @@ from airone.lib.elasticsearch import (
     EntryHint,
     FilterKey,
 )
+from airone.lib.plugin_dispatch import PluginOverrideMixin
 from airone.lib.types import AttrType
 from api_v1.entry.serializer import EntrySearchChainSerializer
 from entity.models import Entity, EntityAttr
@@ -68,6 +70,8 @@ from job.models import Job, JobOperation, JobStatus
 from role.models import Role
 from user.models import User
 
+logger = logging.getLogger(__name__)
+
 
 class EntryPermission(BasePermission):
     def has_object_permission(self, request: Request, view, obj) -> bool:
@@ -90,7 +94,13 @@ class EntryPermission(BasePermission):
         return True
 
 
-class EntryAPI(viewsets.ModelViewSet):
+class EntryAPI(PluginOverrideMixin, viewsets.ModelViewSet):
+    """Entry API ViewSet with plugin override support.
+
+    Plugin overrides are automatically handled by PluginOverrideMixin.
+    Configure overrides via BACKEND_PLUGIN_ENTITY_OVERRIDES environment variable.
+    """
+
     queryset = Entry.objects.all()
     permission_classes = [IsAuthenticated & EntryPermission]
     pagination_class = LimitOffsetPagination
@@ -107,10 +117,25 @@ class EntryAPI(viewsets.ModelViewSet):
         }
         return serializer.get(self.action, EntryBaseSerializer)
 
+    def retrieve(self, request: Request, *args, **kwargs) -> Response:
+        entry: Entry = self.get_object()
+        response = self._dispatch_override(
+            request, "retrieve", entry.schema.id, entry.schema, entry
+        )
+        if response is not None:
+            return response
+
+        serializer = self.get_serializer(entry)
+        return Response(serializer.data)
+
     @extend_schema(request=EntryUpdateSerializer, responses={202: None})
     def update(self, request: Request, *args, **kwargs) -> Response:
-        user: User = request.user
         entry: Entry = self.get_object()
+        response = self._dispatch_override(request, "update", entry.schema.id, entry.schema, entry)
+        if response is not None:
+            return response
+
+        user: User = request.user
 
         serializer = EntryUpdateSerializer(
             instance=entry, data=request.data, context={"_user": user}
@@ -124,6 +149,10 @@ class EntryAPI(viewsets.ModelViewSet):
 
     def destroy(self, request: Request, *args, **kwargs) -> Response:
         entry: Entry = self.get_object()
+        response = self._dispatch_override(request, "delete", entry.schema.id, entry.schema, entry)
+        if response is not None:
+            return response
+
         if not entry.is_active:
             raise ObjectNotExistsError("specified entry has already been deleted")
 

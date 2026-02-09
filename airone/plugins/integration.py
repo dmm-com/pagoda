@@ -1,9 +1,11 @@
 import logging
-from typing import Any, List
+from typing import List
 
 from django.conf import settings
+from django.urls import URLResolver
 
 from .discovery import discover_plugins
+from .override_manager import override_registry
 from .registry import plugin_registry
 
 logger = logging.getLogger(__name__)
@@ -40,8 +42,25 @@ class PluginIntegration:
             logger.info("Initializing plugin system...")
             discover_plugins()
             self._inject_models()
+            self._load_override_config()
             self.initialized = True
             logger.info("Plugin system initialized successfully")
+
+    def _load_override_config(self):
+        """Load override registrations from BACKEND_PLUGIN_ENTITY_OVERRIDES config."""
+        try:
+            # Get BACKEND_PLUGIN_ENTITY_OVERRIDES from AIRONE settings
+            airone_settings = getattr(settings, "AIRONE", {})
+            override_config = airone_settings.get("BACKEND_PLUGIN_ENTITY_OVERRIDES", {})
+
+            if not override_config:
+                logger.debug("No BACKEND_PLUGIN_ENTITY_OVERRIDES configured")
+                return
+
+            override_registry.load_from_settings(override_config, plugin_registry)
+
+        except Exception as e:
+            logger.error(f"Failed to load override configuration: {e}", exc_info=True)
 
     def _inject_models(self):
         """Inject real models into the plugin SDK"""
@@ -87,7 +106,7 @@ class PluginIntegration:
         self.initialize()
         return plugin_registry.get_installed_apps()
 
-    def get_url_patterns(self) -> List[Any]:
+    def get_url_patterns(self) -> List[URLResolver]:
         """Get URL patterns
 
         Returns an empty list if plugins are disabled.
@@ -101,7 +120,7 @@ class PluginIntegration:
         self.initialize()
         return plugin_registry.get_url_patterns()
 
-    def get_api_v2_patterns(self) -> List[Any]:
+    def get_api_v2_patterns(self) -> List[URLResolver]:
         """Get API v2 URL patterns
 
         Returns an empty list if plugins are disabled.

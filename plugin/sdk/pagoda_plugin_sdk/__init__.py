@@ -97,6 +97,60 @@ def _lazy_import_tasks():
         raise
 
 
+def _lazy_import_override():
+    """Lazy import of entry operation override components"""
+    try:
+        from .override import (
+            OverrideContext,
+            OverrideMeta,
+            accepted_response,
+            created_response,
+            error_response,
+            no_content_response,
+            not_found_response,
+            override_operation,
+            permission_denied_response,
+            success_response,
+            validation_error_response,
+        )
+
+        return {
+            "override_operation": override_operation,
+            "OverrideMeta": OverrideMeta,
+            "OverrideContext": OverrideContext,
+            "success_response": success_response,
+            "created_response": created_response,
+            "accepted_response": accepted_response,
+            "no_content_response": no_content_response,
+            "error_response": error_response,
+            "not_found_response": not_found_response,
+            "permission_denied_response": permission_denied_response,
+            "validation_error_response": validation_error_response,
+        }
+    except ImportError as e:
+        if "rest_framework" in str(e).lower():
+            raise ImportError(
+                "Override components require Django REST Framework. "
+                "Please install djangorestframework or import directly when configured."
+            )
+        raise
+
+
+_OVERRIDE_NAMES = [
+    "override_operation",
+    "OverrideMeta",
+    "OverrideContext",
+    "success_response",
+    "created_response",
+    "accepted_response",
+    "no_content_response",
+    "error_response",
+    "not_found_response",
+    "permission_denied_response",
+    "validation_error_response",
+]
+
+
 # Define lazy properties for mixins, API components, and task components
 def __getattr__(name):
     if name == "PluginAPIViewMixin":
@@ -141,6 +195,9 @@ def __getattr__(name):
         ]
         if name in task_names:
             return task_classes[task_names.index(name)]
+    elif name in _OVERRIDE_NAMES:
+        override_components = _lazy_import_override()
+        return override_components[name]
     raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
 
 
@@ -172,6 +229,18 @@ __all__ = [
     "JobStatus",
     "JobOperation",
     "JobTarget",
+    # Entry operation override components
+    "override_operation",
+    "OverrideMeta",
+    "OverrideContext",
+    "success_response",
+    "created_response",
+    "accepted_response",
+    "no_content_response",
+    "error_response",
+    "not_found_response",
+    "permission_denied_response",
+    "validation_error_response",
     # Utilities
     "get_pagoda_version",
 ]
