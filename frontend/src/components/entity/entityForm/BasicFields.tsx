@@ -1,9 +1,8 @@
 import {
   Box,
   Checkbox,
-  FormControl,
-  Select,
   MenuItem,
+  Select,
   Table,
   TableBody,
   TableCell,
@@ -94,30 +93,18 @@ export const BasicFields: FC<Props> = ({ control }) => {
                 name="itemNameType"
                 control={control}
                 defaultValue="US"
-                render={({ field, fieldState: { error } }) => {
-                  const itemNameType = useWatch({
-                    control,
-                    name: "itemNameType",
-                  });
-
-                  return (
-                    <FormControl sx={{ m: 0, minWidth: 120 }} size="small">
-                      <Select
-                        id="itemNameType"
-                        defaultValue={itemNameType}
-                        onChange={(e) => {
-                          field.onChange(e.target.value);
-                        }}
-                      >
-                        <MenuItem value={"US"}>利用者が手動で設定</MenuItem>
-                        <MenuItem value={"ID"}>UUIDに自動で設定</MenuItem>
-                        <MenuItem value={"AT"}>
-                          属性値に応じて自動で設定
-                        </MenuItem>
-                      </Select>
-                    </FormControl>
-                  );
-                }}
+                render={({ field }) => (
+                  <Select
+                    {...field}
+                    id="itemNameType"
+                    size="small"
+                    sx={{ minWidth: "300px" }}
+                  >
+                    <MenuItem value={"US"}>利用者が手動で設定</MenuItem>
+                    <MenuItem value={"ID"}>UUIDに自動で設定</MenuItem>
+                    <MenuItem value={"AT"}>属性値に応じて自動で設定</MenuItem>
+                  </Select>
+                )}
               />
             </TableCell>
           </StyledTableRow>

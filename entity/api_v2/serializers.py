@@ -278,6 +278,8 @@ class EntityAttrCreateSerializer(serializers.ModelSerializer):
 class EntityAttrUpdateSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(required=False)
     is_deleted = serializers.BooleanField(required=False, default=False)
+    name_prefix = serializers.CharField(max_length=20, allow_blank=True, trim_whitespace=False)
+    name_postfix = serializers.CharField(max_length=20, allow_blank=True, trim_whitespace=False)
 
     class Meta:
         model = EntityAttr
