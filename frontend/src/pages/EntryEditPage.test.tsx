@@ -23,6 +23,7 @@ const mockEntity = {
   id: 2,
   name: "test entity",
   note: "",
+  itemNameType: "US",
   isToplevel: false,
   attrs: [
     {
