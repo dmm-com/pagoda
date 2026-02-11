@@ -1,3 +1,4 @@
+import logging
 from typing import List
 
 from django.db.models import F
@@ -16,6 +17,7 @@ from rest_framework.response import Response
 from airone.lib.acl import ACLType, get_permitted_objects
 from airone.lib.drf import ObjectNotExistsError, YAMLParser, YAMLRenderer
 from airone.lib.http import http_get
+from airone.lib.plugin_dispatch import PluginOverrideMixin
 from entity.api_v2.serializers import (
     EntityAttrNameSerializer,
     EntityCreateSerializer,
@@ -30,6 +32,8 @@ from entry.api_v2.serializers import EntryBaseSerializer, EntryCreateSerializer
 from entry.models import Entry
 from job.models import Job
 from user.models import History, User
+
+logger = logging.getLogger(__name__)
 
 
 # distutils.util.strtoboolの代替実装
@@ -148,8 +152,8 @@ class EntityAPI(viewsets.ModelViewSet):
     def get_serializer_class(self):
         serializer = {
             "list": EntityListSerializer,
-            "create": serializers.Serializer,
-            "update": serializers.Serializer,
+            "create": EntityCreateSerializer,
+            "update": EntityUpdateSerializer,
         }
         return serializer.get(self.action, EntityDetailSerializer)
 
@@ -167,7 +171,7 @@ class EntityAPI(viewsets.ModelViewSet):
 
         return Entity.objects.filter(**filter_condition).exclude(**exclude_condition)
 
-    @extend_schema(request=EntityCreateSerializer)
+    @extend_schema(request=EntityCreateSerializer, responses={202: None})
     def create(self, request: Request, *args, **kwargs) -> Response:
         user: User = request.user
 
@@ -180,7 +184,7 @@ class EntityAPI(viewsets.ModelViewSet):
 
         return Response(status=status.HTTP_202_ACCEPTED)
 
-    @extend_schema(request=EntityUpdateSerializer)
+    @extend_schema(request=EntityUpdateSerializer, responses={202: None})
     def update(self, request: Request, *args, **kwargs) -> Response:
         user: User = request.user
         entity: Entity = self.get_object()
@@ -232,7 +236,13 @@ class AliasSearchFilter(filters.SearchFilter):
         OpenApiParameter("with_alias", OpenApiTypes.STR, OpenApiParameter.QUERY),
     ],
 )
-class EntityEntryAPI(viewsets.ModelViewSet):
+class EntityEntryAPI(PluginOverrideMixin, viewsets.ModelViewSet):
+    """Entity Entry API ViewSet with plugin override support.
+
+    Plugin overrides are automatically handled by PluginOverrideMixin.
+    Configure overrides via BACKEND_PLUGIN_ENTITY_OVERRIDES environment variable.
+    """
+
     queryset = Entry.objects.all()
     pagination_class = PageNumberPagination
     permission_classes = [IsAuthenticated & EntityPermission]
@@ -243,7 +253,7 @@ class EntityEntryAPI(viewsets.ModelViewSet):
 
     def get_serializer_class(self):
         serializer = {
-            "create": serializers.Serializer,
+            "create": EntryCreateSerializer,
         }
         return serializer.get(self.action, EntryBaseSerializer)
 
@@ -255,9 +265,18 @@ class EntityEntryAPI(viewsets.ModelViewSet):
             self.queryset.filter(schema=entity).select_related("schema").prefetch_related("aliases")
         )
 
-    @extend_schema(request=EntryCreateSerializer)
+    @extend_schema(request=EntryCreateSerializer, responses={202: None})
     def create(self, request: Request, entity_id: int) -> Response:
+        entity = Entity.objects.filter(id=entity_id).first()
+        if entity:
+            response = self._dispatch_override(request, "create", entity.id, entity)
+            if response is not None:
+                return response
+
         user: User = request.user
+
+        # Set schema to entity_id and let the serializer validate it
+        # This allows proper validation error response for non-existent entities
         request.data["schema"] = entity_id
 
         serializer = EntryCreateSerializer(data=request.data, context={"_user": user})
@@ -370,8 +389,9 @@ class EntityHistoryAPI(viewsets.ReadOnlyModelViewSet):
 
 class EntityImportAPI(generics.GenericAPIView):
     parser_classes = [YAMLParser]
-    serializer_class = serializers.Serializer
+    serializer_class = EntityImportExportRootSerializer
 
+    @extend_schema(responses={200: None})
     def post(self, request: Request) -> Response:
         import_datas = request.data
         serializer = EntityImportExportRootSerializer(

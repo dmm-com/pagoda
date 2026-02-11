@@ -2172,7 +2172,7 @@ class Entry(ACLBase):
                 }
             )
 
-        return {"name": self.name, "attrs": attrinfo}
+        return {"name": self.name, "attrs": attrinfo, "id": self.id}
 
     # NOTE: Type-Write
     def get_es_document(self, entity_attrs=None) -> EntryDocument:

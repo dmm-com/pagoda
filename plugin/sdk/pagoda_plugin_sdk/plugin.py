@@ -5,9 +5,13 @@ All plugins must inherit from the Plugin class defined here.
 This provides the foundation for plugin discovery, validation, and lifecycle management.
 """
 
-from typing import Any, ClassVar, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Callable, ClassVar, Dict, List, Optional, Type
 
 from .exceptions import PluginValidationError
+from .override import OVERRIDE_META_ATTR
+
+if TYPE_CHECKING:
+    from pydantic import BaseModel
 
 
 class Plugin:
@@ -32,23 +36,34 @@ class Plugin:
     url_patterns: Optional[str] = None
     api_v2_patterns: Optional[str] = None
 
+    # Plugin-specific parameter model for override configuration
+    # Subclasses can set this to a Pydantic BaseModel class for validation
+    params_model: ClassVar[Optional[Type["BaseModel"]]] = None
+
     # Hook handlers - populated by __init_subclass__
     _hook_handlers: ClassVar[List[Dict[str, Any]]] = []
 
+    # Override handlers mapping: operation -> method_name, populated by __init_subclass__
+    _override_handlers: ClassVar[Dict[str, str]] = {}
+
     def __init_subclass__(cls, **kwargs):
-        """Automatically detect and register decorated hook methods"""
+        """Automatically detect and register decorated hook and override methods"""
         super().__init_subclass__(**kwargs)
 
         # Scan for decorated methods
         cls._hook_handlers = []
+        cls._override_handlers = {}
         for attr_name in dir(cls):
             # Skip private/magic methods
             if attr_name.startswith("_"):
                 continue
 
             attr = getattr(cls, attr_name)
+            if not callable(attr):
+                continue
+
             # Check if method has hook metadata from decorator
-            if callable(attr) and hasattr(attr, "_hook_metadata"):
+            if hasattr(attr, "_hook_metadata"):
                 metadata = attr._hook_metadata
                 cls._hook_handlers.append(
                     {
@@ -59,6 +74,11 @@ class Plugin:
                         "handler": attr,
                     }
                 )
+
+            # Check if method has override metadata from @override_operation
+            meta = getattr(attr, OVERRIDE_META_ATTR, None)
+            if meta:
+                cls._override_handlers[meta.operation] = attr_name
 
     def __init__(self):
         """Initialize the plugin instance"""
@@ -90,7 +110,45 @@ class Plugin:
             if not app or not isinstance(app, str):
                 raise PluginValidationError("Django app names must be non-empty strings")
 
-    def get_info(self) -> Dict[str, Any]:
+    def validate_params(self, params: Dict[str, Any]) -> Dict[str, Any] | "BaseModel":
+        """Validate plugin parameters using the params_model if defined.
+
+        If params_model is defined (a Pydantic BaseModel), the params will
+        be validated and returned as a model instance. Otherwise, the raw
+        dict is returned.
+
+        Args:
+            params: Raw parameter dictionary from configuration
+
+        Returns:
+            Validated params (Pydantic model instance or dict)
+
+        Raises:
+            ValidationError: If params don't match the model schema
+        """
+        if self.params_model is None:
+            return params
+
+        # Assumes params_model is a Pydantic BaseModel
+        return self.params_model(**params)
+
+    def get_handler(self, operation: str) -> Optional[Callable]:
+        """Get the override handler for a specific operation.
+
+        Uses the pre-built _override_handlers mapping for O(1) lookup.
+
+        Args:
+            operation: Operation type string ("create", "retrieve", etc.)
+
+        Returns:
+            Handler callable if found, None otherwise
+        """
+        method_name = self._override_handlers.get(operation.lower())
+        if method_name:
+            return getattr(self, method_name, None)
+        return None
+
+    def get_info(self) -> Dict[str, str | bool | List[str] | None]:
         """Get plugin metadata
 
         Returns:
@@ -101,6 +159,8 @@ class Plugin:
         if hasattr(self.__class__, "_hook_handlers"):
             for handler_info in self.__class__._hook_handlers:
                 hook_names.add(handler_info["hook_name"])
+
+        override_operations = list(self._override_handlers.keys())
 
         return {
             "id": self.id,
@@ -113,6 +173,8 @@ class Plugin:
             "url_patterns": self.url_patterns,
             "api_v2_patterns": self.api_v2_patterns,
             "hooks": list(hook_names),
+            "override_operations": override_operations,
+            "has_params_model": self.params_model is not None,
         }
 
     def __str__(self) -> str:

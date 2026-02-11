@@ -975,6 +975,179 @@ class EntityListView(PluginAPIViewMixin):
         return Response({"entities": entity_list})
 ```
 
+## Backend Plugin Entity Overrides
+
+Plugins can override standard Entry API operations for specific entities. This allows custom handling of create, retrieve, update, delete, and list operations without modifying core code.
+
+### Configuration
+
+Configure backend overrides in `settings_common.py` or via environment variable:
+
+```python
+# airone/settings_common.py
+AIRONE = {
+    # ... other settings ...
+
+    # Backend plugin entity override configuration
+    # Format: { "entityId": { "plugin": "plugin-id", "operations": [...], "params": {...} } }
+    "BACKEND_PLUGIN_ENTITY_OVERRIDES": json.loads(
+        env.str(
+            "BACKEND_PLUGIN_ENTITY_OVERRIDES",
+            json.dumps({}),  # Default: no overrides
+        )
+    ),
+}
+```
+
+### Configuration Format
+
+```json
+{
+  "entityId": {
+    "plugin": "plugin-id",
+    "operations": ["create", "retrieve", "update", "delete"],
+    "params": {
+      "configuration_entity_id": 99,
+      "cascade_delete": true
+    }
+  }
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `entityId` | string | The entity ID (as string) to override |
+| `plugin` | string | The plugin ID that provides the override handlers |
+| `operations` | string[] | List of operations to override: `create`, `retrieve`, `update`, `delete`, `list` |
+| `params` | object | Optional plugin-specific parameters passed to handlers |
+
+### Example Configurations
+
+**Single Entity Override:**
+```bash
+export BACKEND_PLUGIN_ENTITY_OVERRIDES='{"42": {"plugin": "cross-entity-sample", "operations": ["create", "retrieve", "update", "delete"], "params": {"configuration_entity_id": 99}}}'
+```
+
+**Multiple Entity Overrides:**
+```bash
+export BACKEND_PLUGIN_ENTITY_OVERRIDES='{
+  "42": {"plugin": "cross-entity-sample", "operations": ["create", "retrieve"], "params": {}},
+  "100": {"plugin": "custom-handler", "operations": ["retrieve"], "params": {"enrichment": true}}
+}'
+```
+
+### How It Works
+
+1. When an Entry API request is received (e.g., `GET /entry/api/v2/{entry_id}/`), the system checks if an override is registered for that entity/operation combination.
+
+2. If an override exists, the request is dispatched to the plugin's handler instead of the default implementation.
+
+3. The handler receives an `OverrideContext` object containing:
+   - `request`: The DRF Request object
+   - `user`: The authenticated user
+   - `entity`: The Entity instance
+   - `entry`: The Entry instance (for retrieve/update/delete)
+   - `data`: Request data (for create/update)
+   - `params`: Plugin-specific parameters from configuration
+   - `plugin_id`: The plugin's ID
+   - `operation`: The operation type
+
+4. The handler returns a DRF `Response` object.
+
+### Implementing Override Handlers
+
+Use the `@override_operation` decorator to mark methods as override handlers:
+
+```python
+from pagoda_plugin_sdk.override import (
+    OverrideContext,
+    override_operation,
+    success_response,
+    error_response,
+)
+
+class MyHandlers:
+    @override_operation("retrieve")
+    def handle_retrieve(self, context: OverrideContext) -> Response:
+        """Handle entry retrieval with custom logic."""
+        entry = context.entry
+        if not entry:
+            return error_response("Entry not found", status_code=404)
+
+        # Use the standard serializer for compatibility
+        from entry.api_v2.serializers import EntryRetrieveSerializer
+        serializer = EntryRetrieveSerializer(entry, context={"request": context.request})
+        response_data = serializer.data
+
+        # Add plugin-specific enrichment
+        response_data["_plugin_override"] = {
+            "active": True,
+            "plugin_id": context.plugin_id,
+            "message": "Custom handling active",
+        }
+
+        return success_response(response_data)
+```
+
+### Response Helpers
+
+The SDK provides response helper functions:
+
+```python
+from pagoda_plugin_sdk.override import (
+    success_response,            # 200 OK with data
+    created_response,            # 201 Created
+    accepted_response,           # 202 Accepted
+    no_content_response,         # 204 No Content
+    error_response,              # 400 Bad Request (customizable)
+    not_found_response,          # 404 Not Found
+    permission_denied_response,  # 403 Forbidden
+    validation_error_response,   # 400 with validation errors
+)
+```
+
+### Important: Maintaining API Compatibility
+
+When implementing override handlers, especially for `retrieve` operations, ensure the response format is compatible with the frontend:
+
+```python
+@override_operation("retrieve")
+def handle_retrieve(self, context: OverrideContext) -> Response:
+    entry = context.entry
+
+    # Use the standard serializer to ensure correct format
+    from entry.api_v2.serializers import EntryRetrieveSerializer
+    serializer = EntryRetrieveSerializer(entry, context={"request": context.request})
+    response_data = serializer.data
+
+    # Then add your custom fields
+    response_data["_custom_field"] = "value"
+
+    return success_response(response_data)
+```
+
+This ensures the response includes required fields like `attrs` that the frontend expects.
+
+### Verifying Override Configuration
+
+```bash
+# Check if override is active for an entry
+curl -H "Authorization: Token YOUR_TOKEN" \
+     http://localhost:8000/entry/api/v2/{entry_id}/
+
+# Response with override active:
+{
+  "id": 123,
+  "name": "test-entry",
+  "attrs": [...],
+  "_plugin_override": {
+    "active": true,
+    "plugin_id": "cross-entity-sample",
+    "message": "Custom handling active"
+  }
+}
+```
+
 ## Configuration
 
 ### Environment Variables
@@ -982,6 +1155,8 @@ class EntityListView(PluginAPIViewMixin):
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `ENABLED_PLUGINS` | `[]` | List of plugins to enable (comma-separated) |
+| `BACKEND_PLUGIN_ENTITY_OVERRIDES` | `{}` | Backend entity override configuration (JSON) |
+| `FRONTEND_PLUGIN_ENTITY_OVERRIDES` | `{}` | Frontend entity override configuration (JSON) |
 
 ### Django Settings Integration
 

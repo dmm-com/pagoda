@@ -6,6 +6,7 @@ from django.template import loader
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from django_filters.rest_framework import DjangoFilterBackend
+from drf_spectacular.utils import extend_schema
 from rest_framework import filters, generics, status, viewsets
 from rest_framework.authtoken.models import Token
 from rest_framework.generics import get_object_or_404
@@ -92,8 +93,9 @@ class UserTokenAPI(viewsets.ModelViewSet):
 class UserImportAPI(generics.GenericAPIView):
     parser_classes = [YAMLParser]
     permission_classes = [IsAuthenticated]
-    serializer_class = Serializer
+    serializer_class = UserImportSerializer
 
+    @extend_schema(responses={200: None})
     def post(self, request: Request) -> Response:
         import_datas = request.data
         serializer = UserImportSerializer(data=import_datas)

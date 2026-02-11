@@ -1234,7 +1234,7 @@ class PluginA(Plugin):
 class PluginB(Plugin):
     def use_shared_data(self):
         from airone.plugins.registry import plugin_registry
-        plugin_a = plugin_registry.get_plugin("plugin-a")
+        plugin_a = plugin_registry.get("plugin-a")
         if plugin_a:
             data = plugin_a.get_shared_data()
             return data

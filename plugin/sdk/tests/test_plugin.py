@@ -169,6 +169,8 @@ class TestPlugin(unittest.TestCase):
             "url_patterns": "test_urls",
             "api_v2_patterns": "test_api_urls",
             "hooks": ["entry.after_create"],
+            "override_operations": [],
+            "has_params_model": False,
         }
 
         self.assertEqual(info, expected_info)

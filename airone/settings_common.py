@@ -209,8 +209,11 @@ class Common(Configuration):
     STATIC_URL = "/static/"
     STATICFILES_DIRS = [
         os.path.join(BASE_DIR, "static"),
-        os.path.join(BASE_DIR, "custom_view/static"),
     ]
+    # Add custom_view/static only if the directory exists (same pattern as line 74-75)
+    _custom_static = os.path.join(BASE_DIR, "custom_view/static")
+    if os.path.exists(_custom_static):
+        STATICFILES_DIRS.append(_custom_static)
     STATIC_ROOT = os.path.join(BASE_DIR, "static_root")
     MEDIA_ROOT = env.str("AIRONE_FILE_STORE_PATH", "/tmp/airone_app")
 
@@ -279,6 +282,32 @@ class Common(Configuration):
         "PLUGINS": {
             "ENABLED": bool(ENABLED_PLUGINS),
         },
+        # Frontend plugin entity override configuration
+        # Format: { "entityId": { "plugin": "plugin-id", "pages": ["entry.list"] } }
+        #
+        # TEST CONFIG: Entity ID "9681" uses sample plugin for entry.list page.
+        # Change the ID to match your test entity, or set FRONTEND_PLUGIN_ENTITY_OVERRIDES env var.
+        # To disable: set FRONTEND_PLUGIN_ENTITY_OVERRIDES='{}'
+        "FRONTEND_PLUGIN_ENTITY_OVERRIDES": json.loads(
+            env.str(
+                "FRONTEND_PLUGIN_ENTITY_OVERRIDES",
+                json.dumps({"9681": {"plugin": "sample", "pages": ["entry.list"]}}),
+            )
+        ),
+        # Backend plugin entity override configuration
+        # Format: { "entityId": { "plugin": "plugin-id", "operations": ["create", "update"],
+        #                         "params": { "key": "value" } } }
+        #
+        # Example: Override Service entity (ID 42) with cross-entity-sample plugin
+        # BACKEND_PLUGIN_ENTITY_OVERRIDES='{"42":{"plugin":"cross-entity-sample",
+        #   "operations":["create","update"],"params":{"configuration_entity_id":99}}}'
+        # To disable: set BACKEND_PLUGIN_ENTITY_OVERRIDES='{}'
+        "BACKEND_PLUGIN_ENTITY_OVERRIDES": json.loads(
+            env.str(
+                "BACKEND_PLUGIN_ENTITY_OVERRIDES",
+                json.dumps({}),
+            )
+        ),
     }
 
     # flags to enable/disable AirOne core features
@@ -463,6 +492,10 @@ class Common(Configuration):
         "PAGE_SIZE": 30,
         "EXCEPTION_HANDLER": "airone.lib.drf.custom_exception_handler",
     }
+
+    # Silence rest_framework.W001 warning
+    # PAGE_SIZE is used by views with explicit pagination_class settings
+    SILENCED_SYSTEM_CHECKS = ["rest_framework.W001"]
 
     SPECTACULAR_SETTINGS: dict[str, list[str]] = {
         "PREPROCESSING_HOOKS": [],

@@ -1,4 +1,5 @@
 from django_filters.rest_framework import DjangoFilterBackend
+from drf_spectacular.utils import extend_schema
 from rest_framework import filters, generics, serializers, status, viewsets
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import BasePermission, IsAuthenticated
@@ -58,8 +59,9 @@ class GroupTreeAPI(viewsets.ReadOnlyModelViewSet):
 class GroupImportAPI(generics.GenericAPIView):
     parser_classes = [YAMLParser]
     permission_classes = [IsAuthenticated]
-    serializer_class = serializers.Serializer
+    serializer_class = GroupImportSerializer
 
+    @extend_schema(responses={200: None})
     def post(self, request: Request) -> Response:
         import_datas = request.data
         serializer = GroupImportSerializer(data=import_datas, many=True)

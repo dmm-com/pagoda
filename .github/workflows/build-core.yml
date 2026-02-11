@@ -38,6 +38,25 @@ jobs:
           uv run mypy ./
           uv run ruff check --output-format=github .
           uv run ruff format --check .
+      - name: Check OpenAPI schema generation
+        run: |
+          # Use the same configuration as npm run generate:client
+          export DJANGO_CONFIGURATION=DRFSpectacularExcludeCustomView
+
+          # Check for errors (fail the build)
+          errors=$(uv run python manage.py spectacular 2>&1 > /dev/null | grep -i ERROR || true)
+          if [ -n "$errors" ]; then
+            echo "::error::OpenAPI schema generation errors:"
+            echo "$errors"
+            exit 1
+          fi
+
+          # Check for warnings (report but don't fail - for gradual cleanup)
+          warnings=$(uv run python manage.py spectacular 2>&1 > /dev/null | grep -i WARN || true)
+          if [ -n "$warnings" ]; then
+            echo "::warning::OpenAPI schema generation warnings:"
+            echo "$warnings"
+          fi
 
   # set modules have python test code outputs.modules
   setup_python:
@@ -71,12 +90,13 @@ jobs:
         ports:
           - 5672:5672
       elasticsearch:
-        image: docker.elastic.co/elasticsearch/elasticsearch:7.17.28
+        image: docker.elastic.co/elasticsearch/elasticsearch:8.17.0
         ports:
           - 9200:9200
         env:
           discovery.type: single-node
           ES_JAVA_OPTS: -Xms512m -Xmx512m
+          xpack.security.enabled: false
         options: >-
           --health-cmd "curl http://localhost:9200/_cluster/health"
           --health-interval 10s

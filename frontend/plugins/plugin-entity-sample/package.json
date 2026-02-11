@@ -1,0 +1,50 @@
+{
+  "name": "@airone/plugin-entity-sample",
+  "version": "1.0.0",
+  "description": "Sample entity view plugin for Airone - demonstrates entity page routing",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "airone",
+    "plugin",
+    "entity-view",
+    "sample"
+  ],
+  "author": "Airone Team",
+  "license": "MIT",
+  "peerDependencies": {
+    "@dmm-com/pagoda-core": "file:../../..",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "@mui/material": "^5.11.3",
+    "react-router": "^7.0.0",
+    "zod": "^3.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.0",
+    "typescript": "^5.0.0"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/",
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dmm-com/airone.git",
+    "directory": "frontend/plugins/plugin-entity-sample"
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  }
+}

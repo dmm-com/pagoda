@@ -39,6 +39,7 @@
           flags: {
               webhook: {{ airone_flags.WEBHOOK|yesno:"true,false" }},
           },
+          frontendPluginEntityOverrides: {{ airone.FRONTEND_PLUGIN_ENTITY_OVERRIDES|safe }},
       };
     </script>
     <script src="/static/js/ui.js"></script>
