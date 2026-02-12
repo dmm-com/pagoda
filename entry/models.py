@@ -1700,7 +1700,7 @@ class Entry(ACLBase):
 
         return self.name
 
-    def save_autoname(self):
+    def save_autoname(self, past_path: list[int] = []) -> None:
         """This method saves auto-generated name according to the Entity settings"""
         autoname = self.autoname
         if self.name != autoname:
@@ -1718,6 +1718,15 @@ class Entry(ACLBase):
                 self.name = autoname
 
             self.save(update_fields=["name"])
+
+        # This may also change name of referred items
+        # when its Model is configured to set item names from Attribute values by itemNameType=ATTR.
+        for referred_item in self.get_referred_objects():
+            if referred_item.id in past_path:
+                continue
+
+            if referred_item.schema.item_name_type == ItemNameType.ATTR:
+                referred_item.save_autoname(past_path + [self.id])
 
     def add_alias(self, name):
         # validate name that is not duplicated with other Item names and Aliases in this model

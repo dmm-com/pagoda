@@ -88,44 +88,15 @@ class AironeTestCase(TestCase):
 
         self._settings.disable()
 
-    def create_entity(
+    def _do_update_entity(
         self,
         user,
-        name,
+        entity,
+        is_public=True,
         attrs=[],
         webhooks=[],
-        is_public=True,
         default_permission=ACLType.Nothing.id,
-        item_name_pattern="",
-        item_name_type=None,
     ):
-        """
-        This is a helper method to create Entity for test. This method has following parameters.
-        * user      : describes user instance which will be registered on creating Entity
-        * name      : describes name of Entity to be created
-        * is_public : same parameter of creating Entity [True by default]
-        * attrs     : describes EntityAttrs to attach creating Entity
-                      and expects to have following information
-          - name : indicates name of creating EntityAttr
-          - type : indicates type of creating EntityAttr [string by default]
-          - is_mandatory : same parameter of EntityAttr [False by default]
-          - is_public: same parameter of creating EntityAttr [True by default]
-          - default_permission: same parameter of creating EntityAttr
-                                [ACLType.Nothing.id by default]
-          - ref : Entity that Entry can refer to
-          - name_order: number of name order when ItemNameType.ATTR is set
-          - name_prefix: prefix string when ItemNameType.ATTR is set
-          - name_postfix: postfix string when ItemNameType.ATTR is set
-        """
-        entity: Entity = Entity.objects.create(
-            name=name,
-            created_user=user,
-            is_public=is_public,
-            default_permission=default_permission,
-            item_name_pattern=item_name_pattern if item_name_pattern else "",
-            item_name_type=item_name_type if item_name_type else ItemNameType.USER,
-        )
-
         for index, attr_info in enumerate(attrs):
             entity_attr: EntityAttr = EntityAttr.objects.create(
                 **{
@@ -159,6 +130,49 @@ class AironeTestCase(TestCase):
             entity.webhooks.add(webhook)
 
         return entity
+
+    def create_entity(
+        self,
+        user,
+        name,
+        is_public=True,
+        item_name_pattern="",
+        item_name_type=None,
+        default_permission=ACLType.Nothing.id,
+        *args,
+        **kwargs,
+    ):
+        """
+        This is a helper method to create Entity for test. This method has following parameters.
+        * user      : describes user instance which will be registered on creating Entity
+        * name      : describes name of Entity to be created
+        * is_public : same parameter of creating Entity [True by default]
+        * attrs     : describes EntityAttrs to attach creating Entity
+                      and expects to have following information
+          - name : indicates name of creating EntityAttr
+          - type : indicates type of creating EntityAttr [string by default]
+          - is_mandatory : same parameter of EntityAttr [False by default]
+          - is_public: same parameter of creating EntityAttr [True by default]
+          - default_permission: same parameter of creating EntityAttr
+                                [ACLType.Nothing.id by default]
+          - ref : Entity that Entry can refer to
+          - name_order: number of name order when ItemNameType.ATTR is set
+          - name_prefix: prefix string when ItemNameType.ATTR is set
+          - name_postfix: postfix string when ItemNameType.ATTR is set
+        """
+        entity: Entity = Entity.objects.create(
+            name=name,
+            created_user=user,
+            is_public=is_public,
+            default_permission=default_permission,
+            item_name_pattern=item_name_pattern if item_name_pattern else "",
+            item_name_type=item_name_type if item_name_type else ItemNameType.USER,
+        )
+
+        return self._do_update_entity(user, entity, is_public, *args, **kwargs)
+
+    def update_entity(self, user, entity, *args, **kwargs):
+        return self._do_update_entity(user, entity, *args, **kwargs)
 
     def add_entry(self, user: User, name: str, schema: Entity, values={}, is_public=True) -> Entry:
         entry = Entry.objects.create(

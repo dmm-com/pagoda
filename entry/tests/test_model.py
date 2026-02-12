@@ -5655,3 +5655,61 @@ class ModelTest(AironeTestCase):
         self.assertEqual(items[0].name, "foo-bar")
         self.assertRegex(items[1].name, r"^foo-bar -- duplicate of ID:%s -- " % str(items[0].id))
         self.assertRegex(items[2].name, r"^foo-bar -- duplicate of ID:%s -- " % str(items[0].id))
+
+    def test_may_change_referred_item_names(self):
+        """
+        This tests Entry.may_change_referred_item_names() method works propery
+        when circular reference structure is present.
+        """
+        model0 = self.create_entity(
+            self._user,
+            "Model0",
+            attrs=[
+                {"name": "val", "type": AttrType.STRING, "name_order": 1},
+            ],
+            item_name_type=ItemNameType.ATTR,
+        )
+        model1 = self.create_entity(
+            self._user,
+            "Model1",
+            attrs=[
+                {"name": "ref", "type": AttrType.OBJECT, "name_order": 1, "ref": model0},
+                {"name": "val", "type": AttrType.STRING, "name_order": 2, "name_prefix": "-"},
+            ],
+            item_name_type=ItemNameType.ATTR,
+        )
+        model2 = self.create_entity(
+            self._user,
+            "Model2",
+            attrs=[
+                {"name": "ref", "type": AttrType.OBJECT, "name_order": 1, "ref": model1},
+                {"name": "val", "type": AttrType.STRING, "name_order": 2, "name_prefix": "-"},
+            ],
+            item_name_type=ItemNameType.ATTR,
+        )
+        self.update_entity(
+            self._user, model0, attrs=[{"name": "ref", "type": AttrType.OBJECT, "ref": model2}]
+        )
+
+        # create items that have circular reference structure
+        # (item0 -> item1 -> item2 -> item0 ...)
+        item0 = self.add_entry(self._user, "tmp00", model0, values={"val": "BEFORE"})
+        item0.save_autoname()
+        item1 = self.add_entry(self._user, "tmp01", model1, values={"val": "hoge", "ref": item0})
+        item1.save_autoname()
+        item2 = self.add_entry(self._user, "tmp02", model2, values={"val": "fuga", "ref": item1})
+        item2.save_autoname()
+        item0.attrs.get(schema__name="ref").add_value(self._user, item2)
+
+        self.assertEqual(item1.autoname, "BEFORE-hoge")
+        self.assertEqual(item2.autoname, "BEFORE-hoge-fuga")
+
+        # change referred item's name
+        item0.attrs.get(schema__name="val").add_value(self._user, "AFTER")
+        item0.save_autoname()
+
+        # check all referred items are updated
+        item1.refresh_from_db()
+        self.assertEqual(item1.name, "AFTER-hoge")
+        item2.refresh_from_db()
+        self.assertEqual(item2.name, "AFTER-hoge-fuga")
