@@ -235,7 +235,7 @@ class Common(Configuration):
         AWS_SECRET_ACCESS_KEY = env.str("AIRONE_STORAGE_SECRET_ACCESS_KEY", "")
         AWS_STORAGE_BUCKET_NAME = env.str("AIRONE_STORAGE_BUCKET_NAME", "")
 
-    LOGIN_REDIRECT_URL = "/dashboard/"
+    LOGIN_REDIRECT_URL = "/ui/"
 
     # global settings for AirOne
     AIRONE: dict[str, Any] = {
