@@ -23,20 +23,30 @@ const mockEntity = {
   id: 2,
   name: "test entity",
   note: "",
-  itemNameType: "US",
-  isToplevel: false,
+  item_name_type: "US",
+  is_toplevel: false,
   attrs: [
     {
       id: 1,
+      index: 0,
       name: "attr1",
       type: 2, // string
-      isMandatory: false,
-      isDeleteInChain: false,
-      isWritable: true,
+      is_mandatory: false,
+      is_delete_in_chain: false,
+      is_summarized: false,
+      is_writable: true,
       referral: [],
+      note: "",
+      default_value: null,
+      name_order: 0,
+      name_prefix: "",
+      name_postfix: "",
     },
   ],
   webhooks: [],
+  is_public: false,
+  has_ongoing_changes: false,
+  permission: 3,
 };
 
 const mockEntry = {
@@ -68,6 +78,13 @@ const server = setupServer(
   // getEntry
   http.get("http://localhost/entry/api/v2/1/", () => {
     return HttpResponse.json(mockEntry);
+  }),
+  // getReferral (for attribute value fields)
+  http.get("http://localhost/entry/api/v2/1/referral/", () => {
+    return HttpResponse.json({
+      count: 0,
+      results: [],
+    });
   }),
 );
 
