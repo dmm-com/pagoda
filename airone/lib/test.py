@@ -92,10 +92,8 @@ class AironeTestCase(TestCase):
         self,
         user,
         entity,
-        is_public=True,
         attrs=[],
         webhooks=[],
-        default_permission=ACLType.Nothing.id,
     ):
         for index, attr_info in enumerate(attrs):
             entity_attr: EntityAttr = EntityAttr.objects.create(
@@ -135,6 +133,7 @@ class AironeTestCase(TestCase):
         self,
         user,
         name,
+        attrs=[],
         is_public=True,
         item_name_pattern="",
         item_name_type=None,
@@ -169,7 +168,7 @@ class AironeTestCase(TestCase):
             item_name_type=item_name_type if item_name_type else ItemNameType.USER,
         )
 
-        return self._do_update_entity(user, entity, is_public, *args, **kwargs)
+        return self._do_update_entity(user, entity, attrs, *args, **kwargs)
 
     def update_entity(self, user, entity, *args, **kwargs):
         return self._do_update_entity(user, entity, *args, **kwargs)
