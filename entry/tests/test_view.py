@@ -19,7 +19,7 @@ from airone.lib.test import AironeViewTest, DisableStderr
 from airone.lib.types import (
     AttrType,
 )
-from entity.models import Entity, EntityAttr
+from entity.models import Entity, EntityAttr, ItemNameType
 from entry import tasks
 from entry.models import Attribute, AttributeValue, Entry
 from entry.services import AdvancedSearchService
@@ -4946,6 +4946,64 @@ class ViewTest(AironeViewTest):
                 self.assertEqual(data["value"], value)
 
         self.assertEqual(mock_task.call_count, len(attr_info))
+
+    def test_revert_attrv_for_autoname(self):
+        user = self.guest_login()
+        model_lb = self.create_entity(user, "LB")
+        model_sg = self.create_entity(
+            user,
+            "LBServiceGroup",
+            attrs=[
+                {
+                    "name": "LB",
+                    "type": AttrType.OBJECT,
+                    "ref": model_lb,
+                    "name_order": 1,
+                    "name_prefix": "[",
+                    "name_postfix": "]",
+                },
+                {"name": "domain", "type": AttrType.STRING, "name_order": 2, "name_prefix": " "},
+                {"name": "port", "type": AttrType.STRING, "name_order": 3, "name_prefix": ":"},
+            ],
+            item_name_type=ItemNameType.ATTR,
+        )
+
+        item_lb = self.add_entry(user, "LB0001", model_lb)
+        item_sg = self.add_entry(
+            user,
+            "ChangingName",
+            model_sg,
+            values={
+                "lb": item_lb.id,
+                "domain": "test.example.com",
+                "port": "10000",
+            },
+        )
+        item_sg.save_autoname()
+
+        # update its attribute values
+        attr_domain = item_sg.attrs.get(schema__name="domain")
+        v1 = attr_domain.add_value(user, "hoge.example.com")
+        v2 = attr_domain.add_value(user, "fuga.example.com")
+
+        # revert attribute value of 'domain' and check its name is followed by its change
+        params = {"attr_id": str(attr_domain.id), "attrv_id": str(v1.id)}
+        resp = self.client.post(
+            reverse("entry:revert_attrv"), json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(attr_domain.get_latest_value().get_value(), "hoge.example.com")
+        item_sg.refresh_from_db()
+        self.assertEqual(item_sg.name, "[LB0001] hoge.example.com:10000")
+        # ---
+        params = {"attr_id": str(attr_domain.id), "attrv_id": str(v2.id)}
+        resp = self.client.post(
+            reverse("entry:revert_attrv"), json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(attr_domain.get_latest_value().get_value(), "fuga.example.com")
+        item_sg.refresh_from_db()
+        self.assertEqual(item_sg.name, "[LB0001] fuga.example.com:10000")
 
     @patch(
         "trigger.tasks.may_invoke_trigger.delay",

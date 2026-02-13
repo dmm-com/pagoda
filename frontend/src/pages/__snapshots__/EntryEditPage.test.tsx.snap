@@ -349,15 +349,42 @@ exports[`EntryEditPage should match snapshot 1`] = `
                 <td
                   class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1egp9pz-MuiTableCell-root"
                 >
-                  <p
-                    class="MuiTypography-root MuiTypography-body1 css-rizt0-MuiTypography-root"
+                  <div
+                    class="MuiBox-root css-136r79r"
                   >
-                    Permission denied.
-                  </p>
+                    <div
+                      class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-ck5q85-MuiFormControl-root-MuiTextField-root"
+                    >
+                      <div
+                        class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl css-6h9cc6-MuiInputBase-root-MuiInput-root"
+                      >
+                        <input
+                          aria-invalid="false"
+                          class="MuiInputBase-input MuiInput-input css-1yrc8ca-MuiInputBase-input-MuiInput-input"
+                          id="_r_3_"
+                          name="attrs.1.value.asString"
+                          type="text"
+                          value=""
+                        />
+                      </div>
+                    </div>
+                  </div>
                 </td>
                 <td
                   class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1t1g30f-MuiTableCell-root"
-                />
+                >
+                  <svg
+                    aria-hidden="true"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1ok51jx-MuiSvgIcon-root"
+                    data-testid="CheckCircleIcon"
+                    focusable="false"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2m-2 15-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8z"
+                    />
+                  </svg>
+                </td>
               </tr>
             </tbody>
           </table>
@@ -732,15 +759,42 @@ exports[`EntryEditPage should match snapshot 1`] = `
               <td
                 class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1egp9pz-MuiTableCell-root"
               >
-                <p
-                  class="MuiTypography-root MuiTypography-body1 css-rizt0-MuiTypography-root"
+                <div
+                  class="MuiBox-root css-136r79r"
                 >
-                  Permission denied.
-                </p>
+                  <div
+                    class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-ck5q85-MuiFormControl-root-MuiTextField-root"
+                  >
+                    <div
+                      class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl css-6h9cc6-MuiInputBase-root-MuiInput-root"
+                    >
+                      <input
+                        aria-invalid="false"
+                        class="MuiInputBase-input MuiInput-input css-1yrc8ca-MuiInputBase-input-MuiInput-input"
+                        id="_r_3_"
+                        name="attrs.1.value.asString"
+                        type="text"
+                        value=""
+                      />
+                    </div>
+                  </div>
+                </div>
               </td>
               <td
                 class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1t1g30f-MuiTableCell-root"
-              />
+              >
+                <svg
+                  aria-hidden="true"
+                  class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1ok51jx-MuiSvgIcon-root"
+                  data-testid="CheckCircleIcon"
+                  focusable="false"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2m-2 15-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8z"
+                  />
+                </svg>
+              </td>
             </tr>
           </tbody>
         </table>

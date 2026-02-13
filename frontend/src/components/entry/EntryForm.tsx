@@ -74,12 +74,14 @@ export interface EntryFormProps {
   entity: EntityDetail;
   control: Control<Schema>;
   setValue: UseFormSetValue<Schema>;
+  skipItemName: boolean;
 }
 
 export const EntryForm: FC<EntryFormProps> = ({
   entity,
   control,
   setValue,
+  skipItemName,
 }) => {
   const { errors } = useFormState({
     control,
@@ -128,53 +130,55 @@ export const EntryForm: FC<EntryFormProps> = ({
           </HeaderTableRow>
         </TableHead>
         <TableBody>
-          <TableRow>
-            <StyledTableCell>
-              <TableBox>
-                <StyledTypography id="name">アイテム名</StyledTypography>
-                <RequiredLabel>必須</RequiredLabel>
-              </TableBox>
-            </StyledTableCell>
-            <StyledTableCell>
-              <Controller
-                name="name"
-                control={control}
-                defaultValue=""
-                render={({ field, fieldState: { error, isDirty } }) => (
-                  <TextField
-                    {...field}
-                    id="entry-name"
-                    variant="standard"
-                    error={error != null}
-                    helperText={error?.message}
-                    fullWidth
-                    inputProps={{ "data-1p-ignore": true }}
-                    sx={getStagedErrorStyle(!!error, isDirty)}
-                  />
-                )}
-              />
-            </StyledTableCell>
-            <StyledTableCell sx={{ textAlign: "center" }}>
-              {!errors.name && (
+          {!skipItemName && (
+            <TableRow>
+              <StyledTableCell>
+                <TableBox>
+                  <StyledTypography id="name">アイテム名</StyledTypography>
+                  <RequiredLabel>必須</RequiredLabel>
+                </TableBox>
+              </StyledTableCell>
+              <StyledTableCell>
                 <Controller
                   name="name"
                   control={control}
-                  render={({ field }) => (
-                    <>
-                      {field.value && (
-                        <CheckCircleIcon
-                          sx={{
-                            color: "#4caf50",
-                            fontSize: 20,
-                          }}
-                        />
-                      )}
-                    </>
+                  defaultValue=""
+                  render={({ field, fieldState: { error, isDirty } }) => (
+                    <TextField
+                      {...field}
+                      id="entry-name"
+                      variant="standard"
+                      error={error != null}
+                      helperText={error?.message}
+                      fullWidth
+                      inputProps={{ "data-1p-ignore": true }}
+                      sx={getStagedErrorStyle(!!error, isDirty)}
+                    />
                   )}
                 />
-              )}
-            </StyledTableCell>
-          </TableRow>
+              </StyledTableCell>
+              <StyledTableCell sx={{ textAlign: "center" }}>
+                {!errors.name && (
+                  <Controller
+                    name="name"
+                    control={control}
+                    render={({ field }) => (
+                      <>
+                        {field.value && (
+                          <CheckCircleIcon
+                            sx={{
+                              color: "#4caf50",
+                              fontSize: 20,
+                            }}
+                          />
+                        )}
+                      </>
+                    )}
+                  />
+                )}
+              </StyledTableCell>
+            </TableRow>
+          )}
           {entity.attrs
             .sort((a, b) => a.index - b.index)
             .map(({ id, name, type, isMandatory, isWritable }) => (

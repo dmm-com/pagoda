@@ -13,6 +13,7 @@ describe("schema", () => {
     name: "entity",
     note: "note",
     itemNamePattern: "",
+    itemNameType: "US",
     isToplevel: false,
     webhooks: [
       {
@@ -43,6 +44,9 @@ describe("schema", () => {
           },
         ],
         note: "note",
+        nameOrder: "0",
+        namePrefix: "",
+        namePostfix: "",
       },
     ],
   };
@@ -197,6 +201,9 @@ describe("schema", () => {
       isWritable: true,
       referral: [],
       note: "note",
+      nameOrder: "0",
+      namePrefix: "",
+      namePostfix: "",
     };
 
     test("validation succeeds if attribute names are unique", () => {

@@ -20,7 +20,7 @@ from airone.lib.types import (
     AttrType,
     AttrTypeValue,
 )
-from entity.models import Entity, EntityAttr
+from entity.models import Entity, EntityAttr, ItemNameType
 from entry import tasks
 from entry.models import Attribute, AttributeValue, Entry
 from entry.services import AdvancedSearchService
@@ -1741,6 +1741,45 @@ class ViewTest(BaseViewTest):
         )
         self.assertTrue(
             Entry.objects.filter(name="copy2", schema=self.entity, is_active=True).exists()
+        )
+
+    @mock.patch("entry.tasks.copy_entry.delay", mock.Mock(side_effect=tasks.copy_entry))
+    def test_copy_entry_for_autoname(self):
+        (model_lb, model_sg) = self._create_lb_models_for_autoname()
+
+        item_lb = self.add_entry(self.user, "LB0001", model_lb)
+        item_sg = self.add_entry(
+            self.user,
+            "ChangingName",
+            model_sg,
+            values={
+                "lb": item_lb.id,
+                "domain": "test.example.com",
+                "port": "10000",
+            },
+        )
+        item_sg.save_autoname()
+
+        # copy 2 Items from item_sg
+        params = {"copy_entry_names": ["copy1", "copy2"]}
+        resp = self.client.post(
+            "/entry/api/v2/%s/copy/" % item_sg.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(
+            Entry.objects.filter(name=item_sg.autoname, schema=model_sg, is_active=True).count(), 1
+        )
+        self.assertEqual(
+            Entry.objects.filter(name=item_sg.autoname, schema=model_sg, is_active=True).first().id,
+            item_sg.id,
+        )
+        self.assertEqual(
+            Entry.objects.filter(
+                name__contains="%s -- duplicate of ID:%s --" % (item_sg.autoname, item_sg.id),
+                schema=model_sg,
+                is_active=True,
+            ).count(),
+            2,
         )
 
     def test_copy_entry_without_permission(self):
@@ -5942,6 +5981,148 @@ class ViewTest(BaseViewTest):
         self.assertEqual(len(retrieved_values), len(number_values))
         for i, expected_val in enumerate(number_values):
             self.assertAlmostEqual(retrieved_values[i], expected_val, places=5)
+
+    def _create_lb_models_for_autoname(self):
+        """
+        This is a helper function to create LB and LBServiceGroup models for autoname tests.
+        """
+        model_lb = self.create_entity(self.user, "LB")
+        model_sg = self.create_entity(
+            self.user,
+            "LBServiceGroup",
+            attrs=[
+                {
+                    "name": "LB",
+                    "type": AttrType.OBJECT,
+                    "ref": model_lb,
+                    "name_order": 1,
+                    "name_prefix": "[",
+                    "name_postfix": "]",
+                },
+                {"name": "label", "type": AttrType.STRING},
+                {"name": "domain", "type": AttrType.STRING, "name_order": 2, "name_prefix": " "},
+                {"name": "port", "type": AttrType.STRING, "name_order": 3, "name_prefix": ":"},
+                {
+                    "name": "number",
+                    "type": AttrType.NUMBER,
+                    "name_order": 4,
+                },  # This should be ignored
+                {
+                    "name": "dict",
+                    "type": AttrType.NAMED_OBJECT,
+                    "name_order": 5,
+                },  # This should be ignored
+            ],
+            item_name_type=ItemNameType.ATTR,
+        )
+
+        return (model_lb, model_sg)
+
+    @patch("entry.tasks.create_entry_v2.delay", Mock(side_effect=tasks.create_entry_v2))
+    def test_create_for_autoname_item(self):
+        (model_lb, model_sg) = self._create_lb_models_for_autoname()
+
+        item_lb = self.add_entry(self.user, "LB0001", model_lb)
+        payload = {
+            "name": "ChangingName",
+            "schema": model_sg.id,
+            "attrs": [
+                {"id": model_sg.attrs.get(name="LB").id, "value": item_lb.id},
+                {"id": model_sg.attrs.get(name="label").id, "value": "This is test ServiceGroup"},
+                {"id": model_sg.attrs.get(name="domain").id, "value": "test.example.com"},
+                {"id": model_sg.attrs.get(name="port").id, "value": "8080"},
+                {"id": model_sg.attrs.get(name="number").id, "value": 123.456},
+                {
+                    "id": model_sg.attrs.get(name="dict").id,
+                    "value": {"id": item_lb.id, "name": "hoge"},
+                },
+            ],
+        }
+
+        # Create Entry with Array Number attribute
+        resp_create = self.client.post(
+            f"/entity/api/v2/{model_sg.id}/entries/", payload, "application/json"
+        )
+        self.assertEqual(resp_create.status_code, status.HTTP_202_ACCEPTED)
+
+        # Check create Item's name is expected one that is generated from autoname pattern
+        self.assertEqual(
+            Entry.objects.filter(schema=model_sg).last().name, "[LB0001] test.example.com:8080"
+        )
+
+    @patch("entry.tasks.edit_entry_v2.delay", Mock(side_effect=tasks.edit_entry_v2))
+    def test_update_for_autoname_item(self):
+        (model_lb, model_sg) = self._create_lb_models_for_autoname()
+
+        item_lb = self.add_entry(self.user, "LB0001", model_lb)
+        item_sg = self.add_entry(self.user, "ChangingName", model_sg)
+
+        # attr = item_sg.schema.attrs.get(name="label")
+        params = {
+            "name": "ChangingName",
+            "attrs": [
+                {"id": model_sg.attrs.get(name="LB").id, "value": item_lb.id},
+                {"id": model_sg.attrs.get(name="label").id, "value": "This is test ServiceGroup"},
+                {"id": model_sg.attrs.get(name="domain").id, "value": "test.example.com"},
+                {"id": model_sg.attrs.get(name="port").id, "value": "8080"},
+                {"id": model_sg.attrs.get(name="number").id, "value": 123.456},
+                {
+                    "id": model_sg.attrs.get(name="dict").id,
+                    "value": {"id": item_lb.id, "name": "hoge"},
+                },
+            ],
+        }
+        resp = self.client.put(
+            "/entry/api/v2/%s/" % item_sg.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
+
+        # Check updated Item's name is expected one that is generated from autoname pattern
+        item_sg.refresh_from_db()
+        self.assertEqual(item_sg.name, "[LB0001] test.example.com:8080")
+
+    @patch("entry.tasks.import_entries_v2.delay", Mock(side_effect=tasks.import_entries_v2))
+    def test_import_update_items_for_autoname(self):
+        (model_lb, model_sg) = self._create_lb_models_for_autoname()
+
+        item_lbs = [self.add_entry(self.user, "LB%04d" % x, model_lb) for x in range(3)]
+
+        importing_params = [
+            {
+                "entity": model_sg.name,
+                "entries": [
+                    {
+                        "name": "ShouldBeChanged",
+                        "attrs": [
+                            {"name": "LB", "value": item_lbs[index].name},
+                            {"name": "port", "value": port},
+                            {"name": "domain", "value": domain},
+                        ],
+                    }
+                    for index, (domain, port) in enumerate(
+                        [
+                            ("hoge.example.com", "8080"),
+                            ("fuga.example.com", "9090"),
+                            ("puyo.example.com", "10000"),
+                        ]
+                    )
+                ],
+            }
+        ]
+        resp = self.client.post(
+            "/entry/api/v2/import/", yaml.dump(importing_params), "application/yaml"
+        )
+        self.assertEqual(resp.status_code, 200)
+
+        # check Item name is determined by its attribute values
+        self.assertEqual(
+            [
+                "[LB0000] hoge.example.com:8080",
+                "[LB0001] fuga.example.com:9090",
+                "[LB0002] puyo.example.com:10000",
+            ],
+            [x.name for x in Entry.objects.filter(schema=model_sg).order_by("id")],
+        )
 
     @patch("entry.tasks.create_entry_v2.delay", Mock(side_effect=tasks.create_entry_v2))
     def test_array_number_with_null_values(self):

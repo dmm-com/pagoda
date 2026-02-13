@@ -47,11 +47,15 @@ export const EntryCopyPage: FC<Props> = ({ CopyForm = DefaultCopyForm }) => {
     }
   }, [submitted]);
 
+  const entity = useAsyncWithThrow(async () => {
+    return await aironeApiClient.getEntity(entityId);
+  }, [entityId]);
+
   const entry = useAsyncWithThrow(async () => {
     return await aironeApiClient.getEntry(entryId);
   }, [entryId]);
 
-  if (entry.loading) {
+  if (entry.loading || entity.loading) {
     return <Loading />;
   }
 
@@ -108,12 +112,18 @@ export const EntryCopyPage: FC<Props> = ({ CopyForm = DefaultCopyForm }) => {
       </PageHeader>
 
       <Container>
-        {entry.value && (
-          <CopyForm
-            entries={entries}
-            setEntries={setEntries}
-            templateEntry={entry.value}
-          />
+        {entity.value?.itemNameType == "US" ? (
+          entry.value && (
+            <CopyForm
+              entries={entries}
+              setEntries={setEntries}
+              templateEntry={entry.value}
+            />
+          )
+        ) : (
+          <Box>
+            アイテム名の登録方法が「利用者が手動で設定」以外の場合はコピーできません
+          </Box>
         )}
       </Container>
     </Box>

@@ -20,7 +20,7 @@ from airone.lib.drf import DuplicatedObjectExistsError, ObjectNotExistsError, Re
 from airone.lib.log import Logger
 from airone.lib.types import AttrType, AttrTypeValue
 from entity.admin import EntityAttrResource, EntityResource
-from entity.models import Entity, EntityAttr
+from entity.models import Entity, EntityAttr, ItemNameType
 from user.models import History, User
 from webhook.models import Webhook
 
@@ -47,6 +47,9 @@ class EntityDetailAttribute(TypedDict):
     referral: List[EntityAttrReferralData]
     note: str
     default_value: Any
+    name_order: int
+    name_prefix: str
+    name_postfix: str
 
 
 # Pydantic models for request validation
@@ -165,6 +168,12 @@ class WebhookCreateUpdateSerializer(serializers.ModelSerializer):
 
 class EntityAttrCreateSerializer(serializers.ModelSerializer):
     created_user = serializers.HiddenField(default=drf.AironeUserDefault())
+    name_prefix = serializers.CharField(
+        required=False, max_length=20, allow_blank=True, trim_whitespace=False
+    )
+    name_postfix = serializers.CharField(
+        required=False, max_length=20, allow_blank=True, trim_whitespace=False
+    )
 
     class Meta:
         model = EntityAttr
@@ -179,6 +188,9 @@ class EntityAttrCreateSerializer(serializers.ModelSerializer):
             "created_user",
             "note",
             "default_value",
+            "name_order",
+            "name_prefix",
+            "name_postfix",
         ]
 
     def validate_type(self, type: Optional[int]) -> Optional[int]:
@@ -275,6 +287,12 @@ class EntityAttrCreateSerializer(serializers.ModelSerializer):
 class EntityAttrUpdateSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(required=False)
     is_deleted = serializers.BooleanField(required=False, default=False)
+    name_prefix = serializers.CharField(
+        required=False, max_length=20, allow_blank=True, trim_whitespace=False
+    )
+    name_postfix = serializers.CharField(
+        required=False, max_length=20, allow_blank=True, trim_whitespace=False
+    )
 
     class Meta:
         model = EntityAttr
@@ -290,6 +308,9 @@ class EntityAttrUpdateSerializer(serializers.ModelSerializer):
             "is_deleted",
             "note",
             "default_value",
+            "name_order",
+            "name_prefix",
+            "name_postfix",
         ]
         extra_kwargs = {"name": {"required": False}, "type": {"required": False}}
 
@@ -415,6 +436,7 @@ class EntityCreateData(TypedDict, total=False):
     name: str
     note: str
     item_name_pattern: str
+    item_name_type: str
     is_toplevel: bool
     attrs: list[EntityAttrCreateSerializer]
     webhooks: WebhookCreateUpdateSerializer
@@ -426,6 +448,7 @@ class EntityUpdateData(TypedDict, total=False):
     name: str
     note: str
     item_name_pattern: str
+    item_name_type: str
     is_toplevel: bool
     attrs: list[EntityAttrUpdateSerializer]
     webhooks: WebhookCreateUpdateSerializer
@@ -464,6 +487,12 @@ class EntitySerializer(serializers.ModelSerializer):
             raise ValidationError("Invalid regex pattern")
 
         return item_name_pattern
+
+    def validate_item_name_type(self, item_name_type: str):
+        if item_name_type not in ItemNameType.values:
+            raise ValidationError("Invalid item_name_type was specified")
+
+        return item_name_type
 
     def _validate_and_convert_default_value(self, attr_type: int, default_value):
         """
@@ -634,7 +663,16 @@ class EntityCreateSerializer(EntitySerializer):
 
     class Meta:
         model = Entity
-        fields = ["id", "name", "note", "item_name_pattern", "is_toplevel", "attrs", "webhooks"]
+        fields = [
+            "id",
+            "name",
+            "note",
+            "item_name_pattern",
+            "item_name_type",
+            "is_toplevel",
+            "attrs",
+            "webhooks",
+        ]
         extra_kwargs = {"note": {"write_only": True}}
 
     def validate_name(self, name: str):
@@ -677,6 +715,7 @@ class EntityCreateSerializer(EntitySerializer):
             name=validated_data.get("name"),
             note=validated_data.get("note", ""),
             item_name_pattern=validated_data.get("item_name_pattern", ""),
+            item_name_type=validated_data.get("item_name_type", ""),
             created_user=validated_data.get("created_user"),
         )
 
@@ -708,7 +747,16 @@ class EntityUpdateSerializer(EntitySerializer):
 
     class Meta:
         model = Entity
-        fields = ["id", "name", "note", "item_name_pattern", "is_toplevel", "attrs", "webhooks"]
+        fields = [
+            "id",
+            "name",
+            "note",
+            "item_name_pattern",
+            "item_name_type",
+            "is_toplevel",
+            "attrs",
+            "webhooks",
+        ]
         extra_kwargs = {"name": {"required": False}, "note": {"write_only": True}}
 
     def validate_name(self, name: str):
@@ -778,6 +826,12 @@ class EntityUpdateSerializer(EntitySerializer):
         ):
             entity.item_name_pattern = validated_data.get("item_name_pattern")
             updated_fields.append("item_name_pattern")
+
+        if "item_name_type" in validated_data and entity.item_name_type != validated_data.get(
+            "item_name_type"
+        ):
+            entity.item_name_type = validated_data.get("item_name_type")
+            updated_fields.append("item_name_type")
         if len(updated_fields) > 0:
             entity.save(update_fields=updated_fields)
         else:
@@ -810,7 +864,16 @@ class EntityListSerializer(EntitySerializer):
 
     class Meta:
         model = Entity
-        fields = ["id", "name", "note", "item_name_pattern", "status", "is_toplevel", "permission"]
+        fields = [
+            "id",
+            "name",
+            "note",
+            "item_name_pattern",
+            "item_name_type",
+            "status",
+            "is_toplevel",
+            "permission",
+        ]
 
     def get_is_toplevel(self, obj: Entity) -> bool:
         return (obj.status & Entity.STATUS_TOP_LEVEL) != 0
@@ -832,6 +895,9 @@ class EntityDetailAttributeSerializer(serializers.Serializer):
     referral = serializers.ListField(child=serializers.DictField())
     note = serializers.CharField()
     default_value = serializers.JSONField(required=False, allow_null=True)
+    name_order = serializers.IntegerField(default=0)
+    name_prefix = serializers.CharField(default="")
+    name_postfix = serializers.CharField(default="")
 
 
 class EntityDetailSerializer(EntityListSerializer):
@@ -846,6 +912,7 @@ class EntityDetailSerializer(EntityListSerializer):
             "name",
             "note",
             "item_name_pattern",
+            "item_name_type",
             "status",
             "is_toplevel",
             "attrs",
@@ -880,6 +947,9 @@ class EntityDetailSerializer(EntityListSerializer):
                 ],
                 "note": x.note,
                 "default_value": x.default_value,
+                "name_order": x.name_order,
+                "name_prefix": x.name_prefix,
+                "name_postfix": x.name_postfix,
             }
             for x in obj.attrs.filter(is_active=True).prefetch_related("referral").order_by("index")
         ]

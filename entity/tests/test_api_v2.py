@@ -16,7 +16,7 @@ from airone.lib.log import Logger
 from airone.lib.test import AironeViewTest
 from airone.lib.types import AttrType
 from entity import tasks
-from entity.models import Entity, EntityAttr
+from entity.models import Entity, EntityAttr, ItemNameType
 from entry.models import Entry
 from entry.tasks import create_entry_v2
 from group.models import Group
@@ -68,6 +68,7 @@ class ViewTest(AironeViewTest):
                 "id": self.entity.id,
                 "is_toplevel": False,
                 "item_name_pattern": "",
+                "item_name_type": "US",
                 "name": "test-entity",
                 "note": "",
                 "status": 0,
@@ -98,6 +99,9 @@ class ViewTest(AironeViewTest):
                     "id": self.entity.attrs.get(name="val").id,
                     "index": 0,
                     "name": "val",
+                    "name_order": 0,
+                    "name_postfix": "",
+                    "name_prefix": "",
                     "type": AttrType.STRING,
                     "is_mandatory": False,
                     "is_delete_in_chain": False,
@@ -111,6 +115,9 @@ class ViewTest(AironeViewTest):
                     "id": self.entity.attrs.get(name="vals").id,
                     "index": 1,
                     "name": "vals",
+                    "name_order": 0,
+                    "name_postfix": "",
+                    "name_prefix": "",
                     "type": AttrType.ARRAY_STRING,
                     "is_mandatory": False,
                     "is_delete_in_chain": False,
@@ -124,6 +131,9 @@ class ViewTest(AironeViewTest):
                     "id": self.entity.attrs.get(name="ref").id,
                     "index": 2,
                     "name": "ref",
+                    "name_order": 0,
+                    "name_postfix": "",
+                    "name_prefix": "",
                     "type": AttrType.OBJECT,
                     "is_mandatory": False,
                     "is_delete_in_chain": False,
@@ -137,6 +147,9 @@ class ViewTest(AironeViewTest):
                     "id": self.entity.attrs.get(name="refs").id,
                     "index": 3,
                     "name": "refs",
+                    "name_order": 0,
+                    "name_postfix": "",
+                    "name_prefix": "",
                     "type": AttrType.ARRAY_OBJECT,
                     "is_mandatory": False,
                     "is_delete_in_chain": False,
@@ -150,6 +163,9 @@ class ViewTest(AironeViewTest):
                     "id": self.entity.attrs.get(name="name").id,
                     "index": 4,
                     "name": "name",
+                    "name_order": 0,
+                    "name_postfix": "",
+                    "name_prefix": "",
                     "type": AttrType.NAMED_OBJECT,
                     "is_mandatory": False,
                     "is_delete_in_chain": False,
@@ -163,6 +179,9 @@ class ViewTest(AironeViewTest):
                     "id": self.entity.attrs.get(name="names").id,
                     "index": 5,
                     "name": "names",
+                    "name_order": 0,
+                    "name_postfix": "",
+                    "name_prefix": "",
                     "type": AttrType.ARRAY_NAMED_OBJECT,
                     "is_mandatory": False,
                     "is_delete_in_chain": False,
@@ -176,6 +195,9 @@ class ViewTest(AironeViewTest):
                     "id": self.entity.attrs.get(name="group").id,
                     "index": 6,
                     "name": "group",
+                    "name_order": 0,
+                    "name_postfix": "",
+                    "name_prefix": "",
                     "type": AttrType.GROUP,
                     "is_mandatory": False,
                     "is_delete_in_chain": False,
@@ -189,6 +211,9 @@ class ViewTest(AironeViewTest):
                     "id": self.entity.attrs.get(name="groups").id,
                     "index": 7,
                     "name": "groups",
+                    "name_order": 0,
+                    "name_postfix": "",
+                    "name_prefix": "",
                     "type": AttrType.ARRAY_GROUP,
                     "is_mandatory": False,
                     "is_delete_in_chain": False,
@@ -202,6 +227,9 @@ class ViewTest(AironeViewTest):
                     "id": self.entity.attrs.get(name="bool").id,
                     "index": 8,
                     "name": "bool",
+                    "name_order": 0,
+                    "name_postfix": "",
+                    "name_prefix": "",
                     "type": AttrType.BOOLEAN,
                     "is_mandatory": False,
                     "is_delete_in_chain": False,
@@ -215,6 +243,9 @@ class ViewTest(AironeViewTest):
                     "id": self.entity.attrs.get(name="text").id,
                     "index": 9,
                     "name": "text",
+                    "name_order": 0,
+                    "name_postfix": "",
+                    "name_prefix": "",
                     "type": AttrType.TEXT,
                     "is_mandatory": False,
                     "is_delete_in_chain": False,
@@ -228,6 +259,9 @@ class ViewTest(AironeViewTest):
                     "id": self.entity.attrs.get(name="date").id,
                     "index": 10,
                     "name": "date",
+                    "name_order": 0,
+                    "name_postfix": "",
+                    "name_prefix": "",
                     "type": AttrType.DATE,
                     "is_mandatory": False,
                     "is_delete_in_chain": False,
@@ -241,6 +275,9 @@ class ViewTest(AironeViewTest):
                     "id": self.entity.attrs.get(name="role").id,
                     "index": 11,
                     "name": "role",
+                    "name_order": 0,
+                    "name_postfix": "",
+                    "name_prefix": "",
                     "type": AttrType.ROLE,
                     "is_mandatory": False,
                     "is_delete_in_chain": False,
@@ -254,6 +291,9 @@ class ViewTest(AironeViewTest):
                     "id": self.entity.attrs.get(name="roles").id,
                     "index": 12,
                     "name": "roles",
+                    "name_order": 0,
+                    "name_postfix": "",
+                    "name_prefix": "",
                     "type": AttrType.ARRAY_ROLE,
                     "is_mandatory": False,
                     "is_delete_in_chain": False,
@@ -267,6 +307,9 @@ class ViewTest(AironeViewTest):
                     "id": self.entity.attrs.get(name="datetime").id,
                     "index": 13,
                     "name": "datetime",
+                    "name_order": 0,
+                    "name_postfix": "",
+                    "name_prefix": "",
                     "type": AttrType.DATETIME,
                     "is_mandatory": False,
                     "is_delete_in_chain": False,
@@ -284,6 +327,9 @@ class ViewTest(AironeViewTest):
                     "is_summarized": False,
                     "is_writable": True,
                     "name": "num",
+                    "name_order": 0,
+                    "name_postfix": "",
+                    "name_prefix": "",
                     "referral": [],
                     "type": AttrType.NUMBER,
                     "note": "",
@@ -293,6 +339,9 @@ class ViewTest(AironeViewTest):
                     "id": self.entity.attrs.get(name="nums").id,
                     "index": 15,
                     "name": "nums",
+                    "name_order": 0,
+                    "name_postfix": "",
+                    "name_prefix": "",
                     "type": AttrType.ARRAY_NUMBER,
                     "is_mandatory": False,
                     "is_delete_in_chain": False,
@@ -319,6 +368,9 @@ class ViewTest(AironeViewTest):
                 "id": entity_attr.id,
                 "index": 16,
                 "name": "refs",
+                "name_order": 0,
+                "name_postfix": "",
+                "name_prefix": "",
                 "type": AttrType.ARRAY_OBJECT,
                 "is_mandatory": True,
                 "is_delete_in_chain": True,
@@ -501,6 +553,7 @@ class ViewTest(AironeViewTest):
                         "id": self.ref_entity.id,
                         "is_toplevel": False,
                         "item_name_pattern": "",
+                        "item_name_type": "US",
                         "name": "ref_entity",
                         "note": "",
                         "permission": ACLType.Full.value,
@@ -510,6 +563,7 @@ class ViewTest(AironeViewTest):
                         "id": self.entity.id,
                         "is_toplevel": False,
                         "item_name_pattern": "",
+                        "item_name_type": "US",
                         "name": "test-entity",
                         "note": "",
                         "permission": ACLType.Full.value,
@@ -565,6 +619,7 @@ class ViewTest(AironeViewTest):
         params = {
             "name": "entity1",
             "note": "hoge",
+            "item_name_type": ItemNameType.ATTR.value,
             "is_toplevel": True,
             "attrs": [
                 {
@@ -595,6 +650,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(entity.name, "entity1")
         self.assertEqual(entity.note, "hoge")
         self.assertEqual(entity.status, Entity.STATUS_TOP_LEVEL)
+        self.assertEqual(entity.item_name_type, ItemNameType.ATTR.value)
         self.assertEqual(entity.created_user, self.user)
 
         self.assertEqual(entity.attrs.count(), 1)
@@ -631,6 +687,22 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(
             resp.json(), {"name": [{"code": "AE-113000", "message": "This field is required."}]}
+        )
+
+        # test for setting invalid item_name_type parameter
+        params = {"name": "hoge", "item_name_type": "None of the ItemNameType"}
+        resp = self.client.post("/entity/api/v2/", json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.json(),
+            {
+                "item_name_type": [
+                    {
+                        "code": "AE-999999",
+                        "message": '"None of the ItemNameType" is not a valid choice.',
+                    }
+                ]
+            },
         )
 
         # name param

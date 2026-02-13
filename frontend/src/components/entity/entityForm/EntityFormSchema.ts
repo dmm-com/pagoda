@@ -23,6 +23,7 @@ export const schema = z.object({
       },
       { message: "正規表現として正しい文字列を入力してください" },
     ),
+  itemNameType: z.enum(["US", "ID", "AT"]).default("US"),
   isToplevel: z.boolean().default(false),
   webhooks: z
     .array(
@@ -71,6 +72,9 @@ export const schema = z.object({
           defaultValue: z
             .union([z.string(), z.number(), z.boolean(), z.null()])
             .optional(),
+          nameOrder: z.string().default("0"),
+          namePrefix: z.string().default(""),
+          namePostfix: z.string().default(""),
         })
         .refine(
           (attr) => {

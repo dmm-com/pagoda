@@ -858,6 +858,9 @@ def revert_attrv(request, recv_data):
         # clear all exsts latest flag
         attr.unset_latest_flag(exclude_id=new_attrv.id)
 
+        # update its Item name when ItemNameType is set
+        attr.parent_entry.save_autoname()
+
         # register update to the Elasticsearch
         attr.parent_entry.register_es()
 

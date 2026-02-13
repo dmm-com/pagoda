@@ -187,6 +187,12 @@ export const EntryEditPage: FC<Props> = ({
     throw Error("both entity and entry are invalid");
   }
 
+  // set Name automatically when itemNameType is not "US" when creating new Item
+  const skipItemName = entity?.value?.itemNameType !== "US";
+  if (skipItemName && willCreate) {
+    setValue("name", crypto.randomUUID());
+  }
+
   return (
     <Box>
       {entry.value ? (
@@ -220,6 +226,7 @@ export const EntryEditPage: FC<Props> = ({
           }}
           control={control}
           setValue={setValue}
+          skipItemName={skipItemName}
         />
       )}
     </Box>

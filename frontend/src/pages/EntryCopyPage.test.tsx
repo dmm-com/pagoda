@@ -2,7 +2,7 @@
  * @jest-environment jsdom
  */
 
-import { render, screen, act, waitFor } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import { createMemoryRouter, RouterProvider } from "react-router";
@@ -13,6 +13,20 @@ import { TestWrapperWithoutRoutes } from "TestWrapper";
 import { copyEntryPath } from "routes/Routes";
 
 const server = setupServer(
+  // getEntity
+  http.get("http://localhost/entity/api/v2/2/", () => {
+    return HttpResponse.json({
+      id: 2,
+      name: "test entity",
+      item_name_type: "US",
+      is_toplevel: true,
+      attrs: [],
+      webhooks: [],
+      hasOngoingChanges: false,
+      permission: 3,
+    });
+  }),
+
   // getEntry
   http.get("http://localhost/entry/api/v2/1/", () => {
     return HttpResponse.json({

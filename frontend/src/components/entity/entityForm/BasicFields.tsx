@@ -1,6 +1,8 @@
 import {
   Box,
   Checkbox,
+  MenuItem,
+  Select,
   Table,
   TableBody,
   TableCell,
@@ -9,7 +11,7 @@ import {
   Typography,
 } from "@mui/material";
 import { FC } from "react";
-import { Control, Controller } from "react-hook-form";
+import { Control, Controller, useWatch } from "react-hook-form";
 
 import { Schema } from "./EntityFormSchema";
 
@@ -24,6 +26,8 @@ interface Props {
 }
 
 export const BasicFields: FC<Props> = ({ control }) => {
+  const currItemNameType = useWatch({ control, name: "itemNameType" });
+
   return (
     <Box>
       <Typography variant="h4" align="center" my="16px">
@@ -83,23 +87,56 @@ export const BasicFields: FC<Props> = ({ control }) => {
             </TableCell>
           </StyledTableRow>
           <StyledTableRow>
-            <TableCell>アイテム名の許可パターン</TableCell>
+            <TableCell>アイテム名の登録方法</TableCell>
+            <TableCell>
+              <Controller
+                name="itemNameType"
+                control={control}
+                defaultValue="US"
+                render={({ field }) => (
+                  <Select
+                    {...field}
+                    id="itemNameType"
+                    size="small"
+                    sx={{ minWidth: "300px" }}
+                  >
+                    <MenuItem value={"US"}>利用者が手動で設定</MenuItem>
+                    <MenuItem value={"ID"}>UUIDに自動で設定</MenuItem>
+                    <MenuItem value={"AT"}>属性値に応じて自動で設定</MenuItem>
+                  </Select>
+                )}
+              />
+            </TableCell>
+          </StyledTableRow>
+          <StyledTableRow>
+            <TableCell>
+              <Typography
+                color={
+                  currItemNameType !== "US" ? "text.disabled" : "text.primary"
+                }
+              >
+                アイテム名の許可パターン
+              </Typography>
+            </TableCell>
             <TableCell>
               <Controller
                 name="itemNamePattern"
                 control={control}
                 defaultValue=""
-                render={({ field, fieldState: { error } }) => (
-                  <TextField
-                    {...field}
-                    required
-                    placeholder="アイテム名の許可パターン"
-                    error={error != null}
-                    helperText={error?.message}
-                    size="small"
-                    fullWidth
-                  />
-                )}
+                render={({ field, fieldState: { error } }) => {
+                  return (
+                    <TextField
+                      {...field}
+                      disabled={currItemNameType !== "US"}
+                      required
+                      placeholder="アイテム名の許可パターン"
+                      error={error != null}
+                      helperText={error?.message}
+                      size="small"
+                      fullWidth
+                    />
+                  );
+                }}
               />
             </TableCell>
           </StyledTableRow>

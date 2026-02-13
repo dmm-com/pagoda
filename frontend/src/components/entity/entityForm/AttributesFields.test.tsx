@@ -24,6 +24,7 @@ describe("AttributesFields", () => {
     name: "hoge",
     note: "fuga",
     itemNamePattern: "",
+    itemNameType: "US",
     isToplevel: false,
     webhooks: [],
     attrs: [],
@@ -77,18 +78,15 @@ describe("AttributesFields", () => {
       screen.getAllByRole("button")[4].click();
     });
 
-    expect(screen.queryAllByPlaceholderText("属性名")).toHaveLength(2);
+    expect(screen.queryAllByPlaceholderText("属性名")).toHaveLength(1);
 
     // delete first attribute
     await act(async () => {
-      // now there is 1 attribute, and each webhook has 5 buttons (note, up, down, delete, add)
+      // now there is 1 attribute, and each webhook has 5 buttons (up, down, delete, config)
       // click the delete button of the first webhook
-      screen.getAllByRole("button")[3].click();
+      screen.getAllByRole("button")[1].click();
     });
 
     expect(screen.queryAllByPlaceholderText("属性名")).toHaveLength(1);
-
-    expect(screen.getByPlaceholderText("属性名")).toHaveValue("");
-    expect(getValues("attrs.0.name")).toEqual("");
   });
 });

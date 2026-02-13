@@ -1,5 +1,6 @@
 import math
 import re
+import uuid
 from collections.abc import Iterable
 from datetime import date, datetime
 from typing import Any, List, Optional, Type, Union
@@ -22,7 +23,7 @@ from airone.lib.types import (
     AttrDefaultValue,
     AttrType,
 )
-from entity.models import Entity, EntityAttr
+from entity.models import Entity, EntityAttr, ItemNameType
 from group.models import Group
 from role.models import Role
 from user.models import User
@@ -1673,6 +1674,59 @@ class Entry(ACLBase):
     def __init__(self, *args, **kwargs):
         super(Entry, self).__init__(*args, **kwargs)
         self.objtype = ACLObjType.Entry
+
+    @property
+    def autoname(self) -> str:
+        """This property returns auto-generated name according to the Entity settings"""
+        if self.schema.item_name_type == ItemNameType.ATTR:
+            username = ""
+            for attr in self.attrs.filter(
+                schema__is_active=True, is_active=True, schema__name_order__gt=0
+            ).order_by("schema__name_order"):
+                attrv = attr.get_latest_value()
+                if attrv is None:
+                    continue
+
+                # ignore unexpected attribute types
+                if attr.schema.type not in Entity.ITEM_NAME_SELECTABLE_TYPES:
+                    continue
+
+                username += attr.schema.name_prefix + attrv.get_value() + attr.schema.name_postfix
+
+            return username
+
+        elif self.schema.item_name_type == ItemNameType.UUID:
+            return str(uuid.uuid4())
+
+        return self.name
+
+    def save_autoname(self, past_path: list[int] = []) -> None:
+        """This method saves auto-generated name according to the Entity settings"""
+        autoname = self.autoname
+        if self.name != autoname:
+            # check duplication
+            duplicated_item = Entry.objects.filter(
+                schema=self.schema, name=autoname, is_active=True
+            ).first()
+            if duplicated_item:
+                self.name = "%s -- duplicate of ID:%s -- %s" % (
+                    autoname,
+                    str(duplicated_item.id),
+                    str(uuid.uuid4()),
+                )
+            else:
+                self.name = autoname
+
+            self.save(update_fields=["name"])
+
+        # This may also change name of referred items
+        # when its Model is configured to set item names from Attribute values by itemNameType=ATTR.
+        for referred_item in self.get_referred_objects():
+            if referred_item.id in past_path:
+                continue
+
+            if referred_item.schema.item_name_type == ItemNameType.ATTR:
+                referred_item.save_autoname(past_path + [self.id])
 
     def add_alias(self, name):
         # validate name that is not duplicated with other Item names and Aliases in this model

@@ -1,11 +1,11 @@
 import json
 from unittest.mock import Mock, patch
 
+from custom_view.tasks.task_custom import update_custom_attribute
 from django.urls import reverse
 
 from airone.lib.test import AironeViewTest
 from airone.lib.types import AttrType
-from custom_view.tasks.task_custom import update_custom_attribute
 from entity.models import Entity
 from entry.models import Entry
 from entry.tasks import create_entry_attrs, notify_create_entry

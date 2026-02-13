@@ -11,7 +11,7 @@ from airone.lib.drf import ExceedLimitError
 from airone.lib.elasticsearch import AdvancedSearchResultRecord, AttrHint
 from airone.lib.test import AironeTestCase
 from airone.lib.types import AttrType
-from entity.models import Entity, EntityAttr
+from entity.models import Entity, EntityAttr, ItemNameType
 from entry.models import Attribute, AttributeValue, Entry, ItemWalker
 from entry.services import AdvancedSearchService
 from entry.settings import CONFIG
@@ -5587,3 +5587,129 @@ class ModelTest(AironeTestCase):
         entry_instance.delete()
         entity_schema.delete()
         user.delete()
+
+    def test_autoname_method(self):
+        model_lb = self.create_entity(self._user, "LB")
+        model_lb_sg = self.create_entity(
+            self._user,
+            "LBServiceGroup",
+            attrs=[
+                {
+                    "name": "LB",
+                    "type": AttrType.OBJECT,
+                    "ref": model_lb,
+                    "name_order": 1,
+                    "name_prefix": "[",
+                    "name_postfix": "]",
+                },
+                {"name": "label", "type": AttrType.STRING},
+                {"name": "domain", "type": AttrType.STRING, "name_order": 2, "name_prefix": " "},
+                {"name": "port", "type": AttrType.STRING, "name_order": 3, "name_prefix": ":"},
+                {
+                    "name": "number",
+                    "type": AttrType.NUMBER,
+                    "name_order": 4,
+                },  # This should be ignored
+                {
+                    "name": "dict",
+                    "type": AttrType.NAMED_OBJECT,
+                    "name_order": 5,
+                },  # This should be ignored
+            ],
+            item_name_type=ItemNameType.ATTR,
+        )
+
+        lb1 = self.add_entry(self._user, "LB0001", model_lb)
+        lb_sg1 = self.add_entry(
+            self._user,
+            "TestLB but this is not set, actually :)",
+            model_lb_sg,
+            values={
+                "LB": lb1,
+                "label": "This is a test LB ServiceGroup",
+                "domain": "pagoda-test.example.com",
+                "port": 80,
+                "number": 100,
+                "dict": {"name": "TestDict", "id": lb1},
+            },
+        )
+        self.assertEqual(lb_sg1.autoname, "[LB0001] pagoda-test.example.com:80")
+
+    def test_save_autoname_with_duplicated_values(self):
+        model = self.create_entity(
+            self._user,
+            "Auto Save",
+            attrs=[
+                {"name": "a1", "type": AttrType.STRING, "name_order": 1},
+                {"name": "a2", "type": AttrType.STRING, "name_order": 2, "name_prefix": "-"},
+            ],
+            item_name_type=ItemNameType.ATTR,
+        )
+
+        items = [
+            self.add_entry(self._user, x, model, values={"a1": "foo", "a2": "bar"})
+            for x in range(3)
+        ]
+        [x.save_autoname() for x in items]
+
+        self.assertEqual(items[0].name, "foo-bar")
+        self.assertRegex(items[1].name, r"^foo-bar -- duplicate of ID:%s -- " % str(items[0].id))
+        self.assertRegex(items[2].name, r"^foo-bar -- duplicate of ID:%s -- " % str(items[0].id))
+
+    def test_may_change_referred_item_names(self):
+        """
+        This tests Entry.may_change_referred_item_names() method works propery
+        when circular reference structure is present.
+        """
+        model0 = self.create_entity(
+            self._user,
+            "Model0",
+            attrs=[
+                {"name": "val", "type": AttrType.STRING, "name_order": 1},
+            ],
+            item_name_type=ItemNameType.ATTR,
+        )
+        model1 = self.create_entity(
+            self._user,
+            "Model1",
+            attrs=[
+                {"name": "ref", "type": AttrType.OBJECT, "name_order": 1, "ref": model0},
+                {"name": "val", "type": AttrType.STRING, "name_order": 2, "name_prefix": "-"},
+            ],
+            item_name_type=ItemNameType.ATTR,
+        )
+        model2 = self.create_entity(
+            self._user,
+            "Model2",
+            attrs=[
+                {"name": "ref", "type": AttrType.OBJECT, "name_order": 1, "ref": model1},
+                {"name": "val", "type": AttrType.STRING, "name_order": 2, "name_prefix": "-"},
+            ],
+            item_name_type=ItemNameType.ATTR,
+        )
+        self.update_entity(
+            self._user, model0, attrs=[{"name": "ref", "type": AttrType.OBJECT, "ref": model2}]
+        )
+
+        # create items that have circular reference structure
+        # (item0 -> item1 -> item2 -> item0 ...)
+        item0 = self.add_entry(self._user, "tmp00", model0, values={"val": "BEFORE"})
+        item0.save_autoname()
+        item1 = self.add_entry(self._user, "tmp01", model1, values={"val": "hoge", "ref": item0})
+        item1.save_autoname()
+        item2 = self.add_entry(self._user, "tmp02", model2, values={"val": "fuga", "ref": item1})
+        item2.save_autoname()
+        item0.attrs.get(schema__name="ref").add_value(self._user, item2)
+
+        self.assertEqual(item1.autoname, "BEFORE-hoge")
+        self.assertEqual(item2.autoname, "BEFORE-hoge-fuga")
+
+        # change referred item's name
+        item0.attrs.get(schema__name="val").add_value(self._user, "AFTER")
+        item0.save_autoname()
+
+        # check all referred items are updated
+        item1.refresh_from_db()
+        self.assertEqual(item1.name, "AFTER-hoge")
+        item2.refresh_from_db()
+        self.assertEqual(item2.name, "AFTER-hoge-fuga")
