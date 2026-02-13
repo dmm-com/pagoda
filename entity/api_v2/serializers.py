@@ -168,6 +168,12 @@ class WebhookCreateUpdateSerializer(serializers.ModelSerializer):
 
 class EntityAttrCreateSerializer(serializers.ModelSerializer):
     created_user = serializers.HiddenField(default=drf.AironeUserDefault())
+    name_prefix = serializers.CharField(
+        required=False, max_length=20, allow_blank=True, trim_whitespace=False
+    )
+    name_postfix = serializers.CharField(
+        required=False, max_length=20, allow_blank=True, trim_whitespace=False
+    )
 
     class Meta:
         model = EntityAttr
@@ -182,6 +188,9 @@ class EntityAttrCreateSerializer(serializers.ModelSerializer):
             "created_user",
             "note",
             "default_value",
+            "name_order",
+            "name_prefix",
+            "name_postfix",
         ]
 
     def validate_type(self, type: Optional[int]) -> Optional[int]:

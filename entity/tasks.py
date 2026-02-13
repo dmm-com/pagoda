@@ -105,6 +105,9 @@ class CreateEntityV2Attr(BaseModel):
     referral: list[int] = Field(default_factory=list)
     note: str = ""
     default_value: Optional[str | bool | int | float] = None
+    name_order: Optional[int] = 0  # for internal use only
+    name_prefix: Optional[str] = ""  # for internal use only
+    name_postfix: Optional[str] = ""  # for internal use only
 
     @model_validator(mode="after")
     def validate_default_value_for_type(self):
