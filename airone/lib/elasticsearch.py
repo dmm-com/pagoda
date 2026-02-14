@@ -1007,10 +1007,11 @@ def execute_query(
         query = {**query, "sort": [{"name.keyword": "asc"}]}
     kwargs = {
         "size": min(size, 500000) if size else settings.ES_CONFIG["MAXIMUM_RESULTS_NUM"],
-        "from_": offset,
         "body": query,
         "track_total_hits": True,
     }
+    if offset is not None:
+        kwargs["from_"] = offset
 
     try:
         res = ESS().search(**kwargs)
