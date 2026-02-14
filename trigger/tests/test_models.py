@@ -1,6 +1,5 @@
 import json
-
-import mock
+from unittest import mock
 
 from airone.lib.test import AironeTestCase
 from airone.lib.types import AttrType
