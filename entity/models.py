@@ -48,11 +48,18 @@ class EntityAttr(ACLBase):
     name_prefix = models.CharField(max_length=20, blank=True, default="")
     name_postfix = models.CharField(max_length=20, blank=True, default="")
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any):
         super(ACLBase, self).__init__(*args, **kwargs)
         self.objtype = ACLObjType.EntityAttr
 
-    def is_updated(self, name, is_mandatory, is_delete_in_chain, index, default_value=None) -> bool:
+    def is_updated(
+        self,
+        name: str,
+        is_mandatory: bool,
+        is_delete_in_chain: bool,
+        index: int,
+        default_value: Any = None,
+    ) -> bool:
         # checks each parameters that are different between current object parameters
         if (
             self.name != name
@@ -64,7 +71,7 @@ class EntityAttr(ACLBase):
             return True
         return False
 
-    def is_referral_updated(self, refs) -> bool:
+    def is_referral_updated(self, refs: list[int]) -> bool:
         # checks each parameters that are different between current object parameters
         return sorted([x.id for x in self.referral.all()]) != sorted(refs)
 
@@ -167,7 +174,7 @@ class Entity(ACLBase):
         choices=ItemNameType.choices, max_length=10, default=ItemNameType.USER
     )
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any):
         super(Entity, self).__init__(*args, **kwargs)
         self.objtype = ACLObjType.Entity
 

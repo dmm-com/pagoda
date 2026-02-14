@@ -1,18 +1,24 @@
+from collections.abc import Iterable
 from datetime import datetime
 from importlib import import_module
+from typing import TYPE_CHECKING, Any
 
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
+from django.db.models import QuerySet
 from rest_framework.authtoken.models import Token
 
 from airone.lib.acl import ACLType
 from group.models import Group
 from role.models import Role
 
+if TYPE_CHECKING:
+    from acl.models import ACLBase
+
 
 class UserManager(BaseUserManager):
-    def create_user(self, request_data, **kwargs):
+    def create_user(self, request_data: dict[str, Any], **kwargs: Any) -> "User":
         user = User(
             username=request_data.get("username"),
             email=request_data.get("email"),
@@ -41,7 +47,7 @@ class User(AbstractUser):
     token_lifetime = models.IntegerField(default=TOKEN_LIFETIME)
 
     @property
-    def airone_groups(self):
+    def airone_groups(self) -> QuerySet:
         """
         This returns groups that current user just belongs to
         (not include hierarchical parent groups)
@@ -54,10 +60,10 @@ class User(AbstractUser):
         return self.user_permissions
 
     @property
-    def token(self):
+    def token(self) -> Token | None:
         return Token.objects.filter(user=self).first()
 
-    def belonging_groups(self, is_direct_belonging=False):
+    def belonging_groups(self, is_direct_belonging: bool = False) -> Iterable[Group]:
         """This returns groups that include hierarchical superior groups"""
 
         def _scan_superior_groups(group, parent_groups):
@@ -74,7 +80,7 @@ class User(AbstractUser):
 
             return set(list(self.airone_groups) + parent_groups)
 
-    def has_permission(self, target_obj, permission_level) -> bool:
+    def has_permission(self, target_obj: "ACLBase", permission_level: ACLType | int | None) -> bool:
         # A bypass processing to rapidly return.
         # This condition is effective when the public objects are majority.
         if self.is_superuser:
@@ -139,8 +145,13 @@ class User(AbstractUser):
         return False
 
     def is_permitted_to_change(
-        self, target_obj, expected_permission, will_be_public, default_permission, acl_settings
-    ):
+        self,
+        target_obj: "ACLBase",
+        expected_permission: ACLType,
+        will_be_public: bool,
+        default_permission: int,
+        acl_settings: list[dict[str, Any]],
+    ) -> bool:
         """
         This checks specified permission settings have expected_permission for this user.
 
@@ -215,16 +226,16 @@ class User(AbstractUser):
         self.save()
 
     # operations for registering History
-    def seth_entity_add(self, target):
+    def seth_entity_add(self, target: "ACLBase") -> "History":
         return History.register(self, target, History.ADD_ENTITY)
 
-    def seth_entity_mod(self, target):
+    def seth_entity_mod(self, target: "ACLBase") -> "History":
         return History.register(self, target, History.MOD_ENTITY)
 
-    def seth_entity_del(self, target):
+    def seth_entity_del(self, target: "ACLBase") -> "History":
         return History.register(self, target, History.DEL_ENTITY)
 
-    def seth_entry_del(self, target):
+    def seth_entry_del(self, target: "ACLBase") -> "History":
         return History.register(self, target, History.DEL_ENTRY)
 
 
@@ -271,7 +282,7 @@ class History(models.Model):
     # This parameter is needed to record related operation histories
     details = models.ManyToManyField("History")
 
-    def add_attr(self, target, text=""):
+    def add_attr(self, target: "ACLBase", text: str = ""):
         detail = History.register(
             target=target,
             operation=History.ADD_ATTR,
@@ -281,7 +292,7 @@ class History(models.Model):
         )
         self.details.add(detail)
 
-    def mod_attr(self, target, text=""):
+    def mod_attr(self, target: "ACLBase", text: str = ""):
         detail = History.register(
             target=target,
             operation=History.MOD_ATTR,
@@ -291,7 +302,7 @@ class History(models.Model):
         )
         self.details.add(detail)
 
-    def del_attr(self, target, text=""):
+    def del_attr(self, target: "ACLBase", text: str = ""):
         detail = History.register(
             target=target,
             operation=History.DEL_ATTR,
@@ -301,7 +312,7 @@ class History(models.Model):
         )
         self.details.add(detail)
 
-    def mod_entity(self, target, text=""):
+    def mod_entity(self, target: "ACLBase", text: str = ""):
         detail = History.register(
             target=target,
             operation=History.MOD_ENTITY,
@@ -312,7 +323,14 @@ class History(models.Model):
         self.details.add(detail)
 
     @classmethod
-    def register(kls, user, target, operation, is_detail=False, text=""):
+    def register(
+        kls,
+        user: "User",
+        target: "ACLBase",
+        operation: int,
+        is_detail: bool = False,
+        text: str = "",
+    ) -> "History":
         if kls._type_check(target, operation):
             return kls.objects.create(
                 target_obj=target,
@@ -325,7 +343,7 @@ class History(models.Model):
             raise TypeError("Couldn't register history '%s' because of invalid type" % str(target))
 
     @classmethod
-    def _type_check(kls, target, operation) -> bool:
+    def _type_check(kls, target: "ACLBase", operation: int) -> bool:
         if (
             operation & kls.TARGET_ENTITY
             and isinstance(target, import_module("entity.models").Entity)
