@@ -11,6 +11,7 @@ from django.db.models import Q
 from django.http import HttpResponse
 from django.http.response import JsonResponse
 from django.urls import reverse
+from elasticsearch import NotFoundError
 
 from airone.lib.acl import ACLType
 from airone.lib.elasticsearch import AttrHint
@@ -1583,12 +1584,8 @@ class ViewTest(AironeViewTest):
         self.assertFalse(Attribute.objects.get(name__icontains="attr-test_deleted_").is_active)
 
         # Checks Elasticsearch also removes document of removed entry
-        res = self._es.get(
-            index=settings.ES_CONFIG["INDEX_NAME"],
-            id=entry.id,
-            ignore=[404],
-        )
-        self.assertFalse(res["found"])
+        with self.assertRaises(NotFoundError):
+            self._es.get(index=settings.ES_CONFIG["INDEX_NAME"], id=entry.id)
 
     @patch("entry.tasks.delete_entry.delay", Mock(return_value=None))
     def test_post_delete_entry_with_long_delay(self):

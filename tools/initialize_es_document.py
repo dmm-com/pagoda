@@ -23,7 +23,7 @@ def initialize_es_document(entities):
     es = ESS()
 
     # clear previous index
-    es.indices.delete(index=es._index, ignore=[400, 404])
+    es.indices.delete(index=es._index, ignore_unavailable=True)
 
     # create a new index with mapping
     es.recreate_index()

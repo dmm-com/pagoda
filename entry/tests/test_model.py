@@ -4,6 +4,7 @@ from unittest import skip
 
 from django.conf import settings
 from django.db.models import Q
+from elasticsearch import NotFoundError
 
 from acl.models import ACLBase
 from airone.lib.acl import ACLObjType, ACLType
@@ -849,12 +850,8 @@ class ModelTest(AironeTestCase):
         self.assertEqual(list(entry.get_referred_objects()), [])
 
         # checks that the document in the Elasticsearch associated with the entry was also deleted
-        res = self._es.get(
-            index=settings.ES_CONFIG["INDEX_NAME"],
-            id=deleting_entry_id,
-            ignore=[404],
-        )
-        self.assertFalse(res["found"])
+        with self.assertRaises(NotFoundError):
+            self._es.get(index=settings.ES_CONFIG["INDEX_NAME"], id=deleting_entry_id)
 
     def test_delete_entry_in_chain(self):
         # initilaize referral Entries for checking processing caused
@@ -2130,12 +2127,8 @@ class ModelTest(AironeTestCase):
         # Total count is one less than initial value.
         res = AdvancedSearchService.get_all_es_docs()
         self.assertEqual(res["hits"]["total"]["value"], ENTRY_COUNTS + 1)
-        res = self._es.get(
-            index=settings.ES_CONFIG["INDEX_NAME"],
-            id=entry.id,
-            ignore=[404],
-        )
-        self.assertFalse(res["found"])
+        with self.assertRaises(NotFoundError):
+            self._es.get(index=settings.ES_CONFIG["INDEX_NAME"], id=entry.id)
 
     def test_unregister_entry_to_elasticsearch(self):
         user = User.objects.create(username="hoge")

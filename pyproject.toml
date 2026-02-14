@@ -53,7 +53,7 @@ dependencies = [
     "djangorestframework==3.15.2",
     "markdown>=3.7",
     "drf-spectacular==0.29.0",
-    "elasticsearch==7.17.6",
+    "elasticsearch==8.17.0",
     "flower==1.2.0",
     "gunicorn==23.0.0",
     "kombu==5.5.4",
