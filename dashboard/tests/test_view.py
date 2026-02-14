@@ -1,9 +1,8 @@
 import errno
 import json
 from datetime import date, datetime, timezone
-from unittest.mock import Mock, patch
+from unittest.mock import Mock, mock_open, patch
 
-import mock
 import yaml
 from django.urls import reverse
 
@@ -1361,8 +1360,8 @@ class ViewTest(AironeViewTest):
         }
         resp_data["Entity-1"][0]["attrs"] = new_attr_values
 
-        mockio = mock.mock_open(read_data=yaml.dump(resp_data))
-        with mock.patch("builtins.open", mockio):
+        mockio = mock_open(read_data=yaml.dump(resp_data))
+        with patch("builtins.open", mockio):
             with open("hogefuga.yaml") as fp:
                 resp = self.client.post(
                     reverse("entry:do_import", args=[entities[1].id]), {"file": fp}

@@ -58,7 +58,6 @@ dependencies = [
     "gunicorn==23.0.0",
     "kombu==5.5.4",
     "lxml_html_clean==0.4.0",
-    "mock==2.0.0",
     "mysqlclient==2.2.0",
     "natsort==5.3.3",
     "python-ldap==3.4.5",
