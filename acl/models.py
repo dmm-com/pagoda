@@ -1,6 +1,7 @@
 import importlib
 import re
 from datetime import datetime
+from typing import Any
 
 from django.contrib.auth.models import Permission
 from django.db import models
@@ -13,13 +14,13 @@ from user.models import User
 
 
 # Add comparison operations to the Permission model
-def _get_acltype(permission):
+def _get_acltype(permission: Permission) -> int:
     if not any([permission.name == x.name for x in ACLType.all()]):
         return 0
     return int(permission.codename.split(".")[-1])
 
 
-def _get_objid(permission):
+def _get_objid(permission: Permission) -> int:
     if not any([permission.name == x.name for x in ACLType.all()]):
         return 0
     return int(permission.codename.split(".")[0])
@@ -32,7 +33,7 @@ Permission.__ge__ = lambda self, comp: _get_acltype(self) >= _get_acltype(comp)
 
 
 class HistoricalDifference(object):
-    def __init__(self, field_val, prev_val, next_val):
+    def __init__(self, field_val: str, prev_val: Any, next_val: Any):
         self.field = field_val
         self.prev = prev_val
         self.next = next_val
@@ -55,7 +56,7 @@ class ACLBase(models.Model):
     # This fields describes the sub-class of this object
     objtype = models.IntegerField(default=0)
 
-    def save(self, update_fields=None, *args, **kwargs):
+    def save(self, update_fields: list[str] | None = None, *args, **kwargs):
         """This forcely adds updated_time to update_fields parameter when it's not specified
         on its parameter.
         """
@@ -65,7 +66,7 @@ class ACLBase(models.Model):
 
         return super(ACLBase, self).save(update_fields=new_update_fields, *args, **kwargs)
 
-    def get_diff(instance, offset=0):
+    def get_diff(instance, offset: int = 0) -> list[HistoricalDifference]:
         ret = []
         try:
             (before_last, last) = list(reversed(instance.history.order_by("history_id")))[
@@ -79,7 +80,7 @@ class ACLBase(models.Model):
 
         return ret
 
-    def show_diff(self, offset=0):
+    def show_diff(self, offset: int = 0):
         for diff in self.get_diff(offset):
             print("{} changed from {} to {}".format(diff.field, diff.prev, diff.next))
 
@@ -91,15 +92,15 @@ class ACLBase(models.Model):
             del self.skip_history_when_saving
         return ret
 
-    def set_status(self, val):
+    def set_status(self, val: int):
         self.status |= val
         self.save_without_historical_record(update_fields=["status"])
 
-    def del_status(self, val):
+    def del_status(self, val: int):
         self.status &= ~val
         self.save_without_historical_record(update_fields=["status"])
 
-    def get_status(self, val):
+    def get_status(self, val: int) -> int:
         return self.status & val
 
     def delete(self, *args, **kwargs):
@@ -119,7 +120,7 @@ class ACLBase(models.Model):
         self.deleted_time = None
         self.save()
 
-    def inherit_acl(self, aclobj):
+    def inherit_acl(self, aclobj: "ACLBase"):
         if not isinstance(aclobj, ACLBase):
             raise TypeError("specified object(%s) is not ACLBase object")
 
@@ -127,27 +128,29 @@ class ACLBase(models.Model):
         self.is_public = aclobj.is_public
         self.default_permission = aclobj.default_permission
 
-    def is_acl_updated(self, is_public, default_permission):
+    def is_acl_updated(self, is_public: bool, default_permission: int) -> bool:
         # checks each parameters that are different between current object parameters
         if self.is_public != is_public or self.default_permission != default_permission:
             return True
 
+        return False
+
     @property
-    def readable(self):
+    def readable(self) -> HistoricalPermission:
         return self._get_permission(ACLType.Readable.id)
 
     @property
-    def writable(self):
+    def writable(self) -> HistoricalPermission:
         return self._get_permission(ACLType.Writable.id)
 
     @property
-    def full(self):
+    def full(self) -> HistoricalPermission:
         return self._get_permission(ACLType.Full.id)
 
-    def _get_permission(self, acltype) -> HistoricalPermission:
+    def _get_permission(self, acltype: int) -> HistoricalPermission:
         return HistoricalPermission.objects.get(codename="%s.%s" % (self.id, acltype))
 
-    def get_subclass_object(self):
+    def get_subclass_object(self) -> "ACLBase":
         # Use importlib to prevent circular import
         match self.objtype:
             case ACLObjType.Entity:
@@ -165,11 +168,11 @@ class ACLBase(models.Model):
 
         return model.objects.get(id=self.id)
 
-    def is_same_object(self, comp):
+    def is_same_object(self, comp: "ACLBase") -> bool:
         return all([self[x] == comp[x] for x in self._IMPORT_INFO["header"]])
 
     @classmethod
-    def search(kls, query):
+    def search(kls, query: str) -> "list[dict[str, str | ACLBase]]":
         results = []
         for obj in kls.objects.filter(name__icontains=query):
             results.append(
