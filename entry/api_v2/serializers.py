@@ -2,6 +2,8 @@ import re
 from datetime import date, datetime
 from typing import Any, Dict, List, Literal, Union
 
+from airone.lib.plugin_dispatch import PluginOverrideMixin
+from airone.lib.http import DRFRequest
 from django.db.models import Prefetch
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema_field, extend_schema_serializer
@@ -24,6 +26,7 @@ from airone.lib.drf import (
 from airone.lib.elasticsearch import EntryFilterKey, FilterKey
 from airone.lib.log import Logger
 from airone.lib.types import AttrDefaultValue, AttrType
+import entity
 from entity.api_v2.serializers import EntitySerializer
 from entity.models import Entity, EntityAttr
 from entry.models import AliasEntry, Attribute, AttributeValue, Entry
@@ -447,7 +450,7 @@ class EntryCreateData(TypedDict, total=False):
 
 
 @extend_schema_serializer(exclude_fields=["schema"])
-class EntryCreateSerializer(EntryBaseSerializer):
+class EntryCreateSerializer(PluginOverrideMixin, EntryBaseSerializer):
     schema = serializers.PrimaryKeyRelatedField(
         queryset=Entity.objects.all(), write_only=True, required=True
     )
@@ -513,6 +516,9 @@ class EntryCreateSerializer(EntryBaseSerializer):
 
         # for updating its name from attribute values
         entry.save_autoname()
+
+        entity = validated_data["schema"]
+        self._dispatch_override(DRFRequest(user), "background", entity.id, entity)
 
         if custom_view.is_custom("after_create_entry_v2", entity_name):
             custom_view.call_custom("after_create_entry_v2", entity_name, user, entry)
