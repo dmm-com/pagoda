@@ -5,6 +5,7 @@ import pickle
 import time
 from datetime import date, datetime, timedelta
 from importlib import import_module
+from types import ModuleType
 from typing import Any, Callable, Optional, TypeAlias, Union
 
 import pytz
@@ -46,7 +47,7 @@ else:
         pass
 
 
-def _support_time_default(o):
+def _support_time_default(o: Any) -> str:
     if isinstance(o, date):
         return o.isoformat()
     raise TypeError(repr(o) + " is not JSON serializable")
@@ -123,7 +124,7 @@ class Job(models.Model):
     DEFAULT_JOB_TIMEOUT = 86400
 
     # This caches each task module to be able to call them from Job instance
-    _TASK_MODULE: dict[str, Any] = {}
+    _TASK_MODULE: dict[str, ModuleType] = {}
 
     # This hash table describes operation status value and operation processing
     _METHOD_TABLE: dict[int, TaskHandler] = {}
@@ -297,7 +298,7 @@ class Job(models.Model):
             "updated_at": self.updated_at,
         }
 
-    def run(self, will_delay=True):
+    def run(self, will_delay: bool = True) -> Any:
         method_table = self.method_table()
         if self.operation not in method_table:
             Logger.error("Job %s has invalid operation type" % self.id)
@@ -316,11 +317,11 @@ class Job(models.Model):
     def _create_new_job(
         kls,
         user: User,
-        target: Entity | Entry | Any | None,
+        target: ACLBase | None,
         operation: int,
         text: str | None,
-        params: dict | None = None,
-        depend_on=None,
+        params: dict | list | None = None,
+        depend_on: "Job | None" = None,
     ) -> "Job":
         t_type = JobTarget.UNKNOWN
         if target is not None:
@@ -366,7 +367,7 @@ class Job(models.Model):
         return kls.objects.create(**job_params)
 
     @classmethod
-    def get_task_module(kls, component: str):
+    def get_task_module(kls, component: str) -> ModuleType:
         if component not in kls._TASK_MODULE:
             kls._TASK_MODULE[component] = import_module(component)
 
@@ -410,13 +411,13 @@ class Job(models.Model):
         kls._METHOD_TABLE[operation] = method
 
     @classmethod
-    def get_job_with_params(kls, user: User, params):
+    def get_job_with_params(kls, user: User, params: dict[str, Any]) -> models.QuerySet["Job"]:
         return kls.objects.filter(
             user=user, params=json.dumps(params, default=_support_time_default, sort_keys=True)
         )
 
     @classmethod
-    def new_create(kls, user: User, target, text="", params={}):
+    def new_create(kls, user: User, target: Entry, text: str = "", params: dict = {}) -> "Job":
         return kls._create_new_job(
             user=user,
             target=target,
@@ -426,7 +427,7 @@ class Job(models.Model):
         )
 
     @classmethod
-    def new_edit(kls, user: User, target, text="", params={}):
+    def new_edit(kls, user: User, target: Entry, text: str = "", params: dict = {}) -> "Job":
         return kls._create_new_job(
             user=user,
             target=target,
@@ -436,13 +437,13 @@ class Job(models.Model):
         )
 
     @classmethod
-    def new_delete(kls, user: User, target, text=""):
+    def new_delete(kls, user: User, target: Entry, text: str = "") -> "Job":
         return kls._create_new_job(
             user=user, target=target, operation=JobOperation.DELETE_ENTRY, text=text
         )
 
     @classmethod
-    def new_copy(kls, user: User, target, text="", params={}):
+    def new_copy(kls, user: User, target: Entry, text: str = "", params: dict = {}) -> "Job":
         return kls._create_new_job(
             user=user,
             target=target,
@@ -452,7 +453,7 @@ class Job(models.Model):
         )
 
     @classmethod
-    def new_do_copy(kls, user: User, target, text="", params={}):
+    def new_do_copy(kls, user: User, target: Entry, text: str = "", params: dict = {}) -> "Job":
         return kls._create_new_job(
             user=user,
             target=target,
@@ -462,7 +463,7 @@ class Job(models.Model):
         )
 
     @classmethod
-    def new_import(kls, user: User, entity, text="", params={}):
+    def new_import(kls, user: User, entity: Entity, text: str = "", params: dict = {}) -> "Job":
         return kls._create_new_job(
             user=user,
             target=entity,
@@ -472,7 +473,7 @@ class Job(models.Model):
         )
 
     @classmethod
-    def new_import_v2(kls, user: User, entity, text="", params={}):
+    def new_import_v2(kls, user: User, entity: Entity, text: str = "", params: dict = {}) -> "Job":
         return kls._create_new_job(
             user=user,
             target=entity,
@@ -482,7 +483,9 @@ class Job(models.Model):
         )
 
     @classmethod
-    def new_export(kls, user: User, target=None, text="", params={}):
+    def new_export(
+        kls, user: User, target: ACLBase | None = None, text: str = "", params: dict = {}
+    ) -> "Job":
         return kls._create_new_job(
             user=user,
             target=target,
@@ -492,7 +495,9 @@ class Job(models.Model):
         )
 
     @classmethod
-    def new_export_v2(kls, user: User, target=None, text="", params={}):
+    def new_export_v2(
+        kls, user: User, target: ACLBase | None = None, text: str = "", params: dict = {}
+    ) -> "Job":
         return kls._create_new_job(
             user=user,
             target=target,
@@ -502,7 +507,7 @@ class Job(models.Model):
         )
 
     @classmethod
-    def new_restore(kls, user: User, target, text="", params={}):
+    def new_restore(kls, user: User, target: Entry, text: str = "", params: dict = {}) -> "Job":
         return kls._create_new_job(
             user=user,
             target=target,
@@ -512,7 +517,9 @@ class Job(models.Model):
         )
 
     @classmethod
-    def new_export_search_result(kls, user: User, target=None, text="", params={}):
+    def new_export_search_result(
+        kls, user: User, target: ACLBase | None = None, text: str = "", params: dict = {}
+    ) -> "Job":
         return kls._create_new_job(
             user=user,
             target=target,
@@ -522,7 +529,9 @@ class Job(models.Model):
         )
 
     @classmethod
-    def new_export_search_result_v2(kls, user: User, target=None, text="", params={}):
+    def new_export_search_result_v2(
+        kls, user: User, target: ACLBase | None = None, text: str = "", params: dict = {}
+    ) -> "Job":
         return kls._create_new_job(
             user=user,
             target=target,
@@ -533,8 +542,12 @@ class Job(models.Model):
 
     @classmethod
     def new_register_referrals(
-        kls, user: User, target, operation_value=JobOperation.REGISTER_REFERRALS, params={}
-    ):
+        kls,
+        user: User,
+        target: ACLBase | None,
+        operation_value: int = JobOperation.REGISTER_REFERRALS,
+        params: dict = {},
+    ) -> "Job":
         return kls._create_new_job(
             user=user,
             target=target,
@@ -544,7 +557,9 @@ class Job(models.Model):
         )
 
     @classmethod
-    def new_create_entity(kls, user: User, target, text="", params={}):
+    def new_create_entity(
+        kls, user: User, target: Entity, text: str = "", params: dict = {}
+    ) -> "Job":
         return kls._create_new_job(
             user=user,
             target=target,
@@ -554,7 +569,9 @@ class Job(models.Model):
         )
 
     @classmethod
-    def new_edit_entity(kls, user: User, target, text="", params={}):
+    def new_edit_entity(
+        kls, user: User, target: Entity, text: str = "", params: dict = {}
+    ) -> "Job":
         return kls._create_new_job(
             user=user,
             target=target,
@@ -564,13 +581,15 @@ class Job(models.Model):
         )
 
     @classmethod
-    def new_delete_entity(kls, user: User, target, text=""):
+    def new_delete_entity(kls, user: User, target: Entity, text: str = "") -> "Job":
         return kls._create_new_job(
             user=user, target=target, operation=JobOperation.DELETE_ENTITY, text=text
         )
 
     @classmethod
-    def new_update_documents(kls, target, text="", params={}):
+    def new_update_documents(
+        kls, target: ACLBase | None, text: str = "", params: dict = {}
+    ) -> "Job":
         user = auto_complement.get_auto_complement_user(None)
         if not user:
             user = User.objects.create(username=settings.AIRONE["AUTO_COMPLEMENT_USER"])
@@ -583,25 +602,31 @@ class Job(models.Model):
         )
 
     @classmethod
-    def new_notify_create_entry(kls, user: User, target, text=""):
+    def new_notify_create_entry(kls, user: User, target: Entry, text: str = "") -> "Job":
         return kls._create_new_job(
             user=user, target=target, operation=JobOperation.NOTIFY_CREATE_ENTRY, text=text
         )
 
     @classmethod
-    def new_notify_update_entry(kls, user: User, target, text=""):
+    def new_notify_update_entry(kls, user: User, target: Entry, text: str = "") -> "Job":
         return kls._create_new_job(
             user=user, target=target, operation=JobOperation.NOTIFY_UPDATE_ENTRY, text=text
         )
 
     @classmethod
-    def new_notify_delete_entry(kls, user: User, target, text=""):
+    def new_notify_delete_entry(kls, user: User, target: Entry, text: str = "") -> "Job":
         return kls._create_new_job(
             user=user, target=target, operation=JobOperation.NOTIFY_DELETE_ENTRY, text=text
         )
 
     @classmethod
-    def new_invoke_trigger(kls, user: User, target_entry, recv_attrs={}, dependent_job=None):
+    def new_invoke_trigger(
+        kls,
+        user: User,
+        target_entry: Entry,
+        recv_attrs: list | dict = {},
+        dependent_job: "Job | None" = None,
+    ) -> "Job":
         return kls._create_new_job(
             user=user,
             target=target_entry,
@@ -642,7 +667,9 @@ class Job(models.Model):
         )
 
     @classmethod
-    def new_create_entry_v2(kls, user: User, target, text="", params={}):
+    def new_create_entry_v2(
+        kls, user: User, target: Entry | None, text: str = "", params: dict = {}
+    ) -> "Job":
         return kls._create_new_job(
             user=user,
             target=target,
@@ -671,11 +698,11 @@ class Job(models.Model):
             params=params,
         )
 
-    def set_cache(self, value):
+    def set_cache(self, value: Any):
         with default_storage.open("job_%d" % self.id, "wb") as fp:
             pickle.dump(value, fp)
 
-    def get_cache(self):
+    def get_cache(self) -> Any:
         value = ""
         with default_storage.open("job_%d" % self.id, "rb") as fp:
             value = pickle.load(fp)

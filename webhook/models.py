@@ -31,7 +31,7 @@ class Webhook(models.Model):
     # }]
     headers = models.JSONField(encoder=json.JSONEncoder, default=list)
 
-    def to_dict(self):
+    def to_dict(self) -> dict[str, int | str | bool | list]:
         try:
             webhook_headers = json.loads(self.headers)
         except json.decoder.JSONDecodeError:

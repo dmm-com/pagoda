@@ -16,10 +16,12 @@ from entry.models import Entry
 if TYPE_CHECKING:
     from django.db.models import Manager
 
+    from user.models import User
+
 
 ## These are internal classes for AirOne trigger and action
 class InputTriggerCondition(object):
-    def __init__(self, **input):
+    def __init__(self, **input: Any):
         # set EntityAttr from "attr" parameter of input
         attr_id = input.get("attr_id", 0)
         self.attr = EntityAttr.objects.filter(id=attr_id, is_active=True).first()
@@ -34,7 +36,7 @@ class InputTriggerCondition(object):
         # set each condition parameters by specified condition value
         self.parse_input_condition(input.get("cond"), input.get("hint"))
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "(attr:%s[%s]) str_cond:%s, ref_cond:%s, bool_cond:%s is_unmatch:%s" % (
             self.attr.name,
             self.attr.id,
@@ -50,7 +52,7 @@ class InputTriggerCondition(object):
         self.bool_cond = False
         self.is_unmatch = False
 
-    def parse_input_condition(self, input_condition, hint=None):
+    def parse_input_condition(self, input_condition: Any, hint: str | None = None):
         def _convert_value_to_entry(value: Entry | int | str | Any):
             if isinstance(value, Entry):
                 return value
@@ -96,27 +98,29 @@ class InputTriggerCondition(object):
 
 
 class InputTriggerActionValue(object):
-    def __init__(self, **input):
+    def __init__(self, **input: Any):
         self.str_cond = input.get("str_cond", "")
         self.ref_cond = input.get("ref_cond", None)
         self.bool_cond = input.get("bool_cond", False)
 
 
 class InputTriggerAction(object):
-    def __init__(self, **input):
+    def __init__(self, **input: Any):
         # set EntityAttr from "attr" parameter of input
         attr_id = input.get("attr_id", 0)
         self.attr = EntityAttr.objects.filter(id=attr_id, is_active=True).first()
         if not self.attr:
             raise InvalidInputException("Specified attr(%s) is invalid" % attr_id)
 
-        self.values = []
+        self.values: list[Any] = []
         if self.attr.type & AttrType._ARRAY:
-            self.values = self.get_value(input.get("values", []))
+            self.values = self.get_value(input.get("values", []))  # type: ignore[assignment]
         else:
             self.values = [self.get_value(input.get("value"))]
 
-    def get_value(self, raw_input_value):
+    def get_value(
+        self, raw_input_value: Any
+    ) -> InputTriggerActionValue | list[InputTriggerActionValue] | None:
         def _do_get_value(input_value, attr_type):
             match AttrType(attr_type):
                 case (
@@ -179,7 +183,7 @@ class TriggerParent(models.Model):
         conditions: Manager["TriggerCondition"]
         actions: Manager["TriggerAction"]
 
-    def is_match_condition(self, inputs: list[InputTriggerCondition]):
+    def is_match_condition(self, inputs: list[InputTriggerCondition]) -> bool:
         if all([c.is_same_condition(inputs) for c in self.conditions.all()]):
             return True
         return False
@@ -234,7 +238,7 @@ class TriggerParent(models.Model):
         self.conditions.all().delete()
         self.actions.all().delete()
 
-    def update(self, conditions: list, actions: list):
+    def update(self, conditions: list[dict[str, Any]], actions: list[dict[str, Any]]):
         # convert input to InputTriggerCondition
         input_trigger_conditions = [InputTriggerCondition(**condition) for condition in conditions]
 
@@ -259,7 +263,7 @@ class TriggerCondition(models.Model):
     is_unmatch = models.BooleanField(default=False)
 
     @property
-    def ATTR_TYPE(self):
+    def ATTR_TYPE(self) -> AttrType:
         return AttrType(self.attr.type)
 
     def is_same_condition(self, input_list: list[InputTriggerCondition]) -> bool:
@@ -280,7 +284,7 @@ class TriggerCondition(models.Model):
 
         return any([_do_check_condition(input) for input in input_list])
 
-    def is_match_condition(self, raw_recv_value) -> bool:
+    def is_match_condition(self, raw_recv_value: Any) -> bool:
         """
         This checks specified value, which is compatible with APIv2 standard, matches
         with this condition.
@@ -435,7 +439,7 @@ class TriggerCondition(models.Model):
         return parent_condition
 
     @classmethod
-    def get_invoked_actions(cls, entity: Entity, recv_data: list):
+    def get_invoked_actions(cls, entity: Entity, recv_data: list) -> list["TriggerAction"]:
         # The APIv1 and APIv2 format is different.
         # In the APIv2, the "id" parameter in the recv_data variable means EntityAttr ID.
         # But in the APIv1, the "id" parameter in the recv_data variable means Attribute ID
@@ -494,7 +498,9 @@ class TriggerAction(models.Model):
             }
             TriggerActionValue.objects.create(**params)
 
-    def get_serializer_acceptable_value(self, value=None, attr_type=None):
+    def get_serializer_acceptable_value(
+        self, value: "TriggerActionValue | None" = None, attr_type: int | None = None
+    ) -> Any:
         """
         This converts TriggerActionValue to the value that EntryUpdateSerializer can accept.
         """
@@ -521,7 +527,7 @@ class TriggerAction(models.Model):
         elif attr_type == AttrType.OBJECT:
             return value.ref_cond.id if isinstance(value.ref_cond, Entry) else None
 
-    def run(self, user, entry, call_stacks=[]):
+    def run(self, user: "User", entry: Entry, call_stacks: list[int] = []):
         # When self.id contains in call_stacks, it means that this action is already invoked.
         # This prevents infinite loop.
         if self.id in call_stacks:

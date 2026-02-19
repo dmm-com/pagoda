@@ -102,7 +102,7 @@ class AttributeValue(models.Model):
         self.status &= ~val
         self.save(update_fields=["status"])
 
-    def get_status(self, val: int):
+    def get_status(self, val: int) -> int:
         return self.status & val
 
     def clone(self, user: User, **extra_params) -> "AttributeValue":
@@ -130,7 +130,7 @@ class AttributeValue(models.Model):
         with_entity: bool = False,
         serialize: bool = False,
         is_active: bool = True,
-    ):
+    ) -> Any:
         """
         This returns registered value according to the type of Attribute
         """
@@ -276,7 +276,7 @@ class AttributeValue(models.Model):
 
         return value
 
-    def format_for_history(self):
+    def format_for_history(self) -> Any:
         match self.data_type:
             case AttrType.ARRAY_STRING:
                 return [x.value for x in self.data_array.all()]
@@ -585,7 +585,7 @@ class Attribute(ACLBase):
         return self.schema.type & AttrType._ARRAY
 
     # This checks whether each specified attribute needs to update
-    def is_updated(self, recv_value) -> bool:
+    def is_updated(self, recv_value: Any) -> bool:
         # the case new attribute-value is specified
         if not self.values.exists():
             # the result depends on the specified value
@@ -844,7 +844,7 @@ class Attribute(ACLBase):
 
         return False
 
-    def get_values(self, where_extra: list[str] = []):
+    def get_values(self, where_extra: list[str] = []) -> QuerySet[AttributeValue]:
         where_cond = [] + where_extra
 
         if self.is_array():
@@ -854,7 +854,7 @@ class Attribute(ACLBase):
 
         return self.values.extra(where=where_cond).order_by("created_time")
 
-    def get_latest_values(self):
+    def get_latest_values(self) -> QuerySet[AttributeValue]:
         params = {
             "where_extra": ["is_latest > 0"],
         }
@@ -981,7 +981,7 @@ class Attribute(ACLBase):
                 return False
         return False
 
-    def _validate_value(self, value) -> bool:
+    def _validate_value(self, value: Any) -> bool:
         def _is_group_object(val: Any, model: Type[Group | Role]) -> bool:
             return isinstance(val, (model, int, str)) or val is None
 
@@ -1276,7 +1276,7 @@ class Attribute(ACLBase):
 
         return attr_value
 
-    def convert_value_to_register(self, value):
+    def convert_value_to_register(self, value: Any) -> Any:
         """
         This absorbs difference values according to the type of Attributes
         """
@@ -1728,21 +1728,21 @@ class Entry(ACLBase):
             if referred_item.schema.item_name_type == ItemNameType.ATTR:
                 referred_item.save_autoname(past_path + [self.id])
 
-    def add_alias(self, name):
+    def add_alias(self, name: str) -> "AliasEntry":
         # validate name that is not duplicated with other Item names and Aliases in this model
         if not self.schema.is_available(name):
             raise ValueError("Specified name has already been used by other Item or Alias")
 
         return AliasEntry.objects.create(name=name, entry=self)
 
-    def delete_alias(self, name):
+    def delete_alias(self, name: str):
         alias = AliasEntry.objects.filter(
             name=name, entry__schema=self.schema, entry__is_active=True
         ).first()
         if alias:
             alias.delete()
 
-    def add_attribute_from_base(self, base: EntityAttr, request_user: User):
+    def add_attribute_from_base(self, base: EntityAttr, request_user: User) -> Attribute:
         if not isinstance(base, EntityAttr):
             raise TypeError('Variable "base" is incorrect type')
 

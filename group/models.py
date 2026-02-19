@@ -1,13 +1,18 @@
 import importlib
 import sys
 from datetime import datetime
+from typing import TYPE_CHECKING
 
 from django.conf import settings
 from django.contrib.auth.models import Group as DjangoGroup
 from django.db import models
-from django.db.models import Q
+from django.db.models import Q, QuerySet
 
 from airone.lib.types import AttrType
+
+if TYPE_CHECKING:
+    from acl.models import ACLBase
+    from airone.lib.acl import ACLType
 
 
 class Group(DjangoGroup):
@@ -59,7 +64,7 @@ class Group(DjangoGroup):
 
         job_register_referrals.run()
 
-    def has_permission(self, target_obj, permission_level):
+    def has_permission(self, target_obj: "ACLBase", permission_level: "ACLType") -> bool:
         """[NOTE]
         This function will be obsoleted, then will be alternated by Role feature
         """
@@ -76,7 +81,7 @@ class Group(DjangoGroup):
             ]
         )
 
-    def get_referred_entries(self, entity_name=None):
+    def get_referred_entries(self, entity_name: str | None = None) -> QuerySet:
         # make query to identify AttributeValue that specify this Group instance
         query = Q(
             Q(
