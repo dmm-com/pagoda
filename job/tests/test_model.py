@@ -1,6 +1,6 @@
 import json
+from unittest import mock
 
-import mock
 from django.conf import settings
 
 from airone.celery import app

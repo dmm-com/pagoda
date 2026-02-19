@@ -1,7 +1,7 @@
 import logging
 import re
+from unittest import mock
 
-import mock
 from django.urls import reverse
 
 from acl.models import ACLBase

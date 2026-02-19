@@ -1,6 +1,5 @@
 import json
-
-from mock import mock
+from unittest import mock
 
 from acl.models import ACLBase
 from airone.lib.acl import ACLType
