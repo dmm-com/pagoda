@@ -517,8 +517,9 @@ class EntryCreateSerializer(PluginOverrideMixin, EntryBaseSerializer):
         # for updating its name from attribute values
         entry.save_autoname()
 
+        # Call plugin processing
         entity = validated_data["schema"]
-        self._dispatch_override(DRFRequest(user), "background", entity.id, entity)
+        self._dispatch_override(DRFRequest(user), "background", entity.id, entity, entry)
 
         if custom_view.is_custom("after_create_entry_v2", entity_name):
             custom_view.call_custom("after_create_entry_v2", entity_name, user, entry)
