@@ -341,6 +341,10 @@ class EntityAttrUpdateSerializer(serializers.ModelSerializer):
         return id
 
     def validate_type(self, type: Optional[int]) -> Optional[int]:
+        # FIX ME:Handle special case for ARRAY_NAMED_OBJECT_BOOLEAN
+        # type to maintain backward compatibility
+        if type == AttrType.ARRAY_NAMED_OBJECT_BOOLEAN:
+            type = AttrType.ARRAY_NAMED_OBJECT
         if type is not None and type not in AttrTypeValue.values():
             raise ObjectNotExistsError("attrs type(%s) does not exist" % type)
 
