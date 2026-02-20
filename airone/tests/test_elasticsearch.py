@@ -471,7 +471,6 @@ class ElasticSearchTest(TestCase):
                 "total": {"value": 1},
                 "hits": [
                     {
-                        "_type": "entry",
                         "_id": entry.id,
                         "_source": {
                             "entity": {"id": entry.id, "name": entry.name},
@@ -548,7 +547,6 @@ class ElasticSearchTest(TestCase):
                 "total": {"value": 1},
                 "hits": [
                     {
-                        "_type": "entry",
                         "_id": entry.id,
                         "_source": {
                             "name": entry.name,
@@ -563,7 +561,6 @@ class ElasticSearchTest(TestCase):
                                     "total": 1,
                                     "hits": [
                                         {
-                                            "_type": "entry",
                                             "_id": entry.id,
                                             "_source": {"name": attr.name},
                                         }
@@ -605,7 +602,6 @@ class ElasticSearchTest(TestCase):
                 "total": {"value": len(entries)},
                 "hits": [
                     {
-                        "_type": "entry",
                         "_id": entry.id,
                         "_source": {
                             "entity": {"id": entry.id, "name": entry.name},

@@ -118,24 +118,29 @@ class ESS(Elasticsearch):
     def index(self, *args, **kwargs):
         return super(ESS, self).index(index=self._index, *args, **kwargs)
 
-    def search(self, *args, **kwargs) -> dict[str, Any]:
+    def search(self, **kwargs: Any) -> dict[str, Any]:  # type: ignore[override]
         # expand max_result_window parameter which indicates numbers to return at one searching
         if not self.additional_config:
             self.additional_config = True
 
-            body = {"index": {"max_result_window": settings.ES_CONFIG["MAXIMUM_RESULTS_NUM"]}}
-            self.indices.put_settings(index=self._index, body=body)
+            self.indices.put_settings(
+                index=self._index,
+                settings={
+                    "index": {
+                        "max_result_window": settings.ES_CONFIG["MAXIMUM_RESULTS_NUM"],
+                    }
+                },
+            )
 
         if "size" not in kwargs:
             kwargs["size"] = settings.ES_CONFIG["MAXIMUM_RESULTS_NUM"]
 
-        return super(ESS, self).search(index=self._index, *args, **kwargs)
+        return dict(super(ESS, self).search(index=self._index, **kwargs))
 
     def recreate_index(self) -> None:
-        self.indices.delete(index=self._index, ignore=[400, 404])
+        self.indices.delete(index=self._index, ignore_unavailable=True)
         self.indices.create(
             index=self._index,
-            ignore=400,
             settings={
                 "index": {
                     "mapping": {
@@ -1002,11 +1007,11 @@ def execute_query(
         query = {**query, "sort": [{"name.keyword": "asc"}]}
     kwargs = {
         "size": min(size, 500000) if size else settings.ES_CONFIG["MAXIMUM_RESULTS_NUM"],
-        "from_": offset,
         "body": query,
-        "ignore": [404],
         "track_total_hits": True,
     }
+    if offset is not None:
+        kwargs["from_"] = offset
 
     try:
         res = ESS().search(**kwargs)

@@ -8,6 +8,7 @@ from typing import Any, List, Optional, Type, Union
 from django.conf import settings
 from django.db import models
 from django.db.models import Prefetch, Q, QuerySet
+from elasticsearch import NotFoundError
 from simple_history.models import HistoricalRecords
 
 from acl.models import ACLBase
@@ -2454,8 +2455,11 @@ class Entry(ACLBase):
         if not es:
             es = ESS()
 
-        es.delete(id=self.id, ignore=[404])
-        es.refresh(ignore=[404])
+        try:
+            es.delete(id=self.id)
+        except NotFoundError:
+            pass
+        es.refresh()
 
     def get_value_history(
         self, user: User, count: int = CONFIG.MAX_HISTORY_COUNT, index: int = 0

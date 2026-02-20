@@ -78,7 +78,7 @@ class AironeTestCase(TestCase):
         # Clean up Elasticsearch test index
         if hasattr(self, "_es") and self._es:
             try:
-                self._es.indices.delete(index=self._es._index, ignore=[400, 404])
+                self._es.indices.delete(index=self._es._index, ignore_unavailable=True)
             except Exception as e:
                 # Don't fail the test due to cleanup errors
                 logging.warning(f"Failed to cleanup ES index {self._es._index}: {e}")

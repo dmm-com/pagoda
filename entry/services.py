@@ -2,6 +2,7 @@ from typing import Any
 
 from django.conf import settings
 from django.db.models import Prefetch
+from elasticsearch import NotFoundError
 
 from airone.lib.acl import ACLType
 from airone.lib.elasticsearch import (
@@ -139,9 +140,6 @@ class AdvancedSearchService:
             # sending request to elasticsearch with making query
             resp = execute_query(query, limit, offset)
 
-            if "status" in resp and resp["status"] == 404:
-                continue
-
             tmp_hint_attrs = [attr.model_copy(deep=True) for attr in hint_attrs]
             # Check for has permission to EntityAttr, when is_output_all flag
             if is_output_all:
@@ -229,17 +227,11 @@ class AdvancedSearchService:
 
         resp = execute_query(query, limit)
 
-        if "status" in resp and resp["status"] == 404:
-            return {
-                "ret_count": 0,
-                "ret_values": [],
-            }
-
         return make_search_results_for_simple(resp)
 
     @classmethod
     def get_all_es_docs(kls) -> dict[str, Any]:
-        return ESS().search(body={"query": {"match_all": {}}}, ignore=[404])
+        return ESS().search(body={"query": {"match_all": {}}})
 
     @classmethod
     def update_documents(kls, entity: Entity, is_update: bool = False):
@@ -315,6 +307,9 @@ class AdvancedSearchService:
         for entry_id in set(entry_ids_from_es) - set(entry_ids_from_db):
             if not is_update:
                 Logger.warning("Delete elasticsearch document (entry_id: %s)" % entry.id)
-            es.delete(id=entry_id, ignore=[404])
+            try:
+                es.delete(id=entry_id)
+            except NotFoundError:
+                pass
 
         es.indices.refresh()
