@@ -2,7 +2,13 @@
  * @jest-environment jsdom
  */
 
-import { render, screen, waitFor, fireEvent } from "@testing-library/react";
+import {
+  act,
+  render,
+  screen,
+  waitFor,
+  fireEvent,
+} from "@testing-library/react";
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 
@@ -54,21 +60,20 @@ afterAll(() => server.close());
 
 describe("EntityListPage", () => {
   const renderPage = async () => {
-    render(<EntityListPage />, { wrapper: TestWrapper });
-    await waitFor(() => {
-      expect(screen.queryByTestId("loading")).not.toBeInTheDocument();
+    await act(async () => {
+      render(<EntityListPage />, { wrapper: TestWrapper });
     });
   };
 
   test("should match snapshot", async () => {
-    const result = render(<EntityListPage />, {
-      wrapper: TestWrapper,
-    });
-    await waitFor(() => {
-      expect(screen.queryByTestId("loading")).not.toBeInTheDocument();
+    let result: ReturnType<typeof render>;
+    await act(async () => {
+      result = render(<EntityListPage />, {
+        wrapper: TestWrapper,
+      });
     });
 
-    expect(result).toMatchSnapshot();
+    expect(result!).toMatchSnapshot();
   });
 
   describe("rendering", () => {
@@ -124,10 +129,10 @@ describe("EntityListPage", () => {
   });
 
   describe("loading state", () => {
-    test("should show loading indicator while fetching entities", async () => {
+    test("should show loading indicator while fetching entities", () => {
       server.use(
         http.get("http://localhost/entity/api/v2/", async () => {
-          await new Promise((resolve) => setTimeout(resolve, 100));
+          await new Promise((resolve) => setTimeout(resolve, 500));
           return HttpResponse.json(mockEntities);
         }),
       );
@@ -151,7 +156,9 @@ describe("EntityListPage", () => {
         }),
       );
 
-      await renderPage();
+      await act(async () => {
+        render(<EntityListPage />, { wrapper: TestWrapper });
+      });
 
       expect(screen.queryByText("Entity A")).not.toBeInTheDocument();
     });

@@ -6,11 +6,11 @@ import {
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Box, Container, Typography } from "@mui/material";
 import { useSnackbar } from "notistack";
-import { FC, useCallback, useEffect, useState } from "react";
+import { FC, Suspense, useCallback, useEffect, useState } from "react";
 import { FieldErrors, useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
 
-import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
+import { usePagodaSWR } from "../hooks/usePagodaSWR";
 
 import { AironeBreadcrumbs, AironeLink } from "components";
 import { ACLForm } from "components/acl/ACLForm";
@@ -31,10 +31,9 @@ import {
   topPath,
 } from "routes/Routes";
 
-export const ACLEditPage: FC = () => {
+const ACLEditContent: FC<{ objectId: number }> = ({ objectId }) => {
   const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
-  const { objectId } = useTypedParams<{ objectId: number }>();
   const [entity, setEntity] = useState<EntityDetail>();
   const [entry, setEntry] = useState<EntryRetrieve>();
   const [breadcrumbs, setBreadcrumbs] = useState<JSX.Element>(<Box />);
@@ -55,12 +54,14 @@ export const ACLEditPage: FC = () => {
     "編集した内容は失われてしまいますが、このページを離れてもよろしいですか？",
   );
 
-  const acl = useAsyncWithThrow(async () => {
-    return await aironeApiClient.getAcl(objectId);
-  });
+  const { data: acl } = usePagodaSWR(
+    ["acl", objectId],
+    () => aironeApiClient.getAcl(objectId),
+    { suspense: true },
+  );
 
   const historyReplace = () => {
-    switch (acl.value?.objtype) {
+    switch (acl.objtype) {
       case ACLObjtypeEnum.Category:
         navigate(listCategoryPath(), { replace: true });
         break;
@@ -119,14 +120,13 @@ export const ACLEditPage: FC = () => {
 
   /* initialize permissions and isPublic variables from acl parameter */
   useEffect(() => {
-    if (acl.value == null) return;
     reset({
-      isPublic: acl.value.isPublic,
-      defaultPermission: acl.value.defaultPermission,
-      objtype: acl.value.objtype,
-      roles: acl.value.roles,
+      isPublic: acl.isPublic,
+      defaultPermission: acl.defaultPermission,
+      objtype: acl.objtype,
+      roles: acl.roles,
     });
-    switch (acl.value.objtype) {
+    switch (acl.objtype) {
       case ACLObjtypeEnum.Category:
         setBreadcrumbs(
           <AironeBreadcrumbs>
@@ -136,7 +136,7 @@ export const ACLEditPage: FC = () => {
             <Typography component={AironeLink} to={listCategoryPath()}>
               カテゴリ一覧
             </Typography>
-            <Typography color="textPrimary">{acl.value.name}</Typography>
+            <Typography color="textPrimary">{acl.name}</Typography>
             <Typography color="textPrimary">ACL設定</Typography>
           </AironeBreadcrumbs>,
         );
@@ -148,13 +148,13 @@ export const ACLEditPage: FC = () => {
         });
         break;
       case ACLObjtypeEnum.EntityAttr:
-        if (acl.value.parent?.id) {
-          aironeApiClient.getEntity(acl.value.parent?.id).then((resp) => {
+        if (acl.parent?.id) {
+          aironeApiClient.getEntity(acl.parent?.id).then((resp) => {
             setEntity(resp);
             setBreadcrumbs(
               <EntityBreadcrumbs
                 entity={resp}
-                attr={acl.value?.name}
+                attr={acl.name}
                 title="ACL設定"
               />,
             );
@@ -169,7 +169,7 @@ export const ACLEditPage: FC = () => {
         });
         break;
     }
-  }, [acl.value]);
+  }, [acl, reset]);
 
   useEffect(() => {
     if (isSubmitSuccessful) {
@@ -178,10 +178,10 @@ export const ACLEditPage: FC = () => {
   }, [isSubmitSuccessful]);
 
   return (
-    <Box className="container-fluid">
+    <>
       {breadcrumbs}
 
-      <PageHeader title={acl.value?.name ?? ""} description="ACL設定">
+      <PageHeader title={acl.name} description="ACL設定">
         <SubmitButton
           name="保存"
           disabled={isSubmitting || isSubmitSuccessful}
@@ -194,13 +194,25 @@ export const ACLEditPage: FC = () => {
         />
       </PageHeader>
 
-      {acl.loading || isSubmitting ? (
+      {isSubmitting ? (
         <Loading />
       ) : (
         <Container>
           <ACLForm control={control} watch={watch} />
         </Container>
       )}
+    </>
+  );
+};
+
+export const ACLEditPage: FC = () => {
+  const { objectId } = useTypedParams<{ objectId: number }>();
+
+  return (
+    <Box className="container-fluid">
+      <Suspense fallback={<Loading />}>
+        <ACLEditContent objectId={objectId} />
+      </Suspense>
     </Box>
   );
 };

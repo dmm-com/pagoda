@@ -11,9 +11,9 @@ import { SubmitButton } from "components/common/SubmitButton";
 import { EntityBreadcrumbs } from "components/entity/EntityBreadcrumbs";
 import { EntityForm } from "components/entity/EntityForm";
 import { Schema, schema } from "components/entity/entityForm/EntityFormSchema";
-import { useAsyncWithThrow } from "hooks/useAsyncWithThrow";
 import { useFormNotification } from "hooks/useFormNotification";
 import { usePageTitle } from "hooks/usePageTitle";
+import { usePagodaSWR } from "hooks/usePagodaSWR";
 import { usePrompt } from "hooks/usePrompt";
 import { useTypedParams } from "hooks/useTypedParams";
 import { aironeApiClient } from "repository/AironeApiClient";
@@ -52,18 +52,16 @@ export const EntityEditPage: FC = () => {
     "編集した内容は失われてしまいますが、このページを離れてもよろしいですか？",
   );
 
-  const entity = useAsyncWithThrow(async () => {
-    if (entityId !== undefined) {
-      return await aironeApiClient.getEntity(entityId);
-    } else {
-      return undefined;
-    }
-  }, []);
+  const { data: entity, isLoading: entityLoading } = usePagodaSWR(
+    entityId !== undefined ? ["entity", entityId] : null,
+    () => aironeApiClient.getEntity(entityId!),
+  );
 
-  const referralEntities = useAsyncWithThrow(async () => {
-    const entities = await aironeApiClient.getEntities();
-    return entities.results;
-  });
+  const { data: referralEntities, isLoading: referralEntitiesLoading } =
+    usePagodaSWR(["entities"], async () => {
+      const entities = await aironeApiClient.getEntities();
+      return entities.results;
+    });
 
   const handleCancel = () => {
     if (entityId !== undefined) {
@@ -118,7 +116,7 @@ export const EntityEditPage: FC = () => {
       });
 
     const deletedAttrs =
-      entity.value?.attrs
+      entity?.attrs
         .filter(
           (attr) =>
             !entityForm.attrs.some((attrForm) => attrForm.id === attr.id),
@@ -142,7 +140,7 @@ export const EntityEditPage: FC = () => {
       ) ?? [];
 
     const deletedWebhooks =
-      entity.value?.webhooks
+      entity?.webhooks
         .filter(
           (webhook) =>
             !entityForm.webhooks.some(
@@ -195,32 +193,27 @@ export const EntityEditPage: FC = () => {
     }
   };
 
-  usePageTitle(
-    entity.loading || (entityId && entity.loading)
-      ? "読み込み中..."
-      : TITLE_TEMPLATES.entityEdit,
-    {
-      prefix: entity.value?.name ?? (entityId == null ? "新規作成" : undefined),
-    },
-  );
+  usePageTitle(entityLoading ? "読み込み中..." : TITLE_TEMPLATES.entityEdit, {
+    prefix: entity?.name ?? (entityId == null ? "新規作成" : undefined),
+  });
 
   useEffect(() => {
-    if (!entity.loading && entity.value != null) {
+    if (!entityLoading && entity != null) {
       // Convert entity data to form schema format, ensuring defaultValue is included
       const formData: Schema = {
-        name: entity.value.name,
-        note: entity.value.note ?? "",
-        itemNamePattern: entity.value.itemNamePattern ?? "",
-        itemNameType: entity.value.itemNameType ?? "US",
-        isToplevel: entity.value.isToplevel,
-        webhooks: entity.value.webhooks.map((webhook) => ({
+        name: entity.name,
+        note: entity.note ?? "",
+        itemNamePattern: entity.itemNamePattern ?? "",
+        itemNameType: entity.itemNameType ?? "US",
+        isToplevel: entity.isToplevel,
+        webhooks: entity.webhooks.map((webhook) => ({
           ...webhook,
           url: webhook.url ?? "",
           label: webhook.label ?? "",
           isEnabled: webhook.isEnabled ?? false,
           headers: webhook.headers ?? [],
         })),
-        attrs: entity.value.attrs.map((attr) => ({
+        attrs: entity.attrs.map((attr) => ({
           ...attr,
           name: attr.name ?? "",
           note: attr.note ?? "",
@@ -243,7 +236,7 @@ export const EntityEditPage: FC = () => {
 
       reset(formData);
     }
-  }, [entity.loading]);
+  }, [entity, entityLoading, reset]);
 
   useEffect(() => {
     if (isSubmitSuccessful) {
@@ -255,23 +248,23 @@ export const EntityEditPage: FC = () => {
     }
   }, [isSubmitSuccessful]);
 
-  if (entity.loading || referralEntities.loading) {
+  if (entityLoading || referralEntitiesLoading) {
     return <Loading />;
   }
 
   return (
     <Box>
       {entityId ? (
-        <EntityBreadcrumbs entity={entity.value} title="編集" />
+        <EntityBreadcrumbs entity={entity} title="編集" />
       ) : (
         <EntityBreadcrumbs title="作成" />
       )}
 
       <PageHeader
-        title={entity?.value != null ? entity.value.name : "新規モデルの作成"}
-        description={entity?.value && "エンティテイティ詳細 / 編集"}
-        targetId={entity.value?.id}
-        hasOngoingProcess={entity?.value?.hasOngoingChanges}
+        title={entity != null ? entity.name : "新規モデルの作成"}
+        description={entity && "エンティテイティ詳細 / 編集"}
+        targetId={entity?.id}
+        hasOngoingProcess={entity?.hasOngoingChanges}
       >
         <SubmitButton
           name="保存"
@@ -283,7 +276,7 @@ export const EntityEditPage: FC = () => {
       </PageHeader>
 
       <EntityForm
-        referralEntities={referralEntities.value}
+        referralEntities={referralEntities}
         control={control}
         setValue={setValue}
       />

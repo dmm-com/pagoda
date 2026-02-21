@@ -16,7 +16,7 @@ import { CategoryForm } from "./CategoryForm";
 import { Schema, schema } from "./categoryForm/CategoryFormSchema";
 
 import { TestWrapper } from "TestWrapper";
-import * as useAsyncWithThrowModule from "hooks/useAsyncWithThrow";
+import * as usePagodaSWRModule from "hooks/usePagodaSWR";
 import { aironeApiClient } from "repository/AironeApiClient";
 import { ACLType } from "services/ACLUtil";
 
@@ -208,15 +208,16 @@ describe("CategoryForm", () => {
     console.error = jest.fn();
 
     try {
-      // Mock useAsyncWithThrow to return loading state
-      jest
-        .spyOn(useAsyncWithThrowModule, "useAsyncWithThrow")
-        .mockImplementation(() => {
-          return {
-            loading: true,
-            value: undefined,
-          };
-        });
+      // Mock usePagodaSWR to return loading state
+      jest.spyOn(usePagodaSWRModule, "usePagodaSWR").mockImplementation(() => {
+        return {
+          data: undefined,
+          error: undefined,
+          isLoading: true,
+          isValidating: false,
+          mutate: jest.fn(),
+        } as ReturnType<typeof usePagodaSWRModule.usePagodaSWR>;
+      });
 
       // Render form hook
       const { result } = renderHook(() =>

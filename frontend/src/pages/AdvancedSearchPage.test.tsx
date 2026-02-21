@@ -3,10 +3,18 @@
  */
 
 import { PaginatedEntityListList } from "@dmm-com/airone-apiclient-typescript-fetch";
-import { act, fireEvent, render, screen, within } from "@testing-library/react";
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
 import { HttpResponse, http } from "msw";
 import { setupServer } from "msw/node";
 import { BrowserRouter as Router } from "react-router";
+import { SWRConfig } from "swr";
 
 import { AdvancedSearchPage } from "./AdvancedSearchPage";
 
@@ -54,9 +62,11 @@ afterEach(() => server.resetHandlers());
 beforeEach(async () => {
   await act(async () => {
     render(
-      <Router>
-        <AdvancedSearchPage />
-      </Router>,
+      <SWRConfig value={{ provider: () => new Map(), dedupingInterval: 0 }}>
+        <Router>
+          <AdvancedSearchPage />
+        </Router>
+      </SWRConfig>,
     );
   });
 });
@@ -163,6 +173,11 @@ describe("AdvancedSearchPage", () => {
     await act(async () => {
       fireEvent.click(optionsEntity[0]);
       fireEvent.keyDown(elemInputEntity, { key: "Escape" });
+    });
+
+    // Wait for entity attrs to be fetched via SWR
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText("属性を選択")).not.toBeDisabled();
     });
 
     await act(async () => {

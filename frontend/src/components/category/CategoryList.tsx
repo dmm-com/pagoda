@@ -1,15 +1,15 @@
 import AddIcon from "@mui/icons-material/Add";
 import { Box, Button, Container, List, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid2";
-import { FC, useState } from "react";
+import { FC, Suspense } from "react";
 import { Link } from "react-router";
 
 import { CategoryListHeader } from "components/category/CategoryListHeader";
 import { AironeLink, Loading } from "components/common";
 import { PaginationFooter } from "components/common/PaginationFooter";
 import { SearchBox } from "components/common/SearchBox";
-import { useAsyncWithThrow } from "hooks";
 import { usePage } from "hooks/usePage";
+import { usePagodaSWR } from "hooks/usePagodaSWR";
 import { aironeApiClient } from "repository";
 import { entityEntriesPath, newCategoryPath } from "routes/Routes";
 import { EntityListParam } from "services/Constants";
@@ -19,8 +19,7 @@ interface Props {
   isEdit?: boolean;
 }
 
-export const CategoryList: FC<Props> = ({ isEdit = false }) => {
-  const [toggle, setToggle] = useState(false);
+const CategoryListContent: FC<Props> = ({ isEdit = false }) => {
   const { page, query, changeQuery, changePage } = usePage();
 
   // request handler when user specify query
@@ -28,9 +27,11 @@ export const CategoryList: FC<Props> = ({ isEdit = false }) => {
     changeQuery(newQuery ?? "");
   };
 
-  const categories = useAsyncWithThrow(async () => {
-    return await aironeApiClient.getCategories(page, query);
-  }, [page, query, toggle]);
+  const { data: categories, mutate: refreshCategories } = usePagodaSWR(
+    ["categories", page, query],
+    () => aironeApiClient.getCategories(page, query),
+    { suspense: true },
+  );
 
   return (
     <Container>
@@ -62,52 +63,56 @@ export const CategoryList: FC<Props> = ({ isEdit = false }) => {
       </Box>
 
       {/* Context of Category */}
-      {categories.loading ? (
-        <Loading />
-      ) : (
-        <Grid container spacing={3}>
-          {categories.value?.results.map((category) => (
-            <Grid size={4} key={category.id}>
-              <List
-                subheader={
-                  <CategoryListHeader
-                    category={category}
-                    setToggle={() => setToggle(!toggle)}
-                    isEdit={isEdit}
-                  />
-                }
+      <Grid container spacing={3}>
+        {categories.results.map((category) => (
+          <Grid size={4} key={category.id}>
+            <List
+              subheader={
+                <CategoryListHeader
+                  category={category}
+                  setToggle={() => refreshCategories()}
+                  isEdit={isEdit}
+                />
+              }
+            >
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  //overflowY: "scroll",
+                  //maxHeight: 300,
+                  ml: "40px",
+                }}
               >
-                <Box
-                  sx={{
-                    display: "flex",
-                    flexDirection: "column",
-                    //overflowY: "scroll",
-                    //maxHeight: 300,
-                    ml: "40px",
-                  }}
-                >
-                  {category.models.map((models) => (
-                    <Typography
-                      key={models.id}
-                      component={AironeLink}
-                      to={entityEntriesPath(models.id)}
-                      variant="body2"
-                    >
-                      {models.name}
-                    </Typography>
-                  ))}
-                </Box>
-              </List>
-            </Grid>
-          ))}
-        </Grid>
-      )}
+                {category.models.map((models) => (
+                  <Typography
+                    key={models.id}
+                    component={AironeLink}
+                    to={entityEntriesPath(models.id)}
+                    variant="body2"
+                  >
+                    {models.name}
+                  </Typography>
+                ))}
+              </Box>
+            </List>
+          </Grid>
+        ))}
+      </Grid>
       <PaginationFooter
-        count={categories.value?.count ?? 0}
+        count={categories.count ?? 0}
         maxRowCount={EntityListParam.MAX_ROW_COUNT}
         page={page}
         changePage={changePage}
       />
     </Container>
+  );
+};
+
+export const CategoryList: FC<Props> = ({ isEdit = false }) => {
+  return (
+    <Suspense fallback={<Loading />}>
+      <CategoryListContent isEdit={isEdit} />
+    </Suspense>
   );
 };

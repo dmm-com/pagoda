@@ -4,7 +4,6 @@ import { useSnackbar } from "notistack";
 import { FC, useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
-import { useToggle } from "react-use";
 
 import { AironeLink } from "components";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
@@ -14,9 +13,9 @@ import { PageHeader } from "components/common/PageHeader";
 import { UserForm } from "components/user/UserForm";
 import { UserPasswordFormModal } from "components/user/UserPasswordFormModal";
 import { schema, Schema } from "components/user/userForm/UserFormSchema";
-import { useAsyncWithThrow } from "hooks/useAsyncWithThrow";
 import { useFormNotification } from "hooks/useFormNotification";
 import { usePageTitle } from "hooks/usePageTitle";
+import { usePagodaSWR } from "hooks/usePagodaSWR";
 import { usePrompt } from "hooks/usePrompt";
 import { useTypedParams } from "hooks/useTypedParams";
 import { aironeApiClient } from "repository/AironeApiClient";
@@ -35,8 +34,6 @@ export const UserEditPage: FC = () => {
   const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
   const { enqueueSubmitResult } = useFormNotification("ユーザ", willCreate);
-  const [shouldRefresh, toggleShouldRefresh] = useToggle(false);
-
   const {
     formState: { isValid, isDirty, isSubmitting, isSubmitSuccessful },
     handleSubmit,
@@ -53,29 +50,31 @@ export const UserEditPage: FC = () => {
     "編集した内容は失われてしまいますが、このページを離れてもよろしいですか？",
   );
 
-  const user = useAsyncWithThrow(async () => {
-    if (userId) {
-      return await aironeApiClient.getUser(userId);
-    }
-  }, [userId, shouldRefresh]);
+  const {
+    data: user,
+    isLoading: userLoading,
+    mutate: refreshUser,
+  } = usePagodaSWR(userId ? ["user", userId] : null, () =>
+    aironeApiClient.getUser(userId!),
+  );
 
   useEffect(() => {
-    if (!user.loading && user.value) {
+    if (!userLoading && user) {
       reset({
-        username: user.value.username,
-        email: user.value.email,
-        isSuperuser: user.value.isSuperuser,
-        tokenLifetime: user.value.token?.lifetime ?? 0,
+        username: user.username,
+        email: user.email,
+        isSuperuser: user.isSuperuser,
+        tokenLifetime: user.token?.lifetime ?? 0,
       });
     }
-  }, [user.value]);
+  }, [user, userLoading, reset]);
 
   useEffect(() => {
     isSubmitSuccessful && navigate(usersPath());
   }, [isSubmitSuccessful]);
 
-  usePageTitle(user.loading ? "読み込み中..." : TITLE_TEMPLATES.userEdit, {
-    prefix: user.value?.username ?? (willCreate ? "新規作成" : undefined),
+  usePageTitle(userLoading ? "読み込み中..." : TITLE_TEMPLATES.userEdit, {
+    prefix: user?.username ?? (willCreate ? "新規作成" : undefined),
   });
 
   // These state variables and handlers are used for password reset feature
@@ -88,19 +87,19 @@ export const UserEditPage: FC = () => {
   };
 
   const isCreateMode = useMemo(() => {
-    return user.value?.id == null;
-  }, [user.value]);
+    return user?.id == null;
+  }, [user]);
 
   const [isSuperuser, isMyself] = useMemo(() => {
     const serverContext = ServerContext.getInstance();
     return [
       serverContext?.user?.isSuperuser != null &&
         serverContext.user.isSuperuser,
-      user.value?.id != null &&
+      user?.id != null &&
         serverContext?.user?.id != null &&
-        user.value.id === serverContext.user.id,
+        user.id === serverContext.user.id,
     ];
-  }, [user.loading]);
+  }, [userLoading]);
 
   const handleSubmitOnValid = async (user: Schema) => {
     try {
@@ -144,7 +143,7 @@ export const UserEditPage: FC = () => {
   const handleRefreshToken = async () => {
     try {
       await aironeApiClient.updateUserToken();
-      toggleShouldRefresh();
+      refreshUser();
     } catch (e) {
       if (e instanceof Response) {
         const json = await e.json();
@@ -172,8 +171,8 @@ export const UserEditPage: FC = () => {
         <Typography color="textPrimary">ユーザ情報の設定</Typography>
       </AironeBreadcrumbs>
       <PageHeader
-        title={user.value != null ? user.value.username : "新規ユーザの作成"}
-        description={user.value != null ? "ユーザ編集" : undefined}
+        title={user != null ? user.username : "新規ユーザの作成"}
+        description={user != null ? "ユーザ編集" : undefined}
       >
         <Box display="flex" justifyContent="center">
           <Box mx="4px">
@@ -186,7 +185,7 @@ export const UserEditPage: FC = () => {
               パスワードの再設定
             </Button>
             <UserPasswordFormModal
-              userId={user.value?.id ?? 0}
+              userId={user?.id ?? 0}
               openModal={openModal}
               onClose={handleCloseModal}
               onSubmitSuccess={() => {
@@ -194,7 +193,7 @@ export const UserEditPage: FC = () => {
                   variant: "success",
                 });
 
-                if (user.value?.id === ServerContext.getInstance()?.user?.id) {
+                if (user?.id === ServerContext.getInstance()?.user?.id) {
                   navigate(loginPath(), { replace: true });
                 } else {
                   navigate(usersPath(), { replace: true });
@@ -221,12 +220,12 @@ export const UserEditPage: FC = () => {
         </Box>
       </PageHeader>
 
-      {user.loading ? (
+      {userLoading ? (
         <Loading />
       ) : (
         <Container>
           <UserForm
-            user={user.value}
+            user={user}
             control={control}
             isCreateMode={isCreateMode}
             isSuperuser={isSuperuser}

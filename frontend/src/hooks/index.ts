@@ -1,4 +1,4 @@
-export * from "./useAsyncWithThrow";
+export * from "./usePagodaSWR";
 export * from "./useFormNotification";
 export * from "./usePage";
 export * from "./usePageTitle";

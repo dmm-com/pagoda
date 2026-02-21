@@ -8,8 +8,8 @@ import { AdvancedSearchEditModal } from "./AdvancedSearchEditModal";
 
 import { TestWrapper } from "TestWrapper";
 
-jest.mock("hooks/useAsyncWithThrow", () => ({
-  useAsyncWithThrow: () => ({ value: ["attrA", "attrB", "attrC"] }),
+jest.mock("hooks/usePagodaSWR", () => ({
+  usePagodaSWR: () => ({ data: ["attrA", "attrB", "attrC"] }),
 }));
 jest.mock("react-router", () => ({
   ...jest.requireActual("react-router"),

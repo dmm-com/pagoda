@@ -1,9 +1,10 @@
 import { Box, Container } from "@mui/material";
 import { useSnackbar } from "notistack";
-import { FC, useEffect, useState } from "react";
+import { FC, Suspense, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
+import { preload } from "swr";
 
-import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
+import { usePagodaSWR, wrapFetcher } from "../hooks/usePagodaSWR";
 import { useTypedParams } from "../hooks/useTypedParams";
 
 import { Loading } from "components/common/Loading";
@@ -22,7 +23,7 @@ interface Props {
   CopyForm?: FC<CopyFormProps>;
 }
 
-export const EntryCopyPage: FC<Props> = ({ CopyForm = DefaultCopyForm }) => {
+const EntryCopyContent: FC<Props> = ({ CopyForm = DefaultCopyForm }) => {
   const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
   const { entityId, entryId } = useTypedParams<{
@@ -47,17 +48,17 @@ export const EntryCopyPage: FC<Props> = ({ CopyForm = DefaultCopyForm }) => {
     }
   }, [submitted]);
 
-  const entity = useAsyncWithThrow(async () => {
-    return await aironeApiClient.getEntity(entityId);
-  }, [entityId]);
+  const { data: entity } = usePagodaSWR(
+    ["entity", entityId],
+    () => aironeApiClient.getEntity(entityId),
+    { suspense: true },
+  );
 
-  const entry = useAsyncWithThrow(async () => {
-    return await aironeApiClient.getEntry(entryId);
-  }, [entryId]);
-
-  if (entry.loading || entity.loading) {
-    return <Loading />;
-  }
+  const { data: entry } = usePagodaSWR(
+    ["entry", entryId],
+    () => aironeApiClient.getEntry(entryId),
+    { suspense: true },
+  );
 
   const setEntries = (entries: string) => {
     setEdited(true);
@@ -88,20 +89,16 @@ export const EntryCopyPage: FC<Props> = ({ CopyForm = DefaultCopyForm }) => {
   };
 
   const handleCancel = () => {
-    navigate(
-      entryDetailsPath(entry.value?.schema?.id ?? 0, entry.value?.id ?? 0),
-      { replace: true },
-    );
+    navigate(entryDetailsPath(entry.schema?.id ?? 0, entry.id), {
+      replace: true,
+    });
   };
 
   return (
-    <Box>
-      <EntryBreadcrumbs entry={entry.value} title="コピー" />
+    <>
+      <EntryBreadcrumbs entry={entry} title="コピー" />
 
-      <PageHeader
-        title={entry.value?.name ?? ""}
-        description="アイテムのコピーを作成"
-      >
+      <PageHeader title={entry.name ?? ""} description="アイテムのコピーを作成">
         <SubmitButton
           name="コピーを作成"
           disabled={!entries || submitting || submitted}
@@ -112,20 +109,42 @@ export const EntryCopyPage: FC<Props> = ({ CopyForm = DefaultCopyForm }) => {
       </PageHeader>
 
       <Container>
-        {entity.value?.itemNameType == "US" ? (
-          entry.value && (
-            <CopyForm
-              entries={entries}
-              setEntries={setEntries}
-              templateEntry={entry.value}
-            />
-          )
+        {entity.itemNameType == "US" ? (
+          <CopyForm
+            entries={entries}
+            setEntries={setEntries}
+            templateEntry={entry}
+          />
         ) : (
           <Box>
             アイテム名の登録方法が「利用者が手動で設定」以外の場合はコピーできません
           </Box>
         )}
       </Container>
+    </>
+  );
+};
+
+export const EntryCopyPage: FC<Props> = ({ CopyForm = DefaultCopyForm }) => {
+  const { entityId, entryId } = useTypedParams<{
+    entityId: number;
+    entryId: number;
+  }>();
+
+  preload(
+    ["entity", entityId],
+    wrapFetcher(() => aironeApiClient.getEntity(entityId)),
+  );
+  preload(
+    ["entry", entryId],
+    wrapFetcher(() => aironeApiClient.getEntry(entryId)),
+  );
+
+  return (
+    <Box>
+      <Suspense fallback={<Loading />}>
+        <EntryCopyContent CopyForm={CopyForm} />
+      </Suspense>
     </Box>
   );
 };

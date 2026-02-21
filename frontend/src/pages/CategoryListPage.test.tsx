@@ -2,7 +2,7 @@
  * @jest-environment jsdom
  */
 
-import { render, screen, waitFor } from "@testing-library/react";
+import { act, render, screen } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import { createMemoryRouter, RouterProvider } from "react-router";
@@ -61,21 +61,21 @@ describe("CategoryListPage", () => {
     );
 
     // Render component
-    render(
-      <TestWrapperWithoutRoutes>
-        <RouterProvider router={router} />
-      </TestWrapperWithoutRoutes>,
-    );
+    await act(async () => {
+      render(
+        <TestWrapperWithoutRoutes>
+          <RouterProvider router={router} />
+        </TestWrapperWithoutRoutes>,
+      );
+    });
 
     // Verify that the category list title is displayed (with specific element)
     expect(
       screen.getByRole("heading", { name: "カテゴリ一覧" }),
     ).toBeInTheDocument();
 
-    // Wait for categories to be displayed
-    await waitFor(() => {
-      expect(screen.getByText("category1")).toBeInTheDocument();
-      expect(screen.getByText("category2")).toBeInTheDocument();
-    });
+    // Verify categories are displayed
+    expect(screen.getByText("category1")).toBeInTheDocument();
+    expect(screen.getByText("category2")).toBeInTheDocument();
   });
 });

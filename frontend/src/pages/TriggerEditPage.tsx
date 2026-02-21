@@ -29,8 +29,8 @@ import { SubmitButton } from "components/common/SubmitButton";
 import { Actions } from "components/trigger/Actions";
 import { Conditions } from "components/trigger/Conditions";
 import { Schema, schema } from "components/trigger/TriggerFormSchema";
-import { useAsyncWithThrow } from "hooks/useAsyncWithThrow";
 import { useFormNotification } from "hooks/useFormNotification";
+import { usePagodaSWR } from "hooks/usePagodaSWR";
 import { usePrompt } from "hooks/usePrompt";
 import { useTypedParams } from "hooks/useTypedParams";
 import { aironeApiClient } from "repository/AironeApiClient";
@@ -73,14 +73,10 @@ export const TriggerEditPage: FC = () => {
   const navigate = useNavigate();
   const { enqueueSubmitResult } = useFormNotification("トリガー", willCreate);
 
-  const actionTrigger = useAsyncWithThrow(async () => {
-    if (triggerId !== undefined) {
-      // set valid for actionTrigger context when opening edit page
-      return await aironeApiClient.getTrigger(triggerId);
-    } else {
-      return undefined;
-    }
-  }, []);
+  const { data: actionTrigger } = usePagodaSWR(
+    triggerId !== undefined ? ["trigger", triggerId] : null,
+    () => aironeApiClient.getTrigger(triggerId!),
+  );
 
   const {
     formState: { isDirty, isValid, isSubmitting, isSubmitSuccessful },
@@ -104,19 +100,19 @@ export const TriggerEditPage: FC = () => {
     "編集した内容は失われてしまいますが、このページを離れてもよろしいですか？",
   );
 
-  const entities = useAsyncWithThrow(async () => {
-    const entities = await aironeApiClient.getEntities();
-    return entities.results;
-  });
+  const { data: entities, isLoading: entitiesLoading } = usePagodaSWR(
+    ["entities"],
+    async () => {
+      const resp = await aironeApiClient.getEntities();
+      return resp.results;
+    },
+  );
 
   const [entityId, setEntityId] = useState<number>();
-  const entity = useAsyncWithThrow(async () => {
-    if (entityId) {
-      return await aironeApiClient.getEntity(entityId);
-    } else {
-      return undefined;
-    }
-  }, [entityId]);
+  const { data: entity } = usePagodaSWR(
+    entityId ? ["entity", entityId] : null,
+    () => aironeApiClient.getEntity(entityId!),
+  );
 
   // --- Added: helper type to include isUnmatch (and hint) in outgoing conditions ---
   type TriggerConditionUpdate = {
@@ -129,15 +125,13 @@ export const TriggerEditPage: FC = () => {
   const convertConditions2ServerFormat = (
     trigger: Schema,
   ): TriggerConditionUpdate[] => {
-    if (!entity.value) {
+    if (!entity) {
       return [];
     }
 
     return trigger.conditions.flatMap(
       (cond): TriggerConditionUpdate | TriggerConditionUpdate[] => {
-        const attrInfo = entity.value?.attrs.find(
-          (attr) => attr.id === cond.attr.id,
-        );
+        const attrInfo = entity?.attrs.find((attr) => attr.id === cond.attr.id);
 
         const base = {
           attrId: cond.attr.id,
@@ -179,14 +173,12 @@ export const TriggerEditPage: FC = () => {
   const convertActions2ServerFormat = (
     trigger: Schema,
   ): TriggerActionUpdate[] => {
-    if (!entity.value) {
+    if (!entity) {
       return [];
     }
 
     return trigger.actions.flatMap((action): TriggerActionUpdate[] => {
-      const attrInfo = entity.value?.attrs.find(
-        (attr) => attr.id === action.attr.id,
-      );
+      const attrInfo = entity?.attrs.find((attr) => attr.id === action.attr.id);
 
       switch (attrInfo?.type) {
         case EntryAttributeTypeTypeEnum.STRING:
@@ -281,24 +273,24 @@ export const TriggerEditPage: FC = () => {
   };
 
   useEffect(() => {
-    if (!actionTrigger.loading && actionTrigger.value != null) {
+    if (actionTrigger != null) {
       // set defult value to React-hook-form
-      reset(actionTrigger.value);
+      reset(actionTrigger);
 
-      setEntityId(actionTrigger.value.entity.id);
+      setEntityId(actionTrigger.entity.id);
 
       trigger();
     }
-  }, [actionTrigger.loading]);
+  }, [actionTrigger]);
 
   useEffect(() => {
-    if (entity.value && entity.value.id !== 0) {
+    if (entity && entity.id !== 0) {
       setValue(
         `entity`,
         {
-          id: entity.value.id,
-          name: entity.value.name,
-          permission: entity.value.permission,
+          id: entity.id,
+          name: entity.name,
+          permission: entity.permission,
         },
         {
           shouldValidate: true,
@@ -306,7 +298,7 @@ export const TriggerEditPage: FC = () => {
       );
     }
     trigger();
-  }, [entity.loading]);
+  }, [entity]);
 
   useEffect(() => {
     if (isSubmitSuccessful) {
@@ -329,10 +321,8 @@ export const TriggerEditPage: FC = () => {
       </AironeBreadcrumbs>
 
       <PageHeader
-        title={
-          triggerId && entity.value ? entity.value.name : "新規トリガーの作成"
-        }
-        description={triggerId ? entity.value && "トリガー編集" : ""}
+        title={triggerId && entity ? entity.name : "新規トリガーの作成"}
+        description={triggerId ? entity && "トリガー編集" : ""}
       >
         <SubmitButton
           name="保存"
@@ -353,12 +343,12 @@ export const TriggerEditPage: FC = () => {
             render={({ field }) => (
               <Autocomplete
                 value={field.value ?? null}
-                options={entities.value ?? []}
+                options={entities ?? []}
                 getOptionLabel={(option: { id: number; name: string }) =>
                   option.name
                 }
                 isOptionEqualToValue={(option, value) => option.id === value.id}
-                disabled={entities.loading}
+                disabled={entitiesLoading}
                 onChange={(_, value: { id: number; name: string } | null) => {
                   if (value && value.id != entityId) {
                     // set EntityId to state variable
@@ -387,7 +377,7 @@ export const TriggerEditPage: FC = () => {
         </StyledFlexColumnBox>
 
         {/* Trigger configuration forms should be shown after target entity is defined */}
-        {entity.value && (
+        {entity && (
           <>
             <StyledFlexColumnBox>
               <Typography variant="h4" align="center" my="32px">
@@ -404,9 +394,7 @@ export const TriggerEditPage: FC = () => {
                   </HeaderTableRow>
                 </TableHead>
                 <StyledTableBody>
-                  {entity.value && (
-                    <Conditions control={control} entity={entity.value} />
-                  )}
+                  {entity && <Conditions control={control} entity={entity} />}
                 </StyledTableBody>
               </Table>
             </StyledFlexColumnBox>
@@ -425,9 +413,7 @@ export const TriggerEditPage: FC = () => {
                   </HeaderTableRow>
                 </TableHead>
                 <StyledTableBody>
-                  {entity.value && (
-                    <Actions control={control} entity={entity.value} />
-                  )}
+                  {entity && <Actions control={control} entity={entity} />}
                 </StyledTableBody>
               </Table>
             </StyledFlexColumnBox>

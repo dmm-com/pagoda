@@ -10,9 +10,9 @@ import { PageHeader } from "components/common/PageHeader";
 import { SubmitButton } from "components/common/SubmitButton";
 import { GroupForm } from "components/group/GroupForm";
 import { schema, Schema } from "components/group/groupForm/GroupFormSchema";
-import { useAsyncWithThrow } from "hooks/useAsyncWithThrow";
 import { useFormNotification } from "hooks/useFormNotification";
 import { usePageTitle } from "hooks/usePageTitle";
+import { usePagodaSWR } from "hooks/usePagodaSWR";
 import { usePrompt } from "hooks/usePrompt";
 import { useTypedParams } from "hooks/useTypedParams";
 import { aironeApiClient } from "repository/AironeApiClient";
@@ -51,15 +51,14 @@ export const GroupEditPage: FC = () => {
     "編集した内容は失われてしまいますが、このページを離れてもよろしいですか？",
   );
 
-  const group = useAsyncWithThrow(async () => {
-    return groupId != null
-      ? await aironeApiClient.getGroup(groupId)
-      : undefined;
-  }, [groupId]);
+  const { data: group, isLoading: groupLoading } = usePagodaSWR(
+    groupId != null ? ["group", groupId] : null,
+    () => aironeApiClient.getGroup(groupId!),
+  );
 
   useEffect(() => {
-    !group.loading && group.value != null && reset(group.value);
-  }, [group.value]);
+    !groupLoading && group != null && reset(group);
+  }, [group, groupLoading, reset]);
 
   const handleSubmitOnValid = async (group: Schema) => {
     try {
@@ -95,8 +94,8 @@ export const GroupEditPage: FC = () => {
     isSubmitSuccessful && navigate(groupsPath(), { replace: true });
   }, [isSubmitSuccessful]);
 
-  usePageTitle(group.loading ? "読み込み中..." : TITLE_TEMPLATES.groupEdit, {
-    prefix: group.value?.name ?? (willCreate ? "新規作成" : undefined),
+  usePageTitle(groupLoading ? "読み込み中..." : TITLE_TEMPLATES.groupEdit, {
+    prefix: group?.name ?? (willCreate ? "新規作成" : undefined),
   });
 
   const handleCancel = async () => {
@@ -107,7 +106,7 @@ export const GroupEditPage: FC = () => {
     throw new ForbiddenError("only admin can edit a group");
   }
 
-  const pageTitle = group.value?.name ?? "新規グループの作成";
+  const pageTitle = group?.name ?? "新規グループの作成";
   const pageDescription = willCreate ? undefined : "グループ編集";
 
   return (

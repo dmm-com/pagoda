@@ -241,7 +241,7 @@ describe("EntryList", () => {
       .spyOn(console, "error")
       .mockImplementation(() => {});
 
-    // Expect the component to throw due to useAsyncWithThrow
+    // Expect the component to throw due to usePagodaSWR
     await expect(async () => {
       await act(async () => {
         render(<EntryList entityId={1} />, {

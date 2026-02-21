@@ -18,7 +18,7 @@ import { Link } from "react-router";
 
 import { AutocompleteWithAllSelector } from "../components/common/AutocompleteWithAllSelector";
 import { PageHeader } from "../components/common/PageHeader";
-import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
+import { usePagodaSWR } from "../hooks/usePagodaSWR";
 import { aironeApiClient } from "../repository/AironeApiClient";
 import { formatAdvancedSearchParams } from "../services/entry/AdvancedSearch";
 
@@ -52,20 +52,21 @@ export const AdvancedSearchPage: FC = () => {
   const [entityName, setEntityName] = useState("");
   const [attrName, setAttrName] = useState("");
 
-  const entities = useAsyncWithThrow(async () => {
-    const entities = await aironeApiClient.getEntities();
-    return entities.results;
-  });
+  const { data: entities, isLoading: entitiesLoading } = usePagodaSWR(
+    ["entities"],
+    async () => {
+      const entities = await aironeApiClient.getEntities();
+      return entities.results;
+    },
+  );
 
-  const attrs = useAsyncWithThrow(async () => {
-    if (selectedEntities.length > 0 || searchAllEntities) {
-      return await aironeApiClient.getEntityAttrs(
-        selectedEntities.map((e) => e.id),
-        searchAllEntities,
-      );
-    }
-    return [];
-  }, [selectedEntities, searchAllEntities]);
+  const entityIds = selectedEntities.map((e) => e.id);
+  const { data: attrs, isLoading: attrsLoading } = usePagodaSWR(
+    selectedEntities.length > 0 || searchAllEntities
+      ? ["entityAttrs", entityIds, searchAllEntities]
+      : null,
+    () => aironeApiClient.getEntityAttrs(entityIds, searchAllEntities),
+  );
 
   const searchParams = useMemo(() => {
     return formatAdvancedSearchParams({
@@ -136,11 +137,11 @@ export const AdvancedSearchPage: FC = () => {
           <StyledTypography variant="h4">検索対象のモデル</StyledTypography>
 
           <Autocomplete
-            options={entities.value ?? []}
+            options={entities ?? []}
             getOptionLabel={(option: EntityList) => option.name}
             value={selectedEntities}
             inputValue={entityName}
-            disabled={entities.loading}
+            disabled={entitiesLoading}
             onChange={(_, value: Array<EntityList>) =>
               setSelectedEntities(value)
             }
@@ -170,10 +171,10 @@ export const AdvancedSearchPage: FC = () => {
 
           <AutocompleteWithAllSelector
             selectAllLabel="すべて選択"
-            options={Array.from(new Set(attrs.value?.map((x) => x.name) ?? []))}
+            options={Array.from(new Set(attrs?.map((x) => x.name) ?? []))}
             value={selectedAttrs}
             inputValue={attrName}
-            disabled={attrs.loading}
+            disabled={attrsLoading}
             onChange={(_, value: Array<string>) => setSelectedAttrs(value)}
             onInputChange={handleChangeInputAttrName}
             renderInput={(params) => (

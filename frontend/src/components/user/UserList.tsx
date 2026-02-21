@@ -13,7 +13,7 @@ import {
 import Grid from "@mui/material/Grid2";
 import { styled } from "@mui/material/styles";
 import { useSnackbar } from "notistack";
-import { FC, KeyboardEvent, useMemo, useState } from "react";
+import { FC, KeyboardEvent, Suspense, useMemo, useState } from "react";
 import { Link } from "react-router";
 
 import { UserControlMenu } from "./UserControlMenu";
@@ -23,8 +23,8 @@ import { ClipboardCopyButton } from "components/common/ClipboardCopyButton";
 import { Loading } from "components/common/Loading";
 import { PaginationFooter } from "components/common/PaginationFooter";
 import { SearchBox } from "components/common/SearchBox";
-import { useAsyncWithThrow } from "hooks/useAsyncWithThrow";
 import { usePage } from "hooks/usePage";
+import { usePagodaSWR } from "hooks/usePagodaSWR";
 import { aironeApiClient } from "repository/AironeApiClient";
 import { newUserPath, userPath } from "routes/Routes";
 import { UserListParam } from "services/Constants";
@@ -47,16 +47,16 @@ const UserName = styled(Typography)(({}) => ({
   whiteSpace: "nowrap",
 }));
 
-export const UserList: FC = () => {
+const UserListContent: FC = () => {
   const { page, query, changePage, changeQuery } = usePage();
   const [userAnchorEls, setUserAnchorEls] = useState<{
     [key: number]: HTMLButtonElement | null;
   }>({});
-  const [toggle, setToggle] = useState(false);
-
-  const users = useAsyncWithThrow(async () => {
-    return await aironeApiClient.getUsers(page, query);
-  }, [page, query, toggle]);
+  const { data: users, mutate: refreshUsers } = usePagodaSWR(
+    ["users", page, query],
+    () => aironeApiClient.getUsers(page, query),
+    { suspense: true },
+  );
 
   const serverContext = useMemo(() => ServerContext.getInstance(), []);
   const currentUsername = useMemo(
@@ -70,7 +70,6 @@ export const UserList: FC = () => {
 
   const handleChangeQuery = changeQuery;
 
-  // 新規追加: パスワードモーダル制御用
   const [passwordModalUserId, setPasswordModalUserId] = useState<number | null>(
     null,
   );
@@ -111,74 +110,67 @@ export const UserList: FC = () => {
         </Button>
       </Box>
 
-      {users.loading ? (
-        <Loading />
-      ) : (
-        <Grid container spacing={2} id="user_list">
-          {users.value?.results?.map((user) => {
-            const isCurrentUser = user.username === currentUsername;
-            const isLinkVisible = isSuperuser || isCurrentUser;
-            const isMenuVisible = isSuperuser || isCurrentUser;
+      <Grid container spacing={2} id="user_list">
+        {users.results?.map((user) => {
+          const isCurrentUser = user.username === currentUsername;
+          const isLinkVisible = isSuperuser || isCurrentUser;
+          const isMenuVisible = isSuperuser || isCurrentUser;
 
-            return (
-              <Grid size={4} key={user.id}>
-                <Card sx={{ height: "100%" }}>
-                  <StyledCardHeader
-                    title={
-                      isLinkVisible ? (
-                        <CardActionArea component={Link} to={userPath(user.id)}>
-                          <Tooltip
-                            title={user.username}
-                            placement="bottom-start"
-                          >
-                            <UserName>{user.username}</UserName>
-                          </Tooltip>
-                        </CardActionArea>
-                      ) : (
+          return (
+            <Grid size={4} key={user.id}>
+              <Card sx={{ height: "100%" }}>
+                <StyledCardHeader
+                  title={
+                    isLinkVisible ? (
+                      <CardActionArea component={Link} to={userPath(user.id)}>
                         <Tooltip title={user.username} placement="bottom-start">
                           <UserName>{user.username}</UserName>
                         </Tooltip>
-                      )
-                    }
-                    action={
-                      <>
-                        <ClipboardCopyButton name={user.username} />
-                        {isMenuVisible && (
-                          <>
-                            <IconButton
-                              onClick={(e) => {
-                                setUserAnchorEls({
-                                  ...userAnchorEls,
-                                  [user.id]: e.currentTarget,
-                                });
-                              }}
-                            >
-                              <MoreVertIcon fontSize="small" />
-                            </IconButton>
-                            <UserControlMenu
-                              user={user}
-                              isSelf={isCurrentUser}
-                              anchorElem={userAnchorEls[user.id]}
-                              handleClose={(userId: number) =>
-                                setUserAnchorEls({
-                                  ...userAnchorEls,
-                                  [userId]: null,
-                                })
-                              }
-                              onClickEditPassword={handleOpenPasswordModal}
-                              setToggle={() => setToggle(!toggle)}
-                            />
-                          </>
-                        )}
-                      </>
-                    }
-                  />
-                </Card>
-              </Grid>
-            );
-          })}
-        </Grid>
-      )}
+                      </CardActionArea>
+                    ) : (
+                      <Tooltip title={user.username} placement="bottom-start">
+                        <UserName>{user.username}</UserName>
+                      </Tooltip>
+                    )
+                  }
+                  action={
+                    <>
+                      <ClipboardCopyButton name={user.username} />
+                      {isMenuVisible && (
+                        <>
+                          <IconButton
+                            onClick={(e) => {
+                              setUserAnchorEls({
+                                ...userAnchorEls,
+                                [user.id]: e.currentTarget,
+                              });
+                            }}
+                          >
+                            <MoreVertIcon fontSize="small" />
+                          </IconButton>
+                          <UserControlMenu
+                            user={user}
+                            isSelf={isCurrentUser}
+                            anchorElem={userAnchorEls[user.id]}
+                            handleClose={(userId: number) =>
+                              setUserAnchorEls({
+                                ...userAnchorEls,
+                                [userId]: null,
+                              })
+                            }
+                            onClickEditPassword={handleOpenPasswordModal}
+                            setToggle={() => refreshUsers()}
+                          />
+                        </>
+                      )}
+                    </>
+                  }
+                />
+              </Card>
+            </Grid>
+          );
+        })}
+      </Grid>
       {passwordModalUserId !== null && (
         <UserPasswordFormModal
           userId={passwordModalUserId}
@@ -189,16 +181,24 @@ export const UserList: FC = () => {
               variant: "success",
             });
             handleClosePasswordModal();
-            setToggle(!toggle);
+            refreshUsers();
           }}
         />
       )}
       <PaginationFooter
-        count={users.value?.count ?? 0}
+        count={users.count ?? 0}
         maxRowCount={UserListParam.MAX_ROW_COUNT}
         page={page}
         changePage={changePage}
       />
     </Box>
+  );
+};
+
+export const UserList: FC = () => {
+  return (
+    <Suspense fallback={<Loading />}>
+      <UserListContent />
+    </Suspense>
   );
 };

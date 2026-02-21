@@ -22,7 +22,7 @@ import { useSnackbar } from "notistack";
 import { FC, useEffect, useMemo, useRef, useState } from "react";
 import { useLocation } from "react-router";
 
-import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
+import { usePagodaSWR } from "../hooks/usePagodaSWR";
 
 import { AironeLink } from "components";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
@@ -162,9 +162,10 @@ export const AdvancedSearchResultsPage: FC = () => {
       totalCount: 0,
     });
 
-  const entityAttrs = useAsyncWithThrow(async () => {
-    return await aironeApiClient.getEntityAttrs(entityIds, searchAllEntities);
-  });
+  const { data: entityAttrs, isLoading: entityAttrsLoading } = usePagodaSWR(
+    ["entityAttrs", entityIds, searchAllEntities],
+    () => aironeApiClient.getEntityAttrs(entityIds, searchAllEntities),
+  );
 
   useEffect(() => {
     const myId = ++requestIdRef.current;
@@ -298,7 +299,7 @@ export const AdvancedSearchResultsPage: FC = () => {
             variant="contained"
             color="info"
             startIcon={<SettingsIcon />}
-            disabled={entityAttrs.loading}
+            disabled={entityAttrsLoading}
             onClick={() => {
               setOpenModal(true);
             }}
@@ -424,7 +425,7 @@ export const AdvancedSearchResultsPage: FC = () => {
             searchAllEntities={searchAllEntities}
             joinAttrs={joinAttrs}
             disablePaginationFooter={joinAttrs.length > 0}
-            entityAttrs={entityAttrs.value ?? []}
+            entityAttrs={entityAttrs ?? []}
           />
 
           {/* show button to show continuous search results manually when joinAttrs are specified */}
@@ -454,9 +455,7 @@ export const AdvancedSearchResultsPage: FC = () => {
       <AdvancedSearchModal
         openModal={openModal}
         setOpenModal={setOpenModal}
-        attrNames={Array.from(
-          new Set(entityAttrs.value?.map((x) => x.name) ?? []),
-        )}
+        attrNames={Array.from(new Set(entityAttrs?.map((x) => x.name) ?? []))}
         initialAttrNames={attrInfo.map(
           (e: AdvancedSearchResultAttrInfo) => e.name,
         )}
