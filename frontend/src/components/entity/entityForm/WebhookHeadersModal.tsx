@@ -46,27 +46,25 @@ export const WebhookHeadersModal: FC<Props> = ({
 
   // NOTE initialize headers values manually with useWatch()
   // the useFieldArray() call in this component cannot resolve the initial value, so it does such thing...
-  (() => {
-    const [initialized, setInitialized] = useState(false);
+  const [initialized, setInitialized] = useState(false);
 
-    const headers = useWatch({
-      control,
-      name: `webhooks.${webhookIndex}.headers`,
-    });
+  const headers = useWatch({
+    control,
+    name: `webhooks.${webhookIndex}.headers`,
+  });
 
-    useEffect(() => {
-      // get only valid headers. useWatch will get incomplete values.
-      if (!initialized && Array.isArray(headers)) {
-        replace(headers);
-        setInitialized(true);
-      }
-    }, [headers]);
+  useEffect(() => {
+    // get only valid headers. useWatch will get incomplete values.
+    if (!initialized && Array.isArray(headers)) {
+      replace(headers);
+      setInitialized(true);
+    }
+  }, [headers, initialized, replace]);
 
-    // enable to re-initialize on changing a webhook
-    useEffect(() => {
-      setInitialized(false);
-    }, [webhookIndex]);
-  })();
+  // enable to re-initialize on changing a webhook
+  useEffect(() => {
+    setInitialized(false);
+  }, [webhookIndex]);
 
   const handleAppendWebhookAdditionalHeader = (nextTo: number) => {
     insert(nextTo, {

@@ -8,7 +8,7 @@ module.exports = {
     '**/*.min.js',
     'static/js/',
   ],
-  plugins: ['import', 'unused-imports', 'react', '@typescript-eslint'],
+  plugins: ['import', 'unused-imports', 'react', 'react-hooks', 'react-you-might-not-need-an-effect', '@typescript-eslint'],
   settings: {
     'import/resolver': {
       webpack: {
@@ -36,6 +36,8 @@ module.exports = {
     "no-unused-vars": "off",
     "@typescript-eslint/no-unused-vars": "error",
     "@typescript-eslint/no-explicit-any": "error",
+    'react-hooks/rules-of-hooks': 'error',
+    'react-hooks/exhaustive-deps': 'warn',
   },
   parser: '@typescript-eslint/parser',
   parserOptions: {
@@ -48,6 +50,7 @@ module.exports = {
   extends: [
     'plugin:@typescript-eslint/recommended',
     'plugin:react/recommended',
+    'plugin:react-you-might-not-need-an-effect/legacy-recommended',
   ],
   overrides: [
     {
