@@ -20,7 +20,7 @@ import {
   HeaderTableRow,
   StyledTableRow,
 } from "components/common/Table";
-import { useAsyncWithThrow } from "hooks/useAsyncWithThrow";
+import { usePagodaSWR } from "hooks/usePagodaSWR";
 import { aironeApiClient } from "repository/AironeApiClient";
 
 const StyledBox = styled(Box)(({ theme }) => ({
@@ -38,9 +38,10 @@ interface Props {
 }
 
 export const CategoryForm: FC<Props> = ({ control, setValue }) => {
-  const entities = useAsyncWithThrow(async () => {
-    return await aironeApiClient.getEntities();
-  });
+  const { data: entities, isLoading: entitiesLoading } = usePagodaSWR(
+    ["entities"],
+    () => aironeApiClient.getEntities(),
+  );
 
   return (
     <StyledBox>
@@ -112,13 +113,13 @@ export const CategoryForm: FC<Props> = ({ control, setValue }) => {
                     <Autocomplete<Entity, true>
                       {...field}
                       options={
-                        entities.value?.results.map((e) => ({
+                        entities?.results.map((e) => ({
                           id: e.id,
                           name: e.name,
                           permission: e.permission,
                         })) ?? []
                       }
-                      disabled={entities.loading}
+                      disabled={entitiesLoading}
                       getOptionLabel={(option) => option.name}
                       isOptionEqualToValue={(option, value) =>
                         option.id === value.id
