@@ -37,7 +37,7 @@ F = TypeVar("F", bound=Callable[..., Any])
 # Attribute name for storing override metadata on decorated methods
 OVERRIDE_META_ATTR = "_override_meta"
 
-_VALID_OPERATIONS = {"create", "retrieve", "update", "delete", "list"}
+_VALID_OPERATIONS = {"create", "retrieve", "update", "delete", "list", "background"}
 
 
 @dataclass
