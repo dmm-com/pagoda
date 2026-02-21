@@ -4,7 +4,9 @@
   "ignore": ["docs/**/*.js", "static/**/*.js", "templates/**/*.js", "frontend/plugins/**/*"],
   "ignoreDependencies": [
     // CLI
-    "webpack-bundle-analyzer"
+    "webpack-bundle-analyzer",
+    // used internally by eslint-plugin-import-x
+    "eslint-import-resolver-typescript"
   ],
   "ignoreBinaries": [
     // to use `export` command

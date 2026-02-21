@@ -18,7 +18,7 @@ jobs:
       matrix:
         python-version: ["3.12.9"]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Install uv
         run: pipx install uv
       - uses: actions/setup-python@v4
@@ -64,7 +64,7 @@ jobs:
     outputs:
       targets: ${{ steps.modules.outputs.targets }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - id: modules
         name: Set test modules
         run: |
@@ -117,7 +117,7 @@ jobs:
           --health-timeout=5s
           --health-retries=3
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Install uv
         run: pipx install uv
       - uses: actions/setup-python@v4
