@@ -86,7 +86,7 @@ jobs:
         target: ${{ fromJson(needs.setup_python.outputs.targets) }}
     services:
       rabbitmq:
-        image: rabbitmq:3.8.19-management
+        image: rabbitmq:4.1.3-management
         ports:
           - 5672:5672
       elasticsearch:
