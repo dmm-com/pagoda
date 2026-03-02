@@ -3,12 +3,13 @@ import AppsIcon from "@mui/icons-material/Apps";
 import { Box, Container, IconButton } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import { useSnackbar } from "notistack";
-import { FC, useEffect, useState } from "react";
+import { FC, Suspense, useEffect, useState } from "react";
 
-import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
+import { usePagodaSWR } from "../hooks/usePagodaSWR";
 import { useTypedParams } from "../hooks/useTypedParams";
 
 import { PaginationFooter } from "components";
+import { Loading } from "components/common/Loading";
 import { PageHeader } from "components/common/PageHeader";
 import { SearchBox } from "components/common/SearchBox";
 import { EntityBreadcrumbs } from "components/entity/EntityBreadcrumbs";
@@ -24,7 +25,7 @@ import {
   normalizeToMatch,
 } from "services";
 
-export const ListAliasEntryPage: FC = ({}) => {
+const ListAliasEntryContent: FC = () => {
   const { entityId } = useTypedParams<{
     entityId: number;
   }>();
@@ -40,9 +41,11 @@ export const ListAliasEntryPage: FC = ({}) => {
   const [entries, setEntries] = useState<EntryBase[]>([]);
   const [totalCount, setTotalCount] = useState<number>(0);
 
-  const entity = useAsyncWithThrow(async () => {
-    return await aironeApiClient.getEntity(entityId);
-  }, [entityId]);
+  const { data: entity } = usePagodaSWR(
+    ["entity", entityId],
+    () => aironeApiClient.getEntity(entityId),
+    { suspense: true },
+  );
 
   useEffect(() => {
     aironeApiClient
@@ -112,10 +115,10 @@ export const ListAliasEntryPage: FC = ({}) => {
   };
 
   return (
-    <Box>
-      <EntityBreadcrumbs entity={entity.value} title="エイリアス設定" />
+    <>
+      <EntityBreadcrumbs entity={entity} title="エイリアス設定" />
 
-      <PageHeader title={entity.value?.name ?? ""} description="エイリアス設定">
+      <PageHeader title={entity.name} description="エイリアス設定">
         <Box width="50px">
           <IconButton
             id="entity_menu"
@@ -130,7 +133,7 @@ export const ListAliasEntryPage: FC = ({}) => {
             anchorElem={entityAnchorEl}
             handleClose={() => setEntityAnchorEl(null)}
             setOpenImportModal={setOpenImportModal}
-            permission={entity.value?.permission}
+            permission={entity.permission}
           />
         </Box>
       </PageHeader>
@@ -178,6 +181,16 @@ export const ListAliasEntryPage: FC = ({}) => {
         openImportModal={openImportModal}
         closeImportModal={() => setOpenImportModal(false)}
       />
+    </>
+  );
+};
+
+export const ListAliasEntryPage: FC = ({}) => {
+  return (
+    <Box>
+      <Suspense fallback={<Loading />}>
+        <ListAliasEntryContent />
+      </Suspense>
     </Box>
   );
 };

@@ -9,7 +9,7 @@ import {
   Typography,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import { FC, useCallback, useMemo, useState } from "react";
+import { FC, Suspense, useCallback, useMemo, useState } from "react";
 import { Link } from "react-router";
 
 import { GroupControlMenu } from "../components/group/GroupControlMenu";
@@ -21,8 +21,8 @@ import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { Loading } from "components/common/Loading";
 import { PageHeader } from "components/common/PageHeader";
 import { SearchBox } from "components/common/SearchBox";
-import { useAsyncWithThrow } from "hooks/useAsyncWithThrow";
 import { usePageTitle } from "hooks/usePageTitle";
+import { usePagodaSWR } from "hooks/usePagodaSWR";
 import { aironeApiClient } from "repository/AironeApiClient";
 import { newGroupPath, topPath } from "routes/Routes";
 import { TITLE_TEMPLATES } from "services";
@@ -44,38 +44,35 @@ const UserListPanel = styled(Box)(({ theme }) => ({
   },
 }));
 
-export const GroupListPage: FC = () => {
+const GroupListContent: FC = () => {
   const [keyword, setKeyword] = useState("");
   const [selectedGroupId, setSelectedGroupId] = useState<number | null>(null);
-  const [openImportModal, setOpenImportModal] = useState(false);
   const [groupAnchorEls, setGroupAnchorEls] = useState<{
     groupId: number;
     el: HTMLButtonElement;
   } | null>();
-  const [toggle, setToggle] = useState(false);
 
-  const groupTrees = useAsyncWithThrow(async () => {
-    return await aironeApiClient.getGroupTrees();
-  }, [toggle]);
+  const { data: groupTrees, mutate: refreshGroupTrees } = usePagodaSWR(
+    ["groupTrees"],
+    () => aironeApiClient.getGroupTrees(),
+    { suspense: true },
+  );
 
-  const usersInGroup = useAsyncWithThrow(async (): Promise<
-    Array<{ id: number; username: string }>
-  > => {
-    if (selectedGroupId != null) {
-      const group = await aironeApiClient.getGroup(selectedGroupId);
+  const { data: usersInGroup } = usePagodaSWR(
+    selectedGroupId != null ? ["group", selectedGroupId] : null,
+    async () => {
+      const group = await aironeApiClient.getGroup(selectedGroupId!);
       return group.members.map((member) => ({
         id: member.id,
         username: member.username,
       }));
-    } else {
-      return [];
-    }
-  }, [selectedGroupId]);
+    },
+  );
 
   const filteredUsersInGroup = useMemo(() => {
     const keywordLower = keyword.toLowerCase();
     return (
-      usersInGroup.value?.filter((user) =>
+      usersInGroup?.filter((user) =>
         user.username.toLowerCase().includes(keywordLower),
       ) ?? []
     );
@@ -84,6 +81,62 @@ export const GroupListPage: FC = () => {
   const handleSelectGroupId = (groupId: number | null) => {
     setSelectedGroupId(groupId);
   };
+
+  return (
+    <Box
+      display="flex"
+      flexDirection={{ xs: "column", md: "row" }}
+      flexGrow={1}
+      gap={2}
+      paddingBottom={4}
+    >
+      <Box flex={1}>
+        <StyledContainer>
+          <Typography>
+            選択したいグループにチェックマークを入れてください。
+          </Typography>
+          <Divider sx={{ mt: "16px" }} />
+          <GroupTreeRoot
+            groupTrees={groupTrees}
+            selectedGroupId={selectedGroupId}
+            handleSelectGroupId={handleSelectGroupId}
+            setGroupAnchorEls={setGroupAnchorEls}
+          />
+          {groupAnchorEls != null && (
+            <GroupControlMenu
+              groupId={groupAnchorEls.groupId}
+              anchorElem={groupAnchorEls.el}
+              handleClose={() => setGroupAnchorEls(null)}
+              setToggle={() => refreshGroupTrees()}
+            />
+          )}
+        </StyledContainer>
+      </Box>
+
+      <UserListPanel>
+        <Typography>属するユーザ(計 {usersInGroup?.length ?? 0})</Typography>
+        <SearchBox
+          placeholder="ユーザを絞り込む"
+          value={keyword}
+          onChange={(e) => {
+            setKeyword(e.target.value);
+          }}
+        />
+        <List data-testid="GroupMember">
+          {filteredUsersInGroup.map((user, index) => (
+            <Box key={user.id}>
+              {index !== 0 && <Divider />}
+              <ListItem>{user.username}</ListItem>
+            </Box>
+          ))}
+        </List>
+      </UserListPanel>
+    </Box>
+  );
+};
+
+export const GroupListPage: FC = () => {
+  const [openImportModal, setOpenImportModal] = useState(false);
 
   const handleExport = useCallback(async () => {
     await aironeApiClient.exportGroups("group.yaml");
@@ -135,61 +188,9 @@ export const GroupListPage: FC = () => {
         </Button>
       </PageHeader>
 
-      {groupTrees.loading ? (
-        <Loading />
-      ) : (
-        <Box
-          display="flex"
-          flexDirection={{ xs: "column", md: "row" }}
-          flexGrow={1}
-          gap={2}
-          paddingBottom={4}
-        >
-          <Box flex={1}>
-            <StyledContainer>
-              <Typography>
-                選択したいグループにチェックマークを入れてください。
-              </Typography>
-              <Divider sx={{ mt: "16px" }} />
-              <GroupTreeRoot
-                groupTrees={groupTrees.value ?? []}
-                selectedGroupId={selectedGroupId}
-                handleSelectGroupId={handleSelectGroupId}
-                setGroupAnchorEls={setGroupAnchorEls}
-              />
-              {groupAnchorEls != null && (
-                <GroupControlMenu
-                  groupId={groupAnchorEls.groupId}
-                  anchorElem={groupAnchorEls.el}
-                  handleClose={() => setGroupAnchorEls(null)}
-                  setToggle={() => setToggle(!toggle)}
-                />
-              )}
-            </StyledContainer>
-          </Box>
-
-          <UserListPanel>
-            <Typography>
-              属するユーザ(計 {usersInGroup.value?.length ?? 0})
-            </Typography>
-            <SearchBox
-              placeholder="ユーザを絞り込む"
-              value={keyword}
-              onChange={(e) => {
-                setKeyword(e.target.value);
-              }}
-            />
-            <List data-testid="GroupMember">
-              {filteredUsersInGroup.map((user, index) => (
-                <Box key={user.id}>
-                  {index !== 0 && <Divider />}
-                  <ListItem>{user.username}</ListItem>
-                </Box>
-              ))}
-            </List>
-          </UserListPanel>
-        </Box>
-      )}
+      <Suspense fallback={<Loading />}>
+        <GroupListContent />
+      </Suspense>
     </Box>
   );
 };

@@ -1,4 +1,5 @@
 import { FC, ReactNode, useMemo } from "react";
+import { SWRConfig } from "swr";
 
 import { ErrorHandler } from "ErrorHandler";
 import { CheckTerms } from "components/common/CheckTerms";
@@ -24,10 +25,12 @@ export const AppBase: FC<Props> = ({ customRoutes, plugins = [] }) => {
   );
 
   return (
-    <ErrorHandler>
-      <CheckTerms>
-        <AppRouter customRoutes={allCustomRoutes} pluginMap={pluginMap} />
-      </CheckTerms>
-    </ErrorHandler>
+    <SWRConfig value={{ revalidateOnFocus: true, dedupingInterval: 2000 }}>
+      <ErrorHandler>
+        <CheckTerms>
+          <AppRouter customRoutes={allCustomRoutes} pluginMap={pluginMap} />
+        </CheckTerms>
+      </ErrorHandler>
+    </SWRConfig>
   );
 };
