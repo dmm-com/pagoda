@@ -37,8 +37,12 @@ const ElemBool: FC<{ attrValue: string | boolean }> = ({ attrValue }) => {
 const ElemString: FC<{ attrValue: string }> = ({ attrValue }) => {
   return (
     <Box>
-      {// Separate line breaks with tags
-      attrValue?.split("\n").map((line, key) => <Box key={key}>{line}</Box>)}
+      {
+        // Separate line breaks with tags
+        attrValue?.split("\n").map((line, key) => (
+          <Box key={key}>{line}</Box>
+        ))
+      }
     </Box>
   );
 };
