@@ -15,9 +15,9 @@ import {
   EntryFormProps,
 } from "components/entry/EntryForm";
 import { Schema, schema } from "components/entry/entryForm/EntryFormSchema";
-import { useAsyncWithThrow } from "hooks/useAsyncWithThrow";
 import { useFormNotification } from "hooks/useFormNotification";
 import { usePageTitle } from "hooks/usePageTitle";
+import { usePagodaSWR } from "hooks/usePagodaSWR";
 import { usePrompt } from "hooks/usePrompt";
 import { useTypedParams } from "hooks/useTypedParams";
 import { aironeApiClient } from "repository/AironeApiClient";
@@ -73,45 +73,32 @@ export const EntryEditPage: FC<Props> = ({
     "編集した内容は失われてしまいますが、このページを離れてもよろしいですか？",
   );
 
-  const entity = useAsyncWithThrow(async () => {
-    return await aironeApiClient.getEntity(entityId);
-  });
+  const { data: entity, isLoading: entityLoading } = usePagodaSWR(
+    ["entity", entityId],
+    () => aironeApiClient.getEntity(entityId),
+  );
 
-  const entry = useAsyncWithThrow(async () => {
-    return entryId != undefined
-      ? await aironeApiClient.getEntry(entryId)
-      : undefined;
-  });
+  const { data: entry, isLoading: entryLoading } = usePagodaSWR(
+    entryId != undefined ? ["entry", entryId] : null,
+    () => aironeApiClient.getEntry(entryId!),
+  );
 
   useEffect(() => {
     if (willCreate) {
-      if (!entity.loading && entity.value != null) {
-        const entryInfo = formalizeEntryInfo(
-          undefined,
-          entity.value,
-          excludeAttrs,
-        );
+      if (!entityLoading && entity != null) {
+        const entryInfo = formalizeEntryInfo(undefined, entity, excludeAttrs);
         entryInfo.name = useUUID ? uuidv4() : "";
         reset(entryInfo);
         setInitialized(true);
       }
     } else {
-      if (
-        !entity.loading &&
-        entity.value != null &&
-        !entry.loading &&
-        entry.value != null
-      ) {
-        const entryInfo = formalizeEntryInfo(
-          entry.value,
-          entity.value,
-          excludeAttrs,
-        );
+      if (!entityLoading && entity != null && !entryLoading && entry != null) {
+        const entryInfo = formalizeEntryInfo(entry, entity, excludeAttrs);
         reset(entryInfo);
         setInitialized(true);
       }
     }
-  }, [willCreate, entity.value, entry.value]);
+  }, [willCreate, entity, entry]);
 
   useEffect(() => {
     if (isSubmitSuccessful) {
@@ -131,11 +118,11 @@ export const EntryEditPage: FC<Props> = ({
   }, [initialized]);
 
   usePageTitle(
-    entity.loading || (entryId && entry.loading)
+    entityLoading || (entryId && entryLoading)
       ? "読み込み中..."
       : TITLE_TEMPLATES.entryEdit,
     {
-      prefix: entry.value?.name ?? (entryId == null ? "新規作成" : undefined),
+      prefix: entry?.name ?? (entryId == null ? "新規作成" : undefined),
     },
   );
 
@@ -174,36 +161,36 @@ export const EntryEditPage: FC<Props> = ({
     }
   };
 
-  if (entity.loading || entry.loading) {
+  if (entityLoading || entryLoading) {
     return <Loading />;
   }
 
   if (
-    !entity.loading &&
-    entity.value == undefined &&
-    !entry.loading &&
-    entry.value == undefined
+    !entityLoading &&
+    entity == undefined &&
+    !entryLoading &&
+    entry == undefined
   ) {
     throw Error("both entity and entry are invalid");
   }
 
   // set Name automatically when itemNameType is not "US" when creating new Item
-  const skipItemName = entity?.value?.itemNameType !== "US";
+  const skipItemName = entity?.itemNameType !== "US";
   if (skipItemName && willCreate) {
     setValue("name", crypto.randomUUID());
   }
 
   return (
     <Box>
-      {entry.value ? (
-        <EntryBreadcrumbs entry={entry.value} title="編集" />
+      {entry ? (
+        <EntryBreadcrumbs entry={entry} title="編集" />
       ) : (
-        <EntityBreadcrumbs entity={entity.value} title="作成" />
+        <EntityBreadcrumbs entity={entity} title="作成" />
       )}
 
       <PageHeader
-        title={entry?.value != null ? entry.value.name : "新規アイテムの作成"}
-        description={entry?.value != null ? "アイテム編集" : undefined}
+        title={entry != null ? entry.name : "新規アイテムの作成"}
+        description={entry != null ? "アイテム編集" : undefined}
       >
         <SubmitButton
           name="保存"
@@ -216,11 +203,11 @@ export const EntryEditPage: FC<Props> = ({
         />
       </PageHeader>
 
-      {initialized && entity.value != null && (
+      {initialized && entity != null && (
         <EntryForm
           entity={{
-            ...entity.value,
-            attrs: entity.value.attrs.filter(
+            ...entity,
+            attrs: entity.attrs.filter(
               (attr) => !excludeAttrs.includes(attr.name),
             ),
           }}

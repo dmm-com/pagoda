@@ -2,7 +2,7 @@ import { Box, CircularProgress } from "@mui/material";
 import { FC, useMemo } from "react";
 import { useParams } from "react-router";
 
-import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
+import { usePagodaSWR } from "../hooks/usePagodaSWR";
 import { usePluginMappings } from "../hooks/usePluginMappings";
 import { SchemaValidationErrorPage } from "../pages/SchemaValidationErrorPage";
 import { EntityPageType, Plugin, isEntityViewPlugin } from "../plugins";
@@ -59,12 +59,10 @@ export const EntityAwareRoute: FC<Props> = ({
   }, [entityId, config, pageType, pluginMap]);
 
   // Fetch entity for schema validation (only when needed)
-  const entityState = useAsyncWithThrow(async () => {
-    if (!shouldFetchEntity || !entityId) {
-      return null;
-    }
-    return await aironeApiClient.getEntity(Number(entityId));
-  }, [shouldFetchEntity, entityId]);
+  const { data: entityData, isLoading: entityLoading } = usePagodaSWR(
+    shouldFetchEntity && entityId ? ["entity", Number(entityId)] : null,
+    () => aironeApiClient.getEntity(Number(entityId)),
+  );
 
   // Validate entity against plugin schema
   const validationResult = useMemo(() => {
@@ -72,19 +70,19 @@ export const EntityAwareRoute: FC<Props> = ({
       return { success: true as const, errors: [] };
     }
 
-    if (!entityState.value) {
+    if (!entityData) {
       // Still loading or no entity to validate
       return { success: true as const, errors: [] };
     }
 
     // Convert to AttrRecord and validate with Zod's safeParse
-    const attrRecord = toAttrRecord(entityState.value);
+    const attrRecord = toAttrRecord(entityData);
     const result = plugin.attrSchema.safeParse(attrRecord);
 
     return result.success
       ? { success: true as const, errors: [] }
       : { success: false as const, errors: result.error.issues };
-  }, [plugin, entityState.value]);
+  }, [plugin, entityData]);
 
   // No entityId in URL - render default
   if (!entityId) {
@@ -113,7 +111,7 @@ export const EntityAwareRoute: FC<Props> = ({
   }
 
   // If plugin has schema, wait for entity to load
-  if (plugin.attrSchema && entityState.loading) {
+  if (plugin.attrSchema && entityLoading) {
     return (
       <Box
         display="flex"
@@ -130,7 +128,7 @@ export const EntityAwareRoute: FC<Props> = ({
   if (!validationResult.success) {
     return (
       <SchemaValidationErrorPage
-        entityName={entityState.value?.name}
+        entityName={entityData?.name}
         pluginName={plugin.name}
         errors={validationResult.errors}
       />

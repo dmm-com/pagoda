@@ -3,7 +3,7 @@ import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import { Box, Chip, IconButton, Stack, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import { styled } from "@mui/material/styles";
-import { FC, useEffect, useState } from "react";
+import { FC, Suspense, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 
 import { Loading } from "components/common/Loading";
@@ -12,8 +12,8 @@ import { EntryAttributes } from "components/entry/EntryAttributes";
 import { EntryBreadcrumbs } from "components/entry/EntryBreadcrumbs";
 import { EntryControlMenu } from "components/entry/EntryControlMenu";
 import { EntryReferral } from "components/entry/EntryReferral";
-import { useAsyncWithThrow } from "hooks/useAsyncWithThrow";
 import { usePageTitle } from "hooks/usePageTitle";
+import { usePagodaSWR } from "hooks/usePagodaSWR";
 import { useTypedParams } from "hooks/useTypedParams";
 import { aironeApiClient } from "repository/AironeApiClient";
 import { entryDetailsPath, restoreEntryPath } from "routes/Routes";
@@ -67,7 +67,7 @@ interface Props {
   sideContent?: JSX.Element;
 }
 
-export const EntryDetailsPage: FC<Props> = ({
+const EntryDetailsContent: FC<Props> = ({
   excludeAttrs = [],
   additionalContents = [],
   sideContent = <Box />,
@@ -82,39 +82,35 @@ export const EntryDetailsPage: FC<Props> = ({
     null,
   );
 
-  const entry = useAsyncWithThrow(async () => {
-    return await aironeApiClient.getEntry(entryId);
-  }, [entryId]);
+  const { data: entry } = usePagodaSWR(
+    ["entry", entryId],
+    () => aironeApiClient.getEntry(entryId),
+    { suspense: true },
+  );
 
   useEffect(() => {
-    // When user specifies invalid entityId, redirect to the page that is correct entityId
-    if (!entry.loading && entry.value?.schema?.id != entityId) {
-      navigate(entryDetailsPath(entry.value?.schema?.id ?? 0, entryId), {
+    if (entry.schema?.id != entityId) {
+      navigate(entryDetailsPath(entry.schema?.id ?? 0, entryId), {
         replace: true,
       });
     }
 
-    // If it'd been deleted, show restore-entry page instead
-    if (!entry.loading && entry.value?.isActive === false) {
-      navigate(
-        restoreEntryPath(
-          entry.value?.schema?.id ?? "",
-          entry.value?.name ?? "",
-        ),
-        { replace: true },
-      );
+    if (entry.isActive === false) {
+      navigate(restoreEntryPath(entry.schema?.id ?? "", entry.name ?? ""), {
+        replace: true,
+      });
     }
-  }, [entry.loading]);
+  }, [entry]);
 
-  usePageTitle(entry.loading ? "読み込み中..." : TITLE_TEMPLATES.entryDetail, {
-    prefix: entry.value?.name,
+  usePageTitle(TITLE_TEMPLATES.entryDetail, {
+    prefix: entry.name,
   });
 
   return (
     <FlexBox>
-      <EntryBreadcrumbs entry={entry.value} />
+      <EntryBreadcrumbs entry={entry} />
 
-      <PageHeader title={entry.value?.name ?? ""} description="アイテム詳細">
+      <PageHeader title={entry.name ?? ""} description="アイテム詳細">
         <ChipBox>
           <Stack direction="row" spacing={1}>
             {[
@@ -152,8 +148,8 @@ export const EntryDetailsPage: FC<Props> = ({
               entryId={entryId}
               anchorElem={entryAnchorEl}
               handleClose={() => setEntryAnchorEl(null)}
-              permission={entry.value?.permission}
-              entityPermission={entry.value?.schema?.permission}
+              permission={entry.permission}
+              entityPermission={entry.schema?.permission}
             />
           </MenuBox>
         </ChipBox>
@@ -168,15 +164,11 @@ export const EntryDetailsPage: FC<Props> = ({
             {
               name: "attr_list",
               label: "項目一覧",
-              content: entry.loading ? (
-                <Loading />
-              ) : (
+              content: (
                 <EntryAttributes
-                  attributes={
-                    entry.value?.attrs.filter(
-                      (attr) => !excludeAttrs.includes(attr.schema.name),
-                    ) ?? []
-                  }
+                  attributes={entry.attrs.filter(
+                    (attr) => !excludeAttrs.includes(attr.schema.name),
+                  )}
                 />
               ),
             },
@@ -195,5 +187,21 @@ export const EntryDetailsPage: FC<Props> = ({
         <RightGrid size={1}>{sideContent}</RightGrid>
       </Grid>
     </FlexBox>
+  );
+};
+
+export const EntryDetailsPage: FC<Props> = ({
+  excludeAttrs = [],
+  additionalContents = [],
+  sideContent = <Box />,
+}) => {
+  return (
+    <Suspense fallback={<Loading />}>
+      <EntryDetailsContent
+        excludeAttrs={excludeAttrs}
+        additionalContents={additionalContents}
+        sideContent={sideContent}
+      />
+    </Suspense>
   );
 };

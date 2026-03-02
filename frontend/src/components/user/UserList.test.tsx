@@ -3,13 +3,7 @@
  */
 
 import { PaginatedUserListList } from "@dmm-com/airone-apiclient-typescript-fetch";
-import {
-  act,
-  render,
-  screen,
-  waitFor,
-  waitForElementToBeRemoved,
-} from "@testing-library/react";
+import { act, render, screen } from "@testing-library/react";
 import { createMemoryRouter, RouterProvider } from "react-router";
 
 import { UserList } from "./UserList";
@@ -69,8 +63,9 @@ describe("UserList", () => {
       user: { username: "user1", isSuperuser: false },
     });
 
-    render(<UserList />, { wrapper: TestWrapper });
-    await waitForElementToBeRemoved(screen.getByTestId("loading"));
+    await act(async () => {
+      render(<UserList />, { wrapper: TestWrapper });
+    });
 
     expect(screen.getByText("user1")).toBeInTheDocument();
     expect(screen.getByText("user2")).toBeInTheDocument();
@@ -81,8 +76,9 @@ describe("UserList", () => {
       user: { username: "admin", isSuperuser: true },
     });
 
-    render(<UserList />, { wrapper: TestWrapper });
-    await waitForElementToBeRemoved(screen.getByTestId("loading"));
+    await act(async () => {
+      render(<UserList />, { wrapper: TestWrapper });
+    });
 
     const menuIcons = screen.getAllByTestId("MoreVertIcon");
     expect(menuIcons.length).toBe(2);
@@ -93,8 +89,9 @@ describe("UserList", () => {
       user: { username: "user1", isSuperuser: false },
     });
 
-    render(<UserList />, { wrapper: TestWrapper });
-    await waitForElementToBeRemoved(screen.getByTestId("loading"));
+    await act(async () => {
+      render(<UserList />, { wrapper: TestWrapper });
+    });
 
     const menuIcons = screen.getAllByTestId("MoreVertIcon");
     expect(menuIcons.length).toBe(1);
@@ -105,8 +102,9 @@ describe("UserList", () => {
       user: { username: "user1", isSuperuser: false },
     });
 
-    render(<UserList />, { wrapper: TestWrapper });
-    await waitForElementToBeRemoved(screen.getByTestId("loading"));
+    await act(async () => {
+      render(<UserList />, { wrapper: TestWrapper });
+    });
 
     const registerLink = screen.getByRole("link", {
       name: /新規ユーザを登録/i,
@@ -119,8 +117,9 @@ describe("UserList", () => {
       user: { username: "admin", isSuperuser: true },
     });
 
-    render(<UserList />, { wrapper: TestWrapper });
-    await waitForElementToBeRemoved(screen.getByTestId("loading"));
+    await act(async () => {
+      render(<UserList />, { wrapper: TestWrapper });
+    });
 
     const registerLink = screen.getByRole("link", {
       name: /新規ユーザを登録/i,
@@ -140,12 +139,10 @@ describe("UserList", () => {
       },
     ]);
 
-    render(<RouterProvider router={router} />, {
-      wrapper: TestWrapperWithoutRoutes,
-    });
-
-    await waitFor(() => {
-      expect(screen.queryByTestId("loading")).not.toBeInTheDocument();
+    await act(async () => {
+      render(<RouterProvider router={router} />, {
+        wrapper: TestWrapperWithoutRoutes,
+      });
     });
 
     await act(async () => {
@@ -167,12 +164,10 @@ describe("UserList", () => {
       },
     ]);
 
-    render(<RouterProvider router={router} />, {
-      wrapper: TestWrapperWithoutRoutes,
-    });
-
-    await waitFor(() => {
-      expect(screen.queryByTestId("loading")).not.toBeInTheDocument();
+    await act(async () => {
+      render(<RouterProvider router={router} />, {
+        wrapper: TestWrapperWithoutRoutes,
+      });
     });
 
     await act(async () => {

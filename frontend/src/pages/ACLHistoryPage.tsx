@@ -6,9 +6,10 @@ import {
 import AppsIcon from "@mui/icons-material/Apps";
 import { Box, Container, IconButton } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import { FC, useEffect, useState } from "react";
+import { FC, Suspense, useEffect, useState } from "react";
+import { preload } from "swr";
 
-import { useAsyncWithThrow } from "../hooks/useAsyncWithThrow";
+import { usePagodaSWR, wrapFetcher } from "../hooks/usePagodaSWR";
 
 import { ACLHistoryList } from "components/acl/ACLHistoryList";
 import { Loading } from "components/common/Loading";
@@ -25,8 +26,7 @@ const MenuBox = styled(Box)(({}) => ({
   width: "50px",
 }));
 
-export const ACLHistoryPage: FC = () => {
-  const { objectId } = useTypedParams<{ objectId: number }>();
+const ACLHistoryContent: FC<{ objectId: number }> = ({ objectId }) => {
   const [breadcrumbs, setBreadcrumbs] = useState<JSX.Element>(<Box />);
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
   const [openImportModal, setOpenImportModal] = useState(false);
@@ -35,21 +35,24 @@ export const ACLHistoryPage: FC = () => {
     null,
   );
 
-  const acl = useAsyncWithThrow(async () => {
-    return await aironeApiClient.getAcl(objectId);
-  }, [objectId]);
+  const { data: acl } = usePagodaSWR(
+    ["acl", objectId],
+    () => aironeApiClient.getAcl(objectId),
+    { suspense: true },
+  );
 
-  const aclHistory = useAsyncWithThrow(async () => {
-    return await aironeApiClient.getAclHistory(objectId);
-  }, [objectId]);
+  const { data: aclHistory } = usePagodaSWR(
+    ["aclHistory", objectId],
+    () => aironeApiClient.getAclHistory(objectId),
+    { suspense: true },
+  );
 
   const controlMenu = () => {
-    if (acl.value == null) return;
-    switch (acl.value.objtype) {
+    switch (acl.objtype) {
       case ACLObjtypeEnum.Entity:
         return (
           <EntityControlMenu
-            entityId={acl.value.id}
+            entityId={acl.id}
             anchorElem={anchorEl}
             handleClose={() => setAnchorEl(null)}
             setOpenImportModal={setOpenImportModal}
@@ -57,11 +60,11 @@ export const ACLHistoryPage: FC = () => {
           />
         );
       case ACLObjtypeEnum.Entry:
-        if (acl.value.parent?.id) {
+        if (acl.parent?.id) {
           return (
             <EntryControlMenu
-              entityId={acl.value.parent.id}
-              entryId={acl.value.id}
+              entityId={acl.parent.id}
+              entryId={acl.id}
               anchorElem={anchorEl}
               handleClose={() => setAnchorEl(null)}
               permission={entryRetrieve?.permission}
@@ -73,9 +76,7 @@ export const ACLHistoryPage: FC = () => {
   };
 
   useEffect(() => {
-    if (acl.value == null) return;
-
-    switch (acl.value.objtype) {
+    switch (acl.objtype) {
       case ACLObjtypeEnum.Entity:
         aironeApiClient.getEntity(objectId).then((resp) => {
           setEntityDetail(resp);
@@ -91,13 +92,13 @@ export const ACLHistoryPage: FC = () => {
         });
         break;
     }
-  }, [acl.loading]);
+  }, [acl]);
 
   return (
-    <Box className="container-fluid">
+    <>
       {breadcrumbs}
 
-      <PageHeader title={acl.value?.name ?? ""} description="ACL変更履歴">
+      <PageHeader title={acl.name} description="ACL変更履歴">
         <MenuBox>
           <IconButton
             id="controlMenu"
@@ -115,13 +116,30 @@ export const ACLHistoryPage: FC = () => {
         closeImportModal={() => setOpenImportModal(false)}
       />
 
-      {aclHistory.loading ? (
-        <Loading />
-      ) : (
-        <Container>
-          <ACLHistoryList histories={aclHistory.value ?? []} />
-        </Container>
-      )}
+      <Container>
+        <ACLHistoryList histories={aclHistory} />
+      </Container>
+    </>
+  );
+};
+
+export const ACLHistoryPage: FC = () => {
+  const { objectId } = useTypedParams<{ objectId: number }>();
+
+  preload(
+    ["acl", objectId],
+    wrapFetcher(() => aironeApiClient.getAcl(objectId)),
+  );
+  preload(
+    ["aclHistory", objectId],
+    wrapFetcher(() => aironeApiClient.getAclHistory(objectId)),
+  );
+
+  return (
+    <Box className="container-fluid">
+      <Suspense fallback={<Loading />}>
+        <ACLHistoryContent objectId={objectId} />
+      </Suspense>
     </Box>
   );
 };
