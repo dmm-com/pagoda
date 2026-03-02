@@ -32,4 +32,4 @@ RUN bash -c '\
 # python
 RUN pip install --no-cache-dir --upgrade \
     pip \
-    poetry
+    uv

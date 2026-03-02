@@ -518,7 +518,7 @@ To test job tasks, you need to run both a Celery worker and the Django server:
 
 ```bash
 # Terminal 1: Start Celery worker
-poetry run celery -A airone worker -l info
+uv run celery -A airone worker -l info
 
 # Terminal 2: Start Django server
 ENABLED_PLUGINS=my-first python manage.py runserver
@@ -564,7 +564,7 @@ curl http://localhost:8080/api/v2/jobs/123/ \
 
 | Issue | Cause | Solution |
 |-------|-------|----------|
-| Task not executing | Celery worker not running | Start Celery worker: `poetry run celery -A airone worker -l info` |
+| Task not executing | Celery worker not running | Start Celery worker: `uv run celery -A airone worker -l info` |
 | Operation ID error | Range not configured | Add plugin to `PLUGIN_OPERATION_ID_CONFIG` |
 | Import error | Registry not called | Ensure `PluginTaskRegistry.register()` is in `apps.py` ready() |
 | Job status stuck at PREPARING | Task handler not found | Check decorator `@register_plugin_job_task(offset)` is present |

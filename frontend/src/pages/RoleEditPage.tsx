@@ -12,9 +12,9 @@ import { PageHeader } from "components/common/PageHeader";
 import { SubmitButton } from "components/common/SubmitButton";
 import { RoleForm } from "components/role/RoleForm";
 import { Schema, schema } from "components/role/roleForm/RoleFormSchema";
-import { useAsyncWithThrow } from "hooks/useAsyncWithThrow";
 import { useFormNotification } from "hooks/useFormNotification";
 import { usePageTitle } from "hooks/usePageTitle";
+import { usePagodaSWR } from "hooks/usePagodaSWR";
 import { usePrompt } from "hooks/usePrompt";
 import { useTypedParams } from "hooks/useTypedParams";
 import { aironeApiClient } from "repository/AironeApiClient";
@@ -50,26 +50,27 @@ export const RoleEditPage: FC = () => {
     "編集した内容は失われてしまいますが、このページを離れてもよろしいですか？",
   );
 
-  const role = useAsyncWithThrow(async () => {
-    return roleId != null ? await aironeApiClient.getRole(roleId) : undefined;
-  }, [roleId]);
+  const { data: role, isLoading: roleLoading } = usePagodaSWR(
+    roleId != null ? ["role", roleId] : null,
+    () => aironeApiClient.getRole(roleId!),
+  );
 
   useEffect(() => {
-    if (!role.loading && role.value && !role.value.isEditable) {
+    if (!roleLoading && role && !role.isEditable) {
       throw new ForbiddenError("Only admin can edit a role");
     }
-  }, [role]);
+  }, [role, roleLoading]);
 
   useEffect(() => {
-    !role.loading && role.value != null && reset(role.value);
-  }, [role.loading]);
+    !roleLoading && role != null && reset(role);
+  }, [role, roleLoading, reset]);
 
   useEffect(() => {
     isSubmitSuccessful && navigate(rolesPath());
   }, [isSubmitSuccessful]);
 
-  usePageTitle(role.loading ? "読み込み中..." : TITLE_TEMPLATES.roleEdit, {
-    prefix: role.value?.name ?? (willCreate ? "新規作成" : undefined),
+  usePageTitle(roleLoading ? "読み込み中..." : TITLE_TEMPLATES.roleEdit, {
+    prefix: role?.name ?? (willCreate ? "新規作成" : undefined),
   });
 
   const handleSubmitOnValid = useCallback(
@@ -111,7 +112,7 @@ export const RoleEditPage: FC = () => {
     navigate(-1);
   };
 
-  if (role.loading) {
+  if (roleLoading) {
     return <Loading />;
   }
 
@@ -128,8 +129,8 @@ export const RoleEditPage: FC = () => {
       </AironeBreadcrumbs>
 
       <PageHeader
-        title={role.value != null ? role.value.name : "新規ロールの作成"}
-        description={role.value != null ? "ロール編集" : undefined}
+        title={role != null ? role.name : "新規ロールの作成"}
+        description={role != null ? "ロール編集" : undefined}
       >
         <SubmitButton
           name="保存"
@@ -138,7 +139,7 @@ export const RoleEditPage: FC = () => {
             !isValid ||
             isSubmitting ||
             isSubmitSuccessful ||
-            role.value?.isEditable === false
+            role?.isEditable === false
           }
           isSubmitting={isSubmitting}
           handleSubmit={handleSubmit(handleSubmitOnValid)}

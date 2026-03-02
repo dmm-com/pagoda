@@ -7,7 +7,7 @@ import { FC, useState } from "react";
 import { useNavigate } from "react-router";
 
 import { AironeModal } from "components/common/AironeModal";
-import { useAsyncWithThrow } from "hooks/useAsyncWithThrow";
+import { usePagodaSWR } from "hooks/usePagodaSWR";
 import { aironeApiClient } from "repository/AironeApiClient";
 import { formatAdvancedSearchParams } from "services/entry/AdvancedSearch";
 
@@ -35,13 +35,15 @@ export const AdvancedSearchJoinModal: FC<Props> = ({
     currentAttrInfo?.attrinfo.map((attr) => attr.name) ?? [],
   );
 
-  const referralAttrs = useAsyncWithThrow(async () => {
-    return await aironeApiClient.getEntityAttrs(
-      targetEntityIds,
-      searchAllEntities,
-      targetAttrname,
-    );
-  }, [targetEntityIds, searchAllEntities, targetAttrname]);
+  const { data: referralAttrs } = usePagodaSWR(
+    ["referralAttrs", targetEntityIds, searchAllEntities, targetAttrname],
+    () =>
+      aironeApiClient.getEntityAttrs(
+        targetEntityIds,
+        searchAllEntities,
+        targetAttrname,
+      ),
+  );
 
   const handleUpdatePageURL = () => {
     // to prevent duplication of same name parameter
@@ -83,7 +85,7 @@ export const AdvancedSearchJoinModal: FC<Props> = ({
       onClose={handleClose}
     >
       <Autocomplete
-        options={referralAttrs.value?.map((x) => x.name) ?? []}
+        options={referralAttrs?.map((x) => x.name) ?? []}
         value={selectedAttrNames}
         onChange={(_, value: Array<string>) => {
           setSelectedAttrNames(value);

@@ -19,7 +19,7 @@ import {
 import Grid from "@mui/material/Grid2";
 import { styled } from "@mui/material/styles";
 import { useSnackbar } from "notistack";
-import { FC, useState } from "react";
+import { FC, Suspense, useState } from "react";
 import { useNavigate } from "react-router";
 
 import { EntryAttributes } from "./EntryAttributes";
@@ -28,8 +28,8 @@ import { Confirmable } from "components/common/Confirmable";
 import { Loading } from "components/common/Loading";
 import { PaginationFooter } from "components/common/PaginationFooter";
 import { SearchBox } from "components/common/SearchBox";
-import { useAsyncWithThrow } from "hooks/useAsyncWithThrow";
 import { usePage } from "hooks/usePage";
+import { usePagodaSWR } from "hooks/usePagodaSWR";
 import { aironeApiClient } from "repository/AironeApiClient";
 import { restoreEntryPath, topPath } from "routes/Routes";
 import { EntryListParam } from "services/Constants";
@@ -95,11 +95,82 @@ const ItemValueTableCell = styled(TableCell)(() => ({
   wordBreak: "break-word",
 }));
 
+const EntryDetailModalContent: FC<{
+  entryId: number;
+  onRestore: (entryId: number) => void;
+  onClose: () => void;
+}> = ({ entryId, onRestore, onClose }) => {
+  const { data: entryDetail } = usePagodaSWR(
+    ["entry", entryId],
+    () => aironeApiClient.getEntry(entryId),
+    { suspense: true },
+  );
+
+  return (
+    <>
+      <Typography color="primary" my={2}>
+        Operation Information
+      </Typography>
+      <TableContainer component={Paper} style={{ overflowX: "unset" }}>
+        <Table id="table_info_list">
+          <TableHead sx={{ backgroundColor: "primary.dark" }}>
+            <TableRow>
+              <HeaderTableCell>項目</HeaderTableCell>
+              <HeaderTableCell>内容</HeaderTableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            <StyledTableRow>
+              <ItemNameTableCell>Deleted by</ItemNameTableCell>
+              <ItemValueTableCell>
+                {entryDetail.deletedUser?.username}
+              </ItemValueTableCell>
+            </StyledTableRow>
+            <StyledTableRow>
+              <ItemNameTableCell>Deleted at</ItemNameTableCell>
+              <ItemValueTableCell>
+                {entryDetail.deletedTime != null
+                  ? formatDateTime(entryDetail.deletedTime)
+                  : null}
+              </ItemValueTableCell>
+            </StyledTableRow>
+          </TableBody>
+        </Table>
+      </TableContainer>
+      <Typography color="primary" my={2}>
+        Attributes & Values
+      </Typography>
+      {entryDetail.attrs != null && (
+        <EntryAttributes attributes={entryDetail.attrs} />
+      )}
+      <Box display="flex" justifyContent="flex-end" my={2}>
+        <Confirmable
+          componentGenerator={(handleOpen) => (
+            <Button
+              variant="contained"
+              color="secondary"
+              sx={{ margin: "0 4px" }}
+              onClick={handleOpen}
+            >
+              復旧
+            </Button>
+          )}
+          dialogTitle="本当に復旧しますか？"
+          onClickYes={() => onRestore(entryDetail.id)}
+        />
+        <Button variant="outlined" sx={{ margin: "0 4px" }} onClick={onClose}>
+          キャンセル
+        </Button>
+      </Box>
+    </>
+  );
+};
+
 interface Props {
   entityId: number;
 }
 
-export const RestorableEntryList: FC<Props> = ({ entityId }) => {
+const RestorableEntryListContent: FC<Props> = ({ entityId }) => {
   const { enqueueSnackbar } = useSnackbar();
   const navigate = useNavigate();
 
@@ -108,16 +179,11 @@ export const RestorableEntryList: FC<Props> = ({ entityId }) => {
   const [openModal, setOpenModal] = useState(false);
   const [selectedEntryId, setSelectedEntryId] = useState<number>();
 
-  const entries = useAsyncWithThrow(async () => {
-    return await aironeApiClient.getEntries(entityId, false, page, query);
-  }, [page, query]);
-
-  const entryDetail = useAsyncWithThrow(async () => {
-    if (selectedEntryId == null) {
-      return null;
-    }
-    return await aironeApiClient.getEntry(selectedEntryId);
-  }, [selectedEntryId]);
+  const { data: entries } = usePagodaSWR(
+    ["entries", entityId, false, page, query],
+    () => aironeApiClient.getEntries(entityId, false, page, query),
+    { suspense: true },
+  );
 
   const handleChangeQuery = changeQuery;
 
@@ -157,49 +223,45 @@ export const RestorableEntryList: FC<Props> = ({ entityId }) => {
       </Box>
 
       {/* This box shows each entry Cards */}
-      {entries.loading ? (
-        <Loading />
-      ) : (
-        <Grid container spacing={2} id="entry_list">
-          {entries.value?.results?.map((entry) => {
-            return (
-              <Grid size={4} key={entry.id}>
-                <StyledCard>
-                  <StyledCardHeader
-                    title={
-                      <CardActionArea
-                        onClick={() => {
-                          setSelectedEntryId(entry.id);
-                          setOpenModal(true);
-                        }}
-                      >
-                        <EntryName variant="h6">
-                          {entry.name.replace(/_deleted_.*/, "")}
-                        </EntryName>
-                      </CardActionArea>
-                    }
-                    action={
-                      <>
-                        <Confirmable
-                          componentGenerator={(handleOpen) => (
-                            <IconButton onClick={handleOpen}>
-                              <RestoreIcon />
-                            </IconButton>
-                          )}
-                          dialogTitle="本当に復旧しますか？"
-                          onClickYes={() => handleRestore(entry.id)}
-                        />
-                      </>
-                    }
-                  />
-                </StyledCard>
-              </Grid>
-            );
-          })}
-        </Grid>
-      )}
+      <Grid container spacing={2} id="entry_list">
+        {entries.results?.map((entry) => {
+          return (
+            <Grid size={4} key={entry.id}>
+              <StyledCard>
+                <StyledCardHeader
+                  title={
+                    <CardActionArea
+                      onClick={() => {
+                        setSelectedEntryId(entry.id);
+                        setOpenModal(true);
+                      }}
+                    >
+                      <EntryName variant="h6">
+                        {entry.name.replace(/_deleted_.*/, "")}
+                      </EntryName>
+                    </CardActionArea>
+                  }
+                  action={
+                    <>
+                      <Confirmable
+                        componentGenerator={(handleOpen) => (
+                          <IconButton onClick={handleOpen}>
+                            <RestoreIcon />
+                          </IconButton>
+                        )}
+                        dialogTitle="本当に復旧しますか？"
+                        onClickYes={() => handleRestore(entry.id)}
+                      />
+                    </>
+                  }
+                />
+              </StyledCard>
+            </Grid>
+          );
+        })}
+      </Grid>
       <PaginationFooter
-        count={entries.value?.count ?? 0}
+        count={entries.count ?? 0}
         maxRowCount={EntryListParam.MAX_ROW_COUNT}
         page={page}
         changePage={changePage}
@@ -211,72 +273,25 @@ export const RestorableEntryList: FC<Props> = ({ entityId }) => {
         onClose={() => setOpenModal(false)}
       >
         <PaperBox>
-          {entryDetail.loading ? (
-            <Loading />
-          ) : (
-            <>
-              <Typography color="primary" my={2}>
-                Operation Information
-              </Typography>
-              <TableContainer component={Paper} style={{ overflowX: "unset" }}>
-                <Table id="table_info_list">
-                  <TableHead sx={{ backgroundColor: "primary.dark" }}>
-                    <TableRow>
-                      <HeaderTableCell>項目</HeaderTableCell>
-                      <HeaderTableCell>内容</HeaderTableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    <StyledTableRow>
-                      <ItemNameTableCell>Deleted by</ItemNameTableCell>
-                      <ItemValueTableCell>
-                        {entryDetail.value?.deletedUser?.username}
-                      </ItemValueTableCell>
-                    </StyledTableRow>
-                    <StyledTableRow>
-                      <ItemNameTableCell>Deleted at</ItemNameTableCell>
-                      <ItemValueTableCell>
-                        {entryDetail.value?.deletedTime != null
-                          ? formatDateTime(entryDetail.value.deletedTime)
-                          : null}
-                      </ItemValueTableCell>
-                    </StyledTableRow>
-                  </TableBody>
-                </Table>
-              </TableContainer>
-              <Typography color="primary" my={2}>
-                Attributes & Values
-              </Typography>
-              {entryDetail.value?.attrs != null && (
-                <EntryAttributes attributes={entryDetail.value.attrs} />
-              )}
-              <Box display="flex" justifyContent="flex-end" my={2}>
-                <Confirmable
-                  componentGenerator={(handleOpen) => (
-                    <Button
-                      variant="contained"
-                      color="secondary"
-                      sx={{ margin: "0 4px" }}
-                      onClick={handleOpen}
-                    >
-                      復旧
-                    </Button>
-                  )}
-                  dialogTitle="本当に復旧しますか？"
-                  onClickYes={() => handleRestore(entryDetail.value?.id ?? 0)}
-                />
-                <Button
-                  variant="outlined"
-                  sx={{ margin: "0 4px" }}
-                  onClick={() => setOpenModal(false)}
-                >
-                  キャンセル
-                </Button>
-              </Box>
-            </>
+          {selectedEntryId != null && (
+            <Suspense fallback={<Loading />}>
+              <EntryDetailModalContent
+                entryId={selectedEntryId}
+                onRestore={handleRestore}
+                onClose={() => setOpenModal(false)}
+              />
+            </Suspense>
           )}
         </PaperBox>
       </StyledModal>
     </Box>
+  );
+};
+
+export const RestorableEntryList: FC<Props> = ({ entityId }) => {
+  return (
+    <Suspense fallback={<Loading />}>
+      <RestorableEntryListContent entityId={entityId} />
+    </Suspense>
   );
 };
