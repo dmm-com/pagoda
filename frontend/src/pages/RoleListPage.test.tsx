@@ -2,7 +2,7 @@
  * @jest-environment jsdom
  */
 
-import { render, screen, waitFor } from "@testing-library/react";
+import { act, render } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 
@@ -37,13 +37,13 @@ afterAll(() => server.close());
 describe("RoleListPage", () => {
   test("should match snapshot", async () => {
     // wait async calls and get rendered fragment
-    const result = render(<RoleListPage />, {
-      wrapper: TestWrapper,
-    });
-    await waitFor(() => {
-      expect(screen.queryByTestId("loading")).not.toBeInTheDocument();
+    let result: ReturnType<typeof render>;
+    await act(async () => {
+      result = render(<RoleListPage />, {
+        wrapper: TestWrapper,
+      });
     });
 
-    expect(result).toMatchSnapshot();
+    expect(result!).toMatchSnapshot();
   });
 });

@@ -9,15 +9,16 @@ import {
   Typography,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import { FC, useMemo, useState } from "react";
+import { FC, Suspense, useMemo, useState } from "react";
 import { Link } from "react-router";
 
-import { useAsyncWithThrow } from "../../hooks/useAsyncWithThrow";
 import { usePage } from "../../hooks/usePage";
+import { usePagodaSWR } from "../../hooks/usePagodaSWR";
 import { aironeApiClient } from "../../repository/AironeApiClient";
 import { EntryReferralList } from "../../services/Constants";
 import { normalizeToMatch } from "../../services/StringUtil";
 
+import { Loading } from "components/common/Loading";
 import { SearchBox } from "components/common/SearchBox";
 import { entryDetailsPath } from "routes/Routes";
 
@@ -38,30 +39,28 @@ interface Props {
   entryId: number;
 }
 
-export const EntryReferral: FC<Props> = ({ entryId }) => {
+const EntryReferralContent: FC<Props> = ({ entryId }) => {
   const { page, changePage } = usePage();
   const [keywordQuery, setKeywordQuery] = useState("");
 
-  const referredEntries = useAsyncWithThrow(async () => {
-    return await aironeApiClient.getEntryReferral(
-      entryId,
-      page,
-      keywordQuery !== "" ? keywordQuery : undefined,
-    );
-  }, [entryId, page, keywordQuery]);
+  const { data: referredEntries } = usePagodaSWR(
+    ["referralEntries", entryId, page, keywordQuery],
+    () =>
+      aironeApiClient.getEntryReferral(
+        entryId,
+        page,
+        keywordQuery !== "" ? keywordQuery : undefined,
+      ),
+    { suspense: true },
+  );
 
   const [matchedEntries, count, maxPage] = useMemo(() => {
-    if (!referredEntries.loading && referredEntries.value != null) {
-      return [
-        referredEntries.value.results,
-        referredEntries.value.count,
-        Math.ceil(
-          (referredEntries.value.count ?? 0) / EntryReferralList.MAX_ROW_COUNT,
-        ),
-      ];
-    }
-    return [[], 0, 0];
-  }, [referredEntries.loading]);
+    return [
+      referredEntries.results,
+      referredEntries.count,
+      Math.ceil((referredEntries.count ?? 0) / EntryReferralList.MAX_ROW_COUNT),
+    ];
+  }, [referredEntries]);
 
   return (
     <Box>
@@ -107,5 +106,13 @@ export const EntryReferral: FC<Props> = ({ entryId }) => {
         ))}
       </List>
     </Box>
+  );
+};
+
+export const EntryReferral: FC<Props> = ({ entryId }) => {
+  return (
+    <Suspense fallback={<Loading />}>
+      <EntryReferralContent entryId={entryId} />
+    </Suspense>
   );
 };
