@@ -8,15 +8,6 @@ import { SearchResultControlMenuForReferral } from "./SearchResultControlMenuFor
 
 import { TestWrapper } from "TestWrapper";
 
-// Mock the location object
-const mockLocation = {
-  search: "",
-};
-Object.defineProperty(window, "location", {
-  value: mockLocation,
-  writable: true,
-});
-
 describe("SearchResultControlMenuForReferral", () => {
   const defaultProps = {
     referralFilter: "",
@@ -33,7 +24,6 @@ describe("SearchResultControlMenuForReferral", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockLocation.search = "";
   });
 
   test("should render menu when anchorElem is provided", () => {
