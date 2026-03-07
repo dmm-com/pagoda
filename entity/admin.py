@@ -30,23 +30,23 @@ class EntityResource(AironeModelResource):
 
     class Meta:
         model = Entity
-        fields = ("id", "name", "note", "status")
+        fields = ("id", "name", "note", "status", "user")
         export_order = ("id", "name", "note", "user")
 
-    def import_obj(self, instance, data, dry_run, **kwargs):
+    def import_instance(self, instance, row, **kwargs):
         # will not import duplicate entity
-        if Entity.objects.filter(name=data["name"]).exists():
-            entity = Entity.objects.filter(name=data["name"]).get()
-            if "id" not in data or not data["id"] or entity.id != data["id"]:
-                raise RuntimeError("There is a duplicate entity object (%s)" % data["name"])
+        if Entity.objects.filter(name=row["name"]).exists():
+            entity = Entity.objects.filter(name=row["name"]).get()
+            if "id" not in row or not row["id"] or entity.id != row["id"]:
+                raise RuntimeError("There is a duplicate entity object (%s)" % row["name"])
 
         # Set event handler for custom-view. When it returns not None, then it abort to import.
         if custom_view.is_custom("import_entity"):
-            error = custom_view.call_custom("import_entity", None, instance, data)
+            error = custom_view.call_custom("import_entity", None, instance, row)
             if error:
                 raise RuntimeError(error)
 
-        super(EntityResource, self).import_obj(instance, data, dry_run, **kwargs)
+        super().import_instance(instance, row, **kwargs)
 
 
 class EntityAttrResource(AironeModelResource):
@@ -92,29 +92,29 @@ class EntityAttrResource(AironeModelResource):
 
     class Meta:
         model = EntityAttr
-        fields = ("id", "name", "type", "is_mandatory")
+        fields = ("id", "name", "type", "is_mandatory", "user", "refer", "entity")
 
-    def import_obj(self, instance, data, dry_run, **kwargs):
-        if not Entity.objects.filter(name=data["entity"]).exists():
+    def import_instance(self, instance, row, **kwargs):
+        if not Entity.objects.filter(name=row["entity"]).exists():
             raise RuntimeError("failed to identify entity object")
 
-        if data["refer"] and not all(
-            [Entity.objects.filter(name=x).exists() for x in data["refer"].split(",")]
+        if row["refer"] and not all(
+            [Entity.objects.filter(name=x).exists() for x in row["refer"].split(",")]
         ):
             raise RuntimeError("refer to invalid entity object")
 
         # The processing fails when 'type' parameter is not existed for creating a new instance
-        if not instance.pk and not data["type"]:
+        if not instance.pk and not row["type"]:
             raise RuntimeError("The parameter 'type' is mandatory when a new EntityAtter create")
 
         # Set event handler for custom-view. When it returns not None, then it abort to import.
         if custom_view.is_custom("import_entity_attr"):
-            error = custom_view.call_custom("import_entity_attr", None, instance, data)
+            error = custom_view.call_custom("import_entity_attr", None, instance, row)
             if error:
                 raise RuntimeError(error)
 
         # Do not allow to change type when instance is already created
         if instance.pk:
-            data["type"] = instance.type
+            row["type"] = instance.type
 
-        super(EntityAttrResource, self).import_obj(instance, data, dry_run, **kwargs)
+        super().import_instance(instance, row, **kwargs)
