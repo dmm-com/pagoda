@@ -1,6 +1,7 @@
 import importlib
 
 import tablib
+from import_export.exceptions import ImportError as ImportExportError
 from import_export.resources import ModelResource
 
 from acl.models import ACLBase
@@ -91,4 +92,9 @@ class AironeModelResource(ModelResource):
             headers=self._IMPORT_INFO["header"],
         )
 
-        return resource.import_data(dataset, raise_errors=True)
+        try:
+            return resource.import_data(dataset, raise_errors=True)
+        except ImportExportError as e:
+            if isinstance(e.error, Exception):
+                raise e.error from e
+            raise
