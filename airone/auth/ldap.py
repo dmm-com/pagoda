@@ -49,8 +49,8 @@ class LDAPBackend(object):
             if user:
                 return user
 
-            # If the HTTP method is GET or HEAD, use the slave DB by the django_replicated.
-            # Return None because session information cannot be written to SlaveDB.
+            # If the HTTP method is GET or HEAD, the DB router directs to replica.
+            # Return None because session information cannot be written to the replica DB.
             if request and request.method in ["GET", "HEAD"]:
                 Logger.info("Failed to authenticate because of GET or HEAD method")
                 return None
