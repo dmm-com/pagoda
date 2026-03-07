@@ -1,9 +1,8 @@
 import copy
 import json
-from datetime import date, datetime, timedelta
+from datetime import UTC, date, datetime, timedelta
 from unittest import mock
 
-import pytz
 from django.conf import settings
 from rest_framework import status
 from rest_framework.authtoken.models import Token
@@ -206,7 +205,7 @@ class APITest(AironeViewTest):
             {
                 "name": "datetime",
                 "check": lambda v: self.assertEqual(
-                    v.datetime, datetime(2018, 12, 31, 12, 34, 56, tzinfo=pytz.utc)
+                    v.datetime, datetime(2018, 12, 31, 12, 34, 56, tzinfo=UTC)
                 ),
             },
         ]
@@ -1110,7 +1109,7 @@ class APITest(AironeViewTest):
         )
 
         # Fixed value of datetime.now() for 100-seconds future
-        dt_mock.now = mock.Mock(return_value=datetime.now(tz=pytz.UTC) + timedelta(seconds=100))
+        dt_mock.now = mock.Mock(return_value=datetime.now(tz=UTC) + timedelta(seconds=100))
 
         # By default, token_lifetime is set of User.TOKEN_LIFETIME which is more than 100 seconds
         resp = self.client.get(
