@@ -8,7 +8,6 @@ from typing import Any
 import environ
 from configurations import Configuration
 from ddtrace import config, patch_all, tracer
-from django_replicated import settings
 
 env = environ.Env()
 env.read_env(os.path.join(environ.Path(__file__) - 2, ".env"))
@@ -96,7 +95,7 @@ class Common(Configuration):
         "django.contrib.messages.middleware.MessageMiddleware",
         "django.middleware.clickjacking.XFrameOptionsMiddleware",
         "social_django.middleware.SocialAuthExceptionMiddleware",
-        "airone.middleware.db.AirOneReplicationMiddleware",
+        "multidb.middleware.PinningRouterMiddleware",
         "airone.middleware.gate_keeper.URLGateKeeper",
         "simple_history.middleware.HistoryRequestMiddleware",
     ] + env.list("AIRONE_MIDDLEWARE", None, [])
@@ -154,25 +153,14 @@ class Common(Configuration):
         )
     }
 
-    DATABASE_ROUTERS = ["django_replicated.router.ReplicationRouter"]
-    REPLICATED_DATABASE_SLAVES = ["default"]
-    REPLICATED_CACHE_BACKEND = settings.REPLICATED_CACHE_BACKEND
-    REPLICATED_DATABASE_DOWNTIME = settings.REPLICATED_DATABASE_DOWNTIME
-    REPLICATED_VIEWS_OVERRIDES = settings.REPLICATED_VIEWS_OVERRIDES
-    REPLICATED_READ_ONLY_DOWNTIME = settings.REPLICATED_READ_ONLY_DOWNTIME
-    REPLICATED_READ_ONLY_TRIES = settings.REPLICATED_READ_ONLY_TRIES
-    REPLICATED_FORCE_MASTER_COOKIE_NAME = settings.REPLICATED_FORCE_MASTER_COOKIE_NAME
-    REPLICATED_FORCE_MASTER_COOKIE_MAX_AGE = settings.REPLICATED_FORCE_MASTER_COOKIE_MAX_AGE
-    REPLICATED_FORCE_STATE_HEADER = settings.REPLICATED_FORCE_STATE_HEADER
-    REPLICATED_CHECK_STATE_ON_WRITE = settings.REPLICATED_CHECK_STATE_ON_WRITE
-    REPLICATED_FORCE_MASTER_COOKIE_STATUS_CODES = (
-        settings.REPLICATED_FORCE_MASTER_COOKIE_STATUS_CODES
-    )
-    REPLICATED_MANAGE_ATOMIC_REQUESTS = settings.REPLICATED_MANAGE_ATOMIC_REQUESTS
+    DATABASE_ROUTERS = ["multidb.PinningReplicaRouter"]
+    REPLICA_DATABASES = ["default"]
+    MULTIDB_PINNING_SECONDS = 5
+    MULTIDB_PINNING_COOKIE = "just_updated"
 
     if os.environ.get("AIRONE_MYSQL_SLAVE_URL", False):
         DATABASES["slave"] = env.db("AIRONE_MYSQL_SLAVE_URL")
-        REPLICATED_DATABASE_SLAVES = ["slave"]
+        REPLICA_DATABASES = ["slave"]
 
     # Password validation
     # https://docs.djangoproject.com/en/1.11/ref/settings/#auth-password-validators

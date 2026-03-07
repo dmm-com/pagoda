@@ -46,7 +46,7 @@ dependencies = [
     "django-environ==0.12.0",
     "django-filter==24.3",
     "django-import-export==3.3.1",
-    "django-replicated==2.7",
+    "django-multidb-router>=0.11",
     "django-simple-history==3.11.0",
     "django-storages==1.14.1",
     "django==4.2.29",
