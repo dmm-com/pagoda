@@ -65,15 +65,25 @@ class AttrValueResource(AironeModelResource):
 
     class Meta:
         model = AttributeValue
-        fields = ("id", "name", "value", "created_time", "status")
+        fields = (
+            "id",
+            "name",
+            "value",
+            "created_time",
+            "status",
+            "attr_id",
+            "refer",
+            "user",
+            "parent_attrv",
+        )
         skip_unchanged = True
         instance_loader_class = CachedInstanceLoader
 
-    def after_save_instance(self, instance, using_transactions, dry_run):
+    def after_save_instance(self, instance, row, **kwargs):
         # If a new AttributeValue object is created,
         # this processing append it to the associated Entity object.
         self._saved_instance = None
-        if not dry_run:
+        if not kwargs.get("dry_run", False):
             attr = instance.parent_attr
 
             # register data_type parameter which is same with EntityAttr's type
@@ -145,14 +155,14 @@ class AttrResource(AironeModelResource):
 
     class Meta:
         model = Attribute
-        fields = ("id", "name", "schema_id")
+        fields = ("id", "name", "schema_id", "entry", "user")
         skip_unchanged = True
         instance_loader_class = CachedInstanceLoader
 
-    def after_save_instance(self, instance, using_transactions, dry_run):
+    def after_save_instance(self, instance, row, **kwargs):
         # If a new Attribute object is created,
         # this processing append it to the associated Entity object.
-        if not dry_run:
+        if not kwargs.get("dry_run", False):
             entry = instance.parent_entry
 
             if not entry.attrs.filter(id=instance.id).exists():
@@ -182,40 +192,40 @@ class EntryResource(AironeModelResource):
 
     class Meta:
         model = Entry
-        fields = ("id", "name")
+        fields = ("id", "name", "entity", "user")
         skip_unchanged = True
         instance_loader_class = CachedInstanceLoader
 
-    def import_obj(self, instance, data, dry_run, **kwargs):
+    def import_instance(self, instance, row, **kwargs):
         # will not import entry which refers invalid entity
-        if not Entity.objects.filter(name=data["entity"]).exists():
-            raise RuntimeError("Specified entity(%s) doesn't exist" % data["entity"])
+        if not Entity.objects.filter(name=row["entity"]).exists():
+            raise RuntimeError("Specified entity(%s) doesn't exist" % row["entity"])
 
         # will not import entry which has same name and refers same entity
-        entity = Entity.objects.get(name=data["entity"])
-        if Entry.objects.filter(schema=entity, name=data["name"]).exists():
-            entry = Entry.objects.get(schema=entity, name=data["name"])
-            if "id" not in data or not data["id"] or entry.id != data["id"]:
+        entity = Entity.objects.get(name=row["entity"])
+        if Entry.objects.filter(schema=entity, name=row["name"]).exists():
+            entry = Entry.objects.get(schema=entity, name=row["name"])
+            if "id" not in row or not row["id"] or entry.id != row["id"]:
                 raise RuntimeError("There is a duplicate entry object")
 
-        super(EntryResource, self).import_obj(instance, data, dry_run, **kwargs)
+        super().import_instance(instance, row, **kwargs)
 
-    def after_save_instance(self, instance, using_transactions, dry_run):
-        if not dry_run:
+    def after_save_instance(self, instance, row, **kwargs):
+        if not kwargs.get("dry_run", False):
             # register imported entry to the Elasticsearch
             instance.register_es()
 
 
 class EntryAdmin(ImportExportModelAdmin):
-    resource_class = EntryResource
+    resource_classes = [EntryResource]
     skip_admin_log = True
 
 
 class AttrAdmin(ImportExportModelAdmin):
-    resource_class = AttrResource
+    resource_classes = [AttrResource]
     skip_admin_log = True
 
 
 class AttrValueAdmin(ImportExportModelAdmin):
-    resource_class = AttrValueResource
+    resource_classes = [AttrValueResource]
     skip_admin_log = True
