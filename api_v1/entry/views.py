@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import List, Optional
+from zoneinfo import ZoneInfo
 
-import pytz
 from django.conf import settings
 from django.db.models import Q
 from pydantic import BaseModel, Field, RootModel, ValidationError, field_validator
@@ -285,12 +285,12 @@ class UpdateHistory(APIView):
             )
 
         # Set variables that describe timerange to filter the result of AttributeValue with them.
-        older_than = datetime.now(pytz.timezone(settings.TIME_ZONE))
+        older_than = datetime.now(ZoneInfo(settings.TIME_ZONE))
         p_older_than = request.GET.get("older_than")
         if p_older_than:
             try:
                 older_than = datetime.strptime(p_older_than, CONFIG_ENTRY.TIME_FORMAT).replace(
-                    tzinfo=pytz.timezone(settings.TIME_ZONE)
+                    tzinfo=ZoneInfo(settings.TIME_ZONE)
                 )
             except ValueError:
                 return Response(
@@ -302,12 +302,12 @@ class UpdateHistory(APIView):
         # with the created time of AttributeValue. We could handle minimum time by using
         # 'datetime.MIN', but some library and service couldn't deal with this time.
         # (c.f. https://dev.mysql.com/doc/refman/5.7/en/datetime.html)
-        newer_than = datetime(1900, 1, 1, tzinfo=pytz.timezone(settings.TIME_ZONE))
+        newer_than = datetime(1900, 1, 1, tzinfo=ZoneInfo(settings.TIME_ZONE))
         p_newer_than = request.GET.get("newer_than")
         if p_newer_than:
             try:
                 newer_than = datetime.strptime(p_newer_than, CONFIG_ENTRY.TIME_FORMAT).replace(
-                    tzinfo=pytz.timezone(settings.TIME_ZONE)
+                    tzinfo=ZoneInfo(settings.TIME_ZONE)
                 )
             except ValueError:
                 return Response(

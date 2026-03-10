@@ -7,8 +7,8 @@ from datetime import date, datetime, timedelta
 from importlib import import_module
 from types import ModuleType
 from typing import Any, Callable, Optional, TypeAlias, Union
+from zoneinfo import ZoneInfo
 
-import pytz
 from django.conf import settings
 from django.core.files.storage import default_storage
 from django.db import models
@@ -216,7 +216,7 @@ class Job(models.Model):
 
         task_expiry = self.updated_at + timedelta(seconds=self._get_job_timeout())
 
-        return datetime.now(pytz.timezone(settings.TIME_ZONE)) > task_expiry
+        return datetime.now(ZoneInfo(settings.TIME_ZONE)) > task_expiry
 
     def is_finished(self, with_refresh: bool = True) -> bool:
         if with_refresh:
@@ -333,7 +333,7 @@ class Job(models.Model):
         # # set dependent job to prevent running tasks simultaneously which set to target same one.
         dependent_job: Job | None = None
         if target is not None:
-            threshold = datetime.now(pytz.timezone(settings.TIME_ZONE)) - timedelta(
+            threshold = datetime.now(ZoneInfo(settings.TIME_ZONE)) - timedelta(
                 seconds=kls._get_job_timeout()
             )
             dependent_job = (
