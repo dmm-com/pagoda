@@ -14,7 +14,7 @@ import {
 import { FC, useState } from "react";
 import { Control, Controller, UseFormSetValue } from "react-hook-form";
 
-import { useAsyncWithThrow } from "../../hooks/useAsyncWithThrow";
+import { usePagodaSWR } from "../../hooks/usePagodaSWR";
 import { filterAncestorsAndOthers } from "../../services/group/Edit";
 
 import { GroupTreeRoot } from "./GroupTreeRoot";
@@ -32,19 +32,22 @@ interface Props {
 export const GroupForm: FC<Props> = ({ control, setValue, groupId }) => {
   const [userKeyword, setUserKeyword] = useState("");
 
-  const users = useAsyncWithThrow(async () => {
+  const { data: users } = usePagodaSWR(["users", 1, userKeyword], async () => {
     const _users = await aironeApiClient.getUsers(1, userKeyword);
     return _users.results?.map(
       (user): GroupMember => ({ id: user.id, username: user.username }),
     );
-  }, [userKeyword]);
-
-  const groupTrees = useAsyncWithThrow(async () => {
-    const _groupTrees = await aironeApiClient.getGroupTrees();
-    return groupId != null
-      ? filterAncestorsAndOthers(_groupTrees, groupId)
-      : _groupTrees;
   });
+
+  const { data: groupTrees, isLoading: groupTreesLoading } = usePagodaSWR(
+    ["groupTrees", groupId],
+    async () => {
+      const _groupTrees = await aironeApiClient.getGroupTrees();
+      return groupId != null
+        ? filterAncestorsAndOthers(_groupTrees, groupId)
+        : _groupTrees;
+    },
+  );
 
   return (
     <Box>
@@ -92,7 +95,7 @@ export const GroupForm: FC<Props> = ({ control, setValue, groupId }) => {
                 render={({ field }) => (
                   <Autocomplete
                     {...field}
-                    options={users.value ?? []}
+                    options={users ?? []}
                     getOptionLabel={(option: GroupMember) => option.username}
                     isOptionEqualToValue={(option: GroupMember, value) =>
                       option.id === value.id
@@ -125,7 +128,7 @@ export const GroupForm: FC<Props> = ({ control, setValue, groupId }) => {
         </Typography>
       </Box>
       <Divider sx={{ mt: "16px" }} />
-      {groupTrees.loading ? (
+      {groupTreesLoading ? (
         <Loading />
       ) : (
         <Controller
@@ -133,7 +136,7 @@ export const GroupForm: FC<Props> = ({ control, setValue, groupId }) => {
           control={control}
           render={({ field }) => (
             <GroupTreeRoot
-              groupTrees={groupTrees.value ?? []}
+              groupTrees={groupTrees ?? []}
               selectedGroupId={field.value ?? null}
               handleSelectGroupId={(groupId: number | null) =>
                 setValue("parentGroup", groupId, {

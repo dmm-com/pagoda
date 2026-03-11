@@ -1,5 +1,5 @@
 import { Box, Button, Container, Typography } from "@mui/material";
-import { FC, useCallback, useState } from "react";
+import { FC, Suspense, useCallback, useState } from "react";
 
 import { AironeLink } from "components";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
@@ -7,28 +7,44 @@ import { Loading } from "components/common/Loading";
 import { PageHeader } from "components/common/PageHeader";
 import { EntityImportModal } from "components/entity/EntityImportModal";
 import { EntityList } from "components/entity/EntityList";
-import { useAsyncWithThrow } from "hooks/useAsyncWithThrow";
 import { usePage } from "hooks/usePage";
 import { usePageTitle } from "hooks/usePageTitle";
+import { usePagodaSWR } from "hooks/usePagodaSWR";
 import { aironeApiClient } from "repository/AironeApiClient";
 import { topPath } from "routes/Routes";
 import { TITLE_TEMPLATES } from "services";
 
-export const EntityListPage: FC = () => {
+const EntityListContent: FC = () => {
   const { page, query, changePage, changeQuery } = usePage();
 
-  const [openImportModal, setOpenImportModal] = useState(false);
-  const [toggle, setToggle] = useState(false);
+  const { data: entities, mutate: refreshEntities } = usePagodaSWR(
+    ["entities", page, query],
+    () => aironeApiClient.getEntities(page, query),
+    { suspense: true },
+  );
 
-  const entities = useAsyncWithThrow(async () => {
-    return await aironeApiClient.getEntities(page, query);
-  }, [page, query, toggle]);
+  usePageTitle(TITLE_TEMPLATES.entityList);
+
+  return (
+    <Container>
+      <EntityList
+        entities={entities}
+        page={page}
+        changePage={changePage}
+        query={query}
+        handleChangeQuery={changeQuery}
+        setToggle={() => refreshEntities()}
+      />
+    </Container>
+  );
+};
+
+export const EntityListPage: FC = () => {
+  const [openImportModal, setOpenImportModal] = useState(false);
 
   const handleExport = useCallback(async () => {
     await aironeApiClient.exportEntities("entity.yaml");
   }, []);
-
-  usePageTitle(TITLE_TEMPLATES.entityList);
 
   return (
     <Box className="container-fluid">
@@ -64,20 +80,9 @@ export const EntityListPage: FC = () => {
         </Box>
       </PageHeader>
 
-      {entities.loading || !entities.value ? (
-        <Loading />
-      ) : (
-        <Container>
-          <EntityList
-            entities={entities.value}
-            page={page}
-            changePage={changePage}
-            query={query}
-            handleChangeQuery={changeQuery}
-            setToggle={() => setToggle(!toggle)}
-          />
-        </Container>
-      )}
+      <Suspense fallback={<Loading />}>
+        <EntityListContent />
+      </Suspense>
     </Box>
   );
 };

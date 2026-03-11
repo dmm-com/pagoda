@@ -23,7 +23,7 @@ import {
   UseFormSetValue,
 } from "react-hook-form";
 
-import { useAsyncWithThrow } from "../../hooks/useAsyncWithThrow";
+import { usePagodaSWR } from "../../hooks/usePagodaSWR";
 import { aironeApiClient } from "../../repository/AironeApiClient";
 
 import { Schema } from "./roleForm/RoleFormSchema";
@@ -40,30 +40,39 @@ export const RoleForm: FC<Props> = ({ control, setValue }) => {
   const [adminGroupUserKeyword, setGroupAdminUserKeyword] = useState("");
 
   // TODO implement pagination and incremental search
-  const adminGroups = useAsyncWithThrow(async () => {
-    const _groups = await aironeApiClient.getGroups(1, adminGroupUserKeyword);
-    return _groups.results?.map(
-      (group): RoleGroup => ({ id: group.id, name: group.name }),
-    );
-  }, [adminGroupUserKeyword]);
-  const groups = useAsyncWithThrow(async () => {
-    const _groups = await aironeApiClient.getGroups(1, groupUserKeyword);
-    return _groups.results?.map(
-      (group): RoleGroup => ({ id: group.id, name: group.name }),
-    );
-  }, [groupUserKeyword]);
-  const adminUsers = useAsyncWithThrow(async () => {
-    const _users = await aironeApiClient.getUsers(1, adminUserKeyword);
-    return _users.results?.map(
-      (user): RoleUser => ({ id: user.id, username: user.username }),
-    );
-  }, [adminUserKeyword]);
-  const users = useAsyncWithThrow(async () => {
+  const { data: adminGroups } = usePagodaSWR(
+    ["groups", 1, adminGroupUserKeyword],
+    async () => {
+      const _groups = await aironeApiClient.getGroups(1, adminGroupUserKeyword);
+      return _groups.results?.map(
+        (group): RoleGroup => ({ id: group.id, name: group.name }),
+      );
+    },
+  );
+  const { data: groups } = usePagodaSWR(
+    ["groups", 1, groupUserKeyword],
+    async () => {
+      const _groups = await aironeApiClient.getGroups(1, groupUserKeyword);
+      return _groups.results?.map(
+        (group): RoleGroup => ({ id: group.id, name: group.name }),
+      );
+    },
+  );
+  const { data: adminUsers } = usePagodaSWR(
+    ["users", 1, adminUserKeyword],
+    async () => {
+      const _users = await aironeApiClient.getUsers(1, adminUserKeyword);
+      return _users.results?.map(
+        (user): RoleUser => ({ id: user.id, username: user.username }),
+      );
+    },
+  );
+  const { data: users } = usePagodaSWR(["users", 1, userKeyword], async () => {
     const _users = await aironeApiClient.getUsers(1, userKeyword);
     return _users.results?.map(
       (user): RoleUser => ({ id: user.id, username: user.username }),
     );
-  }, [userKeyword]);
+  });
 
   return (
     <Box>
@@ -153,7 +162,7 @@ export const RoleForm: FC<Props> = ({ control, setValue }) => {
                     render={({ field, fieldState: { error } }) => (
                       <Autocomplete
                         {...field}
-                        options={adminGroups.value ?? []}
+                        options={adminGroups ?? []}
                         getOptionLabel={(option: RoleGroup) => option.name}
                         isOptionEqualToValue={(option, value) =>
                           option.id === value.id
@@ -225,7 +234,7 @@ export const RoleForm: FC<Props> = ({ control, setValue }) => {
                     render={({ field, fieldState: { error } }) => (
                       <Autocomplete
                         {...field}
-                        options={groups.value ?? []}
+                        options={groups ?? []}
                         getOptionLabel={(option: RoleGroup) => option.name}
                         isOptionEqualToValue={(option, value) =>
                           option.id === value.id
@@ -314,7 +323,7 @@ export const RoleForm: FC<Props> = ({ control, setValue }) => {
                     render={({ field, fieldState: { error } }) => (
                       <Autocomplete
                         {...field}
-                        options={adminUsers.value ?? []}
+                        options={adminUsers ?? []}
                         getOptionLabel={(option: RoleUser) => option.username}
                         isOptionEqualToValue={(option, value) =>
                           option.id === value.id
@@ -386,7 +395,7 @@ export const RoleForm: FC<Props> = ({ control, setValue }) => {
                     render={({ field, fieldState: { error } }) => (
                       <Autocomplete
                         {...field}
-                        options={users.value ?? []}
+                        options={users ?? []}
                         getOptionLabel={(option: RoleUser) => option.username}
                         isOptionEqualToValue={(option, value) =>
                           option.id === value.id

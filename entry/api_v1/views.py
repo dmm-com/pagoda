@@ -1,12 +1,12 @@
 import json
 import re
 from datetime import date, datetime
+from zoneinfo import ZoneInfo
 
 from django.db.models import Q
 from django.http import HttpResponse
 from django.http.response import JsonResponse
 from natsort import natsorted
-from pytz import timezone
 
 from acl.models import ACLBase
 from airone.lib.acl import ACLType
@@ -264,7 +264,7 @@ def get_entry_history(request, entry_id):
         if isinstance(obj, ACLBase) or isinstance(obj, Group) or isinstance(obj, Role):
             return {"id": obj.id, "name": obj.name}
         elif isinstance(obj, datetime):
-            return obj.astimezone(timezone("Asia/Tokyo")).strftime("%b. %d, %Y, %I:%M %p")
+            return obj.astimezone(ZoneInfo("Asia/Tokyo")).strftime("%b. %d, %Y, %I:%M %p")
         elif isinstance(obj, date):
             return str(obj)
 

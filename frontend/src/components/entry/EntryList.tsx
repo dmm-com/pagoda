@@ -1,7 +1,7 @@
 import AddIcon from "@mui/icons-material/Add";
 import { Box, Button } from "@mui/material";
 import Grid from "@mui/material/Grid2";
-import { FC, useState } from "react";
+import { FC, Suspense } from "react";
 import { Link } from "react-router";
 
 import { EntryListCard } from "./EntryListCard";
@@ -9,8 +9,8 @@ import { EntryListCard } from "./EntryListCard";
 import { Loading } from "components/common/Loading";
 import { PaginationFooter } from "components/common/PaginationFooter";
 import { SearchBox } from "components/common/SearchBox";
-import { useAsyncWithThrow } from "hooks/useAsyncWithThrow";
 import { usePage } from "hooks/usePage";
+import { usePagodaSWR } from "hooks/usePagodaSWR";
 import { aironeApiClient } from "repository/AironeApiClient";
 import { newEntryPath } from "routes/Routes";
 import { EntryListParam } from "services/Constants";
@@ -21,13 +21,14 @@ interface Props {
   canCreateEntry?: boolean;
 }
 
-export const EntryList: FC<Props> = ({ entityId, canCreateEntry = true }) => {
+const EntryListContent: FC<Props> = ({ entityId, canCreateEntry = true }) => {
   const { page, query, changePage, changeQuery } = usePage();
-  const [toggle, setToggle] = useState(false);
 
-  const entries = useAsyncWithThrow(async () => {
-    return await aironeApiClient.getEntries(entityId, true, page, query);
-  }, [entityId, page, query, toggle]);
+  const { data: entries, mutate: refreshEntries } = usePagodaSWR(
+    ["entries", entityId, true, page, query],
+    () => aironeApiClient.getEntries(entityId, true, page, query),
+    { suspense: true },
+  );
 
   const handleChangeQuery = changeQuery;
 
@@ -61,29 +62,33 @@ export const EntryList: FC<Props> = ({ entityId, canCreateEntry = true }) => {
       </Box>
 
       {/* This box shows each entry Cards */}
-      {entries.loading ? (
-        <Loading />
-      ) : (
-        <Grid container spacing={2} id="entry_list">
-          {entries.value?.results?.map((entry) => {
-            return (
-              <Grid size={4} key={entry.id}>
-                <EntryListCard
-                  entityId={entityId}
-                  entry={entry}
-                  setToggle={() => setToggle(!toggle)}
-                />
-              </Grid>
-            );
-          })}
-        </Grid>
-      )}
+      <Grid container spacing={2} id="entry_list">
+        {entries.results?.map((entry) => {
+          return (
+            <Grid size={4} key={entry.id}>
+              <EntryListCard
+                entityId={entityId}
+                entry={entry}
+                setToggle={() => refreshEntries()}
+              />
+            </Grid>
+          );
+        })}
+      </Grid>
       <PaginationFooter
-        count={entries.value?.count ?? 0}
+        count={entries.count ?? 0}
         maxRowCount={EntryListParam.MAX_ROW_COUNT}
         page={page}
         changePage={changePage}
       />
     </Box>
+  );
+};
+
+export const EntryList: FC<Props> = ({ entityId, canCreateEntry = true }) => {
+  return (
+    <Suspense fallback={<Loading />}>
+      <EntryListContent entityId={entityId} canCreateEntry={canCreateEntry} />
+    </Suspense>
   );
 };

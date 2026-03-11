@@ -146,8 +146,6 @@ externalRabbitmq:
 
 rabbitmq:
   enabled: true
-  image:
-    tag: 3.8.19-debian-10-r30
   auth:
     username: airone
     password: password

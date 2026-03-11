@@ -530,7 +530,7 @@ pip install https://github.com/user/my-plugin/releases/download/v1.0.0/my_plugin
 # Development editable install
 pip install -e .
 
-# Development install in Poetry environment
+# Development install in uv environment
 pip install -e .
 ```
 
@@ -850,7 +850,7 @@ Always test plugin tasks with a running Celery worker:
 
 ```bash
 # Terminal 1: Start Celery worker
-poetry run celery -A airone worker -l info
+uv run celery -A airone worker -l info
 
 # Terminal 2: Start Django server
 ENABLED_PLUGINS=my-plugin python manage.py runserver
@@ -1283,7 +1283,7 @@ def log_after_create(self, entity_name, user, entry, **kwargs):
 
 #### 4. Plugin Development Environment Issues
 
-**Development with Poetry**:
+**Development with uv**:
 ```bash
 # If pagoda-core is not found
 cd pagoda-core/

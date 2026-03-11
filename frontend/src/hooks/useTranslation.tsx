@@ -25,8 +25,13 @@ export function useTranslation<
     return response.t(key);
   };
 
-  return {
-    ...response,
+  // Build an array with named properties to support both
+  // array destructuring (const [t, i18n, ready] = ...) and
+  // object access (result.t, result.i18n, result.ready).
+  const result = Object.assign([t, response.i18n, response.ready], {
     t,
-  };
+    i18n: response.i18n,
+    ready: response.ready,
+  });
+  return result as unknown as UseTranslationResponse;
 }

@@ -2,7 +2,7 @@
  * @jest-environment jsdom
  */
 
-import { render, screen, waitFor } from "@testing-library/react";
+import { act, render, screen } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import { createMemoryRouter, RouterProvider } from "react-router";
@@ -111,16 +111,16 @@ describe("AliasEntryListPage", () => {
     );
 
     // Render component
-    render(
-      <TestWrapperWithoutRoutes>
-        <RouterProvider router={router} />
-      </TestWrapperWithoutRoutes>,
-    );
-
-    // Wait for page title to be displayed
-    await waitFor(() => {
-      const titleElement = screen.getByRole("heading", { name: "Entity1" });
-      expect(titleElement).toBeInTheDocument();
+    await act(async () => {
+      render(
+        <TestWrapperWithoutRoutes>
+          <RouterProvider router={router} />
+        </TestWrapperWithoutRoutes>,
+      );
     });
+
+    // Verify page title is displayed
+    const titleElement = screen.getByRole("heading", { name: "Entity1" });
+    expect(titleElement).toBeInTheDocument();
   });
 });

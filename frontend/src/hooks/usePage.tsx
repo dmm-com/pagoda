@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { startTransition, useCallback, useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router";
 
 type UsePageReturn = {
@@ -30,11 +30,13 @@ export const usePage = (): UsePageReturn => {
 
   const changePage = useCallback(
     (newPage: number) => {
-      const params = new URLSearchParams(location.search);
-      params.set("page", newPage.toString());
-      navigate({
-        pathname: location.pathname,
-        search: params.toString(),
+      startTransition(() => {
+        const params = new URLSearchParams(location.search);
+        params.set("page", newPage.toString());
+        navigate({
+          pathname: location.pathname,
+          search: params.toString(),
+        });
       });
     },
     [location.pathname, location.search, navigate],
@@ -42,14 +44,16 @@ export const usePage = (): UsePageReturn => {
 
   const changeQuery = useCallback(
     (newQuery: string) => {
-      const params = new URLSearchParams();
-      if (newQuery) {
-        params.set("query", encodeURIComponent(newQuery));
-      }
-      params.set("page", "1");
-      navigate({
-        pathname: location.pathname,
-        search: params.toString(),
+      startTransition(() => {
+        const params = new URLSearchParams();
+        if (newQuery) {
+          params.set("query", encodeURIComponent(newQuery));
+        }
+        params.set("page", "1");
+        navigate({
+          pathname: location.pathname,
+          search: params.toString(),
+        });
       });
     },
     [location.pathname, navigate],

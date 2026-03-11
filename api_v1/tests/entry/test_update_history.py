@@ -1,6 +1,6 @@
 from datetime import date, datetime, timedelta
+from zoneinfo import ZoneInfo
 
-import pytz
 from django.conf import settings
 
 from airone.lib.test import AironeViewTest
@@ -315,7 +315,9 @@ class APITest(AironeViewTest):
         attrvs = [attr.add_value(self.user, x) for x in ["initial value", "second value"]]
 
         # This is test processing to pretend that both Values are set at different times.
-        reference_time = datetime.now().replace(tzinfo=pytz.timezone(settings.TIME_ZONE))
+        # Use a reference time slightly in the past so both created_times are in the past,
+        # ensuring the view's default older_than (datetime.now()) is after both values.
+        reference_time = datetime.now(ZoneInfo(settings.TIME_ZONE)) - timedelta(seconds=10)
         attrvs[0].created_time = reference_time - timedelta(seconds=5)
         attrvs[1].created_time = reference_time + timedelta(seconds=5)
         for attrv in attrvs:

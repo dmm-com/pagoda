@@ -4,10 +4,10 @@ import logging
 import os
 import sys
 from typing import List
+from zoneinfo import ZoneInfo
 
 from django.conf import settings
 from django.test import Client, TestCase, override_settings
-from pytz import timezone
 
 from airone.lib.acl import ACLType
 from airone.lib.types import AttrType
@@ -40,7 +40,7 @@ class AironeTestCase(TestCase):
         {"name": "nums", "type": AttrType.ARRAY_NUMBER},
     ]
 
-    TZ_INFO = timezone(settings.TIME_ZONE)
+    TZ_INFO = ZoneInfo(settings.TIME_ZONE)
 
     def setUp(self):
         OVERRIDE_ES_CONFIG = settings.ES_CONFIG.copy()

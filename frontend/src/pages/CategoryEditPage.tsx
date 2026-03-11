@@ -14,8 +14,8 @@ import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { Loading } from "components/common/Loading";
 import { PageHeader } from "components/common/PageHeader";
 import { SubmitButton } from "components/common/SubmitButton";
-import { useAsyncWithThrow } from "hooks/useAsyncWithThrow";
 import { useFormNotification } from "hooks/useFormNotification";
+import { usePagodaSWR } from "hooks/usePagodaSWR";
 import { usePrompt } from "hooks/usePrompt";
 import { useTypedParams } from "hooks/useTypedParams";
 import { aironeApiClient } from "repository/AironeApiClient";
@@ -51,15 +51,14 @@ export const CategoryEditPage: FC = () => {
     "編集した内容は失われてしまいますが、このページを離れてもよろしいですか？",
   );
 
-  const category = useAsyncWithThrow(async () => {
-    return categoryId != null
-      ? await aironeApiClient.getCategory(categoryId)
-      : undefined;
-  }, [categoryId]);
+  const { data: category, isLoading: categoryLoading } = usePagodaSWR(
+    categoryId != null ? ["category", categoryId] : null,
+    () => aironeApiClient.getCategory(categoryId!),
+  );
 
   useEffect(() => {
-    !category.loading && category.value != null && reset(category.value);
-  }, [category.loading]);
+    !categoryLoading && category != null && reset(category);
+  }, [categoryLoading, category, reset]);
 
   useEffect(() => {
     isSubmitSuccessful && navigate(listCategoryPath());
@@ -98,7 +97,7 @@ export const CategoryEditPage: FC = () => {
     navigate(-1);
   };
 
-  if (category.loading) {
+  if (categoryLoading) {
     return <Loading />;
   }
 
@@ -115,16 +114,14 @@ export const CategoryEditPage: FC = () => {
       </AironeBreadcrumbs>
 
       <PageHeader
-        title={
-          category.value != null ? category.value.name : "新規カテゴリの作成"
-        }
-        description={category.value != null ? "カテゴリ編集" : undefined}
+        title={category != null ? category.name : "新規カテゴリの作成"}
+        description={category != null ? "カテゴリ編集" : undefined}
       >
         <SubmitButton
           name="保存"
           disabled={
             !isDirty || !isValid || isSubmitting || isSubmitSuccessful
-            //category.value?. === false
+            //category?. === false
           }
           isSubmitting={isSubmitting}
           handleSubmit={handleSubmit(handleSubmitOnValid)}
