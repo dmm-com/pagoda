@@ -3,7 +3,9 @@ import os
 
 import configurations
 from celery import Celery
+from celery.signals import task_postrun, task_prerun
 from django.conf import settings
+from multidb.pinning import pin_this_thread, unpin_this_thread
 
 from airone.lib.log import Logger
 from airone.plugins.integration import plugin_integration
@@ -37,6 +39,18 @@ if settings.AIRONE.get("PLUGINS", {}).get("ENABLED", False):
         plugin_integration.initialize()
     except Exception as e:
         Logger.error(f"Failed to initialize plugin system: {e}", exc_info=True)
+
+
+# Pin Celery tasks to master DB to ensure writes are always directed correctly.
+@task_prerun.connect
+def pin_celery_task_to_master(**kwargs):
+    pin_this_thread()
+
+
+@task_postrun.connect
+def unpin_celery_task_from_master(**kwargs):
+    unpin_this_thread()
+
 
 # Recognize tasks explicitly
 import dashboard.tasks  # noqa: F401, E402

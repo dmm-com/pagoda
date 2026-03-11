@@ -19,7 +19,7 @@ dependencies = [
     { name = "django-environ" },
     { name = "django-filter" },
     { name = "django-import-export" },
-    { name = "django-replicated" },
+    { name = "django-multidb-router" },
     { name = "django-simple-history" },
     { name = "django-storages" },
     { name = "djangorestframework" },
@@ -76,7 +76,7 @@ requires-dist = [
     { name = "django-environ", specifier = "==0.12.0" },
     { name = "django-filter", specifier = "==24.3" },
     { name = "django-import-export", specifier = "==4.4.0" },
-    { name = "django-replicated", specifier = "==2.7" },
+    { name = "django-multidb-router", specifier = ">=0.11" },
     { name = "django-simple-history", specifier = "==3.11.0" },
     { name = "django-storages", specifier = "==1.14.6" },
     { name = "djangorestframework", specifier = "==3.16.1" },
@@ -696,13 +696,16 @@ wheels = [
 ]
 
 [[package]]
-name = "django-replicated"
-version = "2.7"
+name = "django-multidb-router"
+version = "0.11"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "six" },
+    { name = "django" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/31/a8/c26cc15057dea6d2eb3fbbf97da80b4631c49dcee54bdd0a793c04019826/django_replicated-2.7.tar.gz", hash = "sha256:9f983343b707aaaed7ccc664dde5f16a7c56f896ff08b3087e8d9b45a9f77e7c", size = 5642, upload-time = "2020-04-10T11:07:18.28Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/1d/ea/7b6057663ea31bc5f251e7aad492d0505b83d2a42a139655776d70f7a027/django_multidb_router-0.11.tar.gz", hash = "sha256:3ae340dbc8f06feed1128d3a4270730c2e9e1f854c02bad4a7e2f90b56114034", size = 9360, upload-time = "2025-07-04T14:07:29.804Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/02/62/9d4b6b0b32f9c1050cb3485bbc70a8b81704a08fdef865402f288227e762/django_multidb_router-0.11-py3-none-any.whl", hash = "sha256:bbf105db8f2562236d4cbdd4017e853156d000eed4b8c68868637147cb156618", size = 10561, upload-time = "2025-07-04T14:07:28.415Z" },
+]
 
 [[package]]
 name = "django-simple-history"
