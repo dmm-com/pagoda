@@ -1,3 +1,5 @@
+from typing import Any
+
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
@@ -46,8 +48,8 @@ class CategoryCreateSerializer(serializers.ModelSerializer):
         model = Category
         fields = ["id", "name", "note", "models", "priority"]
 
-    def create(self, validated_data):
-        # craete Category instance
+    def create(self, validated_data: dict[str, Any]) -> Category:
+        # create Category instance
         category = Category.objects.create(
             created_user=self.context["request"].user,
             **{k: v for (k, v) in validated_data.items() if k != "models"},
@@ -69,7 +71,7 @@ class CategoryUpdateSerializer(serializers.ModelSerializer):
         model = Category
         fields = ["name", "note", "models", "priority"]
 
-    def update(self, category: Category, validated_data):
+    def update(self, category: Category, validated_data: dict[str, Any]) -> Category:
         # name and note are updated
         updated_fields: list[str] = []
 

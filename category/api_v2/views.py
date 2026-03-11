@@ -1,9 +1,13 @@
+from typing import Any
+
+from django.db.models import QuerySet
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, status, viewsets
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
+from rest_framework.serializers import Serializer
 
 from airone.lib.acl import ACLType
 from airone.lib.drf import ObjectNotExistsError
@@ -23,14 +27,14 @@ class CategoryAPI(viewsets.ModelViewSet):
     search_fields = ["name", "models__name"]
     ordering = ["-priority", "name"]
 
-    def get_serializer_class(self):
-        serializer = {
+    def get_serializer_class(self) -> type[Serializer]:
+        serializer: dict[str, type[Serializer]] = {
             "create": CategoryCreateSerializer,
             "update": CategoryUpdateSerializer,
         }
         return serializer.get(self.action, CategoryListSerializer)
 
-    def get_queryset(self):
+    def get_queryset(self) -> QuerySet[Category]:
         # Return empty queryset for DRF Spectacular schema generation
         if getattr(self, "swagger_fake_view", False):
             return Category.objects.none()
@@ -43,7 +47,7 @@ class CategoryAPI(viewsets.ModelViewSet):
 
         return Category.objects.filter(id__in=targets)
 
-    def destroy(self, request: Request, *args, **kwargs) -> Response:
+    def destroy(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         category: Category = self.get_object()
         if not category.is_active:
             raise ObjectNotExistsError("specified entry has already been deleted")

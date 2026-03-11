@@ -132,10 +132,10 @@ class TriggerConditionUpdateSerializer(serializers.Serializer):
 
 @extend_schema_field(OpenApiTypes.ANY)
 class AnyField(serializers.Field):
-    def to_internal_value(self, data):
+    def to_internal_value(self, data: Any) -> Any:
         return data
 
-    def to_representation(self, value):
+    def to_representation(self, value: Any) -> Any:
         return value
 
 
@@ -158,7 +158,7 @@ class TriggerParentBaseSerializer(serializers.ModelSerializer):
         model = TriggerParent
         fields = ["id", "entity_id", "conditions", "actions"]
 
-    def validate(self, data):
+    def validate(self, data: dict[str, Any]) -> dict[str, Any]:
         entity = Entity.objects.filter(id=data["entity_id"], is_active=True).first()
         if not entity:
             raise ValidationError("Invalid entity_id(%s) was specified" % data["entity_id"])
@@ -181,7 +181,7 @@ class TriggerParentBaseSerializer(serializers.ModelSerializer):
 
 
 class TriggerParentCreateSerializer(TriggerParentBaseSerializer):
-    def create(self, validated_data: TriggerParentUpdateData):
+    def create(self, validated_data: TriggerParentUpdateData) -> TriggerParent:
         return TriggerCondition.register(
             entity=Entity.objects.get(id=validated_data["entity_id"]),
             conditions=validated_data["conditions"],
@@ -190,7 +190,9 @@ class TriggerParentCreateSerializer(TriggerParentBaseSerializer):
 
 
 class TriggerParentUpdateSerializer(TriggerParentBaseSerializer):
-    def update(self, parent_condition, validated_data):
+    def update(
+        self, parent_condition: TriggerParent, validated_data: dict[str, Any]
+    ) -> TriggerParent:
         # clear configurations that have already been registered in this TriggerParent
         parent_condition.clear()
 

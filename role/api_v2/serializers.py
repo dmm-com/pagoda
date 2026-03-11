@@ -1,7 +1,9 @@
 from collections import OrderedDict
+from typing import Any
 
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
+from rest_framework.utils.serializer_helpers import ReturnList
 
 from airone.lib.drf import RequiredParameterError
 from group.models import Group
@@ -49,19 +51,19 @@ class RoleSerializer(serializers.ModelSerializer):
         ]
 
     @extend_schema_field(RoleUserSerializer(many=True))
-    def get_users(self, obj):
+    def get_users(self, obj: Role) -> ReturnList:
         return RoleUserSerializer(obj.users.all(), many=True).data
 
     @extend_schema_field(RoleUserSerializer(many=True))
-    def get_admin_users(self, obj):
+    def get_admin_users(self, obj: Role) -> ReturnList:
         return RoleUserSerializer(obj.admin_users.all(), many=True).data
 
     @extend_schema_field(RoleGroupSerializer(many=True))
-    def get_groups(self, obj):
+    def get_groups(self, obj: Role) -> ReturnList:
         return RoleGroupSerializer(obj.groups.all(), many=True).data
 
     @extend_schema_field(RoleGroupSerializer(many=True))
-    def get_admin_groups(self, obj):
+    def get_admin_groups(self, obj: Role) -> ReturnList:
         return RoleGroupSerializer(obj.admin_groups.all(), many=True).data
 
     def get_is_editable(self, obj: Role) -> bool:
@@ -82,7 +84,7 @@ class RoleCreateUpdateSerializer(serializers.ModelSerializer):
             "admin_groups",
         ]
 
-    def validate(self, role: OrderedDict):
+    def validate(self, role: OrderedDict[str, Any]) -> OrderedDict[str, Any]:
         if not role.get("admin_users") and not role.get("admin_groups"):
             raise RequiredParameterError("admin_users or admin_groups field is required")
 
@@ -135,8 +137,8 @@ class RoleImportExportChildSerializer(serializers.ModelSerializer):
             "permissions",
         ]
 
-    def to_representation(self, instance: Role):
-        def _get_permission_data(permission_obj):
+    def to_representation(self, instance: Role) -> dict[str, Any]:
+        def _get_permission_data(permission_obj: Any) -> dict[str, Any]:
             return {
                 "obj_id": permission_obj.get_objid(),
                 "permission": permission_obj.name,

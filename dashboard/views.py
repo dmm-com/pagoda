@@ -1,8 +1,9 @@
 import json
+from typing import Any
 
 import yaml
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
-from django.http import HttpResponse
+from django.http import HttpRequest, HttpResponse
 from django.http.response import JsonResponse
 from django.shortcuts import redirect
 from pydantic import ValidationError
@@ -21,7 +22,7 @@ from job.models import Job, JobStatus
 
 from .settings import CONFIG
 
-IMPORT_INFOS = [
+IMPORT_INFOS: list[dict[str, Any]] = [
     {"model": "Entity", "resource": EntityResource},
     {"model": "EntityAttr", "resource": EntityAttrResource},
     {"model": "Entry", "resource": EntryResource},
@@ -30,8 +31,8 @@ IMPORT_INFOS = [
 ]
 
 
-def index(request):
-    context = {}
+def index(request: HttpRequest) -> HttpResponse:
+    context: dict[str, Any] = {}
     if request.user.is_authenticated:
         history = []
         # Sort by newest attribute update date (id is auto increment)
@@ -59,12 +60,12 @@ def index(request):
 
 
 @http_get
-def import_data(request):
+def import_data(request: HttpRequest) -> HttpResponse:
     return render(request, "import.html", {})
 
 
 @http_file_upload
-def do_import_data(request, context):
+def do_import_data(request: HttpRequest, context: str) -> HttpResponse:
     if request.FILES["file"].size >= CONFIG.LIMIT_FILE_SIZE:
         return HttpResponse("File size over", status=400)
 
@@ -73,8 +74,8 @@ def do_import_data(request, context):
     except yaml.parser.ParserError:
         return HttpResponse("Couldn't parse uploaded file", status=400)
 
-    def _do_import(resource, iter_data):
-        results = []
+    def _do_import(resource: Any, iter_data: list[Any]) -> None:
+        results: list[dict[str, Any]] = []
         for data in iter_data:
             try:
                 result = resource.import_data_from_request(data, request.user)
@@ -93,7 +94,9 @@ def do_import_data(request, context):
     return HttpResponseSeeOther("/dashboard/")
 
 
-def _search_by_keyword(query, entity_name, per_page, page_num):
+def _search_by_keyword(
+    query: str, entity_name: str | None, per_page: int, page_num: int
+) -> tuple[int, list[dict[str, Any]]]:
     # correct entries that contans query at EntryName or AttributeValue
     search_result = AdvancedSearchService.search_entries_for_simple(
         query, entity_name, [], per_page, (page_num - 1) * per_page
@@ -103,7 +106,7 @@ def _search_by_keyword(query, entity_name, per_page, page_num):
 
 
 @http_get
-def search(request):
+def search(request: HttpRequest) -> HttpResponse:
     query = request.GET.get("query")
     entity_name = request.GET.get("entity")
     try:
@@ -155,7 +158,7 @@ def search(request):
 
 
 @http_get
-def advanced_search(request):
+def advanced_search(request: HttpRequest) -> HttpResponse:
     entities = [
         x
         for x in Entity.objects.filter(is_active=True).order_by("name")
@@ -172,7 +175,7 @@ def advanced_search(request):
 
 
 @http_get
-def advanced_search_result(request):
+def advanced_search_result(request: HttpRequest) -> HttpResponse:
     recv_entity = request.GET.getlist("entity[]")
     recv_attr = request.GET.getlist("attr[]")
     is_all_entities = request.GET.get("is_all_entities") == "true"
@@ -304,7 +307,7 @@ def advanced_search_result(request):
         },
     ]
 )
-def export_search_result(request, recv_data) -> HttpResponse:
+def export_search_result(request: HttpRequest, recv_data: dict[str, Any]) -> HttpResponse:
     # check whether same job is sent
     job_status_not_finished: list[JobStatus] = [JobStatus.PREPARING, JobStatus.PROCESSING]
     if (
@@ -317,10 +320,8 @@ def export_search_result(request, recv_data) -> HttpResponse:
     # create a job to export search result and run it
     job = Job.new_export_search_result(
         request.user,
-        **{
-            "text": "search_results.%s" % recv_data["export_style"],
-            "params": recv_data,
-        },
+        text="search_results.%s" % recv_data["export_style"],
+        params=recv_data,
     )
     job.run()
 
