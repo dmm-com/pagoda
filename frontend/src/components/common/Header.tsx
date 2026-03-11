@@ -17,15 +17,13 @@ import {
 } from "@mui/material";
 import { OverridableComponent } from "@mui/material/OverridableComponent";
 import { styled } from "@mui/material/styles";
-import PopupState, { bindHover, bindMenu } from "material-ui-popup-state";
-import HoverMenu from "material-ui-popup-state/HoverMenu";
 import { FC, Fragment, MouseEvent, useMemo, useState } from "react";
 import { Link } from "react-router";
-import { useInterval } from "react-use";
 
 import { useTranslation } from "../../hooks/useTranslation";
 
 import { SearchBox } from "components/common/SearchBox";
+import { useInterval } from "hooks/useInterval";
 import { useSimpleSearch } from "hooks/useSimpleSearch";
 import { aironeApiClient } from "repository/AironeApiClient";
 import {
@@ -123,6 +121,11 @@ export const Header: FC = () => {
 
   const [userAnchorEl, setUserAnchorEl] = useState<HTMLButtonElement | null>();
   const [jobAnchorEl, setJobAnchorEl] = useState<HTMLButtonElement | null>();
+  const [managementAnchorEl, setManagementAnchorEl] =
+    useState<HTMLElement | null>(null);
+  const [extendedMenuAnchors, setExtendedMenuAnchors] = useState<
+    Record<number, HTMLElement | null>
+  >({});
   const [latestCheckDate, setLatestCheckDate] = useState<Date | null>(
     getLatestCheckDate(),
   );
@@ -188,51 +191,73 @@ export const Header: FC = () => {
               <Button component={Link} to={advancedSearchPath()}>
                 {t("advancedSearch")}
               </Button>
-              <PopupState variant="popover" popupId="basic">
-                {(popupState) => (
-                  <Fragment>
-                    <Button {...bindHover(popupState)}>
-                      {t("management")}
-                      <KeyboardArrowDownIcon fontSize="small" />
-                    </Button>
-                    <HoverMenu {...bindMenu(popupState)}>
-                      <MenuItem component={Link} to={usersPath()}>
-                        {t("manageUsers")}
-                      </MenuItem>
-                      <MenuItem component={Link} to={groupsPath()}>
-                        {t("manageGroups")}
-                      </MenuItem>
-                      <MenuItem component={Link} to={rolesPath()}>
-                        {t("manageRoles")}
-                      </MenuItem>
-                      <MenuItem component={Link} to={triggersPath()}>
-                        {t("manageTriggers")}
-                      </MenuItem>
-                    </HoverMenu>
-                  </Fragment>
-                )}
-              </PopupState>
+              <Button
+                onMouseEnter={(e) => setManagementAnchorEl(e.currentTarget)}
+              >
+                {t("management")}
+                <KeyboardArrowDownIcon fontSize="small" />
+              </Button>
+              <Menu
+                anchorEl={managementAnchorEl}
+                open={Boolean(managementAnchorEl)}
+                onClose={() => setManagementAnchorEl(null)}
+                MenuListProps={{
+                  onMouseLeave: () => setManagementAnchorEl(null),
+                }}
+              >
+                <MenuItem component={Link} to={usersPath()}>
+                  {t("manageUsers")}
+                </MenuItem>
+                <MenuItem component={Link} to={groupsPath()}>
+                  {t("manageGroups")}
+                </MenuItem>
+                <MenuItem component={Link} to={rolesPath()}>
+                  {t("manageRoles")}
+                </MenuItem>
+                <MenuItem component={Link} to={triggersPath()}>
+                  {t("manageTriggers")}
+                </MenuItem>
+              </Menu>
 
               {/* If there is another menu settings are passed from Server,
                   this represent another menu*/}
               {serverContext?.extendedHeaderMenus.map((menu, index) => (
-                <PopupState variant="popover" popupId={menu.name} key={index}>
-                  {(popupState) => (
-                    <Fragment>
-                      <Button {...bindHover(popupState)}>
-                        {menu.name}
-                        <KeyboardArrowDownIcon fontSize="small" />
-                      </Button>
-                      <HoverMenu {...bindMenu(popupState)}>
-                        {menu.children.map((child, index) => (
-                          <MenuItem key={index} component="a" href={child.url}>
-                            {child.name}
-                          </MenuItem>
-                        ))}
-                      </HoverMenu>
-                    </Fragment>
-                  )}
-                </PopupState>
+                <Fragment key={index}>
+                  <Button
+                    onMouseEnter={(e) =>
+                      setExtendedMenuAnchors((prev) => ({
+                        ...prev,
+                        [index]: e.currentTarget,
+                      }))
+                    }
+                  >
+                    {menu.name}
+                    <KeyboardArrowDownIcon fontSize="small" />
+                  </Button>
+                  <Menu
+                    anchorEl={extendedMenuAnchors[index]}
+                    open={Boolean(extendedMenuAnchors[index])}
+                    onClose={() =>
+                      setExtendedMenuAnchors((prev) => ({
+                        ...prev,
+                        [index]: null,
+                      }))
+                    }
+                    MenuListProps={{
+                      onMouseLeave: () =>
+                        setExtendedMenuAnchors((prev) => ({
+                          ...prev,
+                          [index]: null,
+                        })),
+                    }}
+                  >
+                    {menu.children.map((child, childIndex) => (
+                      <MenuItem key={childIndex} component="a" href={child.url}>
+                        {child.name}
+                      </MenuItem>
+                    ))}
+                  </Menu>
+                </Fragment>
               ))}
             </MenuBox>
 

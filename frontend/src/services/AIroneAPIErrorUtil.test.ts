@@ -1,5 +1,3 @@
-import "isomorphic-fetch";
-
 import { ResponseError } from "@dmm-com/airone-apiclient-typescript-fetch";
 
 import {

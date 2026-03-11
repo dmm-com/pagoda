@@ -3,11 +3,11 @@ import { OverridableComponent } from "@mui/material/OverridableComponent";
 import { styled } from "@mui/material/styles";
 import { FC } from "react";
 import { Link, useNavigate } from "react-router";
-import { useAsync } from "react-use";
 
 import { Loading, SearchBox } from "components";
 import { CategoryList } from "components/category/CategoryList";
 import { useSimpleSearch } from "hooks";
+import { useAsync } from "hooks/useAsync";
 import { aironeApiClient } from "repository";
 import { entryDetailsPath } from "routes";
 

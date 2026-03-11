@@ -30,13 +30,13 @@ import { styled } from "@mui/material/styles";
 import { useSnackbar } from "notistack";
 import { FC, useState } from "react";
 import { Link, useNavigate } from "react-router";
-import { useAsync } from "react-use";
 
 import { AironeLink } from "components";
 import { AironeBreadcrumbs } from "components/common/AironeBreadcrumbs";
 import { Confirmable } from "components/common/Confirmable";
 import { Loading } from "components/common/Loading";
 import { PageHeader } from "components/common/PageHeader";
+import { useAsync } from "hooks/useAsync";
 import { aironeApiClient } from "repository/AironeApiClient";
 import {
   editTriggerPath,

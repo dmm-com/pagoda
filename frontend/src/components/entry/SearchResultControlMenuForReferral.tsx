@@ -16,10 +16,10 @@ import {
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { ChangeEvent, Dispatch, FC, KeyboardEvent, useState } from "react";
-import { useAsync } from "react-use";
 
 import { handleSelectFilterConditionsParams } from "./SearchResultsTableHead";
 
+import { useAsync } from "hooks/useAsync";
 import { aironeApiClient } from "repository";
 
 const StyledTextField = styled(TextField)({
