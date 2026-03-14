@@ -57,8 +57,6 @@ import {
   WebhookCreateUpdate,
   GroupTree as _GroupTree,
 } from "@dmm-com/airone-apiclient-typescript-fetch";
-import Cookies from "js-cookie";
-import fileDownload from "js-file-download";
 
 import {
   AdvancedSerarchResultListParam,
@@ -73,10 +71,21 @@ export type GroupTree = Pick<_GroupTree, "id" | "name"> & {
   children: Array<GroupTree>;
 };
 
+export function fileDownload(data: string, filename: string): void {
+  const blob = new Blob([data], { type: "text/plain" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 // Get CSRF Token from Cookie set by Django
 // see https://docs.djangoproject.com/en/3.2/ref/csrf/
-function getCsrfToken(): string {
-  return Cookies.get("csrftoken") ?? "";
+export function getCsrfToken(): string {
+  const match = document.cookie.match(/(?:^|;\s*)csrftoken=([^;]*)/);
+  return match ? decodeURIComponent(match[1]) : "";
 }
 
 /**

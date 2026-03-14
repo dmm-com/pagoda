@@ -9,8 +9,8 @@ import {
 import { styled } from "@mui/material/styles";
 import { FC, ReactNode, useCallback, useEffect, useState } from "react";
 import { ErrorBoundary, FallbackProps } from "react-error-boundary";
-import { useError } from "react-use";
 
+import { useError } from "./hooks/useError";
 import { ForbiddenErrorPage } from "./pages/ForbiddenErrorPage";
 import { NonTermsServiceAgreementPage } from "./pages/NonTermsServiceAgreement";
 import { NotFoundErrorPage } from "./pages/NotFoundErrorPage";
