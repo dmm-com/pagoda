@@ -32,8 +32,8 @@ class AttrValueResource(AironeModelResource):
         "resource_module": "entry.admin",
         "resource_model_name": "AttrValueResource",
     }
-    COMPARING_KEYS = []
-    DISALLOW_UPDATE_KEYS = [
+    COMPARING_KEYS: list[str] = []
+    DISALLOW_UPDATE_KEYS: list[str] = [
         "created_time",
         "created_user",
         "parent_attr",

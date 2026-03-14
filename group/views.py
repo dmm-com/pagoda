@@ -1,5 +1,5 @@
 import io
-from typing import Any, Dict
+from typing import Any
 
 import yaml
 from django.http import HttpRequest, HttpResponse
@@ -20,7 +20,7 @@ from user.models import User
 
 
 @http_get
-def index(request):
+def index(request: HttpRequest) -> HttpResponse:
     return render(request, "list_group.html", {})
 
 
@@ -33,7 +33,7 @@ def edit(request: HttpRequest, group_id: int) -> HttpResponse:
     group = Group.objects.get(id=group_id)
 
     # set selected group information
-    context: Dict[str, Any] = {
+    context: dict[str, Any] = {
         "default_group_id": int(group_id),
         "current_group_name": group.name,
         "current_group_members": User.objects.filter(groups__id=group.id, is_active=True).order_by(
@@ -80,7 +80,7 @@ def edit(request: HttpRequest, group_id: int) -> HttpResponse:
     ]
 )
 @check_superuser
-def do_edit(request, group_id, recv_data):
+def do_edit(request: HttpRequest, group_id: int, recv_data: dict[str, Any]) -> HttpResponse:
     if not Group.objects.filter(id=group_id).exists():
         return HttpResponse("Failed to get group of specified id", status=400)
 
@@ -132,8 +132,8 @@ def do_edit(request, group_id, recv_data):
 
 @http_get
 @check_superuser
-def create(request):
-    context: Dict[str, Any] = {
+def create(request: HttpRequest) -> HttpResponse:
+    context: dict[str, Any] = {
         "default_group_id": 0,
         "submit_ref": "/group/do_create",
     }
@@ -180,7 +180,7 @@ def create(request):
     ]
 )
 @check_superuser
-def do_create(request, recv_data):
+def do_create(request: HttpRequest, recv_data: dict[str, Any]) -> HttpResponse:
     new_group = Group(
         name=recv_data["name"],
         parent_group=Group.objects.filter(
@@ -201,7 +201,7 @@ def do_create(request, recv_data):
 
 @http_post()
 @check_superuser
-def do_delete(request, group_id, recv_data):
+def do_delete(request: HttpRequest, group_id: int, recv_data: dict[str, Any]) -> HttpResponse:
     group = Group.objects.get(id=group_id)
     ret = {}
 
@@ -219,7 +219,7 @@ def do_delete(request, group_id, recv_data):
 
 
 @http_get
-def export(request):
+def export(request: HttpRequest) -> HttpResponse:
     output = io.StringIO()
 
     data: dict[str, list[dict[str, Any]]] = {
@@ -253,13 +253,13 @@ def export(request):
 
 @http_get
 @check_superuser
-def import_user_and_group(request):
+def import_user_and_group(request: HttpRequest) -> HttpResponse:
     return render(request, "import_user_and_group.html", {})
 
 
 @http_file_upload
 @check_superuser
-def do_import_user_and_group(request, context):
+def do_import_user_and_group(request: HttpRequest, context: str) -> HttpResponse:
     try:
         data = yaml.load(context, Loader=yaml.SafeLoader)
     except (yaml.parser.ParserError, yaml.scanner.ScannerError):

@@ -27,7 +27,7 @@ Note:
 """
 
 # Cache for lazy-loaded components
-_cache = {}
+_cache: dict[str, object] = {}
 
 
 _EXPORTED_NAMES = [

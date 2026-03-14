@@ -1,10 +1,11 @@
 import json
+from typing import Any
 
 import requests
 import urllib3
 from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator
-from django.http import HttpResponse
+from django.http import HttpRequest, HttpResponse
 from django.http.response import JsonResponse
 from requests.exceptions import ConnectionError
 from urllib3.exceptions import InsecureRequestWarning
@@ -25,7 +26,7 @@ urllib3.disable_warnings(InsecureRequestWarning)
         {"name": "request_headers", "type": list},
     ]
 )
-def set_webhook(request, entity_id, recv_data):
+def set_webhook(request: HttpRequest, entity_id: int, recv_data: dict[str, Any]) -> HttpResponse:
     entity, error = get_obj_with_check_perm(request.user, Entity, entity_id, ACLType.Full)
     if error or entity is None:
         return error
@@ -92,7 +93,7 @@ def set_webhook(request, entity_id, recv_data):
 
 
 # FIXME specify HTTP method
-def del_webhook(request, webhook_id):
+def del_webhook(request: HttpRequest, webhook_id: int) -> HttpResponse:
     webhook = Webhook.objects.filter(id=webhook_id).first()
     if not webhook:
         return HttpResponse("Specified webhook has already been deleted", status=400)

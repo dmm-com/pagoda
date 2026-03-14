@@ -1,4 +1,6 @@
-from django.http import HttpResponse
+from typing import Any
+
+from django.http import HttpRequest, HttpResponse
 from django.http.response import JsonResponse
 
 from airone.lib.http import http_get, http_post, render
@@ -8,7 +10,7 @@ from role.models import Role
 from user.models import User
 
 
-def set_role_members(role, recv_data):
+def set_role_members(role: Role, recv_data: dict[str, Any]) -> None:
     for model, member, key in [
         (User, "users", "users"),
         (Group, "groups", "groups"),
@@ -22,7 +24,7 @@ def set_role_members(role, recv_data):
                 getattr(role, member).add(instance)
 
 
-def is_role_editable(user, recv_data):
+def is_role_editable(user: User, recv_data: dict[str, Any]) -> bool:
     admin_users = [
         User.objects.get(id=u["id"])
         for u in recv_data["admin_users"]
@@ -37,8 +39,8 @@ def is_role_editable(user, recv_data):
     return Role.editable(user, admin_users, admin_groups)
 
 
-def initialize_role_context():
-    context = {}
+def initialize_role_context() -> dict[str, Any]:
+    context: dict[str, Any] = {}
     for k in ["user_info", "admin_user_info"]:
         context[k] = {
             u.id: {
@@ -61,8 +63,8 @@ def initialize_role_context():
 
 
 @http_get
-def index(request):
-    context = {}
+def index(request: HttpRequest) -> HttpResponse:
+    context: dict[str, Any] = {}
     context["roles"] = [
         {
             "id": x.id,
@@ -96,7 +98,7 @@ def index(request):
 
 
 @http_get
-def create(request):
+def create(request: HttpRequest) -> HttpResponse:
     # get user and group members that are selectable as role members
     context = initialize_role_context()
     context["submit_ref"] = "/role/do_create/"
@@ -114,7 +116,7 @@ def create(request):
         {"name": "admin_groups", "type": list, "meta": [{"name": "id", "type": int}]},
     ]
 )
-def do_create(request, recv_data):
+def do_create(request: HttpRequest, recv_data: dict[str, Any]) -> HttpResponse:
     if Role.objects.filter(name=recv_data["name"], is_active=True).exists():
         return HttpResponse("Duplicate named role has already been registered", status=400)
 
@@ -140,7 +142,7 @@ def do_create(request, recv_data):
 
 
 @http_get
-def edit(request, role_id):
+def edit(request: HttpRequest, role_id: int) -> HttpResponse:
     user = request.user
     role = Role.objects.filter(id=role_id, is_active=True).first()
     if not role:
@@ -183,7 +185,7 @@ def edit(request, role_id):
         {"name": "admin_groups", "type": list, "meta": [{"name": "id", "type": int}]},
     ]
 )
-def do_edit(request, role_id, recv_data):
+def do_edit(request: HttpRequest, role_id: int, recv_data: dict[str, Any]) -> HttpResponse:
     user = request.user
     role = Role.objects.filter(id=role_id, is_active=True).first()
     if not role:

@@ -46,14 +46,18 @@ class InputTriggerCondition(object):
             self.is_unmatch,
         )
 
-    def initialize_condition(self):
+    def initialize_condition(self) -> None:
         self.str_cond = ""
-        self.ref_cond = None
+        self.ref_cond: Entry | None = None
         self.bool_cond = False
         self.is_unmatch = False
 
-    def parse_input_condition(self, input_condition: Any, hint: str | None = None):
-        def _convert_value_to_entry(value: Entry | int | str | Any):
+    def parse_input_condition(
+        self,
+        input_condition: str | int | bool | dict[str, str | int | None] | None,
+        hint: str | None = None,
+    ) -> None:
+        def _convert_value_to_entry(value: Entry | int | str | None) -> Entry | None:
             if isinstance(value, Entry):
                 return value
             elif isinstance(value, int) or (isinstance(value, str) and value.isdigit()):
@@ -63,7 +67,7 @@ class InputTriggerCondition(object):
                     return entry
             return None
 
-        def _decode_value(value) -> dict:
+        def _decode_value(value: Any) -> dict[str, Any]:
             try:
                 return json.loads(value)
             except (ValueError, TypeError):
@@ -73,20 +77,25 @@ class InputTriggerCondition(object):
             case AttrType.NAMED_OBJECT | AttrType.ARRAY_NAMED_OBJECT:
                 match hint:
                     case "entry":
-                        self.ref_cond = _convert_value_to_entry(input_condition)
+                        if (
+                            isinstance(input_condition, (Entry, int, str))
+                            or input_condition is None
+                        ):
+                            self.ref_cond = _convert_value_to_entry(input_condition)
                     case "json":
                         info = _decode_value(input_condition)
 
                         self.ref_cond = _convert_value_to_entry(info.get("id"))
                         self.str_cond = info.get("name", "")
                     case _:
-                        self.str_cond = input_condition
+                        self.str_cond = str(input_condition) if input_condition else ""
 
             case AttrType.OBJECT | AttrType.ARRAY_OBJECT:
-                self.ref_cond = _convert_value_to_entry(input_condition)
+                if isinstance(input_condition, (Entry, int, str)) or input_condition is None:
+                    self.ref_cond = _convert_value_to_entry(input_condition)
 
             case AttrType.STRING | AttrType.ARRAY_STRING | AttrType.TEXT:
-                self.str_cond = input_condition if input_condition else ""
+                self.str_cond = str(input_condition) if input_condition else ""
 
             case AttrType.BOOLEAN:
                 if isinstance(input_condition, bool):
@@ -99,9 +108,9 @@ class InputTriggerCondition(object):
 
 class InputTriggerActionValue(object):
     def __init__(self, **input: Any):
-        self.str_cond = input.get("str_cond", "")
-        self.ref_cond = input.get("ref_cond", None)
-        self.bool_cond = input.get("bool_cond", False)
+        self.str_cond: str = input.get("str_cond", "")
+        self.ref_cond: Entry | None = input.get("ref_cond", None)
+        self.bool_cond: bool = input.get("bool_cond", False)
 
 
 class InputTriggerAction(object):
@@ -121,7 +130,9 @@ class InputTriggerAction(object):
     def get_value(
         self, raw_input_value: Any
     ) -> InputTriggerActionValue | list[InputTriggerActionValue] | None:
-        def _do_get_value(input_value, attr_type):
+        def _do_get_value(
+            input_value: Any, attr_type: int
+        ) -> InputTriggerActionValue | list[InputTriggerActionValue] | None:
             match AttrType(attr_type):
                 case (
                     AttrType.ARRAY_OBJECT
@@ -129,7 +140,13 @@ class InputTriggerAction(object):
                     | AttrType.ARRAY_NAMED_OBJECT_BOOLEAN
                     | AttrType.ARRAY_STRING
                 ):
-                    return [_do_get_value(x, attr_type ^ AttrType._ARRAY) for x in input_value if x]
+                    return [
+                        v
+                        for x in input_value
+                        if x
+                        for v in [_do_get_value(x, attr_type ^ AttrType._ARRAY)]
+                        if isinstance(v, InputTriggerActionValue)
+                    ]
 
                 case AttrType.STRING | AttrType.TEXT:
                     return InputTriggerActionValue(str_cond=input_value)
@@ -173,6 +190,8 @@ class InputTriggerAction(object):
                     else:
                         return InputTriggerActionValue(bool_cond=input_value)
 
+            return None
+
         return _do_get_value(raw_input_value, self.attr.type)
 
 
@@ -188,7 +207,7 @@ class TriggerParent(models.Model):
             return True
         return False
 
-    def save_conditions(self, inputs: list[InputTriggerCondition]):
+    def save_conditions(self, inputs: list[InputTriggerCondition]) -> None:
         for input_cond in inputs:
             params = {
                 "parent": self,
@@ -211,7 +230,7 @@ class TriggerParent(models.Model):
         context to reduce DB query to get it from Attribute instance.
         """
 
-        def _is_match(condition: TriggerCondition):
+        def _is_match(condition: TriggerCondition) -> bool:
             for attr_info in [x for x in recv_attrs if x["attr_id"] == condition.attr.id]:
                 if condition.is_match_condition(attr_info["value"]):
                     if not condition.is_unmatch:
@@ -230,7 +249,7 @@ class TriggerParent(models.Model):
         else:
             return []
 
-    def clear(self, *args, **kwargs):
+    def clear(self, *args: Any, **kwargs: Any) -> None:
         # delete TriggerActionValues, which are associated with TriggerAction instance
         TriggerActionValue.objects.filter(action__condition=self).delete()
 
@@ -238,7 +257,7 @@ class TriggerParent(models.Model):
         self.conditions.all().delete()
         self.actions.all().delete()
 
-    def update(self, conditions: list[dict[str, Any]], actions: list[dict[str, Any]]):
+    def update(self, conditions: list[dict[str, Any]], actions: list[dict[str, Any]]) -> None:
         # convert input to InputTriggerCondition
         input_trigger_conditions = [InputTriggerCondition(**condition) for condition in conditions]
 
@@ -268,7 +287,7 @@ class TriggerCondition(models.Model):
 
     def is_same_condition(self, input_list: list[InputTriggerCondition]) -> bool:
         # This checks one of the InputCondition which is in input_list matches with this condition
-        def _do_check_condition(input: InputTriggerCondition):
+        def _do_check_condition(input: InputTriggerCondition) -> bool:
             if self.attr.id == input.attr.id and self.is_unmatch == input.is_unmatch:
                 match self.ATTR_TYPE:
                     case AttrType.STRING | AttrType.TEXT | AttrType.ARRAY_STRING:
@@ -290,7 +309,7 @@ class TriggerCondition(models.Model):
         with this condition.
         """
 
-        def _compatible_with_apiv1(recv_value):
+        def _compatible_with_apiv1(recv_value: Any) -> Any:
             """
             This method retrieve value from recv_value that is specified by user. This processing
             is necessary to compatible with both API versions (v1 and v2)
@@ -313,7 +332,7 @@ class TriggerCondition(models.Model):
         # This is a helper method when AttrType is "object" or "named_object"
         recv_value = _compatible_with_apiv1(raw_recv_value)
 
-        def _is_match_object(val) -> bool:
+        def _is_match_object(val: Any) -> bool:
             if isinstance(val, int) or isinstance(val, str):
                 if self.ref_cond and self.ref_cond.is_active:
                     return self.ref_cond.id == int(val)
@@ -326,7 +345,7 @@ class TriggerCondition(models.Model):
 
             return False
 
-        def _is_match_named_object(val) -> bool:
+        def _is_match_named_object(val: Any) -> bool:
             # This refilling processing is necessary because any type of value is acceptable
             eval_value: dict[str, Any] = {
                 "name": "",
@@ -488,7 +507,7 @@ class TriggerAction(models.Model):
     if TYPE_CHECKING:
         values: Manager["TriggerActionValue"]
 
-    def save_actions(self, input: InputTriggerAction):
+    def save_actions(self, input: InputTriggerAction) -> None:
         for input_action_value in input.values:
             params = {
                 "action": self,
@@ -527,7 +546,7 @@ class TriggerAction(models.Model):
         elif attr_type == AttrType.OBJECT:
             return value.ref_cond.id if isinstance(value.ref_cond, Entry) else None
 
-    def run(self, user: "User", entry: Entry, call_stacks: list[int] = []):
+    def run(self, user: "User", entry: Entry, call_stacks: list[int] = []) -> None:
         # When self.id contains in call_stacks, it means that this action is already invoked.
         # This prevents infinite loop.
         if self.id in call_stacks:

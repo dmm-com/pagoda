@@ -1,5 +1,7 @@
 import importlib.util
+from collections.abc import Callable
 from pathlib import Path
+from typing import Any
 
 from django.conf import settings
 from django.http import HttpResponse
@@ -7,7 +9,7 @@ from django.http import HttpResponse
 from airone.plugins.hook_manager import hook_manager
 
 # to cache custom view
-CUSTOM_VIEW = {}
+CUSTOM_VIEW: dict[str, dict[str, Callable[..., Any]]] = {}
 BASE_DIR = settings.PROJECT_PATH + "/../custom_view"
 
 
