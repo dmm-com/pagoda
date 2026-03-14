@@ -83,6 +83,12 @@ def override_operation(operation: str) -> Callable[[F], F]:
         - entry: Entry instance (for retrieve/update/delete)
         - data: Request data dict (for create/update)
         - params: Plugin-specific parameters from configuration
+
+    Note:
+        Override handlers bypass the normal ViewSet -> Job flow. If your handler
+        creates a Job internally (e.g., job_register_entry), hooks registered via
+        @entry_hook will still fire. If your handler performs the operation directly
+        without a Job, hooks will not execute.
     """
     if operation.lower() not in _VALID_OPERATIONS:
         raise ValueError(

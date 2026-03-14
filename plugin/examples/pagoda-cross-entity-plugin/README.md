@@ -333,6 +333,17 @@ Entity binding is now done via configuration:
 export BACKEND_PLUGIN_ENTITY_OVERRIDES='{"42": {"plugin": "cross-entity-sample", "operations": ["retrieve"], "params": {}}}'
 ```
 
+## Interaction Between Hooks and Overrides
+
+When an override handler is active for an entity/operation, the normal ViewSet processing flow (including Job creation) is bypassed. This has implications for `@entry_hook` hooks:
+
+- **Override uses Job internally**: If your override handler creates a Job (e.g., `job_register_entry`) to perform the actual operation, hooks registered via `@entry_hook` **will fire** as normal, because the Job triggers the same code path that fires hooks.
+- **Override does NOT use Job**: If your override handler performs the operation directly (e.g., calling `Entry.objects.create()` or manipulating models without a Job), hooks **will NOT fire**, because the hook invocation is tied to the Job execution path.
+
+This is by design — an override replaces the entire operation, so the plugin author decides whether to go through the standard Job pipeline or not.
+
+The sample `handlers.py` in this plugin uses the Job-based pattern, so hooks will fire for overridden operations.
+
 ## Development Notes
 
 - Handlers are registered during plugin initialization via the override registry
