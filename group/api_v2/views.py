@@ -5,6 +5,7 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import BasePermission, IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from airone.lib.drf import YAMLParser, YAMLRenderer
 from group.api_v2.serializers import (
@@ -19,7 +20,7 @@ from user.models import User
 
 
 class UserPermission(BasePermission):
-    def has_object_permission(self, request, view, obj: User):
+    def has_object_permission(self, request: Request, view: APIView, obj: User) -> bool:
         current_user: User = request.user
         permisson = {
             "retrieve": True,
@@ -38,7 +39,7 @@ class GroupAPI(viewsets.ModelViewSet):
     ordering = ["name"]
     search_fields = ["name"]
 
-    def get_serializer_class(self):
+    def get_serializer_class(self) -> type[serializers.Serializer]:
         serializer = {
             "create": GroupCreateUpdateSerializer,
             "update": GroupCreateUpdateSerializer,

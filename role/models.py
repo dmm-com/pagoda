@@ -1,7 +1,7 @@
 import importlib
 import sys
 from datetime import datetime
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from django.conf import settings
 from django.contrib.auth.models import Group, Permission
@@ -93,7 +93,7 @@ class Role(models.Model):
             ]
         )
 
-    def save(self, *args, **kwargs) -> None:
+    def save(self, *args: Any, **kwargs: Any) -> None:
         """
         Override Model.save method of Django
         """
@@ -102,14 +102,12 @@ class Role(models.Model):
             raise RuntimeError("The number of roles is over the limit")
         return super(Role, self).save(*args, **kwargs)
 
-    def delete(self):
+    def delete(self) -> None:
+        """Override Model.delete method of Django"""
         from airone.lib import auto_complement
         from job.models import Job, JobOperation
         from user.models import User
 
-        """
-        Override Model.delete method of Django
-        """
         self.is_active = False
         self.name = "%s_deleted_%s" % (
             self.name,

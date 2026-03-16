@@ -30,9 +30,9 @@ except ImportError:
         HTTP_400_BAD_REQUEST = 400
         HTTP_204_NO_CONTENT = 204
 
-    status = MockStatus()  # type: ignore
+    status = MockStatus()  # type: ignore[assignment]
 
-    class Request:  # type: ignore
+    class Request:  # type: ignore[no-redef]
         pass
 
     class Response:  # type: ignore

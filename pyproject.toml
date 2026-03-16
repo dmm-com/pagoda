@@ -3,8 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.mypy]
-allow_untyped_globals = true
-follow_imports = "silent"
+follow_imports = "normal"
 ignore_missing_imports = true
 explicit_package_bases = true
 mypy_path = "."
@@ -17,8 +16,16 @@ warn_redundant_casts = true
 # Exclude test directories for now (394 errors in tests vs 126 in production code)
 # We will address production code first, then gradually enable checking for tests
 [[tool.mypy.overrides]]
-module = ["*.tests.*", "*/tests/*"]
+module = ["*.tests.*", "*/tests/*", "tests.*"]
 ignore_errors = true
+
+[[tool.mypy.overrides]]
+module = ["*.migrations.*"]
+ignore_errors = true
+
+[[tool.mypy.overrides]]
+module = ["webhook.*", "category.*", "dashboard.*", "group.*", "role.*", "trigger.*", "job.*"]
+disallow_untyped_defs = true
 
 [tool.ruff]
 # Pyflakes (F), pycodestyle (E, W), isort (I)

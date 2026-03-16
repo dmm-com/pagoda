@@ -1,6 +1,8 @@
+from typing import Any
+
 from django.db.models import Prefetch, Q, QuerySet
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters, generics, status, viewsets
+from rest_framework import filters, generics, serializers, status, viewsets
 from rest_framework.permissions import BasePermission, IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -33,7 +35,7 @@ def get_permitted_roles(user: User, base_queryset: QuerySet[Role]) -> QuerySet[R
 
 
 class RolePermission(BasePermission):
-    def has_object_permission(self, request, view, obj: Role):
+    def has_object_permission(self, request: Request, view: Any, obj: Role) -> bool:
         current_user: User = request.user
         is_editable = Role.editable(current_user, obj.admin_users.all(), obj.admin_groups.all())
         permission = {
@@ -52,7 +54,7 @@ class RoleAPI(viewsets.ModelViewSet):
     search_fields = ["name"]
     ordering = ["name"]
 
-    def get_queryset(self):
+    def get_queryset(self) -> QuerySet[Role]:
         base_queryset = Role.objects.filter(is_active=True).prefetch_related(
             Prefetch("users", queryset=User.objects.filter(is_active=True)),
             Prefetch("groups", queryset=Group.objects.filter(is_active=True)),
@@ -61,8 +63,8 @@ class RoleAPI(viewsets.ModelViewSet):
         )
         return get_permitted_roles(self.request.user, base_queryset)
 
-    def get_serializer_class(self):
-        serializer = {
+    def get_serializer_class(self) -> type[serializers.Serializer]:
+        serializer: dict[str, type[serializers.Serializer]] = {
             "create": RoleCreateUpdateSerializer,
             "update": RoleCreateUpdateSerializer,
         }
@@ -98,5 +100,5 @@ class RoleExportAPI(generics.ListAPIView):
     renderer_classes = [YAMLRenderer]
     permission_classes = [IsAuthenticated]
 
-    def get_queryset(self):
+    def get_queryset(self) -> QuerySet[Role]:
         return get_permitted_roles(self.request.user, Role.objects.filter(is_active=True))
