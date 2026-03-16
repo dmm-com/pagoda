@@ -70,6 +70,6 @@ describe("EntityList", () => {
     expect(screen.getByPlaceholderText("モデルを絞り込む")).toHaveValue(
       "entity",
     );
-    expect(handleChangeQuery).toBeCalled();
+    expect(handleChangeQuery).toHaveBeenCalled();
   });
 });
