@@ -1383,7 +1383,7 @@ class EntryHistoryAttributeValueSerializer(serializers.ModelSerializer):
 class EntryAttributeValueRestoreSerializer(serializers.ModelSerializer):
     class Meta:
         model = AttributeValue
-        fields = []
+        fields: list[str] = []
 
     def create(self, validated_data):
         raise ValidationError("unsupported")

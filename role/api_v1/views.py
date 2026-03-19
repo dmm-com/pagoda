@@ -1,4 +1,5 @@
 from rest_framework import status
+from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -6,7 +7,7 @@ from role.models import Role
 
 
 class RoleAPI(APIView):
-    def delete(self, request, role_id, format=None):
+    def delete(self, request: Request, role_id: int, format: str | None = None) -> Response:
         try:
             role = Role.objects.get(pk=role_id)
         except Role.DoesNotExist:

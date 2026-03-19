@@ -6,5 +6,5 @@ from airone.lib.plugin_task import PluginTaskRegistry
 class JobConfig(AppConfig):
     name = "job"
 
-    def ready(self):
+    def ready(self) -> None:
         PluginTaskRegistry.validate_all()

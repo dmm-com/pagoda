@@ -11,18 +11,6 @@ import { TestWrapperWithoutRoutes } from "TestWrapper";
 import { ListAliasEntryPage } from "pages/ListAliasEntryPage";
 import { listAliasPath } from "routes/Routes";
 
-const mockLocation = {
-  pathname: "/ui/entities/1/alias",
-  search: "",
-  hash: "",
-  state: null,
-};
-
-jest.mock("react-use", () => ({
-  ...jest.requireActual("react-use"),
-  useLocation: () => mockLocation,
-}));
-
 const server = setupServer(
   // GET /entity/api/v2/:entityId/
   http.get("http://localhost/entity/api/v2/1/", () => {

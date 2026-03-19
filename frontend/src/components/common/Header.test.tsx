@@ -8,17 +8,24 @@ import { Header } from "./Header";
 
 import { TestWrapper } from "TestWrapper";
 
-// Mock ServerContext
+// Mock ServerContext - configurable per test
+const defaultServerContext = {
+  title: "Airone",
+  version: "1.0.0",
+  headerColor: "#1976d2",
+  legacyUiDisabled: true,
+  extendedHeaderMenus: [] as Array<{
+    name: string;
+    children: Array<{ name: string; url: string }>;
+  }>,
+  user: { id: 1, username: "testuser" },
+};
+
+let mockServerContext = { ...defaultServerContext };
+
 jest.mock("../../services/ServerContext", () => ({
   ServerContext: {
-    getInstance: () => ({
-      title: "Airone",
-      version: "1.0.0",
-      headerColor: "#1976d2",
-      legacyUiDisabled: true,
-      extendedHeaderMenus: [],
-      user: { id: 1, username: "testuser" },
-    }),
+    getInstance: () => mockServerContext,
   },
 }));
 
@@ -61,12 +68,16 @@ jest.mock("../../repository/AironeApiClient", () => ({
   },
 }));
 
-// Mock react-use useInterval
-jest.mock("react-use", () => ({
+// Mock useInterval
+jest.mock("../../hooks/useInterval", () => ({
   useInterval: jest.fn(),
 }));
 
 describe("Header", () => {
+  beforeEach(() => {
+    mockServerContext = { ...defaultServerContext, extendedHeaderMenus: [] };
+  });
+
   describe("rendering", () => {
     test("should render header with title", () => {
       render(<Header />, { wrapper: TestWrapper });
@@ -147,6 +158,110 @@ describe("Header", () => {
         expect(screen.getByText("Groups")).toBeInTheDocument();
         expect(screen.getByText("Roles")).toBeInTheDocument();
         expect(screen.getByText("Triggers")).toBeInTheDocument();
+      });
+    });
+
+    test("should close management submenu on mouse leave", async () => {
+      render(<Header />, { wrapper: TestWrapper });
+
+      const managementButton = screen.getByText("Management");
+      fireEvent.mouseEnter(managementButton);
+
+      await waitFor(() => {
+        expect(screen.getByText("Users")).toBeInTheDocument();
+      });
+
+      // Find the menu list and trigger mouseLeave
+      const menuItems = screen.getByText("Users").closest("ul");
+      if (menuItems) {
+        fireEvent.mouseLeave(menuItems);
+      }
+
+      await waitFor(() => {
+        expect(screen.queryByText("Users")).not.toBeVisible();
+      });
+    });
+  });
+
+  describe("extended header menus", () => {
+    test("should show extended menu items on hover", async () => {
+      mockServerContext = {
+        ...defaultServerContext,
+        extendedHeaderMenus: [
+          {
+            name: "External Tools",
+            children: [
+              { name: "Tool A", url: "https://tool-a.example.com" },
+              { name: "Tool B", url: "https://tool-b.example.com" },
+            ],
+          },
+        ],
+      };
+
+      render(<Header />, { wrapper: TestWrapper });
+
+      const extendedMenuButton = screen.getByText("External Tools");
+      expect(extendedMenuButton).toBeInTheDocument();
+
+      fireEvent.mouseEnter(extendedMenuButton);
+
+      await waitFor(() => {
+        expect(screen.getByText("Tool A")).toBeInTheDocument();
+        expect(screen.getByText("Tool B")).toBeInTheDocument();
+      });
+    });
+
+    test("should close extended menu on mouse leave", async () => {
+      mockServerContext = {
+        ...defaultServerContext,
+        extendedHeaderMenus: [
+          {
+            name: "External Tools",
+            children: [{ name: "Tool A", url: "https://tool-a.example.com" }],
+          },
+        ],
+      };
+
+      render(<Header />, { wrapper: TestWrapper });
+
+      const extendedMenuButton = screen.getByText("External Tools");
+      fireEvent.mouseEnter(extendedMenuButton);
+
+      await waitFor(() => {
+        expect(screen.getByText("Tool A")).toBeInTheDocument();
+      });
+
+      const menuItems = screen.getByText("Tool A").closest("ul");
+      if (menuItems) {
+        fireEvent.mouseLeave(menuItems);
+      }
+
+      await waitFor(() => {
+        expect(screen.queryByText("Tool A")).not.toBeVisible();
+      });
+    });
+
+    test("should render links with correct href in extended menu", async () => {
+      mockServerContext = {
+        ...defaultServerContext,
+        extendedHeaderMenus: [
+          {
+            name: "External Tools",
+            children: [{ name: "Tool A", url: "https://tool-a.example.com" }],
+          },
+        ],
+      };
+
+      render(<Header />, { wrapper: TestWrapper });
+
+      fireEvent.mouseEnter(screen.getByText("External Tools"));
+
+      await waitFor(() => {
+        const toolLink = screen.getByText("Tool A");
+        expect(toolLink.closest("a")).toHaveAttribute(
+          "href",
+          "https://tool-a.example.com",
+        );
       });
     });
   });

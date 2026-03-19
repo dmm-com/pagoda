@@ -132,9 +132,11 @@ class TestDecorators(unittest.TestCase):
         info = plugin.get_info()
 
         self.assertIn("hooks", info)
-        self.assertEqual(len(info["hooks"]), 2)
-        self.assertIn("entry.after_create", info["hooks"])
-        self.assertIn("entity.after_update", info["hooks"])
+        hooks = info["hooks"]
+        assert isinstance(hooks, list)
+        self.assertEqual(len(hooks), 2)
+        self.assertIn("entry.after_create", hooks)
+        self.assertIn("entity.after_update", hooks)
 
 
 if __name__ == "__main__":

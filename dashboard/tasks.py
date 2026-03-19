@@ -117,7 +117,7 @@ def _yaml_export(
 ) -> io.StringIO | None:
     output = io.StringIO()
 
-    def _get_attr_value(atype: int, value: dict):
+    def _get_attr_value(atype: int, value: Any) -> Any:
         match atype:
             case _ if atype & AttrType._ARRAY:
                 return [_get_attr_value(atype ^ AttrType._ARRAY, x) for x in value]
@@ -173,7 +173,7 @@ def _yaml_export(
 @register_job_task(JobOperation.EXPORT_SEARCH_RESULT)
 @app.task(bind=True)
 @may_schedule_until_job_is_ready
-def export_search_result(self, job: Job):
+def export_search_result(self: Any, job: Job) -> None:
     user = job.user
     recv_data = json.loads(job.params)
 

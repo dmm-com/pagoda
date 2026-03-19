@@ -44,7 +44,8 @@ jobs:
           export DJANGO_CONFIGURATION=DRFSpectacularExcludeCustomView
 
           # Check for errors (fail the build)
-          errors=$(uv run python manage.py spectacular 2>&1 > /dev/null | grep -i ERROR || true)
+          # grep for actual error lines like "Error [ViewName]: ..." (not summary lines)
+          errors=$(uv run python manage.py spectacular 2>&1 > /dev/null | grep "Error \[" || true)
           if [ -n "$errors" ]; then
             echo "::error::OpenAPI schema generation errors:"
             echo "$errors"

@@ -9,8 +9,8 @@ from airone.lib.acl import ACLType
 
 
 class AironeModelResource(ModelResource):
-    COMPARING_KEYS = []
-    DISALLOW_UPDATE_KEYS = []
+    COMPARING_KEYS: list[str] = []
+    DISALLOW_UPDATE_KEYS: list[str] = []
 
     def __init__(self, *args, **kwargs):
         super(AironeModelResource, self).__init__(*args, **kwargs)

@@ -1,4 +1,5 @@
 import json
+from typing import Any
 
 from airone.celery import app
 from airone.lib.job import may_schedule_until_job_is_ready, register_job_task
@@ -13,7 +14,7 @@ from user.models import User
 @register_job_task(JobOperation.MAY_INVOKE_TRIGGER)
 @app.task(bind=True)
 @may_schedule_until_job_is_ready
-def may_invoke_trigger(self, job: Job) -> JobStatus:
+def may_invoke_trigger(self: Any, job: Job) -> JobStatus:
     # Get job parameters that are set at frontend processing
     user = User.objects.filter(id=job.user.id).first()
     entry = Entry.objects.filter(id=job.target.id, is_active=True).first()

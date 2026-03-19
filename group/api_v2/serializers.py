@@ -1,4 +1,4 @@
-from typing import Dict, TypedDict
+from typing import Any, TypedDict
 
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
@@ -46,7 +46,7 @@ class GroupCreateUpdateSerializer(serializers.ModelSerializer):
         model = Group
         fields = ["id", "name", "parent_group", "members"]
 
-    def create(self, validated_data: Dict):
+    def create(self, validated_data: dict[str, Any]) -> Group:
         parent_group = validated_data.get("parent_group")
         if parent_group and not parent_group.is_active:
             parent_group = None
@@ -62,7 +62,7 @@ class GroupCreateUpdateSerializer(serializers.ModelSerializer):
 
         return new_group
 
-    def update(self, instance: Group, validated_data: Dict):
+    def update(self, instance: Group, validated_data: dict[str, Any]) -> Group:
         job_register_referrals = None
         if instance.name != validated_data["name"]:
             job_register_referrals = Job.new_register_referrals(
@@ -107,8 +107,8 @@ class GroupTreeSerializer(serializers.ModelSerializer):
         model = Group
         fields = ["id", "name", "children"]
 
-    def get_children(self, obj: Group) -> list[Dict]:
-        def _make_hierarchical_group(groups: list[Group]) -> list[Dict]:
+    def get_children(self, obj: Group) -> list[dict[str, object]]:
+        def _make_hierarchical_group(groups: list[Group]) -> list[dict[str, object]]:
             return [
                 {
                     "id": g.id,

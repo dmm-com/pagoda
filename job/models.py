@@ -6,7 +6,7 @@ import time
 from datetime import date, datetime, timedelta
 from importlib import import_module
 from types import ModuleType
-from typing import Any, Callable, Optional, TypeAlias, Union
+from typing import Any, Callable, TypeAlias
 from zoneinfo import ZoneInfo
 
 from django.conf import settings
@@ -23,7 +23,7 @@ from entry.models import Entry
 from job.settings import CONFIG as JOB_CONFIG
 from user.models import User
 
-TaskReturnType: TypeAlias = Union["JobStatus", tuple["JobStatus", str, Optional[ACLBase]], None]
+TaskReturnType: TypeAlias = "JobStatus | tuple[JobStatus, str, ACLBase | None] | None"
 
 TaskHandler: TypeAlias = Callable[[Any, "Job"], TaskReturnType]
 
@@ -257,7 +257,7 @@ class Job(models.Model):
         text: str | None = None,
         target: ACLBase | None = None,
         operation: int | None = None,
-    ):
+    ) -> None:
         update_fields = ["updated_at"]
 
         if status is not None and status in [s.value for s in JobStatus]:
@@ -399,7 +399,7 @@ class Job(models.Model):
     @classmethod
     def register_method_table(
         kls, operation: int | JobOperation | JobOperationCustom, method: TaskHandler
-    ):
+    ) -> None:
         # Raise error if trying to register a handler that's already registered
         if operation in kls._METHOD_TABLE:
             raise ValueError(
@@ -637,7 +637,9 @@ class Job(models.Model):
         )
 
     @classmethod
-    def new_create_entity_v2(kls, user: User, target: Entity, text="", params={}):
+    def new_create_entity_v2(
+        kls, user: User, target: Entity, text: str = "", params: dict = {}
+    ) -> "Job":
         return kls._create_new_job(
             user=user,
             target=target,
@@ -647,7 +649,9 @@ class Job(models.Model):
         )
 
     @classmethod
-    def new_edit_entity_v2(kls, user: User, target: Entity, text="", params={}):
+    def new_edit_entity_v2(
+        kls, user: User, target: Entity, text: str = "", params: dict = {}
+    ) -> "Job":
         return kls._create_new_job(
             user=user,
             target=target,
@@ -657,7 +661,9 @@ class Job(models.Model):
         )
 
     @classmethod
-    def new_delete_entity_v2(kls, user: User, target: Entity, text="", params={}):
+    def new_delete_entity_v2(
+        kls, user: User, target: Entity, text: str = "", params: dict = {}
+    ) -> "Job":
         return kls._create_new_job(
             user=user,
             target=target,
@@ -679,7 +685,9 @@ class Job(models.Model):
         )
 
     @classmethod
-    def new_edit_entry_v2(kls, user: User, target: Entry, text="", params={}):
+    def new_edit_entry_v2(
+        kls, user: User, target: Entry, text: str = "", params: dict = {}
+    ) -> "Job":
         return kls._create_new_job(
             user=user,
             target=target,
@@ -689,7 +697,9 @@ class Job(models.Model):
         )
 
     @classmethod
-    def new_delete_entry_v2(kls, user: User, target: Entry, text="", params={}):
+    def new_delete_entry_v2(
+        kls, user: User, target: Entry, text: str = "", params: dict = {}
+    ) -> "Job":
         return kls._create_new_job(
             user=user,
             target=target,
@@ -698,7 +708,7 @@ class Job(models.Model):
             params=params,
         )
 
-    def set_cache(self, value: Any):
+    def set_cache(self, value: Any) -> None:
         with default_storage.open("job_%d" % self.id, "wb") as fp:
             pickle.dump(value, fp)
 
@@ -716,7 +726,7 @@ class Job(models.Model):
             return kls.DEFAULT_JOB_TIMEOUT
 
     @classmethod
-    def new_role_import_v2(kls, user: User, text="", params: dict | None = None) -> "Job":
+    def new_role_import_v2(kls, user: User, text: str = "", params: dict | None = None) -> "Job":
         return kls._create_new_job(
             user=user, target=None, operation=JobOperation.IMPORT_ROLE_V2, text=text, params=params
         )

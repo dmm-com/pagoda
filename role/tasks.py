@@ -1,4 +1,5 @@
 import json
+from typing import Any
 
 from acl.models import ACLBase
 from airone.celery import app
@@ -13,7 +14,7 @@ from user.models import User
 @register_job_task(JobOperation.ROLE_REGISTER_REFERRAL)
 @app.task(bind=True)
 @may_schedule_until_job_is_ready
-def edit_role_referrals(self, job: Job) -> JobStatus:
+def edit_role_referrals(self: Any, job: Job) -> JobStatus:
     params = json.loads(job.params)
     role = Role.objects.get(id=params["role_id"])
 
@@ -26,7 +27,7 @@ def edit_role_referrals(self, job: Job) -> JobStatus:
 @register_job_task(JobOperation.IMPORT_ROLE_V2)
 @app.task(bind=True)
 @may_schedule_until_job_is_ready
-def import_role_v2(self, job: Job) -> tuple[JobStatus, str, None] | None:
+def import_role_v2(self: Any, job: Job) -> tuple[JobStatus, str, None] | None:
     import_data = json.loads(job.params)
     err_msg = []
     total_count = len(import_data)
