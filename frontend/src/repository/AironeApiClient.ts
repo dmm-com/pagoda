@@ -891,6 +891,7 @@ class AironeApiClient {
   async exportAdvancedSearchResults(
     entityIds: number[],
     attrinfo: Array<AdvancedSearchResultAttrInfo>,
+    joinAttrs: Array<AdvancedSearchJoinAttrInfo>,
     hasReferral: boolean,
     isAllEntities: boolean,
     format: "yaml" | "csv",
@@ -901,6 +902,7 @@ class AironeApiClient {
         advancedSearchResultExport: {
           entities: entityIds,
           attrinfo: attrinfo,
+          joinAttrs: joinAttrs,
           hasReferral: hasReferral,
           isAllEntities: isAllEntities,
           exportStyle: format,

@@ -226,10 +226,13 @@ export const AdvancedSearchResultsPage: FC = () => {
   }, [page, toggle, location.search]);
 
   const handleExport = async (exportStyle: "yaml" | "csv") => {
+    console.log("[onix/handleExport(00)] exportStyle: ", exportStyle);
+    console.log("[onix/handleExport(10)] joinAttrs: ", joinAttrs);
     try {
       await aironeApiClient.exportAdvancedSearchResults(
         entityIds,
         attrInfo,
+        joinAttrs,
         hasReferral,
         searchAllEntities,
         exportStyle,
