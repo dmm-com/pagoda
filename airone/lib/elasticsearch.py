@@ -20,6 +20,7 @@ class AdvancedSearchResultRecordIdNamePair(TypedDict):
     id: int
     name: str
     schema: NotRequired["AdvancedSearchResultRecordIdNamePair"]
+    attrs: NotRequired[Any]
 
 
 class AdvancedSearchResultRecordAttr(TypedDict, total=False):
@@ -1027,6 +1028,7 @@ def make_search_results(
     hint_attrs: list[AttrHint],
     hint_referral: str | None,
     limit: int,
+    include_referrals: bool = False,
 ) -> AdvancedSearchResults:
     """Acquires and returns the attribute values held by each search result
 
@@ -1089,7 +1091,7 @@ def make_search_results(
             is_readable=False,
         )
 
-        if hint_referral is not None:
+        if hint_referral is not None or include_referrals:
             record.referrals = entry_info.get("referrals", [])
 
         # Check for has permission to Entry. But it will be omitted when user is None.

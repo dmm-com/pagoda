@@ -1520,6 +1520,7 @@ class AdvancedSearchSerializer(serializers.Serializer):
     entities = serializers.ListField(child=serializers.IntegerField())
     attrinfo = AdvancedSearchResultAttrInfoSerializer(many=True)
     join_attrs = AdvancedSearchJoinAttrInfoSerializer(many=True, required=False)
+    referral_attrinfo = AdvancedSearchResultAttrInfoSerializer(many=True, required=False, default=[])
     has_referral = serializers.BooleanField(default=False)
     referral_name = serializers.CharField(required=False, allow_blank=True)
     is_output_all = serializers.BooleanField(default=True)
@@ -1568,6 +1569,7 @@ class AdvancedSearchResultValueReferralSerializer(serializers.Serializer):
     id = serializers.IntegerField()
     name = serializers.CharField()
     schema = EntityAttributeTypeSerializer()
+    attrs = serializers.DictField(child=AdvancedSearchResultValueAttrSerializer(), required=False)
 
 
 class AdvancedSearchResultValueSerializer(serializers.Serializer):

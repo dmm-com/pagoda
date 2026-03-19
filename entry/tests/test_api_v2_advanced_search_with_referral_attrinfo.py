@@ -1,4 +1,5 @@
 import json
+from unicodedata import name
 
 from airone.lib.elasticsearch import FilterKey
 from airone.lib.types import AttrType
@@ -9,85 +10,114 @@ class ViewTest(BaseViewTest):
     def setUp(self):
         super().setUp()
 
-        # TargetItem-0, 1, 2 を ref_model に作成（検索対象）
-        self.target_items = [
-            self.add_entry(self.user, "TargetItem-%d" % i, self.ref_entity)
-            for i in range(3)
+        # Create an entity for IP addresses as search targets
+        self.ip_address_entity = self.create_entity(self.user, "IPAddress", attrs=[])
+
+        # Create IP address entries
+        self.ip_addresses = [
+            self.add_entry(self.user, ip, self.ip_address_entity)
+            for ip in ["192.168.0.1", "192.168.0.2", "192.168.0.3"]
         ]
 
-        # 参照する側のモデルを複数用意する（実際と同じく複数モデルから参照される状況）
-        self.model_a = self.create_entity(
+        # Create referrer entities: Server and VM
+        # Both have "status" and "ip_address" attrs, referencing the IPAddress entity
+        self.server_entity = self.create_entity(
             self.user,
-            "ModelA",
+            "Server",
             attrs=[
-                {"name": "val", "type": AttrType.STRING},
-                {"name": "ref", "type": AttrType.OBJECT, "ref": self.ref_entity},
+                {"name": "status", "type": AttrType.STRING},
+                {"name": "ip_address", "type": AttrType.OBJECT, "ref": self.ip_address_entity},
             ],
         )
-        self.model_b = self.create_entity(
+        self.vm_entity = self.create_entity(
             self.user,
-            "ModelB",
+            "VM",
             attrs=[
-                {"name": "val", "type": AttrType.STRING},
-                {"name": "ref", "type": AttrType.OBJECT, "ref": self.ref_entity},
+                {"name": "status", "type": AttrType.STRING},
+                {"name": "ip_address", "type": AttrType.OBJECT, "ref": self.ip_address_entity},
             ],
         )
 
-        # ModelA の Item が TargetItem を参照
-        # ModelA-Item-0: val="active",   ref -> TargetItem-0
-        # ModelA-Item-1: val="inactive", ref -> TargetItem-0
-        for i, (val, ref_id) in enumerate(
-            [
-                ("active", self.target_items[0].id),
-                ("inactive", self.target_items[0].id),
-            ]
-        ):
+        # Server entries:
+        # Server-1: status="active",   ip_address -> 192.168.0.1
+        # Server-2: status="inactive", ip_address -> 192.168.0.1
+        self.servers = [
             self.add_entry(
                 self.user,
-                "ModelA-Item-%d" % i,
-                self.model_a,
-                values={"val": val, "ref": ref_id},
+                name,
+                self.server_entity,
+                values={"status": status, "ip_address": ip},
             )
+        for name, status, ip in [
+            ("Server-1", "active", self.ip_addresses[0].id),
+            ("Server-2", "inactive", self.ip_addresses[0].id),
+        ]
+            
+        ]
 
-        # ModelB の Item が TargetItem を参照
-        # ModelB-Item-0: val="active", ref -> TargetItem-1
-        # ModelB-Item-1: val="",       ref -> TargetItem-2 (空値)
-        for i, (val, ref_id) in enumerate(
-            [
-                ("active", self.target_items[1].id),
-                ("", self.target_items[2].id),
-            ]
-        ):
+        # VM entries:
+        # VM-1: status="active", ip_address -> 192.168.0.2
+        # VM-2: status="",       ip_address -> 192.168.0.3 (no status)
+        self.vms = [
             self.add_entry(
                 self.user,
-                "ModelB-Item-%d" % i,
-                self.model_b,
-                values={"val": val, "ref": ref_id},
+                name,
+                self.vm_entity,
+                values={"status": status, "ip_address": ip},
             )
+        for name, status, ip in [
+            ("VM-1", "active", self.ip_addresses[1].id),
+            ("VM-2", "", self.ip_addresses[2].id),
+        ]
+            
+        ]
 
     def test_filter_by_referral_attrinfo_with_keyword(self):
-        # "active" を持つ参照アイテムから参照されているアイテムのみ返る
+        # Only IP addresses referenced by active Servers or VMs should be returned
         params = {
-            "entities": [self.ref_entity.id],
+            "entities": [self.ip_address_entity.id],
             "attrinfo": [],
-            "referral_attrinfo": [{"name": "val", "keyword": "active"}],
+            "referral_attrinfo": [{"name": "status", "keyword": "active"}],
         }
         resp = self.client.post(
             "/entry/api/v2/advanced_search/", json.dumps(params), "application/json"
         )
         self.assertEqual(resp.status_code, 200)
 
-        result_names = [x["entry"]["name"] for x in resp.json()["values"]]
-        self.assertIn("TargetItem-0", result_names)
-        self.assertIn("TargetItem-1", result_names)
-        self.assertNotIn("TargetItem-2", result_names)
+        resp_data = resp.json()
+
+        self.assertEqual(resp_data["count"], 2)
+        self.assertEqual(resp_data["total_count"], 2)
+
+        result_names = [x["entry"]["name"] for x in resp_data["values"]]
+        self.assertIn("192.168.0.1", result_names)
+        self.assertIn("192.168.0.2", result_names)
+        self.assertNotIn("192.168.0.3", result_names)
+
+        self.assertEqual(resp_data["values"][0]["referrals"], [{
+            "id": self.servers[0].id,
+            "name": self.servers[0].name,
+            "schema": {
+                "id": self.server_entity.id,
+                "name": self.server_entity.name,
+            },
+            "attrs": {
+                "status": {
+                    "type": AttrType.STRING,
+                    "value": {
+                        "as_string": "active",
+                    },
+                    "is_readable": True,
+                },
+            },
+        }])
 
     def test_filter_by_referral_attrinfo_filter_key_empty(self):
-        # val が空の参照アイテムから参照されているアイテムのみ返る
+        # Only IP addresses referenced by Servers/VMs with empty status should be returned
         params = {
-            "entities": [self.ref_entity.id],
+            "entities": [self.ip_address_entity.id],
             "attrinfo": [],
-            "referral_attrinfo": [{"name": "val", "filter_key": FilterKey.EMPTY}],
+            "referral_attrinfo": [{"name": "status", "filter_key": FilterKey.EMPTY}],
         }
         resp = self.client.post(
             "/entry/api/v2/advanced_search/", json.dumps(params), "application/json"
@@ -95,14 +125,14 @@ class ViewTest(BaseViewTest):
         self.assertEqual(resp.status_code, 200)
 
         result_names = [x["entry"]["name"] for x in resp.json()["values"]]
-        self.assertEqual(result_names, ["TargetItem-2"])
+        self.assertEqual(result_names, ["192.168.0.3"])
 
     def test_filter_by_referral_attrinfo_filter_key_non_empty(self):
-        # val が非空の参照アイテムから参照されているアイテムのみ返る
+        # Only IP addresses referenced by Servers/VMs with non-empty status should be returned
         params = {
-            "entities": [self.ref_entity.id],
+            "entities": [self.ip_address_entity.id],
             "attrinfo": [],
-            "referral_attrinfo": [{"name": "val", "filter_key": FilterKey.NON_EMPTY}],
+            "referral_attrinfo": [{"name": "status", "filter_key": FilterKey.NON_EMPTY}],
         }
         resp = self.client.post(
             "/entry/api/v2/advanced_search/", json.dumps(params), "application/json"
@@ -110,6 +140,6 @@ class ViewTest(BaseViewTest):
         self.assertEqual(resp.status_code, 200)
 
         result_names = [x["entry"]["name"] for x in resp.json()["values"]]
-        self.assertIn("TargetItem-0", result_names)
-        self.assertIn("TargetItem-1", result_names)
-        self.assertNotIn("TargetItem-2", result_names)
+        self.assertIn("192.168.0.1", result_names)
+        self.assertIn("192.168.0.2", result_names)
+        self.assertNotIn("192.168.0.3", result_names)
