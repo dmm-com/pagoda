@@ -2398,6 +2398,51 @@ class ViewTest(BaseViewTest):
             job.get_cache()
 
     @patch("entry.tasks.export_entries_v2.delay", Mock(side_effect=tasks.export_entries_v2))
+    def test_post_export_with_join_attrs(self):
+        user = self.guest_login("guest2")
+
+        model_ref = self.create_entity(user, "ModelR", attrs=[{"name": "attr1", "type": AttrType.STRING}])
+        item_refs = [self.add_entry(user, "ItemRef-%s" % i, model_ref, values={"attr1": x}) for (i, x) in enumerate(["foo", "bar", "baz"])]
+
+        model_tgt = self.create_entity(user, "ModelT", attrs=[{"name": "attr2", "type": AttrType.OBJECT}])
+        item_tgts = [self.add_entry(user, "ItemTgt-%s" % i, model_tgt, values={"attr2": x.id}) for (i, x) in enumerate(item_refs)]
+
+        export_params = {
+            "format": "CSV",
+            "join_attrs": [
+                {
+                    "name": "attr2",
+                    "attrinfo": [
+                        {
+                            "name": model_ref.name,
+                            "filter_key": 0,
+                            "keyword": "ba",
+                        }
+                    ],
+                }
+            ],
+        }
+
+        resp = self.client.post(
+            "/entry/api/v2/%d/export/" % model_tgt.id,
+            json.dumps(export_params),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(
+            resp.json(),
+            {"result": "Succeed in registering export processing. Please check Job list."},
+        )
+
+        content = Job.objects.filter(target=model_tgt).last().get_cache()
+        # check header contents
+        self.assertEqual(content.splitlines()[0], 'Name,attr2,attr1' % model_tgt.name)
+
+        # check data contents but only get filtered items by "ba"
+        self.assertEqual(content.splitlines()[1], '%s,%s,bar' % (item_tgts[1].name, item_refs[1].name))
+        self.assertEqual(content.splitlines()[2], '%s,%s,baz' % (item_tgts[2].name, item_refs[2].name))
+
+    @patch("entry.tasks.export_entries_v2.delay", Mock(side_effect=tasks.export_entries_v2))
     def test_post_export_with_referrals(self):
         user = self.admin_login()
 

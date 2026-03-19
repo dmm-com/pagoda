@@ -810,6 +810,7 @@ def export_search_result_v2(self, job: Job):
     serializer = AdvancedSearchResultExportSerializer(data=json.loads(job.params))
     serializer.is_valid(raise_exception=True)
     params: dict = serializer.validated_data
+    join_attrs = params.get("join_attrs", [])
 
     has_referral: bool = params.get("has_referral", False)
     referral_name: str | None = params.get("referral_name")

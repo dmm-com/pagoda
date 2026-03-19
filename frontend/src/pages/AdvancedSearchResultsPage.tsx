@@ -226,8 +226,6 @@ export const AdvancedSearchResultsPage: FC = () => {
   }, [page, toggle, location.search]);
 
   const handleExport = async (exportStyle: "yaml" | "csv") => {
-    console.log("[onix/handleExport(00)] exportStyle: ", exportStyle);
-    console.log("[onix/handleExport(10)] joinAttrs: ", joinAttrs);
     try {
       await aironeApiClient.exportAdvancedSearchResults(
         entityIds,
@@ -352,7 +350,7 @@ export const AdvancedSearchResultsPage: FC = () => {
             content={
               bulkOperationEntryIds.length ==
                 AdvancedSerarchResultListParam.MAX_ROW_COUNT &&
-              joinAttrs.length == 0 ? (
+                joinAttrs.length == 0 ? (
                 <FormControlLabel
                   sx={
                     attrInfo.some((x) => isAttrInfoSet(x))
