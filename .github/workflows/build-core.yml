@@ -139,11 +139,8 @@ jobs:
         run: |
           mv custom_view_sample custom_view
           uv run python manage.py makemigrations
-          uv run python manage.py migrate
           uv run python manage.py collectstatic
-          uv run coverage run manage.py test ${{ matrix.target }} --parallel 
-          uv run coverage report
-          uv run coverage xml
+          uv run pytest ${{ matrix.target }}/tests/ --cov=${{ matrix.target }} --cov-report=xml --cov-report=term
       - name: octocov
         uses: k1LoW/octocov-action@v1
         with:

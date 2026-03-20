@@ -100,3 +100,17 @@ plugins = [
     "pagoda-cross-entity-sample-plugin",
     "pagoda-echo-plugin",
 ]
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "airone.settings"
+python_files = ["test*.py"]
+python_classes = ["Test*", "*Test"]
+python_functions = ["test_*"]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.2",
+    "pytest-cov>=6.3.0",
+    "pytest-django>=4.12.0",
+    "pytest-xdist>=3.8.0",
+]
