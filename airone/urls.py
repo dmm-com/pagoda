@@ -53,7 +53,7 @@ urlpatterns = [
     re_path(r"^category/", include(("category.urls", "category"))),
 ]
 
-if settings.DEBUG:
+if "debug_toolbar" in settings.INSTALLED_APPS:
     urlpatterns.append(re_path(r"^__debug__/", include("debug_toolbar.urls")))
 
 for extension in settings.AIRONE["EXTENSIONS"]:
