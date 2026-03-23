@@ -2401,22 +2401,41 @@ class ViewTest(BaseViewTest):
     def test_post_export_with_join_attrs(self):
         user = self.guest_login("guest2")
 
-        model_ref = self.create_entity(user, "ModelR", attrs=[{"name": "attr1", "type": AttrType.STRING}])
-        item_refs = [self.add_entry(user, "ItemRef-%s" % i, model_ref, values={"attr1": x}) for (i, x) in enumerate(["foo", "bar", "baz"])]
+        model_devil = self.create_entity(user, "Devil", attrs=[
+            {"name": "ability", "type": AttrType.STRING},
+        ])
+        item_devils = {x: self.add_entry(user, name, model_devil, values={"ability": ability}) for (name, ability) in [
+            ("chaincaw", "Immotal"),
+            ("blood", "Half-Immotal"),
+        ]}
 
-        model_tgt = self.create_entity(user, "ModelT", attrs=[{"name": "attr2", "type": AttrType.OBJECT}])
-        item_tgts = [self.add_entry(user, "ItemTgt-%s" % i, model_tgt, values={"attr2": x.id}) for (i, x) in enumerate(item_refs)]
+        model_member = self.create_entity(user, "Member", attrs=[
+            {"name": "age", "type": AttrType.STRING},
+            {"name": "devil", "type": AttrType.OBJECT, "ref": model_devil.id},
+        ])
+        item_members = {name: self.add_entry(user, name, model_member, values={"devil": devil, "age": age}) for (name, age, devil) in [
+            ("Denji", "17", item_devils["chaincaw"].id),
+            ("Power", "19", item_devils["blood"].id),
+            ("Kishibe", "51"),
+        ]}
 
+        # This filters both age and ability.
         export_params = {
-            "format": "CSV",
+            "export_style": "csv",
+            "attrinfo": [
+                {"name": "age", "filter_key": 3, "keyword": "1"},
+                {"name": "devil", "filter_key": 0, "keyword": ""},
+            ],
+            "entities": [model_member.id],
+            "has_referral": False,
+            "is_all_entities": False,
             "join_attrs": [
                 {
-                    "name": "attr2",
+                    "name": "devil",
                     "attrinfo": [
                         {
-                            "name": model_ref.name,
-                            "filter_key": 0,
-                            "keyword": "ba",
+                            "name": "ability",
+                            "keyword": "Half",
                         }
                     ],
                 }
@@ -2424,23 +2443,18 @@ class ViewTest(BaseViewTest):
         }
 
         resp = self.client.post(
-            "/entry/api/v2/%d/export/" % model_tgt.id,
+            "/entry/api/v2/advanced_search_result_export/",
             json.dumps(export_params),
             "application/json",
         )
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(
-            resp.json(),
-            {"result": "Succeed in registering export processing. Please check Job list."},
-        )
 
-        content = Job.objects.filter(target=model_tgt).last().get_cache()
+        csv_contents = [x for x in Job.objects.last().get_cache().splitlines() if x]
         # check header contents
-        self.assertEqual(content.splitlines()[0], 'Name,attr2,attr1' % model_tgt.name)
+        self.assertEqual(csv_contents[0], "Name,age,devil,ability")
 
-        # check data contents but only get filtered items by "ba"
-        self.assertEqual(content.splitlines()[1], '%s,%s,bar' % (item_tgts[1].name, item_refs[1].name))
-        self.assertEqual(content.splitlines()[2], '%s,%s,baz' % (item_tgts[2].name, item_refs[2].name))
+        # check data contents, both age and ability are filtered, so only Power matches the condition.
+        self.assertEqual(csv_contents[1], "Power,19,blood,Half-Immotal")
 
     @patch("entry.tasks.export_entries_v2.delay", Mock(side_effect=tasks.export_entries_v2))
     def test_post_export_with_referrals(self):
