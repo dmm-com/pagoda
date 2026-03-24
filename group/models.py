@@ -1,7 +1,7 @@
 import importlib
 import sys
 from datetime import datetime
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from django.conf import settings
 from django.contrib.auth.models import Group as DjangoGroup
@@ -21,7 +21,7 @@ class Group(DjangoGroup):
         "Group", on_delete=models.DO_NOTHING, related_name="subordinates", null=True
     )
 
-    def save(self, *args, **kwargs) -> None:
+    def save(self, *args: Any, **kwargs: Any) -> None:
         """
         Override Model.save method of Django
         """
@@ -30,7 +30,7 @@ class Group(DjangoGroup):
             raise RuntimeError("The number of groups is over the limit")
         return super(Group, self).save(*args, **kwargs)
 
-    def delete(self):
+    def delete(self) -> None:
         from airone.lib import auto_complement
         from job.models import Job, JobOperation
         from user.models import User

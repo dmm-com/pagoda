@@ -208,7 +208,7 @@ class UserPasswordBySuperuserAPI(generics.UpdateAPIView):
 
 class PasswordResetAPI(viewsets.GenericViewSet):
     serializer_class = PasswordResetSerializer
-    permission_classes = []
+    permission_classes: list[type] = []
 
     def reset(self, request: Request) -> Response:
         serializer = PasswordResetSerializer(data=request.data)
@@ -288,7 +288,7 @@ class PasswordResetAPI(viewsets.GenericViewSet):
 
 class PasswordResetConfirmAPI(viewsets.GenericViewSet):
     serializer_class = PasswordResetConfirmSerializer
-    permission_classes = []
+    permission_classes: list[type] = []
 
     def confirm(self, request: Request) -> Response:
         serializer = PasswordResetConfirmSerializer(data=request.data)

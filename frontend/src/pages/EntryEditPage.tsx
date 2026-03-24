@@ -3,7 +3,6 @@ import { Box } from "@mui/material";
 import { FC, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
-import { v4 as uuidv4 } from "uuid";
 
 import { Loading } from "components/common/Loading";
 import { PageHeader } from "components/common/PageHeader";
@@ -87,7 +86,7 @@ export const EntryEditPage: FC<Props> = ({
     if (willCreate) {
       if (!entityLoading && entity != null) {
         const entryInfo = formalizeEntryInfo(undefined, entity, excludeAttrs);
-        entryInfo.name = useUUID ? uuidv4() : "";
+        entryInfo.name = useUUID ? crypto.randomUUID() : "";
         reset(entryInfo);
         setInitialized(true);
       }

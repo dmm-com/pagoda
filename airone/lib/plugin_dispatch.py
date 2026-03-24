@@ -29,6 +29,11 @@ class PluginOverrideMixin:
     If found, the request is dispatched to the plugin handler instead
     of the default ViewSet implementation.
 
+    When an override is active, the normal ViewSet processing — including
+    Job creation and hook invocation — is skipped entirely. The override
+    handler is responsible for the full operation. If the handler needs
+    hooks (@entry_hook) to fire, it must create a Job internally.
+
     Usage:
         class EntryAPI(PluginOverrideMixin, viewsets.ModelViewSet):
             ...

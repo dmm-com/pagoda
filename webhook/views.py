@@ -1,10 +1,12 @@
+from django.http import HttpRequest, HttpResponse
+
 from airone.lib.acl import ACLType
 from airone.lib.http import get_obj_with_check_perm, http_get, render
 from entity.models import Entity
 
 
 @http_get
-def list_webhook(request, entity_id):
+def list_webhook(request: HttpRequest, entity_id: int) -> HttpResponse | None:
     entity, error = get_obj_with_check_perm(request.user, Entity, entity_id, ACLType.Full)
     if error or not entity:
         return error
