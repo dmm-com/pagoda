@@ -715,8 +715,8 @@ for p in plugins:
 
 # 3. Check entry points
 python -c "
-import pkg_resources
-entries = list(pkg_resources.iter_entry_points('pagoda.plugins'))
+from importlib.metadata import entry_points
+entries = list(entry_points(group='pagoda.plugins'))
 print(f'Found {len(entries)} entry points:')
 for ep in entries:
     print(f'  {ep.name} -> {ep.module_name}')
