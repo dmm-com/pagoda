@@ -28,26 +28,20 @@ def discover_external_plugins():
     plugins installed as external packages. Only loads plugins
     specified in ENABLED_PLUGINS setting.
     """
-    try:
-        # Import pkg_resources (planned migration to importlib.metadata in the future)
-        import pkg_resources
+    from importlib.metadata import entry_points
 
-        enabled_plugins = getattr(settings, "ENABLED_PLUGINS", [])
-        if not enabled_plugins:
-            logger.info("No plugins specified in ENABLED_PLUGINS, skipping plugin discovery")
-            return
+    enabled_plugins = getattr(settings, "ENABLED_PLUGINS", [])
+    if not enabled_plugins:
+        logger.info("No plugins specified in ENABLED_PLUGINS, skipping plugin discovery")
+        return
 
-        for entry_point in pkg_resources.iter_entry_points("pagoda.plugins"):
-            if entry_point.name in enabled_plugins:
-                try:
-                    plugin_class = entry_point.load()
-                    plugin_registry.register(plugin_class)
-                    logger.info(f"Loaded external plugin: {entry_point.name}")
-                except Exception as e:
-                    logger.error(f"Failed to load external plugin {entry_point.name}: {e}")
-            else:
-                logger.debug(f"Skipping plugin {entry_point.name} (not in enabled list)")
-
-    except ImportError:
-        # If pkg_resources is not available
-        logger.debug("pkg_resources not available, skipping external plugin discovery")
+    for entry_point in entry_points(group="pagoda.plugins"):
+        if entry_point.name in enabled_plugins:
+            try:
+                plugin_class = entry_point.load()
+                plugin_registry.register(plugin_class)
+                logger.info(f"Loaded external plugin: {entry_point.name}")
+            except Exception as e:
+                logger.error(f"Failed to load external plugin {entry_point.name}: {e}")
+        else:
+            logger.debug(f"Skipping plugin {entry_point.name} (not in enabled list)")
