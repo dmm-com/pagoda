@@ -67,7 +67,7 @@ dependencies = [
     "python-ldap==3.4.5",
     "python3-saml==1.12.0",
     "pyyaml==6.0.1",
-    "requests==2.32.4",
+    "requests==2.33.0",
     "social-auth-app-django==5.4.3",
     "social-auth-core==4.5.1",
     "whitenoise==6.12.0",
