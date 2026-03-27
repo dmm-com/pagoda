@@ -41,6 +41,7 @@ class AdvancedSearchService:
         allow_missing_attributes: bool = False,
         exclude_referrals: list[int] = [],
         include_referrals: list[int] = [],
+        need_referrals: bool = False,
     ) -> AdvancedSearchResults:
         """Main method called from advanced search.
 
@@ -164,6 +165,7 @@ class AdvancedSearchService:
                 tmp_hint_attrs,
                 hint_referral,
                 limit,
+                include_referrals=need_referrals,
             )
             results.ret_count += search_result.ret_count
             results.ret_values.extend(search_result.ret_values)

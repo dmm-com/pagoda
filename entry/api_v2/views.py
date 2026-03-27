@@ -385,6 +385,14 @@ class AdvancedSearchAPI(generics.GenericAPIView):
         ).root
         exclude_referrals = serializer.validated_data["exclude_referrals"]
         include_referrals = serializer.validated_data["include_referrals"]
+        hint_referral_attrinfo = [
+            AttrHint(
+                name=x["name"],
+                keyword=x.get("keyword"),
+                filter_key=x.get("filter_key"),
+            )
+            for x in serializer.validated_data.get("referral_attrinfo", [])
+        ]
 
         def _get_joined_resp(
             prev_results: list[AdvancedSearchResultRecord], join_attr: AdvancedSearchJoinAttrInfo
@@ -558,10 +566,104 @@ class AdvancedSearchAPI(generics.GenericAPIView):
             allow_missing_attributes=True,  # For APIv2, allow entries missing attributes
             exclude_referrals=exclude_referrals,
             include_referrals=include_referrals,
+            need_referrals=bool(hint_referral_attrinfo),
         )
 
         # save total population number
         total_count = deepcopy(resp.ret_count)
+
+        def _get_typed_value(type: int) -> str:
+            if type & AttrType._ARRAY:
+                if type & AttrType.STRING:
+                    return "as_array_string"
+                elif type & AttrType._NAMED:
+                    return "as_array_named_object"
+                elif type & AttrType.OBJECT:
+                    return "as_array_object"
+                elif type & AttrType.GROUP:
+                    return "as_array_group"
+                elif type & AttrType.ROLE:
+                    return "as_array_role"
+                elif type & AttrType.NUMBER:
+                    return "as_array_number"
+            elif type & AttrType.STRING or type & AttrType.TEXT:
+                return "as_string"
+            elif type & AttrType.NUMBER:
+                return "as_number"
+            elif type & AttrType._NAMED:
+                return "as_named_object"
+            elif type & AttrType.OBJECT:
+                return "as_object"
+            elif type & AttrType.BOOLEAN:
+                return "as_boolean"
+            elif type & AttrType.DATE:
+                return "as_string"
+            elif type & AttrType.GROUP:
+                return "as_group"
+            elif type & AttrType.ROLE:
+                return "as_role"
+            elif type & AttrType.DATETIME:
+                return "as_string"
+            raise IncorrectTypeError(f"unexpected type: {type}")
+
+        def _convert_attr_to_typed(attr: dict) -> dict:
+            typed_key = _get_typed_value(attr["type"])
+            result = {
+                "is_readable": attr["is_readable"],
+                "type": attr["type"],
+                "value": {typed_key: attr.get("value", "")},
+            }
+            if typed_key == "as_string" and result["value"]["as_string"] is None:
+                result["value"]["as_string"] = ""
+            return result
+
+        if hint_referral_attrinfo:
+            # Second ES query: find all entries matching referral_attrinfo conditions
+            # (no entity specified — derive entity IDs from attr names, same as is_all_entities)
+            referral_attr_names = [x.name for x in hint_referral_attrinfo]
+            referral_entity_ids = list(
+                EntityAttr.objects.filter(
+                    name__in=referral_attr_names, is_active=True, parent_entity__is_active=True
+                )
+                .values_list("parent_entity__id", flat=True)
+                .distinct()
+            )
+            second_resp = AdvancedSearchService.search_entries(
+                request.user,
+                referral_entity_ids,
+                hint_referral_attrinfo,
+                is_output_all=False,
+                allow_missing_attributes=True,
+            )
+
+            # Apply typed value conversion to second_resp entries (same as main resp below)
+            for entry in second_resp.ret_values:
+                for name, attr in entry.attrs.items():
+                    entry.attrs[name] = _convert_attr_to_typed(attr)
+
+            # Build dict: {entry_id: AdvancedSearchResultRecord} from second query
+            referral_attrs_dict = {r.entry["id"]: r for r in second_resp.ret_values}
+
+            # Merge: filter main results, keeping only entries whose referrals intersect
+            new_ret_values: list[AdvancedSearchResultRecord] = []
+            for record in resp.ret_values:
+                matching_refs = [
+                    r for r in (record.referrals or []) if r["id"] in referral_attrs_dict
+                ]
+                if matching_refs:
+                    record.referrals = [
+                        {
+                            "id": ref["id"],
+                            "name": ref["name"],
+                            "schema": referral_attrs_dict[ref["id"]].entity,
+                            "attrs": referral_attrs_dict[ref["id"]].attrs,
+                        }
+                        for ref in matching_refs
+                    ]
+                    new_ret_values.append(record)
+            resp.ret_values = new_ret_values
+            resp.ret_count = len(new_ret_values)
+            total_count = resp.ret_count
 
         for join_attr in join_attrs:
             # Note: Each iteration here represents a potential N+1 query
@@ -628,54 +730,7 @@ class AdvancedSearchAPI(generics.GenericAPIView):
         for entry in resp.ret_values:
             for name, attr in entry.attrs.items():
 
-                def _get_typed_value(type: int) -> str:
-                    if type & AttrType._ARRAY:
-                        if type & AttrType.STRING:
-                            return "as_array_string"
-                        elif type & AttrType._NAMED:
-                            return "as_array_named_object"
-                        elif type & AttrType.OBJECT:
-                            return "as_array_object"
-                        elif type & AttrType.GROUP:
-                            return "as_array_group"
-                        elif type & AttrType.ROLE:
-                            return "as_array_role"
-                        elif type & AttrType.NUMBER:
-                            return "as_array_number"
-                    elif type & AttrType.STRING or type & AttrType.TEXT:
-                        return "as_string"
-                    elif type & AttrType.NUMBER:
-                        return "as_number"
-                    elif type & AttrType._NAMED:
-                        return "as_named_object"
-                    elif type & AttrType.OBJECT:
-                        return "as_object"
-                    elif type & AttrType.BOOLEAN:
-                        return "as_boolean"
-                    elif type & AttrType.DATE:
-                        return "as_string"
-                    elif type & AttrType.GROUP:
-                        return "as_group"
-                    elif type & AttrType.ROLE:
-                        return "as_role"
-                    elif type & AttrType.DATETIME:
-                        return "as_string"
-                    raise IncorrectTypeError(f"unexpected type: {type}")
-
-                entry.attrs[name] = {
-                    "is_readable": attr["is_readable"],
-                    "type": attr["type"],
-                    "value": {
-                        _get_typed_value(attr["type"]): attr.get("value", ""),
-                    },
-                }
-
-                # "asString" is a string type and does not allow None
-                if (
-                    _get_typed_value(attr["type"]) == "as_string"
-                    and entry.attrs[name]["value"]["as_string"] is None
-                ):
-                    entry.attrs[name]["value"]["as_string"] = ""
+                entry.attrs[name] = _convert_attr_to_typed(attr)
 
                 # "asNamedObject", "as_array_named_object" converts types
                 if _get_typed_value(attr["type"]) == "as_named_object":
