@@ -4,7 +4,6 @@ from django.db.models import QuerySet
 from django.http import Http404
 from rest_framework import serializers, status, viewsets
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 
@@ -17,7 +16,6 @@ from trigger.models import TriggerParent
 
 
 class TriggerAPI(viewsets.ModelViewSet):
-    permission_classes = [IsAuthenticated]
     pagination_class = PageNumberPagination
     filterset_fields = ["entity__is_active"]
 

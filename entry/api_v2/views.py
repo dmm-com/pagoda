@@ -942,7 +942,6 @@ class EntryImportAPI(generics.GenericAPIView):
 class EntryAttributeValueRestoreAPI(generics.UpdateAPIView):
     queryset = AttributeValue.objects.all()
     serializer_class = EntryAttributeValueRestoreSerializer
-    permission_classes = [IsAuthenticated]
 
 
 class EntryBulkUpdateAPI(generics.UpdateAPIView):
@@ -1051,7 +1050,6 @@ class EntryBulkDeleteAPI(generics.DestroyAPIView):
 
 
 class EntryAliasAPI(viewsets.ModelViewSet):
-    permission_classes = [IsAuthenticated]
     pagination_class = LimitOffsetPagination
     serializer_class = EntryAliasSerializer
     queryset = AliasEntry.objects.filter(entry__is_active=True)

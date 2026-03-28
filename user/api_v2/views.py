@@ -76,7 +76,6 @@ class UserAPI(viewsets.ModelViewSet):
 
 class UserTokenAPI(viewsets.ModelViewSet):
     serializer_class = UserTokenSerializer
-    permission_classes = [IsAuthenticated]
 
     def retrieve(self, request: Request) -> Response:
         instance = get_object_or_404(Token.objects.filter(user=request.user))
@@ -92,7 +91,6 @@ class UserTokenAPI(viewsets.ModelViewSet):
 
 class UserImportAPI(generics.GenericAPIView):
     parser_classes = [YAMLParser]
-    permission_classes = [IsAuthenticated]
     serializer_class = UserImportSerializer
 
     @extend_schema(responses={200: None})
@@ -158,14 +156,12 @@ class UserImportAPI(generics.GenericAPIView):
 class UserExportAPI(generics.ListAPIView):
     queryset = User.objects.filter(is_active=True)
     serializer_class = UserExportSerializer
-    permission_classes = [IsAuthenticated]
     renderer_classes = [YAMLRenderer]
 
 
 class UserPasswordAPI(generics.UpdateAPIView):
     queryset = User.objects.filter(is_active=True)
     serializer_class = UserPasswordSerializer
-    permission_classes = [IsAuthenticated]
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
@@ -301,7 +297,6 @@ class PasswordResetConfirmAPI(viewsets.GenericViewSet):
 class UserAuthAPI(generics.UpdateAPIView):
     queryset = User.objects.filter(is_active=True)
     serializer_class = UserAuthSerializer
-    permission_classes = [IsAuthenticated]
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
