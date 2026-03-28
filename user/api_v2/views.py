@@ -1,3 +1,5 @@
+from typing import Any
+
 from django.contrib.auth.forms import UserModel
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sites.shortcuts import get_current_site
@@ -36,7 +38,7 @@ from user.models import User
 
 
 class UserPermission(BasePermission):
-    def has_object_permission(self, request: Request, view, obj: User):
+    def has_object_permission(self, request: Request, view: Any, obj: User) -> bool:
         current_user: User = request.user
         permisson = {
             "retrieve": current_user.is_superuser or current_user == obj,
@@ -47,7 +49,7 @@ class UserPermission(BasePermission):
 
 
 class SuperuserPermission(BasePermission):
-    def has_object_permission(self, request, view, obj: User):
+    def has_object_permission(self, request: Request, view: Any, obj: User) -> bool:
         return request.user.is_superuser
 
 
@@ -59,7 +61,7 @@ class UserAPI(viewsets.ModelViewSet):
     ordering = ["username"]
     search_fields = ["username"]
 
-    def get_serializer_class(self):
+    def get_serializer_class(self) -> type[Serializer]:
         serializer = {
             "create": UserCreateSerializer,
             "update": UserUpdateSerializer,
@@ -67,7 +69,7 @@ class UserAPI(viewsets.ModelViewSet):
         }
         return serializer.get(self.action, UserRetrieveSerializer)
 
-    def destroy(self, request: Request, pk) -> Response:
+    def destroy(self, request: Request, pk: int) -> Response:
         user: User = self.get_object()
         user.delete()
 
@@ -167,17 +169,17 @@ class UserPasswordAPI(generics.UpdateAPIView):
     serializer_class = UserPasswordSerializer
     permission_classes = [IsAuthenticated]
 
-    def get_serializer_context(self):
+    def get_serializer_context(self) -> dict[str, Any]:
         context = super().get_serializer_context()
         context["user"] = self.get_object()
         return context
 
-    def put(self, request: Request, *args, **kwargs) -> Response:
+    def put(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         return Response(
             "Unsupported. Use PATCH alternatively", status=status.HTTP_405_METHOD_NOT_ALLOWED
         )
 
-    def patch(self, request: Request, *args, **kwargs) -> Response:
+    def patch(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         serializer: Serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
@@ -189,17 +191,17 @@ class UserPasswordBySuperuserAPI(generics.UpdateAPIView):
     serializer_class = UserPasswordBySuperuserSerializer
     permission_classes = [IsAuthenticated & SuperuserPermission]
 
-    def get_serializer_context(self):
+    def get_serializer_context(self) -> dict[str, Any]:
         context = super().get_serializer_context()
         context["user"] = self.get_object()
         return context
 
-    def put(self, request: Request, *args, **kwargs) -> Response:
+    def put(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         return Response(
             "Unsupported. Use PATCH alternatively", status=status.HTTP_405_METHOD_NOT_ALLOWED
         )
 
-    def patch(self, request: Request, *args, **kwargs) -> Response:
+    def patch(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         serializer: Serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
@@ -246,7 +248,7 @@ class PasswordResetAPI(viewsets.GenericViewSet):
 
         return Response(serializer.validated_data)
 
-    def _get_user(self, username: str):
+    def _get_user(self, username: str) -> User | None:
         """
         Given a username, return matching user who should receive a reset or None.
         """
@@ -265,11 +267,11 @@ class PasswordResetAPI(viewsets.GenericViewSet):
         self,
         subject_template_name: str,
         email_template_name: str,
-        context,
+        context: dict[str, Any],
         from_email: str | None,
         to_email: str,
         html_email_template_name: str | None = None,
-    ):
+    ) -> None:
         """
         Sends a django.core.mail.EmailMultiAlternatives to `to_email`.
         """
@@ -303,17 +305,17 @@ class UserAuthAPI(generics.UpdateAPIView):
     serializer_class = UserAuthSerializer
     permission_classes = [IsAuthenticated]
 
-    def get_serializer_context(self):
+    def get_serializer_context(self) -> dict[str, Any]:
         context = super().get_serializer_context()
         context["user"] = self.get_object()
         return context
 
-    def put(self, request: Request, *args, **kwargs) -> Response:
+    def put(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         return Response(
             "Unsupported. Use PATCH alternatively", status=status.HTTP_405_METHOD_NOT_ALLOWED
         )
 
-    def patch(self, request: Request, *args, **kwargs) -> Response:
+    def patch(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         serializer: Serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()

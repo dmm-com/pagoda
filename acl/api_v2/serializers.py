@@ -115,12 +115,12 @@ class ACLSerializer(serializers.ModelSerializer):
             if user.is_superuser or x.is_belonged_to(user)
         ]
 
-    def validate_default_permission(self, default_permission: int):
+    def validate_default_permission(self, default_permission: int) -> int:
         if default_permission not in ACLType.all():
             raise IncorrectTypeError("invalid default_permission parameter")
         return default_permission
 
-    def validate(self, attrs: dict[str, Any]):
+    def validate(self, attrs: dict[str, Any]) -> dict[str, Any]:
         # validate acl_settings parameter
         member_ids = [s["member_id"] for s in attrs.get("acl_settings", [])]
         if Role.objects.filter(id__in=member_ids).count() != len(member_ids):
@@ -149,7 +149,7 @@ class ACLSerializer(serializers.ModelSerializer):
 
         return attrs
 
-    def update(self, instance: ACLBase, validated_data):
+    def update(self, instance: ACLBase, validated_data: dict[str, Any]) -> ACLBase:
         obj = instance.get_subclass_object()
         if "is_public" in validated_data and validated_data["is_public"] != obj.is_public:
             obj.is_public = validated_data["is_public"]
@@ -184,7 +184,7 @@ class ACLSerializer(serializers.ModelSerializer):
         return instance
 
     @staticmethod
-    def _get_acl_model(object_id):
+    def _get_acl_model(object_id: int) -> type[ACLBase]:
         match int(object_id):
             case ACLObjType.Entity:
                 return Entity
@@ -201,8 +201,11 @@ class ACLSerializer(serializers.ModelSerializer):
 
     @staticmethod
     def _set_permission(
-        role: Role, acl_obj: ACLBase, permissions: dict[str, HistoricalPermission], acl_type
-    ):
+        role: Role,
+        acl_obj: ACLBase,
+        permissions: dict[str, HistoricalPermission],
+        acl_type: ACLType,
+    ) -> None:
         # clear unset permissions of target ACLbased object
         permission: HistoricalPermission
         for permission in role.permissions.filter(codename__startswith="%s." % acl_obj.id):
@@ -230,10 +233,10 @@ class ACLHistoryChangeSerializer(serializers.Serializer):
     before = serializers.SerializerMethodField(required=False)
     after = serializers.SerializerMethodField(required=False)
 
-    def get_before(self, change) -> Any:
+    def get_before(self, change: Any) -> Any:
         return change.before
 
-    def get_after(self, change) -> Any:
+    def get_after(self, change: Any) -> Any:
         return change.after
 
 
@@ -244,7 +247,7 @@ class ACLHistorySerializer(serializers.Serializer):
     changes = serializers.SerializerMethodField()
 
     @extend_schema_field(str)
-    def get_name(self, history):
+    def get_name(self, history: Any) -> str:
         if history.__class__.__name__ == "HistoricalHistoricalPermission":
             # Use cached ACLBase data to avoid duplicate queries
             acl_base_cache = self.context.get("acl_base_cache", {})
@@ -260,7 +263,7 @@ class ACLHistorySerializer(serializers.Serializer):
             return history.name
 
     @extend_schema_field(ACLHistoryChangeSerializer(many=True))
-    def get_changes(self, history):
+    def get_changes(self, history: Any) -> list[dict[str, Any]]:
         if history.__class__.__name__ == "HistoricalHistoricalPermission":
             # Use cached prev_record to avoid DB queries
             prev_record_cache = self.context.get("prev_record_cache", {})

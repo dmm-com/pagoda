@@ -56,7 +56,7 @@ class User(AbstractUser):
 
     # to make a polymorphism between the Group model
     @property
-    def permissions(self):
+    def permissions(self) -> models.Manager:
         return self.user_permissions
 
     @property
@@ -66,7 +66,7 @@ class User(AbstractUser):
     def belonging_groups(self, is_direct_belonging: bool = False) -> Iterable[Group]:
         """This returns groups that include hierarchical superior groups"""
 
-        def _scan_superior_groups(group, parent_groups):
+        def _scan_superior_groups(group: Group, parent_groups: list[Group]) -> None:
             if group.parent_group and group.parent_group not in parent_groups:
                 parent_groups.append(group.parent_group)
                 _scan_superior_groups(group.parent_group, parent_groups)
@@ -178,7 +178,7 @@ class User(AbstractUser):
                 return False
 
         # This checks there are any administrative roles that can control this object left
-        def _tobe_admin(role):
+        def _tobe_admin(role: Role) -> bool:
             for r_info in acl_settings:
                 if r_info["role"].id == role.id and r_info["value"] != ACLType.Full.id:
                     return False
@@ -200,7 +200,7 @@ class User(AbstractUser):
 
         return True
 
-    def save(self, *args, **kwargs) -> None:
+    def save(self, *args: Any, **kwargs: Any) -> None:
         """
         Override Model.save method of Django
         """
@@ -209,7 +209,7 @@ class User(AbstractUser):
             raise RuntimeError("The number of users is over the limit")
         return super(User, self).save(*args, **kwargs)
 
-    def delete(self):
+    def delete(self) -> None:
         """
         Override Model.delete method of Django
         """
@@ -282,7 +282,7 @@ class History(models.Model):
     # This parameter is needed to record related operation histories
     details = models.ManyToManyField("History")
 
-    def add_attr(self, target: "ACLBase", text: str = ""):
+    def add_attr(self, target: "ACLBase", text: str = "") -> None:
         detail = History.register(
             target=target,
             operation=History.ADD_ATTR,
@@ -292,7 +292,7 @@ class History(models.Model):
         )
         self.details.add(detail)
 
-    def mod_attr(self, target: "ACLBase", text: str = ""):
+    def mod_attr(self, target: "ACLBase", text: str = "") -> None:
         detail = History.register(
             target=target,
             operation=History.MOD_ATTR,
@@ -302,7 +302,7 @@ class History(models.Model):
         )
         self.details.add(detail)
 
-    def del_attr(self, target: "ACLBase", text: str = ""):
+    def del_attr(self, target: "ACLBase", text: str = "") -> None:
         detail = History.register(
             target=target,
             operation=History.DEL_ATTR,
@@ -312,7 +312,7 @@ class History(models.Model):
         )
         self.details.add(detail)
 
-    def mod_entity(self, target: "ACLBase", text: str = ""):
+    def mod_entity(self, target: "ACLBase", text: str = "") -> None:
         detail = History.register(
             target=target,
             operation=History.MOD_ENTITY,

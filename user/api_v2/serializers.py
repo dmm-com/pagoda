@@ -1,5 +1,5 @@
 from datetime import timedelta
-from typing import Dict, TypedDict
+from typing import Any, TypedDict
 
 from django.conf import settings
 from django.contrib.auth import password_validation
@@ -58,7 +58,7 @@ class UserCreateSerializer(UserBaseSerializer):
             "is_superuser",
         ]
 
-    def create(self, validate_data):
+    def create(self, validate_data: dict[str, Any]) -> User:
         return User.objects.create_user(request_data=validate_data)
 
 
@@ -156,7 +156,7 @@ class UserPasswordSerializer(serializers.Serializer):
     new_passwd = serializers.CharField()
     chk_passwd = serializers.CharField()
 
-    def validate(self, attrs: Dict):
+    def validate(self, attrs: dict[str, Any]) -> dict[str, Any]:
         request = self.context["request"]
         user = self.context["user"]
 
@@ -185,7 +185,7 @@ class UserPasswordSerializer(serializers.Serializer):
 
         return attrs
 
-    def save(self, **kwargs):
+    def save(self, **kwargs: Any) -> None:
         user = self.context["user"]
         user.set_password(self.validated_data["new_passwd"])
         user.save(update_fields=["password"])
@@ -195,7 +195,7 @@ class UserPasswordBySuperuserSerializer(serializers.Serializer):
     new_passwd = serializers.CharField()
     chk_passwd = serializers.CharField()
 
-    def validate(self, attrs: Dict):
+    def validate(self, attrs: dict[str, Any]) -> dict[str, Any]:
         request = self.context["request"]
 
         if not request.user.is_superuser:
@@ -207,7 +207,7 @@ class UserPasswordBySuperuserSerializer(serializers.Serializer):
 
         return attrs
 
-    def save(self, **kwargs) -> None:
+    def save(self, **kwargs: Any) -> None:
         user: User = self.context["user"]
         user.set_password(self.validated_data["new_passwd"])
         user.save(update_fields=["password"])
@@ -234,7 +234,7 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
             return None
         return user
 
-    def validate_token(self, value: str):
+    def validate_token(self, value: str) -> str:
         user = self._get_user()
         if not user:
             raise ValidationError("user not found")
@@ -244,7 +244,7 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
 
         return value
 
-    def validate(self, attrs: Dict):
+    def validate(self, attrs: dict[str, Any]) -> dict[str, Any]:
         password1 = attrs.get("password1")
         password2 = attrs.get("password2")
 
@@ -258,7 +258,7 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
 
         return attrs
 
-    def create(self, validated_data):
+    def create(self, validated_data: dict[str, Any]) -> dict[str, Any]:
         user = self._get_user()
         if not user:
             raise ValidationError("user not found")
@@ -273,7 +273,7 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
 class UserAuthSerializer(serializers.Serializer):
     ldap_password = serializers.CharField(required=True, allow_blank=False)
 
-    def validate(self, attrs: Dict):
+    def validate(self, attrs: dict[str, Any]) -> dict[str, Any]:
         """Only local to LDAP authentication is allowed."""
         user: User = self.context["user"]
 
@@ -286,7 +286,7 @@ class UserAuthSerializer(serializers.Serializer):
 
         return attrs
 
-    def save(self, **kwargs):
+    def save(self, **kwargs: Any) -> None:
         user = self.context["user"]
         user.authenticate_type = User.AuthenticateType.AUTH_TYPE_LDAP
         user.save(update_fields=["authenticate_type"])

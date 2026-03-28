@@ -56,7 +56,7 @@ class ACLBase(models.Model):
     # This fields describes the sub-class of this object
     objtype = models.IntegerField(default=0)
 
-    def save(self, update_fields: list[str] | None = None, *args, **kwargs):
+    def save(self, update_fields: list[str] | None = None, *args: Any, **kwargs: Any) -> None:
         """This forcely adds updated_time to update_fields parameter when it's not specified
         on its parameter.
         """
@@ -64,7 +64,7 @@ class ACLBase(models.Model):
         if isinstance(update_fields, list) and "updated_time" not in update_fields:
             new_update_fields = update_fields + ["updated_time"]
 
-        return super(ACLBase, self).save(update_fields=new_update_fields, *args, **kwargs)
+        super(ACLBase, self).save(update_fields=new_update_fields, *args, **kwargs)
 
     def get_diff(instance, offset: int = 0) -> list[HistoricalDifference]:
         ret = []
@@ -80,30 +80,29 @@ class ACLBase(models.Model):
 
         return ret
 
-    def show_diff(self, offset: int = 0):
+    def show_diff(self, offset: int = 0) -> None:
         for diff in self.get_diff(offset):
             print("{} changed from {} to {}".format(diff.field, diff.prev, diff.next))
 
-    def save_without_historical_record(self, *args, **kwargs):
+    def save_without_historical_record(self, *args: Any, **kwargs: Any) -> None:
         self.skip_history_when_saving = True
         try:
-            ret = self.save(*args, **kwargs)
+            self.save(*args, **kwargs)
         finally:
             del self.skip_history_when_saving
-        return ret
 
-    def set_status(self, val: int):
+    def set_status(self, val: int) -> None:
         self.status |= val
         self.save_without_historical_record(update_fields=["status"])
 
-    def del_status(self, val: int):
+    def del_status(self, val: int) -> None:
         self.status &= ~val
         self.save_without_historical_record(update_fields=["status"])
 
     def get_status(self, val: int) -> int:
         return self.status & val
 
-    def delete(self, *args, **kwargs):
+    def delete(self, *args: Any, **kwargs: Any) -> None:
         self.is_active = False
         self.name = "%s_deleted_%s" % (
             self.name,
@@ -113,14 +112,14 @@ class ACLBase(models.Model):
         self.deleted_user = kwargs.get("deleted_user")
         self.save()
 
-    def restore(self, *args, **kwargs):
+    def restore(self, *args: Any, **kwargs: Any) -> None:
         self.is_active = True
         self.name = re.sub(r"_deleted_[0-9_]*$", "", self.name)
         self.deleted_user = None
         self.deleted_time = None
         self.save()
 
-    def inherit_acl(self, aclobj: "ACLBase"):
+    def inherit_acl(self, aclobj: "ACLBase") -> None:
         if not isinstance(aclobj, ACLBase):
             raise TypeError("specified object(%s) is not ACLBase object")
 

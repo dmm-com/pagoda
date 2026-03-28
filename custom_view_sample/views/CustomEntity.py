@@ -1,6 +1,5 @@
-from custom_view.lib.task import JobOperationCustom
-
 from airone.lib.http import render
+from custom_view.lib.task import JobOperationCustom
 from job.models import Job
 
 

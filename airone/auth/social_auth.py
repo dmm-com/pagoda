@@ -1,7 +1,11 @@
+from typing import Any
+
 from user.models import User
 
 
-def create_user(details, user=None, *args, **kwargs):
+def create_user(
+    details: dict[str, str], user: User | None = None, *args: Any, **kwargs: Any
+) -> dict[str, Any]:
     # When first time login, UserSocialAuth model's object is created.
     # If UserSocialAuth exists, user already exists.
     if user:

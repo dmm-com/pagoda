@@ -5,14 +5,19 @@
 # with supporting username based email resolution.
 #
 
+from typing import Any
+
 from django import forms
 from django.contrib.auth.forms import UserModel, UsernameField
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import EmailMultiAlternatives
+from django.http import HttpRequest
 from django.template import loader
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
+
+from user.models import User
 
 
 class UsernameBasedPasswordResetForm(forms.Form):
@@ -27,13 +32,13 @@ class UsernameBasedPasswordResetForm(forms.Form):
 
     def send_mail(
         self,
-        subject_template_name,
-        email_template_name,
-        context,
-        from_email,
-        to_email,
-        html_email_template_name=None,
-    ):
+        subject_template_name: str,
+        email_template_name: str,
+        context: dict[str, Any],
+        from_email: str | None,
+        to_email: str,
+        html_email_template_name: str | None = None,
+    ) -> None:
         """
         Sends a django.core.mail.EmailMultiAlternatives to `to_email`.
         """
@@ -49,7 +54,7 @@ class UsernameBasedPasswordResetForm(forms.Form):
 
         email_message.send()
 
-    def get_user(self, username):
+    def get_user(self, username: str) -> User | None:
         """
         Given a username, return matching user who should receive a reset or None.
         """
@@ -66,16 +71,16 @@ class UsernameBasedPasswordResetForm(forms.Form):
 
     def save(
         self,
-        domain_override=None,
-        subject_template_name="registration/password_reset_subject.txt",
-        email_template_name="registration/password_reset_email.html",
-        use_https=False,
-        token_generator=default_token_generator,
-        from_email=None,
-        request=None,
-        html_email_template_name=None,
-        extra_email_context=None,
-    ):
+        domain_override: str | None = None,
+        subject_template_name: str = "registration/password_reset_subject.txt",
+        email_template_name: str = "registration/password_reset_email.html",
+        use_https: bool = False,
+        token_generator: Any = default_token_generator,
+        from_email: str | None = None,
+        request: HttpRequest | None = None,
+        html_email_template_name: str | None = None,
+        extra_email_context: dict[str, Any] | None = None,
+    ) -> None:
         """
         Generates a one-use only link for resetting password and sends to the
         user.

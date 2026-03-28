@@ -1,4 +1,6 @@
-from django.http import HttpResponse
+from typing import Any
+
+from django.http import HttpRequest, HttpResponse
 from django.http.response import JsonResponse
 
 from airone.lib.acl import ACLObjType, ACLType
@@ -12,7 +14,7 @@ from .models import ACLBase
 
 
 @http_get
-def index(request, obj_id):
+def index(request: HttpRequest, obj_id: int) -> HttpResponse:
     aclbase_obj, error = get_obj_with_check_perm(request.user, ACLBase, obj_id, ACLType.Full)
     if error or not aclbase_obj:
         return error
@@ -80,7 +82,7 @@ def index(request, obj_id):
         },
     ]
 )
-def set(request, recv_data):
+def set(request: HttpRequest, recv_data: dict[str, Any]) -> JsonResponse | HttpResponse:
     acl_obj = getattr(_get_acl_model(recv_data["object_type"]), "objects").get(
         id=recv_data["object_id"]
     )
@@ -153,7 +155,7 @@ def set(request, recv_data):
     )
 
 
-def _get_acl_model(object_id):
+def _get_acl_model(object_id: str) -> type[ACLBase]:
     if int(object_id) == ACLObjType.Entity:
         return Entity
     if int(object_id) == ACLObjType.Entry:
@@ -166,7 +168,7 @@ def _get_acl_model(object_id):
         return ACLBase
 
 
-def _set_permission(role, acl_obj, acl_type):
+def _set_permission(role: Role, acl_obj: ACLBase, acl_type: ACLType) -> None:
     # clear unset permissions of target ACLbased object
     for _acltype in ACLType.all():
         if _acltype != acl_type and _acltype != ACLType.Nothing:
