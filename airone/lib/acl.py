@@ -32,7 +32,7 @@ class ACLType(BaseIntEnum):
             self.Writable: "writable",
             self.Full: "full",
         }
-        return names[self.value]
+        return names[self]
 
     @property
     def label(self):
@@ -42,7 +42,7 @@ class ACLType(BaseIntEnum):
             self.Writable: "Writable",
             self.Full: "Full Controllable",
         }
-        return labels[self.value]
+        return labels[self]
 
     @classmethod
     def all(cls):

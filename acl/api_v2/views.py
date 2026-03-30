@@ -1,4 +1,5 @@
 from collections import defaultdict
+from typing import Any
 
 from django.db.models import Q
 from django.http import Http404
@@ -19,7 +20,7 @@ from user.models import User
 
 
 class ACLPermission(BasePermission):
-    def has_object_permission(self, request: Request, view, obj) -> bool:
+    def has_object_permission(self, request: Request, view: Any, obj: Any) -> bool:
         user: User = request.user
         permisson = {
             "retrieve": ACLType.Readable,
@@ -47,7 +48,7 @@ class ACLAPI(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, viewsets.Generi
 class ACLHistoryAPI(generics.ListAPIView):
     serializer_class = ACLHistorySerializer
 
-    def get_queryset(self):
+    def get_queryset(self) -> None:
         """Unnecessary in this serializer"""
         pass
 

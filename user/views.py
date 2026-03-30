@@ -1,9 +1,10 @@
 import re
 from datetime import timedelta
+from typing import Any
 
 from django.contrib.auth import views as auth_views
 from django.core.exceptions import ObjectDoesNotExist
-from django.http import HttpResponse
+from django.http import HttpRequest, HttpResponse
 from django.http.response import JsonResponse
 from django.urls import reverse_lazy
 
@@ -15,7 +16,7 @@ from .models import User
 
 
 @http_get
-def index(request):
+def index(request: HttpRequest) -> HttpResponse:
     if not request.user.is_authenticated:
         return HttpResponseSeeOther("/auth/login")
 
@@ -30,7 +31,7 @@ def index(request):
 
 @http_get
 @check_superuser
-def create(request):
+def create(request: HttpRequest) -> HttpResponse:
     return render(request, "create_user.html")
 
 
@@ -54,7 +55,7 @@ def create(request):
     ]
 )
 @check_superuser
-def do_create(request, recv_data):
+def do_create(request: HttpRequest, recv_data: dict[str, Any]) -> JsonResponse:
     is_superuser = False
     if "is_superuser" in recv_data:
         is_superuser = True
@@ -73,7 +74,7 @@ def do_create(request, recv_data):
 
 
 @http_get
-def edit(request, user_id):
+def edit(request: HttpRequest, user_id: int) -> HttpResponse:
     current_user = request.user
     try:
         user = User.objects.get(id=user_id, is_active=True)
@@ -110,7 +111,7 @@ def edit(request, user_id):
         {"name": "email", "type": str, "checker": lambda x: x["email"]},
     ]
 )
-def do_edit(request, user_id, recv_data):
+def do_edit(request: HttpRequest, user_id: int, recv_data: dict[str, Any]) -> HttpResponse:
     access_user = request.user
     try:
         target_user = User.objects.get(id=user_id, is_active=True)
@@ -160,7 +161,7 @@ def do_edit(request, user_id, recv_data):
 
 
 @http_get
-def edit_passwd(request, user_id):
+def edit_passwd(request: HttpRequest, user_id: int) -> HttpResponse:
     user_grade = ""
     if request.user.is_superuser:
         user_grade = "super"
@@ -199,7 +200,7 @@ def edit_passwd(request, user_id):
         },
     ]
 )
-def do_edit_passwd(request, user_id, recv_data):
+def do_edit_passwd(request: HttpRequest, user_id: int, recv_data: dict[str, Any]) -> HttpResponse:
     try:
         user = User.objects.get(id=user_id, is_active=True)
     except ObjectDoesNotExist:
@@ -245,7 +246,9 @@ def do_edit_passwd(request, user_id, recv_data):
     ]
 )
 @check_superuser
-def do_su_edit_passwd(request, user_id, recv_data):
+def do_su_edit_passwd(
+    request: HttpRequest, user_id: int, recv_data: dict[str, Any]
+) -> HttpResponse:
     try:
         user = User.objects.get(id=user_id, is_active=True)
     except ObjectDoesNotExist:
@@ -264,7 +267,7 @@ def do_su_edit_passwd(request, user_id, recv_data):
 
 @http_post([])
 @check_superuser
-def do_delete(request, user_id, recv_data):
+def do_delete(request: HttpRequest, user_id: int, recv_data: dict[str, Any]) -> HttpResponse:
     try:
         user = User.objects.get(id=user_id, is_active=True)
     except ObjectDoesNotExist:
@@ -290,7 +293,7 @@ def do_delete(request, user_id, recv_data):
         }
     ]
 )
-def change_ldap_auth(request, recv_data):
+def change_ldap_auth(request: HttpRequest, recv_data: dict[str, Any]) -> HttpResponse:
     if LDAPBackend.is_authenticated(request.user.username, recv_data["ldap_password"]):
         # When LDAP authentication is passed with current username and specified password,
         # this chnages authentication type from local to LDAP.
@@ -311,7 +314,7 @@ class PasswordReset(auth_views.PasswordResetView):
     template_name = "password_reset_form.html"
     form_class = UsernameBasedPasswordResetForm
 
-    def form_valid(self, form):
+    def form_valid(self, form: UsernameBasedPasswordResetForm) -> HttpResponse:
         # additionally validate if the user can reset its password
         username = form.cleaned_data["username"]
         user = User.objects.filter(username=username).first()
