@@ -394,9 +394,9 @@ class AdvancedSearchService:
                         # has_filter: exclude the entry
                 else:
                     # Non-ARRAY type (OBJECT, NAMED_OBJECT, etc.)
-                    ref_id: int | None = ref_ids[0] if ref_ids else None
-                    if ref_id:
-                        matched = matched_results.get(ref_id)
+                    single_ref_id: int | None = ref_ids[0] if ref_ids else None
+                    if single_ref_id:
+                        matched = matched_results.get(single_ref_id)
                         if has_filter and matched is None:
                             continue  # filter did not match → exclude the entry
                         new_info = entry_info.model_copy(deep=True)
