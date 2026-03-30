@@ -8,6 +8,7 @@ from airone.lib.acl import ACLType
 from airone.lib.elasticsearch import (
     ESS,
     AdvancedSearchResultRecord,
+    AdvancedSearchResultRecordAttr,
     AdvancedSearchResults,
     AttrHint,
     EntryHint,
@@ -232,7 +233,7 @@ class AdvancedSearchService:
         return make_search_results_for_simple(resp)
 
     @classmethod
-    def _extract_ref_ids(kls, attr: dict) -> list[int]:
+    def _extract_ref_ids(kls, attr: AdvancedSearchResultRecordAttr) -> list[int]:
         """
         Retrun a list of referenced Entry IDs from an AdvancedSearchResultRecordAttr dict.
         """
@@ -289,7 +290,7 @@ class AdvancedSearchService:
     # Default value for joined attrs when there is no referral or it does not match the filter.
     # Initialized as STRING with an empty string because views.py
     # requires is_readable / type / value.
-    _EMPTY_ATTR: dict = {
+    _EMPTY_ATTR: AdvancedSearchResultRecordAttr = {
         "type": AttrType.STRING,
         "value": "",
         "is_readable": True,
@@ -349,7 +350,7 @@ class AdvancedSearchService:
             for entity_id, ref_ids_in_entity in ref_entries_by_entity.items():
                 search_result = kls.search_entries(
                     user,
-                    [entity_id],
+                    [str(entity_id)],
                     hint_attrs,
                     limit=len(ref_ids_in_entity) + 100,
                 )
@@ -393,7 +394,7 @@ class AdvancedSearchService:
                         # has_filter: exclude the entry
                 else:
                     # Non-ARRAY type (OBJECT, NAMED_OBJECT, etc.)
-                    ref_id = ref_ids[0] if ref_ids else None
+                    ref_id: int | None = ref_ids[0] if ref_ids else None
                     if ref_id:
                         matched = matched_results.get(ref_id)
                         if has_filter and matched is None:

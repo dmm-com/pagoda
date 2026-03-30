@@ -12,7 +12,12 @@ from acl.models import ACLBase
 from airone.celery import app
 from airone.lib import custom_view
 from airone.lib.acl import ACLType
-from airone.lib.elasticsearch import AdvancedSearchResultRecord, AttrHint, EntryHint
+from airone.lib.elasticsearch import (
+    AdvancedSearchResultRecord,
+    AdvancedSearchResultRecordAttr,
+    AttrHint,
+    EntryHint,
+)
 from airone.lib.event_notification import (
     notify_entry_create,
     notify_entry_delete,
@@ -818,7 +823,7 @@ def _csv_export_v2(
 
     writer.writerow(["Name"] + [x["name"] for x in recv_data["attrinfo"]] + join_attr_col_names)
 
-    def _format_value(value: dict) -> str:
+    def _format_value(value: AdvancedSearchResultRecordAttr) -> str:
         if not value or "value" not in value or value["value"] is None:
             return ""
         vtype = value.get("type")

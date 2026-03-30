@@ -84,6 +84,7 @@ class ExportedEntityEntries(BaseModel):
 class ExportTaskParams(BaseModel):
     export_format: Literal["yaml", "csv"]
     target_id: int
+    join_attrs: list = []
 
 
 class EntityAttributeType(TypedDict):
