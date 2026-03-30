@@ -6,7 +6,7 @@ from copy import deepcopy
 from datetime import datetime, timedelta
 from typing import Any
 
-from django.db.models import Prefetch, Q
+from django.db.models import Q
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import generics, status, viewsets
@@ -28,8 +28,6 @@ from airone.lib.drf import (
     YAMLParser,
 )
 from airone.lib.elasticsearch import (
-    AdvancedSearchResultRecord,
-    AdvancedSearchResults,
     AttrHint,
     EntryHint,
     FilterKey,
@@ -40,7 +38,6 @@ from api_v1.entry.serializer import EntrySearchChainSerializer
 from entity.models import Entity, EntityAttr
 from entry.api_v2.pagination import EntryReferralPagination
 from entry.api_v2.serializers import (
-    AdvancedSearchJoinAttrInfo,
     AdvancedSearchJoinAttrInfoList,
     AdvancedSearchResultExportSerializer,
     AdvancedSearchResultSerializer,
@@ -386,133 +383,6 @@ class AdvancedSearchAPI(generics.GenericAPIView):
         exclude_referrals = serializer.validated_data["exclude_referrals"]
         include_referrals = serializer.validated_data["include_referrals"]
 
-        def _get_joined_resp(
-            prev_results: list[AdvancedSearchResultRecord], join_attr: AdvancedSearchJoinAttrInfo
-        ) -> tuple[bool, AdvancedSearchResults]:
-            """
-            Process join operation for a single attribute.
-
-            Flow:
-            1. Get related entities from prev_results
-            2. Extract referral IDs and names
-            3. Execute new ES query for joined entities
-            4. Apply filters if specified
-
-            Note:
-            - Each call triggers new ES query
-            - Results may be reduced by join filters
-            - Pagination from root level may lead to incomplete results
-            """
-            entities = Entity.objects.filter(
-                id__in=[result.entity["id"] for result in prev_results]
-            ).prefetch_related(
-                Prefetch(
-                    "attrs",
-                    queryset=EntityAttr.objects.filter(
-                        name=join_attr.name, is_active=True
-                    ).prefetch_related(
-                        Prefetch(
-                            "referral", queryset=Entity.objects.filter(is_active=True).only("id")
-                        )
-                    ),
-                )
-            )
-            entity_dict: dict[int, Entity] = {entity.id: entity for entity in entities}
-
-            # set hint_entity_ids for joining Items search and get item names
-            # that specified attribute refers
-            item_names: list[str] = []
-            hint_entity_ids: list[str] = []
-            for result in prev_results:
-                entity = entity_dict.get(result.entity["id"])
-                if entity is None:
-                    continue
-
-                attr: Attribute | None = next(
-                    (a for a in entity.attrs.all() if a.name == join_attr.name), None
-                )
-                if attr is None:
-                    continue
-
-                if attr.type & AttrType.OBJECT:
-                    # set hint Model ID
-                    hint_entity_ids.extend([x.id for x in attr.referral.all()])
-
-                    # set Item name
-                    if join_attr.name not in result.attrs:
-                        continue
-                    attrinfo = result.attrs[join_attr.name]
-
-                    if attr.type == AttrType.OBJECT and attrinfo["value"]["name"] not in item_names:
-                        item_names.append(attrinfo["value"]["name"])
-
-                    if attr.type == AttrType.NAMED_OBJECT:
-                        for co_info in attrinfo["value"].values():
-                            if co_info["name"] not in item_names:
-                                item_names.append(co_info["name"])
-
-                    if attr.type == AttrType.ARRAY_OBJECT:
-                        for r in attrinfo["value"]:
-                            if r["name"] not in item_names:
-                                item_names.append(r["name"])
-
-                    if attr.type == AttrType.ARRAY_NAMED_OBJECT:
-                        for r in attrinfo["value"]:
-                            [co_info] = r.values()
-                            if co_info["name"] not in item_names:
-                                item_names.append(co_info["name"])
-
-            # set parameters to filter joining search results
-            hint_attrs = [
-                AttrHint(
-                    name=info.name,
-                    keyword=info.keyword,
-                    filter_key=info.filter_key,
-                )
-                for info in join_attr.attrinfo
-            ]
-
-            # search Items from elasticsearch to join
-            return (
-                # This represents whether user want to narrow down results by keyword of joined attr
-                any([x.keyword or (x.filter_key or 0) > 0 for x in join_attr.attrinfo]),
-                AdvancedSearchService.search_entries(
-                    request.user,
-                    hint_entity_ids=list(set(hint_entity_ids)),  # this removes depulicated IDs
-                    hint_attrs=hint_attrs,
-                    limit=entry_limit,
-                    entry_name="|".join(item_names),
-                    hint_referral=None,
-                    is_output_all=is_output_all,
-                    hint_referral_entity_id=None,
-                    offset=join_attr.offset,
-                    exclude_referrals=exclude_referrals,
-                    include_referrals=include_referrals,
-                ),
-            )
-
-        # === End of Function: _get_joined_resp() ===
-
-        def _get_ref_id_from_es_result(attrinfo) -> list[int | None]:
-            if attrinfo and attrinfo.get("value") is not None:
-                match attrinfo["type"]:
-                    case AttrType.OBJECT:
-                        return [attrinfo["value"].get("id")]
-
-                    case AttrType.NAMED_OBJECT:
-                        [ref_info] = attrinfo["value"].values()
-                        return [ref_info.get("id")]
-
-                    case AttrType.ARRAY_OBJECT:
-                        return [x.get("id") for x in attrinfo["value"]]
-
-                    case AttrType.ARRAY_NAMED_OBJECT:
-                        return sum([[y["id"] for y in x.values()] for x in attrinfo["value"]], [])
-
-            return []
-
-        # === End of Function: _get_ref_id_from_es_result() ===
-
         if not has_referral:
             hint_referral = None
 
@@ -563,65 +433,15 @@ class AdvancedSearchAPI(generics.GenericAPIView):
         # save total population number
         total_count = deepcopy(resp.ret_count)
 
-        for join_attr in join_attrs:
-            # Note: Each iteration here represents a potential N+1 query
-            # The trade-off is between query performance and result accuracy
-            (will_filter_by_joined_attr, joined_resp) = _get_joined_resp(resp.ret_values, join_attr)
-            # This is needed to set result as blank value
-            blank_joining_info = {
-                "%s.%s" % (join_attr.name, k.name): {
-                    "is_readable": True,
-                    "type": AttrType.STRING,
-                    "value": "",
-                }
-                for k in join_attr.attrinfo
-            }
-
-            # convert search result to dict to be able to handle it without loop
-            joined_resp_info = {
-                x.entry["id"]: {
-                    "%s.%s" % (join_attr.name, k): v
-                    for k, v in x.attrs.items()
-                    if any(_x.name == k for _x in join_attr.attrinfo)
-                }
-                for x in joined_resp.ret_values
-            }
-
-            # this inserts result to previous search result
-            new_ret_values: list[AdvancedSearchResultRecord] = []
-            joined_ret_values: list[AdvancedSearchResultRecord] = []
-            for resp_result in resp.ret_values:
-                # joining search result to original one
-                ref_info = resp_result.attrs.get(join_attr.name)
-
-                # This get referral Item-ID from joined search result
-                ref_list = _get_ref_id_from_es_result(ref_info)
-                for ref_id in ref_list:
-                    if ref_id and ref_id in joined_resp_info:
-                        # join valid value
-                        resp_result.attrs |= joined_resp_info[ref_id]
-
-                        # collect only the result that matches with keyword of joined_attr parameter
-                        copied_result = deepcopy(resp_result)
-                        new_ret_values.append(copied_result)
-                        joined_ret_values.append(copied_result)
-
-                    else:
-                        # join EMPTY value
-                        resp_result.attrs |= blank_joining_info  # type: ignore
-                        joined_ret_values.append(deepcopy(resp_result))
-
-                if len(ref_list) == 0:
-                    # join EMPTY value
-                    resp_result.attrs |= blank_joining_info  # type: ignore
-                    joined_ret_values.append(deepcopy(resp_result))
-
-            if will_filter_by_joined_attr:
-                resp.ret_values = new_ret_values
-                resp.ret_count = len(new_ret_values)
-            else:
-                resp.ret_values = joined_ret_values
-                resp.ret_count = len(joined_ret_values)
+        resp = AdvancedSearchService.apply_join_attrs(
+            request.user,
+            resp,
+            join_attrs,
+            entry_limit=entry_limit,
+            is_output_all=is_output_all,
+            exclude_referrals=exclude_referrals,
+            include_referrals=include_referrals,
+        )
 
         # convert field values to fit entry retrieve API data type, as a workaround.
         # FIXME should be replaced with DRF serializer etc
@@ -798,7 +618,9 @@ class EntryExportAPI(generics.GenericAPIView):
             )
 
         job_params = ExportTaskParams(
-            export_format=serializer.validated_data["format"], target_id=entity_id
+            export_format=serializer.validated_data["format"],
+            target_id=entity_id,
+            join_attrs=serializer.validated_data.get("join_attrs", []),
         )
 
         # check whether same job is sent

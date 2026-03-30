@@ -230,6 +230,7 @@ export const AdvancedSearchResultsPage: FC = () => {
       await aironeApiClient.exportAdvancedSearchResults(
         entityIds,
         attrInfo,
+        joinAttrs,
         hasReferral,
         searchAllEntities,
         exportStyle,

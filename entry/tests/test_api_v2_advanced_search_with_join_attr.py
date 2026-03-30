@@ -1,9 +1,12 @@
 import json
+from unittest.mock import Mock, patch
 
 from airone.lib.elasticsearch import FilterKey
 from airone.lib.types import AttrType
 from entity.models import EntityAttr
+from entry import tasks
 from entry.tests.test_api_v2 import BaseViewTest
+from job.models import Job
 
 
 class ViewTest(BaseViewTest):
@@ -323,3 +326,82 @@ class ViewTest(BaseViewTest):
         )
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.json()["total_count"], 5)
+
+    @patch(
+        "entry.tasks.export_search_result_v2.delay",
+        Mock(side_effect=tasks.export_search_result_v2),
+    )
+    def test_post_export_with_join_attrs(self):
+        user = self.guest_login("guest2")
+
+        # create model and items that are reffered by other items.
+        model_devil = self.create_entity(
+            user,
+            "Devil",
+            attrs=[
+                {"name": "ability", "type": AttrType.STRING},
+            ],
+        )
+        item_devils = {
+            name: self.add_entry(user, name, model_devil, values={"ability": ability})
+            for (name, ability) in [
+                ("chaincaw", "Immotal"),
+                ("blood", "Half-Immotal"),
+            ]
+        }
+
+        # create model and items that refer to the above items.
+        model_member = self.create_entity(
+            user,
+            "Member",
+            attrs=[
+                {"name": "age", "type": AttrType.STRING},
+                {"name": "devil", "type": AttrType.OBJECT, "ref": model_devil.id},
+            ],
+        )
+        {
+            name: self.add_entry(user, name, model_member, values={"devil": devil, "age": age})
+            for (name, age, devil) in [
+                ("Denji", "17", item_devils["chaincaw"].id),
+                ("Power", "19", item_devils["blood"].id),
+                ("Kishibe", "51", None),
+            ]
+        }
+
+        # This filters both age and ability.
+        export_params = {
+            "export_style": "csv",
+            "attrinfo": [
+                {"name": "age", "filter_key": 3, "keyword": "1"},
+                {"name": "devil", "filter_key": 0, "keyword": ""},
+            ],
+            "entities": [model_member.id],
+            "has_referral": False,
+            "is_all_entities": False,
+            "join_attrs": [
+                {
+                    "name": "devil",
+                    "attrinfo": [
+                        {
+                            "name": "ability",
+                            "keyword": "Half",
+                        }
+                    ],
+                }
+            ],
+        }
+
+        resp = self.client.post(
+            "/entry/api/v2/advanced_search_result_export/",
+            json.dumps(export_params),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 200)
+
+        csv_contents = [x for x in Job.objects.last().get_cache().splitlines() if x]
+        # check header contents
+        self.assertEqual(csv_contents[0], "Name,age,devil,ability")
+
+        # check data contents, both age and ability are filtered,
+        # so only Power matches the condition.
+        self.assertEqual(csv_contents[1], "Power,19,blood,Half-Immotal")
