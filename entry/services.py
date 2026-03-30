@@ -7,6 +7,7 @@ from elasticsearch import NotFoundError
 from airone.lib.acl import ACLType
 from airone.lib.elasticsearch import (
     ESS,
+    AdvancedSearchResultRecord,
     AdvancedSearchResults,
     AttrHint,
     EntryHint,
@@ -17,6 +18,7 @@ from airone.lib.elasticsearch import (
     make_search_results_for_simple,
 )
 from airone.lib.log import Logger
+from airone.lib.types import AttrType
 from entity.models import Entity, EntityAttr
 from entry.models import Attribute, AttributeValue, Entry
 from user.models import User
@@ -228,6 +230,195 @@ class AdvancedSearchService:
         resp = execute_query(query, limit)
 
         return make_search_results_for_simple(resp)
+
+    @classmethod
+    def _extract_ref_ids(kls, attr: dict) -> list[int]:
+        """
+        Retrun a list of referenced Entry IDs from an AdvancedSearchResultRecordAttr dict.
+        """
+        attr_type = attr.get("type")
+        attr_value = attr.get("value")
+
+        if not attr_type or not attr_value:
+            return []
+
+        def _valid_id(v: Any) -> int | None:
+            # return only int and positive value, because Entry IDs are positive integers.
+            return v if isinstance(v, int) and v > 0 else None
+
+        if attr_type in (AttrType.OBJECT, AttrType.GROUP, AttrType.ROLE):
+            if isinstance(attr_value, dict):
+                ref_id = _valid_id(attr_value.get("id"))
+                if ref_id is not None:
+                    return [ref_id]
+            return []
+
+        if attr_type == AttrType.NAMED_OBJECT:
+            if isinstance(attr_value, dict):
+                for _k, v in attr_value.items():
+                    if isinstance(v, dict):
+                        ref_id = _valid_id(v.get("id"))
+                        if ref_id is not None:
+                            return [ref_id]
+            return []
+
+        if attr_type & AttrType._ARRAY:
+            if not isinstance(attr_value, list):
+                return []
+            ids: list[int] = []
+            if attr_type & AttrType._NAMED:
+                # ARRAY_NAMED_OBJECT: This expects following data structure
+                # [{"key": {"id": ..., "name": ...}}]
+                for item in [x for x in attr_value if isinstance(item, dict)]:
+                    for v in [v for v in item.values() if isinstance(v, dict)]:
+                        ref_id = _valid_id(v.get("id"))
+                        if ref_id is not None:
+                            ids.append(ref_id)
+            else:
+                # ARRAY_OBJECT / ARRAY_GROUP / ARRAY_ROLE
+                # This expects following data structure
+                # [{"id": ..., "name": ...}]
+                for item in [x for x in attr_value if isinstance(x, dict)]:
+                    ref_id = _valid_id(item.get("id"))
+                    if ref_id is not None:
+                        ids.append(ref_id)
+            return ids
+
+        return []
+
+    # Default value for joined attrs when there is no referral or it does not match the filter.
+    # Initialized as STRING with an empty string because views.py requires is_readable / type / value.
+    _EMPTY_ATTR: dict = {
+        "type": AttrType.STRING,
+        "value": "",
+        "is_readable": True,
+    }
+
+    @classmethod
+    def apply_join_attrs(
+        kls,
+        user: User,
+        resp: AdvancedSearchResults,
+        join_attrs: list,
+        entry_limit: int,
+        is_output_all: bool,
+        exclude_referrals: list[int] = [],
+        include_referrals: list[int] = [],
+    ) -> AdvancedSearchResults:
+        """Join referred Entry attributes based on join_attrs and filter/expand the results.
+
+        This is shared logic called from both AdvancedSearchAPI.post() in views.py
+        and export_search_result_v2() in tasks.py.
+
+        For each join_attr:
+        1. Collect referred Entry IDs from the current search results
+        2. Group by Entity in the DB and apply filters via search_entries()
+        3. Attach attributes of entries that passed the filter under the key join_attr.name.subattr_name
+        4. Expand ARRAY-type attrs into one row per referral
+        """
+        for join_attr in join_attrs:
+            has_filter = any(a.keyword or a.filter_key for a in join_attr.attrinfo)
+            hint_attrs = [
+                AttrHint(
+                    name=a.name,
+                    keyword=a.keyword,
+                    filter_key=a.filter_key,
+                )
+                for a in join_attr.attrinfo
+            ]
+
+            # Collect referred Entry IDs from all results and group by Entity
+            all_ref_ids: set[int] = set()
+            for entry_info in resp.ret_values:
+                attr = entry_info.attrs.get(join_attr.name)
+                if attr:
+                    all_ref_ids.update(kls._extract_ref_ids(attr))
+
+            # Fetch Entity IDs from DB and group them (batch lookup)
+            ref_entries_by_entity: dict[int, list[int]] = {}
+            if all_ref_ids:
+                for ref_entry in Entry.objects.filter(
+                    id__in=all_ref_ids, is_active=True
+                ).select_related("schema"):
+                    ref_entries_by_entity.setdefault(ref_entry.schema_id, []).append(ref_entry.id)
+
+            # Call search_entries() per Entity to apply keyword filters
+            matched_results: dict[int, AdvancedSearchResultRecord] = {}
+            for entity_id, ref_ids_in_entity in ref_entries_by_entity.items():
+                search_result = kls.search_entries(
+                    user,
+                    [entity_id],
+                    hint_attrs,
+                    limit=len(ref_ids_in_entity) + 100,
+                )
+                for record in search_result.ret_values:
+                    if record.entry["id"] in ref_ids_in_entity:
+                        matched_results[record.entry["id"]] = record
+
+            # Process each entry and build new_ret_values
+            new_ret_values: list[AdvancedSearchResultRecord] = []
+            for entry_info in resp.ret_values:
+                attr = entry_info.attrs.get(join_attr.name)
+                attr_type = attr.get("type") if attr else None
+                is_array = bool(attr_type and (attr_type & AttrType._ARRAY))
+                ref_ids = kls._extract_ref_ids(attr) if attr else []
+
+                if is_array:
+                    # ARRAY type: expand into one row per referral
+                    expanded = False
+                    for ref_id in ref_ids:
+                        matched = matched_results.get(ref_id)
+                        if has_filter and matched is None:
+                            continue  # this ref did not match the filter → skip
+                        new_info = entry_info.model_copy(deep=True)
+                        if matched:
+                            for attr_name, attr_val in matched.attrs.items():
+                                new_info.attrs[f"{join_attr.name}.{attr_name}"] = attr_val
+                        else:
+                            for a in join_attr.attrinfo:
+                                new_info.attrs[f"{join_attr.name}.{a.name}"] = kls._EMPTY_ATTR
+                        new_ret_values.append(new_info)
+                        expanded = True
+
+                    if not expanded:
+                        # No referrals, or all excluded by filter
+                        if not has_filter:
+                            # No filter → keep the entry as one row (joined attrs are empty)
+                            new_info = entry_info.model_copy(deep=True)
+                            for a in join_attr.attrinfo:
+                                new_info.attrs[f"{join_attr.name}.{a.name}"] = kls._EMPTY_ATTR
+                            new_ret_values.append(new_info)
+                        # has_filter: exclude the entry
+                else:
+                    # Non-ARRAY type (OBJECT, NAMED_OBJECT, etc.)
+                    ref_id = ref_ids[0] if ref_ids else None
+                    if ref_id:
+                        matched = matched_results.get(ref_id)
+                        if has_filter and matched is None:
+                            continue  # filter did not match → exclude the entry
+                        new_info = entry_info.model_copy(deep=True)
+                        if matched:
+                            for attr_name, attr_val in matched.attrs.items():
+                                new_info.attrs[f"{join_attr.name}.{attr_name}"] = attr_val
+                        else:
+                            for a in join_attr.attrinfo:
+                                new_info.attrs[f"{join_attr.name}.{a.name}"] = kls._EMPTY_ATTR
+                        new_ret_values.append(new_info)
+                    else:
+                        # No referral
+                        if not has_filter:
+                            new_info = entry_info.model_copy(deep=True)
+                            for a in join_attr.attrinfo:
+                                new_info.attrs[f"{join_attr.name}.{a.name}"] = kls._EMPTY_ATTR
+                            new_ret_values.append(new_info)
+                        # has_filter and no referral → exclude the entry
+
+            resp = AdvancedSearchResults(
+                ret_count=len(new_ret_values),
+                ret_values=new_ret_values,
+            )
+
+        return resp
 
     @classmethod
     def get_all_es_docs(kls) -> dict[str, Any]:

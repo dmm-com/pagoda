@@ -29,6 +29,7 @@ from airone.lib.types import AttrType
 from dashboard.tasks import _csv_export
 from entity.models import Entity, EntityAttr
 from entry.api_v2.serializers import (
+    AdvancedSearchJoinAttrInfoList,
     AdvancedSearchResultExportSerializer,
     EntryCreateSerializer,
     EntryImportEntitySerializer,
@@ -802,6 +803,84 @@ def export_entries_v2(self, job: Job):
         job.set_cache(output.getvalue())
 
 
+def _csv_export_v2(
+    job: Job,
+    values: list[AdvancedSearchResultRecord],
+    recv_data: dict,
+    has_referral: bool,
+) -> io.StringIO | None:
+    """CSV export for v2. No Entity column; adds sub-attribute columns from join_attrs."""
+    output = io.StringIO(newline="")
+    writer = csv.writer(output)
+
+    join_attrs = recv_data.get("join_attrs", [])
+    join_attr_col_names = [attr["name"] for jattr in join_attrs for attr in jattr["attrinfo"]]
+
+    writer.writerow(["Name"] + [x["name"] for x in recv_data["attrinfo"]] + join_attr_col_names)
+
+    def _format_value(value: dict) -> str:
+        if not value or "value" not in value or value["value"] is None:
+            return ""
+        vtype = value.get("type")
+        vval = value["value"]
+        match vtype:
+            case (
+                AttrType.STRING
+                | AttrType.TEXT
+                | AttrType.BOOLEAN
+                | AttrType.DATE
+                | AttrType.DATETIME
+                | AttrType.NUMBER
+            ):
+                return str(vval)
+            case AttrType.OBJECT | AttrType.GROUP | AttrType.ROLE:
+                return str(vval["name"])
+            case AttrType.NAMED_OBJECT:
+                [(k, v)] = vval.items()
+                return "%s: %s" % (k, v["name"])
+            case AttrType.ARRAY_STRING:
+                from natsort import natsorted
+
+                return "\n".join(natsorted(vval))
+            case AttrType.ARRAY_NUMBER:
+                from natsort import natsorted
+
+                return "\n".join(natsorted([str(x) if x is not None else "" for x in vval]))
+            case AttrType.ARRAY_OBJECT | AttrType.ARRAY_GROUP | AttrType.ARRAY_ROLE:
+                from natsort import natsorted
+
+                return "\n".join(natsorted([x["name"] for x in vval]))
+            case AttrType.ARRAY_NAMED_OBJECT:
+                from natsort import natsorted
+
+                items = []
+                for vset in vval:
+                    [(k, v)] = vset.items()
+                    items.append("%s: %s" % (k, v["name"]))
+                return "\n".join(natsorted(items))
+        return ""
+
+    for index, entry_info in enumerate(values):
+        if index % Job.STATUS_CHECK_FREQUENCY == 0 and job.is_canceled():
+            return None
+
+        line_data = [entry_info.entry["name"]]
+
+        for attrinfo in recv_data["attrinfo"]:
+            value = entry_info.attrs.get(attrinfo["name"])
+            line_data.append(_format_value(value) if value else "")
+
+        for jattr in join_attrs:
+            for attr in jattr["attrinfo"]:
+                col_key = f"{jattr['name']}.{attr['name']}"
+                value = entry_info.attrs.get(col_key)
+                line_data.append(_format_value(value) if value else "")
+
+        writer.writerow(line_data)
+
+    return output
+
+
 @register_job_task(JobOperation.EXPORT_SEARCH_RESULT_V2)
 @app.task(bind=True)
 @may_schedule_until_job_is_ready
@@ -849,13 +928,28 @@ def export_search_result_v2(self, job: Job):
         hint_entry=hint_entry,
     )
 
+    # Apply join_attrs in the same way as AdvancedSearchAPI.post() in views.py
+    join_attr_objects = AdvancedSearchJoinAttrInfoList.model_validate(join_attrs).root
+    resp = AdvancedSearchService.apply_join_attrs(
+        user,
+        resp,
+        join_attr_objects,
+        entry_limit=settings.ES_CONFIG["MAXIMUM_RESULTS_NUM"],
+        is_output_all=False,
+        exclude_referrals=[],
+        include_referrals=[],
+    )
+
     output: io.StringIO | None = None
     match params["export_style"]:
         case "yaml":
             output = _yaml_export_v2(job, resp.ret_values, params, has_referral)
         case "csv":
-            # NOTE reuse v1 internal export logic, but better to have a duplicated logic for v2
-            output = _csv_export(job, resp.ret_values, params, has_referral)
+            # Use v2 format (no Entity column, with sub-attribute columns) when join_attrs is specified
+            if join_attrs:
+                output = _csv_export_v2(job, resp.ret_values, params, has_referral)
+            else:
+                output = _csv_export(job, resp.ret_values, params, has_referral)
 
     if output:
         job.set_cache(output.getvalue())
