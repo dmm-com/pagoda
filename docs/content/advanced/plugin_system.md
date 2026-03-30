@@ -1222,8 +1222,8 @@ The plugin system adopts explicit control:
 1. **Check Entry points**:
 ```bash
 python -c "
-import pkg_resources
-for ep in pkg_resources.iter_entry_points('pagoda.plugins'):
+from importlib.metadata import entry_points
+for ep in entry_points(group='pagoda.plugins'):
     print(f'{ep.name} -> {ep.module_name}:{ep.attrs[0]}')
     try:
         plugin_class = ep.load()
@@ -1335,7 +1335,7 @@ print(f'Registered hooks: {stats[\"registered_hooks\"]}')
 
 ```
 1. External Plugin Discovery (Entry Points)
-   ├─ pkg_resources.iter_entry_points('pagoda.plugins')
+   ├─ entry_points(group='pagoda.plugins')
    ├─ Load plugin class from entry point
    └─ Register with plugin_registry
 

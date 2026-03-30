@@ -66,7 +66,7 @@ sequenceDiagram
     AI->>PD: Start plugin discovery
 
     par External Plugin Discovery
-        PD->>PD: pkg_resources.iter_entry_points('pagoda.plugins')
+        PD->>PD: entry_points(group="pagoda.plugins")
         PD->>PR: Register external plugins
     and Example Plugin Discovery
         PD->>PD: Scan plugin/examples/ directory
