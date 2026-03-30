@@ -350,7 +350,7 @@ export const AdvancedSearchResultsPage: FC = () => {
             content={
               bulkOperationEntryIds.length ==
                 AdvancedSerarchResultListParam.MAX_ROW_COUNT &&
-                joinAttrs.length == 0 ? (
+              joinAttrs.length == 0 ? (
                 <FormControlLabel
                   sx={
                     attrInfo.some((x) => isAttrInfoSet(x))
