@@ -3,10 +3,10 @@ from unittest.mock import Mock, patch
 
 from airone.lib.elasticsearch import FilterKey
 from airone.lib.types import AttrType
-from job.models import Job
-from entry import tasks
 from entity.models import EntityAttr
+from entry import tasks
 from entry.tests.test_api_v2 import BaseViewTest
+from job.models import Job
 
 
 class ViewTest(BaseViewTest):
@@ -402,5 +402,6 @@ class ViewTest(BaseViewTest):
         # check header contents
         self.assertEqual(csv_contents[0], "Name,age,devil,ability")
 
-        # check data contents, both age and ability are filtered, so only Power matches the condition.
+        # check data contents, both age and ability are filtered,
+        # so only Power matches the condition.
         self.assertEqual(csv_contents[1], "Power,19,blood,Half-Immotal")

@@ -945,7 +945,8 @@ def export_search_result_v2(self, job: Job):
         case "yaml":
             output = _yaml_export_v2(job, resp.ret_values, params, has_referral)
         case "csv":
-            # Use v2 format (no Entity column, with sub-attribute columns) when join_attrs is specified
+            # Use v2 format (no Entity column, with sub-attribute columns)
+            # when join_attrs is specified.
             if join_attrs:
                 output = _csv_export_v2(job, resp.ret_values, params, has_referral)
             else:

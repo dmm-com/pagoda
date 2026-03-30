@@ -269,7 +269,7 @@ class AdvancedSearchService:
             if attr_type & AttrType._NAMED:
                 # ARRAY_NAMED_OBJECT: This expects following data structure
                 # [{"key": {"id": ..., "name": ...}}]
-                for item in [x for x in attr_value if isinstance(item, dict)]:
+                for item in [x for x in attr_value if isinstance(x, dict)]:
                     for v in [v for v in item.values() if isinstance(v, dict)]:
                         ref_id = _valid_id(v.get("id"))
                         if ref_id is not None:
@@ -287,7 +287,8 @@ class AdvancedSearchService:
         return []
 
     # Default value for joined attrs when there is no referral or it does not match the filter.
-    # Initialized as STRING with an empty string because views.py requires is_readable / type / value.
+    # Initialized as STRING with an empty string because views.py
+    # requires is_readable / type / value.
     _EMPTY_ATTR: dict = {
         "type": AttrType.STRING,
         "value": "",
@@ -313,7 +314,8 @@ class AdvancedSearchService:
         For each join_attr:
         1. Collect referred Entry IDs from the current search results
         2. Group by Entity in the DB and apply filters via search_entries()
-        3. Attach attributes of entries that passed the filter under the key join_attr.name.subattr_name
+        3. Attach attributes of entries that passed the filter under the key
+           join_attr.name.subattr_name
         4. Expand ARRAY-type attrs into one row per referral
         """
         for join_attr in join_attrs:
