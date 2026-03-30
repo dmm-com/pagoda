@@ -589,13 +589,9 @@ class AironeApiClient {
       ),
     });
 
-    return groupTrees.map((groupTree) => ({
-      id: groupTree.id,
-      name: groupTree.name,
-      children: groupTree.children.map((child: Partial<APIGroupTreeData>) =>
-        toTyped(child),
-      ),
-    }));
+    return groupTrees.map((groupTree) =>
+      toTyped(groupTree as unknown as Partial<APIGroupTreeData>),
+    );
   }
 
   async importGroups(data: string | ArrayBuffer): Promise<void> {
