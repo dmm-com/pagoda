@@ -214,10 +214,8 @@ class Common(Configuration):
         },
     }
     if env.bool("AIRONE_STORAGE_ENABLE", False):
-        STORAGES = {
-            "default": {
-                "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
-            },
+        STORAGES["default"] = {
+            "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
         }
         AWS_ACCESS_KEY_ID = env.str("AIRONE_STORAGE_ACCESS_KEY", "")
         AWS_SECRET_ACCESS_KEY = env.str("AIRONE_STORAGE_SECRET_ACCESS_KEY", "")
