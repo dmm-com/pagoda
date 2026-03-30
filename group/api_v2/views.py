@@ -51,7 +51,6 @@ class GroupAPI(viewsets.ModelViewSet):
 class GroupTreeAPI(viewsets.ReadOnlyModelViewSet):
     queryset = Group.objects.filter(parent_group__isnull=True, is_active=True)
     serializer_class = GroupTreeSerializer
-    permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter, filters.SearchFilter]
     ordering = ["name"]
     search_fields = ["name"]
@@ -59,7 +58,6 @@ class GroupTreeAPI(viewsets.ReadOnlyModelViewSet):
 
 class GroupImportAPI(generics.GenericAPIView):
     parser_classes = [YAMLParser]
-    permission_classes = [IsAuthenticated]
     serializer_class = GroupImportSerializer
 
     @extend_schema(responses={200: None})
@@ -107,4 +105,3 @@ class GroupExportAPI(generics.ListAPIView):
     queryset = Group.objects.filter(is_active=True)
     serializer_class = GroupExportSerializer
     renderer_classes = [YAMLRenderer]
-    permission_classes = [IsAuthenticated]

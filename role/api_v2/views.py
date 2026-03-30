@@ -98,7 +98,6 @@ class RoleExportAPI(generics.ListAPIView):
     queryset = Role.objects.filter(is_active=True)
     serializer_class = RoleImportExportChildSerializer
     renderer_classes = [YAMLRenderer]
-    permission_classes = [IsAuthenticated]
 
     def get_queryset(self) -> QuerySet[Role]:
         return get_permitted_roles(self.request.user, Role.objects.filter(is_active=True))
