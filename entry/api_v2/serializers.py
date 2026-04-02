@@ -84,6 +84,7 @@ class ExportedEntityEntries(BaseModel):
 class ExportTaskParams(BaseModel):
     export_format: Literal["yaml", "csv"]
     target_id: int
+    join_attrs: list = []
 
 
 class EntityAttributeType(TypedDict):
@@ -988,8 +989,38 @@ class EntryCopySerializer(serializers.Serializer):
                 )
 
 
+class AdvancedSearchResultAttrInfoSerializer(serializers.Serializer):
+    @extend_schema_field(
+        {
+            "type": "integer",
+            "enum": [k.value for k in FilterKey],
+            "x-enum-varnames": [k.name for k in FilterKey],
+        }
+    )
+    class FilterKeyField(serializers.IntegerField):
+        pass
+
+    name = serializers.CharField()
+    filter_key = FilterKeyField(required=False)
+    keyword = serializers.CharField(
+        required=False, allow_blank=True, max_length=CONFIG_ENTRY.MAX_QUERY_SIZE
+    )
+
+    def validate_filter_key(self, filter_key: int):
+        if filter_key not in [k.value for k in FilterKey]:
+            raise ValidationError("filter key parameter is invalid value")
+        return filter_key
+
+
+class AdvancedSearchJoinAttrInfoSerializer(serializers.Serializer):
+    name = serializers.CharField()
+    offset = serializers.IntegerField(default=0)
+    attrinfo = AdvancedSearchResultAttrInfoSerializer(many=True)
+
+
 class EntryExportSerializer(serializers.Serializer):
     format = serializers.CharField(default="yaml")
+    join_attrs = AdvancedSearchJoinAttrInfoSerializer(many=True, required=False, default=list)
 
     def validate_format(self, data: str) -> str:
         if data.lower() == "csv":
@@ -1459,35 +1490,6 @@ class EntryAttributeValueRestoreSerializer(serializers.ModelSerializer):
         return instance
 
 
-class AdvancedSearchResultAttrInfoSerializer(serializers.Serializer):
-    @extend_schema_field(
-        {
-            "type": "integer",
-            "enum": [k.value for k in FilterKey],
-            "x-enum-varnames": [k.name for k in FilterKey],
-        }
-    )
-    class FilterKeyField(serializers.IntegerField):
-        pass
-
-    name = serializers.CharField()
-    filter_key = FilterKeyField(required=False)
-    keyword = serializers.CharField(
-        required=False, allow_blank=True, max_length=CONFIG_ENTRY.MAX_QUERY_SIZE
-    )
-
-    def validate_filter_key(self, filter_key: int):
-        if filter_key not in [k.value for k in FilterKey]:
-            raise ValidationError("filter key parameter is invalid value")
-        return filter_key
-
-
-class AdvancedSearchJoinAttrInfoSerializer(serializers.Serializer):
-    name = serializers.CharField()
-    offset = serializers.IntegerField(default=0)
-    attrinfo = AdvancedSearchResultAttrInfoSerializer(many=True)
-
-
 class EntryHintSerializer(serializers.Serializer):
     @extend_schema_field(
         {
@@ -1587,6 +1589,7 @@ class AdvancedSearchResultSerializer(serializers.Serializer):
 class AdvancedSearchResultExportSerializer(serializers.Serializer):
     entities = serializers.ListField(child=serializers.IntegerField())
     attrinfo = AdvancedSearchResultAttrInfoSerializer(many=True)
+    join_attrs = AdvancedSearchJoinAttrInfoSerializer(many=True, required=False)
     has_referral = serializers.BooleanField(required=False)
     referral_name = serializers.CharField(required=False)
     is_all_entities = serializers.BooleanField(default=False)
