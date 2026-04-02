@@ -163,7 +163,7 @@ class IsolationAPITest(AironeViewTest):
         self.assertNotIn(entry_ng.id, result_ids)
 
     def test_referral_list_not_filtered_for_other_entity(self):
-        """prevent_from が consumer でない場合は consumer からの参照に影響しない"""
+        """A rule targeting a different entity should not affect the consumer's referral list."""
         entry_ng = self.add_entry(
             self.user, "inactive_item", self.entity_item, values={"status": "inactive"}
         )
@@ -185,6 +185,6 @@ class IsolationAPITest(AironeViewTest):
         resp = self.client.get(f"/entry/api/v2/{consumer_attr.id}/attr_referrals/")
         self.assertEqual(resp.status_code, 200)
 
-        result_ids = [item["id"] for item in resp.json()["results"]]
-        # entity_unrelated をターゲットにしたルールなので consumer には影響しない
+        result_ids = [item["id"] for item in resp.json()]
+        # The rule targets entity_unrelated, so it should not affect consumer's referral list
         self.assertIn(entry_ng.id, result_ids)
