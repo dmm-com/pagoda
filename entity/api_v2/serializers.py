@@ -466,6 +466,77 @@ class EntityAttrSerializer(serializers.ModelSerializer):
         fields = ("id", "name", "type")
 
 
+class IsolationConditionSerializer(serializers.ModelSerializer):
+    attr = EntityAttrSerializer(read_only=True)
+    ref_cond = serializers.SerializerMethodField()
+
+    class Meta:
+        from isolation.models import IsolationCondition
+
+        model = IsolationCondition
+        fields = ["id", "attr", "str_cond", "ref_cond", "bool_cond", "is_unmatch"]
+
+    @extend_schema_field(serializers.DictField(allow_null=True))
+    def get_ref_cond(self, obj):
+        if obj.ref_cond:
+            return {
+                "id": obj.ref_cond.id,
+                "name": obj.ref_cond.name,
+                "schema": {
+                    "id": obj.ref_cond.schema.id,
+                    "name": obj.ref_cond.schema.name,
+                },
+            }
+        return None
+
+
+class IsolationActionSerializer(serializers.ModelSerializer):
+    prevent_from = serializers.SerializerMethodField()
+
+    class Meta:
+        from isolation.models import IsolationAction
+
+        model = IsolationAction
+        fields = ["id", "prevent_from", "is_prevent_all"]
+
+    @extend_schema_field(serializers.DictField(allow_null=True))
+    def get_prevent_from(self, obj):
+        if obj.prevent_from:
+            return {"id": obj.prevent_from.id, "name": obj.prevent_from.name}
+        return None
+
+
+class IsolationParentSerializer(serializers.ModelSerializer):
+    conditions = IsolationConditionSerializer(many=True, read_only=True)
+    action = IsolationActionSerializer(read_only=True)
+
+    class Meta:
+        from isolation.models import IsolationParent
+
+        model = IsolationParent
+        fields = ["id", "conditions", "action"]
+
+
+class IsolationConditionCreateUpdateSerializer(serializers.Serializer):
+    attr_id = serializers.IntegerField()
+    str_cond = serializers.CharField(required=False, allow_blank=True, default="")
+    ref_cond_id = serializers.IntegerField(required=False, allow_null=True, default=None)
+    bool_cond = serializers.BooleanField(required=False, default=False)
+    is_unmatch = serializers.BooleanField(required=False, default=False)
+
+
+class IsolationActionCreateUpdateSerializer(serializers.Serializer):
+    is_prevent_all = serializers.BooleanField(required=False, default=False)
+    prevent_from_id = serializers.IntegerField(required=False, allow_null=True, default=None)
+
+
+class IsolationParentCreateUpdateSerializer(serializers.Serializer):
+    id = serializers.IntegerField(required=False)
+    is_deleted = serializers.BooleanField(required=False, default=False)
+    conditions = IsolationConditionCreateUpdateSerializer(many=True, default=[])
+    action = IsolationActionCreateUpdateSerializer(default={})
+
+
 class EntitySerializer(serializers.ModelSerializer):
     permission = serializers.SerializerMethodField()
 
@@ -551,6 +622,7 @@ class EntitySerializer(serializers.ModelSerializer):
     ) -> Entity:
         attrs_data: list = validated_data.get("attrs", [])
         webhooks_data: list = validated_data.get("webhooks", [])
+        isolation_rules_data: list = validated_data.get("isolation_rules", [])
 
         # register history to create, update Entity
         history: History
@@ -645,6 +717,31 @@ class EntitySerializer(serializers.ModelSerializer):
 
             webhook.save(update_fields=["is_verified", "verification_error_details"])
 
+        # register isolation rules
+        from isolation.models import IsolationAction, IsolationParent
+
+        for rule_data in isolation_rules_data:
+            rule_id = rule_data.get("id")
+            is_deleted = rule_data.get("is_deleted", False)
+
+            if is_deleted:
+                if rule_id:
+                    IsolationParent.objects.filter(id=rule_id, entity=entity).delete()
+                continue
+
+            parent, _ = IsolationParent.objects.get_or_create(
+                id=rule_id, defaults={"entity": entity}
+            ) if rule_id else (IsolationParent.objects.create(entity=entity), True)
+            parent.clear()
+            parent.save_conditions(rule_data.get("conditions", []))
+
+            action_data = rule_data.get("action", {})
+            IsolationAction.objects.create(
+                parent=parent,
+                is_prevent_all=action_data.get("is_prevent_all", False),
+                prevent_from_id=action_data.get("prevent_from_id"),
+            )
+
         # unset Editing MODE
         if is_create_mode:
             entity.del_status(Entity.STATUS_CREATING)
@@ -664,6 +761,9 @@ class EntityCreateSerializer(EntitySerializer):
         child=EntityAttrCreateSerializer(), write_only=True, required=False, default=[]
     )
     webhooks = WebhookCreateUpdateSerializer(many=True, write_only=True, required=False, default=[])
+    isolation_rules = IsolationParentCreateUpdateSerializer(
+        many=True, write_only=True, required=False, default=[]
+    )
 
     class Meta:
         model = Entity
@@ -676,6 +776,7 @@ class EntityCreateSerializer(EntitySerializer):
             "is_toplevel",
             "attrs",
             "webhooks",
+            "isolation_rules",
         ]
         extra_kwargs = {"note": {"write_only": True}}
 
@@ -748,6 +849,9 @@ class EntityUpdateSerializer(EntitySerializer):
         child=EntityAttrUpdateSerializer(), write_only=True, required=False, default=[]
     )
     webhooks = WebhookCreateUpdateSerializer(many=True, write_only=True, required=False, default=[])
+    isolation_rules = IsolationParentCreateUpdateSerializer(
+        many=True, write_only=True, required=False, default=[]
+    )
 
     class Meta:
         model = Entity
@@ -760,6 +864,7 @@ class EntityUpdateSerializer(EntitySerializer):
             "is_toplevel",
             "attrs",
             "webhooks",
+            "isolation_rules",
         ]
         extra_kwargs = {"name": {"required": False}, "note": {"write_only": True}}
 
@@ -907,6 +1012,7 @@ class EntityDetailAttributeSerializer(serializers.Serializer):
 class EntityDetailSerializer(EntityListSerializer):
     attrs = serializers.SerializerMethodField(method_name="get_attrs")
     webhooks = WebhookSerializer(many=True)
+    isolation_rules = IsolationParentSerializer(many=True, read_only=True)
     has_ongoing_changes = serializers.SerializerMethodField()
 
     class Meta:
@@ -921,6 +1027,7 @@ class EntityDetailSerializer(EntityListSerializer):
             "is_toplevel",
             "attrs",
             "webhooks",
+            "isolation_rules",
             "is_public",
             "has_ongoing_changes",
             "permission",
