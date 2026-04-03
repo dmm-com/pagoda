@@ -33,6 +33,7 @@ class OperationType(Enum):
     UPDATE = "update"
     DELETE = "delete"
     LIST = "list"
+    BACKGROUND = "background"
 
     @classmethod
     def from_string(cls, value: str) -> "OperationType":
