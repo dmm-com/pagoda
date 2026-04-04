@@ -1,3 +1,5 @@
+from typing import Any
+
 from airone.celery import app
 from entry.models import Attribute, Entry
 from job.models import Job, JobStatus
@@ -5,7 +7,7 @@ from user.models import User
 
 
 @app.task(bind=True)
-def update_custom_attribute(self, job_id: str):
+def update_custom_attribute(self: Any, job_id: str) -> None:
     job = Job.objects.get(id=job_id)
 
     if job.proceed_if_ready():

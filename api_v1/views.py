@@ -3,6 +3,7 @@ from typing import Any
 
 from django.db.models import Q
 from rest_framework import status
+from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -17,7 +18,7 @@ from .serializers import PostEntrySerializer
 
 
 class EntryAPI(APIView):
-    def post(self, request, format=None):
+    def post(self, request: Request, format: str | None = None) -> Response:
         sel = PostEntrySerializer(data=request.data, context={"_user": request.user})
 
         # This is necessary because request.data might be changed by the processing of serializer
@@ -49,7 +50,7 @@ class EntryAPI(APIView):
         will_notify_update_entry = False
 
         # Common processing to update Entry's name and set will_notify_update_entry variable
-        def _update_entry_name(entry):
+        def _update_entry_name(entry: Entry) -> bool:
             # Set Entry status that indicates target Entry is under editing processing
             # to prevent to updating this entry from others.
             entry.set_status(Entry.STATUS_EDITING)
@@ -169,7 +170,7 @@ class EntryAPI(APIView):
 
         return Response(dict({"result": entry.id}, **resp_data))
 
-    def get(self, request, *args, **kwargs):
+    def get(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         # The parameter for entry is acceptable both id and name.
         param_entry_id = request.GET.get("entry_id")
         param_entry_name = request.GET.get("entry")
@@ -225,7 +226,7 @@ class EntryAPI(APIView):
 
         return Response([x for x in retinfo if x])
 
-    def delete(self, request, *args, **kwargs):
+    def delete(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         # checks mandatory parameters are specified
         if not all([x in request.data for x in ["entity", "entry"]]):
             return Response(
