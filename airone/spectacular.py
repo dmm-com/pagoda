@@ -10,9 +10,11 @@ def exclude_customview_hook(endpoints):
     api_v1 endpoints are excluded because they are legacy APIs that use APIView without
     serializer_class, which causes DRF Spectacular to fail schema generation.
     This includes /api/v1/, /group/api/v1/, /role/api/v1/, etc.
+    plugin endpoints are excluded because they are external plugin APIs that use APIView
+    without serializer_class.
     """
     result = []
     for path, path_regex, method, callback in endpoints:
-        if "/custom/" not in path and "/api/v1/" not in path:
+        if "/custom/" not in path and "/api/v1/" not in path and "/plugins/" not in path:
             result.append((path, path_regex, method, callback))
     return result
