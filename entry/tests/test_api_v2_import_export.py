@@ -47,20 +47,26 @@ class ViewTest(BaseViewTest):
         user = self.admin_login()
 
         entity = Entity.objects.create(name="ほげ", created_user=user)
-        for name in ["foo", "bar"]:
+        for index, name in [(2, "foo"), (1, "bar")]:
             EntityAttr.objects.create(
                 **{
                     "name": name,
                     "type": AttrType.STRING,
                     "created_user": user,
                     "parent_entity": entity,
+                    "index": index,
                 }
             )
 
-        entry = Entry.objects.create(name="fuga", schema=entity, created_user=user)
-        entry.complement_attrs(user)
-        for attr in entry.attrs.all():
-            [attr.add_value(user, x) for x in ["hoge", "fuga"]]
+        entry = self.add_entry(
+            user,
+            "Item",
+            entity,
+            values={
+                "foo": "hoge",
+                "bar": "fuga",
+            },
+        )
 
         resp = self.client.post(
             "/entry/api/v2/%d/export/" % entity.id,
@@ -86,7 +92,7 @@ class ViewTest(BaseViewTest):
 
         self.assertEqual(len(entity_data["entries"]), 1)
         entry_data = entity_data["entries"][0]
-        self.assertEqual(entry_data["name"], "fuga")
+        self.assertEqual(entry_data["name"], "Item")
         self.assertEqual(entry_data["id"], entry.id)
         self.assertTrue("attrs" in entry_data)
 
@@ -94,7 +100,7 @@ class ViewTest(BaseViewTest):
         self.assertTrue(all(["name" in x and "value" in x for x in attrs_data]))
         self.assertEqual(len(attrs_data), entry.attrs.count())
         self.assertEqual(sorted([x["name"] for x in attrs_data]), sorted(["foo", "bar"]))
-        self.assertTrue(all([x["value"] == "fuga" for x in attrs_data]))
+        self.assertTrue(all([x["value"] in ["hoge", "fuga"] for x in attrs_data]))
 
         resp = self.client.post(
             "/entry/api/v2/%d/export/" % entity.id,
@@ -102,6 +108,13 @@ class ViewTest(BaseViewTest):
             "application/json",
         )
         self.assertEqual(resp.status_code, 200)
+
+        # check exported content
+        content = Job.objects.filter(target=entity).last().get_cache().splitlines()
+        # check header content is shown by expected order
+        self.assertEqual(content[0], "Name,bar,foo")
+        # check content value has expected order
+        self.assertEqual(content[1], "Item,fuga,hoge")
 
         # append an unpermitted Attribute
         EntityAttr.objects.create(

@@ -375,9 +375,11 @@ def _yaml_export_v2(
 @register_job_task(JobOperation.CREATE_ENTRY)
 @app.task(bind=True)
 @may_schedule_until_job_is_ready_with_handlers(
-    on_cancelled=lambda job: Entry.objects.filter(id=job.target.id, is_active=True).first().delete()
-    if Entry.objects.filter(id=job.target.id, is_active=True).exists()
-    else None
+    on_cancelled=lambda job: (
+        Entry.objects.filter(id=job.target.id, is_active=True).first().delete()
+        if Entry.objects.filter(id=job.target.id, is_active=True).exists()
+        else None
+    )
 )
 def create_entry_attrs(self, job: Job) -> JobStatus | None:
     user = User.objects.filter(id=job.user.id).first()
@@ -782,7 +784,7 @@ def export_entries_v2(self, job: Job):
         output = io.StringIO(newline="")
         writer = csv.writer(output)
 
-        attrs = [x.name for x in entity.attrs.filter(is_active=True)]
+        attrs = [x.name for x in entity.attrs.filter(is_active=True).order_by("index")]
         writer.writerow(["Name"] + attrs)
 
         def data2str(data: ExportedEntryAttributeValue | None) -> str:
