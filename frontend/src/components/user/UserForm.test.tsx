@@ -58,7 +58,6 @@ describe("UserForm", () => {
         control={control}
         isCreateMode={true}
         isMyself={true}
-        isSuperuser={false}
         isSubmittable={false}
         handleSubmit={() => Promise.resolve()}
         handleCancel={() => {

@@ -49,6 +49,7 @@ class UserBaseSerializer(serializers.ModelSerializer):
 
 
 class UserCreateSerializer(UserBaseSerializer):
+    username = serializers.CharField(required=True, write_only=True)
     class Meta:
         model = User
         fields = [
@@ -58,19 +59,29 @@ class UserCreateSerializer(UserBaseSerializer):
             "is_superuser",
         ]
 
+    def validate_username(self, username:str) -> str:
+        """
+        superuser can create any user, but non-superuser can only create user
+        within a limited namespace of one's own name
+        (e.g. (original-username)-NEW_NAME).
+        """
+        # check specified username has already been used at co-users of login user
+        request_user = self.context["request"].user
+        if not request_user.is_superuser:
+            candidate_name = "%s-%s" % (request_user.username, username)
+
+            if User.objects.filter(username=candidate_name).exists():
+                raise ValidationError("A user with that username already exists.")
+
+            return candidate_name
+
+        return username
+
     def create(self, validate_data: dict[str, Any]) -> User:
         request_user = self.context["request"].user
 
         # set request_params to create user with validated data and additional parameters
         request_params = validate_data.copy()
-
-        # superuser can create any user, but non-superuser can only create user
-        # within a limited namespace of one's own name
-        # (e.g. (original-username)-NEW_NAME).
-        if request_user.is_superuser:
-            request_params["username"] = validate_data.get("username")
-        else:
-            request_params["username"] = request_user.username + "-" + validate_data.get("username")
 
         # return HTTP 403 when user trying to create super-user without super-user permissions
         if validate_data.get("is_superuser", False) and not request_user.is_superuser:

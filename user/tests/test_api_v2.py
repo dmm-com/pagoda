@@ -113,6 +113,15 @@ class ViewTest(AironeViewTest):
         self.assertFalse(created_user.is_readonly)
         self.assertIsNone(created_user.parent_user)
 
+        # check to prevent creating duplicated username user
+        resp = self.client.post(
+            "/user/api/v2/",
+            json.dumps(params),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.json()["username"][0]["message"], "A user with that username already exists.")
+
     def test_create_superuser_by_guest(self):
         self.guest_login()
 
@@ -135,6 +144,11 @@ class ViewTest(AironeViewTest):
 
     def test_create_readonly_by_guest(self):
         guest_user = self.guest_login()
+
+        # for checking wrong duplication error
+        # (creating user will be "guest-new-user", so "newuser" won't be duplicated)
+        self._create_user("newuser")
+
         params = {
             "username": "newuser",
             "email": "newuser@example.com",
@@ -156,6 +170,15 @@ class ViewTest(AironeViewTest):
         self.assertTrue(created_user.check_password("secret-pass"))
         self.assertTrue(created_user.is_readonly)
         self.assertEqual(created_user.parent_user, guest_user)
+
+        # check to prevent creating duplicated username user
+        resp = self.client.post(
+            "/user/api/v2/",
+            json.dumps(params),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.json()["username"][0]["message"], "A user with that username already exists.")
 
     def test_delete_user(self):
         self.admin_login()
