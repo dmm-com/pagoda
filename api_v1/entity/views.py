@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from rest_framework import status
+from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -11,7 +12,7 @@ class EntityAttrsAPIResponse(BaseModel):
 
 
 class EntityAttrsAPI(APIView):
-    def get(self, request, entity_ids: str, format=None):
+    def get(self, request: Request, entity_ids: str, format: str | None = None) -> Response:
         entities: list[Entity] = [
             Entity.objects.filter(id=x, is_active=True).first() for x in entity_ids.split(",") if x
         ]

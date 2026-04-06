@@ -3,6 +3,7 @@ from datetime import datetime, timedelta, timezone
 from django.db.models import Q
 from pydantic import BaseModel
 from rest_framework import status
+from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -11,7 +12,7 @@ from job.settings import CONFIG as JOB_CONFIG
 
 
 class JobAPI(APIView):
-    def get(self, request, format=None):
+    def get(self, request: Request, format: str | None = None) -> Response:
         """
         This returns only jobs that are created by the user who sends this request.
         """
@@ -59,7 +60,7 @@ class JobAPI(APIView):
             }
         )
 
-    def delete(self, request, format=None):
+    def delete(self, request: Request, format: str | None = None) -> Response:
         """
         This cancels a specified Job.
         """
@@ -86,7 +87,7 @@ class JobAPI(APIView):
 
 
 class SpecificJobAPI(APIView):
-    def post(self, request, job_id, format=None):
+    def post(self, request: Request, job_id: int, format: str | None = None) -> Response:
         job = Job.objects.filter(id=job_id).first()
         if not job:
             return Response(
@@ -128,12 +129,12 @@ class SearchJobResponse(BaseModel):
 
 
 class SearchJob(APIView):
-    def get(self, request):
+    def get(self, request: Request) -> Response:
         """
         This returns jobs that are matched to the specified conditions in spite of who makes.
         """
 
-        def _update_query_by_get_param(query, query_key, get_param):
+        def _update_query_by_get_param(query: Q, query_key: str, get_param: str) -> Q:
             param = request.GET.get(get_param)
             if param:
                 return Q(query, **{query_key: param})

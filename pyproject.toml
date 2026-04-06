@@ -24,7 +24,7 @@ module = ["*.migrations.*"]
 ignore_errors = true
 
 [[tool.mypy.overrides]]
-module = ["webhook.*", "category.*", "dashboard.*", "group.*", "role.*", "trigger.*", "job.*", "acl.*", "airone.auth.*", "user.*"]
+module = ["webhook.*", "category.*", "dashboard.*", "group.*", "role.*", "trigger.*", "job.*", "acl.*", "airone.auth.*", "user.*", "api_v2.*", "custom_view.*", "api_v1.*"]
 disallow_untyped_defs = true
 
 [tool.ruff]

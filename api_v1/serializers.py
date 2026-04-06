@@ -1,11 +1,12 @@
 from datetime import datetime
+from typing import Any
 
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
 from airone.lib import custom_view
 from airone.lib.types import AttrType
-from entity.models import Entity
+from entity.models import Entity, EntityAttr
 from entry.models import AttributeValue, Entry
 from group.models import Group
 from role.models import Role
@@ -18,8 +19,8 @@ class GetEntrySerializer(serializers.ModelSerializer):
         model = Entry
         fields = ("id", "name", "attrs")
 
-    def get_attrs(self, obj):
-        def get_attr_value(attr):
+    def get_attrs(self, obj: Entry) -> list[dict[str, Any]]:
+        def get_attr_value(attr: Any) -> Any:
             attrv = attr.get_latest_value()
 
             if not attrv:
@@ -104,16 +105,16 @@ class PostEntrySerializer(serializers.Serializer):
     name = serializers.CharField(required=True, max_length=100)
     attrs = serializers.DictField(required=True)
 
-    def _validate_attr(self, attr, value):
+    def _validate_attr(self, attr: EntityAttr, value: Any) -> Any:
         """This method validate and convert attribute value to be acceptable for AirOne"""
 
-        def get_entry(schema, name):
+        def get_entry(schema: Entity, name: str) -> Entry:
             return Entry.objects.get(is_active=True, schema=schema, name=name)
 
-        def is_entry(schema, name):
+        def is_entry(schema: Entity, name: str) -> Any:
             return Entry.objects.filter(is_active=True, schema=schema, name=name)
 
-        def validate_named_attr(value):
+        def validate_named_attr(value: dict[str, Any]) -> dict[str, Any] | None:
             if "name" not in value:
                 value["name"] = ""
 
@@ -239,7 +240,7 @@ class PostEntrySerializer(serializers.Serializer):
 
         return None
 
-    def validate(self, data):
+    def validate(self, data: dict[str, Any]) -> dict[str, Any]:
         # checks specified entity is existed
         if not Entity.objects.filter(is_active=True, name=data["entity"]).exists():
             raise ValidationError("Invalid Entity is specified (%s)" % data["entity"])
