@@ -67,6 +67,7 @@ class Common(Configuration):
         "storages",
         "trigger",
         "category",
+        "isolation",
     ]
 
     # Existing custom_view support (maintained with legacy CUSTOM_TASKS)

@@ -683,9 +683,12 @@ class EntryAttrReferralsAPI(viewsets.ReadOnlyModelViewSet):
 
         # TODO support natural sort?
         if entity_attr.type & AttrType.OBJECT:
-            return Entry.objects.filter(
+            from isolation.models import IsolationParent
+            qs = Entry.objects.filter(
                 **conditions, schema__in=entity_attr.referral.all()
-            ).order_by("name")[0 : CONFIG.MAX_LIST_REFERRALS]
+            ).order_by("name")
+            isolated_ids = IsolationParent.get_isolated_entry_ids(qs, entity_attr.parent_entity)
+            return qs.exclude(id__in=isolated_ids)[0 : CONFIG.MAX_LIST_REFERRALS]
         elif entity_attr.type & AttrType.GROUP:
             return Group.objects.filter(**conditions).order_by("name")[
                 0 : CONFIG.MAX_LIST_REFERRALS

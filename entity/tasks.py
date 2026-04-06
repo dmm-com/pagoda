@@ -235,6 +235,32 @@ class EditEntityV2Attr(BaseModel):
         return self
 
 
+class IsolationConditionParam(BaseModel):
+    """Condition definition for an isolation rule."""
+
+    attr_id: int
+    str_cond: str = ""
+    ref_cond_id: Optional[int] = None
+    bool_cond: bool = False
+    is_unmatch: bool = False
+
+
+class IsolationActionParam(BaseModel):
+    """Action definition for an isolation rule."""
+
+    is_prevent_all: bool = False
+    prevent_from_id: Optional[int] = None
+
+
+class IsolationRuleParam(BaseModel):
+    """Isolation rule definition for EDIT_ENTITY_V2 task."""
+
+    id: Optional[int] = None
+    is_deleted: bool = False
+    conditions: list[IsolationConditionParam] = Field(default_factory=list)
+    action: IsolationActionParam = Field(default_factory=IsolationActionParam)
+
+
 class EditEntityV2Params(BaseModel):
     """Parameters for EDIT_ENTITY_V2 task."""
 
@@ -245,7 +271,7 @@ class EditEntityV2Params(BaseModel):
     is_toplevel: Optional[bool] = None
     attrs: list[EditEntityV2Attr] = Field(default_factory=list)
     webhooks: list[EditEntityV2Webhook] = Field(default_factory=list)
-
+    isolation_rules: list[IsolationRuleParam] = Field(default_factory=list)
 
 # ============================================================================
 # Task Functions
