@@ -94,10 +94,10 @@ export const UserEditPage: FC = () => {
     const serverContext = ServerContext.getInstance();
     return [
       serverContext?.user?.isSuperuser != null &&
-        serverContext.user.isSuperuser,
+      serverContext.user.isSuperuser,
       user?.id != null &&
-        serverContext?.user?.id != null &&
-        user.id === serverContext.user.id,
+      serverContext?.user?.id != null &&
+      user.id === serverContext.user.id,
     ];
   }, [userLoading]);
 
@@ -228,7 +228,6 @@ export const UserEditPage: FC = () => {
             user={user}
             control={control}
             isCreateMode={isCreateMode}
-            isSuperuser={isSuperuser}
             isMyself={isMyself}
             isSubmittable={
               isDirty && isValid && !isSubmitting && !isSubmitSuccessful

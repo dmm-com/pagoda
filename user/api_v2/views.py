@@ -42,7 +42,7 @@ class UserPermission(BasePermission):
         current_user: User = request.user
         permisson = {
             "retrieve": current_user.is_superuser or current_user == obj,
-            "destroy": current_user.is_superuser,
+            "destroy": current_user.is_superuser or current_user == obj.parent_user,
             "update": current_user.is_superuser or current_user == obj,
         }
         return permisson.get(view.action, False)
