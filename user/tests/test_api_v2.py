@@ -17,14 +17,18 @@ class ViewTest(AironeViewTest):
     def _create_user(
         self,
         name,
-        email="email",
+        email="email@example.com",
         is_superuser=False,
+        is_readonly=False,
+        parent_user=None,
         authenticate_type=User.AuthenticateType.AUTH_TYPE_LOCAL,
     ):
         user = User(
             username=name,
             email=email,
             is_superuser=is_superuser,
+            is_readonly=is_readonly,
+            parent_user=parent_user,
             authenticate_type=authenticate_type,
         )
         user.set_password(name)
@@ -179,6 +183,20 @@ class ViewTest(AironeViewTest):
                 "message": "You do not have permission to perform this action.",
             },
         )
+
+    def test_delete_own_co_user(self):
+        user_guest = self.guest_login()
+
+        # create co-user for guest user
+        co_user = self._create_user("co_user", email="co_user@example.com", parent_user=user_guest)
+
+        # delete co-user by parent user
+        resp = self.client.delete("/user/api/v2/%d/" % co_user.id)
+        self.assertEqual(resp.status_code, 204)
+
+        # check co-user was deleted actually.
+        co_user.refresh_from_db()
+        self.assertFalse(co_user.is_active)
 
     def test_get_user_token_via_apiv2_without_creation(self):
         self.guest_login()
