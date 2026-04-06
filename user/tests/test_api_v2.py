@@ -85,6 +85,74 @@ class ViewTest(AironeViewTest):
             },
         )
 
+    def test_create_user_by_admin(self):
+        self.admin_login()
+
+        params = {
+            "username": "superuser",
+            "email": "superuser@example.com",
+            "password": "secret-pass",
+            "is_superuser": True,
+        }
+        resp = self.client.post(
+            "/user/api/v2/",
+            json.dumps(params),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 201)
+
+        created_user = User.objects.filter(username="superuser").first()
+        self.assertIsNotNone(created_user)
+        self.assertEqual(created_user.email, "superuser@example.com")
+        self.assertTrue(created_user.is_superuser)
+        self.assertTrue(created_user.check_password("secret-pass"))
+        self.assertFalse(created_user.is_readonly)
+        self.assertIsNone(created_user.parent_user)
+
+    def test_create_superuser_by_guest(self):
+        self.guest_login()
+
+        params = {
+            "username": "superuser",
+            "email": "superuser@example.com",
+            "password": "secret-pass",
+            "is_superuser": True,
+        }
+        resp = self.client.post(
+            "/user/api/v2/",
+            json.dumps(params),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(resp.json()["message"], "You don't have permission to create superuser")
+
+        # check superuser wasn't created, actually.
+        self.assertFalse(User.objects.filter(username="superuser").exists())
+
+    def test_create_readonly_by_guest(self):
+        guest_user = self.guest_login()
+        params = {
+            "username": "newuser",
+            "email": "newuser@example.com",
+            "password": "secret-pass",
+            "is_superuser": False,
+        }
+        resp = self.client.post(
+            "/user/api/v2/",
+            json.dumps(params),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 201)
+
+        # check readonly user was created.
+        created_user = User.objects.filter(username=guest_user.username + "-newuser").first()
+        self.assertIsNotNone(created_user)
+        self.assertEqual(created_user.email, guest_user.email)
+        self.assertFalse(created_user.is_superuser)
+        self.assertTrue(created_user.check_password("secret-pass"))
+        self.assertTrue(created_user.is_readonly)
+        self.assertEqual(created_user.parent_user, guest_user)
+
     def test_delete_user(self):
         self.admin_login()
 
