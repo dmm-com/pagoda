@@ -729,9 +729,11 @@ class EntitySerializer(serializers.ModelSerializer):
                     IsolationParent.objects.filter(id=rule_id, entity=entity).delete()
                 continue
 
-            parent, _ = IsolationParent.objects.get_or_create(
-                id=rule_id, defaults={"entity": entity}
-            ) if rule_id else (IsolationParent.objects.create(entity=entity), True)
+            parent, _ = (
+                IsolationParent.objects.get_or_create(id=rule_id, defaults={"entity": entity})
+                if rule_id
+                else (IsolationParent.objects.create(entity=entity), True)
+            )
             parent.clear()
             parent.save_conditions(rule_data.get("conditions", []))
 

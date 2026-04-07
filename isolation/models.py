@@ -22,8 +22,7 @@ class IsolationParent(models.Model):
     def conditions_match(self, entry: "Entry") -> bool:
         """Returns True if ALL conditions match the entry (AND logic)."""
         return all(
-            c.is_match_for_entry(entry)
-            for c in self.conditions.filter(attr__is_active=True)
+            c.is_match_for_entry(entry) for c in self.conditions.filter(attr__is_active=True)
         )
 
     def applies_to(self, requesting_entity: Any) -> bool:
@@ -73,9 +72,7 @@ class IsolationParent(models.Model):
         from entry.models import Entry
 
         for cond_data in conditions_data:
-            attr = EntityAttr.objects.filter(
-                id=cond_data.get("attr_id"), is_active=True
-            ).first()
+            attr = EntityAttr.objects.filter(id=cond_data.get("attr_id"), is_active=True).first()
             if not attr:
                 continue
 
@@ -102,14 +99,10 @@ class IsolationParent(models.Model):
 
 
 class IsolationCondition(models.Model):
-    parent = models.ForeignKey(
-        IsolationParent, on_delete=models.CASCADE, related_name="conditions"
-    )
+    parent = models.ForeignKey(IsolationParent, on_delete=models.CASCADE, related_name="conditions")
     attr = models.ForeignKey("entity.EntityAttr", on_delete=models.CASCADE)
     str_cond = models.TextField(blank=True, null=True)
-    ref_cond = models.ForeignKey(
-        "entry.Entry", on_delete=models.SET_NULL, null=True, blank=True
-    )
+    ref_cond = models.ForeignKey("entry.Entry", on_delete=models.SET_NULL, null=True, blank=True)
     bool_cond = models.BooleanField(default=False)
     is_unmatch = models.BooleanField(default=False)
 
@@ -125,9 +118,7 @@ class IsolationCondition(models.Model):
         if attr_obj is None:
             result = self._is_empty_condition()
         else:
-            attrv = (
-                attr_obj.values.filter(is_latest=True, parent_attrv__isnull=True).first()
-            )
+            attrv = attr_obj.values.filter(is_latest=True, parent_attrv__isnull=True).first()
             if attrv is None:
                 result = self._is_empty_condition()
             else:
@@ -191,9 +182,8 @@ class IsolationCondition(models.Model):
                 case AttrType.ARRAY_NAMED_OBJECT:
                     children = attrv.data_array.all()
                     if not children.exists():
-                        return (
-                            self.ref_cond is None
-                            and (self.str_cond == "" or self.str_cond is None)
+                        return self.ref_cond is None and (
+                            self.str_cond == "" or self.str_cond is None
                         )
                     for c in children:
                         name_match = c.value == (self.str_cond or "")
@@ -211,9 +201,7 @@ class IsolationCondition(models.Model):
 
 
 class IsolationAction(models.Model):
-    parent = models.OneToOneField(
-        IsolationParent, on_delete=models.CASCADE, related_name="action"
-    )
+    parent = models.OneToOneField(IsolationParent, on_delete=models.CASCADE, related_name="action")
     prevent_from = models.ForeignKey(
         "entity.Entity",
         on_delete=models.SET_NULL,

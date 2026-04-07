@@ -81,9 +81,7 @@ class IsolationModelTest(AironeTestCase):
         self.assertFalse(parent.is_entry_isolated(entry, self.entity_consumer))
 
     def test_bool_condition_matches(self):
-        entry = self.add_entry(
-            self.user, "item1", self.entity_item, values={"is_active": False}
-        )
+        entry = self.add_entry(self.user, "item1", self.entity_item, values={"is_active": False})
         parent = self._make_parent(prevent_from=self.entity_consumer)
         self._add_bool_condition(parent, "is_active", False)
 
@@ -165,12 +163,8 @@ class IsolationModelTest(AironeTestCase):
     def test_get_isolated_entry_ids_excludes_matching_entries(self):
         from entry.models import Entry
 
-        entry_ok = self.add_entry(
-            self.user, "ok", self.entity_item, values={"status": "active"}
-        )
-        entry_ng = self.add_entry(
-            self.user, "ng", self.entity_item, values={"status": "inactive"}
-        )
+        entry_ok = self.add_entry(self.user, "ok", self.entity_item, values={"status": "active"})
+        entry_ng = self.add_entry(self.user, "ng", self.entity_item, values={"status": "inactive"})
 
         parent = self._make_parent(prevent_from=self.entity_consumer)
         self._add_string_condition(parent, "status", "inactive")

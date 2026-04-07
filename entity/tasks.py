@@ -273,6 +273,7 @@ class EditEntityV2Params(BaseModel):
     webhooks: list[EditEntityV2Webhook] = Field(default_factory=list)
     isolation_rules: list[IsolationRuleParam] = Field(default_factory=list)
 
+
 # ============================================================================
 # Task Functions
 # ============================================================================

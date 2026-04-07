@@ -58,10 +58,13 @@ class IsolationAPITest(AironeViewTest):
         rule = data["isolation_rules"][0]
         self.assertEqual(len(rule["conditions"]), 1)
         self.assertEqual(rule["conditions"][0]["str_cond"], "inactive")
-        self.assertEqual(rule["action"]["prevent_from"], {
-            "id": self.entity_consumer.id,
-            "name": self.entity_consumer.name,
-        })
+        self.assertEqual(
+            rule["action"]["prevent_from"],
+            {
+                "id": self.entity_consumer.id,
+                "name": self.entity_consumer.name,
+            },
+        )
         self.assertFalse(rule["action"]["is_prevent_all"])
 
     # -----------------------------------------------------------------------
