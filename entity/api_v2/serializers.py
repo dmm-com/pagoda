@@ -436,28 +436,6 @@ class EntityAttrUpdateSerializer(serializers.ModelSerializer):
         return attr
 
 
-class EntityCreateData(TypedDict, total=False):
-    name: str
-    note: str
-    item_name_pattern: str
-    item_name_type: str
-    is_toplevel: bool
-    attrs: list[EntityAttrCreateSerializer]
-    webhooks: WebhookCreateUpdateSerializer
-    created_user: User
-
-
-class EntityUpdateData(TypedDict, total=False):
-    id: int
-    name: str
-    note: str
-    item_name_pattern: str
-    item_name_type: str
-    is_toplevel: bool
-    attrs: list[EntityAttrUpdateSerializer]
-    webhooks: WebhookCreateUpdateSerializer
-
-
 class EntityAttrSerializer(serializers.ModelSerializer):
     type = serializers.IntegerField(required=False, read_only=True)
 
@@ -535,6 +513,30 @@ class IsolationParentCreateUpdateSerializer(serializers.Serializer):
     is_deleted = serializers.BooleanField(required=False, default=False)
     conditions = IsolationConditionCreateUpdateSerializer(many=True, default=[])
     action = IsolationActionCreateUpdateSerializer(default={})
+
+
+class EntityCreateData(TypedDict, total=False):
+    name: str
+    note: str
+    item_name_pattern: str
+    item_name_type: str
+    is_toplevel: bool
+    attrs: list[EntityAttrCreateSerializer]
+    webhooks: WebhookCreateUpdateSerializer
+    isolation_rules: list[IsolationParentCreateUpdateSerializer]
+    created_user: User
+
+
+class EntityUpdateData(TypedDict, total=False):
+    id: int
+    name: str
+    note: str
+    item_name_pattern: str
+    item_name_type: str
+    is_toplevel: bool
+    attrs: list[EntityAttrUpdateSerializer]
+    webhooks: WebhookCreateUpdateSerializer
+    isolation_rules: list[IsolationParentCreateUpdateSerializer]
 
 
 class EntitySerializer(serializers.ModelSerializer):
