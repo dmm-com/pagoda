@@ -21,6 +21,7 @@ const server = setupServer(
       hasOngoingChanges: false,
       attrs: [],
       webhooks: [],
+      isolation_rules: [],
     });
   }),
 

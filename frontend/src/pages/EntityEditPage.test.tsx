@@ -3,8 +3,7 @@
  */
 
 import {
-  EntityDetail,
-  PaginatedEntityListList,
+  PaginatedEntityListList
 } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { act, render, screen, waitFor } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
@@ -45,7 +44,7 @@ const entityList: PaginatedEntityListList = {
   ],
 };
 
-const entity: EntityDetail = {
+const entity = {
   id: 1,
   name: "test entity",
   note: "",
@@ -53,7 +52,7 @@ const entity: EntityDetail = {
   hasOngoingChanges: false,
   attrs: [],
   webhooks: [],
-  isolationRules: [],
+  isolation_rules: [],
   permission: ACLType.Full,
 };
 
