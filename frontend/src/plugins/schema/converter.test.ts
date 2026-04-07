@@ -14,6 +14,7 @@ function createEntityDetail(
     note: "",
     isToplevel: false,
     webhooks: [],
+    isolationRules: [],
     isPublic: true,
     hasOngoingChanges: false,
     permission: 0,

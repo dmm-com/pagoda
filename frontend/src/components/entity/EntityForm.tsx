@@ -10,6 +10,7 @@ import { ServerContext } from "../../services/ServerContext";
 import { AttributesFields } from "./entityForm/AttributesFields";
 import { BasicFields } from "./entityForm/BasicFields";
 import { Schema } from "./entityForm/EntityFormSchema";
+import { IsolationRulesFields } from "./entityForm/IsolationRulesFields";
 import { WebhookFields } from "./entityForm/WebhookFields";
 
 const StyledBox = styled(Box)(({ theme }) => ({
@@ -38,15 +39,20 @@ export const EntityForm: FC<Props> = ({
     <StyledBox>
       <BasicFields control={control} />
 
-      {(serverContext?.flags.webhook ?? true) && (
-        <WebhookFields control={control} />
-      )}
-
       <AttributesFields
         control={control}
         setValue={setValue}
         referralEntities={referralEntities ?? []}
       />
+
+      <IsolationRulesFields
+        control={control}
+        referralEntities={referralEntities ?? []}
+      />
+
+      {(serverContext?.flags.webhook ?? true) && (
+        <WebhookFields control={control} />
+      )}
     </StyledBox>
   );
 };

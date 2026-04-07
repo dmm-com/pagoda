@@ -29,6 +29,30 @@ describe("schema", () => {
         ],
       },
     ],
+    isolationRules: [
+      {
+        conditions: [
+          {
+            attr: {
+              id: 1,
+              name: "attr1",
+              type: AttributeTypes.string.type,
+            },
+            strCond: "condition",
+            refCond: null,
+            boolCond: false,
+            isUnmatch: false,
+          },
+        ],
+        action: {
+          isPreventAll: false,
+          preventFrom: {
+            id: 1,
+            name: "preventedEntity",
+          },
+        },
+      },
+    ],
     attrs: [
       {
         name: "attr1",

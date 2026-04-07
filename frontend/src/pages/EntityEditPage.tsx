@@ -153,6 +153,36 @@ export const EntityEditPage: FC = () => {
           isDeleted: true,
         })) ?? [];
 
+    const isolationRules = entityForm.isolationRules.map((rule) => ({
+      id: rule.id,
+      isDeleted: false,
+      conditions: rule.conditions.map((c) => ({
+        id: c.id,
+        attrId: c.attr.id,
+        strCond: c.strCond ?? undefined,
+        refCondId: c.refCond?.id ?? undefined,
+        boolCond: c.boolCond,
+        isUnmatch: c.isUnmatch,
+      })),
+      action: {
+        id: rule.action.id,
+        isPreventAll: rule.action.isPreventAll,
+        preventFromId: rule.action.preventFrom?.id ?? null,
+      },
+    }));
+
+    const deletedIsolationRules =
+      (entity?.isolationRules ?? [])
+        .filter(
+          (rule) => !entityForm.isolationRules.some((f) => f.id === rule.id),
+        )
+        .map((rule) => ({
+          id: rule.id,
+          isDeleted: true,
+          conditions: [],
+          action: {},
+        })) ?? [];
+
     try {
       if (willCreate) {
         await aironeApiClient.createEntity(
@@ -163,6 +193,7 @@ export const EntityEditPage: FC = () => {
           entityForm.isToplevel,
           attrs,
           webhooks,
+          isolationRules,
         );
       } else {
         await aironeApiClient.updateEntity(
@@ -174,6 +205,7 @@ export const EntityEditPage: FC = () => {
           entityForm.isToplevel,
           [...attrs, ...deletedAttrs],
           [...webhooks, ...deletedWebhooks],
+          [...isolationRules, ...deletedIsolationRules],
         );
       }
       enqueueSubmitResult(true);
@@ -206,6 +238,26 @@ export const EntityEditPage: FC = () => {
         itemNamePattern: entity.itemNamePattern ?? "",
         itemNameType: entity.itemNameType ?? "US",
         isToplevel: entity.isToplevel,
+        isolationRules: entity.isolationRules.map((rule) => ({
+          ...rule,
+          conditions: rule.conditions.map((c) => ({
+            attr: {
+              id: c.attr.id,
+              name: c.attr.name,
+              type: c.attr.type ?? 0,
+            },
+            strCond: c.strCond ?? null,
+            refCond: c.refCond
+              ? { id: c.refCond.id, name: c.refCond.name }
+              : null,
+            boolCond: c.boolCond ?? false,
+            isUnmatch: c.isUnmatch ?? false,
+          })),
+          action: {
+            isPreventAll: rule.action?.isPreventAll ?? false,
+            preventFrom: rule.action?.preventFrom ?? null,
+          },
+        })),
         webhooks: entity.webhooks.map((webhook) => ({
           ...webhook,
           url: webhook.url ?? "",

@@ -41,6 +41,7 @@ describe("Conditions", () => {
       referral: [],
     })),
     webhooks: [],
+    isolationRules: [],
     hasOngoingChanges: false,
   };
 

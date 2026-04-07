@@ -490,20 +490,20 @@ class IsolationConditionSerializer(serializers.ModelSerializer):
         return None
 
 
+class IsolationActionModelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Entity
+        fields = ["id", "name"]
+
+
 class IsolationActionSerializer(serializers.ModelSerializer):
-    prevent_from = serializers.SerializerMethodField()
+    prevent_from = IsolationActionModelSerializer(read_only=True)
 
     class Meta:
         from isolation.models import IsolationAction
 
         model = IsolationAction
         fields = ["id", "prevent_from", "is_prevent_all"]
-
-    @extend_schema_field(serializers.DictField(allow_null=True))
-    def get_prevent_from(self, obj):
-        if obj.prevent_from:
-            return {"id": obj.prevent_from.id, "name": obj.prevent_from.name}
-        return None
 
 
 class IsolationParentSerializer(serializers.ModelSerializer):
