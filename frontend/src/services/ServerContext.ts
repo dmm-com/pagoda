@@ -75,15 +75,15 @@ export class ServerContext {
     this.version = context.version as string;
     this.user = context.user
       ? new User(
-        context.user as {
-          id: number;
-          username: string;
-          email: string;
-          isSuperuser: boolean;
-          isReadonly: boolean;
-          parentUser: number | null;
-        },
-      )
+          context.user as {
+            id: number;
+            username: string;
+            email: string;
+            isSuperuser: boolean;
+            isReadonly: boolean;
+            parentUser: number | null;
+          },
+        )
       : undefined;
     this.singleSignOnLoginUrl = context.singleSignOnLoginUrl as
       | string

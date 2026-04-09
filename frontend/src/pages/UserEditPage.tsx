@@ -94,10 +94,10 @@ export const UserEditPage: FC = () => {
     const serverContext = ServerContext.getInstance();
     return [
       serverContext?.user?.isSuperuser != null &&
-      serverContext.user.isSuperuser,
+        serverContext.user.isSuperuser,
       user?.id != null &&
-      serverContext?.user?.id != null &&
-      user.id === serverContext.user.id,
+        serverContext?.user?.id != null &&
+        user.id === serverContext.user.id,
     ];
   }, [userLoading]);
 

@@ -19,7 +19,6 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { FlexBox } from "components/common/FlexBox";
 import { styled } from "@mui/material/styles";
 import { useSnackbar } from "notistack";
 import {
@@ -35,6 +34,7 @@ import { Control, Controller } from "react-hook-form";
 import { ChangeUserAuthModal } from "./ChangeUserAuthModal";
 import { Schema } from "./userForm/UserFormSchema";
 
+import { FlexBox } from "components/common/FlexBox";
 import { ServerContext } from "services/ServerContext";
 import { User } from "services/ServerContext";
 
@@ -55,7 +55,10 @@ interface ReadonlyProps {
   user: UserRetrieve;
 }
 
-const InputBox: FC<{ children: ReactNode; sx?: object }> = ({ children, sx }) => {
+const InputBox: FC<{ children: ReactNode; sx?: object }> = ({
+  children,
+  sx,
+}) => {
   return (
     <Box
       component="form"
@@ -83,7 +86,7 @@ const ElemAuthenticationMethod: FC<ReadonlyProps> = ({ user }) => {
       </TableCell>
       <TableCell sx={{ width: "750px", p: "0px", wordBreak: "break-word" }}>
         {user.authenticateType ===
-          UserRetrieveAuthenticateTypeEnum.AUTH_TYPE_LOCAL ? (
+        UserRetrieveAuthenticateTypeEnum.AUTH_TYPE_LOCAL ? (
           <Box sx={{ m: 1 }}>
             <Box sx={{ my: 1 }}>ローカル認証</Box>
             <Button variant="outlined" onClick={() => setOpenModal(true)}>
@@ -256,7 +259,10 @@ const ElemEmailAddress: FC<Props> = ({ control }) => {
 };
 
 const ElemUserName: FC<Props> = ({ control }) => {
-  const loginUser: User | undefined = useMemo(() => ServerContext.getInstance()?.user, []);
+  const loginUser: User | undefined = useMemo(
+    () => ServerContext.getInstance()?.user,
+    [],
+  );
 
   return (
     <StyledTableRow>

@@ -31,7 +31,7 @@ import { UserListParam } from "services/Constants";
 import { ServerContext } from "services/ServerContext";
 import { normalizeToMatch } from "services/StringUtil";
 
-const StyledCardHeader = styled(CardHeader)(({ }) => ({
+const StyledCardHeader = styled(CardHeader)(({}) => ({
   p: "0px",
   mt: "24px",
   mx: "16px",
@@ -41,7 +41,7 @@ const StyledCardHeader = styled(CardHeader)(({ }) => ({
   },
 }));
 
-const UserName = styled(Typography)(({ }) => ({
+const UserName = styled(Typography)(({}) => ({
   textOverflow: "ellipsis",
   overflow: "hidden",
   whiteSpace: "nowrap",
@@ -118,7 +118,9 @@ const UserListContent: FC = () => {
         {users.results?.map((user) => {
           const isCurrentUser = user.username === currentUsername;
           const isLinkVisible = isSuperuser || isCurrentUser;
-          const isCoUser = user.parentUser === serverContext?.user?.id && serverContext?.user?.id !== undefined;
+          const isCoUser =
+            user.parentUser === serverContext?.user?.id &&
+            serverContext?.user?.id !== undefined;
           const isMenuVisible = isSuperuser || isCurrentUser || isCoUser;
 
           return (
