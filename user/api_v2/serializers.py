@@ -50,6 +50,7 @@ class UserBaseSerializer(serializers.ModelSerializer):
 
 class UserCreateSerializer(UserBaseSerializer):
     username = serializers.CharField(required=True, write_only=True)
+
     class Meta:
         model = User
         fields = [
@@ -59,7 +60,7 @@ class UserCreateSerializer(UserBaseSerializer):
             "is_superuser",
         ]
 
-    def validate_username(self, username:str) -> str:
+    def validate_username(self, username: str) -> str:
         """
         superuser can create any user, but non-superuser can only create user
         within a limited namespace of one's own name
@@ -152,7 +153,15 @@ class UserRetrieveSerializer(UserBaseSerializer):
 class UserListSerializer(UserBaseSerializer):
     class Meta:
         model = User
-        fields = ["id", "username", "email", "is_superuser", "date_joined", "parent_user", "is_readonly"]
+        fields = [
+            "id",
+            "username",
+            "email",
+            "is_superuser",
+            "date_joined",
+            "parent_user",
+            "is_readonly",
+        ]
 
 
 class UserImportChildSerializer(serializers.ModelSerializer):
@@ -204,8 +213,9 @@ class UserPasswordSerializer(serializers.Serializer):
         if settings.AIRONE.get("PASSWORD_RESET_DISABLED"):
             raise PermissionDenied("It is not allowed to change password")
 
-        # Identification
-        if int(request.user.id) != int(user.id):
+        # Only allow to change password of own account or co-user's account for Non-superuser.
+        is_couser = user.parent_user == request.user
+        if int(request.user.id) != int(user.id) and not is_couser:
             raise ValidationError("You don't have permission to access this object")
 
         # When not have a password, don't check old password.

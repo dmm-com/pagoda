@@ -120,7 +120,9 @@ class ViewTest(AironeViewTest):
             "application/json",
         )
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(resp.json()["username"][0]["message"], "A user with that username already exists.")
+        self.assertEqual(
+            resp.json()["username"][0]["message"], "A user with that username already exists."
+        )
 
     def test_create_superuser_by_guest(self):
         self.guest_login()
@@ -178,7 +180,9 @@ class ViewTest(AironeViewTest):
             "application/json",
         )
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(resp.json()["username"][0]["message"], "A user with that username already exists.")
+        self.assertEqual(
+            resp.json()["username"][0]["message"], "A user with that username already exists."
+        )
 
     def test_delete_user(self):
         self.admin_login()
@@ -421,6 +425,38 @@ class ViewTest(AironeViewTest):
         updated_user = User.objects.filter(id=user.id).first()
         self.assertIsNotNone(updated_user)
         self.assertTrue(updated_user.check_password(new_passwd))
+
+    def test_patch_co_user_password_by_guest(self):
+        user = self.guest_login()
+
+        co_user = self._create_user("co_user", parent_user=user)
+        params = {
+            "old_passwd": co_user.username,
+            "new_passwd": "new-passwd",
+            "chk_passwd": "new-passwd",
+        }
+        resp = self.client.patch(
+            "/user/api/v2/%d/edit_passwd" % co_user.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 200)
+
+    def test_patch_other_user_password_by_guest(self):
+        self.guest_login()
+
+        other_user = self._create_user("other")
+        params = {
+            "old_passwd": "other",
+            "new_passwd": "new-passwd",
+            "chk_passwd": "new-passwd",
+        }
+        resp = self.client.patch(
+            "/user/api/v2/%d/edit_passwd" % other_user.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.json()["non_field_errors"][0]["message"],
+            "You don't have permission to access this object",
+        )
 
     @with_airone_settings(
         {
