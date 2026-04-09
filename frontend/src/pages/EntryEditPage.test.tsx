@@ -44,6 +44,7 @@ const mockEntity = {
     },
   ],
   webhooks: [],
+  isolation_rules: [],
   is_public: false,
   has_ongoing_changes: false,
   permission: 3,

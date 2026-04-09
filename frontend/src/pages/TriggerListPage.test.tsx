@@ -4,8 +4,8 @@
 
 import {
   render,
-  waitForElementToBeRemoved,
   screen,
+  waitForElementToBeRemoved,
 } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
@@ -31,6 +31,7 @@ const server = setupServer(
             isToplevel: false,
             attrs: [],
             webhooks: [],
+            isolation_rules: [],
           },
           actions: [],
           conditions: [],
@@ -44,6 +45,7 @@ const server = setupServer(
             isToplevel: false,
             attrs: [],
             webhooks: [],
+            isolation_rules: [],
           },
           actions: [],
           conditions: [],

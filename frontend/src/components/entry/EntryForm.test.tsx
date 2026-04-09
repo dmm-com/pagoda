@@ -3,8 +3,8 @@
  */
 
 import {
-  EntryAttributeTypeTypeEnum,
   EntityDetail,
+  EntryAttributeTypeTypeEnum,
 } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -71,6 +71,7 @@ describe("EntryForm", () => {
       },
     ],
     webhooks: [],
+    isolationRules: [],
   };
 
   const entryInfo: Schema = {

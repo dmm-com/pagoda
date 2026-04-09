@@ -22,6 +22,7 @@ const server = setupServer(
       is_toplevel: false,
       attrs: [],
       webhooks: [],
+      isolation_rules: [],
     });
   }),
   // getEntries

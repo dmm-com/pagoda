@@ -21,6 +21,7 @@ describe("EntityForm", () => {
     itemNameType: "US",
     isToplevel: false,
     webhooks: [],
+    isolationRules: [],
     attrs: [],
   };
 

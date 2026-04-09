@@ -22,6 +22,7 @@ const server = setupServer(
       is_toplevel: true,
       attrs: [],
       webhooks: [],
+      isolation_rules: [],
       hasOngoingChanges: false,
       permission: 3,
     });

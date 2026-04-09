@@ -27,6 +27,7 @@ describe("WebhookFields", () => {
     itemNameType: "US",
     isToplevel: false,
     webhooks: [],
+    isolationRules: [],
     attrs: [],
   };
 

@@ -27,6 +27,7 @@ describe("EntityBreadcrumbs", () => {
     hasOngoingChanges: false,
     attrs: [],
     webhooks: [],
+    isolationRules: [],
     permission: ACLType.Full,
   };
 

@@ -16,8 +16,8 @@ import {
   EntityApi,
   EntityApiV2ListRequest,
   EntityAttrCreate,
-  EntityAttrUpdate,
   EntityAttrIDandName,
+  EntityAttrUpdate,
   EntityCreateItemNameTypeEnum,
   EntityDetail,
   EntryAlias,
@@ -32,6 +32,7 @@ import {
   Group,
   GroupApi,
   GroupCreateUpdate,
+  IsolationParentCreateUpdate,
   JobApi,
   JobSerializers,
   PaginatedCategoryListList,
@@ -259,6 +260,7 @@ class AironeApiClient {
     isToplevel: boolean,
     attrs: Array<EntityAttrCreate>,
     webhooks: Array<WebhookCreateUpdate>,
+    isolationRules: Array<IsolationParentCreateUpdate>,
   ): Promise<void> {
     await this.entity.entityApiV2Create(
       {
@@ -270,6 +272,7 @@ class AironeApiClient {
           isToplevel: isToplevel,
           attrs: attrs,
           webhooks: webhooks,
+          isolationRules: isolationRules,
         },
       },
       {
@@ -290,6 +293,7 @@ class AironeApiClient {
     isToplevel: boolean,
     attrs: Array<EntityAttrUpdate>,
     webhooks: Array<WebhookCreateUpdate>,
+    isolationRules: Array<IsolationParentCreateUpdate> = [],
   ): Promise<void> {
     await this.entity.entityApiV2Update(
       {
@@ -302,6 +306,7 @@ class AironeApiClient {
           isToplevel: isToplevel,
           attrs: attrs,
           webhooks: webhooks,
+          isolationRules: isolationRules,
         },
       },
       {
