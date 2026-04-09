@@ -152,7 +152,7 @@ class UserRetrieveSerializer(UserBaseSerializer):
 class UserListSerializer(UserBaseSerializer):
     class Meta:
         model = User
-        fields = ["id", "username", "email", "is_superuser", "date_joined"]
+        fields = ["id", "username", "email", "is_superuser", "date_joined", "parent_user", "is_readonly"]
 
 
 class UserImportChildSerializer(serializers.ModelSerializer):

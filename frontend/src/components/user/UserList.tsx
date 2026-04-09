@@ -118,7 +118,8 @@ const UserListContent: FC = () => {
         {users.results?.map((user) => {
           const isCurrentUser = user.username === currentUsername;
           const isLinkVisible = isSuperuser || isCurrentUser;
-          const isMenuVisible = isSuperuser || isCurrentUser;
+          const isCoUser = user.parentUser === serverContext?.user?.id && serverContext?.user?.id !== undefined;
+          const isMenuVisible = isSuperuser || isCurrentUser || isCoUser;
 
           return (
             <Grid size={4} key={user.id}>
@@ -155,6 +156,7 @@ const UserListContent: FC = () => {
                           <UserControlMenu
                             user={user}
                             isSelf={isCurrentUser}
+                            isCoUser={isCoUser}
                             anchorElem={userAnchorEls[user.id]}
                             handleClose={(userId: number) =>
                               setUserAnchorEls({
