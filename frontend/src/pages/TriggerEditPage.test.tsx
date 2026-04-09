@@ -25,6 +25,7 @@ const server = setupServer(
         isToplevel: false,
         attrs: [],
         webhooks: [],
+        isolation_rules: [],
       },
       actions: [],
       conditions: [],
@@ -42,6 +43,7 @@ const server = setupServer(
           isToplevel: false,
           attrs: [],
           webhooks: [],
+          isolation_rules: [],
         },
         {
           id: 2,
@@ -50,6 +52,7 @@ const server = setupServer(
           isToplevel: false,
           attrs: [],
           webhooks: [],
+          isolation_rules: [],
         },
         {
           id: 3,
@@ -58,6 +61,7 @@ const server = setupServer(
           isToplevel: false,
           attrs: [],
           webhooks: [],
+          isolation_rules: [],
         },
       ],
     });
@@ -71,6 +75,7 @@ const server = setupServer(
       isToplevel: false,
       attrs: [],
       webhooks: [],
+      isolation_rules: [],
     });
   }),
 );

@@ -44,6 +44,7 @@ describe("ActionForm", () => {
       referral: [],
     })),
     webhooks: [],
+    isolationRules: [],
     hasOngoingChanges: false,
   };
 

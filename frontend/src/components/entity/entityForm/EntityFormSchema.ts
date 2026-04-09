@@ -25,6 +25,40 @@ export const schema = z.object({
     ),
   itemNameType: z.enum(["US", "ID", "AT"]).default("US"),
   isToplevel: z.boolean().default(false),
+  isolationRules: z
+    .array(
+      z.object({
+        id: z.number().optional(),
+        conditions: z
+          .array(
+            z.object({
+              id: z.number().optional(),
+              attr: z.object({
+                id: z.number(),
+                name: z.string(),
+                type: z.number(),
+              }),
+              strCond: z.string().nullable().default(null),
+              refCond: z
+                .object({ id: z.number(), name: z.string() })
+                .nullable()
+                .default(null),
+              boolCond: z.boolean().default(false),
+              isUnmatch: z.boolean().default(false),
+            }),
+          )
+          .min(1, "条件は1つ以上必要です"),
+        action: z.object({
+          id: z.number().optional(),
+          isPreventAll: z.boolean().default(false),
+          preventFrom: z
+            .object({ id: z.number(), name: z.string() })
+            .nullable()
+            .default(null),
+        }),
+      }),
+    )
+    .default([]),
   webhooks: z
     .array(
       z.object({

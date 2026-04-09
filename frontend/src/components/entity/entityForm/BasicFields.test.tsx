@@ -27,6 +27,7 @@ describe("BasicFields", () => {
     itemNameType: "US",
     isToplevel: false,
     webhooks: [],
+    isolationRules: [],
     attrs: [],
   };
 

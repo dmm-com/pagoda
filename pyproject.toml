@@ -24,7 +24,7 @@ module = ["*.migrations.*"]
 ignore_errors = true
 
 [[tool.mypy.overrides]]
-module = ["webhook.*", "category.*", "dashboard.*", "group.*", "role.*", "trigger.*", "job.*", "acl.*", "airone.auth.*", "user.*"]
+module = ["webhook.*", "category.*", "dashboard.*", "group.*", "role.*", "trigger.*", "job.*", "acl.*", "airone.auth.*", "user.*", "api_v2.*", "custom_view.*", "api_v1.*"]
 disallow_untyped_defs = true
 
 [tool.ruff]
@@ -55,7 +55,7 @@ dependencies = [
     "django-multidb-router>=0.11",
     "django-simple-history==3.11.0",
     "django-storages==1.14.6",
-    "django==5.2.12",
+    "django==5.2.13",
     "djangorestframework==3.16.1",
     "markdown>=3.7",
     "drf-spectacular==0.29.0",

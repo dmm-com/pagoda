@@ -74,6 +74,7 @@ class ViewTest(AironeViewTest):
                 "status": 0,
                 "attrs": [],
                 "webhooks": [],
+                "isolation_rules": [],
                 "is_public": True,
                 "has_ongoing_changes": False,
                 "permission": ACLType.Full.value,
@@ -1486,6 +1487,7 @@ class ViewTest(AironeViewTest):
                         "is_toplevel": False,
                         "attrs": [],
                         "webhooks": [],
+                        "isolation_rules": [],
                         "created_user": self.user,
                     },
                 )
@@ -2680,6 +2682,7 @@ class ViewTest(AironeViewTest):
                         "name": "hoge",
                         "attrs": [],
                         "webhooks": [],
+                        "isolation_rules": [],
                     },
                 )
                 self.assertEqual(args[1], self.entity)

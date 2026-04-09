@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import List, Optional
+from typing import Any, List, Optional
 from zoneinfo import ZoneInfo
 
 from django.conf import settings
@@ -38,13 +38,13 @@ class EntrySearchAPIRequest(BaseModel):
     entry_limit: int = Field(default=CONFIG_ENTRY.MAX_LIST_ENTRIES, gt=0)
 
     @field_validator("entities")
-    def validate_entities_not_empty(cls, v):
+    def validate_entities_not_empty(cls, v: list[int | str]) -> list[int | str]:
         if not v or len(v) < 1:
             raise ValueError("At least one entity is required")
         return v
 
     @field_validator("attrinfo")
-    def validate_attrinfo_keyword_length(cls, v):
+    def validate_attrinfo_keyword_length(cls, v: list[Any]) -> list[Any]:
         for item in v:
             if isinstance(item, dict) and "keyword" in item and item["keyword"]:
                 if len(item["keyword"]) > CONFIG_ENTRY.MAX_QUERY_SIZE:
@@ -57,7 +57,7 @@ class EntrySearchAPIResponse(BaseModel):
 
 
 class EntrySearchChainAPI(APIView):
-    def post(self, request):
+    def post(self, request: Request) -> Response:
         serializer = EntrySearchChainSerializer(data=request.data)
         if not serializer.is_valid():
             return Response({}, status=status.HTTP_400_BAD_REQUEST)
@@ -102,7 +102,7 @@ class EntrySearchChainAPI(APIView):
 
 
 class EntrySearchAPI(APIView):
-    def post(self, request, format=None):
+    def post(self, request: Request, format: str | None = None) -> Response:
         if not isinstance(request.data, dict):
             return Response(
                 "parameter must be in dictionary format", status=status.HTTP_400_BAD_REQUEST
