@@ -19,7 +19,6 @@
     "doc": "docs"
   },
   "scripts": {
-    "postinstall": "node -e \"try{require.resolve('@dmm-com/airone-apiclient-typescript-fetch')}catch{console.warn('\\n⚠ @dmm-com/airone-apiclient-typescript-fetch is not installed.\\n  Run: npm run generate:client && npm run link:client\\n')}\"",
     "build": "npm run build:development",
     "build:development": "webpack build --entry ./frontend/src/App.tsx --mode development",
     "build:development:analyze": "webpack build --entry ./frontend/src/App.tsx --mode development --analyze",
@@ -65,6 +64,7 @@
     "@babel/plugin-transform-runtime": "^7.26.9",
     "@babel/preset-env": "^7.26.9",
     "@babel/preset-react": "^7.26.3",
+    "@dmm-com/airone-apiclient-typescript-fetch": "^0.26.0",
     "@hookform/resolvers": "^2.9.11",
     "@mui/icons-material": "^6.4.6",
     "@mui/material": "^6.4.6",
@@ -112,9 +112,6 @@
     "notistack": "^3.0.1",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
-  },
-  "optionalDependencies": {
-    "@dmm-com/airone-apiclient-typescript-fetch": "^0.26.0"
   },
   "dependencies": {
     "react-router": "^7.12.0",
