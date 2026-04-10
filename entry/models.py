@@ -1573,7 +1573,15 @@ class Attribute(ACLBase):
                 # the case referred entry is already deleted, do nothing
                 return
 
-            if entry.get_referred_objects().exclude(id=self.parent_entry.id).count() > 0:
+            exclude_entity_names = list(
+                entry.schema.delete_chain_exclude_entities.values_list("name", flat=True)
+            )
+            if (
+                entry.get_referred_objects(exclude_entities=exclude_entity_names)
+                .exclude(id=self.parent_entry.id)
+                .count()
+                > 0
+            ):
                 # the case other entries also refer target referral, do nothing
                 return
 
