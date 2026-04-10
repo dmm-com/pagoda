@@ -1021,3 +1021,113 @@ class ModelTest(AironeTestCase):
                 self.assertGreaterEqual(len(actions), 1)
             else:
                 self.assertEqual(len(actions), 0)
+
+    def test_invoke_trigger_when_ref_entry_deleted(self):
+        # Register trigger: ref_trigger = None → str_action = "changed_by_delete"
+        ref_attr = self.entity.attrs.get(name="ref_trigger")
+        str_action_attr = self.entity.attrs.get(name="str_action")
+        TriggerCondition.register(
+            self.entity,
+            [{"attr_id": ref_attr.id, "cond": None}],
+            [{"attr_id": str_action_attr.id, "value": "changed_by_delete"}],
+        )
+
+        # Create entry with ref_trigger pointing to a deletable entry
+        ref_entry = self.add_entry(self.user, "deletable_ref", self.entity_ref)
+        entry = self.add_entry(
+            self.user, "test_entry", self.entity, values={"ref_trigger": ref_entry}
+        )
+
+        # Delete the referenced entry and evaluate triggers
+        ref_entry.delete()
+        results = TriggerCondition.get_invoked_actions_on_delete(ref_entry)
+
+        self.assertEqual(len(results), 1)
+        ref_entry_result, actions = results[0]
+        self.assertEqual(ref_entry_result.id, entry.id)
+        self.assertEqual(len(actions), 1)
+
+        # Run the action and verify the entry was updated
+        actions[0].run(self.user, entry)
+        self.assertEqual(entry.get_attrv("str_action").value, "changed_by_delete")
+
+    def test_invoke_trigger_when_named_ref_entry_deleted(self):
+        # Register trigger: named_trigger = None (empty ref+name) → str_action = "changed_by_delete"
+        named_attr = self.entity.attrs.get(name="named_trigger")
+        str_action_attr = self.entity.attrs.get(name="str_action")
+        TriggerCondition.register(
+            self.entity,
+            [{"attr_id": named_attr.id, "cond": None}],
+            [{"attr_id": str_action_attr.id, "value": "changed_by_delete"}],
+        )
+
+        # Create entry with named_trigger referencing a deletable entry
+        ref_entry = self.add_entry(self.user, "deletable_named_ref", self.entity_ref)
+        entry = self.add_entry(
+            self.user,
+            "test_entry",
+            self.entity,
+            values={"named_trigger": {"name": "test_name", "id": ref_entry.id}},
+        )
+
+        # Delete the referenced entry and evaluate triggers
+        ref_entry.delete()
+        results = TriggerCondition.get_invoked_actions_on_delete(ref_entry)
+
+        self.assertEqual(len(results), 1)
+        ref_entry_result, actions = results[0]
+        self.assertEqual(ref_entry_result.id, entry.id)
+
+        actions[0].run(self.user, entry)
+        self.assertEqual(entry.get_attrv("str_action").value, "changed_by_delete")
+
+    def test_invoke_trigger_when_last_arr_ref_deleted(self):
+        # Register trigger: arr_ref_trigger = None (empty array) → str_action = "changed_by_delete"
+        arr_ref_attr = self.entity.attrs.get(name="arr_ref_trigger")
+        str_action_attr = self.entity.attrs.get(name="str_action")
+        TriggerCondition.register(
+            self.entity,
+            [{"attr_id": arr_ref_attr.id, "cond": None}],
+            [{"attr_id": str_action_attr.id, "value": "changed_by_delete"}],
+        )
+
+        # Create entry with arr_ref_trigger = [ref_entry] (single element)
+        ref_entry = self.add_entry(self.user, "deletable_arr_ref", self.entity_ref)
+        entry = self.add_entry(
+            self.user, "test_entry", self.entity, values={"arr_ref_trigger": [ref_entry]}
+        )
+
+        # Delete the only referenced entry → array becomes empty → trigger fires
+        ref_entry.delete()
+        results = TriggerCondition.get_invoked_actions_on_delete(ref_entry)
+
+        self.assertEqual(len(results), 1)
+        _, actions = results[0]
+        actions[0].run(self.user, entry)
+        self.assertEqual(entry.get_attrv("str_action").value, "changed_by_delete")
+
+    def test_no_trigger_when_arr_ref_partially_deleted(self):
+        # Register trigger: arr_ref_trigger = None (empty array) → str_action = "changed_by_delete"
+        arr_ref_attr = self.entity.attrs.get(name="arr_ref_trigger")
+        str_action_attr = self.entity.attrs.get(name="str_action")
+        TriggerCondition.register(
+            self.entity,
+            [{"attr_id": arr_ref_attr.id, "cond": None}],
+            [{"attr_id": str_action_attr.id, "value": "changed_by_delete"}],
+        )
+
+        # Create entry with arr_ref_trigger = [ref_entry_a, ref_entry_b]
+        ref_entry_a = self.add_entry(self.user, "deletable_arr_ref_a", self.entity_ref)
+        ref_entry_b = self.add_entry(self.user, "deletable_arr_ref_b", self.entity_ref)
+        self.add_entry(
+            self.user,
+            "test_entry",
+            self.entity,
+            values={"arr_ref_trigger": [ref_entry_a, ref_entry_b]},
+        )
+
+        # Delete only one entry → array still has ref_entry_b → trigger must NOT fire
+        ref_entry_a.delete()
+        results = TriggerCondition.get_invoked_actions_on_delete(ref_entry_a)
+
+        self.assertEqual(results, [])

@@ -53,6 +53,7 @@ from entry.services import AdvancedSearchService
 from group.models import Group
 from job.models import Job, JobOperation, JobStatus
 from role.models import Role
+from trigger.models import TriggerCondition
 from user.models import User
 
 
@@ -510,6 +511,10 @@ def delete_entry(self, job: Job) -> JobStatus:
     entry._history_user = job.user
 
     entry.delete()
+
+    for ref_entry, actions in TriggerCondition.get_invoked_actions_on_delete(entry):
+        for action in actions:
+            action.run(job.user, ref_entry)
 
     if custom_view.is_custom("after_delete_entry", entry.schema.name):
         custom_view.call_custom("after_delete_entry", entry.schema.name, job.user, entry)
@@ -1063,6 +1068,10 @@ def delete_entry_v2(self, job: Job) -> JobStatus:
     # register operation History for deleting entry
     job.user.seth_entry_del(entry)
     entry.delete(deleted_user=job.user)
+
+    for ref_entry, actions in TriggerCondition.get_invoked_actions_on_delete(entry):
+        for action in actions:
+            action.run(job.user, ref_entry)
 
     # Send notification to the webhook URL
     job_notify: Job = Job.new_notify_delete_entry(job.user, entry)
