@@ -1,3 +1,5 @@
+from typing import Any
+
 from django.contrib import admin
 from import_export import fields, widgets
 
@@ -33,7 +35,7 @@ class EntityResource(AironeModelResource):
         fields = ("id", "name", "note", "status", "user")
         export_order = ("id", "name", "note", "user")
 
-    def import_instance(self, instance, row, **kwargs):
+    def import_instance(self, instance: Entity, row: dict[str, Any], **kwargs: Any) -> None:
         # will not import duplicate entity
         if Entity.objects.filter(name=row["name"]).exists():
             entity = Entity.objects.filter(name=row["name"]).get()
@@ -94,7 +96,7 @@ class EntityAttrResource(AironeModelResource):
         model = EntityAttr
         fields = ("id", "name", "type", "is_mandatory", "user", "refer", "entity")
 
-    def import_instance(self, instance, row, **kwargs):
+    def import_instance(self, instance: EntityAttr, row: dict[str, Any], **kwargs: Any) -> None:
         if not Entity.objects.filter(name=row["entity"]).exists():
             raise RuntimeError("failed to identify entity object")
 

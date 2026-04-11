@@ -6,7 +6,7 @@ from typing import Any
 import yaml
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.db.models import Q
-from django.http import HttpResponse
+from django.http import HttpRequest, HttpResponse
 from django.http.response import JsonResponse
 
 from airone.lib import custom_view
@@ -28,7 +28,7 @@ from .settings import CONFIG
 
 
 @http_get
-def index(request):
+def index(request: HttpRequest) -> HttpResponse:
     param_page_index = request.GET.get("page", 0)
     param_keyword = request.GET.get("keyword")
 
@@ -64,7 +64,7 @@ def index(request):
 
 
 @http_get
-def create(request):
+def create(request: HttpRequest) -> HttpResponse:
     context = {
         "entities": [
             x
@@ -77,7 +77,7 @@ def create(request):
 
 
 @http_get
-def edit(request, entity_id):
+def edit(request: HttpRequest, entity_id: int) -> HttpResponse:
     entity, error = get_obj_with_check_perm(request.user, Entity, entity_id, ACLType.Writable)
     if error or entity is None:
         return error
@@ -148,7 +148,7 @@ def edit(request, entity_id):
         },
     ]
 )
-def do_edit(request, entity_id, recv_data):
+def do_edit(request: HttpRequest, entity_id: int, recv_data: dict[str, Any]) -> HttpResponse:
     entity, error = get_obj_with_check_perm(request.user, Entity, entity_id, ACLType.Writable)
     if error or entity is None:
         return error
@@ -252,7 +252,7 @@ def do_edit(request, entity_id, recv_data):
         },
     ]
 )
-def do_create(request, recv_data):
+def do_create(request: HttpRequest, recv_data: dict[str, Any]) -> HttpResponse:
     # validation checks
     for attr in recv_data["attrs"]:
         # formalize recv_data format
@@ -313,7 +313,7 @@ def do_create(request, recv_data):
 
 
 @http_get
-def export(request):
+def export(request: HttpRequest) -> HttpResponse:
     output = io.StringIO()
 
     data: dict[str, list[dict[str, Any]]] = {"Entity": [], "EntityAttr": []}
@@ -351,7 +351,7 @@ def export(request):
 
 
 @http_post([])
-def do_delete(request, entity_id, recv_data):
+def do_delete(request: HttpRequest, entity_id: int, recv_data: dict[str, Any]) -> HttpResponse:
     entity, error = get_obj_with_check_perm(request.user, Entity, entity_id, ACLType.Full)
     if error or entity is None:
         return error
@@ -386,7 +386,7 @@ def do_delete(request, entity_id, recv_data):
 
 
 @http_get
-def history(request, entity_id):
+def history(request: HttpRequest, entity_id: int) -> HttpResponse:
     if not Entity.objects.filter(id=entity_id).exists():
         return HttpResponse("Failed to get entity of specified id", status=400)
 
@@ -402,7 +402,7 @@ def history(request, entity_id):
 
 
 @http_get
-def dashboard(request, entity_id):
+def dashboard(request: HttpRequest, entity_id: int) -> HttpResponse:
     if not Entity.objects.filter(id=entity_id).exists():
         return HttpResponse("Failed to get entity of specified id", status=400)
 
@@ -484,7 +484,7 @@ def dashboard(request, entity_id):
 
 
 @http_get
-def conf_dashboard(request, entity_id):
+def conf_dashboard(request: HttpRequest, entity_id: int) -> HttpResponse:
     if not Entity.objects.filter(id=entity_id).exists():
         return HttpResponse("Failed to get entity of specified id", status=400)
 
@@ -512,7 +512,9 @@ def conf_dashboard(request, entity_id):
         }
     ]
 )
-def do_conf_dashboard(request, entity_id, recv_data):
+def do_conf_dashboard(
+    request: HttpRequest, entity_id: int, recv_data: dict[str, Any]
+) -> HttpResponse:
     if not Entity.objects.filter(id=entity_id).exists():
         return HttpResponse("Failed to get entity of specified id", status=400)
 

@@ -15,7 +15,7 @@ urllib3.disable_warnings(InsecureRequestWarning)
 EventType = Literal["entry.create", "entry.update", "entry.delete"]
 
 
-def _send_request_to_webhook_endpoint(entry: Entry, user: User, event_type: EventType):
+def _send_request_to_webhook_endpoint(entry: Entry, user: User, event_type: EventType) -> None:
     if not settings.AIRONE_FLAGS["WEBHOOK"]:
         Logger.warning(
             "skipped to send requests because webhook is disabled. skipped urls are %s",
@@ -39,16 +39,16 @@ def _send_request_to_webhook_endpoint(entry: Entry, user: User, event_type: Even
         )
 
 
-def notify_entry_create(entry: Entry, user: User):
+def notify_entry_create(entry: Entry, user: User) -> None:
     # send a request to the registered WebHook URL
     _send_request_to_webhook_endpoint(entry, user, "entry.create")
 
 
-def notify_entry_update(entry: Entry, user: User):
+def notify_entry_update(entry: Entry, user: User) -> None:
     # send a request to the registered WebHook URL
     _send_request_to_webhook_endpoint(entry, user, "entry.update")
 
 
-def notify_entry_delete(entry: Entry, user: User):
+def notify_entry_delete(entry: Entry, user: User) -> None:
     # send a request to the registered WebHook URL
     _send_request_to_webhook_endpoint(entry, user, "entry.delete")

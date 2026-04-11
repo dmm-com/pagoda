@@ -13,8 +13,6 @@ check_untyped_defs = true
 warn_unused_ignores = true
 warn_redundant_casts = true
 
-# Exclude test directories for now (394 errors in tests vs 126 in production code)
-# We will address production code first, then gradually enable checking for tests
 [[tool.mypy.overrides]]
 module = ["*.tests.*", "*/tests/*", "tests.*"]
 ignore_errors = true
@@ -24,7 +22,7 @@ module = ["*.migrations.*"]
 ignore_errors = true
 
 [[tool.mypy.overrides]]
-module = ["webhook.*", "category.*", "dashboard.*", "group.*", "role.*", "trigger.*", "job.*", "acl.*", "airone.auth.*", "user.*", "api_v2.*", "custom_view.*", "api_v1.*"]
+module = ["webhook.*", "category.*", "dashboard.*", "group.*", "role.*", "trigger.*", "job.*", "acl.*", "airone.*", "user.*", "api_v2.*", "custom_view.*", "api_v1.*", "common.*", "isolation.*", "apiclient.*", "custom_view_sample.*", "entity.*"]
 disallow_untyped_defs = true
 
 [tool.ruff]

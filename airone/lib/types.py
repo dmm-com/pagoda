@@ -4,7 +4,7 @@ from typing import Any
 
 class BaseIntEnum(enum.IntEnum):
     @classmethod
-    def isin(cls, v):
+    def isin(cls, v: int) -> bool:
         return v in cls.__members__.values()
 
 

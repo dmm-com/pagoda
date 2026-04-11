@@ -7,11 +7,12 @@ Provides authentication and user management utilities for external plugins.
 from typing import Any, Dict
 
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import AbstractBaseUser, AnonymousUser
 
 User = get_user_model()
 
 
-def get_current_user_info(user) -> Dict[str, Any]:
+def get_current_user_info(user: AbstractBaseUser | AnonymousUser) -> Dict[str, Any]:
     """Get current user information
 
     Provides safe access to user information for plugins.
@@ -44,7 +45,7 @@ def get_current_user_info(user) -> Dict[str, Any]:
     }
 
 
-def check_user_permission(user, permission: str) -> bool:
+def check_user_permission(user: AbstractBaseUser | AnonymousUser, permission: str) -> bool:
     """Check if user has specific permission
 
     Args:
@@ -60,7 +61,7 @@ def check_user_permission(user, permission: str) -> bool:
     return user.has_perm(permission)
 
 
-def get_user_groups(user) -> list:
+def get_user_groups(user: AbstractBaseUser | AnonymousUser) -> list[str]:
     """Get user's group names
 
     Args:

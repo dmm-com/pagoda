@@ -1821,13 +1821,15 @@ class Entry(ACLBase):
         """
 
         # Get auto complement user
-        user = auto_complement.get_auto_complement_user(user)
+        complemented_user = auto_complement.get_auto_complement_user(user)
+        if complemented_user is None:
+            return
 
         for attr_id in set(
             self.schema.attrs.filter(is_active=True).values_list("id", flat=True)
         ) - set(self.attrs.filter(is_active=True).values_list("schema", flat=True)):
             entity_attr = self.schema.attrs.get(id=attr_id)
-            if not user.has_permission(entity_attr, ACLType.Readable):
+            if not complemented_user.has_permission(entity_attr, ACLType.Readable):
                 continue
 
             newattr = self.add_attribute_from_base(entity_attr, user)

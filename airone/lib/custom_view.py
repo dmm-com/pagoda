@@ -13,11 +13,11 @@ CUSTOM_VIEW: dict[str, dict[str, Callable[..., Any]]] = {}
 BASE_DIR = settings.PROJECT_PATH + "/../custom_view"
 
 
-def _isin_cache(filepath, method_name):
+def _isin_cache(filepath: str, method_name: str) -> bool:
     return filepath in CUSTOM_VIEW and method_name in CUSTOM_VIEW[filepath]
 
 
-def _does_custom_method_defined(method_name, spec_name, filepath):
+def _does_custom_method_defined(method_name: str, spec_name: str, filepath: str) -> bool:
     # return if cache is hit
     if _isin_cache(filepath, method_name):
         return True
@@ -62,7 +62,7 @@ def is_custom(handler_name: str, entity_name: str | None = None) -> bool:
     return hook_manager.has_hook(handler_name, entity_name)
 
 
-def call_custom(handler_name: str, spec_name: str | None = None, *args, **kwargs):
+def call_custom(handler_name: str, spec_name: str | None = None, *args: Any, **kwargs: Any) -> Any:
     if not spec_name:
         filepath = "%s/entity.py" % BASE_DIR
     else:

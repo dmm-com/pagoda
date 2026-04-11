@@ -3,7 +3,9 @@
 # (c.f. https://drf-spectacular.readthedocs.io/en/latest/settings.html)
 
 
-def exclude_customview_hook(endpoints):
+def exclude_customview_hook(
+    endpoints: list[tuple[str, str, str, object]],
+) -> list[tuple[str, str, str, object]]:
     """This excludes API endpoints of custom-view's and api_v1's ones.
 
     custom_view endpoints are excluded because they are optional and not always necessary.

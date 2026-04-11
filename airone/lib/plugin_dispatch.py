@@ -6,7 +6,7 @@ Entry API operations to plugin override handlers when configured.
 """
 
 import logging
-from typing import TYPE_CHECKING, Dict, Optional
+from typing import TYPE_CHECKING, Any, Dict, Optional
 
 from pagoda_plugin_sdk.override import OverrideContext
 from rest_framework.request import Request
@@ -109,7 +109,7 @@ class PluginOverrideMixin:
             logger.error(f"Override handler error for entity {entity_id}/{operation}: {e}")
             raise
 
-    def create(self, request: Request, *args, **kwargs) -> Response:
+    def create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         """Handle create action with plugin override support."""
         entity_id = self.kwargs.get("entity_id")
         if entity_id:
@@ -123,7 +123,7 @@ class PluginOverrideMixin:
 
         return super().create(request, *args, **kwargs)  # type: ignore[misc]
 
-    def list(self, request: Request, *args, **kwargs) -> Response:
+    def list(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         """Handle list action with plugin override support."""
         entity_id = self.kwargs.get("entity_id")
         if entity_id:

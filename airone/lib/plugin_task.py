@@ -56,7 +56,7 @@ class PluginTaskConfig:
     parallelizable_operations: list[str] = field(default_factory=list)
     downloadable_operations: list[str] = field(default_factory=list)
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Validation after initialization"""
         if not self.plugin_id:
             raise ValueError("plugin_id is required")
