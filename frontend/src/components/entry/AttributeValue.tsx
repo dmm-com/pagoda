@@ -6,7 +6,7 @@ import {
   EntryAttributeValueObject,
   EntryAttributeValueRole,
 } from "@dmm-com/airone-apiclient-typescript-fetch";
-import { Box, Checkbox, Divider, List, ListItem } from "@mui/material";
+import { Box, Checkbox, Chip, Divider, List, ListItem } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { FC } from "react";
 
@@ -22,8 +22,11 @@ const StyledList = styled(List)(() => ({
   padding: "0",
 }));
 
-const StyledListItem = styled(ListItem)(() => ({
+const StyledListItem = styled(ListItem)(({ theme }) => ({
   padding: "4px",
+  "&:not(:last-child)": {
+    borderBottom: `1px solid ${theme.palette.divider}`,
+  },
 }));
 
 const ElemBool: FC<{ attrValue: string | boolean }> = ({ attrValue }) => {
@@ -71,7 +74,7 @@ const ElemNamedObject: FC<{
 }> = ({ attrValue }) => {
   return attrValue ? (
     <StyledBox>
-      <Box>{attrValue.name}</Box>
+      <Chip label={attrValue.name || "\u00A0"} size="small" variant="outlined" />
       <Divider orientation="vertical" flexItem />
       {attrValue.object ? (
         <Box
