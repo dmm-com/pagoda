@@ -728,6 +728,9 @@ class EntryImportAPI(generics.GenericAPIView):
         },
     )
     def post(self, request: Request) -> Response:
+        if request.user.is_readonly:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
         import_datas = request.data
         user: User = request.user
         serializer = EntryImportSerializer(data=import_datas)

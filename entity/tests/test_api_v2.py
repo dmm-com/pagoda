@@ -4429,3 +4429,9 @@ class ReadonlyUserPermissionTest(AironeViewTest):
             f"/entity/api/v2/{self.entity.id}/entries/", json.dumps(params), "application/json"
         )
         self.assertEqual(resp.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_import_entity_is_forbidden_for_readonly_user(self):
+        resp = self.client.post(
+            "/entity/api/v2/import", b"Entity: []", content_type="application/yaml"
+        )
+        self.assertEqual(resp.status_code, status.HTTP_403_FORBIDDEN)
