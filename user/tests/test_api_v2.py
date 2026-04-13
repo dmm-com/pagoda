@@ -57,6 +57,11 @@ class ViewTest(AironeViewTest):
         resp = self.client.get("/user/api/v2/%s/" % other.id)
         self.assertEqual(resp.status_code, 403)
 
+        # parent user can retrieve their co-user
+        co_user = self._create_user("co_user", "co@example.com", parent_user=login_user)
+        resp = self.client.get("/user/api/v2/%s/" % co_user.id)
+        self.assertEqual(resp.status_code, 200)
+
     def test_list_user(self):
         login_user = self.guest_login()
         admin_user = self._create_user("admin", "admin@example.com", True)
@@ -635,3 +640,17 @@ class ViewTest(AironeViewTest):
                 "/user/api/v2/%d/auth" % login_user.id, json.dumps(_param), "application/json"
             )
             self.assertEqual(resp.status_code, 400)
+
+    def test_refresh_co_user_token_by_parent(self):
+        parent_user = self.guest_login()
+        co_user = self._create_user("co_user", parent_user=parent_user)
+
+        resp = self.client.post("/user/api/v2/%d/token/" % co_user.id)
+        self.assertEqual(resp.status_code, 204)
+
+    def test_refresh_co_user_token_by_non_parent(self):
+        self.guest_login()
+        other_user = self._create_user("other_user")
+
+        resp = self.client.post("/user/api/v2/%d/token/" % other_user.id)
+        self.assertEqual(resp.status_code, 403)

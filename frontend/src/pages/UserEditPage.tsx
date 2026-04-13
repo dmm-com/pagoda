@@ -90,7 +90,7 @@ export const UserEditPage: FC = () => {
     return user?.id == null;
   }, [user]);
 
-  const [isSuperuser, isMyself] = useMemo(() => {
+  const [isSuperuser, isMyself, isCoUser] = useMemo(() => {
     const serverContext = ServerContext.getInstance();
     return [
       serverContext?.user?.isSuperuser != null &&
@@ -98,6 +98,9 @@ export const UserEditPage: FC = () => {
       user?.id != null &&
         serverContext?.user?.id != null &&
         user.id === serverContext.user.id,
+      user?.parentUser != null &&
+        serverContext?.user?.id != null &&
+        user.parentUser === serverContext.user.id,
     ];
   }, [userLoading]);
 
@@ -142,7 +145,11 @@ export const UserEditPage: FC = () => {
 
   const handleRefreshToken = async () => {
     try {
-      await aironeApiClient.updateUserToken();
+      if (isCoUser && userId != null) {
+        await aironeApiClient.updateUserTokenForCoUser(userId);
+      } else {
+        await aironeApiClient.updateUserToken();
+      }
       refreshUser();
     } catch (e) {
       if (e instanceof Response) {
@@ -179,7 +186,7 @@ export const UserEditPage: FC = () => {
             <Button
               variant="contained"
               color="info"
-              disabled={isCreateMode || !(isMyself || isSuperuser)}
+              disabled={isCreateMode || !(isMyself || isSuperuser || isCoUser)}
               onClick={handleOpenModal}
             >
               パスワードの再設定
@@ -207,7 +214,7 @@ export const UserEditPage: FC = () => {
                 <Button
                   variant="contained"
                   color="info"
-                  disabled={isCreateMode || !isMyself}
+                  disabled={isCreateMode || !(isMyself || isCoUser)}
                   onClick={handleOpen}
                 >
                   Access Token をリフレッシュ
@@ -229,6 +236,7 @@ export const UserEditPage: FC = () => {
             control={control}
             isCreateMode={isCreateMode}
             isMyself={isMyself}
+            isCoUser={isCoUser}
             isSubmittable={
               isDirty && isValid && !isSubmitting && !isSubmitSuccessful
             }

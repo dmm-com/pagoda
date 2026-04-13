@@ -132,12 +132,17 @@ class UserRetrieveSerializer(UserBaseSerializer):
             "date_joined",
             "token",
             "authenticate_type",
+            "parent_user",
         ]
 
     @extend_schema_field(UserRetrieveTokenSerializer(required=False))
     def get_token(self, obj: User) -> UserRetrieveTokenSerializer.UserTokenTypedDict | None:
         current_user = self.context["request"].user
-        if (current_user.id == obj.id or current_user.is_superuser) and obj.token:
+        if (
+            current_user.id == obj.id
+            or current_user.is_superuser
+            or current_user == obj.parent_user
+        ) and obj.token:
             return {
                 "value": str(obj.token),
                 "lifetime": obj.token_lifetime,

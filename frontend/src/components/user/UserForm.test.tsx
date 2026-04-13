@@ -60,6 +60,7 @@ describe("UserForm", () => {
         isCreateMode={true}
         isMyself={true}
         isSubmittable={false}
+        isCoUser={false}
         handleSubmit={() => Promise.resolve()}
         handleCancel={() => {
           /* do nothing */

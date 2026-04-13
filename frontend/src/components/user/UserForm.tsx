@@ -29,7 +29,7 @@ import {
   useMemo,
   useState,
 } from "react";
-import { Control, Controller } from "react-hook-form";
+import { Control, Controller, useWatch } from "react-hook-form";
 
 import { ChangeUserAuthModal } from "./ChangeUserAuthModal";
 import { Schema } from "./userForm/UserFormSchema";
@@ -258,10 +258,12 @@ const ElemEmailAddress: FC<Props> = ({ control }) => {
   );
 };
 
-const ElemUserName: FC<Props & { isMyself: boolean }> = ({
+const ElemUserName: FC<Props & { isMyself: boolean, isCoUser: boolean }> = ({
   control,
   isMyself,
+  isCoUser,
 }) => {
+  const userInfo = useWatch({ control });
   const loginUser: User | undefined = useMemo(
     () => ServerContext.getInstance()?.user,
     [],
@@ -273,9 +275,9 @@ const ElemUserName: FC<Props & { isMyself: boolean }> = ({
         名前
       </TableCell>
       <TableCell sx={{ width: "750px", p: "0px", wordBreak: "break-word" }}>
-        {isMyself ? (
+        {(isMyself || isCoUser) ? (
           <InputBox>
-            <Typography>{loginUser?.username}</Typography>
+            <Typography>{userInfo.username}</Typography>
           </InputBox>
         ) : (
           <FlexBox alignItems={"center"}>
@@ -368,6 +370,7 @@ interface UserFormProps {
   control: Control<Schema>;
   isCreateMode: boolean;
   isMyself: boolean;
+  isCoUser: boolean;
   isSubmittable: boolean;
   handleSubmit: (e?: BaseSyntheticEvent) => Promise<void>;
   handleCancel: () => void;
@@ -378,6 +381,7 @@ export const UserForm: FC<UserFormProps> = ({
   control,
   isCreateMode,
   isMyself,
+  isCoUser,
   isSubmittable,
   handleSubmit,
   handleCancel,
@@ -412,7 +416,7 @@ export const UserForm: FC<UserFormProps> = ({
             </TableRow>
           </TableHead>
           <TableBody>
-            <ElemUserName control={control} isMyself={isMyself} />
+            <ElemUserName control={control} isMyself={isMyself} isCoUser={isCoUser} />
 
             {loginUser?.isSuperuser && (
               <>
@@ -424,11 +428,11 @@ export const UserForm: FC<UserFormProps> = ({
             {isCreateMode && <ElemUserPassword control={control} />}
 
             {/* Hide other user's token information */}
-            {!isCreateMode && isMyself && user != null && (
+            {!isCreateMode && (isMyself || isCoUser) && user != null && (
               <>
                 <ElemAccessToken user={user} />
                 <ElemAccessTokenConfiguration user={user} control={control} />
-                <ElemAuthenticationMethod user={user} />
+                {isMyself && <ElemAuthenticationMethod user={user} />}
               </>
             )}
           </TableBody>

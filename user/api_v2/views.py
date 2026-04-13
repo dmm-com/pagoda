@@ -41,7 +41,9 @@ class UserPermission(BasePermission):
     def has_object_permission(self, request: Request, view: Any, obj: User) -> bool:
         current_user: User = request.user
         permisson = {
-            "retrieve": current_user.is_superuser or current_user == obj,
+            "retrieve": current_user.is_superuser
+            or current_user == obj
+            or current_user == obj.parent_user,
             "destroy": current_user.is_superuser or current_user == obj.parent_user,
             "update": current_user.is_superuser or current_user == obj,
         }
@@ -89,6 +91,20 @@ class UserTokenAPI(viewsets.ModelViewSet):
         instance = Token.objects.create(user=request.user)
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
+
+
+class UserCoUserTokenRefreshAPI(generics.GenericAPIView):
+    """Allow a parent user to refresh the token of their co-user."""
+
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request: Request, pk: int) -> Response:
+        co_user = get_object_or_404(User, pk=pk, is_active=True)
+        if co_user.parent_user != request.user:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        Token.objects.filter(user=co_user).delete()
+        Token.objects.create(user=co_user)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class UserImportAPI(generics.GenericAPIView):
