@@ -782,6 +782,11 @@ class EntryAttributeValueRestoreAPI(generics.UpdateAPIView):
     queryset = AttributeValue.objects.all()
     serializer_class = EntryAttributeValueRestoreSerializer
 
+    def update(self, request: Request, *args, **kwargs) -> Response:
+        if request.user.is_readonly:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        return super().update(request, *args, **kwargs)
+
 
 class EntryBulkUpdateAPI(generics.UpdateAPIView):
     serializer_class = EntryBulkUpdateSerializer
