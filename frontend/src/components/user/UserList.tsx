@@ -110,7 +110,11 @@ const UserListContent: FC = () => {
           sx={{ borderRadius: "24px", height: "100%" }}
         >
           <AddIcon />
-          新規ユーザを登録
+          {isSuperuser && (
+            "新規ユーザを登録"
+          ) || (
+              "Read-Only ユーザを作成"
+            )}
         </Button>
       </Box>
 
