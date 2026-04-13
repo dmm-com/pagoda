@@ -117,10 +117,10 @@ const UserListContent: FC = () => {
       <Grid container spacing={2} id="user_list">
         {users.results?.map((user) => {
           const isCurrentUser = user.username === currentUsername;
-          const isLinkVisible = isSuperuser || isCurrentUser;
           const isCoUser =
             user.parentUser === serverContext?.user?.id &&
             serverContext?.user?.id !== undefined;
+          const isLinkVisible = isSuperuser || isCurrentUser || isCoUser;
           const isMenuVisible = isSuperuser || isCurrentUser || isCoUser;
 
           return (
