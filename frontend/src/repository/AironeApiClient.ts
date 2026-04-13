@@ -261,6 +261,7 @@ class AironeApiClient {
     attrs: Array<EntityAttrCreate>,
     webhooks: Array<WebhookCreateUpdate>,
     isolationRules: Array<IsolationParentCreateUpdate>,
+    deleteChainExcludeEntities: Array<number> = [],
   ): Promise<void> {
     await this.entity.entityApiV2Create(
       {
@@ -273,6 +274,7 @@ class AironeApiClient {
           attrs: attrs,
           webhooks: webhooks,
           isolationRules: isolationRules,
+          deleteChainExcludeEntities: deleteChainExcludeEntities,
         },
       },
       {
@@ -294,6 +296,7 @@ class AironeApiClient {
     attrs: Array<EntityAttrUpdate>,
     webhooks: Array<WebhookCreateUpdate>,
     isolationRules: Array<IsolationParentCreateUpdate> = [],
+    deleteChainExcludeEntities: Array<number> = [],
   ): Promise<void> {
     await this.entity.entityApiV2Update(
       {
@@ -307,6 +310,7 @@ class AironeApiClient {
           attrs: attrs,
           webhooks: webhooks,
           isolationRules: isolationRules,
+          deleteChainExcludeEntities: deleteChainExcludeEntities,
         },
       },
       {

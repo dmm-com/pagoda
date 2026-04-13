@@ -524,6 +524,7 @@ class EntityCreateData(TypedDict, total=False):
     attrs: list[EntityAttrCreateSerializer]
     webhooks: WebhookCreateUpdateSerializer
     isolation_rules: list[IsolationParentCreateUpdateSerializer]
+    delete_chain_exclude_entities: list[int]
     created_user: User
 
 
@@ -537,6 +538,7 @@ class EntityUpdateData(TypedDict, total=False):
     attrs: list[EntityAttrUpdateSerializer]
     webhooks: WebhookCreateUpdateSerializer
     isolation_rules: list[IsolationParentCreateUpdateSerializer]
+    delete_chain_exclude_entities: list[int]
 
 
 class EntitySerializer(serializers.ModelSerializer):
@@ -625,6 +627,13 @@ class EntitySerializer(serializers.ModelSerializer):
         attrs_data: list = validated_data.get("attrs", [])
         webhooks_data: list = validated_data.get("webhooks", [])
         isolation_rules_data: list = validated_data.get("isolation_rules", [])
+        exclude_entity_ids: list[int] | None = validated_data.get(
+            "delete_chain_exclude_entities", None
+        )
+        if exclude_entity_ids is not None:
+            entity.delete_chain_exclude_entities.set(
+                Entity.objects.filter(id__in=exclude_entity_ids)
+            )
 
         # register history to create, update Entity
         history: History
@@ -768,6 +777,9 @@ class EntityCreateSerializer(EntitySerializer):
     isolation_rules = IsolationParentCreateUpdateSerializer(
         many=True, write_only=True, required=False, default=[]
     )
+    delete_chain_exclude_entities = serializers.ListField(
+        child=serializers.IntegerField(), write_only=True, required=False, default=[]
+    )
 
     class Meta:
         model = Entity
@@ -781,6 +793,7 @@ class EntityCreateSerializer(EntitySerializer):
             "attrs",
             "webhooks",
             "isolation_rules",
+            "delete_chain_exclude_entities",
         ]
         extra_kwargs = {"note": {"write_only": True}}
 
@@ -856,6 +869,9 @@ class EntityUpdateSerializer(EntitySerializer):
     isolation_rules = IsolationParentCreateUpdateSerializer(
         many=True, write_only=True, required=False, default=[]
     )
+    delete_chain_exclude_entities = serializers.ListField(
+        child=serializers.IntegerField(), write_only=True, required=False, default=[]
+    )
 
     class Meta:
         model = Entity
@@ -869,6 +885,7 @@ class EntityUpdateSerializer(EntitySerializer):
             "attrs",
             "webhooks",
             "isolation_rules",
+            "delete_chain_exclude_entities",
         ]
         extra_kwargs = {"name": {"required": False}, "note": {"write_only": True}}
 
@@ -1018,6 +1035,7 @@ class EntityDetailSerializer(EntityListSerializer):
     webhooks = WebhookSerializer(many=True)
     isolation_rules = IsolationParentSerializer(many=True, read_only=True)
     has_ongoing_changes = serializers.SerializerMethodField()
+    delete_chain_exclude_entities = serializers.SerializerMethodField()
 
     class Meta:
         model = Entity
@@ -1035,6 +1053,7 @@ class EntityDetailSerializer(EntityListSerializer):
             "is_public",
             "has_ongoing_changes",
             "permission",
+            "delete_chain_exclude_entities",
         ]
 
     @extend_schema_field(serializers.ListField(child=EntityDetailAttributeSerializer()))
@@ -1077,6 +1096,9 @@ class EntityDetailSerializer(EntityListSerializer):
 
     def get_has_ongoing_changes(self, obj: Entity) -> bool:
         return (obj.status & Entity.STATUS_CREATING) > 0 or (obj.status & Entity.STATUS_EDITING) > 0
+
+    def get_delete_chain_exclude_entities(self, obj: Entity) -> list[dict]:
+        return [{"id": e.id, "name": e.name} for e in obj.delete_chain_exclude_entities.all()]
 
 
 class EntityHistoryChangeSerializer(serializers.Serializer):

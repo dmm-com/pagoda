@@ -37,7 +37,11 @@ export const EntityForm: FC<Props> = ({
 
   return (
     <StyledBox>
-      <BasicFields control={control} />
+      <BasicFields
+        control={control}
+        setValue={setValue}
+        referralEntities={referralEntities ?? []}
+      />
 
       <AttributesFields
         control={control}

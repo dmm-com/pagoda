@@ -272,6 +272,7 @@ class EditEntityV2Params(BaseModel):
     attrs: list[EditEntityV2Attr] = Field(default_factory=list)
     webhooks: list[EditEntityV2Webhook] = Field(default_factory=list)
     isolation_rules: list[IsolationRuleParam] = Field(default_factory=list)
+    delete_chain_exclude_entities: list[int] = Field(default_factory=list)
 
 
 # ============================================================================
