@@ -107,6 +107,7 @@ class GroupTreeSerializer(serializers.ModelSerializer):
         model = Group
         fields = ["id", "name", "children"]
 
+    @extend_schema_field(serializers.ListField(child=serializers.DictField()))
     def get_children(self, obj: Group) -> list[dict[str, object]]:
         def _make_hierarchical_group(groups: list[Group]) -> list[dict[str, object]]:
             return [
