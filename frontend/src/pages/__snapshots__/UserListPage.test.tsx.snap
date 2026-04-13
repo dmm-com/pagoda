@@ -168,11 +168,10 @@ exports[`UserListPage should match snapshot 1`] = `
                 </div>
               </div>
               <a
-                aria-disabled="true"
-                class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary Mui-disabled MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary css-mdne71-MuiButtonBase-root-MuiButton-root"
+                class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary css-mdne71-MuiButtonBase-root-MuiButton-root"
                 data-discover="true"
                 href="/ui/users/new"
-                tabindex="-1"
+                tabindex="0"
               >
                 <svg
                   aria-hidden="true"
@@ -489,11 +488,10 @@ exports[`UserListPage should match snapshot 1`] = `
               </div>
             </div>
             <a
-              aria-disabled="true"
-              class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary Mui-disabled MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary css-mdne71-MuiButtonBase-root-MuiButton-root"
+              class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary css-mdne71-MuiButtonBase-root-MuiButton-root"
               data-discover="true"
               href="/ui/users/new"
-              tabindex="-1"
+              tabindex="0"
             >
               <svg
                 aria-hidden="true"

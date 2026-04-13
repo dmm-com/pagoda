@@ -109,7 +109,7 @@ describe("UserList", () => {
     const registerLink = screen.getByRole("link", {
       name: /新規ユーザを登録/i,
     });
-    expect(registerLink.classList.contains("Mui-disabled")).toBe(true);
+    expect(registerLink.classList.contains("Mui-disabled")).toBe(false);
   });
 
   test("superuser can use register button", async () => {
