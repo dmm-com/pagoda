@@ -73,6 +73,16 @@ logger = logging.getLogger(__name__)
 class EntryPermission(BasePermission):
     def has_object_permission(self, request: Request, view, obj) -> bool:
         user: User = request.user
+
+        if user.is_readonly and view.action in [
+            "update",
+            "destroy",
+            "restore",
+            "copy",
+            "restore_self_history",
+        ]:
+            return False
+
         permisson = {
             "retrieve": ACLType.Readable,
             "update": ACLType.Writable,

@@ -1988,3 +1988,29 @@ class ViewTest(BaseViewTest):
         )
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         self.assertTrue(mock_call_custom.called)
+
+
+class ReadonlyUserPermissionTest(BaseViewTest):
+    def setUp(self):
+        super().setUp()
+
+        self.user.is_readonly = True
+        self.user.save()
+
+        self.entity: Entity = self.create_entity(user=self.user, name="readonly-test-entity")
+        self.entry: Entry = self.add_entry(self.user, "readonly-test-entry", self.entity)
+
+    def test_update_entry_is_forbidden_for_readonly_user(self):
+        params = {"name": "updated-entry", "attrs": []}
+        resp = self.client.put(
+            f"/entry/api/v2/{self.entry.id}/", json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_delete_entry_is_forbidden_for_readonly_user(self):
+        resp = self.client.delete(f"/entry/api/v2/{self.entry.id}/")
+        self.assertEqual(resp.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_retrieve_entry_is_allowed_for_readonly_user(self):
+        resp = self.client.get(f"/entry/api/v2/{self.entry.id}/")
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)

@@ -95,6 +95,9 @@ def history(request: HttpRequest, pk: int) -> HttpResponse:
 
 class EntityPermission(BasePermission):
     def has_permission(self, request: Request, view: APIView) -> bool:
+        if request.user.is_readonly and view.action == "create":
+            return False
+
         permissions = {
             "list": ACLType.Readable,
             "create": ACLType.Writable,
@@ -122,6 +125,9 @@ class EntityPermission(BasePermission):
         return True
 
     def has_object_permission(self, request: Request, view: APIView, obj: Entity) -> bool:
+        if request.user.is_readonly and view.action in ["update", "destroy"]:
+            return False
+
         permissions = {
             "retrieve": ACLType.Readable,
             "update": ACLType.Writable,

@@ -4391,3 +4391,41 @@ class EntityHistoryAPITest(AironeViewTest):
         # Each result should have changes field
         for history in data["results"]:
             self.assertIn("changes", history)
+
+
+class ReadonlyUserPermissionTest(AironeViewTest):
+    def setUp(self):
+        super().setUp()
+
+        self.user: User = self.guest_login()
+        self.user.is_readonly = True
+        self.user.save()
+
+        self.entity: Entity = self.create_entity(user=self.user, name="test-entity")
+
+    def test_create_entity_is_forbidden_for_readonly_user(self):
+        params = {"name": "new-entity", "note": "", "attrs": [], "webhooks": []}
+        resp = self.client.post("/entity/api/v2/", json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_update_entity_is_forbidden_for_readonly_user(self):
+        params = {"name": "updated-entity", "note": "", "attrs": [], "webhooks": []}
+        resp = self.client.put(
+            f"/entity/api/v2/{self.entity.id}/", json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_delete_entity_is_forbidden_for_readonly_user(self):
+        resp = self.client.delete(f"/entity/api/v2/{self.entity.id}/")
+        self.assertEqual(resp.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_retrieve_entity_is_allowed_for_readonly_user(self):
+        resp = self.client.get(f"/entity/api/v2/{self.entity.id}/")
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+
+    def test_create_entry_is_forbidden_for_readonly_user(self):
+        params = {"name": "new-entry", "attrs": []}
+        resp = self.client.post(
+            f"/entity/api/v2/{self.entity.id}/entries/", json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, status.HTTP_403_FORBIDDEN)
