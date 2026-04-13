@@ -1,3 +1,4 @@
+from django.http import HttpRequest
 from django.http.response import JsonResponse
 
 from airone.lib.acl import ACLType
@@ -6,7 +7,7 @@ from entity.models import Entity
 
 
 @http_get
-def get_entities(request):
+def get_entities(request: HttpRequest) -> JsonResponse:
     return JsonResponse(
         {
             "entities": [

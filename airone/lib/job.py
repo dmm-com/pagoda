@@ -10,7 +10,7 @@ from job.models import Job, JobOperation, JobOperationCustom, JobStatus, TaskHan
 
 
 def _handle_task(
-    kls,
+    kls: object,
     func: TaskHandler,
     job: Job,
     on_cancelled: Callable[[Job], None] | None = None,
@@ -62,9 +62,9 @@ raised exception:
 
 def may_schedule_until_job_is_ready(
     func: TaskHandler,
-):
+) -> Callable[[object, int], None]:
     @functools.wraps(func)
-    def wrapper(kls, job_id: int):
+    def wrapper(kls: object, job_id: int) -> None:
         job = Job.objects.get(id=job_id)
         _handle_task(kls, func, job)
 
@@ -73,12 +73,12 @@ def may_schedule_until_job_is_ready(
 
 def may_schedule_until_job_is_ready_with_handlers(
     on_cancelled: Callable[[Job], None] | None = None,
-):
+) -> Callable[[TaskHandler], Callable[[object, int], None]]:
     def decorator(
         func: TaskHandler,
-    ):
+    ) -> Callable[[object, int], None]:
         @functools.wraps(func)
-        def wrapper(kls, job_id: int):
+        def wrapper(kls: object, job_id: int) -> None:
             job = Job.objects.get(id=job_id)
             _handle_task(kls, func, job, on_cancelled)
 
@@ -87,7 +87,9 @@ def may_schedule_until_job_is_ready_with_handlers(
     return decorator
 
 
-def register_job_task(operation: Union[JobOperation, JobOperationCustom]) -> Callable:
+def register_job_task(
+    operation: Union[JobOperation, JobOperationCustom],
+) -> Callable[[TaskHandler], TaskHandler]:
     """
     A decorator to register a Celery task in the job model's method table.
     This allows registering tasks while avoiding circular imports by using

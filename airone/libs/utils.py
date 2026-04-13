@@ -4,6 +4,7 @@ AirOne Utility Functions for Plugins
 Provides utility functions that plugins can use to interact with AirOne core functionality.
 """
 
+import datetime
 import logging
 from typing import Any, Dict, Optional
 
@@ -57,7 +58,9 @@ def get_airone_settings(key: Optional[str] = None, default: Any = None) -> Any:
     return getattr(settings, key, default)
 
 
-def log_plugin_activity(plugin_id: str, action: str, details: Optional[Dict[str, Any]] = None):
+def log_plugin_activity(
+    plugin_id: str, action: str, details: Optional[Dict[str, Any]] = None
+) -> None:
     """Log plugin activity
 
     Provides centralized logging for plugin activities.
@@ -103,7 +106,7 @@ def validate_plugin_data(data: Dict[str, Any], required_fields: list) -> Dict[st
     }
 
 
-def format_datetime_for_api(dt) -> Optional[str]:
+def format_datetime_for_api(dt: Optional["datetime.datetime"]) -> Optional[str]:
     """Format datetime for API response
 
     Args:

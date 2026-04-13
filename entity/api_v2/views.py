@@ -1,8 +1,8 @@
 import logging
 from typing import List
 
-from django.db.models import F
-from django.http import Http404
+from django.db.models import F, QuerySet
+from django.http import Http404, HttpRequest
 from django.http.response import HttpResponse, JsonResponse
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.types import OpenApiTypes
@@ -13,6 +13,7 @@ from rest_framework.pagination import LimitOffsetPagination, PageNumberPaginatio
 from rest_framework.permissions import BasePermission, IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from airone.lib.acl import ACLType, get_permitted_objects
 from airone.lib.drf import ObjectNotExistsError, YAMLParser, YAMLRenderer
@@ -37,7 +38,7 @@ logger = logging.getLogger(__name__)
 
 
 # distutils.util.strtoboolの代替実装
-def strtobool(val):
+def strtobool(val: str) -> int:
     """Convert a string representation of truth to true (1) or false (0).
 
     True values are 'y', 'yes', 't', 'true', 'on', and '1'; false values
@@ -54,7 +55,7 @@ def strtobool(val):
 
 
 @http_get
-def history(request, pk: int) -> HttpResponse:
+def history(request: HttpRequest, pk: int) -> HttpResponse:
     if not Entity.objects.filter(id=pk).exists():
         return HttpResponse("Failed to get entity of specified id", status=400)
 
@@ -93,7 +94,7 @@ def history(request, pk: int) -> HttpResponse:
 
 
 class EntityPermission(BasePermission):
-    def has_permission(self, request: Request, view) -> bool:
+    def has_permission(self, request: Request, view: APIView) -> bool:
         permissions = {
             "list": ACLType.Readable,
             "create": ACLType.Writable,
@@ -120,7 +121,7 @@ class EntityPermission(BasePermission):
 
         return True
 
-    def has_object_permission(self, request: Request, view, obj) -> bool:
+    def has_object_permission(self, request: Request, view: APIView, obj: Entity) -> bool:
         permissions = {
             "retrieve": ACLType.Readable,
             "update": ACLType.Writable,
@@ -149,7 +150,7 @@ class EntityAPI(viewsets.ModelViewSet):
     search_fields = ["name"]
     ordering = ["name"]
 
-    def get_serializer_class(self):
+    def get_serializer_class(self) -> type[serializers.Serializer]:
         serializer = {
             "list": EntityListSerializer,
             "create": EntityCreateSerializer,
@@ -157,7 +158,7 @@ class EntityAPI(viewsets.ModelViewSet):
         }
         return serializer.get(self.action, EntityDetailSerializer)
 
-    def get_queryset(self):
+    def get_queryset(self) -> QuerySet[Entity]:
         is_toplevel = self.request.query_params.get("is_toplevel", None)
 
         filter_condition = {"is_active": True}
@@ -172,7 +173,7 @@ class EntityAPI(viewsets.ModelViewSet):
         return Entity.objects.filter(**filter_condition).exclude(**exclude_condition)
 
     @extend_schema(request=EntityCreateSerializer, responses={202: None})
-    def create(self, request: Request, *args, **kwargs) -> Response:
+    def create(self, request: Request, *args: object, **kwargs: object) -> Response:
         user: User = request.user
 
         serializer = EntityCreateSerializer(data=request.data, context={"_user": user})
@@ -185,7 +186,7 @@ class EntityAPI(viewsets.ModelViewSet):
         return Response(status=status.HTTP_202_ACCEPTED)
 
     @extend_schema(request=EntityUpdateSerializer, responses={202: None})
-    def update(self, request: Request, *args, **kwargs) -> Response:
+    def update(self, request: Request, *args: object, **kwargs: object) -> Response:
         user: User = request.user
         entity: Entity = self.get_object()
 
@@ -200,7 +201,7 @@ class EntityAPI(viewsets.ModelViewSet):
 
         return Response(status=status.HTTP_202_ACCEPTED)
 
-    def destroy(self, request: Request, *args, **kwargs) -> Response:
+    def destroy(self, request: Request, *args: object, **kwargs: object) -> Response:
         user: User = request.user
         entity: Entity = self.get_object()
 
@@ -219,7 +220,7 @@ class EntityAPI(viewsets.ModelViewSet):
 
 
 class AliasSearchFilter(filters.SearchFilter):
-    def get_search_fields(self, view, request):
+    def get_search_fields(self, view: APIView, request: Request) -> list[str]:
         original_fields = super().get_search_fields(view, request)
 
         # update search_fields when "with_alias" parameter was specified
@@ -251,13 +252,13 @@ class EntityEntryAPI(PluginOverrideMixin, viewsets.ModelViewSet):
     ordering_fields = ["name", "updated_time"]
     search_fields = ["name"]
 
-    def get_serializer_class(self):
+    def get_serializer_class(self) -> type[serializers.Serializer]:
         serializer = {
             "create": EntryCreateSerializer,
         }
         return serializer.get(self.action, EntryBaseSerializer)
 
-    def get_queryset(self):
+    def get_queryset(self) -> QuerySet[Entry]:
         entity = Entity.objects.filter(id=self.kwargs.get("entity_id"), is_active=True).first()
         if not entity:
             raise Http404
@@ -293,7 +294,7 @@ class EntityHistoryAPI(viewsets.ReadOnlyModelViewSet):
     permission_classes = [IsAuthenticated & EntityPermission]
     pagination_class = LimitOffsetPagination
 
-    def get_queryset(self):
+    def get_queryset(self) -> QuerySet[History]:
         entity = Entity.objects.get(id=self.kwargs.get("entity_id"))
         if not entity:
             raise Http404
@@ -305,7 +306,7 @@ class EntityHistoryAPI(viewsets.ReadOnlyModelViewSet):
 
         return entity_histories.union(entity_attr_histories).order_by("-time")
 
-    def list(self, request, *args, **kwargs):
+    def list(self, request: Request, *args: object, **kwargs: object) -> Response:
         queryset = self.filter_queryset(self.get_queryset())
 
         # Solve N+1 problem by prefetching related objects
@@ -427,7 +428,7 @@ class EntityExportAPI(generics.RetrieveAPIView):
 class EntityAttrNameAPI(generics.GenericAPIView):
     serializer_class = EntityAttrNameSerializer
 
-    def get_queryset(self):
+    def get_queryset(self) -> list[dict[str, int | str]]:
         entity_ids = list(filter(None, self.request.query_params.get("entity_ids", "").split(",")))
         referral_attr = self.request.query_params.get("referral_attr")
 

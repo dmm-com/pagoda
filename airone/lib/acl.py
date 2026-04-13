@@ -1,6 +1,11 @@
 import enum
+from typing import TYPE_CHECKING
 
 from airone.lib.types import BaseIntEnum
+
+if TYPE_CHECKING:
+    from acl.models import ACLBase
+    from user.models import User
 
 __all__ = ["ACLType", "ACLObjType", "get_permission_level"]
 
@@ -21,11 +26,11 @@ class ACLType(BaseIntEnum):
     Full = 1 << 3
 
     @property
-    def id(self):
+    def id(self) -> int:
         return self.value
 
     @property
-    def name(self):
+    def name(self) -> str:
         names = {
             self.Nothing: "nothing",
             self.Readable: "readable",
@@ -35,7 +40,7 @@ class ACLType(BaseIntEnum):
         return names[self]
 
     @property
-    def label(self):
+    def label(self) -> str:
         labels = {
             self.Nothing: "Nothing",
             self.Readable: "Readable",
@@ -45,22 +50,24 @@ class ACLType(BaseIntEnum):
         return labels[self]
 
     @classmethod
-    def all(cls):
+    def all(cls) -> list["ACLType"]:
         return [cls.Nothing, cls.Readable, cls.Writable, cls.Full]
 
     @classmethod
-    def availables(cls):
+    def availables(cls) -> list["ACLType"]:
         return [cls.Readable, cls.Writable, cls.Full]
 
 
-def get_permitted_objects(user, model, permission_level):
+def get_permitted_objects(
+    user: "User", model: type["ACLBase"], permission_level: "ACLType"
+) -> list["ACLBase"]:
     # This method assumes that model is a subclass of ACLBase
     return [
         x for x in model.objects.all() if user.has_permission(x, permission_level) and x.is_active
     ]
 
 
-def get_permission_level(user, obj) -> int:
+def get_permission_level(user: "User", obj: "ACLBase") -> int:
     """Returns the highest permission level the user has on the object.
 
     Args:

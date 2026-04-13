@@ -1,4 +1,5 @@
 from collections import OrderedDict
+from typing import IO, Any
 
 import yaml
 from django.conf import settings
@@ -6,11 +7,13 @@ from rest_framework import serializers
 from rest_framework.exceptions import APIException, ParseError, ValidationError
 from rest_framework.parsers import BaseParser
 from rest_framework.renderers import BaseRenderer
+from rest_framework.response import Response
 from rest_framework.utils.serializer_helpers import ReturnDict, ReturnList
 from rest_framework.views import exception_handler
 from yaml import SafeDumper
 
 from airone.lib.log import Logger
+from user.models import User
 
 SafeDumper.add_representer(OrderedDict, yaml.representer.SafeRepresenter.represent_dict)
 SafeDumper.add_representer(ReturnDict, yaml.representer.SafeRepresenter.represent_dict)
@@ -24,7 +27,12 @@ class YAMLParser(BaseParser):
 
     media_type = "application/yaml"
 
-    def parse(self, stream, media_type=None, parser_context=None):
+    def parse(
+        self,
+        stream: IO[bytes],
+        media_type: str | None = None,
+        parser_context: dict[str, str] | None = None,
+    ) -> dict[str, object]:
         """
         Parses the incoming bytestream as YAML and returns the resulting data.
         """
@@ -47,7 +55,12 @@ class YAMLRenderer(BaseRenderer):
     format = "yaml"
     charset = "utf-8"
 
-    def render(self, data, accepted_media_type=None, renderer_context=None):
+    def render(
+        self,
+        data: object,
+        accepted_media_type: str | None = None,
+        renderer_context: dict[str, object] | None = None,
+    ) -> str:
         return yaml.dump(
             data, Dumper=SafeDumper, stream=None, default_flow_style=False, allow_unicode=True
         )
@@ -97,8 +110,8 @@ class FileIsNotExistsError(ValidationError):
     default_code = "AE-280000"
 
 
-def custom_exception_handler(exc, context):
-    def _convert_error_code(detail):
+def custom_exception_handler(exc: Exception, context: dict[str, Any]) -> Response | None:
+    def _convert_error_code(detail: Any) -> Any:
         if isinstance(detail, list):
             return [_convert_error_code(item) for item in detail]
 
@@ -160,7 +173,7 @@ class AironeUserDefault(serializers.CurrentUserDefault):
     so it fails if the context doesn't have request.
     """
 
-    def __call__(self, serializer_field):
+    def __call__(self, serializer_field: serializers.Field) -> User:
         if "_user" in serializer_field.context:
             return serializer_field.context["_user"]
 
