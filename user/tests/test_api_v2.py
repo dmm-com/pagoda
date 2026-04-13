@@ -124,9 +124,7 @@ class ViewTest(AironeViewTest):
             "application/json",
         )
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(
-            resp.json()[0]["message"], "User with this username already exists"
-        )
+        self.assertEqual(resp.json()[0]["message"], "User with this username already exists")
 
     def test_create_superuser_by_guest(self):
         self.guest_login()
