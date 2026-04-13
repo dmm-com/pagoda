@@ -7,7 +7,7 @@ from .registry import plugin_registry
 logger = logging.getLogger(__name__)
 
 
-def discover_plugins():
+def discover_plugins() -> None:
     """Auto-discover installed plugins
 
     Detects plugins from external packages using entry points.
@@ -21,7 +21,7 @@ def discover_plugins():
     logger.info(f"Plugin discovery completed. Found {len(discovered_plugins)} plugins.")
 
 
-def discover_external_plugins():
+def discover_external_plugins() -> None:
     """Discover plugins from external packages
 
     Uses the 'pagoda.plugins' group in entry points to discover

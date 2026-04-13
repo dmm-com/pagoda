@@ -94,29 +94,27 @@ class EntryDocument(TypedDict):
 class ESS(Elasticsearch):
     MAX_TERM_SIZE = 32766
 
-    def __init__(self, index=None, *args, **kwargs):
+    def __init__(self, index: str | None = None, **kwargs: Any) -> None:
         self.additional_config = False
 
-        self._index = index
-        if not index:
-            self._index = settings.ES_CONFIG["INDEX_NAME"]
+        self._index: str = index if index else settings.ES_CONFIG["INDEX_NAME"]
 
         if ("timeout" not in kwargs) and (settings.ES_CONFIG["TIMEOUT"] is not None):
             kwargs["timeout"] = settings.ES_CONFIG["TIMEOUT"]
 
-        super(ESS, self).__init__(settings.ES_CONFIG["URL"], *args, **kwargs)
+        super(ESS, self).__init__(settings.ES_CONFIG["URL"], **kwargs)
 
-    def bulk(self, *args, **kwargs):
-        return super(ESS, self).bulk(index=self._index, *args, **kwargs)
+    def bulk(self, **kwargs: Any) -> Any:
+        return super(ESS, self).bulk(index=self._index, **kwargs)
 
-    def delete(self, *args, **kwargs):
-        return super(ESS, self).delete(index=self._index, *args, **kwargs)
+    def delete(self, **kwargs: Any) -> Any:
+        return super(ESS, self).delete(index=self._index, **kwargs)
 
-    def refresh(self, *args, **kwargs):
-        return self.indices.refresh(index=self._index, *args, **kwargs)
+    def refresh(self, **kwargs: Any) -> Any:
+        return self.indices.refresh(index=self._index, **kwargs)
 
-    def index(self, *args, **kwargs):
-        return super(ESS, self).index(index=self._index, *args, **kwargs)
+    def index(self, **kwargs: Any) -> Any:
+        return super(ESS, self).index(index=self._index, **kwargs)
 
     def search(self, **kwargs: Any) -> dict[str, Any]:  # type: ignore[override]
         # expand max_result_window parameter which indicates numbers to return at one searching

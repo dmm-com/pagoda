@@ -1829,7 +1829,10 @@ class Entry(ACLBase):
         """
 
         # Get auto complement user
-        user = auto_complement.get_auto_complement_user(user)
+        complemented_user = auto_complement.get_auto_complement_user(user)
+        if complemented_user is None:
+            return
+        user = complemented_user
 
         for attr_id in set(
             self.schema.attrs.filter(is_active=True).values_list("id", flat=True)

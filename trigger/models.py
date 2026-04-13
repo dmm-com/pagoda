@@ -431,6 +431,60 @@ class TriggerCondition(models.Model):
         return False
 
     @classmethod
+    def get_invoked_actions_on_delete(
+        cls, deleted_entry: "Entry"
+    ) -> list[tuple["Entry", list["TriggerAction"]]]:
+        """
+        When an entry is deleted, return (entry, actions) pairs for entries that
+        referenced it via object-type attributes whose trigger conditions now match.
+        """
+        from django.db.models import Q as _Q
+
+        from entry.models import AttributeValue
+
+        affected: dict[int, tuple["Entry", set[int]]] = {}
+        for attrv in AttributeValue.objects.filter(
+            _Q(referral=deleted_entry, is_latest=True)
+            | _Q(referral=deleted_entry, parent_attrv__is_latest=True),
+            parent_attr__is_active=True,
+            parent_attr__schema__is_active=True,
+            parent_attr__parent_entry__is_active=True,
+        ).select_related("parent_attr__parent_entry", "parent_attr__schema"):
+            entry = attrv.parent_attr.parent_entry
+            if entry.id not in affected:
+                affected[entry.id] = (entry, set())
+            affected[entry.id][1].add(attrv.parent_attr.schema.id)
+
+        result = []
+        for entry, entity_attr_ids in affected.values():
+            recv_attrs = []
+            for aid in entity_attr_ids:
+                ea = EntityAttr.objects.get(id=aid)
+                if ea.type & AttrType._ARRAY:
+                    attr = entry.attrs.filter(schema_id=aid, is_active=True).first()
+                    parent_attrv = attr.values.filter(is_latest=True).first() if attr else None
+                    remaining = []
+                    if parent_attrv:
+                        for child in parent_attrv.data_array.filter(referral__is_active=True):
+                            remaining.append(
+                                {"name": child.value, "id": child.referral.id}
+                                if ea.type == AttrType.ARRAY_NAMED_OBJECT
+                                else child.referral.id
+                            )
+                    recv_attrs.append({"attr_id": aid, "value": remaining})
+                else:
+                    recv_attrs.append({"attr_id": aid, "value": None})
+
+            actions = [
+                a
+                for p in TriggerParent.objects.filter(entity=entry.schema)
+                for a in p.get_actions(recv_attrs)
+            ]
+            if actions:
+                result.append((entry, actions))
+        return result
+
+    @classmethod
     def register(cls, entity: Entity, conditions: list, actions: list) -> TriggerParent:
         # convert input to InputTriggerCondition
         input_trigger_conditions = [InputTriggerCondition(**condition) for condition in conditions]

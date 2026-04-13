@@ -1,8 +1,15 @@
+from __future__ import annotations
+
 import collections
 import json
 import math
 import re
-from typing import Any, List, Optional, TypedDict
+from datetime import datetime
+from typing import TYPE_CHECKING, Any, List, Optional, Self, TypedDict
+
+if TYPE_CHECKING:
+    from airone.lib.resources import AironeModelResource
+    from isolation.models import IsolationCondition
 
 import requests
 from django.conf import settings
@@ -67,7 +74,7 @@ class EntityAttrCreateRequest(BaseModel):
     index: int | None = None
 
     @model_validator(mode="after")
-    def validate_default_value_for_type(self):
+    def validate_default_value_for_type(self) -> Self:
         """Validate that default_value is appropriate for the attribute type."""
         if self.default_value is None:
             return self
@@ -154,7 +161,7 @@ class WebhookCreateUpdateSerializer(serializers.ModelSerializer):
 
         return id
 
-    def validate(self, webhook: dict):
+    def validate(self, webhook: dict[str, Any]) -> dict[str, Any]:
         # case create Webhook
         if "id" not in webhook and "url" not in webhook:
             raise RequiredParameterError("id or url field is required")
@@ -199,7 +206,7 @@ class EntityAttrCreateSerializer(serializers.ModelSerializer):
 
         return type
 
-    def _validate_default_value_for_type(self, attr_type: int, default_value):
+    def _validate_default_value_for_type(self, attr_type: int, default_value: Any) -> Any:
         """
         Validates that the default_value is appropriate for the given attribute type.
         Returns the validated (and potentially converted) default value.
@@ -238,7 +245,7 @@ class EntityAttrCreateSerializer(serializers.ModelSerializer):
 
         return default_value
 
-    def validate(self, attr: dict):
+    def validate(self, attr: dict[str, Any]) -> dict[str, Any]:
         # Use Pydantic model for comprehensive validation
         # Prepare data for Pydantic validation
         pydantic_data = attr.copy()
@@ -350,7 +357,7 @@ class EntityAttrUpdateSerializer(serializers.ModelSerializer):
 
         return type
 
-    def _validate_default_value_for_type(self, attr_type: int, default_value):
+    def _validate_default_value_for_type(self, attr_type: int, default_value: Any) -> Any:
         """
         Validates that the default_value is appropriate for the given attribute type.
         Returns the validated (and potentially converted) default value.
@@ -389,7 +396,7 @@ class EntityAttrUpdateSerializer(serializers.ModelSerializer):
 
         return default_value
 
-    def validate(self, attr: dict):
+    def validate(self, attr: dict[str, Any]) -> dict[str, Any]:
         # case update EntityAttr
         if "id" in attr:
             entity_attr = EntityAttr.objects.get(id=attr["id"])
@@ -455,7 +462,7 @@ class IsolationConditionSerializer(serializers.ModelSerializer):
         fields = ["id", "attr", "str_cond", "ref_cond", "bool_cond", "is_unmatch"]
 
     @extend_schema_field(serializers.DictField(allow_null=True))
-    def get_ref_cond(self, obj):
+    def get_ref_cond(self, obj: IsolationCondition) -> dict[str, Any] | None:
         if obj.ref_cond:
             return {
                 "id": obj.ref_cond.id,
@@ -559,7 +566,7 @@ class EntitySerializer(serializers.ModelSerializer):
             return get_permission_level(request.user, obj)
         return ACLType.Nothing.value
 
-    def validate_item_name_pattern(self, item_name_pattern: str):
+    def validate_item_name_pattern(self, item_name_pattern: str) -> str:
         try:
             re.compile(item_name_pattern)
         except Exception:
@@ -567,13 +574,13 @@ class EntitySerializer(serializers.ModelSerializer):
 
         return item_name_pattern
 
-    def validate_item_name_type(self, item_name_type: str):
+    def validate_item_name_type(self, item_name_type: str) -> str:
         if item_name_type not in ItemNameType.values:
             raise ValidationError("Invalid item_name_type was specified")
 
         return item_name_type
 
-    def _validate_and_convert_default_value(self, attr_type: int, default_value):
+    def _validate_and_convert_default_value(self, attr_type: int, default_value: Any) -> Any:
         """
         Helper method to validate and convert default_value based on attribute type.
         This implements the same logic as EntityAttrCreateSerializer.
@@ -797,13 +804,15 @@ class EntityCreateSerializer(EntitySerializer):
         ]
         extra_kwargs = {"note": {"write_only": True}}
 
-    def validate_name(self, name: str):
+    def validate_name(self, name: str) -> str:
         if Entity.objects.filter(name=name, is_active=True).exists():
             raise DuplicatedObjectExistsError("Duplication error. There is same named Entity")
 
         return name
 
-    def validate_attrs(self, attrs: list[EntityAttrCreateSerializer]):
+    def validate_attrs(
+        self, attrs: list[EntityAttrCreateSerializer]
+    ) -> list[EntityAttrCreateSerializer]:
         # duplication checks
         counter = collections.Counter([attr["name"] for attr in attrs])
         if len([v for v, count in counter.items() if count > 1]):
@@ -811,7 +820,9 @@ class EntityCreateSerializer(EntitySerializer):
 
         return attrs
 
-    def validate_webhooks(self, webhooks: list[WebhookCreateUpdateSerializer]):
+    def validate_webhooks(
+        self, webhooks: list[WebhookCreateUpdateSerializer]
+    ) -> list[WebhookCreateUpdateSerializer]:
         # deny webhooks if its disabled
         if not settings.AIRONE_FLAGS["WEBHOOK"] and len(webhooks) > 0:
             raise ValidationError("webhook is disabled")
@@ -889,13 +900,15 @@ class EntityUpdateSerializer(EntitySerializer):
         ]
         extra_kwargs = {"name": {"required": False}, "note": {"write_only": True}}
 
-    def validate_name(self, name: str):
+    def validate_name(self, name: str) -> str:
         if self.instance.name != name and Entity.objects.filter(name=name, is_active=True).exists():
             raise DuplicatedObjectExistsError("Duplication error. There is same named Entity")
 
         return name
 
-    def validate_attrs(self, attrs: list[EntityAttrUpdateSerializer]):
+    def validate_attrs(
+        self, attrs: list[EntityAttrUpdateSerializer]
+    ) -> list[EntityAttrUpdateSerializer]:
         entity: Entity = self.instance
 
         # duplication checks
@@ -918,7 +931,9 @@ class EntityUpdateSerializer(EntitySerializer):
 
         return attrs
 
-    def validate_webhooks(self, webhooks: list[WebhookCreateUpdateSerializer]):
+    def validate_webhooks(
+        self, webhooks: list[WebhookCreateUpdateSerializer]
+    ) -> list[WebhookCreateUpdateSerializer]:
         entity: Entity = self.instance
 
         # deny changing webhooks if its disabled
@@ -928,7 +943,7 @@ class EntityUpdateSerializer(EntitySerializer):
 
         return webhooks
 
-    def update(self, entity: Entity, validated_data: EntityUpdateData):
+    def update(self, entity: Entity, validated_data: EntityUpdateData) -> Entity:
         user: User | None = None
         if "request" in self.context:
             user = self.context["request"].user
@@ -1162,11 +1177,11 @@ class EntityHistorySerializer(serializers.ModelSerializer):
     def _get_entity_changes(
         self,
         entity_id: int,
-        history_time,
+        history_time: datetime,
         operation: int,
-        historical_cache: dict,
-        prev_record_cache: dict,
-    ) -> List[dict]:
+        historical_cache: dict[str, list[Any]],
+        prev_record_cache: dict[str, Any],
+    ) -> List[dict[str, Any]]:
         """Get changes for Entity operations."""
         cache_key = f"entity_{entity_id}"
         historicals = historical_cache.get(cache_key, [])
@@ -1212,11 +1227,11 @@ class EntityHistorySerializer(serializers.ModelSerializer):
     def _get_attr_changes(
         self,
         attr_id: int,
-        history_time,
+        history_time: datetime,
         operation: int,
-        historical_cache: dict,
-        prev_record_cache: dict,
-    ) -> List[dict]:
+        historical_cache: dict[str, list[Any]],
+        prev_record_cache: dict[str, Any],
+    ) -> List[dict[str, Any]]:
         """Get changes for EntityAttr operations."""
         cache_key = f"attr_{attr_id}"
         historicals = historical_cache.get(cache_key, [])
@@ -1259,7 +1274,9 @@ class EntityHistorySerializer(serializers.ModelSerializer):
 
         return []
 
-    def _find_closest_historical(self, historicals: list, target_time) -> Optional[Any]:
+    def _find_closest_historical(
+        self, historicals: list[Any], target_time: datetime
+    ) -> Optional[Any]:
         """Find the historical record closest to the target time."""
         if not historicals:
             return None
@@ -1336,7 +1353,7 @@ class EntityAttrImportExportSerializer(serializers.ModelSerializer):
         model = EntityAttr
         fields = ["id", "name", "type", "entity", "is_mandatory", "created_user", "refer"]
 
-    def to_representation(self, instance: EntityAttr):
+    def to_representation(self, instance: EntityAttr) -> dict[str, Any]:
         return {
             "created_user": instance.created_user.username,
             "entity": instance.parent_entity.name,
@@ -1360,7 +1377,7 @@ class EntityImportExportSerializer(serializers.ModelSerializer):
         model = Entity
         fields = ["id", "name", "note", "item_name_pattern", "status", "created_user"]
 
-    def to_representation(self, instance: Entity):
+    def to_representation(self, instance: Entity) -> dict[str, Any]:
         ret = super().to_representation(instance)
         ret["created_user"] = instance.created_user.username
         return ret
@@ -1371,11 +1388,13 @@ class EntityImportExportRootSerializer(serializers.Serializer):
     Entity = EntityImportExportSerializer(many=True)
     EntityAttr = EntityAttrImportExportSerializer(many=True)
 
-    def save(self, **kwargs) -> None:
+    def save(self, **kwargs: object) -> None:
         user: User = self.context.get("request").user
 
-        def _do_import(resource, iter_data: Any):
-            results = []
+        def _do_import(
+            resource: type[AironeModelResource], iter_data: list[dict[str, Any]]
+        ) -> None:
+            results: list[dict[str, Any]] = []
             for data in iter_data:
                 try:
                     result = resource.import_data_from_request(data, user)
