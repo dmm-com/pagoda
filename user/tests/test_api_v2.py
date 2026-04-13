@@ -76,14 +76,18 @@ class ViewTest(AironeViewTest):
                         "username": "admin",
                         "email": "admin@example.com",
                         "is_superuser": True,
+                        "is_readonly": False,
                         "date_joined": admin_user.date_joined.isoformat(),
+                        "parent_user": None,
                     },
                     {
                         "id": login_user.id,
                         "username": "guest",
                         "email": "",
                         "is_superuser": False,
+                        "is_readonly": False,
                         "date_joined": login_user.date_joined.isoformat(),
+                        "parent_user": None,
                     },
                 ],
             },
@@ -121,7 +125,7 @@ class ViewTest(AironeViewTest):
         )
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(
-            resp.json()["username"][0]["message"], "A user with that username already exists."
+            resp.json()[0]["message"], "User with this username already exists"
         )
 
     def test_create_superuser_by_guest(self):
