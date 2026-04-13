@@ -46,16 +46,23 @@ export const ImportForm: FC<Props> = ({ handleImport, handleCancel }) => {
           navigate(0);
         } catch (e) {
           if (e instanceof Error && isResponseError(e)) {
-            const reportableError = await toReportableNonFieldErrors(e);
-            setErrorMessage(
-              `ファイルのアップロードに失敗しました: ${reportableError ?? ""}`,
-            );
-            enqueueSnackbar(
-              `ファイルのアップロードに失敗しました: ${reportableError ?? ""}`,
-              {
+            if (e.response.status === 403) {
+              setErrorMessage("この操作を行う権限がありません。");
+              enqueueSnackbar("この操作を行う権限がありません。", {
                 variant: "error",
-              },
-            );
+              });
+            } else {
+              const reportableError = await toReportableNonFieldErrors(e);
+              setErrorMessage(
+                `ファイルのアップロードに失敗しました: ${reportableError ?? ""}`,
+              );
+              enqueueSnackbar(
+                `ファイルのアップロードに失敗しました: ${reportableError ?? ""}`,
+                {
+                  variant: "error",
+                },
+              );
+            }
           } else {
             setErrorMessage("ファイルのアップロードに失敗しました。");
             enqueueSnackbar("ファイルのアップロードに失敗しました", {

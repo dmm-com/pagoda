@@ -97,7 +97,7 @@ describe("UserList", () => {
     expect(menuIcons.length).toBe(1);
   });
 
-  test("normal user cannot use register button", async () => {
+  test("normal user can use readonly user creation button", async () => {
     (ServerContext.getInstance as jest.Mock).mockReturnValue({
       user: { username: "user1", isSuperuser: false },
     });
@@ -107,7 +107,7 @@ describe("UserList", () => {
     });
 
     const registerLink = screen.getByRole("link", {
-      name: /新規ユーザを登録/i,
+      name: /Read-Only ユーザを作成/i,
     });
     expect(registerLink.classList.contains("Mui-disabled")).toBe(false);
   });
