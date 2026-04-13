@@ -78,6 +78,7 @@ class ViewTest(AironeViewTest):
                 "is_public": True,
                 "has_ongoing_changes": False,
                 "permission": ACLType.Full.value,
+                "delete_chain_exclude_entities": [],
             },
         )
 
@@ -1488,6 +1489,7 @@ class ViewTest(AironeViewTest):
                         "attrs": [],
                         "webhooks": [],
                         "isolation_rules": [],
+                        "delete_chain_exclude_entities": [],
                         "created_user": self.user,
                     },
                 )
@@ -2683,6 +2685,7 @@ class ViewTest(AironeViewTest):
                         "attrs": [],
                         "webhooks": [],
                         "isolation_rules": [],
+                        "delete_chain_exclude_entities": [],
                     },
                 )
                 self.assertEqual(args[1], self.entity)
