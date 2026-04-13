@@ -18,7 +18,7 @@ class PluginIntegration:
     Manages dynamic handling of INSTALLED_APPS, URL patterns, and API v2 patterns.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.initialized = False
 
     def is_plugins_enabled(self) -> bool:
@@ -33,7 +33,7 @@ class PluginIntegration:
         enabled_plugins = getattr(settings, "ENABLED_PLUGINS", [])
         return bool(enabled_plugins)
 
-    def initialize(self):
+    def initialize(self) -> None:
         """Initialize the plugin system
 
         Only executes plugin auto-discovery if plugins are enabled.
@@ -46,7 +46,7 @@ class PluginIntegration:
             self.initialized = True
             logger.info("Plugin system initialized successfully")
 
-    def _load_override_config(self):
+    def _load_override_config(self) -> None:
         """Load override registrations from BACKEND_PLUGIN_ENTITY_OVERRIDES config."""
         try:
             # Get BACKEND_PLUGIN_ENTITY_OVERRIDES from AIRONE settings
@@ -62,7 +62,7 @@ class PluginIntegration:
         except Exception as e:
             logger.error(f"Failed to load override configuration: {e}", exc_info=True)
 
-    def _inject_models(self):
+    def _inject_models(self) -> None:
         """Inject real models into the plugin SDK"""
         try:
             # Import real models from AirOne

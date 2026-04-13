@@ -1,5 +1,6 @@
-from typing import Optional
+from typing import Optional, Self
 
+from celery import Task
 from pydantic import BaseModel, Field, ValidationError, field_validator, model_validator
 
 from airone.celery import app
@@ -29,7 +30,7 @@ class CreateEntityAttr(BaseModel):
 
     @field_validator("type", mode="before")
     @classmethod
-    def validate_type(cls, v):
+    def validate_type(cls, v: int | str) -> int:
         """Convert string type to int if needed."""
         if isinstance(v, str):
             try:
@@ -59,7 +60,7 @@ class EditEntityAttr(BaseModel):
 
     @field_validator("type", mode="before")
     @classmethod
-    def validate_type(cls, v):
+    def validate_type(cls, v: int | str) -> int:
         """Convert string type to int if needed."""
         if isinstance(v, str):
             try:
@@ -110,7 +111,7 @@ class CreateEntityV2Attr(BaseModel):
     name_postfix: Optional[str] = ""  # for internal use only
 
     @model_validator(mode="after")
-    def validate_default_value_for_type(self):
+    def validate_default_value_for_type(self) -> Self:
         """Validate that default_value is compatible with the attribute type."""
         if self.default_value is None:
             return self
@@ -189,7 +190,7 @@ class EditEntityV2Attr(BaseModel):
     name_postfix: Optional[str] = ""  # for internal use only
 
     @model_validator(mode="after")
-    def validate_attr_fields(self):
+    def validate_attr_fields(self) -> Self:
         """Validate that required fields are present based on operation type."""
         if self.id is None:
             if self.name is None or self.type is None:
@@ -197,7 +198,7 @@ class EditEntityV2Attr(BaseModel):
         return self
 
     @model_validator(mode="after")
-    def validate_default_value_for_type(self):
+    def validate_default_value_for_type(self) -> Self:
         """Validate default_value compatibility with attribute type."""
         if self.default_value is None or self.type is None:
             return self
@@ -282,7 +283,7 @@ class EditEntityV2Params(BaseModel):
 @register_job_task(JobOperation.CREATE_ENTITY)
 @app.task(bind=True)
 @may_schedule_until_job_is_ready
-def create_entity(self, job: Job) -> JobStatus:
+def create_entity(self: Task, job: Job) -> JobStatus:
     user = User.objects.filter(id=job.user.id).first()
     entity = Entity.objects.filter(id=job.target.id, is_active=True).first()
 
@@ -330,7 +331,7 @@ def create_entity(self, job: Job) -> JobStatus:
 @register_job_task(JobOperation.EDIT_ENTITY)
 @app.task(bind=True)
 @may_schedule_until_job_is_ready
-def edit_entity(self, job: Job) -> JobStatus:
+def edit_entity(self: Task, job: Job) -> JobStatus:
     user = User.objects.filter(id=job.user.id).first()
     entity = Entity.objects.filter(id=job.target.id, is_active=True).first()
 
@@ -440,7 +441,7 @@ def edit_entity(self, job: Job) -> JobStatus:
 @register_job_task(JobOperation.DELETE_ENTITY)
 @app.task(bind=True)
 @may_schedule_until_job_is_ready
-def delete_entity(self, job: Job) -> JobStatus:
+def delete_entity(self: Task, job: Job) -> JobStatus:
     user = User.objects.filter(id=job.user.id).first()
     entity = Entity.objects.filter(id=job.target.id, is_active=False).first()
 
@@ -466,7 +467,7 @@ def delete_entity(self, job: Job) -> JobStatus:
 @register_job_task(JobOperation.CREATE_ENTITY_V2)
 @app.task(bind=True)
 @may_schedule_until_job_is_ready
-def create_entity_v2(self, job: Job) -> JobStatus:
+def create_entity_v2(self: Task, job: Job) -> JobStatus:
     entity: Entity | None = Entity.objects.filter(id=job.target.id, is_active=True).first()
     if not entity:
         return JobStatus.ERROR
@@ -494,7 +495,7 @@ def create_entity_v2(self, job: Job) -> JobStatus:
 @register_job_task(JobOperation.EDIT_ENTITY_V2)
 @app.task(bind=True)
 @may_schedule_until_job_is_ready
-def edit_entity_v2(self, job: Job) -> JobStatus:
+def edit_entity_v2(self: Task, job: Job) -> JobStatus:
     entity: Entity | None = Entity.objects.filter(id=job.target.id, is_active=True).first()
     if not entity:
         return JobStatus.ERROR
@@ -524,7 +525,7 @@ def edit_entity_v2(self, job: Job) -> JobStatus:
 @register_job_task(JobOperation.DELETE_ENTITY_V2)
 @app.task(bind=True)
 @may_schedule_until_job_is_ready
-def delete_entity_v2(self, job: Job) -> JobStatus:
+def delete_entity_v2(self: Task, job: Job) -> JobStatus:
     entity: Entity | None = Entity.objects.filter(id=job.target.id, is_active=True).first()
     if not entity:
         return JobStatus.ERROR

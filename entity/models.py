@@ -75,7 +75,7 @@ class EntityAttr(ACLBase):
         # checks each parameters that are different between current object parameters
         return sorted([x.id for x in self.referral.all()]) != sorted(refs)
 
-    def referral_clear(self):
+    def referral_clear(self) -> None:
         # In order not to leave a historical record
         self.skip_history_when_saving = True
         try:
@@ -105,7 +105,7 @@ class EntityAttr(ACLBase):
         if adding_referral:
             self.referral.add(adding_referral)
 
-    def save(self, *args, **kwargs) -> None:
+    def save(self, *args: Any, **kwargs: Any) -> None:
         max_attributes_per_entity: Optional[int] = settings.MAX_ATTRIBUTES_PER_ENTITY
         if (
             max_attributes_per_entity
@@ -178,7 +178,7 @@ class Entity(ACLBase):
         super(Entity, self).__init__(*args, **kwargs)
         self.objtype = ACLObjType.Entity
 
-    def save(self, *args, **kwargs) -> None:
+    def save(self, *args: Any, **kwargs: Any) -> None:
         max_entities: Optional[int] = settings.MAX_ENTITIES
         if max_entities and Entity.objects.count() >= max_entities:
             raise RuntimeError("The number of entities is over the limit")

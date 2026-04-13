@@ -1,9 +1,10 @@
 import functools
 import inspect
+import io
 import logging
 import os
 import sys
-from typing import List
+from typing import Callable, List, cast
 from zoneinfo import ZoneInfo
 
 from django.conf import settings
@@ -42,7 +43,7 @@ class AironeTestCase(TestCase):
 
     TZ_INFO = ZoneInfo(settings.TIME_ZONE)
 
-    def setUp(self):
+    def setUp(self) -> None:
         OVERRIDE_ES_CONFIG = settings.ES_CONFIG.copy()
         # Attach prefix "test-" to distinguish index name for test with configured one.
         # This should be only one time.
@@ -74,7 +75,7 @@ class AironeTestCase(TestCase):
         self._es = ESS()
         self._es.recreate_index()
 
-    def tearDown(self):
+    def tearDown(self) -> None:
         # Clean up Elasticsearch test index
         if hasattr(self, "_es") and self._es:
             try:
@@ -90,11 +91,11 @@ class AironeTestCase(TestCase):
 
     def _do_update_entity(
         self,
-        user,
-        entity,
-        attrs=[],
-        webhooks=[],
-    ):
+        user: User,
+        entity: Entity,
+        attrs: list[dict[str, object]] = [],
+        webhooks: list[dict[str, object]] = [],
+    ) -> Entity:
         for index, attr_info in enumerate(attrs):
             entity_attr: EntityAttr = EntityAttr.objects.create(
                 **{
@@ -113,7 +114,9 @@ class AironeTestCase(TestCase):
             )
 
             # register referral(s) EntityAttr.add_referral() supports any kind of types
-            entity_attr.add_referral(attr_info.get("ref"))
+            ref = attr_info.get("ref")
+            if ref is not None:
+                entity_attr.add_referral(cast(Entity | str | int | list[Entity | str | int], ref))
 
         for webhook_info in webhooks:
             webhook: Webhook = Webhook.objects.create(
@@ -131,16 +134,15 @@ class AironeTestCase(TestCase):
 
     def create_entity(
         self,
-        user,
-        name,
-        attrs=[],
-        is_public=True,
-        item_name_pattern="",
-        item_name_type=None,
-        default_permission=ACLType.Nothing.id,
-        *args,
-        **kwargs,
-    ):
+        user: User,
+        name: str,
+        attrs: list[dict[str, object]] = [],
+        is_public: bool = True,
+        item_name_pattern: str = "",
+        item_name_type: ItemNameType | None = None,
+        default_permission: int = ACLType.Nothing.id,
+        webhooks: list[dict[str, object]] = [],
+    ) -> Entity:
         """
         This is a helper method to create Entity for test. This method has following parameters.
         * user      : describes user instance which will be registered on creating Entity
@@ -168,12 +170,25 @@ class AironeTestCase(TestCase):
             item_name_type=item_name_type if item_name_type else ItemNameType.USER,
         )
 
-        return self._do_update_entity(user, entity, attrs, *args, **kwargs)
+        return self._do_update_entity(user, entity, attrs, webhooks)
 
-    def update_entity(self, user, entity, *args, **kwargs):
-        return self._do_update_entity(user, entity, *args, **kwargs)
+    def update_entity(
+        self,
+        user: User,
+        entity: Entity,
+        attrs: list[dict[str, object]] = [],
+        webhooks: list[dict[str, object]] = [],
+    ) -> Entity:
+        return self._do_update_entity(user, entity, attrs, webhooks)
 
-    def add_entry(self, user: User, name: str, schema: Entity, values={}, is_public=True) -> Entry:
+    def add_entry(
+        self,
+        user: User,
+        name: str,
+        schema: Entity,
+        values: dict[str, object] = {},
+        is_public: bool = True,
+    ) -> Entry:
         entry = Entry.objects.create(
             name=name, schema=schema, created_user=user, is_public=is_public
         )
@@ -189,7 +204,7 @@ class AironeTestCase(TestCase):
         return entry
 
     def create_category(
-        self, user: User, name: str, note: str = "", models: List[Entity] = [], priority=0
+        self, user: User, name: str, note: str = "", models: List[Entity] = [], priority: int = 0
     ) -> Category:
         # create target Category instance
         category = Category.objects.create(
@@ -257,7 +272,7 @@ class AironeTestCase(TestCase):
             parent_entry=entry or getattr(self, "_entry", None),
         )
 
-    def _do_login(self, uname, is_superuser=False) -> User:
+    def _do_login(self, uname: str, is_superuser: bool = False) -> User:
         # create test user to authenticate
         user = User(username=uname, is_superuser=is_superuser)
         user.set_password(uname)
@@ -270,17 +285,17 @@ class AironeTestCase(TestCase):
     def admin_login(self) -> User:
         return self._do_login("admin", True)
 
-    def guest_login(self, uname="guest") -> User:
+    def guest_login(self, uname: str = "guest") -> User:
         return self._do_login(uname)
 
 
 class AironeViewTest(AironeTestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         super(AironeViewTest, self).setUp()
 
         self.client = Client()
 
-    def open_fixture_file(self, fname):
+    def open_fixture_file(self, fname: str) -> io.TextIOWrapper:
         test_file_path = inspect.getfile(self.__class__)
         test_base_path = os.path.dirname(test_file_path)
 
@@ -288,27 +303,28 @@ class AironeViewTest(AironeTestCase):
 
 
 class DisableStderr(object):
-    def __enter__(self):
+    def __enter__(self) -> "DisableStderr":
         self.tmp_stderr = sys.stderr
         self.f = open(os.devnull, "w")
         sys.stderr = self.f
+        return self
 
-    def __exit__(self, *arg, **kwargs):
+    def __exit__(self, *arg: object, **kwargs: object) -> None:
         sys.stderr = self.tmp_stderr
         self.f.close()
 
 
-def with_airone_settings(info={}):
+def with_airone_settings(info: dict[str, object] = {}) -> Callable[..., Callable[..., None]]:
     """
     This update AIRONE.settings parameter duing running test and retrieve it
     after running test.
     """
 
-    def _with_settings(method):
+    def _with_settings(method: Callable[..., None]) -> Callable[..., None]:
         @functools.wraps(method)
-        def wrapper(*args, **kwargs):
+        def wrapper(*args: object, **kwargs: object) -> None:
             # This evacuates original values in settings.AIRONE and set specified one
-            evacuation_place = {}
+            evacuation_place: dict[str, object] = {}
             for k, v in info.items():
                 evacuation_place[k] = settings.AIRONE.get(k)
                 settings.AIRONE[k] = v

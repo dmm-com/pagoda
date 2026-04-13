@@ -97,7 +97,7 @@ class HookManager:
         return False
 
     def execute_hook(
-        self, handler_name: str, *args, entity_name: Optional[str] = None, **kwargs
+        self, handler_name: str, *args: Any, entity_name: Optional[str] = None, **kwargs: Any
     ) -> List[Any]:
         """Execute all registered plugin hooks for this handler
 
