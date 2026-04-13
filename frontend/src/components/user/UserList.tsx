@@ -31,7 +31,7 @@ import { UserListParam } from "services/Constants";
 import { ServerContext } from "services/ServerContext";
 import { normalizeToMatch } from "services/StringUtil";
 
-const StyledCardHeader = styled(CardHeader)(({}) => ({
+const StyledCardHeader = styled(CardHeader)(({ }) => ({
   p: "0px",
   mt: "24px",
   mx: "16px",
@@ -41,7 +41,7 @@ const StyledCardHeader = styled(CardHeader)(({}) => ({
   },
 }));
 
-const UserName = styled(Typography)(({}) => ({
+const UserName = styled(Typography)(({ }) => ({
   textOverflow: "ellipsis",
   overflow: "hidden",
   whiteSpace: "nowrap",

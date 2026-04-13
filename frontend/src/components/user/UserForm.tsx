@@ -86,7 +86,7 @@ const ElemAuthenticationMethod: FC<ReadonlyProps> = ({ user }) => {
       </TableCell>
       <TableCell sx={{ width: "750px", p: "0px", wordBreak: "break-word" }}>
         {user.authenticateType ===
-        UserRetrieveAuthenticateTypeEnum.AUTH_TYPE_LOCAL ? (
+          UserRetrieveAuthenticateTypeEnum.AUTH_TYPE_LOCAL ? (
           <Box sx={{ m: 1 }}>
             <Box sx={{ my: 1 }}>ローカル認証</Box>
             <Button variant="outlined" onClick={() => setOpenModal(true)}>
@@ -258,7 +258,10 @@ const ElemEmailAddress: FC<Props> = ({ control }) => {
   );
 };
 
-const ElemUserName: FC<Props> = ({ control }) => {
+const ElemUserName: FC<Props & { isMyself: boolean }> = ({
+  control,
+  isMyself,
+}) => {
   const loginUser: User | undefined = useMemo(
     () => ServerContext.getInstance()?.user,
     [],
@@ -270,30 +273,36 @@ const ElemUserName: FC<Props> = ({ control }) => {
         名前
       </TableCell>
       <TableCell sx={{ width: "750px", p: "0px", wordBreak: "break-word" }}>
-        <FlexBox alignItems={"center"}>
-          {loginUser && !loginUser.isSuperuser && (
-            <Typography sx={{ whiteSpace: "nowrap" }}>
-              {loginUser.username}-
-            </Typography>
-          )}
-          <InputBox sx={{ flex: 1, width: "auto" }}>
-            <Controller
-              name="username"
-              control={control}
-              defaultValue=""
-              render={({ field, fieldState: { error } }) => (
-                <TextField
-                  {...field}
-                  type="text"
-                  placeholder="ユーザ名を入力してください"
-                  error={error != null}
-                  helperText={error?.message}
-                  sx={{ width: "100%" }}
-                />
-              )}
-            />
+        {isMyself ? (
+          <InputBox>
+            <Typography>{loginUser?.username}</Typography>
           </InputBox>
-        </FlexBox>
+        ) : (
+          <FlexBox alignItems={"center"}>
+            {loginUser && !loginUser.isSuperuser && (
+              <Typography sx={{ whiteSpace: "nowrap" }}>
+                {loginUser.username}-
+              </Typography>
+            )}
+            <InputBox sx={{ flex: 1, width: "auto" }}>
+              <Controller
+                name="username"
+                control={control}
+                defaultValue=""
+                render={({ field, fieldState: { error } }) => (
+                  <TextField
+                    {...field}
+                    type="text"
+                    placeholder="ユーザ名を入力してください"
+                    error={error != null}
+                    helperText={error?.message}
+                    sx={{ width: "100%" }}
+                  />
+                )}
+              />
+            </InputBox>
+          </FlexBox>
+        )}
       </TableCell>
     </StyledTableRow>
   );
@@ -403,7 +412,7 @@ export const UserForm: FC<UserFormProps> = ({
             </TableRow>
           </TableHead>
           <TableBody>
-            <ElemUserName control={control} />
+            <ElemUserName control={control} isMyself={isMyself} />
 
             {loginUser?.isSuperuser && (
               <>
