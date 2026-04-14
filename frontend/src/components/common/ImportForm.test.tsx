@@ -116,5 +116,4 @@ describe("ImportForm", () => {
 
     expect(handleImport).not.toHaveBeenCalled();
   });
-
 });

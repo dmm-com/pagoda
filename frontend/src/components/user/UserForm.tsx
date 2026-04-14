@@ -86,7 +86,7 @@ const ElemAuthenticationMethod: FC<ReadonlyProps> = ({ user }) => {
       </TableCell>
       <TableCell sx={{ width: "750px", p: "0px", wordBreak: "break-word" }}>
         {user.authenticateType ===
-          UserRetrieveAuthenticateTypeEnum.AUTH_TYPE_LOCAL ? (
+        UserRetrieveAuthenticateTypeEnum.AUTH_TYPE_LOCAL ? (
           <Box sx={{ m: 1 }}>
             <Box sx={{ my: 1 }}>ローカル認証</Box>
             <Button variant="outlined" onClick={() => setOpenModal(true)}>
@@ -258,7 +258,7 @@ const ElemEmailAddress: FC<Props> = ({ control }) => {
   );
 };
 
-const ElemUserName: FC<Props & { isMyself: boolean, isCoUser: boolean }> = ({
+const ElemUserName: FC<Props & { isMyself: boolean; isCoUser: boolean }> = ({
   control,
   isMyself,
   isCoUser,
@@ -275,7 +275,7 @@ const ElemUserName: FC<Props & { isMyself: boolean, isCoUser: boolean }> = ({
         名前
       </TableCell>
       <TableCell sx={{ width: "750px", p: "0px", wordBreak: "break-word" }}>
-        {(isMyself || isCoUser) ? (
+        {isMyself || isCoUser ? (
           <InputBox>
             <Typography>{userInfo.username}</Typography>
           </InputBox>
@@ -416,7 +416,11 @@ export const UserForm: FC<UserFormProps> = ({
             </TableRow>
           </TableHead>
           <TableBody>
-            <ElemUserName control={control} isMyself={isMyself} isCoUser={isCoUser} />
+            <ElemUserName
+              control={control}
+              isMyself={isMyself}
+              isCoUser={isCoUser}
+            />
 
             {loginUser?.isSuperuser && (
               <>

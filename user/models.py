@@ -102,6 +102,10 @@ class User(AbstractUser):
         except TypeError:
             return False
 
+        # This condition is effective when the number of read-only users is majority.
+        if self.is_readonly and permission_level > ACLType.Readable:
+            return False
+
         # doesn't permit, access to the children's objects are also not permitted.
         if (
             isinstance(target_obj, import_module("entry.models").Entry)
