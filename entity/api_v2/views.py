@@ -106,6 +106,8 @@ class EntityPermission(BasePermission):
 
         entity_id = view.kwargs.get("pk") or view.kwargs.get("entity_id")
         if not entity_id:
+            if request.user.is_readonly:
+                return False
             return True
 
         if not hasattr(view, "_pagoda_context"):

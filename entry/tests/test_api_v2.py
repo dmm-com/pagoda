@@ -2016,9 +2016,7 @@ class ReadonlyUserPermissionTest(BaseViewTest):
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
 
     def test_import_entry_is_forbidden_for_readonly_user(self):
-        resp = self.client.post(
-            "/entry/api/v2/import/", b"[]", content_type="application/yaml"
-        )
+        resp = self.client.post("/entry/api/v2/import/", b"[]", content_type="application/yaml")
         self.assertEqual(resp.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_attrv_restore_is_forbidden_for_readonly_user(self):
