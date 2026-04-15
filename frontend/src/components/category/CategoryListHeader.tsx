@@ -6,21 +6,19 @@ import { FC, useState } from "react";
 
 import { CategoryControlMenu } from "components/category/CategoryControlMenu";
 import { BetweenAlignedBox, FlexBox } from "components/common/FlexBox";
+import { ServerContext } from "services";
 import { canEdit } from "services/ACLUtil";
 
 interface Props {
   category: CategoryList;
-  isEdit: boolean;
   setToggle: () => void;
 }
 
-export const CategoryListHeader: FC<Props> = ({
-  category,
-  isEdit,
-  setToggle,
-}) => {
+export const CategoryListHeader: FC<Props> = ({ category, setToggle }) => {
   const [categoryAnchorEl, setCategoryAnchorEl] =
     useState<HTMLButtonElement | null>(null);
+
+  const isReadonly = ServerContext.getInstance()?.user?.isReadonly ?? false;
 
   return (
     <BetweenAlignedBox>
@@ -37,7 +35,7 @@ export const CategoryListHeader: FC<Props> = ({
       </FlexBox>
 
       {/* Category control menu */}
-      {isEdit && canEdit(category.permission) && (
+      {!isReadonly && canEdit(category.permission) && (
         <FlexBox sx={{ marginInlineStart: "40px" }}>
           <IconButton
             onClick={(e) => {

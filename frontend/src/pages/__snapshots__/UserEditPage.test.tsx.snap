@@ -207,91 +207,51 @@ exports[`EditUserPage should match snapshot 1`] = `
                     <td
                       class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1qtwksv-MuiTableCell-root"
                     >
-                      <form
-                        class="MuiBox-root css-nlbhye"
+                      <div
+                        class="MuiBox-root css-l7h7cx"
                       >
-                        <div
-                          class="MuiFormControl-root MuiTextField-root css-1myhl20-MuiFormControl-root-MuiTextField-root"
+                        <p
+                          class="MuiTypography-root MuiTypography-body1 css-1c26xtj-MuiTypography-root"
+                        >
+                          -
+                        </p>
+                        <form
+                          class="MuiBox-root css-5vvffn"
                         >
                           <div
-                            class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-formControl css-quhxjy-MuiInputBase-root-MuiOutlinedInput-root"
+                            class="MuiFormControl-root MuiTextField-root css-1myhl20-MuiFormControl-root-MuiTextField-root"
                           >
-                            <input
-                              aria-invalid="false"
-                              class="MuiInputBase-input MuiOutlinedInput-input css-16wblaj-MuiInputBase-input-MuiOutlinedInput-input"
-                              id="_r_5_"
-                              name="username"
-                              placeholder="ユーザ名を入力してください"
-                              type="text"
-                              value=""
-                            />
-                            <fieldset
-                              aria-hidden="true"
-                              class="MuiOutlinedInput-notchedOutline css-1ll44ll-MuiOutlinedInput-notchedOutline"
+                            <div
+                              class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-formControl css-quhxjy-MuiInputBase-root-MuiOutlinedInput-root"
                             >
-                              <legend
-                                class="css-w4cd9x"
+                              <input
+                                aria-invalid="false"
+                                class="MuiInputBase-input MuiOutlinedInput-input css-16wblaj-MuiInputBase-input-MuiOutlinedInput-input"
+                                id="_r_5_"
+                                name="username"
+                                placeholder="ユーザ名を入力してください"
+                                type="text"
+                                value=""
+                              />
+                              <fieldset
+                                aria-hidden="true"
+                                class="MuiOutlinedInput-notchedOutline css-1ll44ll-MuiOutlinedInput-notchedOutline"
                               >
-                                <span
-                                  aria-hidden="true"
-                                  class="notranslate"
+                                <legend
+                                  class="css-w4cd9x"
                                 >
-                                  ​
-                                </span>
-                              </legend>
-                            </fieldset>
+                                  <span
+                                    aria-hidden="true"
+                                    class="notranslate"
+                                  >
+                                    ​
+                                  </span>
+                                </legend>
+                              </fieldset>
+                            </div>
                           </div>
-                        </div>
-                      </form>
-                    </td>
-                  </tr>
-                  <tr
-                    class="MuiTableRow-root css-irfqwy-MuiTableRow-root"
-                  >
-                    <td
-                      class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1wgb810-MuiTableCell-root"
-                    >
-                      メールアドレス
-                    </td>
-                    <td
-                      class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1qtwksv-MuiTableCell-root"
-                    >
-                      <form
-                        class="MuiBox-root css-nlbhye"
-                      >
-                        <div
-                          class="MuiFormControl-root MuiTextField-root css-1myhl20-MuiFormControl-root-MuiTextField-root"
-                        >
-                          <div
-                            class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-formControl css-quhxjy-MuiInputBase-root-MuiOutlinedInput-root"
-                          >
-                            <input
-                              aria-invalid="false"
-                              class="MuiInputBase-input MuiOutlinedInput-input css-16wblaj-MuiInputBase-input-MuiOutlinedInput-input"
-                              id="_r_6_"
-                              name="email"
-                              placeholder="メールアドレスを入力してください"
-                              type="email"
-                              value=""
-                            />
-                            <fieldset
-                              aria-hidden="true"
-                              class="MuiOutlinedInput-notchedOutline css-1ll44ll-MuiOutlinedInput-notchedOutline"
-                            >
-                              <legend
-                                class="css-w4cd9x"
-                              >
-                                <span
-                                  aria-hidden="true"
-                                  class="notranslate"
-                                >
-                                  ​
-                                </span>
-                              </legend>
-                            </fieldset>
-                          </div>
-                        </div>
-                      </form>
+                        </form>
+                      </div>
                     </td>
                   </tr>
                   <tr
@@ -317,7 +277,7 @@ exports[`EditUserPage should match snapshot 1`] = `
                             <input
                               aria-invalid="false"
                               class="MuiInputBase-input MuiOutlinedInput-input css-16wblaj-MuiInputBase-input-MuiOutlinedInput-input"
-                              id="_r_7_"
+                              id="_r_6_"
                               name="password"
                               placeholder="パスワードを入力してください"
                               type="password"
@@ -554,91 +514,51 @@ exports[`EditUserPage should match snapshot 1`] = `
                   <td
                     class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1qtwksv-MuiTableCell-root"
                   >
-                    <form
-                      class="MuiBox-root css-nlbhye"
+                    <div
+                      class="MuiBox-root css-l7h7cx"
                     >
-                      <div
-                        class="MuiFormControl-root MuiTextField-root css-1myhl20-MuiFormControl-root-MuiTextField-root"
+                      <p
+                        class="MuiTypography-root MuiTypography-body1 css-1c26xtj-MuiTypography-root"
+                      >
+                        -
+                      </p>
+                      <form
+                        class="MuiBox-root css-5vvffn"
                       >
                         <div
-                          class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-formControl css-quhxjy-MuiInputBase-root-MuiOutlinedInput-root"
+                          class="MuiFormControl-root MuiTextField-root css-1myhl20-MuiFormControl-root-MuiTextField-root"
                         >
-                          <input
-                            aria-invalid="false"
-                            class="MuiInputBase-input MuiOutlinedInput-input css-16wblaj-MuiInputBase-input-MuiOutlinedInput-input"
-                            id="_r_5_"
-                            name="username"
-                            placeholder="ユーザ名を入力してください"
-                            type="text"
-                            value=""
-                          />
-                          <fieldset
-                            aria-hidden="true"
-                            class="MuiOutlinedInput-notchedOutline css-1ll44ll-MuiOutlinedInput-notchedOutline"
+                          <div
+                            class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-formControl css-quhxjy-MuiInputBase-root-MuiOutlinedInput-root"
                           >
-                            <legend
-                              class="css-w4cd9x"
+                            <input
+                              aria-invalid="false"
+                              class="MuiInputBase-input MuiOutlinedInput-input css-16wblaj-MuiInputBase-input-MuiOutlinedInput-input"
+                              id="_r_5_"
+                              name="username"
+                              placeholder="ユーザ名を入力してください"
+                              type="text"
+                              value=""
+                            />
+                            <fieldset
+                              aria-hidden="true"
+                              class="MuiOutlinedInput-notchedOutline css-1ll44ll-MuiOutlinedInput-notchedOutline"
                             >
-                              <span
-                                aria-hidden="true"
-                                class="notranslate"
+                              <legend
+                                class="css-w4cd9x"
                               >
-                                ​
-                              </span>
-                            </legend>
-                          </fieldset>
+                                <span
+                                  aria-hidden="true"
+                                  class="notranslate"
+                                >
+                                  ​
+                                </span>
+                              </legend>
+                            </fieldset>
+                          </div>
                         </div>
-                      </div>
-                    </form>
-                  </td>
-                </tr>
-                <tr
-                  class="MuiTableRow-root css-irfqwy-MuiTableRow-root"
-                >
-                  <td
-                    class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1wgb810-MuiTableCell-root"
-                  >
-                    メールアドレス
-                  </td>
-                  <td
-                    class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1qtwksv-MuiTableCell-root"
-                  >
-                    <form
-                      class="MuiBox-root css-nlbhye"
-                    >
-                      <div
-                        class="MuiFormControl-root MuiTextField-root css-1myhl20-MuiFormControl-root-MuiTextField-root"
-                      >
-                        <div
-                          class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-formControl css-quhxjy-MuiInputBase-root-MuiOutlinedInput-root"
-                        >
-                          <input
-                            aria-invalid="false"
-                            class="MuiInputBase-input MuiOutlinedInput-input css-16wblaj-MuiInputBase-input-MuiOutlinedInput-input"
-                            id="_r_6_"
-                            name="email"
-                            placeholder="メールアドレスを入力してください"
-                            type="email"
-                            value=""
-                          />
-                          <fieldset
-                            aria-hidden="true"
-                            class="MuiOutlinedInput-notchedOutline css-1ll44ll-MuiOutlinedInput-notchedOutline"
-                          >
-                            <legend
-                              class="css-w4cd9x"
-                            >
-                              <span
-                                aria-hidden="true"
-                                class="notranslate"
-                              >
-                                ​
-                              </span>
-                            </legend>
-                          </fieldset>
-                        </div>
-                      </div>
-                    </form>
+                      </form>
+                    </div>
                   </td>
                 </tr>
                 <tr
@@ -664,7 +584,7 @@ exports[`EditUserPage should match snapshot 1`] = `
                           <input
                             aria-invalid="false"
                             class="MuiInputBase-input MuiOutlinedInput-input css-16wblaj-MuiInputBase-input-MuiOutlinedInput-input"
-                            id="_r_7_"
+                            id="_r_6_"
                             name="password"
                             placeholder="パスワードを入力してください"
                             type="password"

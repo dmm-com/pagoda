@@ -40,16 +40,12 @@ def create(request: HttpRequest) -> HttpResponse:
         {
             "name": "name",
             "type": str,
-            "checker": lambda x: (
-                x["name"] and not User.objects.filter(username=x["name"]).exists()
-            ),
+            "checker": lambda x: x["name"] and not User.objects.filter(username=x["name"]).exists(),
         },
         {
             "name": "email",
             "type": str,
-            "checker": lambda x: (
-                x["email"] and not User.objects.filter(email=x["email"]).exists()
-            ),
+            "checker": lambda x: x["email"] and not User.objects.filter(email=x["email"]).exists(),
         },
         {"name": "passwd", "type": str, "checker": lambda x: x["passwd"]},
     ]

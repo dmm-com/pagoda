@@ -9,10 +9,12 @@ import { UserList } from "components/user/UserList";
 import { usePageTitle } from "hooks/usePageTitle";
 import { aironeApiClient } from "repository/AironeApiClient";
 import { topPath } from "routes/Routes";
-import { TITLE_TEMPLATES } from "services";
+import { ServerContext, TITLE_TEMPLATES } from "services";
 
 export const UserListPage: FC = () => {
   const [openImportModal, setOpenImportModal] = useState(false);
+
+  const isReadonly = ServerContext.getInstance()?.user?.isReadonly ?? false;
 
   const handleExport = useCallback(async () => {
     await aironeApiClient.exportUsers("user.yaml");
@@ -44,6 +46,7 @@ export const UserListPage: FC = () => {
             color="info"
             sx={{ margin: "0 4px" }}
             onClick={() => setOpenImportModal(true)}
+            disabled={isReadonly}
           >
             インポート
           </Button>

@@ -18,7 +18,7 @@ export const ListCategoryPage: FC = () => {
       </AironeBreadcrumbs>
 
       <PageHeader title={"カテゴリ一覧"}></PageHeader>
-      <CategoryList isEdit />
+      <CategoryList />
     </Box>
   );
 };

@@ -1,14 +1,27 @@
 import { FrontendPluginEntityOverridesConfig } from "../plugins";
 
-class User {
+export class User {
   id: number;
   username: string;
   isSuperuser: boolean;
+  isReadonly: boolean;
+  parentUser: number | null;
+  email: string;
 
-  constructor(user: { id: number; username: string; isSuperuser: boolean }) {
+  constructor(user: {
+    id: number;
+    username: string;
+    isSuperuser: boolean;
+    isReadonly: boolean;
+    parentUser: number | null;
+    email: string;
+  }) {
     this.id = user.id;
     this.username = user.username;
     this.isSuperuser = user.isSuperuser;
+    this.isReadonly = user.isReadonly;
+    this.parentUser = user.parentUser;
+    this.email = user.email;
   }
 }
 
@@ -65,7 +78,10 @@ export class ServerContext {
           context.user as {
             id: number;
             username: string;
+            email: string;
             isSuperuser: boolean;
+            isReadonly: boolean;
+            parentUser: number | null;
           },
         )
       : undefined;

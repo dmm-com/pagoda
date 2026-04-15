@@ -17,7 +17,8 @@ describe("UserForm", () => {
   Object.defineProperty(window, "django_context", {
     value: {
       user: {
-        is_superuser: false,
+        username: "user1",
+        isSuperuser: false,
       },
     },
     writable: false,
@@ -57,9 +58,9 @@ describe("UserForm", () => {
         user={userInfo}
         control={control}
         isCreateMode={true}
-        isMyself={true}
-        isSuperuser={false}
+        isMyself={false}
         isSubmittable={false}
+        isCoUser={false}
         handleSubmit={() => Promise.resolve()}
         handleCancel={() => {
           /* do nothing */
@@ -72,10 +73,8 @@ describe("UserForm", () => {
       screen.getByPlaceholderText("ユーザ名を入力してください"),
     ).toHaveValue("user1");
     expect(
-      screen.getByPlaceholderText("メールアドレスを入力してください"),
-    ).toHaveValue("user1@example.com");
-    expect(
       screen.getByPlaceholderText("パスワードを入力してください"),
     ).toHaveValue("user1");
+    expect(screen.getByText("user1-")).toBeInTheDocument();
   });
 });

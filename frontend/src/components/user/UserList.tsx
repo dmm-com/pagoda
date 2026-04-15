@@ -67,6 +67,10 @@ const UserListContent: FC = () => {
     () => serverContext?.user?.isSuperuser === true,
     [serverContext],
   );
+  const isReadonly = useMemo(
+    () => serverContext?.user?.isReadonly === true,
+    [serverContext],
+  );
 
   const handleChangeQuery = changeQuery;
 
@@ -100,21 +104,24 @@ const UserListContent: FC = () => {
         <Button
           color="secondary"
           variant="contained"
-          disabled={!isSuperuser}
+          disabled={isReadonly}
           component={Link}
           to={newUserPath()}
           sx={{ borderRadius: "24px", height: "100%" }}
         >
           <AddIcon />
-          新規ユーザを登録
+          {(isSuperuser && "新規ユーザを登録") || "Read-Only ユーザを作成"}
         </Button>
       </Box>
 
       <Grid container spacing={2} id="user_list">
         {users.results?.map((user) => {
           const isCurrentUser = user.username === currentUsername;
-          const isLinkVisible = isSuperuser || isCurrentUser;
-          const isMenuVisible = isSuperuser || isCurrentUser;
+          const isCoUser =
+            user.parentUser === serverContext?.user?.id &&
+            serverContext?.user?.id !== undefined;
+          const isLinkVisible = isSuperuser || isCurrentUser || isCoUser;
+          const isMenuVisible = isSuperuser || isCurrentUser || isCoUser;
 
           return (
             <Grid size={4} key={user.id}>
@@ -151,6 +158,7 @@ const UserListContent: FC = () => {
                           <UserControlMenu
                             user={user}
                             isSelf={isCurrentUser}
+                            isCoUser={isCoUser}
                             anchorElem={userAnchorEls[user.id]}
                             handleClose={(userId: number) =>
                               setUserAnchorEls({

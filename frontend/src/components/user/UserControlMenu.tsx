@@ -24,6 +24,7 @@ interface UserControlProps {
   onClickEditPassword: (userId: number) => void;
   setToggle?: () => void;
   isSelf?: boolean;
+  isCoUser?: boolean;
 }
 
 export const UserControlMenu: FC<UserControlProps> = ({
@@ -33,6 +34,7 @@ export const UserControlMenu: FC<UserControlProps> = ({
   onClickEditPassword,
   setToggle,
   isSelf = false,
+  isCoUser = false,
 }) => {
   const { enqueueSnackbar } = useSnackbar();
   const navigate = useNavigate();
@@ -77,7 +79,7 @@ export const UserControlMenu: FC<UserControlProps> = ({
         >
           <Typography>パスワード編集</Typography>
         </MenuItem>
-        {!isSelf && (
+        {(!isSelf || isCoUser) && (
           <Confirmable
             componentGenerator={(handleOpen) => (
               <MenuItem onClick={handleOpen} sx={{ justifyContent: "end" }}>

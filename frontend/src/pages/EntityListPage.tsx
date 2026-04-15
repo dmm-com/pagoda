@@ -12,7 +12,7 @@ import { usePageTitle } from "hooks/usePageTitle";
 import { usePagodaSWR } from "hooks/usePagodaSWR";
 import { aironeApiClient } from "repository/AironeApiClient";
 import { topPath } from "routes/Routes";
-import { TITLE_TEMPLATES } from "services";
+import { ServerContext, TITLE_TEMPLATES } from "services";
 
 const EntityListContent: FC = () => {
   const { page, query, changePage, changeQuery } = usePage();
@@ -42,6 +42,8 @@ const EntityListContent: FC = () => {
 export const EntityListPage: FC = () => {
   const [openImportModal, setOpenImportModal] = useState(false);
 
+  const isReadonly = ServerContext.getInstance()?.user?.isReadonly ?? false;
+
   const handleExport = useCallback(async () => {
     await aironeApiClient.exportEntities("entity.yaml");
   }, []);
@@ -70,6 +72,7 @@ export const EntityListPage: FC = () => {
             color="info"
             sx={{ margin: "0 4px" }}
             onClick={() => setOpenImportModal(true)}
+            disabled={isReadonly}
           >
             インポート
           </Button>

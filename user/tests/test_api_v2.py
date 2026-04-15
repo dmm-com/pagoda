@@ -17,14 +17,18 @@ class ViewTest(AironeViewTest):
     def _create_user(
         self,
         name,
-        email="email",
+        email="email@example.com",
         is_superuser=False,
+        is_readonly=False,
+        parent_user=None,
         authenticate_type=User.AuthenticateType.AUTH_TYPE_LOCAL,
     ):
         user = User(
             username=name,
             email=email,
             is_superuser=is_superuser,
+            is_readonly=is_readonly,
+            parent_user=parent_user,
             authenticate_type=authenticate_type,
         )
         user.set_password(name)
@@ -53,6 +57,11 @@ class ViewTest(AironeViewTest):
         resp = self.client.get("/user/api/v2/%s/" % other.id)
         self.assertEqual(resp.status_code, 403)
 
+        # parent user can retrieve their co-user
+        co_user = self._create_user("co_user", "co@example.com", parent_user=login_user)
+        resp = self.client.get("/user/api/v2/%s/" % co_user.id)
+        self.assertEqual(resp.status_code, 200)
+
     def test_list_user(self):
         login_user = self.guest_login()
         admin_user = self._create_user("admin", "admin@example.com", True)
@@ -72,17 +81,114 @@ class ViewTest(AironeViewTest):
                         "username": "admin",
                         "email": "admin@example.com",
                         "is_superuser": True,
+                        "is_readonly": False,
                         "date_joined": admin_user.date_joined.isoformat(),
+                        "parent_user": None,
                     },
                     {
                         "id": login_user.id,
                         "username": "guest",
                         "email": "",
                         "is_superuser": False,
+                        "is_readonly": False,
                         "date_joined": login_user.date_joined.isoformat(),
+                        "parent_user": None,
                     },
                 ],
             },
+        )
+
+    def test_create_user_by_admin(self):
+        self.admin_login()
+
+        params = {
+            "username": "superuser",
+            "email": "superuser@example.com",
+            "password": "secret-pass",
+            "is_superuser": True,
+        }
+        resp = self.client.post(
+            "/user/api/v2/",
+            json.dumps(params),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 201)
+
+        created_user = User.objects.filter(username="superuser").first()
+        self.assertIsNotNone(created_user)
+        self.assertEqual(created_user.email, "superuser@example.com")
+        self.assertTrue(created_user.is_superuser)
+        self.assertTrue(created_user.check_password("secret-pass"))
+        self.assertFalse(created_user.is_readonly)
+        self.assertIsNone(created_user.parent_user)
+
+        # check to prevent creating duplicated username user
+        resp = self.client.post(
+            "/user/api/v2/",
+            json.dumps(params),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.json()[0]["message"], "User with this username already exists")
+
+    def test_create_superuser_by_guest(self):
+        self.guest_login()
+
+        params = {
+            "username": "superuser",
+            "email": "superuser@example.com",
+            "password": "secret-pass",
+            "is_superuser": True,
+        }
+        resp = self.client.post(
+            "/user/api/v2/",
+            json.dumps(params),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(resp.json()["message"], "You don't have permission to create superuser")
+
+        # check superuser wasn't created, actually.
+        self.assertFalse(User.objects.filter(username="superuser").exists())
+
+    def test_create_readonly_by_guest(self):
+        guest_user = self.guest_login()
+
+        # for checking wrong duplication error
+        # (creating user will be "guest-new-user", so "newuser" won't be duplicated)
+        self._create_user("newuser")
+
+        params = {
+            "username": "newuser",
+            "email": "newuser@example.com",
+            "password": "secret-pass",
+            "is_superuser": False,
+        }
+        resp = self.client.post(
+            "/user/api/v2/",
+            json.dumps(params),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 201)
+
+        # check readonly user was created.
+        created_user = User.objects.filter(username=guest_user.username + "-newuser").first()
+        self.assertIsNotNone(created_user)
+        self.assertEqual(created_user.email, guest_user.email)
+        self.assertFalse(created_user.is_superuser)
+        self.assertTrue(created_user.check_password("secret-pass"))
+        self.assertTrue(created_user.is_readonly)
+        self.assertEqual(created_user.parent_user, guest_user)
+
+        # check to prevent creating duplicated username user
+        resp = self.client.post(
+            "/user/api/v2/",
+            json.dumps(params),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.json()["username"][0]["message"], "A user with that username already exists."
         )
 
     def test_delete_user(self):
@@ -111,6 +217,20 @@ class ViewTest(AironeViewTest):
                 "message": "You do not have permission to perform this action.",
             },
         )
+
+    def test_delete_own_co_user(self):
+        user_guest = self.guest_login()
+
+        # create co-user for guest user
+        co_user = self._create_user("co_user", email="co_user@example.com", parent_user=user_guest)
+
+        # delete co-user by parent user
+        resp = self.client.delete("/user/api/v2/%d/" % co_user.id)
+        self.assertEqual(resp.status_code, 204)
+
+        # check co-user was deleted actually.
+        co_user.refresh_from_db()
+        self.assertFalse(co_user.is_active)
 
     def test_get_user_token_via_apiv2_without_creation(self):
         self.guest_login()
@@ -313,6 +433,38 @@ class ViewTest(AironeViewTest):
         self.assertIsNotNone(updated_user)
         self.assertTrue(updated_user.check_password(new_passwd))
 
+    def test_patch_co_user_password_by_guest(self):
+        user = self.guest_login()
+
+        co_user = self._create_user("co_user", parent_user=user)
+        params = {
+            "old_passwd": co_user.username,
+            "new_passwd": "new-passwd",
+            "chk_passwd": "new-passwd",
+        }
+        resp = self.client.patch(
+            "/user/api/v2/%d/edit_passwd" % co_user.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 200)
+
+    def test_patch_other_user_password_by_guest(self):
+        self.guest_login()
+
+        other_user = self._create_user("other")
+        params = {
+            "old_passwd": "other",
+            "new_passwd": "new-passwd",
+            "chk_passwd": "new-passwd",
+        }
+        resp = self.client.patch(
+            "/user/api/v2/%d/edit_passwd" % other_user.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.json()["non_field_errors"][0]["message"],
+            "You don't have permission to access this object",
+        )
+
     @with_airone_settings(
         {
             "PASSWORD_RESET_DISABLED": True,
@@ -488,3 +640,20 @@ class ViewTest(AironeViewTest):
                 "/user/api/v2/%d/auth" % login_user.id, json.dumps(_param), "application/json"
             )
             self.assertEqual(resp.status_code, 400)
+
+    def test_refresh_co_user_token_by_parent(self):
+        parent_user = self.guest_login()
+        co_user = self._create_user("co_user", parent_user=parent_user)
+
+        resp = self.client.post("/user/api/v2/%d/token/" % co_user.id)
+        self.assertEqual(resp.status_code, 200)
+
+        token = Token.objects.get(user=co_user)
+        self.assertEqual(resp.json(), {"key": str(token)})
+
+    def test_refresh_co_user_token_by_non_parent(self):
+        self.guest_login()
+        other_user = self._create_user("other_user")
+
+        resp = self.client.post("/user/api/v2/%d/token/" % other_user.id)
+        self.assertEqual(resp.status_code, 403)

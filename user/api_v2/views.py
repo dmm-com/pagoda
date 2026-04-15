@@ -41,8 +41,10 @@ class UserPermission(BasePermission):
     def has_object_permission(self, request: Request, view: Any, obj: User) -> bool:
         current_user: User = request.user
         permisson = {
-            "retrieve": current_user.is_superuser or current_user == obj,
-            "destroy": current_user.is_superuser,
+            "retrieve": current_user.is_superuser
+            or current_user == obj
+            or current_user == obj.parent_user,
+            "destroy": current_user.is_superuser or current_user == obj.parent_user,
             "update": current_user.is_superuser or current_user == obj,
         }
         return permisson.get(view.action, False)
@@ -84,9 +86,22 @@ class UserTokenAPI(viewsets.ModelViewSet):
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
 
+    @extend_schema(operation_id="user_api_v2_token_refresh")
     def refresh(self, request: Request) -> Response:
         Token.objects.filter(user=request.user).delete()
         instance = Token.objects.create(user=request.user)
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
+
+    @extend_schema(operation_id="user_api_v2_co_user_token_refresh")
+    def co_user_refresh(self, request: Request, pk: int) -> Response:
+        """Allow a parent user to refresh the token of their co-user."""
+
+        co_user = get_object_or_404(User, pk=pk, is_active=True)
+        if co_user.parent_user != request.user:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        Token.objects.filter(user=co_user).delete()
+        instance = Token.objects.create(user=co_user)
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
 

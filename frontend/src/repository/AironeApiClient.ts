@@ -157,8 +157,20 @@ class AironeApiClient {
   }
 
   async updateUserToken(): Promise<UserToken> {
-    return await this.user.userApiV2TokenCreate(
+    return await this.user.userApiV2TokenRefresh(
       {},
+      {
+        headers: {
+          "Content-Type": "application/json;charset=utf-8",
+          "X-CSRFToken": getCsrfToken(),
+        },
+      },
+    );
+  }
+
+  async updateUserTokenForCoUser(userId: number): Promise<void> {
+    await this.user.userApiV2CoUserTokenRefresh(
+      { id: userId },
       {
         headers: {
           "Content-Type": "application/json;charset=utf-8",

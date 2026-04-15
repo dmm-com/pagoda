@@ -73,6 +73,7 @@ logger = logging.getLogger(__name__)
 class EntryPermission(BasePermission):
     def has_object_permission(self, request: Request, view, obj) -> bool:
         user: User = request.user
+
         permisson = {
             "retrieve": ACLType.Readable,
             "update": ACLType.Writable,
@@ -718,6 +719,9 @@ class EntryImportAPI(generics.GenericAPIView):
         },
     )
     def post(self, request: Request) -> Response:
+        if request.user.is_readonly:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
         import_datas = request.data
         user: User = request.user
         serializer = EntryImportSerializer(data=import_datas)
@@ -768,6 +772,11 @@ class EntryImportAPI(generics.GenericAPIView):
 class EntryAttributeValueRestoreAPI(generics.UpdateAPIView):
     queryset = AttributeValue.objects.all()
     serializer_class = EntryAttributeValueRestoreSerializer
+
+    def update(self, request: Request, *args, **kwargs) -> Response:
+        if request.user.is_readonly:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        return super().update(request, *args, **kwargs)
 
 
 class EntryBulkUpdateAPI(generics.UpdateAPIView):
