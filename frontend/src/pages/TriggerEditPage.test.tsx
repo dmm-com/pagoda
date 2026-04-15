@@ -26,6 +26,7 @@ const server = setupServer(
         attrs: [],
         webhooks: [],
         isolation_rules: [],
+        delete_chain_exclude_entities: [],
       },
       actions: [],
       conditions: [],
@@ -44,6 +45,7 @@ const server = setupServer(
           attrs: [],
           webhooks: [],
           isolation_rules: [],
+          delete_chain_exclude_entities: [],
         },
         {
           id: 2,
@@ -53,6 +55,7 @@ const server = setupServer(
           attrs: [],
           webhooks: [],
           isolation_rules: [],
+          delete_chain_exclude_entities: [],
         },
         {
           id: 3,
@@ -62,6 +65,7 @@ const server = setupServer(
           attrs: [],
           webhooks: [],
           isolation_rules: [],
+          delete_chain_exclude_entities: [],
         },
       ],
     });
@@ -76,6 +80,7 @@ const server = setupServer(
       attrs: [],
       webhooks: [],
       isolation_rules: [],
+      delete_chain_exclude_entities: [],
     });
   }),
 );

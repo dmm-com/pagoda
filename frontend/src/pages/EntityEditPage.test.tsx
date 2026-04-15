@@ -51,6 +51,7 @@ const entity = {
   attrs: [],
   webhooks: [],
   isolation_rules: [],
+  delete_chain_exclude_entities: [],
   permission: ACLType.Full,
 };
 

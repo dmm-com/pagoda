@@ -29,7 +29,11 @@ interface Props {
   referralEntities?: Array<{ id: number; name: string }>;
 }
 
-export const BasicFields: FC<Props> = ({ control, referralEntities, setValue }) => {
+export const BasicFields: FC<Props> = ({
+  control,
+  referralEntities,
+  setValue,
+}) => {
   const currItemNameType = useWatch({ control, name: "itemNameType" });
 
   return (

@@ -53,6 +53,12 @@ describe("schema", () => {
         },
       },
     ],
+    deleteChainExcludeEntities: [
+      {
+        id: 1,
+        name: "excludedEntity",
+      },
+    ],
     attrs: [
       {
         name: "attr1",

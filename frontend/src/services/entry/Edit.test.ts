@@ -74,6 +74,7 @@ test("formalizeEntryInfo should return expect value", () => {
     ],
     webhooks: [],
     isolationRules: [],
+    deleteChainExcludeEntities: [],
     isPublic: true,
   };
 
@@ -331,6 +332,7 @@ test("formalizeEntryInfo should use defaultValue when creating new entry", () =>
     ],
     webhooks: [],
     isolationRules: [],
+    deleteChainExcludeEntities: [],
     isPublic: true,
   };
 
@@ -625,6 +627,7 @@ test("formalizeEntryInfo should use defaultValue when creating new entry", () =>
     ],
     webhooks: [],
     isolationRules: [],
+    deleteChainExcludeEntities: [],
     isPublic: true,
   };
 
@@ -901,6 +904,7 @@ test("formalizeEntryInfo should use defaultValue when creating new entry", () =>
     ],
     webhooks: [],
     isolationRules: [],
+    deleteChainExcludeEntities: [],
     isPublic: true,
   };
 

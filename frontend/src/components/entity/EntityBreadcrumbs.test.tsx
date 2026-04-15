@@ -28,6 +28,7 @@ describe("EntityBreadcrumbs", () => {
     attrs: [],
     webhooks: [],
     isolationRules: [],
+    deleteChainExcludeEntities: [],
     permission: ACLType.Full,
   };
 

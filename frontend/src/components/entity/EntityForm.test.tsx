@@ -22,6 +22,7 @@ describe("EntityForm", () => {
     isToplevel: false,
     webhooks: [],
     isolationRules: [],
+    deleteChainExcludeEntities: [],
     attrs: [],
   };
 

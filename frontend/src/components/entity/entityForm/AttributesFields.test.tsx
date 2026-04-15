@@ -28,6 +28,7 @@ describe("AttributesFields", () => {
     isToplevel: false,
     webhooks: [],
     isolationRules: [],
+    deleteChainExcludeEntities: [],
     attrs: [],
   };
 

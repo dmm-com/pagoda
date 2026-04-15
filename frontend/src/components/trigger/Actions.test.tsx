@@ -45,6 +45,7 @@ describe("ActionForm", () => {
     })),
     webhooks: [],
     isolationRules: [],
+    deleteChainExcludeEntities: [],
     hasOngoingChanges: false,
   };
 

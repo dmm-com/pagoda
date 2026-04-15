@@ -72,6 +72,7 @@ describe("EntryForm", () => {
     ],
     webhooks: [],
     isolationRules: [],
+    deleteChainExcludeEntities: [],
   };
 
   const entryInfo: Schema = {

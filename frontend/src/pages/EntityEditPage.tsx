@@ -184,9 +184,8 @@ export const EntityEditPage: FC = () => {
         })) ?? [];
 
     try {
-      const deleteChainExcludeEntityIds = entityForm.deleteChainExcludeEntities.map(
-        (e) => e.id,
-      );
+      const deleteChainExcludeEntityIds =
+        entityForm.deleteChainExcludeEntities.map((e) => e.id);
 
       if (willCreate) {
         await aironeApiClient.createEntity(
