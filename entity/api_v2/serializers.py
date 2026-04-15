@@ -33,6 +33,13 @@ from webhook.models import Webhook
 
 
 # Enhanced TypedDict definitions
+class EntityData(TypedDict):
+    """Type definition for Entity data"""
+
+    id: int
+    name: str
+
+
 class EntityAttrReferralData(TypedDict):
     """Type definition for EntityAttr referral data"""
 
@@ -1112,7 +1119,7 @@ class EntityDetailSerializer(EntityListSerializer):
     def get_has_ongoing_changes(self, obj: Entity) -> bool:
         return (obj.status & Entity.STATUS_CREATING) > 0 or (obj.status & Entity.STATUS_EDITING) > 0
 
-    def get_delete_chain_exclude_entities(self, obj: Entity) -> list[dict]:
+    def get_delete_chain_exclude_entities(self, obj: Entity) -> list[EntityData]:
         return [{"id": e.id, "name": e.name} for e in obj.delete_chain_exclude_entities.all()]
 
 
