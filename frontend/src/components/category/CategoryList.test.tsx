@@ -19,11 +19,9 @@ beforeEach(() => {
 describe("CategoryList", () => {
   test("should render with categories when ReadOnly User", async () => {
     // Mock ServerContext to simulate a ReadOnly user
-    jest
-      .spyOn(ServerContext, "getInstance")
-      .mockReturnValue({
-        user: { isReadonly: true },
-      } as unknown as ServerContext);
+    jest.spyOn(ServerContext, "getInstance").mockReturnValue({
+      user: { isReadonly: true },
+    } as unknown as ServerContext);
     // Mock API response
     const getCategoriesMock = jest
       .spyOn(aironeApiClient, "getCategories")
