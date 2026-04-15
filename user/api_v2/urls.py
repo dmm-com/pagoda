@@ -36,7 +36,11 @@ urlpatterns = [
     ),
     path(
         "<int:pk>/token/",
-        views.UserCoUserTokenRefreshAPI.as_view(),
+        views.UserTokenAPI.as_view(
+            {
+                "post": "co_user_refresh",
+            }
+        ),
     ),
     path(
         "token/",

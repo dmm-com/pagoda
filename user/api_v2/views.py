@@ -86,25 +86,24 @@ class UserTokenAPI(viewsets.ModelViewSet):
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
 
+    @extend_schema(operation_id="user_api_v2_token_refresh")
     def refresh(self, request: Request) -> Response:
         Token.objects.filter(user=request.user).delete()
         instance = Token.objects.create(user=request.user)
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
 
+    @extend_schema(operation_id="user_api_v2_co_user_token_refresh")
+    def co_user_refresh(self, request: Request, pk: int) -> Response:
+        """Allow a parent user to refresh the token of their co-user."""
 
-class UserCoUserTokenRefreshAPI(generics.GenericAPIView):
-    """Allow a parent user to refresh the token of their co-user."""
-
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request: Request, pk: int) -> Response:
         co_user = get_object_or_404(User, pk=pk, is_active=True)
         if co_user.parent_user != request.user:
             return Response(status=status.HTTP_403_FORBIDDEN)
         Token.objects.filter(user=co_user).delete()
-        Token.objects.create(user=co_user)
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        instance = Token.objects.create(user=co_user)
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
 
 
 class UserImportAPI(generics.GenericAPIView):
