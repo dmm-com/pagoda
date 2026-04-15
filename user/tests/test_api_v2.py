@@ -646,7 +646,10 @@ class ViewTest(AironeViewTest):
         co_user = self._create_user("co_user", parent_user=parent_user)
 
         resp = self.client.post("/user/api/v2/%d/token/" % co_user.id)
-        self.assertEqual(resp.status_code, 204)
+        self.assertEqual(resp.status_code, 200)
+
+        token = Token.objects.get(user=co_user)
+        self.assertEqual(resp.json(), {"key": str(token)})
 
     def test_refresh_co_user_token_by_non_parent(self):
         self.guest_login()
