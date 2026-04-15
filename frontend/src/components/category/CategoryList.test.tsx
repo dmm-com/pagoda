@@ -9,6 +9,7 @@ import { CategoryList } from "./CategoryList";
 import { TestWrapper } from "TestWrapper";
 import { aironeApiClient } from "repository/AironeApiClient";
 import { ACLType } from "services/ACLUtil";
+import { ServerContext } from "services/ServerContext";
 
 // Setup API mocks
 beforeEach(() => {
@@ -16,7 +17,13 @@ beforeEach(() => {
 });
 
 describe("CategoryList", () => {
-  test("should render with categories when isEdit is false", async () => {
+  test("should render with categories when ReadOnly User", async () => {
+    // Mock ServerContext to simulate a ReadOnly user
+    jest
+      .spyOn(ServerContext, "getInstance")
+      .mockReturnValue({
+        user: { isReadonly: true },
+      } as unknown as ServerContext);
     // Mock API response
     const getCategoriesMock = jest
       .spyOn(aironeApiClient, "getCategories")
@@ -46,7 +53,7 @@ describe("CategoryList", () => {
       });
 
     await act(async () => {
-      render(<CategoryList isEdit={false} />, {
+      render(<CategoryList />, {
         wrapper: TestWrapper,
       });
     });
@@ -63,8 +70,11 @@ describe("CategoryList", () => {
     expect(screen.getByText("モデル2")).toBeInTheDocument();
     expect(screen.getByText("モデル3")).toBeInTheDocument();
 
-    // Verify create button is not displayed
-    expect(screen.queryByText("新規カテゴリを作成")).not.toBeInTheDocument();
+    // Verify create button is displayed but disabled for ReadOnly users
+    expect(screen.getByText("新規カテゴリを作成")).toBeInTheDocument();
+    expect(
+      screen.getByText("新規カテゴリを作成").closest("a, button"),
+    ).toHaveAttribute("aria-disabled", "true");
 
     // Verify pagination is displayed
     expect(screen.getByText("1 - 2 / 2 件")).toBeInTheDocument();
@@ -87,7 +97,7 @@ describe("CategoryList", () => {
     });
 
     await act(async () => {
-      render(<CategoryList isEdit={true} />, {
+      render(<CategoryList />, {
         wrapper: TestWrapper,
       });
     });

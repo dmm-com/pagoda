@@ -12,10 +12,12 @@ import { PageHeader } from "components/common/PageHeader";
 import { usePageTitle } from "hooks/usePageTitle";
 import { aironeApiClient } from "repository/AironeApiClient";
 import { newRolePath, topPath } from "routes/Routes";
-import { TITLE_TEMPLATES } from "services";
+import { ServerContext, TITLE_TEMPLATES } from "services";
 
 export const RoleListPage: FC = () => {
   const [openImportModal, setOpenImportModal] = useState(false);
+
+  const isReadonly = ServerContext.getInstance()?.user?.isReadonly ?? false;
 
   const handleExport = useCallback(async () => {
     await aironeApiClient.exportRoles("role.yaml");
@@ -46,6 +48,7 @@ export const RoleListPage: FC = () => {
           color="info"
           sx={{ margin: "0 4px" }}
           onClick={() => setOpenImportModal(true)}
+          disabled={isReadonly}
         >
           インポート
         </Button>
@@ -59,6 +62,7 @@ export const RoleListPage: FC = () => {
           component={Link}
           to={newRolePath()}
           sx={{ height: "48px", borderRadius: "24px", ml: "16px" }}
+          disabled={isReadonly}
         >
           <AddIcon /> 新規ロールを作成
         </Button>

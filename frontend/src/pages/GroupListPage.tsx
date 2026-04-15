@@ -143,6 +143,7 @@ export const GroupListPage: FC = () => {
   }, []);
 
   const isSuperuser = ServerContext.getInstance()?.user?.isSuperuser ?? false;
+  const isReadonly = ServerContext.getInstance()?.user?.isReadonly ?? false;
 
   usePageTitle(TITLE_TEMPLATES.groupList);
 
@@ -169,6 +170,7 @@ export const GroupListPage: FC = () => {
           color="info"
           sx={{ margin: "0 4px" }}
           onClick={() => setOpenImportModal(true)}
+          disabled={isReadonly}
         >
           インポート
         </Button>

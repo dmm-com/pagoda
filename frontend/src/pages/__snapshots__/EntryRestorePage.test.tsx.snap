@@ -266,8 +266,9 @@ exports[`should match snapshot 1`] = `
                         class="MuiBox-root css-0"
                       >
                         <button
-                          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-53g0n7-MuiButtonBase-root-MuiIconButton-root"
-                          tabindex="0"
+                          class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeMedium css-53g0n7-MuiButtonBase-root-MuiIconButton-root"
+                          disabled=""
+                          tabindex="-1"
                           type="button"
                         >
                           <svg
@@ -326,8 +327,9 @@ exports[`should match snapshot 1`] = `
                         class="MuiBox-root css-0"
                       >
                         <button
-                          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-53g0n7-MuiButtonBase-root-MuiIconButton-root"
-                          tabindex="0"
+                          class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeMedium css-53g0n7-MuiButtonBase-root-MuiIconButton-root"
+                          disabled=""
+                          tabindex="-1"
                           type="button"
                         >
                           <svg
@@ -386,8 +388,9 @@ exports[`should match snapshot 1`] = `
                         class="MuiBox-root css-0"
                       >
                         <button
-                          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-53g0n7-MuiButtonBase-root-MuiIconButton-root"
-                          tabindex="0"
+                          class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeMedium css-53g0n7-MuiButtonBase-root-MuiIconButton-root"
+                          disabled=""
+                          tabindex="-1"
                           type="button"
                         >
                           <svg
@@ -751,8 +754,9 @@ exports[`should match snapshot 1`] = `
                       class="MuiBox-root css-0"
                     >
                       <button
-                        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-53g0n7-MuiButtonBase-root-MuiIconButton-root"
-                        tabindex="0"
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeMedium css-53g0n7-MuiButtonBase-root-MuiIconButton-root"
+                        disabled=""
+                        tabindex="-1"
                         type="button"
                       >
                         <svg
@@ -811,8 +815,9 @@ exports[`should match snapshot 1`] = `
                       class="MuiBox-root css-0"
                     >
                       <button
-                        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-53g0n7-MuiButtonBase-root-MuiIconButton-root"
-                        tabindex="0"
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeMedium css-53g0n7-MuiButtonBase-root-MuiIconButton-root"
+                        disabled=""
+                        tabindex="-1"
                         type="button"
                       >
                         <svg
@@ -871,8 +876,9 @@ exports[`should match snapshot 1`] = `
                       class="MuiBox-root css-0"
                     >
                       <button
-                        class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-53g0n7-MuiButtonBase-root-MuiIconButton-root"
-                        tabindex="0"
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeMedium css-53g0n7-MuiButtonBase-root-MuiIconButton-root"
+                        disabled=""
+                        tabindex="-1"
                         type="button"
                       >
                         <svg

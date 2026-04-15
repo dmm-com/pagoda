@@ -9,6 +9,7 @@ import { EntityListCard } from "./EntityListCard";
 
 import { PaginationFooter } from "components/common/PaginationFooter";
 import { SearchBox } from "components/common/SearchBox";
+import { ServerContext } from "index";
 import { newEntityPath } from "routes/Routes";
 import { EntityListParam } from "services/Constants";
 import { normalizeToMatch } from "services/StringUtil";
@@ -30,6 +31,8 @@ export const EntityList: FC<Props> = ({
   handleChangeQuery,
   setToggle,
 }) => {
+  const isReadonly = ServerContext.getInstance()?.user?.isReadonly ?? false;
+
   return (
     <Box>
       {/* This box shows search box and create button */}
@@ -52,6 +55,7 @@ export const EntityList: FC<Props> = ({
           component={Link}
           to={newEntityPath()}
           sx={{ height: "48px", borderRadius: "24px" }}
+          disabled={isReadonly}
         >
           <AddIcon /> 新規モデルを作成
         </Button>

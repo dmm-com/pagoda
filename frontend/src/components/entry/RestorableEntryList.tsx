@@ -32,6 +32,7 @@ import { usePage } from "hooks/usePage";
 import { usePagodaSWR } from "hooks/usePagodaSWR";
 import { aironeApiClient } from "repository/AironeApiClient";
 import { restoreEntryPath, topPath } from "routes/Routes";
+import { canEdit } from "services/ACLUtil";
 import { EntryListParam } from "services/Constants";
 import { formatDateTime } from "services/DateUtil";
 import { normalizeToMatch } from "services/StringUtil";
@@ -151,6 +152,7 @@ const EntryDetailModalContent: FC<{
               color="secondary"
               sx={{ margin: "0 4px" }}
               onClick={handleOpen}
+              disabled={!canEdit(entryDetail.permission)}
             >
               復旧
             </Button>
@@ -245,7 +247,10 @@ const RestorableEntryListContent: FC<Props> = ({ entityId }) => {
                     <>
                       <Confirmable
                         componentGenerator={(handleOpen) => (
-                          <IconButton onClick={handleOpen}>
+                          <IconButton
+                            onClick={handleOpen}
+                            disabled={!canEdit(entry.permission)}
+                          >
                             <RestoreIcon />
                           </IconButton>
                         )}

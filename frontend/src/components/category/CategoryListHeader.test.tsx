@@ -30,7 +30,6 @@ describe("CategoryListHeader", () => {
         <CategoryListHeader
           {...defaultProps}
           category={createCategory(ACLType.Full)}
-          isEdit={true}
         />,
         { wrapper: TestWrapper },
       );
@@ -40,86 +39,52 @@ describe("CategoryListHeader", () => {
   });
 
   describe("menu button visibility", () => {
-    describe("when isEdit is true", () => {
-      test("menu button should be displayed when permission is Writable", () => {
-        render(
-          <CategoryListHeader
-            {...defaultProps}
-            category={createCategory(ACLType.Writable)}
-            isEdit={true}
-          />,
-          { wrapper: TestWrapper },
-        );
+    test("menu button should be displayed when permission is Writable", () => {
+      render(
+        <CategoryListHeader
+          {...defaultProps}
+          category={createCategory(ACLType.Writable)}
+        />,
+        { wrapper: TestWrapper },
+      );
 
-        expect(screen.getByRole("button")).toBeInTheDocument();
-      });
-
-      test("menu button should be displayed when permission is Full", () => {
-        render(
-          <CategoryListHeader
-            {...defaultProps}
-            category={createCategory(ACLType.Full)}
-            isEdit={true}
-          />,
-          { wrapper: TestWrapper },
-        );
-
-        expect(screen.getByRole("button")).toBeInTheDocument();
-      });
-
-      test("menu button should not be displayed when permission is Readable", () => {
-        render(
-          <CategoryListHeader
-            {...defaultProps}
-            category={createCategory(ACLType.Readable)}
-            isEdit={true}
-          />,
-          { wrapper: TestWrapper },
-        );
-
-        expect(screen.queryByRole("button")).not.toBeInTheDocument();
-      });
-
-      test("menu button should not be displayed when permission is Nothing", () => {
-        render(
-          <CategoryListHeader
-            {...defaultProps}
-            category={createCategory(ACLType.Nothing)}
-            isEdit={true}
-          />,
-          { wrapper: TestWrapper },
-        );
-
-        expect(screen.queryByRole("button")).not.toBeInTheDocument();
-      });
+      expect(screen.getByRole("button")).toBeInTheDocument();
     });
 
-    describe("when isEdit is false", () => {
-      test("menu button should not be displayed even with Full permission", () => {
-        render(
-          <CategoryListHeader
-            {...defaultProps}
-            category={createCategory(ACLType.Full)}
-            isEdit={false}
-          />,
-          { wrapper: TestWrapper },
-        );
+    test("menu button should be displayed when permission is Full", () => {
+      render(
+        <CategoryListHeader
+          {...defaultProps}
+          category={createCategory(ACLType.Full)}
+        />,
+        { wrapper: TestWrapper },
+      );
 
-        expect(screen.queryByRole("button")).not.toBeInTheDocument();
-      });
+      expect(screen.getByRole("button")).toBeInTheDocument();
+    });
 
-      test("menu button should not be displayed with Writable permission", () => {
-        render(
-          <CategoryListHeader
-            {...defaultProps}
-            category={createCategory(ACLType.Writable)}
-            isEdit={false}
-          />,
-          { wrapper: TestWrapper },
-        );
+    test("menu button should not be displayed when permission is Readable", () => {
+      render(
+        <CategoryListHeader
+          {...defaultProps}
+          category={createCategory(ACLType.Readable)}
+        />,
+        { wrapper: TestWrapper },
+      );
 
-        expect(screen.queryByRole("button")).not.toBeInTheDocument();
-      });
+      expect(screen.queryByRole("button")).not.toBeInTheDocument();
+    });
+
+    test("menu button should not be displayed when permission is Nothing", () => {
+      render(
+        <CategoryListHeader
+          {...defaultProps}
+          category={createCategory(ACLType.Nothing)}
+        />,
+        { wrapper: TestWrapper },
+      );
+
+      expect(screen.queryByRole("button")).not.toBeInTheDocument();
     });
   });
 });
