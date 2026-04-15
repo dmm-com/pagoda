@@ -157,7 +157,7 @@ class AironeApiClient {
   }
 
   async updateUserToken(): Promise<UserToken> {
-    return await this.user.userApiV2TokenCreate(
+    return await this.user.userApiV2TokenRefresh(
       {},
       {
         headers: {
@@ -169,7 +169,7 @@ class AironeApiClient {
   }
 
   async updateUserTokenForCoUser(userId: number): Promise<void> {
-    await this.user.userApiV2TokenCreate2(
+    await this.user.userApiV2CoUserTokenRefresh(
       { id: userId },
       {
         headers: {
