@@ -10,17 +10,16 @@ import { PaginationFooter } from "components/common/PaginationFooter";
 import { SearchBox } from "components/common/SearchBox";
 import { usePage } from "hooks/usePage";
 import { usePagodaSWR } from "hooks/usePagodaSWR";
+import { ServerContext } from "index";
 import { aironeApiClient } from "repository";
 import { entityEntriesPath, newCategoryPath } from "routes/Routes";
 import { EntityListParam } from "services/Constants";
 import { normalizeToMatch } from "services/StringUtil";
 
-interface Props {
-  isEdit?: boolean;
-}
-
-const CategoryListContent: FC<Props> = ({ isEdit = false }) => {
+const CategoryListContent: FC = () => {
   const { page, query, changeQuery, changePage } = usePage();
+
+  const isReadonly = ServerContext.getInstance()?.user?.isReadonly ?? false;
 
   // request handler when user specify query
   const handleChangeQuery = (newQuery?: string) => {
@@ -49,17 +48,16 @@ const CategoryListContent: FC<Props> = ({ isEdit = false }) => {
             }}
           />
         </Box>
-        {isEdit && (
-          <Button
-            variant="contained"
-            color="secondary"
-            component={Link}
-            to={newCategoryPath()}
-            sx={{ height: "48px", borderRadius: "24px" }}
-          >
-            <AddIcon /> 新規カテゴリを作成
-          </Button>
-        )}
+        <Button
+          variant="contained"
+          color="secondary"
+          component={Link}
+          to={newCategoryPath()}
+          sx={{ height: "48px", borderRadius: "24px" }}
+          disabled={isReadonly}
+        >
+          <AddIcon /> 新規カテゴリを作成
+        </Button>
       </Box>
 
       {/* Context of Category */}
@@ -71,7 +69,6 @@ const CategoryListContent: FC<Props> = ({ isEdit = false }) => {
                 <CategoryListHeader
                   category={category}
                   setToggle={() => refreshCategories()}
-                  isEdit={isEdit}
                 />
               }
             >
@@ -109,10 +106,10 @@ const CategoryListContent: FC<Props> = ({ isEdit = false }) => {
   );
 };
 
-export const CategoryList: FC<Props> = ({ isEdit = false }) => {
+export const CategoryList: FC = () => {
   return (
     <Suspense fallback={<Loading />}>
-      <CategoryListContent isEdit={isEdit} />
+      <CategoryListContent />
     </Suspense>
   );
 };

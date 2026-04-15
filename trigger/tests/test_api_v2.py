@@ -597,3 +597,89 @@ class APITest(AironeViewTest):
         }
         resp = self.client.post("/trigger/api/v2/", json.dumps(params), "application/json")
         self.assertEqual(resp.status_code, 201)
+
+
+class ReadonlyUserPermissionTest(AironeViewTest):
+    def setUp(self):
+        super().setUp()
+
+        self.user = self.guest_login()
+        self.user.is_readonly = True
+        self.user.save()
+
+        self.entity_book = self.create_entity(
+            user=self.user,
+            name="book",
+            attrs=[
+                {"name": "title", "type": AttrType.STRING},
+                {"name": "isbn", "type": AttrType.STRING},
+                {"name": "memo", "type": AttrType.STRING},
+            ],
+        )
+
+        # Create a trigger using model layer (bypassing API) for update/delete/list tests
+        self.trigger_parent = TriggerCondition.register(
+            entity=self.entity_book,
+            conditions=[
+                {
+                    "attr_id": self.entity_book.attrs.get(name="title").id,
+                    "cond": "test",
+                }
+            ],
+            actions=[
+                {
+                    "attr_id": self.entity_book.attrs.get(name="memo").id,
+                    "value": "test",
+                }
+            ],
+        )
+
+    def test_create_trigger_is_forbidden_for_readonly_user(self):
+        params = {
+            "entity_id": self.entity_book.id,
+            "conditions": [
+                {
+                    "attr_id": self.entity_book.attrs.get(name="isbn").id,
+                    "cond": "test-isbn",
+                }
+            ],
+            "actions": [
+                {
+                    "attr_id": self.entity_book.attrs.get(name="memo").id,
+                    "value": "test",
+                }
+            ],
+        }
+        resp = self.client.post("/trigger/api/v2/", json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, 403)
+
+    def test_update_trigger_is_forbidden_for_readonly_user(self):
+        params = {
+            "entity_id": self.entity_book.id,
+            "conditions": [
+                {
+                    "attr_id": self.entity_book.attrs.get(name="isbn").id,
+                    "cond": "updated",
+                }
+            ],
+            "actions": [
+                {
+                    "attr_id": self.entity_book.attrs.get(name="memo").id,
+                    "value": "updated",
+                }
+            ],
+        }
+        resp = self.client.put(
+            f"/trigger/api/v2/{self.trigger_parent.id}",
+            json.dumps(params),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 403)
+
+    def test_delete_trigger_is_forbidden_for_readonly_user(self):
+        resp = self.client.delete(f"/trigger/api/v2/{self.trigger_parent.id}")
+        self.assertEqual(resp.status_code, 403)
+
+    def test_list_triggers_is_allowed_for_readonly_user(self):
+        resp = self.client.get("/trigger/api/v2/")
+        self.assertEqual(resp.status_code, 200)

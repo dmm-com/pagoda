@@ -35,7 +35,15 @@ def get_permitted_roles(user: User, base_queryset: QuerySet[Role]) -> QuerySet[R
 
 
 class RolePermission(BasePermission):
+    def has_permission(self, request: Request, view: Any) -> bool:
+        if request.user.is_readonly and view.action == "create":
+            return False
+        return True
+
     def has_object_permission(self, request: Request, view: Any, obj: Role) -> bool:
+        if request.user.is_readonly and view.action in ["update", "destroy"]:
+            return False
+
         current_user: User = request.user
         is_editable = Role.editable(current_user, obj.admin_users.all(), obj.admin_groups.all())
         permission = {

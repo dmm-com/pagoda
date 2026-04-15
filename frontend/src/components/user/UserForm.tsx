@@ -17,6 +17,7 @@ import {
   TableHead,
   TableRow,
   TextField,
+  Typography,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { useSnackbar } from "notistack";
@@ -25,14 +26,17 @@ import {
   FC,
   ReactNode,
   useCallback,
+  useMemo,
   useState,
 } from "react";
-import { Control, Controller } from "react-hook-form";
+import { Control, Controller, useWatch } from "react-hook-form";
 
 import { ChangeUserAuthModal } from "./ChangeUserAuthModal";
 import { Schema } from "./userForm/UserFormSchema";
 
+import { FlexBox } from "components/common/FlexBox";
 import { ServerContext } from "services/ServerContext";
+import { User } from "services/ServerContext";
 
 const StyledTableRow = styled(TableRow)(() => ({
   "&:nth-of-type(odd)": {
@@ -51,7 +55,10 @@ interface ReadonlyProps {
   user: UserRetrieve;
 }
 
-const InputBox: FC<{ children: ReactNode }> = ({ children }) => {
+const InputBox: FC<{ children: ReactNode; sx?: object }> = ({
+  children,
+  sx,
+}) => {
   return (
     <Box
       component="form"
@@ -61,6 +68,7 @@ const InputBox: FC<{ children: ReactNode }> = ({ children }) => {
         display: "flex",
         alignItems: "center",
         width: "90%",
+        ...sx,
       }}
     >
       {children}
@@ -250,30 +258,53 @@ const ElemEmailAddress: FC<Props> = ({ control }) => {
   );
 };
 
-const ElemUserName: FC<Props> = ({ control }) => {
+const ElemUserName: FC<Props & { isMyself: boolean; isCoUser: boolean }> = ({
+  control,
+  isMyself,
+  isCoUser,
+}) => {
+  const userInfo = useWatch({ control });
+  const loginUser: User | undefined = useMemo(
+    () => ServerContext.getInstance()?.user,
+    [],
+  );
+
   return (
     <StyledTableRow>
       <TableCell sx={{ width: "400px", wordBreak: "break-word" }}>
         名前
       </TableCell>
       <TableCell sx={{ width: "750px", p: "0px", wordBreak: "break-word" }}>
-        <InputBox>
-          <Controller
-            name="username"
-            control={control}
-            defaultValue=""
-            render={({ field, fieldState: { error } }) => (
-              <TextField
-                {...field}
-                type="text"
-                placeholder="ユーザ名を入力してください"
-                error={error != null}
-                helperText={error?.message}
-                sx={{ width: "100%" }}
-              />
+        {isMyself || isCoUser ? (
+          <InputBox>
+            <Typography>{userInfo.username}</Typography>
+          </InputBox>
+        ) : (
+          <FlexBox alignItems={"center"}>
+            {loginUser && !loginUser.isSuperuser && (
+              <Typography sx={{ whiteSpace: "nowrap" }}>
+                {loginUser.username}-
+              </Typography>
             )}
-          />
-        </InputBox>
+            <InputBox sx={{ flex: 1, width: "auto" }}>
+              <Controller
+                name="username"
+                control={control}
+                defaultValue=""
+                render={({ field, fieldState: { error } }) => (
+                  <TextField
+                    {...field}
+                    type="text"
+                    placeholder="ユーザ名を入力してください"
+                    error={error != null}
+                    helperText={error?.message}
+                    sx={{ width: "100%" }}
+                  />
+                )}
+              />
+            </InputBox>
+          </FlexBox>
+        )}
       </TableCell>
     </StyledTableRow>
   );
@@ -309,7 +340,7 @@ const ElemUserPassword: FC<Props> = ({ control }) => {
 };
 
 const ElemIsSuperuser: FC<Props> = ({ control }) => {
-  const serverContext = ServerContext.getInstance();
+  const loginUser = useMemo(() => ServerContext.getInstance()?.user, []);
 
   return (
     <StyledTableRow>
@@ -325,7 +356,7 @@ const ElemIsSuperuser: FC<Props> = ({ control }) => {
             <Checkbox
               checked={field.value}
               onChange={(e) => field.onChange(e.target.checked)}
-              disabled={!(serverContext?.user?.isSuperuser ?? false)}
+              disabled={!(loginUser?.isSuperuser ?? false)}
             />
           )}
         />
@@ -338,8 +369,8 @@ interface UserFormProps {
   user?: UserRetrieve;
   control: Control<Schema>;
   isCreateMode: boolean;
-  isSuperuser: boolean;
   isMyself: boolean;
+  isCoUser: boolean;
   isSubmittable: boolean;
   handleSubmit: (e?: BaseSyntheticEvent) => Promise<void>;
   handleCancel: () => void;
@@ -349,12 +380,14 @@ export const UserForm: FC<UserFormProps> = ({
   user,
   control,
   isCreateMode,
-  isSuperuser,
   isMyself,
+  isCoUser,
   isSubmittable,
   handleSubmit,
   handleCancel,
 }) => {
+  const loginUser = useMemo(() => ServerContext.getInstance()?.user, []);
+
   return (
     <Box>
       <Box display="flex" justifyContent="flex-end" pb="24px">
@@ -362,7 +395,7 @@ export const UserForm: FC<UserFormProps> = ({
           <Button
             variant="contained"
             color="secondary"
-            disabled={!isSubmittable}
+            disabled={!isSubmittable || loginUser?.isReadonly}
             onClick={handleSubmit}
           >
             保存
@@ -383,18 +416,27 @@ export const UserForm: FC<UserFormProps> = ({
             </TableRow>
           </TableHead>
           <TableBody>
-            <ElemUserName control={control} />
-            <ElemEmailAddress control={control} />
-            {isSuperuser && <ElemIsSuperuser control={control} />}
+            <ElemUserName
+              control={control}
+              isMyself={isMyself}
+              isCoUser={isCoUser}
+            />
+
+            {loginUser?.isSuperuser && (
+              <>
+                <ElemEmailAddress control={control} />
+                <ElemIsSuperuser control={control} />
+              </>
+            )}
 
             {isCreateMode && <ElemUserPassword control={control} />}
 
             {/* Hide other user's token information */}
-            {!isCreateMode && isMyself && user != null && (
+            {!isCreateMode && (isMyself || isCoUser) && user != null && (
               <>
                 <ElemAccessToken user={user} />
                 <ElemAccessTokenConfiguration user={user} control={control} />
-                <ElemAuthenticationMethod user={user} />
+                {isMyself && <ElemAuthenticationMethod user={user} />}
               </>
             )}
           </TableBody>

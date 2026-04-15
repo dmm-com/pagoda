@@ -22,7 +22,9 @@ class UserManager(BaseUserManager):
         user = User(
             username=request_data.get("username"),
             email=request_data.get("email"),
-            is_superuser=request_data.get("is_superuser"),
+            is_superuser=request_data.get("is_superuser", False),
+            is_readonly=request_data.get("is_readonly", False),
+            parent_user=request_data.get("parent_user"),
         )
         user.set_password(request_data.get("password"))
         user.save()
@@ -45,6 +47,12 @@ class User(AbstractUser):
     )
     authorized_type = models.IntegerField(default=0)
     token_lifetime = models.IntegerField(default=TOKEN_LIFETIME)
+
+    # This indicates co-users that have inferior permissions.
+    parent_user = models.ForeignKey(
+        "User", null=True, related_name="co_users", on_delete=models.SET_NULL
+    )
+    is_readonly = models.BooleanField(default=False)
 
     @property
     def airone_groups(self) -> QuerySet:
@@ -92,6 +100,10 @@ class User(AbstractUser):
             if not isinstance(permission_level, ACLType):
                 return False
         except TypeError:
+            return False
+
+        # This condition is effective when the number of read-only users is majority.
+        if self.is_readonly and permission_level > ACLType.Readable:
             return False
 
         # doesn't permit, access to the children's objects are also not permitted.

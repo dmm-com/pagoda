@@ -35,6 +35,14 @@ urlpatterns = [
         views.UserAuthAPI.as_view(),
     ),
     path(
+        "<int:pk>/token/",
+        views.UserTokenAPI.as_view(
+            {
+                "post": "co_user_refresh",
+            }
+        ),
+    ),
+    path(
         "token/",
         views.UserTokenAPI.as_view(
             {

@@ -556,3 +556,50 @@ class ViewTest(AironeViewTest):
         # Superuser should be able to export all roles
         self.assertIn("role-for-user1", role_names)
         self.assertIn("role-for-user2", role_names)
+
+
+class ReadonlyUserPermissionTest(AironeViewTest):
+    def setUp(self):
+        super().setUp()
+
+        self.user = self.guest_login()
+        self.user.is_readonly = True
+        self.user.save()
+
+        # Create a role with the user as a member so it's visible via get_permitted_roles
+        self.role = Role.objects.create(name="test-role")
+        self.role.users.add(self.user)
+
+    def test_create_role_is_forbidden_for_readonly_user(self):
+        params = {
+            "name": "new-role",
+            "description": "",
+            "users": [],
+            "groups": [],
+            "admin_users": [],
+            "admin_groups": [],
+        }
+        resp = self.client.post("/role/api/v2/", json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, 403)
+
+    def test_update_role_is_forbidden_for_readonly_user(self):
+        params = {
+            "name": "updated-role",
+            "description": "",
+            "users": [],
+            "groups": [],
+            "admin_users": [],
+            "admin_groups": [],
+        }
+        resp = self.client.put(
+            f"/role/api/v2/{self.role.id}", json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, 403)
+
+    def test_delete_role_is_forbidden_for_readonly_user(self):
+        resp = self.client.delete(f"/role/api/v2/{self.role.id}")
+        self.assertEqual(resp.status_code, 403)
+
+    def test_retrieve_role_is_allowed_for_readonly_user(self):
+        resp = self.client.get(f"/role/api/v2/{self.role.id}")
+        self.assertEqual(resp.status_code, 200)

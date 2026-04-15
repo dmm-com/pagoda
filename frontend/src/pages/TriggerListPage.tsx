@@ -37,6 +37,7 @@ import { Confirmable } from "components/common/Confirmable";
 import { Loading } from "components/common/Loading";
 import { PageHeader } from "components/common/PageHeader";
 import { useAsync } from "hooks/useAsync";
+import { ServerContext } from "index";
 import { aironeApiClient } from "repository/AironeApiClient";
 import {
   editTriggerPath,
@@ -217,6 +218,8 @@ export const TriggerListPage: FC = () => {
     return await aironeApiClient.getTriggers();
   }, [toggle]);
 
+  const isReadonly = ServerContext.getInstance()?.user?.isReadonly ?? false;
+
   const handleDelete = async (triggerId: number) => {
     try {
       await aironeApiClient.deleteTrigger(triggerId);
@@ -248,6 +251,7 @@ export const TriggerListPage: FC = () => {
           component={Link}
           to={newTriggerPath()}
           sx={{ height: "48px", borderRadius: "24px", ml: "16px" }}
+          disabled={isReadonly}
         >
           <AddIcon />
           新規トリガーを作成
@@ -301,7 +305,10 @@ export const TriggerListPage: FC = () => {
                         <TableCell>
                           <Confirmable
                             componentGenerator={(handleOpen) => (
-                              <StyledIconButton onClick={handleOpen}>
+                              <StyledIconButton
+                                onClick={handleOpen}
+                                disabled={isReadonly}
+                              >
                                 <DeleteOutlineIcon />
                               </StyledIconButton>
                             )}
@@ -315,6 +322,7 @@ export const TriggerListPage: FC = () => {
                           <StyledIconButton
                             component={Link}
                             to={editTriggerPath(trigger.id)}
+                            disabled={isReadonly}
                           >
                             <EditOutlinedIcon />
                           </StyledIconButton>

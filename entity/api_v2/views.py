@@ -104,6 +104,9 @@ class EntityPermission(BasePermission):
         if not permission:
             return True
 
+        if request.user.is_readonly and permission > ACLType.Readable:
+            return False
+
         entity_id = view.kwargs.get("pk") or view.kwargs.get("entity_id")
         if not entity_id:
             return True
@@ -394,6 +397,9 @@ class EntityImportAPI(generics.GenericAPIView):
 
     @extend_schema(responses={200: None})
     def post(self, request: Request) -> Response:
+        if request.user.is_readonly:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
         import_datas = request.data
         serializer = EntityImportExportRootSerializer(
             data=import_datas, context={"request": self.request}

@@ -26,6 +26,7 @@ import { Confirmable } from "../common/Confirmable";
 import { Loading } from "../common/Loading";
 
 import { rolePath, rolesPath, topPath } from "routes/Routes";
+import { ServerContext } from "services";
 
 const StyledList = styled(List)(() => ({
   padding: "0",
@@ -47,6 +48,8 @@ const RoleListContent: FC = () => {
     () => aironeApiClient.getRoles(),
     { suspense: true },
   );
+
+  const isReadonly = ServerContext.getInstance()?.user?.isReadonly ?? false;
 
   const handleDelete = async (roleId: number) => {
     try {
@@ -142,7 +145,7 @@ const RoleListContent: FC = () => {
               <Confirmable
                 componentGenerator={(handleOpen) => (
                   <StyledIconButton
-                    disabled={!role.isEditable}
+                    disabled={!role.isEditable || isReadonly}
                     onClick={handleOpen}
                   >
                     <DeleteOutlineIcon />
@@ -154,7 +157,7 @@ const RoleListContent: FC = () => {
             </TableCell>
             <TableCell>
               <StyledIconButton
-                disabled={!role.isEditable}
+                disabled={!role.isEditable || isReadonly}
                 component={Link}
                 to={rolePath(role.id)}
               >
