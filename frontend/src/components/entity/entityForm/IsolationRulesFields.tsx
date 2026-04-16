@@ -435,8 +435,9 @@ export const IsolationRulesFields: FC<Props> = ({
             <HeaderTableCell width="200px">対象モデル</HeaderTableCell>
             <HeaderTableCell width="100px">全モデル</HeaderTableCell>
             <HeaderTableCell sx={{ display: "flex", gap: "8px" }}>
-              <Box width="200px">除外条件</Box>
+              <Box width="200px">属性</Box>
               <Box>NOT</Box>
+              <Box>除外するアイテムの属性値</Box>
             </HeaderTableCell>
             <HeaderTableCell width="60px">削除</HeaderTableCell>
             <HeaderTableCell width="60px">追加</HeaderTableCell>
