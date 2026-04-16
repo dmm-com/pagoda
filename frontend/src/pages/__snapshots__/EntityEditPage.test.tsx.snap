@@ -666,12 +666,17 @@ exports[`EditEntityPage should match snapshot 1`] = `
                   <div
                     class="MuiBox-root css-1domaf0"
                   >
-                    除外条件
+                    属性
                   </div>
                   <div
                     class="MuiBox-root css-0"
                   >
                     NOT
+                  </div>
+                  <div
+                    class="MuiBox-root css-0"
+                  >
+                    除外するアイテムの属性値
                   </div>
                 </th>
                 <th
@@ -1511,12 +1516,17 @@ exports[`EditEntityPage should match snapshot 1`] = `
                 <div
                   class="MuiBox-root css-1domaf0"
                 >
-                  除外条件
+                  属性
                 </div>
                 <div
                   class="MuiBox-root css-0"
                 >
                   NOT
+                </div>
+                <div
+                  class="MuiBox-root css-0"
+                >
+                  除外するアイテムの属性値
                 </div>
               </th>
               <th
