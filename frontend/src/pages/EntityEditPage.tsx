@@ -184,6 +184,9 @@ export const EntityEditPage: FC = () => {
         })) ?? [];
 
     try {
+      const deleteChainExcludeEntityIds =
+        entityForm.deleteChainExcludeEntities.map((e) => e.id);
+
       if (willCreate) {
         await aironeApiClient.createEntity(
           entityForm.name,
@@ -194,6 +197,7 @@ export const EntityEditPage: FC = () => {
           attrs,
           webhooks,
           isolationRules,
+          deleteChainExcludeEntityIds,
         );
       } else {
         await aironeApiClient.updateEntity(
@@ -206,6 +210,7 @@ export const EntityEditPage: FC = () => {
           [...attrs, ...deletedAttrs],
           [...webhooks, ...deletedWebhooks],
           [...isolationRules, ...deletedIsolationRules],
+          deleteChainExcludeEntityIds,
         );
       }
       enqueueSubmitResult(true);
@@ -264,6 +269,12 @@ export const EntityEditPage: FC = () => {
           label: webhook.label ?? "",
           isEnabled: webhook.isEnabled ?? false,
           headers: webhook.headers ?? [],
+        })),
+        deleteChainExcludeEntities: (
+          entity.deleteChainExcludeEntities ?? []
+        ).map((e: { id: number; name: string }) => ({
+          id: e.id,
+          name: e.name,
         })),
         attrs: entity.attrs.map((attr) => ({
           ...attr,

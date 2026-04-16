@@ -166,6 +166,14 @@ class Entity(ACLBase):
     # The Category that groups Models according to their purpose (which is defined by User)
     categories = models.ManyToManyField(Category, default=[], related_name="models")
 
+    # Entities listed here are excluded from the "is referenced by others" check during deletion
+    delete_chain_exclude_entities = models.ManyToManyField(
+        "self",
+        blank=True,
+        symmetrical=False,
+        related_name="excluded_from_delete_chain",
+    )
+
     # This is a pattern for making Item that that is written by regex
     item_name_pattern = models.CharField(max_length=400, blank=True)
 

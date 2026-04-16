@@ -294,6 +294,88 @@ class ModelOperationsTest(BaseModelTest):
         self.assertFalse(ref_entries[1].is_active)
         self.assertTrue(ref_entries[2].is_active)
 
+    def test_delete_entry_in_chain_with_exclude_entities(self):
+        # ref_entity excludes exclude_entity from the "is referenced by others" check
+        ref_entity = Entity.objects.create(name="ReferredEntity", created_user=self._user)
+        exclude_entity = Entity.objects.create(name="ExcludeEntity", created_user=self._user)
+        ref_entity.delete_chain_exclude_entities.add(exclude_entity)
+
+        ref_entry = Entry.objects.create(name="ref-0", created_user=self._user, schema=ref_entity)
+
+        attr = EntityAttr.objects.create(
+            name="obj",
+            type=AttrType.OBJECT,
+            is_delete_in_chain=True,
+            created_user=self._user,
+            parent_entity=self._entity,
+        )
+        attr.referral.add(ref_entity)
+
+        # entry whose deletion triggers chain delete
+        entry = Entry.objects.create(name="entry-0", schema=self._entity, created_user=self._user)
+        entry.complement_attrs(self._user)
+        entry.attrs.get(schema__name="obj").add_value(self._user, ref_entry)
+
+        # another entry from exclude_entity also refers ref_entry
+        exclude_attr = EntityAttr.objects.create(
+            name="obj",
+            type=AttrType.OBJECT,
+            created_user=self._user,
+            parent_entity=exclude_entity,
+        )
+        exclude_attr.referral.add(ref_entity)
+        exclude_entry = Entry.objects.create(
+            name="exclude-0", schema=exclude_entity, created_user=self._user
+        )
+        exclude_entry.complement_attrs(self._user)
+        exclude_entry.attrs.get(schema__name="obj").add_value(self._user, ref_entry)
+
+        # delete entry-0: ref_entry should be deleted because exclude_entity is in the exclude list
+        entry.delete()
+
+        ref_entry.refresh_from_db()
+        self.assertFalse(ref_entry.is_active)
+
+    def test_delete_entry_in_chain_without_exclude_entities(self):
+        # without exclude setting, ref_entry is preserved when referenced by another entry
+        ref_entity = Entity.objects.create(name="ReferredEntity2", created_user=self._user)
+        other_entity = Entity.objects.create(name="OtherEntity2", created_user=self._user)
+
+        ref_entry = Entry.objects.create(name="ref-0", created_user=self._user, schema=ref_entity)
+
+        attr = EntityAttr.objects.create(
+            name="obj",
+            type=AttrType.OBJECT,
+            is_delete_in_chain=True,
+            created_user=self._user,
+            parent_entity=self._entity,
+        )
+        attr.referral.add(ref_entity)
+
+        entry = Entry.objects.create(name="entry-0", schema=self._entity, created_user=self._user)
+        entry.complement_attrs(self._user)
+        entry.attrs.get(schema__name="obj").add_value(self._user, ref_entry)
+
+        # another entry from other_entity also refers ref_entry (no exclude setting)
+        other_attr = EntityAttr.objects.create(
+            name="obj",
+            type=AttrType.OBJECT,
+            created_user=self._user,
+            parent_entity=other_entity,
+        )
+        other_attr.referral.add(ref_entity)
+        other_entry = Entry.objects.create(
+            name="other-0", schema=other_entity, created_user=self._user
+        )
+        other_entry.complement_attrs(self._user)
+        other_entry.attrs.get(schema__name="obj").add_value(self._user, ref_entry)
+
+        # delete entry-0: ref_entry should be preserved because other_entity is NOT excluded
+        entry.delete()
+
+        ref_entry.refresh_from_db()
+        self.assertTrue(ref_entry.is_active)
+
     def test_may_remove_referral(self):
         entity: Entity = self.create_entity_with_all_type_attributes(self._user, self._entity)
         entry: Entry = Entry.objects.create(name="e1", schema=entity, created_user=self._user)

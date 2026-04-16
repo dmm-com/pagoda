@@ -42,6 +42,7 @@ describe("Conditions", () => {
     })),
     webhooks: [],
     isolationRules: [],
+    deleteChainExcludeEntities: [],
     hasOngoingChanges: false,
   };
 

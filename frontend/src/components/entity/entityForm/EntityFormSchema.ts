@@ -25,6 +25,9 @@ export const schema = z.object({
     ),
   itemNameType: z.enum(["US", "ID", "AT"]).default("US"),
   isToplevel: z.boolean().default(false),
+  deleteChainExcludeEntities: z
+    .array(z.object({ id: z.number(), name: z.string() }))
+    .default([]),
   isolationRules: z
     .array(
       z.object({

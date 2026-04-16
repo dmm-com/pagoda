@@ -1,4 +1,5 @@
 import {
+  Autocomplete,
   Box,
   Checkbox,
   MenuItem,
@@ -12,6 +13,7 @@ import {
 } from "@mui/material";
 import { FC } from "react";
 import { Control, Controller, useWatch } from "react-hook-form";
+import { UseFormSetValue } from "react-hook-form/dist/types/form";
 
 import { Schema } from "./EntityFormSchema";
 
@@ -23,9 +25,15 @@ import {
 
 interface Props {
   control: Control<Schema>;
+  setValue: UseFormSetValue<Schema>;
+  referralEntities?: Array<{ id: number; name: string }>;
 }
 
-export const BasicFields: FC<Props> = ({ control }) => {
+export const BasicFields: FC<Props> = ({
+  control,
+  referralEntities,
+  setValue,
+}) => {
   const currItemNameType = useWatch({ control, name: "itemNameType" });
 
   return (
@@ -152,6 +160,47 @@ export const BasicFields: FC<Props> = ({ control }) => {
                     data-testid="isToplevel"
                     checked={field.value}
                     onChange={(e) => field.onChange(e.target.checked)}
+                  />
+                )}
+              />
+            </TableCell>
+          </StyledTableRow>
+          <StyledTableRow>
+            <TableCell>関連削除の判定から除外するモデル</TableCell>
+            <TableCell>
+              <Controller
+                name="deleteChainExcludeEntities"
+                control={control}
+                defaultValue={[]}
+                render={({ field }) => (
+                  <Autocomplete
+                    {...field}
+                    multiple
+                    options={referralEntities ?? []}
+                    getOptionLabel={(option: { id: number; name: string }) =>
+                      option.name
+                    }
+                    isOptionEqualToValue={(
+                      option: { id: number; name: string },
+                      value: { id: number; name: string },
+                    ) => option.id === value.id}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        variant="outlined"
+                        placeholder="モデルを選択"
+                      />
+                    )}
+                    onChange={(
+                      _e,
+                      value: Array<{ id: number; name: string }>,
+                    ) =>
+                      setValue("deleteChainExcludeEntities", value, {
+                        shouldDirty: true,
+                        shouldValidate: true,
+                      })
+                    }
+                    size="small"
                   />
                 )}
               />

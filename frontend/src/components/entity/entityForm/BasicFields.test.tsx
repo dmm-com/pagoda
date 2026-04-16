@@ -28,13 +28,14 @@ describe("BasicFields", () => {
     isToplevel: false,
     webhooks: [],
     isolationRules: [],
+    deleteChainExcludeEntities: [],
     attrs: [],
   };
 
   test("should provide basic fields editor", function () {
     const {
       result: {
-        current: { control, getValues },
+        current: { control, getValues, setValue },
       },
     } = renderHook(() =>
       useForm<Schema>({
@@ -44,7 +45,9 @@ describe("BasicFields", () => {
       }),
     );
 
-    render(<BasicFields control={control} />, { wrapper: TestWrapper });
+    render(<BasicFields control={control} setValue={setValue} />, {
+      wrapper: TestWrapper,
+    });
 
     act(() => {
       fireEvent.change(screen.getByPlaceholderText("モデル名"), {
