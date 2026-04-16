@@ -44,6 +44,7 @@ class AdvancedSearchService:
         allow_missing_attributes: bool = False,
         exclude_referrals: list[int] = [],
         include_referrals: list[int] = [],
+        entry_ids: list[int] | None = None,
     ) -> AdvancedSearchResults:
         """Main method called from advanced search.
 
@@ -83,6 +84,10 @@ class AdvancedSearchService:
             include_referrals (list(int)): Default []
                 If it's set, this method only targets items that are referred by
                 items of specified Models.
+            entry_ids (list(int) | None): Default None.
+                When provided, restricts search results to entries with these IDs.
+                The effective limit is automatically set to len(entry_ids) to ensure
+                all specified entries are returned.
 
         Returns:
             AdvancedSearchResults: As a result of the search,
@@ -138,10 +143,15 @@ class AdvancedSearchService:
                 allow_missing_attributes=allow_missing_attributes,
                 exclude_referrals=exclude_referrals,
                 include_referrals=include_referrals,
+                entry_ids=entry_ids,
             )
 
+            # When entry_ids is specified, use its length as the effective limit to ensure
+            # all requested entries are returned regardless of the default limit.
+            effective_limit = len(entry_ids) if entry_ids else limit
+
             # sending request to elasticsearch with making query
-            resp = execute_query(query, limit, offset)
+            resp = execute_query(query, effective_limit, offset)
 
             tmp_hint_attrs = [attr.model_copy(deep=True) for attr in hint_attrs]
             # Check for has permission to EntityAttr, when is_output_all flag
@@ -166,12 +176,13 @@ class AdvancedSearchService:
                 resp,
                 tmp_hint_attrs,
                 hint_referral,
-                limit,
+                effective_limit,
             )
             results.ret_count += search_result.ret_count
             results.ret_values.extend(search_result.ret_values)
-            limit -= len(search_result.ret_values)
-            offset = max(0, offset - search_result.ret_count)
+            if not entry_ids:
+                limit -= len(search_result.ret_values)
+                offset = max(0, offset - search_result.ret_count)
 
         return results
 
@@ -302,10 +313,6 @@ class AdvancedSearchService:
         user: User,
         resp: AdvancedSearchResults,
         join_attrs: list,
-        entry_limit: int,
-        is_output_all: bool,
-        exclude_referrals: list[int] = [],
-        include_referrals: list[int] = [],
     ) -> AdvancedSearchResults:
         """Join referred Entry attributes based on join_attrs and filter/expand the results.
 
@@ -345,17 +352,22 @@ class AdvancedSearchService:
                 ).select_related("schema"):
                     ref_entries_by_entity.setdefault(ref_entry.schema_id, []).append(ref_entry.id)
 
-            # Call search_entries() per Entity to apply keyword filters
+            # Call search_entries() per Entity to apply keyword filters.
+            # Use entry_ids to restrict the search to only the known ref IDs, avoiding the
+            # limit-based data loss that occurs when an entity has more entries than the limit.
+            # Process in chunks of 1000 to keep ES query size manageable.
+            CHUNK_SIZE = 1000
             matched_results: dict[int, AdvancedSearchResultRecord] = {}
             for entity_id, ref_ids_in_entity in ref_entries_by_entity.items():
-                search_result = kls.search_entries(
-                    user,
-                    [str(entity_id)],
-                    hint_attrs,
-                    limit=len(ref_ids_in_entity) + 100,
-                )
-                for record in search_result.ret_values:
-                    if record.entry["id"] in ref_ids_in_entity:
+                for i in range(0, len(ref_ids_in_entity), CHUNK_SIZE):
+                    chunk = ref_ids_in_entity[i : i + CHUNK_SIZE]
+                    search_result = kls.search_entries(
+                        user,
+                        [str(entity_id)],
+                        hint_attrs,
+                        entry_ids=chunk,
+                    )
+                    for record in search_result.ret_values:
                         matched_results[record.entry["id"]] = record
 
             # Process each entry and build new_ret_values
