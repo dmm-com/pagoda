@@ -438,10 +438,6 @@ class AdvancedSearchAPI(generics.GenericAPIView):
             request.user,
             resp,
             join_attrs,
-            entry_limit=entry_limit,
-            is_output_all=is_output_all,
-            exclude_referrals=exclude_referrals,
-            include_referrals=include_referrals,
         )
 
         # convert field values to fit entry retrieve API data type, as a workaround.

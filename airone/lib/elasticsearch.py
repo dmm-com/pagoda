@@ -261,6 +261,7 @@ def make_query(
     allow_missing_attributes: bool = False,
     exclude_referrals: list[int] = [],
     include_referrals: list[int] = [],
+    entry_ids: list[int] | None = None,
 ) -> dict[str, Any]:
     """Create a search query for Elasticsearch.
 
@@ -336,6 +337,10 @@ def make_query(
     query["query"]["bool"]["filter"].append(
         {"nested": {"path": "entity", "query": {"term": {"entity.id": hint_entity.id}}}}
     )
+
+    # Restrict results to specific entry IDs when provided
+    if entry_ids:
+        query["query"]["bool"]["filter"].append({"ids": {"values": [str(i) for i in entry_ids]}})
 
     # Included in query if refinement is entered for 'Name' in advanced search
     if hint_entry is not None and hint_entry.keyword is not None:

@@ -1100,3 +1100,58 @@ class AdvancedSearchServiceTest(AironeTestCase):
                 self.assertEqual(ret_val.attrs["common_attr"]["value"], "common_value_B")
                 # BetaEntity does not have 'alpha_only_attr', so it should not be in its results.
                 self.assertNotIn("alpha_only_attr", ret_val.attrs)
+
+    def test_search_entries_with_entry_ids(self):
+        user = User.objects.create(username="entry_ids_user1")
+        entity = Entity.objects.create(name="entry_ids_entity1", created_user=user)
+        EntityAttr.objects.create(
+            name="val", type=AttrType.STRING, created_user=user, parent_entity=entity
+        )
+
+        entries = []
+        for i in range(10):
+            entry = Entry.objects.create(name="e-%d" % i, schema=entity, created_user=user)
+            entry.complement_attrs(user)
+            entry.attrs.get(name="val").add_value(user, "v-%d" % i)
+            entry.register_es()
+            entries.append(entry)
+
+        target_ids = [entries[2].id, entries[5].id, entries[8].id]
+        ret = AdvancedSearchService.search_entries(
+            user,
+            [str(entity.id)],
+            [AttrHint(name="val")],
+            entry_ids=target_ids,
+        )
+        self.assertEqual(ret.ret_count, 3)
+        returned_ids = {r.entry["id"] for r in ret.ret_values}
+        self.assertEqual(returned_ids, set(target_ids))
+
+    def test_search_entries_with_entry_ids_and_keyword(self):
+        user = User.objects.create(username="entry_ids_user2")
+        entity = Entity.objects.create(name="entry_ids_entity2", created_user=user)
+        EntityAttr.objects.create(
+            name="val", type=AttrType.STRING, created_user=user, parent_entity=entity
+        )
+
+        entries = []
+        for i in range(6):
+            entry = Entry.objects.create(name="e-%d" % i, schema=entity, created_user=user)
+            entry.complement_attrs(user)
+            # Even indexes have "apple" value, odd indexes have "banana"
+            entry.attrs.get(name="val").add_value(user, "apple" if i % 2 == 0 else "banana")
+            entry.register_es()
+            entries.append(entry)
+
+        # Specify only entries[0,1,2] in entry_ids, further narrow down with keyword="apple"
+        target_ids = [entries[0].id, entries[1].id, entries[2].id]
+        ret = AdvancedSearchService.search_entries(
+            user,
+            [str(entity.id)],
+            [AttrHint(name="val", keyword="apple")],
+            entry_ids=target_ids,
+        )
+        # entries[0] and entries[2] have "apple" and are within target_ids
+        self.assertEqual(ret.ret_count, 2)
+        returned_ids = {r.entry["id"] for r in ret.ret_values}
+        self.assertEqual(returned_ids, {entries[0].id, entries[2].id})

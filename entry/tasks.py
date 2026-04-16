@@ -946,10 +946,6 @@ def export_search_result_v2(self, job: Job):
         user,
         resp,
         join_attr_objects,
-        entry_limit=settings.ES_CONFIG["MAXIMUM_RESULTS_NUM"],
-        is_output_all=False,
-        exclude_referrals=[],
-        include_referrals=[],
     )
 
     output: io.StringIO | None = None
