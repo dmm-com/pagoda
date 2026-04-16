@@ -399,7 +399,7 @@ class AttributeValue(models.Model):
 
     @classmethod
     def validate_attr_value(
-        kls, type: int, input_value: Any, is_mandatory: bool
+        kls, type: int, input_value: Any, is_mandatory: bool, entity_attr=None
     ) -> tuple[bool, str | None]:
         """
         Validate if to add_value is a possible value.
@@ -419,17 +419,29 @@ class AttributeValue(models.Model):
 
         def _is_validate_attr_object(value: int | str) -> bool:
             try:
+                entry_id: int | None = None
                 if isinstance(value, Entry) and value.is_active:
-                    return True
-                if (
+                    entry_id = value.id
+                elif (
                     isinstance(value, ACLBase)
                     and Entry.objects.filter(id=value.id, is_active=True).exists()
                 ):
                     raise Exception("value(%s) is not valid entry" % value.name)
-                if value and not Entry.objects.filter(id=value, is_active=True).exists():
+                elif value and not Entry.objects.filter(id=value, is_active=True).exists():
                     raise Exception("value(%s) is not entry id" % value)
-                if is_mandatory and not value:
+                elif is_mandatory and not value:
                     return False
+                elif value:
+                    entry_id = int(value)
+
+                parent_entity = entity_attr.parent_entity if entity_attr is not None else None
+                if entry_id is not None and parent_entity is not None:
+                    from isolation.models import IsolationParent
+
+                    qs = Entry.objects.filter(id=entry_id, is_active=True)
+                    if IsolationParent.get_isolated_entry_ids(qs, parent_entity):
+                        raise Exception("value(%s) is isolated entry" % value)
+
                 return True
             except (ValueError, TypeError):
                 raise Exception("value(%s) is not int" % value)
@@ -1176,6 +1188,14 @@ class Attribute(ACLBase):
                         if ref_entry:
                             attrv.referral = ref_entry
 
+                    parent_entity = self.schema.parent_entity
+                    if attrv.referral is not None:
+                        from isolation.models import IsolationParent
+
+                        qs = Entry.objects.filter(id=attrv.referral.id, is_active=True)
+                        if IsolationParent.get_isolated_entry_ids(qs, parent_entity):
+                            attrv.referral = None
+
                     if not attrv.referral:
                         return None
 
@@ -1208,6 +1228,14 @@ class Attribute(ACLBase):
                         attrv.referral = val["id"]
                     else:
                         attrv.referral = None
+
+                    parent_entity = self.schema.parent_entity
+                    if attrv.referral is not None:
+                        from isolation.models import IsolationParent
+
+                        qs = Entry.objects.filter(id=attrv.referral.id, is_active=True)
+                        if IsolationParent.get_isolated_entry_ids(qs, parent_entity):
+                            attrv.referral = None
 
                     if not attrv.referral and not attrv.value:
                         return None
