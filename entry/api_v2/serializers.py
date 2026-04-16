@@ -384,7 +384,7 @@ class EntryBaseSerializer(serializers.ModelSerializer):
 
             # check attrs value
             (is_valid, msg) = AttributeValue.validate_attr_value(
-                entity_attr.type, attr["value"], entity_attr.is_mandatory
+                entity_attr.type, attr["value"], entity_attr.is_mandatory, entity_attr=entity_attr
             )
             if not is_valid:
                 raise IncorrectTypeError("attrs id(%s) - %s" % (attr["id"], msg))

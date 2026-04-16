@@ -4,6 +4,7 @@ from unittest import mock
 from airone.lib.test import AironeViewTest
 from airone.lib.types import AttrType
 from entity import tasks as entity_tasks
+from entry import tasks as entry_tasks
 from isolation.models import IsolationAction, IsolationCondition, IsolationParent
 
 
@@ -194,3 +195,88 @@ class IsolationAPITest(AironeViewTest):
         result_ids = [item["id"] for item in resp.json()]
         # The rule targets entity_unrelated, so it should not affect consumer's referral list
         self.assertIn(entry_ng.id, result_ids)
+
+    # -----------------------------------------------------------------------
+    # Entry create/update rejects isolated entries
+    # -----------------------------------------------------------------------
+
+    def _setup_isolation_rule(self):
+        """Create an isolation rule: Item with status='inactive' is isolated from Consumer."""
+        parent = IsolationParent.objects.create(entity=self.entity_item)
+        IsolationCondition.objects.create(
+            parent=parent,
+            attr=self.entity_item.attrs.get(name="status"),
+            str_cond="inactive",
+        )
+        IsolationAction.objects.create(
+            parent=parent,
+            prevent_from=self.entity_consumer,
+            is_prevent_all=False,
+        )
+        return parent
+
+    def test_entry_create_rejects_isolated_ref(self):
+        entry_ng = self.add_entry(
+            self.user, "inactive_item", self.entity_item, values={"status": "inactive"}
+        )
+        self._setup_isolation_rule()
+
+        consumer_attr = self.entity_consumer.attrs.get(name="item_ref")
+        params = {
+            "name": "consumer_entry",
+            "attrs": [{"id": consumer_attr.id, "value": entry_ng.id}],
+        }
+        resp = self.client.post(
+            f"/entity/api/v2/{self.entity_consumer.id}/entries/",
+            json.dumps(params),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 400)
+
+    @mock.patch(
+        "entry.tasks.create_entry_v2.delay", mock.Mock(side_effect=entry_tasks.create_entry_v2)
+    )
+    def test_entry_create_allows_non_isolated_ref(self):
+        entry_ok = self.add_entry(
+            self.user, "active_item", self.entity_item, values={"status": "active"}
+        )
+        self._setup_isolation_rule()
+
+        consumer_attr = self.entity_consumer.attrs.get(name="item_ref")
+        params = {
+            "name": "consumer_entry",
+            "attrs": [{"id": consumer_attr.id, "value": entry_ok.id}],
+        }
+        resp = self.client.post(
+            f"/entity/api/v2/{self.entity_consumer.id}/entries/",
+            json.dumps(params),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 202)
+
+    def test_entry_update_rejects_isolated_ref(self):
+        entry_ok = self.add_entry(
+            self.user, "active_item", self.entity_item, values={"status": "active"}
+        )
+        entry_ng = self.add_entry(
+            self.user, "inactive_item", self.entity_item, values={"status": "inactive"}
+        )
+        consumer_entry = self.add_entry(
+            self.user,
+            "consumer_entry",
+            self.entity_consumer,
+            values={"item_ref": entry_ok},
+        )
+        self._setup_isolation_rule()
+
+        consumer_attr = self.entity_consumer.attrs.get(name="item_ref")
+        params = {
+            "name": consumer_entry.name,
+            "attrs": [{"id": consumer_attr.id, "value": entry_ng.id}],
+        }
+        resp = self.client.put(
+            f"/entry/api/v2/{consumer_entry.id}/",
+            json.dumps(params),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 400)
