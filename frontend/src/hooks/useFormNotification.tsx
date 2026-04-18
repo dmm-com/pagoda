@@ -1,5 +1,7 @@
 import { SnackbarKey, useSnackbar } from "notistack";
 
+import { NotificationMessages } from "services/NotificationMessages";
+
 interface formNotification {
   enqueueSubmitResult: (
     finished: boolean,
@@ -21,14 +23,12 @@ export const useFormNotification = (
 
   return {
     enqueueSubmitResult: (finished: boolean, additionalMessage?: string) => {
-      return enqueueSnackbar(
-        `${targetName}の${operationName}が${
-          finished ? "完了" : "失敗"
-        }しました。${additionalMessage ?? ""}`,
-        {
-          variant: finished ? "success" : "error",
-        },
-      );
+      const message = finished
+        ? NotificationMessages.operationCompleted(targetName, operationName)
+        : NotificationMessages.operationFailed(targetName, operationName);
+      return enqueueSnackbar(`${message}${additionalMessage ?? ""}`, {
+        variant: finished ? "success" : "error",
+      });
     },
   };
 };

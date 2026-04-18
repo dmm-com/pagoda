@@ -2,11 +2,12 @@
  * @jest-environment jsdom
  */
 
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 
 import { EntityControlMenu } from "./EntityControlMenu";
 
 import { TestWrapper } from "TestWrapper";
+import { aironeApiClient } from "repository/AironeApiClient";
 import { ACLType } from "services/ACLUtil";
 
 describe("EntityControlMenu", () => {
@@ -160,6 +161,49 @@ describe("EntityControlMenu", () => {
         expect(screen.getByText("ACL 設定")).toBeInTheDocument();
         expect(screen.getByText("インポート")).toBeInTheDocument();
         expect(screen.getByText("削除")).toBeInTheDocument();
+      });
+    });
+  });
+
+  describe("export notification", () => {
+    const defaultProps = {
+      entityId: 1,
+      anchorElem: document.createElement("button"),
+      handleClose: () => {},
+      setOpenImportModal: () => false,
+    };
+
+    test("should show info variant snackbar on successful export", async () => {
+      jest.spyOn(aironeApiClient, "exportEntries").mockResolvedValue(undefined);
+
+      render(<EntityControlMenu {...defaultProps} />, {
+        wrapper: TestWrapper,
+      });
+
+      fireEvent.click(screen.getByText("エクスポート(YAML)"));
+
+      await waitFor(() => {
+        expect(
+          screen.getByText("エクスポートのジョブ登録に成功しました"),
+        ).toBeInTheDocument();
+      });
+    });
+
+    test("should show error variant snackbar on failed export", async () => {
+      jest
+        .spyOn(aironeApiClient, "exportEntries")
+        .mockRejectedValue(new Error("export failed"));
+
+      render(<EntityControlMenu {...defaultProps} />, {
+        wrapper: TestWrapper,
+      });
+
+      fireEvent.click(screen.getByText("エクスポート(CSV)"));
+
+      await waitFor(() => {
+        expect(
+          screen.getByText("エクスポートのジョブ登録に失敗しました"),
+        ).toBeInTheDocument();
       });
     });
   });

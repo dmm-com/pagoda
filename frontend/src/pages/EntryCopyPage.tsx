@@ -18,6 +18,7 @@ import { EntryBreadcrumbs } from "components/entry/EntryBreadcrumbs";
 import { usePrompt } from "hooks/usePrompt";
 import { aironeApiClient } from "repository/AironeApiClient";
 import { entityEntriesPath, entryDetailsPath } from "routes/Routes";
+import { NotificationMessages } from "services/NotificationMessages";
 
 interface Props {
   CopyForm?: FC<CopyFormProps>;
@@ -78,11 +79,11 @@ const EntryCopyContent: FC<Props> = ({ CopyForm = DefaultCopyForm }) => {
 
       setEdited(false);
       setSubmitted(true);
-      enqueueSnackbar("アイテムコピーのジョブ登録が成功しました", {
-        variant: "success",
+      enqueueSnackbar(NotificationMessages.jobRegistered("コピー"), {
+        variant: "info",
       });
     } catch {
-      enqueueSnackbar("アイテムコピーのジョブ登録が失敗しました", {
+      enqueueSnackbar(NotificationMessages.jobRegistrationFailed("コピー"), {
         variant: "error",
       });
     }
