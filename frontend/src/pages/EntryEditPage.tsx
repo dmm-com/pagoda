@@ -37,8 +37,10 @@ interface Props {
   useUUID?: boolean;
 }
 
+const DEFAULT_EXCLUDE_ATTRS: string[] = [];
+
 export const EntryEditPage: FC<Props> = ({
-  excludeAttrs = [],
+  excludeAttrs = DEFAULT_EXCLUDE_ATTRS,
   EntryForm = DefaultEntryForm,
   useUUID = false,
 }) => {
