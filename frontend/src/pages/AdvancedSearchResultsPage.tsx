@@ -169,6 +169,7 @@ export const AdvancedSearchResultsPage: FC = () => {
 
   useEffect(() => {
     const myId = ++requestIdRef.current;
+    // eslint-disable-next-line react-you-might-not-need-an-effect/no-chain-state-updates -- async data fetch with loading state management; multiple setSearchResults calls are intentional (loading then result)
     setSearchResults((prev) => ({ ...prev, isInProcessing: true }));
 
     aironeApiClient
@@ -223,7 +224,20 @@ export const AdvancedSearchResultsPage: FC = () => {
         if (myId !== requestIdRef.current) return;
         setSearchResults((prev) => ({ ...prev, isInProcessing: false }));
       });
-  }, [page, toggle, location.search]);
+  }, [
+    page,
+    toggle,
+    location.search,
+    entityIds,
+    attrInfo,
+    joinAttrs,
+    hasReferral,
+    referralName,
+    searchAllEntities,
+    hintEntry,
+    referralExcludeModelIds,
+    referralIncludeModelIds,
+  ]);
 
   const handleExport = async (exportStyle: "yaml" | "csv") => {
     try {

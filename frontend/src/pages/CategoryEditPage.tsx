@@ -62,7 +62,7 @@ export const CategoryEditPage: FC = () => {
 
   useEffect(() => {
     isSubmitSuccessful && navigate(listCategoryPath());
-  }, [isSubmitSuccessful]);
+  }, [isSubmitSuccessful, navigate]);
 
   const handleSubmitOnValid = useCallback(
     async (category: Schema) => {
@@ -90,7 +90,7 @@ export const CategoryEditPage: FC = () => {
         }
       }
     },
-    [categoryId],
+    [categoryId, willCreate, enqueueSubmitResult, setError],
   );
 
   const handleCancel = async () => {

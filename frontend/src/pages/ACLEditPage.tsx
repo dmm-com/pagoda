@@ -60,7 +60,7 @@ const ACLEditContent: FC<{ objectId: number }> = ({ objectId }) => {
     { suspense: true },
   );
 
-  const historyReplace = () => {
+  const historyReplace = useCallback(() => {
     switch (acl.objtype) {
       case ACLObjtypeEnum.Category:
         navigate(listCategoryPath(), { replace: true });
@@ -83,14 +83,14 @@ const ACLEditContent: FC<{ objectId: number }> = ({ objectId }) => {
         }
         break;
     }
-  };
+  }, [acl, entity, entry, navigate]);
 
   const handleSubmitOnInvalid = useCallback(
     async (err: FieldErrors<Schema & { generalError: string }>) => {
       err.generalError &&
         enqueueSnackbar(err.generalError.message, { variant: "error" });
     },
-    [objectId],
+    [enqueueSnackbar],
   );
 
   const handleSubmitOnValid = useCallback(
@@ -111,7 +111,7 @@ const ACLEditContent: FC<{ objectId: number }> = ({ objectId }) => {
 
       enqueueSnackbar("ACL設定の更新が成功しました", { variant: "success" });
     },
-    [objectId],
+    [objectId, enqueueSnackbar],
   );
 
   const handleCancel = async () => {
@@ -128,6 +128,7 @@ const ACLEditContent: FC<{ objectId: number }> = ({ objectId }) => {
     });
     switch (acl.objtype) {
       case ACLObjtypeEnum.Category:
+        // eslint-disable-next-line react-you-might-not-need-an-effect/no-derived-state -- breadcrumbs depend on async API responses (getEntity/getEntry)
         setBreadcrumbs(
           <AironeBreadcrumbs>
             <Typography component={AironeLink} to={topPath()}>
@@ -169,13 +170,14 @@ const ACLEditContent: FC<{ objectId: number }> = ({ objectId }) => {
         });
         break;
     }
-  }, [acl, reset]);
+  }, [acl, reset, objectId]);
 
   useEffect(() => {
     if (isSubmitSuccessful) {
+      // eslint-disable-next-line react-you-might-not-need-an-effect/no-pass-data-to-parent, react-you-might-not-need-an-effect/no-pass-live-state-to-parent -- navigation after form submission success
       historyReplace();
     }
-  }, [isSubmitSuccessful]);
+  }, [isSubmitSuccessful, historyReplace]);
 
   return (
     <>

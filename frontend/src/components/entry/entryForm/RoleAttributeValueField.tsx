@@ -46,6 +46,7 @@ export const RoleAttributeValueField: FC<Props> = ({
   const [inputValue, setInputValue] = useState("");
   const [loading, setLoading] = useState(false);
 
+  /* eslint-disable react-you-might-not-need-an-effect/no-derived-state -- loading is async fetch state, not derived from props */
   useEffect(() => {
     const fetchRoles = async () => {
       setLoading(true);
@@ -58,6 +59,7 @@ export const RoleAttributeValueField: FC<Props> = ({
     };
     fetchRoles();
   }, [inputValue]);
+  /* eslint-enable react-you-might-not-need-an-effect/no-derived-state */
 
   const handleChange = (value: RoleOption | RoleOption[] | null) => {
     if (multiple) {

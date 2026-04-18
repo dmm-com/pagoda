@@ -40,7 +40,7 @@ export const AdvancedSearchEditModal: FC<Props> = ({
   const { referralName, hintEntry } = useMemo(() => {
     const params = new URLSearchParams(location.search);
     return extractAdvancedSearchParams(params);
-  }, [location.search]);
+  }, []);
 
   const { reset, setValue, control, getValues } = useForm<Schema>({
     resolver: zodResolver(schema),

@@ -92,7 +92,7 @@ const ACLHistoryContent: FC<{ objectId: number }> = ({ objectId }) => {
         });
         break;
     }
-  }, [acl]);
+  }, [acl, objectId]);
 
   return (
     <>

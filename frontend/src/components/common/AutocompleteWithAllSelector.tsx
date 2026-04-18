@@ -67,6 +67,7 @@ export const AutocompleteWithAllSelector = <
     return createFilterOptions<T | SelectorOption>();
   }, []);
 
+  /* eslint-disable react-you-might-not-need-an-effect/no-pass-data-to-parent -- reset parent state when re-enabled; no user event to hook into */
   useEffect(() => {
     // reset on re-enable
     if (!disabled) {
@@ -78,7 +79,8 @@ export const AutocompleteWithAllSelector = <
         results: options as Array<T | SelectorOption>,
       };
     }
-  }, [disabled]);
+  }, [disabled, onChange, options]);
+  /* eslint-enable react-you-might-not-need-an-effect/no-pass-data-to-parent */
 
   const handleChange = (
     event: SyntheticEvent,

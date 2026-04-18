@@ -69,7 +69,7 @@ export const LoginPage: FC = () => {
     if (_uidb64 != null && _token != null) {
       setOpenPasswordResetConfirmModal(true);
     }
-  }, [location.search]);
+  }, [location.search, location.pathname, navigate]);
 
   const handleClickShowPassword = () => {
     setShowPassword(!showPassword);

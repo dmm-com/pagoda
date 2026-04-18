@@ -24,7 +24,6 @@ import {
   ChangeEvent,
   FC,
   useCallback,
-  useEffect,
   useMemo,
   useReducer,
   useState,
@@ -172,9 +171,13 @@ export const SearchResultsTableHead: FC<Props> = ({
     [defaultAttrsFilter],
   );
 
-  useEffect(() => {
+  // Reset attrsFilter when defaultAttrsFilter prop changes
+  const [prevDefaultAttrsFilter, setPrevDefaultAttrsFilter] =
+    useState(defaultAttrsFilter);
+  if (prevDefaultAttrsFilter !== defaultAttrsFilter) {
+    setPrevDefaultAttrsFilter(defaultAttrsFilter);
     setAttrsFilter(defaultAttrsFilter ?? {});
-  }, [defaultAttrsFilter]);
+  }
 
   const handleSelectFilterConditions =
     (attrName?: string) =>

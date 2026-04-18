@@ -130,7 +130,7 @@ const ErrorBridge: FC<{ children: ReactNode }> = ({ children }) => {
       }
       dispatchError(event.reason);
     },
-    [],
+    [dispatchError],
   );
 
   useEffect(() => {

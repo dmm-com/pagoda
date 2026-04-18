@@ -67,7 +67,7 @@ export const RoleEditPage: FC = () => {
 
   useEffect(() => {
     isSubmitSuccessful && navigate(rolesPath());
-  }, [isSubmitSuccessful]);
+  }, [isSubmitSuccessful, navigate]);
 
   usePageTitle(roleLoading ? "読み込み中..." : TITLE_TEMPLATES.roleEdit, {
     prefix: role?.name ?? (willCreate ? "新規作成" : undefined),
@@ -105,7 +105,7 @@ export const RoleEditPage: FC = () => {
         }
       }
     },
-    [roleId],
+    [roleId, willCreate, enqueueSubmitResult, setError],
   );
 
   const handleCancel = async () => {

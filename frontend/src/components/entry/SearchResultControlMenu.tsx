@@ -22,7 +22,7 @@ import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
 import { DesktopDatePicker } from "@mui/x-date-pickers/DesktopDatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { ChangeEvent, FC, KeyboardEvent, useEffect, useState } from "react";
+import { ChangeEvent, FC, KeyboardEvent, useState } from "react";
 
 import { AttrFilter } from "../../services/entry/AdvancedSearch";
 import { DateRangePicker } from "../common/DateRangePicker";
@@ -143,17 +143,17 @@ export const SearchResultControlMenu: FC<Props> = ({
     attrFilter?.filterKey ?? AdvancedSearchResultAttrInfoFilterKeyEnum.CLEARED;
   const keyword = attrFilter?.keyword ?? "";
 
-  // 日付範囲選択のための状態管理
-  const [isRange, setIsRange] = useState(false);
+  // 日付範囲選択のための状態管理 - initialize from keyword
+  const [isRange, setIsRange] = useState(() =>
+    Boolean(keyword && keyword.includes("~")),
+  );
 
-  // 初期状態の設定
-  useEffect(() => {
-    if (keyword && keyword.includes("~")) {
-      setIsRange(true);
-    } else {
-      setIsRange(false);
-    }
-  }, [keyword]);
+  // Reset isRange when keyword changes (adjust state on prop change pattern)
+  const [prevKeyword, setPrevKeyword] = useState(keyword);
+  if (prevKeyword !== keyword) {
+    setPrevKeyword(keyword);
+    setIsRange(Boolean(keyword && keyword.includes("~")));
+  }
 
   return (
     <Menu

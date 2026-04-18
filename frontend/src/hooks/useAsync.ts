@@ -16,6 +16,7 @@ export function useAsync<T>(
     fn()
       .then((value) => setState({ value, loading: false }))
       .catch((error) => setState({ error, loading: false }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, deps ?? []);
   return state;
 }

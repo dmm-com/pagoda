@@ -46,6 +46,7 @@ export const GroupAttributeValueField: FC<Props> = ({
   const [inputValue, setInputValue] = useState("");
   const [loading, setLoading] = useState(false);
 
+  /* eslint-disable react-you-might-not-need-an-effect/no-derived-state -- loading is async fetch state, not derived from props */
   useEffect(() => {
     const fetchGroups = async () => {
       setLoading(true);
@@ -61,6 +62,7 @@ export const GroupAttributeValueField: FC<Props> = ({
 
     fetchGroups();
   }, [inputValue]);
+  /* eslint-enable react-you-might-not-need-an-effect/no-derived-state */
 
   const handleChange = (value: GroupOption | GroupOption[] | null) => {
     if (multiple) {

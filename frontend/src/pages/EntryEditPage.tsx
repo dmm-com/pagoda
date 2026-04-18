@@ -82,6 +82,7 @@ export const EntryEditPage: FC<Props> = ({
     () => aironeApiClient.getEntry(entryId!),
   );
 
+  /* eslint-disable react-you-might-not-need-an-effect/no-adjust-state-on-prop-change -- form initialization when async data loads; cannot be computed during render */
   useEffect(() => {
     if (willCreate) {
       if (!entityLoading && entity != null) {
@@ -97,24 +98,26 @@ export const EntryEditPage: FC<Props> = ({
         setInitialized(true);
       }
     }
-  }, [willCreate, entity, entry]);
-
-  useEffect(() => {
-    if (isSubmitSuccessful) {
-      if (willCreate) {
-        navigate(entityEntriesPath(entityId), { replace: true });
-      } else {
-        navigate(entryDetailsPath(entityId, entryId), { replace: true });
-      }
-    }
-  }, [isSubmitSuccessful]);
+  }, [
+    willCreate,
+    entity,
+    entry,
+    entityLoading,
+    entryLoading,
+    excludeAttrs,
+    useUUID,
+    reset,
+  ]);
+  /* eslint-enable react-you-might-not-need-an-effect/no-adjust-state-on-prop-change */
 
   // Show the first validation feedback
+  /* eslint-disable react-you-might-not-need-an-effect/no-event-handler -- trigger() is react-hook-form validation that must run after form initialization */
   useEffect(() => {
     if (initialized) {
       trigger();
     }
-  }, [initialized]);
+  }, [initialized, trigger]);
+  /* eslint-enable react-you-might-not-need-an-effect/no-event-handler */
 
   usePageTitle(
     entityLoading || (entryId && entryLoading)
@@ -135,6 +138,11 @@ export const EntryEditPage: FC<Props> = ({
         await aironeApiClient.updateEntry(entryId, entry.name, updatedAttr);
       }
       enqueueSubmitResult(true);
+      if (willCreate) {
+        navigate(entityEntriesPath(entityId), { replace: true });
+      } else {
+        navigate(entryDetailsPath(entityId, entryId), { replace: true });
+      }
     } catch (e) {
       console.log("e", e);
       if (e instanceof Error && isResponseError(e)) {

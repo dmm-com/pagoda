@@ -100,7 +100,7 @@ const EntryDetailsContent: FC<Props> = ({
         replace: true,
       });
     }
-  }, [entry]);
+  }, [entry, entityId, entryId, navigate]);
 
   usePageTitle(TITLE_TEMPLATES.entryDetail, {
     prefix: entry.name,

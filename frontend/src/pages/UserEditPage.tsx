@@ -71,7 +71,7 @@ export const UserEditPage: FC = () => {
 
   useEffect(() => {
     isSubmitSuccessful && navigate(usersPath());
-  }, [isSubmitSuccessful]);
+  }, [isSubmitSuccessful, navigate]);
 
   usePageTitle(userLoading ? "読み込み中..." : TITLE_TEMPLATES.userEdit, {
     prefix: user?.username ?? (willCreate ? "新規作成" : undefined),
@@ -99,7 +99,7 @@ export const UserEditPage: FC = () => {
         serverContext?.user?.id != null &&
         user.id === serverContext.user.id,
     ];
-  }, [userLoading]);
+  }, [user?.id]);
 
   const handleSubmitOnValid = async (user: Schema) => {
     try {

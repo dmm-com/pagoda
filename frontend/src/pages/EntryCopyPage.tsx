@@ -1,6 +1,6 @@
 import { Box, Container } from "@mui/material";
 import { useSnackbar } from "notistack";
-import { FC, Suspense, useEffect, useState } from "react";
+import { FC, Suspense, useState } from "react";
 import { useNavigate } from "react-router";
 import { preload } from "swr";
 
@@ -42,12 +42,6 @@ const EntryCopyContent: FC<Props> = ({ CopyForm = DefaultCopyForm }) => {
     "編集した内容は失われてしまいますが、このページを離れてもよろしいですか？",
   );
 
-  useEffect(() => {
-    if (submitted) {
-      navigate(entityEntriesPath(entityId), { replace: true });
-    }
-  }, [submitted]);
-
   const { data: entity } = usePagodaSWR(
     ["entity", entityId],
     () => aironeApiClient.getEntity(entityId),
@@ -81,6 +75,7 @@ const EntryCopyContent: FC<Props> = ({ CopyForm = DefaultCopyForm }) => {
       enqueueSnackbar("アイテムコピーのジョブ登録が成功しました", {
         variant: "success",
       });
+      navigate(entityEntriesPath(entityId), { replace: true });
     } catch {
       enqueueSnackbar("アイテムコピーのジョブ登録が失敗しました", {
         variant: "error",

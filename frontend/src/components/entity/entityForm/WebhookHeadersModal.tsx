@@ -53,6 +53,15 @@ export const WebhookHeadersModal: FC<Props> = ({
     name: `webhooks.${webhookIndex}.headers`,
   });
 
+  // Track previous webhookIndex to reset initialization when webhook changes
+  const [prevWebhookIndex, setPrevWebhookIndex] = useState(webhookIndex);
+  if (prevWebhookIndex !== webhookIndex) {
+    setPrevWebhookIndex(webhookIndex);
+    setInitialized(false);
+  }
+
+  // workaround: useFieldArray cannot resolve initial values, so we manually sync via useWatch+replace
+  /* eslint-disable react-you-might-not-need-an-effect/no-event-handler, react-you-might-not-need-an-effect/no-pass-data-to-parent, react-you-might-not-need-an-effect/no-adjust-state-on-prop-change, react-you-might-not-need-an-effect/no-chain-state-updates -- useFieldArray workaround requires imperative replace call */
   useEffect(() => {
     // get only valid headers. useWatch will get incomplete values.
     if (!initialized && Array.isArray(headers)) {
@@ -60,11 +69,7 @@ export const WebhookHeadersModal: FC<Props> = ({
       setInitialized(true);
     }
   }, [headers, initialized, replace]);
-
-  // enable to re-initialize on changing a webhook
-  useEffect(() => {
-    setInitialized(false);
-  }, [webhookIndex]);
+  /* eslint-enable react-you-might-not-need-an-effect/no-event-handler, react-you-might-not-need-an-effect/no-pass-data-to-parent, react-you-might-not-need-an-effect/no-adjust-state-on-prop-change, react-you-might-not-need-an-effect/no-chain-state-updates */
 
   const handleAppendWebhookAdditionalHeader = (nextTo: number) => {
     insert(nextTo, {

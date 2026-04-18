@@ -1,6 +1,6 @@
 import { Box, Button, Typography } from "@mui/material";
 import { DateTimePicker, DesktopDatePicker } from "@mui/x-date-pickers";
-import { FC, useEffect, useState } from "react";
+import { FC, useMemo, useState } from "react";
 
 interface BaseDateRangePickerProps {
   initialStart?: string;
@@ -31,20 +31,31 @@ export const BaseDateRangePicker: FC<BaseDateRangePickerProps> = ({
     end: initialEnd ? new Date(initialEnd) : null,
   });
   const [isEditing, setIsEditing] = useState(false);
-  const [validationError, setValidationError] = useState<string | null>(null);
 
-  useEffect(() => {
+  // Use key-based reset: track previous initial values and reset when they change
+  const [prevInitialStart, setPrevInitialStart] = useState(initialStart);
+  const [prevInitialEnd, setPrevInitialEnd] = useState(initialEnd);
+  if (prevInitialStart !== initialStart || prevInitialEnd !== initialEnd) {
+    setPrevInitialStart(initialStart);
+    setPrevInitialEnd(initialEnd);
     setDraftDates({
       start: initialStart ? new Date(initialStart) : null,
       end: initialEnd ? new Date(initialEnd) : null,
     });
     setIsEditing(false);
-    setValidationError(null);
-  }, [initialStart, initialEnd]);
+  }
 
-  useEffect(() => {
-    validateDates();
-  }, [draftDates]);
+  // Derive validation error during render instead of useEffect
+  const validationError = useMemo(() => {
+    if (draftDates.start && draftDates.end) {
+      if (draftDates.start > draftDates.end) {
+        return isDateTime
+          ? "終了日時は開始日時以降を指定してください"
+          : "終了日は開始日以降を指定してください";
+      }
+    }
+    return null;
+  }, [draftDates, isDateTime]);
 
   const handleDateChange = (type: "start" | "end", date: Date | null) => {
     setDraftDates((prev) => ({
@@ -55,17 +66,7 @@ export const BaseDateRangePicker: FC<BaseDateRangePickerProps> = ({
   };
 
   const validateDates = () => {
-    if (draftDates.start && draftDates.end) {
-      if (draftDates.start > draftDates.end) {
-        const errorMessage = isDateTime
-          ? "終了日時は開始日時以降を指定してください"
-          : "終了日は開始日以降を指定してください";
-        setValidationError(errorMessage);
-        return false;
-      }
-    }
-    setValidationError(null);
-    return true;
+    return !validationError;
   };
 
   const formatDate = (date: Date | null): string => {

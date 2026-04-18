@@ -122,125 +122,131 @@ export const TriggerEditPage: FC = () => {
     hint?: "json";
   };
 
-  const convertConditions2ServerFormat = (
-    trigger: Schema,
-  ): TriggerConditionUpdate[] => {
-    if (!entity) {
-      return [];
-    }
+  const convertConditions2ServerFormat = useCallback(
+    (trigger: Schema): TriggerConditionUpdate[] => {
+      if (!entity) {
+        return [];
+      }
 
-    return trigger.conditions.flatMap(
-      (cond): TriggerConditionUpdate | TriggerConditionUpdate[] => {
-        const attrInfo = entity?.attrs.find((attr) => attr.id === cond.attr.id);
+      return trigger.conditions.flatMap(
+        (cond): TriggerConditionUpdate | TriggerConditionUpdate[] => {
+          const attrInfo = entity?.attrs.find(
+            (attr) => attr.id === cond.attr.id,
+          );
 
-        const base = {
-          attrId: cond.attr.id,
-          isUnmatch: !!cond.isUnmatch,
-        } as const;
+          const base = {
+            attrId: cond.attr.id,
+            isUnmatch: !!cond.isUnmatch,
+          } as const;
+
+          switch (attrInfo?.type) {
+            case EntryAttributeTypeTypeEnum.STRING:
+            case EntryAttributeTypeTypeEnum.ARRAY_STRING:
+              return { ...base, cond: cond.strCond ?? "" };
+
+            case EntryAttributeTypeTypeEnum.BOOLEAN:
+              return { ...base, cond: String(cond.boolCond) };
+
+            case EntryAttributeTypeTypeEnum.OBJECT:
+            case EntryAttributeTypeTypeEnum.ARRAY_OBJECT:
+              return { ...base, cond: String(cond.refCond?.id ?? 0) };
+
+            case EntryAttributeTypeTypeEnum.NAMED_OBJECT:
+            case EntryAttributeTypeTypeEnum.ARRAY_NAMED_OBJECT:
+              return [
+                {
+                  ...base,
+                  cond: JSON.stringify({
+                    name: cond.strCond,
+                    id: cond.refCond?.id ?? 0,
+                  }),
+                  hint: "json",
+                },
+              ];
+
+            default:
+              return { ...base, cond: "" };
+          }
+        },
+      ) as TriggerConditionUpdate[];
+    },
+    [entity],
+  );
+
+  const convertActions2ServerFormat = useCallback(
+    (trigger: Schema): TriggerActionUpdate[] => {
+      if (!entity) {
+        return [];
+      }
+
+      return trigger.actions.flatMap((action): TriggerActionUpdate[] => {
+        const attrInfo = entity?.attrs.find(
+          (attr) => attr.id === action.attr.id,
+        );
 
         switch (attrInfo?.type) {
           case EntryAttributeTypeTypeEnum.STRING:
+            return action.values.map((val) => ({
+              attrId: action.attr.id,
+              value: val.strCond ?? "",
+            }));
+
           case EntryAttributeTypeTypeEnum.ARRAY_STRING:
-            return { ...base, cond: cond.strCond ?? "" };
-
-          case EntryAttributeTypeTypeEnum.BOOLEAN:
-            return { ...base, cond: String(cond.boolCond) };
-
-          case EntryAttributeTypeTypeEnum.OBJECT:
-          case EntryAttributeTypeTypeEnum.ARRAY_OBJECT:
-            return { ...base, cond: String(cond.refCond?.id ?? 0) };
-
-          case EntryAttributeTypeTypeEnum.NAMED_OBJECT:
-          case EntryAttributeTypeTypeEnum.ARRAY_NAMED_OBJECT:
             return [
               {
-                ...base,
-                cond: JSON.stringify({
-                  name: cond.strCond,
-                  id: cond.refCond?.id ?? 0,
-                }),
-                hint: "json",
+                attrId: action.attr.id,
+                values: action.values.map((val) => val.strCond ?? ""),
               },
             ];
 
-          default:
-            return { ...base, cond: "" };
-        }
-      },
-    ) as TriggerConditionUpdate[];
-  };
-
-  const convertActions2ServerFormat = (
-    trigger: Schema,
-  ): TriggerActionUpdate[] => {
-    if (!entity) {
-      return [];
-    }
-
-    return trigger.actions.flatMap((action): TriggerActionUpdate[] => {
-      const attrInfo = entity?.attrs.find((attr) => attr.id === action.attr.id);
-
-      switch (attrInfo?.type) {
-        case EntryAttributeTypeTypeEnum.STRING:
-          return action.values.map((val) => ({
-            attrId: action.attr.id,
-            value: val.strCond ?? "",
-          }));
-
-        case EntryAttributeTypeTypeEnum.ARRAY_STRING:
-          return [
-            {
+          case EntryAttributeTypeTypeEnum.BOOLEAN:
+            return action.values.map((val) => ({
               attrId: action.attr.id,
-              values: action.values.map((val) => val.strCond ?? ""),
-            },
-          ];
+              value: String(val.boolCond),
+            }));
 
-        case EntryAttributeTypeTypeEnum.BOOLEAN:
-          return action.values.map((val) => ({
-            attrId: action.attr.id,
-            value: String(val.boolCond),
-          }));
-
-        case EntryAttributeTypeTypeEnum.OBJECT:
-          return action.values.map((val) => ({
-            attrId: action.attr.id,
-            value: String(val.refCond?.id ?? 0),
-          }));
-
-        case EntryAttributeTypeTypeEnum.NAMED_OBJECT:
-          return action.values.map((val) => ({
-            attrId: action.attr.id,
-            value: {
-              name: val.strCond,
-              id: val.refCond?.id ?? 0,
-            },
-          }));
-
-        case EntryAttributeTypeTypeEnum.ARRAY_OBJECT:
-          return [
-            {
+          case EntryAttributeTypeTypeEnum.OBJECT:
+            return action.values.map((val) => ({
               attrId: action.attr.id,
-              values: action.values
-                .filter((val) => val.refCond && val.refCond?.id > 0)
-                .map((val) => String(val.refCond?.id ?? 0)),
-            },
-          ];
+              value: String(val.refCond?.id ?? 0),
+            }));
 
-        case EntryAttributeTypeTypeEnum.ARRAY_NAMED_OBJECT:
-          return [
-            {
+          case EntryAttributeTypeTypeEnum.NAMED_OBJECT:
+            return action.values.map((val) => ({
               attrId: action.attr.id,
-              values: action.values.map((val) => ({
+              value: {
                 name: val.strCond,
                 id: val.refCond?.id ?? 0,
-              })),
-            },
-          ];
-      }
+              },
+            }));
 
-      return [];
-    });
-  };
+          case EntryAttributeTypeTypeEnum.ARRAY_OBJECT:
+            return [
+              {
+                attrId: action.attr.id,
+                values: action.values
+                  .filter((val) => val.refCond && val.refCond?.id > 0)
+                  .map((val) => String(val.refCond?.id ?? 0)),
+              },
+            ];
+
+          case EntryAttributeTypeTypeEnum.ARRAY_NAMED_OBJECT:
+            return [
+              {
+                attrId: action.attr.id,
+                values: action.values.map((val) => ({
+                  name: val.strCond,
+                  id: val.refCond?.id ?? 0,
+                })),
+              },
+            ];
+        }
+
+        return [];
+      });
+    },
+    [entity],
+  );
 
   const handleSubmitOnValid = useCallback(
     async (trigger: Schema) => {
@@ -258,6 +264,7 @@ export const TriggerEditPage: FC = () => {
           await aironeApiClient.createTrigger(triggerCreateUpdate);
           enqueueSubmitResult(true);
         }
+        navigate(triggersPath(), { replace: true });
       } catch (e) {
         const errMsg = "Failed to submit trigger";
 
@@ -265,7 +272,14 @@ export const TriggerEditPage: FC = () => {
         setError("conditions", { message: errMsg });
       }
     },
-    [triggerId, entity],
+    [
+      triggerId,
+      enqueueSubmitResult,
+      setError,
+      convertConditions2ServerFormat,
+      convertActions2ServerFormat,
+      navigate,
+    ],
   );
 
   const handleCancel = async () => {
@@ -281,8 +295,9 @@ export const TriggerEditPage: FC = () => {
 
       trigger();
     }
-  }, [actionTrigger]);
+  }, [actionTrigger, reset, trigger]);
 
+  /* eslint-disable react-you-might-not-need-an-effect/no-event-handler -- react-hook-form setValue/trigger must sync when entity data loads asynchronously */
   useEffect(() => {
     if (entity && entity.id !== 0) {
       setValue(
@@ -298,13 +313,10 @@ export const TriggerEditPage: FC = () => {
       );
     }
     trigger();
-  }, [entity]);
+  }, [entity, setValue, trigger]);
+  /* eslint-enable react-you-might-not-need-an-effect/no-event-handler */
 
-  useEffect(() => {
-    if (isSubmitSuccessful) {
-      navigate(triggersPath(), { replace: true });
-    }
-  }, [isSubmitSuccessful]);
+  // Navigation on successful submit is handled in handleSubmitOnValid
 
   return (
     <Box>

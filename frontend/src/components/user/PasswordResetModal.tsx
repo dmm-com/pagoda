@@ -28,7 +28,7 @@ export const PasswordResetModal: FC<Props> = ({ openModal, closeModal }) => {
         variant: "error",
       });
     }
-  }, [username, closeModal]);
+  }, [username, closeModal, enqueueSnackbar]);
 
   return (
     <AironeModal
