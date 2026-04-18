@@ -74,7 +74,11 @@ const ElemNamedObject: FC<{
 }> = ({ attrValue }) => {
   return attrValue ? (
     <StyledBox>
-      <Chip label={attrValue.name || "\u00A0"} size="small" variant="outlined" />
+      <Chip
+        label={attrValue.name || "\u00A0"}
+        size="small"
+        variant="outlined"
+      />
       <Divider orientation="vertical" flexItem />
       {attrValue.object ? (
         <Box
