@@ -100,6 +100,7 @@ export const EntryEditPage: FC<Props> = ({
         setInitialized(true);
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     willCreate,
     entity,
@@ -108,7 +109,6 @@ export const EntryEditPage: FC<Props> = ({
     entryLoading,
     excludeAttrs,
     useUUID,
-    reset,
   ]);
   /* eslint-enable react-you-might-not-need-an-effect/no-adjust-state-on-prop-change */
 
@@ -118,7 +118,8 @@ export const EntryEditPage: FC<Props> = ({
     if (initialized) {
       trigger();
     }
-  }, [initialized, trigger]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialized]);
   /* eslint-enable react-you-might-not-need-an-effect/no-event-handler */
 
   usePageTitle(

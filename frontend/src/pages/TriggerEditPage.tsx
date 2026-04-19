@@ -295,7 +295,8 @@ export const TriggerEditPage: FC = () => {
 
       trigger();
     }
-  }, [actionTrigger, reset, trigger]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [actionTrigger]);
 
   /* eslint-disable react-you-might-not-need-an-effect/no-event-handler -- react-hook-form setValue/trigger must sync when entity data loads asynchronously */
   useEffect(() => {
@@ -313,7 +314,8 @@ export const TriggerEditPage: FC = () => {
       );
     }
     trigger();
-  }, [entity, setValue, trigger]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [entity]);
   /* eslint-enable react-you-might-not-need-an-effect/no-event-handler */
 
   // Navigation on successful submit is handled in handleSubmitOnValid
