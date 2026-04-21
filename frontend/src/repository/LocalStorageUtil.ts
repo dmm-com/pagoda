@@ -1,5 +1,6 @@
 export const LocalStorageKey = {
   JobLatestCheckDate: "job__latest_check_date",
+  JobNotifiedIds: "job__notified_ids",
 } as const;
 
 type LocalStorageKey = (typeof LocalStorageKey)[keyof typeof LocalStorageKey];

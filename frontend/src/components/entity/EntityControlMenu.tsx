@@ -26,6 +26,7 @@ import {
   aclHistoryPath,
 } from "routes/Routes";
 import { canEdit, canModifyACL } from "services/ACLUtil";
+import { NotificationMessages } from "services/NotificationMessages";
 
 type ExportFormatType = "YAML" | "CSV";
 
@@ -70,13 +71,16 @@ export const EntityControlMenu: FC<Props> = ({
   const handleExport = async (entityId: number, format: ExportFormatType) => {
     try {
       await aironeApiClient.exportEntries(entityId, format);
-      enqueueSnackbar("モデルのエクスポートのジョブ登録が成功しました", {
-        variant: "success",
+      enqueueSnackbar(NotificationMessages.jobRegistered("エクスポート"), {
+        variant: "info",
       });
     } catch (e) {
-      enqueueSnackbar("モデルのエクスポートのジョブ登録が失敗しました", {
-        variant: "error",
-      });
+      enqueueSnackbar(
+        NotificationMessages.jobRegistrationFailed("エクスポート"),
+        {
+          variant: "error",
+        },
+      );
     }
   };
 

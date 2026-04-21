@@ -37,6 +37,7 @@ import { usePage } from "hooks/usePage";
 import { aironeApiClient } from "repository/AironeApiClient";
 import { advancedSearchPath, topPath } from "routes/Routes";
 import { AdvancedSerarchResultListParam } from "services/Constants";
+import { NotificationMessages } from "services/NotificationMessages";
 import { extractAdvancedSearchParams } from "services/entry/AdvancedSearch";
 
 function isAttrInfoSet(info: AdvancedSearchResultAttrInfo) {
@@ -236,13 +237,16 @@ export const AdvancedSearchResultsPage: FC = () => {
         exportStyle,
         hintEntry,
       );
-      enqueueSnackbar("エクスポートジョブの登録に成功しました", {
-        variant: "success",
+      enqueueSnackbar(NotificationMessages.jobRegistered("エクスポート"), {
+        variant: "info",
       });
     } catch (e) {
-      enqueueSnackbar("エクスポートジョブの登録に失敗しました", {
-        variant: "error",
-      });
+      enqueueSnackbar(
+        NotificationMessages.jobRegistrationFailed("エクスポート"),
+        {
+          variant: "error",
+        },
+      );
     }
   };
 

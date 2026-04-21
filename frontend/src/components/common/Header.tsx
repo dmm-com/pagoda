@@ -24,6 +24,7 @@ import { useTranslation } from "../../hooks/useTranslation";
 
 import { SearchBox } from "components/common/SearchBox";
 import { useInterval } from "hooks/useInterval";
+import { useJobCompletionNotification } from "hooks/useJobCompletionNotification";
 import { useSimpleSearch } from "hooks/useSimpleSearch";
 import { aironeApiClient } from "repository/AironeApiClient";
 import {
@@ -138,6 +139,8 @@ export const Header: FC = () => {
       console.warn("failed to get recent jobs. will auto retried ...");
     }
   }, JobRefreshIntervalMilliSec);
+
+  useJobCompletionNotification(recentJobs);
 
   const uncheckedJobsCount = useMemo(() => {
     return latestCheckDate != null
