@@ -154,7 +154,7 @@ class Entity(ACLBase):
     STATUS_EDITING = 1 << 2
 
     # This describes which Attribute types are selectable when itm_name_type is ATTR
-    ITEM_NAME_SELECTABLE_TYPES = [AttrType.STRING, AttrType.OBJECT]
+    ITEM_NAME_SELECTABLE_TYPES = [AttrType.STRING, AttrType.OBJECT, AttrType.NUMBER]
 
     note = models.CharField(max_length=200, blank=True)
 
