@@ -42,7 +42,8 @@ class ViewTest(BaseViewTest):
                     "name": "number",
                     "type": AttrType.NUMBER,
                     "name_order": 4,
-                },  # This should be ignored
+                    "name_prefix": " #",
+                },
                 {
                     "name": "dict",
                     "type": AttrType.NAMED_OBJECT,
@@ -487,7 +488,8 @@ class ViewTest(BaseViewTest):
 
         # Check create Item's name is expected one that is generated from autoname pattern
         self.assertEqual(
-            Entry.objects.filter(schema=model_sg).last().name, "[LB0001] test.example.com:8080"
+            Entry.objects.filter(schema=model_sg).last().name,
+            "[LB0001] test.example.com:8080 #123.456",
         )
 
     @patch("entry.tasks.edit_entry_v2.delay", Mock(side_effect=tasks.edit_entry_v2))
@@ -519,7 +521,7 @@ class ViewTest(BaseViewTest):
 
         # Check updated Item's name is expected one that is generated from autoname pattern
         item_sg.refresh_from_db()
-        self.assertEqual(item_sg.name, "[LB0001] test.example.com:8080")
+        self.assertEqual(item_sg.name, "[LB0001] test.example.com:8080 #123.456")
 
     @patch("entry.tasks.import_entries_v2.delay", Mock(side_effect=tasks.import_entries_v2))
     def test_import_update_items_for_autoname(self):

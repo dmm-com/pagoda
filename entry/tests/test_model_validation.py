@@ -1466,7 +1466,8 @@ class ModelValidationTest(BaseModelTest):
                     "name": "number",
                     "type": AttrType.NUMBER,
                     "name_order": 4,
-                },  # This should be ignored
+                    "name_prefix": " #",
+                },
                 {
                     "name": "dict",
                     "type": AttrType.NAMED_OBJECT,
@@ -1490,7 +1491,7 @@ class ModelValidationTest(BaseModelTest):
                 "dict": {"name": "TestDict", "id": lb1},
             },
         )
-        self.assertEqual(lb_sg1.autoname, "[LB0001] pagoda-test.example.com:80")
+        self.assertEqual(lb_sg1.autoname, "[LB0001] pagoda-test.example.com:80 #100")
 
     def test_save_autoname_with_duplicated_values(self):
         model = self.create_entity(
