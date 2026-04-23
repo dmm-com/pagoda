@@ -45,6 +45,13 @@ const StyledBox = styled(Box)(({ theme }) => ({
   gap: "8px",
 }));
 
+// Attribute types that support autoname (mirrors backend Entity.ITEM_NAME_SELECTABLE_TYPES)
+const AUTONAME_SELECTABLE_TYPES = [
+  AttributeTypes.string.type,
+  AttributeTypes.object.type,
+  AttributeTypes.number.type,
+];
+
 // Define the custom display order for attribute types
 const ATTRIBUTE_TYPE_ORDER = [
   "string",
@@ -113,6 +120,7 @@ export const AttributeField: FC<Props> = ({
   }, []);
 
   const isObjectLikeType = ((attrType ?? 0) & AttributeTypes.object.type) > 0;
+  const isAutoNameSupported = AUTONAME_SELECTABLE_TYPES.includes(attrType ?? 0);
 
   const handleCloseModal = () => setOpenModal(false);
   const handleCloseAutoNameConfigModal = () =>
@@ -322,7 +330,10 @@ export const AttributeField: FC<Props> = ({
             </ListItemButton>
 
             {/* Open modal for setting Attribute auto-naming configuration */}
-            <ListItemButton onClick={() => setOpenAutoNameConfigModal(true)}>
+            <ListItemButton
+              onClick={() => setOpenAutoNameConfigModal(true)}
+              disabled={!isAutoNameSupported}
+            >
               <ListItemIcon>
                 <BadgeIcon />
               </ListItemIcon>

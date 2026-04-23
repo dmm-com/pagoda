@@ -11,7 +11,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { FC } from "react";
+import { FC, useMemo } from "react";
 import { Control, Controller, useWatch } from "react-hook-form";
 import { UseFormSetValue } from "react-hook-form/dist/types/form";
 
@@ -35,6 +35,16 @@ export const BasicFields: FC<Props> = ({
   setValue,
 }) => {
   const currItemNameType = useWatch({ control, name: "itemNameType" });
+  const attrs = useWatch({ control, name: "attrs" });
+
+  const autoNamePreview = useMemo(() => {
+    if (currItemNameType !== "AT") return "";
+    return attrs
+      .filter((attr) => Number(attr.nameOrder) > 0)
+      .sort((a, b) => Number(a.nameOrder) - Number(b.nameOrder))
+      .map((attr) => `${attr.namePrefix}${attr.name}${attr.namePostfix}`)
+      .join("");
+  }, [currItemNameType, attrs]);
 
   return (
     <Box>
@@ -114,17 +124,28 @@ export const BasicFields: FC<Props> = ({
                   </Select>
                 )}
               />
+              {currItemNameType === "AT" && (
+                <Typography
+                  variant="body2"
+                  sx={{
+                    mt: 1,
+                    color: autoNamePreview ? "text.primary" : "text.disabled",
+                  }}
+                >
+                  {autoNamePreview ||
+                    "（自動命名が設定された属性がありません）"}
+                </Typography>
+              )}
             </TableCell>
           </StyledTableRow>
           <StyledTableRow>
-            <TableCell>
-              <Typography
-                color={
-                  currItemNameType !== "US" ? "text.disabled" : "text.primary"
-                }
-              >
-                アイテム名の許可パターン
-              </Typography>
+            <TableCell
+              sx={{
+                color:
+                  currItemNameType !== "US" ? "text.disabled" : "text.primary",
+              }}
+            >
+              アイテム名の許可パターン
             </TableCell>
             <TableCell>
               <Controller

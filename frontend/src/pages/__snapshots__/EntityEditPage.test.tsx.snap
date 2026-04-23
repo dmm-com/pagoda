@@ -353,13 +353,9 @@ exports[`EditEntityPage should match snapshot 1`] = `
                   class="MuiTableRow-root css-1lvq97o-MuiTableRow-root"
                 >
                   <td
-                    class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1dc80h3-MuiTableCell-root"
+                    class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1enp6ye-MuiTableCell-root"
                   >
-                    <p
-                      class="MuiTypography-root MuiTypography-body1 css-4leci6-MuiTypography-root"
-                    >
-                      アイテム名の許可パターン
-                    </p>
+                    アイテム名の許可パターン
                   </td>
                   <td
                     class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1dc80h3-MuiTableCell-root"
@@ -1203,13 +1199,9 @@ exports[`EditEntityPage should match snapshot 1`] = `
                 class="MuiTableRow-root css-1lvq97o-MuiTableRow-root"
               >
                 <td
-                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1dc80h3-MuiTableCell-root"
+                  class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1enp6ye-MuiTableCell-root"
                 >
-                  <p
-                    class="MuiTypography-root MuiTypography-body1 css-4leci6-MuiTypography-root"
-                  >
-                    アイテム名の許可パターン
-                  </p>
+                  アイテム名の許可パターン
                 </td>
                 <td
                   class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1dc80h3-MuiTableCell-root"
