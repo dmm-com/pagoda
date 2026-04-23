@@ -295,6 +295,10 @@ class EntityAttrCreateSerializer(serializers.ModelSerializer):
                     "When specified object type, referral field is required"
                 )
 
+        name_order = attr.get("name_order", 0)
+        if name_order > 0 and attr.get("type") not in Entity.ITEM_NAME_SELECTABLE_TYPES:
+            raise ValidationError("This attribute type is not supported for autoname configuration")
+
         return attr
 
 
@@ -416,6 +420,13 @@ class EntityAttrUpdateSerializer(serializers.ModelSerializer):
             if not attr["is_deleted"] and not user.has_permission(entity_attr, ACLType.Writable):
                 raise PermissionDenied("Does not have permission to update")
 
+            name_order = attr.get("name_order")
+            if name_order is not None and name_order > 0:
+                if entity_attr.type not in Entity.ITEM_NAME_SELECTABLE_TYPES:
+                    raise ValidationError(
+                        "This attribute type is not supported for autoname configuration"
+                    )
+
         # case create EntityAttr
         else:
             if "name" not in attr or "type" not in attr:
@@ -425,6 +436,12 @@ class EntityAttrUpdateSerializer(serializers.ModelSerializer):
             if attr["type"] & AttrType.OBJECT and not len(referral):
                 raise RequiredParameterError(
                     "When specified object type, referral field is required"
+                )
+
+            name_order = attr.get("name_order", 0)
+            if name_order > 0 and attr["type"] not in Entity.ITEM_NAME_SELECTABLE_TYPES:
+                raise ValidationError(
+                    "This attribute type is not supported for autoname configuration"
                 )
 
         # Only String, Text, Boolean, Number types support default values (MVP)

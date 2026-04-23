@@ -1728,7 +1728,17 @@ class Entry(ACLBase):
                 if attr.schema.type not in Entity.ITEM_NAME_SELECTABLE_TYPES:
                     continue
 
-                username += attr.schema.name_prefix + attrv.get_value() + attr.schema.name_postfix
+                value = attrv.get_value()
+                if value is None:
+                    continue
+
+                # NUMBER type returns float; represent whole numbers without decimal point
+                str_value = (
+                    str(int(value))
+                    if isinstance(value, float) and value.is_integer()
+                    else str(value)
+                )
+                username += attr.schema.name_prefix + str_value + attr.schema.name_postfix
 
             return username
 

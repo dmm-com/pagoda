@@ -83,7 +83,7 @@ class ViewTest(BaseViewTest):
                     "name": "number",
                     "type": AttrType.NUMBER,
                     "name_order": 4,
-                },  # This should be ignored
+                },
                 {
                     "name": "dict",
                     "type": AttrType.NAMED_OBJECT,
@@ -1765,6 +1765,7 @@ class ViewTest(BaseViewTest):
                 "lb": item_lb.id,
                 "domain": "test.example.com",
                 "port": "10000",
+                "number": 1,
             },
         )
         item_sg.save_autoname()

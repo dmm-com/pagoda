@@ -376,3 +376,39 @@ class EntityAttrSerializerTest(AironeViewTest):
             )
             with self.assertRaises(ValidationError, msg=f"Should fail for: {invalid_value}"):
                 serializer.is_valid(raise_exception=True)
+
+    def test_create_attr_with_name_order_and_unsupported_type_raises_error(self):
+        for unsupported_type in [AttrType.TEXT, AttrType.BOOLEAN, AttrType.DATE, AttrType.GROUP]:
+            data = {"name": "test_attr", "type": unsupported_type, "name_order": 1}
+            serializer = EntityAttrCreateSerializer(
+                data=data, context=self._get_serializer_context()
+            )
+            self.assertFalse(
+                serializer.is_valid(), msg=f"type={unsupported_type} should be invalid"
+            )
+
+    def test_create_attr_with_name_order_and_supported_type_is_valid(self):
+        ref_entity = Entity.objects.create(name="ref_entity", created_user=self.user)
+        for supported_type, extra in [
+            (AttrType.STRING, {}),
+            (AttrType.NUMBER, {}),
+            (AttrType.OBJECT, {"referral": [ref_entity.id]}),
+        ]:
+            data = {"name": "test_attr", "type": supported_type, "name_order": 1, **extra}
+            serializer = EntityAttrCreateSerializer(
+                data=data, context=self._get_serializer_context()
+            )
+            self.assertTrue(
+                serializer.is_valid(), msg=f"type={supported_type}: {serializer.errors}"
+            )
+
+    def test_update_attr_name_order_with_unsupported_type_raises_error(self):
+        attr = EntityAttr.objects.create(
+            name="bool_attr",
+            type=AttrType.BOOLEAN,
+            created_user=self.user,
+            parent_entity=self.entity,
+        )
+        data = {"id": attr.id, "name_order": 1, "is_deleted": False}
+        serializer = EntityAttrUpdateSerializer(data=data, context=self._get_serializer_context())
+        self.assertFalse(serializer.is_valid())
