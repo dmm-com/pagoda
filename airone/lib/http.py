@@ -26,8 +26,9 @@ class HttpResponseSeeOther(HttpResponseRedirect):
 
 
 class DRFRequest(dict):
-    def __init__(self, user: User):
+    def __init__(self, user: User, method: str = "UNKNOWN"):
         self.user = user
+        self.method = method
 
 
 def http_get(func: Callable[..., HttpResponse]) -> Callable[..., HttpResponse]:
