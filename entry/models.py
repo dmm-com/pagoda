@@ -23,6 +23,7 @@ from airone.lib.elasticsearch import (
 from airone.lib.types import (
     AttrDefaultValue,
     AttrType,
+    coerce_number,
 )
 from entity.models import Entity, EntityAttr, ItemNameType
 from group.models import Group
@@ -30,25 +31,6 @@ from role.models import Role
 from user.models import User
 
 from .settings import CONFIG
-
-
-def coerce_number(raw: str | None) -> int | float | None:
-    """Convert a stored Number-attribute string back to int when integer-valued.
-
-    Number values are persisted as strings (e.g. "4.0") via str(float(...)),
-    so reading them back through float() always yields a float. This helper
-    returns int when the value has no fractional part so that integer inputs
-    round-trip as integers (regression for #3458).
-    """
-    if not raw or not raw.strip():
-        return None
-    try:
-        f = float(raw)
-    except ValueError:
-        return None
-    if math.isfinite(f) and f.is_integer():
-        return int(f)
-    return f
 
 
 class AttributeValue(models.Model):

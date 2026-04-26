@@ -23,10 +23,10 @@ from airone.lib.drf import (
 )
 from airone.lib.elasticsearch import EntryFilterKey, FilterKey
 from airone.lib.log import Logger
-from airone.lib.types import AttrDefaultValue, AttrType
+from airone.lib.types import AttrDefaultValue, AttrType, coerce_number
 from entity.api_v2.serializers import EntitySerializer
 from entity.models import Entity, EntityAttr
-from entry.models import AliasEntry, Attribute, AttributeValue, Entry, coerce_number
+from entry.models import AliasEntry, Attribute, AttributeValue, Entry
 from entry.settings import CONFIG as CONFIG_ENTRY
 from group.models import Group
 from job.models import Job, JobStatus
