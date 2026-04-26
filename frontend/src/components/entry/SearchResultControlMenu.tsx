@@ -1,8 +1,3 @@
-import {
-  AdvancedSearchResultAttrInfoFilterKeyEnum,
-  EntityAttrIDandName,
-  EntryAttributeTypeTypeEnum,
-} from "@dmm-com/airone-apiclient-typescript-fetch";
 import Check from "@mui/icons-material/Check";
 import EditNoteIcon from "@mui/icons-material/EditNote";
 import {
@@ -29,6 +24,12 @@ import { DateRangePicker } from "../common/DateRangePicker";
 import { DateTimeRangePicker } from "../common/DateTimeRangePicker";
 
 import { handleSelectFilterConditionsParams } from "./SearchResultsTableHead";
+
+import {
+  AdvancedSearchResultAttrInfoFilterKeyEnum,
+  EntityAttrIDandName,
+  EntryAttributeTypeTypeEnum,
+} from "@dmm-com/airone-apiclient-typescript-fetch";
 
 const StyledTextField = styled(TextField)({
   margin: "8px",
@@ -591,7 +592,10 @@ export const SearchResultControlMenu: FC<Props> = ({
           variant="outlined"
           fullWidth
           startIcon={<EditNoteIcon />}
-          disabled={isDisabledEditModal}
+          // Defense-in-depth for #3449: refuse to open the modal when the
+          // attribute type is unknown (would cause AttributeValueField to
+          // throw "Unknown attribute type: 0").
+          disabled={isDisabledEditModal || (attrType ?? 0) === 0}
           onClick={() => {
             setEditTargetAttrID &&
               setEditTargetAttrID(

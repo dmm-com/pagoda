@@ -2,9 +2,14 @@
  * @jest-environment jsdom
  */
 
-import { AdvancedSearchResult } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { render, screen, fireEvent } from "@testing-library/react";
+import { Component, ReactNode } from "react";
 
+import {
+  AdvancedSearchResult,
+  AdvancedSearchResultAttrInfoFilterKeyEnum,
+  EntryAttributeTypeTypeEnum,
+} from "@dmm-com/airone-apiclient-typescript-fetch";
 import { TestWrapper } from "TestWrapper";
 import { SearchResults } from "components/entry/SearchResults";
 
@@ -198,6 +203,252 @@ describe("SearchResults", () => {
       expect(screen.getAllByTestId("EditOutlinedIcon").length).toBeGreaterThan(
         0,
       );
+    });
+  });
+
+  describe("issue #3449 — bulk update on a freshly added attribute", () => {
+    // Regression for #3449. Scenario: an EntityAttr was just added to the
+    // model, so existing entries have neither an Attribute object nor an ES
+    // entry for it. The advanced-search column for the new attr shows up
+    // (because it is in defaultAttrsFilter), and `results.values[0].attrs[
+    // newattr]` is undefined.
+    //
+    // Pre-fix behavior: SearchResults computed attrTypes[newattr] from row 0
+    // alone → undefined → coerced to 0 → AdvancedSearchEditModal rendered
+    // <AttributeValueField type={0} /> → threw "Unknown attribute type: 0".
+    //
+    // Post-fix behavior: SearchResults sources the type from `entityAttrs`
+    // (now populated with `type` by EntityAttrNameAPI), so the modal opens
+    // cleanly with the correct field for the attribute's type.
+    test("opens bulk-edit modal cleanly when row 0 lacks the new attr", () => {
+      const NEW_ATTR = "newattr";
+
+      const resultsWithMissingAttr: AdvancedSearchResult = {
+        count: 1,
+        totalCount: 1,
+        values: [
+          {
+            entry: { id: 1, name: "Entry 1" },
+            entity: { id: 100, name: "TestEntity" },
+            isReadable: true,
+            // Crucially: NEW_ATTR is NOT in attrs (no ES data for it yet)
+            attrs: {},
+            referrals: [],
+          },
+        ],
+      };
+
+      // Error boundary in case a regression reintroduces the throw — the
+      // assertion below would then fail more legibly than React's default.
+      class Boundary extends Component<
+        { children: ReactNode },
+        { error: Error | null }
+      > {
+        state = { error: null as Error | null };
+        static getDerivedStateFromError(error: Error) {
+          return { error };
+        }
+        render() {
+          if (this.state.error) {
+            return (
+              <div data-testid="boundary-error">{this.state.error.message}</div>
+            );
+          }
+          return this.props.children;
+        }
+      }
+
+      const errSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+
+      try {
+        render(
+          <Boundary>
+            <SearchResults
+              {...defaultProps}
+              results={resultsWithMissingAttr}
+              defaultAttrsFilter={{
+                [NEW_ATTR]: {
+                  filterKey: AdvancedSearchResultAttrInfoFilterKeyEnum.CLEARED,
+                  keyword: "",
+                },
+              }}
+              entityAttrs={[
+                // The fix: EntityAttrNameAPI now returns `type`, so the FE
+                // can resolve the column's type without depending on row 0.
+                {
+                  id: 42,
+                  name: NEW_ATTR,
+                  type: EntryAttributeTypeTypeEnum.STRING,
+                },
+              ]}
+            />
+          </Boundary>,
+          { wrapper: TestWrapper },
+        );
+
+        expect(screen.getByText(NEW_ATTR)).toBeInTheDocument();
+
+        const filterButtons = screen.getAllByRole("button", {
+          name: /属性値でフィルタ/,
+        });
+        expect(filterButtons).toHaveLength(1);
+        fireEvent.click(filterButtons[0]);
+
+        const bulkUpdateBtn = screen.getByRole("button", {
+          name: /属性を一括更新/,
+        });
+        // Defense-in-depth: the bulk-update button is now disabled when the
+        // type is unknown. With entityAttrs.type populated, it must be
+        // enabled.
+        expect(bulkUpdateBtn).not.toBeDisabled();
+        fireEvent.click(bulkUpdateBtn);
+
+        // No error boundary trip and modal heading is rendered.
+        expect(screen.queryByTestId("boundary-error")).toBeNull();
+        expect(
+          screen.getByText("一括更新する（変更後の）値に更新"),
+        ).toBeInTheDocument();
+
+        // No "Unknown attribute type" was logged.
+        const sawAttrTypeThrow = errSpy.mock.calls.some((call) =>
+          call.some(
+            (arg) =>
+              typeof arg === "string" && arg.includes("Unknown attribute type"),
+          ),
+        );
+        expect(sawAttrTypeThrow).toBe(false);
+      } finally {
+        errSpy.mockRestore();
+      }
+    });
+
+    // Defense-in-depth check (#3449): if for any reason both entityAttrs and
+    // results lack the type (e.g. entityAttrs has not loaded yet), the
+    // bulk-update button must be disabled rather than opening a modal that
+    // would throw.
+    test("disables bulk-update button when type cannot be resolved", () => {
+      const NEW_ATTR = "newattr";
+
+      const errSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+      try {
+        render(
+          <SearchResults
+            {...defaultProps}
+            results={{
+              count: 1,
+              totalCount: 1,
+              values: [
+                {
+                  entry: { id: 1, name: "Entry 1" },
+                  entity: { id: 100, name: "TestEntity" },
+                  isReadable: true,
+                  attrs: {},
+                  referrals: [],
+                },
+              ],
+            }}
+            defaultAttrsFilter={{
+              [NEW_ATTR]: {
+                filterKey: AdvancedSearchResultAttrInfoFilterKeyEnum.CLEARED,
+                keyword: "",
+              },
+            }}
+            entityAttrs={[]}
+          />,
+          { wrapper: TestWrapper },
+        );
+
+        const filterButtons = screen.getAllByRole("button", {
+          name: /属性値でフィルタ/,
+        });
+        fireEvent.click(filterButtons[0]);
+
+        const bulkUpdateBtn = screen.getByRole("button", {
+          name: /属性を一括更新/,
+        });
+        expect(bulkUpdateBtn).toBeDisabled();
+      } finally {
+        errSpy.mockRestore();
+      }
+    });
+
+    // Sanity counter-test: when results DO contain the attribute (i.e. after
+    // the user updates an item, ES gets back-filled, so the type lookup
+    // succeeds), the modal opens cleanly. This is the "アイテムを更新すると
+    // 解消する" half of the bug report.
+    test("opening bulk-edit modal works when results expose the attr type", () => {
+      const NEW_ATTR = "newattr";
+
+      const resultsWithAttr: AdvancedSearchResult = {
+        count: 1,
+        totalCount: 1,
+        values: [
+          {
+            entry: { id: 1, name: "Entry 1" },
+            entity: { id: 100, name: "TestEntity" },
+            isReadable: true,
+            attrs: {
+              [NEW_ATTR]: {
+                type: EntryAttributeTypeTypeEnum.STRING,
+                value: { asString: "" },
+                isReadable: true,
+              },
+            },
+            referrals: [],
+          },
+        ],
+      };
+
+      const errSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+      try {
+        render(
+          <SearchResults
+            {...defaultProps}
+            results={resultsWithAttr}
+            defaultAttrsFilter={{
+              [NEW_ATTR]: {
+                filterKey: AdvancedSearchResultAttrInfoFilterKeyEnum.CLEARED,
+                keyword: "",
+              },
+            }}
+            entityAttrs={[
+              {
+                id: 42,
+                name: NEW_ATTR,
+                type: EntryAttributeTypeTypeEnum.STRING,
+              },
+            ]}
+          />,
+          { wrapper: TestWrapper },
+        );
+
+        const filterButtons = screen.getAllByRole("button", {
+          name: /属性値でフィルタ/,
+        });
+        fireEvent.click(filterButtons[0]);
+
+        const bulkUpdateBtn = screen.getByRole("button", {
+          name: /属性を一括更新/,
+        });
+        // Should NOT throw "Unknown attribute type" when the type is known.
+        expect(() => fireEvent.click(bulkUpdateBtn)).not.toThrow();
+
+        // The modal heading should now be on screen.
+        expect(
+          screen.getByText("一括更新する（変更後の）値に更新"),
+        ).toBeInTheDocument();
+
+        // Confirm no "Unknown attribute type" error was logged.
+        const sawAttrTypeThrow = errSpy.mock.calls.some((call) =>
+          call.some(
+            (arg) =>
+              typeof arg === "string" && arg.includes("Unknown attribute type"),
+          ),
+        );
+        expect(sawAttrTypeThrow).toBe(false);
+      } finally {
+        errSpy.mockRestore();
+      }
     });
   });
 });

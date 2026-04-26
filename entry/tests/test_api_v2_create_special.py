@@ -10,7 +10,7 @@ from airone.lib.elasticsearch import EntryFilterKey, FilterKey
 from airone.lib.types import (
     AttrType,
 )
-from entity.models import ItemNameType
+from entity.models import EntityAttr, ItemNameType
 from entry import tasks
 from entry.models import Entry
 from entry.tests.test_api_v2 import BaseViewTest
@@ -318,6 +318,48 @@ class ViewTest(BaseViewTest):
         # Check negative default
         number_negative_value = entry.attrs.get(schema=number_negative_attr)
         self.assertEqual(number_negative_value.get_latest_value().get_value(), -123.45)
+
+    @patch("entry.tasks.create_entry_v2.delay", Mock(side_effect=tasks.create_entry_v2))
+    def test_number_attr_api_response_preserves_int_type(self):
+        # Regression test for #3458: integer values posted to NUMBER / ARRAY_NUMBER
+        # attributes must come back as ints (not 4.0) on the GET response.
+        num_entity_attr = self.entity.attrs.get(name="num")
+        nums_entity_attr = self.entity.attrs.get(name="nums")
+
+        payload = {
+            "name": "int_number_entry",
+            "schema": self.entity.id,
+            "attrs": [
+                {"id": num_entity_attr.id, "value": 4},
+                {"id": nums_entity_attr.id, "value": [1, 2, 3]},
+            ],
+        }
+        resp = self.client.post(
+            f"/entity/api/v2/{self.entity.id}/entries/", payload, "application/json"
+        )
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED, resp.content)
+
+        created = Entry.objects.get(name="int_number_entry", schema=self.entity)
+        resp = self.client.get(f"/entry/api/v2/{created.id}/")
+        self.assertEqual(resp.status_code, status.HTTP_200_OK, resp.content)
+
+        # Use json.loads on raw content to avoid DRF int/float coercion in helpers
+        data = json.loads(resp.content)
+        num_attr = next(a for a in data["attrs"] if a["schema"]["name"] == "num")
+        self.assertEqual(num_attr["value"]["as_number"], 4)
+        self.assertIsInstance(num_attr["value"]["as_number"], int)
+        self.assertNotIsInstance(num_attr["value"]["as_number"], float)
+        # JSON wire-format check: must serialise as 4, not 4.0
+        body = resp.content.decode()
+        self.assertIn('"as_number":4', body.replace(" ", ""))
+        self.assertNotIn('"as_number":4.0', body.replace(" ", ""))
+        self.assertNotIn('"as_array_number":[1.0,2.0,3.0]', body.replace(" ", ""))
+
+        nums_attr = next(a for a in data["attrs"] if a["schema"]["name"] == "nums")
+        self.assertEqual(nums_attr["value"]["as_array_number"], [1, 2, 3])
+        for v in nums_attr["value"]["as_array_number"]:
+            self.assertIsInstance(v, int)
+            self.assertNotIsInstance(v, float)
 
     @patch("entry.tasks.create_entry_v2.delay", Mock(side_effect=tasks.create_entry_v2))
     def test_create_and_retrieve_entry_with_number_attr(self):
@@ -796,6 +838,68 @@ class ViewTest(BaseViewTest):
         for itemname, expected_value in expected_values:
             item = Entry.objects.get(name=itemname, schema=self.entity)
             self.assertEqual(item.get_attrv("val").value, expected_value)
+
+    @patch("entry.tasks.bulk_update_entries.delay", Mock(side_effect=tasks.bulk_update_entries))
+    def test_bulk_update_items_for_newly_added_attribute(self):
+        """
+        Regression-style assertion for issue #3449.
+
+        The backend already handles "bulk update right after adding a new
+        EntityAttr": EntryUpdateSerializer.update() back-fills any missing
+        Attribute via add_attribute_from_base() before writing the value.
+        This test pins that behavior so the *exception* reported in #3449 can
+        be conclusively isolated to the frontend (AttributeValueField throws
+        when its `type` prop is 0/undefined, which is what
+        SearchResults.tsx hands it for an attribute that the first hit row
+        does not yet have indexed in ES).
+        """
+        # Create items BEFORE adding the new attribute, so the existing entries
+        # don't yet have a corresponding Attribute object for the new EntityAttr.
+        for index in range(3):
+            self.add_entry(
+                self.user,
+                "item-%s" % index,
+                self.entity,
+                values={
+                    "val": "v-%s" % index,
+                },
+            )
+
+        # Now add a brand new EntityAttr to the model. Existing entries are NOT
+        # back-filled with a corresponding Attribute object until they are touched.
+        new_attr = EntityAttr.objects.create(
+            name="newattr",
+            type=AttrType.STRING,
+            is_mandatory=False,
+            parent_entity=self.entity,
+            created_user=self.user,
+        )
+
+        # Sanity check: existing entries do not yet have an Attribute for new_attr.
+        for index in range(3):
+            entry = Entry.objects.get(name="item-%s" % index, schema=self.entity)
+            self.assertFalse(entry.attrs.filter(schema=new_attr).exists())
+
+        params = {
+            "value": {"id": new_attr.id, "value": "updated"},
+            "modelid": self.entity.id,
+            "attrinfo": [{"name": "val"}, {"name": "newattr"}],
+        }
+        resp = self.client.put(
+            "/entry/api/v2/bulk/",
+            params,
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 202, resp.content)
+
+        # Assert the bulk-update job finished successfully (regression assertion).
+        job = Job.objects.filter(operation=JobOperation.BULK_EDIT_ENTRY).last()
+        self.assertEqual(job.status, JobStatus.DONE.value, job.text)
+
+        # All entries should now have "updated" for the new attribute.
+        for index in range(3):
+            item = Entry.objects.get(name="item-%s" % index, schema=self.entity)
+            self.assertEqual(item.get_attrv("newattr").value, "updated")
 
     @patch.object(Job, "is_canceled", Mock(return_value=True))
     @patch("entry.tasks.bulk_update_entries.delay", Mock(side_effect=tasks.bulk_update_entries))

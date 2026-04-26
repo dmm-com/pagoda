@@ -2,7 +2,6 @@
  * @jest-environment jsdom
  */
 
-import { EntryAttributeTypeTypeEnum } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { act, render, renderHook, screen } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
@@ -13,6 +12,8 @@ import { TestWrapper } from "../../../TestWrapper";
 
 import { AttributeValueField } from "./AttributeValueField";
 import { schema, Schema } from "./EntryFormSchema";
+
+import { EntryAttributeTypeTypeEnum } from "@dmm-com/airone-apiclient-typescript-fetch";
 
 const server = setupServer(
   // getEntryAttrReferrals
@@ -443,5 +444,46 @@ describe("AttributeValue", () => {
 
       c.fn();
     });
+  });
+
+  // Defensive-contract test (related to issue #3449): if anything upstream
+  // hands `type=0` to AttributeValueField (an unknown/unset attribute type),
+  // we want to fail loudly rather than render a wrong field. The pre-#3449
+  // bug routed undefined → 0 here from SearchResults; that path is now
+  // closed at the source (SearchResults derives type from entityAttrs) and
+  // the bulk-update button is disabled when type cannot be resolved. This
+  // test pins the "last line of defense" so that any future regression that
+  // re-introduces a 0 type fails noisily here.
+  test("throws when type is 0 (defensive last-line contract for #3449)", () => {
+    const {
+      result: {
+        current: { control, setValue },
+      },
+    } = renderHook(() =>
+      useForm<Schema>({
+        resolver: zodResolver(schema),
+        mode: "onBlur",
+        defaultValues,
+      }),
+    );
+
+    // jsdom logs the thrown render error to console.error; silence it so the
+    // test output stays focused on the assertion.
+    const errSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      expect(() =>
+        render(
+          <AttributeValueField
+            control={control}
+            setValue={setValue}
+            type={0}
+            schemaId={0}
+          />,
+          { wrapper: TestWrapper },
+        ),
+      ).toThrow("Unknown attribute type: 0");
+    } finally {
+      errSpy.mockRestore();
+    }
   });
 });
