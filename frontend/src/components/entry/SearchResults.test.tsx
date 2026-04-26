@@ -2,14 +2,14 @@
  * @jest-environment jsdom
  */
 
-import { render, screen, fireEvent } from "@testing-library/react";
-import { Component, ReactNode } from "react";
-
 import {
   AdvancedSearchResult,
   AdvancedSearchResultAttrInfoFilterKeyEnum,
   EntryAttributeTypeTypeEnum,
 } from "@dmm-com/airone-apiclient-typescript-fetch";
+import { render, screen, fireEvent } from "@testing-library/react";
+import { Component, ReactNode } from "react";
+
 import { TestWrapper } from "TestWrapper";
 import { SearchResults } from "components/entry/SearchResults";
 
