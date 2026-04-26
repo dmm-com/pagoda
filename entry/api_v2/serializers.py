@@ -259,9 +259,7 @@ class EntryAttributeValueSerializer(serializers.Serializer):
     # Use IntOrFloatField to preserve int vs float distinction for NUMBER values
     # (regression fix for #3458). FloatField would coerce ints back to floats.
     as_number = IntOrFloatField(allow_null=True, required=False)
-    as_array_number = serializers.ListField(
-        child=IntOrFloatField(allow_null=True), required=False
-    )
+    as_array_number = serializers.ListField(child=IntOrFloatField(allow_null=True), required=False)
 
 
 class EntryAttributeTypeSerializer(serializers.Serializer):
@@ -749,9 +747,7 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
 
                 case AttrType.ARRAY_NUMBER:
                     return {
-                        "as_array_number": [
-                            coerce_number(x.value) for x in attrv.data_array.all()
-                        ],
+                        "as_array_number": [coerce_number(x.value) for x in attrv.data_array.all()],
                     }
 
                 case AttrType.ARRAY_OBJECT:
@@ -1276,9 +1272,7 @@ class EntryHistoryAttributeValueSerializer(serializers.ModelSerializer):
                 return {"as_array_string": [x.value for x in obj.data_array.all()]}
 
             case AttrType.ARRAY_NUMBER:
-                return {
-                    "as_array_number": [coerce_number(x.value) for x in obj.data_array.all()]
-                }
+                return {"as_array_number": [coerce_number(x.value) for x in obj.data_array.all()]}
 
             case AttrType.ARRAY_OBJECT:
                 return {
