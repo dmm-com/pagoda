@@ -26,7 +26,7 @@ from airone.lib.log import Logger
 from airone.lib.types import AttrDefaultValue, AttrType
 from entity.api_v2.serializers import EntitySerializer
 from entity.models import Entity, EntityAttr
-from entry.models import AliasEntry, Attribute, AttributeValue, Entry
+from entry.models import AliasEntry, Attribute, AttributeValue, Entry, coerce_number
 from entry.settings import CONFIG as CONFIG_ENTRY
 from group.models import Group
 from job.models import Job, JobStatus
@@ -136,8 +136,8 @@ class EntryAttributeValue(TypedDict, total=False):
     # date; use string instead
     as_role: EntryAttributeValueRole | None
     as_array_role: list[EntryAttributeValueRole]
-    as_number: float | None  # Added for AttrType.NUMBER
-    as_array_number: list[float | None]  # Added for AttrType.ARRAY_NUMBER
+    as_number: int | float | None  # Added for AttrType.NUMBER
+    as_array_number: list[int | float | None]  # Added for AttrType.ARRAY_NUMBER
 
 
 class EntryAttributeType(TypedDict):
@@ -162,6 +162,45 @@ class AdvancedSearchJoinAttrInfo(BaseModel):
 
 
 AdvancedSearchJoinAttrInfoList = RootModel[list[AdvancedSearchJoinAttrInfo]]
+
+
+@extend_schema_field(OpenApiTypes.NUMBER)
+class IntOrFloatField(serializers.Field):
+    """Number serializer field that preserves int vs float on output.
+
+    DRF's FloatField casts every value to float on representation, which would
+    re-introduce the "4 -> 4.0" drift fixed in entry.models.coerce_number.
+    This field passes int / float through unchanged, and accepts int, float,
+    or numeric strings on input (returning int when the value has no fractional
+    part).
+    """
+
+    default_error_messages = {"invalid": "A valid number is required."}
+
+    def to_representation(self, value):
+        if value is None or isinstance(value, (int, float)):
+            return value
+        # Fallback for unexpected stored types (e.g. legacy strings)
+        try:
+            f = float(value)
+        except (TypeError, ValueError):
+            self.fail("invalid")
+        return int(f) if f.is_integer() else f
+
+    def to_internal_value(self, data):
+        if isinstance(data, bool):
+            self.fail("invalid")
+        if isinstance(data, int):
+            return data
+        if isinstance(data, float):
+            return int(data) if data.is_integer() else data
+        if isinstance(data, str):
+            try:
+                f = float(data)
+            except ValueError:
+                self.fail("invalid")
+            return int(f) if f.is_integer() else f
+        self.fail("invalid")
 
 
 class EntityAttributeTypeSerializer(serializers.Serializer):
@@ -217,9 +256,11 @@ class EntryAttributeValueSerializer(serializers.Serializer):
     # date; use string instead
     as_role = EntryAttributeValueRoleSerializer(allow_null=True, required=False)
     as_array_role = serializers.ListField(child=EntryAttributeValueRoleSerializer(), required=False)
-    as_number = serializers.FloatField(allow_null=True, required=False)  # Added for AttrType.NUMBER
+    # Use IntOrFloatField to preserve int vs float distinction for NUMBER values
+    # (regression fix for #3458). FloatField would coerce ints back to floats.
+    as_number = IntOrFloatField(allow_null=True, required=False)
     as_array_number = serializers.ListField(
-        child=serializers.FloatField(allow_null=True), required=False
+        child=IntOrFloatField(allow_null=True), required=False
     )
 
 
@@ -709,8 +750,7 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
                 case AttrType.ARRAY_NUMBER:
                     return {
                         "as_array_number": [
-                            float(x.value) if x.value and x.value.strip() else None
-                            for x in attrv.data_array.all()
+                            coerce_number(x.value) for x in attrv.data_array.all()
                         ],
                     }
 
@@ -1237,10 +1277,7 @@ class EntryHistoryAttributeValueSerializer(serializers.ModelSerializer):
 
             case AttrType.ARRAY_NUMBER:
                 return {
-                    "as_array_number": [
-                        float(x.value) if x.value and x.value.strip() else None
-                        for x in obj.data_array.all()
-                    ]
+                    "as_array_number": [coerce_number(x.value) for x in obj.data_array.all()]
                 }
 
             case AttrType.ARRAY_OBJECT:

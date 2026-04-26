@@ -32,6 +32,25 @@ from user.models import User
 from .settings import CONFIG
 
 
+def coerce_number(raw: str | None) -> int | float | None:
+    """Convert a stored Number-attribute string back to int when integer-valued.
+
+    Number values are persisted as strings (e.g. "4.0") via str(float(...)),
+    so reading them back through float() always yields a float. This helper
+    returns int when the value has no fractional part so that integer inputs
+    round-trip as integers (regression for #3458).
+    """
+    if not raw or not raw.strip():
+        return None
+    try:
+        f = float(raw)
+    except ValueError:
+        return None
+    if math.isfinite(f) and f.is_integer():
+        return int(f)
+    return f
+
+
 class AttributeValue(models.Model):
     # This is a constant that indicates target object binds multiple AttributeValue objects.
     STATUS_DATA_ARRAY_PARENT = 1 << 0
@@ -200,14 +219,8 @@ class AttributeValue(models.Model):
                 value = self.value
 
             case AttrType.NUMBER:
-                # Convert string value back to number for NUMBER type
-                if self.value and self.value.strip():
-                    try:
-                        value = float(self.value)
-                    except ValueError:
-                        value = None
-                else:
-                    value = None
+                # Convert string value back to number, preserving int when possible
+                value = coerce_number(self.value)
 
             case AttrType.BOOLEAN:
                 value = self.boolean
@@ -246,10 +259,7 @@ class AttributeValue(models.Model):
                 value = [x.value for x in self.data_array.all()]
 
             case AttrType.ARRAY_NUMBER:
-                value = [
-                    float(x.value) if x.value and x.value.strip() else None
-                    for x in self.data_array.all()
-                ]
+                value = [coerce_number(x.value) for x in self.data_array.all()]
 
             case AttrType.ARRAY_OBJECT:
                 value = [
@@ -282,10 +292,7 @@ class AttributeValue(models.Model):
             case AttrType.ARRAY_STRING:
                 return [x.value for x in self.data_array.all()]
             case AttrType.ARRAY_NUMBER:
-                return [
-                    float(x.value) if x.value and x.value.strip() else None
-                    for x in self.data_array.all()
-                ]
+                return [coerce_number(x.value) for x in self.data_array.all()]
             case AttrType.ARRAY_OBJECT:
                 return [x.referral for x in self.data_array.all()]
             case AttrType.OBJECT:
@@ -293,14 +300,8 @@ class AttributeValue(models.Model):
             case AttrType.BOOLEAN:
                 return self.boolean
             case AttrType.NUMBER:
-                # Convert string value back to number for NUMBER type
-                if self.value and self.value.strip():
-                    try:
-                        return float(self.value)
-                    except ValueError:
-                        return None
-                else:
-                    return None
+                # Convert string value back to number, preserving int when possible
+                return coerce_number(self.value)
             case AttrType.DATE:
                 return self.date
             case AttrType.NAMED_OBJECT:
@@ -1965,10 +1966,9 @@ class Entry(ACLBase):
                     attrinfo["last_value"] = [x.value for x in last_value.data_array.all()]
 
                 case AttrType.ARRAY_NUMBER:
-                    # Convert string values back to numbers for ARRAY_NUMBER type
+                    # Convert string values back to numbers, preserving int when possible
                     attrinfo["last_value"] = [
-                        float(x.value) if x.value and x.value.strip() else None
-                        for x in last_value.data_array.all()
+                        coerce_number(x.value) for x in last_value.data_array.all()
                     ]
 
                 case AttrType.ARRAY_OBJECT:
@@ -2043,14 +2043,8 @@ class Entry(ACLBase):
                     attrinfo["last_value"] = last_value.datetime
 
                 case AttrType.NUMBER:
-                    # Convert string value back to number for NUMBER type
-                    if last_value.value and last_value.value.strip():
-                        try:
-                            attrinfo["last_value"] = float(last_value.value)
-                        except ValueError:
-                            attrinfo["last_value"] = None
-                    else:
-                        attrinfo["last_value"] = None
+                    # Convert string value back to number, preserving int when possible
+                    attrinfo["last_value"] = coerce_number(last_value.value)
 
             ret_attrs.append(attrinfo)
 
@@ -2360,14 +2354,9 @@ class Entry(ACLBase):
                         attrinfo["referral_id"] = role.id
 
             elif entity_attr.type & AttrType.NUMBER:
-                # Convert string value to number for NUMBER type
-                if attrv.value and attrv.value.strip():
-                    try:
-                        attrinfo["value"] = float(attrv.value)
-                    except ValueError:
-                        attrinfo["value"] = ""
-                else:
-                    attrinfo["value"] = ""
+                # Convert string value to number, preserving int when possible
+                coerced = coerce_number(attrv.value)
+                attrinfo["value"] = "" if coerced is None else coerced
 
             # Basically register attribute information whatever value doesn't exist
             if not (entity_attr.type & AttrType._ARRAY and not is_recursive):
@@ -2734,18 +2723,14 @@ class AdvancedSearchAttributeIndex(models.Model):
                     key = attrv.role.name if attrv.role else None
                     value = {"id": attrv.role.id, "name": attrv.role.name} if attrv.role else None
                 case AttrType.NUMBER:
-                    # Convert string value to number for NUMBER type
-                    if attrv.value and attrv.value.strip():
-                        try:
-                            number_value = float(attrv.value)
-                            key = str(number_value)
-                            value = number_value
-                        except ValueError:
-                            key = None
-                            value = None
-                    else:
+                    # Convert string value to number, preserving int when possible
+                    number_value = coerce_number(attrv.value)
+                    if number_value is None:
                         key = None
                         value = None
+                    else:
+                        key = str(number_value)
+                        value = number_value
                 case AttrType.ARRAY_STRING:
                     value = [v.value for v in attrv.data_array.all()]
                     key = ",".join(value)
@@ -2778,11 +2763,8 @@ class AdvancedSearchAttributeIndex(models.Model):
                     ]
                     key = ",".join([v["name"] for v in value])
                 case AttrType.ARRAY_NUMBER:
-                    # Convert string values to numbers for ARRAY_NUMBER type
-                    value = [
-                        float(v.value) if v.value and v.value.strip() else None
-                        for v in attrv.data_array.all()
-                    ]
+                    # Convert string values to numbers, preserving int when possible
+                    value = [coerce_number(v.value) for v in attrv.data_array.all()]
                     key = ",".join([str(v) if v is not None else "" for v in value])
                 case _:
                     print("TODO implement it")
