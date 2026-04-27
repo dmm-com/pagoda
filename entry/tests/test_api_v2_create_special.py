@@ -10,7 +10,7 @@ from airone.lib.elasticsearch import EntryFilterKey, FilterKey
 from airone.lib.types import (
     AttrType,
 )
-from entity.models import ItemNameType
+from entity.models import EntityAttr, ItemNameType
 from entry import tasks
 from entry.models import Entry
 from entry.tests.test_api_v2 import BaseViewTest
@@ -796,6 +796,68 @@ class ViewTest(BaseViewTest):
         for itemname, expected_value in expected_values:
             item = Entry.objects.get(name=itemname, schema=self.entity)
             self.assertEqual(item.get_attrv("val").value, expected_value)
+
+    @patch("entry.tasks.bulk_update_entries.delay", Mock(side_effect=tasks.bulk_update_entries))
+    def test_bulk_update_items_for_newly_added_attribute(self):
+        """
+        Regression-style assertion for issue #3449.
+
+        The backend already handles "bulk update right after adding a new
+        EntityAttr": EntryUpdateSerializer.update() back-fills any missing
+        Attribute via add_attribute_from_base() before writing the value.
+        This test pins that behavior so the *exception* reported in #3449 can
+        be conclusively isolated to the frontend (AttributeValueField throws
+        when its `type` prop is 0/undefined, which is what
+        SearchResults.tsx hands it for an attribute that the first hit row
+        does not yet have indexed in ES).
+        """
+        # Create items BEFORE adding the new attribute, so the existing entries
+        # don't yet have a corresponding Attribute object for the new EntityAttr.
+        for index in range(3):
+            self.add_entry(
+                self.user,
+                "item-%s" % index,
+                self.entity,
+                values={
+                    "val": "v-%s" % index,
+                },
+            )
+
+        # Now add a brand new EntityAttr to the model. Existing entries are NOT
+        # back-filled with a corresponding Attribute object until they are touched.
+        new_attr = EntityAttr.objects.create(
+            name="newattr",
+            type=AttrType.STRING,
+            is_mandatory=False,
+            parent_entity=self.entity,
+            created_user=self.user,
+        )
+
+        # Sanity check: existing entries do not yet have an Attribute for new_attr.
+        for index in range(3):
+            entry = Entry.objects.get(name="item-%s" % index, schema=self.entity)
+            self.assertFalse(entry.attrs.filter(schema=new_attr).exists())
+
+        params = {
+            "value": {"id": new_attr.id, "value": "updated"},
+            "modelid": self.entity.id,
+            "attrinfo": [{"name": "val"}, {"name": "newattr"}],
+        }
+        resp = self.client.put(
+            "/entry/api/v2/bulk/",
+            params,
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 202, resp.content)
+
+        # Assert the bulk-update job finished successfully (regression assertion).
+        job = Job.objects.filter(operation=JobOperation.BULK_EDIT_ENTRY).last()
+        self.assertEqual(job.status, JobStatus.DONE.value, job.text)
+
+        # All entries should now have "updated" for the new attribute.
+        for index in range(3):
+            item = Entry.objects.get(name="item-%s" % index, schema=self.entity)
+            self.assertEqual(item.get_attrv("newattr").value, "updated")
 
     @patch.object(Job, "is_canceled", Mock(return_value=True))
     @patch("entry.tasks.bulk_update_entries.delay", Mock(side_effect=tasks.bulk_update_entries))

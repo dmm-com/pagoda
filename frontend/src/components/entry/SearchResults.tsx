@@ -103,18 +103,24 @@ export const SearchResults: FC<Props> = ({
   omitHeadline = false,
   entityAttrs = [],
 }) => {
-  // NOTE attrTypes are guessed by the first element on the results. So if it has no appropriate attr,
-  // the type guess doesn't work well. We should improve attr type API if more accurate type is needed.
+  // attrTypes are sourced from entityAttrs (the EntityAttr definitions),
+  // which always include freshly-added attributes regardless of whether any
+  // Entry/ES document references them yet. Falling back to results.values[0]
+  // covers join attrs ("parent.child") that entityAttrs does not enumerate.
+  // (Issue #3449: the previous row-0-only lookup returned undefined for any
+  // attribute added after the existing entries were last indexed, which
+  // bubbled into AttributeValueField as type=0 and threw.)
   const [attrNames, attrTypes] = useMemo(() => {
     const _attrNames = Object.keys(defaultAttrsFilter);
     const _attrTypes = Object.fromEntries(
       _attrNames.map((attrName) => [
         attrName,
-        results.values[0]?.attrs[attrName]?.type,
+        entityAttrs.find((a) => a.name === attrName)?.type ??
+          results.values[0]?.attrs[attrName]?.type,
       ]),
     );
     return [_attrNames, _attrTypes];
-  }, [defaultAttrsFilter, results.values]);
+  }, [defaultAttrsFilter, results.values, entityAttrs]);
 
   const handleChangeBulkOperationEntryId = (id: number, checked: boolean) => {
     if (checked) {

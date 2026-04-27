@@ -3766,7 +3766,10 @@ class ViewTest(AironeViewTest):
             sorted(resp.json(), key=order_by_id),
             sorted(
                 sum(
-                    [[{"id": a.id, "name": a.name} for a in m.attrs.all()] for m in entities[:2]],
+                    [
+                        [{"id": a.id, "name": a.name, "type": a.type} for a in m.attrs.all()]
+                        for m in entities[:2]
+                    ],
                     [],
                 ),
                 key=order_by_id,
@@ -3781,7 +3784,8 @@ class ViewTest(AironeViewTest):
         self.assertEqual(
             sorted(resp.json(), key=order_by_id),
             sorted(
-                [{"id": a.id, "name": a.name} for a in entities[0].attrs.all()], key=order_by_id
+                [{"id": a.id, "name": a.name, "type": a.type} for a in entities[0].attrs.all()],
+                key=order_by_id,
             ),
         )
 
@@ -3791,7 +3795,13 @@ class ViewTest(AironeViewTest):
         self.assertEqual(
             sorted(resp.json(), key=order_by_id),
             sorted(
-                sum([[{"id": a.id, "name": a.name} for a in m.attrs.all()] for m in entities], []),
+                sum(
+                    [
+                        [{"id": a.id, "name": a.name, "type": a.type} for a in m.attrs.all()]
+                        for m in entities
+                    ],
+                    [],
+                ),
                 key=order_by_id,
             ),
         )
