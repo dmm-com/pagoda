@@ -55,6 +55,10 @@ class SuperuserPermission(BasePermission):
         return request.user.is_superuser
 
 
+class UserActivityAPI(viewsets.ModelViewSet):
+    pass
+
+
 class UserAPI(viewsets.ModelViewSet):
     queryset = User.objects.filter(is_active=True)
     permission_classes = [IsAuthenticated & UserPermission]
