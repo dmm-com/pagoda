@@ -320,6 +320,48 @@ class ViewTest(BaseViewTest):
         self.assertEqual(number_negative_value.get_latest_value().get_value(), -123.45)
 
     @patch("entry.tasks.create_entry_v2.delay", Mock(side_effect=tasks.create_entry_v2))
+    def test_number_attr_api_response_preserves_int_type(self):
+        # Regression test for #3458: integer values posted to NUMBER / ARRAY_NUMBER
+        # attributes must come back as ints (not 4.0) on the GET response.
+        num_entity_attr = self.entity.attrs.get(name="num")
+        nums_entity_attr = self.entity.attrs.get(name="nums")
+
+        payload = {
+            "name": "int_number_entry",
+            "schema": self.entity.id,
+            "attrs": [
+                {"id": num_entity_attr.id, "value": 4},
+                {"id": nums_entity_attr.id, "value": [1, 2, 3]},
+            ],
+        }
+        resp = self.client.post(
+            f"/entity/api/v2/{self.entity.id}/entries/", payload, "application/json"
+        )
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED, resp.content)
+
+        created = Entry.objects.get(name="int_number_entry", schema=self.entity)
+        resp = self.client.get(f"/entry/api/v2/{created.id}/")
+        self.assertEqual(resp.status_code, status.HTTP_200_OK, resp.content)
+
+        # Use json.loads on raw content to avoid DRF int/float coercion in helpers
+        data = json.loads(resp.content)
+        num_attr = next(a for a in data["attrs"] if a["schema"]["name"] == "num")
+        self.assertEqual(num_attr["value"]["as_number"], 4)
+        self.assertIsInstance(num_attr["value"]["as_number"], int)
+        self.assertNotIsInstance(num_attr["value"]["as_number"], float)
+        # JSON wire-format check: must serialise as 4, not 4.0
+        body = resp.content.decode()
+        self.assertIn('"as_number":4', body.replace(" ", ""))
+        self.assertNotIn('"as_number":4.0', body.replace(" ", ""))
+        self.assertNotIn('"as_array_number":[1.0,2.0,3.0]', body.replace(" ", ""))
+
+        nums_attr = next(a for a in data["attrs"] if a["schema"]["name"] == "nums")
+        self.assertEqual(nums_attr["value"]["as_array_number"], [1, 2, 3])
+        for v in nums_attr["value"]["as_array_number"]:
+            self.assertIsInstance(v, int)
+            self.assertNotIsInstance(v, float)
+
+    @patch("entry.tasks.create_entry_v2.delay", Mock(side_effect=tasks.create_entry_v2))
     def test_create_and_retrieve_entry_with_number_attr(self):
         entry_name = "test_entry_with_number"
         number_value = 123.45

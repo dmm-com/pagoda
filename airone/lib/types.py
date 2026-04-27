@@ -1,5 +1,34 @@
 import enum
+import math
 from typing import Any
+
+
+def coerce_number(raw: str | int | float | None) -> int | float | None:
+    """Normalise a Number-attribute value, returning int when integer-valued.
+
+    Number values are persisted as strings (e.g. "4.0") via str(float(...))
+    in entry.models.Attribute.add_value, and Elasticsearch may return either
+    a string or a numeric type via ``_source``. Both routes used to call
+    float() unconditionally, which turned integer inputs (4) into 4.0. This
+    helper accepts any of those shapes and returns int when the parsed value
+    has no fractional part (regression for #3458).
+    """
+    if raw is None or isinstance(raw, bool):
+        return None
+    if isinstance(raw, (int, float)):
+        f = float(raw)
+    elif isinstance(raw, str):
+        if not raw.strip():
+            return None
+        try:
+            f = float(raw)
+        except ValueError:
+            return None
+    else:
+        return None
+    if not math.isfinite(f):
+        return None
+    return int(f) if f.is_integer() else f
 
 
 class BaseIntEnum(enum.IntEnum):
