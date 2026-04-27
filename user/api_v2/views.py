@@ -63,6 +63,8 @@ class SuperuserPermission(BasePermission):
 
 
 class UserActivityAPI(viewsets.GenericViewSet):
+    LIMIT_RECORDS = 10
+
     def _get_activities_for_creating_item(self, user: User) -> list[dict]:
         return [
             {
@@ -75,7 +77,9 @@ class UserActivityAPI(viewsets.GenericViewSet):
                 },
                 "timestamp": entry.created_time,
             }
-            for entry in Entry.objects.filter(created_user=user).select_related("schema")
+            for entry in Entry.objects.filter(created_user=user)
+            .select_related("schema")
+            .order_by("-created_time")[: self.LIMIT_RECORDS]
         ]
 
     def _get_activities_for_updating_item(self, user: User) -> list[dict]:
@@ -97,7 +101,9 @@ class UserActivityAPI(viewsets.GenericViewSet):
             }
             for attr_val in AttributeValue.objects.filter(
                 created_user=user, parent_attrv__isnull=True
-            ).select_related("parent_attr__schema", "parent_attr__parent_entry__schema")
+            )
+            .select_related("parent_attr__schema", "parent_attr__parent_entry__schema")
+            .order_by("-created_time")[: self.LIMIT_RECORDS]
             if (entry := attr_val.parent_attr.parent_entry) or True
             if (attr_schema := attr_val.parent_attr.schema) or True
         ]
@@ -116,7 +122,9 @@ class UserActivityAPI(viewsets.GenericViewSet):
             }
             for entry in Entry.objects.filter(
                 deleted_user=user, is_active=False
-            ).select_related("schema")
+            )
+            .select_related("schema")
+            .order_by("-deleted_time")[: self.LIMIT_RECORDS]
         ]
 
     def retrieve(self, request: Request, pk: int) -> Response:

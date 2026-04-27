@@ -14,6 +14,7 @@ from airone.lib.types import (
     AttrType,
 )
 from group.models import Group
+from user.api_v2.views import UserActivityAPI
 from user.models import User
 from entry import tasks as entry_tasks
 from entry.models import Entry, AliasEntry
@@ -851,3 +852,42 @@ class RecentActivityAPITest(ViewTest):
         self.assertEqual(resp.json()[4]["target"]["attr"]["name"], "ruler")
         self.assertEqual(resp.json()[4]["target"]["attr"]["value"], "織田信長")
         self.assertEqual(resp.json()[4]["target"]["model"]["id"], model_prefecture.id)
+
+    def test_prevent_getting_whole_records(self):
+        """
+        This test case is for checking the prevention of getting whole records of recent activity.
+        When a user has many activities, it is not appropriate to return all records of them at once.
+        """
+        user = self.guest_login()
+        limit = UserActivityAPI.LIMIT_RECORDS
+
+        entity = self.create_entity(
+            user, "TestModel", attrs=[{"name": "val", "type": AttrType.STRING}]
+        )
+
+        # Create limit+1 entries to exceed the create activity limit
+        entries = [self.add_entry(user, "item-%d" % i, entity) for i in range(limit + 1)]
+
+        # Delete limit+1 entries to exceed the delete activity limit
+        for entry in entries:
+            entry.delete(deleted_user=user)
+
+        # Create limit+1 attribute updates to exceed the update activity limit
+        live = self.add_entry(user, "live", entity)
+        attr = live.attrs.get(schema__name="val")
+        for i in range(limit + 1):
+            attr.add_value(user, "v%d" % i)
+
+        resp = self.client.get("/user/api/v2/%s/activity" % user.id)
+        self.assertEqual(resp.status_code, 200)
+
+        activities = resp.json()
+        self.assertLessEqual(
+            sum(1 for a in activities if a["action_type"] == "create"), limit
+        )
+        self.assertLessEqual(
+            sum(1 for a in activities if a["action_type"] == "update"), limit
+        )
+        self.assertLessEqual(
+            sum(1 for a in activities if a["action_type"] == "delete"), limit
+        )
