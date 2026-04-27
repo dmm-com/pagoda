@@ -34,7 +34,14 @@ from user.api_v2.serializers import (
     UserTokenSerializer,
     UserUpdateSerializer,
 )
+from entry.models import AttributeValue, Entry
 from user.models import User
+
+
+def _get_attr_value(attr_val: AttributeValue) -> int | str | None:
+    if attr_val.referral_id is not None:
+        return attr_val.referral_id
+    return attr_val.value
 
 
 class UserPermission(BasePermission):
@@ -55,8 +62,66 @@ class SuperuserPermission(BasePermission):
         return request.user.is_superuser
 
 
-class UserActivityAPI(viewsets.ModelViewSet):
-    pass
+class UserActivityAPI(viewsets.GenericViewSet):
+    def retrieve(self, request: Request, pk: int) -> Response:
+        user = get_object_or_404(User, pk=pk, is_active=True)
+        activities: list[dict] = []
+
+        for entry in Entry.objects.filter(created_user=user).select_related("schema"):
+            activities.append(
+                {
+                    "action_type": "create",
+                    "target_type": "item",
+                    "target": {
+                        "id": entry.id,
+                        "name": entry.name,
+                        "model": {"id": entry.schema.id, "name": entry.schema.name},
+                    },
+                    "timestamp": entry.created_time,
+                }
+            )
+
+        for attr_val in AttributeValue.objects.filter(
+            created_user=user, parent_attrv__isnull=True
+        ).select_related("parent_attr__schema", "parent_attr__parent_entry__schema"):
+            entry = attr_val.parent_attr.parent_entry
+            attr_schema = attr_val.parent_attr.schema
+            activities.append(
+                {
+                    "action_type": "update",
+                    "target_type": "item",
+                    "target": {
+                        "id": entry.id,
+                        "name": entry.name,
+                        "attr": {
+                            "id": attr_schema.id,
+                            "name": attr_schema.name,
+                            "value": _get_attr_value(attr_val),
+                        },
+                        "model": {"id": entry.schema.id, "name": entry.schema.name},
+                    },
+                    "timestamp": attr_val.created_time,
+                }
+            )
+
+        for entry in Entry.objects.filter(
+            deleted_user=user, is_active=False
+        ).select_related("schema"):
+            activities.append(
+                {
+                    "action_type": "delete",
+                    "target_type": "item",
+                    "target": {
+                        "id": entry.id,
+                        "name": entry.name,
+                        "model": {"id": entry.schema.id, "name": entry.schema.name},
+                    },
+                    "timestamp": entry.deleted_time,
+                }
+            )
+
+        activities.sort(key=lambda x: x["timestamp"], reverse=True)
+        return Response(activities)
 
 
 class UserAPI(viewsets.ModelViewSet):
