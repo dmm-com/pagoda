@@ -63,62 +63,74 @@ class SuperuserPermission(BasePermission):
 
 
 class UserActivityAPI(viewsets.GenericViewSet):
+    def _get_activities_for_creating_item(self, user: User) -> list[dict]:
+        return [
+            {
+                "action_type": "create",
+                "target_type": "item",
+                "target": {
+                    "id": entry.id,
+                    "name": entry.name,
+                    "model": {"id": entry.schema.id, "name": entry.schema.name},
+                },
+                "timestamp": entry.created_time,
+            }
+            for entry in Entry.objects.filter(created_user=user).select_related("schema")
+        ]
+
+    def _get_activities_for_updating_item(self, user: User) -> list[dict]:
+        return [
+            {
+                "action_type": "update",
+                "target_type": "item",
+                "target": {
+                    "id": entry.id,
+                    "name": entry.name,
+                    "attr": {
+                        "id": attr_schema.id,
+                        "name": attr_schema.name,
+                        "value": _get_attr_value(attr_val),
+                    },
+                    "model": {"id": entry.schema.id, "name": entry.schema.name},
+                },
+                "timestamp": attr_val.created_time,
+            }
+            for attr_val in AttributeValue.objects.filter(
+                created_user=user, parent_attrv__isnull=True
+            ).select_related("parent_attr__schema", "parent_attr__parent_entry__schema")
+            if (entry := attr_val.parent_attr.parent_entry) or True
+            if (attr_schema := attr_val.parent_attr.schema) or True
+        ]
+
+    def _get_activities_for_deleting_item(self, user: User) -> list[dict]:
+        return [
+            {
+                "action_type": "delete",
+                "target_type": "item",
+                "target": {
+                    "id": entry.id,
+                    "name": entry.name,
+                    "model": {"id": entry.schema.id, "name": entry.schema.name},
+                },
+                "timestamp": entry.deleted_time,
+            }
+            for entry in Entry.objects.filter(
+                deleted_user=user, is_active=False
+            ).select_related("schema")
+        ]
+
     def retrieve(self, request: Request, pk: int) -> Response:
         user = get_object_or_404(User, pk=pk, is_active=True)
         activities: list[dict] = []
 
-        for entry in Entry.objects.filter(created_user=user).select_related("schema"):
-            activities.append(
-                {
-                    "action_type": "create",
-                    "target_type": "item",
-                    "target": {
-                        "id": entry.id,
-                        "name": entry.name,
-                        "model": {"id": entry.schema.id, "name": entry.schema.name},
-                    },
-                    "timestamp": entry.created_time,
-                }
-            )
+        # Add activity records for creating item
+        activities += self._get_activities_for_creating_item(user)
 
-        for attr_val in AttributeValue.objects.filter(
-            created_user=user, parent_attrv__isnull=True
-        ).select_related("parent_attr__schema", "parent_attr__parent_entry__schema"):
-            entry = attr_val.parent_attr.parent_entry
-            attr_schema = attr_val.parent_attr.schema
-            activities.append(
-                {
-                    "action_type": "update",
-                    "target_type": "item",
-                    "target": {
-                        "id": entry.id,
-                        "name": entry.name,
-                        "attr": {
-                            "id": attr_schema.id,
-                            "name": attr_schema.name,
-                            "value": _get_attr_value(attr_val),
-                        },
-                        "model": {"id": entry.schema.id, "name": entry.schema.name},
-                    },
-                    "timestamp": attr_val.created_time,
-                }
-            )
+        # Add activity records for updating item
+        activities += self._get_activities_for_updating_item(user)
 
-        for entry in Entry.objects.filter(
-            deleted_user=user, is_active=False
-        ).select_related("schema"):
-            activities.append(
-                {
-                    "action_type": "delete",
-                    "target_type": "item",
-                    "target": {
-                        "id": entry.id,
-                        "name": entry.name,
-                        "model": {"id": entry.schema.id, "name": entry.schema.name},
-                    },
-                    "timestamp": entry.deleted_time,
-                }
-            )
+        # Add activity records for deleting item
+        activities += self._get_activities_for_deleting_item(user)
 
         activities.sort(key=lambda x: x["timestamp"], reverse=True)
         return Response(activities)
