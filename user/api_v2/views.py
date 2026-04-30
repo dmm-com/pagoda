@@ -1,3 +1,4 @@
+from datetime import timedelta
 from typing import Any
 
 from django.contrib.auth.forms import UserModel
@@ -5,6 +6,7 @@ from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import EmailMultiAlternatives
 from django.template import loader
+from django.utils import timezone
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from django_filters.rest_framework import DjangoFilterBackend
@@ -19,6 +21,7 @@ from rest_framework.response import Response
 from rest_framework.serializers import Serializer
 
 from airone.lib.drf import YAMLParser, YAMLRenderer
+from entry.models import AttributeValue, Entry
 from group.models import Group
 from user.api_v2.serializers import (
     PasswordResetConfirmSerializer,
@@ -34,7 +37,6 @@ from user.api_v2.serializers import (
     UserTokenSerializer,
     UserUpdateSerializer,
 )
-from entry.models import AttributeValue, Entry
 from user.models import User
 
 
@@ -63,9 +65,19 @@ class SuperuserPermission(BasePermission):
 
 
 class UserActivityAPI(viewsets.GenericViewSet):
+    queryset = User.objects.none()
     LIMIT_RECORDS = 10
 
-    def _get_activities_for_creating_item(self, user: User) -> list[dict]:
+    def _get_activities_for_creating_item(
+        self, user: User, since: Any | None = None
+    ) -> list[dict]:
+        qs = Entry.objects.filter(created_user=user).select_related("schema").order_by(
+            "-created_time"
+        )
+        if since is not None:
+            qs = qs.filter(created_time__gte=since)
+        else:
+            qs = qs[: self.LIMIT_RECORDS]
         return [
             {
                 "action_type": "create",
@@ -77,12 +89,21 @@ class UserActivityAPI(viewsets.GenericViewSet):
                 },
                 "timestamp": entry.created_time,
             }
-            for entry in Entry.objects.filter(created_user=user)
-            .select_related("schema")
-            .order_by("-created_time")[: self.LIMIT_RECORDS]
+            for entry in qs
         ]
 
-    def _get_activities_for_updating_item(self, user: User) -> list[dict]:
+    def _get_activities_for_updating_item(
+        self, user: User, since: Any | None = None
+    ) -> list[dict]:
+        qs = (
+            AttributeValue.objects.filter(created_user=user, parent_attrv__isnull=True)
+            .select_related("parent_attr__schema", "parent_attr__parent_entry__schema")
+            .order_by("-created_time")
+        )
+        if since is not None:
+            qs = qs.filter(created_time__gte=since)
+        else:
+            qs = qs[: self.LIMIT_RECORDS]
         return [
             {
                 "action_type": "update",
@@ -99,16 +120,23 @@ class UserActivityAPI(viewsets.GenericViewSet):
                 },
                 "timestamp": attr_val.created_time,
             }
-            for attr_val in AttributeValue.objects.filter(
-                created_user=user, parent_attrv__isnull=True
-            )
-            .select_related("parent_attr__schema", "parent_attr__parent_entry__schema")
-            .order_by("-created_time")[: self.LIMIT_RECORDS]
+            for attr_val in qs
             if (entry := attr_val.parent_attr.parent_entry) or True
             if (attr_schema := attr_val.parent_attr.schema) or True
         ]
 
-    def _get_activities_for_deleting_item(self, user: User) -> list[dict]:
+    def _get_activities_for_deleting_item(
+        self, user: User, since: Any | None = None
+    ) -> list[dict]:
+        qs = (
+            Entry.objects.filter(deleted_user=user, is_active=False)
+            .select_related("schema")
+            .order_by("-deleted_time")
+        )
+        if since is not None:
+            qs = qs.filter(deleted_time__gte=since)
+        else:
+            qs = qs[: self.LIMIT_RECORDS]
         return [
             {
                 "action_type": "delete",
@@ -120,25 +148,33 @@ class UserActivityAPI(viewsets.GenericViewSet):
                 },
                 "timestamp": entry.deleted_time,
             }
-            for entry in Entry.objects.filter(
-                deleted_user=user, is_active=False
-            )
-            .select_related("schema")
-            .order_by("-deleted_time")[: self.LIMIT_RECORDS]
+            for entry in qs
         ]
 
     def retrieve(self, request: Request, pk: int) -> Response:
         user = get_object_or_404(User, pk=pk, is_active=True)
+
+        since = None
+        within_minutes_param = request.query_params.get("within_minutes")
+        if within_minutes_param is not None:
+            try:
+                within_minutes = int(within_minutes_param)
+                if within_minutes <= 0:
+                    return Response(
+                        {"within_minutes": "Must be a positive integer."},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+                since = timezone.now() - timedelta(minutes=within_minutes)
+            except ValueError:
+                return Response(
+                    {"within_minutes": "Must be a positive integer."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
         activities: list[dict] = []
-
-        # Add activity records for creating item
-        activities += self._get_activities_for_creating_item(user)
-
-        # Add activity records for updating item
-        activities += self._get_activities_for_updating_item(user)
-
-        # Add activity records for deleting item
-        activities += self._get_activities_for_deleting_item(user)
+        activities += self._get_activities_for_creating_item(user, since)
+        activities += self._get_activities_for_updating_item(user, since)
+        activities += self._get_activities_for_deleting_item(user, since)
 
         activities.sort(key=lambda x: x["timestamp"], reverse=True)
         return Response(activities)

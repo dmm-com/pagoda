@@ -1,23 +1,25 @@
 import json
+from datetime import timedelta
 from unittest import mock
 from unittest.mock import Mock, patch
 
 import yaml
 from django.contrib.auth.tokens import default_token_generator
+from django.utils import timezone
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
-from rest_framework.authtoken.models import Token
 from rest_framework import status
+from rest_framework.authtoken.models import Token
 
 from airone.lib.test import AironeViewTest, with_airone_settings
 from airone.lib.types import (
     AttrType,
 )
+from entry import tasks as entry_tasks
+from entry.models import Entry
 from group.models import Group
 from user.api_v2.views import UserActivityAPI
 from user.models import User
-from entry import tasks as entry_tasks
-from entry.models import Entry, AliasEntry
 
 
 class ViewTest(AironeViewTest):
@@ -891,3 +893,43 @@ class RecentActivityAPITest(ViewTest):
         self.assertLessEqual(
             sum(1 for a in activities if a["action_type"] == "delete"), limit
         )
+
+    def test_get_activity_within_minutes(self):
+        """
+        When within_minutes is specified, all activities within that window are returned
+        regardless of LIMIT_RECORDS.
+        """
+        user = self.guest_login()
+        limit = UserActivityAPI.LIMIT_RECORDS
+
+        entity = self.create_entity(
+            user, "TestModel", attrs=[{"name": "val", "type": AttrType.STRING}]
+        )
+
+        # Create limit+1 entries so the count exceeds LIMIT_RECORDS
+        entries = [self.add_entry(user, "item-%d" % i, entity) for i in range(limit + 1)]
+
+        # Backdate one entry to be outside the within_minutes window
+        old_entry = entries[0]
+        Entry.objects.filter(pk=old_entry.id).update(
+            created_time=timezone.now() - timedelta(minutes=60)
+        )
+
+        resp = self.client.get("/user/api/v2/%s/activity?within_minutes=30" % user.id)
+        self.assertEqual(resp.status_code, 200)
+
+        create_activities = [a for a in resp.json() if a["action_type"] == "create"]
+        # Should return limit entries (limit+1 created, 1 backdated outside window)
+        self.assertEqual(len(create_activities), limit)
+
+    def test_get_activity_within_minutes_invalid(self):
+        user = self.guest_login()
+
+        resp = self.client.get("/user/api/v2/%s/activity?within_minutes=abc" % user.id)
+        self.assertEqual(resp.status_code, 400)
+
+        resp = self.client.get("/user/api/v2/%s/activity?within_minutes=0" % user.id)
+        self.assertEqual(resp.status_code, 400)
+
+        resp = self.client.get("/user/api/v2/%s/activity?within_minutes=-5" % user.id)
+        self.assertEqual(resp.status_code, 400)
