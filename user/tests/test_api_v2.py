@@ -808,7 +808,22 @@ class RecentActivityAPITest(ViewTest):
                 "attr": {
                     "id": 200,
                     "name": "attr name",
-                    "value": "updated_value",
+                    "curr_value": {
+                        "id": 300,
+                        "value": "current value",
+                        "user": {
+                            "id": 500,
+                            "username": "updated user name",
+                        },
+                    },
+                    "prev_value": {
+                        "id": 400,
+                        "value": "previous value",
+                        "user": {
+                            "id": 600,
+                            "username": "previous updated user name",
+                        },
+                    },
                 }
                 "model": {
                     "id": 10,
@@ -831,7 +846,7 @@ class RecentActivityAPITest(ViewTest):
         self.assertEqual(resp.json()[1]["target_type"], "item")
         self.assertEqual(resp.json()[1]["target"]["id"], item_antu.id)
         self.assertEqual(resp.json()[1]["target"]["attr"]["name"], "designer")
-        self.assertEqual(resp.json()[1]["target"]["attr"]["value"], "丹羽長秀")
+        self.assertEqual(resp.json()[1]["target"]["attr"]["curr_value"]["value"], "丹羽長秀")
         self.assertEqual(resp.json()[1]["target"]["model"]["id"], model_castle.id)
 
         # before that target user update another attribute of created Item
@@ -839,7 +854,7 @@ class RecentActivityAPITest(ViewTest):
         self.assertEqual(resp.json()[2]["target_type"], "item")
         self.assertEqual(resp.json()[2]["target"]["id"], item_antu.id)
         self.assertEqual(resp.json()[2]["target"]["attr"]["name"], "location")
-        self.assertEqual(resp.json()[2]["target"]["attr"]["value"], item_prefectures["滋賀県"].id)
+        self.assertEqual(resp.json()[2]["target"]["attr"]["curr_value"]["value"], item_prefectures["滋賀県"].id)
         self.assertEqual(resp.json()[2]["target"]["model"]["id"], model_castle.id)
 
         # before that target user create castle item
@@ -853,7 +868,9 @@ class RecentActivityAPITest(ViewTest):
         self.assertEqual(resp.json()[4]["target_type"], "item")
         self.assertEqual(resp.json()[4]["target"]["id"], item_prefectures["京都府"].id)
         self.assertEqual(resp.json()[4]["target"]["attr"]["name"], "ruler")
-        self.assertEqual(resp.json()[4]["target"]["attr"]["value"], "織田信長")
+        self.assertEqual(resp.json()[4]["target"]["attr"]["curr_value"]["value"], "織田信長")
+        self.assertEqual(resp.json()[4]["target"]["attr"]["prev_value"]["value"], "松永久秀")
+        self.assertEqual(resp.json()[4]["target"]["attr"]["prev_value"]["user"]["id"], daimyos["松永久秀"].id)
         self.assertEqual(resp.json()[4]["target"]["model"]["id"], model_prefecture.id)
 
     def test_prevent_getting_whole_records(self):

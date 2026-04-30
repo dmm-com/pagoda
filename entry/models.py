@@ -48,6 +48,7 @@ class AttributeValue(models.Model):
     created_time = models.DateTimeField(auto_now_add=True)
     created_user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
     parent_attr = models.ForeignKey("Attribute", on_delete=models.DO_NOTHING)
+    prev_value = models.ForeignKey("AttributeValue", related_name="next_value", on_delete=models.DO_NOTHING)
     status = models.IntegerField(default=0)
     boolean = models.BooleanField(default=False)
     date = models.DateField(null=True)
