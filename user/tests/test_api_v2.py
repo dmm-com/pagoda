@@ -11,6 +11,7 @@ from django.utils.http import urlsafe_base64_encode
 from rest_framework import status
 from rest_framework.authtoken.models import Token
 
+from airone.lib.acl import ACLType
 from airone.lib.test import AironeViewTest, with_airone_settings
 from airone.lib.types import (
     AttrType,
@@ -933,3 +934,50 @@ class RecentActivityAPITest(ViewTest):
 
         resp = self.client.get("/user/api/v2/%s/activity?within_minutes=-5" % user.id)
         self.assertEqual(resp.status_code, 400)
+
+    def test_get_activity_filters_by_permission(self):
+        """
+        Activities for models/items/attributes the requesting user lacks permission to
+        should be excluded from the response.
+        """
+        admin = self._create_user("admin", is_superuser=True)
+        activity_user = self._create_user("activity_user")
+        viewing_user = self._create_user("viewing_user")
+
+        public_entity = self.create_entity(
+            admin, "PublicModel", attrs=[{"name": "val", "type": AttrType.STRING}]
+        )
+        private_entity = self.create_entity(
+            admin, "PrivateModel", attrs=[{"name": "val", "type": AttrType.STRING}]
+        )
+
+        # create entries while both entities are still public so complement_attrs succeeds
+        public_entry = self.add_entry(
+            activity_user, "pub-item", public_entity, values={"val": "v0"}
+        )
+        private_entry = self.add_entry(
+            activity_user, "priv-item", private_entity, values={"val": "v0"}
+        )
+
+        # update attribute values
+        public_entry.attrs.get(schema__name="val").add_value(activity_user, "v1")
+        private_entry.attrs.get(schema__name="val").add_value(activity_user, "v1")
+
+        # delete entries
+        public_entry.delete(deleted_user=activity_user)
+        private_entry.delete(deleted_user=activity_user)
+
+        # now restrict private_entity so viewing_user has no permission
+        private_entity.is_public = False
+        private_entity.default_permission = ACLType.Nothing.id
+        private_entity.save()
+
+        # viewing_user requests activity of activity_user
+        self.client.login(username="viewing_user", password="viewing_user")
+        resp = self.client.get("/user/api/v2/%s/activity" % activity_user.id)
+        self.assertEqual(resp.status_code, 200)
+
+        activities = resp.json()
+        target_models = {a["target"]["model"]["id"] for a in activities}
+        self.assertIn(public_entity.id, target_models)
+        self.assertNotIn(private_entity.id, target_models)

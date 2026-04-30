@@ -20,6 +20,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.serializers import Serializer
 
+from airone.lib.acl import ACLType
 from airone.lib.drf import YAMLParser, YAMLRenderer
 from entry.models import AttributeValue, Entry
 from group.models import Group
@@ -69,7 +70,7 @@ class UserActivityAPI(viewsets.GenericViewSet):
     LIMIT_RECORDS = 10
 
     def _get_activities_for_creating_item(
-        self, user: User, since: Any | None = None
+        self, user: User, requesting_user: User, since: Any | None = None
     ) -> list[dict]:
         qs = Entry.objects.filter(created_user=user).select_related("schema").order_by(
             "-created_time"
@@ -90,10 +91,11 @@ class UserActivityAPI(viewsets.GenericViewSet):
                 "timestamp": entry.created_time,
             }
             for entry in qs
+            if requesting_user.has_permission(entry, ACLType.Readable)
         ]
 
     def _get_activities_for_updating_item(
-        self, user: User, since: Any | None = None
+        self, user: User, requesting_user: User, since: Any | None = None
     ) -> list[dict]:
         qs = (
             AttributeValue.objects.filter(created_user=user, parent_attrv__isnull=True)
@@ -123,10 +125,12 @@ class UserActivityAPI(viewsets.GenericViewSet):
             for attr_val in qs
             if (entry := attr_val.parent_attr.parent_entry) or True
             if (attr_schema := attr_val.parent_attr.schema) or True
+            if requesting_user.has_permission(entry, ACLType.Readable)
+            and requesting_user.has_permission(attr_schema, ACLType.Readable)
         ]
 
     def _get_activities_for_deleting_item(
-        self, user: User, since: Any | None = None
+        self, user: User, requesting_user: User, since: Any | None = None
     ) -> list[dict]:
         qs = (
             Entry.objects.filter(deleted_user=user, is_active=False)
@@ -149,6 +153,7 @@ class UserActivityAPI(viewsets.GenericViewSet):
                 "timestamp": entry.deleted_time,
             }
             for entry in qs
+            if requesting_user.has_permission(entry.schema, ACLType.Readable)
         ]
 
     def retrieve(self, request: Request, pk: int) -> Response:
@@ -171,10 +176,11 @@ class UserActivityAPI(viewsets.GenericViewSet):
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
+        requesting_user: User = request.user
         activities: list[dict] = []
-        activities += self._get_activities_for_creating_item(user, since)
-        activities += self._get_activities_for_updating_item(user, since)
-        activities += self._get_activities_for_deleting_item(user, since)
+        activities += self._get_activities_for_creating_item(user, requesting_user, since)
+        activities += self._get_activities_for_updating_item(user, requesting_user, since)
+        activities += self._get_activities_for_deleting_item(user, requesting_user, since)
 
         activities.sort(key=lambda x: x["timestamp"], reverse=True)
         return Response(activities)
