@@ -224,6 +224,13 @@ class AdvancedSearchServiceTest(AironeTestCase):
         self.assertEqual(ret.ret_count, 11)
         self.assertEqual(len(ret.ret_values), 5)
 
+        # retrieve_all=True overrides the `limit` argument and returns every matched entry
+        ret = AdvancedSearchService.search_entries(
+            user, [entity.id], [AttrHint(name="str")], 5, retrieve_all=True
+        )
+        self.assertEqual(ret.ret_count, 11)
+        self.assertEqual(len(ret.ret_values), 11)
+
         # search entries with keyword
         ret = AdvancedSearchService.search_entries(
             user, [entity.id], [AttrHint(name="str", keyword="foo-5")]
