@@ -1980,6 +1980,100 @@ class ViewTest(BaseViewTest):
     @patch(
         "entry.tasks.export_search_result_v2.delay", Mock(side_effect=tasks.export_search_result_v2)
     )
+    def test_yaml_export_without_has_referral_omits_referrals_key(self):
+        # Regression test for #3459: when 'has_referral' is not enabled, the YAML output
+        # must NOT contain the 'referrals' key (previously emitted as 'referrals: null').
+        user = self._create_user("admin", is_superuser=True)
+
+        ref_entity = Entity.objects.create(name="ReferredEntity", created_user=user)
+        entity = Entity.objects.create(name="entity", created_user=user)
+        entity_attr = EntityAttr.objects.create(
+            name="attr_ref",
+            type=AttrType.OBJECT,
+            created_user=user,
+            parent_entity=entity,
+        )
+        entity_attr.referral.add(ref_entity)
+
+        ref_entry = Entry.objects.create(name="ref", schema=ref_entity, created_user=user)
+        ref_entry.register_es()
+
+        entry = Entry.objects.create(name="entry", schema=entity, created_user=user)
+        entry.complement_attrs(user)
+        entry.attrs.first().add_value(user, ref_entry)
+        entry.register_es()
+
+        # case 1: has_referral omitted entirely
+        resp = self.client.post(
+            "/entry/api/v2/advanced_search_result_export/",
+            json.dumps(
+                {
+                    "entities": [ref_entity.id],
+                    "attrinfo": [],
+                    "export_style": "yaml",
+                }
+            ),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 200)
+
+        resp_data = yaml.load(Job.objects.last().get_cache(), Loader=yaml.FullLoader)
+        for entity_block in resp_data:
+            for entry_block in entity_block["entries"]:
+                self.assertNotIn("referrals", entry_block)
+
+        # case 2: has_referral explicitly False
+        resp = self.client.post(
+            "/entry/api/v2/advanced_search_result_export/",
+            json.dumps(
+                {
+                    "entities": [ref_entity.id],
+                    "attrinfo": [],
+                    "export_style": "yaml",
+                    "has_referral": False,
+                }
+            ),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 200)
+
+        resp_data = yaml.load(Job.objects.last().get_cache(), Loader=yaml.FullLoader)
+        for entity_block in resp_data:
+            for entry_block in entity_block["entries"]:
+                self.assertNotIn("referrals", entry_block)
+
+    @patch("entry.tasks.export_entries_v2.delay", Mock(side_effect=tasks.export_entries_v2))
+    def test_entity_yaml_export_omits_referrals_key(self):
+        # Regression test for #3459: the per-entity YAML export must not emit a stray
+        # 'referrals: null' field for each entry.
+        user = self.admin_login()
+
+        entity = Entity.objects.create(name="entity", created_user=user)
+        EntityAttr.objects.create(
+            name="val",
+            type=AttrType.STRING,
+            created_user=user,
+            parent_entity=entity,
+        )
+        entry = Entry.objects.create(name="entry", schema=entity, created_user=user)
+        entry.complement_attrs(user)
+        entry.attrs.get(name="val").add_value(user, "hoge")
+
+        resp = self.client.post(
+            "/entry/api/v2/%d/export/" % entity.id,
+            json.dumps({}),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 200)
+
+        obj = yaml.load(Job.objects.last().get_cache(), Loader=yaml.SafeLoader)
+        for entity_block in obj:
+            for entry_block in entity_block["entries"]:
+                self.assertNotIn("referrals", entry_block)
+
+    @patch(
+        "entry.tasks.export_search_result_v2.delay", Mock(side_effect=tasks.export_search_result_v2)
+    )
     def test_export_advanced_search_result_with_no_value(self):
         admin = self._create_user("admin", is_superuser=True)
 
@@ -2117,7 +2211,6 @@ class ViewTest(BaseViewTest):
                             "id": self.ref_entry.id,
                             "name": "r-0",
                             "attrs": [{"name": "val", "value": ""}],
-                            "referrals": None,
                         }
                     ],
                 },
@@ -2128,7 +2221,6 @@ class ViewTest(BaseViewTest):
                             "id": test_item.id,
                             "name": "Entry",
                             "attrs": [{"name": "val", "value": "hoge"}],
-                            "referrals": None,
                         }
                     ],
                 },
