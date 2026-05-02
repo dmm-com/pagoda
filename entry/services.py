@@ -45,6 +45,7 @@ class AdvancedSearchService:
         exclude_referrals: list[int] = [],
         include_referrals: list[int] = [],
         entry_ids: list[int] | None = None,
+        retrieve_all: bool = False,
     ) -> AdvancedSearchResults:
         """Main method called from advanced search.
 
@@ -60,7 +61,8 @@ class AdvancedSearchService:
             hint_attrs (list(dict[str, str])): Defaults to Empty list.
                 A list of search strings and attribute sets
             limit (int): Defaults to 100.
-                Maximum number of search results to return
+                Maximum number of search results to return.
+                Ignored when retrieve_all=True.
             entry_name (str): Search string for entry name
             hint_referral (str): Defaults to None.
                 Input value used to refine the reference entry.
@@ -88,6 +90,12 @@ class AdvancedSearchService:
                 When provided, restricts search results to entries with these IDs.
                 The effective limit is automatically set to len(entry_ids) to ensure
                 all specified entries are returned.
+            retrieve_all (bool): Defaults to False.
+                When True, returns all entries that match the conditions, ignoring
+                the `limit` argument. The effective upper bound is the Elasticsearch
+                `max_result_window` (settings.ES_CONFIG["MAXIMUM_RESULTS_NUM"]).
+                If the matched count exceeds this bound the result is silently
+                truncated and a warning is logged.
 
         Returns:
             AdvancedSearchResults: As a result of the search,
@@ -95,6 +103,12 @@ class AdvancedSearchService:
         """
         if not hint_attrs:
             hint_attrs = []
+
+        if retrieve_all:
+            # Use the Elasticsearch max_result_window as the upper bound. Beyond this
+            # value ES rejects the query, and execute_query also clamps to the same
+            # ceiling — so this is the largest size we can request in a single shot.
+            limit = settings.ES_CONFIG["MAXIMUM_RESULTS_NUM"]
 
         results = AdvancedSearchResults(
             ret_count=0,
@@ -180,9 +194,21 @@ class AdvancedSearchService:
             )
             results.ret_count += search_result.ret_count
             results.ret_values.extend(search_result.ret_values)
-            if not entry_ids:
+            if not entry_ids and not retrieve_all:
                 limit -= len(search_result.ret_values)
                 offset = max(0, offset - search_result.ret_count)
+
+        if retrieve_all and results.ret_count > len(results.ret_values):
+            # When retrieve_all=True, the caller expects every matched entry. If the
+            # matched total exceeds the Elasticsearch max_result_window, the result is
+            # silently truncated. Surface this so the truncation does not go unnoticed.
+            Logger.warning(
+                "search_entries(retrieve_all=True) truncated: matched=%d returned=%d "
+                "(max_result_window=%d)",
+                results.ret_count,
+                len(results.ret_values),
+                settings.ES_CONFIG["MAXIMUM_RESULTS_NUM"],
+            )
 
         return results
 

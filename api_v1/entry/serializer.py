@@ -238,7 +238,7 @@ class EntrySearchChainSerializer(serializers.Serializer):
                 "hint_entity_ids": entity_id_list,
                 "hint_referral": search_keyword,
                 "hint_referral_entity_id": sub_query["entity_id"],
-                "limit": 99999,
+                "retrieve_all": True,
             }
 
             # get Entry informations from result
