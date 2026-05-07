@@ -1004,24 +1004,22 @@ class RecentActivityAPITest(ViewTest):
         self.assertIn(public_entity.id, target_models)
         self.assertNotIn(private_entity.id, target_models)
 
-    def test_get_activity_has_text_typed_record(self):
-        # create Model and Item with text type attribute to check
-        # the response of recent activity API has text typed record.
-        user = self.guest_login()
+    def _setup_attr_update_activity(
+        self, user: User, attr_name: str, attr_type: AttrType, values: list
+    ):
+        """Create model/item and update attr via API. values=[initial, updated].
+        Returns (model, item). The most recent PUT sets values[-1]; prev is values[-2]."""
         model = self.create_entity(
-            user, "TestModel", attrs=[{"name": "text_attr", "type": AttrType.TEXT}]
+            user, "TestModel", attrs=[{"name": attr_name, "type": attr_type}]
         )
-        item = self.add_entry(user, "TestItem", model, values={"text_attr": "test"})
-        item.attrs.get(schema__name="text_attr").add_value(user, "updated text")
+        item = self.add_entry(user, "TestItem", model, values={attr_name: values[0]})
+        item.attrs.get(schema__name=attr_name).add_value(user, values[1])
 
-        # send request to update text attribute value
-        target_attr = model.attrs.get(name="text_attr")
-        for value in ["test", "updated text"]:
+        target_attr = model.attrs.get(name=attr_name)
+        for value in values:
             params = {
                 "name": item.name,
-                "attrs": [
-                    {"id": target_attr.id, "value": value},
-                ],
+                "attrs": [{"id": target_attr.id, "value": value}],
             }
             resp = self.client.put(
                 "/entry/api/v2/%s/" % item.id,
@@ -1030,56 +1028,49 @@ class RecentActivityAPITest(ViewTest):
             )
             self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
 
-        # call API to get recent activity of target user
-        resp = self.client.get("/user/api/v2/%s/activity" % user.id)
-        self.assertEqual(resp.status_code, 200)
+        return model, item
 
-        # check the response has text typed record and its value is correct.
+    def _assert_latest_update_activity(
+        self,
+        resp,
+        item,
+        model,
+        attr_name: str,
+        attr_type: AttrType,
+        curr_value,
+        prev_value,
+    ):
+        """Assert that resp.json()[0] is a correctly structured update activity."""
+        self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.json()[0]["action_type"], "update")
         self.assertEqual(resp.json()[0]["target_type"], "item")
         self.assertEqual(resp.json()[0]["target"]["id"], item.id)
-        self.assertEqual(resp.json()[0]["target"]["attr"]["name"], "text_attr")
-        self.assertEqual(resp.json()[0]["target"]["attr"]["type"], AttrType.TEXT)
-        self.assertEqual(resp.json()[0]["target"]["attr"]["curr_value"]["value"], "updated text")
-        self.assertEqual(resp.json()[0]["target"]["attr"]["prev_value"]["value"], "test")
+        self.assertEqual(resp.json()[0]["target"]["attr"]["name"], attr_name)
+        self.assertEqual(resp.json()[0]["target"]["attr"]["type"], attr_type)
+        self.assertEqual(resp.json()[0]["target"]["attr"]["curr_value"]["value"], curr_value)
+        self.assertEqual(resp.json()[0]["target"]["attr"]["prev_value"]["value"], prev_value)
         self.assertEqual(resp.json()[0]["target"]["model"]["id"], model.id)
+
+    def test_get_activity_has_text_typed_record(self):
+        user = self.guest_login()
+        model, item = self._setup_attr_update_activity(
+            user, "text_attr", AttrType.TEXT, ["test", "updated text"]
+        )
+
+        resp = self.client.get("/user/api/v2/%s/activity" % user.id)
+
+        self._assert_latest_update_activity(
+            resp, item, model, "text_attr", AttrType.TEXT, "updated text", "test"
+        )
 
     def test_get_activity_has_boolean_typed_record(self):
-        # create Model and Item with boolean type attribute to check
-        # the response of recent activity API has boolean typed record.
         user = self.guest_login()
-        model = self.create_entity(
-            user, "TestModel", attrs=[{"name": "bool_attr", "type": AttrType.BOOLEAN}]
+        model, item = self._setup_attr_update_activity(
+            user, "bool_attr", AttrType.BOOLEAN, [False, True]
         )
-        item = self.add_entry(user, "TestItem", model, values={"bool_attr": False})
-        item.attrs.get(schema__name="bool_attr").add_value(user, True)
 
-        # send request to update boolean attribute value
-        target_attr = model.attrs.get(name="bool_attr")
-        for value in [False, True]:
-            params = {
-                "name": item.name,
-                "attrs": [
-                    {"id": target_attr.id, "value": value},
-                ],
-            }
-            resp = self.client.put(
-                "/entry/api/v2/%s/" % item.id,
-                json.dumps(params),
-                "application/json",
-            )
-            self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
-
-        # call API to get recent activity of target user
         resp = self.client.get("/user/api/v2/%s/activity" % user.id)
-        self.assertEqual(resp.status_code, 200)
 
-        # check the response has boolean typed record and its value is correct.
-        self.assertEqual(resp.json()[0]["action_type"], "update")
-        self.assertEqual(resp.json()[0]["target_type"], "item")
-        self.assertEqual(resp.json()[0]["target"]["id"], item.id)
-        self.assertEqual(resp.json()[0]["target"]["attr"]["name"], "bool_attr")
-        self.assertEqual(resp.json()[0]["target"]["attr"]["type"], AttrType.BOOLEAN)
-        self.assertEqual(resp.json()[0]["target"]["attr"]["curr_value"]["value"], True)
-        self.assertEqual(resp.json()[0]["target"]["attr"]["prev_value"]["value"], False)
-        self.assertEqual(resp.json()[0]["target"]["model"]["id"], model.id)
+        self._assert_latest_update_activity(
+            resp, item, model, "bool_attr", AttrType.BOOLEAN, True, False
+        )
