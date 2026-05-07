@@ -685,11 +685,11 @@ class RecentActivityAPITest(ViewTest):
         user_guest = self.guest_login()
 
         # prepare test Users, Models, and Items
-        DAIMYO_NAMES = ["松永久秀", "織田信長", "豊臣秀吉"]
+        DAIMYO_NAMES = ["MatsunagaHisahide", "OdaNobunaga", "ToyotomiHideyoshi"]
         daimyos = {x: self._create_user(x) for x in DAIMYO_NAMES}
         model_prefecture = self.create_entity(
             user_guest,
-            "都道府県",
+            "Prefecture",
             attrs=[
                 {"name": "ruler", "type": AttrType.STRING},
             ],
@@ -705,12 +705,12 @@ class RecentActivityAPITest(ViewTest):
         item_prefectures = {
             x: self.add_entry(user_guest, x, model_prefecture)
             for x in [
-                "大阪府",
-                "京都府",
-                "奈良県",
-                "滋賀県",
-                "福井県",
-                "岡山県",
+                "Osaka",
+                "Kyoto",
+                "Nara",
+                "Shiga",
+                "Fukui",
+                "Okayama",
             ]
         }
         item_castles = {
@@ -723,26 +723,25 @@ class RecentActivityAPITest(ViewTest):
                 },
             )
             for (castle_name, location_name) in [
-                ("筒井城", "奈良県"),
-                ("一乗谷城", "福井県"),
-                ("備中高松城", "岡山県"),
+                ("TsutuiCastle", "Nara"),
+                ("IchijodaniCastle", "Fukui"),
+                ("BichuTakamatsuCastle", "Okayama"),
             ]
         }
 
         # change ruler of Kyoto prefecture over the course of history
-        # attr_ruler_of_kyoto = item_prefectures["京都府"].attrs.get(name="ruler")
         attr_ruler_of_kyoto = model_prefecture.attrs.get(name="ruler")
         for daimyo_name in DAIMYO_NAMES:
             # create each castles by specified daimyos
             self.client.login(username=daimyo_name, password=daimyo_name)
             params = {
-                "name": item_prefectures["京都府"].name,
+                "name": item_prefectures["Kyoto"].name,
                 "attrs": [
                     {"id": attr_ruler_of_kyoto.id, "value": daimyo_name},
                 ],
             }
             resp = self.client.put(
-                "/entry/api/v2/%s/" % item_prefectures["京都府"].id,
+                "/entry/api/v2/%s/" % item_prefectures["Kyoto"].id,
                 json.dumps(params),
                 "application/json",
             )
@@ -752,9 +751,9 @@ class RecentActivityAPITest(ViewTest):
         attr_location_of_castle = model_castle.attrs.get(name="location")
         attr_designer_of_castle = model_castle.attrs.get(name="designer")
         for daimyo_name, castle_name, location_name, designer_name in [
-            ("松永久秀", "多聞山城", "奈良県", ""),
-            ("織田信長", "安土城", "滋賀県", "丹羽長秀"),
-            ("豊臣秀吉", "大坂城", "大阪府", "黒田官兵衛"),
+            ("MatsunagaHisahide", "TamonzanCastle", "Nara", ""),
+            ("OdaNobunaga", "AzuchiCastle", "Shiga", "NiwaNagahide"),
+            ("ToyotomiHideyoshi", "OsakaCastle", "Osaka", "KurodaKanbei"),
         ]:
             # create each castles by specified daimyos
             self.client.login(username=daimyo_name, password=daimyo_name)
@@ -774,24 +773,24 @@ class RecentActivityAPITest(ViewTest):
             )
             self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
 
-        # destroy cassles by each daimyos
+        # destroy castles by each daimyos
         for daimyo_name, castle_name, location_name in [
-            ("松永久秀", "筒井城", "奈良県"),
-            ("織田信長", "一乗谷城", "福井県"),
-            ("豊臣秀吉", "備中高松城", "岡山県"),
+            ("MatsunagaHisahide", "TsutuiCastle", "Nara"),
+            ("OdaNobunaga", "IchijodaniCastle", "Fukui"),
+            ("ToyotomiHideyoshi", "BichuTakamatsuCastle", "Okayama"),
         ]:
             # create each castles by specified daimyos
             self.client.login(username=daimyo_name, password=daimyo_name)
 
             # send API request to delete castle item
-            item_cassle = Entry.objects.filter(name=castle_name, schema=model_castle).first()
+            item_castle = Entry.objects.filter(name=castle_name, schema=model_castle).first()
             resp = self.client.delete(
-                "/entry/api/v2/%s/" % item_cassle.id, None, "application/json"
+                "/entry/api/v2/%s/" % item_castle.id, None, "application/json"
             )
             self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
 
         # Here is the main processing of this test case
-        TGT_USERNAME = "織田信長"
+        TGT_USERNAME = "OdaNobunaga"
         self.client.login(username=TGT_USERNAME, password=TGT_USERNAME)
 
         # call API to get recent activity of target user
@@ -835,34 +834,34 @@ class RecentActivityAPITest(ViewTest):
             "timestamp": "2024-01-01T00:00:00Z",
         }
         """
-        item_antu = Entry.objects.get(name="安土城", schema=model_castle)
+        item_azuchi = Entry.objects.get(name="AzuchiCastle", schema=model_castle)
 
-        # last activity is deleting castle by 織田信長, so check it first
+        # last activity is deleting castle by OdaNobunaga, so check it first
         self.assertEqual(resp.json()[0]["action_type"], "delete")
         self.assertEqual(resp.json()[0]["target_type"], "item")
-        self.assertEqual(resp.json()[0]["target"]["id"], item_castles["一乗谷城"].id)
+        self.assertEqual(resp.json()[0]["target"]["id"], item_castles["IchijodaniCastle"].id)
         self.assertEqual(resp.json()[0]["target"]["model"]["id"], model_castle.id)
 
         # before that target user update attribute of created Item (designer is newer than location)
         self.assertEqual(resp.json()[1]["action_type"], "update")
         self.assertEqual(resp.json()[1]["target_type"], "item")
-        self.assertEqual(resp.json()[1]["target"]["id"], item_antu.id)
+        self.assertEqual(resp.json()[1]["target"]["id"], item_azuchi.id)
         self.assertEqual(resp.json()[1]["target"]["attr"]["name"], "designer")
         self.assertEqual(resp.json()[1]["target"]["attr"]["type"], AttrType.STRING)
-        self.assertEqual(resp.json()[1]["target"]["attr"]["curr_value"]["value"], "丹羽長秀")
+        self.assertEqual(resp.json()[1]["target"]["attr"]["curr_value"]["value"], "NiwaNagahide")
         self.assertEqual(resp.json()[1]["target"]["model"]["id"], model_castle.id)
 
         # before that target user update another attribute of created Item
         self.assertEqual(resp.json()[2]["action_type"], "update")
         self.assertEqual(resp.json()[2]["target_type"], "item")
-        self.assertEqual(resp.json()[2]["target"]["id"], item_antu.id)
+        self.assertEqual(resp.json()[2]["target"]["id"], item_azuchi.id)
         self.assertEqual(resp.json()[2]["target"]["attr"]["name"], "location")
         self.assertEqual(resp.json()[2]["target"]["attr"]["type"], AttrType.OBJECT)
         self.assertEqual(
             resp.json()[2]["target"]["attr"]["curr_value"]["value"]["id"],
-            item_prefectures["滋賀県"].id,
+            item_prefectures["Shiga"].id,
         )
-        self.assertEqual(resp.json()[2]["target"]["attr"]["curr_value"]["value"]["name"], "滋賀県")
+        self.assertEqual(resp.json()[2]["target"]["attr"]["curr_value"]["value"]["name"], "Shiga")
         self.assertEqual(
             resp.json()[2]["target"]["attr"]["curr_value"]["value"]["model"]["id"],
             model_prefecture.id,
@@ -872,18 +871,21 @@ class RecentActivityAPITest(ViewTest):
         # before that target user create castle item
         self.assertEqual(resp.json()[3]["action_type"], "create")
         self.assertEqual(resp.json()[3]["target_type"], "item")
-        self.assertEqual(resp.json()[3]["target"]["id"], item_antu.id)
+        self.assertEqual(resp.json()[3]["target"]["id"], item_azuchi.id)
         self.assertEqual(resp.json()[3]["target"]["model"]["id"], model_castle.id)
 
         # before that target user update attribute of prefecture item
         self.assertEqual(resp.json()[4]["action_type"], "update")
         self.assertEqual(resp.json()[4]["target_type"], "item")
-        self.assertEqual(resp.json()[4]["target"]["id"], item_prefectures["京都府"].id)
+        self.assertEqual(resp.json()[4]["target"]["id"], item_prefectures["Kyoto"].id)
         self.assertEqual(resp.json()[4]["target"]["attr"]["name"], "ruler")
-        self.assertEqual(resp.json()[4]["target"]["attr"]["curr_value"]["value"], "織田信長")
-        self.assertEqual(resp.json()[4]["target"]["attr"]["prev_value"]["value"], "松永久秀")
+        self.assertEqual(resp.json()[4]["target"]["attr"]["curr_value"]["value"], "OdaNobunaga")
         self.assertEqual(
-            resp.json()[4]["target"]["attr"]["prev_value"]["user"]["id"], daimyos["松永久秀"].id
+            resp.json()[4]["target"]["attr"]["prev_value"]["value"], "MatsunagaHisahide"
+        )
+        self.assertEqual(
+            resp.json()[4]["target"]["attr"]["prev_value"]["user"]["id"],
+            daimyos["MatsunagaHisahide"].id,
         )
         self.assertEqual(resp.json()[4]["target"]["model"]["id"], model_prefecture.id)
 
