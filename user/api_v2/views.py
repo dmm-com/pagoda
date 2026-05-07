@@ -235,8 +235,8 @@ class UserActivityAPI(viewsets.GenericViewSet):
                 "timestamp": attr_val.created_time,
             }
             for attr_val in qs
-            if (entry := attr_val.parent_attr.parent_entry) or True
-            if (attr_schema := attr_val.parent_attr.schema) or True
+            if (entry := attr_val.parent_attr.parent_entry)
+            if (attr_schema := attr_val.parent_attr.schema)
             if requesting_user.has_permission(entry, ACLType.Readable)
             and requesting_user.has_permission(attr_schema, ACLType.Readable)
         ]
