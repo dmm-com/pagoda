@@ -42,9 +42,13 @@ from user.api_v2.serializers import (
 from user.models import User
 
 
-def _get_attr_value(attr_type: int, attr_val: AttributeValue) -> dict | int | str | bool | None:
+def _get_attr_value(
+    attr_type: int, attr_val: AttributeValue
+) -> dict | list | int | str | bool | None:
     if attr_type == AttrType.BOOLEAN:
         return attr_val.boolean
+    if attr_type == AttrType.ARRAY_STRING:
+        return [x.value for x in attr_val.data_array.all()]
     if attr_type == AttrType.OBJECT and attr_val.referral_id is not None:
         item = attr_val.referral.entry
         return {"id": item.id, "name": item.name, "model": {"id": item.schema.id, "name": item.schema.name}}
@@ -113,6 +117,7 @@ class UserActivityAPI(viewsets.GenericViewSet):
                 "prev_value__created_user",
                 "prev_value__referral__entry__schema",
             )
+            .prefetch_related("data_array", "prev_value__data_array")
             .order_by("-created_time")
         )
         if since is not None:

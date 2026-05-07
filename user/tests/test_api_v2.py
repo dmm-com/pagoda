@@ -1053,24 +1053,57 @@ class RecentActivityAPITest(ViewTest):
 
     def test_get_activity_has_text_typed_record(self):
         user = self.guest_login()
+
+        # prepare to create Model and Item for testing user activity API
         model, item = self._setup_attr_update_activity(
             user, "text_attr", AttrType.TEXT, ["test", "updated text"]
         )
 
+        # call API to get recent activity of target user
         resp = self.client.get("/user/api/v2/%s/activity" % user.id)
 
+        # check that the latest activity has expected data
         self._assert_latest_update_activity(
             resp, item, model, "text_attr", AttrType.TEXT, "updated text", "test"
         )
 
     def test_get_activity_has_boolean_typed_record(self):
         user = self.guest_login()
+
+        # prepare to create Model and Item for testing user activity API
         model, item = self._setup_attr_update_activity(
             user, "bool_attr", AttrType.BOOLEAN, [False, True]
         )
 
+        # call API to get recent activity of target user
         resp = self.client.get("/user/api/v2/%s/activity" % user.id)
 
+        # check that the latest activity has expected data
         self._assert_latest_update_activity(
             resp, item, model, "bool_attr", AttrType.BOOLEAN, True, False
+        )
+
+    def test_get_activity_has_array_string_typed_record(self):
+        user = self.guest_login()
+
+        # prepare to create Model and Item for testing user activity API
+        model, item = self._setup_attr_update_activity(
+            user,
+            "arr_str_attr",
+            AttrType.ARRAY_STRING,
+            [["foo", "bar"], ["baz", "qux"]],
+        )
+
+        # call API to get recent activity of target user
+        resp = self.client.get("/user/api/v2/%s/activity" % user.id)
+
+        # check that the latest activity has expected data
+        self._assert_latest_update_activity(
+            resp,
+            item,
+            model,
+            "arr_str_attr",
+            AttrType.ARRAY_STRING,
+            ["baz", "qux"],
+            ["foo", "bar"],
         )
