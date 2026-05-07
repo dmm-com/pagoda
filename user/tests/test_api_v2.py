@@ -1005,7 +1005,44 @@ class RecentActivityAPITest(ViewTest):
         self.assertNotIn(private_entity.id, target_models)
 
     def test_get_activity_has_text_typed_record(self):
-        pass
+        # create Model and Item with text type attribute to check
+        # the response of recent activity API has text typed record.
+        user = self.guest_login()
+        model = self.create_entity(
+            user, "TestModel", attrs=[{"name": "text_attr", "type": AttrType.TEXT}]
+        )
+        item = self.add_entry(user, "TestItem", model, values={"text_attr": "test"})
+        item.attrs.get(schema__name="text_attr").add_value(user, "updated text")
+
+        # send request to update text attribute value
+        target_attr = model.attrs.get(name="text_attr")
+        for value in ["test", "updated text"]:
+            params = {
+                "name": item.name,
+                "attrs": [
+                    {"id": target_attr.id, "value": value},
+                ],
+            }
+            resp = self.client.put(
+                "/entry/api/v2/%s/" % item.id,
+                json.dumps(params),
+                "application/json",
+            )
+            self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
+
+        # call API to get recent activity of target user
+        resp = self.client.get("/user/api/v2/%s/activity" % user.id)
+        self.assertEqual(resp.status_code, 200)
+
+        # check the response has text typed record and its value is correct.
+        self.assertEqual(resp.json()[0]["action_type"], "update")
+        self.assertEqual(resp.json()[0]["target_type"], "item")
+        self.assertEqual(resp.json()[0]["target"]["id"], item.id)
+        self.assertEqual(resp.json()[0]["target"]["attr"]["name"], "text_attr")
+        self.assertEqual(resp.json()[0]["target"]["attr"]["type"], AttrType.TEXT)
+        self.assertEqual(resp.json()[0]["target"]["attr"]["curr_value"]["value"], "updated text")
+        self.assertEqual(resp.json()[0]["target"]["attr"]["prev_value"]["value"], "test")
+        self.assertEqual(resp.json()[0]["target"]["model"]["id"], model.id)
 
     def test_get_activity_has_boolean_typed_record(self):
         pass
