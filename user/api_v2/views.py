@@ -22,6 +22,7 @@ from rest_framework.serializers import Serializer
 
 from airone.lib.acl import ACLType
 from airone.lib.drf import YAMLParser, YAMLRenderer
+from airone.lib.types import AttrType
 from entry.models import AttributeValue, Entry
 from group.models import Group
 from user.api_v2.serializers import (
@@ -41,7 +42,10 @@ from user.api_v2.serializers import (
 from user.models import User
 
 
-def _get_attr_value(attr_val: AttributeValue) -> int | str | None:
+def _get_attr_value(attr_type: int, attr_val: AttributeValue) -> dict | int | str | None:
+    if attr_type == AttrType.OBJECT and attr_val.referral_id is not None:
+        item = attr_val.referral.entry
+        return {"id": item.id, "name": item.name, "model": {"id": item.schema.id, "name": item.schema.name}}
     if attr_val.referral_id is not None:
         return attr_val.referral_id
     return attr_val.value
@@ -103,7 +107,9 @@ class UserActivityAPI(viewsets.GenericViewSet):
                 "parent_attr__schema",
                 "parent_attr__parent_entry__schema",
                 "created_user",
+                "referral__entry__schema",
                 "prev_value__created_user",
+                "prev_value__referral__entry__schema",
             )
             .order_by("-created_time")
         )
@@ -124,7 +130,7 @@ class UserActivityAPI(viewsets.GenericViewSet):
                         "type": attr_schema.type,
                         "curr_value": {
                             "id": attr_val.id,
-                            "value": _get_attr_value(attr_val),
+                            "value": _get_attr_value(attr_schema.type, attr_val),
                             "user": {
                                 "id": attr_val.created_user.id,
                                 "username": attr_val.created_user.username,
@@ -132,7 +138,7 @@ class UserActivityAPI(viewsets.GenericViewSet):
                         },
                         "prev_value": {
                             "id": attr_val.prev_value.id,
-                            "value": _get_attr_value(attr_val.prev_value),
+                            "value": _get_attr_value(attr_schema.type, attr_val.prev_value),
                             "user": {
                                 "id": attr_val.prev_value.created_user.id,
                                 "username": attr_val.prev_value.created_user.username,

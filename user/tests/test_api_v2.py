@@ -857,7 +857,9 @@ class RecentActivityAPITest(ViewTest):
         self.assertEqual(resp.json()[2]["target"]["id"], item_antu.id)
         self.assertEqual(resp.json()[2]["target"]["attr"]["name"], "location")
         self.assertEqual(resp.json()[2]["target"]["attr"]["type"], AttrType.OBJECT)
-        self.assertEqual(resp.json()[2]["target"]["attr"]["curr_value"]["value"], item_prefectures["滋賀県"].id)
+        self.assertEqual(resp.json()[2]["target"]["attr"]["curr_value"]["value"]["id"], item_prefectures["滋賀県"].id)
+        self.assertEqual(resp.json()[2]["target"]["attr"]["curr_value"]["value"]["name"], "滋賀県")
+        self.assertEqual(resp.json()[2]["target"]["attr"]["curr_value"]["value"]["model"]["id"], model_prefecture.id)
         self.assertEqual(resp.json()[2]["target"]["model"]["id"], model_castle.id)
 
         # before that target user create castle item
