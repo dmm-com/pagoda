@@ -1435,6 +1435,7 @@ class EntityImportExportRootSerializer(serializers.Serializer):
 class EntityAttrIDandNameSerializer(serializers.Serializer):
     id = serializers.IntegerField()
     name = serializers.CharField()
+    type = serializers.IntegerField()
 
 
 class EntityAttrNameSerializer(serializers.ListSerializer):

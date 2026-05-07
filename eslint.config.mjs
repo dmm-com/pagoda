@@ -90,6 +90,13 @@ export default tseslint.config(
             "object",
             "type",
           ],
+          pathGroups: [
+            {
+              pattern: "@dmm-com/**",
+              group: "external",
+            },
+          ],
+          pathGroupsExcludedImportTypes: ["type"],
           alphabetize: { order: "asc" },
           "newlines-between": "always",
         },

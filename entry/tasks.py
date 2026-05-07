@@ -510,7 +510,7 @@ def delete_entry(self, job: Job) -> JobStatus:
     # for history record
     entry._history_user = job.user
 
-    entry.delete()
+    entry.delete(deleted_user=job.user)
 
     for ref_entry, actions in TriggerCondition.get_invoked_actions_on_delete(entry):
         for action in actions:

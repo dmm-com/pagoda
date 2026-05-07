@@ -591,7 +591,10 @@ export const SearchResultControlMenu: FC<Props> = ({
           variant="outlined"
           fullWidth
           startIcon={<EditNoteIcon />}
-          disabled={isDisabledEditModal}
+          // Defense-in-depth for #3449: refuse to open the modal when the
+          // attribute type is unknown (would cause AttributeValueField to
+          // throw "Unknown attribute type: 0").
+          disabled={isDisabledEditModal || (attrType ?? 0) === 0}
           onClick={() => {
             setEditTargetAttrID &&
               setEditTargetAttrID(

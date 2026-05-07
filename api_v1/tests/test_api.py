@@ -1019,7 +1019,7 @@ class APITest(AironeViewTest):
         Entry.objects.create(name="entry21", schema=entity2, created_user=admin)
 
         # re-login for checking entries permission
-        self.guest_login()
+        guest = self.guest_login()
 
         # The case of no specifying mandatory parameter
         resp = send_request({})
@@ -1056,6 +1056,9 @@ class APITest(AironeViewTest):
         # checks specified entry would be deleted
         entry11.refresh_from_db()
         self.assertFalse(entry11.is_active)
+        # the user who issued the DELETE request must be recorded as deleted_user
+        self.assertEqual(entry11.deleted_user, guest)
+        self.assertIsNotNone(entry11.deleted_time)
 
     @mock.patch(
         "entry.tasks.notify_delete_entry.delay",

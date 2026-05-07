@@ -4,6 +4,7 @@
 import {
   AdvancedSearchJoinAttrInfo,
   AdvancedSearchResultAttrInfoFilterKeyEnum,
+  EntryAttributeTypeTypeEnum,
 } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { render, screen, fireEvent } from "@testing-library/react";
 
@@ -51,9 +52,9 @@ jest
   .spyOn(aironeApiClient, "getEntityAttrs")
   //.mockResolvedValue(["attrA", "attrB", "attrC"]);
   .mockResolvedValue([
-    { name: "attrA", id: 1 },
-    { name: "attrB", id: 2 },
-    { name: "attrC", id: 3 },
+    { name: "attrA", id: 1, type: EntryAttributeTypeTypeEnum.STRING },
+    { name: "attrB", id: 2, type: EntryAttributeTypeTypeEnum.STRING },
+    { name: "attrC", id: 3, type: EntryAttributeTypeTypeEnum.STRING },
   ]);
 
 describe("AdvancedSearchJoinModal", () => {
