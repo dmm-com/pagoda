@@ -48,7 +48,13 @@ class AttributeValue(models.Model):
     created_time = models.DateTimeField(auto_now_add=True)
     created_user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
     parent_attr = models.ForeignKey("Attribute", on_delete=models.DO_NOTHING)
-    prev_value = models.ForeignKey("AttributeValue", related_name="next_value", on_delete=models.DO_NOTHING)
+    prev_value = models.ForeignKey(
+        "AttributeValue",
+        null=True,
+        blank=True,
+        related_name="next_value",
+        on_delete=models.SET_NULL,
+    )
     status = models.IntegerField(default=0)
     boolean = models.BooleanField(default=False)
     date = models.DateField(null=True)
@@ -1295,6 +1301,8 @@ class Attribute(ACLBase):
         else:
             _set_attrv(self.schema.type, value, attrv=attr_value)
 
+        # set previous value to make the relationship of updating chain
+        attr_value.prev_value = self.values.filter(is_latest=True).exclude(id=attr_value.id).last()
         attr_value.save()
 
         # append new AttributeValue

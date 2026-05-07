@@ -99,7 +99,12 @@ class UserActivityAPI(viewsets.GenericViewSet):
     ) -> list[dict]:
         qs = (
             AttributeValue.objects.filter(created_user=user, parent_attrv__isnull=True)
-            .select_related("parent_attr__schema", "parent_attr__parent_entry__schema")
+            .select_related(
+                "parent_attr__schema",
+                "parent_attr__parent_entry__schema",
+                "created_user",
+                "prev_value__created_user",
+            )
             .order_by("-created_time")
         )
         if since is not None:
@@ -116,7 +121,24 @@ class UserActivityAPI(viewsets.GenericViewSet):
                     "attr": {
                         "id": attr_schema.id,
                         "name": attr_schema.name,
-                        "value": _get_attr_value(attr_val),
+                        "curr_value": {
+                            "id": attr_val.id,
+                            "value": _get_attr_value(attr_val),
+                            "user": {
+                                "id": attr_val.created_user.id,
+                                "username": attr_val.created_user.username,
+                            },
+                        },
+                        "prev_value": {
+                            "id": attr_val.prev_value.id,
+                            "value": _get_attr_value(attr_val.prev_value),
+                            "user": {
+                                "id": attr_val.prev_value.created_user.id,
+                                "username": attr_val.prev_value.created_user.username,
+                            },
+                        }
+                        if attr_val.prev_value
+                        else None,
                     },
                     "model": {"id": entry.schema.id, "name": entry.schema.name},
                 },
