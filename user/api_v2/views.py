@@ -236,9 +236,11 @@ class UserActivityAPI(viewsets.GenericViewSet):
             }
             for attr_val in qs
             if (entry := attr_val.parent_attr.parent_entry)
+            if (attr := attr_val.parent_attr)
             if (attr_schema := attr_val.parent_attr.schema)
             if requesting_user.has_permission(entry, ACLType.Readable)
             and requesting_user.has_permission(attr_schema, ACLType.Readable)
+            and requesting_user.has_permission(attr, ACLType.Readable)
         ]
 
     def _get_activities_for_deleting_item(

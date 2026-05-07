@@ -1010,6 +1010,56 @@ class RecentActivityAPITest(ViewTest):
         self.assertIn(public_entity.id, target_models)
         self.assertNotIn(private_entity.id, target_models)
 
+        # --- additional case: Attribute-instance permission filters update activity ---
+        # Entity and entry remain public; only the Attribute instance itself is restricted.
+        target_model = self.create_entity(
+            admin,
+            "ModelForAttrPermTest",
+            attrs=[
+                {"name": "secret1", "type": AttrType.STRING},
+                {"name": "secret2", "type": AttrType.STRING},
+            ],
+        )
+        target_item = self.add_entry(
+            activity_user, "item-for-attr-perm", target_model, values={"secret1": "init", "secret2": "init"}
+        )
+
+        # update activity for secret_attr should be visible to viewing_user
+        # at this point since the Attribute instance is still public.
+        for attr in target_item.attrs.all():
+            attr.add_value(activity_user, "change " + attr.schema.name)
+
+        # with the attribute still public, viewing_user sees the update activities
+        # (add_entry itself also records an AttributeValue, so there are at least two)
+        resp = self.client.get("/user/api/v2/%s/activity" % activity_user.id)
+        self.assertEqual(resp.status_code, 200)
+
+        update_activities = [
+            a
+            for a in resp.json()
+            if a["action_type"] == "update" and a["target"]["model"]["id"] == target_model.id
+        ]
+        self.assertGreater(len(update_activities), 0)
+
+        # set permissoins to prevent viewing_user from seeing the AttributeValue
+        # that was updated in the previous step
+        model_attr_secret1 = target_model.attrs.get(name="secret1")
+        item_attr_secret2 = target_item.attrs.get(schema__name="secret2")
+        for attr in [model_attr_secret1, item_attr_secret2]:
+            attr.is_public = False
+            attr.default_permission = ACLType.Nothing.id
+            attr.save()
+
+        resp = self.client.get("/user/api/v2/%s/activity" % activity_user.id)
+        self.assertEqual(resp.status_code, 200)
+
+        update_activities = [
+            a
+            for a in resp.json()
+            if a["action_type"] == "update" and a["target"]["model"]["id"] == target_model.id
+        ]
+        self.assertEqual(len(update_activities), 0)
+
     def _setup_attr_update_activity(
         self, user: User, attr_name: str, attr_type: AttrType, values: list
     ):
