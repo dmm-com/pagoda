@@ -1107,3 +1107,43 @@ class RecentActivityAPITest(ViewTest):
             ["baz", "qux"],
             ["foo", "bar"],
         )
+
+    def test_get_activity_has_named_object_typed_record(self):
+        user = self.guest_login()
+
+        # prepare referral model and item
+        ref_model = self.create_entity(user, "RefModel")
+        ref_item = self.add_entry(user, "RefItem", ref_model)
+
+        # prepare to create Model and Item for testing user activity API
+        model, item = self._setup_attr_update_activity(
+            user,
+            "named_obj_attr",
+            AttrType.NAMED_OBJECT,
+            [
+                {"name": "label1", "id": ref_item.id},
+                {"name": "label2", "id": ref_item.id},
+            ],
+        )
+
+        # call API to get recent activity of target user
+        resp = self.client.get("/user/api/v2/%s/activity" % user.id)
+
+        # check that the latest activity has expected data
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json()[0]["action_type"], "update")
+        self.assertEqual(resp.json()[0]["target"]["attr"]["name"], "named_obj_attr")
+        self.assertEqual(resp.json()[0]["target"]["attr"]["type"], AttrType.NAMED_OBJECT)
+        self.assertEqual(resp.json()[0]["target"]["model"]["id"], model.id)
+
+        curr = resp.json()[0]["target"]["attr"]["curr_value"]["value"]
+        self.assertEqual(curr["name"], "label2")
+        self.assertEqual(curr["object"]["id"], ref_item.id)
+        self.assertEqual(curr["object"]["name"], ref_item.name)
+        self.assertEqual(curr["object"]["model"]["id"], ref_model.id)
+
+        prev = resp.json()[0]["target"]["attr"]["prev_value"]["value"]
+        self.assertEqual(prev["name"], "label1")
+        self.assertEqual(prev["object"]["id"], ref_item.id)
+        self.assertEqual(prev["object"]["name"], ref_item.name)
+        self.assertEqual(prev["object"]["model"]["id"], ref_model.id)

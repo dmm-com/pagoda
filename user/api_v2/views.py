@@ -49,6 +49,12 @@ def _get_attr_value(
         return attr_val.boolean
     if attr_type == AttrType.ARRAY_STRING:
         return [x.value for x in attr_val.data_array.all()]
+    if attr_type == AttrType.NAMED_OBJECT:
+        obj = None
+        if attr_val.referral_id is not None:
+            item = attr_val.referral.entry
+            obj = {"id": item.id, "name": item.name, "model": {"id": item.schema.id, "name": item.schema.name}}
+        return {"name": attr_val.value, "object": obj}
     if attr_type == AttrType.OBJECT and attr_val.referral_id is not None:
         item = attr_val.referral.entry
         return {"id": item.id, "name": item.name, "model": {"id": item.schema.id, "name": item.schema.name}}
