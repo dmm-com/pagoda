@@ -808,6 +808,7 @@ class RecentActivityAPITest(ViewTest):
                 "attr": {
                     "id": 200,
                     "name": "attr name",
+                    "type": AttrType.STRING | AttrType.OBJECT | ...,
                     "curr_value": {
                         "id": 300,
                         "value": "current value",
@@ -846,6 +847,7 @@ class RecentActivityAPITest(ViewTest):
         self.assertEqual(resp.json()[1]["target_type"], "item")
         self.assertEqual(resp.json()[1]["target"]["id"], item_antu.id)
         self.assertEqual(resp.json()[1]["target"]["attr"]["name"], "designer")
+        self.assertEqual(resp.json()[1]["target"]["attr"]["type"], AttrType.STRING)
         self.assertEqual(resp.json()[1]["target"]["attr"]["curr_value"]["value"], "丹羽長秀")
         self.assertEqual(resp.json()[1]["target"]["model"]["id"], model_castle.id)
 
@@ -854,6 +856,7 @@ class RecentActivityAPITest(ViewTest):
         self.assertEqual(resp.json()[2]["target_type"], "item")
         self.assertEqual(resp.json()[2]["target"]["id"], item_antu.id)
         self.assertEqual(resp.json()[2]["target"]["attr"]["name"], "location")
+        self.assertEqual(resp.json()[2]["target"]["attr"]["type"], AttrType.OBJECT)
         self.assertEqual(resp.json()[2]["target"]["attr"]["curr_value"]["value"], item_prefectures["滋賀県"].id)
         self.assertEqual(resp.json()[2]["target"]["model"]["id"], model_castle.id)
 
@@ -998,3 +1001,9 @@ class RecentActivityAPITest(ViewTest):
         target_models = {a["target"]["model"]["id"] for a in activities}
         self.assertIn(public_entity.id, target_models)
         self.assertNotIn(private_entity.id, target_models)
+
+    def test_get_activity_has_text_typed_record(self):
+        pass
+
+    def test_get_activity_has_boolean_typed_record(self):
+        pass

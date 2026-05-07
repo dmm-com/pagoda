@@ -121,6 +121,7 @@ class UserActivityAPI(viewsets.GenericViewSet):
                     "attr": {
                         "id": attr_schema.id,
                         "name": attr_schema.name,
+                        "type": attr_schema.type,
                         "curr_value": {
                             "id": attr_val.id,
                             "value": _get_attr_value(attr_val),
