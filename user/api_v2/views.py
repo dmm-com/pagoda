@@ -42,7 +42,9 @@ from user.api_v2.serializers import (
 from user.models import User
 
 
-def _get_attr_value(attr_type: int, attr_val: AttributeValue) -> dict | int | str | None:
+def _get_attr_value(attr_type: int, attr_val: AttributeValue) -> dict | int | str | bool | None:
+    if attr_type == AttrType.BOOLEAN:
+        return attr_val.boolean
     if attr_type == AttrType.OBJECT and attr_val.referral_id is not None:
         item = attr_val.referral.entry
         return {"id": item.id, "name": item.name, "model": {"id": item.schema.id, "name": item.schema.name}}

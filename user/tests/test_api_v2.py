@@ -1045,4 +1045,41 @@ class RecentActivityAPITest(ViewTest):
         self.assertEqual(resp.json()[0]["target"]["model"]["id"], model.id)
 
     def test_get_activity_has_boolean_typed_record(self):
-        pass
+        # create Model and Item with boolean type attribute to check
+        # the response of recent activity API has boolean typed record.
+        user = self.guest_login()
+        model = self.create_entity(
+            user, "TestModel", attrs=[{"name": "bool_attr", "type": AttrType.BOOLEAN}]
+        )
+        item = self.add_entry(user, "TestItem", model, values={"bool_attr": False})
+        item.attrs.get(schema__name="bool_attr").add_value(user, True)
+
+        # send request to update boolean attribute value
+        target_attr = model.attrs.get(name="bool_attr")
+        for value in [False, True]:
+            params = {
+                "name": item.name,
+                "attrs": [
+                    {"id": target_attr.id, "value": value},
+                ],
+            }
+            resp = self.client.put(
+                "/entry/api/v2/%s/" % item.id,
+                json.dumps(params),
+                "application/json",
+            )
+            self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
+
+        # call API to get recent activity of target user
+        resp = self.client.get("/user/api/v2/%s/activity" % user.id)
+        self.assertEqual(resp.status_code, 200)
+
+        # check the response has boolean typed record and its value is correct.
+        self.assertEqual(resp.json()[0]["action_type"], "update")
+        self.assertEqual(resp.json()[0]["target_type"], "item")
+        self.assertEqual(resp.json()[0]["target"]["id"], item.id)
+        self.assertEqual(resp.json()[0]["target"]["attr"]["name"], "bool_attr")
+        self.assertEqual(resp.json()[0]["target"]["attr"]["type"], AttrType.BOOLEAN)
+        self.assertEqual(resp.json()[0]["target"]["attr"]["curr_value"]["value"], True)
+        self.assertEqual(resp.json()[0]["target"]["attr"]["prev_value"]["value"], False)
+        self.assertEqual(resp.json()[0]["target"]["model"]["id"], model.id)
