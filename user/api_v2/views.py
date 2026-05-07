@@ -137,6 +137,7 @@ class SuperuserPermission(BasePermission):
 
 class UserActivityAPI(viewsets.GenericViewSet):
     queryset = User.objects.none()
+    serializer_class = Serializer
     LIMIT_RECORDS = 10
 
     def _get_activities_for_creating_item(
