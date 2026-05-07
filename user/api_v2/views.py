@@ -140,7 +140,7 @@ class UserActivityAPI(viewsets.GenericViewSet):
     serializer_class = Serializer
     LIMIT_RECORDS = 10
 
-    def _get_activities_for_creating_item(
+    def _get_activity_for_creating_item(
         self, user: User, requesting_user: User, since: Any | None = None
     ) -> list[dict]:
         qs = (
@@ -167,7 +167,7 @@ class UserActivityAPI(viewsets.GenericViewSet):
             if requesting_user.has_permission(entry, ACLType.Readable)
         ]
 
-    def _get_activities_for_updating_item(
+    def _get_activity_for_updating_item(
         self, user: User, requesting_user: User, since: Any | None = None
     ) -> list[dict]:
         qs = (
@@ -243,7 +243,7 @@ class UserActivityAPI(viewsets.GenericViewSet):
             and requesting_user.has_permission(attr, ACLType.Readable)
         ]
 
-    def _get_activities_for_deleting_item(
+    def _get_activity_for_deleting_item(
         self, user: User, requesting_user: User, since: Any | None = None
     ) -> list[dict]:
         qs = (
@@ -292,9 +292,9 @@ class UserActivityAPI(viewsets.GenericViewSet):
 
         requesting_user: User = request.user
         activities: list[dict] = []
-        activities += self._get_activities_for_creating_item(user, requesting_user, since)
-        activities += self._get_activities_for_updating_item(user, requesting_user, since)
-        activities += self._get_activities_for_deleting_item(user, requesting_user, since)
+        activities += self._get_activity_for_creating_item(user, requesting_user, since)
+        activities += self._get_activity_for_updating_item(user, requesting_user, since)
+        activities += self._get_activity_for_deleting_item(user, requesting_user, since)
 
         activities.sort(key=lambda x: x["timestamp"], reverse=True)
         return Response(activities)
