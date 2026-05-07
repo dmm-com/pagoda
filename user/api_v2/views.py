@@ -20,6 +20,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.serializers import Serializer
 
+from airone.exceptions.model import UnexpectedAttributeType
 from airone.lib.acl import ACLType
 from airone.lib.drf import YAMLParser, YAMLRenderer
 from airone.lib.types import AttrType
@@ -43,47 +44,77 @@ from user.models import User
 
 
 def _entry_ref(entry: Any) -> dict:
-    return {"id": entry.id, "name": entry.name, "model": {"id": entry.schema.id, "name": entry.schema.name}}
+    return {
+        "id": entry.id,
+        "name": entry.name,
+        "model": {"id": entry.schema.id, "name": entry.schema.name},
+    }
 
 
 def _get_attr_value(
     attr_type: int, attr_val: AttributeValue
 ) -> dict | list | float | int | str | bool | None:
-    if attr_type == AttrType.BOOLEAN:
-        return attr_val.boolean
-    if attr_type == AttrType.NUMBER:
-        return float(attr_val.value) if attr_val.value and attr_val.value.strip() else None
-    if attr_type == AttrType.DATE:
-        return str(attr_val.date) if attr_val.date else None
-    if attr_type == AttrType.DATETIME:
-        return attr_val.datetime.isoformat() if attr_val.datetime else None
-    if attr_type == AttrType.GROUP:
-        return {"id": attr_val.group.id, "name": attr_val.group.name} if attr_val.group_id else None
-    if attr_type == AttrType.ROLE:
-        return {"id": attr_val.role.id, "name": attr_val.role.name} if attr_val.role_id else None
-    if attr_type == AttrType.ARRAY_STRING:
-        return [x.value for x in attr_val.data_array.all()]
-    if attr_type == AttrType.ARRAY_NUMBER:
-        return [float(x.value) if x.value and x.value.strip() else None for x in attr_val.data_array.all()]
-    if attr_type == AttrType.ARRAY_OBJECT:
-        return [_entry_ref(x.referral.entry) for x in attr_val.data_array.all() if x.referral_id is not None]
-    if attr_type in (AttrType.ARRAY_NAMED_OBJECT, AttrType.ARRAY_NAMED_OBJECT_BOOLEAN):
-        def _named(x: AttributeValue) -> dict:
-            obj = _entry_ref(x.referral.entry) if x.referral_id is not None else None
-            return {"name": x.value, "object": obj}
-        return [_named(x) for x in attr_val.data_array.all()]
-    if attr_type == AttrType.ARRAY_GROUP:
-        return [{"id": x.group.id, "name": x.group.name} for x in attr_val.data_array.all() if x.group_id]
-    if attr_type == AttrType.ARRAY_ROLE:
-        return [{"id": x.role.id, "name": x.role.name} for x in attr_val.data_array.all() if x.role_id]
-    if attr_type == AttrType.NAMED_OBJECT:
-        obj = _entry_ref(attr_val.referral.entry) if attr_val.referral_id is not None else None
-        return {"name": attr_val.value, "object": obj}
-    if attr_type == AttrType.OBJECT and attr_val.referral_id is not None:
-        return _entry_ref(attr_val.referral.entry)
-    if attr_val.referral_id is not None:
-        return attr_val.referral_id
-    return attr_val.value
+    match attr_type:
+        case AttrType.STRING | AttrType.TEXT:
+            return attr_val.value
+        case AttrType.BOOLEAN:
+            return attr_val.boolean
+        case AttrType.NUMBER:
+            return float(attr_val.value) if attr_val.value and attr_val.value.strip() else None
+        case AttrType.DATE:
+            return str(attr_val.date) if attr_val.date else None
+        case AttrType.DATETIME:
+            return attr_val.datetime.isoformat() if attr_val.datetime else None
+        case AttrType.OBJECT:
+            return _entry_ref(attr_val.referral.entry) if attr_val.referral_id is not None else None
+        case AttrType.NAMED_OBJECT:
+            obj = _entry_ref(attr_val.referral.entry) if attr_val.referral_id is not None else None
+            return {"name": attr_val.value, "object": obj}
+        case AttrType.GROUP:
+            return (
+                {"id": attr_val.group.id, "name": attr_val.group.name}
+                if attr_val.group_id
+                else None
+            )
+        case AttrType.ROLE:
+            return (
+                {"id": attr_val.role.id, "name": attr_val.role.name} if attr_val.role_id else None
+            )
+        case AttrType.ARRAY_STRING:
+            return [x.value for x in attr_val.data_array.all()]
+        case AttrType.ARRAY_NUMBER:
+            return [
+                float(x.value) if x.value and x.value.strip() else None
+                for x in attr_val.data_array.all()
+            ]
+        case AttrType.ARRAY_OBJECT:
+            return [
+                _entry_ref(x.referral.entry)
+                for x in attr_val.data_array.all()
+                if x.referral_id is not None
+            ]
+        case AttrType.ARRAY_NAMED_OBJECT | AttrType.ARRAY_NAMED_OBJECT_BOOLEAN:
+            return [
+                {
+                    "name": x.value,
+                    "object": _entry_ref(x.referral.entry) if x.referral_id is not None else None,
+                }
+                for x in attr_val.data_array.all()
+            ]
+        case AttrType.ARRAY_GROUP:
+            return [
+                {"id": x.group.id, "name": x.group.name}
+                for x in attr_val.data_array.all()
+                if x.group_id
+            ]
+        case AttrType.ARRAY_ROLE:
+            return [
+                {"id": x.role.id, "name": x.role.name}
+                for x in attr_val.data_array.all()
+                if x.role_id
+            ]
+        case _:
+            raise UnexpectedAttributeType(f"Unexpected attribute type: {attr_type}")
 
 
 class UserPermission(BasePermission):
@@ -111,8 +142,10 @@ class UserActivityAPI(viewsets.GenericViewSet):
     def _get_activities_for_creating_item(
         self, user: User, requesting_user: User, since: Any | None = None
     ) -> list[dict]:
-        qs = Entry.objects.filter(created_user=user).select_related("schema").order_by(
-            "-created_time"
+        qs = (
+            Entry.objects.filter(created_user=user)
+            .select_related("schema")
+            .order_by("-created_time")
         )
         if since is not None:
             qs = qs.filter(created_time__gte=since)

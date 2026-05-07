@@ -858,9 +858,15 @@ class RecentActivityAPITest(ViewTest):
         self.assertEqual(resp.json()[2]["target"]["id"], item_antu.id)
         self.assertEqual(resp.json()[2]["target"]["attr"]["name"], "location")
         self.assertEqual(resp.json()[2]["target"]["attr"]["type"], AttrType.OBJECT)
-        self.assertEqual(resp.json()[2]["target"]["attr"]["curr_value"]["value"]["id"], item_prefectures["滋賀県"].id)
+        self.assertEqual(
+            resp.json()[2]["target"]["attr"]["curr_value"]["value"]["id"],
+            item_prefectures["滋賀県"].id,
+        )
         self.assertEqual(resp.json()[2]["target"]["attr"]["curr_value"]["value"]["name"], "滋賀県")
-        self.assertEqual(resp.json()[2]["target"]["attr"]["curr_value"]["value"]["model"]["id"], model_prefecture.id)
+        self.assertEqual(
+            resp.json()[2]["target"]["attr"]["curr_value"]["value"]["model"]["id"],
+            model_prefecture.id,
+        )
         self.assertEqual(resp.json()[2]["target"]["model"]["id"], model_castle.id)
 
         # before that target user create castle item
@@ -876,13 +882,16 @@ class RecentActivityAPITest(ViewTest):
         self.assertEqual(resp.json()[4]["target"]["attr"]["name"], "ruler")
         self.assertEqual(resp.json()[4]["target"]["attr"]["curr_value"]["value"], "織田信長")
         self.assertEqual(resp.json()[4]["target"]["attr"]["prev_value"]["value"], "松永久秀")
-        self.assertEqual(resp.json()[4]["target"]["attr"]["prev_value"]["user"]["id"], daimyos["松永久秀"].id)
+        self.assertEqual(
+            resp.json()[4]["target"]["attr"]["prev_value"]["user"]["id"], daimyos["松永久秀"].id
+        )
         self.assertEqual(resp.json()[4]["target"]["model"]["id"], model_prefecture.id)
 
     def test_prevent_getting_whole_records(self):
         """
-        This test case is for checking the prevention of getting whole records of recent activity.
-        When a user has many activities, it is not appropriate to return all records of them at once.
+        This test case is for checking the prevention of getting whole records of
+        recent activity. When a user has many activities, it is not appropriate
+        to return all records of them at once.
         """
         user = self.guest_login()
         limit = UserActivityAPI.LIMIT_RECORDS
@@ -908,15 +917,9 @@ class RecentActivityAPITest(ViewTest):
         self.assertEqual(resp.status_code, 200)
 
         activities = resp.json()
-        self.assertLessEqual(
-            sum(1 for a in activities if a["action_type"] == "create"), limit
-        )
-        self.assertLessEqual(
-            sum(1 for a in activities if a["action_type"] == "update"), limit
-        )
-        self.assertLessEqual(
-            sum(1 for a in activities if a["action_type"] == "delete"), limit
-        )
+        self.assertLessEqual(sum(1 for a in activities if a["action_type"] == "create"), limit)
+        self.assertLessEqual(sum(1 for a in activities if a["action_type"] == "update"), limit)
+        self.assertLessEqual(sum(1 for a in activities if a["action_type"] == "delete"), limit)
 
     def test_get_activity_within_minutes(self):
         """
@@ -965,7 +968,7 @@ class RecentActivityAPITest(ViewTest):
         """
         admin = self._create_user("admin", is_superuser=True)
         activity_user = self._create_user("activity_user")
-        viewing_user = self._create_user("viewing_user")
+        self._create_user("viewing_user")
 
         public_entity = self.create_entity(
             admin, "PublicModel", attrs=[{"name": "val", "type": AttrType.STRING}]
