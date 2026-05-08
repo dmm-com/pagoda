@@ -1,11 +1,12 @@
 import re
 from datetime import datetime
+from typing import Any
 from urllib.parse import urlencode
 
 import yaml
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.db.models import Q
-from django.http import HttpResponse
+from django.http import HttpRequest, HttpResponse
 from django.http.response import JsonResponse
 from django.shortcuts import redirect
 from django.urls import reverse
@@ -33,11 +34,11 @@ from user.models import User
 from .settings import CONFIG
 
 
-def _validate_input(recv_data, obj):
-    def _has_data(value):
+def _validate_input(recv_data: dict[str, Any], obj: Entry | Entity) -> HttpResponse | None:
+    def _has_data(value: dict[str, Any]) -> bool:
         return "data" in value and value["data"] != "" and value["data"] is not None
 
-    def _has_referral(value):
+    def _has_referral(value: dict[str, Any]) -> bool:
         if isinstance(value["data"], int):
             return value["data"] > 0
         elif isinstance(value["data"], str):
@@ -109,9 +110,11 @@ def _validate_input(recv_data, obj):
             except ValueError:
                 return HttpResponse("Incorrect datatime ISO8601 format in datetime", status=400)
 
+    return None
+
 
 @http_get
-def index(request, entity_id):
+def index(request: HttpRequest, entity_id: int) -> HttpResponse:
     entity, error = get_obj_with_check_perm(request.user, Entity, entity_id, ACLType.Readable)
     if error or entity is None:
         return error
@@ -160,7 +163,7 @@ def index(request, entity_id):
 
 
 @http_get
-def create(request, entity_id):
+def create(request: HttpRequest, entity_id: int) -> HttpResponse:
     entity, error = get_obj_with_check_perm(request.user, Entity, entity_id, ACLType.Writable)
     if error or entity is None:
         return error
@@ -221,7 +224,7 @@ def create(request, entity_id):
         },
     ]
 )
-def do_create(request, entity_id, recv_data):
+def do_create(request: HttpRequest, entity_id: int, recv_data: dict[str, Any]) -> HttpResponse:
     # get objects to be referred in the following processing
     entity, error = get_obj_with_check_perm(request.user, Entity, entity_id, ACLType.Writable)
     if error or entity is None:
@@ -274,7 +277,7 @@ def do_create(request, entity_id, recv_data):
 
 
 @http_get
-def edit(request, entry_id):
+def edit(request: HttpRequest, entry_id: int) -> HttpResponse:
     entry, error = get_obj_with_check_perm(request.user, Entry, entry_id, ACLType.Writable)
     if error or entry is None:
         return error
@@ -327,7 +330,7 @@ def edit(request, entry_id):
         },
     ]
 )
-def do_edit(request, entry_id, recv_data):
+def do_edit(request: HttpRequest, entry_id: int, recv_data: dict[str, Any]) -> HttpResponse:
     entry, error = get_obj_with_check_perm(request.user, Entry, entry_id, ACLType.Writable)
     if error or entry is None:
         return error
@@ -390,7 +393,7 @@ def do_edit(request, entry_id, recv_data):
 
 
 @http_get
-def show(request, entry_id):
+def show(request: HttpRequest, entry_id: int) -> HttpResponse:
     entry, error = get_obj_with_check_perm(request.user, Entry, entry_id, ACLType.Readable)
     if error or entry is None:
         return error
@@ -417,7 +420,7 @@ def show(request, entry_id):
 
 
 @http_get
-def history(request, entry_id):
+def history(request: HttpRequest, entry_id: int) -> HttpResponse:
     entry, error = get_obj_with_check_perm(request.user, Entry, entry_id, ACLType.Readable)
     if error or entry is None:
         return error
@@ -438,7 +441,7 @@ def history(request, entry_id):
 
 
 @http_get
-def refer(request, entry_id):
+def refer(request: HttpRequest, entry_id: int) -> HttpResponse:
     entry, error = get_obj_with_check_perm(request.user, Entry, entry_id, ACLType.Readable)
     if error or entry is None:
         return error
@@ -461,7 +464,7 @@ def refer(request, entry_id):
 
 
 @http_post([])
-def export(request, entity_id, recv_data):
+def export(request: HttpRequest, entity_id: int, recv_data: dict[str, Any]) -> HttpResponse:
     job_params = {
         "export_format": "yaml",
         "target_id": entity_id,
@@ -503,7 +506,7 @@ def export(request, entity_id, recv_data):
 
 
 @http_get
-def import_data(request, entity_id):
+def import_data(request: HttpRequest, entity_id: int) -> HttpResponse:
     if not Entity.objects.filter(id=entity_id, is_active=True).exists():
         return HttpResponse("Failed to get entity of specified id", status=400)
 
@@ -511,7 +514,7 @@ def import_data(request, entity_id):
 
 
 @http_file_upload
-def do_import_data(request, entity_id: int, context):
+def do_import_data(request: HttpRequest, entity_id: int, context: str) -> HttpResponse:
     user: User = request.user
     entity_result, error = get_obj_with_check_perm(user, Entity, entity_id, ACLType.Writable)
     if error:
@@ -568,7 +571,7 @@ def do_import_data(request, entity_id: int, context):
 
 
 @http_post([])  # check only that request is POST, id will be given by url
-def do_delete(request, entry_id, recv_data):
+def do_delete(request: HttpRequest, entry_id: int, recv_data: dict[str, Any]) -> HttpResponse:
     entry, error = get_obj_with_check_perm(request.user, Entry, entry_id, ACLType.Writable)
     if error or entry is None:
         return error
@@ -616,7 +619,7 @@ def do_delete(request, entry_id, recv_data):
 
 
 @http_get
-def copy(request, entry_id):
+def copy(request: HttpRequest, entry_id: int) -> HttpResponse:
     entry, error = get_obj_with_check_perm(request.user, Entry, entry_id, ACLType.Writable)
     if error or entry is None:
         return error
@@ -647,13 +650,13 @@ def copy(request, entry_id):
         {"name": "entries", "type": str},
     ]
 )
-def do_copy(request, entry_id, recv_data):
+def do_copy(request: HttpRequest, entry_id: int, recv_data: dict[str, Any]) -> HttpResponse:
     entry, error = get_obj_with_check_perm(request.user, Entry, entry_id, ACLType.Writable)
     if error or entry is None:
         return error
 
     ret = []
-    params = {
+    params: dict[str, Any] = {
         "new_name_list": [],
         "post_data": recv_data,
     }
@@ -707,7 +710,7 @@ def do_copy(request, entry_id, recv_data):
 
 
 @http_get
-def restore(request, entity_id):
+def restore(request: HttpRequest, entity_id: int) -> HttpResponse:
     entity, error = get_obj_with_check_perm(request.user, Entity, entity_id, ACLType.Writable)
     if error or entity is None:
         return error
@@ -747,7 +750,7 @@ def restore(request, entity_id):
 
 
 @http_post([])
-def do_restore(request, entry_id, recv_data):
+def do_restore(request: HttpRequest, entry_id: int, recv_data: dict[str, Any]) -> HttpResponse:
     entry, error = get_obj_with_check_perm(request.user, Entry, entry_id, ACLType.Writable)
     if error or entry is None:
         return error
@@ -794,7 +797,7 @@ def do_restore(request, entry_id, recv_data):
 
 
 @http_post([{"type": str, "name": "attr_id"}, {"type": str, "name": "attrv_id"}])
-def revert_attrv(request, recv_data):
+def revert_attrv(request: HttpRequest, recv_data: dict[str, Any]) -> HttpResponse:
     attr = Attribute.objects.filter(id=recv_data["attr_id"]).first()
     if not attr:
         return HttpResponse("Specified Attribute-id is invalid", status=400)
@@ -891,7 +894,7 @@ def revert_attrv(request, recv_data):
     return HttpResponse('Succeed in updating Attribute "%s"' % attr.schema.name)
 
 
-def _redirect_restore_entry(entry):
+def _redirect_restore_entry(entry: Entry) -> HttpResponse:
     return redirect(
         "{}?{}".format(
             reverse("entry:restore", args=[entry.schema.id]),

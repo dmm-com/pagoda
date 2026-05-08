@@ -1,10 +1,12 @@
 import json
 import re
 from datetime import date, datetime
+from typing import Any
 from zoneinfo import ZoneInfo
 
-from django.db.models import Q
-from django.http import HttpResponse
+from django.db import models
+from django.db.models import Q, QuerySet
+from django.http import HttpRequest, HttpResponse
 from django.http.response import JsonResponse
 from natsort import natsorted
 
@@ -14,7 +16,7 @@ from airone.lib.elasticsearch import prepend_escape_character
 from airone.lib.http import http_get, http_post
 from airone.lib.types import AttrType
 from entity.models import Entity, EntityAttr
-from entry.models import Attribute, Entry
+from entry.models import Attribute, AttributeValue, Entry
 from entry.settings import CONFIG
 from entry.utils import get_sort_order
 from group.models import Group
@@ -22,7 +24,7 @@ from role.models import Role
 
 
 @http_get
-def get_referrals(request, entry_id):
+def get_referrals(request: HttpRequest, entry_id: str) -> HttpResponse:
     """
     This returns entries by which specified entry is referred.
     """
@@ -69,12 +71,14 @@ def get_referrals(request, entry_id):
         },
     ]
 )
-def search_entries(request, entity_ids, recv_data):
+def search_entries(
+    request: HttpRequest, entity_ids: str, recv_data: dict[str, Any]
+) -> HttpResponse:
     cond_link = "or"
     if "cond_link" in recv_data and any([x for x in ["and", "or"] if x == recv_data["cond_link"]]):
         cond_link = recv_data["cond_link"]
 
-    total_entries = []
+    total_entries: list[Entry] = []
     for entity_id in entity_ids.split(","):
         if not Entity.objects.filter(id=entity_id).exists():
             return HttpResponse("Failed to get entity(%s)" % entity_id, status=400)
@@ -85,13 +89,13 @@ def search_entries(request, entity_ids, recv_data):
     if not total_entries:
         return JsonResponse({"results": []})
 
-    def _is_match_value(attrv, cond):
+    def _is_match_value(attrv: AttributeValue, cond: dict[str, Any]) -> Any:
         if cond["type"] == "text":
             return re.match(r".*%s" % cond["value"], attrv.value)
         else:
             return int(cond["value"]) == attrv.referral.id
 
-    def _is_match_attrs(attrs, cond):
+    def _is_match_attrs(attrs: QuerySet[Attribute], cond: dict[str, Any]) -> bool:
         # Ignore he case a value is not specified
         if "value" not in cond or not cond["value"]:
             return False
@@ -117,7 +121,9 @@ def search_entries(request, entity_ids, recv_data):
             if ret:
                 return True
 
-    def _is_match_entry(entry):
+        return False
+
+    def _is_match_entry(entry: Entry) -> bool:
         attrs = entry.attrs.filter(is_active=True)
         if cond_link == "or":
             return any([_is_match_attrs(attrs, cond) for cond in recv_data["cond_params"]])
@@ -142,8 +148,8 @@ def search_entries(request, entity_ids, recv_data):
 
 
 @http_get
-def get_entries(request, entity_ids):
-    total_entries = []
+def get_entries(request: HttpRequest, entity_ids: str) -> HttpResponse:
+    total_entries: list[Entry] = []
 
     # parse parameters
     is_active = request.GET.get("is_active", True)
@@ -185,12 +191,14 @@ def get_entries(request, entity_ids):
 
 
 @http_get
-def get_attr_referrals(request, attr_id):
+def get_attr_referrals(request: HttpRequest, attr_id: str) -> HttpResponse:
     """
     This returns entries that target attribute refers to.
     """
 
-    def _get_referral_objects(attr, model, query_params={}):
+    def _get_referral_objects(
+        attr: EntityAttr, model: type[models.Model], query_params: dict[str, Any] = {}
+    ) -> list[dict[str, Any]]:
         query_name = Q()
 
         keyword = request.GET.get("keyword")
@@ -204,17 +212,17 @@ def get_attr_referrals(request, attr_id):
             ]
         ]
 
-    def _get_referral_entries(attr):
+    def _get_referral_entries(attr: EntityAttr) -> list[dict[str, Any]]:
         return _get_referral_objects(
             attr,
             Entry,
             {"schema__in": [x for x in attr.referral.all()], "is_active": True},
         )
 
-    def _get_referral_groups(attr):
+    def _get_referral_groups(attr: EntityAttr) -> list[dict[str, Any]]:
         return _get_referral_objects(attr, Group, {"is_active": True})
 
-    def _get_referral_roles(attr):
+    def _get_referral_roles(attr: EntityAttr) -> list[dict[str, Any]]:
         return _get_referral_objects(attr, Role, {"is_active": True})
 
     if (
@@ -244,7 +252,7 @@ def get_attr_referrals(request, attr_id):
 
 
 @http_get
-def get_entry_history(request, entry_id):
+def get_entry_history(request: HttpRequest, entry_id: str) -> HttpResponse:
     params: dict[str, int | None] = {"index": None, "count": None}
 
     for key in params.keys():
@@ -260,7 +268,7 @@ def get_entry_history(request, entry_id):
     if not entry:
         return HttpResponse("Specified entry doesn't exist", status=400)
 
-    def json_serial(obj):
+    def json_serial(obj: Any) -> dict[str, Any] | str:
         if isinstance(obj, ACLBase) or isinstance(obj, Group) or isinstance(obj, Role):
             return {"id": obj.id, "name": obj.name}
         elif isinstance(obj, datetime):
@@ -280,7 +288,7 @@ def get_entry_history(request, entry_id):
 
 
 @http_get
-def get_entry_info(request, entry_id):
+def get_entry_info(request: HttpRequest, entry_id: str) -> HttpResponse:
     """
     This returns latest attribute values corresponding to specified entry-id
     """
@@ -311,7 +319,9 @@ def get_entry_info(request, entry_id):
 
 
 @http_post([{"name": "entity_attr_id", "type": int}])
-def create_entry_attr(request, entry_id, recv_data):
+def create_entry_attr(
+    request: HttpRequest, entry_id: str, recv_data: dict[str, Any]
+) -> HttpResponse:
     entry = Entry.objects.filter(id=entry_id).first()
     entity_attr = EntityAttr.objects.filter(id=recv_data["entity_attr_id"], is_active=True).first()
 

@@ -2,7 +2,7 @@ import re
 from datetime import date, datetime
 from typing import Any, Dict, List, Literal, Union
 
-from django.db.models import Prefetch
+from django.db.models import Prefetch, QuerySet
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema_field, extend_schema_serializer
 from pydantic import BaseModel, RootModel, field_validator
@@ -251,7 +251,7 @@ class EntryAliasSerializer(serializers.ModelSerializer):
             "entry",
         ]
 
-    def validate(self, params):
+    def validate(self, params: dict[str, Any]) -> dict[str, Any]:
         if not params["entry"].schema.is_available(params["name"]):
             raise DuplicatedObjectExistsError("A duplicated named Alias exists in this model")
 
@@ -295,7 +295,7 @@ class EntryBaseSerializer(serializers.ModelSerializer):
             return get_permission_level(request.user, obj)
         return ACLType.Nothing.value
 
-    def validate_name(self, name: str):
+    def validate_name(self, name: str) -> str:
         if self.instance:
             # case for creation
             schema = self.instance.schema
@@ -334,7 +334,7 @@ class EntryBaseSerializer(serializers.ModelSerializer):
 
         return name
 
-    def _validate(self, schema: Entity, name: str, attrs: list[dict[str, Any]]):
+    def _validate(self, schema: Entity, name: str, attrs: list[dict[str, Any]]) -> None:
         # Perform basic validation using Pydantic for better type safety
         try:
             # Validate attributes structure
@@ -395,7 +395,7 @@ class EntryBaseSerializer(serializers.ModelSerializer):
                 "validate_entry", schema.name, user, schema.name, name, attrs, self.instance
             )
 
-    def get_aliases(self, obj: Entry):
+    def get_aliases(self, obj: Entry) -> QuerySet[AliasEntry]:
         return obj.aliases.all()
 
 
@@ -428,10 +428,10 @@ class AttributeData(BaseModel):
 class AttributeValueField(serializers.Field):
     """A flexible field that accepts any value type for attribute values."""
 
-    def to_internal_value(self, data):
+    def to_internal_value(self, data: Any) -> Any:
         return data
 
-    def to_representation(self, value):
+    def to_representation(self, value: Any) -> Any:
         return value
 
 
@@ -459,11 +459,11 @@ class EntryCreateSerializer(EntryBaseSerializer):
         model = Entry
         fields = ["id", "name", "schema", "attrs", "created_user"]
 
-    def validate(self, params):
+    def validate(self, params: dict[str, Any]) -> dict[str, Any]:
         self._validate(params["schema"], params["name"], params.get("attrs", []))
         return params
 
-    def create(self, validated_data: EntryCreateData):
+    def create(self, validated_data: EntryCreateData) -> Entry:
         user: User | None = None
         if "request" in self.context:
             user = self.context["request"].user
@@ -561,13 +561,13 @@ class EntryUpdateSerializer(EntryBaseSerializer):
             "name": {"required": False},
         }
 
-    def validate(self, params):
+    def validate(self, params: dict[str, Any]) -> dict[str, Any]:
         self._validate(
             self.instance.schema, params.get("name", self.instance.name), params.get("attrs", [])
         )
         return params
 
-    def update(self, entry: Entry, validated_data: EntryUpdateData):
+    def update(self, entry: Entry, validated_data: EntryUpdateData) -> Entry:
         entry.set_status(Entry.STATUS_EDITING)
 
         user: User | None = None
@@ -970,7 +970,7 @@ class EntryCopySerializer(serializers.Serializer):
     class Meta:
         fields = "copy_entry_names"
 
-    def validate_copy_entry_names(self, copy_entry_names: list[str]):
+    def validate_copy_entry_names(self, copy_entry_names: list[str]) -> list[str]:
         entry: Entry = self.instance
         duplicated_entries = Entry.objects.filter(
             name__in=copy_entry_names, schema=entry.schema, is_active=True
@@ -987,6 +987,8 @@ class EntryCopySerializer(serializers.Serializer):
                 custom_view.call_custom(
                     "validate_entry", entry.schema.name, user, entry.schema.name, name, [], None
                 )
+
+        return copy_entry_names
 
 
 class AdvancedSearchResultAttrInfoSerializer(serializers.Serializer):
@@ -1006,7 +1008,7 @@ class AdvancedSearchResultAttrInfoSerializer(serializers.Serializer):
         required=False, allow_blank=True, max_length=CONFIG_ENTRY.MAX_QUERY_SIZE
     )
 
-    def validate_filter_key(self, filter_key: int):
+    def validate_filter_key(self, filter_key: int) -> int:
         if filter_key not in [k.value for k in FilterKey]:
             raise ValidationError("filter key parameter is invalid value")
         return filter_key
@@ -1043,12 +1045,14 @@ class EntryImportEntitySerializer(serializers.Serializer):
     entity = serializers.CharField()
     entries = serializers.ListField(child=EntryImportEntriesSerializer())
 
-    def validate(self, params: dict):
+    def validate(self, params: dict[str, Any]) -> dict[str, Any]:
         # It runs only in the background, because it takes a long time to process.
         if self.parent:
             return params
 
-        def _convert_value_name_to_id(attr_data: dict, entity_attrs: dict):
+        def _convert_value_name_to_id(
+            attr_data: dict[str, Any], entity_attrs: dict[str, Any]
+        ) -> None:
             def _object(
                 val: str | dict | None,
                 refs: list[Entity],
@@ -1177,7 +1181,7 @@ class AttributeSerializer(serializers.ModelSerializer):
 class EntryHistoryAttributeValueListSerializer(serializers.ListSerializer):
     """Custom list serializer to prefetch previous values efficiently"""
 
-    def to_representation(self, data):
+    def to_representation(self, data: Any) -> Any:
         # Prefetch previous values for all items in the queryset
         if hasattr(data, "__iter__"):
             items = list(data)
@@ -1416,10 +1420,10 @@ class EntryAttributeValueRestoreSerializer(serializers.ModelSerializer):
         model = AttributeValue
         fields: list[str] = []
 
-    def create(self, validated_data):
+    def create(self, validated_data: dict[str, Any]) -> AttributeValue:
         raise ValidationError("unsupported")
 
-    def update(self, instance: AttributeValue, validated_data) -> AttributeValue:
+    def update(self, instance: AttributeValue, validated_data: dict[str, Any]) -> AttributeValue:
         if not self.partial:
             raise ValidationError("only partial update is supported")
 
@@ -1512,7 +1516,7 @@ class EntryHintSerializer(serializers.Serializer):
             raise ValidationError("keyword is too long")
         return keyword
 
-    def validate_filter_key(self, filter_key: int):
+    def validate_filter_key(self, filter_key: int) -> int:
         if filter_key not in [k.value for k in EntryFilterKey]:
             raise ValidationError("filter key parameter is invalid value")
         return filter_key
@@ -1606,7 +1610,7 @@ class AdvancedSearchResultExportSerializer(serializers.Serializer):
             raise ValidationError("format must be yaml or csv")
         return export_style
 
-    def validate(self, params):
+    def validate(self, params: dict[str, Any]) -> dict[str, Any]:
         if params["is_all_entities"]:
             attr_names = [x["name"] for x in params["attrinfo"]]
             params["entities"] = list(
@@ -1622,7 +1626,7 @@ class AdvancedSearchResultExportSerializer(serializers.Serializer):
 
         return params
 
-    def save(self, **kwargs) -> None:
+    def save(self, **kwargs: Any) -> None:
         user: User = self.context["request"].user
 
         job_status_not_finished: list[JobStatus] = [JobStatus.PREPARING, JobStatus.PROCESSING]
@@ -1645,7 +1649,7 @@ class AdvancedSearchResultExportSerializer(serializers.Serializer):
 class EntrySelfHistoryListSerializer(serializers.ListSerializer):
     """Custom list serializer to prefetch previous names efficiently"""
 
-    def to_representation(self, data):
+    def to_representation(self, data: Any) -> Any:
         # Build a mapping of previous names
         if hasattr(data, "__iter__"):
             items = list(data)
@@ -1681,7 +1685,7 @@ class EntrySelfHistorySerializer(serializers.ModelSerializer):
         )
         list_serializer_class = EntrySelfHistoryListSerializer
 
-    def get_prev_name(self, obj) -> str | None:
+    def get_prev_name(self, obj: Any) -> str | None:
         """Get previous name from prefetched data"""
         return getattr(obj, "_prefetched_prev_name", None)
 

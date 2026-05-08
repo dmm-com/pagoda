@@ -6,7 +6,7 @@ from copy import deepcopy
 from datetime import datetime, timedelta
 from typing import Any
 
-from django.db.models import Q
+from django.db.models import Q, QuerySet
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import generics, status, viewsets
@@ -15,6 +15,7 @@ from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import BasePermission, IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
+from rest_framework.serializers import BaseSerializer
 
 from airone.exceptions import ElasticsearchException
 from airone.lib import custom_view
@@ -71,7 +72,7 @@ logger = logging.getLogger(__name__)
 
 
 class EntryPermission(BasePermission):
-    def has_object_permission(self, request: Request, view, obj) -> bool:
+    def has_object_permission(self, request: Request, view: Any, obj: Any) -> bool:
         user: User = request.user
 
         permisson = {
@@ -103,7 +104,7 @@ class EntryAPI(PluginOverrideMixin, viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated & EntryPermission]
     pagination_class = LimitOffsetPagination
 
-    def get_serializer_class(self):
+    def get_serializer_class(self) -> type[BaseSerializer]:
         serializer = {
             "retrieve": EntryRetrieveSerializer,
             "update": EntryUpdateSerializer,
@@ -115,7 +116,7 @@ class EntryAPI(PluginOverrideMixin, viewsets.ModelViewSet):
         }
         return serializer.get(self.action, EntryBaseSerializer)
 
-    def retrieve(self, request: Request, *args, **kwargs) -> Response:
+    def retrieve(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         entry: Entry = self.get_object()
         response = self._dispatch_override(
             request, "retrieve", entry.schema.id, entry.schema, entry
@@ -127,7 +128,7 @@ class EntryAPI(PluginOverrideMixin, viewsets.ModelViewSet):
         return Response(serializer.data)
 
     @extend_schema(request=EntryUpdateSerializer, responses={202: None})
-    def update(self, request: Request, *args, **kwargs) -> Response:
+    def update(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         entry: Entry = self.get_object()
         response = self._dispatch_override(request, "update", entry.schema.id, entry.schema, entry)
         if response is not None:
@@ -145,7 +146,7 @@ class EntryAPI(PluginOverrideMixin, viewsets.ModelViewSet):
 
         return Response(status=status.HTTP_202_ACCEPTED)
 
-    def destroy(self, request: Request, *args, **kwargs) -> Response:
+    def destroy(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         entry: Entry = self.get_object()
         response = self._dispatch_override(request, "delete", entry.schema.id, entry.schema, entry)
         if response is not None:
@@ -165,7 +166,7 @@ class EntryAPI(PluginOverrideMixin, viewsets.ModelViewSet):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     @extend_schema(request=None, responses={201: None})
-    def restore(self, request: Request, *args, **kwargs) -> Response:
+    def restore(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         entry: Entry = self.get_object()
 
         if entry.is_active:
@@ -202,7 +203,7 @@ class EntryAPI(PluginOverrideMixin, viewsets.ModelViewSet):
 
         return Response({}, status=status.HTTP_201_CREATED)
 
-    def copy(self, request: Request, *args, **kwargs) -> Response:
+    def copy(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         src_entry: Entry = self.get_object()
 
         if not src_entry.is_active:
@@ -225,7 +226,7 @@ class EntryAPI(PluginOverrideMixin, viewsets.ModelViewSet):
         return Response({}, status=status.HTTP_200_OK)
 
     @extend_schema(responses=EntryAliasSerializer(many=True))
-    def list_alias(self, request: Request, *args, **kwargs) -> Response:
+    def list_alias(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         entry: Entry = self.get_object()
 
         self.queryset = AliasEntry.objects.filter(entry=entry, entry__is_active=True)
@@ -233,7 +234,7 @@ class EntryAPI(PluginOverrideMixin, viewsets.ModelViewSet):
         return super(EntryAPI, self).list(request, *args, **kwargs)
 
     @extend_schema(responses=EntryHistoryAttributeValueSerializer(many=True))
-    def list_histories(self, request: Request, *args, **kwargs) -> Response:
+    def list_histories(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         user: User = self.request.user
         entry: Entry = self.get_object()
 
@@ -258,7 +259,7 @@ class EntryAPI(PluginOverrideMixin, viewsets.ModelViewSet):
         return super(EntryAPI, self).list(request, *args, **kwargs)
 
     @extend_schema(responses=EntrySelfHistorySerializer(many=True))
-    def list_self_histories(self, request: Request, *args, **kwargs) -> Response:
+    def list_self_histories(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         """List entry self history records"""
         entry: Entry = self.get_object()
 
@@ -268,7 +269,7 @@ class EntryAPI(PluginOverrideMixin, viewsets.ModelViewSet):
         return super(EntryAPI, self).list(request, *args, **kwargs)
 
     @extend_schema(request=EntrySelfHistoryRestoreSerializer)
-    def restore_self_history(self, request: Request, *args, **kwargs) -> Response:
+    def restore_self_history(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         """Restore entry to a previous state from history"""
         entry: Entry = self.get_object()
 
@@ -322,7 +323,7 @@ class EntryAPI(PluginOverrideMixin, viewsets.ModelViewSet):
 class searchAPI(viewsets.ReadOnlyModelViewSet):
     serializer_class = EntrySearchSerializer
 
-    def get_queryset(self):
+    def get_queryset(self) -> list[Any]:
         queryset: list[Any] = []
         query = self.request.query_params.get("query", None)
 
@@ -332,7 +333,7 @@ class searchAPI(viewsets.ReadOnlyModelViewSet):
         results = AdvancedSearchService.search_entries_for_simple(
             query, limit=ENTRY_CONFIG.MAX_SEARCH_ENTRIES
         )
-        return results["ret_values"]
+        return list(results["ret_values"])
 
 
 class AdvancedSearchAPI(generics.GenericAPIView):
@@ -579,7 +580,7 @@ class EntryReferralAPI(viewsets.ReadOnlyModelViewSet):
     serializer_class = EntryBaseSerializer
     pagination_class = EntryReferralPagination
 
-    def get_queryset(self):
+    def get_queryset(self) -> QuerySet[Entry] | list[Entry]:
         entry_id = self.kwargs["pk"]
         keyword = self.request.query_params.get("keyword", None)
 
@@ -662,7 +663,7 @@ class EntryExportAPI(generics.GenericAPIView):
 class EntryAttrReferralsAPI(viewsets.ReadOnlyModelViewSet):
     serializer_class = GetEntryAttrReferralSerializer
 
-    def get_queryset(self):
+    def get_queryset(self) -> QuerySet[Entry] | QuerySet[Group] | QuerySet[Role]:
         attr_id = self.kwargs["attr_id"]
         keyword = self.request.query_params.get("keyword", None)
 
@@ -701,7 +702,7 @@ class EntryImportAPI(generics.GenericAPIView):
     parser_classes = [YAMLParser]
     serializer_class = EntryImportSerializer
 
-    def get_queryset(self):
+    def get_queryset(self) -> QuerySet[Entity]:
         import_data = self.request.data
         entity_names = [d["entity"] for d in import_data]
         return Entity.objects.filter(name__in=entity_names, is_active=True)
@@ -769,7 +770,7 @@ class EntryAttributeValueRestoreAPI(generics.UpdateAPIView):
     queryset = AttributeValue.objects.all()
     serializer_class = EntryAttributeValueRestoreSerializer
 
-    def update(self, request: Request, *args, **kwargs) -> Response:
+    def update(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         if request.user.is_readonly:
             return Response(status=status.HTTP_403_FORBIDDEN)
         return super().update(request, *args, **kwargs)
@@ -778,7 +779,7 @@ class EntryAttributeValueRestoreAPI(generics.UpdateAPIView):
 class EntryBulkUpdateAPI(generics.UpdateAPIView):
     serializer_class = EntryBulkUpdateSerializer
 
-    def update(self, request: Request, *args, **kwargs) -> Response:
+    def update(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         user: User = request.user
 
         serializer = EntryBulkUpdateSerializer(data=request.data, context={"_user": user})
@@ -810,7 +811,7 @@ class EntryBulkDeleteAPI(generics.DestroyAPIView):
     serializer_class = EntryUpdateSerializer
     internal_limit = 10000
 
-    def _validate_attrinfo(self):
+    def _validate_attrinfo(self) -> list[dict[str, Any]]:
         attrinfo_raw = self.request.query_params.get("attrinfo", "[]")
         try:
             json_loaded_value = json.loads(attrinfo_raw)
@@ -824,7 +825,7 @@ class EntryBulkDeleteAPI(generics.DestroyAPIView):
 
         return json_loaded_value
 
-    def delete(self, request: Request, *args, **kwargs) -> Response:
+    def delete(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         # validate "attrinfo" parameter and save it before deleting item processing
         attrinfo = self._validate_attrinfo()
 
@@ -885,7 +886,7 @@ class EntryAliasAPI(viewsets.ModelViewSet):
     serializer_class = EntryAliasSerializer
     queryset = AliasEntry.objects.filter(entry__is_active=True)
 
-    def bulk_create(self, request, *args, **kwargs):
+    def bulk_create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         # refuse input that has duplicated name
         counter = Counter([x["name"] for x in request.data])
         if any([c > 1 for c in counter.values()]):

@@ -1,3 +1,5 @@
+from typing import Any, Sequence
+
 from django.contrib import admin
 from import_export import fields, widgets
 from import_export.admin import ImportExportModelAdmin
@@ -79,7 +81,9 @@ class AttrValueResource(AironeModelResource):
         skip_unchanged = True
         instance_loader_class = CachedInstanceLoader
 
-    def after_save_instance(self, instance, row, **kwargs):
+    def after_save_instance(
+        self, instance: AttributeValue, row: dict[str, Any], **kwargs: Any
+    ) -> None:
         # If a new AttributeValue object is created,
         # this processing append it to the associated Entity object.
         self._saved_instance = None
@@ -116,7 +120,7 @@ class AttrValueResource(AironeModelResource):
             attr.parent_entry.register_es()
 
     @classmethod
-    def after_import_completion(self, results):
+    def after_import_completion(self, results: Sequence[Any]) -> None:
         # make relation between the array of AttributeValue
         for data in [
             x["data"]
@@ -159,7 +163,7 @@ class AttrResource(AironeModelResource):
         skip_unchanged = True
         instance_loader_class = CachedInstanceLoader
 
-    def after_save_instance(self, instance, row, **kwargs):
+    def after_save_instance(self, instance: Attribute, row: dict[str, Any], **kwargs: Any) -> None:
         # If a new Attribute object is created,
         # this processing append it to the associated Entity object.
         if not kwargs.get("dry_run", False):
@@ -196,7 +200,7 @@ class EntryResource(AironeModelResource):
         skip_unchanged = True
         instance_loader_class = CachedInstanceLoader
 
-    def import_instance(self, instance, row, **kwargs):
+    def import_instance(self, instance: Entry, row: dict[str, Any], **kwargs: Any) -> None:
         # will not import entry which refers invalid entity
         if not Entity.objects.filter(name=row["entity"]).exists():
             raise RuntimeError("Specified entity(%s) doesn't exist" % row["entity"])
@@ -210,7 +214,7 @@ class EntryResource(AironeModelResource):
 
         super().import_instance(instance, row, **kwargs)
 
-    def after_save_instance(self, instance, row, **kwargs):
+    def after_save_instance(self, instance: Entry, row: dict[str, Any], **kwargs: Any) -> None:
         if not kwargs.get("dry_run", False):
             # register imported entry to the Elasticsearch
             instance.register_es()

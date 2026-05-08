@@ -440,7 +440,7 @@ class AdvancedSearchService:
         return ESS().search(body={"query": {"match_all": {}}})
 
     @classmethod
-    def update_documents(kls, entity: Entity, is_update: bool = False):
+    def update_documents(kls, entity: Entity, is_update: bool = False) -> None:
         es = ESS()
         query = {
             "query": {
