@@ -365,7 +365,7 @@ def _yaml_export_v2(
     output = io.StringIO()
     output.write(
         yaml.dump(
-            [x.dict() for x in resp_data],
+            [x.dict(exclude_unset=True) for x in resp_data],
             default_flow_style=False,
             allow_unicode=True,
         )
@@ -806,7 +806,7 @@ def export_entries_v2(self: Task, job: Job) -> None:
         output = io.StringIO()
         output.write(
             yaml.dump(
-                [x.dict() for x in exported_entity],
+                [x.dict(exclude_unset=True) for x in exported_entity],
                 default_flow_style=False,
                 allow_unicode=True,
             )
