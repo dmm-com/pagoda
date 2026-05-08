@@ -56,13 +56,13 @@ from entry.api_v2.serializers import (
     EntrySelfHistoryRestoreSerializer,
     EntrySelfHistorySerializer,
     EntryUpdateSerializer,
+    ExportTaskParams,
     GetEntryAttrReferralSerializer,
 )
 from entry.models import AliasEntry, Attribute, AttributeValue, Entry
 from entry.services import AdvancedSearchService
 from entry.settings import CONFIG
 from entry.settings import CONFIG as ENTRY_CONFIG
-from entry.tasks import ExportTaskParams
 from group.models import Group
 from job.models import Job, JobOperation, JobStatus
 from role.models import Role
@@ -848,7 +848,7 @@ class EntryBulkDeleteAPI(generics.DestroyAPIView):
             job.run()
 
         # Run jobs that delete rest of Items of same Model
-        isAll: bool = self.request.query_params.get("isAll", False)
+        isAll: bool | str = self.request.query_params.get("isAll", False)
         if isinstance(isAll, str):
             isAll = isAll.lower() == "true"
 

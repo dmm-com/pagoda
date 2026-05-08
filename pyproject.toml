@@ -12,6 +12,9 @@ mypy_path = "."
 check_untyped_defs = true
 warn_unused_ignores = true
 warn_redundant_casts = true
+strict_equality = true
+warn_unreachable = true
+no_implicit_reexport = true
 
 [[tool.mypy.overrides]]
 module = ["*.tests.*", "*/tests/*", "tests.*"]
