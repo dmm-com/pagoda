@@ -234,6 +234,62 @@ describe("ObjectAttributeValueField", () => {
     ]);
   });
 
+  // Regression test for #3287: typed text must be cleared after selecting
+  // an option from the autocomplete in array-object editor.
+  test("should clear typed text after selecting an option in array-object editor", async () => {
+    const {
+      result: {
+        current: { control, setValue },
+      },
+    } = renderHook(() =>
+      useForm<Schema>({
+        resolver: zodResolver(schema),
+        mode: "onBlur",
+        defaultValues,
+      }),
+    );
+
+    /* eslint-disable */
+    jest
+      .spyOn(
+        require("../../../repository/AironeApiClient").aironeApiClient,
+        "getEntryAttrReferrals",
+      )
+      .mockResolvedValue(Promise.resolve(entries));
+    /* eslint-enable */
+
+    await act(async () => {
+      render(
+        <ObjectAttributeValueField
+          attrId={1}
+          control={control}
+          setValue={setValue}
+          multiple
+        />,
+        { wrapper: TestWrapper },
+      );
+    });
+
+    // Type some keyword to trigger filtering (autocomplete opens automatically).
+    await act(async () => {
+      fireEvent.change(screen.getByRole("combobox"), {
+        target: { value: "entry2" },
+      });
+    });
+    // Sanity check: typed text is reflected before selection.
+    expect(screen.getByRole("combobox")).toHaveValue("entry2");
+
+    // Select "entry2" from the suggestions.
+    await act(async () => {
+      within(screen.getByRole("presentation")).getByText("entry2").click();
+    });
+
+    // After selection, the typed text must be cleared so the next entry
+    // can be searched without manually deleting the previous keyword.
+    expect(screen.getByRole("combobox")).toHaveValue("");
+    expect(screen.getByRole("button", { name: "entry2" })).toBeInTheDocument();
+  });
+
   test("should provide named-object value editor", async () => {
     const {
       result: {
