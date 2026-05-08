@@ -620,3 +620,51 @@ class ModelTest(BaseModelTest):
         self.assertFalse(attr.is_updated([123.45, None, 67.89]))  # Same values should not update
         self.assertFalse(attr.is_updated([67.89, 123.45]))  # Order doesn't matter, None filtered
         self.assertTrue(attr.is_updated([123.45, 67.89, 999]))  # Adding value should update
+
+    def test_number_attr_export_preserves_int_type(self):
+        # Regression test for #3458: Number-type attributes should keep int type
+        # when an integer is provided, instead of being coerced to float
+        # (e.g. 4 -> 4.0). Existing tests use assertEqual which passes for
+        # 4 == 4.0, so the type drift is invisible without isinstance checks.
+        num_attr = self.make_attr("attr_number", AttrType.NUMBER)
+        num_attr.add_value(self._user, 4)
+
+        latest_value = num_attr.get_latest_value().get_value()
+        self.assertEqual(latest_value, 4)
+        self.assertIsInstance(
+            latest_value,
+            int,
+            "NUMBER attr with integer input should keep int type, got %r" % latest_value,
+        )
+        self.assertNotIsInstance(latest_value, float)
+
+        arr_attr = self.make_attr("attr_array_number", AttrType.ARRAY_NUMBER)
+        arr_attr.add_value(self._user, [1, 2, 3.5])
+
+        arr_value = arr_attr.get_latest_value().get_value()
+        self.assertEqual(arr_value, [1, 2, 3.5])
+        self.assertIsInstance(arr_value[0], int)
+        self.assertNotIsInstance(arr_value[0], float)
+        self.assertIsInstance(arr_value[1], int)
+        self.assertNotIsInstance(arr_value[1], float)
+        self.assertIsInstance(arr_value[2], float)
+
+        # entry.export() drives the yaml export reported in the issue
+        exported = self._entry.export(self._user)
+        self.assertEqual(exported["attrs"]["attr_number"], 4)
+        self.assertIsInstance(exported["attrs"]["attr_number"], int)
+        self.assertNotIsInstance(exported["attrs"]["attr_number"], float)
+        self.assertEqual(exported["attrs"]["attr_array_number"], [1, 2, 3.5])
+        self.assertIsInstance(exported["attrs"]["attr_array_number"][0], int)
+        self.assertNotIsInstance(exported["attrs"]["attr_array_number"][0], float)
+
+        # export_v2() returns a list of {name, value} dicts
+        exported_v2 = self._entry.export_v2(self._user)
+        num_entry = next(a for a in exported_v2["attrs"] if a["name"] == "attr_number")
+        self.assertEqual(num_entry["value"], 4)
+        self.assertIsInstance(num_entry["value"], int)
+        self.assertNotIsInstance(num_entry["value"], float)
+        arr_entry = next(a for a in exported_v2["attrs"] if a["name"] == "attr_array_number")
+        self.assertEqual(arr_entry["value"], [1, 2, 3.5])
+        self.assertIsInstance(arr_entry["value"][0], int)
+        self.assertNotIsInstance(arr_entry["value"][0], float)
