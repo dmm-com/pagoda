@@ -1099,7 +1099,7 @@ def bulk_update_entries(
         if job_params.get("hint_entry")
         else None,
         hint_referral=job_params.get("referral_name"),
-        limit=999999,
+        retrieve_all=True,
     )
 
     # update each items in accordance with job_params.value parameter
