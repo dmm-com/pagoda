@@ -47,7 +47,7 @@ const EntryCopyContent: FC<Props> = ({ CopyForm = DefaultCopyForm }) => {
     if (submitted) {
       navigate(entityEntriesPath(entityId), { replace: true });
     }
-  }, [submitted]);
+  }, [submitted, entityId, navigate]);
 
   const { data: entity } = usePagodaSWR(
     ["entity", entityId],

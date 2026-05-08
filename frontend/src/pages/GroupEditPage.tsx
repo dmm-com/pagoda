@@ -92,7 +92,7 @@ export const GroupEditPage: FC = () => {
 
   useEffect(() => {
     isSubmitSuccessful && navigate(groupsPath(), { replace: true });
-  }, [isSubmitSuccessful]);
+  }, [isSubmitSuccessful, navigate]);
 
   usePageTitle(groupLoading ? "読み込み中..." : TITLE_TEMPLATES.groupEdit, {
     prefix: group?.name ?? (willCreate ? "新規作成" : undefined),

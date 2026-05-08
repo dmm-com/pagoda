@@ -54,7 +54,7 @@ const ListAliasEntryContent: FC = () => {
         setEntries(res.results);
         setTotalCount(res.count);
       });
-  }, [page, query]);
+  }, [entityId, page, query]);
 
   const handleChangeQuery = changeQuery;
 

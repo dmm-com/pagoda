@@ -20,7 +20,10 @@ export interface UsePluginMappingsResult {
  */
 export const usePluginMappings = (): UsePluginMappingsResult => {
   const serverContext = ServerContext.getInstance();
-  const config = serverContext?.frontendPluginEntityOverrides ?? {};
+  const config = useMemo(
+    () => serverContext?.frontendPluginEntityOverrides ?? {},
+    [serverContext?.frontendPluginEntityOverrides],
+  );
 
   const hasOverride = useMemo(() => {
     return (entityId: number, pageType: EntityPageType): boolean => {
