@@ -273,21 +273,18 @@ class UserActivityAPI(viewsets.GenericViewSet):
     def retrieve(self, request: Request, pk: int) -> Response:
         user = get_object_or_404(User, pk=pk, is_active=True)
 
-        since: datetime = None
+        since: datetime | None = None
         since_param = request.query_params.get("since")
         if since_param is not None:
             try:
-                since = datetime.fromtimestamp(int(since_param))
-            except (ValueError, OverflowError, OSError):
+                since = datetime.fromisoformat(
+                    since_param.replace("Z", "+00:00").replace(" ", "+")
+                )
+            except ValueError:
                 return Response(
-                    {"since": "Must be a Unix timestamp (integer)."},
+                    {"since": "Must be an ISO 8601 datetime string."},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
-            print("[onix/UserActivityAPI.retrieve(10)] since: ", since)
-        else:
-            since = timezone.now()
-            print("[onix/UserActivityAPI.retrieve(11)] since: ", since)
-            print("[onix/UserActivityAPI.retrieve(12)] since.timestamp: ", since.timestamp())
 
         within_minutes_param = request.query_params.get("within_minutes")
         if within_minutes_param is not None:
@@ -298,7 +295,9 @@ class UserActivityAPI(viewsets.GenericViewSet):
                         {"within_minutes": "Must be a positive integer."},
                         status=status.HTTP_400_BAD_REQUEST,
                     )
-                since -= timedelta(minutes=within_minutes)
+                since = (since if since is not None else timezone.now()) - timedelta(
+                    minutes=within_minutes
+                )
             except ValueError:
                 return Response(
                     {"within_minutes": "Must be a positive integer."},

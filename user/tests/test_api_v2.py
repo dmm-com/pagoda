@@ -951,6 +951,46 @@ class RecentActivityAPITest(ViewTest):
         # Should return limit entries (limit+1 created, 1 backdated outside window)
         self.assertEqual(len(create_activities), limit)
 
+    def test_get_activity_with_since_timestamp(self):
+        user = self.guest_login()
+
+        # create items sparsely over time
+        model = self.create_entity(
+            user, "TestModel", attrs=[{"name": "val", "type": AttrType.STRING}]
+        )
+        item = self.add_entry(user, "item", model)
+        attr = item.attrs.get(schema__name="val")
+
+        for i in range(3):
+            changed_attrv = attr.add_value(user, "changed-%d" % i)
+
+            # backdate its created_time for each 20 minutes
+            changed_attrv.created_time = timezone.now() - timedelta(minutes=(20 * i))
+            changed_attrv.save(update_fields=["created_time"])
+
+        # Remove the initial empty AttributeValue auto-created during entry registration
+        # (register_es calls get_latest_value which creates one; prev_value FK is SET_NULL)
+        attr.values.filter(value="").delete()
+
+        # Without since: all 3 update records are returned
+        resp = self.client.get("/user/api/v2/%s/activity" % user.id)
+        self.assertEqual(resp.status_code, 200)
+        update_records = [a for a in resp.json() if a["action_type"] == "update"]
+        self.assertEqual(len(update_records), 3)
+
+        # since=10 min ago: only i=0 (0 min ago) passes the gte filter, giving 1 record
+        since_iso = (timezone.now() - timedelta(minutes=10)).isoformat()
+        resp = self.client.get("/user/api/v2/%s/activity?since=%s" % (user.id, since_iso))
+        self.assertEqual(resp.status_code, 200)
+        update_records = [a for a in resp.json() if a["action_type"] == "update"]
+        self.assertEqual(len(update_records), 1)
+
+    def test_get_activity_since_invalid(self):
+        user = self.guest_login()
+
+        resp = self.client.get("/user/api/v2/%s/activity?since=not-a-datetime" % user.id)
+        self.assertEqual(resp.status_code, 400)
+
     def test_get_activity_within_minutes_invalid(self):
         user = self.guest_login()
 
