@@ -169,6 +169,23 @@ class UserListSerializer(UserBaseSerializer):
         ]
 
 
+class CoUserSerializer(serializers.ModelSerializer):
+    user_id = serializers.IntegerField(source="id")
+
+    class Meta:
+        model = User
+        fields = ["user_id", "username", "email"]
+
+
+class UserMeSerializer(serializers.ModelSerializer):
+    user_id = serializers.IntegerField(source="id")
+    co_users = CoUserSerializer(many=True)
+
+    class Meta:
+        model = User
+        fields = ["user_id", "username", "email", "co_users"]
+
+
 class UserImportChildSerializer(serializers.ModelSerializer):
     username = serializers.CharField()
     groups = serializers.CharField(required=True, allow_blank=True, write_only=True)

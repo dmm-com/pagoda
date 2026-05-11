@@ -62,6 +62,28 @@ class ViewTest(AironeViewTest):
         resp = self.client.get("/user/api/v2/%s/" % co_user.id)
         self.assertEqual(resp.status_code, 200)
 
+    def test_get_me(self):
+        login_user = self.guest_login()
+        co_user1 = self._create_user("guest-co1", "co1@example.com", parent_user=login_user)
+        co_user2 = self._create_user("guest-co2", "co2@example.com", parent_user=login_user)
+
+        resp = self.client.get("/user/api/v2/me")
+        self.assertEqual(resp.status_code, 200)
+
+        body = resp.json()
+        self.assertEqual(body["user_id"], login_user.id)
+        self.assertEqual(body["username"], login_user.username)
+        self.assertEqual(body["email"], login_user.email)
+
+        co_user_ids = {u["user_id"] for u in body["co_users"]}
+        self.assertIn(co_user1.id, co_user_ids)
+        self.assertIn(co_user2.id, co_user_ids)
+
+        # unauthenticated access is rejected
+        self.client.logout()
+        resp = self.client.get("/user/api/v2/me")
+        self.assertEqual(resp.status_code, 403)
+
     def test_list_user(self):
         login_user = self.guest_login()
         admin_user = self._create_user("admin", "admin@example.com", True)
