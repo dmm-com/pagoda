@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import datetime, timedelta
 from typing import Any
 
 from django.contrib.auth.forms import UserModel
@@ -141,7 +141,7 @@ class UserActivityAPI(viewsets.GenericViewSet):
     LIMIT_RECORDS = 10
 
     def _get_activity_for_creating_item(
-        self, user: User, requesting_user: User, since: Any | None = None
+        self, user: User, requesting_user: User, since: datetime | None = None
     ) -> list[dict]:
         qs = (
             Entry.objects.filter(created_user=user)
@@ -168,7 +168,7 @@ class UserActivityAPI(viewsets.GenericViewSet):
         ]
 
     def _get_activity_for_updating_item(
-        self, user: User, requesting_user: User, since: Any | None = None
+        self, user: User, requesting_user: User, since: datetime | None = None
     ) -> list[dict]:
         qs = (
             AttributeValue.objects.filter(created_user=user, parent_attrv__isnull=True)
@@ -244,7 +244,7 @@ class UserActivityAPI(viewsets.GenericViewSet):
         ]
 
     def _get_activity_for_deleting_item(
-        self, user: User, requesting_user: User, since: Any | None = None
+        self, user: User, requesting_user: User, since: datetime | None = None
     ) -> list[dict]:
         qs = (
             Entry.objects.filter(deleted_user=user, is_active=False)
@@ -273,7 +273,22 @@ class UserActivityAPI(viewsets.GenericViewSet):
     def retrieve(self, request: Request, pk: int) -> Response:
         user = get_object_or_404(User, pk=pk, is_active=True)
 
-        since = None
+        since: datetime = None
+        since_param = request.query_params.get("since")
+        if since_param is not None:
+            try:
+                since = datetime.fromtimestamp(int(since_param))
+            except (ValueError, OverflowError, OSError):
+                return Response(
+                    {"since": "Must be a Unix timestamp (integer)."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            print("[onix/UserActivityAPI.retrieve(10)] since: ", since)
+        else:
+            since = timezone.now()
+            print("[onix/UserActivityAPI.retrieve(11)] since: ", since)
+            print("[onix/UserActivityAPI.retrieve(12)] since.timestamp: ", since.timestamp())
+
         within_minutes_param = request.query_params.get("within_minutes")
         if within_minutes_param is not None:
             try:
@@ -283,7 +298,7 @@ class UserActivityAPI(viewsets.GenericViewSet):
                         {"within_minutes": "Must be a positive integer."},
                         status=status.HTTP_400_BAD_REQUEST,
                     )
-                since = timezone.now() - timedelta(minutes=within_minutes)
+                since -= timedelta(minutes=within_minutes)
             except ValueError:
                 return Response(
                     {"within_minutes": "Must be a positive integer."},
