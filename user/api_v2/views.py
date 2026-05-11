@@ -141,15 +141,24 @@ class UserActivityAPI(viewsets.GenericViewSet):
     LIMIT_RECORDS = 10
 
     def _get_activity_for_creating_item(
-        self, user: User, requesting_user: User, since: datetime | None = None
+        self,
+        user: User,
+        requesting_user: User,
+        since: datetime | None = None,
+        since_from: datetime | None = None,
     ) -> list[dict]:
         qs = (
             Entry.objects.filter(created_user=user)
             .select_related("schema")
             .order_by("-created_time")
         )
-        if since is not None:
-            qs = qs.filter(created_time__gte=since)
+        if since_from is not None or since is not None:
+            qs_filter = {}
+            if since_from is not None:
+                qs_filter["created_time__gte"] = since_from
+            if since is not None:
+                qs_filter["created_time__lte"] = since
+            qs = qs.filter(**qs_filter)
         else:
             qs = qs[: self.LIMIT_RECORDS]
         return [
@@ -168,7 +177,11 @@ class UserActivityAPI(viewsets.GenericViewSet):
         ]
 
     def _get_activity_for_updating_item(
-        self, user: User, requesting_user: User, since: datetime | None = None
+        self,
+        user: User,
+        requesting_user: User,
+        since: datetime | None = None,
+        since_from: datetime | None = None,
     ) -> list[dict]:
         qs = (
             AttributeValue.objects.filter(created_user=user, parent_attrv__isnull=True)
@@ -196,8 +209,14 @@ class UserActivityAPI(viewsets.GenericViewSet):
             )
             .order_by("-created_time")
         )
-        if since is not None:
-            qs = qs.filter(created_time__gte=since)
+        if since_from is not None or since is not None:
+            qs_filter = {}
+            if since_from is not None:
+                qs_filter["created_time__gte"] = since_from
+            if since is not None:
+                qs_filter["created_time__lte"] = since
+                qs_filter["is_latest"] = True
+            qs = qs.filter(**qs_filter)
         else:
             qs = qs[: self.LIMIT_RECORDS]
         return [
@@ -244,15 +263,24 @@ class UserActivityAPI(viewsets.GenericViewSet):
         ]
 
     def _get_activity_for_deleting_item(
-        self, user: User, requesting_user: User, since: datetime | None = None
+        self,
+        user: User,
+        requesting_user: User,
+        since: datetime | None = None,
+        since_from: datetime | None = None,
     ) -> list[dict]:
         qs = (
             Entry.objects.filter(deleted_user=user, is_active=False)
             .select_related("schema")
             .order_by("-deleted_time")
         )
-        if since is not None:
-            qs = qs.filter(deleted_time__gte=since)
+        if since_from is not None or since is not None:
+            qs_filter = {}
+            if since_from is not None:
+                qs_filter["deleted_time__gte"] = since_from
+            if since is not None:
+                qs_filter["deleted_time__lte"] = since
+            qs = qs.filter(**qs_filter)
         else:
             qs = qs[: self.LIMIT_RECORDS]
         return [
@@ -286,6 +314,7 @@ class UserActivityAPI(viewsets.GenericViewSet):
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
+        since_from: datetime | None = None
         within_minutes_param = request.query_params.get("within_minutes")
         if within_minutes_param is not None:
             try:
@@ -295,7 +324,7 @@ class UserActivityAPI(viewsets.GenericViewSet):
                         {"within_minutes": "Must be a positive integer."},
                         status=status.HTTP_400_BAD_REQUEST,
                     )
-                since = (since if since is not None else timezone.now()) - timedelta(
+                since_from = (since if since is not None else timezone.now()) - timedelta(
                     minutes=within_minutes
                 )
             except ValueError:
@@ -306,9 +335,15 @@ class UserActivityAPI(viewsets.GenericViewSet):
 
         requesting_user: User = request.user
         activities: list[dict] = []
-        activities += self._get_activity_for_creating_item(user, requesting_user, since)
-        activities += self._get_activity_for_updating_item(user, requesting_user, since)
-        activities += self._get_activity_for_deleting_item(user, requesting_user, since)
+        activities += self._get_activity_for_creating_item(
+            user, requesting_user, since=since, since_from=since_from
+        )
+        activities += self._get_activity_for_updating_item(
+            user, requesting_user, since=since, since_from=since_from
+        )
+        activities += self._get_activity_for_deleting_item(
+            user, requesting_user, since=since, since_from=since_from
+        )
 
         activities.sort(key=lambda x: x["timestamp"], reverse=True)
         return Response(activities)

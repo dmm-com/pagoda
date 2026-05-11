@@ -978,12 +978,13 @@ class RecentActivityAPITest(ViewTest):
         update_records = [a for a in resp.json() if a["action_type"] == "update"]
         self.assertEqual(len(update_records), 3)
 
-        # since=10 min ago: only i=0 (0 min ago) passes the gte filter, giving 1 record
+        # since=10 min ago: only i=2 (40 min ago, is_latest=True) passes the lte+is_latest filter, giving 1 record
         since_iso = (timezone.now() - timedelta(minutes=10)).isoformat()
         resp = self.client.get("/user/api/v2/%s/activity?since=%s" % (user.id, since_iso))
         self.assertEqual(resp.status_code, 200)
         update_records = [a for a in resp.json() if a["action_type"] == "update"]
         self.assertEqual(len(update_records), 1)
+        self.assertEqual(update_records[0]["target"]["attr"]["curr_value"]["value"], "changed-2")
 
     def test_get_activity_since_invalid(self):
         user = self.guest_login()
