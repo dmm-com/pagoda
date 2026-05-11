@@ -3,7 +3,8 @@ from typing import Any
 from django.db import models
 from django.db.models import QuerySet
 
-from acl.models import ACLBase, ACLObjType
+from acl.models import ACLBase
+from airone.lib.acl import ACLObjType
 
 
 class Category(ACLBase):

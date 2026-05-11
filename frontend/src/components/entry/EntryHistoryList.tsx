@@ -78,20 +78,23 @@ export const EntryHistoryList: FC<Props> = ({
   const { enqueueSnackbar } = useSnackbar();
   const navigate = useNavigate();
 
-  const handleRestore = useCallback(async (prevAttrValueId: number) => {
-    try {
-      await aironeApiClient.restoreEntryHistory(prevAttrValueId);
-      enqueueSnackbar(`変更の復旧が完了しました`, {
-        variant: "success",
-      });
-      navigate(topPath(), { replace: true });
-      navigate(showEntryHistoryPath(entityId, entryId), { replace: true });
-    } catch (e) {
-      enqueueSnackbar(`変更の復旧が失敗しました`, {
-        variant: "error",
-      });
-    }
-  }, []);
+  const handleRestore = useCallback(
+    async (prevAttrValueId: number) => {
+      try {
+        await aironeApiClient.restoreEntryHistory(prevAttrValueId);
+        enqueueSnackbar(`変更の復旧が完了しました`, {
+          variant: "success",
+        });
+        navigate(topPath(), { replace: true });
+        navigate(showEntryHistoryPath(entityId, entryId), { replace: true });
+      } catch (e) {
+        enqueueSnackbar(`変更の復旧が失敗しました`, {
+          variant: "error",
+        });
+      }
+    },
+    [enqueueSnackbar, entityId, entryId, navigate],
+  );
 
   return (
     <>

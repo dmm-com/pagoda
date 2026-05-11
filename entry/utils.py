@@ -1,7 +1,7 @@
 from entry.settings import CONFIG
 
 
-def get_sort_order(sort_order_request):
+def get_sort_order(sort_order_request: str) -> str:
     if sort_order_request == CONFIG.TEMPLATE_CONFIG["SORT_ORDER"]["name"]:
         return "name"
     elif sort_order_request == CONFIG.TEMPLATE_CONFIG["SORT_ORDER"]["name_reverse"]:

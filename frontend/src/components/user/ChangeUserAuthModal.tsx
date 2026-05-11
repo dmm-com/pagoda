@@ -49,7 +49,7 @@ export const ChangeUserAuthModal: FC<Props> = ({
         variant: "error",
       });
     }
-  }, [user, ldapPassword, closeModal]);
+  }, [user, ldapPassword, closeModal, enqueueSnackbar]);
 
   return (
     <StyledModal open={openModal} onClose={closeModal}>

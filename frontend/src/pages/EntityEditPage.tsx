@@ -309,7 +309,7 @@ export const EntityEditPage: FC = () => {
         navigate(entityEntriesPath(entityId), { replace: true });
       }
     }
-  }, [isSubmitSuccessful]);
+  }, [isSubmitSuccessful, entityId, navigate]);
 
   if (entityLoading || referralEntitiesLoading) {
     return <Loading />;

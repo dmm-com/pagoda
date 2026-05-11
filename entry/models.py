@@ -23,6 +23,7 @@ from airone.lib.elasticsearch import (
 from airone.lib.types import (
     AttrDefaultValue,
     AttrType,
+    coerce_number,
 )
 from entity.models import Entity, EntityAttr, ItemNameType
 from group.models import Group
@@ -95,25 +96,25 @@ class AttributeValue(models.Model):
     )
 
     @classmethod
-    def get_default_value(kls, attr: "Attribute"):
+    def get_default_value(kls, attr: "Attribute") -> Any:
         """
         Returns the default value for each attribute type.
         Used when there is no attribute value.
         """
         return AttrDefaultValue[attr.schema.type]
 
-    def set_status(self, val: int):
+    def set_status(self, val: int) -> None:
         self.status |= val
         self.save(update_fields=["status"])
 
-    def del_status(self, val: int):
+    def del_status(self, val: int) -> None:
         self.status &= ~val
         self.save(update_fields=["status"])
 
     def get_status(self, val: int) -> int:
         return self.status & val
 
-    def clone(self, user: User, **extra_params) -> "AttributeValue":
+    def clone(self, user: User, **extra_params: Any) -> "AttributeValue":
         cloned_value = AttributeValue.objects.get(id=self.id)
 
         # By removing the primary key, we can clone a django model instance
@@ -187,7 +188,7 @@ class AttributeValue(models.Model):
                     return attrv.referral.name
             return None
 
-        def _get_model_value(attrv: "AttributeValue"):
+        def _get_model_value(attrv: "AttributeValue") -> Any:
             match attrv.data_type:
                 case AttrType.GROUP | AttrType.ARRAY_GROUP if attrv.group and attrv.group.is_active:
                     instance = attrv.group
@@ -207,14 +208,8 @@ class AttributeValue(models.Model):
                 value = self.value
 
             case AttrType.NUMBER:
-                # Convert string value back to number for NUMBER type
-                if self.value and self.value.strip():
-                    try:
-                        value = float(self.value)
-                    except ValueError:
-                        value = None
-                else:
-                    value = None
+                # Convert string value back to number, preserving int when possible
+                value = coerce_number(self.value)
 
             case AttrType.BOOLEAN:
                 value = self.boolean
@@ -253,10 +248,7 @@ class AttributeValue(models.Model):
                 value = [x.value for x in self.data_array.all()]
 
             case AttrType.ARRAY_NUMBER:
-                value = [
-                    float(x.value) if x.value and x.value.strip() else None
-                    for x in self.data_array.all()
-                ]
+                value = [coerce_number(x.value) for x in self.data_array.all()]
 
             case AttrType.ARRAY_OBJECT:
                 value = [
@@ -289,10 +281,7 @@ class AttributeValue(models.Model):
             case AttrType.ARRAY_STRING:
                 return [x.value for x in self.data_array.all()]
             case AttrType.ARRAY_NUMBER:
-                return [
-                    float(x.value) if x.value and x.value.strip() else None
-                    for x in self.data_array.all()
-                ]
+                return [coerce_number(x.value) for x in self.data_array.all()]
             case AttrType.ARRAY_OBJECT:
                 return [x.referral for x in self.data_array.all()]
             case AttrType.OBJECT:
@@ -300,14 +289,8 @@ class AttributeValue(models.Model):
             case AttrType.BOOLEAN:
                 return self.boolean
             case AttrType.NUMBER:
-                # Convert string value back to number for NUMBER type
-                if self.value and self.value.strip():
-                    try:
-                        return float(self.value)
-                    except ValueError:
-                        return None
-                else:
-                    return None
+                # Convert string value back to number, preserving int when possible
+                return coerce_number(self.value)
             case AttrType.DATE:
                 return self.date
             case AttrType.NAMED_OBJECT:
@@ -373,7 +356,7 @@ class AttributeValue(models.Model):
         return results
 
     @classmethod
-    def create(kls, user: User, attr: "AttributeValue", **params):
+    def create(kls, user: User, attr: "AttributeValue", **params: Any) -> "AttributeValue":
         return kls.objects.create(
             created_user=user, parent_attr=attr, data_type=attr.schema.type, **params
         )
@@ -406,7 +389,11 @@ class AttributeValue(models.Model):
 
     @classmethod
     def validate_attr_value(
-        kls, type: int, input_value: Any, is_mandatory: bool, entity_attr=None
+        kls,
+        type: int,
+        input_value: Any,
+        is_mandatory: bool,
+        entity_attr: "EntityAttr | None" = None,
     ) -> tuple[bool, str | None]:
         """
         Validate if to add_value is a possible value.
@@ -453,7 +440,7 @@ class AttributeValue(models.Model):
             except (ValueError, TypeError):
                 raise Exception("value(%s) is not int" % value)
 
-        def _is_validate_attr(t: int, value) -> bool:
+        def _is_validate_attr(t: int, value: Any) -> bool:
             match t:
                 case AttrType.STRING | AttrType.TEXT:
                     return _is_validate_attr_str(value)
@@ -576,13 +563,14 @@ class AttributeValue(models.Model):
         return (True, None)
 
     @property
-    def is_array(self):
+    def is_array(self) -> bool:
         return self.parent_attr.is_array()
 
     @property
-    def ref_item(self):
+    def ref_item(self) -> "Entry | None":
         if self.referral is not None and self.referral.is_active:
             return self.referral.entry
+        return None
 
 
 class Attribute(ACLBase):
@@ -597,7 +585,7 @@ class Attribute(ACLBase):
             models.UniqueConstraint(fields=["parent_entry", "schema"], name="unique_attribute")
         ]
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super(Attribute, self).__init__(*args, **kwargs)
         self.objtype = ACLObjType.EntryAttr
 
@@ -947,7 +935,7 @@ class Attribute(ACLBase):
         return attrv
 
     # NOTE: Type-Write
-    def clone(self, user: User, **extra_params) -> Optional["Attribute"]:
+    def clone(self, user: User, **extra_params: Any) -> Optional["Attribute"]:
         if not user.has_permission(self, ACLType.Readable) or not user.has_permission(
             self.schema, ACLType.Readable
         ):
@@ -983,7 +971,7 @@ class Attribute(ACLBase):
             exclude = Q(id=exclude_id)
         self.values.filter(is_latest=True).exclude(exclude).update(is_latest=False)
 
-    def _validate_single_number(self, value) -> bool:
+    def _validate_single_number(self, value: Any) -> bool:
         """Validates a single number value (helper for array number validation)"""
         if value is None or value == "":
             return True
@@ -1111,12 +1099,15 @@ class Attribute(ACLBase):
 
         return False
 
-    def add_value(self, user: User, value, boolean: bool = False) -> AttributeValue:
+    def add_value(self, user: User, value: Any, boolean: bool = False) -> AttributeValue:
         """This method make AttributeValue and set it as the latest one"""
 
         # This is a helper method to set AttributeType
         def _set_attrv(
-            attr_type: int, val, attrv: AttributeValue | None = None, params={}
+            attr_type: int,
+            val: Any,
+            attrv: AttributeValue | None = None,
+            params: dict[str, Any] = {},
         ) -> AttributeValue | None:
             if not attrv:
                 attrv = AttributeValue(**params)
@@ -1452,7 +1443,9 @@ class Attribute(ACLBase):
         return None
 
     # NOTE: Type-Write
-    def remove_from_attrv(self, user: User, referral: ACLBase | None = None, value: str = ""):
+    def remove_from_attrv(
+        self, user: User, referral: ACLBase | None = None, value: str = ""
+    ) -> None:
         """
         This method removes target entry from specified attribute
         """
@@ -1539,7 +1532,7 @@ class Attribute(ACLBase):
     # NOTE: Type-Write
     def add_to_attrv(
         self, user: User, referral: ACLBase | None = None, value: str = "", boolean: bool = False
-    ):
+    ) -> None:
         """
         This method adds target entry to specified attribute with referral_key
         """
@@ -1600,7 +1593,7 @@ class Attribute(ACLBase):
                 self.add_value(user, updated_data, boolean=attrv.boolean)
 
     def may_remove_referral(self) -> None:
-        def _may_remove_referral(referral: ACLBase | None):
+        def _may_remove_referral(referral: ACLBase | None) -> None:
             if not referral:
                 # the case this refers no entry, do nothing
                 return
@@ -1630,19 +1623,20 @@ class Attribute(ACLBase):
 
             if attrv:
                 if self.is_array():
-                    [_may_remove_referral(x.referral) for x in attrv.data_array.all()]
+                    for x in attrv.data_array.all():
+                        _may_remove_referral(x.referral)
                 else:
                     _may_remove_referral(attrv.referral)
 
     # NOTE: Type-Write
-    def delete(self):
+    def delete(self) -> None:
         super(Attribute, self).delete()
 
         self.may_remove_referral()
 
     # implementation for Attribute
     def check_duplication_entry_at_restoring(self, entry_chain: list["Entry"]) -> bool:
-        def _check(referral: ACLBase | None):
+        def _check(referral: ACLBase | None) -> bool:
             if referral and not referral.is_active:
                 entry = Entry.objects.filter(id=referral.id, is_active=False).first()
                 if entry:
@@ -1680,10 +1674,10 @@ class Attribute(ACLBase):
         return False
 
     # NOTE: Type-Write
-    def restore(self):
+    def restore(self) -> None:
         super(Attribute, self).restore()
 
-        def _may_restore_referral(referral: ACLBase | None):
+        def _may_restore_referral(referral: ACLBase | None) -> None:
             if not referral:
                 # the case this refers no entry, do nothing
                 return
@@ -1702,7 +1696,8 @@ class Attribute(ACLBase):
                 return
 
             if self.is_array():
-                [_may_restore_referral(x.referral) for x in attrv.data_array.all()]
+                for x in attrv.data_array.all():
+                    _may_restore_referral(x.referral)
             else:
                 _may_restore_referral(attrv.referral)
 
@@ -1717,7 +1712,7 @@ class Entry(ACLBase):
 
     history = HistoricalRecords(excluded_fields=["status", "updated_time"])
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super(Entry, self).__init__(*args, **kwargs)
         self.objtype = ACLObjType.Entry
 
@@ -1791,7 +1786,7 @@ class Entry(ACLBase):
 
         return AliasEntry.objects.create(name=name, entry=self)
 
-    def delete_alias(self, name: str):
+    def delete_alias(self, name: str) -> None:
         alias = AliasEntry.objects.filter(
             name=name, entry__schema=self.schema, entry__is_active=True
         ).first()
@@ -1870,7 +1865,7 @@ class Entry(ACLBase):
     ) -> QuerySet:
         return Entry.get_referred_entries([self.id], filter_entities, exclude_entities)
 
-    def complement_attrs(self, user: User):
+    def complement_attrs(self, user: User) -> None:
         """
         This method complements Attributes which are appended after creation of Entity
         """
@@ -1906,7 +1901,9 @@ class Entry(ACLBase):
                 newattr.values.add(attr_value)
 
     # NOTE: Type-Read
-    def get_available_attrs(self, user: User, permission=ACLType.Readable) -> list[dict[str, Any]]:
+    def get_available_attrs(
+        self, user: User, permission: ACLType = ACLType.Readable
+    ) -> list[dict[str, Any]]:
         # To avoid unnecessary DB access for caching referral entries
         ret_attrs: list[dict[str, Any]] = []
         attrv_prefetch = Prefetch(
@@ -1974,10 +1971,9 @@ class Entry(ACLBase):
                     attrinfo["last_value"] = [x.value for x in last_value.data_array.all()]
 
                 case AttrType.ARRAY_NUMBER:
-                    # Convert string values back to numbers for ARRAY_NUMBER type
+                    # Convert string values back to numbers, preserving int when possible
                     attrinfo["last_value"] = [
-                        float(x.value) if x.value and x.value.strip() else None
-                        for x in last_value.data_array.all()
+                        coerce_number(x.value) for x in last_value.data_array.all()
                     ]
 
                 case AttrType.ARRAY_OBJECT:
@@ -2052,14 +2048,8 @@ class Entry(ACLBase):
                     attrinfo["last_value"] = last_value.datetime
 
                 case AttrType.NUMBER:
-                    # Convert string value back to number for NUMBER type
-                    if last_value.value and last_value.value.strip():
-                        try:
-                            attrinfo["last_value"] = float(last_value.value)
-                        except ValueError:
-                            attrinfo["last_value"] = None
-                    else:
-                        attrinfo["last_value"] = None
+                    # Convert string value back to number, preserving int when possible
+                    attrinfo["last_value"] = coerce_number(last_value.value)
 
             ret_attrs.append(attrinfo)
 
@@ -2135,13 +2125,13 @@ class Entry(ACLBase):
             "attrs": returning_attrs,
         }
 
-    def save(self, *args, **kwargs) -> None:
+    def save(self, *args: Any, **kwargs: Any) -> None:
         max_entries: int | None = settings.MAX_ENTRIES
         if max_entries and Entry.objects.count() >= max_entries:
             raise RuntimeError("The number of entries is over the limit")
         return super(Entry, self).save(*args, **kwargs)
 
-    def delete(self, *args, **kwargs):
+    def delete(self, *args: Any, **kwargs: Any) -> None:
         super(Entry, self).delete(*args, **kwargs)
 
         # update Elasticsearch index info which refered this entry not to refer this link
@@ -2171,7 +2161,7 @@ class Entry(ACLBase):
         # It means it's safe to restore this Entry.
         return False
 
-    def restore(self):
+    def restore(self) -> None:
         super(Entry, self).restore()
 
         # also restore each attributes
@@ -2187,7 +2177,7 @@ class Entry(ACLBase):
         # update entry information to Elasticsearch
         self.register_es()
 
-    def clone(self, user: User, **extra_params) -> Optional["Entry"]:
+    def clone(self, user: User, **extra_params: Any) -> Optional["Entry"]:
         if not user.has_permission(self, ACLType.Readable) or not user.has_permission(
             self.schema, ACLType.Readable
         ):
@@ -2287,7 +2277,7 @@ class Entry(ACLBase):
         return {"name": self.name, "attrs": attrinfo, "id": self.id}
 
     # NOTE: Type-Write
-    def get_es_document(self, entity_attrs=None) -> EntryDocument:
+    def get_es_document(self, entity_attrs: QuerySet[EntityAttr] | None = None) -> EntryDocument:
         """This processing registers entry information to Elasticsearch"""
 
         # This inner method truncates value in taking multi-byte in account
@@ -2302,7 +2292,7 @@ class Entry(ACLBase):
             attrv: AttributeValue | None,
             container: list[AttributeDocument],
             is_recursive: bool = False,
-        ):
+        ) -> None:
             attrinfo: AttributeDocument = {
                 "name": entity_attr.name,
                 "type": entity_attr.type,
@@ -2369,14 +2359,9 @@ class Entry(ACLBase):
                         attrinfo["referral_id"] = role.id
 
             elif entity_attr.type & AttrType.NUMBER:
-                # Convert string value to number for NUMBER type
-                if attrv.value and attrv.value.strip():
-                    try:
-                        attrinfo["value"] = float(attrv.value)
-                    except ValueError:
-                        attrinfo["value"] = ""
-                else:
-                    attrinfo["value"] = ""
+                # Convert string value to number, preserving int when possible
+                coerced = coerce_number(attrv.value)
+                attrinfo["value"] = "" if coerced is None else coerced
 
             # Basically register attribute information whatever value doesn't exist
             if not (entity_attr.type & AttrType._ARRAY and not is_recursive):
@@ -2385,10 +2370,8 @@ class Entry(ACLBase):
             elif entity_attr.type & AttrType._ARRAY and not is_recursive:
                 if attrv is not None:
                     # Here is the case of parent array, set each child values
-                    [
+                    for x in attrv.data_array.all():
                         _set_attrinfo(entity_attr, attr, x, container, True)
-                        for x in attrv.data_array.all()
-                    ]
 
                 # If there is no value in container,
                 # this set blank value for maching blank search request
@@ -2445,7 +2428,7 @@ class Entry(ACLBase):
 
         return document
 
-    def register_es(self, es: ESS | None = None, recursive_call_stack=[]):
+    def register_es(self, es: ESS | None = None, recursive_call_stack: list["Entry"] = []) -> None:
         """
         Arguments
           * recursive_call_stack:
@@ -2509,7 +2492,7 @@ class Entry(ACLBase):
                 entry = Entry.objects.get(id=refer["dst_entry_id"])
                 entry.register_es(es, recursive_call_stack + [self])
 
-    def unregister_es(self, es: ESS | None = None):
+    def unregister_es(self, es: ESS | None = None) -> None:
         if not es:
             es = ESS()
 
@@ -2566,7 +2549,7 @@ class Entry(ACLBase):
         return ret_values
 
     @classmethod
-    def is_importable_data(kls, data) -> bool:
+    def is_importable_data(kls, data: Any) -> bool:
         """This method confirms import data has following data structure
         Entity:
             - name: entry_name
@@ -2599,7 +2582,7 @@ class Entry(ACLBase):
     @classmethod
     def get_referred_entries(
         kls, id_list: list[int], filter_entities: list[str] = [], exclude_entities: list[str] = []
-    ):
+    ) -> QuerySet:
         """
         This returns objects that refer Entries, which is specifeied in the kd_list,
         in the AttributeValue.
@@ -2648,7 +2631,7 @@ class Entry(ACLBase):
     def get_trigger_params(self, user: User, attrnames: list[str]) -> list[dict]:
         entry_dict = self.to_dict(user, with_metainfo=True) or {}
 
-        def _get_value(attrname: str, attrtype: int, value):
+        def _get_value(attrname: str, attrtype: int, value: Any) -> Any:
             if isinstance(value, list):
                 return [_get_value(attrname, attrtype, x) for x in value]
 
@@ -2743,18 +2726,14 @@ class AdvancedSearchAttributeIndex(models.Model):
                     key = attrv.role.name if attrv.role else None
                     value = {"id": attrv.role.id, "name": attrv.role.name} if attrv.role else None
                 case AttrType.NUMBER:
-                    # Convert string value to number for NUMBER type
-                    if attrv.value and attrv.value.strip():
-                        try:
-                            number_value = float(attrv.value)
-                            key = str(number_value)
-                            value = number_value
-                        except ValueError:
-                            key = None
-                            value = None
-                    else:
+                    # Convert string value to number, preserving int when possible
+                    number_value = coerce_number(attrv.value)
+                    if number_value is None:
                         key = None
                         value = None
+                    else:
+                        key = str(number_value)
+                        value = number_value
                 case AttrType.ARRAY_STRING:
                     value = [v.value for v in attrv.data_array.all()]
                     key = ",".join(value)
@@ -2787,11 +2766,8 @@ class AdvancedSearchAttributeIndex(models.Model):
                     ]
                     key = ",".join([v["name"] for v in value])
                 case AttrType.ARRAY_NUMBER:
-                    # Convert string values to numbers for ARRAY_NUMBER type
-                    value = [
-                        float(v.value) if v.value and v.value.strip() else None
-                        for v in attrv.data_array.all()
-                    ]
+                    # Convert string values to numbers, preserving int when possible
+                    value = [coerce_number(v.value) for v in attrv.data_array.all()]
                     key = ",".join([str(v) if v is not None else "" for v in value])
                 case _:
                     print("TODO implement it")
@@ -2808,7 +2784,7 @@ class AdvancedSearchAttributeIndex(models.Model):
         )
 
     @property
-    def value(self):
+    def value(self) -> Any:
         match self.type:
             case AttrType.STRING | AttrType.TEXT | AttrType.DATE | AttrType.DATETIME:
                 return self.key
@@ -2846,13 +2822,13 @@ class AliasEntry(models.Model):
 # This instance wrapps prefetched Entry instance to abstract intermediate method call
 # (e.g. attr_list, value_list, ...)
 class PrefetchedItemWrapper(object):
-    def __init__(self, prefetched_item, attrv=None):
+    def __init__(self, prefetched_item: Any, attrv: Any = None) -> None:
         self.pi = prefetched_item
         self.attrv = attrv
 
-    # Plz fix it
-    # def __getitem__(self, attrname) -> PrefetchedItemWrapper | list(PrefetchedItemWrapper):
-    def __getitem__(self, attrname):
+    def __getitem__(
+        self, attrname: int | str
+    ) -> "PrefetchedItemWrapper | list[PrefetchedItemWrapper]":
         """
         This returns neighbor PrefetchedItemWrapper instance that wraps prefetched Entry instance
         """
@@ -2925,7 +2901,12 @@ class PrefetchedItemWrapper(object):
 
 class ItemWalker(object):
     @classmethod
-    def prefetch_attr_refs(kls, attrnames, nested_prefetch=[], is_intermediate=True):
+    def prefetch_attr_refs(
+        kls,
+        attrnames: Iterable[str],
+        nested_prefetch: list[Any] = [],
+        is_intermediate: bool = True,
+    ) -> Prefetch:
         """
         This returns the Prefetch object for the specified attribute name
         to determine referral items that specified attribute name indicates.
@@ -2962,7 +2943,7 @@ class ItemWalker(object):
         )
 
     @classmethod
-    def create_prefetch(kls, step_map={}, is_last=False) -> Prefetch:
+    def create_prefetch(kls, step_map: dict[str, Any] = {}, is_last: bool = False) -> Prefetch:
         # check attr_routes has nested attribute steps
         related_prefetches = []
         for step_attrname, co_steps in step_map.items():
@@ -2976,11 +2957,11 @@ class ItemWalker(object):
             is_intermediate=not is_last,
         )
 
-    def __init__(self, base_item_ids, step_map={}):
+    def __init__(self, base_item_ids: list[int], step_map: dict[str, Any] = {}) -> None:
         prefetch = ItemWalker.create_prefetch(step_map, is_last=True)
 
         self.base_items = Entry.objects.prefetch_related(prefetch).filter(id__in=base_item_ids)
 
     @property
-    def list(self):
+    def list(self) -> list["PrefetchedItemWrapper"]:
         return [PrefetchedItemWrapper(x) for x in self.base_items]

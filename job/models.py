@@ -34,8 +34,8 @@ if os.path.exists(settings.BASE_DIR + "/custom_view"):
         CUSTOM_HIDDEN_OPERATIONS,
         CUSTOM_PARALLELIZABLE_OPERATIONS,
         CUSTOM_TASKS,
-        JobOperationCustom,
     )
+    from custom_view.lib.task import JobOperationCustom as JobOperationCustom
 else:
     CUSTOM_CANCELABLE_OPERATIONS = []
     CUSTOM_DOWNLOADABLE_OPERATIONS = []

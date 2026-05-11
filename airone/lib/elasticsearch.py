@@ -10,7 +10,7 @@ from typing_extensions import TypedDict
 
 from airone.lib.acl import ACLType
 from airone.lib.log import Logger
-from airone.lib.types import AttrType, BaseIntEnum
+from airone.lib.types import AttrType, BaseIntEnum, coerce_number
 from entity.models import Entity
 from entry.settings import CONFIG
 from user.models import User
@@ -1160,8 +1160,9 @@ def make_search_results(
                     ret_attrinfo["value"] = attrinfo["value"]
 
                 case AttrType.NUMBER:
-                    # recognize empty string is None
-                    ret_attrinfo["value"] = attrinfo["value"] if attrinfo["value"] else None
+                    # Preserve int when integer-valued (#3458); coerce_number
+                    # accepts both numeric and string ES _source values.
+                    ret_attrinfo["value"] = coerce_number(attrinfo["value"])
 
                 case AttrType.DATE | AttrType.DATETIME:
                     ret_attrinfo["value"] = attrinfo["date_value"]
@@ -1211,10 +1212,8 @@ def make_search_results(
                             ret_attrinfo["value"].append(attrinfo["value"])
 
                         case AttrType.ARRAY_NUMBER:
-                            # Convert string value to number, handle empty values as None
-                            ret_attrinfo["value"].append(
-                                attrinfo["value"] if attrinfo["value"] else None
-                            )
+                            # Preserve int when integer-valued (#3458)
+                            ret_attrinfo["value"].append(coerce_number(attrinfo["value"]))
 
                         case AttrType.ARRAY_OBJECT | AttrType.ARRAY_GROUP | AttrType.ARRAY_ROLE:
                             ret_attrinfo["value"].append(

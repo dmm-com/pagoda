@@ -45,7 +45,7 @@ export const GroupControlMenu: FC<Props> = ({
         variant: "error",
       });
     }
-  }, [navigate, enqueueSnackbar, groupId]);
+  }, [navigate, enqueueSnackbar, groupId, setToggle]);
 
   return (
     <Menu

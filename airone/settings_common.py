@@ -7,7 +7,7 @@ from typing import Any
 
 import environ
 from configurations import Configuration
-from ddtrace import config, patch_all, tracer
+from ddtrace import config, patch_all, tracer  # type: ignore[attr-defined]
 
 env = environ.Env()
 env.read_env(os.path.join(environ.Path(__file__) - 2, ".env"))
@@ -312,9 +312,7 @@ class Common(Configuration):
         outs, errs = proc.communicate(timeout=1)
         # if `git describe --tags` prints some string to stdout, use the result as version
         # else use 'unknown' as version (e.g. untagged git repository)
-        if isinstance(outs, str):
-            AIRONE["VERSION"] = outs.strip()
-        elif isinstance(outs, bytes):
+        if outs:
             AIRONE["VERSION"] = outs.decode("utf-8").strip()
         else:
             logging.getLogger(__name__).warning("could not describe airone version from git")

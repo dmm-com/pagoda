@@ -202,8 +202,8 @@ def render(request: HttpRequest, template: str, context: Dict[str, Any] = {}) ->
     # set Construct for Entity status
     context["STATUS_ENTITY"] = {}
     context["STATUS_ENTITY"]["TOP_LEVEL"] = entity_models.Entity.STATUS_TOP_LEVEL
-    context["STATUS_ENTITY"]["CREATING"] = entry_models.Entity.STATUS_CREATING
-    context["STATUS_ENTITY"]["EDITING"] = entry_models.Entity.STATUS_EDITING
+    context["STATUS_ENTITY"]["CREATING"] = entity_models.Entity.STATUS_CREATING
+    context["STATUS_ENTITY"]["EDITING"] = entity_models.Entity.STATUS_EDITING
 
     # set Construct for Entry status
     context["STATUS_ENTRY"] = {}
@@ -231,8 +231,6 @@ def get_download_response(io_stream: StringIO, fname: str, encode: str = "utf-8"
 
 
 def _is_valid(params: Dict[str, Any], meta_info: List[Dict[str, Any]]) -> bool:
-    if not isinstance(params, dict):
-        return False
     # These are existance checks of each parameters except for ones which has omittable parameter
     if not all([x["name"] in params for x in meta_info if "omittable" not in x]):
         return False

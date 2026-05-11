@@ -69,6 +69,8 @@ export const ReferralsAutocomplete: FC<Props> = ({
   ) => {
     if (!multiple && value != null && !Array.isArray(value)) {
       setInputValue(value.name);
+    } else if (multiple) {
+      setInputValue("");
     }
 
     if (reason === "clear") {

@@ -304,7 +304,7 @@ export const TriggerEditPage: FC = () => {
     if (isSubmitSuccessful) {
       navigate(triggersPath(), { replace: true });
     }
-  }, [isSubmitSuccessful]);
+  }, [isSubmitSuccessful, navigate]);
 
   return (
     <Box>

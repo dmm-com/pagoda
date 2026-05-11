@@ -90,7 +90,7 @@ const ACLEditContent: FC<{ objectId: number }> = ({ objectId }) => {
       err.generalError &&
         enqueueSnackbar(err.generalError.message, { variant: "error" });
     },
-    [objectId],
+    [enqueueSnackbar],
   );
 
   const handleSubmitOnValid = useCallback(
@@ -111,7 +111,7 @@ const ACLEditContent: FC<{ objectId: number }> = ({ objectId }) => {
 
       enqueueSnackbar("ACL設定の更新が成功しました", { variant: "success" });
     },
-    [objectId],
+    [objectId, enqueueSnackbar],
   );
 
   const handleCancel = async () => {
@@ -169,7 +169,7 @@ const ACLEditContent: FC<{ objectId: number }> = ({ objectId }) => {
         });
         break;
     }
-  }, [acl, reset]);
+  }, [acl, reset, objectId]);
 
   useEffect(() => {
     if (isSubmitSuccessful) {
