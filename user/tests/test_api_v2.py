@@ -798,38 +798,49 @@ class RecentActivityAPITest(ViewTest):
         self.assertEqual(resp.status_code, 200)
 
         # response data expect following data structure for each activity
+        # create/delete:
         """
         {
-            "action_type": "create" | "update" | "delete",
-            "target_type": "item" | "model",
+            "action_type": "create" | "delete",
+            "target_type": "item",
             "target": {
-                "id": 100,
+                "item_id": 100,
                 "name": "entry name",
+                "model": {"id": 10, "name": "model name"},
+            },
+            "timestamp": "2024-01-01T00:00:00Z",
+        }
+        """
+        # update:
+        """
+        {
+            "action_type": "update",
+            "target_type": "item",
+            "target": {
+                "item_id": 100,
+                "item_name": "entry name",
                 "attr": {
-                    "id": 200,
-                    "name": "attr name",
+                    "attribute_id": 200,
+                    "attribute_name": "attr name",
                     "type": AttrType.STRING | AttrType.OBJECT | ...,
                     "curr_value": {
-                        "id": 300,
+                        "attribute_value_id": 300,
                         "value": "current value",
                         "user": {
-                            "id": 500,
+                            "user_id": 500,
                             "username": "updated user name",
                         },
                     },
                     "prev_value": {
-                        "id": 400,
+                        "attribute_value_id": 400,
                         "value": "previous value",
                         "user": {
-                            "id": 600,
+                            "user_id": 600,
                             "username": "previous updated user name",
                         },
                     },
-                }
-                "model": {
-                    "id": 10,
-                    "name": "model name",
                 },
+                "model": {"model_id": 10, "model_name": "model name"},
             },
             "timestamp": "2024-01-01T00:00:00Z",
         }
@@ -839,23 +850,23 @@ class RecentActivityAPITest(ViewTest):
         # last activity is deleting castle by OdaNobunaga, so check it first
         self.assertEqual(resp.json()[0]["action_type"], "delete")
         self.assertEqual(resp.json()[0]["target_type"], "item")
-        self.assertEqual(resp.json()[0]["target"]["id"], item_castles["IchijodaniCastle"].id)
+        self.assertEqual(resp.json()[0]["target"]["item_id"], item_castles["IchijodaniCastle"].id)
         self.assertEqual(resp.json()[0]["target"]["model"]["id"], model_castle.id)
 
         # before that target user update attribute of created Item (designer is newer than location)
         self.assertEqual(resp.json()[1]["action_type"], "update")
         self.assertEqual(resp.json()[1]["target_type"], "item")
-        self.assertEqual(resp.json()[1]["target"]["id"], item_azuchi.id)
-        self.assertEqual(resp.json()[1]["target"]["attr"]["name"], "designer")
+        self.assertEqual(resp.json()[1]["target"]["item_id"], item_azuchi.id)
+        self.assertEqual(resp.json()[1]["target"]["attr"]["attribute_name"], "designer")
         self.assertEqual(resp.json()[1]["target"]["attr"]["type"], AttrType.STRING)
         self.assertEqual(resp.json()[1]["target"]["attr"]["curr_value"]["value"], "NiwaNagahide")
-        self.assertEqual(resp.json()[1]["target"]["model"]["id"], model_castle.id)
+        self.assertEqual(resp.json()[1]["target"]["model"]["model_id"], model_castle.id)
 
         # before that target user update another attribute of created Item
         self.assertEqual(resp.json()[2]["action_type"], "update")
         self.assertEqual(resp.json()[2]["target_type"], "item")
-        self.assertEqual(resp.json()[2]["target"]["id"], item_azuchi.id)
-        self.assertEqual(resp.json()[2]["target"]["attr"]["name"], "location")
+        self.assertEqual(resp.json()[2]["target"]["item_id"], item_azuchi.id)
+        self.assertEqual(resp.json()[2]["target"]["attr"]["attribute_name"], "location")
         self.assertEqual(resp.json()[2]["target"]["attr"]["type"], AttrType.OBJECT)
         self.assertEqual(
             resp.json()[2]["target"]["attr"]["curr_value"]["value"]["id"],
@@ -866,28 +877,28 @@ class RecentActivityAPITest(ViewTest):
             resp.json()[2]["target"]["attr"]["curr_value"]["value"]["model"]["id"],
             model_prefecture.id,
         )
-        self.assertEqual(resp.json()[2]["target"]["model"]["id"], model_castle.id)
+        self.assertEqual(resp.json()[2]["target"]["model"]["model_id"], model_castle.id)
 
         # before that target user create castle item
         self.assertEqual(resp.json()[3]["action_type"], "create")
         self.assertEqual(resp.json()[3]["target_type"], "item")
-        self.assertEqual(resp.json()[3]["target"]["id"], item_azuchi.id)
+        self.assertEqual(resp.json()[3]["target"]["item_id"], item_azuchi.id)
         self.assertEqual(resp.json()[3]["target"]["model"]["id"], model_castle.id)
 
         # before that target user update attribute of prefecture item
         self.assertEqual(resp.json()[4]["action_type"], "update")
         self.assertEqual(resp.json()[4]["target_type"], "item")
-        self.assertEqual(resp.json()[4]["target"]["id"], item_prefectures["Kyoto"].id)
-        self.assertEqual(resp.json()[4]["target"]["attr"]["name"], "ruler")
+        self.assertEqual(resp.json()[4]["target"]["item_id"], item_prefectures["Kyoto"].id)
+        self.assertEqual(resp.json()[4]["target"]["attr"]["attribute_name"], "ruler")
         self.assertEqual(resp.json()[4]["target"]["attr"]["curr_value"]["value"], "OdaNobunaga")
         self.assertEqual(
             resp.json()[4]["target"]["attr"]["prev_value"]["value"], "MatsunagaHisahide"
         )
         self.assertEqual(
-            resp.json()[4]["target"]["attr"]["prev_value"]["user"]["id"],
+            resp.json()[4]["target"]["attr"]["prev_value"]["user"]["user_id"],
             daimyos["MatsunagaHisahide"].id,
         )
-        self.assertEqual(resp.json()[4]["target"]["model"]["id"], model_prefecture.id)
+        self.assertEqual(resp.json()[4]["target"]["model"]["model_id"], model_prefecture.id)
 
     def test_prevent_getting_whole_records(self):
         """
@@ -1048,7 +1059,10 @@ class RecentActivityAPITest(ViewTest):
         self.assertEqual(resp.status_code, 200)
 
         activities = resp.json()
-        target_models = {a["target"]["model"]["id"] for a in activities}
+        target_models = {
+            a["target"]["model"].get("model_id") or a["target"]["model"].get("id")
+            for a in activities
+        }
         self.assertIn(public_entity.id, target_models)
         self.assertNotIn(private_entity.id, target_models)
 
@@ -1082,7 +1096,7 @@ class RecentActivityAPITest(ViewTest):
         update_activities = [
             a
             for a in resp.json()
-            if a["action_type"] == "update" and a["target"]["model"]["id"] == target_model.id
+            if a["action_type"] == "update" and a["target"]["model"]["model_id"] == target_model.id
         ]
         self.assertGreater(len(update_activities), 0)
 
@@ -1101,7 +1115,7 @@ class RecentActivityAPITest(ViewTest):
         update_activities = [
             a
             for a in resp.json()
-            if a["action_type"] == "update" and a["target"]["model"]["id"] == target_model.id
+            if a["action_type"] == "update" and a["target"]["model"]["model_id"] == target_model.id
         ]
         self.assertEqual(len(update_activities), 0)
 
@@ -1145,12 +1159,12 @@ class RecentActivityAPITest(ViewTest):
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.json()[0]["action_type"], "update")
         self.assertEqual(resp.json()[0]["target_type"], "item")
-        self.assertEqual(resp.json()[0]["target"]["id"], item.id)
-        self.assertEqual(resp.json()[0]["target"]["attr"]["name"], attr_name)
+        self.assertEqual(resp.json()[0]["target"]["item_id"], item.id)
+        self.assertEqual(resp.json()[0]["target"]["attr"]["attribute_name"], attr_name)
         self.assertEqual(resp.json()[0]["target"]["attr"]["type"], attr_type)
         self.assertEqual(resp.json()[0]["target"]["attr"]["curr_value"]["value"], curr_value)
         self.assertEqual(resp.json()[0]["target"]["attr"]["prev_value"]["value"], prev_value)
-        self.assertEqual(resp.json()[0]["target"]["model"]["id"], model.id)
+        self.assertEqual(resp.json()[0]["target"]["model"]["model_id"], model.id)
 
     def test_get_activity_has_text_typed_record(self):
         user = self.guest_login()
@@ -1233,9 +1247,9 @@ class RecentActivityAPITest(ViewTest):
         # check that the latest activity has expected data
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.json()[0]["action_type"], "update")
-        self.assertEqual(resp.json()[0]["target"]["attr"]["name"], "named_obj_attr")
+        self.assertEqual(resp.json()[0]["target"]["attr"]["attribute_name"], "named_obj_attr")
         self.assertEqual(resp.json()[0]["target"]["attr"]["type"], AttrType.NAMED_OBJECT)
-        self.assertEqual(resp.json()[0]["target"]["model"]["id"], model.id)
+        self.assertEqual(resp.json()[0]["target"]["model"]["model_id"], model.id)
 
         curr = resp.json()[0]["target"]["attr"]["curr_value"]["value"]
         self.assertEqual(curr["name"], "label2")

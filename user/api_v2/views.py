@@ -166,7 +166,7 @@ class UserActivityAPI(viewsets.GenericViewSet):
                 "action_type": "create",
                 "target_type": "item",
                 "target": {
-                    "id": entry.id,
+                    "item_id": entry.id,
                     "name": entry.name,
                     "model": {"id": entry.schema.id, "name": entry.schema.name},
                 },
@@ -224,32 +224,32 @@ class UserActivityAPI(viewsets.GenericViewSet):
                 "action_type": "update",
                 "target_type": "item",
                 "target": {
-                    "id": entry.id,
-                    "name": entry.name,
+                    "item_id": entry.id,
+                    "item_name": entry.name,
                     "attr": {
-                        "id": attr_schema.id,
-                        "name": attr_schema.name,
+                        "attribute_id": attr_schema.id,
+                        "attribute_name": attr_schema.name,
                         "type": attr_schema.type,
                         "curr_value": {
-                            "id": attr_val.id,
+                            "attribute_value_id": attr_val.id,
                             "value": _get_attr_value(attr_schema.type, attr_val),
                             "user": {
-                                "id": attr_val.created_user.id,
+                                "user_id": attr_val.created_user.id,
                                 "username": attr_val.created_user.username,
                             },
                         },
                         "prev_value": {
-                            "id": attr_val.prev_value.id,
+                            "attribute_value_id": attr_val.prev_value.id,
                             "value": _get_attr_value(attr_schema.type, attr_val.prev_value),
                             "user": {
-                                "id": attr_val.prev_value.created_user.id,
+                                "user_id": attr_val.prev_value.created_user.id,
                                 "username": attr_val.prev_value.created_user.username,
                             },
                         }
                         if attr_val.prev_value
                         else None,
                     },
-                    "model": {"id": entry.schema.id, "name": entry.schema.name},
+                    "model": {"model_id": entry.schema.id, "model_name": entry.schema.name},
                 },
                 "timestamp": attr_val.created_time,
             }
@@ -288,7 +288,7 @@ class UserActivityAPI(viewsets.GenericViewSet):
                 "action_type": "delete",
                 "target_type": "item",
                 "target": {
-                    "id": entry.id,
+                    "item_id": entry.id,
                     "name": entry.name,
                     "model": {"id": entry.schema.id, "name": entry.schema.name},
                 },
