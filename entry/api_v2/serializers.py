@@ -177,7 +177,7 @@ class IntOrFloatField(serializers.Field):
 
     default_error_messages = {"invalid": "A valid number is required."}
 
-    def to_representation(self, value):
+    def to_representation(self, value: Any) -> int | float | None:
         if value is None or isinstance(value, (int, float)):
             return value
         # Fallback for unexpected stored types (e.g. legacy strings)
@@ -187,20 +187,22 @@ class IntOrFloatField(serializers.Field):
             self.fail("invalid")
         return int(f) if f.is_integer() else f
 
-    def to_internal_value(self, data):
+    def to_internal_value(self, data: Any) -> int | float:
         if isinstance(data, bool):
             self.fail("invalid")
-        if isinstance(data, int):
+        elif isinstance(data, int):
             return data
-        if isinstance(data, float):
+        elif isinstance(data, float):
             return int(data) if data.is_integer() else data
-        if isinstance(data, str):
+        elif isinstance(data, str):
             try:
                 f = float(data)
             except ValueError:
                 self.fail("invalid")
-            return int(f) if f.is_integer() else f
+            else:
+                return int(f) if f.is_integer() else f
         self.fail("invalid")
+        raise AssertionError("unreachable")
 
 
 class EntityAttributeTypeSerializer(serializers.Serializer):

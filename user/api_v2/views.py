@@ -210,7 +210,7 @@ class UserActivityAPI(viewsets.GenericViewSet):
             .order_by("-created_time")
         )
         if since_from is not None or since is not None:
-            qs_filter = {}
+            qs_filter: dict[str, Any] = {}
             if since_from is not None:
                 qs_filter["created_time__gte"] = since_from
             if since is not None:

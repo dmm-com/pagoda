@@ -24,8 +24,6 @@ def coerce_number(raw: str | int | float | None) -> int | float | None:
             f = float(raw)
         except ValueError:
             return None
-    else:
-        return None
     if not math.isfinite(f):
         return None
     return int(f) if f.is_integer() else f
