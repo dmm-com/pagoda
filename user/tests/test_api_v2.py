@@ -978,7 +978,8 @@ class RecentActivityAPITest(ViewTest):
         update_records = [a for a in resp.json() if a["action_type"] == "update"]
         self.assertEqual(len(update_records), 3)
 
-        # since=10 min ago: only i=2 (40 min ago, is_latest=True) passes the lte+is_latest filter, giving 1 record
+        # since=10 min ago: only i=2 (40 min ago, is_latest=True) passes the lte+is_latest filter,
+        # giving 1 record
         since_iso = (timezone.now() - timedelta(minutes=10)).isoformat()
         resp = self.client.get("/user/api/v2/%s/activity?since=%s" % (user.id, since_iso))
         self.assertEqual(resp.status_code, 200)
@@ -1062,7 +1063,10 @@ class RecentActivityAPITest(ViewTest):
             ],
         )
         target_item = self.add_entry(
-            activity_user, "item-for-attr-perm", target_model, values={"secret1": "init", "secret2": "init"}
+            activity_user,
+            "item-for-attr-perm",
+            target_model,
+            values={"secret1": "init", "secret2": "init"},
         )
 
         # update activity for secret_attr should be visible to viewing_user

@@ -305,9 +305,7 @@ class UserActivityAPI(viewsets.GenericViewSet):
         since_param = request.query_params.get("since")
         if since_param is not None:
             try:
-                since = datetime.fromisoformat(
-                    since_param.replace("Z", "+00:00").replace(" ", "+")
-                )
+                since = datetime.fromisoformat(since_param.replace("Z", "+00:00").replace(" ", "+"))
             except ValueError:
                 return Response(
                     {"since": "Must be an ISO 8601 datetime string."},
