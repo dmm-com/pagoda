@@ -28,6 +28,7 @@ from user.api_v2.serializers import (
     UserExportSerializer,
     UserImportSerializer,
     UserListSerializer,
+    UserMeSerializer,
     UserPasswordBySuperuserSerializer,
     UserPasswordSerializer,
     UserRetrieveSerializer,
@@ -76,6 +77,15 @@ class UserAPI(viewsets.ModelViewSet):
         user.delete()
 
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class UserMeAPI(generics.RetrieveAPIView):
+    serializer_class = UserMeSerializer
+    permission_classes = [IsAuthenticated]
+
+    def retrieve(self, request: Request) -> Response:
+        serializer = self.get_serializer(request.user)
+        return Response(serializer.data)
 
 
 class UserTokenAPI(viewsets.ModelViewSet):

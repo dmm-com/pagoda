@@ -12,6 +12,7 @@ urlpatterns = [
             }
         ),
     ),
+    path("me", views.UserMeAPI.as_view()),
     path(
         "<int:pk>/",
         views.UserAPI.as_view(
