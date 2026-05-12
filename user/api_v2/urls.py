@@ -14,6 +14,14 @@ urlpatterns = [
     ),
     path("me", views.UserMeAPI.as_view()),
     path(
+        "<int:pk>/activity",
+        views.UserActivityAPI.as_view(
+            {
+                "get": "retrieve",
+            }
+        ),
+    ),
+    path(
         "<int:pk>/",
         views.UserAPI.as_view(
             {

@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 from typing import Any
 
 from django.contrib.auth.forms import UserModel
@@ -5,6 +6,7 @@ from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import EmailMultiAlternatives
 from django.template import loader
+from django.utils import timezone
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from django_filters.rest_framework import DjangoFilterBackend
@@ -18,7 +20,11 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.serializers import Serializer
 
+from airone.exceptions.model import UnexpectedAttributeType
+from airone.lib.acl import ACLType
 from airone.lib.drf import YAMLParser, YAMLRenderer
+from airone.lib.types import AttrType
+from entry.models import AttributeValue, Entry
 from group.models import Group
 from user.api_v2.serializers import (
     PasswordResetConfirmSerializer,
@@ -38,6 +44,80 @@ from user.api_v2.serializers import (
 from user.models import User
 
 
+def _entry_ref(entry: Any) -> dict:
+    return {
+        "id": entry.id,
+        "name": entry.name,
+        "model": {"id": entry.schema.id, "name": entry.schema.name},
+    }
+
+
+def _get_attr_value(
+    attr_type: int, attr_val: AttributeValue
+) -> dict | list | float | int | str | bool | None:
+    match attr_type:
+        case AttrType.STRING | AttrType.TEXT:
+            return attr_val.value
+        case AttrType.BOOLEAN:
+            return attr_val.boolean
+        case AttrType.NUMBER:
+            return float(attr_val.value) if attr_val.value and attr_val.value.strip() else None
+        case AttrType.DATE:
+            return str(attr_val.date) if attr_val.date else None
+        case AttrType.DATETIME:
+            return attr_val.datetime.isoformat() if attr_val.datetime else None
+        case AttrType.OBJECT:
+            return _entry_ref(attr_val.referral.entry) if attr_val.referral_id is not None else None
+        case AttrType.NAMED_OBJECT:
+            obj = _entry_ref(attr_val.referral.entry) if attr_val.referral_id is not None else None
+            return {"name": attr_val.value, "object": obj}
+        case AttrType.GROUP:
+            return (
+                {"id": attr_val.group.id, "name": attr_val.group.name}
+                if attr_val.group_id
+                else None
+            )
+        case AttrType.ROLE:
+            return (
+                {"id": attr_val.role.id, "name": attr_val.role.name} if attr_val.role_id else None
+            )
+        case AttrType.ARRAY_STRING:
+            return [x.value for x in attr_val.data_array.all()]
+        case AttrType.ARRAY_NUMBER:
+            return [
+                float(x.value) if x.value and x.value.strip() else None
+                for x in attr_val.data_array.all()
+            ]
+        case AttrType.ARRAY_OBJECT:
+            return [
+                _entry_ref(x.referral.entry)
+                for x in attr_val.data_array.all()
+                if x.referral_id is not None
+            ]
+        case AttrType.ARRAY_NAMED_OBJECT | AttrType.ARRAY_NAMED_OBJECT_BOOLEAN:
+            return [
+                {
+                    "name": x.value,
+                    "object": _entry_ref(x.referral.entry) if x.referral_id is not None else None,
+                }
+                for x in attr_val.data_array.all()
+            ]
+        case AttrType.ARRAY_GROUP:
+            return [
+                {"id": x.group.id, "name": x.group.name}
+                for x in attr_val.data_array.all()
+                if x.group_id
+            ]
+        case AttrType.ARRAY_ROLE:
+            return [
+                {"id": x.role.id, "name": x.role.name}
+                for x in attr_val.data_array.all()
+                if x.role_id
+            ]
+        case _:
+            raise UnexpectedAttributeType(f"Unexpected attribute type: {attr_type}")
+
+
 class UserPermission(BasePermission):
     def has_object_permission(self, request: Request, view: Any, obj: User) -> bool:
         current_user: User = request.user
@@ -54,6 +134,218 @@ class UserPermission(BasePermission):
 class SuperuserPermission(BasePermission):
     def has_object_permission(self, request: Request, view: Any, obj: User) -> bool:
         return request.user.is_superuser
+
+
+class UserActivityAPI(viewsets.GenericViewSet):
+    queryset = User.objects.none()
+    serializer_class = Serializer
+    LIMIT_RECORDS = 10
+
+    def _get_activity_for_creating_item(
+        self,
+        user: User,
+        requesting_user: User,
+        since: datetime | None = None,
+        since_from: datetime | None = None,
+    ) -> list[dict]:
+        qs = (
+            Entry.objects.filter(created_user=user)
+            .select_related("schema")
+            .order_by("-created_time")
+        )
+        if since_from is not None or since is not None:
+            qs_filter = {}
+            if since_from is not None:
+                qs_filter["created_time__gte"] = since_from
+            if since is not None:
+                qs_filter["created_time__lte"] = since
+            qs = qs.filter(**qs_filter)
+        else:
+            qs = qs[: self.LIMIT_RECORDS]
+        return [
+            {
+                "action_type": "create",
+                "target_type": "item",
+                "target": {
+                    "item_id": entry.id,
+                    "name": entry.name,
+                    "model": {"id": entry.schema.id, "name": entry.schema.name},
+                },
+                "timestamp": entry.created_time,
+            }
+            for entry in qs
+            if requesting_user.has_permission(entry, ACLType.Readable)
+        ]
+
+    def _get_activity_for_updating_item(
+        self,
+        user: User,
+        requesting_user: User,
+        since: datetime | None = None,
+        since_from: datetime | None = None,
+    ) -> list[dict]:
+        qs = (
+            AttributeValue.objects.filter(created_user=user, parent_attrv__isnull=True)
+            .select_related(
+                "parent_attr__schema",
+                "parent_attr__parent_entry__schema",
+                "created_user",
+                "referral__entry__schema",
+                "group",
+                "role",
+                "prev_value__created_user",
+                "prev_value__referral__entry__schema",
+                "prev_value__group",
+                "prev_value__role",
+            )
+            .prefetch_related(
+                "data_array",
+                "data_array__referral__entry__schema",
+                "data_array__group",
+                "data_array__role",
+                "prev_value__data_array",
+                "prev_value__data_array__referral__entry__schema",
+                "prev_value__data_array__group",
+                "prev_value__data_array__role",
+            )
+            .order_by("-created_time")
+        )
+        if since_from is not None or since is not None:
+            qs_filter: dict[str, Any] = {}
+            if since_from is not None:
+                qs_filter["created_time__gte"] = since_from
+            if since is not None:
+                qs_filter["created_time__lte"] = since
+                qs_filter["is_latest"] = True
+            qs = qs.filter(**qs_filter)
+        else:
+            qs = qs[: self.LIMIT_RECORDS]
+        return [
+            {
+                "action_type": "update",
+                "target_type": "item",
+                "target": {
+                    "item_id": entry.id,
+                    "item_name": entry.name,
+                    "attr": {
+                        "attribute_id": attr_schema.id,
+                        "attribute_name": attr_schema.name,
+                        "type": attr_schema.type,
+                        "curr_value": {
+                            "attribute_value_id": attr_val.id,
+                            "value": _get_attr_value(attr_schema.type, attr_val),
+                            "user": {
+                                "user_id": attr_val.created_user.id,
+                                "username": attr_val.created_user.username,
+                            },
+                        },
+                        "prev_value": {
+                            "attribute_value_id": attr_val.prev_value.id,
+                            "value": _get_attr_value(attr_schema.type, attr_val.prev_value),
+                            "user": {
+                                "user_id": attr_val.prev_value.created_user.id,
+                                "username": attr_val.prev_value.created_user.username,
+                            },
+                        }
+                        if attr_val.prev_value
+                        else None,
+                    },
+                    "model": {"model_id": entry.schema.id, "model_name": entry.schema.name},
+                },
+                "timestamp": attr_val.created_time,
+            }
+            for attr_val in qs
+            if (entry := attr_val.parent_attr.parent_entry)
+            if (attr := attr_val.parent_attr)
+            if (attr_schema := attr_val.parent_attr.schema)
+            if requesting_user.has_permission(entry, ACLType.Readable)
+            and requesting_user.has_permission(attr_schema, ACLType.Readable)
+            and requesting_user.has_permission(attr, ACLType.Readable)
+        ]
+
+    def _get_activity_for_deleting_item(
+        self,
+        user: User,
+        requesting_user: User,
+        since: datetime | None = None,
+        since_from: datetime | None = None,
+    ) -> list[dict]:
+        qs = (
+            Entry.objects.filter(deleted_user=user, is_active=False)
+            .select_related("schema")
+            .order_by("-deleted_time")
+        )
+        if since_from is not None or since is not None:
+            qs_filter = {}
+            if since_from is not None:
+                qs_filter["deleted_time__gte"] = since_from
+            if since is not None:
+                qs_filter["deleted_time__lte"] = since
+            qs = qs.filter(**qs_filter)
+        else:
+            qs = qs[: self.LIMIT_RECORDS]
+        return [
+            {
+                "action_type": "delete",
+                "target_type": "item",
+                "target": {
+                    "item_id": entry.id,
+                    "name": entry.name,
+                    "model": {"id": entry.schema.id, "name": entry.schema.name},
+                },
+                "timestamp": entry.deleted_time,
+            }
+            for entry in qs
+            if requesting_user.has_permission(entry.schema, ACLType.Readable)
+        ]
+
+    def retrieve(self, request: Request, pk: int) -> Response:
+        user = get_object_or_404(User, pk=pk, is_active=True)
+
+        since: datetime | None = None
+        since_param = request.query_params.get("since")
+        if since_param is not None:
+            try:
+                since = datetime.fromisoformat(since_param.replace("Z", "+00:00").replace(" ", "+"))
+            except ValueError:
+                return Response(
+                    {"since": "Must be an ISO 8601 datetime string."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+        since_from: datetime | None = None
+        within_minutes_param = request.query_params.get("within_minutes")
+        if within_minutes_param is not None:
+            try:
+                within_minutes = int(within_minutes_param)
+                if within_minutes <= 0:
+                    return Response(
+                        {"within_minutes": "Must be a positive integer."},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+                since_from = (since if since is not None else timezone.now()) - timedelta(
+                    minutes=within_minutes
+                )
+            except ValueError:
+                return Response(
+                    {"within_minutes": "Must be a positive integer."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+        requesting_user: User = request.user
+        activities: list[dict] = []
+        activities += self._get_activity_for_creating_item(
+            user, requesting_user, since=since, since_from=since_from
+        )
+        activities += self._get_activity_for_updating_item(
+            user, requesting_user, since=since, since_from=since_from
+        )
+        activities += self._get_activity_for_deleting_item(
+            user, requesting_user, since=since, since_from=since_from
+        )
+
+        activities.sort(key=lambda x: x["timestamp"], reverse=True)
+        return Response(activities)
 
 
 class UserAPI(viewsets.ModelViewSet):
