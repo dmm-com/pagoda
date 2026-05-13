@@ -18,10 +18,10 @@ jobs:
       matrix:
         python-version: ["3.13"]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
       - name: Install uv
         run: pipx install uv
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@7f4fc3e22c37d6ff65e88745f38bd3157c663f7c # v4
         with:
           python-version: ${{ matrix.python-version }}
           cache: "pip"
@@ -65,7 +65,7 @@ jobs:
     outputs:
       targets: ${{ steps.modules.outputs.targets }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
       - id: modules
         name: Set test modules
         run: |
@@ -79,7 +79,6 @@ jobs:
     needs: setup_python
     permissions:
       contents: read
-      pull-requests: write
     strategy:
       fail-fast: false
       matrix:
@@ -118,10 +117,10 @@ jobs:
           --health-timeout=5s
           --health-retries=3
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
       - name: Install uv
         run: pipx install uv
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@7f4fc3e22c37d6ff65e88745f38bd3157c663f7c # v4
         with:
           python-version: ${{ matrix.python-version }}
           cache: "pip"
@@ -142,11 +141,33 @@ jobs:
           uv run python manage.py makemigrations
           uv run python manage.py migrate
           uv run python manage.py collectstatic
-          uv run coverage run manage.py test ${{ matrix.target }} --parallel 
+          uv run coverage run manage.py test ${{ matrix.target }} --parallel
           uv run coverage report
           uv run coverage xml
+      - name: Upload coverage report
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: coverage-${{ matrix.target }}
+          path: coverage.xml
+
+  report-coverage:
+    runs-on: ubuntu-24.04
+    needs: [setup_python, test]
+    permissions:
+      contents: read
+      pull-requests: write
+    strategy:
+      fail-fast: false
+      matrix:
+        target: ${{ fromJson(needs.setup_python.outputs.targets) }}
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - name: Download coverage report
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: coverage-${{ matrix.target }}
       - name: octocov
-        uses: k1LoW/octocov-action@v1
+        uses: k1LoW/octocov-action@b3b6ee60482a667950f87553abf1df63217235d9 # v1
         with:
           config: .octocov.yml
           github-token: ${{ secrets.GITHUB_TOKEN }}
