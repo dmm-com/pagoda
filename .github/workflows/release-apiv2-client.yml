@@ -11,21 +11,21 @@ on:
       - ".github/workflows/release-apiv2-client.yml"
 
 jobs:
-  release:
-    runs-on: ubuntu-latest
+  # Runs PR code with minimal permissions to generate the client artifact.
+  # Intentionally isolated from write tokens to prevent token exfiltration.
+  generate:
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
-      packages: write
-      pull-requests: write
     if: ${{ github.event.label.name == 'release-apiv2-client' }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           ref: ${{ github.event.pull_request.head.ref }}
           repository: ${{ github.event.pull_request.head.repo.full_name }}
       - name: Install uv
         run: pipx install uv
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@7f4fc3e22c37d6ff65e88745f38bd3157c663f7c # v4
         with:
           python-version: "3.13"
           cache: "pip"
@@ -36,7 +36,7 @@ jobs:
       - name: uv sync
         run: |
           uv sync --extra dev
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 22
           registry-url: https://npm.pkg.github.com/
@@ -48,19 +48,44 @@ jobs:
       - name: generate client
         run: |
           uv run npm run generate:client
+      - name: Upload generated client
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: apiv2-client
+          path: ./apiclient/typescript-fetch/
+
+  # Downloads the artifact and publishes without executing any PR code.
+  # Holds write tokens only in this job.
+  publish:
+    runs-on: ubuntu-24.04
+    needs: generate
+    permissions:
+      packages: write
+      pull-requests: write
+    steps:
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+          registry-url: https://npm.pkg.github.com/
+          scope: "@dmm-com"
+      - name: Download generated client
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: apiv2-client
+          path: ./apiclient/typescript-fetch/
       - run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
         working-directory: ./apiclient/typescript-fetch
       - name: Find Comment
-        uses: peter-evans/find-comment@v2
+        uses: peter-evans/find-comment@a54c31d7fa095754bfef525c0c8e5e5674c4b4b1 # v2
         id: fc
         with:
           issue-number: ${{ github.event.pull_request.number }}
           comment-author: "github-actions[bot]"
           body-includes: "<!-- release-apiv2-client-notification -->"
       - name: Create or update comment
-        uses: peter-evans/create-or-update-comment@v3
+        uses: peter-evans/create-or-update-comment@23ff15729ef2fc348714a3bb66d2f655ca9066f2 # v3
         with:
           comment-id: ${{ steps.fc.outputs.comment-id }}
           issue-number: ${{ github.event.pull_request.number }}
