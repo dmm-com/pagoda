@@ -6,7 +6,7 @@ from job.models import Job, JobStatus
 from user.models import User
 
 
-@app.task(bind=True)
+@app.task(bind=True)  # type: ignore[misc]
 def update_custom_attribute(self: Any, job_id: str) -> None:
     job = Job.objects.get(id=job_id)
 
