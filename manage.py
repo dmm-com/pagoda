@@ -9,7 +9,7 @@ from django.conf import settings
 from airone.lib.log import Logger
 
 
-def main():
+def main() -> None:
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "airone.settings")
     os.environ.setdefault("DJANGO_CONFIGURATION", "Dev")
 
