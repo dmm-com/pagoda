@@ -131,11 +131,11 @@ class PluginViewSet(viewsets.ModelViewSet):
     plugin_id: Optional[str] = None
     plugin_version: Optional[str] = None
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self._validate_plugin_configuration()
 
-    def _validate_plugin_configuration(self):
+    def _validate_plugin_configuration(self) -> None:
         """Validate plugin configuration
 
         Ensures required plugin attributes are properly configured.
@@ -182,7 +182,7 @@ class PluginViewSet(viewsets.ModelViewSet):
             "user": getattr(self.request, "user", None) if hasattr(self, "request") else None,
         }
 
-    def get_queryset(self):
+    def get_queryset(self) -> Any:
         """Get filtered queryset for the viewset
 
         Can be overridden by subclasses to add plugin-specific filtering.
@@ -196,7 +196,7 @@ class PluginViewSet(viewsets.ModelViewSet):
         # This is a hook for subclasses to customize
         return self.filter_queryset_for_plugin(queryset)
 
-    def filter_queryset_for_plugin(self, queryset):
+    def filter_queryset_for_plugin(self, queryset: Any) -> Any:
         """Apply plugin-specific filtering to queryset
 
         Override this method to add custom filtering logic.

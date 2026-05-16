@@ -36,11 +36,11 @@ class PluginSerializerMixin:
 
     plugin_id: Optional[str] = None
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self._setup_plugin_context()
 
-    def _setup_plugin_context(self):
+    def _setup_plugin_context(self) -> None:
         """Setup plugin context for the serializer"""
         # Get plugin context from request if available
         request = getattr(self, "context", {}).get("request")

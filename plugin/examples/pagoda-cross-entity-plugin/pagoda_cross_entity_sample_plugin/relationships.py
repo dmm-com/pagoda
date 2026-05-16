@@ -50,7 +50,7 @@ SERVICE_ENVIRONMENT_RELATIONSHIP = EntityRelationship(
 )
 
 
-def get_plugin_relationships():
+def get_plugin_relationships() -> list[EntityRelationship]:
     """Get all entity relationships for this plugin.
 
     Returns:
