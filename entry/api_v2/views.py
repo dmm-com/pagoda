@@ -33,6 +33,7 @@ from airone.lib.elasticsearch import (
     EntryHint,
     FilterKey,
 )
+from airone.lib.multidb import db_readonly
 from airone.lib.plugin_dispatch import PluginOverrideMixin
 from airone.lib.types import AttrType
 from api_v1.entry.serializer import EntrySearchChainSerializer
@@ -336,6 +337,7 @@ class searchAPI(viewsets.ReadOnlyModelViewSet):
         return list(results["ret_values"])
 
 
+@db_readonly
 class AdvancedSearchAPI(generics.GenericAPIView):
     serializer_class = AdvancedSearchSerializer
     """
@@ -529,6 +531,7 @@ class AdvancedSearchAPI(generics.GenericAPIView):
         return Response(serializer.initial_data)
 
 
+@db_readonly
 class AdvancedSearchChainAPI(generics.GenericAPIView):
     serializer_class = EntrySearchChainSerializer
     """
