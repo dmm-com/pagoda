@@ -776,6 +776,54 @@ class ViewTest(BaseViewTest):
         search_result = self._es.search(body={"query": {"term": {"name": "entry-change"}}})
         self.assertEqual(search_result["hits"]["total"]["value"], 1)
 
+    def test_update_entry_when_all_attribute_values_have_is_latest_false(self):
+        """When all AttributeValues of an Attribute have lost is_latest=True
+        (e.g. due to a race between concurrent imports racing in
+        unset_latest_flag), Attribute.is_updated must self-heal by treating
+        the next write as an update even if recv_value matches
+        last_value.value. Otherwise EntryUpdateSerializer.update would
+        short-circuit on is_updated()==False and the broken invariant
+        (zero AV with is_latest=True) would never be restored.
+        """
+        from entry.api_v2.serializers import EntryUpdateSerializer
+
+        entry: Entry = self.add_entry(self.user, "entry", self.entity, values={"val": "same"})
+        attr = entry.attrs.get(schema__name="val")
+        self.assertEqual(attr.values.filter(is_latest=True).count(), 1)
+
+        # In a healthy state, resending the identical value is a no-op
+        self.assertFalse(attr.is_updated("same"))
+
+        # Reproduce the broken state: every AttributeValue becomes is_latest=False
+        attr.values.update(is_latest=False)
+        self.assertEqual(attr.values.filter(is_latest=True).count(), 0)
+        before_count = attr.values.count()
+
+        # With the invariant broken, is_updated must return True even for the
+        # same value so the next write restores is_latest=True
+        self.assertTrue(attr.is_updated("same"))
+
+        # Drive the serializer the API would invoke (independent of the Celery pipeline)
+        params = {
+            "name": "entry",
+            "attrs": [{"id": attr.schema.id, "value": "same"}],
+            "delay_trigger": False,
+        }
+        serializer = EntryUpdateSerializer(
+            instance=entry, data=params, context={"_user": self.user}
+        )
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+        serializer.update(entry, serializer.validated_data)
+
+        # A new AttributeValue is created and the invariant (exactly one
+        # is_latest=True) is restored.
+        self.assertEqual(attr.values.count(), before_count + 1)
+        self.assertEqual(attr.values.filter(is_latest=True).count(), 1)
+        latest = attr.get_latest_value()
+        self.assertIsNotNone(latest)
+        self.assertEqual(latest.value, "same")
+        self.assertTrue(latest.is_latest)
+
     def test_update_entry_without_permission(self):
         params = {
             "name": "entry-change",

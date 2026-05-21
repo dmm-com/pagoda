@@ -603,6 +603,14 @@ class Attribute(ACLBase):
             else:
                 return recv_value
 
+        # Self-heal: when the invariant "exactly one AttributeValue with
+        # is_latest=True" has been broken (e.g. by a race between concurrent
+        # imports racing in unset_latest_flag), force the next write to be
+        # treated as an update so add_value() creates a fresh AV and
+        # unset_latest_flag() restores the invariant.
+        if not self.values.filter(is_latest=True).exists():
+            return True
+
         last_value = self.values.last()
         match self.schema.type:
             case AttrType.STRING | AttrType.TEXT:
