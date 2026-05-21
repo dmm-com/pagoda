@@ -17,6 +17,7 @@ from airone.lib.elasticsearch import (
     AdvancedSearchResults,
     AttrHint,
 )
+from airone.lib.multidb import db_readonly
 from api_v1.entry.serializer import EntrySearchChainSerializer
 from entity.models import Entity
 from entry.models import Entry
@@ -56,6 +57,7 @@ class EntrySearchAPIResponse(BaseModel):
     result: AdvancedSearchResults
 
 
+@db_readonly
 class EntrySearchChainAPI(APIView):
     def post(self, request: Request) -> Response:
         serializer = EntrySearchChainSerializer(data=request.data)
@@ -101,6 +103,7 @@ class EntrySearchChainAPI(APIView):
             )
 
 
+@db_readonly
 class EntrySearchAPI(APIView):
     def post(self, request: Request, format: str | None = None) -> Response:
         if not isinstance(request.data, dict):

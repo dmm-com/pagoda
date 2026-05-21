@@ -96,7 +96,7 @@ class Common(Configuration):
         "django.contrib.messages.middleware.MessageMiddleware",
         "django.middleware.clickjacking.XFrameOptionsMiddleware",
         "social_django.middleware.SocialAuthExceptionMiddleware",
-        "multidb.middleware.PinningRouterMiddleware",
+        "airone.lib.multidb.AironePinningRouterMiddleware",
         "airone.middleware.gate_keeper.URLGateKeeper",
         "simple_history.middleware.HistoryRequestMiddleware",
     ] + env.list("AIRONE_MIDDLEWARE", None, [])
