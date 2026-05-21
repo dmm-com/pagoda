@@ -1,6 +1,6 @@
 import os
 import sys
-from optparse import OptionParser
+from optparse import OptionParser, Values
 
 import configurations
 
@@ -19,7 +19,7 @@ from entity.models import Entity  # NOQA
 from job.models import Job  # NOQA
 
 
-def initialize_es_document(entities):
+def initialize_es_document(entities: list[str]) -> None:
     es = ESS()
 
     # clear previous index
@@ -36,7 +36,7 @@ def initialize_es_document(entities):
         Job.new_update_documents(entity, "", {"is_update": True}).run()
 
 
-def get_options():
+def get_options() -> tuple[Values, list[str]]:
     parser = OptionParser(usage="%prog [options] [target-Entities]")
 
     return parser.parse_args()

@@ -1,6 +1,6 @@
 import os
 import sys
-from optparse import OptionParser
+from optparse import OptionParser, Values
 
 import configurations
 
@@ -18,7 +18,7 @@ from entity.models import Entity  # NOQA
 from job.models import Job  # NOQA
 
 
-def update_es_document(entities):
+def update_es_document(entities: list[str]) -> None:
     target_entity = Entity.objects.filter(is_active=True)
     if entities:
         target_entity = target_entity.filter(name__in=entities)
@@ -27,7 +27,7 @@ def update_es_document(entities):
         Job.new_update_documents(entity).run(will_delay=False)
 
 
-def get_options():
+def get_options() -> tuple[Values, list[str]]:
     parser = OptionParser(usage="%prog [options] [target-Entities]")
 
     return parser.parse_args()

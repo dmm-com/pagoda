@@ -57,7 +57,7 @@ class CrossEntityPlugin(Plugin):
     # Plugin capabilities
     capabilities: Set[str] = {"cross_entity", "composite_entries", "endpoint_override"}
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         # Initialize handlers
         self._handlers = ServiceHandlers(self)

@@ -14,7 +14,7 @@ import string
 import sys
 from concurrent.futures import Future, ThreadPoolExecutor
 from datetime import date, datetime, timezone
-from optparse import OptionParser
+from optparse import OptionParser, Values
 
 import configurations
 
@@ -264,7 +264,7 @@ def generate_testdata(num_entities: int, num_entries: int, suffix: str):
             print(f"Progress: entry creation {i}/{len(futures)}")
 
 
-def get_options():
+def get_options() -> tuple[Values, list[str]]:
     parser = OptionParser(usage="%prog [options] [num_entities] [num_entries]")
     return parser.parse_args()
 

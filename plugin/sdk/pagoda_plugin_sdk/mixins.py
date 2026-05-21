@@ -31,11 +31,11 @@ class PluginAPIViewMixin(APIView):
 
     permission_classes = [IsAuthenticated]
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self._validate_plugin_context()
 
-    def _validate_plugin_context(self):
+    def _validate_plugin_context(self) -> None:
         """Validate plugin execution context
 
         This method can be overridden by subclasses or host applications

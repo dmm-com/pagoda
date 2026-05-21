@@ -80,11 +80,11 @@ class Plugin:
             if meta:
                 cls._override_handlers[meta.operation] = attr_name
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the plugin instance"""
         self.validate()
 
-    def validate(self):
+    def validate(self) -> None:
         """Validate plugin configuration
 
         Raises:

@@ -10,6 +10,7 @@ Updated to use the new ID-based override system with OverrideContext.
 
 import logging
 from datetime import datetime
+from typing import Any
 
 from pagoda_plugin_sdk.override import (
     OverrideContext,
@@ -21,6 +22,8 @@ from pagoda_plugin_sdk.override import (
     success_response,
 )
 from rest_framework.response import Response
+
+from pagoda_cross_entity_sample_plugin.relationships import EntityRelationship
 
 logger = logging.getLogger(__name__)
 
@@ -42,14 +45,14 @@ class ServiceHandlers:
     - Cascade delete related entries based on params configuration
     """
 
-    def __init__(self, plugin):
+    def __init__(self, plugin: Any) -> None:
         """Initialize handlers with plugin reference.
 
         Args:
             plugin: The plugin instance that owns these handlers
         """
         self.plugin = plugin
-        self._relationships = None
+        self._relationships: list[EntityRelationship] | None = None
 
     @property
     def relationships(self):

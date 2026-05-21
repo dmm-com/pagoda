@@ -6,6 +6,8 @@ It offers base classes, interfaces, and utilities that enable plugins to be comp
 independent from the host application.
 """
 
+from typing import Any
+
 from .exceptions import (
     PagodaError,
     PluginError,
@@ -18,7 +20,7 @@ from .utils import get_pagoda_version
 
 
 # Lazy import for Django-dependent components
-def _lazy_import_mixins():
+def _lazy_import_mixins() -> Any:
     """Lazy import of Django-dependent mixins"""
     try:
         from .mixins import PluginAPIViewMixin
@@ -35,7 +37,7 @@ def _lazy_import_mixins():
         raise
 
 
-def _lazy_import_api():
+def _lazy_import_api() -> Any:
     """Lazy import of Django REST Framework dependent API components"""
     try:
         from .api import (
@@ -63,7 +65,7 @@ def _lazy_import_api():
         raise
 
 
-def _lazy_import_tasks():
+def _lazy_import_tasks() -> Any:
     """Lazy import of task-related components"""
     try:
         from .tasks import (
@@ -97,7 +99,7 @@ def _lazy_import_tasks():
         raise
 
 
-def _lazy_import_override():
+def _lazy_import_override() -> Any:
     """Lazy import of entry operation override components"""
     try:
         from .override import (
@@ -152,7 +154,7 @@ _OVERRIDE_NAMES = [
 
 
 # Define lazy properties for mixins, API components, and task components
-def __getattr__(name):
+def __getattr__(name: str) -> Any:
     if name == "PluginAPIViewMixin":
         return _lazy_import_mixins()
     elif name in (
