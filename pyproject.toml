@@ -6,7 +6,13 @@ build-backend = "hatchling.build"
 follow_imports = "normal"
 ignore_missing_imports = true
 explicit_package_bases = true
-mypy_path = "."
+# Include plugin/sdk so mypy resolves the editable-installed pagoda_plugin_sdk
+# package against its real (now py.typed) sources instead of treating it as Any.
+mypy_path = [".", "plugin/sdk"]
+# Each plugin package ships its own top-level "tests" package. Once
+# plugin/sdk is on mypy_path they collide as duplicate modules, so exclude
+# plugin test trees from discovery (they are already ignored for errors).
+exclude = ['plugin/.*/tests/']
 
 # Gradual type checking improvements
 check_untyped_defs = true

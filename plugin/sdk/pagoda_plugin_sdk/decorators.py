@@ -3,10 +3,16 @@ Decorators for plugin hook registration
 """
 
 from functools import wraps
-from typing import Any, Callable, Optional
+from typing import Any, Callable, Optional, TypeVar, cast
+
+# Type variable for preserving the decorated function's signature, so that
+# applying these decorators does not erase the wrapped function's type.
+F = TypeVar("F", bound=Callable[..., Any])
 
 
-def entry_hook(hook_type: str, entity: Optional[str] = None, priority: int = 100) -> Callable:
+def entry_hook(
+    hook_type: str, entity: Optional[str] = None, priority: int = 100
+) -> Callable[[F], F]:
     """
     Decorator for entry lifecycle hooks.
 
@@ -21,9 +27,9 @@ def entry_hook(hook_type: str, entity: Optional[str] = None, priority: int = 100
             logger.info(f"Entry created: {entry.name}")
     """
 
-    def decorator(func: Callable) -> Callable:
+    def decorator(func: F) -> F:
         @wraps(func)
-        def wrapper(*args, **kwargs) -> Any:
+        def wrapper(*args: Any, **kwargs: Any) -> Any:
             return func(*args, **kwargs)
 
         # Store hook metadata
@@ -32,12 +38,14 @@ def entry_hook(hook_type: str, entity: Optional[str] = None, priority: int = 100
             "entity": entity,
             "priority": priority,
         }
-        return wrapper
+        return cast(F, wrapper)
 
     return decorator
 
 
-def entity_hook(hook_type: str, entity: Optional[str] = None, priority: int = 100) -> Callable:
+def entity_hook(
+    hook_type: str, entity: Optional[str] = None, priority: int = 100
+) -> Callable[[F], F]:
     """
     Decorator for entity lifecycle hooks.
 
@@ -52,9 +60,9 @@ def entity_hook(hook_type: str, entity: Optional[str] = None, priority: int = 10
             logger.info(f"Entity created: {entity_obj.name}")
     """
 
-    def decorator(func: Callable) -> Callable:
+    def decorator(func: F) -> F:
         @wraps(func)
-        def wrapper(*args, **kwargs) -> Any:
+        def wrapper(*args: Any, **kwargs: Any) -> Any:
             return func(*args, **kwargs)
 
         # Store hook metadata
@@ -63,12 +71,12 @@ def entity_hook(hook_type: str, entity: Optional[str] = None, priority: int = 10
             "entity": entity,
             "priority": priority,
         }
-        return wrapper
+        return cast(F, wrapper)
 
     return decorator
 
 
-def validation_hook(entity: Optional[str] = None, priority: int = 100) -> Callable:
+def validation_hook(entity: Optional[str] = None, priority: int = 100) -> Callable[[F], F]:
     """
     Decorator for entry validation hooks.
 
@@ -83,9 +91,9 @@ def validation_hook(entity: Optional[str] = None, priority: int = 100) -> Callab
             return validated_data
     """
 
-    def decorator(func: Callable) -> Callable:
+    def decorator(func: F) -> F:
         @wraps(func)
-        def wrapper(*args, **kwargs) -> Any:
+        def wrapper(*args: Any, **kwargs: Any) -> Any:
             return func(*args, **kwargs)
 
         # Store hook metadata
@@ -94,12 +102,14 @@ def validation_hook(entity: Optional[str] = None, priority: int = 100) -> Callab
             "entity": entity,
             "priority": priority,
         }
-        return wrapper
+        return cast(F, wrapper)
 
     return decorator
 
 
-def get_attrs_hook(hook_target: str, entity: Optional[str] = None, priority: int = 100) -> Callable:
+def get_attrs_hook(
+    hook_target: str, entity: Optional[str] = None, priority: int = 100
+) -> Callable[[F], F]:
     """
     Decorator for attribute retrieval hooks.
 
@@ -115,9 +125,9 @@ def get_attrs_hook(hook_target: str, entity: Optional[str] = None, priority: int
             return {"custom_field": "value"}
     """
 
-    def decorator(func: Callable) -> Callable:
+    def decorator(func: F) -> F:
         @wraps(func)
-        def wrapper(*args, **kwargs) -> Any:
+        def wrapper(*args: Any, **kwargs: Any) -> Any:
             return func(*args, **kwargs)
 
         # Store hook metadata
@@ -126,6 +136,6 @@ def get_attrs_hook(hook_target: str, entity: Optional[str] = None, priority: int
             "entity": entity,
             "priority": priority,
         }
-        return wrapper
+        return cast(F, wrapper)
 
     return decorator
