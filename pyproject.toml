@@ -11,11 +11,13 @@ mypy_path = "."
 # Gradual type checking improvements
 check_untyped_defs = true
 warn_unused_ignores = true
+warn_unused_configs = true
 warn_redundant_casts = true
 strict_equality = true
 warn_unreachable = true
 no_implicit_reexport = true
 disallow_untyped_calls = true
+extra_checks = true
 
 [[tool.mypy.overrides]]
 module = ["*.tests.*", "*/tests/*", "tests.*"]
