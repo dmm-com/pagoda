@@ -721,7 +721,10 @@ def export_entries(self: Task, job: Job) -> None:
         # newline is blank because csv module performs universal newlines
         # https://docs.python.org/ja/3/library/csv.html#id3
         output = io.StringIO(newline="")
-        writer = csv.writer(output)
+        # Use LF as the row terminator to match the LF used when joining array
+        # values; mixing CRLF terminators with bare-LF cell separators makes
+        # editors render the row-terminating CR as a stray ^M control character.
+        writer = csv.writer(output, lineterminator="\n")
 
         attrs = [x.name for x in entity.attrs.filter(is_active=True)]
         writer.writerow(["Name"] + attrs)
@@ -788,7 +791,10 @@ def export_entries_v2(self: Task, job: Job) -> None:
         # newline is blank because csv module performs universal newlines
         # https://docs.python.org/ja/3/library/csv.html#id3
         output = io.StringIO(newline="")
-        writer = csv.writer(output)
+        # Use LF as the row terminator to match the LF used when joining array
+        # values; mixing CRLF terminators with bare-LF cell separators makes
+        # editors render the row-terminating CR as a stray ^M control character.
+        writer = csv.writer(output, lineterminator="\n")
 
         attrs = [x.name for x in entity.attrs.filter(is_active=True).order_by("index")]
         writer.writerow(["Name"] + attrs)
@@ -824,7 +830,10 @@ def _csv_export_v2(
 ) -> io.StringIO | None:
     """CSV export for v2. No Entity column; adds sub-attribute columns from join_attrs."""
     output = io.StringIO(newline="")
-    writer = csv.writer(output)
+    # Use LF as the row terminator to match the LF used when joining array
+    # values; mixing CRLF terminators with bare-LF cell separators makes
+    # editors render the row-terminating CR as a stray ^M control character.
+    writer = csv.writer(output, lineterminator="\n")
 
     join_attrs = recv_data.get("join_attrs", [])
     join_attr_col_names = [attr["name"] for jattr in join_attrs for attr in jattr["attrinfo"]]
