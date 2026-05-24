@@ -52,7 +52,7 @@ from entry.api_v2.serializers import (
 from entry.models import Attribute, Entry
 from entry.services import AdvancedSearchService
 from group.models import Group
-from job.models import Job, JobOperation, JobStatus
+from job.models import Job, JobOperation, JobStatus, JobTarget
 from role.models import Role
 from trigger.models import TriggerCondition
 from user.models import User
@@ -1032,7 +1032,15 @@ def create_entry_v2(self: Task, job: Job) -> JobStatus:
     if not serializer.is_valid():
         return JobStatus.ERROR
 
-    serializer.create(serializer.validated_data)
+    entry = serializer.create(serializer.validated_data)
+
+    # Associate the created entry with this job. The job is created with
+    # target=None (the entry does not exist yet at request time), so without
+    # this the create operation would be hidden from the job list, which
+    # filters out non-export/non-delete jobs that have no active target.
+    job.target = entry
+    job.target_type = JobTarget.ENTRY
+    job.save(update_fields=["target", "target_type"])
 
     return JobStatus.DONE
 
