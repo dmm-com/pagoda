@@ -88,6 +88,10 @@ const EntryDetailsContent: FC<Props> = ({
     { suspense: true },
   );
 
+  const { data: triggers } = usePagodaSWR(["triggers"], () =>
+    aironeApiClient.getTriggers(),
+  );
+
   useEffect(() => {
     if (entry.schema?.id != entityId) {
       navigate(entryDetailsPath(entry.schema?.id ?? 0, entryId), {
@@ -169,6 +173,7 @@ const EntryDetailsContent: FC<Props> = ({
                   attributes={entry.attrs.filter(
                     (attr) => !excludeAttrs.includes(attr.schema.name),
                   )}
+                  triggers={triggers?.results}
                 />
               ),
             },
