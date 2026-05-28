@@ -12,7 +12,7 @@ from user.models import User
 
 
 @register_job_task(JobOperation.ROLE_REGISTER_REFERRAL)
-@app.task(bind=True)
+@app.task(bind=True)  # type: ignore[misc]
 @may_schedule_until_job_is_ready
 def edit_role_referrals(self: Any, job: Job) -> JobStatus:
     params = json.loads(job.params)
@@ -25,7 +25,7 @@ def edit_role_referrals(self: Any, job: Job) -> JobStatus:
 
 
 @register_job_task(JobOperation.IMPORT_ROLE_V2)
-@app.task(bind=True)
+@app.task(bind=True)  # type: ignore[misc]
 @may_schedule_until_job_is_ready
 def import_role_v2(self: Any, job: Job) -> tuple[JobStatus, str, None] | None:
     import_data = json.loads(job.params)

@@ -18,6 +18,7 @@ warn_unreachable = true
 no_implicit_reexport = true
 disallow_untyped_calls = true
 extra_checks = true
+disallow_untyped_decorators = true
 
 [[tool.mypy.overrides]]
 module = ["*.tests.*", "*/tests/*", "tests.*"]

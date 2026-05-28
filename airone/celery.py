@@ -42,12 +42,12 @@ if settings.AIRONE.get("PLUGINS", {}).get("ENABLED", False):
 
 
 # Pin Celery tasks to master DB to ensure writes are always directed correctly.
-@task_prerun.connect
+@task_prerun.connect  # type: ignore[misc]
 def pin_celery_task_to_master(**kwargs: object) -> None:
     pin_this_thread()
 
 
-@task_postrun.connect
+@task_postrun.connect  # type: ignore[misc]
 def unpin_celery_task_from_master(**kwargs: object) -> None:
     unpin_this_thread()
 
