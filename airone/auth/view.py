@@ -12,7 +12,7 @@ from airone.lib.http import render
 from airone.lib.log import Logger
 
 
-@csrf_protect
+@csrf_protect  # type: ignore[misc]
 def logout(request: HttpRequest) -> HttpResponse:
     if request.method != "POST":
         return HttpResponse("Invalid HTTP method is specified", status=400)

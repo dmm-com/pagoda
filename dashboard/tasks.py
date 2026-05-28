@@ -174,7 +174,7 @@ def _yaml_export(
 
 
 @register_job_task(JobOperation.EXPORT_SEARCH_RESULT)
-@app.task(bind=True)
+@app.task(bind=True)  # type: ignore[misc]
 @may_schedule_until_job_is_ready
 def export_search_result(self: Any, job: Job) -> None:
     user = job.user

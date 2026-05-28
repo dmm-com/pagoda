@@ -10,7 +10,7 @@ class AccessTokenAPI(APIView):
     def get(self, request: Request, format: str | None = None) -> Response:
         return Response({"results": str(request.user.token)})
 
-    @method_decorator(csrf_protect)
+    @method_decorator(csrf_protect)  # type: ignore[misc]
     def put(self, request: Request, format: str | None = None) -> Response:
         """
         This refresh access_token to another one

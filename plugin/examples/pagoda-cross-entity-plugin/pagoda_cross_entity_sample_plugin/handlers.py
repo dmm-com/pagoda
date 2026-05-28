@@ -61,7 +61,7 @@ class ServiceHandlers:
             self._relationships = self.plugin.get_relationships()
         return self._relationships
 
-    @override_operation("create")
+    @override_operation("create")  # type: ignore[misc]
     def handle_create(self, context: OverrideContext) -> Response:
         """Handle entry creation with related entries.
 
@@ -149,7 +149,7 @@ class ServiceHandlers:
             logger.error(f"Error creating entry: {e}", exc_info=True)
             return error_response(f"Failed to create entry: {e}")
 
-    @override_operation("retrieve")
+    @override_operation("retrieve")  # type: ignore[misc]
     def handle_retrieve(self, context: OverrideContext) -> Response:
         """Handle entry retrieval with related data.
 
@@ -196,7 +196,7 @@ class ServiceHandlers:
             logger.error(f"Error retrieving entry {entry.id}: {e}", exc_info=True)
             return error_response(f"Failed to retrieve entry: {e}")
 
-    @override_operation("update")
+    @override_operation("update")  # type: ignore[misc]
     def handle_update(self, context: OverrideContext) -> Response:
         """Handle entry update with related entries.
 
@@ -247,7 +247,7 @@ class ServiceHandlers:
             logger.error(f"Error updating entry {entry.id}: {e}", exc_info=True)
             return error_response(f"Failed to update entry: {e}")
 
-    @override_operation("delete")
+    @override_operation("delete")  # type: ignore[misc]
     def handle_delete(self, context: OverrideContext) -> Response:
         """Handle entry deletion with optional cascade.
 

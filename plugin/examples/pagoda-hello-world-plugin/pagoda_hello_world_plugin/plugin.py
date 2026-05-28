@@ -45,7 +45,7 @@ class HelloWorldPlugin(Plugin):
 
     # Entry Lifecycle Hooks - Entity-specific for 'helloworld'
 
-    @entry_hook("after_create", entity="helloworld")
+    @entry_hook("after_create", entity="helloworld")  # type: ignore[misc]
     def log_helloworld_create(self, entity_name: str, user: Any, entry: Any, **kwargs: Any) -> None:
         """Called after an entry is created in 'helloworld' entity
 
@@ -60,7 +60,7 @@ class HelloWorldPlugin(Plugin):
             f"in entity '{entity_name}' by {user.username}"
         )
 
-    @entry_hook("before_update", entity="helloworld")
+    @entry_hook("before_update", entity="helloworld")  # type: ignore[misc]
     def log_helloworld_before_update(
         self, entity_name: str, user: Any, validated_data: Dict[str, Any], entry: Any, **kwargs: Any
     ) -> Dict[str, Any]:
@@ -82,7 +82,7 @@ class HelloWorldPlugin(Plugin):
         )
         return validated_data
 
-    @entry_hook("after_update", entity="helloworld")
+    @entry_hook("after_update", entity="helloworld")  # type: ignore[misc]
     def log_helloworld_after_update(
         self, entity_name: str, user: Any, entry: Any, **kwargs: Any
     ) -> None:
@@ -101,7 +101,7 @@ class HelloWorldPlugin(Plugin):
 
     # Entry Lifecycle Hooks - Apply to all entities
 
-    @entry_hook("before_delete")
+    @entry_hook("before_delete")  # type: ignore[misc]
     def log_entry_delete(self, entity_name: str, user: Any, entry: Any, **kwargs: Any) -> None:
         """Called before an entry is deleted (all entities)
 
@@ -118,7 +118,7 @@ class HelloWorldPlugin(Plugin):
 
     # Entry Validation Hook
 
-    @validation_hook()
+    @validation_hook()  # type: ignore[misc]
     def validate_entry(
         self,
         user: Any,
@@ -149,7 +149,7 @@ class HelloWorldPlugin(Plugin):
 
     # Entry Data Access Hook
 
-    @get_attrs_hook("entry")
+    @get_attrs_hook("entry")  # type: ignore[misc]
     def get_entry_attrs(
         self, entry: Any, attrinfo: List[Any], is_retrieve: bool, **kwargs: Any
     ) -> List[Any]:
@@ -172,7 +172,7 @@ class HelloWorldPlugin(Plugin):
 
     # Entity Lifecycle Hooks
 
-    @entity_hook("after_create")
+    @entity_hook("after_create")  # type: ignore[misc]
     def log_entity_create(self, user: Any, entity: Any, **kwargs: Any) -> None:
         """Called after an entity is created
 
@@ -183,7 +183,7 @@ class HelloWorldPlugin(Plugin):
         """
         logger.info(f"[Hello World Plugin] Entity created: '{entity.name}' by {user.username}")
 
-    @entity_hook("before_update")
+    @entity_hook("before_update")  # type: ignore[misc]
     def log_entity_before_update(
         self, user: Any, validated_data: Dict[str, Any], entity: Any, **kwargs: Any
     ) -> Dict[str, Any]:
@@ -201,7 +201,7 @@ class HelloWorldPlugin(Plugin):
         logger.info(f"[Hello World Plugin] Entity updating: '{entity.name}' by {user.username}")
         return validated_data
 
-    @entity_hook("after_update")
+    @entity_hook("after_update")  # type: ignore[misc]
     def log_entity_after_update(self, user: Any, entity: Any, **kwargs: Any) -> None:
         """Called after an entity is updated
 
@@ -214,7 +214,7 @@ class HelloWorldPlugin(Plugin):
 
     # Entity Data Access Hook
 
-    @get_attrs_hook("entity")
+    @get_attrs_hook("entity")  # type: ignore[misc]
     def get_entity_attrs(self, entity: Any, attrinfo: List[Any], **kwargs: Any) -> List[Any]:
         """Modify entity attributes before returning to client
 
