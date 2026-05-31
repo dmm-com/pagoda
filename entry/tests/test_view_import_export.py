@@ -416,7 +416,9 @@ class ViewImportExportTest(BaseViewTest):
         resp = self.client.post(reverse("entry:do_import", args=[entity.id]), {"file": fp})
         fp.close()
         self.assertEqual(resp.status_code, 400)
-        self.assertEqual(resp.content, b"Invalid value is found: month must be in 1..12")
+        # Python 3.14+ appends the offending value (", not 99") to the message,
+        # so match on the stable prefix rather than the exact string.
+        self.assertIn(b"Invalid value is found: month must be in 1..12", resp.content)
 
         # import data from test file
         fp = self.open_fixture_file("import_data01.yaml")
