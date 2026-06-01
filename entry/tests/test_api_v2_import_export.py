@@ -1624,6 +1624,67 @@ class ViewTest(BaseViewTest):
             data = content.replace(header, "", 1).strip()
             self.assertEqual(data, '"%s,""ENTRY""",%s,%s' % (type_name, test_entity.name, expected))
 
+    @patch(
+        "entry.tasks.export_search_result_v2.delay", Mock(side_effect=tasks.export_search_result_v2)
+    )
+    def test_csv_export_array_string_uses_consistent_newlines(self):
+        # Regression test for stray ^M (CR) control characters in CSV export.
+        #
+        # csv.writer terminates each row with CRLF ("\r\n"), while ARRAY_STRING
+        # values are joined with a bare LF ("\n") via "\n".join(). When an
+        # exported entry contains an array attribute, the CSV ends up mixing
+        # CRLF row terminators with bare-LF in-cell separators. Editors that
+        # then guess the file as LF-only render the row-terminating CR as a
+        # stray "^M" control character. The export must use a single,
+        # consistent newline convention.
+        user = self._create_user("admin", is_superuser=True)
+
+        entity = Entity.objects.create(name="ArrayStringEntity", created_user=user)
+        entity_attr = EntityAttr.objects.create(
+            name="arr",
+            type=AttrType.ARRAY_STRING,
+            created_user=user,
+            parent_entity=entity,
+        )
+
+        entry = Entry.objects.create(name="entry1", schema=entity, created_user=user)
+        attr = Attribute.objects.create(
+            name="arr", schema=entity_attr, created_user=user, parent_entry=entry
+        )
+
+        parent_val = AttributeValue.create(user=user, attr=attr)
+        parent_val.set_status(AttributeValue.STATUS_DATA_ARRAY_PARENT)
+        for child in ["one", "two", "three"]:
+            AttributeValue.create(user=user, attr=attr, value=child, parent_attrv=parent_val)
+        parent_val.save()
+        attr.values.add(parent_val)
+        attr.save()
+
+        entry.register_es()
+
+        resp = self.client.post(
+            "/entry/api/v2/advanced_search_result_export/",
+            json.dumps(
+                {
+                    "entities": [entity.id],
+                    "attrinfo": [{"name": "arr", "keyword": ""}],
+                    "export_style": "csv",
+                }
+            ),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 200)
+
+        content = Job.objects.last().get_cache()
+
+        has_crlf = "\r\n" in content
+        has_bare_lf = "\n" in content.replace("\r\n", "")
+        self.assertFalse(
+            has_crlf and has_bare_lf,
+            "CSV export mixes CRLF row terminators with bare-LF in-cell separators, "
+            "which makes editors render the CR as a stray ^M. raw=%r" % content,
+        )
+
     @patch("entry.tasks.import_entries_v2.delay", Mock(side_effect=tasks.import_entries_v2))
     @patch(
         "entry.tasks.export_search_result_v2.delay", Mock(side_effect=tasks.export_search_result_v2)

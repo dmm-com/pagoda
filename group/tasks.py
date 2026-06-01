@@ -8,7 +8,7 @@ from job.models import Job, JobOperation, JobStatus
 
 
 @register_job_task(JobOperation.GROUP_REGISTER_REFERRAL)
-@app.task(bind=True)
+@app.task(bind=True)  # type: ignore[misc]
 @may_schedule_until_job_is_ready
 def edit_group_referrals(self: Any, job: Job) -> JobStatus:
     params = json.loads(job.params)

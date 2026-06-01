@@ -21,7 +21,7 @@ def create_permission(instance: Model) -> None:
         HistoricalPermission(name=acltype.name, codename=codename, content_type=content_type).save()
 
 
-@receiver(post_save, sender=ACLBase)
+@receiver(post_save, sender=ACLBase)  # type: ignore[misc]
 def aclbase_create_permission(
     sender: type[ACLBase], instance: ACLBase, created: bool, **kwargs: Any
 ) -> None:
@@ -29,7 +29,7 @@ def aclbase_create_permission(
         create_permission(instance)
 
 
-@receiver(post_save, sender=Category)
+@receiver(post_save, sender=Category)  # type: ignore[misc]
 def category_create_permission(
     sender: type[Category], instance: Category, created: bool, **kwargs: Any
 ) -> None:
@@ -37,7 +37,7 @@ def category_create_permission(
         create_permission(instance)
 
 
-@receiver(post_save, sender=Entity)
+@receiver(post_save, sender=Entity)  # type: ignore[misc]
 def entity_create_permission(
     sender: type[Entity], instance: Entity, created: bool, **kwargs: Any
 ) -> None:
@@ -45,7 +45,7 @@ def entity_create_permission(
         create_permission(instance)
 
 
-@receiver(post_save, sender=EntityAttr)
+@receiver(post_save, sender=EntityAttr)  # type: ignore[misc]
 def entity_attr_create_permission(
     sender: type[EntityAttr], instance: EntityAttr, created: bool, **kwargs: Any
 ) -> None:
@@ -53,7 +53,7 @@ def entity_attr_create_permission(
         create_permission(instance)
 
 
-@receiver(post_save, sender=Entry)
+@receiver(post_save, sender=Entry)  # type: ignore[misc]
 def entry_create_permission(
     sender: type[Entry], instance: Entry, created: bool, **kwargs: Any
 ) -> None:
@@ -61,7 +61,7 @@ def entry_create_permission(
         create_permission(instance)
 
 
-@receiver(post_save, sender=Attribute)
+@receiver(post_save, sender=Attribute)  # type: ignore[misc]
 def attribute_create_permission(
     sender: type[Attribute], instance: Attribute, created: bool, **kwargs: Any
 ) -> None:

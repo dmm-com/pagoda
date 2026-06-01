@@ -46,7 +46,7 @@ class Plugin:
     # Override handlers mapping: operation -> method_name, populated by __init_subclass__
     _override_handlers: ClassVar[Dict[str, str]] = {}
 
-    def __init_subclass__(cls, **kwargs):
+    def __init_subclass__(cls, **kwargs: Any) -> None:
         """Automatically detect and register decorated hook and override methods"""
         super().__init_subclass__(**kwargs)
 
