@@ -140,6 +140,7 @@ class UserActivityAPI(viewsets.GenericViewSet):
     queryset = User.objects.none()
     serializer_class = Serializer
     LIMIT_RECORDS = 10
+    LIMIT_DAYS = 60
 
     def _get_activity_for_creating_item(
         self,
@@ -313,6 +314,31 @@ class UserActivityAPI(viewsets.GenericViewSet):
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
+        to: datetime | None = None
+        to_param = request.query_params.get("to")
+        if to_param is not None:
+            try:
+                to = datetime.fromisoformat(to_param.replace("Z", "+00:00").replace(" ", "+"))
+            except ValueError:
+                return Response(
+                    {"to": "Must be an ISO 8601 datetime string."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            effective_since = since if since is not None else timezone.now()
+            if to > effective_since:
+                return Response(
+                    {"to": "Must be earlier than or equal to 'since'."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            if effective_since - to >= timedelta(days=self.LIMIT_DAYS):
+                return Response(
+                    {
+                        "to": "The interval between 'since' and 'to' must be less than %s days."
+                        % self.LIMIT_DAYS
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
         since_from: datetime | None = None
         within_minutes_param = request.query_params.get("within_minutes")
         if within_minutes_param is not None:
@@ -331,6 +357,9 @@ class UserActivityAPI(viewsets.GenericViewSet):
                     {"within_minutes": "Must be a positive integer."},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
+
+        if to is not None:
+            since_from = to
 
         requesting_user: User = request.user
         activities: list[dict] = []
