@@ -2209,3 +2209,72 @@ class ItemRollbackAPITest(BaseViewTest):
             "application/json",
         )
         self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
+
+    @patch("entry.tasks.edit_entry_v2.delay", Mock(side_effect=tasks.edit_entry_v2))
+    def test_rollback_multiple_entries(self):
+        """Rolling back multiple entries at once restores each to its state before `at`"""
+        entry1: Entry = self.add_entry(
+            self.user,
+            "entry1",
+            self.entity,
+            values={"val": "initial-1"},
+        )
+        entry2: Entry = self.add_entry(
+            self.user,
+            "entry2",
+            self.entity,
+            values={"val": "initial-2"},
+        )
+        attr1 = entry1.attrs.get(schema__name="val")
+        attr2 = entry2.attrs.get(schema__name="val")
+
+        at = datetime.datetime.now(tz=datetime.timezone.utc)
+
+        for entry, value in [(entry1, "updated-1"), (entry2, "updated-2")]:
+            attr = entry.attrs.get(schema__name="val")
+            params = {
+                "name": entry.name,
+                "attrs": [{"id": attr.schema.id, "value": value}],
+            }
+            resp = self.client.put(
+                f"/entry/api/v2/{entry.id}/", json.dumps(params), "application/json"
+            )
+            self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
+
+        resp = self.client.post(
+            "/entry/api/v2/rollback/",
+            json.dumps({"targets": [entry1.id, entry2.id], "at": at.isoformat()}),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        self.assertEqual(attr1.get_latest_value().value, "initial-1")
+        self.assertEqual(attr2.get_latest_value().value, "initial-2")
+
+    @patch("entry.tasks.edit_entry_v2.delay", Mock(side_effect=tasks.edit_entry_v2))
+    def test_rollback_skips_nonexistent_target(self):
+        """Non-existent entry IDs in targets are skipped; valid entries are still rolled back"""
+        entry: Entry = self.add_entry(
+            self.user,
+            "entry",
+            self.entity,
+            values={"val": "initial"},
+        )
+        attr = entry.attrs.get(schema__name="val")
+
+        at = datetime.datetime.now(tz=datetime.timezone.utc)
+
+        params = {
+            "name": "entry",
+            "attrs": [{"id": attr.schema.id, "value": "updated"}],
+        }
+        resp = self.client.put(f"/entry/api/v2/{entry.id}/", json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
+
+        nonexistent_id = 999999
+        resp = self.client.post(
+            "/entry/api/v2/rollback/",
+            json.dumps({"targets": [entry.id, nonexistent_id], "at": at.isoformat()}),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        self.assertEqual(attr.get_latest_value().value, "initial")
