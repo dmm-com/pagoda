@@ -53,7 +53,7 @@ class ReferenceLevel:
         self.entries = entries
 
 
-def _random_string(length=10) -> str:
+def _random_string(length: int = 10) -> str:
     letters = string.ascii_letters
     return "".join(random.choice(letters) for i in range(length))
 
@@ -203,7 +203,7 @@ def generate_reference_hierarchy(user: User, suffix: str) -> list[ReferenceLevel
     return levels
 
 
-def generate_testdata(num_entities: int, num_entries: int, suffix: str):
+def generate_testdata(num_entities: int, num_entries: int, suffix: str) -> None:
     user = User.objects.first()
     if not user:
         user = User.objects.create(username="testuser", email="testuser@example.com")
