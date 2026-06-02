@@ -96,7 +96,7 @@ class CrossEntityPlugin(Plugin):
         }
         return validated
 
-    def get_handler(self, operation: str) -> Optional[Callable]:
+    def get_handler(self, operation: str) -> Optional[Callable[..., Any]]:
         """Get the handler for a specific operation.
 
         Args:

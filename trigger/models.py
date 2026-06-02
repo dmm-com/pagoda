@@ -1,5 +1,6 @@
 import itertools
 import json
+from collections.abc import Mapping, Sequence
 from typing import TYPE_CHECKING, Any
 
 from django.db import models
@@ -220,7 +221,7 @@ class TriggerParent(models.Model):
             if not TriggerCondition.objects.filter(**params).exists():
                 TriggerCondition.objects.create(**params)
 
-    def get_actions(self, recv_attrs: list) -> list["TriggerAction"]:
+    def get_actions(self, recv_attrs: list[dict[str, Any]]) -> list["TriggerAction"]:
         """
         This method checks whether specified entity's Trigger is invoked by recv_attrs context.
         The recv_attrs format should be compatible with APIv2 standard.
@@ -485,7 +486,12 @@ class TriggerCondition(models.Model):
         return result
 
     @classmethod
-    def register(cls, entity: Entity, conditions: list, actions: list) -> TriggerParent:
+    def register(
+        cls,
+        entity: Entity,
+        conditions: Sequence[Mapping[str, Any]],
+        actions: Sequence[Mapping[str, Any]],
+    ) -> TriggerParent:
         # convert input to InputTriggerCondition
         input_trigger_conditions = [InputTriggerCondition(**condition) for condition in conditions]
 
@@ -512,7 +518,9 @@ class TriggerCondition(models.Model):
         return parent_condition
 
     @classmethod
-    def get_invoked_actions(cls, entity: Entity, recv_data: list) -> list["TriggerAction"]:
+    def get_invoked_actions(
+        cls, entity: Entity, recv_data: Sequence[Mapping[str, Any]]
+    ) -> list["TriggerAction"]:
         # The APIv1 and APIv2 format is different.
         # In the APIv2, the "id" parameter in the recv_data variable means EntityAttr ID.
         # But in the APIv1, the "id" parameter in the recv_data variable means Attribute ID

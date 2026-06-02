@@ -59,7 +59,7 @@ from user.models import User
 
 
 def _merge_referrals_by_index(
-    ref_list: list[dict], name_list: list[dict]
+    ref_list: list[dict[str, Any]], name_list: list[dict[str, Any]]
 ) -> dict[int, dict[str, Any]]:
     """This is a helper function to set array_named_object value.
     This re-formats data construction with index parameter of argument.
@@ -250,9 +250,14 @@ def _do_import_entries(job: Job) -> None:
 
 
 def _yaml_export_v2(
-    job: Job, values: list[AdvancedSearchResultRecord], recv_data: dict, has_referral: bool
+    job: Job,
+    values: list[AdvancedSearchResultRecord],
+    recv_data: dict[str, Any],
+    has_referral: bool,
 ) -> io.StringIO | None:
-    def _get_attr_primitive_value(atype: int, value: dict) -> ExportedEntryAttributePrimitiveValue:
+    def _get_attr_primitive_value(
+        atype: int, value: Any
+    ) -> ExportedEntryAttributePrimitiveValue:
         match atype:
             case AttrType.NAMED_OBJECT:
                 [(key, val)] = value.items()
@@ -310,7 +315,7 @@ def _yaml_export_v2(
             case _:
                 return value
 
-    def _get_attr_value(atype: int, value: dict) -> ExportedEntryAttributeValue:
+    def _get_attr_value(atype: int, value: Any) -> ExportedEntryAttributeValue:
         match atype:
             case _ if atype & AttrType._ARRAY:
                 return [_get_attr_primitive_value(atype ^ AttrType._ARRAY, x) for x in value]
@@ -825,7 +830,7 @@ def export_entries_v2(self: Task, job: Job) -> None:
 def _csv_export_v2(
     job: Job,
     values: list[AdvancedSearchResultRecord],
-    recv_data: dict,
+    recv_data: dict[str, Any],
     has_referral: bool,
 ) -> io.StringIO | None:
     """CSV export for v2. No Entity column; adds sub-attribute columns from join_attrs."""
@@ -910,7 +915,7 @@ def export_search_result_v2(self: Any, job: Job) -> tuple[JobStatus, str, ACLBas
     user = job.user
     serializer = AdvancedSearchResultExportSerializer(data=json.loads(job.params))
     serializer.is_valid(raise_exception=True)
-    params: dict = serializer.validated_data
+    params: dict[str, Any] = serializer.validated_data
     join_attrs = params.get("join_attrs", [])
 
     has_referral: bool = params.get("has_referral", False)
@@ -1125,7 +1130,7 @@ def bulk_update_entries(
             return None
 
         entry = Entry.objects.get(id=record.entry["id"])
-        updating_data: dict[str, list] = {"attrs": []}
+        updating_data: dict[str, list[Any]] = {"attrs": []}
         if job_params.get("value"):
             updating_data["attrs"].append(
                 {

@@ -15,6 +15,7 @@ import sys
 from concurrent.futures import Future, ThreadPoolExecutor
 from datetime import date, datetime, timezone
 from optparse import OptionParser, Values
+from typing import Any
 
 import configurations
 
@@ -64,8 +65,8 @@ def _get_attribute_value(
     str
     | list[str]
     | bool
-    | dict
-    | list[dict]
+    | dict[str, Any]
+    | list[dict[str, Any]]
     | Entry
     | Group
     | Role
@@ -245,7 +246,7 @@ def generate_testdata(num_entities: int, num_entries: int, suffix: str) -> None:
     ]
 
     with ThreadPoolExecutor() as executor:
-        futures: list[Future] = []
+        futures: list[Future[None]] = []
         for i, entity in enumerate(entities):
             for j in range(num_entries):
                 futures.append(

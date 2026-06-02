@@ -77,7 +77,7 @@ def log_plugin_activity(
     logger.info(log_entry)
 
 
-def validate_plugin_data(data: Dict[str, Any], required_fields: list) -> Dict[str, Any]:
+def validate_plugin_data(data: Dict[str, Any], required_fields: list[str]) -> Dict[str, Any]:
     """Validate plugin data
 
     Validates that required fields are present in plugin data.

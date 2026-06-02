@@ -34,7 +34,7 @@ class EntrySearchAPIRequest(BaseModel):
     entities: list[int | str]
     entry_name: str = Field(default="", max_length=CONFIG_ENTRY.MAX_QUERY_SIZE)
     referral: str | None = None
-    attrinfo: list = Field(default_factory=list)
+    attrinfo: list[Any] = Field(default_factory=list)
     is_output_all: bool = True
     entry_limit: int = Field(default=CONFIG_ENTRY.MAX_LIST_ENTRIES, gt=0)
 
@@ -80,7 +80,7 @@ class EntrySearchChainAPI(APIView):
             # output all Attributes of returned Entries. This divides input entry names for
             # search processing into 100 pieces to prevent hung-up
             # while AdvancedSearchService.search_entries() because of big input data.
-            ret_values: list = []
+            ret_values: list[AdvancedSearchResultRecord] = []
             for i in range(0, len(ret_data), 100):
                 entry_info = AdvancedSearchService.search_entries(
                     request.user,

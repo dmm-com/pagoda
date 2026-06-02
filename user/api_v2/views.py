@@ -44,7 +44,7 @@ from user.api_v2.serializers import (
 from user.models import User
 
 
-def _entry_ref(entry: Any) -> dict:
+def _entry_ref(entry: Any) -> dict[str, Any]:
     return {
         "id": entry.id,
         "name": entry.name,
@@ -54,7 +54,7 @@ def _entry_ref(entry: Any) -> dict:
 
 def _get_attr_value(
     attr_type: int, attr_val: AttributeValue
-) -> dict | list | float | int | str | bool | None:
+) -> dict[str, Any] | list[Any] | float | int | str | bool | None:
     match attr_type:
         case AttrType.STRING | AttrType.TEXT:
             return attr_val.value
@@ -147,7 +147,7 @@ class UserActivityAPI(viewsets.GenericViewSet):
         requesting_user: User,
         since: datetime | None = None,
         since_from: datetime | None = None,
-    ) -> list[dict]:
+    ) -> list[dict[str, Any]]:
         qs = (
             Entry.objects.filter(created_user=user)
             .select_related("schema")
@@ -183,7 +183,7 @@ class UserActivityAPI(viewsets.GenericViewSet):
         requesting_user: User,
         since: datetime | None = None,
         since_from: datetime | None = None,
-    ) -> list[dict]:
+    ) -> list[dict[str, Any]]:
         qs = (
             AttributeValue.objects.filter(created_user=user, parent_attrv__isnull=True)
             .select_related(
@@ -269,7 +269,7 @@ class UserActivityAPI(viewsets.GenericViewSet):
         requesting_user: User,
         since: datetime | None = None,
         since_from: datetime | None = None,
-    ) -> list[dict]:
+    ) -> list[dict[str, Any]]:
         qs = (
             Entry.objects.filter(deleted_user=user, is_active=False)
             .select_related("schema")
@@ -333,7 +333,7 @@ class UserActivityAPI(viewsets.GenericViewSet):
                 )
 
         requesting_user: User = request.user
-        activities: list[dict] = []
+        activities: list[dict[str, Any]] = []
         activities += self._get_activity_for_creating_item(
             user, requesting_user, since=since, since_from=since_from
         )

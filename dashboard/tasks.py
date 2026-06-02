@@ -16,7 +16,10 @@ from job.models import Job, JobOperation
 
 
 def _csv_export(
-    job: Job, values: list[AdvancedSearchResultRecord], recv_data: dict, has_referral: bool
+    job: Job,
+    values: list[AdvancedSearchResultRecord],
+    recv_data: dict[str, Any],
+    has_referral: bool,
 ) -> io.StringIO | None:
     output = io.StringIO(newline="")
     # Use LF as the row terminator to match the LF used when joining array
@@ -116,7 +119,10 @@ def _csv_export(
 
 
 def _yaml_export(
-    job: Job, values: list[AdvancedSearchResultRecord], recv_data: dict, has_referral: bool
+    job: Job,
+    values: list[AdvancedSearchResultRecord],
+    recv_data: dict[str, Any],
+    has_referral: bool,
 ) -> io.StringIO | None:
     output = io.StringIO()
 
@@ -135,9 +141,9 @@ def _yaml_export(
             case _:
                 return value
 
-    resp_data: dict = {}
+    resp_data: dict[str, Any] = {}
     for index, entry_info in enumerate(values):
-        data: dict = {
+        data: dict[str, Any] = {
             "name": entry_info.entry["name"],
             "attrs": {},
         }

@@ -84,7 +84,7 @@ class ExportedEntityEntries(BaseModel):
 class ExportTaskParams(BaseModel):
     export_format: Literal["yaml", "csv"]
     target_id: int
-    join_attrs: list = []
+    join_attrs: list[dict[str, Any]] = []
 
 
 class EntityAttributeType(TypedDict):
@@ -1092,7 +1092,7 @@ class EntryImportEntitySerializer(serializers.Serializer):
             attr_data: dict[str, Any], entity_attrs: dict[str, Any]
         ) -> None:
             def _object(
-                val: str | dict | None,
+                val: str | dict[str, Any] | None,
                 refs: list[Entity],
             ) -> int | None:
                 if val:

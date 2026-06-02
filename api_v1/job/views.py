@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta, timezone
+from typing import Any
 
 from django.db.models import Q
 from pydantic import BaseModel
@@ -118,7 +119,7 @@ class SearchJobResponse(BaseModel):
         id: int
         user: str
         target_type: int
-        target: dict
+        target: dict[str, Any]
         text: str
         status: int
         operation: int
