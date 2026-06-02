@@ -567,7 +567,7 @@ def _get_hint_keyword_val(keyword: str) -> str:
     return keyword
 
 
-def _make_entry_name_query(entry_name: str) -> dict[str, str]:
+def _make_entry_name_query(entry_name: str) -> dict[str, Any]:
     """Create a search query for the entry name.
 
     Divides the search string with OR.
@@ -579,7 +579,7 @@ def _make_entry_name_query(entry_name: str) -> dict[str, str]:
         entry_name (str): Search string for entry name
 
     Returns:
-        dict[str, str]: Entry name search query
+        dict[str, Any]: Entry name search query
 
     """
     entry_name_or_query: dict[str, Any] = {"bool": {"should": []}}
@@ -633,7 +633,7 @@ def _make_query_exclude_referrals(exclude_referrals: list[int]) -> dict[str, Any
     }
 
 
-def _make_referral_query(referral_name: str) -> dict[str, str]:
+def _make_referral_query(referral_name: str) -> dict[str, Any]:
     referral_or_query: dict[str, Any] = {"bool": {"should": []}}
 
     # Split and process keywords with 'or'
@@ -674,7 +674,7 @@ def _make_referral_query(referral_name: str) -> dict[str, str]:
     return referral_or_query
 
 
-def _make_referral_entity_query(referral_entity_id: int) -> dict[str, str]:
+def _make_referral_entity_query(referral_entity_id: int) -> dict[str, Any]:
     referral_or_query: dict[str, Any] = {
         "bool": {
             "should": [

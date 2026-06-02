@@ -221,7 +221,7 @@ class TriggerParent(models.Model):
             if not TriggerCondition.objects.filter(**params).exists():
                 TriggerCondition.objects.create(**params)
 
-    def get_actions(self, recv_attrs: list[dict[str, Any]]) -> list["TriggerAction"]:
+    def get_actions(self, recv_attrs: Sequence[Mapping[str, Any]]) -> list["TriggerAction"]:
         """
         This method checks whether specified entity's Trigger is invoked by recv_attrs context.
         The recv_attrs format should be compatible with APIv2 standard.
@@ -258,7 +258,9 @@ class TriggerParent(models.Model):
         self.conditions.all().delete()
         self.actions.all().delete()
 
-    def update(self, conditions: list[dict[str, Any]], actions: list[dict[str, Any]]) -> None:
+    def update(
+        self, conditions: Sequence[Mapping[str, Any]], actions: Sequence[Mapping[str, Any]]
+    ) -> None:
         # convert input to InputTriggerCondition
         input_trigger_conditions = [InputTriggerCondition(**condition) for condition in conditions]
 
