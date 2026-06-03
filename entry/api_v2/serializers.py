@@ -1747,3 +1747,8 @@ class EntryBulkUpdateSerializer(serializers.Serializer):
     attrinfo = AdvancedSearchResultAttrInfoSerializer(many=True, required=False)
     referral_name = serializers.CharField(required=False, allow_blank=True)
     hint_entry = EntryHintSerializer(required=False)
+
+
+class ItemRollbackSerializer(serializers.Serializer):
+    targets = serializers.ListField(child=serializers.IntegerField(), min_length=1)
+    at = serializers.DateTimeField()

@@ -59,6 +59,7 @@ from entry.api_v2.serializers import (
     EntryUpdateSerializer,
     ExportTaskParams,
     GetEntryAttrReferralSerializer,
+    ItemRollbackSerializer,
 )
 from entry.models import AliasEntry, Attribute, AttributeValue, Entry
 from entry.services import AdvancedSearchService
@@ -796,6 +797,110 @@ class EntryBulkUpdateAPI(generics.UpdateAPIView):
         job.run()
 
         return Response({}, status=status.HTTP_202_ACCEPTED)
+
+
+class ItemRollbackAPI(generics.GenericAPIView):
+    serializer_class = ItemRollbackSerializer
+
+    @extend_schema(request=ItemRollbackSerializer)
+    def post(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        user: User = request.user
+        if user.is_readonly:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
+        serializer = ItemRollbackSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        targets: list[int] = serializer.validated_data["targets"]
+        at = serializer.validated_data["at"]
+
+        for entry_id in targets:
+            entry = Entry.objects.filter(id=entry_id, is_active=True).first()
+            if entry is None or not user.has_permission(entry, ACLType.Writable):
+                continue
+
+            for attr in entry.attrs.filter(is_active=True, schema__is_active=True):
+                if not user.has_permission(attr, ACLType.Writable):
+                    continue
+
+                # Find the oldest AttributeValue created strictly after `at`
+                v_first_after = (
+                    AttributeValue.objects.filter(
+                        parent_attr=attr,
+                        parent_attrv__isnull=True,
+                        created_time__gt=at,
+                    )
+                    .order_by("created_time")
+                    .first()
+                )
+                if v_first_after is None:
+                    # No changes since `at`; nothing to roll back for this attribute
+                    continue
+
+                # Find the value that was active just before that first change
+                v_before = (
+                    AttributeValue.objects.filter(
+                        parent_attr=attr,
+                        parent_attrv__isnull=True,
+                        created_time__lt=v_first_after.created_time,
+                    )
+                    .prefetch_related("data_array")
+                    .order_by("-created_time")
+                    .first()
+                )
+                if v_before is None:
+                    # Attribute had no value before `at`; skip
+                    continue
+
+                value: Any
+                match v_before.data_type:
+                    case AttrType.STRING | AttrType.TEXT | AttrType.NUMBER:
+                        value = v_before.value
+                    case AttrType.BOOLEAN:
+                        value = v_before.boolean
+                    case AttrType.DATE:
+                        value = v_before.date.isoformat() if v_before.date else None
+                    case AttrType.DATETIME:
+                        value = v_before.datetime.isoformat() if v_before.datetime else None
+                    case AttrType.OBJECT:
+                        value = v_before.referral.id if v_before.referral else None
+                    case AttrType.GROUP:
+                        value = v_before.group.id if v_before.group else None
+                    case AttrType.ROLE:
+                        value = v_before.role.id if v_before.role else None
+                    case AttrType.NAMED_OBJECT:
+                        value = {
+                            "name": v_before.value or "",
+                            "id": v_before.referral.id if v_before.referral else None,
+                        }
+                    case AttrType.ARRAY_STRING | AttrType.ARRAY_NUMBER:
+                        value = [item.value for item in v_before.data_array.all()]
+                    case AttrType.ARRAY_OBJECT:
+                        value = [
+                            item.referral.id for item in v_before.data_array.all() if item.referral
+                        ]
+                    case AttrType.ARRAY_GROUP:
+                        value = [item.group.id for item in v_before.data_array.all() if item.group]
+                    case AttrType.ARRAY_ROLE:
+                        value = [item.role.id for item in v_before.data_array.all() if item.role]
+                    case AttrType.ARRAY_NAMED_OBJECT:
+                        value = [
+                            {
+                                "name": item.value or "",
+                                "id": item.referral.id if item.referral else None,
+                            }
+                            for item in v_before.data_array.all()
+                        ]
+                    case _:
+                        value = v_before.value
+
+                attr.add_value(user, value)
+
+            entry.register_es()
+            job = Job.new_notify_update_entry(user, entry)
+            job.run()
+
+        return Response(status=status.HTTP_200_OK)
 
 
 @extend_schema(
