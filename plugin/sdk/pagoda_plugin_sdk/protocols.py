@@ -6,7 +6,7 @@ in a type-safe manner without creating implementation dependencies.
 """
 
 from datetime import datetime
-from typing import Any, Protocol, TypeVar, runtime_checkable
+from typing import Any, ClassVar, Iterator, Protocol, TypeVar, overload, runtime_checkable
 
 T = TypeVar("T", covariant=True)
 
@@ -20,7 +20,11 @@ class QuerySetProtocol(Protocol[T]):
     def count(self) -> int: ...
     def exists(self) -> bool: ...
     def __len__(self) -> int: ...
+    def __iter__(self) -> Iterator[T]: ...
+    @overload
     def __getitem__(self, index: int) -> T: ...
+    @overload
+    def __getitem__(self, index: slice) -> "QuerySetProtocol[T]": ...
 
 
 class EntityManagerProtocol(Protocol):
@@ -36,6 +40,9 @@ class EntityManagerProtocol(Protocol):
 @runtime_checkable
 class EntityProtocol(Protocol):
     """Protocol for Entity model"""
+
+    # Django model exception raised by Manager.get() on a missing row
+    DoesNotExist: ClassVar[type[Exception]]
 
     # Fields
     id: int
@@ -67,6 +74,9 @@ class EntryManagerProtocol(Protocol):
 @runtime_checkable
 class EntryProtocol(Protocol):
     """Protocol for Entry model"""
+
+    # Django model exception raised by Manager.get() on a missing row
+    DoesNotExist: ClassVar[type[Exception]]
 
     # Fields
     id: int
@@ -102,6 +112,9 @@ class EntityAttrManagerProtocol(Protocol):
 
 class EntityAttrProtocol(Protocol):
     """Protocol for EntityAttr model"""
+
+    # Django model exception raised by Manager.get() on a missing row
+    DoesNotExist: ClassVar[type[Exception]]
 
     # Fields
     id: int
@@ -153,6 +166,9 @@ class AttributeManagerProtocol(Protocol):
 class AttributeProtocol(Protocol):
     """Protocol for Attribute model"""
 
+    # Django model exception raised by Manager.get() on a missing row
+    DoesNotExist: ClassVar[type[Exception]]
+
     # Fields
     id: int
     name: str
@@ -178,6 +194,9 @@ class AttributeProtocol(Protocol):
 class UserProtocol(Protocol):
     """Protocol for User model"""
 
+    # Django model exception raised by Manager.get() on a missing row
+    DoesNotExist: ClassVar[type[Exception]]
+
     # Fields
     id: int
     username: str
@@ -195,6 +214,9 @@ class UserProtocol(Protocol):
 class AttributeValueProtocol(Protocol):
     """Protocol for AttributeValue model"""
 
+    # Django model exception raised by Manager.get() on a missing row
+    DoesNotExist: ClassVar[type[Exception]]
+
     # Fields
     id: int
     parent_entry: EntryProtocol
@@ -209,6 +231,9 @@ class AttributeValueProtocol(Protocol):
 
 
 class JobProtocol(Protocol):
+    # Django model exception raised by Manager.get() on a missing row
+    DoesNotExist: ClassVar[type[Exception]]
+
     # Fields
     user: UserProtocol
     created_at: datetime

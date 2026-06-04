@@ -330,16 +330,20 @@ class EntityDetailView(PluginAPIViewMixin):
         Returns:
             JSON response with entity details
         """
-        try:
-            if Entity is None:
-                return _create_error_response(
-                    "Entity model not available",
-                    "Plugin system may not be initialized",
-                    status.HTTP_503_SERVICE_UNAVAILABLE,
-                )
+        if Entity is None:
+            return _create_error_response(
+                "Entity model not available",
+                "Plugin system may not be initialized",
+                status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
+        # Bind the narrowed model class to a local so it stays non-None inside
+        # the except clause (mypy widens module globals back to their declared
+        # type within exception handlers).
+        entity_model = Entity
 
+        try:
             # Type-safe entity retrieval
-            entity = Entity.objects.get(id=entity_id, is_active=True)
+            entity = entity_model.objects.get(id=entity_id, is_active=True)
 
             entity_data = {
                 "id": entity.id,
@@ -359,7 +363,7 @@ class EntityDetailView(PluginAPIViewMixin):
                 }
             )
 
-        except Entity.DoesNotExist:
+        except entity_model.DoesNotExist:
             return _create_error_response(
                 f"Entity with ID {entity_id} not found",
                 "Entity does not exist or is not active",
@@ -473,16 +477,20 @@ class EntryDetailView(PluginAPIViewMixin):
         Returns:
             JSON response with entry details and attributes
         """
-        try:
-            if Entry is None:
-                return _create_error_response(
-                    "Entry model not available",
-                    "Plugin system may not be initialized",
-                    status.HTTP_503_SERVICE_UNAVAILABLE,
-                )
+        if Entry is None:
+            return _create_error_response(
+                "Entry model not available",
+                "Plugin system may not be initialized",
+                status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
+        # Bind the narrowed model class to a local so it stays non-None inside
+        # the except clause (mypy widens module globals back to their declared
+        # type within exception handlers).
+        entry_model = Entry
 
+        try:
             # Type-safe entry retrieval
-            entry = Entry.objects.get(id=entry_id, is_active=True)
+            entry = entry_model.objects.get(id=entry_id, is_active=True)
 
             # Use Entry's custom get_attrs method
             entry_data = _build_entry_data(entry)
@@ -497,7 +505,7 @@ class EntryDetailView(PluginAPIViewMixin):
                 }
             )
 
-        except Entry.DoesNotExist:
+        except entry_model.DoesNotExist:
             return _create_error_response(
                 f"Entry with ID {entry_id} not found",
                 "Entry does not exist or is not active",

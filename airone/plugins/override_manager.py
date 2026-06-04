@@ -12,6 +12,8 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import TYPE_CHECKING, Any, Callable, Dict, Optional, Protocol
 
+from pydantic import BaseModel
+
 if TYPE_CHECKING:
     from pagoda_plugin_sdk.plugin import Plugin
 
@@ -117,7 +119,7 @@ class OverrideRegistry:
         operation: OperationType,
         handler: Callable,
         plugin_id: str,
-        params: Optional[Dict[str, Any]] = None,
+        params: Optional[Dict[str, Any] | BaseModel] = None,
     ) -> None:
         """Register an override handler for an entity operation.
 
@@ -145,12 +147,22 @@ class OverrideRegistry:
                 new_plugin=plugin_id,
             )
 
+        # A plugin's validate_params() may return either a raw dict or a
+        # validated Pydantic model. Normalize to a plain dict so handlers can
+        # always treat OverrideContext.params as a mapping.
+        if params is None:
+            param_dict: Dict[str, Any] = {}
+        elif isinstance(params, BaseModel):
+            param_dict = params.model_dump()
+        else:
+            param_dict = params
+
         registration = OverrideRegistration(
             entity_id=entity_id,
             operation=operation,
             handler=handler,
             plugin_id=plugin_id,
-            params=params or {},
+            params=param_dict,
         )
 
         self._handlers[entity_id][operation] = registration

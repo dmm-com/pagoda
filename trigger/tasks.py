@@ -12,7 +12,7 @@ from user.models import User
 
 
 @register_job_task(JobOperation.MAY_INVOKE_TRIGGER)
-@app.task(bind=True)
+@app.task(bind=True)  # type: ignore[misc]
 @may_schedule_until_job_is_ready
 def may_invoke_trigger(self: Any, job: Job) -> JobStatus:
     # Get job parameters that are set at frontend processing

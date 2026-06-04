@@ -1,8 +1,11 @@
+import json
 from datetime import timedelta
+from unittest.mock import Mock, patch
 
 from airone.lib.test import AironeViewTest
 from airone.lib.types import AttrType
 from entity.models import Entity, EntityAttr
+from entry import tasks
 from entry.models import Entry
 from job.models import Job, JobOperation, JobStatus
 
@@ -101,6 +104,42 @@ class ViewTest(AironeViewTest):
         body = resp.json()
         self.assertEqual(body["count"], 1)
         self.assertEqual(body["results"][0]["operation"], JobOperation.DELETE_ENTITY_V2)
+
+    @patch("entry.tasks.create_entry_v2.delay", Mock(side_effect=tasks.create_entry_v2))
+    def test_create_entry_v2_job_is_listed(self):
+        """Item creation from the new UI (api_v2) should appear in the job list.
+
+        Expected behaviour: creating an entry through POST
+        /entity/api/v2/<entity_id>/entries/ generates a CREATE_ENTRY_V2 job
+        that the user can see in the job list (just like edit/delete jobs).
+        """
+        user = self.guest_login()
+
+        entity = Entity.objects.create(name="entity", created_user=user)
+
+        # create an entry through the new UI (api_v2) endpoint
+        params = {"name": "new_entry", "schema": entity.id, "attrs": []}
+        resp = self.client.post(
+            "/entity/api/v2/%d/entries/" % entity.id,
+            json.dumps(params),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 202, resp.content)
+
+        # the entry must have been created (the task ran synchronously)
+        created = Entry.objects.filter(name="new_entry", schema=entity).first()
+        self.assertIsNotNone(created)
+
+        # the CREATE_ENTRY_V2 job must be visible in the job list
+        resp = self.client.get(f"/job/api/v2/jobs?limit={_TEST_MAX_LIST_VIEW + 100}&offset=0")
+        self.assertEqual(resp.status_code, 200)
+        body = resp.json()
+        operations = [r["operation"] for r in body["results"]]
+        self.assertIn(
+            JobOperation.CREATE_ENTRY_V2,
+            operations,
+            "CREATE_ENTRY_V2 job should be listed but was not: %s" % operations,
+        )
 
     def test_get_non_target_job(self):
         user = self.guest_login()

@@ -1,7 +1,9 @@
 import json
+from datetime import timedelta
 from unittest import mock
 from unittest.mock import Mock, patch
 
+from django.utils import timezone
 from rest_framework import status
 from rest_framework.exceptions import ValidationError
 
@@ -477,10 +479,6 @@ class ViewTest(BaseViewTest):
         self.assertEqual(data["count"], 3)
         self.assertEqual(len(data["results"]), 3)
 
-        # Debug: print all records to understand the order
-        for i, record in enumerate(data["results"]):
-            print(f"DEBUG: record[{i}] = {record}")
-
         # Check the most recent record (should be at index 0 due to ordering by -history_date)
         latest_record = data["results"][0]
         self.assertEqual(latest_record["name"], "updated_entry_2")
@@ -501,6 +499,119 @@ class ViewTest(BaseViewTest):
         first_record = data["results"][2]
         self.assertEqual(first_record["name"], initial_name)
         self.assertEqual(first_record["history_type"], "+")  # creation
+
+    def test_list_self_histories_prev_name_across_pagination_boundary(self):
+        """Test that prev_name is correct even when history spans multiple pages.
+
+        The list endpoint paginates with a page size of 30. The previous name
+        of each record must be derived from the chronologically preceding record
+        regardless of which page that record falls on. This verifies the record
+        sitting at the page boundary still resolves its previous name correctly.
+        """
+        # Create an entry, then rename it enough times to exceed one page (30).
+        # 1 creation + 30 updates == 31 history records.
+        entry = self.add_entry(self.user, "name_v0", self.entity)
+        for i in range(1, 31):
+            entry.name = "name_v%d" % i
+            entry.save()
+
+        # Assign deterministic, strictly increasing history_date values so that
+        # ordering is stable (consecutive save() calls can collide otherwise).
+        base_time = timezone.now() - timedelta(hours=1)
+        for i, hist in enumerate(entry.history.order_by("history_id")):
+            hist.history_date = base_time + timedelta(minutes=i)
+            hist.save()
+
+        # First page (newest 30 records, ordered by -history_date).
+        resp = self.client.get("/entry/api/v2/%s/self_histories/?offset=0&limit=30" % entry.id)
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        data = resp.json()
+
+        self.assertEqual(data["count"], 31)
+        self.assertEqual(len(data["results"]), 30)
+
+        # The newest record's previous name resolves within the page.
+        self.assertEqual(data["results"][0]["name"], "name_v30")
+        self.assertEqual(data["results"][0]["prev_name"], "name_v29")
+
+        # The last record on this page (name_v1) was renamed from name_v0, which
+        # lives on the *next* page. Its prev_name must still be "name_v0".
+        boundary_record = data["results"][29]
+        self.assertEqual(boundary_record["name"], "name_v1")
+        self.assertEqual(boundary_record["prev_name"], "name_v0")
+
+        # Second page holds the creation record; its prev_name is genuinely None.
+        resp2 = self.client.get("/entry/api/v2/%s/self_histories/?offset=30&limit=30" % entry.id)
+        self.assertEqual(resp2.status_code, status.HTTP_200_OK)
+        data2 = resp2.json()
+        self.assertEqual(len(data2["results"]), 1)
+        self.assertEqual(data2["results"][0]["name"], "name_v0")
+        self.assertEqual(data2["results"][0]["history_type"], "+")  # creation
+        self.assertIsNone(data2["results"][0]["prev_name"])
+
+    def test_list_self_histories_rename_via_update_fields(self):
+        """Reproduce the production rename path: Entry.save(update_fields=['name']).
+
+        The real update flow (EntryUpdateSerializer) renames an entry via
+        ``entry.save(update_fields=["name"])``. This verifies a history record is
+        created for the rename and that its previous name is resolved correctly,
+        which is the case the user reports as showing "-" for the previous name.
+        """
+        entry = self.add_entry(self.user, "old_name", self.entity)
+
+        entry.name = "new_name"
+        entry.save(update_fields=["name"])
+
+        resp = self.client.get("/entry/api/v2/%s/self_histories/" % entry.id)
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        data = resp.json()
+
+        # creation + rename == 2 records
+        self.assertEqual(data["count"], 2)
+
+        # newest record is the rename; its previous name must be "old_name"
+        latest = data["results"][0]
+        self.assertEqual(latest["name"], "new_name")
+        self.assertEqual(latest["history_type"], "~")
+        self.assertEqual(latest["prev_name"], "old_name")
+
+    @patch("entry.tasks.edit_entry_v2.delay", Mock(side_effect=tasks.edit_entry_v2))
+    def test_list_self_histories_rename_without_creation_record(self):
+        """Renaming a history-less entry must still preserve its previous name.
+
+        Entries created before simple-history was introduced (2022-12-08) have no
+        creation history record, and ``populate_history`` is never run. When such
+        an entry is later renamed, the rename would become the oldest (and only)
+        history record, so the previous name (derived from the preceding record)
+        used to resolve to None and the UI showed '-'.
+
+        ``EntryUpdateSerializer.update`` now snapshots the current state before
+        renaming a history-less entry, so the previous name ("original_name") is
+        preserved in history and reported here.
+        """
+        entry = self.add_entry(self.user, "original_name", self.entity)
+
+        # Simulate an entry with no creation history (predates simple-history).
+        entry.history.all().delete()
+        self.assertEqual(entry.history.count(), 0)
+
+        # Rename through the production API path so the serializer fix runs.
+        params = {"name": "renamed", "attrs": []}
+        resp = self.client.put(
+            "/entry/api/v2/%s/" % entry.id, json.dumps(params), "application/json"
+        )
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
+
+        resp = self.client.get("/entry/api/v2/%s/self_histories/" % entry.id)
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        data = resp.json()
+
+        # A baseline snapshot ("original_name") plus the rename == 2 records.
+        self.assertEqual(data["count"], 2)
+        latest = data["results"][0]
+        self.assertEqual(latest["name"], "renamed")
+        self.assertEqual(latest["history_type"], "~")  # update
+        self.assertEqual(latest["prev_name"], "original_name")
 
     def test_list_self_histories_without_permission(self):
         """Test list self histories endpoint - permission check"""

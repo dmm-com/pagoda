@@ -19,7 +19,10 @@ def _csv_export(
     job: Job, values: list[AdvancedSearchResultRecord], recv_data: dict, has_referral: bool
 ) -> io.StringIO | None:
     output = io.StringIO(newline="")
-    writer = csv.writer(output)
+    # Use LF as the row terminator to match the LF used when joining array
+    # values; mixing CRLF terminators with bare-LF cell separators makes
+    # editors render the row-terminating CR as a stray ^M control character.
+    writer = csv.writer(output, lineterminator="\n")
 
     # write first line of CSV
     if has_referral is not False:
@@ -171,7 +174,7 @@ def _yaml_export(
 
 
 @register_job_task(JobOperation.EXPORT_SEARCH_RESULT)
-@app.task(bind=True)
+@app.task(bind=True)  # type: ignore[misc]
 @may_schedule_until_job_is_ready
 def export_search_result(self: Any, job: Job) -> None:
     user = job.user

@@ -282,7 +282,7 @@ class EditEntityV2Params(BaseModel):
 
 
 @register_job_task(JobOperation.CREATE_ENTITY)
-@app.task(bind=True)
+@app.task(bind=True)  # type: ignore[misc]
 @may_schedule_until_job_is_ready
 def create_entity(self: Task, job: Job) -> JobStatus:
     user = User.objects.filter(id=job.user.id).first()
@@ -330,7 +330,7 @@ def create_entity(self: Task, job: Job) -> JobStatus:
 
 
 @register_job_task(JobOperation.EDIT_ENTITY)
-@app.task(bind=True)
+@app.task(bind=True)  # type: ignore[misc]
 @may_schedule_until_job_is_ready
 def edit_entity(self: Task, job: Job) -> JobStatus:
     user = User.objects.filter(id=job.user.id).first()
@@ -440,7 +440,7 @@ def edit_entity(self: Task, job: Job) -> JobStatus:
 
 
 @register_job_task(JobOperation.DELETE_ENTITY)
-@app.task(bind=True)
+@app.task(bind=True)  # type: ignore[misc]
 @may_schedule_until_job_is_ready
 def delete_entity(self: Task, job: Job) -> JobStatus:
     user = User.objects.filter(id=job.user.id).first()
@@ -466,7 +466,7 @@ def delete_entity(self: Task, job: Job) -> JobStatus:
 
 
 @register_job_task(JobOperation.CREATE_ENTITY_V2)
-@app.task(bind=True)
+@app.task(bind=True)  # type: ignore[misc]
 @may_schedule_until_job_is_ready
 def create_entity_v2(self: Task, job: Job) -> JobStatus:
     entity: Entity | None = Entity.objects.filter(id=job.target.id, is_active=True).first()
@@ -494,7 +494,7 @@ def create_entity_v2(self: Task, job: Job) -> JobStatus:
 
 
 @register_job_task(JobOperation.EDIT_ENTITY_V2)
-@app.task(bind=True)
+@app.task(bind=True)  # type: ignore[misc]
 @may_schedule_until_job_is_ready
 def edit_entity_v2(self: Task, job: Job) -> JobStatus:
     entity: Entity | None = Entity.objects.filter(id=job.target.id, is_active=True).first()
@@ -524,7 +524,7 @@ def edit_entity_v2(self: Task, job: Job) -> JobStatus:
 
 
 @register_job_task(JobOperation.DELETE_ENTITY_V2)
-@app.task(bind=True)
+@app.task(bind=True)  # type: ignore[misc]
 @may_schedule_until_job_is_ready
 def delete_entity_v2(self: Task, job: Job) -> JobStatus:
     entity: Entity | None = Entity.objects.filter(id=job.target.id, is_active=True).first()
