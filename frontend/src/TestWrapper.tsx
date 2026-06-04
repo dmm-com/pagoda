@@ -7,7 +7,14 @@ import { SWRConfig } from "swr";
 export const TestWrapper: FC<{ children: ReactNode }> = ({ children }) => {
   const theme = createTheme();
   return (
-    <SWRConfig value={{ provider: () => new Map(), dedupingInterval: 0 }}>
+    <SWRConfig
+      value={{
+        provider: () => new Map(),
+        dedupingInterval: 0,
+        revalidateOnFocus: false,
+        revalidateOnReconnect: false,
+      }}
+    >
       <ThemeProvider theme={theme}>
         <SnackbarProvider maxSnack={1} autoHideDuration={100}>
           <MemoryRouter>{children}</MemoryRouter>
@@ -22,7 +29,14 @@ export const TestWrapperWithoutRoutes: FC<{ children: ReactNode }> = ({
 }) => {
   const theme = createTheme();
   return (
-    <SWRConfig value={{ provider: () => new Map(), dedupingInterval: 0 }}>
+    <SWRConfig
+      value={{
+        provider: () => new Map(),
+        dedupingInterval: 0,
+        revalidateOnFocus: false,
+        revalidateOnReconnect: false,
+      }}
+    >
       <ThemeProvider theme={theme}>
         <SnackbarProvider maxSnack={1} autoHideDuration={100}>
           {children}
