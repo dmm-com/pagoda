@@ -635,6 +635,12 @@ class EntryUpdateSerializer(EntryBaseSerializer):
         # that refers this entry also be updated by creating REGISTERED_REFERRALS task.
         job_register_referrals: Job | None = None
         if "name" in validated_data and entry.name != validated_data["name"]:
+            # Entries created before simple-history was introduced (or otherwise
+            # lacking any history record) have no preceding record to derive the
+            # previous name from. Snapshot the current (pre-rename) state first so
+            # that renaming such an entry preserves its previous name in history.
+            if not entry.history.exists():
+                entry.save()
             entry.name = validated_data["name"]
             entry.save(update_fields=["name"])
             is_updated = True
@@ -1695,7 +1701,13 @@ class EntrySelfHistoryListSerializer(serializers.ListSerializer):
                 if i > 0:
                     item._prefetched_prev_name = items[i - 1].name
                 else:
-                    item._prefetched_prev_name = None
+                    # The oldest record on this page: its preceding record may
+                    # live on a previous page (results are paginated with a
+                    # page size of EntryHistoryListParam.MAX_ROW_COUNT). Resolve
+                    # it from the whole history so the page-boundary record still
+                    # reports the correct previous name instead of None.
+                    prev = item.prev_record
+                    item._prefetched_prev_name = prev.name if prev is not None else None
 
         return super().to_representation(data)
 
@@ -1735,3 +1747,8 @@ class EntryBulkUpdateSerializer(serializers.Serializer):
     attrinfo = AdvancedSearchResultAttrInfoSerializer(many=True, required=False)
     referral_name = serializers.CharField(required=False, allow_blank=True)
     hint_entry = EntryHintSerializer(required=False)
+
+
+class ItemRollbackSerializer(serializers.Serializer):
+    targets = serializers.ListField(child=serializers.IntegerField(), min_length=1)
+    at = serializers.DateTimeField()

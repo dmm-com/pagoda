@@ -1469,3 +1469,94 @@ class RecentActivityAPITest(ViewTest):
         self.assertEqual(curr[0]["name"], role2.name)
         self.assertEqual(len(prev), 1)
         self.assertEqual(prev[0]["id"], role1.id)
+
+    def test_get_activity_with_to_parameter(self):
+        """
+        When 'to' is specified together with 'since', all activities in the range
+        [to, since] are returned regardless of LIMIT_RECORDS.
+        """
+        user = self.guest_login()
+        limit = UserActivityAPI.LIMIT_RECORDS
+
+        entity = self.create_entity(
+            user, "TestModel", attrs=[{"name": "val", "type": AttrType.STRING}]
+        )
+
+        # Create limit+1 entries within the range
+        in_range_entries = [self.add_entry(user, "in-%d" % i, entity) for i in range(limit + 1)]
+
+        # Backdate one entry to be outside the range (before 'to')
+        out_of_range = in_range_entries[0]
+        Entry.objects.filter(pk=out_of_range.id).update(
+            created_time=timezone.now() - timedelta(days=10)
+        )
+
+        since_dt = timezone.now()
+        to_dt = since_dt - timedelta(days=5)
+
+        since_iso = since_dt.isoformat()
+        to_iso = to_dt.isoformat()
+
+        resp = self.client.get(
+            "/user/api/v2/%s/activity?since=%s&to=%s" % (user.id, since_iso, to_iso)
+        )
+        self.assertEqual(resp.status_code, 200)
+
+        create_activities = [a for a in resp.json() if a["action_type"] == "create"]
+        # limit+1 created, 1 backdated outside range → limit in range
+        self.assertEqual(len(create_activities), limit)
+
+    def test_get_activity_to_without_since(self):
+        """When 'to' is specified without 'since', 'since' defaults to now."""
+        user = self.guest_login()
+        entity = self.create_entity(
+            user, "TestModel", attrs=[{"name": "val", "type": AttrType.STRING}]
+        )
+        entry = self.add_entry(user, "item", entity)
+
+        # Backdate entry to be within [to, now]
+        Entry.objects.filter(pk=entry.id).update(created_time=timezone.now() - timedelta(days=3))
+
+        to_dt = timezone.now() - timedelta(days=5)
+        to_iso = to_dt.isoformat()
+
+        resp = self.client.get("/user/api/v2/%s/activity?to=%s" % (user.id, to_iso))
+        self.assertEqual(resp.status_code, 200)
+
+        create_activities = [a for a in resp.json() if a["action_type"] == "create"]
+        self.assertEqual(len(create_activities), 1)
+
+    def test_get_activity_to_after_since_is_invalid(self):
+        """'to' must not be after 'since'."""
+        user = self.guest_login()
+
+        since_iso = (timezone.now() - timedelta(days=5)).isoformat()
+        to_iso = timezone.now().isoformat()  # to is after since → invalid
+
+        resp = self.client.get(
+            "/user/api/v2/%s/activity?since=%s&to=%s" % (user.id, since_iso, to_iso)
+        )
+        self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("to", resp.json())
+
+    def test_get_activity_to_since_range_over_one_month_is_invalid(self):
+        """The interval between 'since' and 'to' must be less than one month."""
+        user = self.guest_login()
+
+        # >LIMIT_DAYS + 1 days apart
+        since_iso = timezone.now().isoformat()
+        to_iso = (timezone.now() - timedelta(days=UserActivityAPI.LIMIT_DAYS + 1)).isoformat()
+
+        resp = self.client.get(
+            "/user/api/v2/%s/activity?since=%s&to=%s" % (user.id, since_iso, to_iso)
+        )
+        self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("to", resp.json())
+
+    def test_get_activity_to_invalid_format(self):
+        """'to' must be a valid ISO 8601 datetime string."""
+        user = self.guest_login()
+
+        resp = self.client.get("/user/api/v2/%s/activity?to=not-a-datetime" % user.id)
+        self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("to", resp.json())

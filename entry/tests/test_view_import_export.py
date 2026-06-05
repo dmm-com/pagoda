@@ -444,23 +444,27 @@ class ViewImportExportTest(BaseViewTest):
             {"attr": "arr1", "checker": lambda x: x.data_array.count() == 3},
             {
                 "attr": "arr2",
-                "checker": lambda x: x.data_array.count() == 1
-                and x.data_array.first().referral.id == ref_entry.id,
+                "checker": lambda x: (
+                    x.data_array.count() == 1 and x.data_array.first().referral.id == ref_entry.id
+                ),
             },
             {
                 "attr": "arr3",
-                "checker": lambda x: x.data_array.count() == 1
-                and x.data_array.first().referral.id == ref_entry.id,
+                "checker": lambda x: (
+                    x.data_array.count() == 1 and x.data_array.first().referral.id == ref_entry.id
+                ),
             },
             {
                 "attr": "arr4",
-                "checker": lambda x: x.data_array.count() == 1
-                and x.data_array.first().group == group,
+                "checker": lambda x: (
+                    x.data_array.count() == 1 and x.data_array.first().group == group
+                ),
             },
             {
                 "attr": "arr5",
-                "checker": lambda x: x.data_array.count() == 1
-                and x.data_array.first().role == role,
+                "checker": lambda x: (
+                    x.data_array.count() == 1 and x.data_array.first().role == role
+                ),
             },
         ]
         for info in checklist:

@@ -1196,9 +1196,9 @@ class ModelOperationsTest(BaseModelTest):
             {
                 "attr": "arr_name",
                 "input": [{"foo": "Ref Entry"}],
-                "checker": lambda x: len(x) == 1
-                and x[0]["name"] == "foo"
-                and x[0]["id"].id == ref_entry.id,
+                "checker": lambda x: (
+                    len(x) == 1 and x[0]["name"] == "foo" and x[0]["id"].id == ref_entry.id
+                ),
             },
             {
                 "attr": "arr_name",
