@@ -1,8 +1,8 @@
 import csv
 import io
 import json
-from datetime import datetime
-from typing import Any, Callable, List
+from datetime import date, datetime
+from typing import Any, Callable, List, TypeAlias
 
 import yaml
 from celery import Task
@@ -56,6 +56,13 @@ from job.models import Job, JobOperation, JobStatus
 from role.models import Role
 from trigger.models import TriggerCondition
 from user.models import User
+
+# A single pre-serialization attribute value handed to the YAML exporter: an
+# object/named-object dict, a scalar, or None. Array values are unwrapped one
+# level up (in _get_attr_value) before reaching the primitive helper.
+ExportPrimitiveInput: TypeAlias = (
+    dict[str, Any] | str | int | float | date | datetime | bool | None
+)
 
 
 def _merge_referrals_by_index(
@@ -256,10 +263,11 @@ def _yaml_export_v2(
     has_referral: bool,
 ) -> io.StringIO | None:
     def _get_attr_primitive_value(
-        atype: int, value: Any
+        atype: int, value: ExportPrimitiveInput
     ) -> ExportedEntryAttributePrimitiveValue:
         match atype:
             case AttrType.NAMED_OBJECT:
+                assert isinstance(value, dict)
                 [(key, val)] = value.items()
                 entry: Entry | None = (
                     Entry.objects.filter(id=val["id"]).first()
@@ -281,6 +289,7 @@ def _yaml_export_v2(
                     return {}
 
             case AttrType.OBJECT:
+                assert isinstance(value, dict)
                 entry = (
                     Entry.objects.filter(id=value["id"]).first()
                     if isinstance(value.get("id"), int)
@@ -295,6 +304,7 @@ def _yaml_export_v2(
                     return None
 
             case AttrType.GROUP:
+                assert isinstance(value, dict)
                 if (
                     isinstance(value.get("id"), int)
                     and Group.objects.filter(id=value["id"]).exists()
@@ -304,6 +314,7 @@ def _yaml_export_v2(
                     return None
 
             case AttrType.ROLE:
+                assert isinstance(value, dict)
                 if (
                     isinstance(value.get("id"), int)
                     and Role.objects.filter(id=value["id"]).exists()
@@ -313,13 +324,18 @@ def _yaml_export_v2(
                     return None
 
             case _:
+                assert not isinstance(value, dict)
                 return value
 
-    def _get_attr_value(atype: int, value: Any) -> ExportedEntryAttributeValue:
+    def _get_attr_value(
+        atype: int, value: ExportPrimitiveInput | list[Any]
+    ) -> ExportedEntryAttributeValue:
         match atype:
             case _ if atype & AttrType._ARRAY:
+                assert isinstance(value, list)
                 return [_get_attr_primitive_value(atype ^ AttrType._ARRAY, x) for x in value]
             case _:
+                assert not isinstance(value, list)
                 return _get_attr_primitive_value(atype, value)
 
     resp_data: List[ExportedEntityEntries] = []
