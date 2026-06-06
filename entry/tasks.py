@@ -60,9 +60,7 @@ from user.models import User
 # A single pre-serialization attribute value handed to the YAML exporter: an
 # object/named-object dict, a scalar, or None. Array values are unwrapped one
 # level up (in _get_attr_value) before reaching the primitive helper.
-ExportPrimitiveInput: TypeAlias = (
-    dict[str, Any] | str | int | float | date | datetime | bool | None
-)
+ExportPrimitiveInput: TypeAlias = dict[str, Any] | str | int | float | date | datetime | bool | None
 
 
 def _merge_referrals_by_index(
