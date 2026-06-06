@@ -1102,3 +1102,164 @@ class ViewTest(BaseViewTest):
         )
         self.assertEqual(resp.status_code, 200)
         self.assertEqual([x["name"] for x in resp.json()], ["[hoge] item0", "[hoge] item1"])
+
+    def _post_advanced_search(self, params: dict):
+        return self.client.post(
+            "/entry/api/v2/advanced_search/", json.dumps(params), "application/json"
+        )
+
+    def _seed_sort_entries(self):
+        """Create three entries with distinct values across string/object/date attrs.
+
+        Entry names intentionally do NOT line up with the attribute-value order
+        so a name-based default sort would not accidentally pass the assertions.
+        """
+        ref_a = self.add_entry(self.user, "ref-a", self.ref_entity)
+        ref_m = self.add_entry(self.user, "ref-m", self.ref_entity)
+        ref_z = self.add_entry(self.user, "ref-z", self.ref_entity)
+
+        # name → (val, ref, date)
+        rows = [
+            ("Cherry", "banana", ref_m.id, "2020-05-05"),
+            ("Apple", "apple", ref_z.id, "2019-01-01"),
+            ("Bravo", "cherry", ref_a.id, "2021-12-31"),
+        ]
+        entries = []
+        for entry_name, val, ref_id, date in rows:
+            entries.append(
+                self.add_entry(
+                    self.user,
+                    entry_name,
+                    self.entity,
+                    values={"val": val, "ref": ref_id, "date": date},
+                )
+            )
+        return entries
+
+    def test_advanced_search_sort_by_string_asc_desc(self):
+        self._seed_sort_entries()
+
+        # asc: apple < banana < cherry
+        resp = self._post_advanced_search(
+            {
+                "entities": [self.entity.id],
+                "attrinfo": [{"name": "val"}],
+                "sort": {"target_attrname": "val", "order": "asc"},
+            }
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(
+            [v["entry"]["name"] for v in resp.json()["values"]],
+            ["Apple", "Cherry", "Bravo"],
+        )
+
+        # desc: cherry > banana > apple
+        resp = self._post_advanced_search(
+            {
+                "entities": [self.entity.id],
+                "attrinfo": [{"name": "val"}],
+                "sort": {"target_attrname": "val", "order": "desc"},
+            }
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(
+            [v["entry"]["name"] for v in resp.json()["values"]],
+            ["Bravo", "Cherry", "Apple"],
+        )
+
+    def test_advanced_search_sort_by_object_display_name(self):
+        self._seed_sort_entries()
+        # ref display name ordering: ref-a < ref-m < ref-z
+        resp = self._post_advanced_search(
+            {
+                "entities": [self.entity.id],
+                "attrinfo": [{"name": "ref"}],
+                "sort": {"target_attrname": "ref", "order": "asc"},
+            }
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(
+            [v["entry"]["name"] for v in resp.json()["values"]],
+            ["Bravo", "Cherry", "Apple"],
+        )
+
+    def test_advanced_search_sort_by_date(self):
+        self._seed_sort_entries()
+        resp = self._post_advanced_search(
+            {
+                "entities": [self.entity.id],
+                "attrinfo": [{"name": "date"}],
+                "sort": {"target_attrname": "date", "order": "asc"},
+            }
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(
+            [v["entry"]["name"] for v in resp.json()["values"]],
+            ["Apple", "Cherry", "Bravo"],
+        )
+
+    def test_advanced_search_sort_by_entry_name(self):
+        self._seed_sort_entries()
+        resp = self._post_advanced_search(
+            {
+                "entities": [self.entity.id],
+                "attrinfo": [{"name": "val"}],
+                "sort": {"target_attrname": "__entry_name__", "order": "desc"},
+            }
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(
+            [v["entry"]["name"] for v in resp.json()["values"]],
+            ["Cherry", "Bravo", "Apple"],
+        )
+
+    def test_advanced_search_sort_default_unchanged(self):
+        self._seed_sort_entries()
+        # Without sort: entry name ascending (existing behavior)
+        resp = self._post_advanced_search(
+            {
+                "entities": [self.entity.id],
+                "attrinfo": [{"name": "val"}],
+            }
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(
+            [v["entry"]["name"] for v in resp.json()["values"]],
+            ["Apple", "Bravo", "Cherry"],
+        )
+
+    def test_advanced_search_sort_target_not_in_attrinfo(self):
+        self._seed_sort_entries()
+        resp = self._post_advanced_search(
+            {
+                "entities": [self.entity.id],
+                "attrinfo": [{"name": "val"}],
+                "sort": {"target_attrname": "date", "order": "asc"},
+            }
+        )
+        self.assertEqual(resp.status_code, 400)
+
+    def test_advanced_search_sort_unsortable_types(self):
+        self._seed_sort_entries()
+        # NUMBER / BOOLEAN / NAMED_OBJECT / ARRAY_STRING all reject.
+        for attrname in ["num", "bool", "name", "vals"]:
+            with self.subTest(attrname=attrname):
+                resp = self._post_advanced_search(
+                    {
+                        "entities": [self.entity.id],
+                        "attrinfo": [{"name": attrname}],
+                        "sort": {"target_attrname": attrname, "order": "asc"},
+                    }
+                )
+                self.assertEqual(resp.status_code, 400)
+
+    def test_advanced_search_sort_unknown_attrname(self):
+        self._seed_sort_entries()
+        resp = self._post_advanced_search(
+            {
+                "entities": [self.entity.id],
+                "attrinfo": [{"name": "no_such_attr"}],
+                "sort": {"target_attrname": "no_such_attr", "order": "asc"},
+            }
+        )
+        self.assertEqual(resp.status_code, 400)

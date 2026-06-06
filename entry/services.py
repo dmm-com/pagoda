@@ -13,6 +13,7 @@ from airone.lib.elasticsearch import (
     AttrHint,
     EntryHint,
     execute_query,
+    make_attr_sort_clauses,
     make_query,
     make_query_for_simple,
     make_search_results,
@@ -46,6 +47,9 @@ class AdvancedSearchService:
         include_referrals: list[int] = [],
         entry_ids: list[int] | None = None,
         retrieve_all: bool = False,
+        sort_target_attrname: str | None = None,
+        sort_order: str = "asc",
+        sort_target_attr_type: int | None = None,
     ) -> AdvancedSearchResults:
         """Main method called from advanced search.
 
@@ -103,6 +107,12 @@ class AdvancedSearchService:
         """
         if not hint_attrs:
             hint_attrs = []
+
+        sort_clauses: list[dict[str, Any]] | None = None
+        if sort_target_attrname:
+            sort_clauses = make_attr_sort_clauses(
+                sort_target_attrname, sort_order, sort_target_attr_type
+            )
 
         if retrieve_all:
             # Use the Elasticsearch max_result_window as the upper bound. Beyond this
@@ -165,7 +175,7 @@ class AdvancedSearchService:
             effective_limit = len(entry_ids) if entry_ids else limit
 
             # sending request to elasticsearch with making query
-            resp = execute_query(query, effective_limit, offset)
+            resp = execute_query(query, effective_limit, offset, sort=sort_clauses)
 
             tmp_hint_attrs = [attr.model_copy(deep=True) for attr in hint_attrs]
             # Check for has permission to EntityAttr, when is_output_all flag

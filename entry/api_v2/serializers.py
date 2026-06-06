@@ -1561,6 +1561,12 @@ class EntryHintSerializer(serializers.Serializer):
         return filter_key
 
 
+class AdvancedSearchSortSerializer(serializers.Serializer):
+    # An attribute name listed in attrinfo, or "__entry_name__" to sort by entry name.
+    target_attrname = serializers.CharField()
+    order = serializers.ChoiceField(choices=["asc", "desc"], default="asc")
+
+
 class AdvancedSearchSerializer(serializers.Serializer):
     entities = serializers.ListField(child=serializers.IntegerField())
     attrinfo = AdvancedSearchResultAttrInfoSerializer(many=True)
@@ -1578,6 +1584,7 @@ class AdvancedSearchSerializer(serializers.Serializer):
     include_referrals = serializers.ListField(
         child=serializers.IntegerField(), required=False, default=[]
     )
+    sort = AdvancedSearchSortSerializer(required=False)
 
     def validate_attrs(self, attrs: list[dict[str, str]]) -> list[dict[str, str]]:
         if any([len(attr.get("keyword", "")) > CONFIG_ENTRY.MAX_QUERY_SIZE for attr in attrs]):

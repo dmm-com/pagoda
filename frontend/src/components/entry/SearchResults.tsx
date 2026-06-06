@@ -1,6 +1,7 @@
 import {
   AdvancedSearchJoinAttrInfo,
   AdvancedSearchResult,
+  AdvancedSearchSort,
   EntityAttrIDandName,
   EntryHint,
 } from "@dmm-com/airone-apiclient-typescript-fetch";
@@ -70,6 +71,7 @@ interface Props {
   defaultReferralIncludeModelIds?: number[];
   defaultReferralExcludeModelIds?: number[];
   defaultAttrsFilter?: AttrsFilter;
+  defaultSort?: AdvancedSearchSort;
   bulkOperationEntryIds: Array<number>;
   setBulkOperationEntryIds: (entryIds: Array<number>) => void;
   entityIds: number[];
@@ -92,6 +94,7 @@ export const SearchResults: FC<Props> = ({
   defaultReferralIncludeModelIds,
   defaultReferralExcludeModelIds,
   defaultAttrsFilter = {},
+  defaultSort,
   bulkOperationEntryIds,
   setBulkOperationEntryIds,
   entityIds,
@@ -152,6 +155,7 @@ export const SearchResults: FC<Props> = ({
               defaultReferralIncludeModelIds={defaultReferralIncludeModelIds}
               defaultReferralExcludeModelIds={defaultReferralExcludeModelIds}
               defaultAttrsFilter={defaultAttrsFilter}
+              defaultSort={defaultSort}
               entityIds={entityIds}
               searchAllEntities={searchAllEntities}
               joinAttrs={joinAttrs}

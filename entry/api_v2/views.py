@@ -29,13 +29,14 @@ from airone.lib.drf import (
     YAMLParser,
 )
 from airone.lib.elasticsearch import (
+    ENTRY_NAME_SORT_TARGET,
     AttrHint,
     EntryHint,
     FilterKey,
 )
 from airone.lib.multidb import db_readonly
 from airone.lib.plugin_dispatch import PluginOverrideMixin
-from airone.lib.types import AttrType
+from airone.lib.types import AttrType, is_sortable_attr_type
 from api_v1.entry.serializer import EntrySearchChainSerializer
 from entity.models import Entity, EntityAttr
 from entry.api_v2.pagination import EntryReferralPagination
@@ -420,6 +421,40 @@ class AdvancedSearchAPI(generics.GenericAPIView):
             if entity and request.user.has_permission(entity, ACLType.Readable):
                 hint_entity_ids.append(entity.id)
 
+        # Validate sort parameter.
+        sort_input = serializer.validated_data.get("sort")
+        sort_target_attrname: str | None = None
+        sort_order: str = "asc"
+        sort_target_attr_type: int | None = None
+        if sort_input:
+            sort_target_attrname = sort_input["target_attrname"]
+            sort_order = sort_input.get("order", "asc")
+            if sort_target_attrname != ENTRY_NAME_SORT_TARGET:
+                if sort_target_attrname not in [a.name for a in hint_attrs]:
+                    return Response(
+                        "sort target_attrname is not included in attrinfo", status=400
+                    )
+                matching_attr_types = set(
+                    EntityAttr.objects.filter(
+                        parent_entity_id__in=hint_entity_ids,
+                        name=sort_target_attrname,
+                        is_active=True,
+                    ).values_list("type", flat=True)
+                )
+                if not matching_attr_types:
+                    return Response("sort target attribute not found", status=400)
+                if len(matching_attr_types) > 1:
+                    return Response(
+                        "sort target has inconsistent attribute types across entities",
+                        status=400,
+                    )
+                attr_type = matching_attr_types.pop()
+                if not is_sortable_attr_type(attr_type):
+                    return Response(
+                        "sort target attribute type is not sortable", status=400
+                    )
+                sort_target_attr_type = attr_type
+
         resp = AdvancedSearchService.search_entries(
             request.user,
             hint_entity_ids,
@@ -433,6 +468,9 @@ class AdvancedSearchAPI(generics.GenericAPIView):
             allow_missing_attributes=True,  # For APIv2, allow entries missing attributes
             exclude_referrals=exclude_referrals,
             include_referrals=include_referrals,
+            sort_target_attrname=sort_target_attrname,
+            sort_order=sort_order,
+            sort_target_attr_type=sort_target_attr_type,
         )
 
         # save total population number
