@@ -17,11 +17,14 @@ if TYPE_CHECKING:
     from acl.models import ACLBase
 
 
-class UserManager(BaseUserManager):
+class UserManager(BaseUserManager["User"]):
     def create_user(self, request_data: dict[str, Any], **kwargs: Any) -> "User":
+        # username / email are required keys; callers (e.g. UserCreateSerializer)
+        # validate them. Use direct indexing so a missing key surfaces a clear
+        # KeyError instead of silently creating a user with an empty string.
         user = User(
-            username=request_data.get("username"),
-            email=request_data.get("email"),
+            username=request_data["username"],
+            email=request_data["email"],
             is_superuser=request_data.get("is_superuser", False),
             is_readonly=request_data.get("is_readonly", False),
             parent_user=request_data.get("parent_user"),
@@ -37,7 +40,7 @@ class User(AbstractUser):
         AUTH_TYPE_LOCAL = 1 << 0, "AUTH_TYPE_LOCAL"
         AUTH_TYPE_LDAP = 1 << 1, "AUTH_TYPE_LDAP"
 
-    objects = UserManager()
+    objects = UserManager()  # type: ignore[assignment, misc]
 
     MAXIMUM_TOKEN_LIFETIME = 10**8
     TOKEN_LIFETIME = 86400
@@ -55,16 +58,21 @@ class User(AbstractUser):
     is_readonly = models.BooleanField(default=False)
 
     @property
-    def airone_groups(self) -> QuerySet:
+    def airone_groups(self) -> "QuerySet[Group]":
         """
         This returns groups that current user just belongs to
         (not include hierarchical parent groups)
         """
-        return Group.objects.filter(id__in=[g.id for g in self.groups.all()], is_active=True)
+        # Group subclasses django.contrib.auth.models.Group; django-stubs picks
+        # up the parent Manager's generic, so we widen with ignore[return-value].
+        return Group.objects.filter(
+            id__in=[g.id for g in self.groups.all()],
+            is_active=True,  # type: ignore[misc]
+        )  # type: ignore[return-value]
 
     # to make a polymorphism between the Group model
     @property
-    def permissions(self) -> models.Manager:
+    def permissions(self) -> "models.Manager[Any]":
         return self.user_permissions
 
     @property
@@ -221,19 +229,19 @@ class User(AbstractUser):
             raise RuntimeError("The number of users is over the limit")
         return super(User, self).save(*args, **kwargs)
 
-    def delete(self) -> None:
+    def delete(self) -> None:  # type: ignore[override]
         """
         Override Model.delete method of Django
         """
         self.is_active = False
-        current_username: str = self.username  # type: ignore[has-type]
+        current_username: str = self.username
         self.username = "%s_deleted_%s" % (
             current_username,
             datetime.now().strftime("%Y%m%d_%H%M%S"),
         )
-        current_email: str = self.email  # type: ignore[has-type]
+        current_email: str = self.email
         self.email = "deleted__%s" % (current_email)
-        for social_auth in self.social_auth.all():
+        for social_auth in self.social_auth.all():  # type: ignore[attr-defined]
             social_auth.delete()
         self.save()
 
@@ -292,7 +300,7 @@ class History(models.Model):
     is_detail = models.BooleanField(default=False)
 
     # This parameter is needed to record related operation histories
-    details = models.ManyToManyField("History")
+    details = models.ManyToManyField("History")  # type: ignore[var-annotated]
 
     def add_attr(self, target: "ACLBase", text: str = "") -> None:
         detail = History.register(

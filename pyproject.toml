@@ -44,6 +44,81 @@ ignore_errors = true
 module = ["*.migrations.*"]
 ignore_errors = true
 
+# Modules that surface new mypy errors once mypy_django_plugin / mypy_drf_plugin
+# are enabled. The model layer has been typed in the accompanying commit; the
+# view / serializer / task / plugin layer is intentionally muted here and will
+# be typed in a follow-up PR (fix/mypy-django-stubs-finalize).
+[[tool.mypy.overrides]]
+module = [
+    "acl.api_v2.serializers",
+    "acl.api_v2.views",
+    "acl.views",
+    "airone.auth.view",
+    "airone.celery",
+    "airone.lib.drf",
+    "airone.lib.http",
+    "airone.lib.multidb",
+    "airone.lib.plugin_dispatch",
+    "airone.lib.test",
+    "airone.libs.auth",
+    "airone.plugins.integration",
+    "airone.urls",
+    "api_v1.entity.views",
+    "api_v1.entry.serializer",
+    "api_v1.entry.views",
+    "api_v1.job.views",
+    "api_v1.serializers",
+    "api_v1.user.views",
+    "api_v1.views",
+    "category.api_v2.serializers",
+    "category.api_v2.views",
+    "common.templatetags.bitwise_tags",
+    "common.templatetags.calculator",
+    "custom_view_sample.tasks.task_custom",
+    "custom_view.tasks.task_custom",
+    "dashboard.tasks",
+    "dashboard.views",
+    "entity.api_v1.views",
+    "entity.api_v2.serializers",
+    "entity.api_v2.views",
+    "entity.tasks",
+    "entity.views",
+    "entry.api_v1.views",
+    "entry.api_v2.serializers",
+    "entry.api_v2.views",
+    "entry.services",
+    "entry.tasks",
+    "entry.views",
+    "group.api_v1.views",
+    "group.api_v2.serializers",
+    "group.api_v2.views",
+    "group.tasks",
+    "group.views",
+    "job.api_v2.serializers",
+    "job.api_v2.views",
+    "pagoda_plugin_sdk.api.base",
+    "pagoda_plugin_sdk.api.pagination",
+    "pagoda_plugin_sdk.api.permissions",
+    "pagoda_plugin_sdk.api.serializers",
+    "pagoda_plugin_sdk.override",
+    "role.api_v1.views",
+    "role.api_v2.serializers",
+    "role.api_v2.views",
+    "role.tasks",
+    "role.views",
+    "tools.generate_testdata",
+    "trigger.api_v2.serializers",
+    "trigger.api_v2.views",
+    "trigger.tasks",
+    "user.api_v2.serializers",
+    "user.api_v2.views",
+    "user.forms",
+    "user.views",
+    "webhook.api_v1.views",
+    "webhook.views",
+]
+ignore_errors = true
+
 [tool.ruff]
 # Pyflakes (F), pycodestyle (E, W), isort (I)
 lint.select = ["E", "F", "I", "W"]

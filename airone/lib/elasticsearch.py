@@ -79,7 +79,9 @@ class AttributeDocument(TypedDict):
     key: str
     value: str | bool | float | None
     date_value: str | None
-    referral_id: str
+    # ES mapping is `integer`; the default sentinel for "no referral" is the
+    # empty string, so the runtime type is the union.
+    referral_id: int | str
     is_readable: bool
 
 
