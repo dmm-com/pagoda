@@ -22,6 +22,8 @@ class JobAPI(viewsets.ModelViewSet):
     serializer_class = JobSerializers
 
     def get_queryset(self) -> QuerySet:
+        if self.request.user.is_superuser:
+            return Job.objects.all()
         return Job.objects.filter(user=self.request.user)
 
     def destroy(self, request: Request, *args: Any, **kwargs: Any) -> Response:
@@ -88,6 +90,10 @@ class JobListAPI(viewsets.ModelViewSet):
         user = self.request.user
         created_after: str | None = self.request.query_params.get("created_after", None)
         target_id: str | None = self.request.query_params.get("target_id", None)
+        all_users: bool = (
+            user.is_superuser
+            and self.request.query_params.get("all_users", "false").lower() == "true"
+        )
 
         export_operations: list[JobOperation] = [
             JobOperation.EXPORT_ENTRY,
@@ -96,7 +102,7 @@ class JobListAPI(viewsets.ModelViewSet):
             JobOperation.EXPORT_SEARCH_RESULT_V2,
         ]
         query = Q(
-            Q(user=user),
+            Q() if all_users else Q(user=user),
             ~Q(operation__in=Job.HIDDEN_OPERATIONS),
             Q(
                 Q(operation__in=export_operations)

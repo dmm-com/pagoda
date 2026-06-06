@@ -15,6 +15,7 @@ describe("JobList", () => {
     const jobs = Object.values(JobOperations).map(
       (operation, index): JobSerializers => ({
         id: index,
+        user: "test-user",
         text: `operation-${index}`,
         status: JobStatuses.DONE,
         operation,
@@ -54,6 +55,7 @@ describe("JobList", () => {
     const jobs = Object.values(JobStatuses).map(
       (status, index): JobSerializers => ({
         id: index,
+        user: "test-user",
         text: `status-${index}`,
         status,
         operation: JobOperations.CREATE_ENTRY,

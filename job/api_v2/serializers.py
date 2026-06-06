@@ -25,6 +25,7 @@ class JobTargetSerializer(serializers.Serializer):
 
 
 class JobSerializers(serializers.ModelSerializer):
+    user = serializers.SlugRelatedField(slug_field="username", read_only=True)
     target = serializers.SerializerMethodField(method_name="get_target")
     passed_time = serializers.SerializerMethodField(method_name="get_passed_time")
 
@@ -32,7 +33,7 @@ class JobSerializers(serializers.ModelSerializer):
 
     class Meta:
         model = Job
-        fields = ["id", "text", "status", "operation", "created_at", "target", "passed_time"]
+        fields = ["id", "user", "text", "status", "operation", "created_at", "target", "passed_time"]
 
     @extend_schema_field(JobTargetSerializer())
     def get_target(self, obj: Job) -> JobTarget | None:

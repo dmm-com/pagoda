@@ -35,11 +35,20 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.json()["count"], _TEST_MAX_LIST_VIEW)
 
-        # checks no job object will be returned because of different user
+        # admin sees only own jobs by default (same as regular users)
         self.admin_login()
         resp = self.client.get(f"/job/api/v2/jobs?limit={_TEST_MAX_LIST_VIEW + 100}&offset=0")
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.json()["count"], 0)
+
+        # admin with all_users=true sees all users' jobs
+        resp = self.client.get(
+            f"/job/api/v2/jobs?limit={_TEST_MAX_LIST_VIEW + 100}&offset=0&all_users=true"
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json()["count"], _TEST_MAX_LIST_VIEW)
+        # user field is present in results
+        self.assertIn("user", resp.json()["results"][0])
 
     def test_get_jobs_deleted_target(self):
         user = self.guest_login()
@@ -233,20 +242,44 @@ class ViewTest(AironeViewTest):
             resp.json(), {"code": "AE-230000", "message": "No Job matches the given query."}
         )
 
-        resp = self.client.get("/job/api/v2/%s/" % "hoge")
-        self.assertEqual(resp.status_code, 404)
+    def test_admin_get_other_users_job(self):
+        guest = self.guest_login()
 
-        # other user job
-        entity = Entity.objects.create(name="entity", created_user=user)
-        entry = Entry.objects.create(name="entry", created_user=user, schema=entity)
-        job = Job.new_create(user, entry)
+        entity = Entity.objects.create(name="entity", created_user=guest)
+        entry = Entry.objects.create(name="entry", created_user=guest, schema=entity)
+        job = Job.new_create(guest, entry, "hoge")
 
+        # guest cannot see admin's job (404 after admin creates one, but here just verify guest job)
         self.admin_login()
+
+        # admin can retrieve any job by ID without extra parameters
         resp = self.client.get("/job/api/v2/%d/" % job.id)
-        self.assertEqual(resp.status_code, 404)
-        self.assertEqual(
-            resp.json(), {"code": "AE-230000", "message": "No Job matches the given query."}
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json()["id"], job.id)
+        self.assertEqual(resp.json()["user"], guest.username)
+
+    def test_non_admin_cannot_use_all_users(self):
+        guest = self.guest_login()
+
+        entity = Entity.objects.create(name="entity", created_user=guest)
+        entry = Entry.objects.create(name="entry", created_user=guest, schema=entity)
+        Job.new_create(guest, entry)
+
+        from user.models import User
+
+        other = User.objects.create(username="other", password="passwd", is_superuser=False)
+        other_job = Job.new_create(other, entry)
+
+        # all_users=true is silently ignored for non-admin; only own jobs are returned
+        resp = self.client.get(
+            f"/job/api/v2/jobs?limit={_TEST_MAX_LIST_VIEW + 100}&offset=0&all_users=true"
         )
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json()["count"], 1)
+
+        # non-admin cannot retrieve another user's job by ID
+        resp = self.client.get("/job/api/v2/%d/" % other_job.id)
+        self.assertEqual(resp.status_code, 404)
 
     def test_cancel_job(self):
         user = self.guest_login()

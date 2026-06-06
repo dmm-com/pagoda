@@ -1,6 +1,13 @@
 import ReplayIcon from "@mui/icons-material/Replay";
-import { Box, Button, Container, Typography } from "@mui/material";
-import { FC, Suspense, useMemo } from "react";
+import {
+  Box,
+  Button,
+  Container,
+  FormControlLabel,
+  Switch,
+  Typography,
+} from "@mui/material";
+import { FC, Suspense, useMemo, useState } from "react";
 import { useLocation } from "react-router";
 
 import { usePagodaSWR } from "../hooks/usePagodaSWR";
@@ -15,15 +22,17 @@ import { usePage } from "hooks/usePage";
 import { aironeApiClient } from "repository/AironeApiClient";
 import { topPath } from "routes/Routes";
 import { JobListParam } from "services/Constants";
+import { ServerContext } from "services/ServerContext";
 
 const JobListContent: FC<{
   page: number;
   changePage: (page: number) => void;
   targetId?: number;
-}> = ({ page, changePage, targetId }) => {
+  allUsers?: boolean;
+}> = ({ page, changePage, targetId, allUsers }) => {
   const { data: jobs, mutate: refreshJobs } = usePagodaSWR(
-    ["jobs", page, targetId],
-    () => aironeApiClient.getJobs(page, targetId),
+    ["jobs", page, targetId, allUsers],
+    () => aironeApiClient.getJobs(page, targetId, undefined, allUsers),
     { suspense: true },
   );
 
@@ -38,7 +47,7 @@ const JobListContent: FC<{
           <ReplayIcon /> ジョブ一覧を更新
         </Button>
       </Box>
-      <JobList jobs={jobs.results ?? []} />
+      <JobList jobs={jobs.results ?? []} showUser={allUsers} />
       <PaginationFooter
         count={jobs.count ?? 0}
         maxRowCount={JobListParam.MAX_ROW_COUNT}
@@ -51,8 +60,11 @@ const JobListContent: FC<{
 
 export const JobListPage: FC = () => {
   const location = useLocation();
+  const isSuperuser =
+    ServerContext.getInstance()?.user?.isSuperuser === true;
 
   const { page, changePage } = usePage();
+  const [allUsers, setAllUsers] = useState(false);
 
   const { targetId } = useMemo(() => {
     const params = new URLSearchParams(location.search);
@@ -71,13 +83,26 @@ export const JobListPage: FC = () => {
         <Typography color="textPrimary">ジョブ一覧</Typography>
       </AironeBreadcrumbs>
 
-      <PageHeader title="ジョブ一覧" />
+      <PageHeader title="ジョブ一覧">
+        {isSuperuser && (
+          <FormControlLabel
+            control={
+              <Switch
+                checked={allUsers}
+                onChange={(e) => setAllUsers(e.target.checked)}
+              />
+            }
+            label="全ユーザーのジョブを表示"
+          />
+        )}
+      </PageHeader>
 
       <Suspense fallback={<Loading />}>
         <JobListContent
           page={page}
           changePage={changePage}
           targetId={targetId}
+          allUsers={allUsers ? true : undefined}
         />
       </Suspense>
     </Box>
