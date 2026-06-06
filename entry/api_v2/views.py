@@ -431,9 +431,7 @@ class AdvancedSearchAPI(generics.GenericAPIView):
             sort_order = sort_input.get("order", "asc")
             if sort_target_attrname != ENTRY_NAME_SORT_TARGET:
                 if sort_target_attrname not in [a.name for a in hint_attrs]:
-                    return Response(
-                        "sort target_attrname is not included in attrinfo", status=400
-                    )
+                    return Response("sort target_attrname is not included in attrinfo", status=400)
                 matching_attr_types = set(
                     EntityAttr.objects.filter(
                         parent_entity_id__in=hint_entity_ids,
@@ -450,9 +448,7 @@ class AdvancedSearchAPI(generics.GenericAPIView):
                     )
                 attr_type = matching_attr_types.pop()
                 if not is_sortable_attr_type(attr_type):
-                    return Response(
-                        "sort target attribute type is not sortable", status=400
-                    )
+                    return Response("sort target attribute type is not sortable", status=400)
                 sort_target_attr_type = attr_type
 
         resp = AdvancedSearchService.search_entries(

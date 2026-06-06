@@ -77,6 +77,8 @@ AttrTypeValue = {
     "datetime": AttrType.DATETIME,
     "number": AttrType.NUMBER,
 }
+
+
 def is_sortable_attr_type(attr_type: int) -> bool:
     """Whether Advanced Search supports sorting results by this attribute type.
 
