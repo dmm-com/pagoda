@@ -1,4 +1,4 @@
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from django.conf import settings
 from django.db.models import Prefetch
@@ -26,6 +26,9 @@ from entry.models import Attribute, AttributeValue, Entry
 from user.models import User
 
 from .settings import CONFIG
+
+if TYPE_CHECKING:
+    from entry.api_v2.serializers import AdvancedSearchJoinAttrInfo
 
 
 class AdvancedSearchService:
@@ -348,7 +351,7 @@ class AdvancedSearchService:
         kls,
         user: User,
         resp: AdvancedSearchResults,
-        join_attrs: list,
+        join_attrs: list["AdvancedSearchJoinAttrInfo"],
     ) -> AdvancedSearchResults:
         """Join referred Entry attributes based on join_attrs and filter/expand the results.
 

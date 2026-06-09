@@ -20,7 +20,7 @@ class HelloWorldPluginConfig(AppConfig):
     label = "pagoda_hello_world_plugin"
     verbose_name = "Pagoda Hello World Plugin (External)"
 
-    def ready(self):
+    def ready(self) -> None:
         """Initialize the plugin when Django is ready
 
         This method is called when Django has finished loading all applications.

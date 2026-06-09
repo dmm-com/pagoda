@@ -5,7 +5,7 @@ This module provides access to host application models through a safe injection 
 Models are injected by the host application during plugin system initialization.
 """
 
-from typing import List, Optional, Type
+from typing import Any, List, Optional, Type
 
 from .protocols import (
     AttributeProtocol,
@@ -27,7 +27,7 @@ Attribute: Optional[Type[AttributeProtocol]] = None
 Job: Optional[Type[JobProtocol]] = None
 
 
-def __getattr__(name: str):
+def __getattr__(name: str) -> Any:
     """Handle access to model attributes with proper error messages"""
 
     # Map of available models

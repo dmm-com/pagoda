@@ -404,7 +404,7 @@ def make_query(
             }
         )
 
-    attr_query: dict[str, dict] = {}
+    attr_query: dict[str, dict[str, Any]] = {}
 
     # filter attribute by keywords
     for hint in [hint for hint in hint_attrs if hint.name and hint.keyword]:
@@ -444,7 +444,7 @@ def make_query_for_simple(
         "from": offset,
     }
 
-    hint_query: dict = {"bool": {"should": [{"match": {"name": hint_string}}]}}
+    hint_query: dict[str, Any] = {"bool": {"should": [{"match": {"name": hint_string}}]}}
     hint_query["bool"]["should"].append(_make_entry_name_query(hint_string))
     hint_query["bool"]["should"].append(_make_attr_query_for_simple(hint_string))
     query["query"]["bool"]["must"].append(hint_query)
@@ -473,7 +473,7 @@ def make_query_for_simple(
     return query
 
 
-def _make_aggs_query(hint_attr_name: str) -> dict:
+def _make_aggs_query(hint_attr_name: str) -> dict[str, Any]:
     return {
         "aggs": {
             "attr_aggs": {
@@ -567,7 +567,7 @@ def _get_hint_keyword_val(keyword: str) -> str:
     return keyword
 
 
-def _make_entry_name_query(entry_name: str) -> dict[str, str]:
+def _make_entry_name_query(entry_name: str) -> dict[str, Any]:
     """Create a search query for the entry name.
 
     Divides the search string with OR.
@@ -579,14 +579,14 @@ def _make_entry_name_query(entry_name: str) -> dict[str, str]:
         entry_name (str): Search string for entry name
 
     Returns:
-        dict[str, str]: Entry name search query
+        dict[str, Any]: Entry name search query
 
     """
-    entry_name_or_query: dict = {"bool": {"should": []}}
+    entry_name_or_query: dict[str, Any] = {"bool": {"should": []}}
 
     # Split and process keywords with 'or'
     for keyword_divided_or in entry_name.split(CONFIG.OR_SEARCH_CHARACTER):
-        entry_name_and_query: dict = {"bool": {"must": []}}
+        entry_name_and_query: dict[str, Any] = {"bool": {"must": []}}
 
         # Keyword divided by 'or' is processed by dividing by 'and'
         for keyword in keyword_divided_or.split(CONFIG.AND_SEARCH_CHARACTER):
@@ -604,7 +604,7 @@ def _make_entry_name_query(entry_name: str) -> dict[str, str]:
     return entry_name_or_query
 
 
-def _make_query_specific_referred_items(model_id: int) -> dict[str, dict]:
+def _make_query_specific_referred_items(model_id: int) -> dict[str, Any]:
     return {
         "nested": {
             "path": "referrals.schema",
@@ -613,7 +613,7 @@ def _make_query_specific_referred_items(model_id: int) -> dict[str, dict]:
     }
 
 
-def _make_query_include_referrals(include_referrals: list[int]) -> dict[str, dict]:
+def _make_query_include_referrals(include_referrals: list[int]) -> dict[str, Any]:
     return {
         "bool": {
             "should": [
@@ -623,7 +623,7 @@ def _make_query_include_referrals(include_referrals: list[int]) -> dict[str, dic
     }
 
 
-def _make_query_exclude_referrals(exclude_referrals: list[int]) -> dict[str, dict]:
+def _make_query_exclude_referrals(exclude_referrals: list[int]) -> dict[str, Any]:
     return {
         "bool": {
             "must_not": [
@@ -633,12 +633,12 @@ def _make_query_exclude_referrals(exclude_referrals: list[int]) -> dict[str, dic
     }
 
 
-def _make_referral_query(referral_name: str) -> dict[str, str]:
-    referral_or_query: dict = {"bool": {"should": []}}
+def _make_referral_query(referral_name: str) -> dict[str, Any]:
+    referral_or_query: dict[str, Any] = {"bool": {"should": []}}
 
     # Split and process keywords with 'or'
     for keyword_divided_or in referral_name.split(CONFIG.OR_SEARCH_CHARACTER):
-        referral_and_query: dict = {
+        referral_and_query: dict[str, Any] = {
             "bool": {
                 "must": [],
                 "must_not": [],
@@ -674,8 +674,8 @@ def _make_referral_query(referral_name: str) -> dict[str, str]:
     return referral_or_query
 
 
-def _make_referral_entity_query(referral_entity_id: int) -> dict[str, str]:
-    referral_or_query: dict = {
+def _make_referral_entity_query(referral_entity_id: int) -> dict[str, Any]:
+    referral_or_query: dict[str, Any] = {
         "bool": {
             "should": [
                 {
@@ -691,7 +691,7 @@ def _make_referral_entity_query(referral_entity_id: int) -> dict[str, str]:
     return referral_or_query
 
 
-def _make_attr_query_for_simple(hint_string: str) -> dict[str, dict]:
+def _make_attr_query_for_simple(hint_string: str) -> dict[str, Any]:
     """Create a search query for the AttributeValue in simple search.
 
     Divides the search string with OR.
@@ -706,16 +706,16 @@ def _make_attr_query_for_simple(hint_string: str) -> dict[str, dict]:
 
     """
 
-    attr_query: dict[str, dict] = {
+    attr_query: dict[str, Any] = {
         "bool": {"filter": {"nested": {"path": "attr", "inner_hits": {"_source": ["attr.name"]}}}}
     }
 
-    attr_or_query: dict[str, dict] = {"bool": {"should": []}}
+    attr_or_query: dict[str, Any] = {"bool": {"should": []}}
     for keyword_divided_or in hint_string.split(CONFIG.OR_SEARCH_CHARACTER):
         if not keyword_divided_or:
             continue
 
-        attr_and_query: dict[str, dict] = {"bool": {"filter": []}}
+        attr_and_query: dict[str, Any] = {"bool": {"filter": []}}
         for keyword_divided_and in keyword_divided_or.split(CONFIG.AND_SEARCH_CHARACTER):
             if not keyword_divided_and:
                 continue
@@ -730,7 +730,7 @@ def _make_attr_query_for_simple(hint_string: str) -> dict[str, dict]:
     return attr_query
 
 
-def _parse_or_search(hint: AttrHint) -> dict[str, dict]:
+def _parse_or_search(hint: AttrHint) -> dict[str, dict[str, Any]]:
     """Performs keyword analysis processing.
 
     The search keyword is separated by OR and passed to the next process.
@@ -744,8 +744,8 @@ def _parse_or_search(hint: AttrHint) -> dict[str, dict]:
             by 'OR' and return.
 
     """
-    attr_query: dict[str, dict] = {}
-    duplicate_keys: list = []
+    attr_query: dict[str, dict[str, Any]] = {}
+    duplicate_keys: list[str] = []
 
     # Split and process keywords with 'or'
     for keyword_divided_or in (hint.keyword or "").split(CONFIG.OR_SEARCH_CHARACTER):
@@ -759,7 +759,7 @@ def _parse_and_search(
     hint: AttrHint,
     keyword_divided_or: str,
     duplicate_keys: list[str],
-) -> dict[str, dict]:
+) -> dict[str, dict[str, Any]]:
     """Analyze the keywords separated by `OR`
 
     Keywords separated by OR are separated by AND.
@@ -791,7 +791,7 @@ def _parse_and_search(
             by 'AND' and returned.
 
     """
-    attr_query: dict[str, dict] = {}
+    attr_query: dict[str, dict[str, Any]] = {}
 
     # Keyword divided by 'or' is processed by dividing by 'and'
     for keyword in keyword_divided_or.split(CONFIG.AND_SEARCH_CHARACTER):
@@ -810,8 +810,8 @@ def _parse_and_search(
 
 def _build_queries_along_keywords(
     hint_attrs: list[AttrHint],
-    attr_query: dict[str, dict],
-) -> dict[str, dict]:
+    attr_query: dict[str, dict[str, Any]],
+) -> dict[str, Any]:
     """Build queries along search terms.
 
     Do the following:
@@ -887,7 +887,7 @@ def _build_queries_along_keywords(
     return res_query
 
 
-def _make_an_attribute_filter(hint: AttrHint, keyword: str) -> dict[str, dict]:
+def _make_an_attribute_filter(hint: AttrHint, keyword: str) -> dict[str, Any]:
     """creates an attribute filter from keywords.
 
     For the attribute set in the name of hint, create a filter for filtering search keywords.
@@ -916,7 +916,7 @@ def _make_an_attribute_filter(hint: AttrHint, keyword: str) -> dict[str, dict]:
         dict[str, str]: Created attribute filter
 
     """
-    cond_attr: list[dict] = [{"term": {"attr.name": hint.name}}]
+    cond_attr: list[dict[str, Any]] = [{"term": {"attr.name": hint.name}}]
 
     date_results = _is_date(keyword)
     if date_results:
@@ -1380,7 +1380,7 @@ def _is_date_check(value: str) -> tuple[str, datetime | tuple[datetime, datetime
     return None
 
 
-def _is_date(value: str) -> list | None:
+def _is_date(value: str) -> list[Any] | None:
     # checks all specified value is date format
     result = [_is_date_check(x) for x in value.split(" ") if x]
 

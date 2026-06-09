@@ -33,7 +33,7 @@ class HookManager:
     def register_hook(
         self,
         hook_name: str,
-        handler: Callable,
+        handler: Callable[..., Any],
         plugin_id: str,
         priority: int = 100,
         entity: Optional[str] = None,

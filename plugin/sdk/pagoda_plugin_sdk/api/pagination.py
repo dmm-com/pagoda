@@ -104,7 +104,7 @@ class PluginPagination(LimitOffsetPagination):
             return 1
         return int((self.offset // self.limit) + 1)
 
-    def paginate_queryset(self, queryset, request, view=None):
+    def paginate_queryset(self, queryset: Any, request: Any, view: Any = None) -> Any:
         """Paginate a queryset with performance monitoring
 
         Args:
@@ -195,7 +195,7 @@ class PluginPageNumberPagination(PageNumberPagination):
             return cast(Optional[Dict[str, Any]], request.plugin_context)
         return None
 
-    def paginate_queryset(self, queryset, request, view=None):
+    def paginate_queryset(self, queryset: Any, request: Any, view: Any = None) -> Any:
         """Paginate a queryset with performance monitoring
 
         Args:
@@ -228,7 +228,7 @@ class PluginNoPagination:
             pagination_class = PluginNoPagination
     """
 
-    def paginate_queryset(self, queryset, request, view=None):
+    def paginate_queryset(self, queryset: Any, request: Any, view: Any = None) -> Any:
         """Return None to disable pagination
 
         Args:

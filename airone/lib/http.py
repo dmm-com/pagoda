@@ -25,7 +25,7 @@ class HttpResponseSeeOther(HttpResponseRedirect):
     status_code = 303
 
 
-class DRFRequest(dict):
+class DRFRequest(dict[str, Any]):
     def __init__(self, user: User):
         self.user = user
 

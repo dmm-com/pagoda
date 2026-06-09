@@ -339,7 +339,7 @@ class Common(Configuration):
     )
 
     AUTHENTICATION_BACKENDS = ["django.contrib.auth.backends.ModelBackend"]
-    AUTH_CONFIG: dict[str, dict] = {"LDAP": {}}
+    AUTH_CONFIG: dict[str, dict[str, Any]] = {"LDAP": {}}
 
     # Note: Disable LDAP authentication by default in the mean time.
     if env.bool("AIRONE_LDAP_ENABLE", False):
@@ -501,8 +501,6 @@ class Common(Configuration):
         config.celery["distributed_tracing"] = True
 
         patch_all(mysql=False, mysqldb=False, pymysql=False, botocore=False, logging=True)
-
-        INSTALLED_APPS.append("ddtrace.contrib.django")
 
         LOGGING["formatters"]["all"]["format"] = "\t".join(
             [

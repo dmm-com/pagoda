@@ -1324,7 +1324,7 @@ class Attribute(ACLBase):
         def is_entry(schema: Entity, name: str) -> bool:
             return Entry.objects.filter(is_active=True, schema=schema, name=name).exists()
 
-        def get_named_object(data: dict) -> dict:
+        def get_named_object(data: dict[str, Any]) -> dict[str, Any]:
             (key, value) = list(data.items())[0]
 
             ret_value = {"name": key, "id": None}
@@ -2238,7 +2238,7 @@ class Entry(ACLBase):
 
         return {"name": self.name, "attrs": attrinfo}
 
-    def export_v2(self, user: User, with_entity: bool = False) -> dict:
+    def export_v2(self, user: User, with_entity: bool = False) -> dict[str, Any]:
         attrinfo = []
 
         # This calling of complement_attrs is needed to take into account the case of the Attributes
@@ -2512,7 +2512,7 @@ class Entry(ACLBase):
 
     def get_value_history(
         self, user: User, count: int = CONFIG.MAX_HISTORY_COUNT, index: int = 0
-    ) -> list[dict]:
+    ) -> list[dict[str, Any]]:
         def _get_values(attrv: AttributeValue) -> dict[str, Any]:
             return {
                 "attrv_id": attrv.id,
@@ -2521,7 +2521,7 @@ class Entry(ACLBase):
                 "created_user": attrv.created_user.username,
             }
 
-        ret_values: list[dict] = []
+        ret_values: list[dict[str, Any]] = []
         all_attrv = AttributeValue.objects.filter(
             parent_attr__in=self.attrs.all(), parent_attrv__isnull=True
         ).order_by("-created_time")[index:]
@@ -2636,7 +2636,7 @@ class Entry(ACLBase):
         else:
             return attrv.ref_item
 
-    def get_trigger_params(self, user: User, attrnames: list[str]) -> list[dict]:
+    def get_trigger_params(self, user: User, attrnames: list[str]) -> list[dict[str, Any]]:
         entry_dict = self.to_dict(user, with_metainfo=True) or {}
 
         def _get_value(attrname: str, attrtype: int, value: Any) -> Any:

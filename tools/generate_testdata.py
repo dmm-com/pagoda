@@ -15,6 +15,7 @@ import sys
 from concurrent.futures import Future, ThreadPoolExecutor
 from datetime import date, datetime, timezone
 from optparse import OptionParser, Values
+from typing import Any
 
 import configurations
 
@@ -53,7 +54,7 @@ class ReferenceLevel:
         self.entries = entries
 
 
-def _random_string(length=10) -> str:
+def _random_string(length: int = 10) -> str:
     letters = string.ascii_letters
     return "".join(random.choice(letters) for i in range(length))
 
@@ -64,8 +65,8 @@ def _get_attribute_value(
     str
     | list[str]
     | bool
-    | dict
-    | list[dict]
+    | dict[str, Any]
+    | list[dict[str, Any]]
     | Entry
     | Group
     | Role
@@ -203,7 +204,7 @@ def generate_reference_hierarchy(user: User, suffix: str) -> list[ReferenceLevel
     return levels
 
 
-def generate_testdata(num_entities: int, num_entries: int, suffix: str):
+def generate_testdata(num_entities: int, num_entries: int, suffix: str) -> None:
     user = User.objects.first()
     if not user:
         user = User.objects.create(username="testuser", email="testuser@example.com")
@@ -245,7 +246,7 @@ def generate_testdata(num_entities: int, num_entries: int, suffix: str):
     ]
 
     with ThreadPoolExecutor() as executor:
-        futures: list[Future] = []
+        futures: list[Future[None]] = []
         for i, entity in enumerate(entities):
             for j in range(num_entries):
                 futures.append(

@@ -1,6 +1,7 @@
 import json
 from unittest.mock import Mock, patch
 
+from django.db.models import Max
 from rest_framework import status
 
 from acl.models import ACLType
@@ -10,7 +11,7 @@ from airone.lib.types import (
 )
 from entity.models import Entity, EntityAttr
 from entry import tasks
-from entry.models import Entry
+from entry.models import Attribute, Entry
 from entry.settings import CONFIG
 from entry.tests.test_api_v2 import BaseViewTest
 from group.models import Group
@@ -417,8 +418,17 @@ class ViewTest(BaseViewTest):
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(len(resp.json()), CONFIG.MAX_LIST_REFERRALS)
 
-        # specify invalid Attribute ID
-        resp = self.client.get("/entry/api/v2/9999/attr_referrals/")
+        # specify invalid Attribute ID. The view falls back to an EntityAttr lookup,
+        # so the id must exist in neither table; pick one past the current max to avoid
+        # collisions as the auto-increment grows across the suite.
+        invalid_attr_id = (
+            max(
+                Attribute.objects.aggregate(max_id=Max("id"))["max_id"] or 0,
+                EntityAttr.objects.aggregate(max_id=Max("id"))["max_id"] or 0,
+            )
+            + 1
+        )
+        resp = self.client.get("/entry/api/v2/%d/attr_referrals/" % invalid_attr_id)
         self.assertEqual(resp.status_code, 404)
 
         # speify valid Attribute ID and a enalbed keyword

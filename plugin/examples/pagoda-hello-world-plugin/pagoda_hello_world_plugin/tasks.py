@@ -6,6 +6,7 @@ Celery integration.
 """
 
 import logging
+from typing import Any
 
 from pagoda_plugin_sdk.tasks import Job, JobStatus, celery_app, register_plugin_job_task
 
@@ -16,7 +17,7 @@ logger = logging.getLogger("airone.plugins.hello_world")
 
 @register_plugin_job_task(HelloWorldPluginOperation.HELLO_WORLD_TASK)  # type: ignore[misc]
 @celery_app.task(bind=True)  # type: ignore[misc]
-def hello_world_task(self, job_id: int):
+def hello_world_task(self: Any, job_id: int) -> None:
     """Hello World task - does nothing but demonstrate task execution
 
     This is a simple task that demonstrates:

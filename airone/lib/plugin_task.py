@@ -313,7 +313,7 @@ class PluginTaskRegistry:
         cls._initialized = False
 
 
-def register_plugin_job_task(offset: int) -> Callable:
+def register_plugin_job_task(offset: int) -> Callable[[TaskHandler], TaskHandler]:
     """
     Decorator for plugin tasks that associates an operation_id with a Celery task.
     Similar to @register_job_task on the core side, it only takes a numeric offset.
