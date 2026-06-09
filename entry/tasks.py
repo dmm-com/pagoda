@@ -1,8 +1,8 @@
 import csv
 import io
 import json
-from datetime import datetime
-from typing import Any, Callable, List
+from datetime import date, datetime
+from typing import Any, Callable, List, TypeAlias
 
 import yaml
 from celery import Task
@@ -57,9 +57,14 @@ from role.models import Role
 from trigger.models import TriggerCondition
 from user.models import User
 
+# A single pre-serialization attribute value handed to the YAML exporter: an
+# object/named-object dict, a scalar, or None. Array values are unwrapped one
+# level up (in _get_attr_value) before reaching the primitive helper.
+ExportPrimitiveInput: TypeAlias = dict[str, Any] | str | int | float | date | datetime | bool | None
+
 
 def _merge_referrals_by_index(
-    ref_list: list[dict], name_list: list[dict]
+    ref_list: list[dict[str, Any]], name_list: list[dict[str, Any]]
 ) -> dict[int, dict[str, Any]]:
     """This is a helper function to set array_named_object value.
     This re-formats data construction with index parameter of argument.
@@ -250,11 +255,17 @@ def _do_import_entries(job: Job) -> None:
 
 
 def _yaml_export_v2(
-    job: Job, values: list[AdvancedSearchResultRecord], recv_data: dict, has_referral: bool
+    job: Job,
+    values: list[AdvancedSearchResultRecord],
+    recv_data: dict[str, Any],
+    has_referral: bool,
 ) -> io.StringIO | None:
-    def _get_attr_primitive_value(atype: int, value: dict) -> ExportedEntryAttributePrimitiveValue:
+    def _get_attr_primitive_value(
+        atype: int, value: ExportPrimitiveInput
+    ) -> ExportedEntryAttributePrimitiveValue:
         match atype:
             case AttrType.NAMED_OBJECT:
+                assert isinstance(value, dict)
                 [(key, val)] = value.items()
                 entry: Entry | None = (
                     Entry.objects.filter(id=val["id"]).first()
@@ -276,6 +287,7 @@ def _yaml_export_v2(
                     return {}
 
             case AttrType.OBJECT:
+                assert isinstance(value, dict)
                 entry = (
                     Entry.objects.filter(id=value["id"]).first()
                     if isinstance(value.get("id"), int)
@@ -290,6 +302,7 @@ def _yaml_export_v2(
                     return None
 
             case AttrType.GROUP:
+                assert isinstance(value, dict)
                 if (
                     isinstance(value.get("id"), int)
                     and Group.objects.filter(id=value["id"]).exists()
@@ -299,6 +312,7 @@ def _yaml_export_v2(
                     return None
 
             case AttrType.ROLE:
+                assert isinstance(value, dict)
                 if (
                     isinstance(value.get("id"), int)
                     and Role.objects.filter(id=value["id"]).exists()
@@ -308,13 +322,18 @@ def _yaml_export_v2(
                     return None
 
             case _:
+                assert not isinstance(value, dict)
                 return value
 
-    def _get_attr_value(atype: int, value: dict) -> ExportedEntryAttributeValue:
+    def _get_attr_value(
+        atype: int, value: ExportPrimitiveInput | list[Any]
+    ) -> ExportedEntryAttributeValue:
         match atype:
             case _ if atype & AttrType._ARRAY:
+                assert isinstance(value, list)
                 return [_get_attr_primitive_value(atype ^ AttrType._ARRAY, x) for x in value]
             case _:
+                assert not isinstance(value, list)
                 return _get_attr_primitive_value(atype, value)
 
     resp_data: List[ExportedEntityEntries] = []
@@ -825,7 +844,7 @@ def export_entries_v2(self: Task, job: Job) -> None:
 def _csv_export_v2(
     job: Job,
     values: list[AdvancedSearchResultRecord],
-    recv_data: dict,
+    recv_data: dict[str, Any],
     has_referral: bool,
 ) -> io.StringIO | None:
     """CSV export for v2. No Entity column; adds sub-attribute columns from join_attrs."""
@@ -910,7 +929,7 @@ def export_search_result_v2(self: Any, job: Job) -> tuple[JobStatus, str, ACLBas
     user = job.user
     serializer = AdvancedSearchResultExportSerializer(data=json.loads(job.params))
     serializer.is_valid(raise_exception=True)
-    params: dict = serializer.validated_data
+    params: dict[str, Any] = serializer.validated_data
     join_attrs = params.get("join_attrs", [])
 
     has_referral: bool = params.get("has_referral", False)
@@ -1133,7 +1152,7 @@ def bulk_update_entries(
             return None
 
         entry = Entry.objects.get(id=record.entry["id"])
-        updating_data: dict[str, list] = {"attrs": []}
+        updating_data: dict[str, list[Any]] = {"attrs": []}
         if job_params.get("value"):
             updating_data["attrs"].append(
                 {

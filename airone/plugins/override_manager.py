@@ -53,7 +53,7 @@ class OverrideRegistration:
 
     entity_id: int
     operation: OperationType
-    handler: Callable
+    handler: Callable[..., Any]
     plugin_id: str
     params: Dict[str, Any] = field(default_factory=dict)
 
@@ -117,7 +117,7 @@ class OverrideRegistry:
         self,
         entity_id: int,
         operation: OperationType,
-        handler: Callable,
+        handler: Callable[..., Any],
         plugin_id: str,
         params: Optional[Dict[str, Any] | BaseModel] = None,
     ) -> None:

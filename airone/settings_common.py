@@ -339,7 +339,7 @@ class Common(Configuration):
     )
 
     AUTHENTICATION_BACKENDS = ["django.contrib.auth.backends.ModelBackend"]
-    AUTH_CONFIG: dict[str, dict] = {"LDAP": {}}
+    AUTH_CONFIG: dict[str, dict[str, Any]] = {"LDAP": {}}
 
     # Note: Disable LDAP authentication by default in the mean time.
     if env.bool("AIRONE_LDAP_ENABLE", False):

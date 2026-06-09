@@ -104,7 +104,9 @@ def generate_plugin_cache_key(plugin_id: str, key: str) -> str:
     return f"pagoda:plugin:{sanitized_id}:{key}"
 
 
-def log_plugin_activity(plugin_id: str, action: str, details: Optional[Dict[str, Any]] = None):
+def log_plugin_activity(
+    plugin_id: str, action: str, details: Optional[Dict[str, Any]] = None
+) -> None:
     """Log plugin activity
 
     Args:
@@ -176,18 +178,18 @@ class PluginLogger:
         self.plugin_id = plugin_id
         self.logger = logging.getLogger(f"pagoda.plugin.{plugin_id}")
 
-    def info(self, message: str, **kwargs):
+    def info(self, message: str, **kwargs: Any) -> None:
         """Log info message"""
         self.logger.info(f"[{self.plugin_id}] {message}", **kwargs)
 
-    def warning(self, message: str, **kwargs):
+    def warning(self, message: str, **kwargs: Any) -> None:
         """Log warning message"""
         self.logger.warning(f"[{self.plugin_id}] {message}", **kwargs)
 
-    def error(self, message: str, **kwargs):
+    def error(self, message: str, **kwargs: Any) -> None:
         """Log error message"""
         self.logger.error(f"[{self.plugin_id}] {message}", **kwargs)
 
-    def debug(self, message: str, **kwargs):
+    def debug(self, message: str, **kwargs: Any) -> None:
         """Log debug message"""
         self.logger.debug(f"[{self.plugin_id}] {message}", **kwargs)

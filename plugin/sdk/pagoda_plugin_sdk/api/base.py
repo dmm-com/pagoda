@@ -237,7 +237,7 @@ class PluginViewSet(viewsets.ModelViewSet):
         # Delegate to parent for other exceptions
         return super().handle_exception(exc)
 
-    def initialize_request(self, request: Request, *args, **kwargs) -> Request:
+    def initialize_request(self, request: Request, *args: Any, **kwargs: Any) -> Request:
         """Initialize request with plugin context
 
         Adds plugin context to the request object for use in other components.
@@ -256,7 +256,7 @@ class PluginViewSet(viewsets.ModelViewSet):
 
         return request
 
-    def create(self, request: Request, *args, **kwargs) -> Response:
+    def create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         """Create a new model instance with plugin context
 
         Args:
@@ -268,7 +268,7 @@ class PluginViewSet(viewsets.ModelViewSet):
         logger.info(f"Plugin {self.get_plugin_id()} creating new instance")
         return super().create(request, *args, **kwargs)
 
-    def update(self, request: Request, *args, **kwargs) -> Response:
+    def update(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         """Update a model instance with plugin context
 
         Args:
@@ -280,7 +280,7 @@ class PluginViewSet(viewsets.ModelViewSet):
         logger.info(f"Plugin {self.get_plugin_id()} updating instance")
         return super().update(request, *args, **kwargs)
 
-    def destroy(self, request: Request, *args, **kwargs) -> Response:
+    def destroy(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         """Delete a model instance with plugin context
 
         Args:

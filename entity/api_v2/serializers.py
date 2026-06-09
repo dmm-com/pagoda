@@ -655,9 +655,9 @@ class EntitySerializer(serializers.ModelSerializer):
         is_create_mode: bool,
         validated_data: EntityCreateData | EntityUpdateData,
     ) -> Entity:
-        attrs_data: list = validated_data.get("attrs", [])
-        webhooks_data: list = validated_data.get("webhooks", [])
-        isolation_rules_data: list = validated_data.get("isolation_rules", [])
+        attrs_data: list[Any] = validated_data.get("attrs", [])
+        webhooks_data: list[Any] = validated_data.get("webhooks", [])
+        isolation_rules_data: list[Any] = validated_data.get("isolation_rules", [])
         exclude_entity_ids: list[int] | None = validated_data.get(
             "delete_chain_exclude_entities", None
         )
@@ -1173,7 +1173,7 @@ class EntityHistorySerializer(serializers.ModelSerializer):
         return obj.user.username
 
     @extend_schema_field(EntityHistoryChangeSerializer(many=True))
-    def get_changes(self, obj: History) -> List[dict]:
+    def get_changes(self, obj: History) -> List[dict[str, Any]]:
         """
         Get changes from simple-history records.
 
@@ -1314,7 +1314,7 @@ class EntityHistorySerializer(serializers.ModelSerializer):
         # If all records are after target_time, return the oldest one
         return historicals[-1] if historicals else None
 
-    def _find_prev_record(self, historicals: list, current: Any) -> Optional[Any]:
+    def _find_prev_record(self, historicals: list[Any], current: Any) -> Optional[Any]:
         """Find the previous record in the historical list."""
         try:
             idx = historicals.index(current)

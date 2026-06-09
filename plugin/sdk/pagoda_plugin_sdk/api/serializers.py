@@ -189,7 +189,7 @@ class PluginModelSerializer(PluginSerializerMixin, ModelSerializer):
                 fields = ['id', 'name', 'description']
     """
 
-    def get_field_names(self, declared_fields, info):
+    def get_field_names(self, declared_fields: Any, info: Any) -> Any:
         """Get field names with plugin-specific filtering
 
         Args:
@@ -281,7 +281,7 @@ class PluginValidationMixin:
 
         return value
 
-    def validate_unique_in_plugin(self, value: Any, field_name: str, queryset) -> Any:
+    def validate_unique_in_plugin(self, value: Any, field_name: str, queryset: Any) -> Any:
         """Validate that a value is unique within plugin scope
 
         Args:
@@ -324,7 +324,7 @@ class PluginListSerializer(PluginSerializerMixin, Serializer):
             total_count = serializers.IntegerField()
     """
 
-    def to_representation(self, data):
+    def to_representation(self, data: Any) -> Any:
         """Convert list data to representation
 
         Args:
@@ -367,7 +367,7 @@ class PluginErrorSerializer(Serializer):
     plugin_id = serializers.CharField(max_length=100, required=False)
     timestamp = serializers.DateTimeField(required=False)
 
-    def to_representation(self, instance):
+    def to_representation(self, instance: Any) -> Any:
         """Convert error data to representation
 
         Args:

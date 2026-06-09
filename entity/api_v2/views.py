@@ -1,5 +1,5 @@
 import logging
-from typing import List
+from typing import Any, List
 
 from django.db.models import F, QuerySet
 from django.http import Http404, HttpRequest
@@ -348,7 +348,9 @@ class EntityHistoryAPI(viewsets.ReadOnlyModelViewSet):
         serializer = self.get_serializer(cached_histories, many=True, context=serializer_context)
         return Response(serializer.data)
 
-    def _build_historical_cache(self, entity: Entity, histories: List[History]) -> dict:
+    def _build_historical_cache(
+        self, entity: Entity, histories: List[History]
+    ) -> dict[str, List[Any]]:
         """
         Build cache for simple-history records to avoid N+1 queries.
 
@@ -414,7 +416,7 @@ class EntityExportAPI(generics.RetrieveAPIView):
     serializer_class = EntityImportExportRootSerializer
     renderer_classes = [YAMLRenderer]
 
-    def get_object(self) -> dict:
+    def get_object(self) -> dict[str, Any]:
         user: User = self.request.user
         entities = get_permitted_objects(user, Entity, ACLType.Readable)
         attrs = get_permitted_objects(user, EntityAttr, ACLType.Readable)

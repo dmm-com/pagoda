@@ -55,7 +55,7 @@ class ServiceHandlers:
         self._relationships: list[EntityRelationship] | None = None
 
     @property
-    def relationships(self):
+    def relationships(self) -> list[EntityRelationship]:
         """Get the entity relationships (lazy loaded)."""
         if self._relationships is None:
             self._relationships = self.plugin.get_relationships()

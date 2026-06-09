@@ -132,7 +132,7 @@ class Plugin:
         # Assumes params_model is a Pydantic BaseModel
         return self.params_model(**params)
 
-    def get_handler(self, operation: str) -> Optional[Callable]:
+    def get_handler(self, operation: str) -> Optional[Callable[..., Any]]:
         """Get the override handler for a specific operation.
 
         Uses the pre-built _override_handlers mapping for O(1) lookup.

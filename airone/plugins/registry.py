@@ -115,7 +115,7 @@ class PluginRegistry:
         if registered_count > 0:
             logger.info(f"Registered {registered_count} hook(s) for plugin '{plugin.id}'")
 
-    def _load_handler(self, handler_path: str) -> Callable:
+    def _load_handler(self, handler_path: str) -> Callable[..., Any]:
         """Load handler function from module path
 
         Args:

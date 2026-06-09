@@ -100,7 +100,7 @@ def override_operation(operation: str) -> Callable[[F], F]:
         setattr(method, OVERRIDE_META_ATTR, meta)
 
         @wraps(method)
-        def wrapper(*args, **kwargs):
+        def wrapper(*args: Any, **kwargs: Any) -> Any:
             return method(*args, **kwargs)
 
         setattr(wrapper, OVERRIDE_META_ATTR, meta)

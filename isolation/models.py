@@ -39,7 +39,9 @@ class IsolationParent(models.Model):
         return self.applies_to(requesting_entity) and self.conditions_match(entry)
 
     @classmethod
-    def get_isolated_entry_ids(cls, candidate_entries: "QuerySet", requesting_entity: Any) -> set:
+    def get_isolated_entry_ids(
+        cls, candidate_entries: "QuerySet", requesting_entity: Any
+    ) -> set[int]:
         """
         Returns the set of entry IDs that are isolated from requesting_entity.
         Iterates only IsolationParents whose actions apply to requesting_entity.
@@ -59,7 +61,7 @@ class IsolationParent(models.Model):
         if not applicable_parents.exists():
             return set()
 
-        isolated_ids: set = set()
+        isolated_ids: set[int] = set()
         for entry in candidate_entries:
             for parent in applicable_parents.filter(entity_id=entry.schema_id):
                 if parent.conditions_match(entry):
@@ -67,7 +69,7 @@ class IsolationParent(models.Model):
                     break
         return isolated_ids
 
-    def save_conditions(self, conditions_data: list) -> None:
+    def save_conditions(self, conditions_data: list[dict[str, Any]]) -> None:
         from entity.models import EntityAttr
         from entry.models import Entry
 
