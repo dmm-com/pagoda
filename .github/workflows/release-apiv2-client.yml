@@ -27,7 +27,7 @@ jobs:
         run: pipx install uv
       - uses: actions/setup-python@7f4fc3e22c37d6ff65e88745f38bd3157c663f7c # v4
         with:
-          python-version: "3.13"
+          python-version: "3.14"
           cache: "pip"
       - name: apt-get
         run: |

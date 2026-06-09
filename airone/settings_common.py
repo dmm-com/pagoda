@@ -502,8 +502,6 @@ class Common(Configuration):
 
         patch_all(mysql=False, mysqldb=False, pymysql=False, botocore=False, logging=True)
 
-        INSTALLED_APPS.append("ddtrace.contrib.django")
-
         LOGGING["formatters"]["all"]["format"] = "\t".join(
             [
                 "[%(levelname)s]",
