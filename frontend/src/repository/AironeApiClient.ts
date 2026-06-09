@@ -7,6 +7,7 @@ import {
   AdvancedSearchJoinAttrInfo,
   AdvancedSearchResult,
   AdvancedSearchResultAttrInfo,
+  AdvancedSearchSort,
   AttributeData,
   CategoryApi,
   CategoryCreate,
@@ -871,6 +872,7 @@ class AironeApiClient {
     entryHint?: EntryHint,
     excludeReferrals: number[] = [],
     includeReferrals: number[] = [],
+    sort?: AdvancedSearchSort,
   ): Promise<AdvancedSearchResult> {
     return await this.entry.entryApiV2AdvancedSearchCreate(
       {
@@ -887,6 +889,7 @@ class AironeApiClient {
           hintEntry: entryHint,
           excludeReferrals: excludeReferrals,
           includeReferrals: includeReferrals,
+          sort: sort,
         },
       },
       {

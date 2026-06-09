@@ -987,8 +987,50 @@ def _make_an_attribute_filter(hint: AttrHint, keyword: str) -> dict[str, Any]:
     return {"nested": {"path": "attr", "query": {"bool": {"filter": cond_attr}}}}
 
 
+# Sentinel value for sorting by entry name in Advanced Search.
+ENTRY_NAME_SORT_TARGET = "__entry_name__"
+
+
+def make_attr_sort_clauses(
+    target_attrname: str, order: str, attr_type: int | None
+) -> list[dict[str, Any]]:
+    """Build ES sort clauses for Advanced Search.
+
+    For attribute targets, this emits a nested sort filtered by attr.name so
+    that the correct attribute drives the ordering, with entry name as a
+    stable secondary key. Only the attribute types listed in
+    ``is_sortable_attr_type`` are supported here — callers must validate.
+    """
+    if order not in ("asc", "desc"):
+        raise ValueError(f"unsupported sort order: {order}")
+
+    if target_attrname == ENTRY_NAME_SORT_TARGET:
+        return [{"name.keyword": {"order": order}}]
+
+    if attr_type is not None and attr_type & (AttrType.DATE | AttrType.DATETIME):
+        sort_field = "attr.date_value"
+    else:
+        sort_field = "attr.value.keyword"
+
+    return [
+        {
+            sort_field: {
+                "order": order,
+                "nested": {
+                    "path": "attr",
+                    "filter": {"term": {"attr.name": target_attrname}},
+                },
+            }
+        },
+        {"name.keyword": "asc"},
+    ]
+
+
 def execute_query(
-    query: dict[str, Any], size: int | None = None, offset: int | None = None
+    query: dict[str, Any],
+    size: int | None = None,
+    offset: int | None = None,
+    sort: list[dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     """Run a search query.
 
@@ -996,6 +1038,8 @@ def execute_query(
         query (dict[str, dict]): Search query
         size (int | None): Size of search query results
         offset (int | None): Offset of search query results
+        sort (list[dict] | None): Sort clauses to override the default. When
+            None, the existing entry-name-asc default is preserved.
 
     Raises:
         Exception: If query execution fails, output error details.
@@ -1005,8 +1049,9 @@ def execute_query(
 
     """
     # Include sort in body for compatibility with both ES7 and ES8 servers
-    # Only add default sort if not already specified in the query
-    if "sort" not in query:
+    if sort is not None:
+        query = {**query, "sort": sort}
+    elif "sort" not in query:
         query = {**query, "sort": [{"name.keyword": "asc"}]}
     kwargs = {
         "size": min(size, 500000) if size else settings.ES_CONFIG["MAXIMUM_RESULTS_NUM"],
@@ -1078,13 +1123,19 @@ def make_search_results(
         "schema"
     )
 
-    hit_infos: dict[Entry, dict[str, Any]] = {}
-    for entry in hit_entries[:limit]:
-        hit_infos[entry] = [x["_source"] for x in res["hits"]["hits"] if int(x["_id"]) == entry.id][
-            0
-        ]
+    # Preserve the order returned by Elasticsearch so caller-specified sorts
+    # (e.g. by attribute value) are not overridden here.
+    entries_by_id = {e.id: e for e in hit_entries}
+    ordered_hits: list[tuple[Entry, dict[str, Any]]] = []
+    for hit in res["hits"]["hits"]:
+        if len(ordered_hits) >= limit:
+            break
+        entry = entries_by_id.get(int(hit["_id"]))
+        if entry is None:
+            continue
+        ordered_hits.append((entry, hit["_source"]))
 
-    for entry, entry_info in sorted(hit_infos.items(), key=lambda x: x[0].name):
+    for entry, entry_info in ordered_hits:
         record = AdvancedSearchResultRecord(
             entity={"id": entry.schema.id, "name": entry.schema.name},
             entry={"id": entry.id, "name": entry.name},

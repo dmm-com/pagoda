@@ -2,8 +2,13 @@ import {
   AdvancedSearchJoinAttrInfo,
   AdvancedSearchResultAttrInfo,
   AdvancedSearchResultAttrInfoFilterKeyEnum,
+  AdvancedSearchSort,
+  AdvancedSearchSortOrderEnum,
   EntryHint,
 } from "@dmm-com/airone-apiclient-typescript-fetch";
+
+// Sentinel sort target identifying the entry-name column.
+export const ENTRY_NAME_SORT_TARGET = "__entry_name__";
 
 export type AttrFilter = {
   filterKey: AdvancedSearchResultAttrInfoFilterKeyEnum;
@@ -30,6 +35,7 @@ export interface AdvancedSearchParams {
   attrInfo: AdvancedSearchResultAttrInfo[];
   joinAttrs: AdvancedSearchJoinAttrInfo[];
   hintEntry?: EntryHint;
+  sort?: AdvancedSearchSort;
 }
 
 const AdvancedSearchParamKey = {
@@ -43,6 +49,8 @@ const AdvancedSearchParamKey = {
   PAGE: "page",
   JOIN_ATTRS: "join_attrs",
   HINT_ENTRY: "hint_entry",
+  SORT: "sort",
+  ORDER: "order",
 } as const;
 type AdvancedSearchParamKey =
   (typeof AdvancedSearchParamKey)[keyof typeof AdvancedSearchParamKey];
@@ -93,6 +101,7 @@ export function formatAdvancedSearchParams({
   baseParams,
   joinAttrs,
   hintEntry,
+  sort,
 }: {
   attrsFilter?: AttrsFilter;
   entityIds?: string[];
@@ -104,6 +113,7 @@ export function formatAdvancedSearchParams({
   baseParams?: URLSearchParams;
   joinAttrs?: JoinAttr[];
   hintEntry?: EntryHint;
+  sort?: AdvancedSearchSort | null;
 }): URLSearchParams {
   const params = new AdvancedSearchParamsInner(new URLSearchParams(baseParams));
 
@@ -170,6 +180,19 @@ export function formatAdvancedSearchParams({
     params.delete(AdvancedSearchParamKey.HINT_ENTRY);
   }
 
+  if (sort !== undefined) {
+    if (sort === null) {
+      params.delete(AdvancedSearchParamKey.SORT);
+      params.delete(AdvancedSearchParamKey.ORDER);
+    } else {
+      params.set(AdvancedSearchParamKey.SORT, sort.targetAttrname);
+      params.set(
+        AdvancedSearchParamKey.ORDER,
+        sort.order ?? AdvancedSearchSortOrderEnum.Asc,
+      );
+    }
+  }
+
   params.delete("page");
 
   return params.urlSearchParams();
@@ -200,6 +223,17 @@ export function extractAdvancedSearchParams(
     hintEntry = JSON.parse(hintEntryRaw) as EntryHint;
   }
 
+  let sort: AdvancedSearchSort | undefined = undefined;
+  const sortTarget = params.get("sort");
+  if (sortTarget) {
+    const orderRaw = params.get("order");
+    const order: AdvancedSearchSortOrderEnum =
+      orderRaw === AdvancedSearchSortOrderEnum.Desc
+        ? AdvancedSearchSortOrderEnum.Desc
+        : AdvancedSearchSortOrderEnum.Asc;
+    sort = { targetAttrname: sortTarget, order };
+  }
+
   return {
     entityIds,
     searchAllEntities,
@@ -210,5 +244,6 @@ export function extractAdvancedSearchParams(
     attrInfo,
     joinAttrs,
     hintEntry,
+    sort,
   };
 }

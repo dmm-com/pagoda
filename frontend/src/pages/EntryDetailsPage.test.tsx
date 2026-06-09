@@ -44,6 +44,15 @@ const server = setupServer(
       ],
     });
   }),
+  // getTrigger
+  http.get("http://localhost/trigger/api/v2/", () => {
+    return HttpResponse.json({
+      count: 0,
+      next: null,
+      previous: null,
+      results: [],
+    });
+  }),
 );
 
 beforeAll(() => server.listen());

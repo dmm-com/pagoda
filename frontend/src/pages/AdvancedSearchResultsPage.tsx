@@ -149,6 +149,7 @@ export const AdvancedSearchResultsPage: FC = () => {
     attrInfo,
     joinAttrs,
     hintEntry,
+    sort,
   } = useMemo(() => {
     const params = new URLSearchParams(location.search);
     return extractAdvancedSearchParams(params);
@@ -186,6 +187,7 @@ export const AdvancedSearchResultsPage: FC = () => {
         hintEntry,
         referralExcludeModelIds,
         referralIncludeModelIds,
+        sort,
       )
       .then((results) => {
         if (myId !== requestIdRef.current) return;
@@ -387,6 +389,7 @@ export const AdvancedSearchResultsPage: FC = () => {
             defaultReferralFilter={referralName}
             defaultReferralIncludeModelIds={referralIncludeModelIds}
             defaultReferralExcludeModelIds={referralExcludeModelIds}
+            defaultSort={sort}
             defaultAttrsFilter={
               // make defaultAttrFilter to make fabric contexts of joinAttrs into the one of attrinfo
               // for considering order of showing attribute by userdefined one and connection of

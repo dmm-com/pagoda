@@ -230,11 +230,28 @@ exports[`should match snapshot 1`] = `
                         <div
                           class="MuiBox-root css-1p22ljb"
                         >
-                          <p
-                            class="MuiTypography-root MuiTypography-body1 css-rizt0-MuiTypography-root"
+                          <span
+                            class="MuiButtonBase-root MuiTableSortLabel-root MuiTableSortLabel-directionAsc css-iykaik-MuiButtonBase-root-MuiTableSortLabel-root"
+                            role="button"
+                            tabindex="0"
                           >
-                            アイテム名
-                          </p>
+                            <p
+                              class="MuiTypography-root MuiTypography-body1 css-rizt0-MuiTypography-root"
+                            >
+                              アイテム名
+                            </p>
+                            <svg
+                              aria-hidden="true"
+                              class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium MuiTableSortLabel-icon MuiTableSortLabel-iconDirectionAsc css-7ojauk-MuiSvgIcon-root-MuiTableSortLabel-icon"
+                              data-testid="ArrowDownwardIcon"
+                              focusable="false"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                d="M20 12l-1.41-1.41L13 16.17V4h-2v12.17l-5.58-5.59L4 12l8 8 8-8z"
+                              />
+                            </svg>
+                          </span>
                           <button
                             aria-label="アイテム名でフィルタ"
                             class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-5ws45t-MuiButtonBase-root-MuiIconButton-root"
@@ -611,11 +628,28 @@ exports[`should match snapshot 1`] = `
                       <div
                         class="MuiBox-root css-1p22ljb"
                       >
-                        <p
-                          class="MuiTypography-root MuiTypography-body1 css-rizt0-MuiTypography-root"
+                        <span
+                          class="MuiButtonBase-root MuiTableSortLabel-root MuiTableSortLabel-directionAsc css-iykaik-MuiButtonBase-root-MuiTableSortLabel-root"
+                          role="button"
+                          tabindex="0"
                         >
-                          アイテム名
-                        </p>
+                          <p
+                            class="MuiTypography-root MuiTypography-body1 css-rizt0-MuiTypography-root"
+                          >
+                            アイテム名
+                          </p>
+                          <svg
+                            aria-hidden="true"
+                            class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium MuiTableSortLabel-icon MuiTableSortLabel-iconDirectionAsc css-7ojauk-MuiSvgIcon-root-MuiTableSortLabel-icon"
+                            data-testid="ArrowDownwardIcon"
+                            focusable="false"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              d="M20 12l-1.41-1.41L13 16.17V4h-2v12.17l-5.58-5.59L4 12l8 8 8-8z"
+                            />
+                          </svg>
+                        </span>
                         <button
                           aria-label="アイテム名でフィルタ"
                           class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-5ws45t-MuiButtonBase-root-MuiIconButton-root"

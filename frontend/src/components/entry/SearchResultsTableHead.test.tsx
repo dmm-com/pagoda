@@ -2,9 +2,12 @@
  * @jest-environment jsdom
  */
 
-import { EntryAttributeTypeTypeEnum } from "@dmm-com/airone-apiclient-typescript-fetch";
+import {
+  AdvancedSearchSortOrderEnum,
+  EntryAttributeTypeTypeEnum,
+} from "@dmm-com/airone-apiclient-typescript-fetch";
 import { Table, TableContainer } from "@mui/material";
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { useLocation, useNavigate } from "react-router";
 
 import { SearchResultsTableHead } from "./SearchResultsTableHead";
@@ -157,5 +160,67 @@ describe("SearchResultsTableHead", () => {
 
     // Should render basic structure
     expect(screen.getByText("アイテム名")).toBeInTheDocument();
+  });
+
+  describe("sort label", () => {
+    const findSortLabel = (headerText: string) =>
+      screen.getByText(headerText).closest(".MuiTableSortLabel-root");
+
+    test("entry name column always carries a sort label", () => {
+      renderSearchResultsTableHead();
+      expect(findSortLabel("アイテム名")).toBeTruthy();
+    });
+
+    test("sortable attribute type shows a sort label", () => {
+      renderSearchResultsTableHead({
+        attrTypes: { stringAttr: EntryAttributeTypeTypeEnum.STRING },
+        defaultAttrsFilter: { stringAttr: { filterKey: 0, keyword: "" } },
+      });
+      expect(findSortLabel("stringAttr")).toBeTruthy();
+    });
+
+    test.each([
+      ["number", EntryAttributeTypeTypeEnum.NUMBER],
+      ["boolean", EntryAttributeTypeTypeEnum.BOOLEAN],
+      ["array_string", EntryAttributeTypeTypeEnum.ARRAY_STRING],
+      ["named_object", EntryAttributeTypeTypeEnum.NAMED_OBJECT],
+      ["array_named_object", EntryAttributeTypeTypeEnum.ARRAY_NAMED_OBJECT],
+    ])("unsortable type (%s) does NOT show a sort label", (label, type) => {
+      renderSearchResultsTableHead({
+        attrTypes: { unsortableAttr: type },
+        defaultAttrsFilter: { unsortableAttr: { filterKey: 0, keyword: "" } },
+      });
+      expect(findSortLabel("unsortableAttr")).toBeFalsy();
+    });
+
+    test("clicking an unsorted column navigates with asc", () => {
+      renderSearchResultsTableHead({
+        attrTypes: { stringAttr: EntryAttributeTypeTypeEnum.STRING },
+        defaultAttrsFilter: { stringAttr: { filterKey: 0, keyword: "" } },
+      });
+      const label = findSortLabel("stringAttr");
+      fireEvent.click(label!);
+      expect(mockNavigate).toHaveBeenCalled();
+      const target = (mockNavigate.mock.calls[0][0] as { search: string })
+        .search;
+      expect(target).toContain("sort=stringAttr");
+      expect(target).toContain("order=asc");
+    });
+
+    test("clicking the currently-sorted column toggles to desc", () => {
+      renderSearchResultsTableHead({
+        attrTypes: { stringAttr: EntryAttributeTypeTypeEnum.STRING },
+        defaultAttrsFilter: { stringAttr: { filterKey: 0, keyword: "" } },
+        defaultSort: {
+          targetAttrname: "stringAttr",
+          order: AdvancedSearchSortOrderEnum.Asc,
+        },
+      });
+      const label = findSortLabel("stringAttr");
+      fireEvent.click(label!);
+      const target = (mockNavigate.mock.calls[0][0] as { search: string })
+        .search;
+      expect(target).toContain("order=desc");
+    });
   });
 });

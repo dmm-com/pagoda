@@ -1,5 +1,7 @@
 import {
   AdvancedSearchJoinAttrInfo,
+  AdvancedSearchSort,
+  AdvancedSearchSortOrderEnum,
   EntityAttrIDandName,
   EntryAttributeTypeTypeEnum,
   EntryHint,
@@ -16,6 +18,7 @@ import {
   TableCell,
   TableHead,
   TableRow,
+  TableSortLabel,
   Tooltip,
   Typography,
 } from "@mui/material";
@@ -41,8 +44,42 @@ import { getIsFiltered } from "pages/AdvancedSearchResultsPage";
 import {
   AttrFilter,
   AttrsFilter,
+  ENTRY_NAME_SORT_TARGET,
   formatAdvancedSearchParams,
 } from "services/entry/AdvancedSearch";
+
+// Bitmask matching backend airone.lib.types.is_sortable_attr_type:
+// STRING/TEXT/OBJECT/GROUP/ROLE/DATE/DATETIME, excluding _ARRAY/_NAMED variants
+// and NUMBER/BOOLEAN (which lack a sort-friendly representation in ES today).
+const SORTABLE_BASE_MASK =
+  EntryAttributeTypeTypeEnum.STRING |
+  EntryAttributeTypeTypeEnum.TEXT |
+  EntryAttributeTypeTypeEnum.OBJECT |
+  EntryAttributeTypeTypeEnum.GROUP |
+  EntryAttributeTypeTypeEnum.ROLE |
+  EntryAttributeTypeTypeEnum.DATE |
+  EntryAttributeTypeTypeEnum.DATETIME;
+
+const isSortableAttrType = (attrType: number | undefined): boolean => {
+  if (attrType == null) return false;
+  if (
+    (attrType &
+      (EntryAttributeTypeTypeEnum._ARRAY |
+        EntryAttributeTypeTypeEnum._NAMED)) !==
+    0
+  ) {
+    return false;
+  }
+  if (
+    (attrType &
+      (EntryAttributeTypeTypeEnum.NUMBER |
+        EntryAttributeTypeTypeEnum.BOOLEAN)) !==
+    0
+  ) {
+    return false;
+  }
+  return (attrType & SORTABLE_BASE_MASK) !== 0;
+};
 
 const HeaderBox = styled(Box)({
   display: "flex",
@@ -67,6 +104,7 @@ interface Props {
   defaultReferralIncludeModelIds?: number[];
   defaultReferralExcludeModelIds?: number[];
   defaultAttrsFilter?: AttrsFilter;
+  defaultSort?: AdvancedSearchSort;
   entityIds: number[];
   searchAllEntities: boolean;
   joinAttrs: AdvancedSearchJoinAttrInfo[];
@@ -93,6 +131,7 @@ export const SearchResultsTableHead: FC<Props> = ({
   defaultReferralIncludeModelIds,
   defaultReferralExcludeModelIds,
   defaultAttrsFilter = {},
+  defaultSort,
   entityIds,
   searchAllEntities,
   joinAttrs,
@@ -246,6 +285,34 @@ export const SearchResultsTableHead: FC<Props> = ({
       }));
     };
 
+  const handleSort = (targetAttrname: string) => {
+    let nextOrder: AdvancedSearchSortOrderEnum =
+      AdvancedSearchSortOrderEnum.Asc;
+    if (defaultSort?.targetAttrname === targetAttrname) {
+      nextOrder =
+        defaultSort.order === AdvancedSearchSortOrderEnum.Asc
+          ? AdvancedSearchSortOrderEnum.Desc
+          : AdvancedSearchSortOrderEnum.Asc;
+    }
+    const newParams = formatAdvancedSearchParams({
+      baseParams: new URLSearchParams(location.search),
+      sort: { targetAttrname, order: nextOrder },
+    });
+    navigate({
+      pathname: location.pathname,
+      search: "?" + newParams.toString(),
+    });
+  };
+
+  const getSortDirection = (
+    targetAttrname: string,
+  ): "asc" | "desc" | undefined => {
+    if (defaultSort?.targetAttrname !== targetAttrname) return undefined;
+    return defaultSort.order === AdvancedSearchSortOrderEnum.Desc
+      ? "desc"
+      : "asc";
+  };
+
   return (
     <TableHead>
       <TableRow sx={{ backgroundColor: "primary.dark" }}>
@@ -273,7 +340,24 @@ export const SearchResultsTableHead: FC<Props> = ({
             : { sx: { outline: "1px solid #FFFFFF" } })}
         >
           <HeaderBox>
-            <Typography>{!omitHeadline ? "アイテム名" : ""}</Typography>
+            {omitHeadline ? (
+              <Typography />
+            ) : (
+              <TableSortLabel
+                active={defaultSort?.targetAttrname === ENTRY_NAME_SORT_TARGET}
+                direction={getSortDirection(ENTRY_NAME_SORT_TARGET) ?? "asc"}
+                onClick={() => handleSort(ENTRY_NAME_SORT_TARGET)}
+                sx={{
+                  color: "primary.contrastText",
+                  "&:hover, &.Mui-active, &.Mui-active .MuiTableSortLabel-icon":
+                    {
+                      color: "primary.contrastText",
+                    },
+                }}
+              >
+                <Typography>アイテム名</Typography>
+              </TableSortLabel>
+            )}
 
             {/* SearchControlMenu would be invisible when NarrowDown Mode is True */}
             {isNarrowDown && !omitHeadline && (
@@ -302,11 +386,33 @@ export const SearchResultsTableHead: FC<Props> = ({
         {attrNames.map((attrName) => (
           <StyledTableCell key={attrName}>
             <HeaderBox>
-              <Typography>
-                {defaultAttrsFilter[attrName]?.alterName
-                  ? defaultAttrsFilter[attrName].alterName
-                  : attrName}
-              </Typography>
+              {isSortableAttrType(attrTypes[attrName]) &&
+              defaultAttrsFilter[attrName]?.joinedAttrname === undefined ? (
+                <TableSortLabel
+                  active={defaultSort?.targetAttrname === attrName}
+                  direction={getSortDirection(attrName) ?? "asc"}
+                  onClick={() => handleSort(attrName)}
+                  sx={{
+                    color: "primary.contrastText",
+                    "&:hover, &.Mui-active, &.Mui-active .MuiTableSortLabel-icon":
+                      {
+                        color: "primary.contrastText",
+                      },
+                  }}
+                >
+                  <Typography>
+                    {defaultAttrsFilter[attrName]?.alterName
+                      ? defaultAttrsFilter[attrName].alterName
+                      : attrName}
+                  </Typography>
+                </TableSortLabel>
+              ) : (
+                <Typography>
+                  {defaultAttrsFilter[attrName]?.alterName
+                    ? defaultAttrsFilter[attrName].alterName
+                    : attrName}
+                </Typography>
+              )}
 
               {/* Bulk operation checkbox would be invisible when NarrowDown mode is true */}
               {(attrTypes[attrName] & EntryAttributeTypeTypeEnum.OBJECT) > 0 &&

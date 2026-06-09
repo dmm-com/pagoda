@@ -77,6 +77,35 @@ AttrTypeValue = {
     "datetime": AttrType.DATETIME,
     "number": AttrType.NUMBER,
 }
+
+
+def is_sortable_attr_type(attr_type: int) -> bool:
+    """Whether Advanced Search supports sorting results by this attribute type.
+
+    Sortable types (string/text/object/group/role/date/datetime) map directly
+    onto ES fields that are already keyword- or date-indexed. NUMBER and
+    BOOLEAN are stored as text in ES so would sort lexicographically, and any
+    _ARRAY / _NAMED variant lacks a single representative value per entry
+    without additional indexing.
+    """
+    if attr_type & (AttrType._ARRAY | AttrType._NAMED):
+        return False
+    if attr_type & (AttrType.NUMBER | AttrType.BOOLEAN):
+        return False
+    return bool(
+        attr_type
+        & (
+            AttrType.STRING
+            | AttrType.TEXT
+            | AttrType.OBJECT
+            | AttrType.GROUP
+            | AttrType.ROLE
+            | AttrType.DATE
+            | AttrType.DATETIME
+        )
+    )
+
+
 AttrDefaultValue: dict[int, Any] = {
     AttrType.OBJECT: None,
     AttrType.STRING: "",
