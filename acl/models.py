@@ -26,10 +26,10 @@ def _get_objid(permission: Permission) -> int:
     return int(permission.codename.split(".")[0])
 
 
-Permission.get_aclid = lambda self: _get_acltype(self)
-Permission.get_objid = lambda self: _get_objid(self)
-Permission.__le__ = lambda self, comp: _get_acltype(self) <= _get_acltype(comp)
-Permission.__ge__ = lambda self, comp: _get_acltype(self) >= _get_acltype(comp)
+Permission.get_aclid = lambda self: _get_acltype(self)  # type: ignore[attr-defined]
+Permission.get_objid = lambda self: _get_objid(self)  # type: ignore[attr-defined]
+Permission.__le__ = lambda self, comp: _get_acltype(self) <= _get_acltype(comp)  # type: ignore[operator]
+Permission.__ge__ = lambda self, comp: _get_acltype(self) >= _get_acltype(comp)  # type: ignore[operator]
 
 
 class HistoricalDifference(object):
@@ -56,7 +56,9 @@ class ACLBase(models.Model):
     # This fields describes the sub-class of this object
     objtype = models.IntegerField(default=0)
 
-    def save(self, update_fields: list[str] | None = None, *args: Any, **kwargs: Any) -> None:
+    def save(  # type: ignore[override]
+        self, update_fields: list[str] | None = None, *args: Any, **kwargs: Any
+    ) -> None:
         """This forcely adds updated_time to update_fields parameter when it's not specified
         on its parameter.
         """
@@ -69,9 +71,9 @@ class ACLBase(models.Model):
     def get_diff(instance, offset: int = 0) -> list[HistoricalDifference]:
         ret = []
         try:
-            (before_last, last) = list(reversed(instance.history.order_by("history_id")))[
-                offset : offset + 2
-            ]
+            (before_last, last) = list(
+                reversed(instance.history.order_by("history_id"))  # type: ignore[attr-defined]
+            )[offset : offset + 2]
             for change in before_last.diff_against(last, excluded_fields=["status"]).changes:
                 ret.append(HistoricalDifference(change.field, change.old, change.new))
 
@@ -102,7 +104,7 @@ class ACLBase(models.Model):
     def get_status(self, val: int) -> int:
         return self.status & val
 
-    def delete(self, *args: Any, **kwargs: Any) -> None:
+    def delete(self, *args: Any, **kwargs: Any) -> None:  # type: ignore[override]
         self.is_active = False
         self.name = "%s_deleted_%s" % (
             self.name,
@@ -147,7 +149,9 @@ class ACLBase(models.Model):
         return self._get_permission(ACLType.Full.id)
 
     def _get_permission(self, acltype: int) -> HistoricalPermission:
-        return HistoricalPermission.objects.get(codename="%s.%s" % (self.id, acltype))
+        return HistoricalPermission.objects.get(  # type: ignore[return-value]
+            codename="%s.%s" % (self.id, acltype)
+        )
 
     def get_subclass_object(self) -> "ACLBase":
         # Use importlib to prevent circular import
@@ -168,11 +172,18 @@ class ACLBase(models.Model):
         return model.objects.get(id=self.id)
 
     def is_same_object(self, comp: "ACLBase") -> bool:
-        return all([self[x] == comp[x] for x in self._IMPORT_INFO["header"]])
+        # _IMPORT_INFO and __getitem__ are provided by concrete subclasses
+        # (e.g. Entity) for import/export feature; ACLBase itself doesn't define them.
+        return all(
+            [
+                self[x] == comp[x]  # type: ignore[index]
+                for x in self._IMPORT_INFO["header"]  # type: ignore[attr-defined]
+            ]
+        )
 
     @classmethod
     def search(kls, query: str) -> "list[dict[str, str | ACLBase]]":
-        results = []
+        results: list[dict[str, str | ACLBase]] = []
         for obj in kls.objects.filter(name__icontains=query):
             results.append(
                 {

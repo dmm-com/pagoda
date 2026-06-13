@@ -40,7 +40,7 @@ class IsolationParent(models.Model):
 
     @classmethod
     def get_isolated_entry_ids(
-        cls, candidate_entries: "QuerySet", requesting_entity: Any
+        cls, candidate_entries: "QuerySet[Entry]", requesting_entity: Any
     ) -> set[int]:
         """
         Returns the set of entry IDs that are isolated from requesting_entity.
@@ -74,7 +74,10 @@ class IsolationParent(models.Model):
         from entry.models import Entry
 
         for cond_data in conditions_data:
-            attr = EntityAttr.objects.filter(id=cond_data.get("attr_id"), is_active=True).first()
+            attr_id = cond_data.get("attr_id")
+            if attr_id is None:
+                continue
+            attr = EntityAttr.objects.filter(id=attr_id, is_active=True).first()
             if not attr:
                 continue
 

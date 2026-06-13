@@ -25,9 +25,10 @@ class InputTriggerCondition(object):
     def __init__(self, **input: Any):
         # set EntityAttr from "attr" parameter of input
         attr_id = input.get("attr_id", 0)
-        self.attr = EntityAttr.objects.filter(id=attr_id, is_active=True).first()
-        if not self.attr:
+        attr = EntityAttr.objects.filter(id=attr_id, is_active=True).first()
+        if not attr:
             raise InvalidInputException("Specified attr(%s) is invalid" % attr_id)
+        self.attr: EntityAttr = attr
 
         # initialize each condition parameters
         self.initialize_condition()
@@ -118,9 +119,10 @@ class InputTriggerAction(object):
     def __init__(self, **input: Any):
         # set EntityAttr from "attr" parameter of input
         attr_id = input.get("attr_id", 0)
-        self.attr = EntityAttr.objects.filter(id=attr_id, is_active=True).first()
-        if not self.attr:
+        attr = EntityAttr.objects.filter(id=attr_id, is_active=True).first()
+        if not attr:
             raise InvalidInputException("Specified attr(%s) is invalid" % attr_id)
+        self.attr: EntityAttr = attr
 
         self.values: list[Any] = []
         if self.attr.type & AttrType._ARRAY:
@@ -171,7 +173,7 @@ class InputTriggerAction(object):
                     )
 
                 case AttrType.OBJECT:
-                    params = {}
+                    params: dict[str, Entry | None] = {}
                     if isinstance(input_value, Entry):
                         params["ref_cond"] = input_value
                     elif isinstance(input_value, int):
@@ -341,7 +343,7 @@ class TriggerCondition(models.Model):
                     return self.ref_cond.id == int(val)
 
             elif isinstance(val, Entry) or isinstance(val, ACLBase):
-                return self.ref_cond.id == val.id
+                return self.ref_cond is not None and self.ref_cond.id == val.id
 
             elif val is None:
                 return self.ref_cond is None
@@ -469,6 +471,8 @@ class TriggerCondition(models.Model):
                     remaining = []
                     if parent_attrv:
                         for child in parent_attrv.data_array.filter(referral__is_active=True):
+                            if child.referral is None:
+                                continue
                             remaining.append(
                                 {"name": child.value, "id": child.referral.id}
                                 if ea.type == AttrType.ARRAY_NAMED_OBJECT
@@ -533,6 +537,8 @@ class TriggerCondition(models.Model):
             params = []
             for data in recv_data:
                 entity_attr = EntityAttr.objects.filter(id=data["entity_attr_id"]).first()
+                if entity_attr is None:
+                    continue
 
                 if entity_attr.type & AttrType._NAMED and entity_attr.type & AttrType.OBJECT:
                     # merge name and id value to the data parameter to be compatible with APIv2
@@ -596,7 +602,9 @@ class TriggerAction(models.Model):
                 self.get_serializer_acceptable_value(x, attr_type ^ AttrType._ARRAY)
                 for x in self.values.all()
             ]
-        elif attr_type == AttrType.BOOLEAN:
+        if value is None:
+            return None
+        if attr_type == AttrType.BOOLEAN:
             return value.bool_cond
         elif attr_type == AttrType.NAMED_OBJECT:
             return {
