@@ -22,10 +22,15 @@ class JobAPI(viewsets.ModelViewSet):
     serializer_class = JobSerializers
 
     def get_queryset(self) -> QuerySet:
+        if self.request.user.is_superuser:
+            return Job.objects.all()
         return Job.objects.filter(user=self.request.user)
 
     def destroy(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         job: Job = self.get_object()
+
+        if job.user != request.user:
+            return Response("Cannot cancel another user's job", status=status.HTTP_403_FORBIDDEN)
 
         if job.status == JobStatus.DONE:
             return Response("Target job has already been done", status=status.HTTP_400_BAD_REQUEST)
@@ -51,6 +56,10 @@ class JobAPI(viewsets.ModelViewSet):
     )
     def download(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         job: Job = self.get_object()
+
+        if job.user != request.user:
+            return Response("Cannot download another user's job", status=status.HTTP_403_FORBIDDEN)
+
         encode_param = request.query_params.get("encode", "utf-8")
 
         if encode_param not in ["utf-8", "shift_jis"]:
@@ -78,6 +87,13 @@ class JobAPI(viewsets.ModelViewSet):
     parameters=[
         OpenApiParameter("created_after", OpenApiTypes.DATETIME, OpenApiParameter.QUERY),
         OpenApiParameter("target_id", OpenApiTypes.INT, OpenApiParameter.QUERY),
+        OpenApiParameter(
+            "all_users",
+            OpenApiTypes.BOOL,
+            OpenApiParameter.QUERY,
+            description="If true and the requester is a superuser, return jobs for all users.",
+            default=False,
+        ),
     ],
 )
 class JobListAPI(viewsets.ModelViewSet):
@@ -88,6 +104,10 @@ class JobListAPI(viewsets.ModelViewSet):
         user = self.request.user
         created_after: str | None = self.request.query_params.get("created_after", None)
         target_id: str | None = self.request.query_params.get("target_id", None)
+        all_users: bool = (
+            user.is_superuser
+            and self.request.query_params.get("all_users", "false").lower() == "true"
+        )
 
         export_operations: list[JobOperation] = [
             JobOperation.EXPORT_ENTRY,
@@ -96,7 +116,7 @@ class JobListAPI(viewsets.ModelViewSet):
             JobOperation.EXPORT_SEARCH_RESULT_V2,
         ]
         query = Q(
-            Q(user=user),
+            Q() if all_users else Q(user=user),
             ~Q(operation__in=Job.HIDDEN_OPERATIONS),
             Q(
                 Q(operation__in=export_operations)
