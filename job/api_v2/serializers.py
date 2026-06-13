@@ -33,7 +33,16 @@ class JobSerializers(serializers.ModelSerializer):
 
     class Meta:
         model = Job
-        fields = ["id", "user", "text", "status", "operation", "created_at", "target", "passed_time"]
+        fields = [
+            "id",
+            "user",
+            "text",
+            "status",
+            "operation",
+            "created_at",
+            "target",
+            "passed_time",
+        ]
 
     @extend_schema_field(JobTargetSerializer())
     def get_target(self, obj: Job) -> JobTarget | None:

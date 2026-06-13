@@ -29,6 +29,9 @@ class JobAPI(viewsets.ModelViewSet):
     def destroy(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         job: Job = self.get_object()
 
+        if job.user != request.user:
+            return Response("Cannot cancel another user's job", status=status.HTTP_403_FORBIDDEN)
+
         if job.status == JobStatus.DONE:
             return Response("Target job has already been done", status=status.HTTP_400_BAD_REQUEST)
 
@@ -53,6 +56,10 @@ class JobAPI(viewsets.ModelViewSet):
     )
     def download(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         job: Job = self.get_object()
+
+        if job.user != request.user:
+            return Response("Cannot download another user's job", status=status.HTTP_403_FORBIDDEN)
+
         encode_param = request.query_params.get("encode", "utf-8")
 
         if encode_param not in ["utf-8", "shift_jis"]:
@@ -80,6 +87,13 @@ class JobAPI(viewsets.ModelViewSet):
     parameters=[
         OpenApiParameter("created_after", OpenApiTypes.DATETIME, OpenApiParameter.QUERY),
         OpenApiParameter("target_id", OpenApiTypes.INT, OpenApiParameter.QUERY),
+        OpenApiParameter(
+            "all_users",
+            OpenApiTypes.BOOL,
+            OpenApiParameter.QUERY,
+            description="If true and the requester is a superuser, return jobs for all users.",
+            default=False,
+        ),
     ],
 )
 class JobListAPI(viewsets.ModelViewSet):

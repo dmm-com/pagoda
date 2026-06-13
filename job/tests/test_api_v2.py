@@ -235,7 +235,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(body["text"], "hoge")
 
     def test_get_job_with_invalid_param(self):
-        user = self.guest_login()
+        self.guest_login()
         resp = self.client.get("/job/api/v2/%d/" % 9999)
         self.assertEqual(resp.status_code, 404)
         self.assertEqual(
@@ -249,7 +249,6 @@ class ViewTest(AironeViewTest):
         entry = Entry.objects.create(name="entry", created_user=guest, schema=entity)
         job = Job.new_create(guest, entry, "hoge")
 
-        # guest cannot see admin's job (404 after admin creates one, but here just verify guest job)
         self.admin_login()
 
         # admin can retrieve any job by ID without extra parameters
@@ -257,6 +256,10 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.json()["id"], job.id)
         self.assertEqual(resp.json()["user"], guest.username)
+
+        # admin cannot cancel another user's job
+        resp = self.client.delete("/job/api/v2/%d/" % job.id)
+        self.assertEqual(resp.status_code, 403)
 
     def test_non_admin_cannot_use_all_users(self):
         guest = self.guest_login()
@@ -462,10 +465,7 @@ class ViewTest(AironeViewTest):
             resp.json(), [{"message": "Invalid encode parameter", "code": "AE-250000"}]
         )
 
-        # send request to download job with different user
+        # send request to download job with different user (superuser can retrieve but not download)
         self.admin_login()
         resp = self.client.get("/job/api/v2/%d/download" % job.id)
-        self.assertEqual(resp.status_code, 404)
-        self.assertEqual(
-            resp.json(), {"message": "No Job matches the given query.", "code": "AE-230000"}
-        )
+        self.assertEqual(resp.status_code, 403)

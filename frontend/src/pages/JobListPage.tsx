@@ -60,8 +60,7 @@ const JobListContent: FC<{
 
 export const JobListPage: FC = () => {
   const location = useLocation();
-  const isSuperuser =
-    ServerContext.getInstance()?.user?.isSuperuser === true;
+  const isSuperuser = ServerContext.getInstance()?.user?.isSuperuser === true;
 
   const { page, changePage } = usePage();
   const [allUsers, setAllUsers] = useState(false);
