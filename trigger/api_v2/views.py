@@ -1,7 +1,6 @@
 from typing import Any
 
 from django.db.models import QuerySet
-from django.http import Http404
 from rest_framework import serializers, status, viewsets
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import BasePermission, IsAuthenticated
@@ -45,11 +44,7 @@ class TriggerAPI(viewsets.ModelViewSet):
         if filter_entity_id:
             filters["entity__id"] = filter_entity_id
 
-        qs = TriggerParent.objects.filter(**filters)
-        if not qs.exists():
-            raise Http404
-
-        return qs
+        return TriggerParent.objects.filter(**filters)
 
     def destroy(self, request: Request, pk: int | str) -> Response:
         trigger_parent = TriggerParent.objects.filter(pk=pk).last()
