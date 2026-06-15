@@ -85,6 +85,7 @@ interface Props {
   onClose: () => void;
   attrname: string;
   attrType: number;
+  totalCount: number;
 }
 
 export const AttrStatsModal: FC<Props> = ({
@@ -92,6 +93,7 @@ export const AttrStatsModal: FC<Props> = ({
   onClose,
   attrname,
   attrType,
+  totalCount,
 }) => {
   const location = useLocation();
   const [allResults, setAllResults] = useState<AdvancedSearchResult | null>(
@@ -129,7 +131,7 @@ export const AttrStatsModal: FC<Props> = ({
         referralName,
         searchAllEntities,
         1,
-        99999,
+        totalCount,
         0,
         hintEntry,
         referralExcludeModelIds,
@@ -141,7 +143,7 @@ export const AttrStatsModal: FC<Props> = ({
       .finally(() => {
         setIsLoading(false);
       });
-  }, [open, location.search, attrname]);
+  }, [open, location.search, attrname, totalCount]);
 
   const stats = useMemo(() => {
     if (!allResults) return [];

@@ -161,6 +161,7 @@ export const SearchResults: FC<Props> = ({
               isReadonly={isReadonly}
               isNarrowDown={isNarrowDown}
               omitHeadline={omitHeadline}
+              totalCount={results.count}
             />
             <TableBody>
               {results.values?.map((result) => (

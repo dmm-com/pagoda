@@ -23,6 +23,7 @@ describe("SearchResultControlMenu", () => {
     setOpenEditModal: jest.fn(),
     isDisabledEditModal: false,
     entityAttrs: [],
+    totalCount: 0,
   };
 
   beforeEach(() => {

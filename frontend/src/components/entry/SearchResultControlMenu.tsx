@@ -61,6 +61,7 @@ interface Props {
   setEditTargetAttrID?: (attrID: number) => void;
   setEditTargetAttrname?: (attrname: string) => void;
   setEditTargetAttrtype?: (attrtype: number) => void;
+  totalCount: number;
 }
 
 export const SearchResultControlMenu: FC<Props> = ({
@@ -77,6 +78,7 @@ export const SearchResultControlMenu: FC<Props> = ({
   setEditTargetAttrID,
   setEditTargetAttrname,
   setEditTargetAttrtype,
+  totalCount,
 }) => {
   const [openStatsModal, setOpenStatsModal] = useState(false);
   const handleClick = (key: AdvancedSearchResultAttrInfoFilterKeyEnum) => {
@@ -631,6 +633,7 @@ export const SearchResultControlMenu: FC<Props> = ({
         onClose={() => setOpenStatsModal(false)}
         attrname={attrname}
         attrType={attrType ?? 0}
+        totalCount={totalCount}
       />
     </>
   );
