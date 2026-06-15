@@ -1,6 +1,5 @@
 import {
   AdvancedSearchJoinAttrInfo,
-  AdvancedSearchResult,
   EntityAttrIDandName,
   EntryAttributeTypeTypeEnum,
   EntryHint,
@@ -61,7 +60,6 @@ const StyledTableCell = styled(TableCell)(({ theme }) => ({
 }));
 
 interface Props {
-  results: AdvancedSearchResult;
   hasReferral: boolean;
   attrTypes: Record<string, number>;
   defaultEntryFilter?: EntryHint;
@@ -88,7 +86,6 @@ export interface handleSelectFilterConditionsParams {
 }
 
 export const SearchResultsTableHead: FC<Props> = ({
-  results,
   hasReferral,
   attrTypes,
   defaultEntryFilter,
@@ -350,7 +347,6 @@ export const SearchResultsTableHead: FC<Props> = ({
                     </StyledIconButton>
                   </Tooltip>
                   <SearchResultControlMenu
-                    results={results}
                     attrname={attrName}
                     attrFilter={attrsFilter[attrName]}
                     anchorElem={attributeMenuEls[attrName]}

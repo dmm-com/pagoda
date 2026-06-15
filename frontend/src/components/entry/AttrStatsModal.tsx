@@ -1,10 +1,12 @@
 import {
   AdvancedSearchResult,
+  AdvancedSearchResultAttrInfo,
   EntryAttributeTypeTypeEnum,
   EntryAttributeValue,
 } from "@dmm-com/airone-apiclient-typescript-fetch";
 import CloseIcon from "@mui/icons-material/Close";
 import {
+  CircularProgress,
   Dialog,
   DialogContent,
   DialogTitle,
@@ -17,7 +19,11 @@ import {
   TableHead,
   TableRow,
 } from "@mui/material";
-import { FC, useMemo } from "react";
+import { FC, useEffect, useMemo, useState } from "react";
+import { useLocation } from "react-router";
+
+import { aironeApiClient } from "repository/AironeApiClient";
+import { extractAdvancedSearchParams } from "services/entry/AdvancedSearch";
 
 function attrValueToKey(
   value: EntryAttributeValue,
@@ -78,7 +84,6 @@ interface Props {
   open: boolean;
   onClose: () => void;
   attrname: string;
-  results: AdvancedSearchResult;
   attrType: number;
 }
 
@@ -86,12 +91,62 @@ export const AttrStatsModal: FC<Props> = ({
   open,
   onClose,
   attrname,
-  results,
   attrType,
 }) => {
+  const location = useLocation();
+  const [allResults, setAllResults] = useState<AdvancedSearchResult | null>(
+    null,
+  );
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    if (!open) return;
+
+    const params = new URLSearchParams(location.search);
+    const {
+      entityIds,
+      attrInfo,
+      joinAttrs,
+      hasReferral,
+      referralName,
+      searchAllEntities,
+      hintEntry,
+      referralExcludeModelIds,
+      referralIncludeModelIds,
+    } = extractAdvancedSearchParams(params);
+
+    const filteredAttrInfo: AdvancedSearchResultAttrInfo[] = attrInfo.filter(
+      (attr) => attr.name === attrname,
+    );
+
+    setIsLoading(true);
+    aironeApiClient
+      .advancedSearch(
+        entityIds,
+        filteredAttrInfo,
+        joinAttrs,
+        hasReferral,
+        referralName,
+        searchAllEntities,
+        1,
+        99999,
+        0,
+        hintEntry,
+        referralExcludeModelIds,
+        referralIncludeModelIds,
+      )
+      .then((results) => {
+        setAllResults(results);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  }, [open, location.search, attrname]);
+
   const stats = useMemo(() => {
+    if (!allResults) return [];
     const counts = new Map<string, number>();
-    for (const row of results.values) {
+    for (const row of allResults.values) {
       const attr = row.attrs[attrname];
       if (!attr || !attr.isReadable) continue;
       const key = attrValueToKey(attr.value, attrType) || "(空白)";
@@ -100,7 +155,7 @@ export const AttrStatsModal: FC<Props> = ({
     return Array.from(counts.entries())
       .map(([value, count]) => ({ value, count }))
       .sort((a, b) => b.count - a.count);
-  }, [results.values, attrname, attrType]);
+  }, [allResults, attrname, attrType]);
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
@@ -114,24 +169,28 @@ export const AttrStatsModal: FC<Props> = ({
         </IconButton>
       </DialogTitle>
       <DialogContent>
-        <TableContainer component={Paper} variant="outlined">
-          <Table size="small">
-            <TableHead>
-              <TableRow>
-                <TableCell>値</TableCell>
-                <TableCell align="right">件数</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {stats.map(({ value, count }) => (
-                <TableRow key={value}>
-                  <TableCell>{value}</TableCell>
-                  <TableCell align="right">{count}</TableCell>
+        {isLoading ? (
+          <CircularProgress />
+        ) : (
+          <TableContainer component={Paper} variant="outlined">
+            <Table size="small">
+              <TableHead>
+                <TableRow>
+                  <TableCell>値</TableCell>
+                  <TableCell align="right">件数</TableCell>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
+              </TableHead>
+              <TableBody>
+                {stats.map(({ value, count }) => (
+                  <TableRow key={value}>
+                    <TableCell>{value}</TableCell>
+                    <TableCell align="right">{count}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        )}
       </DialogContent>
     </Dialog>
   );

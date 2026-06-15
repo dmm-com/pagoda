@@ -1,5 +1,4 @@
 import {
-  AdvancedSearchResult,
   AdvancedSearchResultAttrInfoFilterKeyEnum,
   EntityAttrIDandName,
   EntryAttributeTypeTypeEnum,
@@ -62,7 +61,6 @@ interface Props {
   setEditTargetAttrID?: (attrID: number) => void;
   setEditTargetAttrname?: (attrname: string) => void;
   setEditTargetAttrtype?: (attrtype: number) => void;
-  results?: AdvancedSearchResult;
 }
 
 export const SearchResultControlMenu: FC<Props> = ({
@@ -79,9 +77,7 @@ export const SearchResultControlMenu: FC<Props> = ({
   setEditTargetAttrID,
   setEditTargetAttrname,
   setEditTargetAttrtype,
-  results,
 }) => {
-  console.log("[onix/SearchResultControlMenu] results: ", results);
   const [openStatsModal, setOpenStatsModal] = useState(false);
   const handleClick = (key: AdvancedSearchResultAttrInfoFilterKeyEnum) => {
     // If the selected filter is the same, remove the filter.
@@ -621,7 +617,6 @@ export const SearchResultControlMenu: FC<Props> = ({
             variant="outlined"
             fullWidth
             startIcon={<LeaderboardIcon />}
-            disabled={!results}
             onClick={() => {
               handleClose();
               setOpenStatsModal(true);
@@ -631,15 +626,12 @@ export const SearchResultControlMenu: FC<Props> = ({
           </Button>
         </StyledBox>
       </Menu>
-      {results && (
-        <AttrStatsModal
-          open={openStatsModal}
-          onClose={() => setOpenStatsModal(false)}
-          attrname={attrname}
-          results={results}
-          attrType={attrType ?? 0}
-        />
-      )}
+      <AttrStatsModal
+        open={openStatsModal}
+        onClose={() => setOpenStatsModal(false)}
+        attrname={attrname}
+        attrType={attrType ?? 0}
+      />
     </>
   );
 };

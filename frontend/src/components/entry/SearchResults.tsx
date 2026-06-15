@@ -144,7 +144,6 @@ export const SearchResults: FC<Props> = ({
         <TableContainer component={Paper}>
           <Table id="table_result_list">
             <SearchResultsTableHead
-              results={results}
               entityAttrs={entityAttrs}
               hasReferral={hasReferral}
               attrTypes={attrTypes}

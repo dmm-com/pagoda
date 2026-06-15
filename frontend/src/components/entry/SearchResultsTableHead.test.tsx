@@ -61,7 +61,6 @@ describe("SearchResultsTableHead", () => {
   const stableJoinAttrs: never[] = [];
 
   const defaultProps = {
-    results: { count: 0, results: [] } as any,
     hasReferral: false,
     attrTypes: stableAttrTypes,
     entityIds: stableEntityIds,
