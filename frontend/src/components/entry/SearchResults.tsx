@@ -116,7 +116,7 @@ export const SearchResults: FC<Props> = ({
       _attrNames.map((attrName) => [
         attrName,
         entityAttrs.find((a) => a.name === attrName)?.type ??
-          results.values[0]?.attrs[attrName]?.type,
+        results.values[0]?.attrs[attrName]?.type,
       ]),
     );
     return [_attrNames, _attrTypes];
@@ -144,6 +144,7 @@ export const SearchResults: FC<Props> = ({
         <TableContainer component={Paper}>
           <Table id="table_result_list">
             <SearchResultsTableHead
+              results={results}
               entityAttrs={entityAttrs}
               hasReferral={hasReferral}
               attrTypes={attrTypes}

@@ -1,5 +1,6 @@
 import {
   AdvancedSearchJoinAttrInfo,
+  AdvancedSearchResult,
   EntityAttrIDandName,
   EntryAttributeTypeTypeEnum,
   EntryHint,
@@ -60,6 +61,7 @@ const StyledTableCell = styled(TableCell)(({ theme }) => ({
 }));
 
 interface Props {
+  results: AdvancedSearchResult;
   hasReferral: boolean;
   attrTypes: Record<string, number>;
   defaultEntryFilter?: EntryHint;
@@ -86,6 +88,7 @@ export interface handleSelectFilterConditionsParams {
 }
 
 export const SearchResultsTableHead: FC<Props> = ({
+  results,
   hasReferral,
   attrTypes,
   defaultEntryFilter,
@@ -178,65 +181,65 @@ export const SearchResultsTableHead: FC<Props> = ({
 
   const handleSelectFilterConditions =
     (attrName?: string) =>
-    ({
-      attrFilter,
-      overwriteReferral,
-      overwriteReferralIncludeModelIds,
-      overwriteReferralExcludeModelIds,
-      overwriteHintEntry,
-    }: handleSelectFilterConditionsParams) => {
-      const _attrsFilter =
-        attrName != null && attrFilter != null
-          ? { ...attrsFilter, [attrName]: attrFilter }
-          : attrsFilter;
+      ({
+        attrFilter,
+        overwriteReferral,
+        overwriteReferralIncludeModelIds,
+        overwriteReferralExcludeModelIds,
+        overwriteHintEntry,
+      }: handleSelectFilterConditionsParams) => {
+        const _attrsFilter =
+          attrName != null && attrFilter != null
+            ? { ...attrsFilter, [attrName]: attrFilter }
+            : attrsFilter;
 
-      const effectiveHintEntry = overwriteHintEntry ?? hintEntry;
-      const hintEntryParam =
-        effectiveHintEntry.keyword && effectiveHintEntry.keyword.length > 0
-          ? {
+        const effectiveHintEntry = overwriteHintEntry ?? hintEntry;
+        const hintEntryParam =
+          effectiveHintEntry.keyword && effectiveHintEntry.keyword.length > 0
+            ? {
               filterKey: effectiveHintEntry.filterKey,
               keyword: effectiveHintEntry.keyword,
             }
-          : undefined;
+            : undefined;
 
-      const newParams = formatAdvancedSearchParams({
-        attrsFilter: Object.keys(_attrsFilter)
-          .filter((k) => _attrsFilter[k]?.joinedAttrname === undefined)
-          .reduce((a, k) => ({ ...a, [k]: _attrsFilter[k] }), {}),
-        referralName: overwriteReferral ?? referralFilter,
-        referralIncludeModelIds:
-          overwriteReferralIncludeModelIds ??
-          referralIncludeModelIds.map(String),
-        referralExcludeModelIds:
-          overwriteReferralExcludeModelIds ??
-          referralExcludeModelIds.map(String),
-        hintEntry: hintEntryParam,
-        baseParams: new URLSearchParams(location.search),
-        joinAttrs: Object.keys(_attrsFilter)
-          .filter((k) => _attrsFilter[k]?.joinedAttrname !== undefined)
-          .map((k) => ({
-            name: _attrsFilter[k]?.baseAttrname ?? "",
-            attrinfo: Object.keys(_attrsFilter)
-              .filter(
-                (j) =>
-                  _attrsFilter[j].baseAttrname === _attrsFilter[k].baseAttrname,
-              )
-              .map((j) => ({
-                name: _attrsFilter[j]?.joinedAttrname ?? "",
-                filterKey: _attrsFilter[j].filterKey,
-                keyword: _attrsFilter[j].keyword,
-              })),
-          }))
-          // This removes duplicates
-          .filter((v, i, a) => a.findIndex((t) => t.name === v.name) === i),
-      });
+        const newParams = formatAdvancedSearchParams({
+          attrsFilter: Object.keys(_attrsFilter)
+            .filter((k) => _attrsFilter[k]?.joinedAttrname === undefined)
+            .reduce((a, k) => ({ ...a, [k]: _attrsFilter[k] }), {}),
+          referralName: overwriteReferral ?? referralFilter,
+          referralIncludeModelIds:
+            overwriteReferralIncludeModelIds ??
+            referralIncludeModelIds.map(String),
+          referralExcludeModelIds:
+            overwriteReferralExcludeModelIds ??
+            referralExcludeModelIds.map(String),
+          hintEntry: hintEntryParam,
+          baseParams: new URLSearchParams(location.search),
+          joinAttrs: Object.keys(_attrsFilter)
+            .filter((k) => _attrsFilter[k]?.joinedAttrname !== undefined)
+            .map((k) => ({
+              name: _attrsFilter[k]?.baseAttrname ?? "",
+              attrinfo: Object.keys(_attrsFilter)
+                .filter(
+                  (j) =>
+                    _attrsFilter[j].baseAttrname === _attrsFilter[k].baseAttrname,
+                )
+                .map((j) => ({
+                  name: _attrsFilter[j]?.joinedAttrname ?? "",
+                  filterKey: _attrsFilter[j].filterKey,
+                  keyword: _attrsFilter[j].keyword,
+                })),
+            }))
+            // This removes duplicates
+            .filter((v, i, a) => a.findIndex((t) => t.name === v.name) === i),
+        });
 
-      // simply reload with the new params
-      navigate({
-        pathname: location.pathname,
-        search: "?" + newParams.toString(),
-      });
-    };
+        // simply reload with the new params
+        navigate({
+          pathname: location.pathname,
+          search: "?" + newParams.toString(),
+        });
+      };
 
   const handleUpdateAttrFilter =
     (attrName: string) => (attrFilter: AttrFilter) => {
@@ -347,6 +350,7 @@ export const SearchResultsTableHead: FC<Props> = ({
                     </StyledIconButton>
                   </Tooltip>
                   <SearchResultControlMenu
+                    results={results}
                     attrname={attrName}
                     attrFilter={attrsFilter[attrName]}
                     anchorElem={attributeMenuEls[attrName]}
@@ -386,8 +390,8 @@ export const SearchResultsTableHead: FC<Props> = ({
                   }}
                 >
                   {defaultReferralFilter ||
-                  defaultReferralIncludeModelIds?.length ||
-                  defaultReferralExcludeModelIds?.length ? (
+                    defaultReferralIncludeModelIds?.length ||
+                    defaultReferralExcludeModelIds?.length ? (
                     <FilterAltIcon />
                   ) : (
                     <FilterListIcon />
