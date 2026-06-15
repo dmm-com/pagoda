@@ -1,16 +1,16 @@
 import {
-  AdvancedSearchResult,
   AdvancedSearchResultAttrInfo,
   EntryAttributeTypeTypeEnum,
   EntryAttributeValue,
 } from "@dmm-com/airone-apiclient-typescript-fetch";
 import CloseIcon from "@mui/icons-material/Close";
 import {
-  CircularProgress,
+  Box,
   Dialog,
   DialogContent,
   DialogTitle,
   IconButton,
+  LinearProgress,
   Paper,
   Table,
   TableBody,
@@ -18,12 +18,15 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  Typography,
 } from "@mui/material";
 import { FC, useEffect, useMemo, useState } from "react";
 import { useLocation } from "react-router";
 
 import { aironeApiClient } from "repository/AironeApiClient";
 import { extractAdvancedSearchParams } from "services/entry/AdvancedSearch";
+
+const PAGE_SIZE = 100;
 
 function attrValueToKey(
   value: EntryAttributeValue,
@@ -96,13 +99,19 @@ export const AttrStatsModal: FC<Props> = ({
   totalCount,
 }) => {
   const location = useLocation();
-  const [allResults, setAllResults] = useState<AdvancedSearchResult | null>(
-    null,
-  );
+  const [counts, setCounts] = useState<Map<string, number>>(new Map());
+  const [loadedCount, setLoadedCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    if (!open) return;
+    if (!open) {
+      setCounts(new Map());
+      setLoadedCount(0);
+      setIsLoading(false);
+      return;
+    }
+
+    if (totalCount === 0) return;
 
     const params = new URLSearchParams(location.search);
     const {
@@ -121,43 +130,68 @@ export const AttrStatsModal: FC<Props> = ({
       (attr) => attr.name === attrname,
     );
 
+    setCounts(new Map());
+    setLoadedCount(0);
     setIsLoading(true);
-    aironeApiClient
-      .advancedSearch(
-        entityIds,
-        filteredAttrInfo,
-        joinAttrs,
-        hasReferral,
-        referralName,
-        searchAllEntities,
-        1,
-        totalCount,
-        0,
-        hintEntry,
-        referralExcludeModelIds,
-        referralIncludeModelIds,
-      )
-      .then((results) => {
-        setAllResults(results);
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
-  }, [open, location.search, attrname, totalCount]);
 
-  const stats = useMemo(() => {
-    if (!allResults) return [];
-    const counts = new Map<string, number>();
-    for (const row of allResults.values) {
-      const attr = row.attrs[attrname];
-      if (!attr || !attr.isReadable) continue;
-      const key = attrValueToKey(attr.value, attrType) || "(空白)";
-      counts.set(key, (counts.get(key) ?? 0) + 1);
-    }
-    return Array.from(counts.entries())
-      .map(([value, count]) => ({ value, count }))
-      .sort((a, b) => b.count - a.count);
-  }, [allResults, attrname, attrType]);
+    let cancelled = false;
+    const totalPages = Math.ceil(totalCount / PAGE_SIZE);
+
+    (async () => {
+      for (let page = 1; page <= totalPages; page++) {
+        if (cancelled) break;
+
+        const results = await aironeApiClient.advancedSearch(
+          entityIds,
+          filteredAttrInfo,
+          joinAttrs,
+          hasReferral,
+          referralName,
+          searchAllEntities,
+          page,
+          PAGE_SIZE,
+          0,
+          hintEntry,
+          referralExcludeModelIds,
+          referralIncludeModelIds,
+        );
+
+        if (cancelled) break;
+
+        setCounts((prev) => {
+          const next = new Map(prev);
+          for (const row of results.values) {
+            const attr = row.attrs[attrname];
+            if (!attr || !attr.isReadable) continue;
+            const key = attrValueToKey(attr.value, attrType) || "(空白)";
+            next.set(key, (next.get(key) ?? 0) + 1);
+          }
+          return next;
+        });
+        setLoadedCount((prev) => prev + results.values.length);
+      }
+
+      if (!cancelled) setIsLoading(false);
+    })().catch(() => {
+      if (!cancelled) setIsLoading(false);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [open, location.search, attrname, attrType, totalCount]);
+
+  const stats = useMemo(
+    () =>
+      Array.from(counts.entries())
+        .map(([value, count]) => ({ value, count }))
+        .sort((a, b) => b.count - a.count),
+    [counts],
+  );
+
+  const displayedCount = isLoading ? Math.min(loadedCount, totalCount) : totalCount;
+  const progress =
+    totalCount > 0 ? Math.min(Math.round((displayedCount / totalCount) * 100), 100) : 0;
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
@@ -171,28 +205,39 @@ export const AttrStatsModal: FC<Props> = ({
         </IconButton>
       </DialogTitle>
       <DialogContent>
-        {isLoading ? (
-          <CircularProgress />
-        ) : (
-          <TableContainer component={Paper} variant="outlined">
-            <Table size="small">
-              <TableHead>
-                <TableRow>
-                  <TableCell>値</TableCell>
-                  <TableCell align="right">件数</TableCell>
+        <Box sx={{ mb: 1 }}>
+          <Box sx={{ display: "flex", justifyContent: "space-between", mb: 0.5 }}>
+            <Typography variant="caption" color="text.secondary">
+              {displayedCount} / {totalCount} 件
+            </Typography>
+            <Typography variant="caption" color="text.secondary">
+              {progress}%
+            </Typography>
+          </Box>
+          <LinearProgress
+            variant="determinate"
+            value={progress}
+            sx={{ borderRadius: 1 }}
+          />
+        </Box>
+        <TableContainer component={Paper} variant="outlined">
+          <Table size="small">
+            <TableHead>
+              <TableRow>
+                <TableCell>値</TableCell>
+                <TableCell align="right">件数</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {stats.map(({ value, count }) => (
+                <TableRow key={value}>
+                  <TableCell>{value}</TableCell>
+                  <TableCell align="right">{count}</TableCell>
                 </TableRow>
-              </TableHead>
-              <TableBody>
-                {stats.map(({ value, count }) => (
-                  <TableRow key={value}>
-                    <TableCell>{value}</TableCell>
-                    <TableCell align="right">{count}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        )}
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
       </DialogContent>
     </Dialog>
   );
