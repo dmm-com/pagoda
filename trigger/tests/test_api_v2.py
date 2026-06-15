@@ -683,3 +683,12 @@ class ReadonlyUserPermissionTest(AironeViewTest):
     def test_list_triggers_is_allowed_for_readonly_user(self):
         resp = self.client.get("/trigger/api/v2/")
         self.assertEqual(resp.status_code, 200)
+
+    def test_list_triggers_returns_empty_result_when_no_trigger_exists(self):
+        TriggerParent.objects.all().delete()
+
+        resp = self.client.get("/trigger/api/v2/")
+
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json()["count"], 0)
+        self.assertEqual(resp.json()["results"], [])
