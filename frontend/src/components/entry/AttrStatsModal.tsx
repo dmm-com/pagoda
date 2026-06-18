@@ -28,10 +28,7 @@ import { extractAdvancedSearchParams } from "services/entry/AdvancedSearch";
 
 const PAGE_SIZE = 100;
 
-function attrValueToKey(
-  value: EntryAttributeValue,
-  attrType: number,
-): string {
+function attrValueToKey(value: EntryAttributeValue, attrType: number): string {
   switch (attrType) {
     case EntryAttributeTypeTypeEnum.OBJECT:
       return value.asObject?.name ?? "";
@@ -189,9 +186,13 @@ export const AttrStatsModal: FC<Props> = ({
     [counts],
   );
 
-  const displayedCount = isLoading ? Math.min(loadedCount, totalCount) : totalCount;
+  const displayedCount = isLoading
+    ? Math.min(loadedCount, totalCount)
+    : totalCount;
   const progress =
-    totalCount > 0 ? Math.min(Math.round((displayedCount / totalCount) * 100), 100) : 0;
+    totalCount > 0
+      ? Math.min(Math.round((displayedCount / totalCount) * 100), 100)
+      : 0;
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
@@ -206,7 +207,9 @@ export const AttrStatsModal: FC<Props> = ({
       </DialogTitle>
       <DialogContent>
         <Box sx={{ mb: 1 }}>
-          <Box sx={{ display: "flex", justifyContent: "space-between", mb: 0.5 }}>
+          <Box
+            sx={{ display: "flex", justifyContent: "space-between", mb: 0.5 }}
+          >
             <Typography variant="caption" color="text.secondary">
               {displayedCount} / {totalCount} 件
             </Typography>
