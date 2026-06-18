@@ -113,6 +113,7 @@ interface Props {
   isNarrowDown?: boolean;
   omitHeadline?: boolean;
   entityAttrs: EntityAttrIDandName[];
+  totalCount: number;
 }
 
 export interface handleSelectFilterConditionsParams {
@@ -140,6 +141,7 @@ export const SearchResultsTableHead: FC<Props> = ({
   isNarrowDown = true,
   omitHeadline = false,
   entityAttrs = [],
+  totalCount,
 }) => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -475,6 +477,7 @@ export const SearchResultsTableHead: FC<Props> = ({
                     setEditTargetAttrID={setEditTargetAttrID}
                     setEditTargetAttrname={setEditTargetAttrname}
                     setEditTargetAttrtype={setEditTargetAttrtype}
+                    totalCount={totalCount}
                   />
                 </>
               )}

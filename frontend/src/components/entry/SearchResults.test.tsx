@@ -295,7 +295,7 @@ describe("SearchResults", () => {
         fireEvent.click(filterButtons[0]);
 
         const bulkUpdateBtn = screen.getByRole("button", {
-          name: /属性を一括更新/,
+          name: /一括更新/,
         });
         // Defense-in-depth: the bulk-update button is now disabled when the
         // type is unknown. With entityAttrs.type populated, it must be
@@ -364,7 +364,7 @@ describe("SearchResults", () => {
         fireEvent.click(filterButtons[0]);
 
         const bulkUpdateBtn = screen.getByRole("button", {
-          name: /属性を一括更新/,
+          name: /一括更新/,
         });
         expect(bulkUpdateBtn).toBeDisabled();
       } finally {
@@ -428,7 +428,7 @@ describe("SearchResults", () => {
         fireEvent.click(filterButtons[0]);
 
         const bulkUpdateBtn = screen.getByRole("button", {
-          name: /属性を一括更新/,
+          name: /一括更新/,
         });
         // Should NOT throw "Unknown attribute type" when the type is known.
         expect(() => fireEvent.click(bulkUpdateBtn)).not.toThrow();
