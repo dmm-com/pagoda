@@ -177,7 +177,9 @@ export const AttrStatsModal: FC<Props> = ({
     () =>
       Array.from(counts.entries())
         .map(([value, count]) => ({ value, count }))
-        .sort((a, b) => b.count - a.count || a.value.localeCompare(b.value, "ja")),
+        .sort(
+          (a, b) => b.count - a.count || a.value.localeCompare(b.value, "ja"),
+        ),
     [counts],
   );
 
