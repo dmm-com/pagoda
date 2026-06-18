@@ -1,5 +1,4 @@
 import {
-  AdvancedSearchResultAttrInfo,
   EntryAttributeTypeTypeEnum,
   EntryAttributeValue,
 } from "@dmm-com/airone-apiclient-typescript-fetch";
@@ -123,10 +122,6 @@ export const AttrStatsModal: FC<Props> = ({
       referralIncludeModelIds,
     } = extractAdvancedSearchParams(params);
 
-    const filteredAttrInfo: AdvancedSearchResultAttrInfo[] = attrInfo.filter(
-      (attr) => attr.name === attrname,
-    );
-
     setCounts(new Map());
     setLoadedCount(0);
     setIsLoading(true);
@@ -140,7 +135,7 @@ export const AttrStatsModal: FC<Props> = ({
 
         const results = await aironeApiClient.advancedSearch(
           entityIds,
-          filteredAttrInfo,
+          attrInfo,
           joinAttrs,
           hasReferral,
           referralName,
