@@ -886,6 +886,18 @@ class ItemRollbackAPI(generics.GenericAPIView):
                     # Attribute had no value before `at`; skip
                     continue
 
+                # Skip if another user made any change between v_before and the current value
+                if (
+                    AttributeValue.objects.filter(
+                        parent_attr=attr,
+                        parent_attrv__isnull=True,
+                        created_time__gt=v_before.created_time,
+                    )
+                    .exclude(created_user_id=user.id)
+                    .exists()
+                ):
+                    continue
+
                 value: Any
                 match v_before.data_type:
                     case AttrType.STRING | AttrType.TEXT | AttrType.NUMBER:
