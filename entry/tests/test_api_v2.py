@@ -2251,6 +2251,70 @@ class ItemRollbackAPITest(BaseViewTest):
         self.assertEqual(attr2.get_latest_value().value, "initial-2")
 
     @patch("entry.tasks.edit_entry_v2.delay", Mock(side_effect=tasks.edit_entry_v2))
+    def test_rollback_skips_attr_with_other_user_change_at_last(self):
+        """Attribute is skipped when the latest value was written by another user"""
+        entry: Entry = self.add_entry(
+            self.user,
+            "entry",
+            self.entity,
+            values={"val": "initial"},
+        )
+        attr = entry.attrs.get(schema__name="val")
+
+        at = datetime.datetime.now(tz=datetime.timezone.utc)
+
+        other_user = User(username="other")
+        other_user.set_password("other")
+        other_user.save()
+
+        # Self updates first, then another user overwrites last
+        params = {"name": "entry", "attrs": [{"id": attr.schema.id, "value": "self-change"}]}
+        resp = self.client.put(f"/entry/api/v2/{entry.id}/", json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
+        attr.add_value(other_user, "other-user-change")
+
+        resp = self.client.post(
+            "/entry/api/v2/rollback/",
+            json.dumps({"targets": [entry.id], "at": at.isoformat()}),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        # Other user's change is between v_before and current → rollback skipped
+        self.assertEqual(attr.get_latest_value().value, "other-user-change")
+
+    @patch("entry.tasks.edit_entry_v2.delay", Mock(side_effect=tasks.edit_entry_v2))
+    def test_rollback_skips_attr_with_other_user_change_in_middle(self):
+        """Attribute is skipped even when self made the last change but another user changed in between"""  # noqa: E501
+        entry: Entry = self.add_entry(
+            self.user,
+            "entry",
+            self.entity,
+            values={"val": "initial"},
+        )
+        attr = entry.attrs.get(schema__name="val")
+
+        at = datetime.datetime.now(tz=datetime.timezone.utc)
+
+        other_user = User(username="other2")
+        other_user.set_password("other2")
+        other_user.save()
+
+        # Another user changes in the middle, then self overwrites last
+        attr.add_value(other_user, "other-user-change")
+        params = {"name": "entry", "attrs": [{"id": attr.schema.id, "value": "self-last-change"}]}
+        resp = self.client.put(f"/entry/api/v2/{entry.id}/", json.dumps(params), "application/json")
+        self.assertEqual(resp.status_code, status.HTTP_202_ACCEPTED)
+
+        resp = self.client.post(
+            "/entry/api/v2/rollback/",
+            json.dumps({"targets": [entry.id], "at": at.isoformat()}),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        # Other user's intermediate change exists → rollback skipped even though self is last
+        self.assertEqual(attr.get_latest_value().value, "self-last-change")
+
+    @patch("entry.tasks.edit_entry_v2.delay", Mock(side_effect=tasks.edit_entry_v2))
     def test_rollback_skips_nonexistent_target(self):
         """Non-existent entry IDs in targets are skipped; valid entries are still rolled back"""
         entry: Entry = self.add_entry(
