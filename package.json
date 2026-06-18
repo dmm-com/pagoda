@@ -117,7 +117,7 @@
     "@dmm-com/airone-apiclient-typescript-fetch": "^0.28.4"
   },
   "dependencies": {
-    "react-router": "^7.15.0",
+    "react-router": "^7.15.1",
     "swr": "^2.4.0"
   }
 }
