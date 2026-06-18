@@ -88,7 +88,7 @@ class Role(models.Model):
         """
         return any(
             [
-                permission_level.id <= x.get_aclid()
+                permission_level.id <= x.get_aclid()  # type: ignore[attr-defined]
                 for x in self.permissions.filter(codename__startswith=(str(target_obj.id) + "."))
             ]
         )
@@ -102,7 +102,7 @@ class Role(models.Model):
             raise RuntimeError("The number of roles is over the limit")
         return super(Role, self).save(*args, **kwargs)
 
-    def delete(self) -> None:
+    def delete(self) -> None:  # type: ignore[override]
         """Override Model.delete method of Django"""
         from airone.lib import auto_complement
         from job.models import Job, JobOperation
@@ -129,13 +129,17 @@ class Role(models.Model):
         job_register_referrals.run()
 
     def get_current_permission(self, aclbase: "ACLBase") -> int:
-        permissions = [x for x in self.permissions.all() if x.get_objid() == aclbase.id]
+        permissions = [
+            x
+            for x in self.permissions.all()
+            if x.get_objid() == aclbase.id  # type: ignore[attr-defined]
+        ]
         if permissions:
-            return permissions[0].get_aclid()
+            return permissions[0].get_aclid()  # type: ignore[attr-defined]
         else:
             return ACLType.Nothing.id
 
-    def get_referred_entries(self, entity_name: str | None = None) -> QuerySet:
+    def get_referred_entries(self, entity_name: str | None = None) -> "QuerySet[Any]":
         # make query to identify AttributeValue that specify this Role instance
         query = Q(
             Q(

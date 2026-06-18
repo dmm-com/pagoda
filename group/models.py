@@ -30,7 +30,7 @@ class Group(DjangoGroup):
             raise RuntimeError("The number of groups is over the limit")
         return super(Group, self).save(*args, **kwargs)
 
-    def delete(self) -> None:
+    def delete(self) -> None:  # type: ignore[override]
         from airone.lib import auto_complement
         from job.models import Job, JobOperation
         from user.models import User
@@ -44,7 +44,7 @@ class Group(DjangoGroup):
             child_group.save(update_fields=["parent_group"])
 
         self.is_active = False
-        current_name: str = self.name  # type: ignore[has-type]
+        current_name: str = self.name
         self.name = "%s_deleted_%s" % (
             current_name,
             datetime.now().strftime("%Y%m%d_%H%M%S"),
@@ -75,13 +75,13 @@ class Group(DjangoGroup):
 
         return any(
             [
-                permission_level.id <= x.get_aclid()
+                permission_level.id <= x.get_aclid()  # type: ignore[attr-defined]
                 for x in self.permissions.all()
-                if target_obj.id == x.get_objid()
+                if target_obj.id == x.get_objid()  # type: ignore[attr-defined]
             ]
         )
 
-    def get_referred_entries(self, entity_name: str | None = None) -> QuerySet:
+    def get_referred_entries(self, entity_name: str | None = None) -> "QuerySet[Any]":
         # make query to identify AttributeValue that specify this Group instance
         query = Q(
             Q(
