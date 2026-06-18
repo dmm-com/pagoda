@@ -110,9 +110,10 @@ const jobStatusIcons = (jobStatus: number | undefined) => {
 
 interface Props {
   jobs: JobSerializers[];
+  showUser?: boolean;
 }
 
-export const JobList: FC<Props> = ({ jobs }) => {
+export const JobList: FC<Props> = ({ jobs, showUser }) => {
   const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
 
@@ -140,6 +141,11 @@ export const JobList: FC<Props> = ({ jobs }) => {
     <Table>
       <TableHead>
         <AironeTableHeadRow>
+          {showUser && (
+            <AironeTableHeadCell sx={{ width: "120px" }}>
+              実行ユーザー
+            </AironeTableHeadCell>
+          )}
           <AironeTableHeadCell sx={{ width: "160px" }}>
             対象モデル
           </AironeTableHeadCell>
@@ -164,6 +170,11 @@ export const JobList: FC<Props> = ({ jobs }) => {
       <TableBody>
         {jobs.map((job) => (
           <StyledTableRow key={job.id}>
+            {showUser && (
+              <TableCell>
+                <Typography>{job.user}</Typography>
+              </TableCell>
+            )}
             <TableCell>
               {(() => {
                 switch (job.operation) {

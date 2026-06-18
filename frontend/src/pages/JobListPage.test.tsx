@@ -19,6 +19,7 @@ const server = setupServer(
       results: [
         {
           id: 1,
+          user: "user1",
           operation: 1,
           status: 1,
           passed_time: 1,
@@ -33,6 +34,7 @@ const server = setupServer(
         },
         {
           id: 2,
+          user: "user2",
           operation: 2,
           status: 2,
           passed_time: 2,

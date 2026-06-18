@@ -1117,11 +1117,13 @@ class AironeApiClient {
     page: number = 1,
     targetId?: number,
     limit?: number,
+    allUsers?: boolean,
   ): Promise<PaginatedJobSerializersList> {
     return await this.job.jobApiV2JobsList({
       offset: (page - 1) * JobListParam.MAX_ROW_COUNT,
       limit: limit ?? JobListParam.MAX_ROW_COUNT,
       targetId,
+      allUsers,
     });
   }
 
