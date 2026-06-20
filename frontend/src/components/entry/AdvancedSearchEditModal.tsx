@@ -1,4 +1,7 @@
-import { AttributeData } from "@dmm-com/airone-apiclient-typescript-fetch";
+import {
+  AttributeData,
+  EntryAttributeTypeTypeEnum,
+} from "@dmm-com/airone-apiclient-typescript-fetch";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Box, Button } from "@mui/material";
 import { useSnackbar } from "notistack";
@@ -9,6 +12,7 @@ import { AironeModal } from "components/common/AironeModal";
 import { AttributeValueField } from "components/entry/entryForm/AttributeValueField";
 import { EditableEntryAttrs } from "components/entry/entryForm/EditableEntry";
 import { Schema, schema } from "components/entry/entryForm/EntryFormSchema";
+import { usePagodaSWR } from "hooks/usePagodaSWR";
 import { aironeApiClient } from "repository/AironeApiClient";
 import {
   AttrsFilter,
@@ -46,6 +50,26 @@ export const AdvancedSearchEditModal: FC<Props> = ({
     resolver: zodResolver(schema),
     mode: "onBlur",
   });
+
+  const isSelectLikeType =
+    targetAttrtype === EntryAttributeTypeTypeEnum.SELECT ||
+    targetAttrtype === EntryAttributeTypeTypeEnum.ARRAY_SELECT;
+
+  // For SELECT / ARRAY_SELECT bulk-edit the dropdown needs the EntityAttr's
+  // choices list. Fetch the first model's detail and look up the column by
+  // name. Skipped entirely for non-SELECT types.
+  const { data: targetEntity } = usePagodaSWR(
+    isSelectLikeType && openModal && modelIds.length > 0
+      ? ["bulkEditSelectChoices", modelIds[0]]
+      : null,
+    () => aironeApiClient.getEntity(modelIds[0]),
+  );
+
+  const targetChoices = useMemo(() => {
+    if (!isSelectLikeType || !targetEntity) return undefined;
+    const attr = targetEntity.attrs.find((a) => a.name === targetAttrname);
+    return attr?.choices ?? undefined;
+  }, [isSelectLikeType, targetEntity, targetAttrname]);
 
   const handleUpdateAttributeValue = () => {
     // create parameters to send API for bulk update
@@ -127,6 +151,7 @@ export const AdvancedSearchEditModal: FC<Props> = ({
           setValue={setValue}
           type={targetAttrtype}
           schemaId={targetAttrID}
+          choices={targetChoices ?? undefined}
         />
       </Box>
       <Box display="flex" justifyContent="flex-end" my="8px">

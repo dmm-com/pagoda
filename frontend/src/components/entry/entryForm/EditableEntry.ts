@@ -28,6 +28,8 @@ export type EditableEntryAttrValue = {
   asRole?: EntryAttributeValueRole | null;
   asNumber?: number | null;
   asArrayNumber?: Array<{ value: number | null }>;
+  asSelect?: { value: string; label: string } | null;
+  asArraySelect?: Array<{ value: string; label: string }>;
 };
 
 export type EditableEntry = {

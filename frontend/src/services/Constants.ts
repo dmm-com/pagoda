@@ -42,6 +42,7 @@ export const BaseAttributeTypes = {
   role: 1 << 6,
   datetime: 1 << 7,
   number: 1 << 8,
+  select: 1 << 9,
   array: 1 << 10,
   named: 1 << 11,
 };
@@ -113,6 +114,14 @@ export const AttributeTypes: Record<string, { name: string; type: number }> = {
   array_number: {
     name: "array_number",
     type: BaseAttributeTypes.number | BaseAttributeTypes.array,
+  },
+  select: {
+    name: "select",
+    type: BaseAttributeTypes.select,
+  },
+  array_select: {
+    name: "array_select",
+    type: BaseAttributeTypes.select | BaseAttributeTypes.array,
   },
 };
 

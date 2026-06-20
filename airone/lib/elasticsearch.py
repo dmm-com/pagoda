@@ -1234,6 +1234,12 @@ def make_search_results(
                         }
                     }
 
+                case AttrType.SELECT:
+                    ret_attrinfo["value"] = {
+                        "value": attrinfo["key"],
+                        "label": attrinfo["value"],
+                    }
+
                 case (
                     AttrType.ARRAY_OBJECT
                     | AttrType.ARRAY_STRING
@@ -1242,6 +1248,7 @@ def make_search_results(
                     | AttrType.ARRAY_NAMED_OBJECT_BOOLEAN
                     | AttrType.ARRAY_GROUP
                     | AttrType.ARRAY_ROLE
+                    | AttrType.ARRAY_SELECT
                 ):
                     if "value" not in ret_attrinfo:
                         ret_attrinfo["value"] = []
@@ -1271,6 +1278,14 @@ def make_search_results(
                         case AttrType.ARRAY_OBJECT | AttrType.ARRAY_GROUP | AttrType.ARRAY_ROLE:
                             ret_attrinfo["value"].append(
                                 {"id": attrinfo["referral_id"], "name": attrinfo["value"]}
+                            )
+
+                        case AttrType.ARRAY_SELECT:
+                            ret_attrinfo["value"].append(
+                                {
+                                    "value": attrinfo["key"],
+                                    "label": attrinfo["value"],
+                                }
                             )
 
         results.ret_values.append(record)

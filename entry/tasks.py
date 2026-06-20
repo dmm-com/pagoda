@@ -321,6 +321,14 @@ def _yaml_export_v2(
                 else:
                     return None
 
+            case AttrType.SELECT:
+                # SELECT value comes as {"value": ..., "label": ...}.
+                # Export the immutable `value` (not the label) so re-import is
+                # safe across schema label edits.
+                if isinstance(value, dict):
+                    return value.get("value")
+                return value
+
             case _:
                 assert not isinstance(value, dict)
                 return value
@@ -879,6 +887,10 @@ def _csv_export_v2(
             case AttrType.NAMED_OBJECT:
                 [(k, v)] = vval.items()
                 return "%s: %s" % (k, v["name"])
+            case AttrType.SELECT:
+                if isinstance(vval, dict):
+                    return str(vval.get("label", ""))
+                return ""
             case AttrType.ARRAY_STRING:
                 from natsort import natsorted
 
@@ -887,6 +899,11 @@ def _csv_export_v2(
                 from natsort import natsorted
 
                 return "\n".join(natsorted([str(x) if x is not None else "" for x in vval]))
+            case AttrType.ARRAY_SELECT:
+                from natsort import natsorted
+
+                labels = [str(x.get("label", "")) for x in vval if isinstance(x, dict)]
+                return "\n".join(natsorted(labels))
             case AttrType.ARRAY_OBJECT | AttrType.ARRAY_GROUP | AttrType.ARRAY_ROLE:
                 from natsort import natsorted
 

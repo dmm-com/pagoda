@@ -71,6 +71,8 @@ export function formalizeEntryInfo(
               asNamedObject: { name: "", object: null },
               asNumber: null as number | null,
               asArrayNumber: [{ value: null }],
+              asSelect: null as { value: string; label: string } | null,
+              asArraySelect: [] as Array<{ value: string; label: string }>,
             };
 
             // Apply defaultValue for supported types (backend returns raw primitive values)
@@ -117,6 +119,19 @@ export function formalizeEntryInfo(
                     defaults.asNumber = (
                       defaultValue as { asNumber: number }
                     ).asNumber;
+                  }
+                  break;
+                case EntryAttributeTypeTypeEnum.SELECT:
+                  if (typeof defaultValue === "string") {
+                    const match = (attrDetail.choices ?? []).find(
+                      (c) => c.value === defaultValue,
+                    );
+                    if (match) {
+                      defaults.asSelect = {
+                        value: match.value,
+                        label: match.label,
+                      };
+                    }
                   }
                   break;
               }
@@ -201,6 +216,14 @@ export function formalizeEntryInfo(
 
               if (value.asNumber !== undefined) {
                 result.asNumber = value.asNumber;
+              }
+
+              if (value.asSelect !== undefined) {
+                result.asSelect = value.asSelect;
+              }
+
+              if (value.asArraySelect !== undefined) {
+                result.asArraySelect = value.asArraySelect;
               }
 
               return result;
@@ -309,6 +332,12 @@ export function convertAttrsFormatCtoS(
                 boolean: x._boolean,
               };
             });
+
+        case EntryAttributeTypeTypeEnum.SELECT:
+          return attrValue.asSelect?.value ?? null;
+
+        case EntryAttributeTypeTypeEnum.ARRAY_SELECT:
+          return attrValue.asArraySelect?.map((x) => x.value) ?? [];
 
         default:
           throw new Error(`unknown attribute type ${attrType}`);

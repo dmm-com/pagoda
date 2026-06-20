@@ -40,6 +40,10 @@ class EntityAttr(ACLBase):
     note = models.CharField(max_length=200, blank=True, default="")
     default_value = models.JSONField(null=True, blank=True, default=None)
 
+    # Stores [{"value": str, "label": str}, ...] for SELECT / ARRAY_SELECT types.
+    # NULL for all other types.
+    choices = models.JSONField(null=True, blank=True, default=None)
+
     history = HistoricalRecords(m2m_fields=[referral], excluded_fields=["status", "updated_time"])
 
     # These fields describes the configuration of specifying Item name from Attriute
@@ -126,8 +130,14 @@ class EntityAttr(ACLBase):
         if value is None:
             return True  # None is always valid
 
-        # Only String, Text, Boolean, Number types support custom default values, currently
-        supported_types = [AttrType.STRING, AttrType.TEXT, AttrType.BOOLEAN, AttrType.NUMBER]
+        # Only String, Text, Boolean, Number, Select types support custom default values, currently
+        supported_types = [
+            AttrType.STRING,
+            AttrType.TEXT,
+            AttrType.BOOLEAN,
+            AttrType.NUMBER,
+            AttrType.SELECT,
+        ]
         if self.type not in supported_types:
             return False
 
@@ -144,8 +154,74 @@ class EntityAttr(ACLBase):
             if isinstance(value, float) and (math.isnan(value) or math.isinf(value)):
                 return False
             return True
+        elif self.type == AttrType.SELECT:
+            # value must match an existing choice's "value"
+            if not isinstance(value, str):
+                return False
+            return value in {c.get("value") for c in (self.choices or [])}
 
         return True
+
+    @staticmethod
+    def validate_choices(choices: Any) -> None:
+        """Validates choices payload for SELECT / ARRAY_SELECT types.
+
+        Raises ValueError when the payload is malformed.
+        """
+        if not isinstance(choices, list) or len(choices) == 0:
+            raise ValueError("choices must be a non-empty list")
+
+        values: list[str] = []
+        labels: list[str] = []
+        for c in choices:
+            if not isinstance(c, dict):
+                raise ValueError("each choice must be an object with value/label")
+            v = c.get("value")
+            lb = c.get("label")
+            if not isinstance(v, str) or not v:
+                raise ValueError("choice 'value' must be a non-empty string")
+            if not isinstance(lb, str) or not lb:
+                raise ValueError("choice 'label' must be a non-empty string")
+            values.append(v)
+            labels.append(lb)
+
+        if len(set(values)) != len(values):
+            raise ValueError("choice 'value' must be unique")
+        if len(set(labels)) != len(labels):
+            raise ValueError("choice 'label' must be unique")
+
+    def get_choices_in_use(self) -> set[str]:
+        """Returns the set of choice values currently referenced by latest AttributeValues.
+
+        For SELECT, scans is_latest=True rows directly.
+        For ARRAY_SELECT, child rows have is_latest=False; traverse via parent_attrv.
+        """
+        from entry.models import AttributeValue
+
+        in_use: set[str] = set()
+
+        if self.type == AttrType.SELECT:
+            in_use.update(
+                AttributeValue.objects.filter(
+                    parent_attr__schema=self,
+                    data_type=AttrType.SELECT,
+                    is_latest=True,
+                )
+                .exclude(value="")
+                .values_list("value", flat=True)
+            )
+        elif self.type == AttrType.ARRAY_SELECT:
+            in_use.update(
+                AttributeValue.objects.filter(
+                    parent_attr__schema=self,
+                    data_type=AttrType.ARRAY_SELECT,
+                    parent_attrv__is_latest=True,
+                )
+                .exclude(value="")
+                .values_list("value", flat=True)
+            )
+
+        return in_use
 
 
 class Entity(ACLBase):

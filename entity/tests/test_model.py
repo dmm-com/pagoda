@@ -562,3 +562,51 @@ class ModelTest(TestCase):
         self.assertTrue(
             object_attr.validate_default_value(None)
         )  # None should be valid for any type
+
+    def test_validate_choices_method(self):
+        """validate_choices accepts valid lists and rejects malformed payloads."""
+        # Valid case
+        EntityAttr.validate_choices(
+            [
+                {"value": "a", "label": "Alpha"},
+                {"value": "b", "label": "Beta"},
+            ]
+        )
+
+        # Empty list
+        with self.assertRaises(ValueError):
+            EntityAttr.validate_choices([])
+
+        # Duplicate value
+        with self.assertRaises(ValueError):
+            EntityAttr.validate_choices(
+                [{"value": "a", "label": "x"}, {"value": "a", "label": "y"}]
+            )
+
+        # Duplicate label
+        with self.assertRaises(ValueError):
+            EntityAttr.validate_choices(
+                [{"value": "a", "label": "x"}, {"value": "b", "label": "x"}]
+            )
+
+        # Missing field
+        with self.assertRaises(ValueError):
+            EntityAttr.validate_choices([{"value": "a"}])
+
+        # Non-string
+        with self.assertRaises(ValueError):
+            EntityAttr.validate_choices([{"value": 1, "label": "x"}])
+
+    def test_select_default_value_validation(self):
+        """SELECT default_value must reference a value in choices."""
+        entity = Entity.objects.create(name="ent_sel", created_user=self._test_user)
+        attr = EntityAttr.objects.create(
+            name="status",
+            type=AttrType.SELECT,
+            created_user=self._test_user,
+            parent_entity=entity,
+            choices=[{"value": "active", "label": "Active"}],
+        )
+        self.assertTrue(attr.validate_default_value("active"))
+        self.assertFalse(attr.validate_default_value("unknown"))
+        self.assertTrue(attr.validate_default_value(None))

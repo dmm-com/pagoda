@@ -121,6 +121,11 @@ class EntryAttributeValueRole(TypedDict):
     name: str
 
 
+class EntryAttributeValueSelect(TypedDict):
+    value: str
+    label: str
+
+
 # A thin container returns typed value(s)
 class EntryAttributeValue(TypedDict, total=False):
     as_object: EntryAttributeValueObject | None
@@ -138,6 +143,8 @@ class EntryAttributeValue(TypedDict, total=False):
     as_array_role: list[EntryAttributeValueRole]
     as_number: int | float | None  # Added for AttrType.NUMBER
     as_array_number: list[int | float | None]  # Added for AttrType.ARRAY_NUMBER
+    as_select: EntryAttributeValueSelect | None
+    as_array_select: list[EntryAttributeValueSelect]
 
 
 class EntryAttributeType(TypedDict):
@@ -237,6 +244,11 @@ class EntryAttributeValueRoleSerializer(serializers.Serializer):
     name = serializers.CharField()
 
 
+class EntryAttributeValueSelectSerializer(serializers.Serializer):
+    value = serializers.CharField()
+    label = serializers.CharField()
+
+
 class EntryAttributeValueSerializer(serializers.Serializer):
     as_object = EntryAttributeValueObjectSerializer(allow_null=True, required=False)
     as_string = serializers.CharField(required=False)
@@ -262,6 +274,10 @@ class EntryAttributeValueSerializer(serializers.Serializer):
     # (regression fix for #3458). FloatField would coerce ints back to floats.
     as_number = IntOrFloatField(allow_null=True, required=False)
     as_array_number = serializers.ListField(child=IntOrFloatField(allow_null=True), required=False)
+    as_select = EntryAttributeValueSelectSerializer(allow_null=True, required=False)
+    as_array_select = serializers.ListField(
+        child=EntryAttributeValueSelectSerializer(), required=False
+    )
 
 
 class EntryAttributeTypeSerializer(serializers.Serializer):
@@ -546,6 +562,7 @@ class EntryCreateSerializer(EntryBaseSerializer):
                     AttrType.TEXT,
                     AttrType.BOOLEAN,
                     AttrType.NUMBER,
+                    AttrType.SELECT,
                 ]
                 if entity_attr.type in supported_types:
                     default_value = entity_attr.get_default_value()
@@ -862,6 +879,12 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
                     val = attrv.get_value()
                     return {"as_number": val}
 
+                case AttrType.SELECT:
+                    return {"as_select": attrv.get_value()}
+
+                case AttrType.ARRAY_SELECT:
+                    return {"as_array_select": attrv.get_value() or []}
+
                 case AttrType.DATE:
                     return {"as_string": attrv.date if attrv.date else ""}
 
@@ -944,6 +967,12 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
                     return {
                         "as_number": AttrDefaultValue.get(type)
                     }  # Use .get for safety, though type should exist
+
+                case AttrType.SELECT:
+                    return {"as_select": None}
+
+                case AttrType.ARRAY_SELECT:
+                    return {"as_array_select": []}
 
                 case _:
                     raise IncorrectTypeError(f"unexpected type: {type}")
@@ -1417,6 +1446,12 @@ class EntryHistoryAttributeValueSerializer(serializers.ModelSerializer):
             case AttrType.NUMBER:
                 return {"as_number": obj.get_value()}
 
+            case AttrType.SELECT:
+                return {"as_select": obj.get_value()}
+
+            case AttrType.ARRAY_SELECT:
+                return {"as_array_select": obj.get_value() or []}
+
             case _:
                 return {}
 
@@ -1480,7 +1515,7 @@ class EntryAttributeValueRestoreSerializer(serializers.ModelSerializer):
 
         # Prepare value based on data_type
         match instance.data_type:
-            case AttrType.STRING | AttrType.TEXT | AttrType.NUMBER:
+            case AttrType.STRING | AttrType.TEXT | AttrType.NUMBER | AttrType.SELECT:
                 value = instance.value
             case AttrType.BOOLEAN:
                 value = instance.boolean
@@ -1499,7 +1534,7 @@ class EntryAttributeValueRestoreSerializer(serializers.ModelSerializer):
                     "name": instance.value if instance.value else "",
                     "id": instance.referral.id if instance.referral else None,
                 }
-            case AttrType.ARRAY_STRING | AttrType.ARRAY_NUMBER:
+            case AttrType.ARRAY_STRING | AttrType.ARRAY_NUMBER | AttrType.ARRAY_SELECT:
                 array_data = list(instance.data_array.all())
                 value = [item.value for item in array_data]
             case AttrType.ARRAY_OBJECT:

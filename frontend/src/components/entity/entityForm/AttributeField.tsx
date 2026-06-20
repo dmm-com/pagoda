@@ -33,6 +33,7 @@ import { Link } from "react-router";
 
 import { AttributeAutoNameConfigModal } from "./AttributeAutoNameConfigModal";
 import { AttributeNoteModal } from "./AttributeNoteModal";
+import { ChoicesEditor } from "./ChoicesEditor";
 import { Schema } from "./EntityFormSchema";
 
 import { aclPath } from "routes/Routes";
@@ -68,6 +69,8 @@ const ATTRIBUTE_TYPE_ORDER = [
   "boolean",
   "number",
   "array_number",
+  "select",
+  "array_select",
   "date",
   "datetime",
 ];
@@ -120,6 +123,7 @@ export const AttributeField: FC<Props> = ({
   }, []);
 
   const isObjectLikeType = ((attrType ?? 0) & AttributeTypes.object.type) > 0;
+  const isSelectLikeType = ((attrType ?? 0) & AttributeTypes.select.type) > 0;
   const isAutoNameSupported = AUTONAME_SELECTABLE_TYPES.includes(attrType ?? 0);
 
   const handleCloseModal = () => setOpenModal(false);
@@ -205,6 +209,13 @@ export const AttributeField: FC<Props> = ({
               )}
             />
           )}
+          {isSelectLikeType && (
+            <ChoicesEditor
+              control={control}
+              index={index}
+              disabled={!isWritable}
+            />
+          )}
         </StyledBox>
       </TableCell>
 
@@ -219,7 +230,8 @@ export const AttributeField: FC<Props> = ({
               attrType === AttributeTypes.string.type ||
               attrType === AttributeTypes.text.type ||
               attrType === AttributeTypes.boolean.type ||
-              attrType === AttributeTypes.number.type;
+              attrType === AttributeTypes.number.type ||
+              attrType === AttributeTypes.select.type;
 
             // Boolean type gets a checkbox
             if (attrType === AttributeTypes.boolean.type) {
