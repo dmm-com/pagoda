@@ -1,7 +1,7 @@
 import importlib
 import sys
 from datetime import datetime
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, cast
 
 from django.conf import settings
 from django.contrib.auth.models import Group as DjangoGroup
@@ -28,7 +28,7 @@ class Group(DjangoGroup):
         max_groups: int | None = settings.MAX_GROUPS
         if max_groups and Group.objects.count() >= max_groups:
             raise RuntimeError("The number of groups is over the limit")
-        return super(Group, self).save(*args, **kwargs)
+        return super().save(*args, **kwargs)
 
     def delete(self) -> None:  # type: ignore[override]
         from airone.lib import auto_complement
@@ -106,8 +106,11 @@ class Group(DjangoGroup):
             entry_model = importlib.import_module("entry.models")
 
         # get Entries that has AttributeValues, which specify this Group instance.
-        return entry_model.Entry.objects.filter(
-            pk__in=entry_model.AttributeValue.objects.filter(query).values_list(
-                "parent_attr__parent_entry", flat=True
-            )
+        return cast(
+            "QuerySet[Any]",
+            entry_model.Entry.objects.filter(
+                pk__in=entry_model.AttributeValue.objects.filter(query).values_list(
+                    "parent_attr__parent_entry", flat=True
+                )
+            ),
         )

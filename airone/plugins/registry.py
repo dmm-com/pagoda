@@ -1,6 +1,7 @@
 import importlib
 import logging
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Type
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Any, Optional, cast
 
 from django.urls import URLResolver, include, path
 from pagoda_plugin_sdk.exceptions import PluginError
@@ -23,10 +24,10 @@ class PluginRegistry:
     """Plugin registration and management system"""
 
     def __init__(self) -> None:
-        self._plugins: Dict[str, "Plugin"] = {}
-        self._api_v2_patterns: List[Dict[str, Any]] = []
+        self._plugins: dict[str, Plugin] = {}
+        self._api_v2_patterns: list[dict[str, Any]] = []
 
-    def register(self, plugin_class: Type["Plugin"]) -> "Plugin":
+    def register(self, plugin_class: type["Plugin"]) -> "Plugin":
         """Register a plugin
 
         Args:
@@ -144,7 +145,7 @@ class PluginRegistry:
         if not hasattr(module, func_name):
             raise AttributeError(f"Function '{func_name}' not found in module '{module_path}'")
 
-        return getattr(module, func_name)
+        return cast("Callable[..., Any]", getattr(module, func_name))
 
     def get(self, plugin_id: str) -> Optional["Plugin"]:
         """Get a plugin by ID
@@ -157,7 +158,7 @@ class PluginRegistry:
         """
         return self._plugins.get(plugin_id)
 
-    def get_all_plugins(self) -> List["Plugin"]:
+    def get_all_plugins(self) -> list["Plugin"]:
         """Get all plugins
 
         Returns:
@@ -165,7 +166,7 @@ class PluginRegistry:
         """
         return list(self._plugins.values())
 
-    def get_enabled_plugins(self) -> List["Plugin"]:
+    def get_enabled_plugins(self) -> list["Plugin"]:
         """Get enabled plugins
 
         Returns:
@@ -173,7 +174,7 @@ class PluginRegistry:
         """
         return list(self._plugins.values())
 
-    def get_installed_apps(self) -> List[str]:
+    def get_installed_apps(self) -> list[str]:
         """Get Django apps to add to INSTALLED_APPS
 
         Returns:
@@ -184,25 +185,25 @@ class PluginRegistry:
             apps.extend(plugin.django_apps)
         return apps
 
-    def get_url_patterns(self) -> List[URLResolver]:
+    def get_url_patterns(self) -> list[URLResolver]:
         """Get URL patterns
 
         Returns:
             List of URL patterns from enabled plugins
         """
-        patterns: List[URLResolver] = []
+        patterns: list[URLResolver] = []
         for plugin in self.get_enabled_plugins():
             if plugin.url_patterns:
                 patterns.append(path(f"plugins/{plugin.id}/", include(plugin.url_patterns)))
         return patterns
 
-    def get_api_v2_patterns(self) -> List[URLResolver]:
+    def get_api_v2_patterns(self) -> list[URLResolver]:
         """Get API v2 URL patterns
 
         Returns:
             List of API v2 URL patterns from enabled plugins
         """
-        patterns: List[URLResolver] = []
+        patterns: list[URLResolver] = []
         for pattern_config in self._api_v2_patterns:
             patterns.append(path(pattern_config["prefix"], include(pattern_config["patterns"])))
         return patterns
