@@ -26,6 +26,10 @@ import {
   aclHistoryPath,
 } from "routes/Routes";
 import { canEdit, canModifyACL } from "services/ACLUtil";
+import {
+  isResponseError,
+  toReportableNonFieldErrors,
+} from "services/AironeAPIErrorUtil";
 import { NotificationMessages } from "services/NotificationMessages";
 
 type ExportFormatType = "YAML" | "CSV";
@@ -51,22 +55,35 @@ export const EntityControlMenu: FC<Props> = ({
   const navigate = useNavigate();
 
   const handleDelete = async (entityId: number) => {
-    await aironeApiClient
-      .deleteEntity(entityId)
-      .then(() => {
-        enqueueSnackbar("モデルの削除が完了しました", {
-          variant: "success",
-        });
-        // A magic to reload the entity list with keeping snackbar
-        navigate(topPath(), { replace: true });
-        navigate(entitiesPath(), { replace: true });
-        setToggle && setToggle();
-      })
-      .catch(() => {
-        enqueueSnackbar("モデルの削除が失敗しました", {
-          variant: "error",
-        });
+    try {
+      await aironeApiClient.deleteEntity(entityId);
+      enqueueSnackbar("モデルの削除が完了しました", {
+        variant: "success",
       });
+      // A magic to reload the entity list with keeping snackbar
+      navigate(topPath(), { replace: true });
+      navigate(entitiesPath(), { replace: true });
+      setToggle && setToggle();
+    } catch (e) {
+      const detail =
+        e instanceof Error && isResponseError(e)
+          ? await toReportableNonFieldErrors(e).catch((parseErr) => {
+              console.error(
+                "Failed to extract error detail from delete response",
+                parseErr,
+              );
+              return null;
+            })
+          : null;
+      enqueueSnackbar(
+        detail
+          ? `モデルの削除が失敗しました: ${detail}`
+          : "モデルの削除が失敗しました",
+        {
+          variant: "error",
+        },
+      );
+    }
   };
   const handleExport = async (entityId: number, format: ExportFormatType) => {
     try {
