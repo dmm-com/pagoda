@@ -106,6 +106,7 @@ class CreateEntityV2Attr(BaseModel):
     referral: list[int] = Field(default_factory=list)
     note: str = ""
     default_value: Optional[str | bool | int | float] = None
+    choices: Optional[list[dict[str, str]]] = None
     name_order: Optional[int] = 0  # for internal use only
     name_prefix: Optional[str] = ""  # for internal use only
     name_postfix: Optional[str] = ""  # for internal use only
@@ -116,7 +117,13 @@ class CreateEntityV2Attr(BaseModel):
         if self.default_value is None:
             return self
 
-        supported_types = [AttrType.STRING, AttrType.TEXT, AttrType.BOOLEAN, AttrType.NUMBER]
+        supported_types = [
+            AttrType.STRING,
+            AttrType.TEXT,
+            AttrType.BOOLEAN,
+            AttrType.NUMBER,
+            AttrType.SELECT,
+        ]
 
         # Clear default_value for unsupported types (don't raise error)
         if self.type not in supported_types:
@@ -137,6 +144,9 @@ class CreateEntityV2Attr(BaseModel):
                 is_valid = False
         elif self.type == AttrType.NUMBER:
             if not isinstance(self.default_value, (int, float)):
+                is_valid = False
+        elif self.type == AttrType.SELECT:
+            if not isinstance(self.default_value, str):
                 is_valid = False
 
         if not is_valid:
@@ -184,6 +194,7 @@ class EditEntityV2Attr(BaseModel):
     referral: Optional[list[int]] = None
     note: Optional[str] = None
     default_value: Optional[str | bool | int | float] = None
+    choices: Optional[list[dict[str, str]]] = None
     is_deleted: bool = False
     name_order: Optional[int] = 0  # for internal use only
     name_prefix: Optional[str] = ""  # for internal use only
@@ -203,7 +214,13 @@ class EditEntityV2Attr(BaseModel):
         if self.default_value is None or self.type is None:
             return self
 
-        supported_types = [AttrType.STRING, AttrType.TEXT, AttrType.BOOLEAN, AttrType.NUMBER]
+        supported_types = [
+            AttrType.STRING,
+            AttrType.TEXT,
+            AttrType.BOOLEAN,
+            AttrType.NUMBER,
+            AttrType.SELECT,
+        ]
 
         # Clear default_value for unsupported types (don't raise error)
         if self.type not in supported_types:
@@ -224,6 +241,9 @@ class EditEntityV2Attr(BaseModel):
                 is_valid = False
         elif self.type == AttrType.NUMBER:
             if not isinstance(self.default_value, (int, float)):
+                is_valid = False
+        elif self.type == AttrType.SELECT:
+            if not isinstance(self.default_value, str):
                 is_valid = False
 
         if not is_valid:
