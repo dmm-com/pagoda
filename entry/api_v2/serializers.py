@@ -1558,6 +1558,24 @@ class EntryAttributeValueRestoreSerializer(serializers.ModelSerializer):
             case _:
                 value = instance.value
 
+        # SELECT/ARRAY_SELECT restoration may resurrect a value that has since
+        # been removed from EntityAttr.choices. add_value() now strictly
+        # validates membership and would raise TypeError, so surface a clear
+        # 400 to the caller instead of letting an opaque crash bubble up.
+        if instance.data_type in (AttrType.SELECT, AttrType.ARRAY_SELECT):
+            allowed = {c.get("value") for c in (attr.schema.choices or []) if isinstance(c, dict)}
+            stale: list[str] = []
+            if instance.data_type == AttrType.SELECT and isinstance(value, str):
+                if value and value not in allowed:
+                    stale = [value]
+            elif instance.data_type == AttrType.ARRAY_SELECT and isinstance(value, list):
+                stale = [v for v in value if isinstance(v, str) and v and v not in allowed]
+            if stale:
+                raise ValidationError(
+                    "cannot restore value(s) no longer in choices: %s"
+                    % ", ".join(sorted(set(stale)))
+                )
+
         attr.add_value(user, value)
         entry.register_es()
 

@@ -96,13 +96,23 @@ export const ArraySelectAttributeValueField: FC<CommonProps> = ({
         render={({ field, fieldState: { error } }) => {
           const value = Array.isArray(field.value) ? field.value : [];
           const selectedValues = value.map((v) => v.value);
+          // Surface entries that hold a value no longer in the schema's choices
+          // — without this, choices.filter() drops them and a single user
+          // interaction permanently deletes the data.
+          const staleSelected = value.filter(
+            (v) => !choices.some((c) => c.value === v.value),
+          );
+          const renderedValue = [
+            ...choices.filter((c) => selectedValues.includes(c.value)),
+            ...staleSelected,
+          ];
           return (
             <Autocomplete
               multiple
               options={choices}
               getOptionLabel={(option) => option.label}
               isOptionEqualToValue={(opt, v) => opt.value === v.value}
-              value={choices.filter((c) => selectedValues.includes(c.value))}
+              value={renderedValue}
               onChange={(_e, newValue) =>
                 field.onChange(
                   newValue.map((c) => ({ value: c.value, label: c.label })),

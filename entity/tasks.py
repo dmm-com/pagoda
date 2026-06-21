@@ -112,6 +112,23 @@ class CreateEntityV2Attr(BaseModel):
     name_postfix: Optional[str] = ""  # for internal use only
 
     @model_validator(mode="after")
+    def validate_choices_shape(self) -> Self:
+        """Reuse the EntityAttr authoritative choices validator so the Celery
+        path applies the same invariants (non-empty, unique value, unique label,
+        non-empty strings) as the synchronous serializer path."""
+        if self.choices is None:
+            if self.type in (AttrType.SELECT, AttrType.ARRAY_SELECT):
+                raise ValueError("SELECT type requires a non-empty choices list")
+            return self
+        if self.type not in (AttrType.SELECT, AttrType.ARRAY_SELECT):
+            self.choices = None
+            return self
+        from entity.models import EntityAttr
+
+        EntityAttr.validate_choices(self.choices)
+        return self
+
+    @model_validator(mode="after")
     def validate_default_value_for_type(self) -> Self:
         """Validate that default_value is compatible with the attribute type."""
         if self.default_value is None:
@@ -199,6 +216,22 @@ class EditEntityV2Attr(BaseModel):
     name_order: Optional[int] = 0  # for internal use only
     name_prefix: Optional[str] = ""  # for internal use only
     name_postfix: Optional[str] = ""  # for internal use only
+
+    @model_validator(mode="after")
+    def validate_choices_shape(self) -> Self:
+        """Reuse EntityAttr.validate_choices when the payload provides choices."""
+        if self.choices is None:
+            return self
+        if self.type is not None and self.type not in (
+            AttrType.SELECT,
+            AttrType.ARRAY_SELECT,
+        ):
+            self.choices = None
+            return self
+        from entity.models import EntityAttr
+
+        EntityAttr.validate_choices(self.choices)
+        return self
 
     @model_validator(mode="after")
     def validate_attr_fields(self) -> Self:

@@ -14,6 +14,7 @@ if TYPE_CHECKING:
 import requests
 from django.conf import settings
 from django.core.validators import URLValidator
+from django.db import transaction
 from drf_spectacular.utils import extend_schema_field
 from pydantic import BaseModel, model_validator
 from pydantic import ValidationError as PydanticValidationError
@@ -534,12 +535,18 @@ class EntityAttrUpdateSerializer(serializers.ModelSerializer):
             if attr_type is None:
                 attr_type = existing_attr.type
 
-        # Validate choices payload and deletion constraints for SELECT types.
-        if existing_attr is not None and "choices" in attr:
-            new_choices = attr.get("choices")
-            is_select = attr_type in (AttrType.SELECT, AttrType.ARRAY_SELECT)
+        is_select = attr_type in (AttrType.SELECT, AttrType.ARRAY_SELECT)
+        new_choices = attr.get("choices")
 
-            if is_select:
+        if is_select:
+            # New SELECT attr created via update payload: no existing record to
+            # diff, but choices must still satisfy the model invariant.
+            if existing_attr is None:
+                try:
+                    EntityAttr.validate_choices(new_choices)
+                except ValueError as exc:
+                    raise ValidationError(str(exc)) from exc
+            elif "choices" in attr:
                 try:
                     EntityAttr.validate_choices(new_choices)
                 except ValueError as exc:
@@ -557,9 +564,9 @@ class EntityAttrUpdateSerializer(serializers.ModelSerializer):
                         raise ValidationError(
                             "choices in use cannot be removed: %s" % ", ".join(sorted(in_use))
                         )
-            elif new_choices is not None:
-                # Drop choices silently for non-SELECT attributes
-                attr["choices"] = None
+        elif new_choices is not None:
+            # Drop choices silently for non-SELECT attributes
+            attr["choices"] = None
 
         if default_value is not None and attr_type is not None:
             supported_types = [
@@ -896,11 +903,15 @@ class EntitySerializer(serializers.ModelSerializer):
                 history.mod_attr(entity_attr)
 
         # Fire a single reindex job per entity if any SELECT label changed.
+        # Wrap in on_commit so the worker reads the freshly-committed
+        # EntityAttr.choices instead of racing the pending transaction.
         if needs_reindex_for_label:
-            Job.new_update_documents(
-                target=entity,
-                params={"is_update": True},
-            ).run()
+            transaction.on_commit(
+                lambda: Job.new_update_documents(
+                    target=entity,
+                    params={"is_update": True},
+                ).run()
+            )
 
         # register webhook
         for webhook_data in webhooks_data:
