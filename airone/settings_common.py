@@ -244,14 +244,16 @@ class Common(Configuration):
             env.str(
                 "EXTENDED_HEADER_MENUS",
                 json.dumps([]),
-            )
+            ).strip()
+            or "[]"
         ),
         # This is the general parameter that would be passed to custom-views from external world
         "EXTENDED_GENERAL_PARAMETERS": json.loads(
             env.str(
                 "EXTENDED_GENERAL_PARAMETERS",
                 json.dumps({}),
-            )
+            ).strip()
+            or "{}"
         ),
         # This is an example to set EXTENDED_HEADER_MENUS
         # "EXTENDED_HEADER_MENUS": json.loads(env.str(
@@ -279,7 +281,8 @@ class Common(Configuration):
             env.str(
                 "FRONTEND_PLUGIN_ENTITY_OVERRIDES",
                 json.dumps({"9681": {"plugin": "sample", "pages": ["entry.list"]}}),
-            )
+            ).strip()
+            or "{}"
         ),
         # Backend plugin entity override configuration
         # Format: { "entityId": { "plugin": "plugin-id", "operations": ["create", "update"],
@@ -293,7 +296,8 @@ class Common(Configuration):
             env.str(
                 "BACKEND_PLUGIN_ENTITY_OVERRIDES",
                 json.dumps({}),
-            )
+            ).strip()
+            or "{}"
         ),
     }
 
@@ -534,7 +538,8 @@ class Common(Configuration):
         env.str(
             "PLUGIN_OPERATION_ID_CONFIG",
             json.dumps({}),
-        )
+        ).strip()
+        or "{}"
     )
     PLUGIN_OPERATION_ID_CONFIG: dict[str, tuple[int, int]] = {
         plugin_id: tuple(range_values) for plugin_id, range_values in _raw_plugin_config.items()

@@ -8,7 +8,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import filters, generics, serializers, status, viewsets
-from rest_framework.exceptions import NotFound, ValidationError
+from rest_framework.exceptions import NotFound
 from rest_framework.pagination import LimitOffsetPagination, PageNumberPagination
 from rest_framework.permissions import BasePermission, IsAuthenticated
 from rest_framework.request import Request
@@ -16,7 +16,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from airone.lib.acl import ACLType, get_permitted_objects
-from airone.lib.drf import ObjectNotExistsError, YAMLParser, YAMLRenderer
+from airone.lib.drf import EntryIsNotEmptyError, ObjectNotExistsError, YAMLParser, YAMLRenderer
 from airone.lib.http import http_get
 from airone.lib.plugin_dispatch import PluginOverrideMixin
 from entity.api_v2.serializers import (
@@ -212,7 +212,7 @@ class EntityAPI(viewsets.ModelViewSet):
             raise ObjectNotExistsError("specified entity has already been deleted")
 
         if Entry.objects.filter(schema=entity, is_active=True).exists():
-            raise ValidationError(
+            raise EntryIsNotEmptyError(
                 "cannot delete Entity because one or more Entries are not deleted"
             )
 

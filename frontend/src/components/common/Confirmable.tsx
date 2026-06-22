@@ -11,7 +11,7 @@ import { ReactElement, FC, SyntheticEvent, useState } from "react";
 interface Props {
   componentGenerator: (handleOpen: () => void) => ReactElement;
   dialogTitle: string;
-  onClickYes: (e: SyntheticEvent) => void;
+  onClickYes: (e: SyntheticEvent) => void | Promise<void>;
   content?: ReactElement;
 }
 
@@ -22,18 +22,26 @@ export const Confirmable: FC<Props> = ({
   content,
 }) => {
   const [open, setOpen] = useState(false);
+  const [processing, setProcessing] = useState(false);
 
   const handleOpen = () => {
     setOpen(true);
   };
 
   const handleClose = () => {
+    if (processing) return;
     setOpen(false);
   };
 
-  const handleConfirmed = (event: SyntheticEvent) => {
-    setOpen(false);
-    onClickYes(event);
+  const handleConfirmed = async (event: SyntheticEvent) => {
+    if (processing) return;
+    setProcessing(true);
+    try {
+      await onClickYes(event);
+    } finally {
+      setProcessing(false);
+      setOpen(false);
+    }
   };
 
   return (
@@ -50,10 +58,15 @@ export const Confirmable: FC<Props> = ({
           <>{content}</>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleConfirmed} color="primary" autoFocus>
+          <Button
+            onClick={handleConfirmed}
+            color="primary"
+            autoFocus
+            disabled={processing}
+          >
             Yes
           </Button>
-          <Button onClick={handleClose} color="primary">
+          <Button onClick={handleClose} color="primary" disabled={processing}>
             No
           </Button>
         </DialogActions>
