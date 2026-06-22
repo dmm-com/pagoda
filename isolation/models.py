@@ -33,7 +33,7 @@ class IsolationParent(models.Model):
             return False
         if action.is_prevent_all:
             return True
-        return action.prevent_from_id == requesting_entity.id
+        return bool(action.prevent_from_id == requesting_entity.id)
 
     def is_entry_isolated(self, entry: "Entry", requesting_entity: Any) -> bool:
         return self.applies_to(requesting_entity) and self.conditions_match(entry)
@@ -152,15 +152,15 @@ class IsolationCondition(models.Model):
         try:
             match self.ATTR_TYPE:
                 case AttrType.STRING | AttrType.TEXT:
-                    return attrv.value == self.str_cond
+                    return bool(attrv.value == self.str_cond)
 
                 case AttrType.OBJECT:
                     if self.ref_cond is None:
                         return attrv.referral_id is None
-                    return attrv.referral_id == self.ref_cond_id
+                    return bool(attrv.referral_id == self.ref_cond_id)
 
                 case AttrType.BOOLEAN:
-                    return attrv.boolean == self.bool_cond
+                    return bool(attrv.boolean == self.bool_cond)
 
                 case AttrType.NAMED_OBJECT:
                     name_match = attrv.value == (self.str_cond or "")

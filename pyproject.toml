@@ -13,7 +13,7 @@ mypy_path = [".", "plugin/sdk"]
 # Each plugin package ships its own top-level "tests" package. Once
 # plugin/sdk is on mypy_path they collide as duplicate modules, so exclude
 # plugin test trees from discovery (they are already ignored for errors).
-exclude = ['plugin/.*/tests/', 'plugin/examples/']
+exclude = ['plugin/.*/tests/', 'plugin/examples/', 'virtualenv_old/']
 
 # Gradual type checking improvements
 check_untyped_defs = true
@@ -27,6 +27,7 @@ disallow_untyped_calls = true
 extra_checks = true
 disallow_untyped_decorators = true
 disallow_any_generics = true
+warn_return_any = true
 # Production code (including plugin/sdk and tools) must be fully annotated.
 # Test and migration trees are exempted via the ignore_errors overrides below.
 disallow_untyped_defs = true

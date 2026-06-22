@@ -1,7 +1,7 @@
 import importlib
 import re
 from datetime import datetime
-from typing import Any
+from typing import Any, cast
 
 from django.contrib.auth.models import Permission
 from django.db import models
@@ -32,7 +32,7 @@ Permission.__le__ = lambda self, comp: _get_acltype(self) <= _get_acltype(comp) 
 Permission.__ge__ = lambda self, comp: _get_acltype(self) >= _get_acltype(comp)  # type: ignore[operator]
 
 
-class HistoricalDifference(object):
+class HistoricalDifference:
     def __init__(self, field_val: str, prev_val: Any, next_val: Any):
         self.field = field_val
         self.prev = prev_val
@@ -66,7 +66,7 @@ class ACLBase(models.Model):
         if isinstance(update_fields, list) and "updated_time" not in update_fields:
             new_update_fields = update_fields + ["updated_time"]
 
-        super(ACLBase, self).save(update_fields=new_update_fields, *args, **kwargs)
+        super().save(update_fields=new_update_fields, *args, **kwargs)
 
     def get_diff(instance, offset: int = 0) -> list[HistoricalDifference]:
         ret = []
@@ -84,7 +84,7 @@ class ACLBase(models.Model):
 
     def show_diff(self, offset: int = 0) -> None:
         for diff in self.get_diff(offset):
-            print("{} changed from {} to {}".format(diff.field, diff.prev, diff.next))
+            print(f"{diff.field} changed from {diff.prev} to {diff.next}")
 
     def save_without_historical_record(self, *args: Any, **kwargs: Any) -> None:
         self.skip_history_when_saving = True
@@ -169,7 +169,7 @@ class ACLBase(models.Model):
             case _:
                 model = type(self)
 
-        return model.objects.get(id=self.id)
+        return cast("ACLBase", model.objects.get(id=self.id))
 
     def is_same_object(self, comp: "ACLBase") -> bool:
         # _IMPORT_INFO and __getitem__ are provided by concrete subclasses

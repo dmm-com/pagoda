@@ -13,9 +13,10 @@ Operation ID Allocation Ranges:
 - 200-9999: Plugin operations (specified in settings.py)
 """
 
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from importlib import import_module
-from typing import Any, Callable, TypeAlias
+from typing import Any, cast
 
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
@@ -25,7 +26,7 @@ from airone.lib.log import Logger
 logger = Logger
 
 
-TaskHandler: TypeAlias = Callable[[Any, Any], Any]
+type TaskHandler = Callable[[Any, Any], Any]
 
 
 @dataclass
@@ -279,7 +280,7 @@ class PluginTaskRegistry:
         handler = getattr(module, func_name, None)
         if handler is None:
             raise AttributeError(f"Task function not found: {config.module_path}.{func_name}")
-        return handler
+        return cast("TaskHandler", handler)
 
     @classmethod
     def get_all_tasks(cls) -> dict[int, tuple[str, str]]:

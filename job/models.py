@@ -3,10 +3,11 @@ import json
 import os
 import pickle
 import time
+from collections.abc import Callable
 from datetime import date, datetime, timedelta
 from importlib import import_module
 from types import ModuleType
-from typing import Any, Callable, TypeAlias
+from typing import Any, cast
 from zoneinfo import ZoneInfo
 
 from django.conf import settings
@@ -23,12 +24,12 @@ from entry.models import Entry
 from job.settings import CONFIG as JOB_CONFIG
 from user.models import User
 
-TaskReturnType: TypeAlias = "JobStatus | tuple[JobStatus, str, ACLBase | None] | None"
+type TaskReturnType = "JobStatus | tuple[JobStatus, str, ACLBase | None] | None"
 
-TaskHandler: TypeAlias = Callable[[Any, "Job"], TaskReturnType]
+type TaskHandler = Callable[[Any, "Job"], TaskReturnType]
 
 # Free-form parameter payload carried by a Job (JSON-serialized for storage).
-JobParams: TypeAlias = dict[str, Any]
+type JobParams = dict[str, Any]
 
 if os.path.exists(settings.BASE_DIR + "/custom_view"):
     from custom_view.lib.task import (
@@ -732,7 +733,7 @@ class Job(models.Model):
     @classmethod
     def _get_job_timeout(kls) -> int:
         if "JOB_TIMEOUT" in settings.AIRONE and settings.AIRONE["JOB_TIMEOUT"]:
-            return settings.AIRONE["JOB_TIMEOUT"]
+            return cast("int", settings.AIRONE["JOB_TIMEOUT"])
         else:
             return kls.DEFAULT_JOB_TIMEOUT
 

@@ -18,9 +18,10 @@ Example:
             return Response({"id": entry.id}, status=202)
 """
 
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from functools import wraps
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, TypeVar
+from typing import TYPE_CHECKING, Any, Optional, TypeVar
 
 from rest_framework import status
 from rest_framework.request import Request
@@ -46,7 +47,7 @@ class OverrideMeta:
 
     operation: str
 
-    def to_dict(self) -> Dict[str, str]:
+    def to_dict(self) -> dict[str, str]:
         """Convert to dictionary."""
         return {
             "operation": self.operation,
@@ -104,7 +105,7 @@ def override_operation(operation: str) -> Callable[[F], F]:
             return method(*args, **kwargs)
 
         setattr(wrapper, OVERRIDE_META_ATTR, meta)
-        return wrapper  # type: ignore
+        return wrapper
 
     return decorator
 
@@ -113,7 +114,7 @@ def override_operation(operation: str) -> Callable[[F], F]:
 
 
 def success_response(
-    data: Optional[Dict[str, Any]] = None,
+    data: dict[str, Any] | None = None,
     status_code: int = status.HTTP_200_OK,
 ) -> Response:
     """Create a success response.
@@ -129,9 +130,9 @@ def success_response(
 
 
 def created_response(
-    data: Optional[Dict[str, Any]] = None,
-    entry_id: Optional[int] = None,
-    entry_name: Optional[str] = None,
+    data: dict[str, Any] | None = None,
+    entry_id: int | None = None,
+    entry_name: str | None = None,
 ) -> Response:
     """Create a 201 Created response.
 
@@ -154,7 +155,7 @@ def created_response(
 
 
 def accepted_response(
-    data: Optional[Dict[str, Any]] = None,
+    data: dict[str, Any] | None = None,
     message: str = "Request accepted for processing",
 ) -> Response:
     """Create a 202 Accepted response (for async operations).
@@ -185,7 +186,7 @@ def no_content_response() -> Response:
 def error_response(
     message: str,
     status_code: int = status.HTTP_400_BAD_REQUEST,
-    details: Optional[Dict[str, Any]] = None,
+    details: dict[str, Any] | None = None,
 ) -> Response:
     """Create an error response.
 
@@ -197,7 +198,7 @@ def error_response(
     Returns:
         DRF Response object
     """
-    data: Dict[str, Any] = {"error": message}
+    data: dict[str, Any] = {"error": message}
     if details:
         data["details"] = details
 
@@ -220,7 +221,7 @@ def not_found_response(
 
 def permission_denied_response(
     message: str = "Permission denied",
-    denied_entries: Optional[List[int]] = None,
+    denied_entries: list[int] | None = None,
 ) -> Response:
     """Create a 403 Forbidden response.
 
@@ -231,7 +232,7 @@ def permission_denied_response(
     Returns:
         DRF Response object with 403 status
     """
-    data: Dict[str, Any] = {"error": message}
+    data: dict[str, Any] = {"error": message}
     if denied_entries:
         data["denied_entries"] = denied_entries
 
@@ -239,7 +240,7 @@ def permission_denied_response(
 
 
 def validation_error_response(
-    errors: Dict[str, Any] | List[str] | str,
+    errors: dict[str, Any] | list[str] | str,
 ) -> Response:
     """Create a validation error response.
 
@@ -282,15 +283,15 @@ class OverrideContext:
     plugin_id: str
     operation: str
     entry: Optional["Entry"] = None
-    data: Optional[Dict[str, Any]] = None
-    params: Dict[str, Any] = field(default_factory=dict)
+    data: dict[str, Any] | None = None
+    params: dict[str, Any] = field(default_factory=dict)
 
     @property
     def is_authenticated(self) -> bool:
         """Check if the user is authenticated."""
-        return self.user and self.user.is_authenticated
+        return bool(self.user and self.user.is_authenticated)
 
-    def get_request_data(self) -> Dict[str, Any]:
+    def get_request_data(self) -> dict[str, Any]:
         """Get the request data as a dictionary."""
         if self.data:
             return dict(self.data)
