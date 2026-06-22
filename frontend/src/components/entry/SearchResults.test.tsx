@@ -13,7 +13,7 @@ import { Component, ReactNode } from "react";
 import { TestWrapper } from "TestWrapper";
 import { SearchResults } from "components/entry/SearchResults";
 
-// Sample data for tests
+// Sample data for tests.
 const createMockResults = (count: number = 2): AdvancedSearchResult => ({
   count,
   totalCount: count,
