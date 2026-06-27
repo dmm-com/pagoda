@@ -29,7 +29,7 @@ export type EditableEntryAttrValue = {
   asNumber?: number | null;
   asArrayNumber?: Array<{ value: number | null }>;
   asSelect?: { value: string; label: string } | null;
-  asArraySelect?: Array<{ value: string; label: string }>;
+  asMultiSelect?: Array<{ value: string; label: string }>;
 };
 
 export type EditableEntry = {

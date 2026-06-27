@@ -19,14 +19,22 @@ const StyledBox = styled(Box)(({}) => ({
   gap: "0 12px",
 }));
 
+// `value` is backend-assigned and always present in EntityDetail responses,
+// but the autogen Choice type widens it to optional because a draft choice
+// row may omit it. Filter out value-less rows before render so MUI Select
+// has a stable identity to compare against.
+type InputChoice = { value?: string; label: string };
 type Choice = { value: string; label: string };
 
 interface CommonProps {
   attrId: number;
   control: Control<Schema>;
-  choices: Choice[];
+  choices: InputChoice[];
   isDisabled?: boolean;
 }
+
+const usableChoices = (choices: InputChoice[]): Choice[] =>
+  choices.filter((c): c is Choice => typeof c.value === "string");
 
 export const SelectAttributeValueField: FC<CommonProps> = ({
   attrId,
@@ -34,14 +42,15 @@ export const SelectAttributeValueField: FC<CommonProps> = ({
   choices,
   isDisabled = false,
 }) => {
+  const usable = useMemo(() => usableChoices(choices), [choices]);
   const menuItems = useMemo(
     () =>
-      choices.map((c) => (
+      usable.map((c) => (
         <MenuItem key={c.value} value={c.value}>
           {c.label}
         </MenuItem>
       )),
-    [choices],
+    [usable],
   );
 
   return (
@@ -60,7 +69,7 @@ export const SelectAttributeValueField: FC<CommonProps> = ({
                 value={currentValue}
                 onChange={(e) => {
                   const v = e.target.value as string;
-                  const found = choices.find((c) => c.value === v);
+                  const found = usable.find((c) => c.value === v);
                   field.onChange(
                     found ? { value: found.value, label: found.label } : null,
                   );
@@ -81,16 +90,17 @@ export const SelectAttributeValueField: FC<CommonProps> = ({
   );
 };
 
-export const ArraySelectAttributeValueField: FC<CommonProps> = ({
+export const MultiSelectAttributeValueField: FC<CommonProps> = ({
   attrId,
   control,
   choices,
   isDisabled = false,
 }) => {
+  const usable = useMemo(() => usableChoices(choices), [choices]);
   return (
     <StyledBox>
       <Controller
-        name={`attrs.${attrId}.value.asArraySelect`}
+        name={`attrs.${attrId}.value.asMultiSelect`}
         control={control}
         defaultValue={[]}
         render={({ field, fieldState: { error } }) => {
@@ -100,16 +110,16 @@ export const ArraySelectAttributeValueField: FC<CommonProps> = ({
           // — without this, choices.filter() drops them and a single user
           // interaction permanently deletes the data.
           const staleSelected = value.filter(
-            (v) => !choices.some((c) => c.value === v.value),
+            (v) => !usable.some((c) => c.value === v.value),
           );
           const renderedValue = [
-            ...choices.filter((c) => selectedValues.includes(c.value)),
+            ...usable.filter((c) => selectedValues.includes(c.value)),
             ...staleSelected,
           ];
           return (
             <Autocomplete
               multiple
-              options={choices}
+              options={usable}
               getOptionLabel={(option) => option.label}
               isOptionEqualToValue={(opt, v) => opt.value === v.value}
               value={renderedValue}

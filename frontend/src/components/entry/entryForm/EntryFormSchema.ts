@@ -194,7 +194,7 @@ export const schema = schemaForType<EditableEntry>()(
                 })
                 .nullable()
                 .optional(),
-              asArraySelect: z
+              asMultiSelect: z
                 .array(
                   z.object({
                     value: z.string(),
@@ -399,12 +399,12 @@ export const schema = schemaForType<EditableEntry>()(
                   });
                 }
                 break;
-              case EntryAttributeTypeTypeEnum.ARRAY_SELECT:
-                if ((value.value.asArraySelect?.length ?? 0) === 0) {
+              case EntryAttributeTypeTypeEnum.MULTI_SELECT:
+                if ((value.value.asMultiSelect?.length ?? 0) === 0) {
                   ctx.addIssue({
                     code: z.ZodIssueCode.custom,
                     message: "必須項目です",
-                    path: ["value", "asArraySelect"],
+                    path: ["value", "asMultiSelect"],
                   });
                 }
                 break;

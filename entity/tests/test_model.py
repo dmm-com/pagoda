@@ -565,19 +565,21 @@ class ModelTest(TestCase):
 
     def test_validate_choices_method(self):
         """validate_choices accepts valid lists and rejects malformed payloads."""
-        # Valid case
+        # Valid: explicit values
         EntityAttr.validate_choices(
             [
                 {"value": "a", "label": "Alpha"},
                 {"value": "b", "label": "Beta"},
             ]
         )
+        # Valid: label-only entries (backend assigns values later)
+        EntityAttr.validate_choices([{"label": "Alpha"}, {"label": "Beta"}])
 
         # Empty list
         with self.assertRaises(ValueError):
             EntityAttr.validate_choices([])
 
-        # Duplicate value
+        # Duplicate value (when both are specified)
         with self.assertRaises(ValueError):
             EntityAttr.validate_choices(
                 [{"value": "a", "label": "x"}, {"value": "a", "label": "y"}]
@@ -585,28 +587,34 @@ class ModelTest(TestCase):
 
         # Duplicate label
         with self.assertRaises(ValueError):
-            EntityAttr.validate_choices(
-                [{"value": "a", "label": "x"}, {"value": "b", "label": "x"}]
-            )
+            EntityAttr.validate_choices([{"label": "x"}, {"label": "x"}])
 
-        # Missing field
+        # Missing label
         with self.assertRaises(ValueError):
             EntityAttr.validate_choices([{"value": "a"}])
 
-        # Non-string
+        # Non-string label
         with self.assertRaises(ValueError):
-            EntityAttr.validate_choices([{"value": 1, "label": "x"}])
+            EntityAttr.validate_choices([{"label": 1}])
 
-    def test_select_default_value_validation(self):
-        """SELECT default_value must reference a value in choices."""
+    def test_normalize_choices_assigns_uuid(self):
+        """normalize_choices keeps existing values and mints UUIDs for new rows."""
+        out = EntityAttr.normalize_choices([{"label": "A"}, {"value": "x", "label": "B"}])
+        self.assertEqual(out[1], {"value": "x", "label": "B"})
+        self.assertEqual(out[0]["label"], "A")
+        self.assertTrue(out[0]["value"])  # auto-assigned
+        self.assertNotEqual(out[0]["value"], out[1]["value"])
+
+    def test_select_default_value_not_supported(self):
+        """SELECT does not currently support custom default_value."""
         entity = Entity.objects.create(name="ent_sel", created_user=self._test_user)
         attr = EntityAttr.objects.create(
             name="status",
             type=AttrType.SELECT,
             created_user=self._test_user,
             parent_entity=entity,
-            choices=[{"value": "active", "label": "Active"}],
+            choices=[{"value": "abc", "label": "Active"}],
         )
-        self.assertTrue(attr.validate_default_value("active"))
-        self.assertFalse(attr.validate_default_value("unknown"))
+        # None is always valid, but any non-None default is rejected for SELECT.
         self.assertTrue(attr.validate_default_value(None))
+        self.assertFalse(attr.validate_default_value("abc"))

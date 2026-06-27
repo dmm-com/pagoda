@@ -119,8 +119,8 @@ export const AttributeTypes: Record<string, { name: string; type: number }> = {
     name: "select",
     type: BaseAttributeTypes.select,
   },
-  array_select: {
-    name: "array_select",
+  multi_select: {
+    name: "multi_select",
     type: BaseAttributeTypes.select | BaseAttributeTypes.array,
   },
 };

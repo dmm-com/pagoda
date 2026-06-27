@@ -1248,7 +1248,7 @@ def make_search_results(
                     | AttrType.ARRAY_NAMED_OBJECT_BOOLEAN
                     | AttrType.ARRAY_GROUP
                     | AttrType.ARRAY_ROLE
-                    | AttrType.ARRAY_SELECT
+                    | AttrType.MULTI_SELECT
                 ):
                     if "value" not in ret_attrinfo:
                         ret_attrinfo["value"] = []
@@ -1280,7 +1280,7 @@ def make_search_results(
                                 {"id": attrinfo["referral_id"], "name": attrinfo["value"]}
                             )
 
-                        case AttrType.ARRAY_SELECT:
+                        case AttrType.MULTI_SELECT:
                             ret_attrinfo["value"].append(
                                 {
                                     "value": attrinfo["key"],

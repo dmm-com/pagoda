@@ -117,10 +117,10 @@ class CreateEntityV2Attr(BaseModel):
         path applies the same invariants (non-empty, unique value, unique label,
         non-empty strings) as the synchronous serializer path."""
         if self.choices is None:
-            if self.type in (AttrType.SELECT, AttrType.ARRAY_SELECT):
+            if self.type in (AttrType.SELECT, AttrType.MULTI_SELECT):
                 raise ValueError("SELECT type requires a non-empty choices list")
             return self
-        if self.type not in (AttrType.SELECT, AttrType.ARRAY_SELECT):
+        if self.type not in (AttrType.SELECT, AttrType.MULTI_SELECT):
             self.choices = None
             return self
         from entity.models import EntityAttr
@@ -139,7 +139,6 @@ class CreateEntityV2Attr(BaseModel):
             AttrType.TEXT,
             AttrType.BOOLEAN,
             AttrType.NUMBER,
-            AttrType.SELECT,
         ]
 
         # Clear default_value for unsupported types (don't raise error)
@@ -161,9 +160,6 @@ class CreateEntityV2Attr(BaseModel):
                 is_valid = False
         elif self.type == AttrType.NUMBER:
             if not isinstance(self.default_value, (int, float)):
-                is_valid = False
-        elif self.type == AttrType.SELECT:
-            if not isinstance(self.default_value, str):
                 is_valid = False
 
         if not is_valid:
@@ -224,7 +220,7 @@ class EditEntityV2Attr(BaseModel):
             return self
         if self.type is not None and self.type not in (
             AttrType.SELECT,
-            AttrType.ARRAY_SELECT,
+            AttrType.MULTI_SELECT,
         ):
             self.choices = None
             return self
@@ -252,7 +248,6 @@ class EditEntityV2Attr(BaseModel):
             AttrType.TEXT,
             AttrType.BOOLEAN,
             AttrType.NUMBER,
-            AttrType.SELECT,
         ]
 
         # Clear default_value for unsupported types (don't raise error)
@@ -274,9 +269,6 @@ class EditEntityV2Attr(BaseModel):
                 is_valid = False
         elif self.type == AttrType.NUMBER:
             if not isinstance(self.default_value, (int, float)):
-                is_valid = False
-        elif self.type == AttrType.SELECT:
-            if not isinstance(self.default_value, str):
                 is_valid = False
 
         if not is_valid:

@@ -108,7 +108,7 @@ test("formalizeEntryInfo should return expect value", () => {
           asRole: null,
           asNamedObject: { name: "", object: null },
           asSelect: null,
-          asArraySelect: [],
+          asMultiSelect: [],
         },
       },
       3: {
@@ -134,7 +134,7 @@ test("formalizeEntryInfo should return expect value", () => {
           asRole: null,
           asNamedObject: { name: "", object: null },
           asSelect: null,
-          asArraySelect: [],
+          asMultiSelect: [],
         },
       },
       4: {
@@ -160,7 +160,7 @@ test("formalizeEntryInfo should return expect value", () => {
           asRole: null,
           asNamedObject: { name: "", object: null },
           asSelect: null,
-          asArraySelect: [],
+          asMultiSelect: [],
         },
       },
     },
@@ -562,12 +562,12 @@ test("convertAttrsFormatCtoS() returns expected value", () => {
       },
       expected_data: null,
     },
-    // array_select
+    // multi_select
     {
       client_data: {
-        type: EntryAttributeTypeTypeEnum.ARRAY_SELECT,
+        type: EntryAttributeTypeTypeEnum.MULTI_SELECT,
         value: {
-          asArraySelect: [
+          asMultiSelect: [
             { value: "a", label: "Alpha" },
             { value: "b", label: "Beta" },
           ],

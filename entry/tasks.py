@@ -899,7 +899,7 @@ def _csv_export_v2(
                 from natsort import natsorted
 
                 return "\n".join(natsorted([str(x) if x is not None else "" for x in vval]))
-            case AttrType.ARRAY_SELECT:
+            case AttrType.MULTI_SELECT:
                 from natsort import natsorted
 
                 labels = [str(x.get("label", "")) for x in vval if isinstance(x, dict)]

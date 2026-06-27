@@ -92,7 +92,7 @@ class BaseModelTest(AironeTestCase):
 
 class ModelTest(BaseModelTest):
     def _make_select_attr(self, attr_type, choices):
-        """Builds an EntityAttr/Attribute pair for SELECT or ARRAY_SELECT.
+        """Builds an EntityAttr/Attribute pair for SELECT or MULTI_SELECT.
 
         Returns the Attribute instance attached to self._entry.
         """
@@ -149,9 +149,9 @@ class ModelTest(BaseModelTest):
         self.assertTrue(attr.is_updated("b"))
         self.assertTrue(attr.is_updated(""))
 
-    def test_array_select_dedup_and_get_value(self):
+    def test_multi_select_dedup_and_get_value(self):
         attr = self._make_select_attr(
-            AttrType.ARRAY_SELECT,
+            AttrType.MULTI_SELECT,
             [
                 {"value": "x", "label": "X"},
                 {"value": "y", "label": "Y"},
@@ -165,17 +165,17 @@ class ModelTest(BaseModelTest):
         result = latest.get_value()
         self.assertEqual(result, [{"value": "y", "label": "Y"}, {"value": "x", "label": "X"}])
 
-    def test_array_select_rejects_unknown_element(self):
+    def test_multi_select_rejects_unknown_element(self):
         attr = self._make_select_attr(
-            AttrType.ARRAY_SELECT,
+            AttrType.MULTI_SELECT,
             [{"value": "a", "label": "A"}, {"value": "b", "label": "B"}],
         )
         with self.assertRaises(TypeError):
             attr.add_value(self._user, ["a", "unknown"])
 
-    def test_array_select_is_updated(self):
+    def test_multi_select_is_updated(self):
         attr = self._make_select_attr(
-            AttrType.ARRAY_SELECT,
+            AttrType.MULTI_SELECT,
             [{"value": "a", "label": "A"}, {"value": "b", "label": "B"}],
         )
         attr.add_value(self._user, ["a", "b"])
@@ -189,9 +189,9 @@ class ModelTest(BaseModelTest):
         attr.add_value(self._user, "a")
         self.assertEqual(attr.schema.get_choices_in_use(), {"a"})
 
-    def test_get_choices_in_use_array_select(self):
+    def test_get_choices_in_use_multi_select(self):
         attr = self._make_select_attr(
-            AttrType.ARRAY_SELECT,
+            AttrType.MULTI_SELECT,
             [{"value": "a", "label": "A"}, {"value": "b", "label": "B"}],
         )
         attr.add_value(self._user, ["a", "b"])

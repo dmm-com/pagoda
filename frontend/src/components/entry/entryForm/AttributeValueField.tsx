@@ -17,7 +17,7 @@ import {
 } from "./ObjectAttributeValueField";
 import { RoleAttributeValueField } from "./RoleAttributeValueField";
 import {
-  ArraySelectAttributeValueField,
+  MultiSelectAttributeValueField,
   SelectAttributeValueField,
 } from "./SelectAttributeValueField";
 import {
@@ -30,7 +30,7 @@ interface Props {
   setValue: UseFormSetValue<Schema>;
   type: number;
   schemaId: number;
-  choices?: Array<{ value: string; label: string }>;
+  choices?: Array<{ value?: string; label: string }>;
   isDisabled?: boolean;
 }
 
@@ -214,9 +214,9 @@ export const AttributeValueField: FC<Props> = ({
         />
       );
 
-    case EntryAttributeTypeTypeEnum.ARRAY_SELECT:
+    case EntryAttributeTypeTypeEnum.MULTI_SELECT:
       return (
-        <ArraySelectAttributeValueField
+        <MultiSelectAttributeValueField
           attrId={schemaId}
           control={control}
           choices={choices ?? []}

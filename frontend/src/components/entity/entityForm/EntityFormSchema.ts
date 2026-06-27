@@ -116,8 +116,10 @@ export const schema = z.object({
           choices: z
             .array(
               z.object({
-                value: z.string().min(1, "value は必須です"),
-                label: z.string().min(1, "label は必須です"),
+                // value is the backend-assigned internal id. New rows omit it;
+                // existing rows keep it so the server can rename labels in place.
+                value: z.string().optional(),
+                label: z.string().min(1, "選択肢の表示名は必須です"),
               }),
             )
             .nullable()
@@ -142,7 +144,7 @@ export const schema = z.object({
         )
         .refine(
           (attr) => {
-            // SELECT / ARRAY_SELECT require non-empty choices
+            // SELECT / MULTI_SELECT require non-empty choices
             if (isSelectLikeType(attr.type)) {
               return Array.isArray(attr.choices) && attr.choices.length > 0;
             }
@@ -155,19 +157,15 @@ export const schema = z.object({
         )
         .refine(
           (attr) => {
-            // SELECT / ARRAY_SELECT choices must have unique value and label
+            // SELECT / MULTI_SELECT labels must be unique
             if (isSelectLikeType(attr.type) && Array.isArray(attr.choices)) {
-              const values = attr.choices.map((c) => c.value);
               const labels = attr.choices.map((c) => c.label);
-              return (
-                new Set(values).size === values.length &&
-                new Set(labels).size === labels.length
-              );
+              return new Set(labels).size === labels.length;
             }
             return true;
           },
           {
-            message: "選択肢の value と label はそれぞれ重複できません",
+            message: "選択肢の表示名は重複できません",
             path: ["choices"],
           },
         ),

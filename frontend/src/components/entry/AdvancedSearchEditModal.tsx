@@ -53,9 +53,9 @@ export const AdvancedSearchEditModal: FC<Props> = ({
 
   const isSelectLikeType =
     targetAttrtype === EntryAttributeTypeTypeEnum.SELECT ||
-    targetAttrtype === EntryAttributeTypeTypeEnum.ARRAY_SELECT;
+    targetAttrtype === EntryAttributeTypeTypeEnum.MULTI_SELECT;
 
-  // For SELECT / ARRAY_SELECT bulk-edit the dropdown needs the EntityAttr's
+  // For SELECT / MULTI_SELECT bulk-edit the dropdown needs the EntityAttr's
   // choices list. Fetch the first model's detail and look up the column by
   // name. Skipped entirely for non-SELECT types.
   const { data: targetEntity } = usePagodaSWR(

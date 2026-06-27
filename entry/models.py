@@ -262,7 +262,7 @@ class AttributeValue(models.Model):
             case AttrType.SELECT:
                 value = self._resolve_choice(self.value)
 
-            case AttrType.ARRAY_SELECT:
+            case AttrType.MULTI_SELECT:
                 # Preserve insertion order (matches ARRAY_STRING / ARRAY_NUMBER)
                 # so the user's chosen ordering survives round-trips.
                 value = [
@@ -302,7 +302,7 @@ class AttributeValue(models.Model):
         match self.data_type:
             case AttrType.SELECT:
                 return self._resolve_choice(self.value)
-            case AttrType.ARRAY_SELECT:
+            case AttrType.MULTI_SELECT:
                 return [
                     c for c in (self._resolve_choice(x.value) for x in self.data_array.all()) if c
                 ]
@@ -726,9 +726,9 @@ class Attribute(ACLBase):
                 incoming = _normalize_select(recv_value)
                 return stored != incoming
 
-            case AttrType.ARRAY_SELECT:
+            case AttrType.MULTI_SELECT:
 
-                def _normalize_array_select_item(v: Any) -> str | None:
+                def _normalize_multi_select_item(v: Any) -> str | None:
                     if v is None or v == "":
                         return None
                     if isinstance(v, dict):
@@ -741,7 +741,7 @@ class Attribute(ACLBase):
                 stored_set = {x.value for x in last_value.data_array.all()}
                 incoming_set = {
                     norm
-                    for norm in (_normalize_array_select_item(v) for v in recv_value)
+                    for norm in (_normalize_multi_select_item(v) for v in recv_value)
                     if norm is not None
                 }
                 return stored_set != incoming_set
@@ -1194,7 +1194,7 @@ class Attribute(ACLBase):
                     case AttrType.ARRAY_STRING:
                         return True
 
-                    case AttrType.ARRAY_SELECT:
+                    case AttrType.MULTI_SELECT:
                         if not all(isinstance(x, str) for x in value):
                             return False
                         allowed = {
@@ -1392,10 +1392,10 @@ class Attribute(ACLBase):
             attr_value.set_status(AttributeValue.STATUS_DATA_ARRAY_PARENT)
 
             if value and isinstance(value, Iterable):
-                # ARRAY_SELECT must hold a deduplicated set of choice values.
+                # MULTI_SELECT must hold a deduplicated set of choice values.
                 # Preserve insertion order so the resulting AttributeValues remain stable
                 # against unchanged input even if the caller passes duplicates.
-                if self.schema.type == AttrType.ARRAY_SELECT and isinstance(value, list):
+                if self.schema.type == AttrType.MULTI_SELECT and isinstance(value, list):
                     value = list(dict.fromkeys(v for v in value if isinstance(v, str) and v))
 
                 co_attrv_params = {
@@ -1566,7 +1566,7 @@ class Attribute(ACLBase):
                     case AttrType.ARRAY_STRING:
                         return value
 
-                    case AttrType.ARRAY_SELECT:
+                    case AttrType.MULTI_SELECT:
                         resolved = [_resolve_choice_value(x) for x in value]
                         return list(dict.fromkeys(v for v in resolved if v))
 

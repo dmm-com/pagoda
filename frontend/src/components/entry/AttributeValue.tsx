@@ -287,10 +287,10 @@ export const AttributeValue: FC<Props> = ({ attrInfo }) => {
         </StyledList>
       );
 
-    case EntryAttributeTypeTypeEnum.ARRAY_SELECT:
+    case EntryAttributeTypeTypeEnum.MULTI_SELECT:
       return (
         <StyledList>
-          {attrInfo.value?.asArraySelect?.map((info, n) => (
+          {attrInfo.value?.asMultiSelect?.map((info, n) => (
             <StyledListItem key={n}>
               <ElemSelect attrValue={info} />
             </StyledListItem>

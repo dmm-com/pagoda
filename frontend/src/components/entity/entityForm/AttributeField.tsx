@@ -70,7 +70,7 @@ const ATTRIBUTE_TYPE_ORDER = [
   "number",
   "array_number",
   "select",
-  "array_select",
+  "multi_select",
   "date",
   "datetime",
 ];

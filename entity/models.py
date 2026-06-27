@@ -40,7 +40,7 @@ class EntityAttr(ACLBase):
     note = models.CharField(max_length=200, blank=True, default="")
     default_value = models.JSONField(null=True, blank=True, default=None)
 
-    # Stores [{"value": str, "label": str}, ...] for SELECT / ARRAY_SELECT types.
+    # Stores [{"value": str, "label": str}, ...] for SELECT / MULTI_SELECT types.
     # NULL for all other types.
     choices = models.JSONField(null=True, blank=True, default=None)
 
@@ -130,13 +130,12 @@ class EntityAttr(ACLBase):
         if value is None:
             return True  # None is always valid
 
-        # Only String, Text, Boolean, Number, Select types support custom default values, currently
+        # Only String, Text, Boolean, Number types support custom default values, currently
         supported_types = [
             AttrType.STRING,
             AttrType.TEXT,
             AttrType.BOOLEAN,
             AttrType.NUMBER,
-            AttrType.SELECT,
         ]
         if self.type not in supported_types:
             return False
@@ -154,47 +153,67 @@ class EntityAttr(ACLBase):
             if isinstance(value, float) and (math.isnan(value) or math.isinf(value)):
                 return False
             return True
-        elif self.type == AttrType.SELECT:
-            # value must match an existing choice's "value"
-            if not isinstance(value, str):
-                return False
-            return value in {c.get("value") for c in (self.choices or [])}
 
         return True
 
     @staticmethod
     def validate_choices(choices: Any) -> None:
-        """Validates choices payload for SELECT / ARRAY_SELECT types.
+        """Validates choices payload for SELECT / MULTI_SELECT types.
+
+        Each choice must carry a non-empty `label`. The `value` is an internal
+        identifier that the system auto-assigns; it may be omitted by the
+        caller (new choice) but must be a non-empty unique string when present
+        (referring to an existing choice for label rename / re-ordering).
 
         Raises ValueError when the payload is malformed.
         """
         if not isinstance(choices, list) or len(choices) == 0:
             raise ValueError("choices must be a non-empty list")
 
-        values: list[str] = []
+        present_values: list[str] = []
         labels: list[str] = []
         for c in choices:
             if not isinstance(c, dict):
-                raise ValueError("each choice must be an object with value/label")
-            v = c.get("value")
+                raise ValueError("each choice must be an object with a label")
             lb = c.get("label")
-            if not isinstance(v, str) or not v:
-                raise ValueError("choice 'value' must be a non-empty string")
             if not isinstance(lb, str) or not lb:
                 raise ValueError("choice 'label' must be a non-empty string")
-            values.append(v)
             labels.append(lb)
 
-        if len(set(values)) != len(values):
-            raise ValueError("choice 'value' must be unique")
+            if "value" in c and c["value"] is not None:
+                v = c["value"]
+                if not isinstance(v, str) or not v:
+                    raise ValueError("choice 'value' must be a non-empty string when given")
+                present_values.append(v)
+
         if len(set(labels)) != len(labels):
             raise ValueError("choice 'label' must be unique")
+        if len(set(present_values)) != len(present_values):
+            raise ValueError("choice 'value' must be unique")
+
+    @staticmethod
+    def normalize_choices(choices: list[dict[str, Any]]) -> list[dict[str, str]]:
+        """Assigns a UUID4-based `value` to every choice that lacks one.
+
+        Called after `validate_choices` to materialise the immutable internal
+        id for newly added entries while preserving the id of pre-existing
+        entries (which carry their `value`).
+        """
+        import uuid as _uuid
+
+        normalised: list[dict[str, str]] = []
+        for c in choices:
+            value = c.get("value")
+            if not value:
+                value = _uuid.uuid4().hex
+            normalised.append({"value": value, "label": c["label"]})
+        return normalised
 
     def get_choices_in_use(self) -> set[str]:
         """Returns the set of choice values currently referenced by latest AttributeValues.
 
         For SELECT, scans is_latest=True rows directly.
-        For ARRAY_SELECT, child rows have is_latest=False; traverse via parent_attrv.
+        For MULTI_SELECT, child rows have is_latest=False; traverse via parent_attrv.
         """
         from entry.models import AttributeValue
 
@@ -210,11 +229,11 @@ class EntityAttr(ACLBase):
                 .exclude(value="")
                 .values_list("value", flat=True)
             )
-        elif self.type == AttrType.ARRAY_SELECT:
+        elif self.type == AttrType.MULTI_SELECT:
             in_use.update(
                 AttributeValue.objects.filter(
                     parent_attr__schema=self,
-                    data_type=AttrType.ARRAY_SELECT,
+                    data_type=AttrType.MULTI_SELECT,
                     parent_attrv__is_latest=True,
                 )
                 .exclude(value="")

@@ -25,6 +25,9 @@ export const ChoicesEditor: FC<Props> = ({
   index,
   disabled = false,
 }) => {
+  // useFieldArray operates over choice rows; each row may carry a server-assigned
+  // `value` (internal id) which is hidden from the UI. New rows are appended
+  // without a value and the backend auto-assigns it on save.
   const { fields, append, remove } = useFieldArray({
     control,
     name: `attrs.${index}.choices` as const,
@@ -36,25 +39,24 @@ export const ChoicesEditor: FC<Props> = ({
       name: `attrs.${index}.choicesInUse` as const,
     }) ?? [];
 
-  // Watch the live choices values so the "in use" disable state stays in sync
-  // with what the user is currently typing.
   const watchedChoices =
     useWatch({
       control,
       name: `attrs.${index}.choices` as const,
     }) ?? [];
 
-  const handleAppend = () => append({ value: "", label: "" });
+  const handleAppend = () => append({ label: "" });
 
   return (
     <Box>
       <Typography variant="caption" color="textSecondary">
-        選択肢 (value: 内部識別子 / label: 表示名)
+        選択肢
       </Typography>
       <Stack spacing={1} mt={0.5}>
         {fields.map((field, i) => {
-          const currentValue = watchedChoices[i]?.value ?? "";
-          const isUsed = choicesInUse.includes(currentValue);
+          const currentValue = watchedChoices[i]?.value;
+          const isUsed =
+            currentValue !== undefined && choicesInUse.includes(currentValue);
           return (
             <Stack
               direction="row"
@@ -63,27 +65,14 @@ export const ChoicesEditor: FC<Props> = ({
               alignItems="center"
             >
               <Controller
-                name={`attrs.${index}.choices.${i}.value` as const}
-                control={control}
-                render={({ field: f, fieldState: { error } }) => (
-                  <TextField
-                    {...f}
-                    placeholder="value"
-                    size="small"
-                    disabled={disabled || isUsed}
-                    error={error != null}
-                    helperText={error?.message}
-                  />
-                )}
-              />
-              <Controller
                 name={`attrs.${index}.choices.${i}.label` as const}
                 control={control}
                 render={({ field: f, fieldState: { error } }) => (
                   <TextField
                     {...f}
-                    placeholder="label"
+                    placeholder="選択肢の表示名"
                     size="small"
+                    fullWidth
                     disabled={disabled}
                     error={error != null}
                     helperText={error?.message}
