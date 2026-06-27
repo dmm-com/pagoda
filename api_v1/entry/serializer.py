@@ -94,7 +94,7 @@ class EntrySearchChainSerializer(serializers.Serializer[dict[str, Any]]):
             # This validates whethere it is possible that Entity has specified Attribute
             if not any(
                 [
-                    EntityAttr.objects.filter(name=attrname, is_active=True, parent_entity__pk=x.pk)
+                    EntityAttr.objects.filter(name=attrname, is_active=True, parent_entity__pk=x)  # type: ignore[misc]
                     for x in entities
                 ]
             ):
@@ -105,7 +105,7 @@ class EntrySearchChainSerializer(serializers.Serializer[dict[str, Any]]):
                 entity_ids = []
                 for entity in entities:
                     entity_attr = EntityAttr.objects.filter(
-                        name=condition["name"], is_active=True, parent_entity__pk=entity.pk
+                        name=condition["name"], is_active=True, parent_entity__pk=entity  # type: ignore[misc]
                     ).first()
                     if entity_attr:
                         # complements Entity IDs that this condition implicitly expects
