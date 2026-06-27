@@ -497,6 +497,8 @@ class AdvancedSearchAPI(generics.GenericAPIView):
                             return "as_array_role"
                         elif type & AttrType.NUMBER:
                             return "as_array_number"
+                        elif type & AttrType.SELECT:
+                            return "as_multi_select"
                     elif type & AttrType.STRING or type & AttrType.TEXT:
                         return "as_string"
                     elif type & AttrType.NUMBER:
@@ -515,6 +517,8 @@ class AdvancedSearchAPI(generics.GenericAPIView):
                         return "as_role"
                     elif type & AttrType.DATETIME:
                         return "as_string"
+                    elif type & AttrType.SELECT:
+                        return "as_select"
                     raise IncorrectTypeError(f"unexpected type: {type}")
 
                 entry.attrs[name] = {
