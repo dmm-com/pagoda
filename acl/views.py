@@ -25,7 +25,7 @@ def index(request: HttpRequest, obj_id: int) -> HttpResponse:
 
     # Some type of objects needs object that refers target_obj (e.g. Attribute)
     # for showing breadcrumb navigation.
-    parent_obj: Any = None
+    parent_obj: Entry | Entity | None = None
     try:
         if isinstance(target_obj, Attribute):
             parent_obj = target_obj.parent_entry

@@ -20,24 +20,30 @@ class ACLParentType(TypedDict):
     is_public: bool
 
 
-class ACLRoleSerializer(serializers.Serializer[Any]):
+class ACLRoleType(TypedDict):
+    id: int
+    name: str
+    description: str
+    current_permission: int
+
+
+class ACLRoleSerializer(serializers.Serializer[ACLRoleType]):
     id = serializers.IntegerField()
     name = serializers.CharField()
     description = serializers.CharField()
     current_permission = serializers.IntegerField()
 
-    class ACLRoleType(TypedDict):
-        id: int
-        name: str
-        description: str
-        current_permission: int
 
-
-class ACLRoleListSerializer(serializers.ListSerializer[Any]):
+class ACLRoleListSerializer(serializers.ListSerializer[ACLRoleType]):
     child = ACLRoleSerializer()
 
 
-class ACLSettingSerializer(serializers.Serializer[Any]):
+class ACLSettingType(TypedDict):
+    member_id: int
+    value: int
+
+
+class ACLSettingSerializer(serializers.Serializer[ACLSettingType]):
     member_id = serializers.IntegerField()
     value = serializers.IntegerField()
 
@@ -53,8 +59,10 @@ class ACLSerializer(serializers.ModelSerializer[ACLBase]):
     class ObjTypeField(serializers.IntegerField):
         pass
 
+    # "parent" shadows BaseSerializer.parent (which holds the nested parent
+    # serializer). The Any annotation is required to satisfy mypy here.
     parent: Any = serializers.SerializerMethodField(method_name="get_parent", read_only=True)
-    roles: Any = serializers.SerializerMethodField(method_name="get_roles", read_only=True)
+    roles = serializers.SerializerMethodField(method_name="get_roles", read_only=True)
     # TODO better name?
     # acl = serializers.ListField(write_only=True, required=False)
     acl_settings = ACLSettingSerializer(write_only=True, required=False, many=True)
@@ -101,7 +109,7 @@ class ACLSerializer(serializers.ModelSerializer[ACLBase]):
             return None
 
     @extend_schema_field(ACLRoleListSerializer)
-    def get_roles(self, obj: ACLBase) -> list[ACLRoleSerializer.ACLRoleType]:
+    def get_roles(self, obj: ACLBase) -> list[ACLRoleType]:
         user = self.context["request"].user
 
         return [
@@ -227,7 +235,12 @@ class ACLSerializer(serializers.ModelSerializer[ACLBase]):
             permission.roles.add(role)
 
 
-class ACLHistoryUserSerializer(serializers.Serializer[Any]):
+class ACLHistoryUserType(TypedDict):
+    id: int
+    username: str
+
+
+class ACLHistoryUserSerializer(serializers.Serializer[ACLHistoryUserType]):
     id = serializers.IntegerField()
     username = serializers.CharField()
 

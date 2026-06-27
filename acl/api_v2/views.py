@@ -13,7 +13,8 @@ from rest_framework.response import Response
 from acl.api_v2.serializers import ACLHistorySerializer, ACLSerializer
 from acl.models import ACLBase
 from airone.lib.acl import ACLObjType, ACLType
-from entity.models import EntityAttr
+from entity.models import Entity, EntityAttr
+from entry.models import Entry
 from role.models import HistoricalPermission
 from user.models import User
 
@@ -44,10 +45,10 @@ class ACLAPI(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, viewsets.Generi
         OpenApiParameter("id", OpenApiTypes.INT, OpenApiParameter.PATH),
     ]
 )
-class ACLHistoryAPI(generics.ListAPIView[Any]):
+class ACLHistoryAPI(generics.ListAPIView[ACLBase]):
     serializer_class = ACLHistorySerializer
 
-    def get_queryset(self) -> QuerySet[Any]:
+    def get_queryset(self) -> QuerySet[ACLBase]:
         """Unnecessary in this serializer"""
         return ACLBase.objects.none()
 
@@ -67,7 +68,7 @@ class ACLHistoryAPI(generics.ListAPIView[Any]):
         if not acl:
             raise Http404
 
-        instance: Any = acl.get_subclass_object()
+        instance = cast(Entity | EntityAttr | Entry, acl.get_subclass_object())
 
         # 1. Bulk fetch ACL history data (including history_user information)
         acl_history = list(instance.history.select_related("history_user").all())
@@ -78,6 +79,7 @@ class ACLHistoryAPI(generics.ListAPIView[Any]):
         )
         # Also fetch Entity attribute history with same optimization
         if instance.objtype == ACLObjType.Entity:
+            assert isinstance(instance, Entity)
             attrs = instance.attrs.filter(is_active=True)
             acl_history = acl_history + list(
                 EntityAttr.history.filter(aclbase_ptr_id__in=[a.id for a in attrs])

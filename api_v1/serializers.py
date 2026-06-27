@@ -99,7 +99,7 @@ class GetEntrySerializer(serializers.ModelSerializer[Entry]):
         ]
 
 
-class PostEntrySerializer(serializers.Serializer[Any]):
+class PostEntrySerializer(serializers.Serializer[dict[str, Any]]):
     id = serializers.IntegerField(required=False)
     entity = serializers.CharField(required=True, max_length=100)
     name = serializers.CharField(required=True, max_length=100)

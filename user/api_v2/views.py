@@ -414,7 +414,7 @@ class UserAPI(viewsets.ModelViewSet[User]):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class UserMeAPI(generics.RetrieveAPIView[Any]):
+class UserMeAPI(generics.RetrieveAPIView[User]):
     serializer_class = UserMeSerializer
     permission_classes = [IsAuthenticated]
 

@@ -14,7 +14,7 @@ class GroupMemberType(TypedDict):
     username: str
 
 
-class GroupMemberSerializer(serializers.Serializer[Any]):
+class GroupMemberSerializer(serializers.Serializer[GroupMemberType]):
     id = serializers.IntegerField()
     username = serializers.CharField()
 
@@ -125,7 +125,7 @@ class GroupTreeSerializer(serializers.ModelSerializer[Group]):
         return _make_hierarchical_group(obj.subordinates.filter(is_active=True))
 
 
-class GroupImportSerializer(serializers.Serializer[Any]):
+class GroupImportSerializer(serializers.Serializer[dict[str, Any]]):
     id = serializers.IntegerField(required=False)
     name = serializers.CharField()
 

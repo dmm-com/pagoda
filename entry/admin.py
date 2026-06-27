@@ -220,16 +220,16 @@ class EntryResource(AironeModelResource):
             instance.register_es()
 
 
-class EntryAdmin(ImportExportModelAdmin):
+class EntryAdmin(ImportExportModelAdmin):  # type: ignore[misc]
     resource_classes = [EntryResource]
     skip_admin_log = True
 
 
-class AttrAdmin(ImportExportModelAdmin):
+class AttrAdmin(ImportExportModelAdmin):  # type: ignore[misc]
     resource_classes = [AttrResource]
     skip_admin_log = True
 
 
-class AttrValueAdmin(ImportExportModelAdmin):
+class AttrValueAdmin(ImportExportModelAdmin):  # type: ignore[misc]
     resource_classes = [AttrValueResource]
     skip_admin_log = True
