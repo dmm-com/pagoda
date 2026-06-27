@@ -13,7 +13,7 @@ env = environ.Env()
 env.read_env(os.path.join(environ.Path(__file__) - 2, ".env"))
 
 
-class Common(Configuration):
+class Common(Configuration):  # type: ignore[misc]
     # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
     BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 

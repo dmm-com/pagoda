@@ -1,7 +1,7 @@
 import importlib
 import sys
 from datetime import datetime
-from typing import TYPE_CHECKING, Any, cast
+from typing import TYPE_CHECKING, Any
 
 from django.conf import settings
 from django.contrib.auth.models import Group, Permission
@@ -100,7 +100,7 @@ class Role(models.Model):
         max_roles: int | None = settings.MAX_ROLES
         if max_roles and Role.objects.count() >= max_roles:
             raise RuntimeError("The number of roles is over the limit")
-        return super().save(*args, **kwargs)
+        return super(Role, self).save(*args, **kwargs)
 
     def delete(self) -> None:  # type: ignore[override]
         """Override Model.delete method of Django"""
@@ -135,7 +135,7 @@ class Role(models.Model):
             if x.get_objid() == aclbase.id  # type: ignore[attr-defined]
         ]
         if permissions:
-            return cast("int", permissions[0].get_aclid())  # type: ignore[attr-defined]
+            return permissions[0].get_aclid()  # type: ignore[attr-defined,no-any-return]
         else:
             return ACLType.Nothing.id
 
@@ -164,14 +164,12 @@ class Role(models.Model):
             entry_model = importlib.import_module("entry.models")
 
         # get Entries that has AttributeValues, which specify this Role instance.
-        return cast(
-            "QuerySet[Any]",
-            entry_model.Entry.objects.filter(
-                pk__in=entry_model.AttributeValue.objects.filter(query).values_list(
-                    "parent_attr__parent_entry", flat=True
-                )
-            ),
+        qs: QuerySet[Any] = entry_model.Entry.objects.filter(
+            pk__in=entry_model.AttributeValue.objects.filter(query).values_list(
+                "parent_attr__parent_entry", flat=True
+            )
         )
+        return qs
 
 
 class HistoricalPermission(Permission):

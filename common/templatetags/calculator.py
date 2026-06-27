@@ -3,6 +3,6 @@ from django import template
 register = template.Library()
 
 
-@register.filter  # type: ignore[misc]
+@register.filter
 def divmod(dividend: int, divisor: int) -> int:
     return dividend % divisor

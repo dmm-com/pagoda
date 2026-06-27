@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, cast
 
 from django.http import HttpRequest, HttpResponse
 from django.http.response import JsonResponse
@@ -9,20 +9,23 @@ from airone.lib.log import Logger
 from entity.models import Entity, EntityAttr
 from entry.models import Attribute, Entry
 from role.models import Role
+from user.models import User
 
 from .models import ACLBase
 
 
 @http_get
 def index(request: HttpRequest, obj_id: int) -> HttpResponse:
-    aclbase_obj, error = get_obj_with_check_perm(request.user, ACLBase, obj_id, ACLType.Full)
+    user = cast(User, request.user)
+    aclbase_obj, error = get_obj_with_check_perm(user, ACLBase, obj_id, ACLType.Full)  # type: ignore[arg-type]
     if error or not aclbase_obj:
+        assert error is not None
         return error
     target_obj = aclbase_obj.get_subclass_object()
 
     # Some type of objects needs object that refers target_obj (e.g. Attribute)
     # for showing breadcrumb navigation.
-    parent_obj = None
+    parent_obj: Any = None
     try:
         if isinstance(target_obj, Attribute):
             parent_obj = target_obj.parent_entry
@@ -43,7 +46,7 @@ def index(request: HttpRequest, obj_id: int) -> HttpResponse:
                 "current_permission": x.get_current_permission(target_obj),
             }
             for x in Role.objects.filter(is_active=True)
-            if request.user.is_superuser or x.is_belonged_to(request.user)
+            if user.is_superuser or x.is_belonged_to(user)
         ],
     }
     return render(request, "edit_acl.html", context)
@@ -83,20 +86,21 @@ def index(request: HttpRequest, obj_id: int) -> HttpResponse:
     ]
 )
 def set(request: HttpRequest, recv_data: dict[str, Any]) -> JsonResponse | HttpResponse:
+    user = cast(User, request.user)
     acl_obj = getattr(_get_acl_model(recv_data["object_type"]), "objects").get(
         id=recv_data["object_id"]
     )
 
     # This checks that user currently has permission to change it
-    if not request.user.has_permission(acl_obj, ACLType.Full):
+    if not user.has_permission(acl_obj, ACLType.Full):
         return HttpResponse(
-            "User(%s) doesn't have permission to change this ACL" % request.user.username,
+            "User(%s) doesn't have permission to change this ACL" % user.username,
             status=400,
         )
 
     # This checks that user will have permission as user specifies by this change
     # (NOTE: this processing is completely different from above permission check)
-    if not request.user.is_permitted_to_change(
+    if not user.is_permitted_to_change(
         **{
             "target_obj": acl_obj,
             "expected_permission": ACLType.Full,

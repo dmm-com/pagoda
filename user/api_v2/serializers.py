@@ -15,7 +15,7 @@ from airone.auth.ldap import LDAPBackend
 from user.models import User
 
 
-class UserRetrieveTokenSerializer(serializers.Serializer):
+class UserRetrieveTokenSerializer(serializers.Serializer[Any]):
     value = serializers.CharField()
     lifetime = serializers.IntegerField()
     expire = serializers.CharField()
@@ -28,7 +28,7 @@ class UserRetrieveTokenSerializer(serializers.Serializer):
         created: str
 
 
-class UserTokenSerializer(serializers.ModelSerializer):
+class UserTokenSerializer(serializers.ModelSerializer[Token]):
     class Meta:
         model = Token
         fields = [
@@ -37,7 +37,7 @@ class UserTokenSerializer(serializers.ModelSerializer):
         read_only_fields = ["key"]
 
 
-class UserBaseSerializer(serializers.ModelSerializer):
+class UserBaseSerializer(serializers.ModelSerializer[User]):
     date_joined = serializers.SerializerMethodField(method_name="get_date_joined")
 
     class Meta:
@@ -169,7 +169,7 @@ class UserListSerializer(UserBaseSerializer):
         ]
 
 
-class CoUserSerializer(serializers.ModelSerializer):
+class CoUserSerializer(serializers.ModelSerializer[User]):
     user_id = serializers.IntegerField(source="id")
 
     class Meta:
@@ -177,7 +177,7 @@ class CoUserSerializer(serializers.ModelSerializer):
         fields = ["user_id", "username", "email"]
 
 
-class UserMeSerializer(serializers.ModelSerializer):
+class UserMeSerializer(serializers.ModelSerializer[User]):
     user_id = serializers.IntegerField(source="id")
     co_users = CoUserSerializer(many=True)
 
@@ -186,7 +186,7 @@ class UserMeSerializer(serializers.ModelSerializer):
         fields = ["user_id", "username", "email", "co_users"]
 
 
-class UserImportChildSerializer(serializers.ModelSerializer):
+class UserImportChildSerializer(serializers.ModelSerializer[User]):
     username = serializers.CharField()
     groups = serializers.CharField(required=True, allow_blank=True, write_only=True)
 
@@ -201,11 +201,11 @@ class UserImportChildSerializer(serializers.ModelSerializer):
         ]
 
 
-class UserImportSerializer(serializers.ListSerializer):
+class UserImportSerializer(serializers.ListSerializer[User]):
     child = UserImportChildSerializer()
 
 
-class UserExportSerializer(serializers.ModelSerializer):
+class UserExportSerializer(serializers.ModelSerializer[User]):
     groups = serializers.SerializerMethodField()
 
     class Meta:
@@ -221,7 +221,7 @@ class UserExportSerializer(serializers.ModelSerializer):
         return ",".join(list(map(lambda x: x.name, obj.groups.filter(group__is_active=True))))
 
 
-class UserPasswordSerializer(serializers.Serializer):
+class UserPasswordSerializer(serializers.Serializer[Any]):
     old_passwd = serializers.CharField()
     new_passwd = serializers.CharField()
     chk_passwd = serializers.CharField()
@@ -262,7 +262,7 @@ class UserPasswordSerializer(serializers.Serializer):
         user.save(update_fields=["password"])
 
 
-class UserPasswordBySuperuserSerializer(serializers.Serializer):
+class UserPasswordBySuperuserSerializer(serializers.Serializer[Any]):
     new_passwd = serializers.CharField()
     chk_passwd = serializers.CharField()
 
@@ -284,11 +284,11 @@ class UserPasswordBySuperuserSerializer(serializers.Serializer):
         user.save(update_fields=["password"])
 
 
-class PasswordResetSerializer(serializers.Serializer):
+class PasswordResetSerializer(serializers.Serializer[Any]):
     username = serializers.CharField(required=True)
 
 
-class PasswordResetConfirmSerializer(serializers.Serializer):
+class PasswordResetConfirmSerializer(serializers.Serializer[Any]):
     uidb64 = serializers.CharField()
     token = serializers.CharField()
     password1 = serializers.CharField()
@@ -322,6 +322,9 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
         if password1 != password2:
             raise ValidationError("passwords do not match")
 
+        if password1 is None:
+            raise ValidationError("password is required")
+
         try:
             password_validation.validate_password(password1)
         except DjangoCoreValidationError as e:
@@ -341,7 +344,7 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
         return validated_data
 
 
-class UserAuthSerializer(serializers.Serializer):
+class UserAuthSerializer(serializers.Serializer[Any]):
     ldap_password = serializers.CharField(required=True, allow_blank=False)
 
     def validate(self, attrs: dict[str, Any]) -> dict[str, Any]:

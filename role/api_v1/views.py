@@ -1,9 +1,12 @@
+from typing import cast
+
 from rest_framework import status
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from role.models import Role
+from user.models import User
 
 
 class RoleAPI(APIView):
@@ -13,7 +16,7 @@ class RoleAPI(APIView):
         except Role.DoesNotExist:
             return Response("Role not found(id:%s)" % role_id, status=status.HTTP_404_NOT_FOUND)
 
-        user = request.user
+        user = cast(User, request.user)
         if not role.is_editable(user):
             return Response(
                 "Permission error to delete the Role(%s)" % role.name,

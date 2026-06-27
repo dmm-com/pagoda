@@ -102,7 +102,7 @@ class SpecificJobAPI(APIView):
             return Response("Target job is under processing", status=status.HTTP_400_BAD_REQUEST)
 
         # check job target status
-        if not job.target.is_active:
+        if not job.target or not job.target.is_active:
             return Response(
                 "Job target has already been deleted",
                 status=status.HTTP_400_BAD_REQUEST,

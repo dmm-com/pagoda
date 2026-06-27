@@ -4,7 +4,7 @@ from typing import Union
 from django.conf import settings
 from django.contrib.auth import logout as django_logout
 from django.contrib.auth import views as django_auth_views
-from django.forms import Form
+from django.contrib.auth.forms import AuthenticationForm
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_protect
 
@@ -12,7 +12,7 @@ from airone.lib.http import render
 from airone.lib.log import Logger
 
 
-@csrf_protect  # type: ignore[misc]
+@csrf_protect
 def logout(request: HttpRequest) -> HttpResponse:
     if request.method != "POST":
         return HttpResponse("Invalid HTTP method is specified", status=400)
@@ -22,16 +22,16 @@ def logout(request: HttpRequest) -> HttpResponse:
 
 
 class PagodaLoginView(django_auth_views.LoginView):
-    def form_valid(self, form: Form) -> Union[HttpResponse, JsonResponse]:
+    def form_valid(self, form: AuthenticationForm) -> Union[HttpResponse, JsonResponse]:
         response = super().form_valid(form)
 
         if not settings.AIRONE["CHECK_TERM_SERVICE"]:
             return response
 
         try:
-            extra_param = json.loads(self.request.POST.get("extra_param"))
+            extra_param = json.loads(self.request.POST.get("extra_param") or "")
             if extra_param.get("AGREE_TERM_OF_SERVICE"):
-                response.set_cookie("AGREE_TERM_OF_SERVICE", True)
+                response.set_cookie("AGREE_TERM_OF_SERVICE", "True")
             else:
                 return JsonResponse(
                     {"error": "You have to agree to the Terms of Service to use Pagoda"}, status=400

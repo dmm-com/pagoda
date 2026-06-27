@@ -11,7 +11,7 @@ from airone.lib.acl import ACLType
 from user.models import User
 
 
-class AironeModelResource(ModelResource):
+class AironeModelResource(ModelResource):  # type: ignore[misc]
     COMPARING_KEYS: list[str] = []
     DISALLOW_UPDATE_KEYS: list[str] = []
 
