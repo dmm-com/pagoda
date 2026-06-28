@@ -105,17 +105,14 @@ export const MultiSelectAttributeValueField: FC<CommonProps> = ({
         defaultValue={[]}
         render={({ field, fieldState: { error } }) => {
           const value = Array.isArray(field.value) ? field.value : [];
-          const selectedValues = value.map((v) => v.value);
-          // Surface entries that hold a value no longer in the schema's choices
-          // — without this, choices.filter() drops them and a single user
-          // interaction permanently deletes the data.
-          const staleSelected = value.filter(
-            (v) => !usable.some((c) => c.value === v.value),
+          // Preserve the user's selection order. Each stored value is replaced
+          // with the canonical usable entry (so labels stay in sync with the
+          // schema) when present; stale values (no longer in choices) are kept
+          // verbatim at their original index so a single user interaction does
+          // not permanently delete the data.
+          const renderedValue = value.map(
+            (v) => usable.find((c) => c.value === v.value) ?? v,
           );
-          const renderedValue = [
-            ...usable.filter((c) => selectedValues.includes(c.value)),
-            ...staleSelected,
-          ];
           return (
             <Autocomplete
               multiple

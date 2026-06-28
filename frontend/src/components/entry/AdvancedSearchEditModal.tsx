@@ -55,21 +55,36 @@ export const AdvancedSearchEditModal: FC<Props> = ({
     targetAttrtype === EntryAttributeTypeTypeEnum.SELECT ||
     targetAttrtype === EntryAttributeTypeTypeEnum.MULTI_SELECT;
 
-  // For SELECT / MULTI_SELECT bulk-edit the dropdown needs the EntityAttr's
-  // choices list. Fetch the first model's detail and look up the column by
-  // name. Skipped entirely for non-SELECT types.
-  const { data: targetEntity } = usePagodaSWR(
+  // For SELECT / MULTI_SELECT bulk-edit the dropdown must offer only choices
+  // valid for *every* selected model — picking a value missing from any model
+  // would 400 that model's bulkUpdateEntries call. Fetch each selected model
+  // in parallel and intersect its EntityAttr.choices (by value) so the picker
+  // surfaces the safe common set.
+  const swrKey =
     isSelectLikeType && openModal && modelIds.length > 0
-      ? ["bulkEditSelectChoices", modelIds[0]]
-      : null,
-    () => aironeApiClient.getEntity(modelIds[0]),
+      ? (["bulkEditSelectChoices", [...modelIds].sort().join(",")] as const)
+      : null;
+  const { data: targetEntities } = usePagodaSWR(swrKey, () =>
+    Promise.all(modelIds.map((id) => aironeApiClient.getEntity(id))),
   );
 
   const targetChoices = useMemo(() => {
-    if (!isSelectLikeType || !targetEntity) return undefined;
-    const attr = targetEntity.attrs.find((a) => a.name === targetAttrname);
-    return attr?.choices ?? undefined;
-  }, [isSelectLikeType, targetEntity, targetAttrname]);
+    if (!isSelectLikeType || !targetEntities || targetEntities.length === 0) {
+      return undefined;
+    }
+    const perModelChoices = targetEntities.map(
+      (e) => e.attrs.find((a) => a.name === targetAttrname)?.choices ?? [],
+    );
+    if (perModelChoices.some((c) => c.length === 0)) {
+      // If any selected model lacks this attribute (or its choices list is
+      // empty) there is no safe common choice to offer.
+      return [];
+    }
+    const [first, ...rest] = perModelChoices;
+    return first.filter((choice) =>
+      rest.every((other) => other.some((c) => c.value === choice.value)),
+    );
+  }, [isSelectLikeType, targetEntities, targetAttrname]);
 
   const handleUpdateAttributeValue = () => {
     // create parameters to send API for bulk update

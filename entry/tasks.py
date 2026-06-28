@@ -229,7 +229,18 @@ def _do_import_entries(job: Job) -> None:
 
             input_value = attr.convert_value_to_register(value)
             if user.has_permission(attr.schema, ACLType.Writable) and attr.is_updated(input_value):
-                attr.add_value(user, input_value)
+                try:
+                    attr.add_value(user, input_value)
+                except TypeError as e:
+                    # add_value raises TypeError when the value fails attr-specific
+                    # validation (e.g. SELECT choice not in EntityAttr.choices).
+                    # Skip this single attribute and continue importing the rest of
+                    # the row / file instead of aborting the whole job.
+                    Logger.warning(
+                        "[task.import_entry] Skipped attr '%s' on entry '%s': %s"
+                        % (attr_name, entry.name, e)
+                    )
+                    continue
                 is_update = True
 
             # call custom-view processing corresponding to import entry

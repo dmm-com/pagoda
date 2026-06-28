@@ -125,10 +125,11 @@ class ModelTest(BaseModelTest):
         # Simulate a schema change that removed the choice (e.g. legacy data).
         attr.schema.choices = [{"value": "b", "label": "Beta"}]
         attr.schema.save()
-        # value/label are surfaced as the raw value when no choice matches.
+        # Stale choices surface as the tombstone label so raw UUID-style values
+        # don't leak into the UI / CSV exports / ES.
         self.assertEqual(
             attr.get_latest_value().get_value(),
-            {"value": "a", "label": "a"},
+            {"value": "a", "label": AttributeValue.DELETED_CHOICE_LABEL},
         )
 
     def test_select_rejects_unknown_choice_value(self):
@@ -179,7 +180,12 @@ class ModelTest(BaseModelTest):
             [{"value": "a", "label": "A"}, {"value": "b", "label": "B"}],
         )
         attr.add_value(self._user, ["a", "b"])
-        self.assertFalse(attr.is_updated(["b", "a"]))  # order-insensitive
+        # Same elements in the same order is a no-op.
+        self.assertFalse(attr.is_updated(["a", "b"]))
+        # Reordering the same elements must count as an update — get_value /
+        # add_value preserve insertion order so the user's reorder needs to
+        # persist.
+        self.assertTrue(attr.is_updated(["b", "a"]))
         self.assertTrue(attr.is_updated(["a"]))
 
     def test_get_choices_in_use_select(self):

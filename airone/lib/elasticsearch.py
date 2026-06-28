@@ -1235,10 +1235,15 @@ def make_search_results(
                     }
 
                 case AttrType.SELECT:
-                    ret_attrinfo["value"] = {
-                        "value": attrinfo["key"],
-                        "label": attrinfo["value"],
-                    }
+                    # Empty SELECT values store key="" / value="" in ES; emit None
+                    # so the FE renders a blank cell instead of an empty Chip.
+                    if attrinfo["key"] == "" and attrinfo["value"] == "":
+                        ret_attrinfo["value"] = None
+                    else:
+                        ret_attrinfo["value"] = {
+                            "value": attrinfo["key"],
+                            "label": attrinfo["value"],
+                        }
 
                 case (
                     AttrType.ARRAY_OBJECT

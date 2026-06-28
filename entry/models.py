@@ -133,12 +133,18 @@ class AttributeValue(models.Model):
 
         return cloned_value
 
+    # Label surfaced when an AttributeValue references a choice that is no
+    # longer present in EntityAttr.choices (e.g. type-changed schema, legacy
+    # fixture). Keeps the internal value intact while preventing raw UUID hex
+    # from surfacing in the UI / CSV / ES.
+    DELETED_CHOICE_LABEL = "(deleted choice)"
+
     def _resolve_choice(self, raw_value: str) -> dict[str, str] | None:
         """Resolves a raw choice value into {"value", "label"} using EntityAttr.choices.
 
-        Falls back to {"value": raw_value, "label": raw_value} when the choice
-        no longer exists in the schema (e.g. a stale value left over from a
-        previous schema). Returns None for empty input.
+        Falls back to a tombstone label when the choice no longer exists in the
+        schema so the UI never displays raw choice ids (e.g. UUID hex) as if
+        they were human-readable labels. Returns None for empty input.
         """
         if not raw_value:
             return None
@@ -146,7 +152,7 @@ class AttributeValue(models.Model):
         for c in choices:
             if isinstance(c, dict) and c.get("value") == raw_value:
                 return {"value": str(c.get("value")), "label": str(c.get("label", raw_value))}
-        return {"value": raw_value, "label": raw_value}
+        return {"value": raw_value, "label": self.DELETED_CHOICE_LABEL}
 
     def get_value(
         self,
@@ -738,13 +744,18 @@ class Attribute(ACLBase):
 
                 if not recv_value:
                     return last_value.data_array.count() > 0
-                stored_set = {x.value for x in last_value.data_array.all()}
-                incoming_set = {
+                # Order matters: get_value / add_value preserve insertion order,
+                # so a reorder of the same choices must register as an update.
+                stored_list = [x.value for x in last_value.data_array.all()]
+                incoming_list = [
                     norm
                     for norm in (_normalize_multi_select_item(v) for v in recv_value)
                     if norm is not None
-                }
-                return stored_set != incoming_set
+                ]
+                # add_value dedupes incoming preserving order before persisting; mirror
+                # that here so callers sending duplicates don't trigger spurious updates.
+                incoming_list = list(dict.fromkeys(incoming_list))
+                return stored_list != incoming_list
 
             case AttrType.ARRAY_NUMBER:
                 # the case that specified value is empty or invalid
@@ -2535,11 +2546,15 @@ class Entry(ACLBase):
                 # so regexp/keyword search on label works automatically.
                 raw = attrv.value
                 choices = entity_attr.choices or []
-                label = raw
+                label: str | None = None
                 for c in choices:
                     if isinstance(c, dict) and c.get("value") == raw:
                         label = str(c.get("label", raw))
                         break
+                if label is None and raw:
+                    # Mirror AttributeValue._resolve_choice's tombstone so the
+                    # UI / CSV export never see raw UUID hex as a label.
+                    label = AttributeValue.DELETED_CHOICE_LABEL
                 attrinfo["key"] = raw
                 attrinfo["value"] = truncate(label) if label else ""
 

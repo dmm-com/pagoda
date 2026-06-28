@@ -11,6 +11,7 @@ from airone.lib.elasticsearch import (
     EntryHint,
 )
 from airone.lib.log import Logger
+from airone.lib.types import AttrType
 from entity.models import Entity, EntityAttr
 from entry.models import Entry
 from entry.services import AdvancedSearchService
@@ -513,6 +514,7 @@ class EntrySearchChainSerializer(serializers.Serializer):
                     return False
 
             v = attrv.get_value(with_metainfo=True)
+            attr_type = attrv.parent_attr.schema.type
             if v["value"] is None:
                 if is_any or (info.get("vlaue") == "" and not is_any):
                     continue
@@ -529,6 +531,32 @@ class EntrySearchChainSerializer(serializers.Serializer):
                 # is True (it means OR condition).
                 if is_any:
                     return True
+
+            elif attr_type == AttrType.SELECT and isinstance(v["value"], dict):
+                # SELECT values are {"value", "label"} dicts that must not be routed
+                # through the referral branch (attrv.referral is always None here).
+                target = info.get("value", "")
+                matched = target in str(v["value"].get("label", "")) or target in str(
+                    v["value"].get("value", "")
+                )
+                if matched and is_any:
+                    return True
+                if not matched and not is_any:
+                    return False
+
+            elif attr_type == AttrType.MULTI_SELECT and isinstance(v["value"], list):
+                # MULTI_SELECT values are lists of {"value", "label"} dicts. Match against
+                # the human-visible label/value of each choice without consulting referral.
+                target = info.get("value", "")
+                matched = any(
+                    target in str(c.get("label", "")) or target in str(c.get("value", ""))
+                    for c in v["value"]
+                    if isinstance(c, dict)
+                )
+                if matched and is_any:
+                    return True
+                if not matched and not is_any:
+                    return False
 
             elif isinstance(v["value"], dict):
                 # this confirms simple referral value (e.g. AttrTypeValue['object'])

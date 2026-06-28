@@ -112,6 +112,7 @@ export const EntityEditPage: FC = () => {
           note: attr.note,
           defaultValue: processedDefaultValue,
           choices: isSelectLikeType ? (attr.choices ?? []) : null,
+          choicesInUse: isSelectLikeType ? (attr.choicesInUse ?? []) : [],
           nameOrder: Number(attr.nameOrder),
           namePrefix: attr.namePrefix,
           namePostfix: attr.namePostfix,

@@ -923,7 +923,7 @@ class ItemRollbackAPI(generics.GenericAPIView):
                             "name": v_before.value or "",
                             "id": v_before.referral.id if v_before.referral else None,
                         }
-                    case AttrType.ARRAY_STRING | AttrType.ARRAY_NUMBER:
+                    case AttrType.ARRAY_STRING | AttrType.ARRAY_NUMBER | AttrType.MULTI_SELECT:
                         value = [item.value for item in v_before.data_array.all()]
                     case AttrType.ARRAY_OBJECT:
                         value = [

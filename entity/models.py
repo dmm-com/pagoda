@@ -1,4 +1,5 @@
 import math
+import uuid
 from typing import Any, List, Optional, Union
 
 from django.conf import settings
@@ -199,13 +200,11 @@ class EntityAttr(ACLBase):
         id for newly added entries while preserving the id of pre-existing
         entries (which carry their `value`).
         """
-        import uuid as _uuid
-
         normalised: list[dict[str, str]] = []
         for c in choices:
             value = c.get("value")
             if not value:
-                value = _uuid.uuid4().hex
+                value = uuid.uuid4().hex
             normalised.append({"value": value, "label": c["label"]})
         return normalised
 
