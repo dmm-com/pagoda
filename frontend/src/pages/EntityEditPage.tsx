@@ -97,6 +97,8 @@ export const EntityEditPage: FC = () => {
           }
         }
 
+        const isSelectLikeType = (attr.type & BaseAttributeTypes.select) !== 0;
+
         return {
           id: attr.id,
           name: attr.name,
@@ -109,6 +111,8 @@ export const EntityEditPage: FC = () => {
           isDeleted: false,
           note: attr.note,
           defaultValue: processedDefaultValue,
+          choices: isSelectLikeType ? (attr.choices ?? []) : null,
+          choicesInUse: isSelectLikeType ? (attr.choicesInUse ?? []) : [],
           nameOrder: Number(attr.nameOrder),
           namePrefix: attr.namePrefix,
           namePostfix: attr.namePostfix,

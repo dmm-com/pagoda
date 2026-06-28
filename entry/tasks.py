@@ -229,7 +229,18 @@ def _do_import_entries(job: Job) -> None:
 
             input_value = attr.convert_value_to_register(value)
             if user.has_permission(attr.schema, ACLType.Writable) and attr.is_updated(input_value):
-                attr.add_value(user, input_value)
+                try:
+                    attr.add_value(user, input_value)
+                except TypeError as e:
+                    # add_value raises TypeError when the value fails attr-specific
+                    # validation (e.g. SELECT choice not in EntityAttr.choices).
+                    # Skip this single attribute and continue importing the rest of
+                    # the row / file instead of aborting the whole job.
+                    Logger.warning(
+                        "[task.import_entry] Skipped attr '%s' on entry '%s': %s"
+                        % (attr_name, entry.name, e)
+                    )
+                    continue
                 is_update = True
 
             # call custom-view processing corresponding to import entry
@@ -320,6 +331,14 @@ def _yaml_export_v2(
                     return value["name"]
                 else:
                     return None
+
+            case AttrType.SELECT:
+                # SELECT value comes as {"value": ..., "label": ...}.
+                # Export the immutable `value` (not the label) so re-import is
+                # safe across schema label edits.
+                if isinstance(value, dict):
+                    return value.get("value")
+                return value
 
             case _:
                 assert not isinstance(value, dict)
@@ -879,6 +898,10 @@ def _csv_export_v2(
             case AttrType.NAMED_OBJECT:
                 [(k, v)] = vval.items()
                 return "%s: %s" % (k, v["name"])
+            case AttrType.SELECT:
+                if isinstance(vval, dict):
+                    return str(vval.get("label", ""))
+                return ""
             case AttrType.ARRAY_STRING:
                 from natsort import natsorted
 
@@ -887,6 +910,11 @@ def _csv_export_v2(
                 from natsort import natsorted
 
                 return "\n".join(natsorted([str(x) if x is not None else "" for x in vval]))
+            case AttrType.MULTI_SELECT:
+                from natsort import natsorted
+
+                labels = [str(x.get("label", "")) for x in vval if isinstance(x, dict)]
+                return "\n".join(natsorted(labels))
             case AttrType.ARRAY_OBJECT | AttrType.ARRAY_GROUP | AttrType.ARRAY_ROLE:
                 from natsort import natsorted
 

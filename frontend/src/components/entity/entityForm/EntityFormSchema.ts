@@ -6,6 +6,10 @@ const isObjectLikeType = (type: number): boolean => {
   return (type & AttributeTypes.object.type) !== 0;
 };
 
+const isSelectLikeType = (type: number): boolean => {
+  return (type & AttributeTypes.select.type) !== 0;
+};
+
 export const schema = z.object({
   name: z.string().min(1, "モデル名は必須です").default(""),
   note: z.string().default(""),
@@ -109,6 +113,18 @@ export const schema = z.object({
           defaultValue: z
             .union([z.string(), z.number(), z.boolean(), z.null()])
             .optional(),
+          choices: z
+            .array(
+              z.object({
+                // value is the backend-assigned internal id. New rows omit it;
+                // existing rows keep it so the server can rename labels in place.
+                value: z.string().optional(),
+                label: z.string().min(1, "選択肢の表示名は必須です"),
+              }),
+            )
+            .nullable()
+            .optional(),
+          choicesInUse: z.array(z.string()).optional(),
           nameOrder: z.string().default("0"),
           namePrefix: z.string().default(""),
           namePostfix: z.string().default(""),
@@ -124,6 +140,33 @@ export const schema = z.object({
           {
             message: "オブジェクト型を選択した場合、参照先は必須です",
             path: ["referral"],
+          },
+        )
+        .refine(
+          (attr) => {
+            // SELECT / MULTI_SELECT require non-empty choices
+            if (isSelectLikeType(attr.type)) {
+              return Array.isArray(attr.choices) && attr.choices.length > 0;
+            }
+            return true;
+          },
+          {
+            message: "選択肢型を選択した場合、選択肢は1つ以上必要です",
+            path: ["choices"],
+          },
+        )
+        .refine(
+          (attr) => {
+            // SELECT / MULTI_SELECT labels must be unique
+            if (isSelectLikeType(attr.type) && Array.isArray(attr.choices)) {
+              const labels = attr.choices.map((c) => c.label);
+              return new Set(labels).size === labels.length;
+            }
+            return true;
+          },
+          {
+            message: "選択肢の表示名は重複できません",
+            path: ["choices"],
           },
         ),
     )
