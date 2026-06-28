@@ -105,7 +105,9 @@ class EntrySearchChainSerializer(serializers.Serializer[dict[str, Any]]):
                 entity_ids = []
                 for entity in entities:
                     entity_attr = EntityAttr.objects.filter(
-                        name=condition["name"], is_active=True, parent_entity__pk=entity  # type: ignore[misc]
+                        name=condition["name"],
+                        is_active=True,
+                        parent_entity__pk=entity,  # type: ignore[misc]
                     ).first()
                     if entity_attr:
                         # complements Entity IDs that this condition implicitly expects
