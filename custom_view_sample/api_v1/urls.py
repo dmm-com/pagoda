@@ -2,4 +2,4 @@ from django.urls import path
 
 from . import views
 
-urlpatterns = [path("", views.CustomAPI.as_view())]
+urlpatterns = [path("", views.CustomEntryAPI.as_view())]
