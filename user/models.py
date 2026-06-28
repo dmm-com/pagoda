@@ -207,7 +207,7 @@ class User(AbstractUser):
             return True
 
         admin_roles = Role.objects.filter(
-            permissions__codename="%s.%s" % (target_obj.id, ACLType.Full.id)
+            permissions__codename=f"{target_obj.id}.{ACLType.Full.id}"
         )
         if (
             len(
@@ -235,10 +235,7 @@ class User(AbstractUser):
         """
         self.is_active = False
         current_username: str = self.username
-        self.username = "%s_deleted_%s" % (
-            current_username,
-            datetime.now().strftime("%Y%m%d_%H%M%S"),
-        )
+        self.username = f"{current_username}_deleted_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
         current_email: str = self.email
         self.email = "deleted__%s" % (current_email)
         for social_auth in self.social_auth.all():  # type: ignore[attr-defined]

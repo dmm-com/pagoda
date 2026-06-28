@@ -1341,7 +1341,7 @@ def _is_date_check(value: str) -> tuple[str, datetime | tuple[datetime, datetime
     # Check for legacy date format
     try:
         for delimiter in ["-", "/"]:
-            date_format = "%%Y%(del)s%%m%(del)s%%d" % {"del": delimiter}
+            date_format = f"%Y{delimiter}%m{delimiter}%d"
 
             # Detect date range separated by tilde (~)
             if "~" in value:
