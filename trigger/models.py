@@ -1,7 +1,7 @@
 import itertools
 import json
 from collections.abc import Mapping, Sequence
-from typing import TYPE_CHECKING, Any, cast
+from typing import TYPE_CHECKING, Any
 
 from django.db import models
 
@@ -21,7 +21,7 @@ if TYPE_CHECKING:
 
 
 ## These are internal classes for AirOne trigger and action
-class InputTriggerCondition:
+class InputTriggerCondition(object):
     def __init__(self, **input: Any):
         # set EntityAttr from "attr" parameter of input
         attr_id = input.get("attr_id", 0)
@@ -71,7 +71,8 @@ class InputTriggerCondition:
 
         def _decode_value(value: Any) -> dict[str, Any]:
             try:
-                return cast("dict[str, Any]", json.loads(value))
+                decoded: dict[str, Any] = json.loads(value)
+                return decoded
             except (ValueError, TypeError):
                 return {}
 
@@ -80,7 +81,7 @@ class InputTriggerCondition:
                 match hint:
                     case "entry":
                         if (
-                            isinstance(input_condition, Entry | int | str)
+                            isinstance(input_condition, (Entry, int, str))
                             or input_condition is None
                         ):
                             self.ref_cond = _convert_value_to_entry(input_condition)
@@ -93,7 +94,7 @@ class InputTriggerCondition:
                         self.str_cond = str(input_condition) if input_condition else ""
 
             case AttrType.OBJECT | AttrType.ARRAY_OBJECT:
-                if isinstance(input_condition, Entry | int | str) or input_condition is None:
+                if isinstance(input_condition, (Entry, int, str)) or input_condition is None:
                     self.ref_cond = _convert_value_to_entry(input_condition)
 
             case AttrType.STRING | AttrType.ARRAY_STRING | AttrType.TEXT:
@@ -108,14 +109,14 @@ class InputTriggerCondition:
                     self.bool_cond = input_condition is not None
 
 
-class InputTriggerActionValue:
+class InputTriggerActionValue(object):
     def __init__(self, **input: Any):
         self.str_cond: str = input.get("str_cond", "")
         self.ref_cond: Entry | None = input.get("ref_cond", None)
         self.bool_cond: bool = input.get("bool_cond", False)
 
 
-class InputTriggerAction:
+class InputTriggerAction(object):
     def __init__(self, **input: Any):
         # set EntityAttr from "attr" parameter of input
         attr_id = input.get("attr_id", 0)
@@ -447,7 +448,7 @@ class TriggerCondition(models.Model):
 
         from entry.models import AttributeValue
 
-        affected: dict[int, tuple[Entry, set[int]]] = {}
+        affected: dict[int, tuple["Entry", set[int]]] = {}
         for attrv in AttributeValue.objects.filter(
             _Q(referral=deleted_entry, is_latest=True)
             | _Q(referral=deleted_entry, parent_attrv__is_latest=True),

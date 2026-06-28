@@ -1,7 +1,7 @@
 from collections import defaultdict
-from typing import Any
+from typing import Any, cast
 
-from django.db.models import Q
+from django.db.models import Q, QuerySet
 from django.http import Http404
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, extend_schema
@@ -14,14 +14,14 @@ from acl.api_v2.serializers import ACLHistorySerializer, ACLSerializer
 from acl.models import ACLBase
 from airone.lib.acl import ACLObjType, ACLType
 from entity.models import Entity, EntityAttr
-from entry.models import Attribute, Entry
+from entry.models import Entry
 from role.models import HistoricalPermission
 from user.models import User
 
 
 class ACLPermission(BasePermission):
     def has_object_permission(self, request: Request, view: Any, obj: Any) -> bool:
-        user: User = request.user
+        user = cast(User, request.user)
         permisson = {
             "retrieve": ACLType.Readable,
             "update": ACLType.Full,
@@ -33,7 +33,7 @@ class ACLPermission(BasePermission):
         return True
 
 
-class ACLAPI(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, viewsets.GenericViewSet):
+class ACLAPI(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, viewsets.GenericViewSet[ACLBase]):
     queryset = ACLBase.objects.all()
     serializer_class = ACLSerializer
 
@@ -45,12 +45,12 @@ class ACLAPI(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, viewsets.Generi
         OpenApiParameter("id", OpenApiTypes.INT, OpenApiParameter.PATH),
     ]
 )
-class ACLHistoryAPI(generics.ListAPIView):
+class ACLHistoryAPI(generics.ListAPIView[ACLBase]):
     serializer_class = ACLHistorySerializer
 
-    def get_queryset(self) -> None:
+    def get_queryset(self) -> QuerySet[ACLBase]:
         """Unnecessary in this serializer"""
-        pass
+        return ACLBase.objects.none()
 
     def get(self, request: Request, pk: int) -> Response:
         """
@@ -68,7 +68,7 @@ class ACLHistoryAPI(generics.ListAPIView):
         if not acl:
             raise Http404
 
-        instance: Entity | EntityAttr | Entry | Attribute = acl.get_subclass_object()
+        instance = cast(Entity | EntityAttr | Entry, acl.get_subclass_object())
 
         # 1. Bulk fetch ACL history data (including history_user information)
         acl_history = list(instance.history.select_related("history_user").all())
@@ -79,6 +79,7 @@ class ACLHistoryAPI(generics.ListAPIView):
         )
         # Also fetch Entity attribute history with same optimization
         if instance.objtype == ACLObjType.Entity:
+            assert isinstance(instance, Entity)
             attrs = instance.attrs.filter(is_active=True)
             acl_history = acl_history + list(
                 EntityAttr.history.filter(aclbase_ptr_id__in=[a.id for a in attrs])

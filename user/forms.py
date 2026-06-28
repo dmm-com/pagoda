@@ -5,10 +5,11 @@
 # with supporting username based email resolution.
 #
 
-from typing import Any
+from typing import Any, cast
 
 from django import forms
-from django.contrib.auth.forms import UserModel, UsernameField
+from django.contrib.auth import get_user_model
+from django.contrib.auth.forms import UsernameField
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import EmailMultiAlternatives
@@ -18,6 +19,8 @@ from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 
 from user.models import User
+
+UserModel = get_user_model()
 
 
 class UsernameBasedPasswordResetForm(forms.Form):
@@ -42,7 +45,7 @@ class UsernameBasedPasswordResetForm(forms.Form):
         """
         Sends a django.core.mail.EmailMultiAlternatives to `to_email`.
         """
-        subject = loader.render_to_string(subject_template_name, context)
+        subject = cast(str, loader.render_to_string(subject_template_name, context))
         # Email subject *must not* contain newlines
         subject = "".join(subject.splitlines())
         body = loader.render_to_string(email_template_name, context)

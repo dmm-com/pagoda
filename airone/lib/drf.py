@@ -1,4 +1,5 @@
 from collections import OrderedDict
+from collections.abc import Mapping
 from typing import IO, Any
 
 import yaml
@@ -31,7 +32,7 @@ class YAMLParser(BaseParser):
         self,
         stream: IO[bytes],
         media_type: str | None = None,
-        parser_context: dict[str, str] | None = None,
+        parser_context: "Mapping[str, Any] | None" = None,
     ) -> dict[str, object]:
         """
         Parses the incoming bytestream as YAML and returns the resulting data.
@@ -41,7 +42,8 @@ class YAMLParser(BaseParser):
 
         try:
             data = stream.read().decode(encoding)
-            return yaml.safe_load(data)
+            loaded: dict[str, object] = yaml.safe_load(data)
+            return loaded
         except (ValueError, yaml.parser.ParserError, yaml.scanner.ScannerError) as exc:
             raise ParseError("YAML parse error - %s" % str(exc))
 
@@ -59,7 +61,7 @@ class YAMLRenderer(BaseRenderer):
         self,
         data: object,
         accepted_media_type: str | None = None,
-        renderer_context: dict[str, object] | None = None,
+        renderer_context: "Mapping[str, Any] | None" = None,
     ) -> str:
         return yaml.dump(
             data, Dumper=SafeDumper, stream=None, default_flow_style=False, allow_unicode=True
@@ -173,8 +175,10 @@ class AironeUserDefault(serializers.CurrentUserDefault):
     so it fails if the context doesn't have request.
     """
 
-    def __call__(self, serializer_field: serializers.Field) -> User:
+    def __call__(self, serializer_field: serializers.Field[Any, Any, Any, Any]) -> User:
         if "_user" in serializer_field.context:
-            return serializer_field.context["_user"]
+            user: User = serializer_field.context["_user"]
+            return user
 
-        return super().__call__(serializer_field)
+        result: User = super().__call__(serializer_field)
+        return result

@@ -19,7 +19,7 @@ from entry.settings import CONFIG
 SEARCH_ENTRY_LIMIT = 200
 
 
-class ReferSerializer(serializers.Serializer):
+class ReferSerializer(serializers.Serializer[dict[str, Any]]):
     entity = serializers.CharField(max_length=200)
     entry = serializers.CharField(max_length=200, required=False, allow_blank=True)
     is_any = serializers.BooleanField(default=False)
@@ -34,11 +34,12 @@ class ReferSerializer(serializers.Serializer):
 
     def validate(self, data: dict[str, Any]) -> dict[str, Any]:
         entity = Entity.objects.filter(name=data["entity"], is_active=True).first()
+        assert entity is not None
         data["entity_id"] = entity.id
         return data
 
 
-class AttrSerializer(serializers.Serializer):
+class AttrSerializer(serializers.Serializer[dict[str, Any]]):
     name = serializers.CharField(max_length=200)
     value = serializers.CharField(max_length=200, required=False, allow_blank=True)
     is_any = serializers.BooleanField(default=False)
@@ -55,7 +56,7 @@ class AttrSerializer(serializers.Serializer):
         return value
 
 
-class EntrySearchChainSerializer(serializers.Serializer):
+class EntrySearchChainSerializer(serializers.Serializer[dict[str, Any]]):
     entities = serializers.ListField(child=serializers.CharField(max_length=200))
     attrs = serializers.ListField(child=AttrSerializer(), required=False)
     refers = serializers.ListField(child=ReferSerializer(), required=False)
@@ -93,7 +94,7 @@ class EntrySearchChainSerializer(serializers.Serializer):
             # This validates whethere it is possible that Entity has specified Attribute
             if not any(
                 [
-                    EntityAttr.objects.filter(name=attrname, is_active=True, parent_entity__pk=x)
+                    EntityAttr.objects.filter(name=attrname, is_active=True, parent_entity__pk=x)  # type: ignore[misc]
                     for x in entities
                 ]
             ):
@@ -104,7 +105,9 @@ class EntrySearchChainSerializer(serializers.Serializer):
                 entity_ids = []
                 for entity in entities:
                     entity_attr = EntityAttr.objects.filter(
-                        name=condition["name"], is_active=True, parent_entity__pk=entity
+                        name=condition["name"],
+                        is_active=True,
+                        parent_entity__pk=entity,  # type: ignore[misc]
                     ).first()
                     if entity_attr:
                         # complements Entity IDs that this condition implicitly expects
@@ -116,7 +119,7 @@ class EntrySearchChainSerializer(serializers.Serializer):
         def _may_validate_and_complement_condition(
             condition: dict[str, Any],
             entities: list[Entity] | None,
-            serializer_class: type[serializers.Serializer],
+            serializer_class: type[serializers.Serializer[Any]],
         ) -> dict[str, Any]:
             serializer = serializer_class(data=condition)
             if not serializer.is_valid():
@@ -125,7 +128,7 @@ class EntrySearchChainSerializer(serializers.Serializer):
             if not entities:
                 raise ValidationError("Condition(%s) couldn't find valid Entities" % str(condition))
 
-            validated_data = serializer.validated_data
+            validated_data: dict[str, Any] = serializer.validated_data
             if "name" in validated_data:
                 _validate_attribute(validated_data["name"], entities)
 

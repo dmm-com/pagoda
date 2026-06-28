@@ -1,6 +1,6 @@
 import errno
 import io
-from typing import Any
+from typing import Any, cast
 
 from django.db.models import Q, QuerySet
 from drf_spectacular.types import OpenApiTypes
@@ -16,15 +16,17 @@ from airone.lib.http import get_download_response
 from entry.models import Entry
 from job.api_v2.serializers import JobSerializers
 from job.models import Job, JobOperation, JobStatus
+from user.models import User
 
 
-class JobAPI(viewsets.ModelViewSet):
+class JobAPI(viewsets.ModelViewSet[Job]):
     serializer_class = JobSerializers
 
-    def get_queryset(self) -> QuerySet:
-        if self.request.user.is_superuser:
+    def get_queryset(self) -> QuerySet[Job]:
+        user = cast(User, self.request.user)
+        if user.is_superuser:
             return Job.objects.all()
-        return Job.objects.filter(user=self.request.user)
+        return Job.objects.filter(user=user)
 
     def destroy(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         job: Job = self.get_object()
@@ -80,7 +82,7 @@ class JobAPI(viewsets.ModelViewSet):
             if e.errno == errno.ENOENT:
                 raise FileIsNotExistsError("Target file is not exists")
 
-        return get_download_response(io_stream, job.text, encode_param)
+        return cast(Response, get_download_response(io_stream, job.text, encode_param))
 
 
 @extend_schema(
@@ -96,11 +98,11 @@ class JobAPI(viewsets.ModelViewSet):
         ),
     ],
 )
-class JobListAPI(viewsets.ModelViewSet):
+class JobListAPI(viewsets.ModelViewSet[Job]):
     serializer_class = JobSerializers
     pagination_class = LimitOffsetPagination
 
-    def get_queryset(self) -> QuerySet:
+    def get_queryset(self) -> QuerySet[Job]:
         user = self.request.user
         created_after: str | None = self.request.query_params.get("created_after", None)
         target_id: str | None = self.request.query_params.get("target_id", None)
@@ -139,12 +141,14 @@ class JobListAPI(viewsets.ModelViewSet):
 
         return Job.objects.filter(query).select_related("target").order_by("-created_at")
 
-    def get_serializer_context(self) -> dict[str, object]:
-        context = super().get_serializer_context()
+    def get_serializer_context(self) -> dict[str, Any]:
+        context: dict[str, Any] = dict(super().get_serializer_context())
 
         # prefetch target entries, then pass it via context manually to avoid N+1 in serializer
         qs = self.paginate_queryset(self.get_queryset().values("target__id", "target__objtype"))
-        target_ids = [int(r["target__id"]) for r in qs if r["target__objtype"] == ACLObjType.Entry]
+        target_ids = [
+            int(r["target__id"]) for r in (qs or []) if r["target__objtype"] == ACLObjType.Entry
+        ]
         entries = (
             Entry.objects.filter(id__in=target_ids)
             .select_related("schema")
@@ -156,11 +160,11 @@ class JobListAPI(viewsets.ModelViewSet):
 
 
 @extend_schema(request=None, responses={200: OpenApiTypes.STR})
-class JobRerunAPI(generics.UpdateAPIView):
+class JobRerunAPI(generics.UpdateAPIView[Job]):
     serializer_class = None
 
-    def get_queryset(self) -> QuerySet:
-        return Job.objects.filter(user=self.request.user)
+    def get_queryset(self) -> QuerySet[Job]:
+        return Job.objects.filter(user=cast(User, self.request.user))
 
     def update(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         return Response(
@@ -177,7 +181,7 @@ class JobRerunAPI(generics.UpdateAPIView):
             return Response("Target job is under processing", status=status.HTTP_400_BAD_REQUEST)
 
         # check job target status
-        if not job.target.is_active:
+        if not job.target or not job.target.is_active:
             return Response(
                 "Job target has already been deleted", status=status.HTTP_400_BAD_REQUEST
             )

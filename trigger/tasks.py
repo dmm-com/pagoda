@@ -12,14 +12,17 @@ from user.models import User
 
 
 @register_job_task(JobOperation.MAY_INVOKE_TRIGGER)
-@app.task(bind=True)  # type: ignore[misc]
+@app.task(bind=True)
 @may_schedule_until_job_is_ready
 def may_invoke_trigger(self: Any, job: Job) -> JobStatus:
     # Get job parameters that are set at frontend processing
     user = User.objects.filter(id=job.user.id).first()
+    assert job.target is not None
     entry = Entry.objects.filter(id=job.target.id, is_active=True).first()
     recv_data = json.loads(job.params)
 
+    assert user is not None
+    assert entry is not None
     # Get TriggerAction instances from entity and user specified data, then run them.
     for action in TriggerCondition.get_invoked_actions(entry.schema, recv_data):
         action.run(user, entry)

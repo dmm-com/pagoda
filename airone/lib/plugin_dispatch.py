@@ -76,7 +76,7 @@ class PluginOverrideMixin:
 
         return OverrideContext(
             request=request,
-            user=request.user,
+            user=request.user,  # type: ignore[arg-type]
             entity=entity,
             entry=entry,
             data=data,
@@ -104,7 +104,8 @@ class PluginOverrideMixin:
 
         context = self._build_override_context(request, registration, entity, operation, entry)
         try:
-            return registration.handler(context)
+            response: Optional[Response] = registration.handler(context)
+            return response
         except Exception as e:
             logger.error(f"Override handler error for entity {entity_id}/{operation}: {e}")
             raise
@@ -121,7 +122,7 @@ class PluginOverrideMixin:
                 if response is not None:
                     return response
 
-        return super().create(request, *args, **kwargs)  # type: ignore[misc]
+        return super().create(request, *args, **kwargs)  # type: ignore[misc,no-any-return]
 
     def list(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         """Handle list action with plugin override support."""
@@ -135,4 +136,4 @@ class PluginOverrideMixin:
                 if response is not None:
                     return response
 
-        return super().list(request, *args, **kwargs)  # type: ignore[misc]
+        return super().list(request, *args, **kwargs)  # type: ignore[misc,no-any-return]
