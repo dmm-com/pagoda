@@ -346,7 +346,7 @@ class AttributeValue(models.Model):
                 {
                     "type": entry.__class__.__name__,
                     "object": entry,
-                    "hint": "attribute '%s' has '%s'" % (attr.name, obj.value),
+                    "hint": f"attribute '{attr.name}' has '{obj.value}'",
                 }
             )
 
@@ -1780,11 +1780,7 @@ class Entry(ACLBase):
                 schema=self.schema, name=autoname, is_active=True
             ).first()
             if duplicated_item:
-                self.name = "%s -- duplicate of ID:%s -- %s" % (
-                    autoname,
-                    str(duplicated_item.id),
-                    str(uuid.uuid4()),
-                )
+                self.name = f"{autoname} -- duplicate of ID:{duplicated_item.id} -- {uuid.uuid4()}"
             else:
                 self.name = autoname
 

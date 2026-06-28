@@ -69,7 +69,7 @@ class UserCreateSerializer(UserBaseSerializer):
         # check specified username has already been used at co-users of login user
         request_user = self.context["request"].user
         if not request_user.is_superuser:
-            candidate_name = "%s-%s" % (request_user.username, username)
+            candidate_name = f"{request_user.username}-{username}"
 
             if User.objects.filter(username=candidate_name).exists():
                 raise ValidationError("A user with that username already exists.")
