@@ -187,6 +187,21 @@ export const schema = schemaForType<EditableEntry>()(
                   }),
                 )
                 .optional(),
+              asSelect: z
+                .object({
+                  value: z.string(),
+                  label: z.string(),
+                })
+                .nullable()
+                .optional(),
+              asMultiSelect: z
+                .array(
+                  z.object({
+                    value: z.string(),
+                    label: z.string(),
+                  }),
+                )
+                .optional(),
             }),
           })
           .superRefine((value, ctx) => {
@@ -373,6 +388,24 @@ export const schema = schemaForType<EditableEntry>()(
                       path: ["value", "asArrayNumber", 0, "value"],
                     });
                   }
+                }
+                break;
+              case EntryAttributeTypeTypeEnum.SELECT:
+                if (value.value.asSelect == null) {
+                  ctx.addIssue({
+                    code: z.ZodIssueCode.custom,
+                    message: "必須項目です",
+                    path: ["value", "asSelect"],
+                  });
+                }
+                break;
+              case EntryAttributeTypeTypeEnum.MULTI_SELECT:
+                if ((value.value.asMultiSelect?.length ?? 0) === 0) {
+                  ctx.addIssue({
+                    code: z.ZodIssueCode.custom,
+                    message: "必須項目です",
+                    path: ["value", "asMultiSelect"],
+                  });
                 }
                 break;
             }

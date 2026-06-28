@@ -107,6 +107,8 @@ test("formalizeEntryInfo should return expect value", () => {
           asGroup: null,
           asRole: null,
           asNamedObject: { name: "", object: null },
+          asSelect: null,
+          asMultiSelect: [],
         },
       },
       3: {
@@ -131,6 +133,8 @@ test("formalizeEntryInfo should return expect value", () => {
           asGroup: null,
           asRole: null,
           asNamedObject: { name: "", object: null },
+          asSelect: null,
+          asMultiSelect: [],
         },
       },
       4: {
@@ -155,6 +159,8 @@ test("formalizeEntryInfo should return expect value", () => {
           asGroup: null,
           asRole: null,
           asNamedObject: { name: "", object: null },
+          asSelect: null,
+          asMultiSelect: [],
         },
       },
     },
@@ -535,6 +541,39 @@ test("convertAttrsFormatCtoS() returns expected value", () => {
         },
       },
       expected_data: [123, 456],
+    },
+    // select
+    {
+      client_data: {
+        type: EntryAttributeTypeTypeEnum.SELECT,
+        value: {
+          asSelect: { value: "active", label: "稼働中" },
+        },
+      },
+      expected_data: "active",
+    },
+    // select (cleared)
+    {
+      client_data: {
+        type: EntryAttributeTypeTypeEnum.SELECT,
+        value: {
+          asSelect: null,
+        },
+      },
+      expected_data: null,
+    },
+    // multi_select
+    {
+      client_data: {
+        type: EntryAttributeTypeTypeEnum.MULTI_SELECT,
+        value: {
+          asMultiSelect: [
+            { value: "a", label: "Alpha" },
+            { value: "b", label: "Beta" },
+          ],
+        },
+      },
+      expected_data: ["a", "b"],
     },
   ];
 
