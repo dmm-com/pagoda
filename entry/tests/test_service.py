@@ -76,6 +76,10 @@ class AdvancedSearchServiceTest(AironeTestCase):
                 "type": AttrType.ARRAY_NAMED_OBJECT,
                 "value": [{"name": "hoge", "id": str(ref_entry.id)}],
             },
+            "arr_name_bool": {
+                "type": AttrType.ARRAY_NAMED_OBJECT_BOOLEAN,
+                "value": [{"name": "hoge", "id": str(ref_entry.id), "boolean": True}],
+            },
             "arr_group": {"type": AttrType.ARRAY_GROUP, "value": [ref_group]},
             "arr_role": {"type": AttrType.ARRAY_ROLE, "value": [ref_role]},
             "datetime": {
@@ -129,6 +133,7 @@ class AdvancedSearchServiceTest(AironeTestCase):
                 AttrHint(name="arr_str"),
                 AttrHint(name="arr_obj"),
                 AttrHint(name="arr_name"),
+                AttrHint(name="arr_name_bool"),
                 AttrHint(name="arr_group"),
                 AttrHint(name="arr_role"),
                 AttrHint(name="datetime"),
@@ -200,6 +205,14 @@ class AdvancedSearchServiceTest(AironeTestCase):
                         self.assertTrue(_co_v)
                         self.assertEqual(_co_v[0]["id"], co_attrv.referral.id)
                         self.assertEqual(_co_v[0]["name"], co_attrv.referral.name)
+
+                elif attrname == "arr_name_bool":
+                    for co_attrv in attrv.data_array.all():
+                        _co_v = [x[co_attrv.value] for x in attrinfo["value"]]
+                        self.assertTrue(_co_v)
+                        self.assertEqual(_co_v[0]["id"], co_attrv.referral.id)
+                        self.assertEqual(_co_v[0]["name"], co_attrv.referral.name)
+                        self.assertEqual(_co_v[0]["boolean"], co_attrv.boolean)
 
                 elif attrname == "arr_group":
                     self.assertEqual(

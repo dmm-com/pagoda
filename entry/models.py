@@ -1222,7 +1222,7 @@ class Attribute(ACLBase):
 
                     attrv.boolean = boolean
 
-                case AttrType.NAMED_OBJECT:
+                case AttrType.NAMED_OBJECT | AttrType.NAMED_OBJECT_BOOLEAN:
                     attrv.value = val["name"] if "name" in val else ""
                     if "boolean" in val:
                         attrv.boolean = val["boolean"]
@@ -2320,13 +2320,16 @@ class Entry(ACLBase):
                 "value": "",
                 "date_value": None,
                 "referral_id": "",
+                "boolean": False,
                 "is_readable": True
                 if (not attr or attr.is_public or attr.default_permission >= ACLType.Readable)
                 else False,
             }
 
-            # default value for boolean attributes is False.
-            if entity_attr.type & AttrType.BOOLEAN:
+            # default value for boolean attributes is False. _NAMED types (e.g.
+            # NAMED_OBJECT_BOOLEAN) also carry the BOOLEAN bit, but their boolean
+            # flag is stored separately in attrinfo["boolean"], so exclude them here.
+            if entity_attr.type & AttrType.BOOLEAN and not entity_attr.type & AttrType._NAMED:
                 attrinfo["value"] = False
 
             # Convert data format for mapping of Elasticsearch according to the data type
@@ -2337,7 +2340,7 @@ class Entry(ACLBase):
             elif entity_attr.type & AttrType.STRING or entity_attr.type & AttrType.TEXT:
                 attrinfo["value"] = truncate(attrv.value)
 
-            elif entity_attr.type & AttrType.BOOLEAN:
+            elif entity_attr.type & AttrType.BOOLEAN and not entity_attr.type & AttrType._NAMED:
                 attrinfo["value"] = attrv.boolean
 
             elif entity_attr.type & AttrType.DATE:
@@ -2348,6 +2351,7 @@ class Entry(ACLBase):
 
             elif entity_attr.type & AttrType._NAMED:
                 attrinfo["key"] = attrv.value
+                attrinfo["boolean"] = attrv.boolean
 
                 if attrv.referral and attrv.referral.is_active:
                     attrinfo["value"] = truncate(attrv.referral.name)
