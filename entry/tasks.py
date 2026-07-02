@@ -878,7 +878,7 @@ def _csv_export_v2(
                 return str(vval["name"])
             case AttrType.NAMED_OBJECT:
                 [(k, v)] = vval.items()
-                return "%s: %s" % (k, v["name"])
+                return f"{k}: {v['name']}"
             case AttrType.ARRAY_STRING:
                 from natsort import natsorted
 
@@ -897,7 +897,7 @@ def _csv_export_v2(
                 items = []
                 for vset in vval:
                     [(k, v)] = vset.items()
-                    items.append("%s: %s" % (k, v["name"]))
+                    items.append(f"{k}: {v['name']}")
                 return "\n".join(natsorted(items))
         return ""
 
