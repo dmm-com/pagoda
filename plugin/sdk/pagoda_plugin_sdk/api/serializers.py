@@ -174,7 +174,7 @@ class PluginSerializerMixin:
         return super().update(instance, validated_data)  # type: ignore[misc]
 
 
-class PluginModelSerializer(PluginSerializerMixin, ModelSerializer):
+class PluginModelSerializer(PluginSerializerMixin, ModelSerializer[Any]):
     """Base model serializer for plugins
 
     Combines PluginSerializerMixin with ModelSerializer to provide
@@ -312,7 +312,7 @@ class PluginValidationMixin:
         return value
 
 
-class PluginListSerializer(PluginSerializerMixin, Serializer):
+class PluginListSerializer(PluginSerializerMixin, Serializer[Any]):
     """Base list serializer for plugin endpoints
 
     Provides common functionality for list-based plugin endpoints
@@ -345,7 +345,7 @@ class PluginListSerializer(PluginSerializerMixin, Serializer):
         }
 
 
-class PluginErrorSerializer(Serializer):
+class PluginErrorSerializer(Serializer[Any]):
     """Standardized error response serializer for plugins
 
     Provides consistent error response format across all plugins.

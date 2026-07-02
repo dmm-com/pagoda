@@ -90,9 +90,11 @@ class PluginPagination(LimitOffsetPagination):
         Returns:
             Total number of pages
         """
-        if self.count == 0 or self.limit == 0:
+        count = self.count or 0
+        limit = self.limit or 0
+        if count == 0 or limit == 0:
             return 0
-        return int((self.count + self.limit - 1) // self.limit)
+        return int((count + limit - 1) // limit)
 
     def _get_current_page(self) -> int:
         """Calculate current page number (1-based)
@@ -100,9 +102,11 @@ class PluginPagination(LimitOffsetPagination):
         Returns:
             Current page number
         """
-        if self.limit == 0:
+        limit = self.limit or 0
+        offset = self.offset or 0
+        if limit == 0:
             return 1
-        return int((self.offset // self.limit) + 1)
+        return int((offset // limit) + 1)
 
     def paginate_queryset(self, queryset: Any, request: Any, view: Any = None) -> Any:
         """Paginate a queryset with performance monitoring
@@ -160,6 +164,7 @@ class PluginPageNumberPagination(PageNumberPagination):
         # Get plugin context if available
         plugin_context = self._get_plugin_context()
 
+        assert self.page is not None
         response_data = OrderedDict(
             [
                 ("count", self.page.paginator.count),

@@ -238,8 +238,9 @@ def generate_testdata(num_entities: int, num_entries: int, suffix: str) -> None:
                 # Reference L1 entity for root entities
                 entity_attr.referral.add(reference_levels[0].entity)
 
-    ref_groups = [
-        Group.objects.create(name=f"Referred_Group_{suffix}_{i}", is_active=True) for i in range(2)
+    ref_groups: list[Group] = [
+        Group.objects.create(name=f"Referred_Group_{suffix}_{i}", is_active=True)  # type: ignore[misc]
+        for i in range(2)
     ]
     ref_roles = [
         Role.objects.create(name=f"Referred_Role_{suffix}_{i}", is_active=True) for i in range(2)

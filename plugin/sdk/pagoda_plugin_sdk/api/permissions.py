@@ -211,7 +211,7 @@ class IsPluginAuthenticated(BasePermission):
         Returns:
             True if user is authenticated and active
         """
-        return (
+        return bool(
             request.user
             and request.user.is_authenticated
             and getattr(request.user, "is_active", True)

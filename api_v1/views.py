@@ -1,5 +1,5 @@
 from copy import deepcopy
-from typing import Any
+from typing import Any, cast
 
 from django.db.models import Q
 from rest_framework import status
@@ -13,13 +13,15 @@ from entity.models import Entity
 from entry.models import Entry
 from entry.settings import CONFIG as ENTRY_CONFIG
 from job.models import Job
+from user.models import User
 
 from .serializers import PostEntrySerializer
 
 
 class EntryAPI(APIView):
     def post(self, request: Request, format: str | None = None) -> Response:
-        sel = PostEntrySerializer(data=request.data, context={"_user": request.user})
+        user = cast(User, request.user)
+        sel = PostEntrySerializer(data=request.data, context={"_user": user})
 
         # This is necessary because request.data might be changed by the processing of serializer
         raw_request_data = deepcopy(request.data)
@@ -27,12 +29,12 @@ class EntryAPI(APIView):
         if not sel.is_valid():
             ret = {
                 "result": "Validation Error",
-                "details": ["(%s) %s" % (k, ",".join(e)) for k, e in sel._errors.items()],
+                "details": ["(%s) %s" % (k, ",".join(e)) for k, e in sel.errors.items()],
             }
             return Response(ret, status=status.HTTP_400_BAD_REQUEST)
 
         # checking that target user has permission to create an entry
-        if not request.user.has_permission(sel.validated_data["entity"], ACLType.Writable):
+        if not user.has_permission(sel.validated_data["entity"], ACLType.Writable):
             return Response(
                 {"result": "Permission denied to create(or update) entry"},
                 status=status.HTTP_400_BAD_REQUEST,
@@ -83,7 +85,7 @@ class EntryAPI(APIView):
             entry = Entry.objects.get(id=sel.validated_data["id"])
 
             # Check user has permission to update this Item
-            if not request.user.has_permission(entry, ACLType.Writable):
+            if not user.has_permission(entry, ACLType.Writable):
                 return Response(
                     {"result": "Permission denied to update entry"},
                     status=status.HTTP_400_BAD_REQUEST,
@@ -103,7 +105,7 @@ class EntryAPI(APIView):
         elif Entry.objects.filter(**entry_condition).exists():
             entry = Entry.objects.get(**entry_condition)
 
-            if not request.user.has_permission(entry, ACLType.Writable):
+            if not user.has_permission(entry, ACLType.Writable):
                 return Response(
                     {"result": "Permission denied to update entry"},
                     status=status.HTTP_400_BAD_REQUEST,
@@ -122,29 +124,27 @@ class EntryAPI(APIView):
             # when multiple requests passed through existance check. Even through multiple
             # requests coming here, Django prevents from creating multiple Entries.
             entry, is_created = Entry.objects.update_or_create(
-                created_user=request.user, status=Entry.STATUS_CREATING, **entry_condition
+                created_user=user, status=Entry.STATUS_CREATING, **entry_condition
             )
             resp_data["is_created"] = True
 
             if is_created:
                 # create job to notify entry event to the registered WebHook
-                Job.new_notify_create_entry(request.user, entry).run()
+                Job.new_notify_create_entry(user, entry).run()
             else:
                 # set flag to create a Job of NOTIFY_UPDATE_ENTRY in later
                 # (Note: This code is rarely run!)
                 will_notify_update_entry = True
 
-        entry.complement_attrs(request.user)
+        entry.complement_attrs(user)
         for name, value in sel.validated_data["attrs"].items():
             # If user doesn't have readable permission for target Attribute, it won't be created.
             if not entry.attrs.filter(name=name).exists():
                 continue
 
             attr = entry.attrs.get(schema__name=name, is_active=True)
-            if request.user.has_permission(attr.schema, ACLType.Writable) and attr.is_updated(
-                value
-            ):
-                attr.add_value(request.user, value)
+            if user.has_permission(attr.schema, ACLType.Writable) and attr.is_updated(value):
+                attr.add_value(user, value)
                 will_notify_update_entry = True
 
                 # This enables to let user know what attributes are changed in this request
@@ -153,7 +153,7 @@ class EntryAPI(APIView):
         if will_notify_update_entry:
             # Create job to notify event, which indicates target entry is updated,
             # to the registered WebHook.
-            Job.new_notify_update_entry(request.user, entry).run()
+            Job.new_notify_update_entry(user, entry).run()
 
         # register target Entry to the Elasticsearch
         entry.register_es()
@@ -161,9 +161,9 @@ class EntryAPI(APIView):
         # Create job for TriggerAction. Before calling, it's necessary to make parameters to pass
         # to TriggerAction from raw_request_data by _be_compatible_with_trigger() method.
         Job.new_invoke_trigger(
-            request.user,
+            user,
             entry,
-            entry.get_trigger_params(request.user, raw_request_data["attrs"].keys()),
+            entry.get_trigger_params(user, raw_request_data["attrs"].keys()),
         ).run()
 
         entry.del_status(Entry.STATUS_CREATING | Entry.STATUS_EDITING)
@@ -171,6 +171,7 @@ class EntryAPI(APIView):
         return Response(dict({"result": entry.id}, **resp_data))
 
     def get(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        user = cast(User, request.user)
         # The parameter for entry is acceptable both id and name.
         param_entry_id = request.GET.get("entry_id")
         param_entry_name = request.GET.get("entry")
@@ -216,7 +217,7 @@ class EntryAPI(APIView):
             query = Q(query, name=param_entry_name)
 
         retinfo = [
-            x.to_dict(request.user)
+            x.to_dict(user)
             for x in Entry.objects.filter(query)[
                 int(param_offset) : int(param_offset) + ENTRY_CONFIG.MAX_LIST_ENTRIES
             ]
@@ -227,6 +228,7 @@ class EntryAPI(APIView):
         return Response([x for x in retinfo if x])
 
     def delete(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        user = cast(User, request.user)
         # checks mandatory parameters are specified
         if not all([x in request.data for x in ["entity", "entry"]]):
             return Response(
@@ -249,27 +251,25 @@ class EntryAPI(APIView):
             )
 
         # permission check
-        if not request.user.has_permission(entry, ACLType.Writable):
+        if not user.has_permission(entry, ACLType.Writable):
             return Response("Permission denied to operate", status=status.HTTP_400_BAD_REQUEST)
 
         if custom_view.is_custom("delete_entry_api", entry.schema.name):
             # do_delete custom view
-            resp = custom_view.call_custom(
-                "delete_entry_api", entry.schema.name, request.user, entry
-            )
+            resp = custom_view.call_custom("delete_entry_api", entry.schema.name, user, entry)
 
             # If custom_view returns available response this returns it to user,
             # or continues default processing.
             if resp:
-                return resp
+                return cast(Response, resp)
 
         # Delete the specified entry then return its id, if is active
         if entry.is_active:
             # create a new Job to delete entry and run it
-            job = Job.new_delete(request.user, entry)
+            job = Job.new_delete(user, entry)
 
             # create and run notify delete entry task
-            job_notify = Job.new_notify_delete_entry(request.user, entry)
+            job_notify = Job.new_notify_delete_entry(user, entry)
             job_notify.run()
 
             job.dependent_job = job_notify

@@ -50,7 +50,7 @@ def http_get(func: Callable[..., HttpResponse]) -> Callable[..., HttpResponse]:
 def get_obj_with_check_perm(
     user: User, model: models.Model, object_id: int, permission_level: int
 ) -> Tuple[Optional[Any], Optional[HttpResponse]]:
-    target_obj = model.objects.filter(id=object_id).first()
+    target_obj = model.objects.filter(id=object_id).first()  # type: ignore[attr-defined]
     if not target_obj:
         return (None, HttpResponse("Failed to get entity of specified id", status=400))
 
@@ -113,6 +113,8 @@ def http_file_upload(func: Callable[..., HttpResponse]) -> Callable[..., HttpRes
         """This returns uploaded file context whatever encoding type"""
 
         fp = request.FILES.get("file")
+        if fp is None:
+            return None
         for encoding in ["UTF-8", "Shift-JIS", "ISO-2022-JP", "EUC-JP"]:
             try:
                 return codecs.getreader(encoding)(fp).read()

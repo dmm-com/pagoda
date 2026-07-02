@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, cast
 
 from django.db.models import QuerySet
 from rest_framework import serializers, status, viewsets
@@ -13,16 +13,18 @@ from trigger.api_v2.serializers import (
     TriggerParentUpdateSerializer,
 )
 from trigger.models import TriggerParent
+from user.models import User
 
 
 class TriggerPermission(BasePermission):
     def has_permission(self, request: Request, view: Any) -> bool:
-        if request.user.is_readonly and view.action in ["create", "update", "destroy"]:
+        user = cast(User, request.user)
+        if user.is_readonly and view.action in ["create", "update", "destroy"]:
             return False
         return True
 
 
-class TriggerAPI(viewsets.ModelViewSet):
+class TriggerAPI(viewsets.ModelViewSet[TriggerParent]):
     pagination_class = PageNumberPagination
     permission_classes = [IsAuthenticated & TriggerPermission]
     filterset_fields = ["entity__is_active"]

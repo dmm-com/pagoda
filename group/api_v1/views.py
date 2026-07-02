@@ -1,3 +1,5 @@
+from typing import Any, cast
+
 from django.db.models import QuerySet
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -8,7 +10,7 @@ from group.models import Group
 
 class GroupTreeAPI(APIView):
     def get(self, request: Request, format: str | None = None) -> Response:
-        def _make_hierarchical_group(groups: QuerySet[Group]) -> list[dict[str, object]]:
+        def _make_hierarchical_group(groups: QuerySet[Group]) -> list[dict[str, Any]]:
             return [
                 {
                     "id": g.id,
@@ -20,6 +22,9 @@ class GroupTreeAPI(APIView):
 
         return Response(
             _make_hierarchical_group(
-                Group.objects.filter(parent_group__isnull=True, is_active=True)
+                cast(
+                    QuerySet[Group],
+                    Group.objects.filter(parent_group__isnull=True, is_active=True),  # type: ignore[misc]
+                )
             )
         )

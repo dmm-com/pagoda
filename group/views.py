@@ -1,5 +1,5 @@
 import io
-from typing import Any
+from typing import Any, cast
 
 import yaml
 from django.http import HttpRequest, HttpResponse
@@ -30,7 +30,7 @@ def edit(request: HttpRequest, group_id: int) -> HttpResponse:
     if not Group.objects.filter(id=group_id).exists():
         return HttpResponse("Failed to get group of specified id", status=400)
 
-    group = Group.objects.get(id=group_id)
+    group = cast(Group, Group.objects.get(id=group_id))
 
     # set selected group information
     context: dict[str, Any] = {
@@ -50,7 +50,7 @@ def edit(request: HttpRequest, group_id: int) -> HttpResponse:
             "name": x.name,
             "members": User.objects.filter(groups__id=x.id, is_active=True).order_by("username"),
         }
-        for x in Group.objects.filter(is_active=True)
+        for x in Group.objects.filter(is_active=True)  # type: ignore[misc]
     ]
 
     # set all user
@@ -84,7 +84,7 @@ def do_edit(request: HttpRequest, group_id: int, recv_data: dict[str, Any]) -> H
     if not Group.objects.filter(id=group_id).exists():
         return HttpResponse("Failed to get group of specified id", status=400)
 
-    group = Group.objects.get(id=group_id)
+    group = cast(Group, Group.objects.get(id=group_id))
     if Group.objects.filter(name=recv_data["name"]).exists():
         same_name_group = Group.objects.get(name=recv_data["name"])
 
@@ -99,7 +99,7 @@ def do_edit(request: HttpRequest, group_id: int, recv_data: dict[str, Any]) -> H
     job_register_referrals = None
     if group.name != recv_data["name"]:
         job_register_referrals = Job.new_register_referrals(
-            request.user,
+            cast(User, request.user),
             None,
             operation_value=JobOperation.GROUP_REGISTER_REFERRAL,
             params={"group_id": group.id},
@@ -107,9 +107,13 @@ def do_edit(request: HttpRequest, group_id: int, recv_data: dict[str, Any]) -> H
 
     # update group_name with specified one
     group.name = recv_data["name"]
-    group.parent_group = Group.objects.filter(
-        id=recv_data.get("parent_group", 0), is_active=True
-    ).first()
+    group.parent_group = cast(
+        Group | None,
+        Group.objects.filter(
+            id=recv_data.get("parent_group", 0),
+            is_active=True,  # type: ignore[misc]
+        ).first(),
+    )
     group.save()
 
     if job_register_referrals:
@@ -145,7 +149,7 @@ def create(request: HttpRequest) -> HttpResponse:
             "name": x.name,
             "members": User.objects.filter(groups__id=x.id, is_active=True).order_by("username"),
         }
-        for x in Group.objects.filter(is_active=True)
+        for x in Group.objects.filter(is_active=True)  # type: ignore[misc]
     ]
 
     # set all user
@@ -183,9 +187,13 @@ def create(request: HttpRequest) -> HttpResponse:
 def do_create(request: HttpRequest, recv_data: dict[str, Any]) -> HttpResponse:
     new_group = Group(
         name=recv_data["name"],
-        parent_group=Group.objects.filter(
-            id=recv_data.get("parent_group", 0), is_active=True
-        ).first(),
+        parent_group=cast(
+            Group | None,
+            Group.objects.filter(
+                id=recv_data.get("parent_group", 0),
+                is_active=True,  # type: ignore[misc]
+            ).first(),
+        ),
     )
     new_group.save()
 
@@ -227,7 +235,7 @@ def export(request: HttpRequest) -> HttpResponse:
         "User": [],
     }
 
-    for group in Group.objects.filter(is_active=True):
+    for group in Group.objects.filter(is_active=True):  # type: ignore[misc]
         data["Group"].append(
             {
                 "id": group.id,

@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, cast
 
 from django.db.models import Prefetch, Q, QuerySet
 from django_filters.rest_framework import DjangoFilterBackend
@@ -36,16 +36,19 @@ def get_permitted_roles(user: User, base_queryset: QuerySet[Role]) -> QuerySet[R
 
 class RolePermission(BasePermission):
     def has_permission(self, request: Request, view: Any) -> bool:
-        if request.user.is_readonly and view.action == "create":
+        user = cast(User, request.user)
+        if user.is_readonly and view.action == "create":
             return False
         return True
 
     def has_object_permission(self, request: Request, view: Any, obj: Role) -> bool:
-        if request.user.is_readonly and view.action in ["update", "destroy"]:
+        current_user = cast(User, request.user)
+        if current_user.is_readonly and view.action in ["update", "destroy"]:
             return False
 
-        current_user: User = request.user
-        is_editable = Role.editable(current_user, obj.admin_users.all(), obj.admin_groups.all())
+        is_editable = Role.editable(
+            current_user, list(obj.admin_users.all()), list(obj.admin_groups.all())
+        )
         permission = {
             "retrieve": True,
             "create": True,
@@ -55,7 +58,7 @@ class RolePermission(BasePermission):
         return permission.get(view.action, False)
 
 
-class RoleAPI(viewsets.ModelViewSet):
+class RoleAPI(viewsets.ModelViewSet[Role]):
     queryset = Role.objects.filter(is_active=True)
     permission_classes = [IsAuthenticated & RolePermission]
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter, filters.SearchFilter]
@@ -65,27 +68,27 @@ class RoleAPI(viewsets.ModelViewSet):
     def get_queryset(self) -> QuerySet[Role]:
         base_queryset = Role.objects.filter(is_active=True).prefetch_related(
             Prefetch("users", queryset=User.objects.filter(is_active=True)),
-            Prefetch("groups", queryset=Group.objects.filter(is_active=True)),
+            Prefetch("groups", queryset=Group.objects.filter(is_active=True)),  # type: ignore[misc]
             Prefetch("admin_users", queryset=User.objects.filter(is_active=True)),
-            Prefetch("admin_groups", queryset=Group.objects.filter(is_active=True)),
+            Prefetch("admin_groups", queryset=Group.objects.filter(is_active=True)),  # type: ignore[misc]
         )
-        return get_permitted_roles(self.request.user, base_queryset)
+        return get_permitted_roles(cast(User, self.request.user), base_queryset)
 
-    def get_serializer_class(self) -> type[serializers.Serializer]:
-        serializer: dict[str, type[serializers.Serializer]] = {
+    def get_serializer_class(self) -> type[serializers.Serializer[Any]]:
+        serializer: dict[str, type[serializers.Serializer[Any]]] = {
             "create": RoleCreateUpdateSerializer,
             "update": RoleCreateUpdateSerializer,
         }
         return serializer.get(self.action, RoleSerializer)
 
 
-class RoleImportAPI(generics.GenericAPIView):
+class RoleImportAPI(generics.GenericAPIView[Any]):
     parser_classes = [YAMLParser]
     serializer_class = RoleImportSerializer
 
     def post(self, request: Request) -> Response:
         import_datas = request.data
-        user: User = request.user
+        user = cast(User, request.user)
         serializer = RoleImportSerializer(data=import_datas)
         serializer.is_valid(raise_exception=True)
 
@@ -102,10 +105,12 @@ class RoleImportAPI(generics.GenericAPIView):
         )
 
 
-class RoleExportAPI(generics.ListAPIView):
+class RoleExportAPI(generics.ListAPIView[Role]):
     queryset = Role.objects.filter(is_active=True)
     serializer_class = RoleImportExportChildSerializer
     renderer_classes = [YAMLRenderer]
 
     def get_queryset(self) -> QuerySet[Role]:
-        return get_permitted_roles(self.request.user, Role.objects.filter(is_active=True))
+        return get_permitted_roles(
+            cast(User, self.request.user), Role.objects.filter(is_active=True)
+        )

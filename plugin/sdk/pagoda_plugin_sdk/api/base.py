@@ -9,6 +9,7 @@ integration with the host application's plugin system.
 import logging
 from typing import Any, Dict, Optional
 
+from django.http import HttpRequest
 from rest_framework import status, viewsets
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
@@ -103,10 +104,11 @@ class PluginAPIView(PluginAPIViewMixin):
             )
 
         # Delegate to parent for other exceptions
-        return super().handle_exception(exc)
+        result: Response = super().handle_exception(exc)
+        return result
 
 
-class PluginViewSet(viewsets.ModelViewSet):
+class PluginViewSet(viewsets.ModelViewSet[Any]):
     """Base ViewSet for plugin models
 
     Provides a standardized base for plugin ViewSets with:
@@ -237,7 +239,7 @@ class PluginViewSet(viewsets.ModelViewSet):
         # Delegate to parent for other exceptions
         return super().handle_exception(exc)
 
-    def initialize_request(self, request: Request, *args: Any, **kwargs: Any) -> Request:
+    def initialize_request(self, request: HttpRequest, *args: Any, **kwargs: Any) -> Request:
         """Initialize request with plugin context
 
         Adds plugin context to the request object for use in other components.
@@ -248,13 +250,13 @@ class PluginViewSet(viewsets.ModelViewSet):
         Returns:
             Enhanced request object
         """
-        request = super().initialize_request(request, *args, **kwargs)
+        drf_request = super().initialize_request(request, *args, **kwargs)
 
         # Add plugin context to request
-        if not hasattr(request, "plugin_context"):
-            request.plugin_context = self.get_plugin_context()
+        if not hasattr(drf_request, "plugin_context"):
+            drf_request.plugin_context = self.get_plugin_context()  # type: ignore[attr-defined]
 
-        return request
+        return drf_request
 
     def create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         """Create a new model instance with plugin context
