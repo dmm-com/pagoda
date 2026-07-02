@@ -1027,7 +1027,7 @@ class Attribute(ACLBase):
                         return False
                 return False
 
-            case AttrType.NAMED_OBJECT:
+            case AttrType.NAMED_OBJECT | AttrType.NAMED_OBJECT_BOOLEAN:
                 return isinstance(value, dict)
 
             case AttrType.STRING | AttrType.TEXT:
@@ -1084,7 +1084,7 @@ class Attribute(ACLBase):
                     return True
 
                 match self.schema.type:
-                    case AttrType.ARRAY_NAMED_OBJECT:
+                    case AttrType.ARRAY_NAMED_OBJECT | AttrType.ARRAY_NAMED_OBJECT_BOOLEAN:
                         return all(
                             isinstance(x, dict) or isinstance(x, type({}.values())) for x in value
                         )

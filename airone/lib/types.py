@@ -49,11 +49,12 @@ class AttrType(BaseIntEnum):
     _ARRAY = 1 << 10
     _NAMED = 1 << 11
     NAMED_OBJECT = _NAMED | OBJECT
+    NAMED_OBJECT_BOOLEAN = _NAMED | OBJECT | BOOLEAN
     ARRAY_OBJECT = _ARRAY | OBJECT
     ARRAY_STRING = _ARRAY | STRING
     ARRAY_NUMBER = _ARRAY | NUMBER
     ARRAY_NAMED_OBJECT = _ARRAY | _NAMED | OBJECT
-    ARRAY_NAMED_OBJECT_BOOLEAN = 3081  # unmanaged by AttrTypeXXX
+    ARRAY_NAMED_OBJECT_BOOLEAN = _ARRAY | NAMED_OBJECT_BOOLEAN
     ARRAY_GROUP = _ARRAY | GROUP
     ARRAY_ROLE = _ARRAY | ROLE
 
@@ -69,6 +70,7 @@ AttrTypeValue = {
     "array_number": AttrType.ARRAY_NUMBER,
     "array_object": AttrType.ARRAY_OBJECT,
     "array_named_object": AttrType.ARRAY_NAMED_OBJECT,
+    "array_named_object_boolean": AttrType.ARRAY_NAMED_OBJECT_BOOLEAN,
     "array_group": AttrType.ARRAY_GROUP,
     "array_role": AttrType.ARRAY_ROLE,
     "textarea": AttrType.TEXT,
@@ -114,6 +116,7 @@ AttrDefaultValue: dict[int, Any] = {
     AttrType.ARRAY_STRING: [],
     AttrType.ARRAY_NUMBER: [],
     AttrType.ARRAY_NAMED_OBJECT: dict().values(),
+    AttrType.ARRAY_NAMED_OBJECT_BOOLEAN: dict().values(),
     AttrType.ARRAY_GROUP: [],
     AttrType.ARRAY_ROLE: [],
     AttrType.TEXT: "",
