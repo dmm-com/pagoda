@@ -16,7 +16,7 @@ urlpatterns = [
     re_path(r"^dashboard/", include(("dashboard.urls", "dashboard"))),
     re_path(r"^ui/", include(("dashboard.urls_for_ui", "dashboard_for_ui"))),
     re_path(r"^entry/", include(("entry.urls", "entry"))),
-    re_path(r"^api/v1/", include(api_v1_urlpatterns)),
+    re_path(r"^api/v1/", include(api_v1_urlpatterns)),  # type: ignore[arg-type]
     re_path(r"^api/v2/", include(("api_v2.urls", "api_v2"))),
     re_path(r"^api/schema/", SpectacularAPIView.as_view(), name="schema"),
     re_path(
@@ -36,7 +36,7 @@ urlpatterns = [
                 "note_desc": settings.AIRONE["NOTE_DESC"],
                 "note_link": settings.AIRONE["NOTE_LINK"],
                 "sso_desc": settings.AIRONE["SSO_DESC"],
-                "idp": list(settings.SOCIAL_AUTH_SAML_ENABLED_IDPS.keys())[0]
+                "idp": list(getattr(settings, "SOCIAL_AUTH_SAML_ENABLED_IDPS").keys())[0]
                 if hasattr(settings, "SOCIAL_AUTH_SAML_ENABLED_IDPS")
                 else None,
                 "password_reset_disabled": settings.AIRONE["PASSWORD_RESET_DISABLED"],

@@ -259,17 +259,20 @@ class AironeTestCase(TestCase):
         entry: Entry | None = None,
     ) -> Attribute:
         """Create EntityAttr and Attribute for testing."""
+        resolved_user: User = user or getattr(self, "_user")
+        resolved_entity: Entity = entity or getattr(self, "_entity")
+        resolved_entry: Entry = entry or getattr(self, "_entry")
         entity_attr = EntityAttr.objects.create(
             name=name,
             type=attrtype,
-            created_user=user or getattr(self, "_user", None),
-            parent_entity=entity or getattr(self, "_entity", None),
+            created_user=resolved_user,
+            parent_entity=resolved_entity,
         )
         return Attribute.objects.create(
             name=name,
             schema=entity_attr,
-            created_user=user or getattr(self, "_user", None),
-            parent_entry=entry or getattr(self, "_entry", None),
+            created_user=resolved_user,
+            parent_entry=resolved_entry,
         )
 
     def _do_login(self, uname: str, is_superuser: bool = False) -> User:
@@ -299,7 +302,7 @@ class AironeViewTest(AironeTestCase):
         test_file_path = inspect.getfile(self.__class__)
         test_base_path = os.path.dirname(test_file_path)
 
-        return open("%s/fixtures/%s" % (test_base_path, fname), "r")
+        return open(f"{test_base_path}/fixtures/{fname}", "r")
 
 
 class DisableStderr(object):

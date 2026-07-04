@@ -28,7 +28,7 @@ logger = Logger
 TaskHandler: TypeAlias = Callable[[Any, Any], Any]
 
 
-@dataclass
+@dataclass(slots=True)
 class PluginTaskConfig:
     """Data class for managing plugin task configuration
 
@@ -276,7 +276,7 @@ class PluginTaskRegistry:
         module = import_module(config.module_path)
 
         offset, func_name = config.tasks[op_name]
-        handler = getattr(module, func_name, None)
+        handler: TaskHandler | None = getattr(module, func_name, None)
         if handler is None:
             raise AttributeError(f"Task function not found: {config.module_path}.{func_name}")
         return handler

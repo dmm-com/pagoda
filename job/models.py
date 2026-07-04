@@ -732,7 +732,8 @@ class Job(models.Model):
     @classmethod
     def _get_job_timeout(kls) -> int:
         if "JOB_TIMEOUT" in settings.AIRONE and settings.AIRONE["JOB_TIMEOUT"]:
-            return settings.AIRONE["JOB_TIMEOUT"]
+            timeout: int = settings.AIRONE["JOB_TIMEOUT"]
+            return timeout
         else:
             return kls.DEFAULT_JOB_TIMEOUT
 

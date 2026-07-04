@@ -2977,7 +2977,7 @@ class ViewTest(AironeViewTest):
             resp.json(),
             [
                 {
-                    "code": "AE-121000",
+                    "code": "AE-240000",
                     "message": "cannot delete Entity because one or more Entries are not deleted",
                 }
             ],

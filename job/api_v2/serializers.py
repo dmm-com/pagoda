@@ -8,6 +8,7 @@ from rest_framework import serializers
 from airone.lib.acl import ACLObjType
 from entry.models import Entry
 from job.models import Job
+from user.models import User
 
 
 class JobTarget(TypedDict):
@@ -17,15 +18,17 @@ class JobTarget(TypedDict):
     schema_name: str | None
 
 
-class JobTargetSerializer(serializers.Serializer):
+class JobTargetSerializer(serializers.Serializer[JobTarget]):
     id = serializers.IntegerField()
     name = serializers.CharField()
     schema_id = serializers.IntegerField(allow_null=True)
     schema_name = serializers.CharField(allow_null=True)
 
 
-class JobSerializers(serializers.ModelSerializer):
-    user = serializers.SlugRelatedField(slug_field="username", read_only=True)
+class JobSerializers(serializers.ModelSerializer[Job]):
+    user: serializers.SlugRelatedField[User] = serializers.SlugRelatedField(
+        slug_field="username", read_only=True
+    )
     target = serializers.SerializerMethodField(method_name="get_target")
     passed_time = serializers.SerializerMethodField(method_name="get_passed_time")
 
@@ -52,11 +55,12 @@ class JobSerializers(serializers.ModelSerializer):
                     obj.target.id
                 )
                 if not sub:
-                    sub = (
+                    sub = dict(
                         Entry.objects.filter(id=obj.target.id)
                         .select_related("schema")
                         .values("id", "name", "schema__id", "schema__name")
                         .first()
+                        or {}
                     )
                 return {
                     "id": sub["id"],

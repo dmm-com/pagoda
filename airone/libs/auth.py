@@ -4,10 +4,10 @@ AirOne Authentication Utilities for Plugins
 Provides authentication and user management utilities for external plugins.
 """
 
-from typing import Any, Dict
+from typing import Any, Dict, cast
 
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import AbstractBaseUser, AnonymousUser
+from django.contrib.auth.models import AbstractBaseUser, AbstractUser, AnonymousUser
 
 User = get_user_model()
 
@@ -31,17 +31,18 @@ def get_current_user_info(user: AbstractBaseUser | AnonymousUser) -> Dict[str, A
             "is_superuser": False,
         }
 
+    auth_user = cast(AbstractUser, user)
     return {
-        "id": user.id,
-        "username": user.username,
-        "email": user.email,
-        "first_name": user.first_name,
-        "last_name": user.last_name,
+        "id": auth_user.pk,
+        "username": auth_user.username,
+        "email": auth_user.email,
+        "first_name": auth_user.first_name,
+        "last_name": auth_user.last_name,
         "is_authenticated": True,
-        "is_staff": user.is_staff,
-        "is_superuser": user.is_superuser,
-        "date_joined": user.date_joined.isoformat() if user.date_joined else None,
-        "last_login": user.last_login.isoformat() if user.last_login else None,
+        "is_staff": auth_user.is_staff,
+        "is_superuser": auth_user.is_superuser,
+        "date_joined": auth_user.date_joined.isoformat() if auth_user.date_joined else None,
+        "last_login": auth_user.last_login.isoformat() if auth_user.last_login else None,
     }
 
 
@@ -58,7 +59,7 @@ def check_user_permission(user: AbstractBaseUser | AnonymousUser, permission: st
     if not user or not user.is_authenticated:
         return False
 
-    return user.has_perm(permission)
+    return cast(AbstractUser, user).has_perm(permission)
 
 
 def get_user_groups(user: AbstractBaseUser | AnonymousUser) -> list[str]:
@@ -73,4 +74,4 @@ def get_user_groups(user: AbstractBaseUser | AnonymousUser) -> list[str]:
     if not user or not user.is_authenticated:
         return []
 
-    return list(user.groups.values_list("name", flat=True))
+    return list(cast(AbstractUser, user).groups.values_list("name", flat=True))

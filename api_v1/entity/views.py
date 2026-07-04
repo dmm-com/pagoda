@@ -13,13 +13,15 @@ class EntityAttrsAPIResponse(BaseModel):
 
 class EntityAttrsAPI(APIView):
     def get(self, request: Request, entity_ids: str, format: str | None = None) -> Response:
-        entities: list[Entity] = [
+        entities: list[Entity | None] = [
             Entity.objects.filter(id=x, is_active=True).first() for x in entity_ids.split(",") if x
         ]
 
         def get_attrs_of_specific_entities() -> set[str]:
             # Compute intersection of attribute names across entities
-            attr_lists = [[a.name for a in e.attrs.filter(is_active=True)] for e in entities]
+            attr_lists = [
+                [a.name for a in e.attrs.filter(is_active=True)] for e in entities if e is not None
+            ]
             result: set[str] = set(attr_lists[0]) if attr_lists else set()
             for attr_list in attr_lists[1:]:
                 result &= set(attr_list)

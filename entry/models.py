@@ -3,7 +3,7 @@ import re
 import uuid
 from collections.abc import Iterable
 from datetime import date, datetime
-from typing import Any, List, Optional, Type, Union, cast
+from typing import Any, Optional, Union, cast
 
 from django.conf import settings
 from django.db import models
@@ -383,7 +383,7 @@ class AttributeValue(models.Model):
                 {
                     "type": entry.__class__.__name__,
                     "object": entry,
-                    "hint": "attribute '%s' has '%s'" % (attr.name, obj.value),
+                    "hint": f"attribute '{attr.name}' has '{obj.value}'",
                 }
             )
 
@@ -399,7 +399,7 @@ class AttributeValue(models.Model):
     # data type (e.g. case group type, this allows Group instance and int and str
     # value that indicate specific group instance, and it returns id of its instance)
     @classmethod
-    def uniform_storable(kls, val: Group | Role | str | int, model: Type[Group | Role]) -> str:
+    def uniform_storable(kls, val: Group | Role | str | int, model: type[Group | Role]) -> str:
         """
         This converts input to group id value(str) to be able to store at AttributeValue.
         And this expects input value as Group type instance, int value that indicate
@@ -506,7 +506,7 @@ class AttributeValue(models.Model):
                         if is_mandatory:
                             raise ValueError("Numeric value is mandatory and cannot be empty.")
                         return True
-                    if isinstance(value, (int, float)):
+                    if isinstance(value, int | float):
                         if isinstance(value, float) and (math.isnan(value) or math.isinf(value)):
                             raise Exception("value(%s) is NaN or Infinity" % value)
                         return True
@@ -648,7 +648,7 @@ class Attribute(ACLBase):
         ]
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
-        super(Attribute, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.objtype = ACLObjType.EntryAttr
 
     def is_array(self) -> bool:
@@ -663,7 +663,7 @@ class Attribute(ACLBase):
                 # the case that first value is 'False' at the boolean typed parameter
                 return True
             else:
-                return recv_value
+                return bool(recv_value)
 
         # Self-heal: when the invariant "exactly one AttributeValue with
         # is_latest=True" has been broken (e.g. by a race between concurrent
@@ -683,7 +683,7 @@ class Attribute(ACLBase):
                     # in the latest AttributeValue
                     return bool(last_value.value)
                 else:
-                    return last_value.value != recv_value
+                    return bool(last_value.value != recv_value)
 
             case AttrType.OBJECT:
                 # formalize recv_value type
@@ -849,7 +849,7 @@ class Attribute(ACLBase):
                     except ValueError:
                         return last_value.date is not None
 
-                return last_value.date != recv_value
+                return bool(last_value.date != recv_value)
 
             case AttrType.DATETIME:
                 if isinstance(recv_value, str):
@@ -858,7 +858,7 @@ class Attribute(ACLBase):
                     except ValueError:
                         return last_value.datetime is not None
 
-                return last_value.datetime != recv_value
+                return bool(last_value.datetime != recv_value)
 
             case AttrType.NAMED_OBJECT:
                 # the case that specified value is empty or invalid
@@ -1089,7 +1089,7 @@ class Attribute(ACLBase):
         """Validates a single number value (helper for array number validation)"""
         if value is None or value == "":
             return True
-        if isinstance(value, (int, float)):
+        if isinstance(value, int | float):
             if isinstance(value, float) and (math.isnan(value) or math.isinf(value)):
                 return False  # NaN or Infinity is not a valid storable number here
             return True
@@ -1104,8 +1104,8 @@ class Attribute(ACLBase):
         return False
 
     def _validate_value(self, value: Any) -> bool:
-        def _is_group_object(val: Any, model: Type[Group | Role]) -> bool:
-            return isinstance(val, (model, int, str)) or val is None
+        def _is_group_object(val: Any, model: type[Group | Role]) -> bool:
+            return isinstance(val, model | int | str) or val is None
 
         match self.schema.type:
             case AttrType.NUMBER:
@@ -1113,7 +1113,7 @@ class Attribute(ACLBase):
                     if self.schema.is_mandatory:
                         raise ValueError("Numeric value is mandatory and cannot be empty.")
                     return True
-                if isinstance(value, (int, float)):
+                if isinstance(value, int | float):
                     if isinstance(value, float) and (math.isnan(value) or math.isinf(value)):
                         return False  # NaN or Infinity is not a valid storable number here
                     return True
@@ -1144,7 +1144,7 @@ class Attribute(ACLBase):
                 return value in allowed
 
             case AttrType.OBJECT:
-                return isinstance(value, (str, int, Entry)) or value is None
+                return isinstance(value, str | int | Entry) or value is None
 
             case AttrType.BOOLEAN:
                 return isinstance(value, bool)
@@ -1200,7 +1200,7 @@ class Attribute(ACLBase):
                         )
 
                     case AttrType.ARRAY_OBJECT:
-                        return all(isinstance(x, (str, int, Entry)) or x is None for x in value)
+                        return all(isinstance(x, str | int | Entry) or x is None for x in value)
 
                     case AttrType.ARRAY_STRING:
                         return True
@@ -1262,7 +1262,7 @@ class Attribute(ACLBase):
                 case AttrType.NUMBER:
                     if val is None or val == "":
                         attrv.value = ""
-                    elif isinstance(val, (int, float)):
+                    elif isinstance(val, int | float):
                         if isinstance(val, float) and (math.isnan(val) or math.isinf(val)):
                             # This should ideally be caught by validation earlier
                             attrv.value = ""  # Or handle as error
@@ -1459,11 +1459,11 @@ class Attribute(ACLBase):
         def get_entry(schema: ACLBase, name: str) -> Entry:
             # schema comes from self.schema.referral (M2M[ACLBase]) but is always
             # an Entity in practice; cast for the Entry.schema FK lookup.
-            return Entry.objects.get(is_active=True, schema=cast(Entity, schema), name=name)
+            return Entry.objects.get(is_active=True, schema=cast("Entity", schema), name=name)
 
         def is_entry(schema: ACLBase, name: str) -> bool:
             return Entry.objects.filter(
-                is_active=True, schema=cast(Entity, schema), name=name
+                is_active=True, schema=cast("Entity", schema), name=name
             ).exists()
 
         def get_named_object(data: dict[str, Any]) -> dict[str, Any]:
@@ -1543,7 +1543,7 @@ class Attribute(ACLBase):
                 # Handle numeric values for import - convert strings to numeric format
                 if value is None or value == "":
                     return None
-                elif isinstance(value, (int, float)):
+                elif isinstance(value, int | float):
                     return float(value)
                 elif isinstance(value, str):
                     try:
@@ -1584,7 +1584,7 @@ class Attribute(ACLBase):
                     case AttrType.ARRAY_NUMBER:
                         return [
                             float(x)
-                            if isinstance(x, (int, float, str)) and str(x).strip()
+                            if isinstance(x, int | float | str) and str(x).strip()
                             else None
                             for x in value
                         ]
@@ -1808,7 +1808,7 @@ class Attribute(ACLBase):
 
     # NOTE: Type-Write
     def delete(self) -> None:  # type: ignore[override]
-        super(Attribute, self).delete()
+        super().delete()
 
         self.may_remove_referral()
 
@@ -1853,7 +1853,7 @@ class Attribute(ACLBase):
 
     # NOTE: Type-Write
     def restore(self) -> None:
-        super(Attribute, self).restore()
+        super().restore()
 
         def _may_restore_referral(referral: ACLBase | None) -> None:
             if not referral:
@@ -1891,7 +1891,7 @@ class Entry(ACLBase):
     history = HistoricalRecords(excluded_fields=["status", "updated_time"])
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
-        super(Entry, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.objtype = ACLObjType.Entry
 
     @property
@@ -1938,11 +1938,7 @@ class Entry(ACLBase):
                 schema=self.schema, name=autoname, is_active=True
             ).first()
             if duplicated_item:
-                self.name = "%s -- duplicate of ID:%s -- %s" % (
-                    autoname,
-                    str(duplicated_item.id),
-                    str(uuid.uuid4()),
-                )
+                self.name = f"{autoname} -- duplicate of ID:{duplicated_item.id} -- {uuid.uuid4()}"
             else:
                 self.name = autoname
 
@@ -2248,7 +2244,7 @@ class Entry(ACLBase):
             ),
             to_attr="attr_list",
         )
-        sorted_attrs: List[Attribute] = [
+        sorted_attrs: list[Attribute] = [
             x.attr_list[0]
             for x in self.schema.attrs.filter(is_active=True)
             .prefetch_related(attr_prefetch)
@@ -2307,10 +2303,10 @@ class Entry(ACLBase):
         max_entries: int | None = settings.MAX_ENTRIES
         if max_entries and Entry.objects.count() >= max_entries:
             raise RuntimeError("The number of entries is over the limit")
-        return super(Entry, self).save(*args, **kwargs)
+        return super().save(*args, **kwargs)
 
     def delete(self, *args: Any, **kwargs: Any) -> None:  # type: ignore[override]
-        super(Entry, self).delete(*args, **kwargs)
+        super().delete(*args, **kwargs)
 
         # update Elasticsearch index info which refered this entry not to refer this link
         es_object = ESS()
@@ -2340,7 +2336,7 @@ class Entry(ACLBase):
         return False
 
     def restore(self) -> None:
-        super(Entry, self).restore()
+        super().restore()
 
         # also restore each attributes
         for attr in self.attrs.filter(is_active=False):
@@ -2684,7 +2680,7 @@ class Entry(ACLBase):
         # db: esixts
         for refer in refers_from_db:
             if refer["dst_entry_id"] not in [x["dst_entry_id"] for x in refers_from_es]:
-                entry = Entry.objects.get(id=cast(int, refer["dst_entry_id"]))
+                entry = Entry.objects.get(id=cast("int", refer["dst_entry_id"]))
                 entry.register_es(es, recursive_call_stack + [self])
 
     def unregister_es(self, es: ESS | None = None) -> None:
@@ -3020,7 +3016,7 @@ class AliasEntry(models.Model):
 
 # This instance wrapps prefetched Entry instance to abstract intermediate method call
 # (e.g. attr_list, value_list, ...)
-class PrefetchedItemWrapper(object):
+class PrefetchedItemWrapper:
     def __init__(self, prefetched_item: Any, attrv: Any = None) -> None:
         self.pi = prefetched_item
         self.attrv = attrv
@@ -3071,34 +3067,34 @@ class PrefetchedItemWrapper(object):
 
     @property
     def item(self) -> Entry:
-        return self.pi
+        return cast("Entry", self.pi)
 
     @property
     def value(self) -> str:
         if self.attrv is not None:
-            return self.attrv.value
+            return cast("str", self.attrv.value)
         return ""
 
     @property
     def boolean(self) -> bool:
         if self.attrv is not None:
-            return self.attrv.boolean
+            return cast("bool", self.attrv.boolean)
         return False
 
     @property
     def date(self) -> date | None:
         if self.attrv is not None:
-            return self.attrv.date
+            return cast("date | None", self.attrv.date)
         return None
 
     @property
     def datetime(self) -> datetime | None:
         if self.attrv is not None:
-            return self.attrv.datetime
+            return cast("datetime | None", self.attrv.datetime)
         return None
 
 
-class ItemWalker(object):
+class ItemWalker:
     @classmethod
     def prefetch_attr_refs(
         kls,

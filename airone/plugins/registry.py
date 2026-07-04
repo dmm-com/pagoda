@@ -144,7 +144,8 @@ class PluginRegistry:
         if not hasattr(module, func_name):
             raise AttributeError(f"Function '{func_name}' not found in module '{module_path}'")
 
-        return getattr(module, func_name)
+        handler: Callable[..., Any] = getattr(module, func_name)
+        return handler
 
     def get(self, plugin_id: str) -> Optional["Plugin"]:
         """Get a plugin by ID

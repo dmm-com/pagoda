@@ -288,7 +288,7 @@ class OverrideContext:
     @property
     def is_authenticated(self) -> bool:
         """Check if the user is authenticated."""
-        return self.user and self.user.is_authenticated
+        return bool(self.user and self.user.is_authenticated)
 
     def get_request_data(self) -> Dict[str, Any]:
         """Get the request data as a dictionary."""

@@ -24,7 +24,7 @@ from trigger.models import (
 )
 
 
-class TriggerActionValueSerializer(serializers.ModelSerializer):
+class TriggerActionValueSerializer(serializers.ModelSerializer[TriggerActionValue]):
     ref_cond = serializers.SerializerMethodField()
 
     class Meta:
@@ -50,7 +50,7 @@ class TriggerActionValueSerializer(serializers.ModelSerializer):
             return None
 
 
-class TriggerActionSerializer(serializers.ModelSerializer):
+class TriggerActionSerializer(serializers.ModelSerializer[TriggerAction]):
     attr = EntityAttrSerializer(read_only=True)
     values = TriggerActionValueSerializer(many=True)
 
@@ -63,7 +63,7 @@ class TriggerActionSerializer(serializers.ModelSerializer):
         ]
 
 
-class TriggerConditionSerializer(serializers.ModelSerializer):
+class TriggerConditionSerializer(serializers.ModelSerializer[TriggerCondition]):
     attr = EntityAttrSerializer(read_only=True)
     ref_cond = serializers.SerializerMethodField()
 
@@ -92,7 +92,7 @@ class TriggerConditionSerializer(serializers.ModelSerializer):
             return None
 
 
-class TriggerParentSerializer(serializers.ModelSerializer):
+class TriggerParentSerializer(serializers.ModelSerializer[TriggerParent]):
     entity = EntitySerializer(read_only=True)
     actions = TriggerActionSerializer(many=True)
     conditions = TriggerConditionSerializer(many=True)
@@ -123,7 +123,7 @@ class TriggerParentUpdateData(TypedDict):
     actions: list[ActionUpdateData]
 
 
-class TriggerConditionUpdateSerializer(serializers.Serializer):
+class TriggerConditionUpdateSerializer(serializers.Serializer[Any]):
     attr_id = serializers.IntegerField(required=True)
     cond = serializers.CharField(required=False, allow_blank=True)
     hint = serializers.CharField(required=False, allow_blank=True)
@@ -131,7 +131,7 @@ class TriggerConditionUpdateSerializer(serializers.Serializer):
 
 
 @extend_schema_field(OpenApiTypes.ANY)
-class AnyField(serializers.Field):
+class AnyField(serializers.Field[Any, Any, Any, Any]):
     def to_internal_value(self, data: Any) -> Any:
         return data
 
@@ -139,13 +139,13 @@ class AnyField(serializers.Field):
         return value
 
 
-class TriggerActionUpdateSerializer(serializers.Serializer):
+class TriggerActionUpdateSerializer(serializers.Serializer[Any]):
     attr_id = serializers.IntegerField(required=True)
     values = serializers.ListField(child=AnyField(allow_null=True), required=False)
     value = AnyField(allow_null=True, required=False)
 
 
-class TriggerParentBaseSerializer(serializers.ModelSerializer):
+class TriggerParentBaseSerializer(serializers.ModelSerializer[TriggerParent]):
     entity_id = serializers.IntegerField(write_only=True, required=False)
     conditions = serializers.ListField(
         child=TriggerConditionUpdateSerializer(), write_only=True, required=False

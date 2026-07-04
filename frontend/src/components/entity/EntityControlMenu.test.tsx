@@ -165,6 +165,120 @@ describe("EntityControlMenu", () => {
     });
   });
 
+  describe("delete notification", () => {
+    const defaultProps = {
+      entityId: 1,
+      anchorElem: document.createElement("button"),
+      handleClose: () => {},
+      setOpenImportModal: () => false,
+    };
+
+    const buildResponseError = (status: number, body: unknown) => {
+      const err = new Error("response error") as Error & {
+        response: Response;
+      };
+      err.name = "ResponseError";
+      err.response = new Response(JSON.stringify(body), {
+        status,
+        headers: { "Content-Type": "application/json" },
+      });
+      return err;
+    };
+
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
+
+    test("should show success snackbar on successful delete", async () => {
+      jest.spyOn(aironeApiClient, "deleteEntity").mockResolvedValue(undefined);
+
+      render(<EntityControlMenu {...defaultProps} />, {
+        wrapper: TestWrapper,
+      });
+
+      fireEvent.click(screen.getByText("削除"));
+      fireEvent.click(screen.getByRole("button", { name: "Yes" }));
+
+      await waitFor(() => {
+        expect(
+          screen.getByText("モデルの削除が完了しました"),
+        ).toBeInTheDocument();
+      });
+    });
+
+    test("should show specific message when entries remain (AE-240000)", async () => {
+      jest.spyOn(aironeApiClient, "deleteEntity").mockRejectedValue(
+        buildResponseError(400, [
+          {
+            code: "AE-240000",
+            message:
+              "cannot delete Entity because one or more Entries are not deleted",
+          },
+        ]),
+      );
+
+      render(<EntityControlMenu {...defaultProps} />, {
+        wrapper: TestWrapper,
+      });
+
+      fireEvent.click(screen.getByText("削除"));
+      fireEvent.click(screen.getByRole("button", { name: "Yes" }));
+
+      await waitFor(() => {
+        expect(
+          screen.getByText(
+            /モデルの削除が失敗しました: 紐づくアイテムが残っているため削除できません。先に全てのアイテムを削除してください。/,
+          ),
+        ).toBeInTheDocument();
+      });
+    });
+
+    test("should show backend message when response carries an unmapped code", async () => {
+      jest.spyOn(aironeApiClient, "deleteEntity").mockRejectedValue(
+        buildResponseError(400, [
+          {
+            code: "AE-999999",
+            message: "something went wrong on the server side",
+          },
+        ]),
+      );
+
+      render(<EntityControlMenu {...defaultProps} />, {
+        wrapper: TestWrapper,
+      });
+
+      fireEvent.click(screen.getByText("削除"));
+      fireEvent.click(screen.getByRole("button", { name: "Yes" }));
+
+      await waitFor(() => {
+        expect(
+          screen.getByText(
+            /モデルの削除が失敗しました: something went wrong on the server side/,
+          ),
+        ).toBeInTheDocument();
+      });
+    });
+
+    test("should fall back to generic message when error is not a ResponseError", async () => {
+      jest
+        .spyOn(aironeApiClient, "deleteEntity")
+        .mockRejectedValue(new Error("network error"));
+
+      render(<EntityControlMenu {...defaultProps} />, {
+        wrapper: TestWrapper,
+      });
+
+      fireEvent.click(screen.getByText("削除"));
+      fireEvent.click(screen.getByRole("button", { name: "Yes" }));
+
+      await waitFor(() => {
+        expect(
+          screen.getByText("モデルの削除が失敗しました"),
+        ).toBeInTheDocument();
+      });
+    });
+  });
+
   describe("export notification", () => {
     const defaultProps = {
       entityId: 1,

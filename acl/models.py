@@ -169,7 +169,8 @@ class ACLBase(models.Model):
             case _:
                 model = type(self)
 
-        return model.objects.get(id=self.id)
+        obj: "ACLBase" = model.objects.get(id=self.id)
+        return obj
 
     def is_same_object(self, comp: "ACLBase") -> bool:
         # _IMPORT_INFO and __getitem__ are provided by concrete subclasses

@@ -45,10 +45,7 @@ class Group(DjangoGroup):
 
         self.is_active = False
         current_name: str = self.name
-        self.name = "%s_deleted_%s" % (
-            current_name,
-            datetime.now().strftime("%Y%m%d_%H%M%S"),
-        )
+        self.name = f"{current_name}_deleted_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
         self.save()
 
         user = auto_complement.get_auto_complement_user(None)
@@ -106,8 +103,9 @@ class Group(DjangoGroup):
             entry_model = importlib.import_module("entry.models")
 
         # get Entries that has AttributeValues, which specify this Group instance.
-        return entry_model.Entry.objects.filter(
+        qs: QuerySet[Any] = entry_model.Entry.objects.filter(
             pk__in=entry_model.AttributeValue.objects.filter(query).values_list(
                 "parent_attr__parent_entry", flat=True
             )
         )
+        return qs

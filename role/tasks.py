@@ -12,7 +12,7 @@ from user.models import User
 
 
 @register_job_task(JobOperation.ROLE_REGISTER_REFERRAL)
-@app.task(bind=True)  # type: ignore[misc]
+@app.task(bind=True)
 @may_schedule_until_job_is_ready
 def edit_role_referrals(self: Any, job: Job) -> JobStatus:
     params = json.loads(job.params)
@@ -25,7 +25,7 @@ def edit_role_referrals(self: Any, job: Job) -> JobStatus:
 
 
 @register_job_task(JobOperation.IMPORT_ROLE_V2)
-@app.task(bind=True)  # type: ignore[misc]
+@app.task(bind=True)
 @may_schedule_until_job_is_ready
 def import_role_v2(self: Any, job: Job) -> tuple[JobStatus, str, None] | None:
     import_data = json.loads(job.params)
@@ -89,11 +89,14 @@ def import_role_v2(self: Any, job: Job) -> tuple[JobStatus, str, None] | None:
 
         for key in ["groups", "admin_groups"]:
             for name in role_data[key]:
-                instance = Group.objects.filter(name=name, is_active=True).first()
-                if not instance:
+                group_instance = Group.objects.filter(
+                    name=name,
+                    is_active=True,  # type: ignore[misc]
+                ).first()
+                if not group_instance:
                     err_msg.append("specified group is not found (name: %s)" % name)
                     continue
-                getattr(role, key).add(instance)
+                getattr(role, key).add(group_instance)
 
         # Configure ACL
         for permission in role_data.get("permissions", []):

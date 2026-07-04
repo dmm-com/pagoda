@@ -13,7 +13,7 @@ mypy_path = [".", "plugin/sdk"]
 # Each plugin package ships its own top-level "tests" package. Once
 # plugin/sdk is on mypy_path they collide as duplicate modules, so exclude
 # plugin test trees from discovery (they are already ignored for errors).
-exclude = ['plugin/.*/tests/', 'plugin/examples/']
+exclude = ['plugin/.*/tests/', 'plugin/examples/', 'virtualenv_old/']
 
 # Gradual type checking improvements
 check_untyped_defs = true
@@ -27,6 +27,8 @@ disallow_untyped_calls = true
 extra_checks = true
 disallow_untyped_decorators = true
 disallow_any_generics = true
+warn_return_any = true
+disallow_subclassing_any = true
 # Production code (including plugin/sdk and tools) must be fully annotated.
 # Test and migration trees are exempted via the ignore_errors overrides below.
 disallow_untyped_defs = true
@@ -44,40 +46,10 @@ ignore_errors = true
 module = ["*.migrations.*"]
 ignore_errors = true
 
-# Modules that surface new mypy errors once mypy_django_plugin / mypy_drf_plugin
-# are enabled. The model layer has been typed in the accompanying commit; the
-# view / serializer / task / plugin layer is intentionally muted here and will
-# be typed in a follow-up PR (fix/mypy-django-stubs-finalize).
+# entity and entry are the largest, most complex apps; they are typed in a
+# follow-up PR so this PR can be reviewed in a focused slice.
 [[tool.mypy.overrides]]
 module = [
-    "acl.api_v2.serializers",
-    "acl.api_v2.views",
-    "acl.views",
-    "airone.auth.view",
-    "airone.celery",
-    "airone.lib.drf",
-    "airone.lib.http",
-    "airone.lib.multidb",
-    "airone.lib.plugin_dispatch",
-    "airone.lib.test",
-    "airone.libs.auth",
-    "airone.plugins.integration",
-    "airone.urls",
-    "api_v1.entity.views",
-    "api_v1.entry.serializer",
-    "api_v1.entry.views",
-    "api_v1.job.views",
-    "api_v1.serializers",
-    "api_v1.user.views",
-    "api_v1.views",
-    "category.api_v2.serializers",
-    "category.api_v2.views",
-    "common.templatetags.bitwise_tags",
-    "common.templatetags.calculator",
-    "custom_view_sample.tasks.task_custom",
-    "custom_view.tasks.task_custom",
-    "dashboard.tasks",
-    "dashboard.views",
     "entity.api_v1.views",
     "entity.api_v2.serializers",
     "entity.api_v2.views",
@@ -89,33 +61,6 @@ module = [
     "entry.services",
     "entry.tasks",
     "entry.views",
-    "group.api_v1.views",
-    "group.api_v2.serializers",
-    "group.api_v2.views",
-    "group.tasks",
-    "group.views",
-    "job.api_v2.serializers",
-    "job.api_v2.views",
-    "pagoda_plugin_sdk.api.base",
-    "pagoda_plugin_sdk.api.pagination",
-    "pagoda_plugin_sdk.api.permissions",
-    "pagoda_plugin_sdk.api.serializers",
-    "pagoda_plugin_sdk.override",
-    "role.api_v1.views",
-    "role.api_v2.serializers",
-    "role.api_v2.views",
-    "role.tasks",
-    "role.views",
-    "tools.generate_testdata",
-    "trigger.api_v2.serializers",
-    "trigger.api_v2.views",
-    "trigger.tasks",
-    "user.api_v2.serializers",
-    "user.api_v2.views",
-    "user.forms",
-    "user.views",
-    "webhook.api_v1.views",
-    "webhook.views",
 ]
 ignore_errors = true
 
@@ -153,11 +98,17 @@ dependencies = [
     "drf-spectacular==0.29.0",
     "elasticsearch==8.17.0",
     "gunicorn==23.0.0",
-    "lxml_html_clean==0.4.4",
     "mysqlclient>=2.2.8",
     "natsort==8.4.0",
     "python-ldap==3.4.5",
     "python3-saml==1.12.0",
+    # lxml and xmlsec are transitive dependencies of python3-saml (SAML auth).
+    # They are pinned explicitly ONLY to avoid the runtime error
+    # "lxml & xmlsec libxml2 library version mismatch": xmlsec must use a wheel
+    # built against the same libxml2 that lxml bundles. Remove these two pins if
+    # python3-saml is removed.
+    "lxml==6.1.0",
+    "xmlsec==1.3.17",
     "pyyaml==6.0.1",
     "requests==2.33.0",
     "social-auth-app-django==5.4.3",
@@ -192,6 +143,8 @@ dev = [
     "types-mock>=5.1.0.1",
     "ruff>=0.9.9",
     "tblib>=3.0.0",
+    # required by requests-html (lxml.html.clean was split into this package in
+    # lxml 5.2+). Used only in tests; remove if requests-html is removed.
     "lxml-html-clean>=0.4.0",
 ]
 plugins = [

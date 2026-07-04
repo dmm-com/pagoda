@@ -6,7 +6,7 @@ from job.models import Job, JobStatus
 from user.models import User
 
 
-@app.task(bind=True)  # type: ignore[misc]
+@app.task(bind=True)
 def update_custom_attribute(self: Any, job_id: str) -> None:
     job = Job.objects.get(id=job_id)
 
@@ -15,9 +15,12 @@ def update_custom_attribute(self: Any, job_id: str) -> None:
         job.update(JobStatus.PROCESSING)
 
         user = User.objects.filter(id=job.user.id).first()
+        assert job.target is not None
         entry = Entry.objects.filter(id=job.target.id, is_active=True).first()
+        assert entry is not None
+        assert user is not None
 
-        attr: Attribute = entry.attrs.filter(schema__name="val").first()
+        attr: Attribute | None = entry.attrs.filter(schema__name="val").first()
         if attr:
             attr.add_value(user, "initial value")
 

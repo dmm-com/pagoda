@@ -135,7 +135,7 @@ class Role(models.Model):
             if x.get_objid() == aclbase.id  # type: ignore[attr-defined]
         ]
         if permissions:
-            return permissions[0].get_aclid()  # type: ignore[attr-defined]
+            return permissions[0].get_aclid()  # type: ignore[attr-defined,no-any-return]
         else:
             return ACLType.Nothing.id
 
@@ -164,11 +164,12 @@ class Role(models.Model):
             entry_model = importlib.import_module("entry.models")
 
         # get Entries that has AttributeValues, which specify this Role instance.
-        return entry_model.Entry.objects.filter(
+        qs: QuerySet[Any] = entry_model.Entry.objects.filter(
             pk__in=entry_model.AttributeValue.objects.filter(query).values_list(
                 "parent_attr__parent_entry", flat=True
             )
         )
+        return qs
 
 
 class HistoricalPermission(Permission):

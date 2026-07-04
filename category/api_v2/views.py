@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, cast
 
 from django.db.models import QuerySet
 from django_filters.rest_framework import DjangoFilterBackend
@@ -18,17 +18,18 @@ from category.api_v2.serializers import (
 )
 from category.models import Category
 from entity.api_v2.views import EntityPermission
+from user.models import User
 
 
-class CategoryAPI(viewsets.ModelViewSet):
+class CategoryAPI(viewsets.ModelViewSet[Category]):
     pagination_class = LimitOffsetPagination
     permission_classes = [IsAuthenticated & EntityPermission]
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter, filters.SearchFilter]
     search_fields = ["name", "models__name"]
     ordering = ["-priority", "name"]
 
-    def get_serializer_class(self) -> type[Serializer]:
-        serializer: dict[str, type[Serializer]] = {
+    def get_serializer_class(self) -> type[Serializer[Any]]:
+        serializer: dict[str, type[Serializer[Any]]] = {
             "create": CategoryCreateSerializer,
             "update": CategoryUpdateSerializer,
         }
@@ -40,9 +41,10 @@ class CategoryAPI(viewsets.ModelViewSet):
             return Category.objects.none()
 
         # get items that has permission to read
+        user = cast(User, self.request.user)
         targets = []
         for category in Category.objects.filter(is_active=True):
-            if self.request.user.has_permission(category, ACLType.Readable):
+            if user.has_permission(category, ACLType.Readable):
                 targets.append(category.id)
 
         return Category.objects.filter(id__in=targets)

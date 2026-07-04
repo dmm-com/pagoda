@@ -71,7 +71,8 @@ class InputTriggerCondition(object):
 
         def _decode_value(value: Any) -> dict[str, Any]:
             try:
-                return json.loads(value)
+                decoded: dict[str, Any] = json.loads(value)
+                return decoded
             except (ValueError, TypeError):
                 return {}
 
@@ -403,7 +404,7 @@ class TriggerCondition(models.Model):
                         return any([_is_match_object(x) for x in recv_value])
 
                 case AttrType.STRING | AttrType.TEXT:
-                    return self.str_cond == recv_value
+                    return bool(self.str_cond == recv_value)
 
                 case AttrType.NAMED_OBJECT:
                     return _is_match_named_object(recv_value)
@@ -425,7 +426,7 @@ class TriggerCondition(models.Model):
                         return self.str_cond in recv_value
 
                 case AttrType.BOOLEAN:
-                    return self.bool_cond == recv_value
+                    return bool(self.bool_cond == recv_value)
 
         except ValueError:
             Logger.error(
