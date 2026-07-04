@@ -12,7 +12,7 @@ from user.models import User
 def list_webhook(request: HttpRequest, entity_id: int) -> HttpResponse:
     entity, error = get_obj_with_check_perm(
         cast(User, request.user),
-        Entity,  # type: ignore[arg-type]
+        Entity,
         entity_id,
         ACLType.Full,
     )

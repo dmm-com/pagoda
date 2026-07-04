@@ -30,7 +30,7 @@ urllib3.disable_warnings(InsecureRequestWarning)
 def set_webhook(request: HttpRequest, entity_id: int, recv_data: dict[str, Any]) -> HttpResponse:
     entity, error = get_obj_with_check_perm(
         cast(User, request.user),
-        Entity,  # type: ignore[arg-type]
+        Entity,
         entity_id,
         ACLType.Full,
     )
