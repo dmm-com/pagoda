@@ -254,8 +254,7 @@ class AttributeValue(models.Model):
 
             case AttrType.ARRAY_NAMED_OBJECT_BOOLEAN:
                 value = [
-                    _get_named_value(x, is_active, is_boolean=True)
-                    for x in self.data_array.all()
+                    _get_named_value(x, is_active, is_boolean=True) for x in self.data_array.all()
                 ]
 
             case AttrType.ARRAY_STRING:
