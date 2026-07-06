@@ -144,13 +144,17 @@ class AttributeValue(models.Model):
         This returns registered value according to the type of Attribute
         """
 
-        def _get_named_value(attrv: "AttributeValue", is_active: bool = True) -> dict[str, Any]:
+        def _get_named_value(
+            attrv: "AttributeValue", is_active: bool = True, is_boolean: bool = False
+        ) -> dict[str, Any]:
+            boolean_info = {"boolean": attrv.boolean} if is_boolean else {}
             if attrv.referral and (attrv.referral.is_active or not is_active):
                 if with_metainfo:
                     return {
                         attrv.value: {
                             "id": attrv.referral.id,
                             "name": attrv.referral.name,
+                            **boolean_info,
                         }
                     }
                 elif with_entity:
@@ -161,12 +165,16 @@ class AttributeValue(models.Model):
                         attrv.value: {
                             "name": attrv.referral.name,
                             "entity": referral_entry.schema.name,
+                            **boolean_info,
                         }
                     }
                 else:
-                    return {attrv.value: attrv.referral.name}
+                    return {
+                        attrv.value: attrv.referral.name,
+                        **boolean_info,
+                    }
             else:
-                return {attrv.value: None}
+                return {attrv.value: None, **boolean_info}
 
         def _get_object_value(attrv: "AttributeValue", is_active: bool = True) -> Any:
             if attrv.referral and (attrv.referral.is_active or not is_active):
@@ -223,6 +231,9 @@ class AttributeValue(models.Model):
             case AttrType.NAMED_OBJECT:
                 value = _get_named_value(self, is_active)
 
+            case AttrType.NAMED_OBJECT_BOOLEAN:
+                value = _get_named_value(self, is_active, is_boolean=True)
+
             case AttrType.GROUP if self.group:
                 value = _get_model_value(self)
 
@@ -238,8 +249,14 @@ class AttributeValue(models.Model):
                 else:
                     value = self.datetime
 
-            case AttrType.ARRAY_NAMED_OBJECT | AttrType.ARRAY_NAMED_OBJECT_BOOLEAN:
+            case AttrType.ARRAY_NAMED_OBJECT:
                 value = [_get_named_value(x, is_active) for x in self.data_array.all()]
+
+            case AttrType.ARRAY_NAMED_OBJECT_BOOLEAN:
+                value = [
+                    _get_named_value(x, is_active, is_boolean=True)
+                    for x in self.data_array.all()
+                ]
 
             case AttrType.ARRAY_STRING:
                 value = [x.value for x in self.data_array.all()]
