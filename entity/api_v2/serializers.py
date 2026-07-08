@@ -5,7 +5,7 @@ import json
 import math
 import re
 from datetime import datetime
-from typing import TYPE_CHECKING, Any, List, Optional, Self, TypedDict
+from typing import TYPE_CHECKING, Any, List, Optional, Self, TypedDict, cast
 
 if TYPE_CHECKING:
     from airone.lib.resources import AironeModelResource
@@ -534,7 +534,9 @@ class EntityAttrUpdateSerializer(serializers.ModelSerializer[EntityAttr]):
                     EntityAttr.validate_choices(new_choices)
                 except ValueError as exc:
                     raise ValidationError(str(exc)) from exc
-                attr["choices"] = EntityAttr.normalize_choices(new_choices)
+                attr["choices"] = EntityAttr.normalize_choices(
+                    cast(list[dict[str, Any]], new_choices)
+                )
             elif "choices" in attr:
                 try:
                     EntityAttr.validate_choices(new_choices)
@@ -542,7 +544,7 @@ class EntityAttrUpdateSerializer(serializers.ModelSerializer[EntityAttr]):
                     raise ValidationError(str(exc)) from exc
 
                 # Auto-assign value for new entries while preserving existing ids.
-                normalized = EntityAttr.normalize_choices(new_choices)
+                normalized = EntityAttr.normalize_choices(cast(list[dict[str, Any]], new_choices))
 
                 # Reject removal of choice values still referenced by existing entries.
                 old_values = {
@@ -827,7 +829,7 @@ class EntitySerializer(serializers.ModelSerializer[Entity]):
 
             # Capture previous choices to detect SELECT label changes that require
             # ES reindex of existing entries (labels are physically materialised in ES).
-            prev_choices: list[dict] | None = None
+            prev_choices: list[dict[str, Any]] | None = None
             if attr_id and "choices" in attr_data:
                 prev_choices = EntityAttr.objects.get(id=attr_id).choices
 
