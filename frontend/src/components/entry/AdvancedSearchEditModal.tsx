@@ -72,9 +72,10 @@ export const AdvancedSearchEditModal: FC<Props> = ({
     if (!isSelectLikeType || !targetEntities || targetEntities.length === 0) {
       return undefined;
     }
-    const perModelChoices = targetEntities.map(
-      (e) => e.attrs.find((a) => a.name === targetAttrname)?.choices ?? [],
-    );
+    const perModelChoices: Array<Array<{ value?: string; label: string }>> =
+      targetEntities.map(
+        (e) => e.attrs.find((a) => a.name === targetAttrname)?.choices ?? [],
+      );
     if (perModelChoices.some((c) => c.length === 0)) {
       // If any selected model lacks this attribute (or its choices list is
       // empty) there is no safe common choice to offer.
