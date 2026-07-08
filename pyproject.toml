@@ -46,15 +46,10 @@ ignore_errors = true
 module = ["*.migrations.*"]
 ignore_errors = true
 
-# entity and entry are the largest, most complex apps; they are typed in a
-# follow-up PR so this PR can be reviewed in a focused slice.
+# entry is the largest, most complex app; it is typed in a follow-up PR so this
+# PR can be reviewed in a focused slice.
 [[tool.mypy.overrides]]
 module = [
-    "entity.api_v1.views",
-    "entity.api_v2.serializers",
-    "entity.api_v2.views",
-    "entity.tasks",
-    "entity.views",
     "entry.api_v1.views",
     "entry.api_v2.serializers",
     "entry.api_v2.views",

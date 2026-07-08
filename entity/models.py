@@ -1,6 +1,6 @@
 import math
 import uuid
-from typing import Any, List, Optional, Union
+from typing import TYPE_CHECKING, Any, List, Optional, Union
 
 from django.conf import settings
 from django.db import models
@@ -11,6 +11,9 @@ from airone.lib.acl import ACLObjType
 from airone.lib.types import AttrDefaultValue, AttrType
 from category.models import Category
 from webhook.models import Webhook
+
+if TYPE_CHECKING:
+    from user.models import User
 
 
 class ItemNameType(models.TextChoices):
@@ -256,6 +259,10 @@ class Entity(ACLBase):
     webhooks = models.ManyToManyField(Webhook, default=[], related_name="registered_entity")
 
     history = HistoricalRecords(excluded_fields=["status", "updated_time"])
+
+    # HistoricalRecords sets `_history_user` dynamically to pick up the acting user
+    # for each save; declare it here so callers can assign without a type: ignore.
+    _history_user: Optional["User"]
 
     # The Category that groups Models according to their purpose (which is defined by User)
     categories = models.ManyToManyField(Category, default=[], related_name="models")

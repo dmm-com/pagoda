@@ -3,22 +3,24 @@ import importlib
 import json
 import urllib.parse
 from io import StringIO
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import Any, Callable, Dict, List, Optional, Tuple, TypeVar, cast
 from urllib.parse import quote
 
 from django.conf import settings
-from django.db import models
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render as django_render
 from django.utils.encoding import smart_str
 from django.utils.http import MAX_URL_LENGTH
 
+from acl.models import ACLBase
 from airone.lib.acl import ACLObjType
 from airone.lib.types import AttrType, AttrTypeValue
 from entity import models as entity_models
 from entry import models as entry_models
 from job.models import JobOperation, JobStatus
 from user.models import History, User
+
+_ACLBaseT = TypeVar("_ACLBaseT", bound=ACLBase)
 
 
 class HttpResponseSeeOther(HttpResponseRedirect):
@@ -48,14 +50,16 @@ def http_get(func: Callable[..., HttpResponse]) -> Callable[..., HttpResponse]:
 
 
 def get_obj_with_check_perm(
-    user: User, model: models.Model, object_id: int, permission_level: int
-) -> Tuple[Optional[Any], Optional[HttpResponse]]:
-    target_obj = model.objects.filter(id=object_id).first()  # type: ignore[attr-defined]
+    user: User, model: type[_ACLBaseT], object_id: int, permission_level: int
+) -> Tuple[Optional[_ACLBaseT], Optional[HttpResponse]]:
+    target_obj = model.objects.filter(id=object_id).first()
     if not target_obj:
         return (None, HttpResponse("Failed to get entity of specified id", status=400))
 
     # only requests that have correct permission are executed
-    airone_instance = target_obj.get_subclass_object()
+    # get_subclass_object() returns an ACLBase subclass instance; we trust the caller
+    # invoked us with the correct concrete model, so downcast to _ACLBaseT.
+    airone_instance = cast(_ACLBaseT, target_obj.get_subclass_object())
     if not user.has_permission(airone_instance, permission_level):
         return (
             None,

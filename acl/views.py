@@ -17,7 +17,7 @@ from .models import ACLBase
 @http_get
 def index(request: HttpRequest, obj_id: int) -> HttpResponse:
     user = cast(User, request.user)
-    aclbase_obj, error = get_obj_with_check_perm(user, ACLBase, obj_id, ACLType.Full)  # type: ignore[arg-type]
+    aclbase_obj, error = get_obj_with_check_perm(user, ACLBase, obj_id, ACLType.Full)
     if error or not aclbase_obj:
         assert error is not None
         return error
