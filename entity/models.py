@@ -1,6 +1,6 @@
 import math
-from typing import TYPE_CHECKING, Any, List, Optional, Union
 import uuid
+from typing import TYPE_CHECKING, Any, List, Optional, Union
 
 from django.conf import settings
 from django.db import models
