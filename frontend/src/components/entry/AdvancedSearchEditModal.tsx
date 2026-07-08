@@ -1,4 +1,7 @@
-import { AttributeData } from "@dmm-com/airone-apiclient-typescript-fetch";
+import {
+  AttributeData,
+  EntryAttributeTypeTypeEnum,
+} from "@dmm-com/airone-apiclient-typescript-fetch";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Box, Button } from "@mui/material";
 import { useSnackbar } from "notistack";
@@ -9,6 +12,7 @@ import { AironeModal } from "components/common/AironeModal";
 import { AttributeValueField } from "components/entry/entryForm/AttributeValueField";
 import { EditableEntryAttrs } from "components/entry/entryForm/EditableEntry";
 import { Schema, schema } from "components/entry/entryForm/EntryFormSchema";
+import { usePagodaSWR } from "hooks/usePagodaSWR";
 import { aironeApiClient } from "repository/AironeApiClient";
 import {
   AttrsFilter,
@@ -46,6 +50,42 @@ export const AdvancedSearchEditModal: FC<Props> = ({
     resolver: zodResolver(schema),
     mode: "onBlur",
   });
+
+  const isSelectLikeType =
+    targetAttrtype === EntryAttributeTypeTypeEnum.SELECT ||
+    targetAttrtype === EntryAttributeTypeTypeEnum.MULTI_SELECT;
+
+  // For SELECT / MULTI_SELECT bulk-edit the dropdown must offer only choices
+  // valid for *every* selected model — picking a value missing from any model
+  // would 400 that model's bulkUpdateEntries call. Fetch each selected model
+  // in parallel and intersect its EntityAttr.choices (by value) so the picker
+  // surfaces the safe common set.
+  const swrKey =
+    isSelectLikeType && openModal && modelIds.length > 0
+      ? (["bulkEditSelectChoices", [...modelIds].sort().join(",")] as const)
+      : null;
+  const { data: targetEntities } = usePagodaSWR(swrKey, () =>
+    Promise.all(modelIds.map((id) => aironeApiClient.getEntity(id))),
+  );
+
+  const targetChoices = useMemo(() => {
+    if (!isSelectLikeType || !targetEntities || targetEntities.length === 0) {
+      return undefined;
+    }
+    const perModelChoices: Array<Array<{ value?: string; label: string }>> =
+      targetEntities.map(
+        (e) => e.attrs.find((a) => a.name === targetAttrname)?.choices ?? [],
+      );
+    if (perModelChoices.some((c) => c.length === 0)) {
+      // If any selected model lacks this attribute (or its choices list is
+      // empty) there is no safe common choice to offer.
+      return [];
+    }
+    const [first, ...rest] = perModelChoices;
+    return first.filter((choice) =>
+      rest.every((other) => other.some((c) => c.value === choice.value)),
+    );
+  }, [isSelectLikeType, targetEntities, targetAttrname]);
 
   const handleUpdateAttributeValue = () => {
     // create parameters to send API for bulk update
@@ -127,6 +167,7 @@ export const AdvancedSearchEditModal: FC<Props> = ({
           setValue={setValue}
           type={targetAttrtype}
           schemaId={targetAttrID}
+          choices={targetChoices ?? undefined}
         />
       </Box>
       <Box display="flex" justifyContent="flex-end" my="8px">

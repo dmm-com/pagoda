@@ -91,6 +91,118 @@ class BaseModelTest(AironeTestCase):
 
 
 class ModelTest(BaseModelTest):
+    def _make_select_attr(self, attr_type, choices):
+        """Builds an EntityAttr/Attribute pair for SELECT or MULTI_SELECT.
+
+        Returns the Attribute instance attached to self._entry.
+        """
+        entity_attr = EntityAttr.objects.create(
+            name=f"sel_{attr_type}",
+            type=attr_type,
+            created_user=self._user,
+            parent_entity=self._entity,
+            choices=choices,
+        )
+        attr = self._entry.add_attribute_from_base(entity_attr, self._user)
+        return attr
+
+    def test_select_add_and_get_value(self):
+        choices = [
+            {"value": "active", "label": "稼働中"},
+            {"value": "inactive", "label": "停止中"},
+        ]
+        attr = self._make_select_attr(AttrType.SELECT, choices)
+        attrv = attr.add_value(self._user, "active")
+        self.assertEqual(attrv.value, "active")
+        self.assertEqual(
+            attr.get_latest_value().get_value(),
+            {"value": "active", "label": "稼働中"},
+        )
+
+    def test_select_get_value_falls_back_for_stale_choice(self):
+        attr = self._make_select_attr(AttrType.SELECT, [{"value": "a", "label": "Alpha"}])
+        attr.add_value(self._user, "a")
+        # Simulate a schema change that removed the choice (e.g. legacy data).
+        attr.schema.choices = [{"value": "b", "label": "Beta"}]
+        attr.schema.save()
+        # Stale choices surface as the tombstone label so raw UUID-style values
+        # don't leak into the UI / CSV exports / ES.
+        self.assertEqual(
+            attr.get_latest_value().get_value(),
+            {"value": "a", "label": AttributeValue.DELETED_CHOICE_LABEL},
+        )
+
+    def test_select_rejects_unknown_choice_value(self):
+        attr = self._make_select_attr(AttrType.SELECT, [{"value": "active", "label": "Active"}])
+        with self.assertRaises(TypeError):
+            attr.add_value(self._user, "unknown")
+
+    def test_select_is_updated(self):
+        attr = self._make_select_attr(
+            AttrType.SELECT,
+            [
+                {"value": "a", "label": "A"},
+                {"value": "b", "label": "B"},
+            ],
+        )
+        attr.add_value(self._user, "a")
+        self.assertFalse(attr.is_updated("a"))
+        self.assertTrue(attr.is_updated("b"))
+        self.assertTrue(attr.is_updated(""))
+
+    def test_multi_select_dedup_and_get_value(self):
+        attr = self._make_select_attr(
+            AttrType.MULTI_SELECT,
+            [
+                {"value": "x", "label": "X"},
+                {"value": "y", "label": "Y"},
+            ],
+        )
+        # Duplicates should be removed but insertion order preserved.
+        attr.add_value(self._user, ["y", "x", "y", "x"])
+        latest = attr.get_latest_value()
+        stored_values = [c.value for c in latest.data_array.all().order_by("id")]
+        self.assertEqual(stored_values, ["y", "x"])
+        result = latest.get_value()
+        self.assertEqual(result, [{"value": "y", "label": "Y"}, {"value": "x", "label": "X"}])
+
+    def test_multi_select_rejects_unknown_element(self):
+        attr = self._make_select_attr(
+            AttrType.MULTI_SELECT,
+            [{"value": "a", "label": "A"}, {"value": "b", "label": "B"}],
+        )
+        with self.assertRaises(TypeError):
+            attr.add_value(self._user, ["a", "unknown"])
+
+    def test_multi_select_is_updated(self):
+        attr = self._make_select_attr(
+            AttrType.MULTI_SELECT,
+            [{"value": "a", "label": "A"}, {"value": "b", "label": "B"}],
+        )
+        attr.add_value(self._user, ["a", "b"])
+        # Same elements in the same order is a no-op.
+        self.assertFalse(attr.is_updated(["a", "b"]))
+        # Reordering the same elements must count as an update — get_value /
+        # add_value preserve insertion order so the user's reorder needs to
+        # persist.
+        self.assertTrue(attr.is_updated(["b", "a"]))
+        self.assertTrue(attr.is_updated(["a"]))
+
+    def test_get_choices_in_use_select(self):
+        attr = self._make_select_attr(
+            AttrType.SELECT, [{"value": "a", "label": "A"}, {"value": "b", "label": "B"}]
+        )
+        attr.add_value(self._user, "a")
+        self.assertEqual(attr.schema.get_choices_in_use(), {"a"})
+
+    def test_get_choices_in_use_multi_select(self):
+        attr = self._make_select_attr(
+            AttrType.MULTI_SELECT,
+            [{"value": "a", "label": "A"}, {"value": "b", "label": "B"}],
+        )
+        attr.add_value(self._user, ["a", "b"])
+        self.assertEqual(attr.schema.get_choices_in_use(), {"a", "b"})
+
     def test_make_attribute_value(self):
         AttributeValue(value="hoge", created_user=self._user, parent_attr=self._attr).save()
 

@@ -14,6 +14,7 @@ if TYPE_CHECKING:
 import requests
 from django.conf import settings
 from django.core.validators import URLValidator
+from django.db import transaction
 from drf_spectacular.utils import extend_schema_field
 from pydantic import BaseModel, model_validator
 from pydantic import ValidationError as PydanticValidationError
@@ -28,6 +29,7 @@ from airone.lib.log import Logger
 from airone.lib.types import AttrType, AttrTypeValue
 from entity.admin import EntityAttrResource, EntityResource
 from entity.models import Entity, EntityAttr, ItemNameType
+from job.models import Job
 from user.models import History, User
 from webhook.models import Webhook
 
@@ -61,12 +63,34 @@ class EntityDetailAttribute(TypedDict):
     referral: List[EntityAttrReferralData]
     note: str
     default_value: Any
+    choices: Any
+    choices_in_use: List[str]
     name_order: int
     name_prefix: str
     name_postfix: str
 
 
 # Pydantic models for request validation
+class ChoiceItem(BaseModel):
+    """A single SELECT / MULTI_SELECT choice entry.
+
+    `value` is an internal identifier auto-assigned on save; it may be omitted
+    on new choices (caller only specifies a label) and is preserved verbatim
+    when present (referring to an existing choice).
+    """
+
+    value: str | None = None
+    label: str
+
+    @model_validator(mode="after")
+    def validate_nonempty(self) -> Self:
+        if self.value is not None and not self.value:
+            raise ValueError("choice 'value' must be a non-empty string when given")
+        if not self.label:
+            raise ValueError("choice 'label' must be a non-empty string")
+        return self
+
+
 class EntityAttrCreateRequest(BaseModel):
     """Pydantic model for entity attribute creation with default_value validation."""
 
@@ -78,7 +102,26 @@ class EntityAttrCreateRequest(BaseModel):
     referral: list[int] = []
     note: str = ""
     default_value: Any = None
+    choices: list[ChoiceItem] | None = None
     index: int | None = None
+
+    @model_validator(mode="after")
+    def validate_choices_for_type(self) -> Self:
+        """SELECT / MULTI_SELECT must carry a non-empty unique-label choices list."""
+        is_select = self.type in (AttrType.SELECT, AttrType.MULTI_SELECT)
+        if is_select:
+            if not self.choices:
+                raise ValueError("SELECT type requires a non-empty choices list")
+            labels = [c.label for c in self.choices]
+            present_values = [c.value for c in self.choices if c.value]
+            if len(set(labels)) != len(labels):
+                raise ValueError("choices 'label' must be unique")
+            if len(set(present_values)) != len(present_values):
+                raise ValueError("choices 'value' must be unique")
+        elif self.choices is not None:
+            # Silently drop choices for non-SELECT types to keep the API forgiving.
+            self.choices = None
+        return self
 
     @model_validator(mode="after")
     def validate_default_value_for_type(self) -> Self:
@@ -87,7 +130,13 @@ class EntityAttrCreateRequest(BaseModel):
             return self
 
         # Only String, Text, Boolean, Number types support default values
-        supported_types = [AttrType.STRING, AttrType.TEXT, AttrType.BOOLEAN, AttrType.NUMBER]
+        # (SELECT defers default_value because choice ids are auto-assigned on save).
+        supported_types = [
+            AttrType.STRING,
+            AttrType.TEXT,
+            AttrType.BOOLEAN,
+            AttrType.NUMBER,
+        ]
         if self.type not in supported_types:
             # Clear default_value for unsupported types
             self.default_value = None
@@ -188,6 +237,7 @@ class EntityAttrCreateSerializer(serializers.ModelSerializer):
     name_postfix = serializers.CharField(
         required=False, max_length=20, allow_blank=True, trim_whitespace=False
     )
+    choices = serializers.JSONField(required=False, allow_null=True, default=None)
 
     class Meta:
         model = EntityAttr
@@ -202,6 +252,7 @@ class EntityAttrCreateSerializer(serializers.ModelSerializer):
             "created_user",
             "note",
             "default_value",
+            "choices",
             "name_order",
             "name_prefix",
             "name_postfix",
@@ -271,6 +322,12 @@ class EntityAttrCreateSerializer(serializers.ModelSerializer):
             validated = EntityAttrCreateRequest(**pydantic_data)
             # Update attr with validated values (including cleared default_value if needed)
             attr["default_value"] = validated.default_value
+            if validated.choices:
+                attr["choices"] = EntityAttr.normalize_choices(
+                    [c.model_dump() for c in validated.choices]
+                )
+            else:
+                attr["choices"] = None
         except PydanticValidationError as e:
             # Convert Pydantic validation errors to DRF validation errors
             errors = []
@@ -311,6 +368,7 @@ class EntityAttrUpdateSerializer(serializers.ModelSerializer):
     name_postfix = serializers.CharField(
         required=False, max_length=20, allow_blank=True, trim_whitespace=False
     )
+    choices = serializers.JSONField(required=False, allow_null=True)
 
     class Meta:
         model = EntityAttr
@@ -326,6 +384,7 @@ class EntityAttrUpdateSerializer(serializers.ModelSerializer):
             "is_deleted",
             "note",
             "default_value",
+            "choices",
             "name_order",
             "name_prefix",
             "name_postfix",
@@ -444,22 +503,68 @@ class EntityAttrUpdateSerializer(serializers.ModelSerializer):
                     "This attribute type is not supported for autoname configuration"
                 )
 
-        # Only String, Text, Boolean, Number types support default values (MVP)
+        # Only String, Text, Boolean, Number, Select types support default values (MVP)
         attr_type = attr.get("type")
         default_value = attr.get("default_value")
 
-        # For updates, check existing attribute type if type is not being changed
-        if "id" in attr and attr_type is None:
-            entity_attr = EntityAttr.objects.get(id=attr["id"])
-            attr_type = entity_attr.type
+        # Fetch the existing EntityAttr once for updates so downstream branches reuse it.
+        existing_attr: EntityAttr | None = None
+        if "id" in attr:
+            existing_attr = EntityAttr.objects.get(id=attr["id"])
+            if attr_type is None:
+                attr_type = existing_attr.type
+
+        is_select = attr_type in (AttrType.SELECT, AttrType.MULTI_SELECT)
+        new_choices = attr.get("choices")
+
+        if is_select:
+            # New SELECT attr created via update payload: no existing record to
+            # diff, but choices must still satisfy the model invariant.
+            if existing_attr is None:
+                try:
+                    EntityAttr.validate_choices(new_choices)
+                except ValueError as exc:
+                    raise ValidationError(str(exc)) from exc
+                attr["choices"] = EntityAttr.normalize_choices(new_choices)
+            elif "choices" in attr:
+                try:
+                    EntityAttr.validate_choices(new_choices)
+                except ValueError as exc:
+                    raise ValidationError(str(exc)) from exc
+
+                # Auto-assign value for new entries while preserving existing ids.
+                normalized = EntityAttr.normalize_choices(new_choices)
+
+                # Reject removal of choice values still referenced by existing entries.
+                old_values = {
+                    c.get("value") for c in (existing_attr.choices or []) if isinstance(c, dict)
+                }
+                new_values = {c.get("value") for c in normalized}
+                removed = old_values - new_values
+                if removed:
+                    in_use = existing_attr.get_choices_in_use() & removed
+                    if in_use:
+                        raise ValidationError(
+                            "choices in use cannot be removed: %s" % ", ".join(sorted(in_use))
+                        )
+                attr["choices"] = normalized
+        elif new_choices is not None:
+            # Drop choices silently for non-SELECT attributes
+            attr["choices"] = None
 
         if default_value is not None and attr_type is not None:
-            supported_types = [AttrType.STRING, AttrType.TEXT, AttrType.BOOLEAN, AttrType.NUMBER]
+            supported_types = [
+                AttrType.STRING,
+                AttrType.TEXT,
+                AttrType.BOOLEAN,
+                AttrType.NUMBER,
+            ]
             if attr_type not in supported_types:
-                # Clear default_value for unsupported types
+                # Clear default_value for unsupported types (incl. SELECT/MULTI_SELECT
+                # whose choice ids are auto-assigned, making static default storage
+                # ambiguous; deferred to a follow-up).
                 attr["default_value"] = None
             else:
-                # Validate and potentially convert the default value
                 attr["default_value"] = self._validate_default_value_for_type(
                     attr_type, default_value
                 )
@@ -612,8 +717,14 @@ class EntitySerializer(serializers.ModelSerializer):
         if default_value is None:
             return None
 
-        # Only certain types support default values
-        supported_types = [AttrType.STRING, AttrType.TEXT, AttrType.BOOLEAN, AttrType.NUMBER]
+        # Only certain types support default values (SELECT/MULTI_SELECT excluded
+        # because choice ids are auto-assigned; default_value handling deferred).
+        supported_types = [
+            AttrType.STRING,
+            AttrType.TEXT,
+            AttrType.BOOLEAN,
+            AttrType.NUMBER,
+        ]
         if attr_type not in supported_types:
             return None
 
@@ -673,6 +784,11 @@ class EntitySerializer(serializers.ModelSerializer):
         else:
             history = user.seth_entity_mod(entity)
 
+        # SELECT label changes require ES reindex; collect across the loop and
+        # fire a single job per Entity at the end (labels are physically
+        # materialised in ES, so the whole entity's entries must be refreshed).
+        needs_reindex_for_label = False
+
         # create EntityAttr instances in associated with specifying data
         for attr_data in attrs_data:
             # Apply type-specific validation and conversion for default_value
@@ -704,10 +820,46 @@ class EntitySerializer(serializers.ModelSerializer):
                     history.del_attr(entity_attr)
                 continue
 
+            # Capture previous choices to detect SELECT label changes that require
+            # ES reindex of existing entries (labels are physically materialised in ES).
+            prev_choices: list[dict] | None = None
+            if attr_id and "choices" in attr_data:
+                prev_choices = EntityAttr.objects.get(id=attr_id).choices
+
+            # Guarantee choices carry a backend-assigned `value`. The async
+            # create job bypasses serializer.validate, so the same normalization
+            # we apply on the synchronous path must run here as well.
+            attr_type_now = attr_data.get("type")
+            if attr_type_now is None and attr_id:
+                attr_type_now = EntityAttr.objects.get(id=attr_id).type
+            if attr_type_now in (AttrType.SELECT, AttrType.MULTI_SELECT) and isinstance(
+                attr_data.get("choices"), list
+            ):
+                attr_data["choices"] = EntityAttr.normalize_choices(attr_data["choices"])
+
             # create, update EntityAttr instance with user specified params
             (entity_attr, is_created_attr) = EntityAttr.objects.update_or_create(
                 id=attr_id, defaults={**attr_data, "parent_entity": entity, "created_user": user}
             )
+
+            # If SELECT label(s) changed for the same value(s), mark for batched reindex.
+            if (
+                not is_created_attr
+                and entity_attr.type in (AttrType.SELECT, AttrType.MULTI_SELECT)
+                and prev_choices is not None
+            ):
+                old_map = {
+                    c.get("value"): c.get("label")
+                    for c in (prev_choices or [])
+                    if isinstance(c, dict)
+                }
+                new_map = {
+                    c.get("value"): c.get("label")
+                    for c in (entity_attr.choices or [])
+                    if isinstance(c, dict)
+                }
+                if any(v in old_map and new_map.get(v) != old_map.get(v) for v in new_map):
+                    needs_reindex_for_label = True
 
             # set referrals if necessary
             if entity_attr.type & AttrType.OBJECT:
@@ -719,6 +871,17 @@ class EntitySerializer(serializers.ModelSerializer):
                 history.add_attr(entity_attr)
             else:
                 history.mod_attr(entity_attr)
+
+        # Fire a single reindex job per entity if any SELECT label changed.
+        # Wrap in on_commit so the worker reads the freshly-committed
+        # EntityAttr.choices instead of racing the pending transaction.
+        if needs_reindex_for_label:
+            transaction.on_commit(
+                lambda: Job.new_update_documents(
+                    target=entity,
+                    params={"is_update": True},
+                ).run()
+            )
 
         # register webhook
         for webhook_data in webhooks_data:
@@ -1064,6 +1227,8 @@ class EntityDetailAttributeSerializer(serializers.Serializer):
     referral = serializers.ListField(child=serializers.DictField())
     note = serializers.CharField()
     default_value = serializers.JSONField(required=False, allow_null=True)
+    choices = serializers.JSONField(required=False, allow_null=True)
+    choices_in_use = serializers.ListField(child=serializers.CharField(), required=False)
     name_order = serializers.IntegerField(default=0)
     name_prefix = serializers.CharField(default="")
     name_postfix = serializers.CharField(default="")
@@ -1120,6 +1285,10 @@ class EntityDetailSerializer(EntityListSerializer):
                 ],
                 "note": x.note,
                 "default_value": x.default_value,
+                "choices": x.choices,
+                "choices_in_use": sorted(x.get_choices_in_use())
+                if x.type in (AttrType.SELECT, AttrType.MULTI_SELECT)
+                else [],
                 "name_order": x.name_order,
                 "name_prefix": x.name_prefix,
                 "name_postfix": x.name_postfix,
