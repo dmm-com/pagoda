@@ -71,6 +71,8 @@ export function formalizeEntryInfo(
               asNamedObject: { name: "", object: null },
               asNumber: null as number | null,
               asArrayNumber: [{ value: null }],
+              asSelect: null as { value: string; label: string } | null,
+              asMultiSelect: [] as Array<{ value: string; label: string }>,
             };
 
             // Apply defaultValue for supported types (backend returns raw primitive values)
@@ -203,6 +205,14 @@ export function formalizeEntryInfo(
                 result.asNumber = value.asNumber;
               }
 
+              if (value.asSelect !== undefined) {
+                result.asSelect = value.asSelect;
+              }
+
+              if (value.asMultiSelect !== undefined) {
+                result.asMultiSelect = value.asMultiSelect;
+              }
+
               return result;
           }
         }
@@ -309,6 +319,12 @@ export function convertAttrsFormatCtoS(
                 boolean: x._boolean,
               };
             });
+
+        case EntryAttributeTypeTypeEnum.SELECT:
+          return attrValue.asSelect?.value ?? null;
+
+        case EntryAttributeTypeTypeEnum.MULTI_SELECT:
+          return attrValue.asMultiSelect?.map((x) => x.value) ?? [];
 
         default:
           throw new Error(`unknown attribute type ${attrType}`);

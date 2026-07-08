@@ -28,7 +28,7 @@ logger = Logger
 TaskHandler: TypeAlias = Callable[[Any, Any], Any]
 
 
-@dataclass
+@dataclass(slots=True)
 class PluginTaskConfig:
     """Data class for managing plugin task configuration
 

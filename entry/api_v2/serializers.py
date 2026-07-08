@@ -121,6 +121,11 @@ class EntryAttributeValueRole(TypedDict):
     name: str
 
 
+class EntryAttributeValueSelect(TypedDict):
+    value: str
+    label: str
+
+
 # A thin container returns typed value(s)
 class EntryAttributeValue(TypedDict, total=False):
     as_object: EntryAttributeValueObject | None
@@ -138,6 +143,8 @@ class EntryAttributeValue(TypedDict, total=False):
     as_array_role: list[EntryAttributeValueRole]
     as_number: int | float | None  # Added for AttrType.NUMBER
     as_array_number: list[int | float | None]  # Added for AttrType.ARRAY_NUMBER
+    as_select: EntryAttributeValueSelect | None
+    as_multi_select: list[EntryAttributeValueSelect]
 
 
 class EntryAttributeType(TypedDict):
@@ -237,6 +244,11 @@ class EntryAttributeValueRoleSerializer(serializers.Serializer):
     name = serializers.CharField()
 
 
+class EntryAttributeValueSelectSerializer(serializers.Serializer):
+    value = serializers.CharField()
+    label = serializers.CharField()
+
+
 class EntryAttributeValueSerializer(serializers.Serializer):
     as_object = EntryAttributeValueObjectSerializer(allow_null=True, required=False)
     as_string = serializers.CharField(required=False)
@@ -262,6 +274,10 @@ class EntryAttributeValueSerializer(serializers.Serializer):
     # (regression fix for #3458). FloatField would coerce ints back to floats.
     as_number = IntOrFloatField(allow_null=True, required=False)
     as_array_number = serializers.ListField(child=IntOrFloatField(allow_null=True), required=False)
+    as_select = EntryAttributeValueSelectSerializer(allow_null=True, required=False)
+    as_multi_select = serializers.ListField(
+        child=EntryAttributeValueSelectSerializer(), required=False
+    )
 
 
 class EntryAttributeTypeSerializer(serializers.Serializer):
@@ -862,6 +878,12 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
                     val = attrv.get_value()
                     return {"as_number": val}
 
+                case AttrType.SELECT:
+                    return {"as_select": attrv.get_value()}
+
+                case AttrType.MULTI_SELECT:
+                    return {"as_multi_select": attrv.get_value() or []}
+
                 case AttrType.DATE:
                     return {"as_string": attrv.date if attrv.date else ""}
 
@@ -944,6 +966,12 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
                     return {
                         "as_number": AttrDefaultValue.get(type)
                     }  # Use .get for safety, though type should exist
+
+                case AttrType.SELECT:
+                    return {"as_select": None}
+
+                case AttrType.MULTI_SELECT:
+                    return {"as_multi_select": []}
 
                 case _:
                     raise IncorrectTypeError(f"unexpected type: {type}")
@@ -1417,6 +1445,12 @@ class EntryHistoryAttributeValueSerializer(serializers.ModelSerializer):
             case AttrType.NUMBER:
                 return {"as_number": obj.get_value()}
 
+            case AttrType.SELECT:
+                return {"as_select": obj.get_value()}
+
+            case AttrType.MULTI_SELECT:
+                return {"as_multi_select": obj.get_value() or []}
+
             case _:
                 return {}
 
@@ -1480,7 +1514,7 @@ class EntryAttributeValueRestoreSerializer(serializers.ModelSerializer):
 
         # Prepare value based on data_type
         match instance.data_type:
-            case AttrType.STRING | AttrType.TEXT | AttrType.NUMBER:
+            case AttrType.STRING | AttrType.TEXT | AttrType.NUMBER | AttrType.SELECT:
                 value = instance.value
             case AttrType.BOOLEAN:
                 value = instance.boolean
@@ -1499,7 +1533,7 @@ class EntryAttributeValueRestoreSerializer(serializers.ModelSerializer):
                     "name": instance.value if instance.value else "",
                     "id": instance.referral.id if instance.referral else None,
                 }
-            case AttrType.ARRAY_STRING | AttrType.ARRAY_NUMBER:
+            case AttrType.ARRAY_STRING | AttrType.ARRAY_NUMBER | AttrType.MULTI_SELECT:
                 array_data = list(instance.data_array.all())
                 value = [item.value for item in array_data]
             case AttrType.ARRAY_OBJECT:
@@ -1522,6 +1556,24 @@ class EntryAttributeValueRestoreSerializer(serializers.ModelSerializer):
                 ]
             case _:
                 value = instance.value
+
+        # SELECT/MULTI_SELECT restoration may resurrect a value that has since
+        # been removed from EntityAttr.choices. add_value() now strictly
+        # validates membership and would raise TypeError, so surface a clear
+        # 400 to the caller instead of letting an opaque crash bubble up.
+        if instance.data_type in (AttrType.SELECT, AttrType.MULTI_SELECT):
+            allowed = {c.get("value") for c in (attr.schema.choices or []) if isinstance(c, dict)}
+            stale: list[str] = []
+            if instance.data_type == AttrType.SELECT and isinstance(value, str):
+                if value and value not in allowed:
+                    stale = [value]
+            elif instance.data_type == AttrType.MULTI_SELECT and isinstance(value, list):
+                stale = [v for v in value if isinstance(v, str) and v and v not in allowed]
+            if stale:
+                raise ValidationError(
+                    "cannot restore value(s) no longer in choices: %s"
+                    % ", ".join(sorted(set(stale)))
+                )
 
         attr.add_value(user, value)
         entry.register_es()

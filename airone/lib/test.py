@@ -302,7 +302,7 @@ class AironeViewTest(AironeTestCase):
         test_file_path = inspect.getfile(self.__class__)
         test_base_path = os.path.dirname(test_file_path)
 
-        return open("%s/fixtures/%s" % (test_base_path, fname), "r")
+        return open(f"{test_base_path}/fixtures/{fname}", "r")
 
 
 class DisableStderr(object):
