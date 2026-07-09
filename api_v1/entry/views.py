@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any, List, Optional
+from typing import Any, List, Optional, cast
 from zoneinfo import ZoneInfo
 
 from django.conf import settings
@@ -23,6 +23,7 @@ from entity.models import Entity
 from entry.models import Entry
 from entry.services import AdvancedSearchService
 from entry.settings import CONFIG as CONFIG_ENTRY
+from user.models import User
 
 
 class EntrySearchChainAPIResponse(BaseModel):
@@ -83,7 +84,7 @@ class EntrySearchChainAPI(APIView):
             ret_values: list[AdvancedSearchResultRecord] = []
             for i in range(0, len(ret_data), 100):
                 entry_info = AdvancedSearchService.search_entries(
-                    request.user,
+                    cast(User, request.user),
                     serializer.validated_data["entities"],
                     entry_name="|".join(["^%s$" % x["name"] for x in ret_data[i : i + 100]]),
                     is_output_all=True,
@@ -106,7 +107,7 @@ class EntrySearchChainAPI(APIView):
 @db_readonly
 class EntrySearchAPI(APIView):
     def post(self, request: Request, format: str | None = None) -> Response:
-        if not isinstance(request.data, dict):
+        if not isinstance(cast(Any, request.data), dict):
             return Response(
                 "parameter must be in dictionary format", status=status.HTTP_400_BAD_REQUEST
             )
@@ -164,11 +165,12 @@ class EntrySearchAPI(APIView):
                 else:
                     entity = Entity.objects.filter(name=hint_entity, is_active=True).first()
 
-            if entity and request.user.has_permission(entity, ACLType.Readable):
-                hint_entity_ids.append(entity.id)
+            user = cast(User, request.user)
+            if entity and user.has_permission(entity, ACLType.Readable):
+                hint_entity_ids.append(str(entity.id))
 
         resp = AdvancedSearchService.search_entries(
-            request.user,
+            cast(User, request.user),
             hint_entity_ids,
             hint_attrs,
             params.entry_limit,

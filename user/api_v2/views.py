@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
-from typing import Any
+from typing import Any, cast
 
-from django.contrib.auth.forms import UserModel
+from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import EmailMultiAlternatives
@@ -18,7 +18,7 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import BasePermission, IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
-from rest_framework.serializers import Serializer
+from rest_framework.serializers import BaseSerializer, Serializer
 
 from airone.exceptions.model import UnexpectedAttributeType
 from airone.lib.acl import ACLType
@@ -67,19 +67,29 @@ def _get_attr_value(
         case AttrType.DATETIME:
             return attr_val.datetime.isoformat() if attr_val.datetime else None
         case AttrType.OBJECT:
-            return _entry_ref(attr_val.referral.entry) if attr_val.referral_id is not None else None
+            return (
+                _entry_ref(attr_val.referral.entry)
+                if attr_val.referral_id is not None and attr_val.referral is not None
+                else None
+            )
         case AttrType.NAMED_OBJECT:
-            obj = _entry_ref(attr_val.referral.entry) if attr_val.referral_id is not None else None
+            obj = (
+                _entry_ref(attr_val.referral.entry)
+                if attr_val.referral_id is not None and attr_val.referral is not None
+                else None
+            )
             return {"name": attr_val.value, "object": obj}
         case AttrType.GROUP:
             return (
                 {"id": attr_val.group.id, "name": attr_val.group.name}
-                if attr_val.group_id
+                if attr_val.group_id and attr_val.group is not None
                 else None
             )
         case AttrType.ROLE:
             return (
-                {"id": attr_val.role.id, "name": attr_val.role.name} if attr_val.role_id else None
+                {"id": attr_val.role.id, "name": attr_val.role.name}
+                if attr_val.role_id and attr_val.role is not None
+                else None
             )
         case AttrType.ARRAY_STRING:
             return [x.value for x in attr_val.data_array.all()]
@@ -92,13 +102,17 @@ def _get_attr_value(
             return [
                 _entry_ref(x.referral.entry)
                 for x in attr_val.data_array.all()
-                if x.referral_id is not None
+                if x.referral_id is not None and x.referral is not None
             ]
         case AttrType.ARRAY_NAMED_OBJECT | AttrType.ARRAY_NAMED_OBJECT_BOOLEAN:
             return [
                 {
                     "name": x.value,
-                    "object": _entry_ref(x.referral.entry) if x.referral_id is not None else None,
+                    "object": (
+                        _entry_ref(x.referral.entry)
+                        if x.referral_id is not None and x.referral is not None
+                        else None
+                    ),
                 }
                 for x in attr_val.data_array.all()
             ]
@@ -106,13 +120,13 @@ def _get_attr_value(
             return [
                 {"id": x.group.id, "name": x.group.name}
                 for x in attr_val.data_array.all()
-                if x.group_id
+                if x.group_id and x.group is not None
             ]
         case AttrType.ARRAY_ROLE:
             return [
                 {"id": x.role.id, "name": x.role.name}
                 for x in attr_val.data_array.all()
-                if x.role_id
+                if x.role_id and x.role is not None
             ]
         case _:
             raise UnexpectedAttributeType(f"Unexpected attribute type: {attr_type}")
@@ -120,7 +134,7 @@ def _get_attr_value(
 
 class UserPermission(BasePermission):
     def has_object_permission(self, request: Request, view: Any, obj: User) -> bool:
-        current_user: User = request.user
+        current_user = cast(User, request.user)
         permisson = {
             "retrieve": current_user.is_superuser
             or current_user == obj
@@ -136,9 +150,9 @@ class SuperuserPermission(BasePermission):
         return request.user.is_superuser
 
 
-class UserActivityAPI(viewsets.GenericViewSet):
+class UserActivityAPI(viewsets.GenericViewSet[User]):
     queryset = User.objects.none()
-    serializer_class = Serializer
+    serializer_class = Serializer  # type: ignore[assignment]
     LIMIT_RECORDS = 10
     LIMIT_DAYS = 60
 
@@ -361,7 +375,7 @@ class UserActivityAPI(viewsets.GenericViewSet):
         if to is not None:
             since_from = to
 
-        requesting_user: User = request.user
+        requesting_user = cast(User, request.user)
         activities: list[dict[str, Any]] = []
         activities += self._get_activity_for_creating_item(
             user, requesting_user, since=since, since_from=since_from
@@ -377,7 +391,7 @@ class UserActivityAPI(viewsets.GenericViewSet):
         return Response(activities)
 
 
-class UserAPI(viewsets.ModelViewSet):
+class UserAPI(viewsets.ModelViewSet[User]):
     queryset = User.objects.filter(is_active=True)
     permission_classes = [IsAuthenticated & UserPermission]
     pagination_class = PageNumberPagination
@@ -385,7 +399,7 @@ class UserAPI(viewsets.ModelViewSet):
     ordering = ["username"]
     search_fields = ["username"]
 
-    def get_serializer_class(self) -> type[Serializer]:
+    def get_serializer_class(self) -> type[Serializer[Any]]:
         serializer = {
             "create": UserCreateSerializer,
             "update": UserUpdateSerializer,
@@ -400,7 +414,7 @@ class UserAPI(viewsets.ModelViewSet):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class UserMeAPI(generics.RetrieveAPIView):
+class UserMeAPI(generics.RetrieveAPIView[User]):
     serializer_class = UserMeSerializer
     permission_classes = [IsAuthenticated]
 
@@ -409,18 +423,20 @@ class UserMeAPI(generics.RetrieveAPIView):
         return Response(serializer.data)
 
 
-class UserTokenAPI(viewsets.ModelViewSet):
+class UserTokenAPI(viewsets.ModelViewSet[Token]):
     serializer_class = UserTokenSerializer
 
     def retrieve(self, request: Request) -> Response:
-        instance = get_object_or_404(Token.objects.filter(user=request.user))
+        current_user = cast(User, request.user)
+        instance = get_object_or_404(Token.objects.filter(user=current_user))
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
 
     @extend_schema(operation_id="user_api_v2_token_refresh")
     def refresh(self, request: Request) -> Response:
-        Token.objects.filter(user=request.user).delete()
-        instance = Token.objects.create(user=request.user)
+        current_user = cast(User, request.user)
+        Token.objects.filter(user=current_user).delete()
+        instance = Token.objects.create(user=current_user)
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
 
@@ -437,13 +453,13 @@ class UserTokenAPI(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 
-class UserImportAPI(generics.GenericAPIView):
+class UserImportAPI(generics.GenericAPIView[Any]):
     parser_classes = [YAMLParser]
     serializer_class = UserImportSerializer
 
     @extend_schema(responses={200: None})
     def post(self, request: Request) -> Response:
-        import_datas = request.data
+        import_datas = cast(list[dict[str, Any]], request.data)
         serializer = UserImportSerializer(data=import_datas)
         serializer.is_valid(raise_exception=True)
 
@@ -486,7 +502,7 @@ class UserImportAPI(generics.GenericAPIView):
             for group_name in user_data["groups"].split(","):
                 if group_name == "":
                     continue
-                new_group: Group | None = Group.objects.filter(name=group_name).first()
+                new_group: Group | None = Group.objects.filter(name=group_name).first()  # type: ignore[assignment]
                 if not new_group:
                     return Response(
                         "Specified group does not exist(user:%s, group:%s)"
@@ -501,18 +517,18 @@ class UserImportAPI(generics.GenericAPIView):
         return Response()
 
 
-class UserExportAPI(generics.ListAPIView):
+class UserExportAPI(generics.ListAPIView[User]):
     queryset = User.objects.filter(is_active=True)
     serializer_class = UserExportSerializer
     renderer_classes = [YAMLRenderer]
 
 
-class UserPasswordAPI(generics.UpdateAPIView):
+class UserPasswordAPI(generics.UpdateAPIView[User]):
     queryset = User.objects.filter(is_active=True)
     serializer_class = UserPasswordSerializer
 
     def get_serializer_context(self) -> dict[str, Any]:
-        context = super().get_serializer_context()
+        context = dict(super().get_serializer_context())
         context["user"] = self.get_object()
         return context
 
@@ -522,19 +538,19 @@ class UserPasswordAPI(generics.UpdateAPIView):
         )
 
     def patch(self, request: Request, *args: Any, **kwargs: Any) -> Response:
-        serializer: Serializer = self.get_serializer(data=request.data)
+        serializer: BaseSerializer[Any] = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response({})
 
 
-class UserPasswordBySuperuserAPI(generics.UpdateAPIView):
+class UserPasswordBySuperuserAPI(generics.UpdateAPIView[User]):
     queryset = User.objects.filter(is_active=True)
     serializer_class = UserPasswordBySuperuserSerializer
     permission_classes = [IsAuthenticated & SuperuserPermission]
 
     def get_serializer_context(self) -> dict[str, Any]:
-        context = super().get_serializer_context()
+        context = dict(super().get_serializer_context())
         context["user"] = self.get_object()
         return context
 
@@ -544,13 +560,13 @@ class UserPasswordBySuperuserAPI(generics.UpdateAPIView):
         )
 
     def patch(self, request: Request, *args: Any, **kwargs: Any) -> Response:
-        serializer: Serializer = self.get_serializer(data=request.data)
+        serializer: BaseSerializer[Any] = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response({})
 
 
-class PasswordResetAPI(viewsets.GenericViewSet):
+class PasswordResetAPI(viewsets.GenericViewSet[Any]):
     serializer_class = PasswordResetSerializer
     permission_classes: list[type] = []
 
@@ -564,7 +580,8 @@ class PasswordResetAPI(viewsets.GenericViewSet):
         if not user:
             return Response("user %s not found" % username, status=status.HTTP_400_BAD_REQUEST)
 
-        user_email = getattr(user, UserModel.get_email_field_name())
+        UserModelClass = get_user_model()
+        user_email = getattr(user, UserModelClass.get_email_field_name())
         use_https = request.is_secure()
         token_generator = default_token_generator
         current_site = get_current_site(request)
@@ -594,9 +611,10 @@ class PasswordResetAPI(viewsets.GenericViewSet):
         """
         Given a username, return matching user who should receive a reset or None.
         """
-        active_users = UserModel._default_manager.filter(
+        UserModelClass = get_user_model()
+        active_users = UserModelClass._default_manager.filter(
             **{
-                "%s__iexact" % UserModel.USERNAME_FIELD: username,
+                "%s__iexact" % UserModelClass.USERNAME_FIELD: username,
                 "is_active": True,
             }
         )
@@ -617,7 +635,7 @@ class PasswordResetAPI(viewsets.GenericViewSet):
         """
         Sends a django.core.mail.EmailMultiAlternatives to `to_email`.
         """
-        subject = loader.render_to_string(subject_template_name, context)
+        subject: str = loader.render_to_string(subject_template_name, context)
         # Email subject *must not* contain newlines
         subject = "".join(subject.splitlines())
         body = loader.render_to_string(email_template_name, context)
@@ -630,7 +648,7 @@ class PasswordResetAPI(viewsets.GenericViewSet):
         email_message.send()
 
 
-class PasswordResetConfirmAPI(viewsets.GenericViewSet):
+class PasswordResetConfirmAPI(viewsets.GenericViewSet[Any]):
     serializer_class = PasswordResetConfirmSerializer
     permission_classes: list[type] = []
 
@@ -642,12 +660,12 @@ class PasswordResetConfirmAPI(viewsets.GenericViewSet):
         return Response(serializer.validated_data)
 
 
-class UserAuthAPI(generics.UpdateAPIView):
+class UserAuthAPI(generics.UpdateAPIView[User]):
     queryset = User.objects.filter(is_active=True)
     serializer_class = UserAuthSerializer
 
     def get_serializer_context(self) -> dict[str, Any]:
-        context = super().get_serializer_context()
+        context = dict(super().get_serializer_context())
         context["user"] = self.get_object()
         return context
 
@@ -657,7 +675,7 @@ class UserAuthAPI(generics.UpdateAPIView):
         )
 
     def patch(self, request: Request, *args: Any, **kwargs: Any) -> Response:
-        serializer: Serializer = self.get_serializer(data=request.data)
+        serializer: BaseSerializer[Any] = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response({})

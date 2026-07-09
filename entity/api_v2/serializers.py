@@ -5,7 +5,7 @@ import json
 import math
 import re
 from datetime import datetime
-from typing import TYPE_CHECKING, Any, List, Optional, Self, TypedDict
+from typing import TYPE_CHECKING, Any, List, Optional, Self, TypedDict, cast
 
 if TYPE_CHECKING:
     from airone.lib.resources import AironeModelResource
@@ -14,6 +14,7 @@ if TYPE_CHECKING:
 import requests
 from django.conf import settings
 from django.core.validators import URLValidator
+from django.db import transaction
 from drf_spectacular.utils import extend_schema_field
 from pydantic import BaseModel, model_validator
 from pydantic import ValidationError as PydanticValidationError
@@ -28,6 +29,10 @@ from airone.lib.log import Logger
 from airone.lib.types import AttrType, AttrTypeValue
 from entity.admin import EntityAttrResource, EntityResource
 from entity.models import Entity, EntityAttr, ItemNameType
+from isolation.models import IsolationAction as _IsolationAction
+from isolation.models import IsolationCondition as _IsolationCondition
+from isolation.models import IsolationParent as _IsolationParent
+from job.models import Job
 from user.models import History, User
 from webhook.models import Webhook
 
@@ -61,12 +66,34 @@ class EntityDetailAttribute(TypedDict):
     referral: List[EntityAttrReferralData]
     note: str
     default_value: Any
+    choices: Any
+    choices_in_use: List[str]
     name_order: int
     name_prefix: str
     name_postfix: str
 
 
 # Pydantic models for request validation
+class ChoiceItem(BaseModel):
+    """A single SELECT / MULTI_SELECT choice entry.
+
+    `value` is an internal identifier auto-assigned on save; it may be omitted
+    on new choices (caller only specifies a label) and is preserved verbatim
+    when present (referring to an existing choice).
+    """
+
+    value: str | None = None
+    label: str
+
+    @model_validator(mode="after")
+    def validate_nonempty(self) -> Self:
+        if self.value is not None and not self.value:
+            raise ValueError("choice 'value' must be a non-empty string when given")
+        if not self.label:
+            raise ValueError("choice 'label' must be a non-empty string")
+        return self
+
+
 class EntityAttrCreateRequest(BaseModel):
     """Pydantic model for entity attribute creation with default_value validation."""
 
@@ -78,7 +105,26 @@ class EntityAttrCreateRequest(BaseModel):
     referral: list[int] = []
     note: str = ""
     default_value: Any = None
+    choices: list[ChoiceItem] | None = None
     index: int | None = None
+
+    @model_validator(mode="after")
+    def validate_choices_for_type(self) -> Self:
+        """SELECT / MULTI_SELECT must carry a non-empty unique-label choices list."""
+        is_select = self.type in (AttrType.SELECT, AttrType.MULTI_SELECT)
+        if is_select:
+            if not self.choices:
+                raise ValueError("SELECT type requires a non-empty choices list")
+            labels = [c.label for c in self.choices]
+            present_values = [c.value for c in self.choices if c.value]
+            if len(set(labels)) != len(labels):
+                raise ValueError("choices 'label' must be unique")
+            if len(set(present_values)) != len(present_values):
+                raise ValueError("choices 'value' must be unique")
+        elif self.choices is not None:
+            # Silently drop choices for non-SELECT types to keep the API forgiving.
+            self.choices = None
+        return self
 
     @model_validator(mode="after")
     def validate_default_value_for_type(self) -> Self:
@@ -87,7 +133,13 @@ class EntityAttrCreateRequest(BaseModel):
             return self
 
         # Only String, Text, Boolean, Number types support default values
-        supported_types = [AttrType.STRING, AttrType.TEXT, AttrType.BOOLEAN, AttrType.NUMBER]
+        # (SELECT defers default_value because choice ids are auto-assigned on save).
+        supported_types = [
+            AttrType.STRING,
+            AttrType.TEXT,
+            AttrType.BOOLEAN,
+            AttrType.NUMBER,
+        ]
         if self.type not in supported_types:
             # Clear default_value for unsupported types
             self.default_value = None
@@ -124,12 +176,12 @@ class EntityAttrCreateRequest(BaseModel):
         return self
 
 
-class WebhookHeadersSerializer(serializers.Serializer):
+class WebhookHeadersSerializer(serializers.Serializer[dict[str, Any]]):
     header_key = serializers.CharField()
     header_value = serializers.CharField()
 
 
-class WebhookSerializer(serializers.ModelSerializer):
+class WebhookSerializer(serializers.ModelSerializer[Webhook]):
     headers = serializers.ListField(child=WebhookHeadersSerializer(), required=False)
     is_deleted = serializers.BooleanField(required=False, default=False, write_only=True)
     url = serializers.CharField(required=False, max_length=200, allow_blank=True)
@@ -149,7 +201,7 @@ class WebhookSerializer(serializers.ModelSerializer):
         read_only_fields = ["is_verified", "verification_error_details"]
 
 
-class WebhookCreateUpdateSerializer(serializers.ModelSerializer):
+class WebhookCreateUpdateSerializer(serializers.ModelSerializer[Webhook]):
     id = serializers.IntegerField(required=False)
     url = serializers.CharField(required=False, max_length=200, allow_blank=True)
     headers = serializers.ListField(child=WebhookHeadersSerializer(), required=False)
@@ -162,7 +214,11 @@ class WebhookCreateUpdateSerializer(serializers.ModelSerializer):
         extra_kwargs = {"url": {"required": False}}
 
     def validate_id(self, id: Optional[int]) -> Optional[int]:
-        entity: Entity = self.parent.parent.instance
+        # Used as a nested serializer under a list -> parent serializer;
+        # both parents must be present with an Entity instance bound.
+        assert self.parent is not None and self.parent.parent is not None
+        entity = self.parent.parent.instance
+        assert isinstance(entity, Entity)
         if id is not None and not entity.webhooks.filter(id=id).exists():
             raise ObjectNotExistsError("Invalid id(%s) object does not exist" % id)
 
@@ -180,7 +236,7 @@ class WebhookCreateUpdateSerializer(serializers.ModelSerializer):
         return webhook
 
 
-class EntityAttrCreateSerializer(serializers.ModelSerializer):
+class EntityAttrCreateSerializer(serializers.ModelSerializer[EntityAttr]):
     created_user = serializers.HiddenField(default=drf.AironeUserDefault())
     name_prefix = serializers.CharField(
         required=False, max_length=20, allow_blank=True, trim_whitespace=False
@@ -188,6 +244,7 @@ class EntityAttrCreateSerializer(serializers.ModelSerializer):
     name_postfix = serializers.CharField(
         required=False, max_length=20, allow_blank=True, trim_whitespace=False
     )
+    choices = serializers.JSONField(required=False, allow_null=True, default=None)
 
     class Meta:
         model = EntityAttr
@@ -202,6 +259,7 @@ class EntityAttrCreateSerializer(serializers.ModelSerializer):
             "created_user",
             "note",
             "default_value",
+            "choices",
             "name_order",
             "name_prefix",
             "name_postfix",
@@ -271,6 +329,12 @@ class EntityAttrCreateSerializer(serializers.ModelSerializer):
             validated = EntityAttrCreateRequest(**pydantic_data)
             # Update attr with validated values (including cleared default_value if needed)
             attr["default_value"] = validated.default_value
+            if validated.choices:
+                attr["choices"] = EntityAttr.normalize_choices(
+                    [c.model_dump() for c in validated.choices]
+                )
+            else:
+                attr["choices"] = None
         except PydanticValidationError as e:
             # Convert Pydantic validation errors to DRF validation errors
             errors = []
@@ -302,7 +366,7 @@ class EntityAttrCreateSerializer(serializers.ModelSerializer):
         return attr
 
 
-class EntityAttrUpdateSerializer(serializers.ModelSerializer):
+class EntityAttrUpdateSerializer(serializers.ModelSerializer[EntityAttr]):
     id = serializers.IntegerField(required=False)
     is_deleted = serializers.BooleanField(required=False, default=False)
     name_prefix = serializers.CharField(
@@ -311,6 +375,7 @@ class EntityAttrUpdateSerializer(serializers.ModelSerializer):
     name_postfix = serializers.CharField(
         required=False, max_length=20, allow_blank=True, trim_whitespace=False
     )
+    choices = serializers.JSONField(required=False, allow_null=True)
 
     class Meta:
         model = EntityAttr
@@ -326,6 +391,7 @@ class EntityAttrUpdateSerializer(serializers.ModelSerializer):
             "is_deleted",
             "note",
             "default_value",
+            "choices",
             "name_order",
             "name_prefix",
             "name_postfix",
@@ -349,7 +415,9 @@ class EntityAttrUpdateSerializer(serializers.ModelSerializer):
             return id
 
         # Normal case when used as nested serializer
-        entity: Entity = self.parent.parent.instance
+        assert self.parent is not None and self.parent.parent is not None
+        entity = self.parent.parent.instance
+        assert isinstance(entity, Entity)
         nested_entity_attr: Optional[EntityAttr] = entity.attrs.filter(
             id=id, is_active=True
         ).first()
@@ -444,22 +512,70 @@ class EntityAttrUpdateSerializer(serializers.ModelSerializer):
                     "This attribute type is not supported for autoname configuration"
                 )
 
-        # Only String, Text, Boolean, Number types support default values (MVP)
+        # Only String, Text, Boolean, Number, Select types support default values (MVP)
         attr_type = attr.get("type")
         default_value = attr.get("default_value")
 
-        # For updates, check existing attribute type if type is not being changed
-        if "id" in attr and attr_type is None:
-            entity_attr = EntityAttr.objects.get(id=attr["id"])
-            attr_type = entity_attr.type
+        # Fetch the existing EntityAttr once for updates so downstream branches reuse it.
+        existing_attr: EntityAttr | None = None
+        if "id" in attr:
+            existing_attr = EntityAttr.objects.get(id=attr["id"])
+            if attr_type is None:
+                attr_type = existing_attr.type
+
+        is_select = attr_type in (AttrType.SELECT, AttrType.MULTI_SELECT)
+        new_choices = attr.get("choices")
+
+        if is_select:
+            # New SELECT attr created via update payload: no existing record to
+            # diff, but choices must still satisfy the model invariant.
+            if existing_attr is None:
+                try:
+                    EntityAttr.validate_choices(new_choices)
+                except ValueError as exc:
+                    raise ValidationError(str(exc)) from exc
+                attr["choices"] = EntityAttr.normalize_choices(
+                    cast(list[dict[str, Any]], new_choices)
+                )
+            elif "choices" in attr:
+                try:
+                    EntityAttr.validate_choices(new_choices)
+                except ValueError as exc:
+                    raise ValidationError(str(exc)) from exc
+
+                # Auto-assign value for new entries while preserving existing ids.
+                normalized = EntityAttr.normalize_choices(cast(list[dict[str, Any]], new_choices))
+
+                # Reject removal of choice values still referenced by existing entries.
+                old_values = {
+                    c.get("value") for c in (existing_attr.choices or []) if isinstance(c, dict)
+                }
+                new_values = {c.get("value") for c in normalized}
+                removed = old_values - new_values
+                if removed:
+                    in_use = existing_attr.get_choices_in_use() & removed
+                    if in_use:
+                        raise ValidationError(
+                            "choices in use cannot be removed: %s" % ", ".join(sorted(in_use))
+                        )
+                attr["choices"] = normalized
+        elif new_choices is not None:
+            # Drop choices silently for non-SELECT attributes
+            attr["choices"] = None
 
         if default_value is not None and attr_type is not None:
-            supported_types = [AttrType.STRING, AttrType.TEXT, AttrType.BOOLEAN, AttrType.NUMBER]
+            supported_types = [
+                AttrType.STRING,
+                AttrType.TEXT,
+                AttrType.BOOLEAN,
+                AttrType.NUMBER,
+            ]
             if attr_type not in supported_types:
-                # Clear default_value for unsupported types
+                # Clear default_value for unsupported types (incl. SELECT/MULTI_SELECT
+                # whose choice ids are auto-assigned, making static default storage
+                # ambiguous; deferred to a follow-up).
                 attr["default_value"] = None
             else:
-                # Validate and potentially convert the default value
                 attr["default_value"] = self._validate_default_value_for_type(
                     attr_type, default_value
                 )
@@ -467,7 +583,7 @@ class EntityAttrUpdateSerializer(serializers.ModelSerializer):
         return attr
 
 
-class EntityAttrSerializer(serializers.ModelSerializer):
+class EntityAttrSerializer(serializers.ModelSerializer[EntityAttr]):
     type = serializers.IntegerField(required=False, read_only=True)
 
     class Meta:
@@ -475,14 +591,12 @@ class EntityAttrSerializer(serializers.ModelSerializer):
         fields = ("id", "name", "type")
 
 
-class IsolationConditionSerializer(serializers.ModelSerializer):
+class IsolationConditionSerializer(serializers.ModelSerializer[_IsolationCondition]):
     attr = EntityAttrSerializer(read_only=True)
     ref_cond = serializers.SerializerMethodField()
 
     class Meta:
-        from isolation.models import IsolationCondition
-
-        model = IsolationCondition
+        model = _IsolationCondition
         fields = ["id", "attr", "str_cond", "ref_cond", "bool_cond", "is_unmatch"]
 
     @extend_schema_field(serializers.DictField(allow_null=True))
@@ -499,34 +613,30 @@ class IsolationConditionSerializer(serializers.ModelSerializer):
         return None
 
 
-class IsolationActionModelSerializer(serializers.ModelSerializer):
+class IsolationActionModelSerializer(serializers.ModelSerializer[Entity]):
     class Meta:
         model = Entity
         fields = ["id", "name"]
 
 
-class IsolationActionSerializer(serializers.ModelSerializer):
+class IsolationActionSerializer(serializers.ModelSerializer[_IsolationAction]):
     prevent_from = IsolationActionModelSerializer(read_only=True)
 
     class Meta:
-        from isolation.models import IsolationAction
-
-        model = IsolationAction
+        model = _IsolationAction
         fields = ["id", "prevent_from", "is_prevent_all"]
 
 
-class IsolationParentSerializer(serializers.ModelSerializer):
+class IsolationParentSerializer(serializers.ModelSerializer[_IsolationParent]):
     conditions = IsolationConditionSerializer(many=True, read_only=True)
     action = IsolationActionSerializer(read_only=True)
 
     class Meta:
-        from isolation.models import IsolationParent
-
-        model = IsolationParent
+        model = _IsolationParent
         fields = ["id", "conditions", "action"]
 
 
-class IsolationConditionCreateUpdateSerializer(serializers.Serializer):
+class IsolationConditionCreateUpdateSerializer(serializers.Serializer[dict[str, Any]]):
     attr_id = serializers.IntegerField()
     str_cond = serializers.CharField(required=False, allow_blank=True, default="")
     ref_cond_id = serializers.IntegerField(required=False, allow_null=True, default=None)
@@ -534,12 +644,12 @@ class IsolationConditionCreateUpdateSerializer(serializers.Serializer):
     is_unmatch = serializers.BooleanField(required=False, default=False)
 
 
-class IsolationActionCreateUpdateSerializer(serializers.Serializer):
+class IsolationActionCreateUpdateSerializer(serializers.Serializer[dict[str, Any]]):
     is_prevent_all = serializers.BooleanField(required=False, default=False)
     prevent_from_id = serializers.IntegerField(required=False, allow_null=True, default=None)
 
 
-class IsolationParentCreateUpdateSerializer(serializers.Serializer):
+class IsolationParentCreateUpdateSerializer(serializers.Serializer[dict[str, Any]]):
     id = serializers.IntegerField(required=False)
     is_deleted = serializers.BooleanField(required=False, default=False)
     conditions = IsolationConditionCreateUpdateSerializer(many=True, default=[])
@@ -552,9 +662,10 @@ class EntityCreateData(TypedDict, total=False):
     item_name_pattern: str
     item_name_type: str
     is_toplevel: bool
-    attrs: list[EntityAttrCreateSerializer]
-    webhooks: WebhookCreateUpdateSerializer
-    isolation_rules: list[IsolationParentCreateUpdateSerializer]
+    # nested lists carry deserialized dicts, not Serializer instances
+    attrs: list[dict[str, Any]]
+    webhooks: list[dict[str, Any]]
+    isolation_rules: list[dict[str, Any]]
     delete_chain_exclude_entities: list[int]
     created_user: User
 
@@ -566,13 +677,14 @@ class EntityUpdateData(TypedDict, total=False):
     item_name_pattern: str
     item_name_type: str
     is_toplevel: bool
-    attrs: list[EntityAttrUpdateSerializer]
-    webhooks: WebhookCreateUpdateSerializer
-    isolation_rules: list[IsolationParentCreateUpdateSerializer]
+    # nested lists carry deserialized dicts, not Serializer instances
+    attrs: list[dict[str, Any]]
+    webhooks: list[dict[str, Any]]
+    isolation_rules: list[dict[str, Any]]
     delete_chain_exclude_entities: list[int]
 
 
-class EntitySerializer(serializers.ModelSerializer):
+class EntitySerializer(serializers.ModelSerializer[Entity]):
     permission = serializers.SerializerMethodField()
 
     class Meta:
@@ -612,8 +724,14 @@ class EntitySerializer(serializers.ModelSerializer):
         if default_value is None:
             return None
 
-        # Only certain types support default values
-        supported_types = [AttrType.STRING, AttrType.TEXT, AttrType.BOOLEAN, AttrType.NUMBER]
+        # Only certain types support default values (SELECT/MULTI_SELECT excluded
+        # because choice ids are auto-assigned; default_value handling deferred).
+        supported_types = [
+            AttrType.STRING,
+            AttrType.TEXT,
+            AttrType.BOOLEAN,
+            AttrType.NUMBER,
+        ]
         if attr_type not in supported_types:
             return None
 
@@ -673,6 +791,11 @@ class EntitySerializer(serializers.ModelSerializer):
         else:
             history = user.seth_entity_mod(entity)
 
+        # SELECT label changes require ES reindex; collect across the loop and
+        # fire a single job per Entity at the end (labels are physically
+        # materialised in ES, so the whole entity's entries must be refreshed).
+        needs_reindex_for_label = False
+
         # create EntityAttr instances in associated with specifying data
         for attr_data in attrs_data:
             # Apply type-specific validation and conversion for default_value
@@ -704,21 +827,69 @@ class EntitySerializer(serializers.ModelSerializer):
                     history.del_attr(entity_attr)
                 continue
 
+            # Capture previous choices to detect SELECT label changes that require
+            # ES reindex of existing entries (labels are physically materialised in ES).
+            prev_choices: list[dict[str, Any]] | None = None
+            if attr_id and "choices" in attr_data:
+                prev_choices = EntityAttr.objects.get(id=attr_id).choices
+
+            # Guarantee choices carry a backend-assigned `value`. The async
+            # create job bypasses serializer.validate, so the same normalization
+            # we apply on the synchronous path must run here as well.
+            attr_type_now = attr_data.get("type")
+            if attr_type_now is None and attr_id:
+                attr_type_now = EntityAttr.objects.get(id=attr_id).type
+            if attr_type_now in (AttrType.SELECT, AttrType.MULTI_SELECT) and isinstance(
+                attr_data.get("choices"), list
+            ):
+                attr_data["choices"] = EntityAttr.normalize_choices(attr_data["choices"])
+
             # create, update EntityAttr instance with user specified params
             (entity_attr, is_created_attr) = EntityAttr.objects.update_or_create(
                 id=attr_id, defaults={**attr_data, "parent_entity": entity, "created_user": user}
             )
 
+            # If SELECT label(s) changed for the same value(s), mark for batched reindex.
+            if (
+                not is_created_attr
+                and entity_attr.type in (AttrType.SELECT, AttrType.MULTI_SELECT)
+                and prev_choices is not None
+            ):
+                old_map = {
+                    c.get("value"): c.get("label")
+                    for c in (prev_choices or [])
+                    if isinstance(c, dict)
+                }
+                new_map = {
+                    c.get("value"): c.get("label")
+                    for c in (entity_attr.choices or [])
+                    if isinstance(c, dict)
+                }
+                if any(v in old_map and new_map.get(v) != old_map.get(v) for v in new_map):
+                    needs_reindex_for_label = True
+
             # set referrals if necessary
             if entity_attr.type & AttrType.OBJECT:
                 entity_attr.referral_clear()
-                [entity_attr.referral.add(x) for x in attr_referrals]
+                for x in attr_referrals:
+                    entity_attr.referral.add(x)
 
             # register history to create, update EntityAttr
             if is_created_attr:
                 history.add_attr(entity_attr)
             else:
                 history.mod_attr(entity_attr)
+
+        # Fire a single reindex job per entity if any SELECT label changed.
+        # Wrap in on_commit so the worker reads the freshly-committed
+        # EntityAttr.choices instead of racing the pending transaction.
+        if needs_reindex_for_label:
+            transaction.on_commit(
+                lambda: Job.new_update_documents(
+                    target=entity,
+                    params={"is_update": True},
+                ).run()
+            )
 
         # register webhook
         for webhook_data in webhooks_data:
@@ -834,9 +1005,7 @@ class EntityCreateSerializer(EntitySerializer):
 
         return name
 
-    def validate_attrs(
-        self, attrs: list[EntityAttrCreateSerializer]
-    ) -> list[EntityAttrCreateSerializer]:
+    def validate_attrs(self, attrs: list[dict[str, Any]]) -> list[dict[str, Any]]:
         # duplication checks
         counter = collections.Counter([attr["name"] for attr in attrs])
         if len([v for v, count in counter.items() if count > 1]):
@@ -844,9 +1013,7 @@ class EntityCreateSerializer(EntitySerializer):
 
         return attrs
 
-    def validate_webhooks(
-        self, webhooks: list[WebhookCreateUpdateSerializer]
-    ) -> list[WebhookCreateUpdateSerializer]:
+    def validate_webhooks(self, webhooks: list[dict[str, Any]]) -> list[dict[str, Any]]:
         # deny webhooks if its disabled
         if not settings.AIRONE_FLAGS["WEBHOOK"] and len(webhooks) > 0:
             raise ValidationError("webhook is disabled")
@@ -868,12 +1035,15 @@ class EntityCreateSerializer(EntitySerializer):
                 "before_create_entity_v2", None, user, validated_data
             )
 
+        # `name` and `created_user` are required by the DRF field definitions, so DRF
+        # rejects requests missing them before we get here. TypedDict is total=False,
+        # so index into it directly (rather than .get()) to preserve the non-None type.
         entity = Entity.objects.create(
-            name=validated_data.get("name"),
+            name=validated_data["name"],
             note=validated_data.get("note", ""),
             item_name_pattern=validated_data.get("item_name_pattern", ""),
             item_name_type=validated_data.get("item_name_type", ""),
-            created_user=validated_data.get("created_user"),
+            created_user=validated_data["created_user"],
         )
 
         # set status parameters
@@ -925,15 +1095,16 @@ class EntityUpdateSerializer(EntitySerializer):
         extra_kwargs = {"name": {"required": False}, "note": {"write_only": True}}
 
     def validate_name(self, name: str) -> str:
+        # EntityUpdateSerializer is always constructed with an existing Entity instance.
+        assert isinstance(self.instance, Entity)
         if self.instance.name != name and Entity.objects.filter(name=name, is_active=True).exists():
             raise DuplicatedObjectExistsError("Duplication error. There is same named Entity")
 
         return name
 
-    def validate_attrs(
-        self, attrs: list[EntityAttrUpdateSerializer]
-    ) -> list[EntityAttrUpdateSerializer]:
-        entity: Entity = self.instance
+    def validate_attrs(self, attrs: list[dict[str, Any]]) -> list[dict[str, Any]]:
+        entity = self.instance
+        assert isinstance(entity, Entity)
 
         # duplication checks
         attr_names = {}
@@ -955,10 +1126,9 @@ class EntityUpdateSerializer(EntitySerializer):
 
         return attrs
 
-    def validate_webhooks(
-        self, webhooks: list[WebhookCreateUpdateSerializer]
-    ) -> list[WebhookCreateUpdateSerializer]:
-        entity: Entity = self.instance
+    def validate_webhooks(self, webhooks: list[dict[str, Any]]) -> list[dict[str, Any]]:
+        entity = self.instance
+        assert isinstance(entity, Entity)
 
         # deny changing webhooks if its disabled
         if not settings.AIRONE_FLAGS["WEBHOOK"]:
@@ -983,23 +1153,27 @@ class EntityUpdateSerializer(EntitySerializer):
             )
 
         # record history for specific fields on update
+        # TypedDict is total=False, but the "in" check guarantees the key is present,
+        # so index into the dict directly to keep the concrete non-None value type.
         updated_fields: list[str] = []
-        if "name" in validated_data and entity.name != validated_data.get("name"):
-            entity.name = validated_data.get("name")
+        if "name" in validated_data and entity.name != validated_data["name"]:
+            entity.name = validated_data["name"]
             updated_fields.append("name")
-        if "note" in validated_data and entity.note != validated_data.get("note"):
-            entity.note = validated_data.get("note")
+        if "note" in validated_data and entity.note != validated_data["note"]:
+            entity.note = validated_data["note"]
             updated_fields.append("note")
-        if "item_name_pattern" in validated_data and entity.item_name_pattern != validated_data.get(
-            "item_name_pattern"
+        if (
+            "item_name_pattern" in validated_data
+            and entity.item_name_pattern != validated_data["item_name_pattern"]
         ):
-            entity.item_name_pattern = validated_data.get("item_name_pattern")
+            entity.item_name_pattern = validated_data["item_name_pattern"]
             updated_fields.append("item_name_pattern")
 
-        if "item_name_type" in validated_data and entity.item_name_type != validated_data.get(
-            "item_name_type"
+        if (
+            "item_name_type" in validated_data
+            and entity.item_name_type != validated_data["item_name_type"]
         ):
-            entity.item_name_type = validated_data.get("item_name_type")
+            entity.item_name_type = validated_data["item_name_type"]
             updated_fields.append("item_name_type")
         if len(updated_fields) > 0:
             entity.save(update_fields=updated_fields)
@@ -1052,7 +1226,7 @@ class EntityListSerializer(EntitySerializer):
         return get_permission_level(user, obj)
 
 
-class EntityDetailAttributeSerializer(serializers.Serializer):
+class EntityDetailAttributeSerializer(serializers.Serializer[dict[str, Any]]):
     id = serializers.IntegerField()
     index = serializers.IntegerField()
     name = serializers.CharField()
@@ -1064,6 +1238,8 @@ class EntityDetailAttributeSerializer(serializers.Serializer):
     referral = serializers.ListField(child=serializers.DictField())
     note = serializers.CharField()
     default_value = serializers.JSONField(required=False, allow_null=True)
+    choices = serializers.JSONField(required=False, allow_null=True)
+    choices_in_use = serializers.ListField(child=serializers.CharField(), required=False)
     name_order = serializers.IntegerField(default=0)
     name_prefix = serializers.CharField(default="")
     name_postfix = serializers.CharField(default="")
@@ -1120,6 +1296,10 @@ class EntityDetailSerializer(EntityListSerializer):
                 ],
                 "note": x.note,
                 "default_value": x.default_value,
+                "choices": x.choices,
+                "choices_in_use": sorted(x.get_choices_in_use())
+                if x.type in (AttrType.SELECT, AttrType.MULTI_SELECT)
+                else [],
                 "name_order": x.name_order,
                 "name_prefix": x.name_prefix,
                 "name_postfix": x.name_postfix,
@@ -1140,7 +1320,7 @@ class EntityDetailSerializer(EntityListSerializer):
         return [{"id": e.id, "name": e.name} for e in obj.delete_chain_exclude_entities.all()]
 
 
-class EntityHistoryChangeSerializer(serializers.Serializer):
+class EntityHistoryChangeSerializer(serializers.Serializer[dict[str, Any]]):
     """Serializer for individual change items in entity history."""
 
     action = serializers.CharField()
@@ -1149,7 +1329,7 @@ class EntityHistoryChangeSerializer(serializers.Serializer):
     after = serializers.JSONField(allow_null=True)
 
 
-class EntityHistorySerializer(serializers.ModelSerializer):
+class EntityHistorySerializer(serializers.ModelSerializer[History]):
     """Extended serializer with simple-history changes for entity history."""
 
     username = serializers.SerializerMethodField()
@@ -1365,7 +1545,7 @@ class EntityHistorySerializer(serializers.Serializer):
 
 
 # The format keeps compatibility with entity.views and dashboard.views
-class EntityAttrImportExportSerializer(serializers.ModelSerializer):
+class EntityAttrImportExportSerializer(serializers.ModelSerializer[EntityAttr]):
     id = serializers.IntegerField(required=False)
     name = serializers.CharField(required=False)
     type = serializers.IntegerField(required=False)
@@ -1392,7 +1572,7 @@ class EntityAttrImportExportSerializer(serializers.ModelSerializer):
 
 
 # The format keeps compatibility with entity.views and dashboard.views
-class EntityImportExportSerializer(serializers.ModelSerializer):
+class EntityImportExportSerializer(serializers.ModelSerializer[Entity]):
     id = serializers.IntegerField(required=False)
     name = serializers.CharField(required=False)
     created_user = serializers.CharField(required=False)
@@ -1408,12 +1588,17 @@ class EntityImportExportSerializer(serializers.ModelSerializer):
 
 
 # The format keeps compatibility with entity.views and dashboard.views
-class EntityImportExportRootSerializer(serializers.Serializer):
+class EntityImportExportRootSerializer(serializers.Serializer[dict[str, Any]]):
     Entity = EntityImportExportSerializer(many=True)
     EntityAttr = EntityAttrImportExportSerializer(many=True)
 
-    def save(self, **kwargs: object) -> None:
-        user: User = self.context.get("request").user
+    def save(self, **kwargs: object) -> None:  # type: ignore[override]
+        # Overrides BaseSerializer.save (which returns the created/updated instance):
+        # this serializer only runs importers for side effects and has no natural
+        # return value.
+        request = self.context.get("request")
+        assert request is not None, "EntityImportExportRootSerializer requires 'request' context"
+        user: User = request.user
 
         def _do_import(
             resource: type[AironeModelResource], iter_data: list[dict[str, Any]]
@@ -1432,11 +1617,11 @@ class EntityImportExportRootSerializer(serializers.Serializer):
         _do_import(EntityAttrResource, self.validated_data["EntityAttr"])
 
 
-class EntityAttrIDandNameSerializer(serializers.Serializer):
+class EntityAttrIDandNameSerializer(serializers.Serializer[dict[str, Any]]):
     id = serializers.IntegerField()
     name = serializers.CharField()
     type = serializers.IntegerField()
 
 
-class EntityAttrNameSerializer(serializers.ListSerializer):
+class EntityAttrNameSerializer(serializers.ListSerializer[dict[str, Any]]):
     child = EntityAttrIDandNameSerializer()

@@ -1,9 +1,8 @@
 from collections import OrderedDict
-from typing import Any
+from typing import Any, cast
 
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
-from rest_framework.utils.serializer_helpers import ReturnList
 
 from airone.lib.drf import RequiredParameterError
 from group.models import Group
@@ -11,7 +10,7 @@ from role.models import Role
 from user.models import User
 
 
-class RoleUserSerializer(serializers.ModelSerializer):
+class RoleUserSerializer(serializers.ModelSerializer[User]):
     class Meta:
         model = User
         fields = [
@@ -20,7 +19,7 @@ class RoleUserSerializer(serializers.ModelSerializer):
         ]
 
 
-class RoleGroupSerializer(serializers.ModelSerializer):
+class RoleGroupSerializer(serializers.ModelSerializer[Group]):
     class Meta:
         model = Group
         fields = [
@@ -29,7 +28,7 @@ class RoleGroupSerializer(serializers.ModelSerializer):
         ]
 
 
-class RoleSerializer(serializers.ModelSerializer):
+class RoleSerializer(serializers.ModelSerializer[Role]):
     users = serializers.SerializerMethodField()
     groups = serializers.SerializerMethodField()
     admin_users = serializers.SerializerMethodField()
@@ -51,27 +50,29 @@ class RoleSerializer(serializers.ModelSerializer):
         ]
 
     @extend_schema_field(RoleUserSerializer(many=True))
-    def get_users(self, obj: Role) -> ReturnList:
-        return RoleUserSerializer(obj.users.all(), many=True).data
+    def get_users(self, obj: Role) -> list[dict[str, Any]]:
+        return RoleUserSerializer(obj.users.all(), many=True).data  # type: ignore[return-value]
 
     @extend_schema_field(RoleUserSerializer(many=True))
-    def get_admin_users(self, obj: Role) -> ReturnList:
-        return RoleUserSerializer(obj.admin_users.all(), many=True).data
+    def get_admin_users(self, obj: Role) -> list[dict[str, Any]]:
+        return RoleUserSerializer(obj.admin_users.all(), many=True).data  # type: ignore[return-value]
 
     @extend_schema_field(RoleGroupSerializer(many=True))
-    def get_groups(self, obj: Role) -> ReturnList:
-        return RoleGroupSerializer(obj.groups.all(), many=True).data
+    def get_groups(self, obj: Role) -> list[dict[str, Any]]:
+        return RoleGroupSerializer(obj.groups.all(), many=True).data  # type: ignore[return-value]
 
     @extend_schema_field(RoleGroupSerializer(many=True))
-    def get_admin_groups(self, obj: Role) -> ReturnList:
-        return RoleGroupSerializer(obj.admin_groups.all(), many=True).data
+    def get_admin_groups(self, obj: Role) -> list[dict[str, Any]]:
+        return RoleGroupSerializer(obj.admin_groups.all(), many=True).data  # type: ignore[return-value]
 
     def get_is_editable(self, obj: Role) -> bool:
-        current_user: User = self.context["request"].user
-        return Role.editable(current_user, obj.admin_users.all(), obj.admin_groups.all())
+        current_user = cast(User, self.context["request"].user)
+        return Role.editable(
+            current_user, list(obj.admin_users.all()), list(obj.admin_groups.all())
+        )
 
 
-class RoleCreateUpdateSerializer(serializers.ModelSerializer):
+class RoleCreateUpdateSerializer(serializers.ModelSerializer[Role]):
     class Meta:
         model = Role
         fields = [
@@ -93,8 +94,8 @@ class RoleCreateUpdateSerializer(serializers.ModelSerializer):
         admin_users: list[User] = role.get("admin_users", [])
         admin_groups: list[Group] = role.get("admin_groups", [])
 
-        user: User = self.context["request"].user
-        if not Role.editable(user, admin_users, admin_groups):
+        user = cast(User, self.context["request"].user)
+        if not Role.editable(user, admin_users, cast(list[Any], admin_groups)):
             raise RequiredParameterError(
                 "your account must be set as a member of admin_users or admin_groups"
             )
@@ -116,7 +117,7 @@ class RoleCreateUpdateSerializer(serializers.ModelSerializer):
         return role
 
 
-class RoleImportExportChildSerializer(serializers.ModelSerializer):
+class RoleImportExportChildSerializer(serializers.ModelSerializer[Role]):
     name = serializers.CharField()
     users = serializers.ListField(child=serializers.CharField())
     groups = serializers.ListField(child=serializers.CharField())
@@ -156,5 +157,5 @@ class RoleImportExportChildSerializer(serializers.ModelSerializer):
         }
 
 
-class RoleImportSerializer(serializers.ListSerializer):
+class RoleImportSerializer(serializers.ListSerializer[Role]):
     child = RoleImportExportChildSerializer()

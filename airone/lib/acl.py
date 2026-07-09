@@ -1,5 +1,5 @@
 import enum
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, TypeVar
 
 from airone.lib.types import BaseIntEnum
 
@@ -8,6 +8,8 @@ if TYPE_CHECKING:
     from user.models import User
 
 __all__ = ["ACLType", "ACLObjType", "get_permission_level"]
+
+_ACLBaseT = TypeVar("_ACLBaseT", bound="ACLBase")
 
 
 @enum.unique
@@ -59,8 +61,8 @@ class ACLType(BaseIntEnum):
 
 
 def get_permitted_objects(
-    user: "User", model: type["ACLBase"], permission_level: "ACLType"
-) -> list["ACLBase"]:
+    user: "User", model: type[_ACLBaseT], permission_level: "ACLType"
+) -> list[_ACLBaseT]:
     # This method assumes that model is a subclass of ACLBase
     return [
         x for x in model.objects.all() if user.has_permission(x, permission_level) and x.is_active

@@ -1,5 +1,6 @@
 import math
-from typing import Any, List, Optional, Union
+import uuid
+from typing import TYPE_CHECKING, Any, List, Optional, Union
 
 from django.conf import settings
 from django.db import models
@@ -10,6 +11,9 @@ from airone.lib.acl import ACLObjType
 from airone.lib.types import AttrDefaultValue, AttrType
 from category.models import Category
 from webhook.models import Webhook
+
+if TYPE_CHECKING:
+    from user.models import User
 
 
 class ItemNameType(models.TextChoices):
@@ -39,6 +43,10 @@ class EntityAttr(ACLBase):
 
     note = models.CharField(max_length=200, blank=True, default="")
     default_value = models.JSONField(null=True, blank=True, default=None)
+
+    # Stores [{"value": str, "label": str}, ...] for SELECT / MULTI_SELECT types.
+    # NULL for all other types.
+    choices = models.JSONField(null=True, blank=True, default=None)
 
     history = HistoricalRecords(m2m_fields=[referral], excluded_fields=["status", "updated_time"])
 
@@ -127,7 +135,12 @@ class EntityAttr(ACLBase):
             return True  # None is always valid
 
         # Only String, Text, Boolean, Number types support custom default values, currently
-        supported_types = [AttrType.STRING, AttrType.TEXT, AttrType.BOOLEAN, AttrType.NUMBER]
+        supported_types = [
+            AttrType.STRING,
+            AttrType.TEXT,
+            AttrType.BOOLEAN,
+            AttrType.NUMBER,
+        ]
         if self.type not in supported_types:
             return False
 
@@ -147,6 +160,90 @@ class EntityAttr(ACLBase):
 
         return True
 
+    @staticmethod
+    def validate_choices(choices: Any) -> None:
+        """Validates choices payload for SELECT / MULTI_SELECT types.
+
+        Each choice must carry a non-empty `label`. The `value` is an internal
+        identifier that the system auto-assigns; it may be omitted by the
+        caller (new choice) but must be a non-empty unique string when present
+        (referring to an existing choice for label rename / re-ordering).
+
+        Raises ValueError when the payload is malformed.
+        """
+        if not isinstance(choices, list) or len(choices) == 0:
+            raise ValueError("choices must be a non-empty list")
+
+        present_values: list[str] = []
+        labels: list[str] = []
+        for c in choices:
+            if not isinstance(c, dict):
+                raise ValueError("each choice must be an object with a label")
+            lb = c.get("label")
+            if not isinstance(lb, str) or not lb:
+                raise ValueError("choice 'label' must be a non-empty string")
+            labels.append(lb)
+
+            if "value" in c and c["value"] is not None:
+                v = c["value"]
+                if not isinstance(v, str) or not v:
+                    raise ValueError("choice 'value' must be a non-empty string when given")
+                present_values.append(v)
+
+        if len(set(labels)) != len(labels):
+            raise ValueError("choice 'label' must be unique")
+        if len(set(present_values)) != len(present_values):
+            raise ValueError("choice 'value' must be unique")
+
+    @staticmethod
+    def normalize_choices(choices: list[dict[str, Any]]) -> list[dict[str, str]]:
+        """Assigns a UUID4-based `value` to every choice that lacks one.
+
+        Called after `validate_choices` to materialise the immutable internal
+        id for newly added entries while preserving the id of pre-existing
+        entries (which carry their `value`).
+        """
+        normalised: list[dict[str, str]] = []
+        for c in choices:
+            value = c.get("value")
+            if not value:
+                value = uuid.uuid4().hex
+            normalised.append({"value": value, "label": c["label"]})
+        return normalised
+
+    def get_choices_in_use(self) -> set[str]:
+        """Returns the set of choice values currently referenced by latest AttributeValues.
+
+        For SELECT, scans is_latest=True rows directly.
+        For MULTI_SELECT, child rows have is_latest=False; traverse via parent_attrv.
+        """
+        from entry.models import AttributeValue
+
+        in_use: set[str] = set()
+
+        if self.type == AttrType.SELECT:
+            in_use.update(
+                AttributeValue.objects.filter(
+                    parent_attr__schema=self,
+                    data_type=AttrType.SELECT,
+                    is_latest=True,
+                )
+                .exclude(value="")
+                .values_list("value", flat=True)
+            )
+        elif self.type == AttrType.MULTI_SELECT:
+            in_use.update(
+                AttributeValue.objects.filter(
+                    parent_attr__schema=self,
+                    data_type=AttrType.MULTI_SELECT,
+                    parent_attrv__is_latest=True,
+                )
+                .exclude(value="")
+                .values_list("value", flat=True)
+            )
+
+        return in_use
+
 
 class Entity(ACLBase):
     STATUS_TOP_LEVEL = 1 << 0
@@ -162,6 +259,10 @@ class Entity(ACLBase):
     webhooks = models.ManyToManyField(Webhook, default=[], related_name="registered_entity")
 
     history = HistoricalRecords(excluded_fields=["status", "updated_time"])
+
+    # HistoricalRecords sets `_history_user` dynamically to pick up the acting user
+    # for each save; declare it here so callers can assign without a type: ignore.
+    _history_user: Optional["User"]
 
     # The Category that groups Models according to their purpose (which is defined by User)
     categories = models.ManyToManyField(Category, default=[], related_name="models")

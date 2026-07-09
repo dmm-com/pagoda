@@ -1,5 +1,5 @@
 import logging
-from typing import Any, List
+from typing import Any, List, cast
 
 from django.db.models import F, QuerySet
 from django.http import Http404, HttpRequest
@@ -100,26 +100,34 @@ class EntityPermission(BasePermission):
             "create": ACLType.Writable,
         }
 
-        permission = permissions.get(view.action)
+        # Only ViewSets expose the resolved action name. When plain APIViews
+        # (which have no action) reach this permission check, fall through.
+        action = getattr(view, "action", None)
+        permission = permissions.get(action) if action is not None else None
         if not permission:
             return True
 
-        if request.user.is_readonly and permission > ACLType.Readable:
+        # IsAuthenticated is combined ahead of us so we only see authenticated Users.
+        user = cast(User, request.user)
+        if user.is_readonly and permission > ACLType.Readable:
             return False
 
         entity_id = view.kwargs.get("pk") or view.kwargs.get("entity_id")
         if not entity_id:
             return True
 
+        # Stash the fetched entity on the view for the object-permission phase to
+        # avoid a second DB round-trip. django-stubs cannot see this dynamic attr,
+        # so opt out at the two access sites with narrow ignores.
         if not hasattr(view, "_pagoda_context"):
-            view._pagoda_context = {}
+            view._pagoda_context = {}  # type: ignore[attr-defined]
 
-        entity: Entity | None = view._pagoda_context.get("entity")
+        entity: Entity | None = view._pagoda_context.get("entity")  # type: ignore[attr-defined]
         if not entity or entity.id != entity_id:
             entity = Entity.objects.filter(id=entity_id, is_active=True).first()
-            view._pagoda_context["entity"] = entity
+            view._pagoda_context["entity"] = entity  # type: ignore[attr-defined]
 
-        if entity and not request.user.has_permission(entity, permission):
+        if entity and not user.has_permission(entity, permission):
             return False
 
         return True
@@ -131,11 +139,13 @@ class EntityPermission(BasePermission):
             "destroy": ACLType.Full,
         }
 
-        permission = permissions.get(view.action)
+        action = getattr(view, "action", None)
+        permission = permissions.get(action) if action is not None else None
         if not permission:
             return True
 
-        if not request.user.has_permission(obj, permission):
+        user = cast(User, request.user)
+        if not user.has_permission(obj, permission):
             return False
 
         return True
@@ -146,15 +156,15 @@ class EntityPermission(BasePermission):
         OpenApiParameter("is_toplevel", OpenApiTypes.BOOL, OpenApiParameter.QUERY),
     ],
 )
-class EntityAPI(viewsets.ModelViewSet):
+class EntityAPI(viewsets.ModelViewSet[Entity]):
     pagination_class = LimitOffsetPagination
     permission_classes = [IsAuthenticated & EntityPermission]
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter, filters.SearchFilter]
     search_fields = ["name"]
     ordering = ["name"]
 
-    def get_serializer_class(self) -> type[serializers.Serializer]:
-        serializer = {
+    def get_serializer_class(self) -> type[serializers.Serializer[Any]]:
+        serializer: dict[str, type[serializers.Serializer[Any]]] = {
             "list": EntityListSerializer,
             "create": EntityCreateSerializer,
             "update": EntityUpdateSerializer,
@@ -164,8 +174,8 @@ class EntityAPI(viewsets.ModelViewSet):
     def get_queryset(self) -> QuerySet[Entity]:
         is_toplevel = self.request.query_params.get("is_toplevel", None)
 
-        filter_condition = {"is_active": True}
-        exclude_condition = {}
+        filter_condition: dict[str, Any] = {"is_active": True}
+        exclude_condition: dict[str, Any] = {}
 
         if is_toplevel is not None:
             if strtobool(is_toplevel):
@@ -177,7 +187,8 @@ class EntityAPI(viewsets.ModelViewSet):
 
     @extend_schema(request=EntityCreateSerializer, responses={202: None})
     def create(self, request: Request, *args: object, **kwargs: object) -> Response:
-        user: User = request.user
+        # IsAuthenticated permission is enforced upstream, so request.user is a User.
+        user = cast(User, request.user)
 
         serializer = EntityCreateSerializer(data=request.data, context={"_user": user})
         serializer.is_valid(raise_exception=True)
@@ -190,7 +201,7 @@ class EntityAPI(viewsets.ModelViewSet):
 
     @extend_schema(request=EntityUpdateSerializer, responses={202: None})
     def update(self, request: Request, *args: object, **kwargs: object) -> Response:
-        user: User = request.user
+        user = cast(User, request.user)
         entity: Entity = self.get_object()
 
         serializer = EntityUpdateSerializer(
@@ -205,7 +216,7 @@ class EntityAPI(viewsets.ModelViewSet):
         return Response(status=status.HTTP_202_ACCEPTED)
 
     def destroy(self, request: Request, *args: object, **kwargs: object) -> Response:
-        user: User = request.user
+        user = cast(User, request.user)
         entity: Entity = self.get_object()
 
         if not entity.is_active:
@@ -224,7 +235,9 @@ class EntityAPI(viewsets.ModelViewSet):
 
 class AliasSearchFilter(filters.SearchFilter):
     def get_search_fields(self, view: APIView, request: Request) -> list[str]:
-        original_fields = super().get_search_fields(view, request)
+        # SearchFilter.get_search_fields is typed as returning "list of field
+        # names or None"; we always append to a real list of strings.
+        original_fields: list[str] = list(super().get_search_fields(view, request) or [])
 
         # update search_fields when "with_alias" parameter was specified
         # to consier aliases that are related with target item
@@ -240,7 +253,7 @@ class AliasSearchFilter(filters.SearchFilter):
         OpenApiParameter("with_alias", OpenApiTypes.STR, OpenApiParameter.QUERY),
     ],
 )
-class EntityEntryAPI(PluginOverrideMixin, viewsets.ModelViewSet):
+class EntityEntryAPI(PluginOverrideMixin, viewsets.ModelViewSet[Entry]):
     """Entity Entry API ViewSet with plugin override support.
 
     Plugin overrides are automatically handled by PluginOverrideMixin.
@@ -255,14 +268,17 @@ class EntityEntryAPI(PluginOverrideMixin, viewsets.ModelViewSet):
     ordering_fields = ["name", "updated_time"]
     search_fields = ["name"]
 
-    def get_serializer_class(self) -> type[serializers.Serializer]:
-        serializer = {
+    def get_serializer_class(self) -> type[serializers.Serializer[Any]]:
+        serializer: dict[str, type[serializers.Serializer[Any]]] = {
             "create": EntryCreateSerializer,
         }
         return serializer.get(self.action, EntryBaseSerializer)
 
     def get_queryset(self) -> QuerySet[Entry]:
-        entity = Entity.objects.filter(id=self.kwargs.get("entity_id"), is_active=True).first()
+        entity_id = self.kwargs.get("entity_id")
+        if entity_id is None:
+            raise Http404
+        entity = Entity.objects.filter(id=entity_id, is_active=True).first()
         if not entity:
             raise Http404
         return (
@@ -277,7 +293,7 @@ class EntityEntryAPI(PluginOverrideMixin, viewsets.ModelViewSet):
             if response is not None:
                 return response
 
-        user: User = request.user
+        user = cast(User, request.user)
 
         # Set schema to entity_id and let the serializer validate it
         # This allows proper validation error response for non-existent entities
@@ -292,15 +308,16 @@ class EntityEntryAPI(PluginOverrideMixin, viewsets.ModelViewSet):
         return Response(status=status.HTTP_202_ACCEPTED)
 
 
-class EntityHistoryAPI(viewsets.ReadOnlyModelViewSet):
+class EntityHistoryAPI(viewsets.ReadOnlyModelViewSet[History]):
     serializer_class = EntityHistorySerializer
     permission_classes = [IsAuthenticated & EntityPermission]
     pagination_class = LimitOffsetPagination
 
     def get_queryset(self) -> QuerySet[History]:
-        entity = Entity.objects.get(id=self.kwargs.get("entity_id"))
-        if not entity:
+        entity_id = self.kwargs.get("entity_id")
+        if entity_id is None:
             raise Http404
+        entity = Entity.objects.get(id=entity_id)
 
         attrs = entity.attrs.all()
 
@@ -331,6 +348,8 @@ class EntityHistoryAPI(viewsets.ReadOnlyModelViewSet):
 
         # Build simple-history caches for diff calculation
         entity_id = self.kwargs.get("entity_id")
+        if entity_id is None:
+            raise Http404
         entity = Entity.objects.get(id=entity_id)
         historical_cache = self._build_historical_cache(entity, cached_histories)
 
@@ -340,7 +359,9 @@ class EntityHistoryAPI(viewsets.ReadOnlyModelViewSet):
             "historical_cache": historical_cache,
         }
 
-        page = self.paginate_queryset(cached_histories)
+        # paginate_queryset accepts pre-fetched sequences too; drf-stubs annotates it
+        # tighter than the runtime accepts.
+        page = self.paginate_queryset(cached_histories)  # type: ignore[arg-type]
         if page is not None:
             serializer = self.get_serializer(page, many=True, context=serializer_context)
             return self.get_paginated_response(serializer.data)
@@ -393,13 +414,16 @@ class EntityHistoryAPI(viewsets.ReadOnlyModelViewSet):
         return historical_cache
 
 
-class EntityImportAPI(generics.GenericAPIView):
+class EntityImportAPI(generics.GenericAPIView[Entity]):
     parser_classes = [YAMLParser]
-    serializer_class = EntityImportExportRootSerializer
+    # EntityImportExportRootSerializer is Serializer[dict], not Serializer[Entity],
+    # so the tighter drf-stubs annotation on serializer_class does not fit here.
+    serializer_class = EntityImportExportRootSerializer  # type: ignore[assignment]
 
     @extend_schema(responses={200: None})
     def post(self, request: Request) -> Response:
-        if request.user.is_readonly:
+        user = cast(User, request.user)
+        if user.is_readonly:
             return Response(status=status.HTTP_403_FORBIDDEN)
 
         import_datas = request.data
@@ -412,12 +436,16 @@ class EntityImportAPI(generics.GenericAPIView):
         return Response()
 
 
-class EntityExportAPI(generics.RetrieveAPIView):
-    serializer_class = EntityImportExportRootSerializer
+class EntityExportAPI(generics.RetrieveAPIView[Entity]):
+    # EntityImportExportRootSerializer is Serializer[dict], not Serializer[Entity],
+    # so the tighter drf-stubs annotation on serializer_class does not fit here.
+    serializer_class = EntityImportExportRootSerializer  # type: ignore[assignment]
     renderer_classes = [YAMLRenderer]
 
-    def get_object(self) -> dict[str, Any]:
-        user: User = self.request.user
+    # Overrides get_object to return a dict payload (Entity+EntityAttr collections)
+    # for the YAML export instead of the single-instance shape expected by the base.
+    def get_object(self) -> dict[str, Any]:  # type: ignore[override]
+        user = cast(User, self.request.user)
         entities = get_permitted_objects(user, Entity, ACLType.Readable)
         attrs = get_permitted_objects(user, EntityAttr, ACLType.Readable)
 
@@ -433,10 +461,12 @@ class EntityExportAPI(generics.RetrieveAPIView):
         OpenApiParameter("referral_attr", OpenApiTypes.STR, OpenApiParameter.QUERY),
     ],
 )
-class EntityAttrNameAPI(generics.GenericAPIView):
-    serializer_class = EntityAttrNameSerializer
+class EntityAttrNameAPI(generics.GenericAPIView[EntityAttr]):
+    # EntityAttrNameSerializer is a ListSerializer producing plain dicts, not
+    # EntityAttr instances, so the tighter serializer_class annotation does not fit.
+    serializer_class = EntityAttrNameSerializer  # type: ignore[assignment]
 
-    def get_queryset(self) -> list[dict[str, int | str]]:
+    def get_queryset(self) -> list[dict[str, int | str]]:  # type: ignore[override]
         entity_ids = list(filter(None, self.request.query_params.get("entity_ids", "").split(",")))
         referral_attr = self.request.query_params.get("referral_attr")
 
@@ -485,5 +515,5 @@ class EntityAttrNameAPI(generics.GenericAPIView):
 
     def get(self, request: Request) -> Response:
         queryset = self.get_queryset()
-        serializer: serializers.Serializer = self.get_serializer(queryset)
+        serializer = self.get_serializer(queryset)
         return Response(serializer.data)

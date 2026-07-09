@@ -11,6 +11,7 @@ from airone.lib.elasticsearch import (
     EntryHint,
 )
 from airone.lib.log import Logger
+from airone.lib.types import AttrType
 from entity.models import Entity, EntityAttr
 from entry.models import Entry
 from entry.services import AdvancedSearchService
@@ -19,7 +20,7 @@ from entry.settings import CONFIG
 SEARCH_ENTRY_LIMIT = 200
 
 
-class ReferSerializer(serializers.Serializer):
+class ReferSerializer(serializers.Serializer[dict[str, Any]]):
     entity = serializers.CharField(max_length=200)
     entry = serializers.CharField(max_length=200, required=False, allow_blank=True)
     is_any = serializers.BooleanField(default=False)
@@ -34,11 +35,12 @@ class ReferSerializer(serializers.Serializer):
 
     def validate(self, data: dict[str, Any]) -> dict[str, Any]:
         entity = Entity.objects.filter(name=data["entity"], is_active=True).first()
+        assert entity is not None
         data["entity_id"] = entity.id
         return data
 
 
-class AttrSerializer(serializers.Serializer):
+class AttrSerializer(serializers.Serializer[dict[str, Any]]):
     name = serializers.CharField(max_length=200)
     value = serializers.CharField(max_length=200, required=False, allow_blank=True)
     is_any = serializers.BooleanField(default=False)
@@ -55,7 +57,7 @@ class AttrSerializer(serializers.Serializer):
         return value
 
 
-class EntrySearchChainSerializer(serializers.Serializer):
+class EntrySearchChainSerializer(serializers.Serializer[dict[str, Any]]):
     entities = serializers.ListField(child=serializers.CharField(max_length=200))
     attrs = serializers.ListField(child=AttrSerializer(), required=False)
     refers = serializers.ListField(child=ReferSerializer(), required=False)
@@ -93,7 +95,7 @@ class EntrySearchChainSerializer(serializers.Serializer):
             # This validates whethere it is possible that Entity has specified Attribute
             if not any(
                 [
-                    EntityAttr.objects.filter(name=attrname, is_active=True, parent_entity__pk=x)
+                    EntityAttr.objects.filter(name=attrname, is_active=True, parent_entity__pk=x)  # type: ignore[misc]
                     for x in entities
                 ]
             ):
@@ -104,7 +106,9 @@ class EntrySearchChainSerializer(serializers.Serializer):
                 entity_ids = []
                 for entity in entities:
                     entity_attr = EntityAttr.objects.filter(
-                        name=condition["name"], is_active=True, parent_entity__pk=entity
+                        name=condition["name"],
+                        is_active=True,
+                        parent_entity__pk=entity,  # type: ignore[misc]
                     ).first()
                     if entity_attr:
                         # complements Entity IDs that this condition implicitly expects
@@ -116,7 +120,7 @@ class EntrySearchChainSerializer(serializers.Serializer):
         def _may_validate_and_complement_condition(
             condition: dict[str, Any],
             entities: list[Entity] | None,
-            serializer_class: type[serializers.Serializer],
+            serializer_class: type[serializers.Serializer[Any]],
         ) -> dict[str, Any]:
             serializer = serializer_class(data=condition)
             if not serializer.is_valid():
@@ -125,7 +129,7 @@ class EntrySearchChainSerializer(serializers.Serializer):
             if not entities:
                 raise ValidationError("Condition(%s) couldn't find valid Entities" % str(condition))
 
-            validated_data = serializer.validated_data
+            validated_data: dict[str, Any] = serializer.validated_data
             if "name" in validated_data:
                 _validate_attribute(validated_data["name"], entities)
 
@@ -513,6 +517,7 @@ class EntrySearchChainSerializer(serializers.Serializer):
                     return False
 
             v = attrv.get_value(with_metainfo=True)
+            attr_type = attrv.parent_attr.schema.type
             if v["value"] is None:
                 if is_any or (info.get("vlaue") == "" and not is_any):
                     continue
@@ -529,6 +534,32 @@ class EntrySearchChainSerializer(serializers.Serializer):
                 # is True (it means OR condition).
                 if is_any:
                     return True
+
+            elif attr_type == AttrType.SELECT and isinstance(v["value"], dict):
+                # SELECT values are {"value", "label"} dicts that must not be routed
+                # through the referral branch (attrv.referral is always None here).
+                target = info.get("value", "")
+                matched = target in str(v["value"].get("label", "")) or target in str(
+                    v["value"].get("value", "")
+                )
+                if matched and is_any:
+                    return True
+                if not matched and not is_any:
+                    return False
+
+            elif attr_type == AttrType.MULTI_SELECT and isinstance(v["value"], list):
+                # MULTI_SELECT values are lists of {"value", "label"} dicts. Match against
+                # the human-visible label/value of each choice without consulting referral.
+                target = info.get("value", "")
+                matched = any(
+                    target in str(c.get("label", "")) or target in str(c.get("value", ""))
+                    for c in v["value"]
+                    if isinstance(c, dict)
+                )
+                if matched and is_any:
+                    return True
+                if not matched and not is_any:
+                    return False
 
             elif isinstance(v["value"], dict):
                 # this confirms simple referral value (e.g. AttrTypeValue['object'])

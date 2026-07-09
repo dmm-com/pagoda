@@ -46,6 +46,7 @@ class AttrType(BaseIntEnum):
     ROLE = 1 << 6
     DATETIME = 1 << 7
     NUMBER = 1 << 8
+    SELECT = 1 << 9
     _ARRAY = 1 << 10
     _NAMED = 1 << 11
     NAMED_OBJECT = _NAMED | OBJECT
@@ -57,6 +58,7 @@ class AttrType(BaseIntEnum):
     ARRAY_NAMED_OBJECT_BOOLEAN = _ARRAY | NAMED_OBJECT_BOOLEAN
     ARRAY_GROUP = _ARRAY | GROUP
     ARRAY_ROLE = _ARRAY | ROLE
+    MULTI_SELECT = _ARRAY | SELECT
 
 
 # Mapping from string to AttrType enum values (backwards compatibility)
@@ -78,6 +80,8 @@ AttrTypeValue = {
     "date": AttrType.DATE,
     "datetime": AttrType.DATETIME,
     "number": AttrType.NUMBER,
+    "select": AttrType.SELECT,
+    "multi_select": AttrType.MULTI_SELECT,
 }
 
 
@@ -126,4 +130,6 @@ AttrDefaultValue: dict[int, Any] = {
     AttrType.ROLE: None,
     AttrType.DATETIME: None,
     AttrType.NUMBER: None,
+    AttrType.SELECT: None,
+    AttrType.MULTI_SELECT: [],
 }

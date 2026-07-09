@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, cast
 
 from django.http import HttpRequest, HttpResponse
 from django.http.response import JsonResponse
@@ -56,7 +56,7 @@ def initialize_role_context() -> dict[str, Any]:
                 "name": g.name,
                 "type": "group",
             }
-            for g in Group.objects.filter(is_active=True).order_by("name")
+            for g in Group.objects.filter(is_active=True).order_by("name")  # type: ignore[misc]
         }
 
     return context
@@ -122,7 +122,7 @@ def do_create(request: HttpRequest, recv_data: dict[str, Any]) -> HttpResponse:
 
     # This checks whether specified parameter might make this role not to be able to
     # delete this role by this user.
-    if not is_role_editable(request.user, recv_data):
+    if not is_role_editable(cast(User, request.user), recv_data):
         return HttpResponse(
             "You can't edit this role. Please set administrative members", status=400
         )
@@ -143,7 +143,7 @@ def do_create(request: HttpRequest, recv_data: dict[str, Any]) -> HttpResponse:
 
 @http_get
 def edit(request: HttpRequest, role_id: int) -> HttpResponse:
-    user = request.user
+    user = cast(User, request.user)
     role = Role.objects.filter(id=role_id, is_active=True).first()
     if not role:
         return HttpResponse("Specified Role(id:%d) does not exist" % role_id, status=400)
@@ -165,7 +165,7 @@ def edit(request: HttpRequest, role_id: int) -> HttpResponse:
         ("admin_group_info", "name", role.admin_groups),
     ]:
         for instance in model.filter(is_active=True):
-            context[key][instance.id].update(
+            context[key][cast(Any, instance).id].update(
                 {
                     "name": getattr(instance, nameattr),
                     "is_checked": "true",
@@ -186,7 +186,7 @@ def edit(request: HttpRequest, role_id: int) -> HttpResponse:
     ]
 )
 def do_edit(request: HttpRequest, role_id: int, recv_data: dict[str, Any]) -> HttpResponse:
-    user = request.user
+    user = cast(User, request.user)
     role = Role.objects.filter(id=role_id, is_active=True).first()
     if not role:
         return HttpResponse("Specified Role(id:%d) does not exist" % role_id, status=400)
@@ -215,7 +215,7 @@ def do_edit(request: HttpRequest, role_id: int, recv_data: dict[str, Any]) -> Ht
     job_register_referrals = None
     if role.name != recv_data["name"]:
         job_register_referrals = Job.new_register_referrals(
-            request.user,
+            user,
             None,
             operation_value=JobOperation.ROLE_REGISTER_REFERRAL,
             params={"role_id": role.id},

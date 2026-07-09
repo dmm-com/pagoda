@@ -31,7 +31,7 @@ def _view_opts_in_to_replica(view_func: Callable[..., Any]) -> bool:
     return bool(getattr(view_func, "_db_readonly", False))
 
 
-class AironePinningRouterMiddleware(PinningRouterMiddleware):
+class AironePinningRouterMiddleware(PinningRouterMiddleware):  # type: ignore[misc]
     """Pagoda-flavored PinningRouterMiddleware.
 
     Honors the ``@db_readonly`` marker on a resolved view by undoing the
@@ -49,11 +49,12 @@ class AironePinningRouterMiddleware(PinningRouterMiddleware):
     ) -> None:
         if _view_opts_in_to_replica(view_func):
             unpin_this_thread()
-            request._airone_db_readonly = True
+            request._airone_db_readonly = True  # type: ignore[attr-defined]
 
     def process_response(self, request: HttpRequest, response: HttpResponse) -> HttpResponse:
         if getattr(request, "_airone_db_readonly", False) and not getattr(
             response, "_db_write", False
         ):
             return response
-        return super().process_response(request, response)
+        result: HttpResponse = super().process_response(request, response)
+        return result

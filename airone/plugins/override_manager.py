@@ -9,7 +9,7 @@ Changed to ID-based registration with parameter support.
 
 import logging
 from dataclasses import dataclass, field
-from enum import Enum
+from enum import StrEnum
 from typing import TYPE_CHECKING, Any, Callable, Dict, Optional, Protocol
 
 from pydantic import BaseModel
@@ -27,7 +27,7 @@ class PluginRegistryProtocol(Protocol):
 logger = logging.getLogger(__name__)
 
 
-class OperationType(Enum):
+class OperationType(StrEnum):
     """Supported entry operation types that can be overridden."""
 
     CREATE = "create"
@@ -47,7 +47,7 @@ class OperationType(Enum):
             )
 
 
-@dataclass
+@dataclass(slots=True)
 class OverrideRegistration:
     """Registration information for an override handler."""
 
@@ -85,7 +85,7 @@ class OverrideConflictError(Exception):
         )
 
 
-@dataclass
+@dataclass(slots=True)
 class OverrideRegistry:
     """Registry for plugin entry operation overrides.
 

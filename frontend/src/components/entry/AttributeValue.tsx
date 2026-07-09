@@ -123,6 +123,16 @@ const ElemRole: FC<{ attrValue: EntryAttributeValueRole | undefined }> = ({
   );
 };
 
+const ElemSelect: FC<{
+  attrValue: { value: string; label: string } | null | undefined;
+}> = ({ attrValue }) => {
+  return attrValue ? (
+    <Chip label={attrValue.label || " "} size="small" variant="outlined" />
+  ) : (
+    <Box />
+  );
+};
+
 interface Props {
   attrInfo: {
     type: number;
@@ -264,6 +274,26 @@ export const AttributeValue: FC<Props> = ({ attrInfo }) => {
           {attrInfo.value?.asArrayNumber?.map((info, n) => (
             <StyledListItem key={n}>
               <ElemNumber attrValue={info} />
+            </StyledListItem>
+          ))}
+        </StyledList>
+      );
+
+    case EntryAttributeTypeTypeEnum.SELECT:
+      return (
+        <StyledList>
+          <StyledListItem>
+            <ElemSelect attrValue={attrInfo.value.asSelect ?? null} />
+          </StyledListItem>
+        </StyledList>
+      );
+
+    case EntryAttributeTypeTypeEnum.MULTI_SELECT:
+      return (
+        <StyledList>
+          {attrInfo.value?.asMultiSelect?.map((info, n) => (
+            <StyledListItem key={n}>
+              <ElemSelect attrValue={info} />
             </StyledListItem>
           ))}
         </StyledList>

@@ -75,13 +75,13 @@ class PluginIntegration:
             from user.models import User
 
             # Inject real models
-            sdk_models.Entity = Entity
-            sdk_models.Entry = Entry
-            sdk_models.User = User
-            sdk_models.AttributeValue = AttributeValue
-            sdk_models.EntityAttr = EntityAttr
-            sdk_models.Attribute = Attribute
-            sdk_models.Job = Job
+            sdk_models.Entity = Entity  # type: ignore[assignment]
+            sdk_models.Entry = Entry  # type: ignore[assignment]
+            sdk_models.User = User  # type: ignore[assignment]
+            sdk_models.AttributeValue = AttributeValue  # type: ignore[assignment]
+            sdk_models.EntityAttr = EntityAttr  # type: ignore[assignment]
+            sdk_models.Attribute = Attribute  # type: ignore[assignment]
+            sdk_models.Job = Job  # type: ignore[assignment]
 
             logger.info("Successfully injected models into plugin SDK")
 

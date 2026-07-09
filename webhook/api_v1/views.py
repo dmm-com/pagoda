@@ -1,5 +1,5 @@
 import json
-from typing import Any
+from typing import Any, cast
 
 import requests
 import urllib3
@@ -13,6 +13,7 @@ from urllib3.exceptions import InsecureRequestWarning
 from airone.lib.acl import ACLType
 from airone.lib.http import get_obj_with_check_perm, http_post
 from entity.models import Entity
+from user.models import User
 from webhook.models import Webhook
 
 urllib3.disable_warnings(InsecureRequestWarning)
@@ -27,8 +28,14 @@ urllib3.disable_warnings(InsecureRequestWarning)
     ]
 )
 def set_webhook(request: HttpRequest, entity_id: int, recv_data: dict[str, Any]) -> HttpResponse:
-    entity, error = get_obj_with_check_perm(request.user, Entity, entity_id, ACLType.Full)
+    entity, error = get_obj_with_check_perm(
+        cast(User, request.user),
+        Entity,
+        entity_id,
+        ACLType.Full,
+    )
     if error or entity is None:
+        assert error is not None
         return error
 
     if not entity.is_active:
