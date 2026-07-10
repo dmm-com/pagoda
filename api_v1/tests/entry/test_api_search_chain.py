@@ -1343,6 +1343,76 @@ class APITest(AironeViewTest):
             ),
         )
 
+    def test_search_chain_bundles_leaf_attrs_into_single_and_query(self):
+        # Regression test: leaf-level Attribute conditions combined by AND (is_any=False) must be
+        # bundled into a single Elasticsearch query so that their AND-ed result is evaluated on the
+        # ES side. Otherwise each condition is searched separately and an intermediate result that
+        # alone exceeds SEARCH_CHAIN_ACCEPTABLE_RESULT_COUNT wrongly raises a data overflow error,
+        # even though the AND-ed result is small.
+        ENTRY_CONFIG.conf["SEARCH_CHAIN_ACCEPTABLE_RESULT_COUNT"] = 2
+
+        entity_server = self.create_entity(
+            self.user,
+            "Server",
+            attrs=[
+                {"name": "team", "type": AttrType.STRING},
+                {"name": "category", "type": AttrType.STRING},
+            ],
+        )
+        # team="teamA" alone matches 3 Entries (> acceptable count),
+        # category="catX" alone matches 3 Entries (> acceptable count),
+        # but (team="teamA" AND category="catX") matches only srv1.
+        srv1 = self.add_entry(
+            self.user, "srv1", entity_server, values={"team": "teamA", "category": "catX"}
+        )
+        self.add_entry(
+            self.user, "srv2", entity_server, values={"team": "teamA", "category": "catY"}
+        )
+        self.add_entry(
+            self.user, "srv3", entity_server, values={"team": "teamA", "category": "catZ"}
+        )
+        self.add_entry(
+            self.user, "srv4", entity_server, values={"team": "teamB", "category": "catX"}
+        )
+        self.add_entry(
+            self.user, "srv5", entity_server, values={"team": "teamC", "category": "catX"}
+        )
+
+        # A single leaf condition alone exceeds the acceptable count -> data overflow.
+        resp = self.client.post(
+            "/api/v1/entry/search_chain",
+            json.dumps({"entities": ["Server"], "attrs": [{"name": "team", "value": "teamA"}]}),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.json(),
+            {"reason": "Data overflow was happened. Please narrow down intermediate conditions"},
+        )
+
+        # The two leaf conditions combined by AND are bundled into a single query whose result
+        # stays within the acceptable count, so the search succeeds.
+        resp = self.client.post(
+            "/api/v1/entry/search_chain",
+            json.dumps(
+                {
+                    "entities": ["Server"],
+                    "is_any": False,
+                    "attrs": [
+                        {"name": "team", "value": "teamA"},
+                        {"name": "category", "value": "catX"},
+                    ],
+                }
+            ),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json()["ret_count"], 1)
+        self.assertEqual(
+            [x["entry"] for x in resp.json()["ret_values"]],
+            [{"id": srv1.id, "name": srv1.name}],
+        )
+
     @skip("""
     A situation that raises ElasticsearchException because of exceeding search count because of
     installing workaround limitation cap won't be happened.
