@@ -133,7 +133,7 @@ class ViewTest(BaseViewTest):
             },
             "datetime": {
                 "value": "2018-12-31T00:00:00+00:00",
-                "result": {"as_string": "2018-12-31T00:00:00Z"},
+                "result": {"as_string": "2018-12-31T00:00:00+00:00"},
             },
         }
         entry = self.add_entry(
@@ -148,7 +148,7 @@ class ViewTest(BaseViewTest):
             {
                 "created_time": attrv.created_time.astimezone(self.TZ_INFO).isoformat(),
                 "created_user": "guest",
-                "curr_value": {"as_string": "2018-12-31T00:00:00Z"},
+                "curr_value": {"as_string": "2018-12-31T00:00:00+00:00"},
                 "id": attrv.id,
                 "parent_attr": {"id": attrv.parent_attr.id, "name": "datetime"},
                 "prev_id": None,
