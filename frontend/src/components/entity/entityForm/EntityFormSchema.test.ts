@@ -77,6 +77,7 @@ describe("schema", () => {
         nameOrder: "0",
         namePrefix: "",
         namePostfix: "",
+        displayAttr: "",
       },
     ],
   };
@@ -234,6 +235,7 @@ describe("schema", () => {
       nameOrder: "0",
       namePrefix: "",
       namePostfix: "",
+      displayAttr: "",
     };
 
     test("validation succeeds if attribute names are unique", () => {

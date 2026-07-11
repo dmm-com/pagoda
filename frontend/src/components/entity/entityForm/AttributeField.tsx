@@ -36,6 +36,8 @@ import { AttributeNoteModal } from "./AttributeNoteModal";
 import { ChoicesEditor } from "./ChoicesEditor";
 import { Schema } from "./EntityFormSchema";
 
+import { usePagodaSWR } from "hooks/usePagodaSWR";
+import { aironeApiClient } from "repository/AironeApiClient";
 import { aclPath } from "routes/Routes";
 import { AttributeTypes } from "services/Constants";
 
@@ -52,6 +54,19 @@ const AUTONAME_SELECTABLE_TYPES = [
   AttributeTypes.object.type,
   AttributeTypes.number.type,
 ];
+
+// Attribute types eligible as display_attr on a referred entry (mirrors backend
+// entry.api_v2.serializers._DISPLAY_LABEL_ALLOWED_TYPES). Array / named / group
+// / role are intentionally excluded — backend returns null for those.
+const DISPLAY_ATTR_ALLOWED_TYPES: ReadonlySet<number> = new Set([
+  AttributeTypes.string.type,
+  AttributeTypes.text.type,
+  AttributeTypes.number.type,
+  AttributeTypes.boolean.type,
+  AttributeTypes.date.type,
+  AttributeTypes.datetime.type,
+  AttributeTypes.object.type,
+]);
 
 // Define the custom display order for attribute types
 const ATTRIBUTE_TYPE_ORDER = [
@@ -125,6 +140,41 @@ export const AttributeField: FC<Props> = ({
   const isObjectLikeType = ((attrType ?? 0) & AttributeTypes.object.type) > 0;
   const isSelectLikeType = ((attrType ?? 0) & AttributeTypes.select.type) > 0;
   const isAutoNameSupported = AUTONAME_SELECTABLE_TYPES.includes(attrType ?? 0);
+
+  // Watch selected referral entities so display_attr candidates can be
+  // narrowed to the attrs those entities actually declare.
+  const referral = useWatch({
+    control,
+    name: `attrs.${index ?? -1}.referral`,
+  });
+  const referralIds = useMemo(
+    () => (referral ?? []).map((r: { id: number }) => r.id),
+    [referral],
+  );
+  // Candidate fetching is optional UX — a fetch failure must never crash the
+  // entity edit form (usePagodaSWR re-throws errors in render). Swallow errors
+  // in the fetcher so SWR sees success-with-empty-list on failure.
+  const { data: refEntityAttrs, isLoading: displayAttrLoading } = usePagodaSWR(
+    isObjectLikeType && referralIds.length > 0
+      ? (["displayAttrCandidates", referralIds] as const)
+      : null,
+    async () => {
+      try {
+        return await aironeApiClient.getEntityAttrs(referralIds, false);
+      } catch {
+        return [];
+      }
+    },
+  );
+  const displayAttrOptions = useMemo(() => {
+    const names = new Set<string>();
+    (refEntityAttrs ?? []).forEach((a: { name: string; type: number }) => {
+      if (DISPLAY_ATTR_ALLOWED_TYPES.has(a.type)) {
+        names.add(a.name);
+      }
+    });
+    return Array.from(names).sort();
+  }, [refEntityAttrs]);
 
   const handleCloseModal = () => setOpenModal(false);
   const handleCloseAutoNameConfigModal = () =>
@@ -209,6 +259,48 @@ export const AttributeField: FC<Props> = ({
               )}
             />
           )}
+          {isObjectLikeType && (
+            <Controller
+              name={`attrs.${index}.displayAttr`}
+              control={control}
+              defaultValue=""
+              render={({ field }) => (
+                <Autocomplete
+                  freeSolo
+                  options={displayAttrOptions}
+                  value={field.value ?? ""}
+                  onChange={(_e, v) =>
+                    field.onChange(typeof v === "string" ? v : (v ?? ""))
+                  }
+                  onInputChange={(_e, v, reason) => {
+                    if (reason === "input" || reason === "clear") {
+                      field.onChange(v);
+                    }
+                  }}
+                  size="small"
+                  fullWidth
+                  disabled={!isWritable}
+                  loading={displayAttrLoading}
+                  noOptionsText={
+                    referralIds.length === 0
+                      ? "参照先モデルを先に選択"
+                      : "該当する属性がありません"
+                  }
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      id="display_attr"
+                      placeholder="表示ラベルに使う属性名 (任意)"
+                      inputProps={{
+                        ...params.inputProps,
+                        "data-1p-ignore": true,
+                      }}
+                    />
+                  )}
+                />
+              )}
+            />
+          )}
           {isSelectLikeType && (
             <ChoicesEditor
               control={control}
@@ -240,6 +332,9 @@ export const AttributeField: FC<Props> = ({
                   checked={Boolean(field.value) ?? false}
                   onChange={(e) => field.onChange(e.target.checked)}
                   disabled={!isWritable}
+                  inputProps={{
+                    "aria-label": `${index + 1} 番目の属性のデフォルト値`,
+                  }}
                 />
               );
             }
@@ -282,6 +377,7 @@ export const AttributeField: FC<Props> = ({
       <TableCell>
         <Box display="flex" flexDirection="column">
           <IconButton
+            aria-label={`${index + 1} 番目の属性を上へ移動`}
             disabled={index === 0 || !isWritable}
             onClick={() => handleChangeOrderAttribute(index, 1)}
           >
@@ -289,6 +385,7 @@ export const AttributeField: FC<Props> = ({
           </IconButton>
 
           <IconButton
+            aria-label={`${index + 1} 番目の属性を下へ移動`}
             disabled={index === maxIndex || !isWritable}
             onClick={() => handleChangeOrderAttribute(index, -1)}
           >
@@ -300,6 +397,7 @@ export const AttributeField: FC<Props> = ({
       {/* Delete target Attribute */}
       <TableCell>
         <IconButton
+          aria-label={`${index + 1} 番目の属性を削除`}
           onClick={() => handleDeleteAttribute(index)}
           disabled={!isWritable}
         >
@@ -309,7 +407,10 @@ export const AttributeField: FC<Props> = ({
 
       {/* Add another Attribute button */}
       <TableCell>
-        <IconButton onClick={() => handleAppendAttribute(index ?? 0)}>
+        <IconButton
+          aria-label={`${index + 1} 番目の後に属性を追加`}
+          onClick={() => handleAppendAttribute(index ?? 0)}
+        >
           <AddIcon />
         </IconButton>
       </TableCell>
@@ -318,6 +419,7 @@ export const AttributeField: FC<Props> = ({
       <TableCell>
         <Tooltip title="詳細">
           <IconButton
+            aria-label={`${index + 1} 番目の属性の詳細メニューを開く`}
             onClick={(e) => {
               setAttrMenuElem(e.currentTarget);
             }}
@@ -379,6 +481,9 @@ export const AttributeField: FC<Props> = ({
                   render={({ field }) => (
                     <Checkbox
                       id="mandatory"
+                      inputProps={{
+                        "aria-label": `${index + 1} 番目の属性を必須にする`,
+                      }}
                       disabled={!isWritable}
                       checked={field.value}
                       onChange={(e) => field.onChange(e.target.checked)}
@@ -402,6 +507,9 @@ export const AttributeField: FC<Props> = ({
                   render={({ field }) => (
                     <Checkbox
                       id="delete_in_chain"
+                      inputProps={{
+                        "aria-label": `${index + 1} 番目の属性を関連削除に連動する`,
+                      }}
                       disabled={!isWritable}
                       checked={field.value}
                       onChange={(e) => field.onChange(e.target.checked)}
@@ -441,7 +549,10 @@ export const AttributeField: FC<Props> = ({
       <TableCell />
       <TableCell />
       <TableCell>
-        <IconButton onClick={() => handleAppendAttribute(index ?? 0)}>
+        <IconButton
+          aria-label="属性を追加"
+          onClick={() => handleAppendAttribute(index ?? 0)}
+        >
           <AddIcon />
         </IconButton>
       </TableCell>

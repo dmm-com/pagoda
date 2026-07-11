@@ -128,6 +128,7 @@ export const schema = z.object({
           nameOrder: z.string().default("0"),
           namePrefix: z.string().default(""),
           namePostfix: z.string().default(""),
+          displayAttr: z.string().default(""),
         })
         .refine(
           (attr) => {

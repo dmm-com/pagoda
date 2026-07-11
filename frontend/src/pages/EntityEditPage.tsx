@@ -116,6 +116,7 @@ export const EntityEditPage: FC = () => {
           nameOrder: Number(attr.nameOrder),
           namePrefix: attr.namePrefix,
           namePostfix: attr.namePostfix,
+          displayAttr: attr.displayAttr,
         };
       });
 
@@ -298,6 +299,7 @@ export const EntityEditPage: FC = () => {
           nameOrder: attr.nameOrder?.toString() ?? "0",
           namePrefix: attr.namePrefix ?? "",
           namePostfix: attr.namePostfix ?? "",
+          displayAttr: attr.displayAttr ?? "",
         })),
       };
 

@@ -62,7 +62,7 @@ const ElemObject: FC<{
       component={AironeLink}
       to={entryDetailsPath(attrValue.schema?.id ?? 0, attrValue.id)}
     >
-      {attrValue.name}
+      {attrValue.displayLabel ?? attrValue.name}
     </Box>
   ) : (
     <Box />
@@ -88,7 +88,7 @@ const ElemNamedObject: FC<{
             attrValue.object.id ?? 0,
           )}
         >
-          {attrValue.object.name}
+          {attrValue.object.displayLabel ?? attrValue.object.name}
         </Box>
       ) : (
         <Box />

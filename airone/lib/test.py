@@ -4,7 +4,8 @@ import io
 import logging
 import os
 import sys
-from typing import Callable, List, cast
+from collections.abc import Callable
+from typing import cast
 from zoneinfo import ZoneInfo
 
 from django.conf import settings
@@ -110,13 +111,14 @@ class AironeTestCase(TestCase):
                     "name_order": attr_info.get("name_order", 0),
                     "name_prefix": attr_info.get("name_prefix", ""),
                     "name_postfix": attr_info.get("name_postfix", ""),
+                    "display_attr": attr_info.get("display_attr", ""),
                 }
             )
 
             # register referral(s) EntityAttr.add_referral() supports any kind of types
             ref = attr_info.get("ref")
             if ref is not None:
-                entity_attr.add_referral(cast(Entity | str | int | list[Entity | str | int], ref))
+                entity_attr.add_referral(cast("Entity | str | int | list[Entity | str | int]", ref))
 
         for webhook_info in webhooks:
             webhook: Webhook = Webhook.objects.create(
@@ -204,7 +206,7 @@ class AironeTestCase(TestCase):
         return entry
 
     def create_category(
-        self, user: User, name: str, note: str = "", models: List[Entity] = [], priority: int = 0
+        self, user: User, name: str, note: str = "", models: list[Entity] = [], priority: int = 0
     ) -> Category:
         # create target Category instance
         category = Category.objects.create(
@@ -259,20 +261,17 @@ class AironeTestCase(TestCase):
         entry: Entry | None = None,
     ) -> Attribute:
         """Create EntityAttr and Attribute for testing."""
-        resolved_user: User = user or getattr(self, "_user")
-        resolved_entity: Entity = entity or getattr(self, "_entity")
-        resolved_entry: Entry = entry or getattr(self, "_entry")
-        entity_attr = EntityAttr.objects.create(
+        entity_attr = EntityAttr.objects.create(  # type: ignore[misc]
             name=name,
             type=attrtype,
-            created_user=resolved_user,
-            parent_entity=resolved_entity,
+            created_user=user or getattr(self, "_user", None),
+            parent_entity=entity or getattr(self, "_entity", None),
         )
-        return Attribute.objects.create(
+        return Attribute.objects.create(  # type: ignore[misc]
             name=name,
             schema=entity_attr,
-            created_user=resolved_user,
-            parent_entry=resolved_entry,
+            created_user=user or getattr(self, "_user", None),
+            parent_entry=entry or getattr(self, "_entry", None),
         )
 
     def _do_login(self, uname: str, is_superuser: bool = False) -> User:
@@ -294,7 +293,7 @@ class AironeTestCase(TestCase):
 
 class AironeViewTest(AironeTestCase):
     def setUp(self) -> None:
-        super(AironeViewTest, self).setUp()
+        super().setUp()
 
         self.client = Client()
 
@@ -302,10 +301,10 @@ class AironeViewTest(AironeTestCase):
         test_file_path = inspect.getfile(self.__class__)
         test_base_path = os.path.dirname(test_file_path)
 
-        return open(f"{test_base_path}/fixtures/{fname}", "r")
+        return open("%s/fixtures/%s" % (test_base_path, fname))
 
 
-class DisableStderr(object):
+class DisableStderr:
     def __enter__(self) -> "DisableStderr":
         self.tmp_stderr = sys.stderr
         self.f = open(os.devnull, "w")
