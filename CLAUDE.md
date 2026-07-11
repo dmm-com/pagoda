@@ -13,8 +13,9 @@ Pagoda (formerly AirOne) is an entity/metadata management platform with flexible
 - **Run a specific test:** `uv run python manage.py test <app_name>.tests.<test_file>.<TestClass>.<test_method>`
 - **Fast local test runs:** `tools/test_local.sh <target>...` — serial + `--keepdb`
   (skips ~28s of test-DB creation per run; local Docker MySQL/ES is I/O-bound so
-  `--parallel` is slower here, while CI keeps using `--parallel`). Use
-  `tools/test_local.sh --fresh <target>` after changing models/migrations.
+  `--parallel` is slower here, while CI keeps using `--parallel`). The test DB is
+  isolated per checkout, so parallel worktrees/sessions don't corrupt each other.
+  Use `tools/test_local.sh --fresh <target>` after changing models/migrations.
 - **Lint (ruff):** `uv run ruff check .`
 - **Type check:** `uv run mypy .`
 - **Generate test data:** `uv run python tools/generate_testdata.py`
