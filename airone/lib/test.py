@@ -1,7 +1,7 @@
+import atexit
 import functools
 import inspect
 import io
-import logging
 import os
 import sys
 from typing import Callable, List, cast
@@ -43,6 +43,11 @@ class AironeTestCase(TestCase):
 
     TZ_INFO = ZoneInfo(settings.TIME_ZONE)
 
+    # Elasticsearch index names that have already been created in this process.
+    # Creating an index costs ~10x more than wiping its documents, so each index is
+    # created once per process and only documents are deleted between tests.
+    _es_prepared_indices: set[str] = set()
+
     def setUp(self) -> None:
         OVERRIDE_ES_CONFIG = settings.ES_CONFIG.copy()
         # Attach prefix "test-" to distinguish index name for test with configured one.
@@ -65,6 +70,8 @@ class AironeTestCase(TestCase):
             AIRONE=OVERRIDE_AIRONE,
             AIRONE_FLAGS=OVERRIDE_AIRONE_FLAGS,
             MEDIA_ROOT=MEDIA_ROOT,
+            # PBKDF2 costs ~150ms per hashing; tests don't need password strength
+            PASSWORD_HASHERS=["django.contrib.auth.hashers.MD5PasswordHasher"],
         )
         self._settings.enable()
         self.modify_settings(
@@ -73,17 +80,19 @@ class AironeTestCase(TestCase):
 
         # Before starting test, clear all documents in the Elasticsearch of test index
         self._es = ESS()
-        self._es.recreate_index()
+        if self._es._index not in AironeTestCase._es_prepared_indices:
+            self._es.recreate_index()
+            AironeTestCase._es_prepared_indices.add(self._es._index)
+            # The index is reused by all tests in this process; drop it on process exit
+            atexit.register(self._es.indices.delete, index=self._es._index, ignore_unavailable=True)
+        else:
+            # Make documents indexed by the previous test searchable, then wipe them all
+            self._es.indices.refresh(index=self._es._index)
+            self._es.delete_by_query(
+                index=self._es._index, query={"match_all": {}}, conflicts="proceed", refresh=True
+            )
 
     def tearDown(self) -> None:
-        # Clean up Elasticsearch test index
-        if hasattr(self, "_es") and self._es:
-            try:
-                self._es.indices.delete(index=self._es._index, ignore_unavailable=True)
-            except Exception as e:
-                # Don't fail the test due to cleanup errors
-                logging.warning(f"Failed to cleanup ES index {self._es._index}: {e}")
-
         for fname in os.listdir(settings.MEDIA_ROOT):
             os.unlink(os.path.join(settings.MEDIA_ROOT, fname))
 
