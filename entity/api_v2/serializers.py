@@ -264,6 +264,8 @@ class EntityAttrCreateSerializer(serializers.ModelSerializer[EntityAttr]):
             "name_prefix",
             "name_postfix",
         ]
+        # Pin int32 bounds explicitly; DB-derived bounds are absent on 64-bit SQLite
+        extra_kwargs = {"index": {"min_value": -(2**31), "max_value": 2**31 - 1}}
 
     def validate_type(self, type: Optional[int]) -> Optional[int]:
         if type is not None and type not in AttrTypeValue.values():
@@ -396,7 +398,12 @@ class EntityAttrUpdateSerializer(serializers.ModelSerializer[EntityAttr]):
             "name_prefix",
             "name_postfix",
         ]
-        extra_kwargs = {"name": {"required": False}, "type": {"required": False}}
+        extra_kwargs = {
+            "name": {"required": False},
+            "type": {"required": False},
+            # Pin int32 bounds explicitly; DB-derived bounds are absent on 64-bit SQLite
+            "index": {"min_value": -(2**31), "max_value": 2**31 - 1},
+        }
 
     def validate_id(self, id: int) -> int:
         # Handle case when serializer is used directly (e.g., in tests)
