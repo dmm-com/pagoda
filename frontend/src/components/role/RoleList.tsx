@@ -18,14 +18,14 @@ import { OverridableComponent } from "@mui/material/OverridableComponent";
 import { styled } from "@mui/material/styles";
 import { useSnackbar } from "notistack";
 import { FC, Suspense } from "react";
-import { Link, useNavigate } from "react-router";
+import { Link } from "react-router";
 
 import { usePagodaSWR } from "../../hooks/usePagodaSWR";
 import { aironeApiClient } from "../../repository/AironeApiClient";
 import { Confirmable } from "../common/Confirmable";
 import { Loading } from "../common/Loading";
 
-import { rolePath, rolesPath, topPath } from "routes/Routes";
+import { rolePath } from "routes/Routes";
 import { ServerContext } from "services";
 
 const StyledList = styled(List)(() => ({
@@ -41,7 +41,6 @@ const StyledIconButton = styled(IconButton)(({ theme }) => ({
 })) as OverridableComponent<ExtendButtonBaseTypeMap<IconButtonTypeMap>>;
 
 const RoleListContent: FC = () => {
-  const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
   const { data: roles, mutate: refreshRoles } = usePagodaSWR(
     ["roles"],
@@ -57,8 +56,6 @@ const RoleListContent: FC = () => {
       enqueueSnackbar(`ロールの削除が完了しました`, {
         variant: "success",
       });
-      navigate(topPath(), { replace: true });
-      navigate(rolesPath(), { replace: true });
       refreshRoles();
     } catch (e) {
       enqueueSnackbar("ロールの削除が失敗しました", {
@@ -145,6 +142,7 @@ const RoleListContent: FC = () => {
               <Confirmable
                 componentGenerator={(handleOpen) => (
                   <StyledIconButton
+                    aria-label={`${role.name}を削除`}
                     disabled={!role.isEditable || isReadonly}
                     onClick={handleOpen}
                   >
@@ -157,6 +155,7 @@ const RoleListContent: FC = () => {
             </TableCell>
             <TableCell>
               <StyledIconButton
+                aria-label={`${role.name}を編集`}
                 disabled={!role.isEditable || isReadonly}
                 component={Link}
                 to={rolePath(role.id)}

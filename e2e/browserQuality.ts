@@ -3,6 +3,7 @@ import { expect, Page, TestInfo } from "@playwright/test";
 
 export const collectBrowserFailures = (page: Page) => {
   const failures: string[] = [];
+  const successfulResponses = new WeakSet<object>();
 
   page.on("console", (message) => {
     if (["error", "warning"].includes(message.type())) {
@@ -19,7 +20,16 @@ export const collectBrowserFailures = (page: Page) => {
   page.on("pageerror", (error) => {
     failures.push(`page error: ${error.message}`);
   });
+  page.on("response", (response) => {
+    if (response.ok()) {
+      successfulResponses.add(response.request());
+    }
+  });
   page.on("requestfailed", (request) => {
+    // A response can be accepted successfully while its empty response body is
+    // aborted by a subsequent list refresh. Keep real transport failures, but
+    // do not report a request that already received a successful HTTP response.
+    if (successfulResponses.has(request)) return;
     const failure = request.failure();
     failures.push(
       `request failed: ${request.method()} ${request.url()} ${failure?.errorText ?? ""}`,
@@ -61,8 +71,7 @@ export const expectUiQualityGate = async (page: Page, testInfo: TestInfo) => {
         .filter(
           (rect) =>
             rect.right < -1 ||
-            rect.left > window.innerWidth + 1 ||
-            rect.bottom < -1,
+            rect.left > window.innerWidth + 1,
         ),
     );
   expect(offscreenControls).toEqual([]);

@@ -115,6 +115,7 @@ export const BasicFields: FC<Props> = ({
                   <Select
                     {...field}
                     id="itemNameType"
+                    inputProps={{ "aria-label": "アイテム名の登録方法" }}
                     size="small"
                     sx={{ minWidth: "300px" }}
                   >

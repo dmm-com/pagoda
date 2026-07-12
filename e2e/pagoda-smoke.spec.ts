@@ -31,6 +31,8 @@ const allAttributeNames = [
   "maintenance_groups",
   "support_roles",
   "ports",
+  "environment",
+  "capabilities",
 ];
 
 test.beforeAll(() => {
@@ -108,6 +110,8 @@ test("@smoke @entry-detail renders attribute values", async ({ page }, testInfo)
   await expect(page.getByText("web-primary")).toBeVisible();
   await expect(page.getByText("frontend-a")).toBeVisible();
   await expect(page.getByText("443")).toBeVisible();
+  await expect(page.getByText("production")).toBeVisible();
+  await expect(page.getByText("metrics")).toBeVisible();
 
   await captureEvidence(page, testInfo, {
     name: "entry-detail",

@@ -66,6 +66,7 @@ export const SelectAttributeValueField: FC<CommonProps> = ({
           return (
             <FormControl fullWidth error={error != null} variant="standard">
               <Select
+                inputProps={{ "aria-label": `属性 ${attrId} の選択値` }}
                 value={currentValue}
                 onChange={(e) => {
                   const v = e.target.value as string;

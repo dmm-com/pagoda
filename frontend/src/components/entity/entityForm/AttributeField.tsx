@@ -102,6 +102,10 @@ export const AttributeField: FC<Props> = ({
     control,
     name: `attrs.${index ?? -1}.type`,
   });
+  const attrName = useWatch({
+    control,
+    name: `attrs.${index ?? -1}.name`,
+  });
 
   const isWritable = useWatch({
     control,
@@ -165,6 +169,9 @@ export const AttributeField: FC<Props> = ({
               <Select
                 {...field}
                 id="attr_type"
+                inputProps={{
+                  "aria-label": `${attrName || "未命名属性"}の属性型`,
+                }}
                 size="small"
                 fullWidth
                 disabled={attrId != null}
