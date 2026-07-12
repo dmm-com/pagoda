@@ -8,15 +8,24 @@
 #     first run. Pass --fresh when migrations or models have changed.
 #   - Tests here are I/O-bound against MySQL/ES; running with --parallel is
 #     SLOWER than serial on local Docker setups, so this script runs serially.
+#   - --sqlite runs against an in-memory SQLite database instead of MySQL.
+#     SQL round-trips dominate test time locally (~2.4ms/query through the
+#     Docker VM), so this is by far the fastest mode: entity 99s -> 14s,
+#     whole backend suite ~19min -> ~4min. Migrations run in memory each
+#     time (a few seconds); --keepdb and DB isolation become unnecessary.
+#     Use it for development iteration; run the final check against MySQL
+#     (default mode) or rely on CI, since collation and integer-range
+#     behavior differ slightly between backends.
 #
-# The test database is isolated per checkout (airone_<hash of checkout path>)
-# unless AIRONE_MYSQL_MASTER_URL is already set. Without this, multiple
+# The MySQL test database is isolated per checkout (airone_<hash of checkout
+# path>) unless AIRONE_MYSQL_MASTER_URL is already set. Without this, multiple
 # worktrees or agent sessions share "test_airone" and a --keepdb schema from
 # another branch fails with errors like "Field 'x' doesn't have a default
 # value".
 #
 # usage:
-#   tools/test_local.sh entity                       # one app
+#   tools/test_local.sh entity                       # one app (MySQL)
+#   tools/test_local.sh --sqlite entity              # fastest: in-memory SQLite
 #   tools/test_local.sh entity.tests.test_api_v2     # one file
 #   tools/test_local.sh --fresh entity               # recreate the test DB
 #   tools/test_local.sh entity entry                 # multiple targets
@@ -27,21 +36,19 @@ BASE_DIR=$(cd "$(dirname "$0")/.." && pwd)
 cd "${BASE_DIR}"
 
 FRESH=0
-if [ "${1:-}" = "--fresh" ]; then
-  FRESH=1
-  shift
-fi
+SQLITE=0
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --fresh) FRESH=1; shift ;;
+    --sqlite) SQLITE=1; shift ;;
+    *) break ;;
+  esac
+done
 
 if [ $# -eq 0 ]; then
-  echo "usage: $0 [--fresh] <test target>..."
-  echo "  e.g. $0 entity entry.tests.test_api_v2"
+  echo "usage: $0 [--fresh] [--sqlite] <test target>..."
+  echo "  e.g. $0 --sqlite entity entry.tests.test_api_v2"
   exit 1
-fi
-
-if [ -z "${AIRONE_MYSQL_MASTER_URL:-}" ]; then
-  DB_SUFFIX=$(echo "${BASE_DIR}" | shasum | cut -c1-8)
-  export AIRONE_MYSQL_MASTER_URL="mysql://airone:password@127.0.0.1:3306/airone_${DB_SUFFIX}?charset=utf8mb4"
-  echo ">>> test database: test_airone_${DB_SUFFIX} (isolated per checkout)"
 fi
 
 # The repository does not track migration files; generate them like CI does
@@ -49,6 +56,19 @@ fi
 if ! ls entity/migrations/0*.py >/dev/null 2>&1; then
   echo ">>> generating migrations (first run)"
   uv run python manage.py makemigrations
+fi
+
+if [ "${SQLITE}" = "1" ]; then
+  # In-memory database: always fresh, nothing to keep or isolate
+  export AIRONE_MYSQL_MASTER_URL="sqlite://:memory:"
+  echo ">>> test database: in-memory SQLite"
+  exec uv run python manage.py test "$@"
+fi
+
+if [ -z "${AIRONE_MYSQL_MASTER_URL:-}" ]; then
+  DB_SUFFIX=$(echo "${BASE_DIR}" | shasum | cut -c1-8)
+  export AIRONE_MYSQL_MASTER_URL="mysql://airone:password@127.0.0.1:3306/airone_${DB_SUFFIX}?charset=utf8mb4"
+  echo ">>> test database: test_airone_${DB_SUFFIX} (isolated per checkout)"
 fi
 
 if [ "${FRESH}" = "1" ]; then
