@@ -22,6 +22,27 @@ def logout(request: HttpRequest) -> HttpResponse:
 
 
 class PagodaLoginView(django_auth_views.LoginView):
+    def get_context_data(self, **kwargs: object) -> dict[str, object]:
+        # Read settings per request instead of baking them into the URLconf at
+        # import time, so runtime changes (and per-test overrides) are honored
+        context = super().get_context_data(**kwargs)
+        context.update(
+            {
+                "title": settings.AIRONE["TITLE"],
+                "subtitle": settings.AIRONE["SUBTITLE"],
+                "note_desc": settings.AIRONE["NOTE_DESC"],
+                "note_link": settings.AIRONE["NOTE_LINK"],
+                "sso_desc": settings.AIRONE["SSO_DESC"],
+                "idp": list(getattr(settings, "SOCIAL_AUTH_SAML_ENABLED_IDPS").keys())[0]
+                if hasattr(settings, "SOCIAL_AUTH_SAML_ENABLED_IDPS")
+                else None,
+                "password_reset_disabled": settings.AIRONE["PASSWORD_RESET_DISABLED"],
+                "check_term_service": settings.AIRONE["CHECK_TERM_SERVICE"],
+                "terms_of_service_url": settings.AIRONE["TERMS_OF_SERVICE_URL"],
+            }
+        )
+        return context
+
     def form_valid(self, form: AuthenticationForm) -> Union[HttpResponse, JsonResponse]:
         response = super().form_valid(form)
 

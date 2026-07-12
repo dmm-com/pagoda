@@ -4,15 +4,20 @@ from airone.auth.social_auth import create_user
 from airone.lib.test import AironeViewTest
 from user.models import User
 
-settings.AIRONE["TITLE"] = "TITLE"
-settings.AIRONE["SUBTITLE"] = "SUBTITLE"
-settings.AIRONE["NOTE_DESC"] = "NOTE_DESC"
-settings.AIRONE["NOTE_LINK"] = "NOTE_LINK"
-settings.AIRONE["SSO_DESC"] = "SSO_DESC"
-settings.AIRONE["PASSWORD_RESET_DISABLED"] = True
-
 
 class ViewTest(AironeViewTest):
+    def setUp(self):
+        # AironeTestCase.setUp swaps settings.AIRONE for a per-test copy, so
+        # mutating it here (instead of at import time) cannot leak into tests
+        # of other modules that run in the same process
+        super().setUp()
+        settings.AIRONE["TITLE"] = "TITLE"
+        settings.AIRONE["SUBTITLE"] = "SUBTITLE"
+        settings.AIRONE["NOTE_DESC"] = "NOTE_DESC"
+        settings.AIRONE["NOTE_LINK"] = "NOTE_LINK"
+        settings.AIRONE["SSO_DESC"] = "SSO_DESC"
+        settings.AIRONE["PASSWORD_RESET_DISABLED"] = True
+
     def test_login_extra_context(self):
         resp = self.client.get("/auth/login/")
         self.assertEqual(resp.context["title"], "TITLE")

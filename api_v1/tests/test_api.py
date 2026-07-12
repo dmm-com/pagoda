@@ -53,7 +53,7 @@ class APITest(AironeViewTest):
                 Entry.objects.create(name="r-%d" % index, schema=ref_entity, created_user=admin)
             )
 
-        params = self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY.copy()
+        params = copy.deepcopy(self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY)
         for param in params:
             if param["type"] & AttrType.OBJECT:
                 param["ref"] = ref_entity
@@ -62,7 +62,7 @@ class APITest(AironeViewTest):
             **{
                 "user": admin,
                 "name": "Entity",
-                "attrs": self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY,
+                "attrs": params,
             }
         )
         params = {
@@ -1395,7 +1395,7 @@ class APITest(AironeViewTest):
         # Initialize Entity, Entries and TriggerConditoin
         ref_entity = Entity.objects.create(name="Referred Entity", created_user=user)
         ref_entry = Entry.objects.create(name="ref0", schema=ref_entity, created_user=user)
-        params = self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY.copy()
+        params = copy.deepcopy(self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY)
         for param in params:
             if param["type"] & AttrType.OBJECT:
                 param["ref"] = ref_entity
@@ -1500,7 +1500,7 @@ class APITest(AironeViewTest):
                 Entry.objects.create(name="r-%d" % index, schema=ref_entity, created_user=admin)
             )
 
-        params = self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY.copy()
+        params = copy.deepcopy(self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY)
         for param in params:
             if param["type"] & AttrType.OBJECT:
                 param["ref"] = ref_entity
@@ -1508,7 +1508,7 @@ class APITest(AironeViewTest):
             **{
                 "user": admin,
                 "name": "Entity",
-                "attrs": self.ALL_TYPED_ATTR_PARAMS_FOR_CREATING_ENTITY,
+                "attrs": params,
             }
         )
         params = {
