@@ -20,18 +20,18 @@ from entity.models import Entity  # NOQA
 from job.models import Job  # NOQA
 
 
-@use_primary_db
 def update_es_document(entities: list[str]) -> None:
     # Pin DB access to the primary. Outside of an HTTP request there is no
     # PinningRouterMiddleware to pin the thread after a write, so the Job row
     # created below would otherwise be read from a lagging replica and raise
     # Job.DoesNotExist when the synchronous task looks it up.
-    target_entity = Entity.objects.filter(is_active=True)
-    if entities:
-        target_entity = target_entity.filter(name__in=entities)
+    with use_primary_db:
+        target_entity = Entity.objects.filter(is_active=True)
+        if entities:
+            target_entity = target_entity.filter(name__in=entities)
 
-    for entity in target_entity:
-        Job.new_update_documents(entity).run(will_delay=False)
+        for entity in target_entity:
+            Job.new_update_documents(entity).run(will_delay=False)
 
 
 def get_options() -> tuple[Values, list[str]]:
