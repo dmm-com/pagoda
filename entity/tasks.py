@@ -112,6 +112,7 @@ class CreateEntityV2Attr(BaseModel):
     name_order: Optional[int] = 0  # for internal use only
     name_prefix: Optional[str] = ""  # for internal use only
     name_postfix: Optional[str] = ""  # for internal use only
+    display_attr: str = ""
 
     @model_validator(mode="after")
     def validate_choices_shape(self) -> Self:
@@ -214,6 +215,7 @@ class EditEntityV2Attr(BaseModel):
     name_order: Optional[int] = 0  # for internal use only
     name_prefix: Optional[str] = ""  # for internal use only
     name_postfix: Optional[str] = ""  # for internal use only
+    display_attr: Optional[str] = None
 
     @model_validator(mode="after")
     def validate_choices_shape(self) -> Self:

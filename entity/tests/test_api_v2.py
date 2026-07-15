@@ -1616,6 +1616,7 @@ class ViewTest(AironeViewTest):
                     "is_delete_in_chain": True,
                     "is_summarized": True,
                     "note": "change-attr1 note",
+                    "display_attr": "change-display-attr",
                 }
             ],
             "webhooks": [
@@ -1652,6 +1653,7 @@ class ViewTest(AironeViewTest):
         self.assertEqual(entity_attr.is_summarized, True)
         self.assertEqual(entity_attr.created_user, self.user)
         self.assertEqual(entity_attr.note, "change-attr1 note")
+        self.assertEqual(entity_attr.display_attr, "change-display-attr")
 
         self.assertEqual(entity.webhooks.count(), 1)
         webhook.refresh_from_db()
