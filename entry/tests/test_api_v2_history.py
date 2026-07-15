@@ -83,6 +83,40 @@ class ViewTest(BaseViewTest):
                     ]
                 },
             },
+            "bool_names": {
+                "value": [
+                    {"name": "foo", "id": self.ref_entry.id, "boolean": True},
+                    {"name": "bar", "id": self.ref_entry.id, "boolean": False},
+                ],
+                "result": {
+                    "as_array_named_object": [
+                        {
+                            "name": "foo",
+                            "object": {
+                                "id": self.ref_entry.id,
+                                "name": self.ref_entry.name,
+                                "schema": {
+                                    "id": self.ref_entry.schema.id,
+                                    "name": self.ref_entry.schema.name,
+                                },
+                            },
+                            "boolean": True,
+                        },
+                        {
+                            "name": "bar",
+                            "object": {
+                                "id": self.ref_entry.id,
+                                "name": self.ref_entry.name,
+                                "schema": {
+                                    "id": self.ref_entry.schema.id,
+                                    "name": self.ref_entry.schema.name,
+                                },
+                            },
+                            "boolean": False,
+                        },
+                    ]
+                },
+            },
             "group": {
                 "value": self.group.id,
                 "result": {
@@ -136,12 +170,20 @@ class ViewTest(BaseViewTest):
                 "result": {"as_string": "2018-12-31T00:00:00Z"},
             },
         }
+        # ARRAY_NAMED_OBJECT_BOOLEAN is not included in the shared attr set, so add it here
+        bool_names_attr = EntityAttr.objects.create(
+            name="bool_names",
+            type=AttrType.ARRAY_NAMED_OBJECT_BOOLEAN,
+            created_user=self.user,
+            parent_entity=self.entity,
+        )
+        bool_names_attr.referral.add(self.ref_entity)
         entry = self.add_entry(
             self.user, "Entry", self.entity, values={x: values[x]["value"] for x in values.keys()}
         )
         resp = self.client.get("/entry/api/v2/%s/histories/" % entry.id)
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(resp.json()["count"], 22)
+        self.assertEqual(resp.json()["count"], 24)
         attrv = entry.get_attrv("datetime")
         self.assertEqual(
             resp.json()["results"][0],
@@ -171,7 +213,7 @@ class ViewTest(BaseViewTest):
 
         resp = self.client.get("/entry/api/v2/%s/histories/" % entry.id)
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(resp.json()["count"], 23)
+        self.assertEqual(resp.json()["count"], 25)
         self.assertEqual(resp.json()["results"][0]["parent_attr"]["name"], "vals")
         self.assertEqual(
             resp.json()["results"][0]["curr_value"]["as_array_string"], ["hoge", "fuga"]

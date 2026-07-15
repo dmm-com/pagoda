@@ -812,6 +812,27 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
                     ]
                     return {"as_array_named_object": array_named_object}
 
+                case AttrType.ARRAY_NAMED_OBJECT_BOOLEAN:
+                    array_named_object_boolean: list[EntryAttributeValueNamedObjectBoolean] = [
+                        {
+                            "name": x.value,
+                            "object": {
+                                "id": x.referral.id if x.referral else 0,
+                                "name": x.referral.name if x.referral else "",
+                                "schema": {
+                                    "id": x.referral.entry.schema.id,
+                                    "name": x.referral.entry.schema.name,
+                                },
+                            }
+                            if x.referral and x.referral.is_active
+                            else None,
+                            "boolean": x.boolean,
+                        }
+                        for x in attrv.data_array.all().select_related("referral__entry__schema")
+                        if not (x.referral and not x.referral.is_active)
+                    ]
+                    return {"as_array_named_object": array_named_object_boolean}
+
                 case AttrType.ARRAY_GROUP:
                     groups = [v.group for v in attrv.data_array.all().select_related("group")]
                     return {
@@ -926,7 +947,7 @@ class EntryRetrieveSerializer(EntryBaseSerializer):
                         "as_array_number": AttrDefaultValue.get(type, []),
                     }
 
-                case AttrType.ARRAY_NAMED_OBJECT:
+                case AttrType.ARRAY_NAMED_OBJECT | AttrType.ARRAY_NAMED_OBJECT_BOOLEAN:
                     return {"as_array_named_object": []}
 
                 case AttrType.ARRAY_OBJECT:
@@ -1353,6 +1374,28 @@ class EntryHistoryAttributeValueSerializer(serializers.ModelSerializer):
                     )
                 ]
                 return {"as_array_named_object": array_named_object}
+
+            case AttrType.ARRAY_NAMED_OBJECT_BOOLEAN:
+                array_named_object_boolean: list[EntryAttributeValueNamedObjectBoolean] = [
+                    {
+                        "name": x.value,
+                        "object": {
+                            "id": x.referral.id if x.referral else 0,
+                            "name": x.referral.name if x.referral else "",
+                            "schema": {
+                                "id": x.referral.entry.schema.id,
+                                "name": x.referral.entry.schema.name,
+                            },
+                        }
+                        if x.referral and x.referral.is_active
+                        else None,
+                        "boolean": x.boolean,
+                    }
+                    for x in obj.data_array.all().select_related(
+                        "referral", "referral__entry__schema"
+                    )
+                ]
+                return {"as_array_named_object": array_named_object_boolean}
 
             case AttrType.ARRAY_GROUP:
                 groups = [v.group for v in obj.data_array.all().select_related("group")]

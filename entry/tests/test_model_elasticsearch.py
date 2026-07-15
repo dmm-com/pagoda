@@ -2203,6 +2203,7 @@ class ModelElasticsearchTest(BaseModelTest):
                     "value": "",
                     "date_value": None,
                     "referral_id": "",
+                    "boolean": False,
                     "is_readable": True,
                 }
             ],
@@ -2238,6 +2239,7 @@ class ModelElasticsearchTest(BaseModelTest):
                     "value": self._entry.name,
                     "date_value": None,
                     "referral_id": self._entry.id,
+                    "boolean": False,
                     "is_readable": True,
                 }
             ],
@@ -2259,6 +2261,7 @@ class ModelElasticsearchTest(BaseModelTest):
                     "value": "",  # expected not to have information about deleted entry
                     "date_value": None,
                     "referral_id": "",  # expected not to have information about deleted entry
+                    "boolean": False,
                     "is_readable": True,
                 }
             ],
@@ -2295,6 +2298,7 @@ class ModelElasticsearchTest(BaseModelTest):
                     "value": self._entry.name,
                     "date_value": None,
                     "referral_id": self._entry.id,
+                    "boolean": False,
                     "is_readable": True,
                 },
                 {
@@ -2304,6 +2308,7 @@ class ModelElasticsearchTest(BaseModelTest):
                     "value": "",
                     "date_value": None,
                     "referral_id": "",
+                    "boolean": False,
                     "is_readable": True,
                 },
             ],
@@ -2321,6 +2326,7 @@ class ModelElasticsearchTest(BaseModelTest):
                     "value": "",
                     "date_value": None,
                     "referral_id": "",
+                    "boolean": False,
                     "is_readable": True,
                 },
                 {
@@ -2330,6 +2336,7 @@ class ModelElasticsearchTest(BaseModelTest):
                     "value": "",
                     "date_value": None,
                     "referral_id": "",
+                    "boolean": False,
                     "is_readable": True,
                 },
             ],

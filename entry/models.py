@@ -165,13 +165,17 @@ class AttributeValue(models.Model):
         This returns registered value according to the type of Attribute
         """
 
-        def _get_named_value(attrv: "AttributeValue", is_active: bool = True) -> dict[str, Any]:
+        def _get_named_value(
+            attrv: "AttributeValue", is_active: bool = True, is_boolean: bool = False
+        ) -> dict[str, Any]:
+            boolean_info = {"boolean": attrv.boolean} if is_boolean else {}
             if attrv.referral and (attrv.referral.is_active or not is_active):
                 if with_metainfo:
                     return {
                         attrv.value: {
                             "id": attrv.referral.id,
                             "name": attrv.referral.name,
+                            **boolean_info,
                         }
                     }
                 elif with_entity:
@@ -182,12 +186,16 @@ class AttributeValue(models.Model):
                         attrv.value: {
                             "name": attrv.referral.name,
                             "entity": referral_entry.schema.name,
+                            **boolean_info,
                         }
                     }
                 else:
-                    return {attrv.value: attrv.referral.name}
+                    return {
+                        attrv.value: attrv.referral.name,
+                        **boolean_info,
+                    }
             else:
-                return {attrv.value: None}
+                return {attrv.value: None, **boolean_info}
 
         def _get_object_value(attrv: "AttributeValue", is_active: bool = True) -> Any:
             if attrv.referral and (attrv.referral.is_active or not is_active):
@@ -244,6 +252,9 @@ class AttributeValue(models.Model):
             case AttrType.NAMED_OBJECT:
                 value = _get_named_value(self, is_active)
 
+            case AttrType.NAMED_OBJECT_BOOLEAN:
+                value = _get_named_value(self, is_active, is_boolean=True)
+
             case AttrType.GROUP if self.group:
                 value = _get_model_value(self)
 
@@ -259,8 +270,13 @@ class AttributeValue(models.Model):
                 else:
                     value = self.datetime
 
-            case AttrType.ARRAY_NAMED_OBJECT | AttrType.ARRAY_NAMED_OBJECT_BOOLEAN:
+            case AttrType.ARRAY_NAMED_OBJECT:
                 value = [_get_named_value(x, is_active) for x in self.data_array.all()]
+
+            case AttrType.ARRAY_NAMED_OBJECT_BOOLEAN:
+                value = [
+                    _get_named_value(x, is_active, is_boolean=True) for x in self.data_array.all()
+                ]
 
             case AttrType.ARRAY_STRING:
                 value = [x.value for x in self.data_array.all()]
@@ -1127,7 +1143,7 @@ class Attribute(ACLBase):
                         return False
                 return False
 
-            case AttrType.NAMED_OBJECT:
+            case AttrType.NAMED_OBJECT | AttrType.NAMED_OBJECT_BOOLEAN:
                 return isinstance(value, dict)
 
             case AttrType.STRING | AttrType.TEXT:
@@ -1194,7 +1210,7 @@ class Attribute(ACLBase):
                     return True
 
                 match self.schema.type:
-                    case AttrType.ARRAY_NAMED_OBJECT:
+                    case AttrType.ARRAY_NAMED_OBJECT | AttrType.ARRAY_NAMED_OBJECT_BOOLEAN:
                         return all(
                             isinstance(x, dict) or isinstance(x, type({}.values())) for x in value
                         )
@@ -1348,7 +1364,7 @@ class Attribute(ACLBase):
 
                     attrv.boolean = boolean
 
-                case AttrType.NAMED_OBJECT:
+                case AttrType.NAMED_OBJECT | AttrType.NAMED_OBJECT_BOOLEAN:
                     attrv.value = val["name"] if "name" in val else ""
                     if "boolean" in val:
                         attrv.boolean = val["boolean"]
@@ -2474,13 +2490,16 @@ class Entry(ACLBase):
                 "value": "",
                 "date_value": None,
                 "referral_id": "",
+                "boolean": False,
                 "is_readable": True
                 if (not attr or attr.is_public or attr.default_permission >= ACLType.Readable)
                 else False,
             }
 
-            # default value for boolean attributes is False.
-            if entity_attr.type & AttrType.BOOLEAN:
+            # default value for boolean attributes is False. _NAMED types (e.g.
+            # NAMED_OBJECT_BOOLEAN) also carry the BOOLEAN bit, but their boolean
+            # flag is stored separately in attrinfo["boolean"], so exclude them here.
+            if entity_attr.type & AttrType.BOOLEAN and not entity_attr.type & AttrType._NAMED:
                 attrinfo["value"] = False
 
             # Convert data format for mapping of Elasticsearch according to the data type
@@ -2491,7 +2510,7 @@ class Entry(ACLBase):
             elif entity_attr.type & AttrType.STRING or entity_attr.type & AttrType.TEXT:
                 attrinfo["value"] = truncate(attrv.value)
 
-            elif entity_attr.type & AttrType.BOOLEAN:
+            elif entity_attr.type & AttrType.BOOLEAN and not entity_attr.type & AttrType._NAMED:
                 attrinfo["value"] = attrv.boolean
 
             elif entity_attr.type & AttrType.DATE:
@@ -2502,6 +2521,7 @@ class Entry(ACLBase):
 
             elif entity_attr.type & AttrType._NAMED:
                 attrinfo["key"] = attrv.value
+                attrinfo["boolean"] = attrv.boolean
 
                 if attrv.referral and attrv.referral.is_active:
                     attrinfo["value"] = truncate(attrv.referral.name)

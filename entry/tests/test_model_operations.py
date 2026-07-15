@@ -1024,6 +1024,19 @@ class ModelOperationsTest(BaseModelTest):
         test_role = Role.objects.create(name="test-role")
 
         entity = self.create_entity_with_all_type_attributes(user)
+        # create_entity_with_all_type_attributes doesn't cover the _BOOLEAN variants of
+        # the named-object types, so add them here to exercise the boolean flag that
+        # get_value() attaches for these types.
+        for attr_name, attr_type in [
+            ("name_bool", AttrType.NAMED_OBJECT_BOOLEAN),
+            ("arr_name_bool", AttrType.ARRAY_NAMED_OBJECT_BOOLEAN),
+        ]:
+            named_bool_attr = EntityAttr.objects.create(
+                name=attr_name, type=attr_type, created_user=user, parent_entity=entity
+            )
+            named_bool_attr.referral.add(ref_entity)
+            entity.attrs.add(named_bool_attr)
+
         entry = Entry.objects.create(name="entry", schema=entity, created_user=user)
         entry.complement_attrs(user)
 
@@ -1046,6 +1059,11 @@ class ModelOperationsTest(BaseModelTest):
                 "name": "name",
                 "set_val": {"name": "bar", "id": test_ref},
                 "exp_val": {"bar": test_ref.name},
+            },
+            {
+                "name": "name_bool",
+                "set_val": {"name": "bar", "id": str(test_ref.id), "boolean": True},
+                "exp_val": {"bar": test_ref.name, "boolean": True},
             },
             {"name": "bool", "set_val": False, "exp_val": False},
             {
@@ -1074,6 +1092,11 @@ class ModelOperationsTest(BaseModelTest):
                 "name": "arr_name",
                 "set_val": [{"name": "hoge", "id": test_ref}],
                 "exp_val": [{"hoge": test_ref.name}],
+            },
+            {
+                "name": "arr_name_bool",
+                "set_val": [{"name": "hoge", "id": str(test_ref.id), "boolean": True}],
+                "exp_val": [{"hoge": test_ref.name, "boolean": True}],
             },
             {
                 "name": "date",
@@ -1118,7 +1141,11 @@ class ModelOperationsTest(BaseModelTest):
             expected_value = {"type": attr.schema.type, "value": info["exp_val"]}
             if attr.is_array():
                 if attr.schema.type & AttrType._NAMED:
-                    expected_value["value"] = [{"hoge": {"id": test_ref.id, "name": test_ref.name}}]
+                    named_meta = {"id": test_ref.id, "name": test_ref.name}
+                    # _BOOLEAN named types additionally expose the per-value boolean flag
+                    if attr.schema.type & AttrType.BOOLEAN:
+                        named_meta["boolean"] = True
+                    expected_value["value"] = [{"hoge": named_meta}]
                 elif attr.schema.type & AttrType.OBJECT:
                     expected_value["value"] = [{"id": test_ref.id, "name": test_ref.name}]
                 elif attr.schema.type & AttrType.GROUP:
@@ -1127,7 +1154,11 @@ class ModelOperationsTest(BaseModelTest):
                     expected_value["value"] = [{"id": test_role.id, "name": test_role.name}]
 
             elif attr.schema.type & AttrType._NAMED:
-                expected_value["value"] = {"bar": {"id": test_ref.id, "name": test_ref.name}}
+                named_meta = {"id": test_ref.id, "name": test_ref.name}
+                # _BOOLEAN named types additionally expose the per-value boolean flag
+                if attr.schema.type & AttrType.BOOLEAN:
+                    named_meta["boolean"] = True
+                expected_value["value"] = {"bar": named_meta}
             elif attr.schema.type & AttrType.OBJECT:
                 expected_value["value"] = {"id": test_ref.id, "name": test_ref.name}
             elif attr.schema.type & AttrType.GROUP:

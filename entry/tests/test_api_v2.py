@@ -15,7 +15,7 @@ from airone.lib.types import (
 )
 from entity.models import Entity, EntityAttr, ItemNameType
 from entry import tasks
-from entry.models import Entry
+from entry.models import AttributeValue, Entry
 from entry.services import AdvancedSearchService
 from group.models import Group
 from role.models import Role
@@ -436,6 +436,79 @@ class ViewTest(BaseViewTest):
                     "id": self.entity.attrs.get(name="opt").id,
                     "name": "opt",
                 },
+            },
+        )
+
+    def test_retrieve_entry_with_array_named_object_boolean(self):
+        entity: Entity = self.create_entity(
+            self.user,
+            "boolean-entity",
+            attrs=[
+                {
+                    "name": "bool_names",
+                    "type": AttrType.ARRAY_NAMED_OBJECT_BOOLEAN,
+                    "ref": self.ref_entity,
+                }
+            ],
+        )
+        entry: Entry = self.add_entry(self.user, "Entry", entity)
+
+        # ARRAY_NAMED_OBJECT_BOOLEAN values are not creatable through add_value
+        # (the per-item conversion path is unmanaged for this type), so build the
+        # AttributeValue tree directly to exercise the serializer.
+        attr = entry.attrs.get(schema__name="bool_names")
+        parent_attrv = AttributeValue.objects.create(
+            parent_attr=attr, created_user=self.user, is_latest=True
+        )
+        for name, boolean in [("foo", True), ("bar", False)]:
+            parent_attrv.data_array.add(
+                AttributeValue.objects.create(
+                    parent_attr=attr,
+                    created_user=self.user,
+                    value=name,
+                    referral=self.ref_entry,
+                    boolean=boolean,
+                )
+            )
+        attr.values.add(parent_attrv)
+        # complement_attrs pre-creates an empty latest value for array attrs
+        attr.values.exclude(id=parent_attrv.id).update(is_latest=False)
+
+        resp = self.client.get("/entry/api/v2/%d/" % entry.id)
+        self.assertEqual(resp.status_code, 200)
+
+        resp_data = resp.json()
+        self.assertEqual(
+            next(filter(lambda x: x["schema"]["name"] == "bool_names", resp_data["attrs"]))[
+                "value"
+            ],
+            {
+                "as_array_named_object": [
+                    {
+                        "name": "foo",
+                        "object": {
+                            "id": self.ref_entry.id,
+                            "name": self.ref_entry.name,
+                            "schema": {
+                                "id": self.ref_entry.schema.id,
+                                "name": self.ref_entry.schema.name,
+                            },
+                        },
+                        "boolean": True,
+                    },
+                    {
+                        "name": "bar",
+                        "object": {
+                            "id": self.ref_entry.id,
+                            "name": self.ref_entry.name,
+                            "schema": {
+                                "id": self.ref_entry.schema.id,
+                                "name": self.ref_entry.schema.name,
+                            },
+                        },
+                        "boolean": False,
+                    },
+                ]
             },
         )
 

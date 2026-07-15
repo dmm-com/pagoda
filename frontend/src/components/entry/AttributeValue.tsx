@@ -235,6 +235,7 @@ export const AttributeValue: FC<Props> = ({ attrInfo }) => {
       );
 
     case EntryAttributeTypeTypeEnum.ARRAY_NAMED_OBJECT:
+    case EntryAttributeTypeTypeEnum.ARRAY_NAMED_OBJECT_BOOLEAN:
       return (
         <StyledList>
           {attrInfo.value?.asArrayNamedObject?.map((info, n) => (
