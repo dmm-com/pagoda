@@ -1,6 +1,6 @@
 import math
 import uuid
-from typing import TYPE_CHECKING, Any, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Optional, Union
 
 from django.conf import settings
 from django.db import models
@@ -56,6 +56,12 @@ class EntityAttr(ACLBase):
     name_prefix = models.CharField(max_length=20, blank=True, default="")
     name_postfix = models.CharField(max_length=20, blank=True, default="")
 
+    # For object-like attribute types (OBJECT / NAMED_OBJECT / ARRAY_OBJECT /
+    # ARRAY_NAMED_OBJECT). When set to a non-empty attr name, the value of that
+    # attribute on the referred Entry is used as the display label instead of
+    # Entry.name. Empty string means "fall back to Entry.name" (default).
+    display_attr = models.CharField(max_length=200, blank=True, default="")
+
     def __init__(self, *args: Any, **kwargs: Any):
         super(ACLBase, self).__init__(*args, **kwargs)
         self.objtype = ACLObjType.EntityAttr
@@ -92,7 +98,7 @@ class EntityAttr(ACLBase):
             del self.skip_history_when_saving
 
     def add_referral(
-        self, referral: Union["Entity", str, int, List[Union["Entity", str, int]]]
+        self, referral: Union["Entity", str, int, list[Union["Entity", str, int]]]
     ) -> None:
         adding_referral = None
         if isinstance(referral, list):
@@ -114,14 +120,14 @@ class EntityAttr(ACLBase):
             self.referral.add(adding_referral)
 
     def save(self, *args: Any, **kwargs: Any) -> None:
-        max_attributes_per_entity: Optional[int] = settings.MAX_ATTRIBUTES_PER_ENTITY
+        max_attributes_per_entity: int | None = settings.MAX_ATTRIBUTES_PER_ENTITY
         if (
             max_attributes_per_entity
             and EntityAttr.objects.filter(parent_entity=self.parent_entity).count()
             >= max_attributes_per_entity
         ):
             raise RuntimeError("The number of attributes per entity is over the limit")
-        return super(EntityAttr, self).save(*args, **kwargs)
+        return super().save(*args, **kwargs)
 
     def get_default_value(self) -> Any:
         """Returns custom default value if set, otherwise returns type-based default value"""
@@ -151,7 +157,7 @@ class EntityAttr(ACLBase):
             return isinstance(value, bool)
         elif self.type == AttrType.NUMBER:
             # Only accept int/float types, but reject bool (bool is a subclass of int)
-            if not isinstance(value, (int, float)) or isinstance(value, bool):
+            if not isinstance(value, int | float) or isinstance(value, bool):
                 return False
             # Reject NaN and Infinity values
             if isinstance(value, float) and (math.isnan(value) or math.isinf(value)):
@@ -284,16 +290,16 @@ class Entity(ACLBase):
     )
 
     def __init__(self, *args: Any, **kwargs: Any):
-        super(Entity, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.objtype = ACLObjType.Entity
 
     def save(self, *args: Any, **kwargs: Any) -> None:
-        max_entities: Optional[int] = settings.MAX_ENTITIES
+        max_entities: int | None = settings.MAX_ENTITIES
         if max_entities and Entity.objects.count() >= max_entities:
             raise RuntimeError("The number of entities is over the limit")
-        return super(Entity, self).save(*args, **kwargs)
+        return super().save(*args, **kwargs)
 
-    def is_available(self, name: str, exclude_item_ids: Optional[List[int]] = None) -> bool:
+    def is_available(self, name: str, exclude_item_ids: list[int] | None = None) -> bool:
         from entry.models import AliasEntry, Entry
 
         if exclude_item_ids is None:

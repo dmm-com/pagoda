@@ -602,6 +602,7 @@ exports[`EditEntityPage should match snapshot 1`] = `
                   class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1dc80h3-MuiTableCell-root"
                 >
                   <button
+                    aria-label="属性を追加"
                     class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-53g0n7-MuiButtonBase-root-MuiIconButton-root"
                     tabindex="0"
                     type="button"
@@ -1448,6 +1449,7 @@ exports[`EditEntityPage should match snapshot 1`] = `
                 class="MuiTableCell-root MuiTableCell-body MuiTableCell-sizeMedium css-1dc80h3-MuiTableCell-root"
               >
                 <button
+                  aria-label="属性を追加"
                   class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-53g0n7-MuiButtonBase-root-MuiIconButton-root"
                   tabindex="0"
                   type="button"

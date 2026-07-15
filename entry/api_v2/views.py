@@ -4,9 +4,9 @@ import re
 from collections import Counter
 from copy import deepcopy
 from datetime import datetime, timedelta
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-from django.db.models import Q, QuerySet
+from django.db.models import Prefetch, Q, QuerySet
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import generics, status, viewsets
@@ -61,6 +61,7 @@ from entry.api_v2.serializers import (
     ExportTaskParams,
     GetEntryAttrReferralSerializer,
     ItemRollbackSerializer,
+    _make_display_attr_prefetch,
 )
 from entry.models import AliasEntry, Attribute, AttributeValue, Entry
 from entry.services import AdvancedSearchService
@@ -69,7 +70,9 @@ from entry.settings import CONFIG as ENTRY_CONFIG
 from group.models import Group
 from job.models import Job, JobOperation, JobStatus
 from role.models import Role
-from user.models import User
+
+if TYPE_CHECKING:
+    from user.models import User
 
 logger = logging.getLogger(__name__)
 
@@ -234,7 +237,7 @@ class EntryAPI(PluginOverrideMixin, viewsets.ModelViewSet):
 
         self.queryset = AliasEntry.objects.filter(entry=entry, entry__is_active=True)
 
-        return super(EntryAPI, self).list(request, *args, **kwargs)
+        return super().list(request, *args, **kwargs)
 
     @extend_schema(responses=EntryHistoryAttributeValueSerializer(many=True))
     def list_histories(self, request: Request, *args: Any, **kwargs: Any) -> Response:
@@ -247,6 +250,18 @@ class EntryAPI(PluginOverrideMixin, viewsets.ModelViewSet):
             if user.has_permission(attr, ACLType.Readable):
                 target_attrs.append(attr)
 
+        # If any of the currently-visible attrs has a display_attr configured,
+        # extend the prefetch chain so `_resolve_display_label` never falls
+        # through to per-row DB queries in the history serializer.
+        display_attr_names: set[str] = {
+            a.schema.display_attr for a in target_attrs if a.schema.display_attr
+        }
+        display_prefetches: list[Prefetch] = []
+        data_array_extra: list[Prefetch] = []
+        if display_attr_names:
+            display_prefetches.append(_make_display_attr_prefetch(display_attr_names))
+            data_array_extra.append(_make_display_attr_prefetch(display_attr_names))
+
         self.queryset = (
             AttributeValue.objects.filter(
                 parent_attr__in=target_attrs,
@@ -256,10 +271,18 @@ class EntryAPI(PluginOverrideMixin, viewsets.ModelViewSet):
             .select_related(
                 "parent_attr__schema", "created_user", "referral", "referral__entry__schema"
             )
-            .prefetch_related("data_array__referral__entry__schema")
+            .prefetch_related(
+                Prefetch(
+                    "data_array",
+                    queryset=AttributeValue.objects.select_related(
+                        "referral__entry__schema"
+                    ).prefetch_related(*data_array_extra),
+                ),
+                *display_prefetches,
+            )
         )
 
-        return super(EntryAPI, self).list(request, *args, **kwargs)
+        return super().list(request, *args, **kwargs)
 
     @extend_schema(responses=EntrySelfHistorySerializer(many=True))
     def list_self_histories(self, request: Request, *args: Any, **kwargs: Any) -> Response:
@@ -269,7 +292,7 @@ class EntryAPI(PluginOverrideMixin, viewsets.ModelViewSet):
         # Get historical records for the entry
         self.queryset = entry.history.all().order_by("-history_date").select_related("history_user")
 
-        return super(EntryAPI, self).list(request, *args, **kwargs)
+        return super().list(request, *args, **kwargs)
 
     @extend_schema(request=EntrySelfHistoryRestoreSerializer)
     def restore_self_history(self, request: Request, *args: Any, **kwargs: Any) -> Response:
@@ -705,10 +728,14 @@ class EntryExportAPI(generics.GenericAPIView):
 class EntryAttrReferralsAPI(viewsets.ReadOnlyModelViewSet):
     serializer_class = GetEntryAttrReferralSerializer
 
-    def get_queryset(self) -> QuerySet[Entry] | QuerySet[Group] | QuerySet[Role]:
+    def _resolve_entity_attr(self) -> EntityAttr:
+        # DRF calls both get_serializer_context() and get_queryset() per
+        # request; cache the resolved EntityAttr on self to avoid a duplicate
+        # Attribute + EntityAttr lookup on every autocomplete keystroke.
+        cached = getattr(self, "_entity_attr_cache", None)
+        if cached is not None:
+            return cached
         attr_id = self.kwargs["attr_id"]
-        keyword = self.request.query_params.get("keyword", None)
-
         attr = Attribute.objects.filter(id=attr_id).first()
         if attr:
             entity_attr = attr.schema
@@ -716,6 +743,21 @@ class EntryAttrReferralsAPI(viewsets.ReadOnlyModelViewSet):
             entity_attr = EntityAttr.objects.filter(id=attr_id).first()
         if not entity_attr:
             raise NotFound(f"not found matched attribute or entity attr: {attr_id}")
+        self._entity_attr_cache = entity_attr
+        return entity_attr
+
+    def get_serializer_context(self) -> dict[str, Any]:
+        context = super().get_serializer_context()
+        # Skip resolution for actions like get_schema where kwargs is empty.
+        if "attr_id" in self.kwargs:
+            entity_attr = self._resolve_entity_attr()
+            if entity_attr.type & AttrType.OBJECT:
+                context["display_attr_name"] = entity_attr.display_attr
+        return context
+
+    def get_queryset(self) -> QuerySet[Entry] | QuerySet[Group] | QuerySet[Role]:
+        keyword = self.request.query_params.get("keyword", None)
+        entity_attr = self._resolve_entity_attr()
 
         conditions = {"is_active": True}
         if keyword:
@@ -729,7 +771,28 @@ class EntryAttrReferralsAPI(viewsets.ReadOnlyModelViewSet):
                 "name"
             )
             isolated_ids = IsolationParent.get_isolated_entry_ids(qs, entity_attr.parent_entity)
-            return qs.exclude(id__in=isolated_ids)[0 : CONFIG.MAX_LIST_REFERRALS]
+            qs = qs.exclude(id__in=isolated_ids)[0 : CONFIG.MAX_LIST_REFERRALS]
+            # Bounded prefetch to resolve display_label without N+1 when
+            # display_attr is configured on the caller-side EntityAttr.
+            if entity_attr.display_attr:
+                display_attrv_prefetch = Prefetch(
+                    "values",
+                    queryset=AttributeValue.objects.filter(is_latest=True).select_related(
+                        "referral"
+                    ),
+                    to_attr="_display_attrv_list",
+                )
+                display_attr_prefetch = Prefetch(
+                    "attrs",
+                    queryset=Attribute.objects.filter(
+                        is_active=True, schema__name=entity_attr.display_attr
+                    )
+                    .select_related("schema")
+                    .prefetch_related(display_attrv_prefetch),
+                    to_attr="_display_attr_list",
+                )
+                qs = qs.prefetch_related(display_attr_prefetch)
+            return qs
         elif entity_attr.type & AttrType.GROUP:
             return Group.objects.filter(**conditions).order_by("name")[
                 0 : CONFIG.MAX_LIST_REFERRALS

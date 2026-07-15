@@ -82,6 +82,7 @@ export const AttributesFields: FC<Props> = ({
       nameOrder: "0",
       namePrefix: "",
       namePostfix: "",
+      displayAttr: "",
     });
   };
 
