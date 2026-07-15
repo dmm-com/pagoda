@@ -12,7 +12,7 @@ import { aironeApiClient } from "../../../repository/AironeApiClient";
 // Accept any object that carries at least id / name — display_label is optional
 // and callers may not always provide it (e.g. Trigger/Isolation flows build
 // their own picker payload).
-export type ReferralOption = {
+type ReferralOption = {
   id: number;
   name: string;
   displayLabel?: string | null;
