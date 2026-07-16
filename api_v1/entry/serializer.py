@@ -307,10 +307,10 @@ class EntrySearchChainSerializer(serializers.Serializer[dict[str, Any]]):
         # digging into the condition tree to get to leaf condition by depth-first search
         accumulated_result: list[dict[str, Any]] = []
 
-        def _do_forward_search(
+        def _build_attr_hint(
             sub_query: dict[str, Any], sub_query_result: list[dict[str, Any]]
-        ) -> list[AdvancedSearchResultRecordIdNamePair]:
-            # make query to search Entries using AdvancedSearchService.search_entries()
+        ) -> AttrHint:
+            # make hint to search Entries using AdvancedSearchService.search_entries()
             search_keyword = "|".join(["^%s$" % x["name"] for x in sub_query_result])
             if isinstance(sub_query.get("value"), str) and len(sub_query["value"]) > 0:
                 search_keyword = sub_query["value"]
@@ -320,14 +320,14 @@ class EntrySearchChainSerializer(serializers.Serializer[dict[str, Any]]):
                 # which will match Entries that refers nothing Entry at specified Attribute.
                 search_keyword = "\\"
 
-            # Query for forward search
-            hint_attrs = [
-                AttrHint(
-                    name=sub_query["name"],
-                    keyword=search_keyword,
-                )
-            ]
+            return AttrHint(
+                name=sub_query["name"],
+                keyword=search_keyword,
+            )
 
+        def _run_search(
+            hint_attrs: list[AttrHint],
+        ) -> list[AdvancedSearchResultRecordIdNamePair]:
             hint_item = None
             if hint_item_name:
                 hint_item = EntryHint(
@@ -352,14 +352,38 @@ class EntrySearchChainSerializer(serializers.Serializer[dict[str, Any]]):
             # All results of this request would be joined and pass to next request. It might be
             # huge request and leads to glitch of Elasticsearch by just a single request.
             # This is our original curcit breaker to prevent overload because of them.
-            if len(search_result.ret_values) > CONFIG.SEARCH_CHAIN_ACCEPTABLE_RESULT_COUNT:
+            if search_result.ret_count > CONFIG.SEARCH_CHAIN_ACCEPTABLE_RESULT_COUNT:
                 Logger.warning("Search Chain API error: SEARCH_CHAIN_ACCEPTABLE_RESULT_COUNT")
                 raise ElasticsearchException()
 
             return [x.entry for x in search_result.ret_values]
 
+        def _do_forward_search(
+            sub_query: dict[str, Any], sub_query_result: list[dict[str, Any]]
+        ) -> list[AdvancedSearchResultRecordIdNamePair]:
+            return _run_search([_build_attr_hint(sub_query, sub_query_result)])
+
+        # Leaf conditions (that have no nested "attrs"/"refers") combined by AND (is_any=False)
+        # are bundled into a single Elasticsearch query with multiple AttrHints, which are
+        # AND-combined at the ES level. This avoids decomposing them into separate per-condition
+        # queries whose intermediate results might exceed SEARCH_CHAIN_ACCEPTABLE_RESULT_COUNT
+        # even though the AND-ed result is small.
+        leaf_queries: list[dict[str, Any]] = []
+        non_leaf_queries = queries
+        if not is_any:
+            leaf_queries = [q for q in queries if not q.get("attrs") and not q.get("refers")]
+            non_leaf_queries = [q for q in queries if q.get("attrs") or q.get("refers")]
+
+        if leaf_queries:
+            leaf_results = _run_search([_build_attr_hint(q, []) for q in leaf_queries])
+            if not leaf_results:
+                # These leaf conditions are real AND constraints; an empty result means no Entry
+                # can satisfy the whole condition, so it's useless to continue.
+                return (False, [])
+            accumulated_result = self.merge_search_result(accumulated_result, leaf_results, is_any)
+
         # This expects only AttrSerialized sub-query
-        for sub_query in queries:
+        for sub_query in non_leaf_queries:
             (is_leaf, sub_query_result) = self.search_entries(user, sub_query)
             if not is_leaf and not sub_query_result:
                 # In this case, it's useless to continue to search processing because
