@@ -14,17 +14,24 @@ os.environ.setdefault("DJANGO_CONFIGURATION", "Dev")
 # load AirOne application
 configurations.setup()
 
+from multidb.pinning import use_primary_db  # NOQA
+
 from entity.models import Entity  # NOQA
 from job.models import Job  # NOQA
 
 
 def update_es_document(entities: list[str]) -> None:
-    target_entity = Entity.objects.filter(is_active=True)
-    if entities:
-        target_entity = target_entity.filter(name__in=entities)
+    # Pin DB access to the primary. Outside of an HTTP request there is no
+    # PinningRouterMiddleware to pin the thread after a write, so the Job row
+    # created below would otherwise be read from a lagging replica and raise
+    # Job.DoesNotExist when the synchronous task looks it up.
+    with use_primary_db:
+        target_entity = Entity.objects.filter(is_active=True)
+        if entities:
+            target_entity = target_entity.filter(name__in=entities)
 
-    for entity in target_entity:
-        Job.new_update_documents(entity).run(will_delay=False)
+        for entity in target_entity:
+            Job.new_update_documents(entity).run(will_delay=False)
 
 
 def get_options() -> tuple[Values, list[str]]:
