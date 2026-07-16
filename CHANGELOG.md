@@ -8,6 +8,9 @@
 
 ### Fixed
 
+* Fixed problem at updating array_named_object_boolean typed attribute value
+  Contributed by @userlocalhost
+
 ## v3.153.0
 
 ### Added

@@ -902,7 +902,7 @@ class Attribute(ACLBase):
                 ):
                     return True
 
-            case AttrType.ARRAY_NAMED_OBJECT:
+            case AttrType.ARRAY_NAMED_OBJECT | AttrType.ARRAY_NAMED_OBJECT_BOOLEAN:
 
                 def get_entry_id(value: int | str | Entry | None) -> int | None:
                     if not value:

@@ -592,6 +592,51 @@ class ModelTest(BaseModelTest):
             )
         )
 
+    def test_attr_helper_of_attribute_with_array_named_ref_boolean(self):
+        # ARRAY_NAMED_OBJECT_BOOLEAN must be handled by is_updated() just like
+        # ARRAY_NAMED_OBJECT. Previously this type fell through the match
+        # statement and always returned None (falsy), so changes — most notably
+        # clearing all members with an empty list — were never detected.
+        ref_entity = Entity.objects.create(name="referred_entity", created_user=self._user)
+        ref_entry = Entry.objects.create(
+            name="referred_entry", created_user=self._user, schema=ref_entity
+        )
+
+        entity = Entity.objects.create(name="entity", created_user=self._user)
+        attr_base = EntityAttr.objects.create(
+            name="arr_named_ref_bool",
+            type=AttrType.ARRAY_NAMED_OBJECT_BOOLEAN,
+            created_user=self._user,
+            parent_entity=entity,
+        )
+        attr_base.referral.add(ref_entity)
+
+        entry = Entry.objects.create(name="entry", created_user=self._user, schema=entity)
+        entry.complement_attrs(self._user)
+
+        attr: Attribute = entry.attrs.get(name="arr_named_ref_bool")
+
+        # no value has been set yet, so an empty list is not an update
+        self.assertFalse(attr.is_updated([]))
+        self.assertTrue(attr.is_updated([{"id": ref_entry.id, "name": "hoge"}]))
+
+        # set a value with name, referral and boolean
+        attr.add_value(self._user, [{"id": ref_entry.id, "name": "hoge", "boolean": True}])
+
+        # same content is not an update (boolean is compared as well)
+        self.assertFalse(attr.is_updated([{"id": ref_entry.id, "name": "hoge", "boolean": True}]))
+        self.assertTrue(attr.is_updated([{"id": ref_entry.id, "name": "hoge", "boolean": False}]))
+        self.assertTrue(attr.is_updated([{"id": ref_entry.id, "name": "fuga", "boolean": True}]))
+
+        # clearing all members with an empty list must be detected as an update
+        # (this is the regression that was fixed)
+        self.assertTrue(attr.is_updated([]))
+
+        # after clearing the value, an empty list is a no-op again
+        attr.add_value(self._user, [])
+        self.assertFalse(attr.is_updated([]))
+        self.assertTrue(attr.is_updated([{"id": ref_entry.id, "name": "hoge", "boolean": True}]))
+
     def test_for_boolean_attr_and_value(self):
         attr = self.make_attr("attr_bool", AttrType.BOOLEAN)
 
