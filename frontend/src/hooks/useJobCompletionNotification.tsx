@@ -14,6 +14,8 @@ import { JobOperations, JobStatuses } from "services/Constants";
 import { jobOperationLabel } from "services/JobUtil";
 import { NotificationMessages } from "services/NotificationMessages";
 
+const NOTIFICATION_AUTO_HIDE_DURATION_MS = 8000;
+
 const EXPORT_OPERATIONS = new Set([
   JobOperations.EXPORT_ENTRY,
   JobOperations.EXPORT_SEARCH_RESULT,
@@ -105,7 +107,7 @@ export const useJobCompletionNotification = (
         } else {
           enqueueSnackbar(NotificationMessages.jobCompleted(targetName), {
             variant: "success",
-            autoHideDuration: 8000,
+            autoHideDuration: NOTIFICATION_AUTO_HIDE_DURATION_MS,
             action: (snackbarId) => (
               <>
                 <Button
@@ -142,7 +144,7 @@ export const useJobCompletionNotification = (
       } else if (job.status === JobStatuses.TIMEOUT) {
         enqueueSnackbar(NotificationMessages.jobTimedOut(targetName), {
           variant: "warning",
-          autoHideDuration: 8000,
+          autoHideDuration: NOTIFICATION_AUTO_HIDE_DURATION_MS,
           action: (snackbarId) => (
             <>
               <Button
