@@ -28,26 +28,32 @@ Pagoda (formerly AirOne) is an entity/metadata management platform with flexible
 - **Generate client:** `npm run generate:client`
 - **Generate custom client:** `npm run generate:custom_client`
 
-### API Client Release Workflow (when changing `**/api_v2/**/*.py` schema)
+### API Client Release Workflow (auto-publish on merge to master)
 
 The TypeScript client at `apiclient/typescript-fetch/` is published to GitHub
 Packages as `@dmm-com/airone-apiclient-typescript-fetch`. CI installs the
 *published* version via `npm ci`; `npm run link:client` is local-development
 only and does not affect CI. Therefore any FE change that depends on a new
 API field/endpoint requires a release-and-bump cycle, and **CI will fail
-between steps 1 and 3 — this is expected, not a regression.**
+between steps 1 and 2 — this is expected, not a regression.**
 
-1. Bump version in `apiclient/typescript-fetch/package.json` (e.g.
-   `0.28.1` → `0.28.2`) and push.
-2. Add the **`release-apiv2-client`** label to the PR. The
-   `.github/workflows/release-apiv2-client.yml` workflow will regenerate
-   the spec, publish the new version to GitHub Packages, and post a
-   confirmation comment on the PR.
-3. After the publish completes, bump the same version in the root
-   `package.json` `optionalDependencies` and `package-lock.json` (e.g.
-   `npm install @dmm-com/airone-apiclient-typescript-fetch@<new>` or
-   manual edit) and push. CI now resolves to the new version and FE
-   build/test/lint pass.
+Publishing is automated by `.github/workflows/release-apiv2-client.yml`,
+which runs **on push to `master`** (no `pull_request_target`, no label). It
+fires when a merge touches files that can change the generated OpenAPI spec
+(`**/api_v2/**/*.py`) or the client `package.json`. The workflow regenerates
+the spec/client from the merged code and publishes only when the version in
+`apiclient/typescript-fetch/package.json` is not already on the registry —
+so API changes merged without a version bump are a no-op (skipped), not a
+failure.
+
+1. In your PR, bump the version in `apiclient/typescript-fetch/package.json`
+   (e.g. `0.28.1` → `0.28.2`) whenever you change the APIv2 schema. On merge
+   to `master`, the workflow publishes the new version to GitHub Packages.
+2. After the publish completes, open a follow-up PR that bumps the same
+   version in the root `package.json` `optionalDependencies` and
+   `package-lock.json` (e.g. `npm install
+   @dmm-com/airone-apiclient-typescript-fetch@<new>` or manual edit). Once
+   merged, CI resolves to the new version and FE build/test/lint pass.
 
 Past examples: commits `696e8d1e` (root + lock bump after release) and
 `1401e969` (apiclient-only bump on a separate PR).

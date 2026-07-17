@@ -1,29 +1,28 @@
 name: Release AirOne APIv2 client npm package to GitHub npm Registry
 
 on:
-  # use pull_request_target with labeled(repo owner's operation) to prevent leaking secrets
-  # see also https://pankona.github.io/blog/2021/03/29/github-actions-pull-request-target/
-  pull_request_target:
-    types: [labeled]
+  # Publish only after code is merged into master (trusted context).
+  # Fires on changes that can alter the generated OpenAPI spec (spec.yaml)
+  # or the client package version.
+  push:
+    branches:
+      - master
     paths:
       - "**/api_v2/**/*.py"
       - "apiclient/typescript-fetch/package.json"
       - ".github/workflows/release-apiv2-client.yml"
 
 jobs:
-  # Runs PR code with minimal permissions to generate the client artifact.
-  # Intentionally isolated from write tokens to prevent token exfiltration.
-  generate:
+  # Generates the client from the merged (trusted) code and publishes it.
+  # Publish is skipped when the current version is already on the registry,
+  # so API changes without a version bump won't fail the workflow.
+  release:
     runs-on: ubuntu-24.04
     permissions:
       contents: read
-    if: >-
-      github.event.label.name == 'release-apiv2-client' &&
-      github.event.pull_request.head.repo.full_name == github.repository
+      packages: write
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
       - name: Install uv
         run: pipx install uv
       - uses: actions/setup-python@7f4fc3e22c37d6ff65e88745f38bd3157c663f7c # v4
@@ -49,49 +48,24 @@ jobs:
       - name: generate client
         run: |
           uv run npm run generate:client
-      - name: Upload generated client
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
-        with:
-          name: apiv2-client
-          path: ./apiclient/typescript-fetch/
-
-  # Downloads the artifact and publishes without executing any PR code.
-  # Holds write tokens only in this job.
-  publish:
-    runs-on: ubuntu-24.04
-    needs: generate
-    permissions:
-      packages: write
-      pull-requests: write
-    steps:
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
-        with:
-          node-version: 22
-          registry-url: https://npm.pkg.github.com/
-          scope: "@dmm-com"
-      - name: Download generated client
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
-        with:
-          name: apiv2-client
-          path: ./apiclient/typescript-fetch/
-      - run: npm publish
+      - name: Check if the current version is already published
+        id: check
+        run: |
+          NAME=$(node -p "require('./package.json').name")
+          VERSION=$(node -p "require('./package.json').version")
+          if npm view "$NAME@$VERSION" version >/dev/null 2>&1; then
+            echo "Version $VERSION is already published; skipping publish."
+            echo "published=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Version $VERSION is not published yet; will publish."
+            echo "published=false" >> "$GITHUB_OUTPUT"
+          fi
+        working-directory: ./apiclient/typescript-fetch
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
+      - name: publish
+        if: steps.check.outputs.published == 'false'
+        run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
         working-directory: ./apiclient/typescript-fetch
-      - name: Find Comment
-        uses: peter-evans/find-comment@a54c31d7fa095754bfef525c0c8e5e5674c4b4b1 # v2
-        id: fc
-        with:
-          issue-number: ${{ github.event.pull_request.number }}
-          comment-author: "github-actions[bot]"
-          body-includes: "<!-- release-apiv2-client-notification -->"
-      - name: Create or update comment
-        uses: peter-evans/create-or-update-comment@23ff15729ef2fc348714a3bb66d2f655ca9066f2 # v3
-        with:
-          comment-id: ${{ steps.fc.outputs.comment-id }}
-          issue-number: ${{ github.event.pull_request.number }}
-          edit-mode: replace
-          body: |
-            <!-- release-apiv2-client-notification -->
-            :zap: :zap: :zap: Now the latest apiv2 client npm package is available at:
-            https://github.com/dmm-com/airone/pkgs/npm/airone-apiclient-typescript-fetch/versions
