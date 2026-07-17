@@ -6,10 +6,11 @@ import {
   CircularProgress,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import { FC, useEffect, useState } from "react";
+import { FC, useState } from "react";
 import { Control, Controller } from "react-hook-form";
 import { UseFormSetValue } from "react-hook-form/dist/types/form";
 
+import { usePagodaSWR } from "../../../hooks/usePagodaSWR";
 import { aironeApiClient } from "../../../repository/AironeApiClient";
 
 import { Schema } from "./EntryFormSchema";
@@ -42,25 +43,18 @@ export const GroupAttributeValueField: FC<Props> = ({
   multiple = false,
   isDisabled = false,
 }) => {
-  const [options, setOptions] = useState<GroupOption[]>([]);
   const [inputValue, setInputValue] = useState("");
-  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    const fetchGroups = async () => {
-      setLoading(true);
-      try {
-        const result = await aironeApiClient.getGroups(1, inputValue);
-        setOptions(
-          result.results?.map((g) => ({ id: g.id, name: g.name })) ?? [],
-        );
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchGroups();
-  }, [inputValue]);
+  const { data: options = [], isLoading: loading } = usePagodaSWR(
+    ["groupOptions", inputValue],
+    async () => {
+      const result = await aironeApiClient.getGroups(1, inputValue);
+      return result.results?.map((g) => ({ id: g.id, name: g.name })) ?? [];
+    },
+    // revalidateOnFocus is disabled so a transient failure of a background
+    // refetch cannot crash the entry form the user is editing.
+    { keepPreviousData: true, revalidateOnFocus: false },
+  );
 
   const handleChange = (value: GroupOption | GroupOption[] | null) => {
     if (multiple) {
