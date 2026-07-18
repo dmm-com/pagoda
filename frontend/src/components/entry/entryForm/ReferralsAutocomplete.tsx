@@ -56,6 +56,8 @@ export const ReferralsAutocomplete: FC<Props> = ({
       const result = await aironeApiClient.getEntryAttrReferrals(attrId);
       setOptions(result);
       setHasFetchedInitial(true);
+    } catch {
+      setOptions([]);
     } finally {
       setLoading(false);
     }
@@ -70,6 +72,8 @@ export const ReferralsAutocomplete: FC<Props> = ({
           keyword,
         );
         setOptions(result);
+      } catch {
+        setOptions([]);
       } finally {
         setLoading(false);
       }
@@ -120,6 +124,7 @@ export const ReferralsAutocomplete: FC<Props> = ({
     <Autocomplete
       fullWidth
       multiple={multiple}
+      disabled={isDisabled}
       loading={loading}
       options={options}
       // MUI Autocomplete's value must be structurally compatible with the
@@ -143,7 +148,6 @@ export const ReferralsAutocomplete: FC<Props> = ({
           helperText={error?.message}
           size="small"
           placeholder={multiple ? "" : "-NOT SET-"}
-          disabled={isDisabled}
         />
       )}
     />

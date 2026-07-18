@@ -98,12 +98,14 @@ export const AttrStatsModal: FC<Props> = ({
   const [counts, setCounts] = useState<Map<string, number>>(new Map());
   const [loadedCount, setLoadedCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
+  const [loadFailed, setLoadFailed] = useState(false);
 
   useEffect(() => {
     if (!open) {
       setCounts(new Map());
       setLoadedCount(0);
       setIsLoading(false);
+      setLoadFailed(false);
       return;
     }
 
@@ -125,6 +127,7 @@ export const AttrStatsModal: FC<Props> = ({
     setCounts(new Map());
     setLoadedCount(0);
     setIsLoading(true);
+    setLoadFailed(false);
 
     let cancelled = false;
     const totalPages = Math.ceil(totalCount / PAGE_SIZE);
@@ -165,7 +168,10 @@ export const AttrStatsModal: FC<Props> = ({
 
       if (!cancelled) setIsLoading(false);
     })().catch(() => {
-      if (!cancelled) setIsLoading(false);
+      if (!cancelled) {
+        setLoadFailed(true);
+        setIsLoading(false);
+      }
     });
 
     return () => {
@@ -183,9 +189,8 @@ export const AttrStatsModal: FC<Props> = ({
     [counts],
   );
 
-  const displayedCount = isLoading
-    ? Math.min(loadedCount, totalCount)
-    : totalCount;
+  const displayedCount =
+    isLoading || loadFailed ? Math.min(loadedCount, totalCount) : totalCount;
   const progress =
     totalCount > 0
       ? Math.min(Math.round((displayedCount / totalCount) * 100), 100)
@@ -219,6 +224,11 @@ export const AttrStatsModal: FC<Props> = ({
             value={progress}
             sx={{ borderRadius: 1 }}
           />
+          {loadFailed && (
+            <Typography variant="caption" color="error">
+              集計に失敗しました
+            </Typography>
+          )}
         </Box>
         <TableContainer component={Paper} variant="outlined">
           <Table size="small">

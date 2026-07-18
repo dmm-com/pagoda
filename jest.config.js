@@ -15,6 +15,21 @@ module.exports = {
   setupFilesAfterEnv: [
     "@testing-library/jest-dom/extend-expect",
   ],
+  collectCoverageFrom: [
+    "frontend/src/**/*.{ts,tsx}",
+    "!frontend/src/**/*.test.{ts,tsx}",
+    "!frontend/src/**/index.ts",
+    "!frontend/src/TestWrapper.tsx",
+  ],
+  coverageThreshold: {
+    global: {
+      statements: 75,
+      branches: 55,
+      functions: 60,
+      lines: 75,
+    },
+  },
+  reporters: ["default", "<rootDir>/tools/frontendCoverageReporter.cjs"],
   moduleDirectories: [
     "frontend/src",
     "node_modules"
