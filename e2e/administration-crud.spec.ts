@@ -1,6 +1,10 @@
 import { expect, test } from "@playwright/test";
 
-import { collectBrowserFailures, expectNoBrowserFailures, expectUiQualityGate } from "./browserQuality";
+import {
+  collectBrowserFailures,
+  expectNoBrowserFailures,
+  expectUiQualityGate,
+} from "./browserQuality";
 import { captureEvidence } from "./reportEvidence";
 
 const failureMap = new WeakMap<object, string[]>();
@@ -13,11 +17,18 @@ test.afterEach(async ({ page }, testInfo) => {
   expectNoBrowserFailures(failureMap.get(testInfo) ?? []);
 });
 
-test("@crud @user performs browser UI CRUD", async ({ page, request }, testInfo) => {
+test("@crud @user performs browser UI CRUD", async ({
+  page,
+  request,
+}, testInfo) => {
   await page.goto("/ui/users");
   await page.getByRole("link", { name: "新規ユーザを登録" }).click();
-  await page.getByPlaceholder("ユーザ名を入力してください").fill("browser-user");
-  await page.getByPlaceholder("メールアドレスを入力してください").fill("browser-user@example.test");
+  await page
+    .getByPlaceholder("ユーザ名を入力してください")
+    .fill("browser-user");
+  await page
+    .getByPlaceholder("メールアドレスを入力してください")
+    .fill("browser-user@example.test");
   const password = page.getByPlaceholder("パスワードを入力してください");
   await password.fill("secret123");
   await password.press("Tab");
@@ -25,7 +36,11 @@ test("@crud @user performs browser UI CRUD", async ({ page, request }, testInfo)
   await expect(page).toHaveURL(/\/ui\/users$/);
   await page.reload();
   await expect(page.getByText("browser-user", { exact: true })).toBeVisible();
-  const created = (await (await request.get("/user/api/v2")).json()).results.find(({ username }: { username: string }) => username === "browser-user");
+  const created = (
+    await (await request.get("/user/api/v2")).json()
+  ).results.find(
+    ({ username }: { username: string }) => username === "browser-user",
+  );
   await page.getByText("browser-user", { exact: true }).click();
   const username = page.getByPlaceholder("ユーザ名を入力してください");
   await expect(username).toHaveValue("browser-user");
@@ -35,16 +50,25 @@ test("@crud @user performs browser UI CRUD", async ({ page, request }, testInfo)
   await page.reload();
   const updated = page.getByText("browser-user-updated", { exact: true });
   await expect(updated).toBeVisible();
-  const card = updated.locator("xpath=ancestor::div[contains(@class, 'MuiCard-root')]");
+  const card = updated.locator(
+    "xpath=ancestor::div[contains(@class, 'MuiCard-root')]",
+  );
   await card.getByRole("button").last().click();
   await page.getByText("削除", { exact: true }).click();
   await page.getByRole("button", { name: "Yes" }).click();
   await expect(updated).toHaveCount(0);
   expect((await request.get(`/user/api/v2/${created.id}`)).status()).toBe(404);
-  await captureEvidence(page, testInfo, { name: "user-crud", title: "User CRUD", note: "Browser UI CRUD completed." });
+  await captureEvidence(page, testInfo, {
+    name: "user-crud",
+    title: "User CRUD",
+    note: "Browser UI CRUD completed.",
+  });
 });
 
-test("@crud @group performs browser UI CRUD", async ({ page, request }, testInfo) => {
+test("@crud @group performs browser UI CRUD", async ({
+  page,
+  request,
+}, testInfo) => {
   await page.goto("/ui/groups");
   await page.getByRole("link", { name: "新規グループを作成" }).click();
   const input = page.getByPlaceholder("グループ名");
@@ -54,7 +78,9 @@ test("@crud @group performs browser UI CRUD", async ({ page, request }, testInfo
   await page.reload();
   const createdLink = page.getByText("Browser Group", { exact: true });
   await expect(createdLink).toBeVisible();
-  const created = (await (await request.get("/group/api/v2/groups")).json()).results.find(({ name }: { name: string }) => name === "Browser Group");
+  const created = (
+    await (await request.get("/group/api/v2/groups")).json()
+  ).results.find(({ name }: { name: string }) => name === "Browser Group");
   await createdLink.click();
   await input.fill("Browser Group Updated");
   await input.press("Tab");
@@ -66,11 +92,20 @@ test("@crud @group performs browser UI CRUD", async ({ page, request }, testInfo
   await page.getByText("削除", { exact: true }).click();
   await page.getByRole("button", { name: "Yes" }).click();
   await expect(updated).toHaveCount(0);
-  expect((await request.get(`/group/api/v2/groups/${created.id}`)).status()).toBe(404);
-  await captureEvidence(page, testInfo, { name: "group-crud", title: "Group CRUD", note: "Browser UI CRUD completed." });
+  expect(
+    (await request.get(`/group/api/v2/groups/${created.id}`)).status(),
+  ).toBe(404);
+  await captureEvidence(page, testInfo, {
+    name: "group-crud",
+    title: "Group CRUD",
+    note: "Browser UI CRUD completed.",
+  });
 });
 
-test("@crud @role performs browser UI CRUD", async ({ page, request }, testInfo) => {
+test("@crud @role performs browser UI CRUD", async ({
+  page,
+  request,
+}, testInfo) => {
   await page.goto("/ui/roles");
   await page.getByRole("link", { name: "新規ロールを作成" }).click();
   await page.getByPlaceholder("ロール名").fill("Browser Role");
@@ -81,7 +116,9 @@ test("@crud @role performs browser UI CRUD", async ({ page, request }, testInfo)
   await page.getByRole("button", { name: "保存" }).click();
   await page.reload();
   let row = page.getByRole("row").filter({ hasText: "Browser Role" });
-  const created = (await (await request.get("/role/api/v2")).json()).find(({ name }: { name: string }) => name === "Browser Role");
+  const created = (await (await request.get("/role/api/v2")).json()).find(
+    ({ name }: { name: string }) => name === "Browser Role",
+  );
   await row.getByRole("link", { name: "Browser Roleを編集" }).click();
   await page.getByPlaceholder("ロール名").fill("Browser Role Updated");
   await page.getByPlaceholder("備考").fill("updated through browser");
@@ -93,5 +130,9 @@ test("@crud @role performs browser UI CRUD", async ({ page, request }, testInfo)
   await page.getByRole("button", { name: "Yes" }).click();
   await expect(row).toHaveCount(0);
   expect((await request.get(`/role/api/v2/${created.id}`)).status()).toBe(404);
-  await captureEvidence(page, testInfo, { name: "role-crud", title: "Role CRUD", note: "Browser UI CRUD completed." });
+  await captureEvidence(page, testInfo, {
+    name: "role-crud",
+    title: "Role CRUD",
+    note: "Browser UI CRUD completed.",
+  });
 });

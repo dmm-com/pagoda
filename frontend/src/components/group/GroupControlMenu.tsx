@@ -65,7 +65,9 @@ export const GroupControlMenu: FC<Props> = ({
         componentGenerator={(handleOpen) => (
           <MenuItem onClick={handleOpen} sx={{ justifyContent: "end" }}>
             <ListItemText>削除</ListItemText>
-            <ListItemIcon><DeleteOutlineIcon /></ListItemIcon>
+            <ListItemIcon>
+              <DeleteOutlineIcon />
+            </ListItemIcon>
           </MenuItem>
         )}
         dialogTitle="本当に削除しますか？"

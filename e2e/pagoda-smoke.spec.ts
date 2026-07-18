@@ -60,7 +60,9 @@ test.afterEach(async ({ page }, testInfo) => {
   }
 });
 
-test("@smoke @dashboard renders dashboard cards", async ({ page }, testInfo) => {
+test("@smoke @dashboard renders dashboard cards", async ({
+  page,
+}, testInfo) => {
   await page.goto("/ui/");
   await expect(page.getByText("Operations")).toBeVisible();
   await expect(page.getByRole("link", { name: "Server" })).toBeVisible();
@@ -86,7 +88,9 @@ test("@smoke @entry-list renders entries", async ({ page }, testInfo) => {
   });
 });
 
-test("@smoke @entry-detail renders attribute values", async ({ page }, testInfo) => {
+test("@smoke @entry-detail renders attribute values", async ({
+  page,
+}, testInfo) => {
   await page.goto("/ui/entities/1/entries/1/details");
   await expect(page.getByRole("heading", { name: "web-01" })).toBeVisible();
 
@@ -98,12 +102,18 @@ test("@smoke @entry-detail renders attribute values", async ({ page }, testInfo)
 
   await expect(page.getByText("web-01.example.test")).toBeVisible();
   await expect(page.getByText("switch-core-01", { exact: true })).toBeVisible();
-  await expect(page.getByText("switch-backup-01", { exact: true })).toBeVisible();
-  await expect(page.getByText("switch-uplink-01", { exact: true })).toBeVisible();
+  await expect(
+    page.getByText("switch-backup-01", { exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByText("switch-uplink-01", { exact: true }),
+  ).toBeVisible();
   await expect(
     page.getByText("switch-standby-01", { exact: true }),
   ).toBeVisible();
-  await expect(page.getByText("Runs the customer-facing web tier.")).toBeVisible();
+  await expect(
+    page.getByText("Runs the customer-facing web tier."),
+  ).toBeVisible();
   await expect(page.locator('input[type="checkbox"]').first()).toBeChecked();
   await expect(page.getByText("SRE").first()).toBeVisible();
   await expect(page.getByText("Inventory Maintainer").first()).toBeVisible();
@@ -148,10 +158,7 @@ test("@smoke @object-values renders object-like attribute values", async ({
   for (const [label, href] of expectedLinks) {
     await expect(
       page.getByRole("link", { name: label, exact: true }),
-    ).toHaveAttribute(
-      "href",
-      href,
-    );
+    ).toHaveAttribute("href", href);
   }
 
   await expect(page.getByText("uplink", { exact: true })).toBeVisible();

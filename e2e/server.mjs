@@ -151,9 +151,7 @@ const entryDetail = {
       as_object: switchValue(20, "switch-core-01"),
     }),
     attrValue(13, 1025, "backup_switches", {
-      as_array_object: [
-        switchValue(21, "switch-backup-01"),
-      ],
+      as_array_object: [switchValue(21, "switch-backup-01")],
     }),
     attrValue(14, 2049, "named_switch", {
       as_named_object: {
@@ -185,7 +183,10 @@ const entryDetail = {
       as_array_string: ["web-primary", "frontend-a"],
     }),
     attrValue(24, 1040, "maintenance_groups", {
-      as_array_group: [{ id: 1, name: "Engineering" }, { id: 2, name: "SRE" }],
+      as_array_group: [
+        { id: 1, name: "Engineering" },
+        { id: 2, name: "SRE" },
+      ],
     }),
     attrValue(25, 1088, "support_roles", {
       as_array_role: [{ id: 1, name: "Inventory Maintainer" }],
@@ -299,30 +300,41 @@ const handleApi = async (req, res, parsed) => {
   }
 
   if (req.method === "GET" && pathname === "/category/api/v2") {
-    json(res, 200, paginated([
-      {
-        id: 1,
-        name: "Operations",
-        note: "Operational metadata",
-        models: [{ id: 1, name: "Server" }, { id: 2, name: "Switch" }],
-        priority: 10,
-        permission: ACL_FULL,
-      },
-    ]));
+    json(
+      res,
+      200,
+      paginated([
+        {
+          id: 1,
+          name: "Operations",
+          note: "Operational metadata",
+          models: [
+            { id: 1, name: "Server" },
+            { id: 2, name: "Switch" },
+          ],
+          priority: 10,
+          permission: ACL_FULL,
+        },
+      ]),
+    );
     return true;
   }
   if (req.method === "GET" && pathname === "/entity/api/v2") {
-    json(res, 200, paginated([
-      ...state.entities,
-      {
-        id: 2,
-        name: "Switch",
-        note: "Network switch metadata",
-        is_toplevel: true,
-        attrs: [],
-        permission: ACL_FULL,
-      },
-    ]));
+    json(
+      res,
+      200,
+      paginated([
+        ...state.entities,
+        {
+          id: 2,
+          name: "Switch",
+          note: "Network switch metadata",
+          is_toplevel: true,
+          attrs: [],
+          permission: ACL_FULL,
+        },
+      ]),
+    );
     return true;
   }
   if (req.method === "POST" && pathname === "/entity/api/v2") {
@@ -343,7 +355,9 @@ const handleApi = async (req, res, parsed) => {
   }
   const entityMatch = pathname.match(/^\/entity\/api\/v2\/(\d+)$/);
   if (entityMatch && req.method === "GET") {
-    const entity = state.entities.find(({ id }) => id === Number(entityMatch[1]));
+    const entity = state.entities.find(
+      ({ id }) => id === Number(entityMatch[1]),
+    );
     json(res, entity ? 200 : 404, entity ?? { detail: "Not found" });
     return true;
   }
@@ -368,7 +382,20 @@ const handleApi = async (req, res, parsed) => {
     return true;
   }
   if (req.method === "GET" && pathname === "/entity/api/v2/1/entries") {
-    json(res, 200, paginated(state.entries.map(({ id, name, schema, is_active }) => ({ id, name, schema, is_active, aliases: [], permission: ACL_FULL }))));
+    json(
+      res,
+      200,
+      paginated(
+        state.entries.map(({ id, name, schema, is_active }) => ({
+          id,
+          name,
+          schema,
+          is_active,
+          aliases: [],
+          permission: ACL_FULL,
+        })),
+      ),
+    );
     return true;
   }
   if (req.method === "POST" && pathname === "/entity/api/v2/1/entries") {
@@ -419,7 +446,11 @@ const handleApi = async (req, res, parsed) => {
       id: Math.max(...state.entries.map(({ id }) => id), 0) + 1,
       name: input.name,
       is_active: true,
-      schema: { id: entityId, name: entity?.name ?? "Entity", permission: ACL_FULL },
+      schema: {
+        id: entityId,
+        name: entity?.name ?? "Entity",
+        permission: ACL_FULL,
+      },
       attrs: [],
       permission: ACL_FULL,
     };
@@ -465,7 +496,11 @@ const handleApi = async (req, res, parsed) => {
     return true;
   }
   if (req.method === "GET" && pathname === "/entity/api/v2/attrs") {
-    json(res, 200, attrs.map(({ id, name, type }) => ({ id, name, type })));
+    json(
+      res,
+      200,
+      attrs.map(({ id, name, type }) => ({ id, name, type })),
+    );
     return true;
   }
   if (req.method === "GET" && pathname === "/trigger/api/v2") {
@@ -477,15 +512,32 @@ const handleApi = async (req, res, parsed) => {
     return true;
   }
   const collections = [
-    { base: "/user/api/v2", key: "users", wrapper: "userCreate", paginated: true },
-    { base: "/group/api/v2/groups", key: "groups", wrapper: "groupCreateUpdate", paginated: true },
-    { base: "/role/api/v2", key: "roles", wrapper: "roleCreateUpdate", paginated: false },
+    {
+      base: "/user/api/v2",
+      key: "users",
+      wrapper: "userCreate",
+      paginated: true,
+    },
+    {
+      base: "/group/api/v2/groups",
+      key: "groups",
+      wrapper: "groupCreateUpdate",
+      paginated: true,
+    },
+    {
+      base: "/role/api/v2",
+      key: "roles",
+      wrapper: "roleCreateUpdate",
+      paginated: false,
+    },
   ];
   const hydrateRoleRelations = (input) => {
     const result = { ...input };
     for (const [field, stateKey] of [
-      ["users", "users"], ["groups", "groups"],
-      ["admin_users", "users"], ["admin_groups", "groups"],
+      ["users", "users"],
+      ["groups", "groups"],
+      ["admin_users", "users"],
+      ["admin_groups", "groups"],
     ]) {
       if (Array.isArray(result[field])) {
         result[field] = result[field]
@@ -497,7 +549,13 @@ const handleApi = async (req, res, parsed) => {
   };
   for (const collection of collections) {
     if (pathname === collection.base && req.method === "GET") {
-      json(res, 200, collection.paginated ? paginated(state[collection.key]) : state[collection.key]);
+      json(
+        res,
+        200,
+        collection.paginated
+          ? paginated(state[collection.key])
+          : state[collection.key],
+      );
       return true;
     }
     if (pathname === collection.base && req.method === "POST") {
@@ -516,7 +574,9 @@ const handleApi = async (req, res, parsed) => {
     }
     const match = pathname.match(new RegExp(`^${collection.base}/(\\d+)$`));
     if (match && req.method === "GET") {
-      const record = state[collection.key].find(({ id }) => id === Number(match[1]));
+      const record = state[collection.key].find(
+        ({ id }) => id === Number(match[1]),
+      );
       json(res, record ? 200 : 404, record ?? { detail: "Not found" });
       return true;
     }
@@ -526,21 +586,32 @@ const handleApi = async (req, res, parsed) => {
       const updateWrapper = collection.wrapper.replace("Create", "Update");
       let input = body[updateWrapper] ?? body[collection.wrapper] ?? body;
       if (collection.key === "roles") input = hydrateRoleRelations(input);
-      const index = state[collection.key].findIndex((record) => record.id === id);
-      state[collection.key][index] = { ...state[collection.key][index], ...input };
+      const index = state[collection.key].findIndex(
+        (record) => record.id === id,
+      );
+      state[collection.key][index] = {
+        ...state[collection.key][index],
+        ...input,
+      };
       json(res, 200, state[collection.key][index]);
       return true;
     }
     if (match && req.method === "DELETE") {
       const id = Number(match[1]);
-      state[collection.key] = state[collection.key].filter((record) => record.id !== id);
+      state[collection.key] = state[collection.key].filter(
+        (record) => record.id !== id,
+      );
       res.writeHead(204, { "Content-Length": "0" });
       res.end();
       return true;
     }
   }
   if (req.method === "GET" && pathname === "/group/api/v2/groups/tree") {
-    json(res, 200, state.groups.map(({ id, name }) => ({ id, name, children: [] })));
+    json(
+      res,
+      200,
+      state.groups.map(({ id, name }) => ({ id, name, children: [] })),
+    );
     return true;
   }
   if (req.method === "POST" && pathname === "/entry/api/v2/advanced_search") {
@@ -575,20 +646,27 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  handleApi(req, res, parsed).then((handled) => {
-    if (handled) return;
-    if (parsed.pathname.startsWith("/api/") || parsed.pathname.includes("/api/")) {
-      json(res, 500, { detail: `Unhandled E2E mock: ${req.method} ${parsed.pathname}` });
-      return;
-    }
-    res.writeHead(200, {
-      "Content-Type": "text/html; charset=utf-8",
-      "Cache-Control": "no-store",
+  handleApi(req, res, parsed)
+    .then((handled) => {
+      if (handled) return;
+      if (
+        parsed.pathname.startsWith("/api/") ||
+        parsed.pathname.includes("/api/")
+      ) {
+        json(res, 500, {
+          detail: `Unhandled E2E mock: ${req.method} ${parsed.pathname}`,
+        });
+        return;
+      }
+      res.writeHead(200, {
+        "Content-Type": "text/html; charset=utf-8",
+        "Cache-Control": "no-store",
+      });
+      res.end(html);
+    })
+    .catch((error) => {
+      json(res, 500, { detail: `E2E mock failure: ${error.message}` });
     });
-    res.end(html);
-  }).catch((error) => {
-    json(res, 500, { detail: `E2E mock failure: ${error.message}` });
-  });
 });
 
 server.listen(port, "127.0.0.1", () => {

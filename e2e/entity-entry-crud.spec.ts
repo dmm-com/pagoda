@@ -37,9 +37,9 @@ test("@crud @entity performs browser UI CRUD", async ({
 
   let entityLink = page.getByText("Browser Entity", { exact: true });
   await expect(entityLink).toBeVisible();
-  const created = (await (await request.get("/entity/api/v2")).json()).results.find(
-    ({ name }: { name: string }) => name === "Browser Entity",
-  );
+  const created = (
+    await (await request.get("/entity/api/v2")).json()
+  ).results.find(({ name }: { name: string }) => name === "Browser Entity");
   expect(created).toBeDefined();
 
   const card = entityLink.locator(
@@ -69,7 +69,9 @@ test("@crud @entity performs browser UI CRUD", async ({
   await page.getByText("削除", { exact: true }).click();
   await page.getByRole("button", { name: "Yes" }).click();
   await expect(entityLink).toHaveCount(0);
-  expect((await request.get(`/entity/api/v2/${created.id}`)).status()).toBe(404);
+  expect((await request.get(`/entity/api/v2/${created.id}`)).status()).toBe(
+    404,
+  );
 
   await captureEvidence(page, testInfo, {
     name: "entity-crud",
@@ -96,8 +98,8 @@ test("@crud @entry performs browser UI CRUD", async ({
   await expect(entryLink).toBeVisible();
   const created = (
     await (await request.get("/entity/api/v2/1/entries")).json()
-  ).results.find(({ name: entryName }: { name: string }) =>
-    entryName === "browser-entry",
+  ).results.find(
+    ({ name: entryName }: { name: string }) => entryName === "browser-entry",
   );
   expect(created).toBeDefined();
 

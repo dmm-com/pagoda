@@ -17,7 +17,10 @@ export default defineConfig({
   reporter: [
     ["list"],
     ["json", { outputFile: path.join(testResultsDir, "results.json") }],
-    ["html", { open: "never", outputFolder: path.join(testResultsDir, "html") }],
+    [
+      "html",
+      { open: "never", outputFolder: path.join(testResultsDir, "html") },
+    ],
   ],
   outputDir: path.join(testResultsDir, "artifacts"),
   use: {

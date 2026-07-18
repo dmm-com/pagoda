@@ -68,11 +68,7 @@ export const expectUiQualityGate = async (page: Page, testInfo: TestInfo) => {
             bottom: rect.bottom,
           };
         })
-        .filter(
-          (rect) =>
-            rect.right < -1 ||
-            rect.left > window.innerWidth + 1,
-        ),
+        .filter((rect) => rect.right < -1 || rect.left > window.innerWidth + 1),
     );
   expect(offscreenControls).toEqual([]);
 

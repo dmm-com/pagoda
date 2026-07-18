@@ -40,8 +40,8 @@
     "test:e2e:install": "playwright install chromium",
     "watch": "webpack build --entry ./frontend/src/App.tsx --watch --mode development",
     "watch:custom": "webpack build --watch --entry ./frontend/src/customview/CustomApp.tsx --mode development",
-    "lint": "eslint frontend && biome format frontend && knip",
-    "fix": "eslint --fix frontend ; biome format --write frontend ; knip --fix",
+    "lint": "eslint frontend e2e && biome format frontend e2e && knip",
+    "fix": "eslint --fix frontend e2e ; biome format --write frontend e2e ; knip --fix",
     "test": "TZ=UTC jest --coverage frontend",
     "test:update": "TZ=UTC jest -u frontend"
   },

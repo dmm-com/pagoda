@@ -45,7 +45,10 @@ test("@advanced-search creates, reads, updates, and clears search criteria", asy
   await page.getByRole("option", { name: "Switch" }).click();
   await expect(page.getByRole("button", { name: "Switch" })).toBeVisible();
 
-  await page.getByRole("button", { name: "Switch" }).getByTestId("CancelIcon").click();
+  await page
+    .getByRole("button", { name: "Switch" })
+    .getByTestId("CancelIcon")
+    .click();
   await expect(page.getByRole("link", { name: "検索" })).toHaveAttribute(
     "aria-disabled",
     "true",

@@ -143,33 +143,29 @@ exports[`should match snapshot 1`] = `
                       CSV 出力
                     </button>
                   </div>
-                  <div
-                    class="MuiBox-root css-0"
+                  <button
+                    class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInfo Mui-disabled MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInfo css-fm83n0-MuiButtonBase-root-MuiButton-root"
+                    disabled=""
+                    tabindex="-1"
+                    type="button"
                   >
-                    <button
-                      class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInfo Mui-disabled MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInfo css-fm83n0-MuiButtonBase-root-MuiButton-root"
-                      disabled=""
-                      tabindex="-1"
-                      type="button"
+                    <span
+                      class="MuiButton-icon MuiButton-startIcon MuiButton-iconSizeMedium css-1sh91j5-MuiButton-startIcon"
                     >
-                      <span
-                        class="MuiButton-icon MuiButton-startIcon MuiButton-iconSizeMedium css-1sh91j5-MuiButton-startIcon"
+                      <svg
+                        aria-hidden="true"
+                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1umw9bq-MuiSvgIcon-root"
+                        data-testid="DeleteOutlineIcon"
+                        focusable="false"
+                        viewBox="0 0 24 24"
                       >
-                        <svg
-                          aria-hidden="true"
-                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1umw9bq-MuiSvgIcon-root"
-                          data-testid="DeleteOutlineIcon"
-                          focusable="false"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6zM8 9h8v10H8zm7.5-5-1-1h-5l-1 1H5v2h14V4z"
-                          />
-                        </svg>
-                      </span>
-                      まとめて削除
-                    </button>
-                  </div>
+                        <path
+                          d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6zM8 9h8v10H8zm7.5-5-1-1h-5l-1 1H5v2h14V4z"
+                        />
+                      </svg>
+                    </span>
+                    まとめて削除
+                  </button>
                 </div>
               </div>
             </div>
@@ -541,33 +537,29 @@ exports[`should match snapshot 1`] = `
                     CSV 出力
                   </button>
                 </div>
-                <div
-                  class="MuiBox-root css-0"
+                <button
+                  class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInfo Mui-disabled MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInfo css-fm83n0-MuiButtonBase-root-MuiButton-root"
+                  disabled=""
+                  tabindex="-1"
+                  type="button"
                 >
-                  <button
-                    class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInfo Mui-disabled MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInfo css-fm83n0-MuiButtonBase-root-MuiButton-root"
-                    disabled=""
-                    tabindex="-1"
-                    type="button"
+                  <span
+                    class="MuiButton-icon MuiButton-startIcon MuiButton-iconSizeMedium css-1sh91j5-MuiButton-startIcon"
                   >
-                    <span
-                      class="MuiButton-icon MuiButton-startIcon MuiButton-iconSizeMedium css-1sh91j5-MuiButton-startIcon"
+                    <svg
+                      aria-hidden="true"
+                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1umw9bq-MuiSvgIcon-root"
+                      data-testid="DeleteOutlineIcon"
+                      focusable="false"
+                      viewBox="0 0 24 24"
                     >
-                      <svg
-                        aria-hidden="true"
-                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1umw9bq-MuiSvgIcon-root"
-                        data-testid="DeleteOutlineIcon"
-                        focusable="false"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6zM8 9h8v10H8zm7.5-5-1-1h-5l-1 1H5v2h14V4z"
-                        />
-                      </svg>
-                    </span>
-                    まとめて削除
-                  </button>
-                </div>
+                      <path
+                        d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6zM8 9h8v10H8zm7.5-5-1-1h-5l-1 1H5v2h14V4z"
+                      />
+                    </svg>
+                  </span>
+                  まとめて削除
+                </button>
               </div>
             </div>
           </div>

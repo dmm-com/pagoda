@@ -69,7 +69,9 @@ test("@attribute-types @entity renders all 18 types in the entity editor", async
         .getByPlaceholder("モデルを選択"),
     ).toBeVisible();
   }
-  await expect(page.getByRole("button", { name: "選択肢を追加" })).toHaveCount(2);
+  await expect(page.getByRole("button", { name: "選択肢を追加" })).toHaveCount(
+    2,
+  );
 
   await captureEvidence(page, testInfo, {
     name: "entity-all-attribute-types",

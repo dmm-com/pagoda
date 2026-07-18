@@ -4,6 +4,12 @@
     "includes": [
       "frontend/**/*.ts",
       "frontend/**/*.tsx",
+      "e2e/**/*.js",
+      "e2e/**/*.jsx",
+      "e2e/**/*.ts",
+      "e2e/**/*.tsx",
+      "e2e/**/*.mjs",
+      "e2e/**/*.cjs",
       "!**/build/**",
       "!**/coverage/**",
       "!**/node_modules/**",
