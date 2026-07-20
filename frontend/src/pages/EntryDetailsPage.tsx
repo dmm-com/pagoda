@@ -3,7 +3,7 @@ import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import { Box, Chip, IconButton, Stack, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import { styled } from "@mui/material/styles";
-import { FC, Suspense, useEffect, useState } from "react";
+import { FC, Suspense, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 
 import { Loading } from "components/common/Loading";
@@ -92,6 +92,20 @@ const EntryDetailsContent: FC<Props> = ({
     aironeApiClient.getTriggers(),
   );
 
+  const { data: entity } = usePagodaSWR(["entity", entityId], () =>
+    aironeApiClient.getEntity(entityId),
+  );
+
+  const attrNotes = useMemo(
+    () =>
+      Object.fromEntries(
+        (entity?.attrs ?? [])
+          .filter((attr) => attr.note !== "")
+          .map((attr) => [attr.id, attr.note]),
+      ),
+    [entity],
+  );
+
   useEffect(() => {
     if (entry.schema?.id != entityId) {
       navigate(entryDetailsPath(entry.schema?.id ?? 0, entryId), {
@@ -174,6 +188,7 @@ const EntryDetailsContent: FC<Props> = ({
                     (attr) => !excludeAttrs.includes(attr.schema.name),
                   )}
                   triggers={triggers?.results}
+                  attrNotes={attrNotes}
                 />
               ),
             },
