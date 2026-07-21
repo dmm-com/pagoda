@@ -56,7 +56,10 @@ runs:
         # Python version is centralized here (base side) so every extension
         # repository stays in sync. Bump it in this one place.
         python-version: "3.14"
-        cache: "pip"
+        # No pip cache: dependencies are installed via uv (its own cache), and
+        # `cache: pip` requires a requirements/pyproject file in the workspace,
+        # which fails in jobs that clone the Pagoda base into a subdir without
+        # checking out a Python project at the workspace root.
 
     - name: Install system dependencies
       shell: bash
