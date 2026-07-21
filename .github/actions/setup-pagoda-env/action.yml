@@ -14,6 +14,12 @@ inputs:
     description: "Directory to clone the Pagoda base into (also the working directory for uv)."
     required: false
     default: "airone"
+  clone:
+    description: >-
+      Set to 'false' when the calling repository IS the Pagoda base (e.g. pagoda's
+      own CI): the clone step is skipped and base-dir is used as-is.
+    required: false
+    default: "true"
   link-mode:
     description: "How to place the extension inside the base: none | mv | symlink."
     required: false
@@ -61,6 +67,7 @@ runs:
           default-mysql-client default-libmysqlclient-dev pkg-config
 
     - name: Clone Pagoda base
+      if: ${{ inputs.clone == 'true' }}
       shell: bash
       run: |
         echo "Cloning pagoda (${{ inputs.airone-branch }}) into ${{ inputs.base-dir }}"

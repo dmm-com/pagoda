@@ -23,19 +23,11 @@ jobs:
       packages: write
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
-      - name: Install uv
-        run: pipx install uv
-      - uses: actions/setup-python@7f4fc3e22c37d6ff65e88745f38bd3157c663f7c # v4
+      - name: Set up Pagoda env
+        uses: ./.github/actions/setup-pagoda-env
         with:
-          python-version: "3.14"
-          cache: "pip"
-      - name: apt-get
-        run: |
-          sudo apt-get update
-          sudo apt-get install libldap2-dev libsasl2-dev libxmlsec1-dev libmysqlclient-dev pkg-config
-      - name: uv sync
-        run: |
-          uv sync --extra dev
+          clone: "false"
+          base-dir: .
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 22
