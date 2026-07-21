@@ -14,10 +14,6 @@ inputs:
     description: "Directory to clone the Pagoda base into (also the working directory for uv)."
     required: false
     default: "airone"
-  python-version:
-    description: "Python version to set up."
-    required: false
-    default: "3.14"
   link-mode:
     description: "How to place the extension inside the base: none | mv | symlink."
     required: false
@@ -51,7 +47,9 @@ runs:
 
     - uses: actions/setup-python@7f4fc3e22c37d6ff65e88745f38bd3157c663f7c # v4
       with:
-        python-version: ${{ inputs.python-version }}
+        # Python version is centralized here (base side) so every extension
+        # repository stays in sync. Bump it in this one place.
+        python-version: "3.14"
         cache: "pip"
 
     - name: Install system dependencies
