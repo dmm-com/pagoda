@@ -1,0 +1,122 @@
+name: "Setup Pagoda extension env"
+description: >-
+  Shared CI environment setup for Pagoda/AirOne extension repositories.
+  Installs uv and Python, installs the system dependencies, clones the Pagoda
+  base, optionally places the extension inside the base, runs `uv sync`, and
+  (optionally) prepares MySQL. Service containers and the actual checks stay in
+  the calling workflow (composite actions cannot declare `services:`).
+inputs:
+  airone-branch:
+    description: "Pagoda base branch to clone."
+    required: false
+    default: "master"
+  base-dir:
+    description: "Directory to clone the Pagoda base into (also the working directory for uv)."
+    required: false
+    default: "airone"
+  clone:
+    description: >-
+      Set to 'false' when the calling repository IS the Pagoda base (e.g. pagoda's
+      own CI): the clone step is skipped and base-dir is used as-is.
+    required: false
+    default: "true"
+  link-mode:
+    description: "How to place the extension inside the base: none | mv | symlink."
+    required: false
+    default: "none"
+  link-source:
+    description: "Path of the checked-out extension to place (required when link-mode is mv or symlink)."
+    required: false
+    default: ""
+  link-dest-name:
+    description: "Directory name under base-dir to place the extension as."
+    required: false
+    default: "custom_view"
+  editable-installs:
+    description: "Newline-separated paths (relative to base-dir) to `uv pip install -e`."
+    required: false
+    default: ""
+  prepare-mysql:
+    description: "Set to 'true' to run the MySQL preparation SQL (for jobs with a mysql service)."
+    required: false
+    default: "false"
+outputs:
+  base-dir:
+    description: "Resolved Pagoda base directory."
+    value: ${{ inputs.base-dir }}
+runs:
+  using: "composite"
+  steps:
+    - name: Install uv
+      shell: bash
+      run: pipx install uv
+
+    - uses: actions/setup-python@7f4fc3e22c37d6ff65e88745f38bd3157c663f7c # v4
+      with:
+        # Python version is centralized here (base side) so every extension
+        # repository stays in sync. Bump it in this one place.
+        python-version: "3.14"
+        # No pip cache: dependencies are installed via uv (its own cache), and
+        # `cache: pip` requires a requirements/pyproject file in the workspace,
+        # which fails in jobs that clone the Pagoda base into a subdir without
+        # checking out a Python project at the workspace root.
+
+    - name: Install system dependencies
+      shell: bash
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          libldap2-dev libsasl2-dev libxmlsec1-dev \
+          default-mysql-client default-libmysqlclient-dev pkg-config
+
+    - name: Clone Pagoda base
+      if: ${{ inputs.clone == 'true' }}
+      shell: bash
+      run: |
+        echo "Cloning pagoda (${{ inputs.airone-branch }}) into ${{ inputs.base-dir }}"
+        git clone -b "${{ inputs.airone-branch }}" https://github.com/dmm-com/pagoda.git "${{ inputs.base-dir }}"
+
+    - name: Place extension into base
+      if: ${{ inputs.link-mode != 'none' }}
+      shell: bash
+      run: |
+        dest="${{ inputs.base-dir }}/${{ inputs.link-dest-name }}"
+        if [ -z "${{ inputs.link-source }}" ]; then
+          echo "link-source is required when link-mode is '${{ inputs.link-mode }}'" >&2
+          exit 1
+        fi
+        case "${{ inputs.link-mode }}" in
+          mv)
+            mv "${{ inputs.link-source }}" "$dest"
+            ;;
+          symlink)
+            ln -s "$(realpath "${{ inputs.link-source }}")" "$dest"
+            ;;
+          *)
+            echo "Unknown link-mode: ${{ inputs.link-mode }}" >&2
+            exit 1
+            ;;
+        esac
+
+    - name: Install dependencies (uv sync)
+      shell: bash
+      working-directory: ${{ inputs.base-dir }}
+      run: uv sync --extra dev
+
+    - name: Editable installs
+      if: ${{ inputs.editable-installs != '' }}
+      shell: bash
+      working-directory: ${{ inputs.base-dir }}
+      run: |
+        while IFS= read -r pkg; do
+          [ -z "$pkg" ] && continue
+          echo "uv pip install -e $pkg"
+          uv pip install -e "$pkg"
+        done <<< "${{ inputs.editable-installs }}"
+
+    - name: Prepare MySQL
+      if: ${{ inputs.prepare-mysql == 'true' }}
+      shell: bash
+      run: |
+        mysql -protocol=tcp -uroot -h127.0.0.1 -ppassword -e "SET GLOBAL character_set_server=utf8; SET GLOBAL collation_server=utf8_general_ci; SET GLOBAL default_storage_engine=InnoDB;"
+        mysql -protocol=tcp -uroot -h127.0.0.1 -ppassword -e "GRANT ALL ON *.* to airone@'%'"
