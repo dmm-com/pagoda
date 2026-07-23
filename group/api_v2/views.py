@@ -1,5 +1,6 @@
 from typing import Any, cast
 
+from django.db.models import Prefetch
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema
 from rest_framework import filters, generics, serializers, status, viewsets
@@ -34,7 +35,13 @@ class UserPermission(BasePermission):
 
 
 class GroupAPI(viewsets.ModelViewSet[Group]):
-    queryset = Group.objects.filter(is_active=True)  # type: ignore[assignment,misc]
+    queryset = Group.objects.filter(is_active=True).prefetch_related(  # type: ignore[assignment,misc]
+        Prefetch(
+            "user_set",
+            queryset=User.objects.filter(is_active=True).order_by("username"),
+            to_attr="active_members",
+        )
+    )
     permission_classes = [IsAuthenticated & UserPermission]
     pagination_class = PageNumberPagination
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter, filters.SearchFilter]

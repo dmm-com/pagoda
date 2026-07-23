@@ -1,0 +1,4 @@
+interface:
+  display_name: "Pagoda N+1 Autofix"
+  short_description: "Detect, fix, and verify Django N+1 queries"
+  default_prompt: "Use $pagoda-n-plus-one to detect and repair N+1 queries in this Pagoda change."
