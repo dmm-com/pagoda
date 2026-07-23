@@ -215,17 +215,13 @@ exports[`JobListPage should match snapshot 1`] = `
                       >
                         再実行
                       </button>
-                      <div
-                        class="MuiBox-root css-0"
+                      <button
+                        class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary css-v8e7gc-MuiButtonBase-root-MuiButton-root"
+                        tabindex="0"
+                        type="button"
                       >
-                        <button
-                          class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary css-v8e7gc-MuiButtonBase-root-MuiButton-root"
-                          tabindex="0"
-                          type="button"
-                        >
-                          キャンセル
-                        </button>
-                      </div>
+                        キャンセル
+                      </button>
                     </div>
                   </div>
                 </td>
@@ -644,17 +640,13 @@ exports[`JobListPage should match snapshot 1`] = `
                     >
                       再実行
                     </button>
-                    <div
-                      class="MuiBox-root css-0"
+                    <button
+                      class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary css-v8e7gc-MuiButtonBase-root-MuiButton-root"
+                      tabindex="0"
+                      type="button"
                     >
-                      <button
-                        class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary MuiButton-root MuiButton-contained MuiButton-containedSecondary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorSecondary css-v8e7gc-MuiButtonBase-root-MuiButton-root"
-                        tabindex="0"
-                        type="button"
-                      >
-                        キャンセル
-                      </button>
-                    </div>
+                      キャンセル
+                    </button>
                   </div>
                 </div>
               </td>

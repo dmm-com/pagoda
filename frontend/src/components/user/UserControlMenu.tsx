@@ -1,7 +1,6 @@
 import { UserList } from "@dmm-com/airone-apiclient-typescript-fetch";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import {
-  Box,
   ListItemIcon,
   ListItemText,
   Menu,
@@ -10,12 +9,9 @@ import {
 } from "@mui/material";
 import { useSnackbar } from "notistack";
 import { FC } from "react";
-import { useNavigate } from "react-router";
 
 import { Confirmable } from "components/common/Confirmable";
 import { aironeApiClient } from "repository/AironeApiClient";
-import { topPath } from "routes/Routes";
-import { usersPath } from "routes/Routes";
 
 interface UserControlProps {
   user: UserList;
@@ -37,16 +33,14 @@ export const UserControlMenu: FC<UserControlProps> = ({
   isCoUser = false,
 }) => {
   const { enqueueSnackbar } = useSnackbar();
-  const navigate = useNavigate();
 
   const handleDelete = async (user: UserList) => {
     try {
       await aironeApiClient.destroyUser(user.id);
+      handleClose(user.id);
       enqueueSnackbar(`ユーザ(${user.username})の削除が完了しました`, {
         variant: "success",
       });
-      navigate(topPath(), { replace: true });
-      navigate(usersPath(), { replace: true });
       setToggle && setToggle();
     } catch (e) {
       enqueueSnackbar("ユーザの削除が失敗しました", {
@@ -70,17 +64,19 @@ export const UserControlMenu: FC<UserControlProps> = ({
         horizontal: "right",
       }}
     >
-      <Box sx={{ width: 150 }}>
+      {[
         <MenuItem
+          key="password"
           onClick={() => {
             handleClose(user.id);
             onClickEditPassword(user.id);
           }}
         >
           <Typography>パスワード編集</Typography>
-        </MenuItem>
-        {(!isSelf || isCoUser) && (
+        </MenuItem>,
+        (!isSelf || isCoUser) && (
           <Confirmable
+            key="delete"
             componentGenerator={(handleOpen) => (
               <MenuItem onClick={handleOpen} sx={{ justifyContent: "end" }}>
                 <ListItemText>削除</ListItemText>
@@ -92,8 +88,8 @@ export const UserControlMenu: FC<UserControlProps> = ({
             dialogTitle={`本当に削除しますか？(${user.username})`}
             onClickYes={() => handleDelete(user)}
           />
-        )}
-      </Box>
+        ),
+      ]}
     </Menu>
   );
 };

@@ -304,6 +304,7 @@ exports[`EditEntityPage should match snapshot 1`] = `
                       <div
                         aria-expanded="false"
                         aria-haspopup="listbox"
+                        aria-label="アイテム名の登録方法"
                         aria-labelledby="itemNameType"
                         class="MuiSelect-select MuiSelect-outlined MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputSizeSmall css-si86to-MuiSelect-select-MuiInputBase-input-MuiOutlinedInput-input"
                         id="itemNameType"
@@ -1151,6 +1152,7 @@ exports[`EditEntityPage should match snapshot 1`] = `
                     <div
                       aria-expanded="false"
                       aria-haspopup="listbox"
+                      aria-label="アイテム名の登録方法"
                       aria-labelledby="itemNameType"
                       class="MuiSelect-select MuiSelect-outlined MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputSizeSmall css-si86to-MuiSelect-select-MuiInputBase-input-MuiOutlinedInput-input"
                       id="itemNameType"

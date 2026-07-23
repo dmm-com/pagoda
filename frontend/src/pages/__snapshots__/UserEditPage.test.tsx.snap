@@ -112,18 +112,14 @@ exports[`EditUserPage should match snapshot 1`] = `
                   <div
                     class="MuiBox-root css-qbrse1"
                   >
-                    <div
-                      class="MuiBox-root css-0"
+                    <button
+                      class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInfo Mui-disabled MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInfo css-mnflth-MuiButtonBase-root-MuiButton-root"
+                      disabled=""
+                      tabindex="-1"
+                      type="button"
                     >
-                      <button
-                        class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInfo Mui-disabled MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInfo css-mnflth-MuiButtonBase-root-MuiButton-root"
-                        disabled=""
-                        tabindex="-1"
-                        type="button"
-                      >
-                        Access Token をリフレッシュ
-                      </button>
-                    </div>
+                      Access Token をリフレッシュ
+                    </button>
                   </div>
                 </div>
               </div>
@@ -419,18 +415,14 @@ exports[`EditUserPage should match snapshot 1`] = `
                 <div
                   class="MuiBox-root css-qbrse1"
                 >
-                  <div
-                    class="MuiBox-root css-0"
+                  <button
+                    class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInfo Mui-disabled MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInfo css-mnflth-MuiButtonBase-root-MuiButton-root"
+                    disabled=""
+                    tabindex="-1"
+                    type="button"
                   >
-                    <button
-                      class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInfo Mui-disabled MuiButton-root MuiButton-contained MuiButton-containedInfo MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-colorInfo css-mnflth-MuiButtonBase-root-MuiButton-root"
-                      disabled=""
-                      tabindex="-1"
-                      type="button"
-                    >
-                      Access Token をリフレッシュ
-                    </button>
-                  </div>
+                    Access Token をリフレッシュ
+                  </button>
                 </div>
               </div>
             </div>

@@ -1,5 +1,4 @@
 import {
-  Box,
   Button,
   Dialog,
   DialogActions,
@@ -45,7 +44,7 @@ export const Confirmable: FC<Props> = ({
   };
 
   return (
-    <Box>
+    <>
       {componentGenerator(handleOpen)}
       <Dialog
         open={open}
@@ -71,6 +70,6 @@ export const Confirmable: FC<Props> = ({
           </Button>
         </DialogActions>
       </Dialog>
-    </Box>
+    </>
   );
 };
