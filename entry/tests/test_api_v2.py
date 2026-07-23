@@ -1883,7 +1883,7 @@ class ViewTest(BaseViewTest):
             "ChangingName",
             model_sg,
             values={
-                "lb": item_lb.id,
+                "LB": item_lb.id,
                 "domain": "test.example.com",
                 "port": "10000",
                 "number": 1,
