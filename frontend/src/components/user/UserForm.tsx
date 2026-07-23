@@ -395,7 +395,7 @@ export const UserForm: FC<UserFormProps> = ({
           <Button
             variant="contained"
             color="secondary"
-            disabled={!isSubmittable || loginUser?.isReadonly}
+            disabled={!isSubmittable || (loginUser?.isReadonly && !isMyself)}
             onClick={handleSubmit}
           >
             保存
