@@ -47,9 +47,12 @@ outputs:
 runs:
   using: "composite"
   steps:
+    # Install uv from a prebuilt binary (fast) instead of `pipx install uv`,
+    # which builds/installs via pip. The uv download cache is persisted
+    # separately by the "Cache uv downloads" step below, so enable-cache is
+    # left off here (its lockfile does not exist yet at this point anyway).
     - name: Install uv
-      shell: bash
-      run: pipx install uv
+      uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
 
     - uses: actions/setup-python@7f4fc3e22c37d6ff65e88745f38bd3157c663f7c # v4
       with:
@@ -61,13 +64,33 @@ runs:
         # would also require a requirements/pyproject file at the workspace root,
         # which is absent in jobs that clone the Pagoda base into a subdir.
 
+    # Resolve the apt package list once so both the cache key and the install
+    # step reference the same set (bumping a package invalidates the cache).
+    - name: Resolve apt package list
+      id: apt
+      shell: bash
+      run: |
+        pkgs="libldap2-dev libsasl2-dev libxmlsec1-dev default-mysql-client default-libmysqlclient-dev pkg-config"
+        echo "APT_PACKAGES=$pkgs" >> "$GITHUB_ENV"
+        echo "hash=$(printf '%s' "$pkgs" | sha256sum | cut -c1-16)" >> "$GITHUB_OUTPUT"
+
+    # Cache the downloaded .deb archives. apt is pointed at a runner-owned
+    # directory (~/apt-cache) via Dir::Cache::archives instead of the default
+    # root-owned /var/cache/apt/archives, so actions/cache can read/write it
+    # without permission workarounds. On a hit, `apt-get install` uses the
+    # cached .debs and skips the download (apt-get update + dpkg still run).
+    - name: Cache apt archives
+      uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+      with:
+        path: ~/apt-cache
+        key: apt-${{ runner.os }}-${{ steps.apt.outputs.hash }}
+
     - name: Install system dependencies
       shell: bash
       run: |
+        mkdir -p ~/apt-cache/partial
         sudo apt-get update
-        sudo apt-get install -y \
-          libldap2-dev libsasl2-dev libxmlsec1-dev \
-          default-mysql-client default-libmysqlclient-dev pkg-config
+        sudo apt-get install -y -o Dir::Cache::archives="$HOME/apt-cache" $APT_PACKAGES
 
     - name: Clone Pagoda base
       if: ${{ inputs.clone == 'true' }}
