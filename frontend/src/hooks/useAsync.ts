@@ -12,10 +12,18 @@ export function useAsync<T>(
 ): AsyncState<T> {
   const [state, setState] = useState<AsyncState<T>>({ loading: true });
   useEffect(() => {
+    let cancelled = false;
     setState((s) => ({ ...s, loading: true }));
     fn()
-      .then((value) => setState({ value, loading: false }))
-      .catch((error) => setState({ error, loading: false }));
+      .then((value) => {
+        if (!cancelled) setState({ value, loading: false });
+      })
+      .catch((error) => {
+        if (!cancelled) setState({ error, loading: false });
+      });
+    return () => {
+      cancelled = true;
+    };
   }, deps ?? []);
   return state;
 }
