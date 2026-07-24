@@ -16,9 +16,7 @@ def _candidate_rows(label: str, report: dict[str, Any]) -> list[str]:
     for request in report["requests"]:
         for candidate in request["candidates"]:
             location = candidate.get("location")
-            source = (
-                f"{location['path']}:{location['line']}" if location else "unknown source"
-            )
+            source = f"{location['path']}:{location['line']}" if location else "unknown source"
             rows.append(
                 f"| {label} | `{request['method']} {request['path']}` | "
                 f"{candidate['occurrences']} | `{source}` | {candidate['hint']} |"

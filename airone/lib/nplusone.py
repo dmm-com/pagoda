@@ -109,9 +109,7 @@ class QueryDetector:
         self._locations: dict[str, SourceLocation | None] = {}
         self._counts: defaultdict[str, int] = defaultdict(int)
 
-    def observe(
-        self, sql: str, stack: Sequence[traceback.FrameSummary] | None = None
-    ) -> None:
+    def observe(self, sql: str, stack: Sequence[traceback.FrameSummary] | None = None) -> None:
         self.query_count += 1
         if not _SELECT.match(sql):
             return
