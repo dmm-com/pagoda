@@ -275,12 +275,21 @@ def _yaml_export_v2(
         atype: int, value: ExportPrimitiveInput
     ) -> ExportedEntryAttributePrimitiveValue:
         match atype:
-            case AttrType.NAMED_OBJECT:
+            case AttrType.NAMED_OBJECT | AttrType.NAMED_OBJECT_BOOLEAN:
                 assert isinstance(value, dict)
                 [(key, val)] = value.items()
+                # NAMED_OBJECT_BOOLEAN carries its boolean flag beside the referral
+                # info, so export it too in order to keep the value round-trippable.
+                boolean_info = (
+                    {"boolean": val["boolean"]}
+                    if atype == AttrType.NAMED_OBJECT_BOOLEAN
+                    and isinstance(val, dict)
+                    and "boolean" in val
+                    else {}
+                )
                 entry: Entry | None = (
                     Entry.objects.filter(id=val["id"]).first()
-                    if isinstance(val.get("id"), int)
+                    if isinstance(val, dict) and isinstance(val.get("id"), int)
                     else None
                 )
                 if entry:
@@ -288,6 +297,7 @@ def _yaml_export_v2(
                         key: ExportedEntryAttributeValueObject(
                             entity=entry.schema.name,
                             name=val["name"],
+                            **boolean_info,
                         )
                     }
                 elif len(key) > 0:
@@ -895,9 +905,9 @@ def _csv_export_v2(
                 return str(vval)
             case AttrType.OBJECT | AttrType.GROUP | AttrType.ROLE:
                 return str(vval["name"])
-            case AttrType.NAMED_OBJECT:
+            case AttrType.NAMED_OBJECT | AttrType.NAMED_OBJECT_BOOLEAN:
                 [(k, v)] = vval.items()
-                return f"{k}: {v['name']}"
+                return f"{k}: {v['name']}" if isinstance(v, dict) else f"{k}: "
             case AttrType.SELECT:
                 if isinstance(vval, dict):
                     return str(vval.get("label", ""))
@@ -919,13 +929,13 @@ def _csv_export_v2(
                 from natsort import natsorted
 
                 return "\n".join(natsorted([x["name"] for x in vval]))
-            case AttrType.ARRAY_NAMED_OBJECT:
+            case AttrType.ARRAY_NAMED_OBJECT | AttrType.ARRAY_NAMED_OBJECT_BOOLEAN:
                 from natsort import natsorted
 
                 items = []
                 for vset in vval:
                     [(k, v)] = vset.items()
-                    items.append(f"{k}: {v['name']}")
+                    items.append(f"{k}: {v['name']}" if isinstance(v, dict) else f"{k}: ")
                 return "\n".join(natsorted(items))
         return ""
 
