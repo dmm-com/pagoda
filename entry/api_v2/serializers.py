@@ -37,6 +37,9 @@ from user.models import User
 class ExportedEntryAttributeValueObject(BaseModel):
     entity: str
     name: str
+    # Only set for (ARRAY_)NAMED_OBJECT_BOOLEAN; omitted from the export otherwise
+    # because the dump is done with exclude_unset=True.
+    boolean: bool | None = None
 
 
 ExportedEntryAttributePrimitiveValue = (

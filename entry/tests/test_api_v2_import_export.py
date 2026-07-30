@@ -2041,6 +2041,86 @@ class ViewTest(BaseViewTest):
     @patch(
         "entry.tasks.export_search_result_v2.delay", Mock(side_effect=tasks.export_search_result_v2)
     )
+    def test_export_named_object_boolean_attrs(self):
+        # Regression test: (ARRAY_)NAMED_OBJECT_BOOLEAN values were not handled by the
+        # v2 exporters, so the YAML export aborted the Job with an AssertionError and
+        # the CSV export emitted an empty cell.
+        user = self._create_user("admin", is_superuser=True)
+
+        ref_entity = Entity.objects.create(name="ReferredEntity", created_user=user)
+        entity = Entity.objects.create(name="entity", created_user=user)
+        for name, attr_type in [
+            ("nobool", AttrType.NAMED_OBJECT_BOOLEAN),
+            ("arr_nobool", AttrType.ARRAY_NAMED_OBJECT_BOOLEAN),
+        ]:
+            entity_attr = EntityAttr.objects.create(
+                name=name,
+                type=attr_type,
+                created_user=user,
+                parent_entity=entity,
+            )
+            entity_attr.referral.add(ref_entity)
+
+        ref_entry = Entry.objects.create(name="ref", schema=ref_entity, created_user=user)
+        ref_entry.register_es()
+
+        entry = Entry.objects.create(name="entry", schema=entity, created_user=user)
+        entry.complement_attrs(user)
+        entry.attrs.get(schema__name="nobool").add_value(
+            user, {"name": "key1", "id": ref_entry, "boolean": True}
+        )
+        entry.attrs.get(schema__name="arr_nobool").add_value(
+            user, [{"name": "key2", "id": ref_entry, "boolean": True}]
+        )
+        entry.register_es()
+
+        export_params = {
+            "entities": [entity.id],
+            "attrinfo": [
+                {"name": "nobool", "filter_key": 0, "keyword": ""},
+                {"name": "arr_nobool", "filter_key": 0, "keyword": ""},
+            ],
+        }
+
+        # YAML export
+        resp = self.client.post(
+            "/entry/api/v2/advanced_search_result_export/",
+            json.dumps(dict(export_params, export_style="yaml")),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 200)
+
+        job = Job.objects.last()
+        self.assertEqual(job.status, JobStatus.DONE)
+        resp_data = yaml.load(job.get_cache(), Loader=yaml.FullLoader)
+        attrs = {x["name"]: x["value"] for x in resp_data[0]["entries"][0]["attrs"]}
+        self.assertEqual(
+            attrs["nobool"],
+            {"key1": {"entity": "ReferredEntity", "name": "ref", "boolean": True}},
+        )
+        self.assertEqual(
+            attrs["arr_nobool"],
+            [{"key2": {"entity": "ReferredEntity", "name": "ref", "boolean": True}}],
+        )
+
+        # CSV export
+        resp = self.client.post(
+            "/entry/api/v2/advanced_search_result_export/",
+            json.dumps(dict(export_params, export_style="csv")),
+            "application/json",
+        )
+        self.assertEqual(resp.status_code, 200)
+
+        job = Job.objects.last()
+        self.assertEqual(job.status, JobStatus.DONE)
+        self.assertEqual(
+            job.get_cache(),
+            "Name,Entity,nobool,arr_nobool\nentry,entity,key1: ref,key2: ref\n",
+        )
+
+    @patch(
+        "entry.tasks.export_search_result_v2.delay", Mock(side_effect=tasks.export_search_result_v2)
+    )
     def test_yaml_export_without_has_referral_omits_referrals_key(self):
         # Regression test for #3459: when 'has_referral' is not enabled, the YAML output
         # must NOT contain the 'referrals' key (previously emitted as 'referrals: null').
