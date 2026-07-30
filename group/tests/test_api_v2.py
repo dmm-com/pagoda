@@ -1,6 +1,8 @@
 import json
 
 import yaml
+from django.db import connection
+from django.test.utils import CaptureQueriesContext
 from rest_framework import status
 
 from airone.lib.test import AironeViewTest
@@ -19,16 +21,55 @@ class ViewTest(AironeViewTest):
         self.admin_login()
 
         user = self._create_user("fuga")
+        first_user = self._create_user("alpha")
+        inactive_user = self._create_user("inactive")
+        inactive_user.is_active = False
+        inactive_user.save(update_fields=["is_active"])
         group = self._create_group("hoge")
         user.groups.add(group)
+        first_user.groups.add(group)
+        inactive_user.groups.add(group)
 
         resp = self.client.get("/group/api/v2/groups")
         self.assertEqual(resp.status_code, 200)
         body = resp.json()
         self.assertEqual(len(body["results"]), 1)
         self.assertEqual(body["results"][0]["id"], group.id)
-        self.assertEqual(len(body["results"][0]["members"]), 1)
-        self.assertEqual(body["results"][0]["members"][0]["id"], user.id)
+        self.assertEqual(
+            [member["id"] for member in body["results"][0]["members"]],
+            [first_user.id, user.id],
+        )
+
+    def test_list_many_groups(self):
+        self.admin_login()
+
+        def create_groups(start: int, end: int) -> None:
+            groups = [self._create_group(f"group-{index:02}") for index in range(start, end)]
+            for index, group in enumerate(groups, start=start):
+                user = self._create_user(f"user-{index:02}")
+                user.groups.add(group)
+
+        create_groups(0, 3)
+        with CaptureQueriesContext(connection) as few_queries:
+            resp = self.client.get("/group/api/v2/groups")
+            self.assertEqual(resp.status_code, 200)
+
+        create_groups(3, 12)
+        with CaptureQueriesContext(connection) as many_queries:
+            resp = self.client.get("/group/api/v2/groups")
+
+        self.assertEqual(resp.status_code, 200)
+        body = resp.json()
+        self.assertEqual(len(body["results"]), 12)
+        self.assertTrue(all(len(group["members"]) == 1 for group in body["results"]))
+        self.assertLessEqual(
+            len(many_queries) - len(few_queries),
+            2,
+            msg=(
+                f"query count scales with groups: 3 groups => {len(few_queries)}, "
+                f"12 groups => {len(many_queries)}"
+            ),
+        )
 
     def test_retrieve(self):
         self.admin_login()

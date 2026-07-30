@@ -1,4 +1,4 @@
-from typing import Any, TypedDict
+from typing import Any, TypedDict, cast
 
 from django.db.models import QuerySet
 from drf_spectacular.utils import extend_schema_field
@@ -28,7 +28,7 @@ class GroupSerializer(serializers.ModelSerializer[Group]):
 
     @extend_schema_field(GroupMemberSerializer(many=True))
     def get_members(self, obj: Group) -> list[GroupMemberType]:
-        users = User.objects.filter(groups__name=obj.name, is_active=True).order_by("username")
+        users = cast(list[User], getattr(obj, "active_members"))
         return [
             {
                 "id": u.id,
