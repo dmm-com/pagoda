@@ -2,7 +2,9 @@ import {
   EntryAttributeType,
   TriggerParent,
 } from "@dmm-com/airone-apiclient-typescript-fetch";
+import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import {
+  Box,
   Link,
   Paper,
   Table,
@@ -23,6 +25,8 @@ import { triggersPath } from "routes/Routes";
 interface Props {
   attributes: Array<EntryAttributeType>;
   triggers?: TriggerParent[];
+  /** Description of each attribute (EntityAttr.note), keyed by EntityAttr id */
+  attrNotes?: Record<number, string>;
 }
 
 const StyledTableRow = styled(TableRow)<{ highlighted?: boolean }>(
@@ -58,7 +62,26 @@ const AttrValueTableCell = styled(TableCell)(() => ({
   wordBreak: "break-word",
 }));
 
-export const EntryAttributes: FC<Props> = ({ attributes, triggers }) => {
+const AttrNameBox = styled(Box)(() => ({
+  display: "flex",
+  alignItems: "center",
+  gap: "4px",
+}));
+
+const AttrNoteIcon = styled(HelpOutlineIcon)(({ theme }) => ({
+  fontSize: "16px",
+  color: theme.palette.text.disabled,
+  cursor: "help",
+  "&:hover": {
+    color: theme.palette.text.secondary,
+  },
+}));
+
+export const EntryAttributes: FC<Props> = ({
+  attributes,
+  triggers,
+  attrNotes = {},
+}) => {
   const triggeredAttrIds = useMemo(
     () =>
       new Set(triggers?.flatMap((t) => t.actions.map((a) => a.attr.id)) ?? []),
@@ -81,16 +104,28 @@ export const EntryAttributes: FC<Props> = ({ attributes, triggers }) => {
               highlighted={triggeredAttrIds.has(attr.schema.id)}
             >
               <AttrNameTableCell>
-                {triggeredAttrIds.has(attr.schema.id) ? (
-                  <Tooltip
-                    title="この属性には Trigger が設定されています"
-                    placement="top"
-                  >
-                    <Link href={triggersPath()}>{attr.schema.name}</Link>
-                  </Tooltip>
-                ) : (
-                  attr.schema.name
-                )}
+                <AttrNameBox>
+                  {triggeredAttrIds.has(attr.schema.id) ? (
+                    <Tooltip
+                      title="この属性には Trigger が設定されています"
+                      placement="top"
+                    >
+                      <Link href={triggersPath()}>{attr.schema.name}</Link>
+                    </Tooltip>
+                  ) : (
+                    attr.schema.name
+                  )}
+                  {attrNotes[attr.schema.id] && (
+                    <Tooltip
+                      title={attrNotes[attr.schema.id]}
+                      placement="top"
+                      arrow
+                      enterTouchDelay={0}
+                    >
+                      <AttrNoteIcon aria-label={`${attr.schema.name}の説明`} />
+                    </Tooltip>
+                  )}
+                </AttrNameBox>
               </AttrNameTableCell>
               <AttrValueTableCell>
                 {attr.isReadable ? (

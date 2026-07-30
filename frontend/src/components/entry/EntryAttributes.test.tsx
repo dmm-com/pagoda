@@ -57,4 +57,31 @@ describe("EntryAttributes", () => {
     expect(within(bodyRowGroup).queryByText("value1")).toBeInTheDocument();
     expect(within(bodyRowGroup).queryByText("value2")).not.toBeInTheDocument();
   });
+
+  test("should show note icon only for attributes with a note", async () => {
+    await act(async () => {
+      render(
+        <EntryAttributes
+          attributes={attributes}
+          attrNotes={{ 1: "description of string1" }}
+        />,
+        {
+          wrapper: TestWrapper,
+        },
+      );
+    });
+
+    expect(screen.getByLabelText("string1の説明")).toBeInTheDocument();
+    expect(screen.queryByLabelText("string2の説明")).not.toBeInTheDocument();
+  });
+
+  test("should not show note icons when attrNotes is not given", async () => {
+    await act(async () => {
+      render(<EntryAttributes attributes={attributes} />, {
+        wrapper: TestWrapper,
+      });
+    });
+
+    expect(screen.queryByLabelText("string1の説明")).not.toBeInTheDocument();
+  });
 });

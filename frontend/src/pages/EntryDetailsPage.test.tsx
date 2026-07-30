@@ -44,6 +44,22 @@ const server = setupServer(
       ],
     });
   }),
+  // getEntity
+  http.get("http://localhost/entity/api/v2/2/", () => {
+    return HttpResponse.json({
+      id: 2,
+      name: "test entity",
+      note: "",
+      is_toplevel: false,
+      attrs: [],
+      webhooks: [],
+      isolation_rules: [],
+      is_public: true,
+      has_ongoing_changes: false,
+      permission: 8,
+      delete_chain_exclude_entities: [],
+    });
+  }),
   // getTrigger
   http.get("http://localhost/trigger/api/v2/", () => {
     return HttpResponse.json({
