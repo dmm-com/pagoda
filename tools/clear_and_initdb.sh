@@ -51,9 +51,9 @@ main() {
     db_user=$(uv run python -c "from airone import settings; print(settings.DATABASES['default']['USER'])")
     db_pass=$(uv run python -c "from airone import settings; print(settings.DATABASES['default']['PASSWORD'])")
 
-    MYSQL_COMMAND="mysql -u${db_user} -p${db_pass} -h${db_host}"
+    MYSQL_COMMAND="mysql --skip-ssl -u${db_user} -p${db_pass} -h${db_host}"
   else
-    MYSQL_COMMAND="sudo docker exec -it mysql mysql -uroot"
+    MYSQL_COMMAND="sudo docker exec -it mysql mysql --skip-ssl -uroot"
   fi
 
   # recreate MySQL databse
