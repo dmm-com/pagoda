@@ -7,12 +7,16 @@
   "service": "airone",
   "workspaceFolder": "/workspace/airone",
   "postCreateCommand": "uv sync --extra dev && npm install",
+  "containerEnv": {
+    "CLAUDE_CONFIG_DIR": "/home/airone/.claude"
+  },
   "customizations": {
     "vscode": {
       "extensions": [
         "ms-python.python",
         "ms-python.debugpy",
-        "charliermarsh.ruff"
+        "charliermarsh.ruff",
+        "anthropic.claude-code"
       ],
       "settings": {
         "python.defaultInterpreterPath": "/workspace/airone/.venv/bin/python"

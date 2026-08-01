@@ -16,3 +16,27 @@ services:
       AIRONE_RABBITMQ_URL: "amqp://guest:guest@rabbitmq//"
     volumes:
       - .:/workspace/airone/
+      - ~/.gitconfig:/home/airone/.gitconfig
+      - ~/.claude:/home/airone/.claude
+      # Keep Linux-only build artifacts and package caches out of the bind
+      # mount. They must not be shared with the host (platform-specific
+      # binaries) and named volumes let them survive container rebuilds.
+      # The mount points are pre-created in .devcontainer/Dockerfile so that
+      # they are owned by the container user.
+      - venv:/workspace/airone/.venv
+      - node-modules:/workspace/airone/node_modules
+      - uv-cache:/home/airone/.cache/uv
+      - npm-cache:/home/airone/.npm
+      - playwright-cache:/home/airone/.cache/ms-playwright
+
+volumes:
+  venv:
+    driver: local
+  node-modules:
+    driver: local
+  uv-cache:
+    driver: local
+  npm-cache:
+    driver: local
+  playwright-cache:
+    driver: local
