@@ -141,6 +141,31 @@ test("previews what a model import would change, and changes nothing until asked
     }),
   ).toBeVisible();
 
+  // Clicking a summary chip narrows the list to that action, which is how a
+  // user reaches the problem rows of a file too long to read through.
+  await preview.getByTestId("import-preview-filter-error").click();
+  await expect(
+    preview.getByRole("cell", { name: "e2e-broken-attr", exact: true }),
+  ).toBeVisible();
+  await expect(
+    preview.getByRole("cell", { name: NEW_MODEL, exact: true }),
+  ).toBeHidden();
+  // The summary still covers the whole file while the list is narrowed.
+  await expect(preview.getByText("新規作成 1")).toBeVisible();
+
+  await captureEvidence(page, testInfo, {
+    name: "entity-import-preview-filtered",
+    title: "Filtering a preview down to its problems",
+    note:
+      "Selecting the エラー chip lists only the rows that would fail, while the" +
+      " summary keeps counting the whole file.",
+  });
+
+  await preview.getByTestId("import-preview-filter-error").click();
+  await expect(
+    preview.getByRole("cell", { name: NEW_MODEL, exact: true }),
+  ).toBeVisible();
+
   await captureEvidence(page, testInfo, {
     name: "entity-import-preview",
     title: "Model import preview",

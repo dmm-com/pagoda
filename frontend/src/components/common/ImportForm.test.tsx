@@ -40,10 +40,13 @@ jest.mock("encoding-japanese", () => ({
 }));
 
 const mockWaitForImportPreviews = jest.fn();
+const mockFetchImportPreviewPage = jest.fn();
 jest.mock("services/ImportPreviewJob", () => ({
   ...jest.requireActual("services/ImportPreviewJob"),
   waitForImportPreviews: (...args: unknown[]) =>
     mockWaitForImportPreviews(...args),
+  fetchImportPreviewPage: (...args: unknown[]) =>
+    mockFetchImportPreviewPage(...args),
 }));
 
 // Mock react-router
@@ -73,6 +76,27 @@ const TestWrapper: FC<{ children: ReactNode }> = ({ children }) => {
     </ThemeProvider>
   );
 };
+
+const previewWith = (
+  rows: { index: number; name: string; action: string }[],
+) => ({
+  summary: {
+    created: rows.filter((x) => x.action === "create").length,
+    updated: 0,
+    unchanged: 0,
+    skipped: 0,
+    errored: rows.filter((x) => x.action === "error").length,
+    total: rows.length,
+  },
+  count: rows.length,
+  truncated: false,
+  rows: rows.map((row) => ({
+    ...row,
+    kind: "Entity",
+    reason: null,
+    changes: [],
+  })),
+});
 
 describe("ImportForm", () => {
   beforeEach(() => {
@@ -175,6 +199,77 @@ describe("ImportForm", () => {
     expect(screen.getByText("新規作成 1")).toBeInTheDocument();
     expect(screen.getByText("entity1")).toBeInTheDocument();
     expect(screen.getByText("note: a note")).toBeInTheDocument();
+  });
+
+  test("should re-read the finished jobs when the user filters by action", async () => {
+    mockWaitForImportPreviews.mockResolvedValue(
+      previewWith([
+        { index: 0, name: "ok", action: "create" },
+        { index: 1, name: "broken", action: "error" },
+      ]),
+    );
+    mockFetchImportPreviewPage.mockResolvedValue(
+      previewWith([{ index: 1, name: "broken", action: "error" }]),
+    );
+
+    render(
+      <ImportForm
+        handleImport={jest.fn()}
+        handlePreview={jest.fn().mockResolvedValue([7])}
+      />,
+      { wrapper: TestWrapper },
+    );
+    selectFile(new File(["Entity: []"], "entity.yaml"));
+    fireEvent.click(screen.getByTestId("preview-import-file"));
+    await waitFor(() =>
+      expect(screen.getByTestId("import-preview")).toBeInTheDocument(),
+    );
+
+    fireEvent.click(screen.getByTestId("import-preview-filter-error"));
+
+    // The file is never uploaded again: the jobs already hold the whole preview.
+    await waitFor(() =>
+      expect(mockFetchImportPreviewPage).toHaveBeenCalledWith(
+        [7],
+        expect.objectContaining({ action: ["error"], offset: 0 }),
+      ),
+    );
+    await waitFor(() =>
+      expect(screen.queryByText("ok")).not.toBeInTheDocument(),
+    );
+  });
+
+  test("should append the next page instead of replacing what is shown", async () => {
+    mockWaitForImportPreviews.mockResolvedValue({
+      ...previewWith([{ index: 0, name: "first", action: "create" }]),
+      count: 2,
+    });
+    mockFetchImportPreviewPage.mockResolvedValue({
+      ...previewWith([{ index: 1, name: "second", action: "create" }]),
+      count: 2,
+    });
+
+    render(
+      <ImportForm
+        handleImport={jest.fn()}
+        handlePreview={jest.fn().mockResolvedValue([7])}
+      />,
+      { wrapper: TestWrapper },
+    );
+    selectFile(new File(["Entity: []"], "entity.yaml"));
+    fireEvent.click(screen.getByTestId("preview-import-file"));
+    await waitFor(() =>
+      expect(screen.getByTestId("import-preview")).toBeInTheDocument(),
+    );
+
+    fireEvent.click(screen.getByTestId("import-preview-load-more"));
+
+    await waitFor(() => expect(screen.getByText("second")).toBeInTheDocument());
+    expect(screen.getByText("first")).toBeInTheDocument();
+    expect(mockFetchImportPreviewPage).toHaveBeenCalledWith(
+      [7],
+      expect.objectContaining({ offset: 1 }),
+    );
   });
 
   test("should let the user import without previewing", async () => {

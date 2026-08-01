@@ -394,13 +394,13 @@ class AironeApiClient {
 
   async getImportPreview(
     jobId: number,
-    offset = 0,
-    limit = ImportPreviewParam.MAX_ROW_COUNT,
+    { offset = 0, limit = ImportPreviewParam.MAX_ROW_COUNT, action = "" } = {},
   ): Promise<ImportPreview> {
     const preview = await this.job.jobApiV2PreviewRetrieve({
       id: jobId,
       offset,
       limit,
+      action,
     });
 
     return {

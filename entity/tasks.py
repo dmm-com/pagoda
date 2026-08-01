@@ -623,7 +623,7 @@ def import_entities_preview_v2(self: Task[Any, Any], job: Job) -> JobStatus:
     """Build the preview of a model import file and store it on the job.
 
     Previewing costs as much as the import it previews, so it runs here rather
-    than in the request that asked for it.
+    than in the request that asked for it. It writes nothing.
     """
     from entity.api_v2.serializers import EntityImportExportRootSerializer
 
@@ -634,7 +634,7 @@ def import_entities_preview_v2(self: Task[Any, Any], job: Job) -> JobStatus:
         return JobStatus.ERROR
 
     payload = serializer.build_preview(job=job)
-    if job.is_canceled():
+    if payload is None:
         return JobStatus.CANCELED
 
     job.set_cache(payload)

@@ -25,10 +25,10 @@ from rest_framework.exceptions import PermissionDenied, ValidationError
 from airone.lib import custom_view, drf
 from airone.lib.acl import ACLType, get_permission_level
 from airone.lib.drf import DuplicatedObjectExistsError, ObjectNotExistsError, RequiredParameterError
-from airone.lib.import_preview import PreviewCollector
 from airone.lib.log import Logger
 from airone.lib.types import AttrType, AttrTypeValue
 from entity.admin import EntityAttrResource, EntityResource
+from entity.import_preview import build_entity_import_preview
 from entity.models import Entity, EntityAttr, ItemNameType
 from isolation.models import IsolationAction as _IsolationAction
 from isolation.models import IsolationCondition as _IsolationCondition
@@ -1599,14 +1599,6 @@ class EntityImportExportSerializer(serializers.ModelSerializer[Entity]):
         return ret
 
 
-class _PreviewRollback(Exception):
-    """Internal signal to roll back the transaction that an import preview runs in."""
-
-
-class _PreviewCanceled(_PreviewRollback):
-    """Raised when the user cancels a preview job; rolls back like a finished one."""
-
-
 # The format keeps compatibility with entity.views and dashboard.views
 class EntityImportExportRootSerializer(serializers.Serializer[dict[str, Any]]):
     Entity = EntityImportExportSerializer(many=True)
@@ -1636,14 +1628,13 @@ class EntityImportExportRootSerializer(serializers.Serializer[dict[str, Any]]):
         _do_import(EntityResource, self.validated_data["Entity"])
         _do_import(EntityAttrResource, self.validated_data["EntityAttr"])
 
-    def build_preview(self, job: "Job | None" = None) -> dict[str, Any]:
-        """Report what save() would change, without leaving anything behind.
+    def build_preview(self, job: "Job | None" = None) -> dict[str, Any] | None:
+        """Report what save() would change, without touching anything.
 
-        The rows are imported for real inside a transaction that is always rolled
-        back. Running the real import path (instead of a row-by-row simulation) is
-        what makes the preview trustworthy: every validation, permission check and
-        cross-row dependency behaves exactly as it would on import -- in particular
-        an EntityAttr can refer to an Entity created earlier in the same file.
+        The preview is read-only. Building it by running the real import inside a
+        transaction and rolling back would report the same thing, but it would
+        take write locks on rows the user only asked to look at, and would leave
+        the changes behind if the rollback ever failed to run.
 
         When a job is given, its text reports progress and its cancellation stops
         the walk: this runs on a worker, and a preview of a large file takes as
@@ -1653,47 +1644,18 @@ class EntityImportExportRootSerializer(serializers.Serializer[dict[str, Any]]):
         assert request is not None, "EntityImportExportRootSerializer requires 'request' context"
         user: User = request.user
 
-        collector = PreviewCollector()
-        total = len(self.validated_data["Entity"]) + len(self.validated_data["EntityAttr"])
+        def _on_progress(done: int, total: int) -> None:
+            if job is None:
+                return
+            job.text = "Now previewing... (progress: [%5d/%5d])" % (done, total)
+            job.save(update_fields=["text"])
 
-        def _do_preview(
-            resource: type[AironeModelResource], iter_data: list[dict[str, Any]]
-        ) -> None:
-            for data in iter_data:
-                if job is not None:
-                    job.text = "Now previewing... (progress: [%5d/%5d])" % (
-                        collector.summary["total"] + 1,
-                        total,
-                    )
-                    job.save(update_fields=["text"])
-                    if job.is_canceled():
-                        raise _PreviewCanceled()
-
-                preview_row = resource.preview_data_from_request(data, user)
-                collector.add(
-                    kind=resource._meta.model.__name__,
-                    name=preview_row.name,
-                    action=preview_row.action,
-                    reason=preview_row.reason,
-                    changes=[
-                        {
-                            "field": change.field_name,
-                            "before": change.before,
-                            "after": change.after,
-                        }
-                        for change in preview_row.changes
-                    ],
-                )
-
-        try:
-            with transaction.atomic():
-                _do_preview(EntityResource, self.validated_data["Entity"])
-                _do_preview(EntityAttrResource, self.validated_data["EntityAttr"])
-                raise _PreviewRollback()
-        except _PreviewRollback:
-            pass
-
-        return collector.payload()
+        return build_entity_import_preview(
+            user,
+            self.validated_data,
+            on_progress=_on_progress,
+            is_canceled=(job.is_canceled if job is not None else None),
+        )
 
 
 class EntityAttrIDandNameSerializer(serializers.Serializer[dict[str, Any]]):

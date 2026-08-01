@@ -53,7 +53,11 @@ describe("waitForImportPreview", () => {
       2,
       "Now previewing... (progress: [    2/   10])",
     );
-    expect(mockGetImportPreview).toHaveBeenCalledWith(7);
+    expect(mockGetImportPreview).toHaveBeenCalledWith(7, {
+      offset: undefined,
+      limit: undefined,
+      action: undefined,
+    });
   });
 
   test.each([

@@ -1,4 +1,7 @@
-import { ImportPreview } from "components/common/ImportPreview";
+import {
+  ImportPreview,
+  ImportPreviewAction,
+} from "components/common/ImportPreview";
 import { aironeApiClient } from "repository/AironeApiClient";
 import { ImportPreviewParam, JobStatuses } from "services/Constants";
 
@@ -19,6 +22,12 @@ const statusMessage: Record<number, string> = {
  * runs it on a worker. `onProgress` receives the job's own progress text, which
  * is the only thing that tells the user a large file is still being read.
  */
+export interface ImportPreviewPage {
+  action?: ImportPreviewAction[];
+  offset?: number;
+  limit?: number;
+}
+
 const mergePreviews = (previews: ImportPreview[]): ImportPreview => ({
   summary: previews.reduce(
     (merged, preview) => ({
@@ -54,6 +63,7 @@ export const waitForImportPreviews = async (
   options: {
     onProgress?: (text: string) => void;
     isAbandoned?: () => boolean;
+    page?: ImportPreviewPage;
   } = {},
 ): Promise<ImportPreview> =>
   mergePreviews(
@@ -62,16 +72,39 @@ export const waitForImportPreviews = async (
     ),
   );
 
+/**
+ * Read another page of finished preview jobs.
+ *
+ * Every job is asked for the same page: the rows of one file are shown as one
+ * list, and a job that has run out simply contributes nothing.
+ */
+export const fetchImportPreviewPage = async (
+  jobIds: number[],
+  page: ImportPreviewPage,
+): Promise<ImportPreview> =>
+  mergePreviews(
+    await Promise.all(
+      jobIds.map((jobId) =>
+        aironeApiClient.getImportPreview(jobId, toQuery(page)),
+      ),
+    ),
+  );
+
+const toQuery = (page: ImportPreviewPage) => ({
+  offset: page.offset,
+  limit: page.limit,
+  action: page.action?.join(","),
+});
+
 export const waitForImportPreview = async (
   jobId: number,
-  {
-    onProgress,
-    isAbandoned,
-  }: {
+  options: {
     onProgress?: (text: string) => void;
     isAbandoned?: () => boolean;
+    page?: ImportPreviewPage;
   } = {},
 ): Promise<ImportPreview> => {
+  const { onProgress, isAbandoned } = options;
   for (;;) {
     if (isAbandoned?.()) {
       throw new ImportPreviewFailure("変更内容の確認を中止しました");
@@ -79,7 +112,10 @@ export const waitForImportPreview = async (
 
     const job = await aironeApiClient.getJob(jobId);
     if (job.status === JobStatuses.DONE) {
-      return aironeApiClient.getImportPreview(jobId);
+      return aironeApiClient.getImportPreview(
+        jobId,
+        toQuery(options.page ?? {}),
+      );
     }
     if (job.status != null && job.status in statusMessage) {
       throw new ImportPreviewFailure(statusMessage[job.status]);

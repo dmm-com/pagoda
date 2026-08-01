@@ -13,6 +13,7 @@ from rest_framework.response import Response
 from airone.lib.acl import ACLObjType
 from airone.lib.drf import FileIsNotExistsError, InvalidValueError, JobIsNotDoneError
 from airone.lib.http import get_download_response
+from airone.lib.import_preview import PREVIEW_SUMMARY_KEYS
 from entry.models import Entry
 from job.api_v2.serializers import ImportPreviewSerializer, JobSerializers
 from job.models import Job, JobOperation, JobStatus
@@ -88,6 +89,15 @@ class JobAPI(viewsets.ModelViewSet[Job]):
         parameters=[
             OpenApiParameter("offset", OpenApiTypes.INT, OpenApiParameter.QUERY, default=0),
             OpenApiParameter("limit", OpenApiTypes.INT, OpenApiParameter.QUERY, default=100),
+            OpenApiParameter(
+                "action",
+                OpenApiTypes.STR,
+                OpenApiParameter.QUERY,
+                description=(
+                    "Comma-separated actions to list, e.g. 'error,skip'. "
+                    "Defaults to every action. The summary always covers them all."
+                ),
+            ),
         ],
         responses={200: ImportPreviewSerializer},
     )
@@ -97,6 +107,9 @@ class JobAPI(viewsets.ModelViewSet[Job]):
         The whole preview is kept as a single cached payload, so the rows are
         paged out from here rather than queried: a preview of a large file can
         run to thousands of rows, and no client wants them in one response.
+
+        The rows a user came for -- the errors, the changes -- may sit anywhere
+        in a long file, so they are filtered here rather than after paging.
         """
         job: Job = self.get_object()
 
@@ -117,7 +130,7 @@ class JobAPI(viewsets.ModelViewSet[Job]):
                 raise FileIsNotExistsError("Target file is not exists")
             raise
 
-        rows = payload["rows"]
+        rows = _filter_by_action(payload["rows"], request.query_params.get("action"))
         offset = _query_int(request, "offset", default=0)
         limit = _query_int(request, "limit", default=100)
 
@@ -129,6 +142,18 @@ class JobAPI(viewsets.ModelViewSet[Job]):
                 "rows": rows[offset : offset + limit],
             }
         )
+
+
+def _filter_by_action(rows: list[dict[str, Any]], action: str | None) -> list[dict[str, Any]]:
+    if not action:
+        return rows
+
+    wanted = {x.strip() for x in action.split(",") if x.strip()}
+    unknown = wanted - set(PREVIEW_SUMMARY_KEYS)
+    if unknown:
+        raise InvalidValueError("Unknown action: %s" % ", ".join(sorted(unknown)))
+
+    return [row for row in rows if row["action"] in wanted]
 
 
 def _query_int(request: Request, name: str, default: int) -> int:

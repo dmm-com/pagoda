@@ -1,8 +1,7 @@
 import {
   Box,
+  Button,
   Chip,
-  FormControlLabel,
-  Switch,
   Table,
   TableBody,
   TableCell,
@@ -10,7 +9,7 @@ import {
   TableRow,
   Typography,
 } from "@mui/material";
-import { FC, useMemo, useState } from "react";
+import { FC, useState } from "react";
 
 import { AironeTableHeadCell } from "./AironeTableHeadCell";
 import { AironeTableHeadRow } from "./AironeTableHeadRow";
@@ -18,10 +17,10 @@ import {
   ImportPreview,
   ImportPreviewAction,
   ImportPreviewActionLabel,
-  isImportPreviewNoop,
   ImportPreviewRow,
   ImportPreviewSkipReasonLabel,
   ImportPreviewSummaryKey,
+  isImportPreviewNoop,
 } from "./ImportPreview";
 
 const ActionColor: Record<
@@ -35,7 +34,7 @@ const ActionColor: Record<
   error: "error",
 };
 
-// Rows the user has to act on are listed first; unchanged rows are just noise.
+// Rows the user has to act on come first; unchanged rows are the least urgent.
 const ActionOrder: ImportPreviewAction[] = [
   "error",
   "skip",
@@ -44,12 +43,13 @@ const ActionOrder: ImportPreviewAction[] = [
   "unchanged",
 ];
 
-// The number of rows rendered at once. A preview of a large file would otherwise
-// freeze the browser while the user only ever looks at the first few rows.
-const MaxRenderedRows = 200;
-
 interface Props {
   preview: ImportPreview;
+  /** Selected actions, or an empty array for "everything". */
+  actions: ImportPreviewAction[];
+  onChangeActions: (actions: ImportPreviewAction[]) => void;
+  onLoadMore: () => void;
+  loading: boolean;
 }
 
 const changeSummary = (row: ImportPreviewRow): string => {
@@ -58,34 +58,37 @@ const changeSummary = (row: ImportPreviewRow): string => {
       ? (ImportPreviewSkipReasonLabel[row.reason] ?? row.reason)
       : "-";
   }
-  if (row.changes.length === 0) {
-    return "-";
-  }
-  return row.changes
+
+  const changes = row.changes
     .map((change) =>
       row.action === "create"
         ? `${change.field}: ${change.after ?? ""}`
         : `${change.field}: ${change.before ?? ""} → ${change.after ?? ""}`,
     )
     .join(" / ");
+
+  // A row can both change something and carry a warning, e.g. a value that was
+  // set alongside a reference that could not be resolved.
+  return [changes || "-", row.reason].filter(Boolean).join(" / ");
 };
 
-export const ImportPreviewResult: FC<Props> = ({ preview }) => {
-  const [showUnchanged, setShowUnchanged] = useState(false);
+export const ImportPreviewResult: FC<Props> = ({
+  preview,
+  actions,
+  onChangeActions,
+  onLoadMore,
+  loading,
+}) => {
+  const [expanded, setExpanded] = useState<string>();
 
-  const rows = useMemo(() => {
-    const visible = showUnchanged
-      ? preview.rows
-      : preview.rows.filter((row) => row.action !== "unchanged");
-    return [...visible].sort(
-      (a, b) => ActionOrder.indexOf(a.action) - ActionOrder.indexOf(b.action),
+  const toggleAction = (action: ImportPreviewAction) =>
+    onChangeActions(
+      actions.includes(action)
+        ? actions.filter((x) => x !== action)
+        : [...actions, action],
     );
-  }, [preview.rows, showUnchanged]);
 
-  const hiddenCount =
-    rows.length -
-    Math.min(rows.length, MaxRenderedRows) +
-    (preview.summary.total - preview.count);
+  const remaining = preview.count - preview.rows.length;
 
   return (
     <Box display="flex" flexDirection="column" data-testid="import-preview">
@@ -96,29 +99,31 @@ export const ImportPreviewResult: FC<Props> = ({ preview }) => {
           <Chip
             key={action}
             color={ActionColor[action]}
+            variant={
+              actions.length === 0 || actions.includes(action)
+                ? "filled"
+                : "outlined"
+            }
             label={`${ImportPreviewActionLabel[action]} ${preview.summary[ImportPreviewSummaryKey[action]]}`}
             size="small"
+            onClick={() => toggleAction(action)}
+            data-testid={`import-preview-filter-${action}`}
           />
         ))}
         <Chip label={`合計 ${preview.summary.total}`} size="small" />
       </Box>
+
+      <Typography variant="caption" color="text.secondary" my="4px">
+        {actions.length === 0
+          ? "操作を選ぶと、その行だけを表示します。"
+          : "選択中の操作の行だけを表示しています。もう一度押すと解除します。"}
+      </Typography>
 
       {isImportPreviewNoop(preview) && (
         <Typography variant="body2" my="4px">
           このファイルをインポートしても変更は発生しません。
         </Typography>
       )}
-
-      <FormControlLabel
-        control={
-          <Switch
-            size="small"
-            checked={showUnchanged}
-            onChange={(event) => setShowUnchanged(event.target.checked)}
-          />
-        }
-        label={<Typography variant="body2">変更のない行も表示する</Typography>}
-      />
 
       <Box maxHeight="320px" overflow="auto">
         <Table size="small">
@@ -137,27 +142,72 @@ export const ImportPreviewResult: FC<Props> = ({ preview }) => {
             </AironeTableHeadRow>
           </TableHead>
           <TableBody>
-            {rows.slice(0, MaxRenderedRows).map((row) => (
-              <TableRow key={`${row.kind}-${row.index}`}>
-                <TableCell>
-                  <Chip
-                    color={ActionColor[row.action]}
-                    label={ImportPreviewActionLabel[row.action]}
-                    size="small"
-                  />
+            {preview.rows.map((row) => {
+              const key = `${row.kind}-${row.index}`;
+              return (
+                <TableRow
+                  key={key}
+                  hover
+                  onClick={() =>
+                    setExpanded(expanded === key ? undefined : key)
+                  }
+                  sx={{ cursor: "pointer" }}
+                >
+                  <TableCell>
+                    <Chip
+                      color={ActionColor[row.action]}
+                      label={ImportPreviewActionLabel[row.action]}
+                      size="small"
+                    />
+                  </TableCell>
+                  <TableCell>{row.kind}</TableCell>
+                  <TableCell>{row.name}</TableCell>
+                  <TableCell
+                    sx={
+                      expanded === key
+                        ? undefined
+                        : {
+                            maxWidth: 0,
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                          }
+                    }
+                  >
+                    {changeSummary(row)}
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+            {preview.rows.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={4}>
+                  <Typography variant="body2">
+                    表示できる行がありません。
+                  </Typography>
                 </TableCell>
-                <TableCell>{row.kind}</TableCell>
-                <TableCell>{row.name}</TableCell>
-                <TableCell>{changeSummary(row)}</TableCell>
               </TableRow>
-            ))}
+            )}
           </TableBody>
         </Table>
       </Box>
 
-      {hiddenCount > 0 && (
+      {remaining > 0 && (
+        <Box display="flex" alignItems="center" gap="8px" my="4px">
+          <Button
+            size="small"
+            disabled={loading}
+            onClick={onLoadMore}
+            data-testid="import-preview-load-more"
+          >
+            {`さらに読み込む（残り ${remaining} 行）`}
+          </Button>
+        </Box>
+      )}
+
+      {preview.truncated && (
         <Typography variant="caption" my="4px">
-          {`ほか ${hiddenCount} 行は一覧から省略されています（上のサマリは全 ${preview.summary.total} 行を集計しています）。`}
+          {`行数が多いため一部の行は保持されていません。上のサマリは全 ${preview.summary.total} 行を集計しています。`}
         </Typography>
       )}
     </Box>

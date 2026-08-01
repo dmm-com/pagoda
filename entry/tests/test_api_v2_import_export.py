@@ -556,6 +556,23 @@ class ViewTest(BaseViewTest):
         self.assertEqual(preview["summary"]["unchanged"], 1)
         self.assertEqual(preview["summary"]["updated"], 0)
 
+    def test_import_preview_never_writes(self):
+        self.add_entry(self.user, "test-entry", self.entity, values={"val": "before"})
+
+        fp = self.open_fixture_file("import_data_v2.yaml")
+        payload = fp.read()
+        fp.close()
+
+        # An item import also reindexes and notifies, so its preview cannot lean
+        # on a transaction to undo itself. It must simply not write.
+        with patch.object(Entry, "save", side_effect=AssertionError("wrote Entry")):
+            with patch.object(
+                AttributeValue, "save", side_effect=AssertionError("wrote AttributeValue")
+            ):
+                [preview] = self._preview_import(payload)
+
+        self.assertEqual(preview["summary"]["updated"], 1)
+
     def test_import_preview_warns_about_references_it_cannot_resolve(self):
         payload = yaml.dump(
             [

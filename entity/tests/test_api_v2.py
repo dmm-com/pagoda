@@ -3805,6 +3805,61 @@ class ViewTest(AironeViewTest):
         self.assertEqual(len(body["rows"]), 3)
         self.assertEqual([x["index"] for x in body["rows"]], [2, 3, 4])
 
+    def test_import_preview_never_writes(self):
+        self.admin_login()
+        self._clear_entities()
+
+        fp = self.open_fixture_file("entity.yaml")
+        payload = fp.read()
+        fp.close()
+
+        # A preview must be a read. Nothing it does may reach the database --
+        # not even inside a transaction it means to roll back, which would still
+        # take write locks and would leave the rows behind if it never ran.
+        with mock.patch.object(Entity, "save", side_effect=AssertionError("wrote Entity")):
+            with mock.patch.object(
+                EntityAttr, "save", side_effect=AssertionError("wrote EntityAttr")
+            ):
+                body = self._preview_import(payload)
+
+        self.assertEqual(body["summary"]["created"], 7)
+
+    def test_import_preview_filters_rows_by_action(self):
+        self.admin_login()
+        self._clear_entities()
+
+        fp = self.open_fixture_file("entity_without_mandatory_param.yaml")
+        payload = fp.read()
+        fp.close()
+
+        body = self._preview_import(payload, action="error")
+
+        # Filtering narrows the list, never the summary: a user who asks to see
+        # only the errors still has to be told how much else the file does.
+        self.assertEqual(body["count"], 3)
+        self.assertEqual({x["action"] for x in body["rows"]}, {"error"})
+        self.assertEqual(body["summary"]["total"], 7)
+
+    def test_import_preview_rejects_an_unknown_action(self):
+        self.admin_login()
+        self._clear_entities()
+
+        fp = self.open_fixture_file("entity.yaml")
+        payload = fp.read()
+        fp.close()
+
+        with mock.patch(
+            "entity.tasks.import_entities_preview_v2.delay",
+            mock.Mock(side_effect=tasks.import_entities_preview_v2),
+        ):
+            resp = self.client.post(
+                "/entity/api/v2/import/preview", payload, content_type="application/yaml"
+            )
+        job_id = resp.json()["job_id"]
+
+        resp = self.client.get("/job/api/v2/%d/preview?action=nonsense" % job_id)
+        self.assertEqual(resp.status_code, 400)
+
     def test_import_preview_keeps_the_summary_exact_when_rows_are_capped(self):
         self.admin_login()
         self._clear_entities()
