@@ -6,7 +6,7 @@ import {
   writeE2eReport,
 } from "../reportEvidence";
 
-import { apiGet, login, postYaml } from "./liveApi";
+import { apiGet, login, postJson, postYaml } from "./liveApi";
 
 /**
  * The item import preview, against a real server. Unlike the model preview it
@@ -28,6 +28,16 @@ const findItems = async (page: Page, modelId: number) =>
   (await apiGet<ItemListResponse>(page, `/entity/api/v2/${modelId}/entries/`))
     .results;
 
+const noteOf = async (page: Page, modelId: number, name: string) => {
+  const item = (await findItems(page, modelId)).find((x) => x.name === name);
+  if (item == null) return undefined;
+  const detail = await apiGet<{
+    attrs: { schema: { name: string }; value: { as_string?: string } }[];
+  }>(page, `/entry/api/v2/${item.id}/`);
+  return detail.attrs.find((attr) => attr.schema.name === "note")?.value
+    ?.as_string;
+};
+
 test.afterEach(async ({}, testInfo) => {
   recordTestResult(testInfo);
 });
@@ -42,6 +52,8 @@ test.afterAll(() => {
       "Previews ran as background jobs: the request only started them, and the dialog polled until they finished.",
       "The previews reported creations, field-level updates, and rows the importer would otherwise drop silently.",
       "The database was verified to be untouched while each preview was on screen, and to match it after importing.",
+      "The preview announced a trigger that would fire, and offered the whole result as CSV.",
+      "An item changed by someone else after the preview was left alone when the approved preview was applied.",
     ],
   });
 });
@@ -103,6 +115,26 @@ test("previews what an item import would change, and writes nothing while it doe
     "        value: brand new",
   ]);
 
+  // A trigger on the very attribute the file sets: importing would change values
+  // the file never mentions, and the preview has to say so.
+  const noteAttrId = (
+    await apiGet<{ attrs: { id: number; name: string }[] }>(
+      page,
+      `/entity/api/v2/${modelId}/`,
+    )
+  ).attrs.find((attr) => attr.name === "note")?.id;
+  expect(
+    noteAttrId,
+    "the seeded model should have a note attribute",
+  ).toBeDefined();
+  await postJson(page, "/trigger/api/v2/", {
+    entity_id: modelId,
+    conditions: [{ attr_id: noteAttrId, cond: "after" }],
+    actions: [
+      { attr_id: noteAttrId, values: [{ str_cond: "set by a trigger" }] },
+    ],
+  });
+
   await page.goto(`/ui/entities/${modelId}/entries`);
   // Importing items lives behind the model menu on the item list page.
   await page.locator("#entity_menu").click();
@@ -127,6 +159,7 @@ test("previews what an item import would change, and writes nothing while it doe
   await expect(
     result.getByRole("cell", { name: NEW_ITEM, exact: true }),
   ).toBeVisible();
+  await expect(result.getByText("トリガー").first()).toBeVisible();
 
   await captureEvidence(page, testInfo, {
     name: "entry-import-preview",
@@ -140,6 +173,24 @@ test("previews what an item import would change, and writes nothing while it doe
   // Nothing was written while the preview was on screen.
   expect(await findItems(page, modelId)).toHaveLength(1);
 
+  await expect(result.getByTestId("import-preview-download")).toBeVisible();
+
+  // Someone else changes the very value this file would overwrite, after the
+  // preview was built.
+  await postYaml(
+    page,
+    "/entry/api/v2/import/?force=true",
+    importFile([
+      `  - name: ${EXISTING_ITEM}`,
+      "    attrs:",
+      "      - name: note",
+      "        value: changed by someone else",
+    ]),
+  );
+  await expect
+    .poll(async () => noteOf(page, modelId, EXISTING_ITEM), { timeout: 30_000 })
+    .toBe("changed by someone else");
+
   // The seeding import already ran for this model today, and item imports refuse
   // a second one within a day unless forced.
   await page.getByTestId("force-import").check();
@@ -149,4 +200,9 @@ test("previews what an item import would change, and writes nothing while it doe
       timeout: 60_000,
     })
     .toContain(NEW_ITEM);
+
+  // The new item was created, but the item someone else touched kept their value.
+  expect(await noteOf(page, modelId, EXISTING_ITEM)).toBe(
+    "changed by someone else",
+  );
 });

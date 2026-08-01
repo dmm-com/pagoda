@@ -98,6 +98,9 @@ class ImportPreviewRowSerializer(serializers.Serializer[dict[str, Any]]):
     action = serializers.ChoiceField(choices=["create", "update", "unchanged", "skip", "error"])
     reason = serializers.CharField(allow_null=True)
     changes = ImportPreviewChangeSerializer(many=True)
+    will_invoke_trigger = serializers.BooleanField(
+        help_text="True when importing this row would fire a TriggerAction"
+    )
 
 
 class ImportPreviewSummarySerializer(serializers.Serializer[dict[str, Any]]):

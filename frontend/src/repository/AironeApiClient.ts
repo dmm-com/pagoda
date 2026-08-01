@@ -414,8 +414,16 @@ class AironeApiClient {
         action: row.action as ImportPreviewAction,
         reason: row.reason,
         changes: row.changes,
+        willInvokeTrigger: row.willInvokeTrigger,
       })),
     };
+  }
+
+  async downloadImportPreview(jobId: number, filename: string): Promise<void> {
+    fileDownload(
+      await this.job.jobApiV2PreviewDownloadRetrieve({ id: jobId }),
+      filename,
+    );
   }
 
   async startImportEntriesPreview(
@@ -1238,11 +1246,13 @@ class AironeApiClient {
   async importEntries(
     data: string | ArrayBuffer,
     force: boolean,
+    previewJobId?: number,
   ): Promise<void> {
     return await this.entry.entryApiV2ImportCreate(
       {
         entryImportEntity: [],
         force: force,
+        previewJobId,
       },
       {
         headers: {

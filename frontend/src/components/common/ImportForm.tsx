@@ -27,7 +27,11 @@ import {
 } from "services/ImportPreviewJob";
 
 interface Props {
-  handleImport: (data: string | ArrayBuffer) => Promise<void>;
+  /** Receives the preview the user approved, when they previewed at all. */
+  handleImport: (
+    data: string | ArrayBuffer,
+    previewJobIds: number[],
+  ) => Promise<void>;
   handleCancel?: () => void;
   /**
    * When given, the user can review what the file would change before importing
@@ -171,6 +175,19 @@ export const ImportForm: FC<Props> = ({
 
   // Previewing a large file takes as long as importing it, so it has to be
   // possible to give up on one -- which is why previews run as cancelable jobs.
+  const onDownloadPreview = async () => {
+    await Promise.all(
+      previewJobIds.current.map((jobId) =>
+        aironeApiClient.downloadImportPreview(
+          jobId,
+          previewJobIds.current.length > 1
+            ? `import_preview_${jobId}.csv`
+            : "import_preview.csv",
+        ),
+      ),
+    );
+  };
+
   const onCancelPreview = async () => {
     await Promise.all(
       previewJobIds.current.map((jobId) => aironeApiClient.cancelJob(jobId)),
@@ -184,7 +201,7 @@ export const ImportForm: FC<Props> = ({
 
     setProcessing(true);
     try {
-      await handleImport(await readFileAsText(file));
+      await handleImport(await readFileAsText(file), previewJobIds.current);
       navigate(0);
     } catch (e) {
       await reportError(e, "ファイルのアップロードに失敗しました");
@@ -218,6 +235,7 @@ export const ImportForm: FC<Props> = ({
           actions={actions}
           onChangeActions={onChangeActions}
           onLoadMore={onLoadMore}
+          onDownload={onDownloadPreview}
           loading={processing}
         />
       )}

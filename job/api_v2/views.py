@@ -1,3 +1,4 @@
+import csv
 import errno
 import io
 from typing import Any, cast
@@ -142,6 +143,67 @@ class JobAPI(viewsets.ModelViewSet[Job]):
                 "rows": rows[offset : offset + limit],
             }
         )
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                "encode",
+                OpenApiTypes.STR,
+                OpenApiParameter.QUERY,
+                enum=["utf-8", "shift_jis"],
+                default="utf-8",
+            ),
+        ],
+        responses={200: OpenApiTypes.STR},
+    )
+    def preview_download(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        """Download a whole preview as CSV.
+
+        A preview of a large file is worth reading carefully, and a browser table
+        is not where that is done. This hands over every row that was kept, in
+        the order the file listed them.
+        """
+        job: Job = self.get_object()
+
+        if job.user != request.user:
+            return Response("Cannot read another user's job", status=status.HTTP_403_FORBIDDEN)
+
+        if job.operation not in Job.PREVIEW_OPERATIONS:
+            raise InvalidValueError("Target job has no preview")
+
+        if job.status != JobStatus.DONE:
+            raise JobIsNotDoneError("Target job has not yet done")
+
+        encode_param = request.query_params.get("encode", "utf-8")
+        if encode_param not in ["utf-8", "shift_jis"]:
+            raise InvalidValueError("Invalid encode parameter")
+
+        try:
+            payload = job.get_cache()
+        except OSError as e:
+            if e.errno == errno.ENOENT:
+                raise FileIsNotExistsError("Target file is not exists")
+            raise
+
+        io_stream = io.StringIO()
+        writer = csv.writer(io_stream)
+        writer.writerow(["kind", "name", "action", "reason", "changes", "will_invoke_trigger"])
+        for row in payload["rows"]:
+            writer.writerow(
+                [
+                    row["kind"],
+                    row["name"],
+                    row["action"],
+                    row["reason"] or "",
+                    " / ".join(
+                        "%s: %s -> %s" % (c["field"], c["before"] or "", c["after"] or "")
+                        for c in row["changes"]
+                    ),
+                    row.get("will_invoke_trigger", False),
+                ]
+            )
+
+        return cast(Response, get_download_response(io_stream, "import_preview.csv", encode_param))
 
 
 def _filter_by_action(rows: list[dict[str, Any]], action: str | None) -> list[dict[str, Any]]:

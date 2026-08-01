@@ -29,6 +29,14 @@ urlpatterns = [
         ),
     ),
     path(
+        "<int:pk>/preview/download",
+        views.JobAPI.as_view(
+            {
+                "get": "preview_download",
+            }
+        ),
+    ),
+    path(
         "<int:pk>/rerun",
         views.JobRerunAPI.as_view(),
     ),

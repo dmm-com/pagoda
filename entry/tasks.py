@@ -689,6 +689,8 @@ def import_entries_v2(self: Task, job: Job) -> tuple[JobStatus, str, None] | Non
 
     total_count = len(import_serializer.validated_data["entries"])
     err_msg: list[str] = []
+    stale: list[str] = []
+    baselines = _load_preview_baselines(job)
     for index, entry_data in enumerate(import_serializer.validated_data["entries"]):
         job.text = "Now importing... (progress: [%5d/%5d])" % (index + 1, total_count)
         job.save(update_fields=["text"])
@@ -711,6 +713,12 @@ def import_entries_v2(self: Task, job: Job) -> tuple[JobStatus, str, None] | Non
                 name=entry_data["name"], schema=entity, is_active=True
             ).first()
 
+        if entry and _is_stale(entry, entry_data, baselines):
+            # Someone changed this item after the preview was built, so the
+            # preview the user approved no longer describes what would happen.
+            stale.append(entry_data["name"])
+            continue
+
         if entry:
             serializer = EntryUpdateSerializer(instance=entry, data=entry_data, context=context)
         else:
@@ -725,14 +733,53 @@ def import_entries_v2(self: Task, job: Job) -> tuple[JobStatus, str, None] | Non
                 % (entry_data["name"], e)
             )
 
-    if err_msg:
-        return (
-            JobStatus.WARNING,
-            "Imported Entry count: %d, Failed import Entry: %s" % (total_count, err_msg),
-            None,
-        )
+    if err_msg or stale:
+        text = "Imported Entry count: %d" % total_count
+        if err_msg:
+            text += ", Failed import Entry: %s" % err_msg
+        if stale:
+            text += ", Changed by someone else since the preview: %s" % stale
+        return (JobStatus.WARNING, text, None)
     else:
         return JobStatus.DONE, "Imported Entry count: %d" % total_count, None
+
+
+def _load_preview_baselines(job: Job) -> dict[str, dict[str, Any]] | None:
+    """Read the values a preview recorded, when the import was started from one.
+
+    Without a preview job there is nothing to compare against and the import
+    behaves exactly as it always has.
+    """
+    preview_job_id = json.loads(job.params).get("preview_job_id")
+    if not preview_job_id:
+        return None
+
+    preview_job = Job.objects.filter(
+        id=preview_job_id, user=job.user, operation=JobOperation.IMPORT_ENTRY_PREVIEW
+    ).first()
+    if preview_job is None or preview_job.status != JobStatus.DONE:
+        return None
+
+    try:
+        payload = preview_job.get_cache()
+    except OSError:
+        return None
+
+    return {row["name"]: row["baseline"] for row in payload["rows"] if row.get("baseline")}
+
+
+def _is_stale(
+    entry: Entry, entry_data: dict[str, Any], baselines: dict[str, dict[str, Any]] | None
+) -> bool:
+    if baselines is None:
+        return False
+
+    baseline = baselines.get(entry_data["name"])
+    if baseline is None or baseline["entry_id"] != entry.id:
+        return False
+
+    current = _latest_value_ids(entry, [int(x["id"]) for x in entry_data.get("attrs", [])])
+    return current != baseline["values"]
 
 
 @register_job_task(JobOperation.EXPORT_ENTRY)
@@ -1349,6 +1396,12 @@ def _preview_one_entry(
     warnings = _collect_unresolved(entry_data, raw_entry)
     changes = _collect_attr_changes(user, entity, entry, entry_data, raw_entry)
 
+    # Importing fires triggers, which change values the file never mentions.
+    # Read-only: this asks which actions would match, it does not run them.
+    will_invoke_trigger = bool(
+        TriggerCondition.get_invoked_actions(entity, entry_data.get("attrs", []))
+    )
+
     if entry is None:
         collector.add(
             kind="Item",
@@ -1356,6 +1409,7 @@ def _preview_one_entry(
             action="create",
             reason="; ".join(warnings) or None,
             changes=changes,
+            will_invoke_trigger=will_invoke_trigger,
         )
         return
 
@@ -1368,7 +1422,30 @@ def _preview_one_entry(
         action="update" if changes else "unchanged",
         reason="; ".join(warnings) or None,
         changes=changes,
+        will_invoke_trigger=will_invoke_trigger,
+        baseline=_entry_baseline(entry, entry_data),
     )
+
+
+def _entry_baseline(entry: Entry, entry_data: dict[str, Any]) -> dict[str, Any]:
+    """Fingerprint the values this row would overwrite.
+
+    The import compares it against the values it finds, so that a row someone
+    else changed in the meantime is not overwritten on the strength of a preview
+    that no longer describes it.
+    """
+    return {
+        "entry_id": entry.id,
+        "values": _latest_value_ids(entry, [int(x["id"]) for x in entry_data.get("attrs", [])]),
+    }
+
+
+def _latest_value_ids(entry: Entry, entity_attr_ids: list[int]) -> dict[str, int]:
+    latest: dict[str, int] = {}
+    for attr in entry.attrs.filter(schema__id__in=entity_attr_ids, is_active=True):
+        attrv = attr.values.filter(is_latest=True).last()
+        latest[str(attr.schema_id)] = attrv.id if attrv else 0
+    return latest
 
 
 def _collect_unresolved(entry_data: dict[str, Any], raw_entry: dict[str, Any]) -> list[str]:

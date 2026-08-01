@@ -40,9 +40,12 @@ jest.mock("encoding-japanese", () => ({
 }));
 
 const mockCancelJob = jest.fn();
+const mockDownloadImportPreview = jest.fn();
 jest.mock("repository/AironeApiClient", () => ({
   aironeApiClient: {
     cancelJob: (...args: unknown[]) => mockCancelJob(...args),
+    downloadImportPreview: (...args: unknown[]) =>
+      mockDownloadImportPreview(...args),
   },
 }));
 
@@ -102,6 +105,7 @@ const previewWith = (
     kind: "Entity",
     reason: null,
     changes: [],
+    willInvokeTrigger: false,
   })),
 });
 
@@ -301,6 +305,62 @@ describe("ImportForm", () => {
 
     await waitFor(() => expect(mockCancelJob).toHaveBeenCalledWith(7));
     expect(mockCancelJob).toHaveBeenCalledWith(8);
+  });
+
+  test("should hand the approved preview to the import", async () => {
+    const handleImport = jest.fn().mockResolvedValue(undefined);
+    mockWaitForImportPreviews.mockResolvedValue(
+      previewWith([{ index: 0, name: "ok", action: "create" }]),
+    );
+
+    render(
+      <ImportForm
+        handleImport={handleImport}
+        handlePreview={jest.fn().mockResolvedValue([7])}
+      />,
+      { wrapper: TestWrapper },
+    );
+    selectFile(new File(["Entity: []"], "entity.yaml"));
+    fireEvent.click(screen.getByTestId("preview-import-file"));
+    await waitFor(() =>
+      expect(screen.getByTestId("import-preview")).toBeInTheDocument(),
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "インポート" }));
+
+    // The import needs to know which preview was approved, so that it can leave
+    // alone anything changed since.
+    await waitFor(() =>
+      expect(handleImport).toHaveBeenCalledWith(expect.anything(), [7]),
+    );
+  });
+
+  test("should let the user download the whole preview", async () => {
+    mockWaitForImportPreviews.mockResolvedValue(
+      previewWith([{ index: 0, name: "ok", action: "create" }]),
+    );
+
+    render(
+      <ImportForm
+        handleImport={jest.fn()}
+        handlePreview={jest.fn().mockResolvedValue([7])}
+      />,
+      { wrapper: TestWrapper },
+    );
+    selectFile(new File(["Entity: []"], "entity.yaml"));
+    fireEvent.click(screen.getByTestId("preview-import-file"));
+    await waitFor(() =>
+      expect(screen.getByTestId("import-preview")).toBeInTheDocument(),
+    );
+
+    fireEvent.click(screen.getByTestId("import-preview-download"));
+
+    await waitFor(() =>
+      expect(mockDownloadImportPreview).toHaveBeenCalledWith(
+        7,
+        "import_preview.csv",
+      ),
+    );
   });
 
   test("should let the user import without previewing", async () => {

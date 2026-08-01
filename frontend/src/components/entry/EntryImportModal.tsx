@@ -54,8 +54,10 @@ export const EntryImportModal: FC<Props> = ({
       </Box>
       <Box my="8px">
         <ImportForm
-          handleImport={(data: string | ArrayBuffer) =>
-            aironeApiClient.importEntries(data, forceImport)
+          handleImport={(data: string | ArrayBuffer, previewJobIds: number[]) =>
+            // Passing the approved preview lets the import leave alone anything
+            // someone else changed since it was built.
+            aironeApiClient.importEntries(data, forceImport, previewJobIds[0])
           }
           handleCancel={closeImportModal}
           handlePreview={handlePreview}

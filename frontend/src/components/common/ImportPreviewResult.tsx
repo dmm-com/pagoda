@@ -49,6 +49,7 @@ interface Props {
   actions: ImportPreviewAction[];
   onChangeActions: (actions: ImportPreviewAction[]) => void;
   onLoadMore: () => void;
+  onDownload?: () => void;
   loading: boolean;
 }
 
@@ -77,6 +78,7 @@ export const ImportPreviewResult: FC<Props> = ({
   actions,
   onChangeActions,
   onLoadMore,
+  onDownload,
   loading,
 }) => {
   const [expanded, setExpanded] = useState<string>();
@@ -161,7 +163,18 @@ export const ImportPreviewResult: FC<Props> = ({
                     />
                   </TableCell>
                   <TableCell>{row.kind}</TableCell>
-                  <TableCell>{row.name}</TableCell>
+                  <TableCell>
+                    {row.name}
+                    {row.willInvokeTrigger && (
+                      <Chip
+                        label="トリガー"
+                        size="small"
+                        variant="outlined"
+                        sx={{ ml: "4px" }}
+                        title="インポートするとトリガーが発火し、ファイルにない値も変わります"
+                      />
+                    )}
+                  </TableCell>
                   <TableCell
                     sx={
                       expanded === key
@@ -192,8 +205,8 @@ export const ImportPreviewResult: FC<Props> = ({
         </Table>
       </Box>
 
-      {remaining > 0 && (
-        <Box display="flex" alignItems="center" gap="8px" my="4px">
+      <Box display="flex" alignItems="center" gap="8px" my="4px">
+        {remaining > 0 && (
           <Button
             size="small"
             disabled={loading}
@@ -202,8 +215,17 @@ export const ImportPreviewResult: FC<Props> = ({
           >
             {`さらに読み込む（残り ${remaining} 行）`}
           </Button>
-        </Box>
-      )}
+        )}
+        {onDownload && (
+          <Button
+            size="small"
+            onClick={onDownload}
+            data-testid="import-preview-download"
+          >
+            CSV でダウンロード
+          </Button>
+        )}
+      </Box>
 
       {preview.truncated && (
         <Typography variant="caption" my="4px">
