@@ -1,14 +1,4 @@
-"""Read-only preview of a model import file.
-
-Nothing here writes. An earlier version ran the real import inside a transaction
-and rolled it back, which reported the truth but took write locks on rows a user
-had only asked to look at -- and would have left the damage behind had the
-rollback not run. A preview is a read, so it reads.
-
-Staying read-only means the rules the importer enforces are checked here rather
-than observed. To keep the two from drifting, the rules themselves live in
-entity.admin and are called from both.
-"""
+"""Domain services for models."""
 
 from typing import Any, Callable, NamedTuple
 
@@ -25,7 +15,7 @@ from entity.models import Entity, EntityAttr
 from user.models import User
 
 
-class PreviewField(NamedTuple):
+class _PreviewField(NamedTuple):
     """One comparable field, read from the file and from the stored object.
 
     The two sides are rendered as text before they are compared: the file holds
@@ -48,14 +38,14 @@ def _bool_text(value: Any) -> str:
 
 
 ENTITY_FIELDS = [
-    PreviewField("name", lambda row: _text(row.get("name")), lambda x: _text(x.name)),
-    PreviewField("note", lambda row: _text(row.get("note")), lambda x: _text(x.note)),
-    PreviewField(
+    _PreviewField("name", lambda row: _text(row.get("name")), lambda x: _text(x.name)),
+    _PreviewField("note", lambda row: _text(row.get("note")), lambda x: _text(x.note)),
+    _PreviewField(
         "status",
         lambda row: _text(int(row.get("status") or 0)),
         lambda x: _text(x.status),
     ),
-    PreviewField(
+    _PreviewField(
         "created_user",
         lambda row: _text(row.get("created_user")),
         lambda x: _text(x.created_user.username),
@@ -63,23 +53,23 @@ ENTITY_FIELDS = [
 ]
 
 ENTITY_ATTR_FIELDS = [
-    PreviewField("name", lambda row: _text(row.get("name")), lambda x: _text(x.name)),
-    PreviewField(
+    _PreviewField("name", lambda row: _text(row.get("name")), lambda x: _text(x.name)),
+    _PreviewField(
         "is_mandatory",
         lambda row: _bool_text(row.get("is_mandatory")),
         lambda x: _bool_text(x.is_mandatory),
     ),
-    PreviewField(
+    _PreviewField(
         "referral",
         lambda row: ",".join(sorted(x for x in _text(row.get("refer")).split(",") if x)),
         lambda x: ",".join(sorted(e.name for e in x.referral.all())),
     ),
-    PreviewField(
+    _PreviewField(
         "parent_entity",
         lambda row: _text(row.get("entity")),
         lambda x: _text(x.parent_entity.name),
     ),
-    PreviewField(
+    _PreviewField(
         "created_user",
         lambda row: _text(row.get("created_user")),
         lambda x: _text(x.created_user.username),
@@ -93,13 +83,37 @@ class _RowOutcome(NamedTuple):
     changes: list[dict[str, str | None]]
 
 
-def build_entity_import_preview(
+class EntityImportPreviewService:
+    """Reports what a model import file would change, without changing anything.
+
+    Building this by running the real import inside a transaction and rolling it
+    back would report the same thing, but it would take write locks on rows a
+    user had only asked to look at, and would leave the changes behind if the
+    rollback ever failed to run. A preview is a read, so it reads.
+
+    Staying read-only means the rules the importer enforces are checked here
+    rather than observed. To keep the two from drifting, the rules themselves
+    live in entity.admin and are called from both.
+    """
+
+    @classmethod
+    def build(
+        kls,
+        user: User,
+        validated_data: dict[str, Any],
+        on_progress: Callable[[int, int], None] | None = None,
+        is_canceled: Callable[[], bool] | None = None,
+    ) -> dict[str, Any] | None:
+        """Return the preview payload, or None when the job was canceled."""
+        return _build(user, validated_data, on_progress, is_canceled)
+
+
+def _build(
     user: User,
     validated_data: dict[str, Any],
-    on_progress: Callable[[int, int], None] | None = None,
-    is_canceled: Callable[[], bool] | None = None,
+    on_progress: Callable[[int, int], None] | None,
+    is_canceled: Callable[[], bool] | None,
 ) -> dict[str, Any] | None:
-    """Report what importing this file would change. Returns None if canceled."""
     entities: list[dict[str, Any]] = validated_data["Entity"]
     entity_attrs: list[dict[str, Any]] = validated_data["EntityAttr"]
 
@@ -196,7 +210,7 @@ def _preview_entity_attr_row(
 def _compare(
     user: User,
     resource: type[AironeModelResource],
-    fields: list[PreviewField],
+    fields: list[_PreviewField],
     row: dict[str, Any],
     instance: Any | None,
 ) -> _RowOutcome:

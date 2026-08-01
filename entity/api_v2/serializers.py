@@ -28,8 +28,8 @@ from airone.lib.drf import DuplicatedObjectExistsError, ObjectNotExistsError, Re
 from airone.lib.log import Logger
 from airone.lib.types import AttrType, AttrTypeValue
 from entity.admin import EntityAttrResource, EntityResource
-from entity.import_preview import build_entity_import_preview
 from entity.models import Entity, EntityAttr, ItemNameType
+from entity.services import EntityImportPreviewService
 from isolation.models import IsolationAction as _IsolationAction
 from isolation.models import IsolationCondition as _IsolationCondition
 from isolation.models import IsolationParent as _IsolationParent
@@ -1650,7 +1650,7 @@ class EntityImportExportRootSerializer(serializers.Serializer[dict[str, Any]]):
             job.text = "Now previewing... (progress: [%5d/%5d])" % (done, total)
             job.save(update_fields=["text"])
 
-        return build_entity_import_preview(
+        return EntityImportPreviewService.build(
             user,
             self.validated_data,
             on_progress=_on_progress,
