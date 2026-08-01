@@ -1,5 +1,5 @@
 import importlib
-from typing import Any, Literal, Sequence
+from typing import Any, Sequence
 
 import tablib
 from import_export.exceptions import ImportError as ImportExportError
@@ -9,10 +9,6 @@ from import_export.results import Result
 from acl.models import ACLBase
 from airone.lib.acl import ACLType
 from user.models import User
-
-# Reasons why a row is not applied. They are reported to the user through the
-# import preview so that silently-dropped rows become visible before importing.
-SkipReason = Literal["spoofing", "permission_denied", "disallow_update"]
 
 
 class AironeModelResource(ModelResource):  # type: ignore[misc]
@@ -25,10 +21,6 @@ class AironeModelResource(ModelResource):  # type: ignore[misc]
         # This parameter is needed to check that imported object has permission
         # to add/update it by the user who import data.
         self.request_user: User | None = None
-
-        # Records why the last row was skipped. skip_row() only returns a boolean,
-        # so this keeps the reason available for the import preview.
-        self.skip_reason: SkipReason | None = None
 
     """
     This private method checks that two instance has same content in each attribute.
@@ -50,13 +42,10 @@ class AironeModelResource(ModelResource):  # type: ignore[misc]
         row: dict[str, object],
         import_validation_errors: dict[str, list[object]] | None = None,
     ) -> bool:
-        self.skip_reason = None
-
         # the case of creating new instance
         if not self._meta.model.objects.filter(id=instance.id).exists():
             # Inhibits the spoofing
             if isinstance(instance, ACLBase) and instance.created_user != self.request_user:
-                self.skip_reason = "spoofing"
                 return True
 
         # the case of instance is updated
@@ -65,12 +54,10 @@ class AironeModelResource(ModelResource):  # type: ignore[misc]
             if not self.request_user or not self.request_user.has_permission(
                 instance, ACLType.Writable
             ):
-                self.skip_reason = "permission_denied"
                 return True
 
             # the case user try to change params which are disallow to update
             if not self.validate_update(instance, original):
-                self.skip_reason = "disallow_update"
                 return True
 
         return False
@@ -142,23 +129,3 @@ class AironeModelResource(ModelResource):  # type: ignore[misc]
             if isinstance(e.error, Exception):
                 raise e.error from e
             raise
-
-    @classmethod
-    def _stringify(cls, value: Any) -> str | None:
-        if value is None:
-            return None
-        # ManyToMany fields are exposed as a manager; render them as a sorted name list
-        # so that the preview can diff them as plain text.
-        if hasattr(value, "all"):
-            return ",".join(sorted(cls._stringify_one(x) for x in value.all()))
-        return cls._stringify_one(value)
-
-    @staticmethod
-    def _stringify_one(value: Any) -> str:
-        # Related models are shown by name; ACLBase has no __str__ and would otherwise
-        # render as "ACLBase object (1001)", which is meaningless in a diff.
-        for attribute in ("name", "username"):
-            label = getattr(value, attribute, None)
-            if isinstance(label, str):
-                return label
-        return str(value)

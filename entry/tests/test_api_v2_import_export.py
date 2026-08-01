@@ -8,6 +8,7 @@ from urllib.parse import urlencode
 
 import yaml
 
+from airone.lib.acl import ACLType
 from airone.lib.elasticsearch import EntryFilterKey
 from airone.lib.log import Logger
 from airone.lib.types import (
@@ -614,6 +615,37 @@ class ViewTest(BaseViewTest):
             "changed by someone else",
         )
 
+    def test_import_leaves_alone_an_item_someone_else_created_since_the_preview(self):
+        fp = self.open_fixture_file("import_data_v2.yaml")
+        payload = fp.read()
+        fp.close()
+
+        with patch(
+            "entry.tasks.import_entries_preview_v2.delay",
+            Mock(side_effect=tasks.import_entries_preview_v2),
+        ):
+            resp = self.client.post("/entry/api/v2/import/preview/", payload, "application/yaml")
+        preview_job_id = resp.json()["result"]["jobs"][0]["job_id"]
+
+        # The preview said "create". Someone else gets there first with the same
+        # name, so applying the preview would update their item, not create one.
+        entry = self.add_entry(self.user, "test-entry", self.entity, values={"val": "theirs"})
+
+        with patch(
+            "entry.tasks.import_entries_v2.delay", Mock(side_effect=tasks.import_entries_v2)
+        ):
+            self.client.post(
+                "/entry/api/v2/import/?force=true&preview_job_id=%d" % preview_job_id,
+                payload,
+                "application/yaml",
+            )
+
+        job = Job.objects.filter(operation=JobOperation.IMPORT_ENTRY_V2).last()
+        self.assertEqual(job.status, JobStatus.WARNING)
+        self.assertEqual(
+            entry.attrs.get(schema__name="val").get_latest_value().get_value(), "theirs"
+        )
+
     def test_import_applies_normally_when_nothing_changed_since_the_preview(self):
         entry = self.add_entry(self.user, "test-entry", self.entity, values={"val": "before"})
 
@@ -638,6 +670,21 @@ class ViewTest(BaseViewTest):
             )
 
         self.assertEqual(entry.attrs.get(schema__name="val").get_latest_value().get_value(), "foo")
+
+    def test_preview_does_not_expose_its_internal_fingerprints(self):
+        entry = self.add_entry(self.user, "test-entry", self.entity, values={"val": "before"})
+        self.assertTrue(entry)
+
+        fp = self.open_fixture_file("import_data_v2.yaml")
+        payload = fp.read()
+        fp.close()
+
+        [preview] = self._preview_import(payload)
+
+        # The values a row would overwrite are recorded for the import to compare
+        # against. They are database ids of no use to a client, so they stay in.
+        for row in preview["rows"]:
+            self.assertNotIn("baseline", row)
 
     def test_preview_can_be_downloaded_as_csv(self):
         fp = self.open_fixture_file("import_data_v2.yaml")
@@ -674,6 +721,35 @@ class ViewTest(BaseViewTest):
                 [preview] = self._preview_import(payload)
 
         self.assertEqual(preview["summary"]["updated"], 1)
+
+    def test_import_preview_reports_an_attribute_the_user_cannot_write(self):
+        entry = self.add_entry(self.user, "test-entry", self.entity, values={"val": "before"})
+        attr = entry.attrs.get(schema__name="val")
+        attr.is_public = False
+        attr.default_permission = ACLType.Readable.id
+        attr.save(update_fields=["is_public", "default_permission"])
+
+        other = self._create_user("other")
+        self.client.force_login(other)
+
+        payload = yaml.dump(
+            [
+                {
+                    "entity": self.entity.name,
+                    "entries": [
+                        {"name": "test-entry", "attrs": [{"name": "val", "value": "after"}]}
+                    ],
+                }
+            ]
+        )
+
+        [preview] = self._preview_import(payload)
+
+        # The import would leave this attribute alone. Calling that "unchanged"
+        # would be true but misleading -- the file does ask for a change.
+        [row] = preview["rows"]
+        self.assertEqual(row["action"], "skip")
+        self.assertEqual(row["reason"], "permission_denied")
 
     def test_import_preview_warns_about_references_it_cannot_resolve(self):
         payload = yaml.dump(

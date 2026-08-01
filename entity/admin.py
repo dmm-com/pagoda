@@ -13,12 +13,8 @@ admin.site.register(EntityAttr)
 admin.site.register(Entity)
 
 
-def check_entity_row(row: dict[str, Any], known_entity_names: set[str] | None = None) -> None:
-    """Reject an Entity row the import could not accept. Raises RuntimeError.
-
-    ``known_entity_names`` lets a caller treat models as existing that do not
-    exist yet -- the import preview uses it for models the same file creates.
-    """
+def check_entity_row(row: dict[str, Any]) -> None:
+    """Reject an Entity row the import could not accept. Raises RuntimeError."""
     duplicated = Entity.objects.filter(name=row["name"]).first()
     if duplicated and ("id" not in row or not row["id"] or duplicated.id != int(row["id"])):
         raise RuntimeError("There is a duplicate entity object (%s)" % row["name"])
@@ -27,7 +23,11 @@ def check_entity_row(row: dict[str, Any], known_entity_names: set[str] | None = 
 def check_entity_attr_row(
     row: dict[str, Any], is_new: bool, known_entity_names: set[str] | None = None
 ) -> None:
-    """Reject an EntityAttr row the import could not accept. Raises RuntimeError."""
+    """Reject an EntityAttr row the import could not accept. Raises RuntimeError.
+
+    ``known_entity_names`` lets a caller treat models as existing that do not
+    exist yet -- the import preview uses it for models the same file creates.
+    """
     known = known_entity_names or set()
 
     def _exists(name: str) -> bool:

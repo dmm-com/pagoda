@@ -775,8 +775,13 @@ def _is_stale(
         return False
 
     baseline = baselines.get(entry_data["name"])
-    if baseline is None or baseline["entry_id"] != entry.id:
+    if baseline is None:
         return False
+
+    # The preview described a different item than the one the import found --
+    # either it was going to create this name, or it matched something else.
+    if baseline["entry_id"] != entry.id:
+        return True
 
     current = _latest_value_ids(entry, [int(x["id"]) for x in entry_data.get("attrs", [])])
     return current != baseline["values"]
@@ -1320,11 +1325,10 @@ def _unresolved_referrals(raw_value: Any, converted_value: Any) -> list[str]:
 def import_entries_preview_v2(self: Task, job: Job) -> JobStatus:
     """Report what importing this file would do to the items of one model.
 
-    Unlike the model import preview, this never writes: applying an item import
-    also reindexes Elasticsearch and queues webhook and trigger jobs, none of
-    which a transaction could take back. What it does instead is run the same
-    decisions the import runs -- the same serializers for validation, the same
-    Attribute.is_updated() for change detection -- and stop before the write.
+    It touches no item and no value: it runs the same decisions the import runs
+    -- the same serializers for validation, the same Attribute.is_updated() for
+    change detection -- and stops before the write. The only thing it writes is
+    its own progress, onto the job row it runs as.
     """
     user: User = job.user
     entity = Entity.objects.get(id=job.target.id)
@@ -1394,7 +1398,7 @@ def _preview_one_entry(
         return
 
     warnings = _collect_unresolved(entry_data, raw_entry)
-    changes = _collect_attr_changes(user, entity, entry, entry_data, raw_entry)
+    changes, denied = _collect_attr_changes(user, entity, entry, entry_data, raw_entry)
 
     # Importing fires triggers, which change values the file never mentions.
     # Read-only: this asks which actions would match, it does not run them.
@@ -1410,11 +1414,26 @@ def _preview_one_entry(
             reason="; ".join(warnings) or None,
             changes=changes,
             will_invoke_trigger=will_invoke_trigger,
+            # Recorded even for a creation, so that an item somebody else creates
+            # under this name in the meantime is not silently updated instead.
+            baseline={"entry_id": None, "values": {}},
         )
         return
 
     if entry.name != name:
         changes.insert(0, {"field": "name", "before": entry.name, "after": name})
+
+    if not changes and denied:
+        # Reporting this as "unchanged" would be true but misleading: the file
+        # does ask for a change, the user just cannot make it.
+        collector.add(
+            kind="Item",
+            name=name,
+            action="skip",
+            reason="permission_denied",
+            will_invoke_trigger=will_invoke_trigger,
+        )
+        return
 
     collector.add(
         kind="Item",
@@ -1466,10 +1485,17 @@ def _collect_attr_changes(
     entry: Entry | None,
     entry_data: dict[str, Any],
     raw_entry: dict[str, Any],
-) -> list[dict[str, str | None]]:
+) -> tuple[list[dict[str, str | None]], bool]:
+    """Return the differences the import would apply, and whether any were withheld.
+
+    An attribute the user cannot write is silently left alone by the import, so
+    the preview has to know the difference between "nothing to do" and "not
+    allowed to do it".
+    """
     raw_by_name = {x["name"]: x.get("value") for x in raw_entry.get("attrs", [])}
     attrs_data = entry_data.get("attrs", [])
     changes: list[dict[str, str | None]] = []
+    denied = False
 
     for entity_attr in entity.attrs.filter(is_active=True):
         attr_data = next((x for x in attrs_data if int(x["id"]) == entity_attr.id), None)
@@ -1488,6 +1514,7 @@ def _collect_attr_changes(
             continue
 
         if not user.has_permission(attr, ACLType.Writable):
+            denied = denied or attr.is_updated(attr_data["value"])
             continue
 
         if attr.is_updated(attr_data["value"]):
@@ -1499,4 +1526,4 @@ def _collect_attr_changes(
                 }
             )
 
-    return changes
+    return changes, denied

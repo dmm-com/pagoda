@@ -39,8 +39,8 @@ jest.mock("encoding-japanese", () => ({
   convert: jest.fn().mockReturnValue("Entity: []"),
 }));
 
-const mockCancelJob = jest.fn();
-const mockDownloadImportPreview = jest.fn();
+const mockCancelJob = jest.fn().mockResolvedValue(undefined);
+const mockDownloadImportPreview = jest.fn().mockResolvedValue(undefined);
 jest.mock("repository/AironeApiClient", () => ({
   aironeApiClient: {
     cancelJob: (...args: unknown[]) => mockCancelJob(...args),
@@ -112,6 +112,10 @@ const previewWith = (
 describe("ImportForm", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    // The real client returns promises; a bare jest.fn() would not, and the code
+    // chains onto what it gets back.
+    mockCancelJob.mockResolvedValue(undefined);
+    mockDownloadImportPreview.mockResolvedValue(undefined);
     // Ensure File.prototype.arrayBuffer is mocked for encoding detection
     if (global.File && global.File.prototype) {
       global.File.prototype.arrayBuffer = jest

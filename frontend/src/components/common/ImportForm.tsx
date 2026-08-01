@@ -173,24 +173,32 @@ export const ImportForm: FC<Props> = ({
 
   const onLoadMore = () => readPage(actions, preview?.rows.length ?? 0);
 
-  // Previewing a large file takes as long as importing it, so it has to be
-  // possible to give up on one -- which is why previews run as cancelable jobs.
   const onDownloadPreview = async () => {
-    await Promise.all(
-      previewJobIds.current.map((jobId) =>
-        aironeApiClient.downloadImportPreview(
-          jobId,
-          previewJobIds.current.length > 1
-            ? `import_preview_${jobId}.csv`
-            : "import_preview.csv",
+    try {
+      await Promise.all(
+        previewJobIds.current.map((jobId) =>
+          aironeApiClient.downloadImportPreview(
+            jobId,
+            previewJobIds.current.length > 1
+              ? `import_preview_${jobId}.csv`
+              : "import_preview.csv",
+          ),
         ),
-      ),
-    );
+      );
+    } catch (e) {
+      await reportError(e, "変更内容のダウンロードに失敗しました");
+    }
   };
 
+  // Previewing a large file takes as long as importing it, so it has to be
+  // possible to give up on one -- which is why previews run as cancelable jobs.
+  // The polling loop notices the cancellation and reports it; a job that has
+  // just finished refuses to be cancelled, which is not worth telling anyone.
   const onCancelPreview = async () => {
     await Promise.all(
-      previewJobIds.current.map((jobId) => aironeApiClient.cancelJob(jobId)),
+      previewJobIds.current.map((jobId) =>
+        aironeApiClient.cancelJob(jobId).catch(() => undefined),
+      ),
     );
   };
 
