@@ -39,6 +39,13 @@ jest.mock("encoding-japanese", () => ({
   convert: jest.fn().mockReturnValue("Entity: []"),
 }));
 
+const mockCancelJob = jest.fn();
+jest.mock("repository/AironeApiClient", () => ({
+  aironeApiClient: {
+    cancelJob: (...args: unknown[]) => mockCancelJob(...args),
+  },
+}));
+
 const mockWaitForImportPreviews = jest.fn();
 const mockFetchImportPreviewPage = jest.fn();
 jest.mock("services/ImportPreviewJob", () => ({
@@ -270,6 +277,30 @@ describe("ImportForm", () => {
       [7],
       expect.objectContaining({ offset: 1 }),
     );
+  });
+
+  test("should let the user give up on a preview that is still running", async () => {
+    // Previewing a large file takes as long as importing it, so the wait has to
+    // be escapable -- which is why previews run as cancelable jobs.
+    mockWaitForImportPreviews.mockReturnValue(new Promise(() => {}));
+
+    render(
+      <ImportForm
+        handleImport={jest.fn()}
+        handlePreview={jest.fn().mockResolvedValue([7, 8])}
+      />,
+      { wrapper: TestWrapper },
+    );
+    selectFile(new File(["Entity: []"], "entity.yaml"));
+    fireEvent.click(screen.getByTestId("preview-import-file"));
+
+    await waitFor(() =>
+      expect(screen.getByTestId("cancel-import-preview")).toBeInTheDocument(),
+    );
+    fireEvent.click(screen.getByTestId("cancel-import-preview"));
+
+    await waitFor(() => expect(mockCancelJob).toHaveBeenCalledWith(7));
+    expect(mockCancelJob).toHaveBeenCalledWith(8);
   });
 
   test("should let the user import without previewing", async () => {

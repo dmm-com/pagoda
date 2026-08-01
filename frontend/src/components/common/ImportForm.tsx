@@ -60,7 +60,9 @@ export const ImportForm: FC<Props> = ({
   const [file, setFile] = useState<File>();
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [preview, setPreview] = useState<ImportPreview>();
-  const [previewJobIds, setPreviewJobIds] = useState<number[]>([]);
+  // A ref, not state: the cancel button is on screen before the jobs have been
+  // started, and it has to reach the ids the moment they exist.
+  const previewJobIds = useRef<number[]>([]);
   const [actions, setActions] = useState<ImportPreviewAction[]>([]);
   const [processing, setProcessing] = useState(false);
   const [progress, setProgress] = useState<string>();
@@ -81,7 +83,7 @@ export const ImportForm: FC<Props> = ({
   const onChange = (event: ChangeEvent<HTMLInputElement>) => {
     event.target.files && setFile(event.target.files[0]);
     setPreview(undefined);
-    setPreviewJobIds([]);
+    previewJobIds.current = [];
     setActions([]);
     setErrorMessage("");
   };
@@ -119,7 +121,7 @@ export const ImportForm: FC<Props> = ({
     setProgress("変更内容を確認しています...");
     try {
       const jobIds = await handlePreview(await readFileAsText(file));
-      setPreviewJobIds(jobIds);
+      previewJobIds.current = jobIds;
       setPreview(
         await waitForImportPreviews(jobIds, {
           onProgress: setProgress,
@@ -143,7 +145,7 @@ export const ImportForm: FC<Props> = ({
   ) => {
     setProcessing(true);
     try {
-      const page = await fetchImportPreviewPage(previewJobIds, {
+      const page = await fetchImportPreviewPage(previewJobIds.current, {
         action: nextActions,
         offset,
         limit: ImportPreviewParam.MAX_ROW_COUNT,
@@ -171,7 +173,7 @@ export const ImportForm: FC<Props> = ({
   // possible to give up on one -- which is why previews run as cancelable jobs.
   const onCancelPreview = async () => {
     await Promise.all(
-      previewJobIds.map((jobId) => aironeApiClient.cancelJob(jobId)),
+      previewJobIds.current.map((jobId) => aironeApiClient.cancelJob(jobId)),
     );
   };
 
