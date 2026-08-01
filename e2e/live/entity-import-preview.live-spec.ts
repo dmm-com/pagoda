@@ -94,6 +94,7 @@ test.afterAll(() => {
     summary: [
       "The real frontend bundle ran against a real Django server and database.",
       "A model import file was previewed before being applied, over a generated dataset of ~60 models and ~1800 items.",
+      "The preview ran as a background job: the request only started it, and the dialog polled until it finished.",
       "The preview reported a creation, a field-level update and a row the importer would otherwise drop silently.",
       "The database was verified to be untouched while the preview was on screen, and to match the preview after importing.",
     ],
@@ -142,9 +143,22 @@ test("previews what a model import would change, and changes nothing until asked
     buffer: Buffer.from(importFile, "utf-8"),
   });
 
+  // Previewing is something the user opts into: both buttons are offered, and
+  // "インポート" alone would import the file without ever building a preview.
+  await expect(page.getByTestId("preview-import-file")).toBeEnabled();
+  await captureEvidence(page, testInfo, {
+    name: "entity-import-preview-optional",
+    title: "Previewing is optional",
+    note:
+      "After choosing a file the dialog offers 変更内容を確認 next to インポート." +
+      " Nothing is previewed unless the user asks for it, so a hurried import" +
+      " stays a single click.",
+  });
+
   await page.getByTestId("preview-import-file").click();
+  // The preview runs as a job, so the dialog waits on it before showing rows.
   const preview = page.getByTestId("import-preview");
-  await expect(preview).toBeVisible();
+  await expect(preview).toBeVisible({ timeout: 60_000 });
 
   await expect(preview.getByText("新規作成 1")).toBeVisible();
   await expect(preview.getByText("更新 1")).toBeVisible();

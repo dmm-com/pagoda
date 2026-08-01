@@ -14,7 +14,7 @@ from airone.lib.acl import ACLObjType
 from airone.lib.drf import FileIsNotExistsError, InvalidValueError, JobIsNotDoneError
 from airone.lib.http import get_download_response
 from entry.models import Entry
-from job.api_v2.serializers import JobSerializers
+from job.api_v2.serializers import ImportPreviewSerializer, JobSerializers
 from job.models import Job, JobOperation, JobStatus
 from user.models import User
 
@@ -83,6 +83,65 @@ class JobAPI(viewsets.ModelViewSet[Job]):
                 raise FileIsNotExistsError("Target file is not exists")
 
         return cast(Response, get_download_response(io_stream, job.text, encode_param))
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter("offset", OpenApiTypes.INT, OpenApiParameter.QUERY, default=0),
+            OpenApiParameter("limit", OpenApiTypes.INT, OpenApiParameter.QUERY, default=100),
+        ],
+        responses={200: ImportPreviewSerializer},
+    )
+    def preview(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        """Return the result of a preview job, one page of rows at a time.
+
+        The whole preview is kept as a single cached payload, so the rows are
+        paged out from here rather than queried: a preview of a large file can
+        run to thousands of rows, and no client wants them in one response.
+        """
+        job: Job = self.get_object()
+
+        if job.user != request.user:
+            return Response("Cannot read another user's job", status=status.HTTP_403_FORBIDDEN)
+
+        if job.operation not in Job.PREVIEW_OPERATIONS:
+            raise InvalidValueError("Target job has no preview")
+
+        if job.status != JobStatus.DONE:
+            raise JobIsNotDoneError("Target job has not yet done")
+
+        try:
+            payload = job.get_cache()
+        except OSError as e:
+            # errno.ENOENT is the errno of FileNotFoundError
+            if e.errno == errno.ENOENT:
+                raise FileIsNotExistsError("Target file is not exists")
+            raise
+
+        rows = payload["rows"]
+        offset = _query_int(request, "offset", default=0)
+        limit = _query_int(request, "limit", default=100)
+
+        return Response(
+            {
+                "summary": payload["summary"],
+                "count": len(rows),
+                "truncated": payload["truncated"],
+                "rows": rows[offset : offset + limit],
+            }
+        )
+
+
+def _query_int(request: Request, name: str, default: int) -> int:
+    raw = request.query_params.get(name)
+    if raw is None:
+        return default
+    try:
+        value = int(raw)
+    except ValueError:
+        raise InvalidValueError("'%s' must be an integer" % name)
+    if value < 0:
+        raise InvalidValueError("'%s' must not be negative" % name)
+    return value
 
 
 @extend_schema(

@@ -25,6 +25,7 @@ from rest_framework.exceptions import PermissionDenied, ValidationError
 from airone.lib import custom_view, drf
 from airone.lib.acl import ACLType, get_permission_level
 from airone.lib.drf import DuplicatedObjectExistsError, ObjectNotExistsError, RequiredParameterError
+from airone.lib.import_preview import PreviewCollector
 from airone.lib.log import Logger
 from airone.lib.types import AttrType, AttrTypeValue
 from entity.admin import EntityAttrResource, EntityResource
@@ -1602,15 +1603,8 @@ class _PreviewRollback(Exception):
     """Internal signal to roll back the transaction that an import preview runs in."""
 
 
-# Summary keys are past tense because "create"/"update" would shadow
-# rest_framework.serializers.BaseSerializer.create()/update().
-PREVIEW_SUMMARY_KEYS: dict[str, str] = {
-    "create": "created",
-    "update": "updated",
-    "unchanged": "unchanged",
-    "skip": "skipped",
-    "error": "errored",
-}
+class _PreviewCanceled(_PreviewRollback):
+    """Raised when the user cancels a preview job; rolls back like a finished one."""
 
 
 # The format keeps compatibility with entity.views and dashboard.views
@@ -1642,7 +1636,7 @@ class EntityImportExportRootSerializer(serializers.Serializer[dict[str, Any]]):
         _do_import(EntityResource, self.validated_data["Entity"])
         _do_import(EntityAttrResource, self.validated_data["EntityAttr"])
 
-    def build_preview(self) -> dict[str, Any]:
+    def build_preview(self, job: "Job | None" = None) -> dict[str, Any]:
         """Report what save() would change, without leaving anything behind.
 
         The rows are imported for real inside a transaction that is always rolled
@@ -1650,34 +1644,45 @@ class EntityImportExportRootSerializer(serializers.Serializer[dict[str, Any]]):
         what makes the preview trustworthy: every validation, permission check and
         cross-row dependency behaves exactly as it would on import -- in particular
         an EntityAttr can refer to an Entity created earlier in the same file.
+
+        When a job is given, its text reports progress and its cancellation stops
+        the walk: this runs on a worker, and a preview of a large file takes as
+        long as the import it is previewing.
         """
         request = self.context.get("request")
         assert request is not None, "EntityImportExportRootSerializer requires 'request' context"
         user: User = request.user
 
-        rows: list[dict[str, Any]] = []
+        collector = PreviewCollector()
+        total = len(self.validated_data["Entity"]) + len(self.validated_data["EntityAttr"])
 
         def _do_preview(
             resource: type[AironeModelResource], iter_data: list[dict[str, Any]]
         ) -> None:
-            for index, data in enumerate(iter_data):
+            for data in iter_data:
+                if job is not None:
+                    job.text = "Now previewing... (progress: [%5d/%5d])" % (
+                        collector.summary["total"] + 1,
+                        total,
+                    )
+                    job.save(update_fields=["text"])
+                    if job.is_canceled():
+                        raise _PreviewCanceled()
+
                 preview_row = resource.preview_data_from_request(data, user)
-                rows.append(
-                    {
-                        "index": index,
-                        "kind": resource._meta.model.__name__,
-                        "name": preview_row.name,
-                        "action": preview_row.action,
-                        "reason": preview_row.reason,
-                        "changes": [
-                            {
-                                "field": change.field_name,
-                                "before": change.before,
-                                "after": change.after,
-                            }
-                            for change in preview_row.changes
-                        ],
-                    }
+                collector.add(
+                    kind=resource._meta.model.__name__,
+                    name=preview_row.name,
+                    action=preview_row.action,
+                    reason=preview_row.reason,
+                    changes=[
+                        {
+                            "field": change.field_name,
+                            "before": change.before,
+                            "after": change.after,
+                        }
+                        for change in preview_row.changes
+                    ],
                 )
 
         try:
@@ -1688,43 +1693,7 @@ class EntityImportExportRootSerializer(serializers.Serializer[dict[str, Any]]):
         except _PreviewRollback:
             pass
 
-        summary = {key: 0 for key in PREVIEW_SUMMARY_KEYS.values()}
-        for row in rows:
-            summary[PREVIEW_SUMMARY_KEYS[row["action"]]] += 1
-        summary["total"] = len(rows)
-
-        return {"summary": summary, "rows": rows}
-
-
-class EntityImportPreviewChangeSerializer(serializers.Serializer[dict[str, Any]]):
-    field = serializers.CharField()
-    before = serializers.CharField(allow_null=True)
-    after = serializers.CharField(allow_null=True)
-
-
-class EntityImportPreviewRowSerializer(serializers.Serializer[dict[str, Any]]):
-    index = serializers.IntegerField()
-    kind = serializers.CharField(help_text="Entity or EntityAttr")
-    name = serializers.CharField()
-    action = serializers.ChoiceField(choices=["create", "update", "unchanged", "skip", "error"])
-    reason = serializers.CharField(allow_null=True)
-    changes = EntityImportPreviewChangeSerializer(many=True)
-
-
-class EntityImportPreviewSummarySerializer(serializers.Serializer[dict[str, Any]]):
-    # The keys are past tense because "create"/"update" would shadow
-    # BaseSerializer.create()/update().
-    created = serializers.IntegerField()
-    updated = serializers.IntegerField()
-    unchanged = serializers.IntegerField()
-    skipped = serializers.IntegerField()
-    errored = serializers.IntegerField()
-    total = serializers.IntegerField()
-
-
-class EntityImportPreviewSerializer(serializers.Serializer[dict[str, Any]]):
-    summary = EntityImportPreviewSummarySerializer()
-    rows = EntityImportPreviewRowSerializer(many=True)
+        return collector.payload()
 
 
 class EntityAttrIDandNameSerializer(serializers.Serializer[dict[str, Any]]):

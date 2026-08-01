@@ -50,6 +50,10 @@ export const ImportPreviewSummaryKey: Record<
 export interface ImportPreview {
   summary: ImportPreviewSummary;
   rows: ImportPreviewRow[];
+  /** How many rows the preview can list; the summary may cover more. */
+  count: number;
+  /** True when the file has more rows than the preview kept in detail. */
+  truncated: boolean;
 }
 
 export const ImportPreviewActionLabel: Record<ImportPreviewAction, string> = {

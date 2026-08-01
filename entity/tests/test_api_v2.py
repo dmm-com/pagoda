@@ -2,6 +2,7 @@ import datetime
 import json
 import logging
 from unittest import mock
+from urllib.parse import urlencode
 
 import requests
 import yaml
@@ -14,7 +15,6 @@ from acl.models import ACLBase, ACLType
 from airone.lib.log import Logger
 from airone.lib.test import AironeViewTest
 from airone.lib.types import AttrType
-from entity import settings as entity_settings
 from entity import tasks
 from entity.models import Entity, EntityAttr, ItemNameType
 from entry.models import Entry
@@ -3682,6 +3682,23 @@ class ViewTest(AironeViewTest):
         self.entity.attrs.all().delete()
         self.entity.delete()
 
+    def _preview_import(self, payload, **params):
+        """Start a preview job, run it inline, and read the result back."""
+        with mock.patch(
+            "entity.tasks.import_entities_preview_v2.delay",
+            mock.Mock(side_effect=tasks.import_entities_preview_v2),
+        ):
+            resp = self.client.post(
+                "/entity/api/v2/import/preview", payload, content_type="application/yaml"
+            )
+        self.assertEqual(resp.status_code, 202)
+
+        job_id = resp.json()["job_id"]
+        query = "?" + urlencode(params) if params else ""
+        preview = self.client.get("/job/api/v2/%d/preview%s" % (job_id, query))
+        self.assertEqual(preview.status_code, 200)
+        return preview.json()
+
     def test_import_preview_reports_creations_without_writing(self):
         self.admin_login()
         self._clear_entities()
@@ -3690,13 +3707,9 @@ class ViewTest(AironeViewTest):
         attr_count = EntityAttr.objects.filter(is_active=True).count()
 
         fp = self.open_fixture_file("entity.yaml")
-        resp = self.client.post(
-            "/entity/api/v2/import/preview", fp.read(), content_type="application/yaml"
-        )
+        body = self._preview_import(fp.read())
         fp.close()
-        self.assertEqual(resp.status_code, 200)
 
-        body = resp.json()
         # 3 Entities and 4 EntityAttrs would be created
         self.assertEqual(body["summary"]["created"], 7)
         self.assertEqual(body["summary"]["total"], 7)
@@ -3734,26 +3747,15 @@ class ViewTest(AironeViewTest):
         # EntityAttr row that carries no id: the importer cannot match it against the
         # existing attribute and creates a duplicate. That is existing import behavior,
         # and being able to see it beforehand is exactly the point of the preview.
-        resp = self.client.post(
-            "/entity/api/v2/import/preview", payload, content_type="application/yaml"
-        )
-        self.assertEqual(resp.status_code, 200)
-        self.assertEqual(resp.json()["summary"]["unchanged"], 6)
-        self.assertEqual(resp.json()["summary"]["updated"], 0)
-        self.assertEqual(
-            [x["name"] for x in resp.json()["rows"] if x["action"] == "create"], ["attr-str"]
-        )
+        body = self._preview_import(payload)
+        self.assertEqual(body["summary"]["unchanged"], 6)
+        self.assertEqual(body["summary"]["updated"], 0)
+        self.assertEqual([x["name"] for x in body["rows"] if x["action"] == "create"], ["attr-str"])
 
         # changing a single value is reported as that single field's difference
         changed = yaml.safe_load(payload)
         changed["Entity"][2]["note"] = "note1-updated"
-        resp = self.client.post(
-            "/entity/api/v2/import/preview",
-            yaml.dump(changed),
-            content_type="application/yaml",
-        )
-        self.assertEqual(resp.status_code, 200)
-        body = resp.json()
+        body = self._preview_import(yaml.dump(changed))
         self.assertEqual(body["summary"]["updated"], 1)
         self.assertEqual(body["summary"]["unchanged"], 5)
 
@@ -3771,13 +3773,9 @@ class ViewTest(AironeViewTest):
         self._clear_entities()
 
         fp = self.open_fixture_file("entity_without_mandatory_param.yaml")
-        resp = self.client.post(
-            "/entity/api/v2/import/preview", fp.read(), content_type="application/yaml"
-        )
+        body = self._preview_import(fp.read())
         fp.close()
-        self.assertEqual(resp.status_code, 200)
 
-        body = resp.json()
         # These rows are only logged as warnings by the real import, so the preview is
         # the sole way for a user to notice them beforehand.
         self.assertEqual(body["summary"]["errored"], 3)
@@ -3791,17 +3789,37 @@ class ViewTest(AironeViewTest):
             ],
         )
 
-    def test_import_preview_rejects_too_many_rows(self):
+    def test_import_preview_pages_its_rows(self):
         self.admin_login()
+        self._clear_entities()
 
-        with mock.patch.object(entity_settings.CONFIG, "conf", {"MAX_IMPORT_PREVIEW_ROWS": 1}):
-            fp = self.open_fixture_file("entity.yaml")
-            resp = self.client.post(
-                "/entity/api/v2/import/preview", fp.read(), content_type="application/yaml"
-            )
-            fp.close()
+        fp = self.open_fixture_file("entity.yaml")
+        payload = fp.read()
+        fp.close()
 
-        self.assertEqual(resp.status_code, 400)
+        body = self._preview_import(payload, offset=2, limit=3)
+        # The summary always covers the whole file, however few rows are listed
+        self.assertEqual(body["summary"]["total"], 7)
+        self.assertEqual(body["count"], 7)
+        self.assertFalse(body["truncated"])
+        self.assertEqual(len(body["rows"]), 3)
+        self.assertEqual([x["index"] for x in body["rows"]], [2, 3, 4])
+
+    def test_import_preview_keeps_the_summary_exact_when_rows_are_capped(self):
+        self.admin_login()
+        self._clear_entities()
+
+        fp = self.open_fixture_file("entity.yaml")
+        payload = fp.read()
+        fp.close()
+
+        with mock.patch("airone.lib.import_preview.PREVIEW_MAX_DETAIL_ROWS", 2):
+            body = self._preview_import(payload)
+
+        self.assertEqual(body["summary"]["total"], 7)
+        self.assertEqual(body["summary"]["created"], 7)
+        self.assertEqual(body["count"], 2)
+        self.assertTrue(body["truncated"])
 
     def test_import_with_unnecessary_param(self):
         self.admin_login()

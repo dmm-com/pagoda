@@ -66,6 +66,7 @@ import {
 } from "components/common/ImportPreview";
 import {
   AdvancedSerarchResultListParam,
+  ImportPreviewParam,
   EntityHistoryListParam,
   EntityListParam,
   EntryHistoryListParam,
@@ -375,11 +376,53 @@ class AironeApiClient {
     );
   }
 
-  async previewImportEntities(
+  async startImportEntitiesPreview(
     data: string | ArrayBuffer,
-  ): Promise<ImportPreview> {
-    const preview = await this.entity.entityApiV2ImportPreviewCreate(
+  ): Promise<number> {
+    const { jobId } = await this.entity.entityApiV2ImportPreviewCreate(
       { entityImportExportRoot: { entity: [], entityAttr: [] } },
+      {
+        headers: {
+          "Content-Type": "application/yaml",
+          "X-CSRFToken": getCsrfToken(),
+        },
+        body: new Blob([data]),
+      },
+    );
+    return jobId;
+  }
+
+  async getImportPreview(
+    jobId: number,
+    offset = 0,
+    limit = ImportPreviewParam.MAX_ROW_COUNT,
+  ): Promise<ImportPreview> {
+    const preview = await this.job.jobApiV2PreviewRetrieve({
+      id: jobId,
+      offset,
+      limit,
+    });
+
+    return {
+      summary: preview.summary,
+      count: preview.count,
+      truncated: preview.truncated,
+      rows: preview.rows.map((row) => ({
+        index: row.index,
+        kind: row.kind,
+        name: row.name,
+        action: row.action as ImportPreviewAction,
+        reason: row.reason,
+        changes: row.changes,
+      })),
+    };
+  }
+
+  async startImportEntriesPreview(
+    data: string | ArrayBuffer,
+  ): Promise<{ jobIds: number[]; errors: string[] }> {
+    const { result } = await this.entry.entryApiV2ImportPreviewCreate(
+      { entryImportEntity: [] },
       {
         headers: {
           "Content-Type": "application/yaml",
@@ -390,15 +433,8 @@ class AironeApiClient {
     );
 
     return {
-      summary: preview.summary,
-      rows: preview.rows.map((row) => ({
-        index: row.index,
-        kind: row.kind,
-        name: row.name,
-        action: row.action as ImportPreviewAction,
-        reason: row.reason,
-        changes: row.changes,
-      })),
+      jobIds: result.jobs.map((job) => job.jobId),
+      errors: result.error,
     };
   }
 
@@ -1156,6 +1192,10 @@ class AironeApiClient {
       targetId,
       allUsers,
     });
+  }
+
+  async getJob(id: number): Promise<JobSerializers> {
+    return await this.job.jobApiV2Retrieve({ id });
   }
 
   async getRecentJobs(): Promise<Array<JobSerializers>> {

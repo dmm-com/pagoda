@@ -1,10 +1,11 @@
 import { Box, Checkbox, Typography } from "@mui/material";
-import { FC, useState } from "react";
+import { FC, useCallback, useState } from "react";
 
 import { AironeModal } from "../common/AironeModal";
 
 import { ImportForm } from "components/common/ImportForm";
 import { aironeApiClient } from "repository/AironeApiClient";
+import { ImportPreviewFailure } from "services/ImportPreviewJob";
 
 interface Props {
   openImportModal: boolean;
@@ -16,6 +17,18 @@ export const EntryImportModal: FC<Props> = ({
   closeImportModal,
 }) => {
   const [forceImport, setForceImport] = useState(false);
+
+  const handlePreview = useCallback(async (data: string | ArrayBuffer) => {
+    const { jobIds, errors } =
+      await aironeApiClient.startImportEntriesPreview(data);
+    if (jobIds.length === 0) {
+      // Nothing can be previewed: every model in the file was rejected.
+      throw new ImportPreviewFailure(
+        errors.join(" / ") || "プレビューできるモデルがありませんでした",
+      );
+    }
+    return jobIds;
+  }, []);
 
   return (
     <AironeModal
@@ -40,6 +53,7 @@ export const EntryImportModal: FC<Props> = ({
             aironeApiClient.importEntries(data, forceImport)
           }
           handleCancel={closeImportModal}
+          handlePreview={handlePreview}
         />
       </Box>
     </AironeModal>

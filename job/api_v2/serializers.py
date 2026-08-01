@@ -83,3 +83,56 @@ class JobSerializers(serializers.ModelSerializer[Job]):
             return math.floor((obj.updated_at - obj.created_at).total_seconds())
         else:
             return math.floor((datetime.now(timezone.utc) - obj.created_at).total_seconds())
+
+
+class ImportPreviewChangeSerializer(serializers.Serializer[dict[str, Any]]):
+    field = serializers.CharField()
+    before = serializers.CharField(allow_null=True)
+    after = serializers.CharField(allow_null=True)
+
+
+class ImportPreviewRowSerializer(serializers.Serializer[dict[str, Any]]):
+    index = serializers.IntegerField()
+    kind = serializers.CharField(help_text="What the row describes, e.g. Entity or EntityAttr")
+    name = serializers.CharField()
+    action = serializers.ChoiceField(choices=["create", "update", "unchanged", "skip", "error"])
+    reason = serializers.CharField(allow_null=True)
+    changes = ImportPreviewChangeSerializer(many=True)
+
+
+class ImportPreviewSummarySerializer(serializers.Serializer[dict[str, Any]]):
+    # Past tense because "create"/"update" would shadow BaseSerializer.create()/update().
+    created = serializers.IntegerField()
+    updated = serializers.IntegerField()
+    unchanged = serializers.IntegerField()
+    skipped = serializers.IntegerField()
+    errored = serializers.IntegerField()
+    total = serializers.IntegerField()
+
+
+class ImportPreviewSerializer(serializers.Serializer[dict[str, Any]]):
+    summary = ImportPreviewSummarySerializer()
+    rows = ImportPreviewRowSerializer(many=True)
+    count = serializers.IntegerField(help_text="Number of rows available to list")
+    truncated = serializers.BooleanField(
+        help_text="True when the summary covers more rows than can be listed"
+    )
+
+
+class ImportPreviewJobSerializer(serializers.Serializer[dict[str, Any]]):
+    job_id = serializers.IntegerField(help_text="Poll this job, then read its preview")
+
+
+class ImportPreviewJobForEntitySerializer(ImportPreviewJobSerializer):
+    entity = serializers.CharField(help_text="The model whose items this preview covers")
+
+
+class ImportPreviewJobsResultSerializer(serializers.Serializer[dict[str, Any]]):
+    jobs = ImportPreviewJobForEntitySerializer(many=True)
+    error = serializers.ListField(child=serializers.CharField())
+
+
+class ImportPreviewJobsSerializer(serializers.Serializer[dict[str, Any]]):
+    """One preview job per model, mirroring the shape of the item import API."""
+
+    result = ImportPreviewJobsResultSerializer()

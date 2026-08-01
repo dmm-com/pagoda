@@ -16,13 +16,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from airone.lib.acl import ACLType, get_permitted_objects
-from airone.lib.drf import (
-    EntryIsNotEmptyError,
-    ExceedLimitError,
-    ObjectNotExistsError,
-    YAMLParser,
-    YAMLRenderer,
-)
+from airone.lib.drf import EntryIsNotEmptyError, ObjectNotExistsError, YAMLParser, YAMLRenderer
 from airone.lib.http import http_get
 from airone.lib.plugin_dispatch import PluginOverrideMixin
 from entity.api_v2.serializers import (
@@ -31,14 +25,13 @@ from entity.api_v2.serializers import (
     EntityDetailSerializer,
     EntityHistorySerializer,
     EntityImportExportRootSerializer,
-    EntityImportPreviewSerializer,
     EntityListSerializer,
     EntityUpdateSerializer,
 )
 from entity.models import Entity, EntityAttr
-from entity.settings import CONFIG
 from entry.api_v2.serializers import EntryBaseSerializer, EntryCreateSerializer
 from entry.models import Entry
+from job.api_v2.serializers import ImportPreviewJobSerializer
 from job.models import Job
 from user.models import History, User
 
@@ -445,20 +438,23 @@ class EntityImportAPI(generics.GenericAPIView[Entity]):
 
 
 class EntityImportPreviewAPI(generics.GenericAPIView[Entity]):
-    """Report what an import file would change, without changing anything.
+    """Start a job that reports what an import file would change.
 
-    The preview is optional: clients may post straight to ``EntityImportAPI`` when
-    the user does not need it. It runs synchronously (as the import itself does),
-    so the number of rows is capped to keep a request worker from being occupied
-    for a long time.
+    Previewing walks the same rows the import walks, so it costs the same: it is
+    handed to a worker and this endpoint returns the job to poll, rather than
+    holding a request open for as long as the import would take. That also means
+    a preview has no row limit -- a file too big to preview in a request is
+    exactly the file whose preview is worth waiting for.
+
+    The preview stays optional: clients may post straight to ``EntityImportAPI``.
     """
 
     parser_classes = [YAMLParser]
-    serializer_class = EntityImportPreviewSerializer  # type: ignore[assignment]
+    serializer_class = ImportPreviewJobSerializer  # type: ignore[assignment]
 
     @extend_schema(
         request=EntityImportExportRootSerializer,
-        responses={200: EntityImportPreviewSerializer},
+        responses={202: ImportPreviewJobSerializer},
     )
     def post(self, request: Request) -> Response:
         user = cast(User, request.user)
@@ -470,17 +466,10 @@ class EntityImportPreviewAPI(generics.GenericAPIView[Entity]):
         )
         serializer.is_valid(raise_exception=True)
 
-        row_count = len(serializer.validated_data["Entity"]) + len(
-            serializer.validated_data["EntityAttr"]
-        )
-        max_rows: int = CONFIG.MAX_IMPORT_PREVIEW_ROWS
-        if row_count > max_rows:
-            raise ExceedLimitError(
-                "Preview is available for up to %d rows (this file has %d). "
-                "Import it without preview instead." % (max_rows, row_count)
-            )
+        job = Job.new_import_entity_preview(user, request.data)
+        job.run()
 
-        return Response(serializer.build_preview(), status=status.HTTP_200_OK)
+        return Response({"job_id": job.id}, status=status.HTTP_202_ACCEPTED)
 
 
 class EntityExportAPI(generics.RetrieveAPIView[Entity]):

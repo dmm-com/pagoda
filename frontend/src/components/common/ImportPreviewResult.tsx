@@ -82,7 +82,10 @@ export const ImportPreviewResult: FC<Props> = ({ preview }) => {
     );
   }, [preview.rows, showUnchanged]);
 
-  const hiddenCount = rows.length - Math.min(rows.length, MaxRenderedRows);
+  const hiddenCount =
+    rows.length -
+    Math.min(rows.length, MaxRenderedRows) +
+    (preview.summary.total - preview.count);
 
   return (
     <Box display="flex" flexDirection="column" data-testid="import-preview">
@@ -154,7 +157,7 @@ export const ImportPreviewResult: FC<Props> = ({ preview }) => {
 
       {hiddenCount > 0 && (
         <Typography variant="caption" my="4px">
-          {`ほか ${hiddenCount} 行は省略されています。`}
+          {`ほか ${hiddenCount} 行は一覧から省略されています（上のサマリは全 ${preview.summary.total} 行を集計しています）。`}
         </Typography>
       )}
     </Box>

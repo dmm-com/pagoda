@@ -25,6 +25,7 @@ from airone.lib.event_notification import (
     notify_entry_update,
 )
 from airone.lib.http import DRFRequest
+from airone.lib.import_preview import PreviewCollector
 from airone.lib.job import (
     may_schedule_until_job_is_ready,
     may_schedule_until_job_is_ready_with_handlers,
@@ -1212,3 +1213,213 @@ def bulk_update_entries(
     job.text = "Bulk update completed [%5d/%5d]" % (total_count, total_count)
     job.save(update_fields=["text"])
     return JobStatus.DONE
+
+
+def _render_import_value(value: Any) -> str:
+    """Render a value as the user wrote it in the import file."""
+    match value:
+        case None:
+            return ""
+        case bool():
+            return "true" if value else "false"
+        case list():
+            return ", ".join(_render_import_value(x) for x in value)
+        case dict():
+            return ", ".join("%s: %s" % (k, _render_import_value(v)) for k, v in value.items())
+        case _:
+            return str(value)
+
+
+def _render_stored_value(attr: Attribute) -> str:
+    """Render an attribute's current value.
+
+    Attribute.get_latest_value() creates an empty AttributeValue when there is
+    none, which a preview must never do, so the latest value is read directly.
+    """
+    attrv = attr.values.filter(is_latest=True).last()
+    if attrv is None:
+        return ""
+    return _render_import_value(attrv.get_value())
+
+
+def _unresolved_referrals(raw_value: Any, converted_value: Any) -> list[str]:
+    """Names the importer could not resolve, reported as 0 by the serializer.
+
+    A reference that cannot be resolved is silently stored as an empty value, so
+    a preview that did not surface it would hide the import's most damaging
+    failure mode.
+    """
+    match (raw_value, converted_value):
+        case (list(), list()) if len(raw_value) == len(converted_value):
+            return [
+                name
+                for raw, converted in zip(raw_value, converted_value)
+                for name in _unresolved_referrals(raw, converted)
+            ]
+        case (dict(), dict()):
+            # named object: {"name": ..., "id": <resolved>} against {"<name>": "<referral>"}
+            if converted_value.get("id") == 0:
+                return [_render_import_value(list(raw_value.values())[0])]
+            return []
+        case (_, 0) if raw_value:
+            return [_render_import_value(raw_value)]
+        case _:
+            return []
+
+
+@register_job_task(JobOperation.IMPORT_ENTRY_PREVIEW)
+@app.task(bind=True)  # type: ignore[misc]
+@may_schedule_until_job_is_ready
+def import_entries_preview_v2(self: Task, job: Job) -> JobStatus:
+    """Report what importing this file would do to the items of one model.
+
+    Unlike the model import preview, this never writes: applying an item import
+    also reindexes Elasticsearch and queues webhook and trigger jobs, none of
+    which a transaction could take back. What it does instead is run the same
+    decisions the import runs -- the same serializers for validation, the same
+    Attribute.is_updated() for change detection -- and stop before the write.
+    """
+    user: User = job.user
+    entity = Entity.objects.get(id=job.target.id)
+    raw_data = json.loads(job.params)
+
+    import_serializer = EntryImportEntitySerializer(data=raw_data)
+    if not import_serializer.is_valid():
+        return JobStatus.ERROR
+
+    context = {"request": DRFRequest(user)}
+    collector = PreviewCollector()
+
+    raw_entries = raw_data.get("entries", [])
+    entries = import_serializer.validated_data["entries"]
+    total_count = len(entries)
+
+    for index, entry_data in enumerate(entries):
+        job.text = "Now previewing... (progress: [%5d/%5d])" % (index + 1, total_count)
+        job.save(update_fields=["text"])
+
+        if job.is_canceled():
+            return JobStatus.CANCELED
+
+        raw_entry = raw_entries[index] if index < len(raw_entries) else {}
+        _preview_one_entry(user, entity, entry_data, raw_entry, context, collector)
+
+    job.set_cache(collector.payload())
+
+    return JobStatus.DONE
+
+
+def _preview_one_entry(
+    user: User,
+    entity: Entity,
+    entry_data: dict[str, Any],
+    raw_entry: dict[str, Any],
+    context: dict[str, Any],
+    collector: PreviewCollector,
+) -> None:
+    entry_data = dict(entry_data, schema=entity)
+    name = entry_data["name"]
+
+    # Identify the Item the import would touch, exactly as import_entries_v2 does.
+    entry: Entry | None = None
+    if entry_data.get("id") is not None:
+        entry = Entry.objects.filter(id=entry_data["id"], schema=entity, is_active=True).first()
+    if not entry:
+        entry = Entry.objects.filter(name=name, schema=entity, is_active=True).first()
+
+    # Run the very serializer the import runs, but stop before save(): validation
+    # errors are reported here instead of being logged and counted as a failure.
+    serializer: EntryUpdateSerializer | EntryCreateSerializer = (
+        EntryUpdateSerializer(instance=entry, data=entry_data, context=context)
+        if entry
+        else EntryCreateSerializer(data=entry_data, context=context)
+    )
+    if not serializer.is_valid():
+        collector.add(
+            kind="Item",
+            name=name,
+            action="error",
+            reason="; ".join(
+                "%s: %s" % (field, ", ".join(str(x) for x in messages))
+                for field, messages in serializer.errors.items()
+            ),
+        )
+        return
+
+    warnings = _collect_unresolved(entry_data, raw_entry)
+    changes = _collect_attr_changes(user, entity, entry, entry_data, raw_entry)
+
+    if entry is None:
+        collector.add(
+            kind="Item",
+            name=name,
+            action="create",
+            reason="; ".join(warnings) or None,
+            changes=changes,
+        )
+        return
+
+    if entry.name != name:
+        changes.insert(0, {"field": "name", "before": entry.name, "after": name})
+
+    collector.add(
+        kind="Item",
+        name=name,
+        action="update" if changes else "unchanged",
+        reason="; ".join(warnings) or None,
+        changes=changes,
+    )
+
+
+def _collect_unresolved(entry_data: dict[str, Any], raw_entry: dict[str, Any]) -> list[str]:
+    raw_by_name = {x["name"]: x.get("value") for x in raw_entry.get("attrs", [])}
+    warnings: list[str] = []
+    for attr_data in entry_data.get("attrs", []):
+        unresolved = _unresolved_referrals(raw_by_name.get(attr_data["name"]), attr_data["value"])
+        if unresolved:
+            warnings.append(
+                "%s: 参照先が見つかりません (%s)" % (attr_data["name"], ", ".join(unresolved))
+            )
+    return warnings
+
+
+def _collect_attr_changes(
+    user: User,
+    entity: Entity,
+    entry: Entry | None,
+    entry_data: dict[str, Any],
+    raw_entry: dict[str, Any],
+) -> list[dict[str, str | None]]:
+    raw_by_name = {x["name"]: x.get("value") for x in raw_entry.get("attrs", [])}
+    attrs_data = entry_data.get("attrs", [])
+    changes: list[dict[str, str | None]] = []
+
+    for entity_attr in entity.attrs.filter(is_active=True):
+        attr_data = next((x for x in attrs_data if int(x["id"]) == entity_attr.id), None)
+        if attr_data is None:
+            continue
+
+        after = _render_import_value(raw_by_name.get(attr_data["name"]))
+
+        attr: Attribute | None = (
+            entry.attrs.filter(schema=entity_attr, is_active=True).first() if entry else None
+        )
+        if attr is None:
+            # The import would create the attribute; anything non-empty is a change.
+            if after:
+                changes.append({"field": entity_attr.name, "before": None, "after": after})
+            continue
+
+        if not user.has_permission(attr, ACLType.Writable):
+            continue
+
+        if attr.is_updated(attr_data["value"]):
+            changes.append(
+                {
+                    "field": entity_attr.name,
+                    "before": _render_stored_value(attr),
+                    "after": after,
+                }
+            )
+
+    return changes

@@ -39,6 +39,13 @@ jest.mock("encoding-japanese", () => ({
   convert: jest.fn().mockReturnValue("Entity: []"),
 }));
 
+const mockWaitForImportPreviews = jest.fn();
+jest.mock("services/ImportPreviewJob", () => ({
+  ...jest.requireActual("services/ImportPreviewJob"),
+  waitForImportPreviews: (...args: unknown[]) =>
+    mockWaitForImportPreviews(...args),
+}));
+
 // Mock react-router
 const mockNavigate = jest.fn();
 jest.mock("react-router", () => ({
@@ -122,7 +129,7 @@ describe("ImportForm", () => {
   });
 
   test("should show what the file would change before importing it", async () => {
-    const handlePreview = jest.fn().mockResolvedValue({
+    mockWaitForImportPreviews.mockResolvedValue({
       summary: {
         created: 1,
         updated: 0,
@@ -131,6 +138,8 @@ describe("ImportForm", () => {
         errored: 0,
         total: 1,
       },
+      count: 1,
+      truncated: false,
       rows: [
         {
           index: 0,
@@ -142,6 +151,7 @@ describe("ImportForm", () => {
         },
       ],
     });
+    const handlePreview = jest.fn().mockResolvedValue([42]);
 
     render(
       <ImportForm handleImport={jest.fn()} handlePreview={handlePreview} />,
@@ -157,6 +167,11 @@ describe("ImportForm", () => {
       expect(screen.getByTestId("import-preview")).toBeInTheDocument(),
     );
     expect(handlePreview).toHaveBeenCalledTimes(1);
+    // The form starts the jobs and then waits for them; it never previews inline.
+    expect(mockWaitForImportPreviews).toHaveBeenCalledWith(
+      [42],
+      expect.anything(),
+    );
     expect(screen.getByText("新規作成 1")).toBeInTheDocument();
     expect(screen.getByText("entity1")).toBeInTheDocument();
     expect(screen.getByText("note: a note")).toBeInTheDocument();

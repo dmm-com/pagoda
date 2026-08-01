@@ -4,6 +4,7 @@ import json
 import logging
 from datetime import date
 from unittest.mock import Mock, patch
+from urllib.parse import urlencode
 
 import yaml
 
@@ -467,6 +468,116 @@ class ViewTest(BaseViewTest):
 
             data = content.replace(header, "", 1).strip()
             self.assertEqual(data, '"%s,""ENTRY""",' % type_name + expected)
+
+    def _preview_import(self, payload, **params):
+        """Start item preview jobs, run them inline, and read the results back."""
+        with patch(
+            "entry.tasks.import_entries_preview_v2.delay",
+            Mock(side_effect=tasks.import_entries_preview_v2),
+        ):
+            resp = self.client.post("/entry/api/v2/import/preview/", payload, "application/yaml")
+        self.assertEqual(resp.status_code, 202)
+
+        previews = []
+        for job in resp.json()["result"]["jobs"]:
+            query = "?" + urlencode(params) if params else ""
+            preview = self.client.get("/job/api/v2/%d/preview%s" % (job["job_id"], query))
+            self.assertEqual(preview.status_code, 200)
+            previews.append(preview.json())
+        return previews
+
+    def test_import_preview_reports_creations_without_writing(self):
+        fp = self.open_fixture_file("import_data_v2.yaml")
+        payload = fp.read()
+        fp.close()
+
+        [preview] = self._preview_import(payload)
+
+        self.assertEqual(
+            preview["summary"],
+            {
+                "created": 1,
+                "updated": 0,
+                "unchanged": 0,
+                "skipped": 0,
+                "errored": 0,
+                "total": 1,
+            },
+        )
+        [row] = preview["rows"]
+        self.assertEqual(row["name"], "test-entry")
+        self.assertEqual(row["action"], "create")
+        self.assertIn(
+            {"field": "val", "before": None, "after": "foo"},
+            row["changes"],
+        )
+
+        # the preview did not create the item
+        self.assertFalse(Entry.objects.filter(name="test-entry", is_active=True).exists())
+
+    def test_import_preview_reports_the_attributes_that_would_change(self):
+        entry = self.add_entry(self.user, "test-entry", self.entity, values={"val": "before"})
+
+        fp = self.open_fixture_file("import_data_v2.yaml")
+        payload = fp.read()
+        fp.close()
+
+        [preview] = self._preview_import(payload)
+
+        self.assertEqual(preview["summary"]["updated"], 1)
+        [row] = preview["rows"]
+        self.assertEqual(row["action"], "update")
+        self.assertIn(
+            {"field": "val", "before": "before", "after": "foo"},
+            row["changes"],
+        )
+
+        # the preview did not touch the value
+        self.assertEqual(
+            entry.attrs.get(schema__name="val").get_latest_value().get_value(), "before"
+        )
+
+    def test_import_preview_reports_no_change_for_an_identical_file(self):
+        fp = self.open_fixture_file("import_data_v2.yaml")
+        payload = fp.read()
+        fp.close()
+
+        with patch(
+            "entry.tasks.import_entries_v2.delay", Mock(side_effect=tasks.import_entries_v2)
+        ):
+            with patch(
+                "entry.tasks.notify_create_entry.delay",
+                Mock(side_effect=tasks.notify_create_entry),
+            ):
+                self.client.post("/entry/api/v2/import/", payload, "application/yaml")
+
+        [preview] = self._preview_import(payload)
+
+        self.assertEqual(preview["summary"]["unchanged"], 1)
+        self.assertEqual(preview["summary"]["updated"], 0)
+
+    def test_import_preview_warns_about_references_it_cannot_resolve(self):
+        payload = yaml.dump(
+            [
+                {
+                    "entity": "test-entity",
+                    "entries": [
+                        {
+                            "name": "test-entry",
+                            "attrs": [{"name": "ref", "value": "no-such-item"}],
+                        }
+                    ],
+                }
+            ]
+        )
+
+        [preview] = self._preview_import(payload)
+
+        [row] = preview["rows"]
+        # The importer stores an unresolvable reference as an empty value and says
+        # nothing about it, so the preview is the only place a user can see it.
+        self.assertEqual(row["action"], "create")
+        self.assertEqual(row["reason"], "ref: 参照先が見つかりません (no-such-item)")
 
     @patch("entry.tasks.notify_create_entry.delay", Mock(side_effect=tasks.notify_create_entry))
     @patch("entry.tasks.import_entries_v2.delay", Mock(side_effect=tasks.import_entries_v2))

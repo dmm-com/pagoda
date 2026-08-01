@@ -19,7 +19,9 @@ export const EntityImportModal: FC<Props> = ({
   }, []);
 
   const handlePreview = useCallback(
-    (data: string | ArrayBuffer) => aironeApiClient.previewImportEntities(data),
+    async (data: string | ArrayBuffer) => [
+      await aironeApiClient.startImportEntitiesPreview(data),
+    ],
     [],
   );
 
