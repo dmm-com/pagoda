@@ -40,6 +40,11 @@ export const EntryImportModal: FC<Props> = ({
     >
       <Box display="flex" alignItems="center">
         <Checkbox
+          inputProps={
+            {
+              "data-testid": "force-import",
+            } as React.InputHTMLAttributes<HTMLInputElement>
+          }
           checked={forceImport}
           onChange={(event) => setForceImport(event.target.checked)}
         />

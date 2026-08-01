@@ -7,14 +7,13 @@ import {
   writeE2eReport,
 } from "../reportEvidence";
 
+import { apiGet, login, postYaml, username } from "./liveApi";
+
 /**
  * Runs against a real Django server and a real database (see e2e/live/README.md),
  * so the preview is exercised end to end: real permissions, real validation, and
  * a real rollback. The mock-server suite in e2e/ cannot cover any of that.
  */
-
-const username = process.env.E2E_USERNAME ?? "admin";
-const password = process.env.E2E_PASSWORD ?? "admin";
 
 // Names are unique per run so that a previous run cannot turn a "create" row
 // into a duplicate-name error.
@@ -24,52 +23,9 @@ const TARGET_MODEL = `e2e-preview-target-${runId}`;
 const INITIAL_NOTE = "initial note";
 const UPDATED_NOTE = "updated by the import preview e2e";
 
-const login = async (page: Page) => {
-  await page.goto("/auth/login/");
-  await page.fill('input[name="username"]', username);
-  await page.fill('input[name="password"]', password);
-  await page.getByRole("button", { name: "Login" }).click();
-  await page.waitForURL(/\/ui\//);
-};
-
-// The requests are issued from the page itself so that they carry the very same
-// session and CSRF cookies the UI uses.
-const apiGet = async <T>(page: Page, url: string): Promise<T> =>
-  page.evaluate(async (target) => {
-    const response = await fetch(target, {
-      headers: { Accept: "application/json" },
-    });
-    if (!response.ok) {
-      throw new Error(`GET ${target} failed with ${response.status}`);
-    }
-    return response.json();
-  }, url);
-
 interface ModelListResponse {
   results: { id: number; name: string }[];
 }
-
-const postYaml = async (page: Page, url: string, body: string): Promise<void> =>
-  page.evaluate(
-    async ({ target, payload }) => {
-      const csrfToken =
-        document.cookie.match(/(?:^|;\s*)csrftoken=([^;]*)/)?.[1] ?? "";
-      const response = await fetch(target, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/yaml",
-          "X-CSRFToken": decodeURIComponent(csrfToken),
-        },
-        body: payload,
-      });
-      if (!response.ok) {
-        throw new Error(
-          `POST ${target} failed with ${response.status}: ${await response.text()}`,
-        );
-      }
-    },
-    { target: url, payload: body },
-  );
 
 const findModelId = async (page: Page, name: string): Promise<number> => {
   const found = await apiGet<ModelListResponse>(
