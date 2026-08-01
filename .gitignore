@@ -191,3 +191,4 @@ helm/charts/*
 
 # hugo
 docs/.hugo_build.lock
+e2e/live/test-results/
