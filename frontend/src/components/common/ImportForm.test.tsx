@@ -3,7 +3,7 @@
  */
 
 import { ThemeProvider, createTheme } from "@mui/material/styles";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { SnackbarProvider } from "notistack";
 import { FC, ReactNode } from "react";
 import { MemoryRouter } from "react-router";
@@ -36,6 +36,7 @@ if (typeof global.File === "undefined") {
 // Mock encoding-japanese
 jest.mock("encoding-japanese", () => ({
   detect: jest.fn().mockReturnValue("UTF-8"),
+  convert: jest.fn().mockReturnValue("Entity: []"),
 }));
 
 // Mock react-router
@@ -44,6 +45,16 @@ jest.mock("react-router", () => ({
   ...jest.requireActual("react-router"),
   useNavigate: () => mockNavigate,
 }));
+
+// MUI's Input puts data-testid on its wrapper, so the actual <input> has to be
+// looked up to make React see the change event.
+const selectFile = (file: File) => {
+  const input = document.querySelector('input[type="file"]');
+  if (input == null) {
+    throw new Error("file input is not rendered");
+  }
+  fireEvent.change(input, { target: { files: [file] } });
+};
 
 const TestWrapper: FC<{ children: ReactNode }> = ({ children }) => {
   const theme = createTheme();
@@ -102,6 +113,71 @@ describe("ImportForm", () => {
 
     expect((fileInput as HTMLInputElement).files).toHaveLength(1);
     expect((fileInput as HTMLInputElement).files![0]).toBe(file);
+  });
+
+  test("should not offer a preview when the caller does not support it", () => {
+    render(<ImportForm handleImport={jest.fn()} />, { wrapper: TestWrapper });
+
+    expect(screen.queryByTestId("preview-import-file")).not.toBeInTheDocument();
+  });
+
+  test("should show what the file would change before importing it", async () => {
+    const handlePreview = jest.fn().mockResolvedValue({
+      summary: {
+        created: 1,
+        updated: 0,
+        unchanged: 0,
+        skipped: 0,
+        errored: 0,
+        total: 1,
+      },
+      rows: [
+        {
+          index: 0,
+          kind: "Entity",
+          name: "entity1",
+          action: "create",
+          reason: null,
+          changes: [{ field: "note", before: null, after: "a note" }],
+        },
+      ],
+    });
+
+    render(
+      <ImportForm handleImport={jest.fn()} handlePreview={handlePreview} />,
+      { wrapper: TestWrapper },
+    );
+
+    selectFile(
+      new File(["Entity: []"], "entity.yaml", { type: "application/yaml" }),
+    );
+    fireEvent.click(screen.getByTestId("preview-import-file"));
+
+    await waitFor(() =>
+      expect(screen.getByTestId("import-preview")).toBeInTheDocument(),
+    );
+    expect(handlePreview).toHaveBeenCalledTimes(1);
+    expect(screen.getByText("新規作成 1")).toBeInTheDocument();
+    expect(screen.getByText("entity1")).toBeInTheDocument();
+    expect(screen.getByText("note: a note")).toBeInTheDocument();
+  });
+
+  test("should let the user import without previewing", async () => {
+    const handleImport = jest.fn().mockResolvedValue(undefined);
+    const handlePreview = jest.fn();
+
+    render(
+      <ImportForm handleImport={handleImport} handlePreview={handlePreview} />,
+      { wrapper: TestWrapper },
+    );
+
+    selectFile(
+      new File(["Entity: []"], "entity.yaml", { type: "application/yaml" }),
+    );
+    fireEvent.click(screen.getByRole("button", { name: "インポート" }));
+
+    await waitFor(() => expect(handleImport).toHaveBeenCalledTimes(1));
+    expect(handlePreview).not.toHaveBeenCalled();
   });
 
   test("should not attempt import when no file is selected", () => {

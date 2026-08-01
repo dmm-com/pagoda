@@ -16,7 +16,13 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from airone.lib.acl import ACLType, get_permitted_objects
-from airone.lib.drf import EntryIsNotEmptyError, ObjectNotExistsError, YAMLParser, YAMLRenderer
+from airone.lib.drf import (
+    EntryIsNotEmptyError,
+    ExceedLimitError,
+    ObjectNotExistsError,
+    YAMLParser,
+    YAMLRenderer,
+)
 from airone.lib.http import http_get
 from airone.lib.plugin_dispatch import PluginOverrideMixin
 from entity.api_v2.serializers import (
@@ -25,10 +31,12 @@ from entity.api_v2.serializers import (
     EntityDetailSerializer,
     EntityHistorySerializer,
     EntityImportExportRootSerializer,
+    EntityImportPreviewSerializer,
     EntityListSerializer,
     EntityUpdateSerializer,
 )
 from entity.models import Entity, EntityAttr
+from entity.settings import CONFIG
 from entry.api_v2.serializers import EntryBaseSerializer, EntryCreateSerializer
 from entry.models import Entry
 from job.models import Job
@@ -434,6 +442,45 @@ class EntityImportAPI(generics.GenericAPIView[Entity]):
         serializer.save()
 
         return Response()
+
+
+class EntityImportPreviewAPI(generics.GenericAPIView[Entity]):
+    """Report what an import file would change, without changing anything.
+
+    The preview is optional: clients may post straight to ``EntityImportAPI`` when
+    the user does not need it. It runs synchronously (as the import itself does),
+    so the number of rows is capped to keep a request worker from being occupied
+    for a long time.
+    """
+
+    parser_classes = [YAMLParser]
+    serializer_class = EntityImportPreviewSerializer  # type: ignore[assignment]
+
+    @extend_schema(
+        request=EntityImportExportRootSerializer,
+        responses={200: EntityImportPreviewSerializer},
+    )
+    def post(self, request: Request) -> Response:
+        user = cast(User, request.user)
+        if user.is_readonly:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
+        serializer = EntityImportExportRootSerializer(
+            data=request.data, context={"request": self.request}
+        )
+        serializer.is_valid(raise_exception=True)
+
+        row_count = len(serializer.validated_data["Entity"]) + len(
+            serializer.validated_data["EntityAttr"]
+        )
+        max_rows: int = CONFIG.MAX_IMPORT_PREVIEW_ROWS
+        if row_count > max_rows:
+            raise ExceedLimitError(
+                "Preview is available for up to %d rows (this file has %d). "
+                "Import it without preview instead." % (max_rows, row_count)
+            )
+
+        return Response(serializer.build_preview(), status=status.HTTP_200_OK)
 
 
 class EntityExportAPI(generics.RetrieveAPIView[Entity]):

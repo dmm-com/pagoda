@@ -34,6 +34,8 @@ class EntityResource(AironeModelResource):
         model = Entity
         fields = ("id", "name", "note", "status", "user")
         export_order = ("id", "name", "note", "user")
+        # RowResult.instance is what the import preview diffs against
+        store_instance = True
 
     def import_instance(self, instance: Entity, row: dict[str, Any], **kwargs: Any) -> None:
         # will not import duplicate entity
@@ -95,6 +97,8 @@ class EntityAttrResource(AironeModelResource):
     class Meta:
         model = EntityAttr
         fields = ("id", "name", "type", "is_mandatory", "user", "refer", "entity")
+        # RowResult.instance is what the import preview diffs against
+        store_instance = True
 
     def import_instance(self, instance: EntityAttr, row: dict[str, Any], **kwargs: Any) -> None:
         if not Entity.objects.filter(name=row["entity"]).exists():

@@ -61,6 +61,10 @@ import {
 } from "@dmm-com/airone-apiclient-typescript-fetch";
 
 import {
+  ImportPreview,
+  ImportPreviewAction,
+} from "components/common/ImportPreview";
+import {
   AdvancedSerarchResultListParam,
   EntityHistoryListParam,
   EntityListParam,
@@ -369,6 +373,33 @@ class AironeApiClient {
         body: new Blob([data]),
       },
     );
+  }
+
+  async previewImportEntities(
+    data: string | ArrayBuffer,
+  ): Promise<ImportPreview> {
+    const preview = await this.entity.entityApiV2ImportPreviewCreate(
+      { entityImportExportRoot: { entity: [], entityAttr: [] } },
+      {
+        headers: {
+          "Content-Type": "application/yaml",
+          "X-CSRFToken": getCsrfToken(),
+        },
+        body: new Blob([data]),
+      },
+    );
+
+    return {
+      summary: preview.summary,
+      rows: preview.rows.map((row) => ({
+        index: row.index,
+        kind: row.kind,
+        name: row.name,
+        action: row.action as ImportPreviewAction,
+        reason: row.reason,
+        changes: row.changes,
+      })),
+    };
   }
 
   async exportEntities(filename: string): Promise<void> {
