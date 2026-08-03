@@ -28,6 +28,11 @@ services:
       - uv-cache:/home/airone/.cache/uv
       - npm-cache:/home/airone/.npm
       - playwright-cache:/home/airone/.cache/ms-playwright
+      # Configuration and credentials that tools create inside the container,
+      # such as the GitHub CLI login, so that a rebuild does not require
+      # authenticating again. Not shared with the host, because the host config
+      # may belong to another platform.
+      - config:/home/airone/.config
 
 volumes:
   venv:
@@ -39,4 +44,6 @@ volumes:
   npm-cache:
     driver: local
   playwright-cache:
+    driver: local
+  config:
     driver: local

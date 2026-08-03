@@ -30,6 +30,7 @@ RUN mkdir -p \
     /home/airone/.cache/uv \
     /home/airone/.npm \
     /home/airone/.cache/ms-playwright \
+    /home/airone/.config \
     && chown -R $USER_ID:$USER_ID /workspace /home/airone
 
 USER $USER_ID
