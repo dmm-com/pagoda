@@ -7,6 +7,7 @@ RUN apt-get update \
     && apt-get install -y \
     sudo \
     vim \
+    gh \
     # required for openapi-generator-cli (npm wrapper runs the Java jar)
     default-jre \
     # required for airone library
