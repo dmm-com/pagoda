@@ -3,12 +3,21 @@ on:
   push:
     branches:
       - master
+      # TEMPORARY: verify the Pages deployment before merging. Remove this line
+      # together with the github-pages deployment branch policy for it.
+      - feature/ci/pages-deploy
+
+# Allow only one concurrent deployment, and let a running one finish so that a
+# partially deployed site is never left behind.
+concurrency:
+  group: pages
+  cancel-in-progress: false
 
 jobs:
-  release:
+  build:
     runs-on: ubuntu-24.04
     permissions:
-      contents: write
+      contents: read
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
@@ -21,9 +30,21 @@ jobs:
         run: hugo --minify
         working-directory: ./docs
 
-      - name: Deploy
-        uses: peaceiris/actions-gh-pages@373f7f263a76c20808c831209c920827a82a2847 # v3
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./docs/public
-          keep_files: true
+          path: ./docs/public
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-24.04
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128 # v5
