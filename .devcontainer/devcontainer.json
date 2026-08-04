@@ -6,13 +6,22 @@
   ],
   "service": "airone",
   "workspaceFolder": "/workspace/airone",
+  // Runs on the host before the container is created. Docker creates a
+  // directory when a bind mount source is missing, which makes every git
+  // command in the container fail with "Is a directory", so make sure the
+  // paths that .devcontainer/docker-compose.yml mounts exist beforehand.
+  "initializeCommand": "mkdir -p ~/.claude && touch ~/.gitconfig",
   "postCreateCommand": "uv sync --extra dev && npm install",
+  "containerEnv": {
+    "CLAUDE_CONFIG_DIR": "/home/airone/.claude"
+  },
   "customizations": {
     "vscode": {
       "extensions": [
         "ms-python.python",
         "ms-python.debugpy",
-        "charliermarsh.ruff"
+        "charliermarsh.ruff",
+        "anthropic.claude-code"
       ],
       "settings": {
         "python.defaultInterpreterPath": "/workspace/airone/.venv/bin/python"
