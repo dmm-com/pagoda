@@ -37,6 +37,9 @@ from user.models import User
 class ExportedEntryAttributeValueObject(BaseModel):
     entity: str
     name: str
+    # Only set for (ARRAY_)NAMED_OBJECT_BOOLEAN; omitted from the export otherwise
+    # because the dump is done with exclude_unset=True.
+    boolean: bool | None = None
 
 
 ExportedEntryAttributePrimitiveValue = (
@@ -1285,6 +1288,37 @@ class EntryImportEntitySerializer(serializers.Serializer):
                         return ref_entry.id if ref_entry else 0
                 return None
 
+            def _named_object(
+                val: dict[str, Any],
+                refs: list[Entity],
+                is_boolean: bool,
+            ) -> dict[str, Any]:
+                """Convert a named-object value of `{<name>: <referral>}` shape.
+
+                For (ARRAY_)NAMED_OBJECT_BOOLEAN, the exported boolean flag lives
+                either inside the referral (`{name: .., entity: .., boolean: ..}`,
+                the yaml export shape) or beside the name key
+                (`{<name>: <entry name>, boolean: ..}`). Accept both and carry the
+                flag over, otherwise it is dropped here and the attribute value is
+                never recognized as updated.
+                """
+                items = dict(val)
+                boolean: bool | None = None
+                if is_boolean and isinstance(items.get("boolean"), bool):
+                    boolean = items.pop("boolean")
+                if not items:
+                    return {}
+
+                name, referral = next(iter(items.items()))
+                if is_boolean and boolean is None and isinstance(referral, dict):
+                    boolean = referral.get("boolean")
+
+                converted = {"name": name, "id": _object(referral, refs)}
+                if is_boolean:
+                    converted["boolean"] = bool(boolean)
+
+                return converted
+
             def _group(val: str) -> int | None:
                 if val:
                     ref_group: Group | None = Group.objects.filter(name=val).first()
@@ -1297,6 +1331,10 @@ class EntryImportEntitySerializer(serializers.Serializer):
                     return ref_role.id if ref_role else 0
                 return None
 
+            attr_type = entity_attrs[attr_data["name"]]["type"]
+            # _NAMED types also carry the BOOLEAN bit when they hold a boolean flag
+            is_boolean_named = bool(attr_type & AttrType._NAMED and attr_type & AttrType.BOOLEAN)
+
             if entity_attrs[attr_data["name"]]["type"] & AttrType._ARRAY:
                 if not isinstance(attr_data["value"], list):
                     return
@@ -1305,13 +1343,11 @@ class EntryImportEntitySerializer(serializers.Serializer):
                         if entity_attrs[attr_data["name"]]["type"] & AttrType._NAMED:
                             if not isinstance(child_value, dict):
                                 return
-                            attr_data["value"][i] = {
-                                "name": list(child_value.keys())[0],
-                                "id": _object(
-                                    list(child_value.values())[0],
-                                    entity_attrs[attr_data["name"]]["refs"],
-                                ),
-                            }
+                            attr_data["value"][i] = _named_object(
+                                child_value,
+                                entity_attrs[attr_data["name"]]["refs"],
+                                is_boolean_named,
+                            )
                         else:
                             attr_data["value"][i] = _object(
                                 child_value, entity_attrs[attr_data["name"]]["refs"]
@@ -1326,16 +1362,10 @@ class EntryImportEntitySerializer(serializers.Serializer):
                     if entity_attrs[attr_data["name"]]["type"] & AttrType._NAMED:
                         if not isinstance(attr_data["value"], dict):
                             return
-                        attr_data["value"] = (
-                            {
-                                "name": list(attr_data["value"].keys())[0],
-                                "id": _object(
-                                    list(attr_data["value"].values())[0],
-                                    entity_attrs[attr_data["name"]]["refs"],
-                                ),
-                            }
-                            if len(attr_data["value"].keys()) > 0
-                            else {}
+                        attr_data["value"] = _named_object(
+                            attr_data["value"],
+                            entity_attrs[attr_data["name"]]["refs"],
+                            is_boolean_named,
                         )
                     else:
                         attr_data["value"] = _object(

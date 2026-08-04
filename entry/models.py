@@ -876,7 +876,7 @@ class Attribute(ACLBase):
 
                 return bool(last_value.datetime != recv_value)
 
-            case AttrType.NAMED_OBJECT:
+            case AttrType.NAMED_OBJECT | AttrType.NAMED_OBJECT_BOOLEAN:
                 # the case that specified value is empty or invalid
                 if not recv_value:
                     # Value would be changed as empty when there is valid value
@@ -887,6 +887,12 @@ class Attribute(ACLBase):
 
                 if last_value.value != recv_value["name"]:
                     return True
+
+                # NAMED_OBJECT_BOOLEAN holds a boolean flag beside the referral, so a
+                # change of the flag alone is an update as well.
+                if self.schema.type == AttrType.NAMED_OBJECT_BOOLEAN:
+                    if last_value.boolean != bool(recv_value.get("boolean", False)):
+                        return True
 
                 # formalize recv_value['id'] type
                 if isinstance(recv_value["id"], Entry):
