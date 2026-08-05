@@ -194,3 +194,4 @@ docs/.hugo_build.lock
 
 # lite dev mode state: per-checkout SQLite DB, search index, media, test logs
 .pagoda-lite/
+e2e/live/test-results/
