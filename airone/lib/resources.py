@@ -68,17 +68,8 @@ class AironeModelResource(ModelResource):  # type: ignore[misc]
         pass
 
     @classmethod
-    def import_data_from_request(cls, data: dict[str, object], request_user: User) -> Result:
-        resource = getattr(
-            importlib.import_module(cls._IMPORT_INFO["resource_module"]),
-            cls._IMPORT_INFO["resource_model_name"],
-        )()
-        if not resource:
-            raise RuntimeError("Resource object is not defined")
-
-        # set user who import the data for checking permission
-        resource.request_user = request_user
-
+    def validate_import_row(cls, data: dict[str, object]) -> None:
+        """Reject a row the import could not accept. Raises RuntimeError."""
         # check mandatory keys are existed, or not
         if not all([x in data for x in cls._IMPORT_INFO["mandatory_keys"]]):
             raise RuntimeError("Mandatory key doesn't exist")
@@ -95,11 +86,33 @@ class AironeModelResource(ModelResource):  # type: ignore[misc]
         if not all([x in cls._IMPORT_INFO["header"] for x in data.keys()]):
             raise RuntimeError("Unnecessary key is specified")
 
+    @classmethod
+    def _build_resource_and_dataset(
+        cls, data: dict[str, object], request_user: User
+    ) -> tuple["AironeModelResource", tablib.Dataset]:
+        resource = getattr(
+            importlib.import_module(cls._IMPORT_INFO["resource_module"]),
+            cls._IMPORT_INFO["resource_model_name"],
+        )()
+        if not resource:
+            raise RuntimeError("Resource object is not defined")
+
+        # set user who import the data for checking permission
+        resource.request_user = request_user
+
+        cls.validate_import_row(data)
+
         # get dataset to import
         dataset = tablib.Dataset(
             [x in data and data[x] or "" for x in cls._IMPORT_INFO["header"]],
             headers=cls._IMPORT_INFO["header"],
         )
+
+        return resource, dataset
+
+    @classmethod
+    def import_data_from_request(cls, data: dict[str, object], request_user: User) -> Result:
+        resource, dataset = cls._build_resource_and_dataset(data, request_user)
 
         try:
             return resource.import_data(dataset, raise_errors=True)
