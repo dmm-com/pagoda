@@ -163,7 +163,18 @@ export const ImportPreviewResult: FC<Props> = ({
                     />
                   </TableCell>
                   <TableCell>{row.kind}</TableCell>
-                  <TableCell>{row.name}</TableCell>
+                  <TableCell>
+                    {row.name}
+                    {row.willInvokeTrigger && (
+                      <Chip
+                        label="トリガー"
+                        size="small"
+                        variant="outlined"
+                        sx={{ ml: "4px" }}
+                        title="インポートするとトリガーが発火し、ファイルにない値も変わります"
+                      />
+                    )}
+                  </TableCell>
                   <TableCell
                     sx={
                       expanded === key
