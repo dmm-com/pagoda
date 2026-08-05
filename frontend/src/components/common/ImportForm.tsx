@@ -14,6 +14,19 @@ interface Props {
   handleCancel?: () => void;
 }
 
+// The file is read once and decoded in place. Reading it again through a
+// FileReader would only repeat work the ArrayBuffer already gave us.
+const readFileAsText = async (file: File): Promise<string> => {
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  const detected = Encoding.detect(bytes);
+
+  return Encoding.convert(bytes, {
+    to: "UNICODE",
+    from: typeof detected === "string" ? detected : "AUTO",
+    type: "string",
+  });
+};
+
 export const ImportForm: FC<Props> = ({ handleImport, handleCancel }) => {
   const navigate = useNavigate();
   const [file, setFile] = useState<File>();
@@ -24,53 +37,35 @@ export const ImportForm: FC<Props> = ({ handleImport, handleCancel }) => {
     event.target.files && setFile(event.target.files[0]);
   };
 
-  const onClick = async () => {
-    if (file) {
-      // TODO its better to avoid reading file twice
-      const arrayBuffer = await file.arrayBuffer();
-      const bytes = new Uint8Array(arrayBuffer);
-      const encodingDetection = Encoding.detect(bytes);
-      const encoding =
-        typeof encodingDetection === "string" ? encodingDetection : "UNICODE";
+  const reportError = async (e: unknown, fallback: string) => {
+    if (e instanceof Error && isResponseError(e)) {
+      if (e.response.status === 403) {
+        setErrorMessage("この操作を行う権限がありません。");
+        enqueueSnackbar("この操作を行う権限がありません。", {
+          variant: "error",
+        });
+        return;
+      }
+      const reportableError = await toReportableNonFieldErrors(e);
+      const message = `${fallback}: ${reportableError ?? ""}`;
+      setErrorMessage(message);
+      enqueueSnackbar(message, { variant: "error" });
+      return;
+    }
+    setErrorMessage(fallback);
+    enqueueSnackbar(fallback, { variant: "error" });
+  };
 
-      const fileReader = new FileReader();
-      fileReader.readAsText(file, encoding);
+  const onImport = async () => {
+    if (!file) {
+      return;
+    }
 
-      fileReader.onload = async () => {
-        if (fileReader.result == null) {
-          return;
-        }
-
-        try {
-          await handleImport(fileReader.result);
-          navigate(0);
-        } catch (e) {
-          if (e instanceof Error && isResponseError(e)) {
-            if (e.response.status === 403) {
-              setErrorMessage("この操作を行う権限がありません。");
-              enqueueSnackbar("この操作を行う権限がありません。", {
-                variant: "error",
-              });
-            } else {
-              const reportableError = await toReportableNonFieldErrors(e);
-              setErrorMessage(
-                `ファイルのアップロードに失敗しました: ${reportableError ?? ""}`,
-              );
-              enqueueSnackbar(
-                `ファイルのアップロードに失敗しました: ${reportableError ?? ""}`,
-                {
-                  variant: "error",
-                },
-              );
-            }
-          } else {
-            setErrorMessage("ファイルのアップロードに失敗しました。");
-            enqueueSnackbar("ファイルのアップロードに失敗しました", {
-              variant: "error",
-            });
-          }
-        }
-      };
+    try {
+      await handleImport(await readFileAsText(file));
+      navigate(0);
+    } catch (e) {
+      await reportError(e, "ファイルのアップロードに失敗しました");
     }
   };
 
@@ -86,7 +81,7 @@ export const ImportForm: FC<Props> = ({ handleImport, handleCancel }) => {
           type="submit"
           variant="contained"
           color="secondary"
-          onClick={onClick}
+          onClick={onImport}
           sx={{ m: "4px" }}
         >
           インポート
