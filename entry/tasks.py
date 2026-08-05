@@ -688,6 +688,8 @@ def import_entries_v2(self: Task, job: Job) -> tuple[JobStatus, str, None] | Non
 
     total_count = len(import_serializer.validated_data["entries"])
     err_msg: list[str] = []
+    stale: list[str] = []
+    baselines = EntryImportPreviewService.load_baselines(job)
     for index, entry_data in enumerate(import_serializer.validated_data["entries"]):
         job.text = "Now importing... (progress: [%5d/%5d])" % (index + 1, total_count)
         job.save(update_fields=["text"])
@@ -710,6 +712,12 @@ def import_entries_v2(self: Task, job: Job) -> tuple[JobStatus, str, None] | Non
                 name=entry_data["name"], schema=entity, is_active=True
             ).first()
 
+        if entry and EntryImportPreviewService.is_stale(entry, entry_data, baselines):
+            # Someone changed this item after the preview was built, so the
+            # preview the user approved no longer describes what would happen.
+            stale.append(entry_data["name"])
+            continue
+
         if entry:
             serializer = EntryUpdateSerializer(instance=entry, data=entry_data, context=context)
         else:
@@ -724,12 +732,13 @@ def import_entries_v2(self: Task, job: Job) -> tuple[JobStatus, str, None] | Non
                 % (entry_data["name"], e)
             )
 
-    if err_msg:
-        return (
-            JobStatus.WARNING,
-            "Imported Entry count: %d, Failed import Entry: %s" % (total_count, err_msg),
-            None,
-        )
+    if err_msg or stale:
+        text = "Imported Entry count: %d" % total_count
+        if err_msg:
+            text += ", Failed import Entry: %s" % err_msg
+        if stale:
+            text += ", Changed by someone else since the preview: %s" % stale
+        return (JobStatus.WARNING, text, None)
     else:
         return JobStatus.DONE, "Imported Entry count: %d" % total_count, None
 

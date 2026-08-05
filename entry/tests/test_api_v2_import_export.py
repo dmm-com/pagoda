@@ -577,6 +577,115 @@ class ViewTest(BaseViewTest):
         [row] = preview["rows"]
         self.assertTrue(row["will_invoke_trigger"])
 
+    def test_import_leaves_alone_an_item_changed_since_the_preview(self):
+        entry = self.add_entry(self.user, "test-entry", self.entity, values={"val": "before"})
+
+        fp = self.open_fixture_file("import_data_v2.yaml")
+        payload = fp.read()
+        fp.close()
+
+        with patch(
+            "entry.tasks.import_entries_preview_v2.delay",
+            Mock(side_effect=tasks.import_entries_preview_v2),
+        ):
+            resp = self.client.post("/entry/api/v2/import/preview/", payload, "application/yaml")
+        preview_job_id = resp.json()["result"]["jobs"][0]["job_id"]
+
+        # Someone else edits the very attribute the file would overwrite.
+        entry.attrs.get(schema__name="val").add_value(self.user, "changed by someone else")
+
+        with patch(
+            "entry.tasks.import_entries_v2.delay", Mock(side_effect=tasks.import_entries_v2)
+        ):
+            resp = self.client.post(
+                "/entry/api/v2/import/?force=true&preview_job_id=%d" % preview_job_id,
+                payload,
+                "application/yaml",
+            )
+        self.assertEqual(resp.status_code, 200)
+
+        job = Job.objects.filter(operation=JobOperation.IMPORT_ENTRY_V2).last()
+        self.assertEqual(job.status, JobStatus.WARNING)
+        self.assertIn("Changed by someone else since the preview", job.text)
+
+        # The other person's value survived: the preview the user approved no
+        # longer described this item, so it was not applied.
+        self.assertEqual(
+            entry.attrs.get(schema__name="val").get_latest_value().get_value(),
+            "changed by someone else",
+        )
+
+    def test_import_leaves_alone_an_item_someone_else_created_since_the_preview(self):
+        fp = self.open_fixture_file("import_data_v2.yaml")
+        payload = fp.read()
+        fp.close()
+
+        with patch(
+            "entry.tasks.import_entries_preview_v2.delay",
+            Mock(side_effect=tasks.import_entries_preview_v2),
+        ):
+            resp = self.client.post("/entry/api/v2/import/preview/", payload, "application/yaml")
+        preview_job_id = resp.json()["result"]["jobs"][0]["job_id"]
+
+        # The preview said "create". Someone else gets there first with the same
+        # name, so applying the preview would update their item, not create one.
+        entry = self.add_entry(self.user, "test-entry", self.entity, values={"val": "theirs"})
+
+        with patch(
+            "entry.tasks.import_entries_v2.delay", Mock(side_effect=tasks.import_entries_v2)
+        ):
+            self.client.post(
+                "/entry/api/v2/import/?force=true&preview_job_id=%d" % preview_job_id,
+                payload,
+                "application/yaml",
+            )
+
+        job = Job.objects.filter(operation=JobOperation.IMPORT_ENTRY_V2).last()
+        self.assertEqual(job.status, JobStatus.WARNING)
+        self.assertEqual(
+            entry.attrs.get(schema__name="val").get_latest_value().get_value(), "theirs"
+        )
+
+    def test_import_applies_normally_when_nothing_changed_since_the_preview(self):
+        entry = self.add_entry(self.user, "test-entry", self.entity, values={"val": "before"})
+
+        fp = self.open_fixture_file("import_data_v2.yaml")
+        payload = fp.read()
+        fp.close()
+
+        with patch(
+            "entry.tasks.import_entries_preview_v2.delay",
+            Mock(side_effect=tasks.import_entries_preview_v2),
+        ):
+            resp = self.client.post("/entry/api/v2/import/preview/", payload, "application/yaml")
+        preview_job_id = resp.json()["result"]["jobs"][0]["job_id"]
+
+        with patch(
+            "entry.tasks.import_entries_v2.delay", Mock(side_effect=tasks.import_entries_v2)
+        ):
+            self.client.post(
+                "/entry/api/v2/import/?force=true&preview_job_id=%d" % preview_job_id,
+                payload,
+                "application/yaml",
+            )
+
+        self.assertEqual(entry.attrs.get(schema__name="val").get_latest_value().get_value(), "foo")
+
+    def test_preview_does_not_expose_its_internal_fingerprints(self):
+        entry = self.add_entry(self.user, "test-entry", self.entity, values={"val": "before"})
+        self.assertTrue(entry)
+
+        fp = self.open_fixture_file("import_data_v2.yaml")
+        payload = fp.read()
+        fp.close()
+
+        [preview] = self._preview_import(payload)
+
+        # The values a row would overwrite are recorded for the import to compare
+        # against. They are database ids of no use to a client, so they stay in.
+        for row in preview["rows"]:
+            self.assertNotIn("baseline", row)
+
     def test_preview_can_be_downloaded_as_csv(self):
         fp = self.open_fixture_file("import_data_v2.yaml")
         payload = fp.read()

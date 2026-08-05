@@ -1246,11 +1246,13 @@ class AironeApiClient {
   async importEntries(
     data: string | ArrayBuffer,
     force: boolean,
+    previewJobId?: number,
   ): Promise<void> {
     return await this.entry.entryApiV2ImportCreate(
       {
         entryImportEntity: [],
         force: force,
+        previewJobId,
       },
       {
         headers: {

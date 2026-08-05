@@ -1,3 +1,4 @@
+import json
 from typing import TYPE_CHECKING, Any
 
 from django.conf import settings
@@ -26,6 +27,7 @@ from airone.lib.types import AttrType
 from entity.models import Entity, EntityAttr
 from entry.api_v2.serializers import EntryCreateSerializer, EntryUpdateSerializer
 from entry.models import Attribute, AttributeValue, Entry
+from job.models import Job, JobOperation, JobStatus
 from trigger.models import TriggerCondition
 from user.models import User
 
@@ -33,7 +35,6 @@ from .settings import CONFIG
 
 if TYPE_CHECKING:
     from entry.api_v2.serializers import AdvancedSearchJoinAttrInfo
-    from job.models import Job
 
 
 class AdvancedSearchService:
@@ -601,6 +602,23 @@ class EntryImportPreviewService:
 
         return collector.payload()
 
+    @classmethod
+    def load_baselines(kls, job: "Job") -> dict[str, dict[str, Any]] | None:
+        return _load_preview_baselines(job)
+
+    @classmethod
+    def is_stale(
+        kls,
+        entry: Entry,
+        entry_data: dict[str, Any],
+        baselines: dict[str, dict[str, Any]] | None,
+    ) -> bool:
+        return _is_stale(entry, entry_data, baselines)
+
+    @classmethod
+    def latest_value_ids(kls, entry: Entry, entity_attr_ids: list[int]) -> dict[str, int]:
+        return _latest_value_ids(entry, entity_attr_ids)
+
 
 def _render_import_value(value: Any) -> str:
     """Render a value as the user wrote it in the import file."""
@@ -710,6 +728,7 @@ def _preview_one_entry(
             will_invoke_trigger=will_invoke_trigger,
             # Recorded even for a creation, so that an item somebody else creates
             # under this name in the meantime is not silently updated instead.
+            baseline={"entry_id": None, "values": {}},
         )
         return
 
@@ -735,7 +754,29 @@ def _preview_one_entry(
         reason="; ".join(warnings) or None,
         changes=changes,
         will_invoke_trigger=will_invoke_trigger,
+        baseline=_entry_baseline(entry, entry_data),
     )
+
+
+def _entry_baseline(entry: Entry, entry_data: dict[str, Any]) -> dict[str, Any]:
+    """Fingerprint the values this row would overwrite.
+
+    The import compares it against the values it finds, so that a row someone
+    else changed in the meantime is not overwritten on the strength of a preview
+    that no longer describes it.
+    """
+    return {
+        "entry_id": entry.id,
+        "values": _latest_value_ids(entry, [int(x["id"]) for x in entry_data.get("attrs", [])]),
+    }
+
+
+def _latest_value_ids(entry: Entry, entity_attr_ids: list[int]) -> dict[str, int]:
+    latest: dict[str, int] = {}
+    for attr in entry.attrs.filter(schema__id__in=entity_attr_ids, is_active=True):
+        attrv = attr.values.filter(is_latest=True).last()
+        latest[str(attr.schema_id)] = attrv.id if attrv else 0
+    return latest
 
 
 def _collect_unresolved(entry_data: dict[str, Any], raw_entry: dict[str, Any]) -> list[str]:
@@ -798,3 +839,46 @@ def _collect_attr_changes(
             )
 
     return changes, denied
+
+
+def _load_preview_baselines(job: Job) -> dict[str, dict[str, Any]] | None:
+    """Read the values a preview recorded, when the import was started from one.
+
+    Without a preview job there is nothing to compare against and the import
+    behaves exactly as it always has.
+    """
+    preview_job_id = json.loads(job.params).get("preview_job_id")
+    if not preview_job_id:
+        return None
+
+    preview_job = Job.objects.filter(
+        id=preview_job_id, user=job.user, operation=JobOperation.IMPORT_ENTRY_PREVIEW
+    ).first()
+    if preview_job is None or preview_job.status != JobStatus.DONE:
+        return None
+
+    try:
+        payload = preview_job.get_cache()
+    except OSError:
+        return None
+
+    return {row["name"]: row["baseline"] for row in payload["rows"] if row.get("baseline")}
+
+
+def _is_stale(
+    entry: Entry, entry_data: dict[str, Any], baselines: dict[str, dict[str, Any]] | None
+) -> bool:
+    if baselines is None:
+        return False
+
+    baseline = baselines.get(entry_data["name"])
+    if baseline is None:
+        return False
+
+    # The preview described a different item than the one the import found --
+    # either it was going to create this name, or it matched something else.
+    if baseline["entry_id"] != entry.id:
+        return True
+
+    current = _latest_value_ids(entry, [int(x["id"]) for x in entry_data.get("attrs", [])])
+    return current != baseline["values"]
