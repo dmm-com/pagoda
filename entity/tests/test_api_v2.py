@@ -2,6 +2,7 @@ import datetime
 import json
 import logging
 from unittest import mock
+from urllib.parse import urlencode
 
 import requests
 import yaml
@@ -3676,6 +3677,205 @@ class ViewTest(AironeViewTest):
         self.assertEqual(entity.attrs.get(name="attr-obj").referral.count(), 1)
         self.assertEqual(entity.attrs.get(name="attr-arr-obj").referral.count(), 2)
 
+    def _clear_entities(self):
+        self.ref_entity.delete()
+        self.entity.attrs.all().delete()
+        self.entity.delete()
+
+    def _preview_import(self, payload, **params):
+        """Start a preview job, run it inline, and read the result back."""
+        with mock.patch(
+            "entity.tasks.import_entities_preview_v2.delay",
+            mock.Mock(side_effect=tasks.import_entities_preview_v2),
+        ):
+            resp = self.client.post(
+                "/entity/api/v2/import/preview", payload, content_type="application/yaml"
+            )
+        self.assertEqual(resp.status_code, 202)
+
+        job_id = resp.json()["job_id"]
+        query = "?" + urlencode(params) if params else ""
+        preview = self.client.get("/job/api/v2/%d/preview%s" % (job_id, query))
+        self.assertEqual(preview.status_code, 200)
+        return preview.json()
+
+    def test_import_preview_reports_creations_without_writing(self):
+        self.admin_login()
+        self._clear_entities()
+
+        entity_count = Entity.objects.filter(is_active=True).count()
+        attr_count = EntityAttr.objects.filter(is_active=True).count()
+
+        fp = self.open_fixture_file("entity.yaml")
+        body = self._preview_import(fp.read())
+        fp.close()
+
+        # 3 Entities and 4 EntityAttrs would be created
+        self.assertEqual(body["summary"]["created"], 7)
+        self.assertEqual(body["summary"]["total"], 7)
+        self.assertEqual(body["summary"]["updated"], 0)
+        self.assertEqual(body["summary"]["errored"], 0)
+
+        # An EntityAttr referring to an Entity created by the very same file must be
+        # previewed as a creation, not as an error
+        attr_obj = next(x for x in body["rows"] if x["name"] == "attr-obj")
+        self.assertEqual(attr_obj["kind"], "EntityAttr")
+        self.assertEqual(attr_obj["action"], "create")
+        self.assertIn(
+            "entity1", [x["after"] for x in attr_obj["changes"] if x["field"] == "referral"]
+        )
+
+        # nothing was actually persisted
+        self.assertEqual(Entity.objects.filter(is_active=True).count(), entity_count)
+        self.assertEqual(EntityAttr.objects.filter(is_active=True).count(), attr_count)
+
+    def test_import_preview_reports_updates_and_unchanged_rows(self):
+        self.admin_login()
+        self._clear_entities()
+
+        fp = self.open_fixture_file("entity.yaml")
+        payload = fp.read()
+        fp.close()
+        self.assertEqual(
+            self.client.post(
+                "/entity/api/v2/import", payload, content_type="application/yaml"
+            ).status_code,
+            200,
+        )
+
+        # Previewing the very same file again reports no change, except for the one
+        # EntityAttr row that carries no id: the importer cannot match it against the
+        # existing attribute and creates a duplicate. That is existing import behavior,
+        # and being able to see it beforehand is exactly the point of the preview.
+        body = self._preview_import(payload)
+        self.assertEqual(body["summary"]["unchanged"], 6)
+        self.assertEqual(body["summary"]["updated"], 0)
+        self.assertEqual([x["name"] for x in body["rows"] if x["action"] == "create"], ["attr-str"])
+
+        # changing a single value is reported as that single field's difference
+        changed = yaml.safe_load(payload)
+        changed["Entity"][2]["note"] = "note1-updated"
+        body = self._preview_import(yaml.dump(changed))
+        self.assertEqual(body["summary"]["updated"], 1)
+        self.assertEqual(body["summary"]["unchanged"], 5)
+
+        updated = next(x for x in body["rows"] if x["action"] == "update")
+        self.assertEqual(updated["name"], "entity")
+        self.assertEqual(
+            updated["changes"], [{"field": "note", "before": "note1", "after": "note1-updated"}]
+        )
+
+        # the preview did not apply the change
+        self.assertEqual(Entity.objects.get(name="entity").note, "note1")
+
+    def test_import_preview_surfaces_rows_the_import_would_drop(self):
+        self.admin_login()
+        self._clear_entities()
+
+        fp = self.open_fixture_file("entity_without_mandatory_param.yaml")
+        body = self._preview_import(fp.read())
+        fp.close()
+
+        # These rows are only logged as warnings by the real import, so the preview is
+        # the sole way for a user to notice them beforehand.
+        self.assertEqual(body["summary"]["errored"], 3)
+        reasons = sorted(x["reason"] for x in body["rows"] if x["action"] == "error")
+        self.assertEqual(
+            reasons,
+            [
+                "Mandatory key doesn't exist",
+                "The parameter 'type' is mandatory when a new EntityAtter create",
+                "refer to invalid entity object",
+            ],
+        )
+
+    def test_import_preview_pages_its_rows(self):
+        self.admin_login()
+        self._clear_entities()
+
+        fp = self.open_fixture_file("entity.yaml")
+        payload = fp.read()
+        fp.close()
+
+        body = self._preview_import(payload, offset=2, limit=3)
+        # The summary always covers the whole file, however few rows are listed
+        self.assertEqual(body["summary"]["total"], 7)
+        self.assertEqual(body["count"], 7)
+        self.assertFalse(body["truncated"])
+        self.assertEqual(len(body["rows"]), 3)
+        self.assertEqual([x["index"] for x in body["rows"]], [2, 3, 4])
+
+    def test_import_preview_never_writes(self):
+        self.admin_login()
+        self._clear_entities()
+
+        fp = self.open_fixture_file("entity.yaml")
+        payload = fp.read()
+        fp.close()
+
+        # A preview must be a read. Nothing it does may reach the database --
+        # not even inside a transaction it means to roll back, which would still
+        # take write locks and would leave the rows behind if it never ran.
+        with mock.patch.object(Entity, "save", side_effect=AssertionError("wrote Entity")):
+            with mock.patch.object(
+                EntityAttr, "save", side_effect=AssertionError("wrote EntityAttr")
+            ):
+                body = self._preview_import(payload)
+
+        self.assertEqual(body["summary"]["created"], 7)
+
+    def test_import_preview_filters_rows_by_action(self):
+        self.admin_login()
+        self._clear_entities()
+
+        fp = self.open_fixture_file("entity_without_mandatory_param.yaml")
+        payload = fp.read()
+        fp.close()
+
+        body = self._preview_import(payload, action="error")
+
+        # Filtering narrows the list, never the summary: a user who asks to see
+        # only the errors still has to be told how much else the file does.
+        self.assertEqual(body["count"], 3)
+        self.assertEqual({x["action"] for x in body["rows"]}, {"error"})
+        self.assertEqual(body["summary"]["total"], 7)
+
+    def test_import_preview_rejects_an_unknown_action(self):
+        self.admin_login()
+        self._clear_entities()
+
+        fp = self.open_fixture_file("entity.yaml")
+        payload = fp.read()
+        fp.close()
+
+        with mock.patch(
+            "entity.tasks.import_entities_preview_v2.delay",
+            mock.Mock(side_effect=tasks.import_entities_preview_v2),
+        ):
+            resp = self.client.post(
+                "/entity/api/v2/import/preview", payload, content_type="application/yaml"
+            )
+        job_id = resp.json()["job_id"]
+
+        resp = self.client.get("/job/api/v2/%d/preview?action=nonsense" % job_id)
+        self.assertEqual(resp.status_code, 400)
+
+    def test_import_preview_keeps_the_summary_exact_when_rows_are_capped(self):
+        self.admin_login()
+        self._clear_entities()
+
+        fp = self.open_fixture_file("entity.yaml")
+        payload = fp.read()
+        fp.close()
+
+        with mock.patch("airone.lib.import_preview.PREVIEW_MAX_DETAIL_ROWS", 2):
+            body = self._preview_import(payload)
+
+        self.assertEqual(body["summary"]["total"], 7)
+        self.assertEqual(body["summary"]["created"], 7)
+        self.assertEqual(body["count"], 2)
+        self.assertTrue(body["truncated"])
+
     def test_import_with_unnecessary_param(self):
         self.admin_login()
 
@@ -4498,5 +4698,13 @@ class ReadonlyUserPermissionTest(AironeViewTest):
     def test_import_entity_is_forbidden_for_readonly_user(self):
         resp = self.client.post(
             "/entity/api/v2/import", b"Entity: []", content_type="application/yaml"
+        )
+        self.assertEqual(resp.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_import_preview_is_forbidden_for_readonly_user(self):
+        resp = self.client.post(
+            "/entity/api/v2/import/preview",
+            b"Entity: []\nEntityAttr: []",
+            content_type="application/yaml",
         )
         self.assertEqual(resp.status_code, status.HTTP_403_FORBIDDEN)
