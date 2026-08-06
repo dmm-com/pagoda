@@ -1,9 +1,12 @@
 import { Entity } from "@dmm-com/airone-apiclient-typescript-fetch";
+import {
+  DraggableAttributes,
+  DraggableSyntheticListeners,
+} from "@dnd-kit/core";
 import AddIcon from "@mui/icons-material/Add";
-import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
-import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import BadgeIcon from "@mui/icons-material/Badge";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import DragIndicatorIcon from "@mui/icons-material/DragIndicator";
 import EditNoteIcon from "@mui/icons-material/EditNote";
 import GroupIcon from "@mui/icons-material/Group";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
@@ -90,14 +93,22 @@ const ATTRIBUTE_TYPE_ORDER = [
   "datetime",
 ];
 
+// Props forwarded from the sortable row wrapper so this cell can host the
+// drag handle (pointer + keyboard activation) for reordering attributes.
+interface AttributeDragHandleProps {
+  setActivatorNodeRef: (element: HTMLElement | null) => void;
+  attributes: DraggableAttributes;
+  listeners: DraggableSyntheticListeners;
+  isDragging: boolean;
+}
+
 interface Props {
   control: Control<Schema>;
   setValue: UseFormSetValue<Schema>;
-  maxIndex: number;
   referralEntities: Entity[];
   handleAppendAttribute: (index: number) => void;
   handleDeleteAttribute: (index: number) => void;
-  handleChangeOrderAttribute: (index: number, order: number) => void;
+  dragHandleProps?: AttributeDragHandleProps;
   attrId?: number;
   index?: number;
 }
@@ -105,11 +116,10 @@ interface Props {
 export const AttributeField: FC<Props> = ({
   control,
   setValue,
-  maxIndex,
   referralEntities,
   handleAppendAttribute,
   handleDeleteAttribute,
-  handleChangeOrderAttribute,
+  dragHandleProps,
   attrId,
   index,
 }) => {
@@ -186,6 +196,31 @@ export const AttributeField: FC<Props> = ({
 
   return index != null ? (
     <>
+      {/* Drag handle to reorder attributes (pointer & keyboard) */}
+      <TableCell>
+        <Box display="flex" alignItems="center" justifyContent="center">
+          <Tooltip title="ドラッグして並び替え">
+            {/* span keeps the tooltip working while the button is disabled */}
+            <span>
+              <IconButton
+                ref={dragHandleProps?.setActivatorNodeRef}
+                disabled={!isWritable || dragHandleProps == null}
+                aria-label={`${index + 1} 番目の属性をドラッグして並び替え`}
+                data-testid="attr-drag-handle"
+                sx={{
+                  cursor: dragHandleProps?.isDragging ? "grabbing" : "grab",
+                  touchAction: "none",
+                }}
+                {...(dragHandleProps?.attributes ?? {})}
+                {...(dragHandleProps?.listeners ?? {})}
+              >
+                <DragIndicatorIcon />
+              </IconButton>
+            </span>
+          </Tooltip>
+        </Box>
+      </TableCell>
+
       {/* Attribute Name */}
       <TableCell>
         <Controller
@@ -378,27 +413,6 @@ export const AttributeField: FC<Props> = ({
             );
           }}
         />
-      </TableCell>
-
-      {/* Change Attribute order to be shown at Item detail page */}
-      <TableCell>
-        <Box display="flex" flexDirection="column">
-          <IconButton
-            aria-label={`${index + 1} 番目の属性を上へ移動`}
-            disabled={index === 0 || !isWritable}
-            onClick={() => handleChangeOrderAttribute(index, 1)}
-          >
-            <ArrowUpwardIcon />
-          </IconButton>
-
-          <IconButton
-            aria-label={`${index + 1} 番目の属性を下へ移動`}
-            disabled={index === maxIndex || !isWritable}
-            onClick={() => handleChangeOrderAttribute(index, -1)}
-          >
-            <ArrowDownwardIcon />
-          </IconButton>
-        </Box>
       </TableCell>
 
       {/* Delete target Attribute */}
