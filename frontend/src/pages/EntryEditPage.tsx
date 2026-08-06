@@ -107,14 +107,14 @@ export const EntryEditPage: FC<Props> = ({
         navigate(entryDetailsPath(entityId, entryId), { replace: true });
       }
     }
-  }, [isSubmitSuccessful]);
+  }, [isSubmitSuccessful, willCreate, entityId, entryId, navigate]);
 
   // Show the first validation feedback
   useEffect(() => {
     if (initialized) {
       trigger();
     }
-  }, [initialized]);
+  }, [initialized, trigger]);
 
   usePageTitle(
     entityLoading || (entryId && entryLoading)

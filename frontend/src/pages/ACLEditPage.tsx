@@ -1,12 +1,8 @@
-import {
-  ACLObjtypeEnum,
-  EntityDetail,
-  EntryRetrieve,
-} from "@dmm-com/airone-apiclient-typescript-fetch";
+import { ACLObjtypeEnum } from "@dmm-com/airone-apiclient-typescript-fetch";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Box, Container, Typography } from "@mui/material";
 import { useSnackbar } from "notistack";
-import { FC, Suspense, useCallback, useEffect, useState } from "react";
+import { FC, Suspense, useCallback, useEffect } from "react";
 import { FieldErrors, useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
 
@@ -34,9 +30,6 @@ import {
 const ACLEditContent: FC<{ objectId: number }> = ({ objectId }) => {
   const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
-  const [entity, setEntity] = useState<EntityDetail>();
-  const [entry, setEntry] = useState<EntryRetrieve>();
-  const [breadcrumbs, setBreadcrumbs] = useState<JSX.Element>(<Box />);
 
   const {
     formState: { isDirty, isSubmitting, isSubmitSuccessful },
@@ -60,7 +53,73 @@ const ACLEditContent: FC<{ objectId: number }> = ({ objectId }) => {
     { suspense: true },
   );
 
-  const historyReplace = () => {
+  // Fetch the parent/self entity or entry that the breadcrumbs and
+  // cancel-navigation need, depending on the ACL object type.
+  const entityId = (() => {
+    switch (acl.objtype) {
+      case ACLObjtypeEnum.Entity:
+        return objectId;
+      case ACLObjtypeEnum.EntityAttr:
+        return acl.parent?.id;
+      default:
+        return undefined;
+    }
+  })();
+
+  // One-shot page context (breadcrumbs / navigation target); no need to
+  // track server freshness on window focus.
+  const { data: entity } = usePagodaSWR(
+    entityId != null ? ["entity", entityId] : null,
+    () => aironeApiClient.getEntity(entityId ?? 0),
+    { revalidateOnFocus: false },
+  );
+
+  const { data: entry } = usePagodaSWR(
+    acl.objtype === ACLObjtypeEnum.Entry ? ["entry", objectId] : null,
+    () => aironeApiClient.getEntry(objectId),
+    { revalidateOnFocus: false },
+  );
+
+  // Derived from fetched data; no state needed.
+  const breadcrumbs = (() => {
+    switch (acl.objtype) {
+      case ACLObjtypeEnum.Category:
+        return (
+          <AironeBreadcrumbs>
+            <Typography component={AironeLink} to={topPath()}>
+              Top
+            </Typography>
+            <Typography component={AironeLink} to={listCategoryPath()}>
+              カテゴリ一覧
+            </Typography>
+            <Typography color="textPrimary">{acl.name}</Typography>
+            <Typography color="textPrimary">ACL設定</Typography>
+          </AironeBreadcrumbs>
+        );
+      case ACLObjtypeEnum.Entity:
+        return entity != null ? (
+          <EntityBreadcrumbs entity={entity} title="ACL設定" />
+        ) : (
+          <Box />
+        );
+      case ACLObjtypeEnum.EntityAttr:
+        return entity != null ? (
+          <EntityBreadcrumbs entity={entity} attr={acl.name} title="ACL設定" />
+        ) : (
+          <Box />
+        );
+      case ACLObjtypeEnum.Entry:
+        return entry != null ? (
+          <EntryBreadcrumbs entry={entry} title="ACL設定" />
+        ) : (
+          <Box />
+        );
+      default:
+        return <Box />;
+    }
+  })();
+
+  const historyReplace = useCallback(() => {
     switch (acl.objtype) {
       case ACLObjtypeEnum.Category:
         navigate(listCategoryPath(), { replace: true });
@@ -77,13 +136,13 @@ const ACLEditContent: FC<{ objectId: number }> = ({ objectId }) => {
         break;
       case ACLObjtypeEnum.Entry:
         if (entry?.id) {
-          navigate(entryDetailsPath(entry?.schema.id, entry?.id), {
+          navigate(entryDetailsPath(entry.schema.id, entry.id), {
             replace: true,
           });
         }
         break;
     }
-  };
+  }, [acl.objtype, entity, entry, navigate]);
 
   const handleSubmitOnInvalid = useCallback(
     async (err: FieldErrors<Schema & { generalError: string }>) => {
@@ -126,56 +185,15 @@ const ACLEditContent: FC<{ objectId: number }> = ({ objectId }) => {
       objtype: acl.objtype,
       roles: acl.roles,
     });
-    switch (acl.objtype) {
-      case ACLObjtypeEnum.Category:
-        setBreadcrumbs(
-          <AironeBreadcrumbs>
-            <Typography component={AironeLink} to={topPath()}>
-              Top
-            </Typography>
-            <Typography component={AironeLink} to={listCategoryPath()}>
-              カテゴリ一覧
-            </Typography>
-            <Typography color="textPrimary">{acl.name}</Typography>
-            <Typography color="textPrimary">ACL設定</Typography>
-          </AironeBreadcrumbs>,
-        );
-        break;
-      case ACLObjtypeEnum.Entity:
-        aironeApiClient.getEntity(objectId).then((resp) => {
-          setEntity(resp);
-          setBreadcrumbs(<EntityBreadcrumbs entity={resp} title="ACL設定" />);
-        });
-        break;
-      case ACLObjtypeEnum.EntityAttr:
-        if (acl.parent?.id) {
-          aironeApiClient.getEntity(acl.parent?.id).then((resp) => {
-            setEntity(resp);
-            setBreadcrumbs(
-              <EntityBreadcrumbs
-                entity={resp}
-                attr={acl.name}
-                title="ACL設定"
-              />,
-            );
-          });
-        }
+  }, [acl, reset]);
 
-        break;
-      case ACLObjtypeEnum.Entry:
-        aironeApiClient.getEntry(objectId).then((resp) => {
-          setEntry(resp);
-          setBreadcrumbs(<EntryBreadcrumbs entry={resp} title="ACL設定" />);
-        });
-        break;
-    }
-  }, [acl, reset, objectId]);
-
+  // Navigate after the submit succeeded. This must stay in an effect so that
+  // the usePrompt blocker is disabled (isSubmitSuccessful=true) before leaving.
   useEffect(() => {
     if (isSubmitSuccessful) {
       historyReplace();
     }
-  }, [isSubmitSuccessful]);
+  }, [isSubmitSuccessful, historyReplace]);
 
   return (
     <>

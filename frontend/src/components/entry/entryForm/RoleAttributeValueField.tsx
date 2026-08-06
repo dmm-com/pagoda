@@ -6,10 +6,11 @@ import {
   CircularProgress,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import { FC, useEffect, useState } from "react";
+import { FC, useState } from "react";
 import { Control, Controller } from "react-hook-form";
 import { UseFormSetValue } from "react-hook-form/dist/types/form";
 
+import { usePagodaSWR } from "../../../hooks/usePagodaSWR";
 import { aironeApiClient } from "../../../repository/AironeApiClient";
 
 import { Schema } from "./EntryFormSchema";
@@ -42,22 +43,18 @@ export const RoleAttributeValueField: FC<Props> = ({
   setValue,
   isDisabled = false,
 }) => {
-  const [options, setOptions] = useState<RoleOption[]>([]);
   const [inputValue, setInputValue] = useState("");
-  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    const fetchRoles = async () => {
-      setLoading(true);
-      try {
-        const roles = await aironeApiClient.getRoles(inputValue);
-        setOptions(roles.map((r) => ({ id: r.id, name: r.name })));
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchRoles();
-  }, [inputValue]);
+  const { data: options = [], isLoading: loading } = usePagodaSWR(
+    ["roleOptions", inputValue],
+    async () => {
+      const roles = await aironeApiClient.getRoles(inputValue);
+      return roles.map((r) => ({ id: r.id, name: r.name }));
+    },
+    // revalidateOnFocus is disabled so a transient failure of a background
+    // refetch cannot crash the entry form the user is editing.
+    { keepPreviousData: true, revalidateOnFocus: false },
+  );
 
   const handleChange = (value: RoleOption | RoleOption[] | null) => {
     if (multiple) {

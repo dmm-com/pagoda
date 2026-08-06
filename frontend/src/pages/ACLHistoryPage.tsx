@@ -1,12 +1,8 @@
-import {
-  ACLObjtypeEnum,
-  EntityDetail,
-  EntryRetrieve,
-} from "@dmm-com/airone-apiclient-typescript-fetch";
+import { ACLObjtypeEnum } from "@dmm-com/airone-apiclient-typescript-fetch";
 import AppsIcon from "@mui/icons-material/Apps";
 import { Box, Container, IconButton } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import { FC, Suspense, useEffect, useState } from "react";
+import { FC, Suspense, useState } from "react";
 import { preload } from "swr";
 
 import { usePagodaSWR, wrapFetcher } from "../hooks/usePagodaSWR";
@@ -27,13 +23,8 @@ const MenuBox = styled(Box)(({}) => ({
 }));
 
 const ACLHistoryContent: FC<{ objectId: number }> = ({ objectId }) => {
-  const [breadcrumbs, setBreadcrumbs] = useState<JSX.Element>(<Box />);
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
   const [openImportModal, setOpenImportModal] = useState(false);
-  const [entityDetail, setEntityDetail] = useState<EntityDetail | null>(null);
-  const [entryRetrieve, setEntryRetrieve] = useState<EntryRetrieve | null>(
-    null,
-  );
 
   const { data: acl } = usePagodaSWR(
     ["acl", objectId],
@@ -46,6 +37,40 @@ const ACLHistoryContent: FC<{ objectId: number }> = ({ objectId }) => {
     () => aironeApiClient.getAclHistory(objectId),
     { suspense: true },
   );
+
+  // One-shot page context (breadcrumbs / control menu); no need to track
+  // server freshness on window focus.
+  const { data: entityDetail } = usePagodaSWR(
+    acl.objtype === ACLObjtypeEnum.Entity ? ["entity", objectId] : null,
+    () => aironeApiClient.getEntity(objectId),
+    { revalidateOnFocus: false },
+  );
+
+  const { data: entryRetrieve } = usePagodaSWR(
+    acl.objtype === ACLObjtypeEnum.Entry ? ["entry", objectId] : null,
+    () => aironeApiClient.getEntry(objectId),
+    { revalidateOnFocus: false },
+  );
+
+  // Derived from fetched data; no state needed.
+  const breadcrumbs = (() => {
+    switch (acl.objtype) {
+      case ACLObjtypeEnum.Entity:
+        return entityDetail != null ? (
+          <EntityBreadcrumbs entity={entityDetail} title="ACL変更履歴" />
+        ) : (
+          <Box />
+        );
+      case ACLObjtypeEnum.Entry:
+        return entryRetrieve != null ? (
+          <EntryBreadcrumbs entry={entryRetrieve} title="ACL変更履歴" />
+        ) : (
+          <Box />
+        );
+      default:
+        return <Box />;
+    }
+  })();
 
   const controlMenu = () => {
     switch (acl.objtype) {
@@ -74,25 +99,6 @@ const ACLHistoryContent: FC<{ objectId: number }> = ({ objectId }) => {
         }
     }
   };
-
-  useEffect(() => {
-    switch (acl.objtype) {
-      case ACLObjtypeEnum.Entity:
-        aironeApiClient.getEntity(objectId).then((resp) => {
-          setEntityDetail(resp);
-          setBreadcrumbs(
-            <EntityBreadcrumbs entity={resp} title="ACL変更履歴" />,
-          );
-        });
-        break;
-      case ACLObjtypeEnum.Entry:
-        aironeApiClient.getEntry(objectId).then((resp) => {
-          setEntryRetrieve(resp);
-          setBreadcrumbs(<EntryBreadcrumbs entry={resp} title="ACL変更履歴" />);
-        });
-        break;
-    }
-  }, [acl, objectId]);
 
   return (
     <>

@@ -1,6 +1,6 @@
 import { Box, Button, Typography } from "@mui/material";
 import { DateTimePicker, DesktopDatePicker } from "@mui/x-date-pickers";
-import { FC, useEffect, useState } from "react";
+import { FC, useState } from "react";
 
 interface BaseDateRangePickerProps {
   initialStart?: string;
@@ -31,20 +31,29 @@ export const BaseDateRangePicker: FC<BaseDateRangePickerProps> = ({
     end: initialEnd ? new Date(initialEnd) : null,
   });
   const [isEditing, setIsEditing] = useState(false);
-  const [validationError, setValidationError] = useState<string | null>(null);
 
-  useEffect(() => {
+  // Reset drafts when the initial values change (render-time adjustment
+  // instead of an effect; see "You Might Not Need an Effect" in React docs).
+  const [prevInitial, setPrevInitial] = useState({ initialStart, initialEnd });
+  if (
+    prevInitial.initialStart !== initialStart ||
+    prevInitial.initialEnd !== initialEnd
+  ) {
+    setPrevInitial({ initialStart, initialEnd });
     setDraftDates({
       start: initialStart ? new Date(initialStart) : null,
       end: initialEnd ? new Date(initialEnd) : null,
     });
     setIsEditing(false);
-    setValidationError(null);
-  }, [initialStart, initialEnd]);
+  }
 
-  useEffect(() => {
-    validateDates();
-  }, [draftDates]);
+  // Derived from draftDates; no state needed.
+  const validationError =
+    draftDates.start && draftDates.end && draftDates.start > draftDates.end
+      ? isDateTime
+        ? "終了日時は開始日時以降を指定してください"
+        : "終了日は開始日以降を指定してください"
+      : null;
 
   const handleDateChange = (type: "start" | "end", date: Date | null) => {
     setDraftDates((prev) => ({
@@ -52,20 +61,6 @@ export const BaseDateRangePicker: FC<BaseDateRangePickerProps> = ({
       [type]: date,
     }));
     setIsEditing(true);
-  };
-
-  const validateDates = () => {
-    if (draftDates.start && draftDates.end) {
-      if (draftDates.start > draftDates.end) {
-        const errorMessage = isDateTime
-          ? "終了日時は開始日時以降を指定してください"
-          : "終了日は開始日以降を指定してください";
-        setValidationError(errorMessage);
-        return false;
-      }
-    }
-    setValidationError(null);
-    return true;
   };
 
   const formatDate = (date: Date | null): string => {
@@ -82,7 +77,7 @@ export const BaseDateRangePicker: FC<BaseDateRangePickerProps> = ({
   };
 
   const handleApply = () => {
-    if (!validateDates()) return;
+    if (validationError != null) return;
     onApply(formatDate(draftDates.start), formatDate(draftDates.end));
     setIsEditing(false);
   };

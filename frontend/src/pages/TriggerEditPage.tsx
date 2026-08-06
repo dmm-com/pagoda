@@ -281,7 +281,7 @@ export const TriggerEditPage: FC = () => {
 
       trigger();
     }
-  }, [actionTrigger]);
+  }, [actionTrigger, reset, trigger]);
 
   useEffect(() => {
     if (entity && entity.id !== 0) {
@@ -298,7 +298,7 @@ export const TriggerEditPage: FC = () => {
       );
     }
     trigger();
-  }, [entity]);
+  }, [entity, setValue, trigger]);
 
   useEffect(() => {
     if (isSubmitSuccessful) {
