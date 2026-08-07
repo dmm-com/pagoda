@@ -43,12 +43,12 @@ every configuration, so none of these substitutions changed behaviour.
 
 Read that as four separate effects, because they are not equally interesting:
 
-| step | saved | share |
+| step | saved | share of the 1093s |
 | --- | ---: | ---: |
-| MySQL → SQLite | 953s | 81% |
+| MySQL → SQLite | 953s | 87% |
 | real ES → in-process | 57s | 5% |
 | RabbitMQ → `memory://` | 0s | 0% |
-| serial → parallel apps | 87s | 7% |
+| serial → parallel apps | 87s | 8% |
 
 Three things follow. **The big win is SQLite, and `test_local.sh --sqlite`
 already had it** -- lite mode's marginal gain over that is 222s → 82s (2.7x),
