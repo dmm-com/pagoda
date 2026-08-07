@@ -29,26 +29,45 @@ Nothing needs to be installed or started. `docker` is not involved.
 
 ## What it costs and what it buys
 
-Measured on the same tree, same per-app split, both runs serial, on a busy
-12-core laptop -- so treat the absolute numbers as an upper bound and the ratio
-as the meaningful figure. The failures were identical in both runs, so lite
-mode introduced no divergence.
+1383 tests, same tree, same per-app split, run back to back on a 12-core
+macOS laptop at load ~7. Serial unless noted. The failures were identical in
+every configuration, so none of these substitutions changed behaviour.
 
-| | containers | lite |
+| configuration | containers | total |
 | --- | ---: | ---: |
-| 1344 tests, serial | 2828s | 167s |
-| 1344 tests, 4-way parallel | not practical -- every process wants the same test database | 105s |
+| MySQL + Elasticsearch + RabbitMQ | 3 | 1175s |
+| `test_local.sh --sqlite` (SQLite + real ES) | 2 | 222s |
+| SQLite + in-process search | 1 | 165s |
+| lite | 0 | 169s |
+| lite, `tools/lite.sh test` | 0 | 82s |
 
-Where the time goes differs sharply by app, and not all of it is attributable
-to the containers. For `entry`, the app that dominates the suite, 87% was
-database and search I/O: roughly 35k document writes, each of which
-`register_es()` follows with an `es.refresh()` costing ~35ms. That refresh is
-worth looking at independently of lite mode, since it also runs in production.
+Read that as four separate effects, because they are not equally interesting:
 
-Also note that a separate run split the remaining ~13% between password
-hashing and everything else. That measurement predates the test base class
-adopting MD5 hashing, which now applies to container runs too, so the hashing
-component no longer distinguishes the two modes.
+| step | saved | share |
+| --- | ---: | ---: |
+| MySQL → SQLite | 953s | 81% |
+| real ES → in-process | 57s | 5% |
+| RabbitMQ → `memory://` | 0s | 0% |
+| serial → parallel apps | 87s | 7% |
+
+Three things follow. **The big win is SQLite, and `test_local.sh --sqlite`
+already had it** -- lite mode's marginal gain over that is 222s → 82s (2.7x),
+from dropping the search container and from being able to parallelise at all.
+**Dropping RabbitMQ buys no time whatsoever**; the suite queues tasks nobody
+consumes, so the broker was never on the critical path. Its removal is about
+one less thing to run, not speed.
+
+**These ratios are near their upper bound here.** The dominant cost is
+per-query round-trip latency, and macOS reaches its containers through a VM
+(~2.4ms/query, per `tools/test_local.sh`'s own notes). On Linux with a native
+MySQL -- CI, most servers -- the same substitution saves proportionally less.
+The container-free and per-worktree properties do not depend on the platform;
+the multipliers do.
+
+Finally, `entry` alone accounts for 56% of the container-mode total, and its
+cost is dominated by search writes: `register_es()` issues an `es.refresh()`
+after every single document (~35ms each). That is worth looking at
+independently of lite mode, since it also runs in production.
 
 ## Quick start
 
@@ -94,11 +113,11 @@ Pin a specific value with `PAGODA_SLOT=7` when you want a memorable port.
 
 ## Running tests
 
-`tools/lite.sh test` with no arguments runs **one process per Django app**,
-four at a time. This mirrors CI, which gives every app its own matrix job. It
-is not only faster: a few apps leave process-global state behind (plugin
-registries, the URL gate keeper), so running everything in a single process
-reports failures that neither CI nor a real deployment would ever see.
+`tools/lite.sh test` with no arguments runs **one process per Django app**.
+This mirrors CI, which gives every app its own matrix job. It is not only
+faster: a few apps leave process-global state behind (plugin registries, the
+URL gate keeper), so running everything in a single process reports failures
+that neither CI nor a real deployment would ever see.
 
 Pass a target to run it directly in the foreground:
 
@@ -106,8 +125,23 @@ Pass a target to run it directly in the foreground:
 $ tools/lite.sh test entry.tests.test_service
 ```
 
-Tune concurrency with `PAGODA_TEST_JOBS`. Per-app logs land in
-`.pagoda-lite/testlogs/`.
+**The concurrency budget is shared by every worktree of the repository**, via
+lock directories under the common `.git`. This matters once more than one
+agent or terminal is working in parallel: without it each run helps itself to
+half the cores, and three of them together drive a 12-core laptop past load 40,
+at which point everything -- including the runs themselves -- gets slower.
+`PAGODA_TEST_JOBS` sets the budget; it defaults to cores minus two. A slot
+whose owning process died is reclaimed automatically, so a killed run does not
+strand capacity.
+
+Per-app logs land in `.pagoda-lite/testlogs/`, alongside a `results.json`
+summarising every app, its test count, duration and the names of any failing
+tests -- so tooling does not have to scrape stdout.
+
+Two footguns are handled rather than documented: migrations (which this project
+generates rather than commits) are created when missing and regenerated when
+the models have moved on, and if `custom_view` is not set up the runner says
+up front which two apps are expected to fail for that reason alone.
 
 ## Fidelity: what lite mode reproduces, and what it does not
 

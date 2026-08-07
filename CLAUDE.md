@@ -15,10 +15,19 @@ Elasticsearch and kombu's `memory://` replaces RabbitMQ, so nothing has to be
 started, and it covers the dev server rather than only tests.
 
 - **Whole suite, one process per app (mirrors CI's matrix):** `tools/lite.sh test`
+  — writes `.pagoda-lite/testlogs/results.json` (per-app counts, durations,
+  failing test names) so you do not have to parse stdout. Its concurrency
+  budget is shared across all worktrees, so parallel agents throttle each
+  other instead of thrashing the machine; override with `PAGODA_TEST_JOBS`.
 - **One target:** `tools/lite.sh test entry.tests.test_service`
 - **Dev server on this checkout's own port:** `tools/lite.sh init` then `tools/lite.sh run`
 - **Show this checkout's slot/port/paths:** `tools/lite.sh info`
+- **Is my dev server up?** `tools/lite.sh status`
 - **Any manage.py command:** prefix with `PAGODA_LITE=1`
+
+Migrations are generated, not committed; `lite.sh` creates them when missing
+and regenerates them when models have changed, so a fresh or freshly-rebased
+worktree needs no extra step.
 
 The pieces compose, so `AIRONE_ES_BACKEND=inmemory tools/test_local.sh --sqlite
 <target>` also runs container-free.
