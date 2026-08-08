@@ -9,7 +9,13 @@ on:
       - 'frontend/**/*.ts'
       - 'frontend/**/*.tsx'
       - '.github/workflows/build-frontend.yml'
+      - 'package.json'
       - 'package-lock.json'
+      # Without these, a change that weakens the typecheck gate (relaxing a
+      # compiler option, dropping the `typecheck` script) would not run the job
+      # that enforces it.
+      - 'tsconfig.json'
+      - 'tsconfig.lib.json'
       - '*.config.{js,mjs}'
 
 jobs:
