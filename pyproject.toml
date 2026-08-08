@@ -46,18 +46,22 @@ ignore_errors = true
 module = ["*.migrations.*"]
 ignore_errors = true
 
-# entry is the largest, most complex app; it is typed in a follow-up PR so this
-# PR can be reviewed in a focused slice.
-[[tool.mypy.overrides]]
-module = [
-    "entry.api_v1.views",
-    "entry.api_v2.serializers",
-    "entry.api_v2.views",
-    "entry.services",
-    "entry.tasks",
-    "entry.views",
-]
-ignore_errors = true
+# entry is the largest, most complex app. Rather than suppressing every error
+# in it, its remaining 292 errors are frozen in .mypy-baseline and filtered out
+# by `mypy-baseline filter` (see the staticchecks step in
+# .github/workflows/build-core.yml). New errors in these files - of any error
+# code - now fail the build, and the baseline can only shrink.
+#
+# To work on the backlog: fix errors, then run
+#   uv run mypy ./ | uv run mypy-baseline sync
+# and commit the updated .mypy-baseline.
+
+[tool.mypy-baseline]
+baseline_path = ".mypy-baseline"
+# Line numbers shift whenever unrelated code moves; matching on them would
+# produce spurious "new error" reports.
+sort_baseline = true
+allow_unsynced = false
 
 [tool.ruff]
 # Pyflakes (F), pycodestyle (E, W), isort (I)
@@ -141,6 +145,7 @@ dev = [
     # required by requests-html (lxml.html.clean was split into this package in
     # lxml 5.2+). Used only in tests; remove if requests-html is removed.
     "lxml-html-clean>=0.4.0",
+    "mypy-baseline>=0.7.4",
 ]
 plugins = [
     "pagoda-hello-world-plugin",

@@ -55,6 +55,7 @@ dev = [
     { name = "flower" },
     { name = "lxml-html-clean" },
     { name = "mypy" },
+    { name = "mypy-baseline" },
     { name = "requests-html" },
     { name = "ruff" },
     { name = "tblib" },
@@ -96,6 +97,7 @@ requires-dist = [
     { name = "lxml-html-clean", marker = "extra == 'dev'", specifier = ">=0.4.0" },
     { name = "markdown", specifier = ">=3.7" },
     { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.15.0" },
+    { name = "mypy-baseline", marker = "extra == 'dev'", specifier = ">=0.7.4" },
     { name = "mysqlclient", specifier = ">=2.2.8" },
     { name = "natsort", specifier = "==8.4.0" },
     { name = "pagoda-cross-entity-sample-plugin", marker = "extra == 'plugins'", editable = "plugin/examples/pagoda-cross-entity-plugin" },
@@ -1062,6 +1064,15 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/82/df/c7d79d09f6de8383fe800521d066d877e54d30b4fb94281c262be2df84ef/mypy-1.17.1-cp314-cp314-musllinux_1_2_x86_64.whl", hash = "sha256:397fba5d7616a5bc60b45c7ed204717eaddc38f826e3645402c426057ead9a91", size = 12900322, upload-time = "2025-07-31T07:53:10.551Z" },
     { url = "https://files.pythonhosted.org/packages/b8/98/3d5a48978b4f708c55ae832619addc66d677f6dc59f3ebad71bae8285ca6/mypy-1.17.1-cp314-cp314-win_amd64.whl", hash = "sha256:9d6b20b97d373f41617bd0708fd46aa656059af57f2ef72aa8c7d6a2b73b74ed", size = 9751879, upload-time = "2025-07-31T07:52:56.683Z" },
     { url = "https://files.pythonhosted.org/packages/1d/f3/8fcd2af0f5b806f6cf463efaffd3c9548a28f84220493ecd38d127b6b66d/mypy-1.17.1-py3-none-any.whl", hash = "sha256:a9f52c0351c21fe24c21d8c0eb1f62967b262d6729393397b6f443c3b773c3b9", size = 2283411, upload-time = "2025-07-31T07:53:24.664Z" },
+]
+
+[[package]]
+name = "mypy-baseline"
+version = "0.7.4"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/08/7e/484e07e1b27f9999f5f3f5097f0dfbb1ba756b0a2ed14acca764abad6cc8/mypy_baseline-0.7.4.tar.gz", hash = "sha256:c69d9964ebb2922f53245336bc506d9d277c8a35349a60ce50cff0c48a8702cc", size = 319098, upload-time = "2026-04-13T08:01:54.239Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/9e/77/3dee0c8f219cc5e68e7d84abc1ecc315856104c459658890bd9ecce17815/mypy_baseline-0.7.4-py3-none-any.whl", hash = "sha256:012c5f2f2bf9770b0e846d22580a72b9d43bdfe04148fee10a8af47b5bdd35c7", size = 17853, upload-time = "2026-04-13T08:01:52.444Z" },
 ]
 
 [[package]]

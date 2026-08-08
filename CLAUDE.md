@@ -24,6 +24,11 @@ Pagoda (formerly AirOne) is an entity/metadata management platform with flexible
   integer bounds), so run the final pre-push check in MySQL mode or rely on CI.
 - **Lint (ruff):** `uv run ruff check .`
 - **Type check:** `uv run mypy .`
+- **Type check as CI runs it:** `uv run mypy ./ | uv run mypy-baseline filter`.
+  The 292 remaining errors in the six largest `entry` modules are frozen in
+  `.mypy-baseline`; any *new* error fails the build. After fixing some of them,
+  run `uv run mypy ./ | uv run mypy-baseline sync` and commit the updated
+  `.mypy-baseline` — the file is only allowed to shrink.
 - **Generate test data:** `uv run python tools/generate_testdata.py`
 
 ### Frontend (TypeScript/React)

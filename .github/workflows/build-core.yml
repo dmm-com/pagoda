@@ -24,7 +24,11 @@ jobs:
       - name: staticchecks
         run: |
           mv custom_view_sample custom_view
-          uv run mypy ./
+          # The errors recorded in .mypy-baseline are filtered out; anything
+          # new fails the build. Do not add `set -o pipefail` here: mypy exits
+          # non-zero whenever errors exist, including baselined ones, and the
+          # filter's exit code is the one that matters.
+          uv run mypy ./ | uv run mypy-baseline filter
           uv run ruff check --output-format=github .
           uv run ruff format --check .
       - name: Check OpenAPI schema generation
