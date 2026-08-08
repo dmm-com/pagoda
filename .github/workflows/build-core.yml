@@ -21,6 +21,27 @@ jobs:
         with:
           clone: "false"
           base-dir: .
+      # `mypy-baseline sync` rewrites .mypy-baseline from whatever mypy reports,
+      # so the documented way to unblock a red build is also the way to freeze a
+      # regression. Without this check the ratchet only holds for people who
+      # read the comments.
+      - name: Baseline must not grow
+        if: github.event_name == 'pull_request'
+        run: |
+          base="origin/${{ github.base_ref }}"
+          git fetch --no-tags --depth=1 origin "${{ github.base_ref }}"
+          if ! git cat-file -e "${base}:.mypy-baseline" 2>/dev/null; then
+            echo ".mypy-baseline does not exist on ${base}; nothing to compare."
+            exit 0
+          fi
+          before=$(git show "${base}:.mypy-baseline" | wc -l)
+          after=$(wc -l < .mypy-baseline)
+          echo ".mypy-baseline: ${before} -> ${after} lines"
+          if [ "${after}" -gt "${before}" ]; then
+            echo "::error::.mypy-baseline grew from ${before} to ${after} lines. Fix the new type errors instead of running 'mypy-baseline sync'."
+            exit 1
+          fi
+
       - name: staticchecks
         run: |
           mv custom_view_sample custom_view

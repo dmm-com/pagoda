@@ -58,6 +58,14 @@ uv run ruff check --fix <changed-files>
 
 # Mypy (type checking) — target changed modules
 uv run mypy <changed-modules> --config-file=pyproject.toml
+
+# Whole tree, exactly as CI runs it. Required when the change touches
+# entry/api_v1/views.py, entry/api_v2/serializers.py, entry/api_v2/views.py,
+# entry/services.py, entry/tasks.py or entry/views.py: those modules carry
+# pre-existing errors frozen in .mypy-baseline, so a per-module run reports
+# errors that are not yours. Do not pipe a per-module run through the filter —
+# every baseline entry it does not see counts as "fixed" and it exits non-zero.
+uv run mypy ./ | uv run mypy-baseline filter
 ```
 
 **Ruff rules:**
@@ -106,7 +114,9 @@ uv run python manage.py test entity
 
 Before completing changes:
 1. `uv run ruff check <changed-files>` — lint and import order OK
-2. `uv run mypy <changed-modules>` — type checking OK
+2. `uv run mypy ./ | uv run mypy-baseline filter` — type checking OK (a
+   per-module `uv run mypy <changed-modules>` is fine for a quick look, but it
+   reports the errors frozen in `.mypy-baseline` as if they were yours)
 3. `uv run python manage.py test <related-tests>` — tests pass
 4. Comments and docstrings are written in English
 

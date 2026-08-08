@@ -47,19 +47,27 @@ module = ["*.migrations.*"]
 ignore_errors = true
 
 # entry is the largest, most complex app. Rather than suppressing every error
-# in it, its remaining 292 errors are frozen in .mypy-baseline and filtered out
+# in it, its remaining 272 errors are frozen in .mypy-baseline and filtered out
 # by `mypy-baseline filter` (see the staticchecks step in
-# .github/workflows/build-core.yml). New errors in these files - of any error
-# code - now fail the build, and the baseline can only shrink.
+# .github/workflows/build-core.yml).
+#
+# What this does and does not catch: matching is per (file, message) with line
+# numbers stripped, so an error whose exact message is not already in the
+# baseline fails the build regardless of its error code. It does not catch a
+# change that removes one occurrence of a message and adds another of the same
+# message in the same file - the baseline has, for example, 29 identical
+# "Missing type parameters for generic type Serializer" entries, and those 29
+# are interchangeable.
 #
 # To work on the backlog: fix errors, then run
 #   uv run mypy ./ | uv run mypy-baseline sync
-# and commit the updated .mypy-baseline.
+# and commit the updated .mypy-baseline. `sync` rewrites the file from whatever
+# mypy currently reports, so it will happily record a *new* error as accepted;
+# the "Baseline must not grow" step in build-core.yml is what stops that.
 
 [tool.mypy-baseline]
 baseline_path = ".mypy-baseline"
-# Line numbers shift whenever unrelated code moves; matching on them would
-# produce spurious "new error" reports.
+# Keep the file in a stable order so its diffs stay reviewable.
 sort_baseline = true
 allow_unsynced = false
 
