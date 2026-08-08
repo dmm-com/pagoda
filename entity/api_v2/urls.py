@@ -18,6 +18,10 @@ urlpatterns = [
         views.EntityImportAPI.as_view(),
     ),
     path(
+        "import/preview",
+        views.EntityImportPreviewAPI.as_view(),
+    ),
+    path(
         "export",
         views.EntityExportAPI.as_view(),
     ),

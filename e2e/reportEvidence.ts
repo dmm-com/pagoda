@@ -65,19 +65,29 @@ export const captureEvidence = async (
   });
 };
 
-export const writeE2eReport = () => {
+const defaultSummary = [
+  "The real frontend bundle booted in Chromium headless mode.",
+  "Dashboard, model list, entry list, and entry detail routes were exercised.",
+  "Object, array-object, named-object, and array-named-object values were verified as entry links.",
+  "Browser console errors, page errors, failed requests, critical axe violations, horizontal overflow, and off-screen interactive controls were checked.",
+];
+
+export const writeE2eReport = ({
+  title = "Pagoda E2E Report",
+  summary = defaultSummary,
+}: {
+  title?: string;
+  summary?: string[];
+} = {}) => {
   fs.mkdirSync(reportDir, { recursive: true });
   const lines = [
-    "# Pagoda E2E Report",
+    `# ${title}`,
     "",
     `Generated: ${new Date().toISOString()}`,
     "",
     "## Summary",
     "",
-    "- The real frontend bundle booted in Chromium headless mode.",
-    "- Dashboard, model list, entry list, and entry detail routes were exercised.",
-    "- Object, array-object, named-object, and array-named-object values were verified as entry links.",
-    "- Browser console errors, page errors, failed requests, critical axe violations, horizontal overflow, and off-screen interactive controls were checked.",
+    ...summary.map((line) => `- ${line}`),
     "",
     "## Test Results",
     "",
