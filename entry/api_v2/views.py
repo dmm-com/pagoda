@@ -68,6 +68,7 @@ from entry.services import AdvancedSearchService
 from entry.settings import CONFIG
 from entry.settings import CONFIG as ENTRY_CONFIG
 from group.models import Group
+from job.api_v2.serializers import ImportPreviewJobsSerializer
 from job.models import Job, JobOperation, JobStatus
 from role.models import Role
 
@@ -815,6 +816,15 @@ class EntryImportAPI(generics.GenericAPIView):
     @extend_schema(
         parameters=[
             OpenApiParameter("force", OpenApiTypes.BOOL, OpenApiParameter.QUERY, default=False),
+            OpenApiParameter(
+                "preview_job_id",
+                OpenApiTypes.INT,
+                OpenApiParameter.QUERY,
+                description=(
+                    "The preview this import was approved from. Items changed by "
+                    "someone else since then are left alone and reported."
+                ),
+            ),
         ],
         responses={
             200: None,
@@ -825,6 +835,7 @@ class EntryImportAPI(generics.GenericAPIView):
             return Response(status=status.HTTP_403_FORBIDDEN)
 
         import_datas = request.data
+        preview_job_id = request.query_params.get("preview_job_id")
         user: User = request.user
         serializer = EntryImportSerializer(data=import_datas)
         serializer.is_valid(raise_exception=True)
@@ -861,13 +872,72 @@ class EntryImportAPI(generics.GenericAPIView):
                 continue
 
             job = Job.new_import_v2(
-                user, entity, text="Preparing to import data", params=import_data
+                user,
+                entity,
+                text="Preparing to import data",
+                params=(
+                    {**import_data, "preview_job_id": int(preview_job_id)}
+                    if preview_job_id
+                    else import_data
+                ),
             )
             job.run()
             job_ids.append(job.id)
 
         return Response(
             {"result": {"job_ids": job_ids, "error": error_list}}, status=status.HTTP_200_OK
+        )
+
+
+class EntryImportPreviewAPI(generics.GenericAPIView):
+    """Start a job that reports what an item import file would change.
+
+    Nothing is written: applying an item import also reindexes Elasticsearch and
+    queues webhook and trigger jobs, so the preview runs the import's decisions
+    (the same serializers, the same change detection) and stops before the write.
+
+    One job is started per model in the file, mirroring the import itself. The
+    preview is optional -- posting to ``EntryImportAPI`` imports straight away.
+    """
+
+    parser_classes = [YAMLParser]
+    serializer_class = ImportPreviewJobsSerializer
+
+    @extend_schema(
+        request=EntryImportSerializer,
+        responses={202: ImportPreviewJobsSerializer},
+    )
+    def post(self, request: Request) -> Response:
+        if request.user.is_readonly:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
+        import_datas = request.data
+        user: User = request.user
+        serializer = EntryImportSerializer(data=import_datas)
+        serializer.is_valid(raise_exception=True)
+
+        entities = Entity.objects.filter(
+            name__in=[d["entity"] for d in import_datas], is_active=True
+        )
+
+        jobs: list[dict[str, int]] = []
+        error_list: list[str] = []
+        for import_data in import_datas:
+            entity = next((e for e in entities if e.name == import_data["entity"]), None)
+            if not entity:
+                error_list.append("%s: Entity does not exists." % import_data["entity"])
+                continue
+
+            if not user.has_permission(entity, ACLType.Writable):
+                error_list.append("%s: Entity is permission denied." % import_data["entity"])
+                continue
+
+            job = Job.new_import_entry_preview(user, entity, params=import_data)
+            job.run()
+            jobs.append({"entity": entity.name, "job_id": job.id})
+
+        return Response(
+            {"result": {"jobs": jobs, "error": error_list}}, status=status.HTTP_202_ACCEPTED
         )
 
 
