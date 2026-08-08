@@ -53,7 +53,7 @@ full traceback:
 """.format(request=request, exception=exception, traceback_msg=traceback_msg)
 
         # Print for DEBUG because email is not sent in dev environment
-        print(message)
+        print(message)  # noqa: T201
 
         # Send an email so that admins can receive errors
         mail_admins(subject, message)

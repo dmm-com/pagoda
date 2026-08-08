@@ -32,6 +32,12 @@ jobs:
           NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
       - name: lint
         run: npm run lint
+      # `build:lib:types` also runs tsc, but tsconfig.lib.json excludes the test
+      # files. Run tsc over tsconfig.json as an explicit step so type errors are
+      # reported as such (rather than as a library build failure) and so the
+      # test sources are type checked too.
+      - name: typecheck
+        run: npm run typecheck
   build:
     runs-on: ubuntu-24.04
     permissions:
