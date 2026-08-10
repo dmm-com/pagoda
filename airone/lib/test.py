@@ -57,6 +57,10 @@ class AironeTestCase(TestCase):
             OVERRIDE_ES_CONFIG["INDEX_NAME"] = "test-" + settings.ES_CONFIG["INDEX_NAME"]
         # Append pid suffix to enable parallel test
         OVERRIDE_ES_CONFIG["INDEX_NAME"] += "-" + str(os.getpid())
+        # Lite mode's in-memory index mirrors itself to disk for the dev
+        # server; tests must not inherit that, or they would leak state
+        # between runs and pay for the writes.
+        OVERRIDE_ES_CONFIG["PERSIST_PATH"] = None
         OVERRIDE_AIRONE = settings.AIRONE.copy()
         OVERRIDE_AIRONE_FLAGS = settings.AIRONE_FLAGS.copy()
         # Append pid suffix to enable parallel test
