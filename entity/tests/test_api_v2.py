@@ -3067,7 +3067,8 @@ class ViewTest(AironeViewTest):
 
         for search in ["foo", "FOO", "Foo"]:
             resp = self.client.get(
-                "/entity/api/v2/%d/entries/?search=%s" % (self.entity.id, search))
+                "/entity/api/v2/%d/entries/?search=%s" % (self.entity.id, search)
+            )
             self.assertEqual(resp.json()["count"], 1)
             self.assertEqual(resp.json()["results"][0]["name"], "Foo-0")
 

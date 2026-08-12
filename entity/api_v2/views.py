@@ -192,8 +192,10 @@ class EntityAPI(viewsets.ModelViewSet[Entity]):
             else:
                 exclude_condition["status"] = F("status").bitor(Entity.STATUS_TOP_LEVEL)
 
-        return Entity.objects.filter(**filter_condition).exclude(**exclude_condition).annotate(
-            name_lower=Lower("name")
+        return (
+            Entity.objects.filter(**filter_condition)
+            .exclude(**exclude_condition)
+            .annotate(name_lower=Lower("name"))
         )
 
     @extend_schema(request=EntityCreateSerializer, responses={202: None})
