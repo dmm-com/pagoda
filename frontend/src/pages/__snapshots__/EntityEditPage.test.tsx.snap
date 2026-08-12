@@ -530,6 +530,13 @@ exports[`EditEntityPage should match snapshot 1`] = `
                 <th
                   class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-8816du-MuiTableCell-root"
                   scope="col"
+                  width="100px"
+                >
+                  並び替え
+                </th>
+                <th
+                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-8816du-MuiTableCell-root"
+                  scope="col"
                   width="300px"
                 >
                   属性名
@@ -547,13 +554,6 @@ exports[`EditEntityPage should match snapshot 1`] = `
                   width="200px"
                 >
                   デフォルト値
-                </th>
-                <th
-                  class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-8816du-MuiTableCell-root"
-                  scope="col"
-                  width="100px"
-                >
-                  並び替え
                 </th>
                 <th
                   class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-8816du-MuiTableCell-root"
@@ -627,6 +627,23 @@ exports[`EditEntityPage should match snapshot 1`] = `
               </tr>
             </tbody>
           </table>
+          <div
+            id="DndDescribedBy-0"
+            style="display: none;"
+          >
+            
+    To pick up a draggable item, press the space bar.
+    While dragging, use the arrow keys to move the item.
+    Press space again to drop the item in its new position, or press escape to cancel.
+  
+          </div>
+          <div
+            aria-atomic="true"
+            aria-live="assertive"
+            id="DndLiveRegion-0"
+            role="status"
+            style="position: fixed; top: 0px; left: 0px; width: 1px; height: 1px; margin: -1px; border: 0px; padding: 0px; overflow: hidden; clip-path: inset(100%); white-space: nowrap;"
+          />
           <h4
             class="MuiTypography-root MuiTypography-h4 MuiTypography-alignCenter css-1ulnhey-MuiTypography-root"
             style="--Typography-textAlign: center;"
@@ -1378,6 +1395,13 @@ exports[`EditEntityPage should match snapshot 1`] = `
               <th
                 class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-8816du-MuiTableCell-root"
                 scope="col"
+                width="100px"
+              >
+                並び替え
+              </th>
+              <th
+                class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-8816du-MuiTableCell-root"
+                scope="col"
                 width="300px"
               >
                 属性名
@@ -1395,13 +1419,6 @@ exports[`EditEntityPage should match snapshot 1`] = `
                 width="200px"
               >
                 デフォルト値
-              </th>
-              <th
-                class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-8816du-MuiTableCell-root"
-                scope="col"
-                width="100px"
-              >
-                並び替え
               </th>
               <th
                 class="MuiTableCell-root MuiTableCell-head MuiTableCell-sizeMedium css-8816du-MuiTableCell-root"
@@ -1475,6 +1492,23 @@ exports[`EditEntityPage should match snapshot 1`] = `
             </tr>
           </tbody>
         </table>
+        <div
+          id="DndDescribedBy-0"
+          style="display: none;"
+        >
+          
+    To pick up a draggable item, press the space bar.
+    While dragging, use the arrow keys to move the item.
+    Press space again to drop the item in its new position, or press escape to cancel.
+  
+        </div>
+        <div
+          aria-atomic="true"
+          aria-live="assertive"
+          id="DndLiveRegion-0"
+          role="status"
+          style="position: fixed; top: 0px; left: 0px; width: 1px; height: 1px; margin: -1px; border: 0px; padding: 0px; overflow: hidden; clip-path: inset(100%); white-space: nowrap;"
+        />
         <h4
           class="MuiTypography-root MuiTypography-h4 MuiTypography-alignCenter css-1ulnhey-MuiTypography-root"
           style="--Typography-textAlign: center;"

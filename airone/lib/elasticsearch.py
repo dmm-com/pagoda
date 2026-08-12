@@ -9,6 +9,7 @@ from pydantic import BaseModel
 from typing_extensions import TypedDict
 
 from airone.lib.acl import ACLType
+from airone.lib.es_inmemory import InMemoryElasticsearch
 from airone.lib.log import Logger
 from airone.lib.types import AttrType, BaseIntEnum, coerce_number
 from entity.models import Entity
@@ -97,6 +98,13 @@ class EntryDocument(TypedDict):
 
 class ESS(Elasticsearch):
     MAX_TERM_SIZE = 32766
+
+    def __new__(cls, *args: Any, **kwargs: Any) -> "ESS":
+        # Lite dev mode swaps the cluster for an in-process index. Dispatching
+        # in __new__ keeps every ``ESS()`` call site and type annotation intact.
+        if cls is ESS and settings.ES_CONFIG.get("BACKEND") == "inmemory":
+            return super().__new__(InMemoryESS)
+        return super().__new__(cls)
 
     def __init__(self, index: str | None = None, **kwargs: Any) -> None:
         self.additional_config = False
@@ -257,6 +265,54 @@ class ESS(Elasticsearch):
                 }
             },
         )
+
+
+class InMemoryESS(ESS):
+    """``ESS`` backed by an in-process index instead of an Elasticsearch cluster.
+
+    Instantiated implicitly by ``ESS()`` when ``ES_CONFIG["BACKEND"]`` is
+    ``"inmemory"`` (Pagoda's lite dev mode). Every method that talks to the
+    cluster is overridden here; anything that is not raises ``AttributeError``
+    rather than silently opening a connection, so gaps surface immediately.
+
+    ``recreate_index`` is deliberately inherited: it only drives
+    ``self.indices``, which the in-memory engine supplies.
+    """
+
+    def __init__(self, index: str | None = None, **kwargs: Any) -> None:
+        # Skip Elasticsearch.__init__ entirely: there is no transport to build.
+        self.additional_config = True
+        self._index = index if index else settings.ES_CONFIG["INDEX_NAME"]
+        self._engine = InMemoryElasticsearch(self._index)
+        self.indices = self._engine.indices  # type: ignore[assignment]
+
+    def bulk(self, **kwargs: Any) -> Any:
+        return self._engine.bulk(index=self._index, **kwargs)
+
+    def delete(self, **kwargs: Any) -> Any:
+        return self._engine.delete(index=self._index, **kwargs)
+
+    def delete_by_query(self, **kwargs: Any) -> Any:
+        kwargs.setdefault("index", self._index)
+        return self._engine.delete_by_query(**kwargs)
+
+    def index(self, **kwargs: Any) -> Any:
+        return self._engine.index(index=self._index, **kwargs)
+
+    def refresh(self, **kwargs: Any) -> Any:
+        return self._engine.indices.refresh(index=self._index)
+
+    def count(self, **kwargs: Any) -> Any:
+        return self._engine.count(index=self._index)
+
+    def get(self, **kwargs: Any) -> Any:
+        kwargs.setdefault("index", self._index)
+        return self._engine.get(**kwargs)
+
+    def search(self, **kwargs: Any) -> dict[str, Any]:  # type: ignore[override]
+        if "size" not in kwargs:
+            kwargs["size"] = settings.ES_CONFIG["MAXIMUM_RESULTS_NUM"]
+        return self._engine.search(index=self._index, **kwargs)
 
 
 def make_query(
