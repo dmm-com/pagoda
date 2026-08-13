@@ -284,15 +284,26 @@ class JobListAPI(viewsets.ModelViewSet[Job]):
         if target_id:
             query &= Q(target=target_id)
 
-        return Job.objects.filter(query).select_related("target").order_by("-created_at")
+        return (
+            Job.objects.filter(query)
+            .select_related("user", "target")
+            .order_by("-id")
+        )
+
+    def paginate_queryset(self, queryset: Any) -> Any:
+        page = super().paginate_queryset(queryset)
+        self._paginated_page = page
+        return page
 
     def get_serializer_context(self) -> dict[str, Any]:
         context: dict[str, Any] = dict(super().get_serializer_context())
 
         # prefetch target entries, then pass it via context manually to avoid N+1 in serializer
-        qs = self.paginate_queryset(self.get_queryset().values("target__id", "target__objtype"))
+        page: list[Job] = getattr(self, "_paginated_page", None) or []
         target_ids = [
-            int(r["target__id"]) for r in (qs or []) if r["target__objtype"] == ACLObjType.Entry
+            obj.target.id
+            for obj in page
+            if obj.target is not None and obj.target.objtype == ACLObjType.Entry
         ]
         entries = (
             Entry.objects.filter(id__in=target_ids)
