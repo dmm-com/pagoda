@@ -3062,6 +3062,16 @@ class ViewTest(AironeViewTest):
         self.assertEqual(resp.json()["count"], 1)
         self.assertEqual(resp.json()["results"][0]["name"], "e-0")
 
+    def test_list_entry_with_param_search_case_insensitive(self):
+        self.add_entry(self.user, "Foo-0", self.entity)
+
+        for search in ["foo", "FOO", "Foo"]:
+            resp = self.client.get(
+                "/entity/api/v2/%d/entries/?search=%s" % (self.entity.id, search)
+            )
+            self.assertEqual(resp.json()["count"], 1)
+            self.assertEqual(resp.json()["results"][0]["name"], "Foo-0")
+
     def test_list_entry_with_ordering(self):
         self.add_entry(self.user, "e-2", self.entity)
         self.add_entry(self.user, "e-3", self.entity)

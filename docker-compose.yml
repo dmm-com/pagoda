@@ -11,7 +11,7 @@ services:
     image: mysql:8.0.36
     hostname: mysql
     restart: unless-stopped
-    command: mysqld --character-set-server=utf8 --collation-server=utf8_unicode_ci
+    command: mysqld --character-set-server=utf8 --collation-server=utf8mb4_0900_as_cs
     ports:
       - ${PAGODA_MYSQL_PORT:-3306}:3306
     environment:
