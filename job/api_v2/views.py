@@ -284,11 +284,7 @@ class JobListAPI(viewsets.ModelViewSet[Job]):
         if target_id:
             query &= Q(target=target_id)
 
-        return (
-            Job.objects.filter(query)
-            .select_related("user", "target")
-            .order_by("-id")
-        )
+        return Job.objects.filter(query).select_related("user", "target").order_by("-id")
 
     def paginate_queryset(self, queryset: Any) -> Any:
         page = super().paginate_queryset(queryset)
