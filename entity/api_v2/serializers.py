@@ -29,6 +29,7 @@ from airone.lib.log import Logger
 from airone.lib.types import AttrType, AttrTypeValue
 from entity.admin import EntityAttrResource, EntityResource
 from entity.models import Entity, EntityAttr, ItemNameType
+from entity.services import EntityImportPreviewService
 from isolation.models import IsolationAction as _IsolationAction
 from isolation.models import IsolationCondition as _IsolationCondition
 from isolation.models import IsolationParent as _IsolationParent
@@ -1626,6 +1627,35 @@ class EntityImportExportRootSerializer(serializers.Serializer[dict[str, Any]]):
 
         _do_import(EntityResource, self.validated_data["Entity"])
         _do_import(EntityAttrResource, self.validated_data["EntityAttr"])
+
+    def build_preview(self, job: "Job | None" = None) -> dict[str, Any] | None:
+        """Report what save() would change, without touching anything.
+
+        The preview is read-only. Building it by running the real import inside a
+        transaction and rolling back would report the same thing, but it would
+        take write locks on rows the user only asked to look at, and would leave
+        the changes behind if the rollback ever failed to run.
+
+        When a job is given, its text reports progress and its cancellation stops
+        the walk: this runs on a worker, and a preview of a large file takes as
+        long as the import it is previewing.
+        """
+        request = self.context.get("request")
+        assert request is not None, "EntityImportExportRootSerializer requires 'request' context"
+        user: User = request.user
+
+        def _on_progress(done: int, total: int) -> None:
+            if job is None:
+                return
+            job.text = "Now previewing... (progress: [%5d/%5d])" % (done, total)
+            job.save(update_fields=["text"])
+
+        return EntityImportPreviewService.build(
+            user,
+            self.validated_data,
+            on_progress=_on_progress,
+            is_canceled=(job.is_canceled if job is not None else None),
+        )
 
 
 class EntityAttrIDandNameSerializer(serializers.Serializer[dict[str, Any]]):

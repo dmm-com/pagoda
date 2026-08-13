@@ -32,6 +32,7 @@ from entity.api_v2.serializers import (
 from entity.models import Entity, EntityAttr
 from entry.api_v2.serializers import EntryBaseSerializer, EntryCreateSerializer
 from entry.models import Entry
+from job.api_v2.serializers import ImportPreviewJobSerializer
 from job.models import Job
 from user.models import History, User
 
@@ -453,6 +454,41 @@ class EntityImportAPI(generics.GenericAPIView[Entity]):
         serializer.save()
 
         return Response()
+
+
+class EntityImportPreviewAPI(generics.GenericAPIView[Entity]):
+    """Start a job that reports what an import file would change.
+
+    Previewing walks the same rows the import walks, so it costs the same: it is
+    handed to a worker and this endpoint returns the job to poll, rather than
+    holding a request open for as long as the import would take. That also means
+    a preview has no row limit -- a file too big to preview in a request is
+    exactly the file whose preview is worth waiting for.
+
+    The preview stays optional: clients may post straight to ``EntityImportAPI``.
+    """
+
+    parser_classes = [YAMLParser]
+    serializer_class = ImportPreviewJobSerializer  # type: ignore[assignment]
+
+    @extend_schema(
+        request=EntityImportExportRootSerializer,
+        responses={202: ImportPreviewJobSerializer},
+    )
+    def post(self, request: Request) -> Response:
+        user = cast(User, request.user)
+        if user.is_readonly:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
+        serializer = EntityImportExportRootSerializer(
+            data=request.data, context={"request": self.request}
+        )
+        serializer.is_valid(raise_exception=True)
+
+        job = Job.new_import_entity_preview(user, request.data)
+        job.run()
+
+        return Response({"job_id": job.id}, status=status.HTTP_202_ACCEPTED)
 
 
 class EntityExportAPI(generics.RetrieveAPIView[Entity]):
