@@ -228,9 +228,10 @@ class Job(models.Model):
         else:
             return False
 
-    def is_timeout(self) -> bool:
-        # Sync updated_at time information with the data which is stored in database
-        self.refresh_from_db(fields=["updated_at"])
+    def is_timeout(self, with_refresh: bool = True) -> bool:
+        if with_refresh:
+            # Sync updated_at time information with the data which is stored in database
+            self.refresh_from_db(fields=["updated_at"])
 
         task_expiry = self.updated_at + timedelta(seconds=self._get_job_timeout())
 
@@ -250,7 +251,7 @@ class Job(models.Model):
             JobStatus.WARNING,
         ]
 
-        return self.status in finished_status or self.is_timeout()
+        return self.status in finished_status or self.is_timeout(with_refresh=with_refresh)
 
     def is_canceled(self) -> bool:
         # Sync status flag information with the data which is stored in database
