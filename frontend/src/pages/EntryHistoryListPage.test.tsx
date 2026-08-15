@@ -14,7 +14,7 @@ import { TestWrapperWithoutRoutes } from "TestWrapper";
 
 const server = setupServer(
   // getEntry
-  http.get("/entry/api/v2/:entryId/", () => {
+  http.get("http://localhost/entry/api/v2/1/", () => {
     return HttpResponse.json({
       id: 1,
       name: "test entry",
@@ -27,14 +27,14 @@ const server = setupServer(
     });
   }),
   // getEntryHistories
-  http.get("/entry/api/v2/:entryId/histories", () => {
+  http.get("http://localhost/entry/api/v2/1/histories/", () => {
     return HttpResponse.json({
       count: 0,
       results: [],
     });
   }),
-  // getEntrySelfHistories
-  http.get("/entry/api/v2/:entryId/self_histories/", () => {
+  // getEntrySelfHistories (AironeApiClient uses relative fetch, not apiclient base URL)
+  http.get("/entry/api/v2/1/self_histories/", () => {
     return HttpResponse.json({
       count: 0,
       results: [],
