@@ -1,5 +1,4 @@
 /**
- * @jest-environment jsdom
  */
 
 import {
@@ -290,7 +289,7 @@ describe("EntryForm", () => {
   });
 
   test("should show scroll to top button and handle click", () => {
-    const scrollToSpy = jest.fn();
+    const scrollToSpy = vi.fn();
     Object.defineProperty(window, "scrollTo", {
       value: scrollToSpy,
       writable: true,

@@ -1,5 +1,4 @@
 /**
- * @jest-environment jsdom
  */
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -41,13 +40,13 @@ const defaultValues: Schema = {
 };
 
 beforeEach(() => {
-  jest.clearAllMocks();
+  vi.clearAllMocks();
 });
 
 describe("CategoryForm", () => {
   test("should render all form fields correctly", async () => {
     // API Mock
-    jest.spyOn(aironeApiClient, "getEntities").mockResolvedValue(mockEntities);
+    vi.spyOn(aironeApiClient, "getEntities").mockResolvedValue(mockEntities);
 
     // Render form hook
     const { result } = renderHook(() =>
@@ -83,7 +82,7 @@ describe("CategoryForm", () => {
 
   test("should handle input changes correctly", async () => {
     // API Mock
-    jest.spyOn(aironeApiClient, "getEntities").mockResolvedValue(mockEntities);
+    vi.spyOn(aironeApiClient, "getEntities").mockResolvedValue(mockEntities);
 
     // Render form hook
     const { result } = renderHook(() =>
@@ -130,7 +129,7 @@ describe("CategoryForm", () => {
 
   test("should handle entity selection correctly", async () => {
     // API Mock
-    jest.spyOn(aironeApiClient, "getEntities").mockResolvedValue(mockEntities);
+    vi.spyOn(aironeApiClient, "getEntities").mockResolvedValue(mockEntities);
 
     // Render form hook
     const { result } = renderHook(() =>
@@ -142,7 +141,7 @@ describe("CategoryForm", () => {
     );
 
     // Mock setValue
-    const setValueMock = jest.fn();
+    const setValueMock = vi.fn();
 
     await act(async () => {
       render(
@@ -171,7 +170,7 @@ describe("CategoryForm", () => {
 
   test("should show loading state when fetching entities", async () => {
     // Set API to loading state
-    jest.spyOn(aironeApiClient, "getEntities").mockImplementation(
+    vi.spyOn(aironeApiClient, "getEntities").mockImplementation(
       () =>
         new Promise(() => {
           /* never resolve */
@@ -205,17 +204,17 @@ describe("CategoryForm", () => {
   test("should handle API error gracefully", async () => {
     // Suppress console errors
     const originalConsoleError = console.error;
-    console.error = jest.fn();
+    console.error = vi.fn();
 
     try {
       // Mock usePagodaSWR to return loading state
-      jest.spyOn(usePagodaSWRModule, "usePagodaSWR").mockImplementation(() => {
+      vi.spyOn(usePagodaSWRModule, "usePagodaSWR").mockImplementation(() => {
         return {
           data: undefined,
           error: undefined,
           isLoading: true,
           isValidating: false,
-          mutate: jest.fn(),
+          mutate: vi.fn(),
         } as ReturnType<typeof usePagodaSWRModule.usePagodaSWR>;
       });
 
@@ -250,7 +249,7 @@ describe("CategoryForm", () => {
 
   test("should handle entity selection correctly when entities are loading", async () => {
     // Set API to loading state
-    jest.spyOn(aironeApiClient, "getEntities").mockImplementation(
+    vi.spyOn(aironeApiClient, "getEntities").mockImplementation(
       () =>
         new Promise(() => {
           /* never resolve */
@@ -267,7 +266,7 @@ describe("CategoryForm", () => {
     );
 
     // Mock setValue
-    const setValueMock = jest.fn();
+    const setValueMock = vi.fn();
 
     await act(async () => {
       render(

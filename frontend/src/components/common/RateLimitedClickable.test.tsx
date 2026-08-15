@@ -1,5 +1,4 @@
 /**
- * @jest-environment jsdom
  */
 
 import { Button } from "@mui/material";
@@ -11,7 +10,7 @@ import { TestWrapper } from "TestWrapper";
 
 describe("RateLimitedClickable", () => {
   test("should pass only 1 handler call during rate limiting", async () => {
-    const handleClick = jest.fn();
+    const handleClick = vi.fn();
 
     // with sufficiently long interval
     render(
@@ -35,7 +34,7 @@ describe("RateLimitedClickable", () => {
   });
 
   test("should pass multiple handler call if it doesn't exceed rate limit", async () => {
-    const handleClick = jest.fn();
+    const handleClick = vi.fn();
 
     // with no interval
     render(

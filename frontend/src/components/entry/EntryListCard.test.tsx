@@ -1,5 +1,4 @@
 /**
- * @jest-environment jsdom
  */
 
 import { EntryBase } from "@dmm-com/airone-apiclient-typescript-fetch";
@@ -10,7 +9,7 @@ import { EntryListCard } from "components/entry/EntryListCard";
 import { ACLType } from "services/ACLUtil";
 
 afterEach(() => {
-  jest.clearAllMocks();
+  vi.clearAllMocks();
 });
 
 test("should render a component with essential props", function () {

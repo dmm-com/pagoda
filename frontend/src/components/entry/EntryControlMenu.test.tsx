@@ -1,5 +1,4 @@
 /**
- * @jest-environment jsdom
  */
 
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
@@ -10,9 +9,9 @@ import { aironeApiClient } from "repository/AironeApiClient";
 import { ACLType } from "services/ACLUtil";
 
 // Mock API client
-jest.mock("repository/AironeApiClient", () => ({
+vi.mock("repository/AironeApiClient", () => ({
   aironeApiClient: {
-    destroyEntry: jest.fn(() => Promise.resolve()),
+    destroyEntry: vi.fn(() => Promise.resolve()),
   },
 }));
 
@@ -23,11 +22,11 @@ describe("EntryControlMenu", () => {
     entityId: 1,
     entryId: 1,
     anchorElem: createAnchorElem(),
-    handleClose: jest.fn(),
+    handleClose: vi.fn(),
   };
 
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe("rendering", () => {
@@ -174,7 +173,7 @@ describe("EntryControlMenu", () => {
 
   describe("menu close", () => {
     test("should call handleClose when menu item is clicked", () => {
-      const mockHandleClose = jest.fn();
+      const mockHandleClose = vi.fn();
       render(
         <EntryControlMenu {...defaultProps} handleClose={mockHandleClose} />,
         { wrapper: TestWrapper },

@@ -1,5 +1,4 @@
 /**
- * @jest-environment jsdom
  */
 
 import { GetEntryAttrReferral } from "@dmm-com/airone-apiclient-typescript-fetch";
@@ -52,11 +51,11 @@ const Harness = ({
 
 describe("ReferralsAutocomplete", () => {
   beforeEach(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   test("fetches once on open and uses display labels with name fallback", async () => {
-    const fetchSpy = jest
+    const fetchSpy = vi
       .spyOn(aironeApiClient, "getEntryAttrReferrals")
       .mockResolvedValue(options);
     render(<Harness />, { wrapper: TestWrapper });
@@ -74,7 +73,7 @@ describe("ReferralsAutocomplete", () => {
   });
 
   test("stores a selected option and restores its label after blur", async () => {
-    const fetchSpy = jest
+    const fetchSpy = vi
       .spyOn(aironeApiClient, "getEntryAttrReferrals")
       .mockResolvedValue(options);
     render(<Harness />, { wrapper: TestWrapper });
@@ -98,7 +97,7 @@ describe("ReferralsAutocomplete", () => {
   });
 
   test("queries by input and clears the single value", async () => {
-    const fetchSpy = jest
+    const fetchSpy = vi
       .spyOn(aironeApiClient, "getEntryAttrReferrals")
       .mockResolvedValue(options);
     render(<Harness initialValue={options[0]} />, { wrapper: TestWrapper });
@@ -117,7 +116,7 @@ describe("ReferralsAutocomplete", () => {
   });
 
   test("clears multiple values to an empty array", async () => {
-    const fetchSpy = jest
+    const fetchSpy = vi
       .spyOn(aironeApiClient, "getEntryAttrReferrals")
       .mockResolvedValue(options);
     render(<Harness initialValue={options} multiple />, {
@@ -135,9 +134,9 @@ describe("ReferralsAutocomplete", () => {
   });
 
   test("recovers from request failures and leaves the picker usable", async () => {
-    jest
-      .spyOn(aironeApiClient, "getEntryAttrReferrals")
-      .mockRejectedValue(new Error("network unavailable"));
+    vi.spyOn(aironeApiClient, "getEntryAttrReferrals").mockRejectedValue(
+      new Error("network unavailable"),
+    );
     render(<Harness />, { wrapper: TestWrapper });
 
     fireEvent.click(screen.getByRole("button", { name: "Open" }));
@@ -148,9 +147,9 @@ describe("ReferralsAutocomplete", () => {
   });
 
   test("renders validation feedback and disabled state", () => {
-    jest
-      .spyOn(aironeApiClient, "getEntryAttrReferrals")
-      .mockResolvedValue(options);
+    vi.spyOn(aironeApiClient, "getEntryAttrReferrals").mockResolvedValue(
+      options,
+    );
     render(<Harness disabled error={{ message: "Selection is required" }} />, {
       wrapper: TestWrapper,
     });

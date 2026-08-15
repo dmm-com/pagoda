@@ -1,5 +1,4 @@
 /**
- * @jest-environment jsdom
  */
 
 import { fireEvent, render, screen } from "@testing-library/react";
@@ -18,8 +17,8 @@ interface DateTimePickerProps {
   };
 }
 
-jest.mock("@mui/x-date-pickers", () => ({
-  ...jest.requireActual("@mui/x-date-pickers"),
+vi.mock("@mui/x-date-pickers", async () => ({
+  ...((await vi.importActual("@mui/x-date-pickers")) as object),
   DateTimePicker: ({
     label,
     value,
@@ -69,13 +68,13 @@ jest.mock("@mui/x-date-pickers", () => ({
 
 describe("DateTimeRangePicker", () => {
   const baseProps = {
-    onApply: jest.fn(),
-    onCancel: jest.fn(),
+    onApply: vi.fn(),
+    onCancel: vi.fn(),
     disabled: false,
   };
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   test("Initial date and time should be displayed correctly", () => {
@@ -120,7 +119,7 @@ describe("DateTimeRangePicker", () => {
   });
 
   test("When valid dates are selected and apply button is clicked, onApply should be called with formatted dates", async () => {
-    const handleApply = jest.fn();
+    const handleApply = vi.fn();
     render(<DateTimeRangePicker {...baseProps} onApply={handleApply} />, {
       wrapper: TestWrapper,
     });
@@ -149,7 +148,7 @@ describe("DateTimeRangePicker", () => {
   });
 
   test("When cancel button is clicked, onCancel should be called", async () => {
-    const handleCancel = jest.fn();
+    const handleCancel = vi.fn();
     render(
       <DateTimeRangePicker
         {...baseProps}

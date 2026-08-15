@@ -1,5 +1,4 @@
 /**
- * @jest-environment jsdom
  */
 
 import { act, render, screen } from "@testing-library/react";
@@ -9,7 +8,7 @@ import { PaginationFooter } from "./PaginationFooter";
 import { TestWrapper } from "TestWrapper";
 
 describe("PaginationFooter", () => {
-  const changePage = jest.fn();
+  const changePage = vi.fn();
 
   const cases: Array<{
     count: number;

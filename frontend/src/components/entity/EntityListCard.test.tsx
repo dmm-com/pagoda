@@ -1,5 +1,4 @@
 /**
- * @jest-environment jsdom
  */
 
 import { EntityList } from "@dmm-com/airone-apiclient-typescript-fetch";
@@ -19,7 +18,7 @@ describe("EntityListCard", () => {
   };
 
   test("should render entity", () => {
-    const setToggle = jest.fn();
+    const setToggle = vi.fn();
 
     render(<EntityListCard entity={entity} setToggle={setToggle} />, {
       wrapper: TestWrapper,
@@ -30,7 +29,7 @@ describe("EntityListCard", () => {
   });
 
   test("should click menu button", () => {
-    const setToggle = jest.fn();
+    const setToggle = vi.fn();
 
     render(<EntityListCard entity={entity} setToggle={setToggle} />, {
       wrapper: TestWrapper,
@@ -48,7 +47,7 @@ describe("EntityListCard", () => {
 
   test("should render without note", () => {
     const entityWithoutNote = { ...entity, note: undefined };
-    const setToggle = jest.fn();
+    const setToggle = vi.fn();
 
     render(
       <EntityListCard entity={entityWithoutNote} setToggle={setToggle} />,
@@ -81,7 +80,7 @@ describe("EntityListCard", () => {
     // Mock clipboard API
     Object.assign(navigator, {
       clipboard: {
-        writeText: jest.fn().mockImplementation(() => Promise.resolve()),
+        writeText: vi.fn().mockImplementation(() => Promise.resolve()),
       },
     });
 

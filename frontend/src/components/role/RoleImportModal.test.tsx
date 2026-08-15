@@ -1,5 +1,4 @@
 /**
- * @jest-environment jsdom
  */
 
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
@@ -10,20 +9,20 @@ import { TestWrapper } from "TestWrapper";
 import { aironeApiClient } from "repository/AironeApiClient";
 
 // Mock dependencies
-jest.mock("repository/AironeApiClient", () => ({
+vi.mock("repository/AironeApiClient", () => ({
   aironeApiClient: {
-    importRoles: jest.fn(),
+    importRoles: vi.fn(),
   },
 }));
 
 afterEach(() => {
-  jest.clearAllMocks();
+  vi.clearAllMocks();
 });
 
 describe("RoleImportModal", () => {
   const defaultProps = {
     openImportModal: true,
-    closeImportModal: jest.fn(),
+    closeImportModal: vi.fn(),
   };
 
   test("should render modal with correct title and description", () => {
@@ -67,7 +66,7 @@ describe("RoleImportModal", () => {
   });
 
   test("should successfully import file", async () => {
-    (aironeApiClient.importRoles as jest.Mock).mockResolvedValue(undefined);
+    (aironeApiClient.importRoles as vi.Mock).mockResolvedValue(undefined);
 
     render(<RoleImportModal {...defaultProps} />, { wrapper: TestWrapper });
 

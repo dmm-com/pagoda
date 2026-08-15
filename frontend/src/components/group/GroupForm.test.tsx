@@ -1,5 +1,4 @@
 /**
- * @jest-environment jsdom
  */
 
 import { Group } from "@dmm-com/airone-apiclient-typescript-fetch";
@@ -18,6 +17,8 @@ import { schema } from "../entry/entryForm/EntryFormSchema";
 
 import { GroupForm } from "./GroupForm";
 import { Schema } from "./groupForm/GroupFormSchema";
+
+import { aironeApiClient } from "repository/AironeApiClient";
 
 describe("GroupForm", () => {
   const groups = [
@@ -63,17 +64,12 @@ describe("GroupForm", () => {
       }),
     );
 
-    /* eslint-disable */
-    jest
-      .spyOn(require("repository/AironeApiClient").aironeApiClient, "getUsers")
-      .mockResolvedValue(Promise.resolve([]));
-    jest
-      .spyOn(
-        require("repository/AironeApiClient").aironeApiClient,
-        "getGroupTrees",
-      )
-      .mockResolvedValue(Promise.resolve(groups));
-    /* eslint-enable */
+    vi.spyOn(aironeApiClient, "getUsers").mockResolvedValue(
+      Promise.resolve([]),
+    );
+    vi.spyOn(aironeApiClient, "getGroupTrees").mockResolvedValue(
+      Promise.resolve(groups),
+    );
 
     render(<GroupForm control={control} setValue={setValue} groupId={1} />, {
       wrapper: TestWrapper,
