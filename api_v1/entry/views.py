@@ -48,6 +48,8 @@ class EntrySearchAPIRequest(BaseModel):
     @field_validator("attrinfo")
     def validate_attrinfo_keyword_length(cls, v: list[Any]) -> list[Any]:
         for item in v:
+            if isinstance(item["keyword"], bool):
+                item["keyword"] = str(item["keyword"])
             if isinstance(item, dict) and "keyword" in item and item["keyword"]:
                 if len(item["keyword"]) > CONFIG_ENTRY.MAX_QUERY_SIZE:
                     raise ValueError("Keyword length exceeds maximum allowed size")
