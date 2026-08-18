@@ -519,3 +519,43 @@ class APITest(AironeViewTest):
             self.assertEqual(
                 resp.json()["result"]["ret_values"][0]["attrs"]["boolean"]["value"], value
             )
+
+    def test_search_with_boolean_keyword(self):
+        user = self.guest_login()
+
+        test_entity = self.create_entity(
+            user,
+            "TestEntity",
+            attrs=[
+                {
+                    "name": "text_attr",
+                    "type": AttrType.STRING,
+                }
+            ],
+        )
+
+        for keyword_value, matching_value, unmatching_value in [
+            (True, "True", "False"),
+            (False, "False", "True"),
+        ]:
+            entry = self.add_entry(
+                user, "Entry-%s" % keyword_value, test_entity, values={"text_attr": matching_value}
+            )
+            self.add_entry(
+                user,
+                "UnmatchedEntry-%s" % keyword_value,
+                test_entity,
+                values={"text_attr": unmatching_value},
+            )
+
+            params = {
+                "entities": [test_entity.id],
+                "attrinfo": [{"name": "text_attr", "keyword": keyword_value}],
+            }
+            resp = self.client.post("/api/v1/entry/search", json.dumps(params), "application/json")
+            self.assertEqual(resp.status_code, 200)
+
+            ret_values = resp.json()["result"]["ret_values"]
+            self.assertEqual(len(ret_values), 1)
+            self.assertEqual(ret_values[0]["entry"]["id"], entry.id)
+            self.assertEqual(ret_values[0]["attrs"]["text_attr"]["value"], matching_value)
