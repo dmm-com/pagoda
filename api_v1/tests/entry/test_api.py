@@ -523,21 +523,21 @@ class APITest(AironeViewTest):
     def test_search_with_boolean_keyword(self):
         user = self.guest_login()
 
-        test_entity = self.create_entity(
-            user,
-            "TestEntity",
-            attrs=[
-                {
-                    "name": "text_attr",
-                    "type": AttrType.STRING,
-                }
-            ],
-        )
-
         for keyword_value, matching_value, unmatching_value in [
             (True, "True", "False"),
             (False, "False", "True"),
         ]:
+            test_entity = self.create_entity(
+                user,
+                "TestEntity-%s" % keyword_value,
+                attrs=[
+                    {
+                        "name": "text_attr",
+                        "type": AttrType.STRING,
+                    }
+                ],
+            )
+
             entry = self.add_entry(
                 user, "Entry-%s" % keyword_value, test_entity, values={"text_attr": matching_value}
             )
