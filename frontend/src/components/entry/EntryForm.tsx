@@ -47,7 +47,7 @@ const HeaderTableRow = styled(TableRow)(({}) => ({
 
 const HeaderTableCell = styled(TableCell)(({}) => ({
   color: "#FFFFFF",
-  width: "384px",
+  width: "150px",
 }));
 
 const TableBox = styled(Box)(({}) => ({
