@@ -1,4 +1,4 @@
-import { 
+import {
   MouseEvent as ReactMouseEvent,
   useEffect,
   useRef,
