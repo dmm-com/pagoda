@@ -1,4 +1,9 @@
-import { MouseEvent as ReactMouseEvent, useEffect, useRef, useState } from "react";
+import { 
+  MouseEvent as ReactMouseEvent,
+  useEffect,
+  useRef,
+  useState
+} from "react";
 
 type MenuKey = string | number;
 
@@ -53,7 +58,10 @@ export function useHoverMenus() {
     anchorEl: anchors[key] ?? null,
     open: Boolean(anchors[key]),
     onClose: (event: object, reason: string) => {
-      const { clientX, clientY } = event as { clientX: number; clientY: number };
+      const { clientX, clientY } = event as {
+        clientX: number;
+        clientY: number
+      };
       if (
         reason === "backdropClick" &&
         isPointOverElement(clientX, clientY, triggerRefs.current[key])
