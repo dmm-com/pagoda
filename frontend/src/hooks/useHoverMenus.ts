@@ -2,7 +2,7 @@ import {
   MouseEvent as ReactMouseEvent,
   useEffect,
   useRef,
-  useState
+  useState,
 } from "react";
 
 type MenuKey = string | number;
@@ -60,7 +60,7 @@ export function useHoverMenus() {
     onClose: (event: object, reason: string) => {
       const { clientX, clientY } = event as {
         clientX: number;
-        clientY: number
+        clientY: number;
       };
       if (
         reason === "backdropClick" &&
