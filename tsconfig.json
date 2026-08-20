@@ -1,11 +1,6 @@
 {
   "compilerOptions": {
     "baseUrl": "./frontend/src",
-    "paths": {
-      "@hookform/resolvers/zod": [
-        "../../node_modules/@hookform/resolvers/zod/dist/index.d.ts"
-      ]
-    },
     "allowJs": true,
     "target": "es2022",
     "module": "esnext",
