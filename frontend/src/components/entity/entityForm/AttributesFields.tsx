@@ -32,7 +32,7 @@ import {
   useFieldArray,
   useWatch,
 } from "react-hook-form";
-import { UseFormSetValue } from "react-hook-form/dist/types/form";
+import { UseFormSetValue } from "react-hook-form";
 
 import { AttributeField } from "./AttributeField";
 import { Schema } from "./EntityFormSchema";

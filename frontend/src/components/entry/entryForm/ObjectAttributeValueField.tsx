@@ -13,7 +13,7 @@ import {
 import { styled } from "@mui/material/styles";
 import { FC } from "react";
 import { Control, Controller, useFieldArray } from "react-hook-form";
-import { UseFormSetValue } from "react-hook-form/dist/types/form";
+import { UseFormSetValue } from "react-hook-form";
 
 import { Schema } from "./EntryFormSchema";
 import { ReferralsAutocomplete } from "./ReferralsAutocomplete";

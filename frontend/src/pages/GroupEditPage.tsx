@@ -1,4 +1,4 @@
-import { zodResolver } from "@hookform/resolvers/zod/dist/zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Box, Container, Typography } from "@mui/material";
 import { FC, useEffect } from "react";
 import { useForm } from "react-hook-form";
