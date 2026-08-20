@@ -1,9 +1,10 @@
 import { FlatNamespace, i18n, KeyPrefix } from "i18next";
 import { useTranslation as _useTranslation } from "react-i18next";
 import { FallbackNs, UseTranslationOptions } from "react-i18next";
-import { $Tuple } from "react-i18next/helpers";
 
 import { TranslationKey } from "../i18n/config";
+
+type NamespaceTuple<T> = readonly [T?, ...T[]];
 
 export type UseTranslationResponse = [
   t: (key: TranslationKey) => string,
@@ -15,7 +16,10 @@ export type UseTranslationResponse = [
   ready: boolean;
 };
 export function useTranslation<
-  Ns extends FlatNamespace | $Tuple<FlatNamespace> | undefined = undefined,
+  Ns extends
+    | FlatNamespace
+    | NamespaceTuple<FlatNamespace>
+    | undefined = undefined,
   KPrefix extends KeyPrefix<FallbackNs<Ns>> = undefined,
 >(ns?: Ns, options?: UseTranslationOptions<KPrefix>): UseTranslationResponse {
   const response = _useTranslation(ns, options);

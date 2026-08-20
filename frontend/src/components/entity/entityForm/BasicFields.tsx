@@ -13,7 +13,7 @@ import {
 } from "@mui/material";
 import { FC, useMemo } from "react";
 import { Control, Controller, useWatch } from "react-hook-form";
-import { UseFormSetValue } from "react-hook-form/dist/types/form";
+import { UseFormSetValue } from "react-hook-form";
 
 import { Schema } from "./EntityFormSchema";
 
