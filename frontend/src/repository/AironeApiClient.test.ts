@@ -1,5 +1,4 @@
 /**
- * @jest-environment jsdom
  */
 
 import { fileDownload, getCsrfToken } from "./AironeApiClient";
@@ -9,10 +8,10 @@ describe("fileDownload", () => {
   const originalRevokeObjectURL = URL.revokeObjectURL;
 
   beforeEach(() => {
-    URL.createObjectURL = jest
+    URL.createObjectURL = vi
       .fn()
       .mockReturnValue("blob:http://localhost/fake-url");
-    URL.revokeObjectURL = jest.fn();
+    URL.revokeObjectURL = vi.fn();
   });
 
   afterEach(() => {
@@ -21,8 +20,8 @@ describe("fileDownload", () => {
   });
 
   test("should create a Blob with the given data and trigger a download", () => {
-    const clickMock = jest.fn();
-    const createElementSpy = jest
+    const clickMock = vi.fn();
+    const createElementSpy = vi
       .spyOn(document, "createElement")
       .mockReturnValue({
         href: "",
@@ -34,7 +33,7 @@ describe("fileDownload", () => {
 
     // Verify Blob was created and passed to createObjectURL
     expect(URL.createObjectURL).toHaveBeenCalledTimes(1);
-    const blob = (URL.createObjectURL as jest.Mock).mock.calls[0][0] as Blob;
+    const blob = (URL.createObjectURL as vi.Mock).mock.calls[0][0] as Blob;
     expect(blob).toBeInstanceOf(Blob);
     expect(blob.type).toBe("text/plain");
 
@@ -55,8 +54,8 @@ describe("fileDownload", () => {
   });
 
   test("should handle empty data", () => {
-    const clickMock = jest.fn();
-    const createElementSpy = jest
+    const clickMock = vi.fn();
+    const createElementSpy = vi
       .spyOn(document, "createElement")
       .mockReturnValue({
         href: "",
@@ -67,7 +66,7 @@ describe("fileDownload", () => {
     fileDownload("", "empty.txt");
 
     expect(URL.createObjectURL).toHaveBeenCalledTimes(1);
-    const blob = (URL.createObjectURL as jest.Mock).mock.calls[0][0] as Blob;
+    const blob = (URL.createObjectURL as vi.Mock).mock.calls[0][0] as Blob;
     expect(blob.size).toBe(0);
     expect(clickMock).toHaveBeenCalledTimes(1);
     expect(URL.revokeObjectURL).toHaveBeenCalledTimes(1);
@@ -76,8 +75,8 @@ describe("fileDownload", () => {
   });
 
   test("should set correct filename on the anchor element", () => {
-    const clickMock = jest.fn();
-    const createElementSpy = jest
+    const clickMock = vi.fn();
+    const createElementSpy = vi
       .spyOn(document, "createElement")
       .mockReturnValue({
         href: "",

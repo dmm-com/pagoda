@@ -1,5 +1,4 @@
 /**
- * @jest-environment jsdom
  */
 
 import { CategoryList } from "@dmm-com/airone-apiclient-typescript-fetch";
@@ -21,7 +20,7 @@ describe("CategoryListHeader", () => {
   });
 
   const defaultProps = {
-    setToggle: jest.fn(),
+    setToggle: vi.fn(),
   };
 
   describe("rendering", () => {

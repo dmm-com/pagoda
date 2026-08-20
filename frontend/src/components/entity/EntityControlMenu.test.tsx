@@ -1,5 +1,4 @@
 /**
- * @jest-environment jsdom
  */
 
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
@@ -186,11 +185,11 @@ describe("EntityControlMenu", () => {
     };
 
     afterEach(() => {
-      jest.restoreAllMocks();
+      vi.restoreAllMocks();
     });
 
     test("should show success snackbar on successful delete", async () => {
-      jest.spyOn(aironeApiClient, "deleteEntity").mockResolvedValue(undefined);
+      vi.spyOn(aironeApiClient, "deleteEntity").mockResolvedValue(undefined);
 
       render(<EntityControlMenu {...defaultProps} />, {
         wrapper: TestWrapper,
@@ -207,7 +206,7 @@ describe("EntityControlMenu", () => {
     });
 
     test("should show specific message when entries remain (AE-240000)", async () => {
-      jest.spyOn(aironeApiClient, "deleteEntity").mockRejectedValue(
+      vi.spyOn(aironeApiClient, "deleteEntity").mockRejectedValue(
         buildResponseError(400, [
           {
             code: "AE-240000",
@@ -234,7 +233,7 @@ describe("EntityControlMenu", () => {
     });
 
     test("should show backend message when response carries an unmapped code", async () => {
-      jest.spyOn(aironeApiClient, "deleteEntity").mockRejectedValue(
+      vi.spyOn(aironeApiClient, "deleteEntity").mockRejectedValue(
         buildResponseError(400, [
           {
             code: "AE-999999",
@@ -260,9 +259,9 @@ describe("EntityControlMenu", () => {
     });
 
     test("should fall back to generic message when error is not a ResponseError", async () => {
-      jest
-        .spyOn(aironeApiClient, "deleteEntity")
-        .mockRejectedValue(new Error("network error"));
+      vi.spyOn(aironeApiClient, "deleteEntity").mockRejectedValue(
+        new Error("network error"),
+      );
 
       render(<EntityControlMenu {...defaultProps} />, {
         wrapper: TestWrapper,
@@ -288,7 +287,7 @@ describe("EntityControlMenu", () => {
     };
 
     test("should show info variant snackbar on successful export", async () => {
-      jest.spyOn(aironeApiClient, "exportEntries").mockResolvedValue(undefined);
+      vi.spyOn(aironeApiClient, "exportEntries").mockResolvedValue(undefined);
 
       render(<EntityControlMenu {...defaultProps} />, {
         wrapper: TestWrapper,
@@ -304,9 +303,9 @@ describe("EntityControlMenu", () => {
     });
 
     test("should show error variant snackbar on failed export", async () => {
-      jest
-        .spyOn(aironeApiClient, "exportEntries")
-        .mockRejectedValue(new Error("export failed"));
+      vi.spyOn(aironeApiClient, "exportEntries").mockRejectedValue(
+        new Error("export failed"),
+      );
 
       render(<EntityControlMenu {...defaultProps} />, {
         wrapper: TestWrapper,

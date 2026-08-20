@@ -1,5 +1,4 @@
 /**
- * @jest-environment jsdom
  */
 
 import { render } from "@testing-library/react";
@@ -14,16 +13,16 @@ describe("SearchResultControlMenuForReferral", () => {
     referralIncludeModelIds: [],
     referralExcludeModelIds: [],
     anchorElem: null,
-    handleClose: jest.fn(),
-    referralFilterDispatcher: jest.fn(),
-    referralIncludeModelIdsDispatcher: jest.fn(),
-    referralExcludeModelIdsDispatcher: jest.fn(),
-    handleSelectFilterConditions: jest.fn(),
-    handleClear: jest.fn(),
+    handleClose: vi.fn(),
+    referralFilterDispatcher: vi.fn(),
+    referralIncludeModelIdsDispatcher: vi.fn(),
+    referralExcludeModelIdsDispatcher: vi.fn(),
+    handleSelectFilterConditions: vi.fn(),
+    handleClear: vi.fn(),
   };
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   test("should render menu when anchorElem is provided", () => {

@@ -1,5 +1,4 @@
 /**
- * @jest-environment jsdom
  */
 
 import {
@@ -80,15 +79,11 @@ test("should match snapshot", async () => {
 });
 
 test("should show info variant snackbar on successful copy submission", async () => {
-  jest
-    .spyOn(aironeApiClient, "copyEntry")
-    .mockResolvedValue(
-      {} as ReturnType<typeof aironeApiClient.copyEntry> extends Promise<
-        infer T
-      >
-        ? T
-        : never,
-    );
+  vi.spyOn(aironeApiClient, "copyEntry").mockResolvedValue(
+    {} as ReturnType<typeof aironeApiClient.copyEntry> extends Promise<infer T>
+      ? T
+      : never,
+  );
 
   const router = createMemoryRouter(
     [

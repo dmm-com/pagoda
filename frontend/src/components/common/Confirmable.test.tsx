@@ -4,7 +4,7 @@ import { Confirmable } from "./Confirmable";
 
 describe("Confirmable", () => {
   it("shows dialog and handles confirmation", () => {
-    const onClickYes = jest.fn();
+    const onClickYes = vi.fn();
     render(
       <Confirmable
         componentGenerator={(open) => <button onClick={open}>Open</button>}

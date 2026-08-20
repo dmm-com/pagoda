@@ -1,5 +1,4 @@
 /**
- * @jest-environment jsdom
  */
 
 import { fireEvent, render, screen } from "@testing-library/react";
@@ -11,7 +10,7 @@ import { ServerContext } from "../../services/ServerContext";
 import { GroupTreeItem } from "./GroupTreeItem";
 
 // Mock for ServerContext
-jest.mock("../../services/ServerContext", () => {
+vi.mock("../../services/ServerContext", () => {
   const mockInstance = {
     user: {
       isSuperuser: false,
@@ -19,7 +18,7 @@ jest.mock("../../services/ServerContext", () => {
   };
   return {
     ServerContext: {
-      getInstance: jest.fn(() => mockInstance),
+      getInstance: vi.fn(() => mockInstance),
     },
   };
 });
@@ -46,7 +45,7 @@ const mockGroupTrees: GroupTree[] = [
 
 describe("GroupTreeItem", () => {
   test("should render with basic props without throwing", () => {
-    const handleSelectGroupId = jest.fn();
+    const handleSelectGroupId = vi.fn();
 
     expect(() =>
       render(
@@ -79,7 +78,7 @@ describe("GroupTreeItem", () => {
   });
 
   test("should render group name as a link to detail page when user is superuser", () => {
-    (ServerContext.getInstance as jest.Mock).mockReturnValue({
+    (ServerContext.getInstance as vi.Mock).mockReturnValue({
       user: { isSuperuser: true },
     });
 
@@ -99,7 +98,7 @@ describe("GroupTreeItem", () => {
   });
 
   test("should not render group name as a clickable link when user is not superuser", () => {
-    (ServerContext.getInstance as jest.Mock).mockReturnValue({
+    (ServerContext.getInstance as vi.Mock).mockReturnValue({
       user: { isSuperuser: false },
     });
 
@@ -148,7 +147,7 @@ describe("GroupTreeItem", () => {
   });
 
   test("should call handleSelectGroupId with correct ID when checkbox is clicked (selection)", () => {
-    const handleSelectGroupId = jest.fn();
+    const handleSelectGroupId = vi.fn();
 
     render(
       <GroupTreeItem
@@ -167,7 +166,7 @@ describe("GroupTreeItem", () => {
   });
 
   test("should call handleSelectGroupId with null when checkbox is clicked (deselection)", () => {
-    const handleSelectGroupId = jest.fn();
+    const handleSelectGroupId = vi.fn();
 
     render(
       <GroupTreeItem
@@ -186,9 +185,9 @@ describe("GroupTreeItem", () => {
   });
 
   test("should display menu button when setGroupAnchorEls is provided", () => {
-    const setGroupAnchorEls = jest.fn();
+    const setGroupAnchorEls = vi.fn();
 
-    (ServerContext.getInstance as jest.Mock).mockReturnValue({
+    (ServerContext.getInstance as vi.Mock).mockReturnValue({
       user: { isSuperuser: true },
     });
 
@@ -223,9 +222,9 @@ describe("GroupTreeItem", () => {
   });
 
   test("should call setGroupAnchorEls with correct arguments when menu button is clicked", () => {
-    const setGroupAnchorEls = jest.fn();
+    const setGroupAnchorEls = vi.fn();
 
-    (ServerContext.getInstance as jest.Mock).mockReturnValue({
+    (ServerContext.getInstance as vi.Mock).mockReturnValue({
       user: { isSuperuser: true },
     });
 

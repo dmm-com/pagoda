@@ -11,5 +11,9 @@
     "lib": ["dom", "dom.iterable", "es2022"],
     "esModuleInterop": true
   },
-  "include": ["./frontend/src/**/*"]
+  "include": ["./frontend/src/**/*"],
+  "exclude": [
+    "./frontend/src/**/*.test.ts",
+    "./frontend/src/**/*.test.tsx"
+  ]
 }

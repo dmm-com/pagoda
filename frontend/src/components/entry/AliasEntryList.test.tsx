@@ -1,5 +1,4 @@
 /**
- * @jest-environment jsdom
  */
 
 import "@testing-library/jest-dom";
@@ -11,8 +10,8 @@ import { AliasEntryList } from "./AliasEntryList";
 
 import { ACLType } from "services/ACLUtil";
 
-const mockHandleCreate = jest.fn();
-const mockHandleDelete = jest.fn();
+const mockHandleCreate = vi.fn();
+const mockHandleDelete = vi.fn();
 
 const mockEntryBase: EntryBase = {
   id: 123,
@@ -41,7 +40,7 @@ const renderComponent = (entryProps: EntryBase = mockEntryBase) => {
 
 describe("AliasEntryList Component", () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   test("renders existing aliases as chips", () => {

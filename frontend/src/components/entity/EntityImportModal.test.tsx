@@ -1,5 +1,4 @@
 /**
- * @jest-environment jsdom
  */
 
 import { render, screen, fireEvent } from "@testing-library/react";
@@ -9,20 +8,20 @@ import { EntityImportModal } from "./EntityImportModal";
 import { TestWrapper } from "TestWrapper";
 
 // Mock API client
-jest.mock("../../repository/AironeApiClient", () => ({
+vi.mock("../../repository/AironeApiClient", () => ({
   aironeApiClient: {
-    importEntities: jest.fn(() => Promise.resolve()),
+    importEntities: vi.fn(() => Promise.resolve()),
   },
 }));
 
 describe("EntityImportModal", () => {
   const defaultProps = {
     openImportModal: true,
-    closeImportModal: jest.fn(),
+    closeImportModal: vi.fn(),
   };
 
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe("rendering", () => {
@@ -59,7 +58,7 @@ describe("EntityImportModal", () => {
 
   describe("modal close", () => {
     test("should call closeImportModal when cancel button is clicked", () => {
-      const mockClose = jest.fn();
+      const mockClose = vi.fn();
       render(
         <EntityImportModal {...defaultProps} closeImportModal={mockClose} />,
         { wrapper: TestWrapper },

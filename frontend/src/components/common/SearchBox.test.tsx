@@ -1,5 +1,4 @@
 /**
- * @jest-environment jsdom
  */
 
 import { fireEvent, render, screen } from "@testing-library/react";
@@ -57,7 +56,7 @@ describe("SearchBox", () => {
 
   // Test onChange handler
   test("calls onChange when input value changes", () => {
-    const handleChange = jest.fn();
+    const handleChange = vi.fn();
 
     render(<SearchBox placeholder="Search..." onChange={handleChange} />, {
       wrapper: TestWrapperWithoutRoutes,
@@ -78,7 +77,7 @@ describe("SearchBox", () => {
 
   // Test onKeyPress handler with Enter key
   test("calls onKeyPress when Enter key is pressed", () => {
-    const handleKeyPress = jest.fn();
+    const handleKeyPress = vi.fn();
 
     render(<SearchBox placeholder="Search..." onKeyPress={handleKeyPress} />, {
       wrapper: TestWrapperWithoutRoutes,
@@ -100,7 +99,7 @@ describe("SearchBox", () => {
 
   // Test onKeyPress handler with non-Enter key
   test("does not call onKeyPress when non-Enter key is pressed", () => {
-    const handleKeyPress = jest.fn();
+    const handleKeyPress = vi.fn();
 
     render(<SearchBox placeholder="Search..." onKeyPress={handleKeyPress} />, {
       wrapper: TestWrapperWithoutRoutes,
@@ -115,7 +114,7 @@ describe("SearchBox", () => {
 
   // Test onKeyPress with empty input
   test("calls onKeyPress with empty string when Enter is pressed on empty input", () => {
-    const handleKeyPress = jest.fn();
+    const handleKeyPress = vi.fn();
 
     render(<SearchBox placeholder="Search..." onKeyPress={handleKeyPress} />, {
       wrapper: TestWrapperWithoutRoutes,
@@ -198,7 +197,7 @@ describe("SearchBox", () => {
 
   // Test that input ref is properly set
   test("input ref is accessible for keyboard events", () => {
-    const handleKeyPress = jest.fn();
+    const handleKeyPress = vi.fn();
 
     render(<SearchBox placeholder="Search..." onKeyPress={handleKeyPress} />, {
       wrapper: TestWrapperWithoutRoutes,
@@ -236,8 +235,8 @@ describe("SearchBox", () => {
 
   // Test that both onChange and onKeyPress can work together
   test("handles both onChange and onKeyPress events", () => {
-    const handleChange = jest.fn();
-    const handleKeyPress = jest.fn();
+    const handleChange = vi.fn();
+    const handleKeyPress = vi.fn();
 
     render(
       <SearchBox
@@ -268,7 +267,7 @@ describe("SearchBox", () => {
 
   // Test keyboard navigation doesn't trigger onKeyPress for non-Enter keys
   test("ignores non-Enter keyboard events", () => {
-    const handleKeyPress = jest.fn();
+    const handleKeyPress = vi.fn();
 
     render(<SearchBox placeholder="Search..." onKeyPress={handleKeyPress} />, {
       wrapper: TestWrapperWithoutRoutes,

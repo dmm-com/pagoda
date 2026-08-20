@@ -1,5 +1,4 @@
 /**
- * @jest-environment jsdom
  */
 
 import {
@@ -36,9 +35,9 @@ describe("SearchResults", () => {
   const defaultProps = {
     results: createMockResults(),
     page: 1,
-    changePage: jest.fn(),
+    changePage: vi.fn(),
     bulkOperationEntryIds: [] as number[],
-    setBulkOperationEntryIds: jest.fn(),
+    setBulkOperationEntryIds: vi.fn(),
     hasReferral: false,
     entityIds: [100],
     joinAttrs: [],
@@ -48,7 +47,7 @@ describe("SearchResults", () => {
   };
 
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe("rendering", () => {
@@ -103,7 +102,7 @@ describe("SearchResults", () => {
     });
 
     test("should call setBulkOperationEntryIds when checkbox is clicked", () => {
-      const mockSetBulkIds = jest.fn();
+      const mockSetBulkIds = vi.fn();
       render(
         <SearchResults
           {...defaultProps}
@@ -258,7 +257,7 @@ describe("SearchResults", () => {
         }
       }
 
-      const errSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+      const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
       try {
         render(
@@ -329,7 +328,7 @@ describe("SearchResults", () => {
     test("disables bulk-update button when type cannot be resolved", () => {
       const NEW_ATTR = "newattr";
 
-      const errSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+      const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
       try {
         render(
           <SearchResults
@@ -399,7 +398,7 @@ describe("SearchResults", () => {
         ],
       };
 
-      const errSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+      const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
       try {
         render(
           <SearchResults

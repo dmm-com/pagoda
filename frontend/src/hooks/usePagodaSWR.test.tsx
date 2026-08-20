@@ -1,5 +1,4 @@
 /**
- * @jest-environment jsdom
  */
 
 import { act, renderHook, waitFor } from "@testing-library/react";
@@ -50,7 +49,7 @@ describe("usePagodaSWR", () => {
 
   describe("conditional fetching", () => {
     test("should not fetch when key is null", async () => {
-      const fetcher = jest.fn(() => Promise.resolve("data"));
+      const fetcher = vi.fn(() => Promise.resolve("data"));
 
       const { result } = renderHook(() => usePagodaSWR(null, fetcher), {
         wrapper,

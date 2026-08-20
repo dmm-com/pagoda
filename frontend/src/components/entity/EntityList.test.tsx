@@ -1,5 +1,4 @@
 /**
- * @jest-environment jsdom
  */
 
 import { PaginatedEntityListList } from "@dmm-com/airone-apiclient-typescript-fetch";
@@ -38,8 +37,8 @@ describe("EntityList", () => {
   };
 
   test("should render entities", () => {
-    const changePage = jest.fn();
-    const handleChangeQuery = jest.fn();
+    const changePage = vi.fn();
+    const handleChangeQuery = vi.fn();
 
     render(
       <EntityList
@@ -70,6 +69,6 @@ describe("EntityList", () => {
     expect(screen.getByPlaceholderText("モデルを絞り込む")).toHaveValue(
       "entity",
     );
-    expect(handleChangeQuery).toBeCalled();
+    expect(handleChangeQuery).toHaveBeenCalled();
   });
 });

@@ -10,7 +10,7 @@ on:
       - 'frontend/**/*.tsx'
       - '.github/workflows/build-frontend.yml'
       - 'package-lock.json'
-      - '*.config.{js,mjs}'
+      - '*.config.{js,mjs,ts}'
 
 jobs:
   lint:

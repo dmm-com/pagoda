@@ -1,5 +1,4 @@
 /**
- * @jest-environment jsdom
  */
 
 import {
@@ -26,9 +25,9 @@ import { TestWrapper } from "TestWrapper";
 import "@testing-library/jest-dom";
 
 // ✅ Mock the aironeApiClient module
-jest.mock("../../../repository/AironeApiClient", () => ({
+vi.mock("../../../repository/AironeApiClient", () => ({
   aironeApiClient: {
-    getRoles: jest.fn(),
+    getRoles: vi.fn(),
   },
 }));
 
@@ -96,7 +95,7 @@ describe("RoleAttributeValueField", () => {
   ];
 
   test("should provide role value editor", async () => {
-    (aironeApiClient.getRoles as jest.Mock).mockResolvedValue(roles);
+    (aironeApiClient.getRoles as vi.Mock).mockResolvedValue(roles);
 
     const {
       result: {
@@ -140,7 +139,7 @@ describe("RoleAttributeValueField", () => {
   });
 
   test("should provide array-role value editor", async () => {
-    (aironeApiClient.getRoles as jest.Mock).mockResolvedValue(roles);
+    (aironeApiClient.getRoles as vi.Mock).mockResolvedValue(roles);
 
     const {
       result: {
