@@ -1,6 +1,4 @@
-/**
- * @jest-environment jsdom
- */
+import { vi } from "vitest";
 
 import {
   ImportPreviewFailure,
@@ -10,24 +8,26 @@ import {
 
 import { JobStatuses } from "services/Constants";
 
-const mockGetJob = jest.fn();
-const mockGetImportPreview = jest.fn();
+const mockGetJob = vi.fn();
+const mockGetImportPreview = vi.fn();
 
-jest.mock("repository/AironeApiClient", () => ({
+vi.mock("repository/AironeApiClient", () => ({
   aironeApiClient: {
     getJob: (...args: unknown[]) => mockGetJob(...args),
     getImportPreview: (...args: unknown[]) => mockGetImportPreview(...args),
   },
 }));
 
-jest.mock("services/Constants", () => ({
-  ...jest.requireActual("services/Constants"),
+vi.mock("services/Constants", async () => ({
+  ...(await vi.importActual<typeof import("services/Constants")>(
+    "services/Constants",
+  )),
   ImportPreviewParam: { MAX_ROW_COUNT: 200, POLL_INTERVAL_MS: 0 },
 }));
 
 describe("waitForImportPreview", () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   test("should report progress until the job is done, then read the preview", async () => {
@@ -43,7 +43,7 @@ describe("waitForImportPreview", () => {
       .mockResolvedValueOnce({ status: JobStatuses.DONE, text: "" });
     mockGetImportPreview.mockResolvedValue({ rows: [] });
 
-    const onProgress = jest.fn();
+    const onProgress = vi.fn();
     await expect(waitForImportPreview(7, { onProgress })).resolves.toEqual({
       rows: [],
     });
