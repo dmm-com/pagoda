@@ -59,10 +59,10 @@ main() {
 
   if [ ${IS_BAREMETAL} = "true" ]
   then
-    MYSQL_COMMAND="mysql --skip-ssl　-u${db_user} -p${db_pass} -h${db_host}"
-    MYSQL_ROOT_COMMAND="mysql --skip-ssl　-uroot ${root_pass_opt} -h${db_host}"
+    MYSQL_COMMAND="mysql --skip-ssl -u${db_user} -p${db_pass} -h${db_host}"
+    MYSQL_ROOT_COMMAND="mysql --skip-ssl -uroot ${root_pass_opt} -h${db_host}"
   else
-    MYSQL_COMMAND="sudo docker exec -i mysql mysql --skip-ssl　-uroot ${root_pass_opt}"
+    MYSQL_COMMAND="sudo docker exec -i mysql mysql --skip-ssl -uroot ${root_pass_opt}"
     MYSQL_ROOT_COMMAND="${MYSQL_COMMAND}"
   fi
 
