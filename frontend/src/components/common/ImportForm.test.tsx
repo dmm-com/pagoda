@@ -33,9 +33,13 @@ if (typeof global.File === "undefined") {
 }
 
 // Mock encoding-japanese
-vi.mock("encoding-japanese", () => ({
+const mockEncoding = vi.hoisted(() => ({
   detect: vi.fn().mockReturnValue("UTF-8"),
   convert: vi.fn().mockReturnValue("Entity: []"),
+}));
+vi.mock("encoding-japanese", () => ({
+  default: mockEncoding,
+  ...mockEncoding,
 }));
 
 const mockCancelJob = vi.fn().mockResolvedValue(undefined);
@@ -110,7 +114,7 @@ const previewWith = (
 describe("ImportForm", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    // The real client returns promises; a bare jest.fn() would not, and the code
+    // The real client returns promises; a bare vi.fn() would not, and the code
     // chains onto what it gets back.
     mockCancelJob.mockResolvedValue(undefined);
     mockDownloadImportPreview.mockResolvedValue(undefined);
@@ -120,10 +124,6 @@ describe("ImportForm", () => {
         .fn()
         .mockResolvedValue(new ArrayBuffer(8));
     }
-  });
-
-  afterEach(() => {
-    vi.restoreAllMocks();
   });
 
   test("should render all UI elements", () => {
@@ -160,7 +160,7 @@ describe("ImportForm", () => {
   });
 
   test("should not offer a preview when the caller does not support it", () => {
-    render(<ImportForm handleImport={jest.fn()} />, { wrapper: TestWrapper });
+    render(<ImportForm handleImport={vi.fn()} />, { wrapper: TestWrapper });
 
     expect(screen.queryByTestId("preview-import-file")).not.toBeInTheDocument();
   });
@@ -188,10 +188,10 @@ describe("ImportForm", () => {
         },
       ],
     });
-    const handlePreview = jest.fn().mockResolvedValue([42]);
+    const handlePreview = vi.fn().mockResolvedValue([42]);
 
     render(
-      <ImportForm handleImport={jest.fn()} handlePreview={handlePreview} />,
+      <ImportForm handleImport={vi.fn()} handlePreview={handlePreview} />,
       { wrapper: TestWrapper },
     );
 
@@ -227,8 +227,8 @@ describe("ImportForm", () => {
 
     render(
       <ImportForm
-        handleImport={jest.fn()}
-        handlePreview={jest.fn().mockResolvedValue([7])}
+        handleImport={vi.fn()}
+        handlePreview={vi.fn().mockResolvedValue([7])}
       />,
       { wrapper: TestWrapper },
     );
@@ -264,8 +264,8 @@ describe("ImportForm", () => {
 
     render(
       <ImportForm
-        handleImport={jest.fn()}
-        handlePreview={jest.fn().mockResolvedValue([7])}
+        handleImport={vi.fn()}
+        handlePreview={vi.fn().mockResolvedValue([7])}
       />,
       { wrapper: TestWrapper },
     );
@@ -292,8 +292,8 @@ describe("ImportForm", () => {
 
     render(
       <ImportForm
-        handleImport={jest.fn()}
-        handlePreview={jest.fn().mockResolvedValue([7, 8])}
+        handleImport={vi.fn()}
+        handlePreview={vi.fn().mockResolvedValue([7, 8])}
       />,
       { wrapper: TestWrapper },
     );
@@ -310,7 +310,7 @@ describe("ImportForm", () => {
   });
 
   test("should hand the approved preview to the import", async () => {
-    const handleImport = jest.fn().mockResolvedValue(undefined);
+    const handleImport = vi.fn().mockResolvedValue(undefined);
     mockWaitForImportPreviews.mockResolvedValue(
       previewWith([{ index: 0, name: "ok", action: "create" }]),
     );
@@ -318,7 +318,7 @@ describe("ImportForm", () => {
     render(
       <ImportForm
         handleImport={handleImport}
-        handlePreview={jest.fn().mockResolvedValue([7])}
+        handlePreview={vi.fn().mockResolvedValue([7])}
       />,
       { wrapper: TestWrapper },
     );
@@ -344,8 +344,8 @@ describe("ImportForm", () => {
 
     render(
       <ImportForm
-        handleImport={jest.fn()}
-        handlePreview={jest.fn().mockResolvedValue([7])}
+        handleImport={vi.fn()}
+        handlePreview={vi.fn().mockResolvedValue([7])}
       />,
       { wrapper: TestWrapper },
     );
@@ -366,8 +366,8 @@ describe("ImportForm", () => {
   });
 
   test("should let the user import without previewing", async () => {
-    const handleImport = jest.fn().mockResolvedValue(undefined);
-    const handlePreview = jest.fn();
+    const handleImport = vi.fn().mockResolvedValue(undefined);
+    const handlePreview = vi.fn();
 
     render(
       <ImportForm handleImport={handleImport} handlePreview={handlePreview} />,
