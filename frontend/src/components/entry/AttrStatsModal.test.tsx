@@ -1,5 +1,4 @@
 /**
- * @jest-environment jsdom
  */
 
 import {
@@ -46,7 +45,7 @@ const renderModal = (
   props: Partial<React.ComponentProps<typeof AttrStatsModal>> = {},
   initialEntry = "/ui/advanced-search?entity=10&is_all_entities=true",
 ) => {
-  const onClose = jest.fn();
+  const onClose = vi.fn();
   render(
     <MemoryRouter initialEntries={[initialEntry]}>
       <AttrStatsModal
@@ -63,14 +62,14 @@ const renderModal = (
 };
 
 describe("AttrStatsModal", () => {
-  let advancedSearch: jest.SpyInstance;
+  let advancedSearch: vi.SpyInstance;
 
   beforeEach(() => {
-    advancedSearch = jest.spyOn(aironeApiClient, "advancedSearch");
+    advancedSearch = vi.spyOn(aironeApiClient, "advancedSearch");
   });
 
   afterEach(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   test("aggregates readable values, sorts them, and forwards search params", async () => {
@@ -143,7 +142,7 @@ describe("AttrStatsModal", () => {
       <MemoryRouter>
         <AttrStatsModal
           open={false}
-          onClose={jest.fn()}
+          onClose={vi.fn()}
           attrname={ATTR_NAME}
           attrType={EntryAttributeTypeTypeEnum.STRING}
           totalCount={10}
@@ -155,7 +154,7 @@ describe("AttrStatsModal", () => {
       <MemoryRouter>
         <AttrStatsModal
           open
-          onClose={jest.fn()}
+          onClose={vi.fn()}
           attrname={ATTR_NAME}
           attrType={EntryAttributeTypeTypeEnum.STRING}
           totalCount={0}

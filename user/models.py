@@ -1,4 +1,5 @@
 from collections.abc import Iterable
+from dataclasses import dataclass, field
 from datetime import datetime
 from importlib import import_module
 from typing import TYPE_CHECKING, Any
@@ -15,6 +16,25 @@ from role.models import Role
 
 if TYPE_CHECKING:
     from acl.models import ACLBase
+
+
+@dataclass
+class BelongingRole:
+    """This describes a Role that a User belongs to, and how it is reached.
+
+    A User can belong to a Role through four paths (being a member or an
+    administrator of it, either directly or through a Group). This aggregates
+    all of them into a single entry per Role while keeping the provenance, so
+    that callers can distinguish direct membership from an inherited one.
+    """
+
+    role: Role
+    # True when the User is registered to the Role itself (not through a Group)
+    is_direct: bool = False
+    # True when any of the paths grants administrative privilege of the Role
+    is_admin: bool = False
+    # Groups that grant this Role to the User (empty when it's only direct)
+    via_groups: list[Group] = field(default_factory=list)
 
 
 class UserManager(BaseUserManager["User"]):
@@ -96,6 +116,51 @@ class User(AbstractUser):
 
             return set(list(self.airone_groups) + parent_groups)
 
+    def belonging_roles(self, is_direct_belonging: bool = False) -> list[BelongingRole]:
+        """This returns active Roles that this user belongs to.
+
+        Roles are collected from all the four paths (see BelongingRole) and
+        aggregated into one entry per Role.
+
+        * Params:
+            - is_direct_belonging: when True, Roles that are reached only through
+              hierarchical superior Groups are excluded. Roles that are registered
+              to this user directly are always returned regardless of this value.
+        """
+        belonging: dict[int, BelongingRole] = {}
+
+        def _register(role: Role, is_admin: bool, via_group: Group | None) -> None:
+            info = belonging.setdefault(role.id, BelongingRole(role=role))
+            info.is_admin = info.is_admin or is_admin
+            if via_group is None:
+                info.is_direct = True
+            elif via_group.id not in [g.id for g in info.via_groups]:
+                info.via_groups.append(via_group)
+
+        for role in self.role.filter(is_active=True):
+            _register(role, False, None)
+        for role in self.admin_role.filter(is_active=True):
+            _register(role, True, None)
+
+        groups = {g.id: g for g in self.belonging_groups(is_direct_belonging)}
+        if groups:
+            # Resolve Roles of every belonging Group at once. Querying them per
+            # Group would issue queries proportional to the number of Groups,
+            # which matters because has_permission() calls this on a hot path.
+            member_roles = Role.objects.filter(is_active=True, groups__id__in=groups.keys())
+            for role in member_roles.prefetch_related("groups").distinct():
+                for group in role.groups.all():
+                    if group.id in groups:
+                        _register(role, False, groups[group.id])
+
+            admin_roles = Role.objects.filter(is_active=True, admin_groups__id__in=groups.keys())
+            for role in admin_roles.prefetch_related("admin_groups").distinct():
+                for group in role.admin_groups.all():
+                    if group.id in groups:
+                        _register(role, True, groups[group.id])
+
+        return list(belonging.values())
+
     def has_permission(self, target_obj: "ACLBase", permission_level: ACLType | int | None) -> bool:
         # A bypass processing to rapidly return.
         # This condition is effective when the public objects are majority.
@@ -144,22 +209,8 @@ class User(AbstractUser):
 
         # This checks Roles that this user and groups, which this user belongs to,
         # have permission of specified permission_level
-        belonged_roles = set(
-            list(self.role.filter(is_active=True))
-            + list(self.admin_role.filter(is_active=True))
-            + sum(
-                [
-                    (
-                        list(g.role.filter(is_active=True))
-                        + list(g.admin_role.filter(is_active=True))
-                    )
-                    for g in self.belonging_groups()
-                ],
-                [],
-            )
-        )
-        for role in belonged_roles:
-            if role.is_permitted(target_obj, permission_level):
+        for belonging in self.belonging_roles():
+            if belonging.role.is_permitted(target_obj, permission_level):
                 return True
 
         return False

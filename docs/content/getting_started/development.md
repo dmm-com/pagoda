@@ -421,7 +421,7 @@ user@hostname:~/pagoda$ npm run test:update
 
 When you want to run individual test (e.g. frontend/src/components/user/UserList.test.tsx), you can do it by following command.
 ```
-user@hostname:~/pagoda$ npx jest -u frontend/src/components/user/UserList.test.tsx
+user@hostname:~/pagoda$ npx vitest run -u frontend/src/components/user/UserList.test.tsx
 ```
 
 ## Release pagoda-core package for custom views

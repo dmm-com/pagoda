@@ -1,5 +1,4 @@
 /**
- * @jest-environment jsdom
  */
 
 import { render } from "@testing-library/react";
@@ -9,7 +8,7 @@ import { ForbiddenErrorPage } from "./ForbiddenErrorPage";
 import { TestWrapper } from "TestWrapper";
 
 afterEach(() => {
-  jest.clearAllMocks();
+  vi.clearAllMocks();
 });
 
 test("should match snapshot", async () => {

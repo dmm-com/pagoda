@@ -1,7 +1,7 @@
 coverage:
   paths:
     - coverage.xml              # Python coverage from coverage.py
-    - coverage/lcov.info         # Frontend coverage from Jest
+    - coverage/lcov.info         # Frontend coverage from Vitest
 comment:
   if: true                     # Always comment on PRs
 report:

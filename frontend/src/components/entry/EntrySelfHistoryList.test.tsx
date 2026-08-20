@@ -1,5 +1,4 @@
 /**
- * @jest-environment jsdom
  */
 
 import { act, render, screen, within } from "@testing-library/react";
@@ -8,12 +7,12 @@ import { TestWrapper } from "TestWrapper";
 import { EntrySelfHistoryList } from "components/entry/EntrySelfHistoryList";
 
 // Mock the API client
-jest.mock("repository/AironeApiClient");
+vi.mock("repository/AironeApiClient");
 
 // Mock the router navigate
-const mockNavigate = jest.fn();
-jest.mock("react-router", () => ({
-  ...jest.requireActual("react-router"),
+const mockNavigate = vi.fn();
+vi.mock("react-router", async () => ({
+  ...((await vi.importActual("react-router")) as object),
   useNavigate: () => mockNavigate,
 }));
 
@@ -53,11 +52,11 @@ describe("EntrySelfHistoryList", () => {
     entryId: 2,
     histories: mockHistories,
     page: 1,
-    changePage: jest.fn(),
+    changePage: vi.fn(),
   };
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   test("should render entry self histories correctly", async () => {

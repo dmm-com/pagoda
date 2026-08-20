@@ -1,5 +1,4 @@
 /**
- * @jest-environment jsdom
  */
 
 import { act, render, screen, waitFor } from "@testing-library/react";
@@ -98,5 +97,5 @@ test("should match snapshot", async () => {
 
   expect(result).toMatchSnapshot();
 
-  jest.clearAllMocks();
+  vi.clearAllMocks();
 });

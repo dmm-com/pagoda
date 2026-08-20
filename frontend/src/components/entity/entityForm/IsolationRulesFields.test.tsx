@@ -1,5 +1,4 @@
 /**
- * @jest-environment jsdom
  */
 
 import { Entity } from "@dmm-com/airone-apiclient-typescript-fetch";
@@ -17,8 +16,8 @@ import { IsolationRulesFields } from "./IsolationRulesFields";
 
 import { TestWrapper } from "TestWrapper";
 
-jest.mock("components/entry/entryForm/ReferralsAutocomplete", () => ({
-  ReferralsAutocomplete: jest.fn(() => (
+vi.mock("components/entry/entryForm/ReferralsAutocomplete", () => ({
+  ReferralsAutocomplete: vi.fn(() => (
     <div data-testid="referrals-autocomplete" />
   )),
 }));

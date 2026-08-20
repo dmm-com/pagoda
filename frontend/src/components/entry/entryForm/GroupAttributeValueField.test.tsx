@@ -1,5 +1,4 @@
 /**
- * @jest-environment jsdom
  */
 
 import {
@@ -20,6 +19,7 @@ import { schema, Schema } from "./EntryFormSchema";
 import { GroupAttributeValueField } from "./GroupAttributeValueField";
 
 import { TestWrapper } from "TestWrapper";
+import { aironeApiClient } from "repository/AironeApiClient";
 
 import "@testing-library/jest-dom";
 
@@ -92,14 +92,9 @@ describe("GroupAttributeValueField", () => {
       }),
     );
 
-    /* eslint-disable */
-    jest
-      .spyOn(
-        require("../../../repository/AironeApiClient").aironeApiClient,
-        "getGroups",
-      )
-      .mockResolvedValue(Promise.resolve(groups));
-    /* eslint-enable */
+    vi.spyOn(aironeApiClient, "getGroups").mockResolvedValue(
+      Promise.resolve(groups),
+    );
 
     await act(async () => {
       render(
@@ -147,14 +142,9 @@ describe("GroupAttributeValueField", () => {
       }),
     );
 
-    /* eslint-disable */
-    jest
-      .spyOn(
-        require("../../../repository/AironeApiClient").aironeApiClient,
-        "getGroups",
-      )
-      .mockResolvedValue(Promise.resolve(groups));
-    /* eslint-enable */
+    vi.spyOn(aironeApiClient, "getGroups").mockResolvedValue(
+      Promise.resolve(groups),
+    );
 
     await act(async () => {
       render(

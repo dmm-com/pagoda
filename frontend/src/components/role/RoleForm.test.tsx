@@ -1,5 +1,4 @@
 /**
- * @jest-environment jsdom
  */
 
 import { zodResolver } from "@hookform/resolvers/zod/dist/zod";
@@ -18,8 +17,10 @@ import { schema } from "../entry/entryForm/EntryFormSchema";
 import { RoleForm } from "./RoleForm";
 import { Schema } from "./roleForm/RoleFormSchema";
 
+import { aironeApiClient } from "repository/AironeApiClient";
+
 afterEach(() => {
-  jest.clearAllMocks();
+  vi.clearAllMocks();
 });
 
 describe("RoleForm", () => {
@@ -47,14 +48,12 @@ describe("RoleForm", () => {
       }),
     );
 
-    /* eslint-disable */
-    jest
-      .spyOn(require("repository/AironeApiClient").aironeApiClient, "getUsers")
-      .mockResolvedValue(Promise.resolve([]));
-    jest
-      .spyOn(require("repository/AironeApiClient").aironeApiClient, "getGroups")
-      .mockResolvedValue(Promise.resolve([]));
-    /* eslint-enable */
+    vi.spyOn(aironeApiClient, "getUsers").mockResolvedValue(
+      Promise.resolve([]),
+    );
+    vi.spyOn(aironeApiClient, "getGroups").mockResolvedValue(
+      Promise.resolve([]),
+    );
 
     await act(async () => {
       render(<RoleForm control={control} setValue={setValue} />, {

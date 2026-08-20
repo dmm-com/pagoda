@@ -1,5 +1,4 @@
 /**
- * @jest-environment jsdom
  */
 
 import { act, render, screen } from "@testing-library/react";
@@ -7,22 +6,19 @@ import { act, render, screen } from "@testing-library/react";
 import { RestorableEntryList } from "./RestorableEntryList";
 
 import { TestWrapper } from "TestWrapper";
+import { aironeApiClient } from "repository/AironeApiClient";
 
 afterEach(() => {
-  jest.clearAllMocks();
+  vi.clearAllMocks();
 });
 
 test("should render a component with essential props", async () => {
-  /* eslint-disable */
-  jest
-    .spyOn(require("repository/AironeApiClient").aironeApiClient, "getEntries")
-    .mockResolvedValue(
-      Promise.resolve({
-        count: 0,
-        results: [],
-      }),
-    );
-  /* eslint-enable */
+  vi.spyOn(aironeApiClient, "getEntries").mockResolvedValue(
+    Promise.resolve({
+      count: 0,
+      results: [],
+    }),
+  );
 
   await act(async () => {
     render(<RestorableEntryList entityId={0} />, {

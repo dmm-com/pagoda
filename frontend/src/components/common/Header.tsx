@@ -17,12 +17,13 @@ import {
 } from "@mui/material";
 import { OverridableComponent } from "@mui/material/OverridableComponent";
 import { styled } from "@mui/material/styles";
-import { FC, Fragment, MouseEvent, useMemo, useState } from "react";
+import { FC, MouseEvent, useMemo, useState } from "react";
 import { Link } from "react-router";
 
 import { useTranslation } from "../../hooks/useTranslation";
 
 import { SearchBox } from "components/common/SearchBox";
+import { useHoverMenus } from "hooks/useHoverMenus";
 import { useInterval } from "hooks/useInterval";
 import { useJobCompletionNotification } from "hooks/useJobCompletionNotification";
 import { useSimpleSearch } from "hooks/useSimpleSearch";
@@ -122,11 +123,8 @@ export const Header: FC = () => {
 
   const [userAnchorEl, setUserAnchorEl] = useState<HTMLButtonElement | null>();
   const [jobAnchorEl, setJobAnchorEl] = useState<HTMLButtonElement | null>();
-  const [managementAnchorEl, setManagementAnchorEl] =
-    useState<HTMLElement | null>(null);
-  const [extendedMenuAnchors, setExtendedMenuAnchors] = useState<
-    Record<number, HTMLElement | null>
-  >({});
+  const { getTriggerProps, getMenuProps } = useHoverMenus();
+
   const [latestCheckDate, setLatestCheckDate] = useState<Date | null>(
     getLatestCheckDate(),
   );
@@ -194,73 +192,43 @@ export const Header: FC = () => {
               <Button component={Link} to={advancedSearchPath()}>
                 {t("advancedSearch")}
               </Button>
-              <Button
-                onMouseEnter={(e) => setManagementAnchorEl(e.currentTarget)}
-              >
-                {t("management")}
-                <KeyboardArrowDownIcon fontSize="small" />
-              </Button>
-              <Menu
-                anchorEl={managementAnchorEl}
-                open={Boolean(managementAnchorEl)}
-                onClose={() => setManagementAnchorEl(null)}
-                MenuListProps={{
-                  onMouseLeave: () => setManagementAnchorEl(null),
-                }}
-              >
-                <MenuItem component={Link} to={usersPath()}>
-                  {t("manageUsers")}
-                </MenuItem>
-                <MenuItem component={Link} to={groupsPath()}>
-                  {t("manageGroups")}
-                </MenuItem>
-                <MenuItem component={Link} to={rolesPath()}>
-                  {t("manageRoles")}
-                </MenuItem>
-                <MenuItem component={Link} to={triggersPath()}>
-                  {t("manageTriggers")}
-                </MenuItem>
-              </Menu>
+              <Box {...getTriggerProps("management")}>
+                <Button>
+                  {t("management")}
+                  <KeyboardArrowDownIcon fontSize="small" />
+                </Button>
+                <Menu {...getMenuProps("management")}>
+                  <MenuItem component={Link} to={usersPath()}>
+                    {t("manageUsers")}
+                  </MenuItem>
+                  <MenuItem component={Link} to={groupsPath()}>
+                    {t("manageGroups")}
+                  </MenuItem>
+                  <MenuItem component={Link} to={rolesPath()}>
+                    {t("manageRoles")}
+                  </MenuItem>
+                  <MenuItem component={Link} to={triggersPath()}>
+                    {t("manageTriggers")}
+                  </MenuItem>
+                </Menu>
+              </Box>
 
               {/* If there is another menu settings are passed from Server,
                   this represent another menu*/}
               {serverContext?.extendedHeaderMenus.map((menu, index) => (
-                <Fragment key={index}>
-                  <Button
-                    onMouseEnter={(e) =>
-                      setExtendedMenuAnchors((prev) => ({
-                        ...prev,
-                        [index]: e.currentTarget,
-                      }))
-                    }
-                  >
+                <Box key={index} {...getTriggerProps(index)}>
+                  <Button>
                     {menu.name}
                     <KeyboardArrowDownIcon fontSize="small" />
                   </Button>
-                  <Menu
-                    anchorEl={extendedMenuAnchors[index]}
-                    open={Boolean(extendedMenuAnchors[index])}
-                    onClose={() =>
-                      setExtendedMenuAnchors((prev) => ({
-                        ...prev,
-                        [index]: null,
-                      }))
-                    }
-                    MenuListProps={{
-                      onMouseLeave: () =>
-                        setExtendedMenuAnchors((prev) => ({
-                          ...prev,
-                          [index]: null,
-                        })),
-                    }}
-                  >
+                  <Menu {...getMenuProps(index)}>
                     {menu.children.map((child, childIndex) => (
                       <MenuItem key={childIndex} component="a" href={child.url}>
                         {child.name}
                       </MenuItem>
                     ))}
                   </Menu>
-                </Fragment>
+                </Box>
               ))}
             </MenuBox>
 

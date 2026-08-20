@@ -1,5 +1,4 @@
 /**
- * @jest-environment jsdom
  */
 
 import { ThemeProvider, createTheme } from "@mui/material/styles";
@@ -27,21 +26,21 @@ if (typeof global.File === "undefined") {
       this.type = options?.type || "";
     }
 
-    arrayBuffer = jest.fn().mockResolvedValue(new ArrayBuffer(8));
+    arrayBuffer = vi.fn().mockResolvedValue(new ArrayBuffer(8));
   }
 
   global.File = MockFile as unknown as typeof File;
 }
 
 // Mock encoding-japanese
-jest.mock("encoding-japanese", () => ({
-  detect: jest.fn().mockReturnValue("UTF-8"),
-  convert: jest.fn().mockReturnValue("Entity: []"),
+vi.mock("encoding-japanese", () => ({
+  detect: vi.fn().mockReturnValue("UTF-8"),
+  convert: vi.fn().mockReturnValue("Entity: []"),
 }));
 
-const mockCancelJob = jest.fn().mockResolvedValue(undefined);
-const mockDownloadImportPreview = jest.fn().mockResolvedValue(undefined);
-jest.mock("repository/AironeApiClient", () => ({
+const mockCancelJob = vi.fn().mockResolvedValue(undefined);
+const mockDownloadImportPreview = vi.fn().mockResolvedValue(undefined);
+vi.mock("repository/AironeApiClient", () => ({
   aironeApiClient: {
     cancelJob: (...args: unknown[]) => mockCancelJob(...args),
     downloadImportPreview: (...args: unknown[]) =>
@@ -49,10 +48,10 @@ jest.mock("repository/AironeApiClient", () => ({
   },
 }));
 
-const mockWaitForImportPreviews = jest.fn();
-const mockFetchImportPreviewPage = jest.fn();
-jest.mock("services/ImportPreviewJob", () => ({
-  ...jest.requireActual("services/ImportPreviewJob"),
+const mockWaitForImportPreviews = vi.fn();
+const mockFetchImportPreviewPage = vi.fn();
+vi.mock("services/ImportPreviewJob", async () => ({
+  ...(await vi.importActual("services/ImportPreviewJob")),
   waitForImportPreviews: (...args: unknown[]) =>
     mockWaitForImportPreviews(...args),
   fetchImportPreviewPage: (...args: unknown[]) =>
@@ -60,9 +59,9 @@ jest.mock("services/ImportPreviewJob", () => ({
 }));
 
 // Mock react-router
-const mockNavigate = jest.fn();
-jest.mock("react-router", () => ({
-  ...jest.requireActual("react-router"),
+const mockNavigate = vi.fn();
+vi.mock("react-router", async () => ({
+  ...((await vi.importActual("react-router")) as object),
   useNavigate: () => mockNavigate,
 }));
 
@@ -110,25 +109,25 @@ const previewWith = (
 
 describe("ImportForm", () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     // The real client returns promises; a bare jest.fn() would not, and the code
     // chains onto what it gets back.
     mockCancelJob.mockResolvedValue(undefined);
     mockDownloadImportPreview.mockResolvedValue(undefined);
     // Ensure File.prototype.arrayBuffer is mocked for encoding detection
     if (global.File && global.File.prototype) {
-      global.File.prototype.arrayBuffer = jest
+      global.File.prototype.arrayBuffer = vi
         .fn()
         .mockResolvedValue(new ArrayBuffer(8));
     }
   });
 
   afterEach(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   test("should render all UI elements", () => {
-    const handleImport = jest.fn();
+    const handleImport = vi.fn();
 
     render(<ImportForm handleImport={handleImport} />, {
       wrapper: TestWrapper,
@@ -144,7 +143,7 @@ describe("ImportForm", () => {
   });
 
   test("should handle file selection", () => {
-    const handleImport = jest.fn();
+    const handleImport = vi.fn();
     const file = new File(["test content"], "test.yaml", {
       type: "application/yaml",
     });
@@ -385,7 +384,7 @@ describe("ImportForm", () => {
   });
 
   test("should not attempt import when no file is selected", () => {
-    const handleImport = jest.fn();
+    const handleImport = vi.fn();
 
     render(<ImportForm handleImport={handleImport} />, {
       wrapper: TestWrapper,

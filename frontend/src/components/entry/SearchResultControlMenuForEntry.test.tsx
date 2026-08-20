@@ -1,5 +1,4 @@
 /**
- * @jest-environment jsdom
  */
 
 import {
@@ -19,14 +18,14 @@ describe("SearchResultControlMenuForEntry", () => {
       keyword: "",
     } as EntryHint,
     anchorElem: null,
-    handleClose: jest.fn(),
-    hintEntryDispatcher: jest.fn(),
-    handleSelectFilterConditions: jest.fn(),
-    setOpenEditModal: jest.fn(),
+    handleClose: vi.fn(),
+    hintEntryDispatcher: vi.fn(),
+    handleSelectFilterConditions: vi.fn(),
+    setOpenEditModal: vi.fn(),
   };
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   test("should render menu when anchorElem is provided", () => {

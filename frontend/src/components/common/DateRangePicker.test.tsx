@@ -1,5 +1,4 @@
 /**
- * @jest-environment jsdom
  */
 
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
@@ -17,8 +16,8 @@ interface DesktopDatePickerProps {
   };
 }
 
-jest.mock("@mui/x-date-pickers", () => ({
-  ...jest.requireActual("@mui/x-date-pickers"),
+vi.mock("@mui/x-date-pickers", async () => ({
+  ...((await vi.importActual("@mui/x-date-pickers")) as object),
   DesktopDatePicker: ({
     label,
     value,
@@ -54,13 +53,13 @@ jest.mock("@mui/x-date-pickers", () => ({
 
 describe("DateRangePicker", () => {
   const baseProps = {
-    onApply: jest.fn(),
-    onCancel: jest.fn(),
+    onApply: vi.fn(),
+    onCancel: vi.fn(),
     disabled: false,
   };
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   test("should display initial dates when provided", () => {
@@ -102,7 +101,7 @@ describe("DateRangePicker", () => {
   });
 
   test("should call onApply with formatted dates when valid dates are selected and apply is clicked", async () => {
-    const handleApply = jest.fn();
+    const handleApply = vi.fn();
     render(<DateRangePicker {...baseProps} onApply={handleApply} />, {
       wrapper: TestWrapper,
     });
@@ -124,7 +123,7 @@ describe("DateRangePicker", () => {
   });
 
   test("should call onCancel when cancel button is clicked", async () => {
-    const handleCancel = jest.fn();
+    const handleCancel = vi.fn();
     render(
       <DateRangePicker
         {...baseProps}

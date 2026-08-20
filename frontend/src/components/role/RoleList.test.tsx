@@ -1,5 +1,4 @@
 /**
- * @jest-environment jsdom
  */
 
 import { Role } from "@dmm-com/airone-apiclient-typescript-fetch";
@@ -8,9 +7,10 @@ import { act, render, screen, waitFor, within } from "@testing-library/react";
 import { RoleList } from "./RoleList";
 
 import { TestWrapper } from "TestWrapper";
+import { aironeApiClient } from "repository/AironeApiClient";
 
 afterEach(() => {
-  jest.clearAllMocks();
+  vi.clearAllMocks();
 });
 
 describe("RoleList", () => {
@@ -38,17 +38,12 @@ describe("RoleList", () => {
   ];
 
   test("should show role list", async () => {
-    /* eslint-disable */
-    jest
-      .spyOn(require("repository/AironeApiClient").aironeApiClient, "getRoles")
-      .mockResolvedValue(Promise.resolve(roles));
-    jest
-      .spyOn(
-        require("repository/AironeApiClient").aironeApiClient,
-        "deleteRole",
-      )
-      .mockResolvedValue(Promise.resolve());
-    /* eslint-enable */
+    vi.spyOn(aironeApiClient, "getRoles").mockResolvedValue(
+      Promise.resolve(roles),
+    );
+    vi.spyOn(aironeApiClient, "deleteRole").mockResolvedValue(
+      Promise.resolve(),
+    );
 
     await act(async () => {
       render(<RoleList />, { wrapper: TestWrapper });

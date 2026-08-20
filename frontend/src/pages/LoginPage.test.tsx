@@ -1,5 +1,4 @@
 /**
- * @jest-environment jsdom
  */
 
 import { render, screen, fireEvent } from "@testing-library/react";
@@ -9,7 +8,7 @@ import { LoginPage } from "./LoginPage";
 import { TestWrapper } from "TestWrapper";
 
 // Mock ServerContext
-jest.mock("../services/ServerContext", () => ({
+vi.mock("../services/ServerContext", () => ({
   ServerContext: {
     getInstance: () => ({
       title: "AirOne",
@@ -26,14 +25,14 @@ jest.mock("../services/ServerContext", () => ({
 }));
 
 // Mock API client
-jest.mock("../repository/AironeApiClient", () => ({
+vi.mock("../repository/AironeApiClient", () => ({
   aironeApiClient: {
-    postLogin: jest.fn(() => Promise.resolve({ type: "basic" })),
+    postLogin: vi.fn(() => Promise.resolve({ type: "basic" })),
   },
 }));
 
 afterEach(() => {
-  jest.clearAllMocks();
+  vi.clearAllMocks();
 });
 
 describe("LoginPage", () => {
