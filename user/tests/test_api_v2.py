@@ -73,6 +73,89 @@ class ViewTest(AironeViewTest):
         resp = self.client.get("/user/api/v2/%s/" % co_user.id)
         self.assertEqual(resp.status_code, 200)
 
+    def test_get_user_groups_and_roles(self):
+        login_user = self.guest_login()
+
+        parent_group = self._create_group("parent_group")
+        child_group = Group.objects.create(name="child_group", parent_group=parent_group)
+        login_user.groups.add(child_group)
+
+        direct_role = Role.objects.create(name="direct_role")
+        direct_role.users.add(login_user)
+        group_role = Role.objects.create(name="group_role")
+        group_role.groups.add(child_group)
+        admin_role = Role.objects.create(name="admin_role")
+        admin_role.admin_groups.add(parent_group)
+
+        resp = self.client.get("/user/api/v2/%s/" % login_user.id)
+        self.assertEqual(resp.status_code, 200)
+
+        body = resp.json()
+        self.assertEqual(
+            body["groups"],
+            [
+                {"id": child_group.id, "name": "child_group", "is_direct": True},
+                {"id": parent_group.id, "name": "parent_group", "is_direct": False},
+            ],
+        )
+        self.assertEqual(
+            body["roles"],
+            [
+                {
+                    "id": admin_role.id,
+                    "name": "admin_role",
+                    "is_direct": False,
+                    "is_admin": True,
+                    "via_groups": [{"id": parent_group.id, "name": "parent_group"}],
+                },
+                {
+                    "id": direct_role.id,
+                    "name": "direct_role",
+                    "is_direct": True,
+                    "is_admin": False,
+                    "via_groups": [],
+                },
+                {
+                    "id": group_role.id,
+                    "name": "group_role",
+                    "is_direct": False,
+                    "is_admin": False,
+                    "via_groups": [{"id": child_group.id, "name": "child_group"}],
+                },
+            ],
+        )
+
+    def test_get_user_groups_and_roles_when_user_belongs_to_nothing(self):
+        login_user = self.guest_login()
+
+        resp = self.client.get("/user/api/v2/%s/" % login_user.id)
+        self.assertEqual(resp.status_code, 200)
+
+        body = resp.json()
+        self.assertEqual(body["groups"], [])
+        self.assertEqual(body["roles"], [])
+
+    def test_get_user_excludes_deleted_groups_and_roles(self):
+        login_user = self.guest_login()
+
+        active_group = self._create_group("active_group")
+        deleted_group = self._create_group("deleted_group")
+        login_user.groups.add(active_group, deleted_group)
+        deleted_group.is_active = False
+        deleted_group.save(update_fields=["is_active"])
+
+        active_role = Role.objects.create(name="active_role")
+        active_role.users.add(login_user)
+        deleted_role = Role.objects.create(name="deleted_role", is_active=False)
+        deleted_role.users.add(login_user)
+
+        resp = self.client.get("/user/api/v2/%s/" % login_user.id)
+        self.assertEqual(resp.status_code, 200)
+
+        body = resp.json()
+        self.assertEqual([g["name"] for g in body["groups"]], ["active_group"])
+        self.assertEqual([r["name"] for r in body["roles"]], ["active_role"])
+
     def test_get_me(self):
         login_user = self.guest_login()
         co_user1 = self._create_user("guest-co1", "co1@example.com", parent_user=login_user)

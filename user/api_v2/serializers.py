@@ -37,6 +37,47 @@ class UserTokenSerializer(serializers.ModelSerializer[Token]):
         read_only_fields = ["key"]
 
 
+class UserGroupType(TypedDict):
+    id: int
+    name: str
+    is_direct: bool
+
+
+class UserGroupSerializer(serializers.Serializer[UserGroupType]):
+    id = serializers.IntegerField()
+    name = serializers.CharField()
+    # False when this user belongs to the group only through its subordinates
+    is_direct = serializers.BooleanField()
+
+
+class UserRoleGroupType(TypedDict):
+    id: int
+    name: str
+
+
+class UserRoleGroupSerializer(serializers.Serializer[UserRoleGroupType]):
+    id = serializers.IntegerField()
+    name = serializers.CharField()
+
+
+class UserRoleType(TypedDict):
+    id: int
+    name: str
+    is_direct: bool
+    is_admin: bool
+    via_groups: list[UserRoleGroupType]
+
+
+class UserRoleSerializer(serializers.Serializer[UserRoleType]):
+    id = serializers.IntegerField()
+    name = serializers.CharField()
+    # True when this user is registered to the role itself (not through a group)
+    is_direct = serializers.BooleanField()
+    # True when this user has administrative privilege of the role
+    is_admin = serializers.BooleanField()
+    via_groups = UserRoleGroupSerializer(many=True)
+
+
 class UserBaseSerializer(serializers.ModelSerializer[User]):
     date_joined = serializers.SerializerMethodField(method_name="get_date_joined")
 
@@ -121,6 +162,8 @@ class UserRetrieveSerializer(UserBaseSerializer):
 
     token = serializers.SerializerMethodField()
     authenticate_type = AuthenticateTypeField()
+    groups = serializers.SerializerMethodField()
+    roles = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -133,6 +176,8 @@ class UserRetrieveSerializer(UserBaseSerializer):
             "token",
             "authenticate_type",
             "parent_user",
+            "groups",
+            "roles",
         ]
 
     @extend_schema_field(UserRetrieveTokenSerializer(required=False))
@@ -153,6 +198,30 @@ class UserRetrieveSerializer(UserBaseSerializer):
             }
         else:
             return None
+
+    @extend_schema_field(UserGroupSerializer(many=True))
+    def get_groups(self, obj: User) -> list[UserGroupType]:
+        direct_group_ids = {g.id for g in obj.airone_groups}
+        return [
+            {"id": g.id, "name": g.name, "is_direct": g.id in direct_group_ids}
+            for g in sorted(obj.belonging_groups(), key=lambda x: x.name)
+        ]
+
+    @extend_schema_field(UserRoleSerializer(many=True))
+    def get_roles(self, obj: User) -> list[UserRoleType]:
+        return [
+            {
+                "id": belonging.role.id,
+                "name": belonging.role.name,
+                "is_direct": belonging.is_direct,
+                "is_admin": belonging.is_admin,
+                "via_groups": [
+                    {"id": g.id, "name": g.name}
+                    for g in sorted(belonging.via_groups, key=lambda x: x.name)
+                ],
+            }
+            for belonging in sorted(obj.belonging_roles(), key=lambda x: x.role.name)
+        ]
 
 
 class UserListSerializer(UserBaseSerializer):
