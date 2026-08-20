@@ -119,7 +119,7 @@
     "react-dom": "^19.2.0"
   },
   "optionalDependencies": {
-    "@dmm-com/airone-apiclient-typescript-fetch": "^0.29.1"
+    "@dmm-com/airone-apiclient-typescript-fetch": "^0.29.3"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
