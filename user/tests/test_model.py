@@ -1,5 +1,7 @@
 from django.conf import settings
+from django.db import connection
 from django.test import TestCase
+from django.test.utils import CaptureQueriesContext
 from rest_framework.authtoken.models import Token
 from social_django.models import UserSocialAuth
 
@@ -171,6 +173,100 @@ class ModelTest(TestCase):
         role.users.clear()
         role.admin_users.add(user)
         self.assertTrue(user.has_permission(entity, ACLType.Full))
+
+    def test_belonging_roles(self):
+        # This checks all the four paths (member/admin x direct/via-group) are
+        # collected, and that hierarchical superior groups are traversed.
+        user = User.objects.create(username="user")
+        parent_group = Group.objects.create(name="parent_group")
+        child_group = Group.objects.create(name="child_group", parent_group=parent_group)
+        user.groups.add(child_group)
+
+        direct_role = Role.objects.create(name="direct_role")
+        direct_role.users.add(user)
+        direct_admin_role = Role.objects.create(name="direct_admin_role")
+        direct_admin_role.admin_users.add(user)
+        group_role = Role.objects.create(name="group_role")
+        group_role.groups.add(child_group)
+        parent_group_role = Role.objects.create(name="parent_group_role")
+        parent_group_role.admin_groups.add(parent_group)
+
+        # inactive roles and roles of unrelated groups must not be returned
+        inactive_role = Role.objects.create(name="inactive_role", is_active=False)
+        inactive_role.users.add(user)
+        unrelated_role = Role.objects.create(name="unrelated_role")
+        unrelated_role.groups.add(Group.objects.create(name="unrelated_group"))
+
+        belongings = {x.role.name: x for x in user.belonging_roles()}
+        self.assertEqual(
+            sorted(belongings.keys()),
+            ["direct_admin_role", "direct_role", "group_role", "parent_group_role"],
+        )
+
+        self.assertTrue(belongings["direct_role"].is_direct)
+        self.assertFalse(belongings["direct_role"].is_admin)
+        self.assertEqual(belongings["direct_role"].via_groups, [])
+
+        self.assertTrue(belongings["direct_admin_role"].is_direct)
+        self.assertTrue(belongings["direct_admin_role"].is_admin)
+
+        self.assertFalse(belongings["group_role"].is_direct)
+        self.assertFalse(belongings["group_role"].is_admin)
+        self.assertEqual([g.name for g in belongings["group_role"].via_groups], ["child_group"])
+
+        self.assertFalse(belongings["parent_group_role"].is_direct)
+        self.assertTrue(belongings["parent_group_role"].is_admin)
+        self.assertEqual(
+            [g.name for g in belongings["parent_group_role"].via_groups], ["parent_group"]
+        )
+
+        # when only direct belonging is requested, roles of the superior group are excluded
+        belongings = {x.role.name: x for x in user.belonging_roles(is_direct_belonging=True)}
+        self.assertEqual(
+            sorted(belongings.keys()), ["direct_admin_role", "direct_role", "group_role"]
+        )
+
+    def test_belonging_roles_aggregates_multiple_paths(self):
+        # A role reachable through several paths must be reported only once,
+        # with all the provenance merged into it.
+        user = User.objects.create(username="user")
+        group1 = Group.objects.create(name="group1")
+        group2 = Group.objects.create(name="group2")
+        user.groups.add(group1, group2)
+
+        role = Role.objects.create(name="role")
+        role.users.add(user)
+        role.groups.add(group1)
+        role.admin_groups.add(group2)
+
+        belongings = user.belonging_roles()
+        self.assertEqual(len(belongings), 1)
+        self.assertEqual(belongings[0].role.id, role.id)
+        self.assertTrue(belongings[0].is_direct)
+        self.assertTrue(belongings[0].is_admin)
+        self.assertEqual(sorted(g.name for g in belongings[0].via_groups), ["group1", "group2"])
+
+    def test_belonging_roles_issues_constant_number_of_queries(self):
+        # The number of queries must not grow along with the number of groups,
+        # because has_permission() calls this on a hot path.
+        user = User.objects.create(username="user")
+        role = Role.objects.create(name="role")
+        for i in range(2):
+            group = Group.objects.create(name=f"group-{i}")
+            user.groups.add(group)
+            role.groups.add(group)
+
+        with CaptureQueriesContext(connection) as ctx:
+            user.belonging_roles()
+        baseline = len(ctx.captured_queries)
+
+        for i in range(2, 10):
+            group = Group.objects.create(name=f"group-{i}")
+            user.groups.add(group)
+            role.groups.add(group)
+
+        with self.assertNumQueries(baseline):
+            user.belonging_roles()
 
     def test_get_all_hierarchical_groups_when_they_are_looped(self):
         """This test try to get hierarchical groups when those are looped like this
