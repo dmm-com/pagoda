@@ -27,6 +27,8 @@ describe("ChangeUserAuthModal", () => {
       created: "",
     },
     authenticateType: UserRetrieveAuthenticateTypeEnum.AUTH_TYPE_LOCAL,
+    groups: [],
+    roles: [],
   };
 
   test("should render a component essentially", async () => {

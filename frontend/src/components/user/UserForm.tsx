@@ -1,12 +1,14 @@
 import {
   UserRetrieve,
   UserRetrieveAuthenticateTypeEnum,
+  UserRole,
 } from "@dmm-com/airone-apiclient-typescript-fetch";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import {
   Box,
   Button,
   Checkbox,
+  Chip,
   IconButton,
   InputAdornment,
   Paper,
@@ -34,7 +36,9 @@ import { Control, Controller, useWatch } from "react-hook-form";
 import { ChangeUserAuthModal } from "./ChangeUserAuthModal";
 import { Schema } from "./userForm/UserFormSchema";
 
+import { AironeLink } from "components/common/AironeLink";
 import { FlexBox } from "components/common/FlexBox";
+import { groupPath, rolePath } from "routes/Routes";
 import { ServerContext } from "services/ServerContext";
 import { User } from "services/ServerContext";
 
@@ -45,6 +49,18 @@ const StyledTableRow = styled(TableRow)(() => ({
   "&:last-child td, &:last-child th": {
     border: 0,
   },
+}));
+
+const ChipBox = styled(Box)(({ theme }) => ({
+  display: "flex",
+  flexWrap: "wrap",
+  gap: theme.spacing(0.5),
+  margin: theme.spacing(1),
+}));
+
+const EmptyMessage = styled(Typography)(({ theme }) => ({
+  margin: theme.spacing(1),
+  color: theme.palette.text.secondary,
 }));
 
 interface Props {
@@ -310,6 +326,80 @@ const ElemUserName: FC<Props & { isMyself: boolean; isCoUser: boolean }> = ({
   );
 };
 
+const ElemGroups: FC<ReadonlyProps> = ({ user }) => {
+  return (
+    <StyledTableRow>
+      <TableCell sx={{ width: "400px", wordBreak: "break-word" }}>
+        所属グループ
+      </TableCell>
+      <TableCell sx={{ width: "750px", p: "0px", wordBreak: "break-word" }}>
+        {user.groups.length > 0 ? (
+          <ChipBox>
+            {user.groups.map((group) => (
+              <Chip
+                key={group.id}
+                label={group.isDirect ? group.name : `${group.name} (継承)`}
+                size="small"
+                variant={group.isDirect ? "filled" : "outlined"}
+                component={AironeLink}
+                to={groupPath(group.id)}
+                clickable
+              />
+            ))}
+          </ChipBox>
+        ) : (
+          <EmptyMessage>所属しているグループはありません</EmptyMessage>
+        )}
+      </TableCell>
+    </StyledTableRow>
+  );
+};
+
+/**
+ * Builds a chip label that tells why the user belongs to the role, because a
+ * role can be granted through a group instead of being assigned directly.
+ */
+const getRoleLabel = (role: UserRole): string => {
+  const notes: string[] = [];
+  if (role.isAdmin) {
+    notes.push("管理");
+  }
+  if (!role.isDirect && role.viaGroups.length > 0) {
+    notes.push(`${role.viaGroups.map((g) => g.name).join(", ")} 経由`);
+  }
+
+  return notes.length > 0 ? `${role.name} (${notes.join(" / ")})` : role.name;
+};
+
+const ElemRoles: FC<ReadonlyProps> = ({ user }) => {
+  return (
+    <StyledTableRow>
+      <TableCell sx={{ width: "400px", wordBreak: "break-word" }}>
+        所属ロール
+      </TableCell>
+      <TableCell sx={{ width: "750px", p: "0px", wordBreak: "break-word" }}>
+        {user.roles.length > 0 ? (
+          <ChipBox>
+            {user.roles.map((role) => (
+              <Chip
+                key={role.id}
+                label={getRoleLabel(role)}
+                size="small"
+                variant={role.isDirect ? "filled" : "outlined"}
+                component={AironeLink}
+                to={rolePath(role.id)}
+                clickable
+              />
+            ))}
+          </ChipBox>
+        ) : (
+          <EmptyMessage>所属しているロールはありません</EmptyMessage>
+        )}
+      </TableCell>
+    </StyledTableRow>
+  );
+};
+
 const ElemUserPassword: FC<Props> = ({ control }) => {
   return (
     <StyledTableRow>
@@ -421,6 +511,13 @@ export const UserForm: FC<UserFormProps> = ({
               isMyself={isMyself}
               isCoUser={isCoUser}
             />
+
+            {!isCreateMode && user != null && (
+              <>
+                <ElemGroups user={user} />
+                <ElemRoles user={user} />
+              </>
+            )}
 
             {loginUser?.isSuperuser && (
               <>
