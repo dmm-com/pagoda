@@ -50,7 +50,7 @@ from entry.api_v2.serializers import (
     ReferralEntry,
 )
 from entry.models import Attribute, Entry
-from entry.services import AdvancedSearchService
+from entry.services import AdvancedSearchService, EntryImportPreviewService
 from group.models import Group
 from job.models import Job, JobOperation, JobStatus, JobTarget
 from role.models import Role
@@ -1211,4 +1211,35 @@ def bulk_update_entries(
 
     job.text = "Bulk update completed [%5d/%5d]" % (total_count, total_count)
     job.save(update_fields=["text"])
+    return JobStatus.DONE
+
+
+@register_job_task(JobOperation.IMPORT_ENTRY_PREVIEW)
+@app.task(bind=True)  # type: ignore[misc]
+@may_schedule_until_job_is_ready
+def import_entries_preview_v2(self: Task, job: Job) -> JobStatus:
+    """Report what importing this file would do to the items of one model.
+
+    It touches no item and no value; the only thing it writes is its own
+    progress, onto the job row it runs as. See EntryImportPreviewService.
+    """
+    entity = Entity.objects.get(id=job.target.id)
+    raw_data = json.loads(job.params)
+
+    import_serializer = EntryImportEntitySerializer(data=raw_data)
+    if not import_serializer.is_valid():
+        return JobStatus.ERROR
+
+    payload = EntryImportPreviewService.build(
+        job,
+        job.user,
+        entity,
+        import_serializer.validated_data["entries"],
+        raw_data.get("entries", []),
+    )
+    if payload is None:
+        return JobStatus.CANCELED
+
+    job.set_cache(payload)
+
     return JobStatus.DONE

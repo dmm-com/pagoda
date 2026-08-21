@@ -51,6 +51,7 @@ class PreviewCollector:
         action: PreviewAction,
         reason: str | None = None,
         changes: list[dict[str, str | None]] | None = None,
+        will_invoke_trigger: bool = False,
     ) -> None:
         self.summary[PREVIEW_SUMMARY_KEYS[action]] += 1
         self.summary["total"] += 1
@@ -62,6 +63,7 @@ class PreviewCollector:
             "action": action,
             "reason": reason,
             "changes": changes or [],
+            "will_invoke_trigger": will_invoke_trigger,
         }
 
         bucket = self._unchanged if action == "unchanged" else self._notable

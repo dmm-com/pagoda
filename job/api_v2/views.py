@@ -187,7 +187,7 @@ class JobAPI(viewsets.ModelViewSet[Job]):
 
         io_stream = io.StringIO()
         writer = csv.writer(io_stream)
-        writer.writerow(["kind", "name", "action", "reason", "changes"])
+        writer.writerow(["kind", "name", "action", "reason", "changes", "will_invoke_trigger"])
         for row in payload["rows"]:
             writer.writerow(
                 [
@@ -199,6 +199,7 @@ class JobAPI(viewsets.ModelViewSet[Job]):
                         "%s: %s -> %s" % (c["field"], c["before"] or "", c["after"] or "")
                         for c in row["changes"]
                     ),
+                    row.get("will_invoke_trigger", False),
                 ]
             )
 
