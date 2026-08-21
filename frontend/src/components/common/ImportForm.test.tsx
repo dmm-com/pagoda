@@ -108,6 +108,7 @@ const previewWith = (
     kind: "Entity",
     reason: null,
     changes: [],
+    willInvokeTrigger: false,
   })),
 });
 

@@ -25,6 +25,8 @@ export interface ImportPreviewRow {
   action: ImportPreviewAction;
   reason: string | null;
   changes: ImportPreviewChange[];
+  /** Importing this row would fire a trigger, changing values the file omits. */
+  willInvokeTrigger: boolean;
 }
 
 export interface ImportPreviewSummary {
