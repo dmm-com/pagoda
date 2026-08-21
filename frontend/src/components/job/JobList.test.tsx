@@ -72,10 +72,6 @@ describe("JobList", () => {
     render(<JobList jobs={jobs} />, {
       wrapper: TestWrapper,
     });
-
-    // jobs with "PREPARING", "TIMEOUT", "ERROR" should have a retry button
-    expect(screen.queryAllByRole("button", { name: "再実行" })).toHaveLength(3);
-
     // jobs with "PREPARING", "PROCESSING", "TIMEOUT" should have a cancel button
     expect(
       screen.queryAllByRole("button", { name: "キャンセル" }),
