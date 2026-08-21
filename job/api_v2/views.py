@@ -140,7 +140,7 @@ class JobAPI(viewsets.ModelViewSet[Job]):
                 "summary": payload["summary"],
                 "count": len(rows),
                 "truncated": payload["truncated"],
-                "rows": rows[offset : offset + limit],
+                "rows": [_public_row(row) for row in rows[offset : offset + limit]],
             }
         )
 
@@ -204,6 +204,14 @@ class JobAPI(viewsets.ModelViewSet[Job]):
             )
 
         return cast(Response, get_download_response(io_stream, "import_preview.csv", encode_param))
+
+
+# Keys a preview keeps for the import's own use, which no client should receive.
+INTERNAL_PREVIEW_KEYS = frozenset({"baseline"})
+
+
+def _public_row(row: dict[str, Any]) -> dict[str, Any]:
+    return {key: value for key, value in row.items() if key not in INTERNAL_PREVIEW_KEYS}
 
 
 def _filter_by_action(rows: list[dict[str, Any]], action: str | None) -> list[dict[str, Any]]:

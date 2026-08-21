@@ -816,6 +816,15 @@ class EntryImportAPI(generics.GenericAPIView):
     @extend_schema(
         parameters=[
             OpenApiParameter("force", OpenApiTypes.BOOL, OpenApiParameter.QUERY, default=False),
+            OpenApiParameter(
+                "preview_job_id",
+                OpenApiTypes.INT,
+                OpenApiParameter.QUERY,
+                description=(
+                    "The preview this import was approved from. Items changed by "
+                    "someone else since then are left alone and reported."
+                ),
+            ),
         ],
         responses={
             200: None,
@@ -826,6 +835,7 @@ class EntryImportAPI(generics.GenericAPIView):
             return Response(status=status.HTTP_403_FORBIDDEN)
 
         import_datas = request.data
+        preview_job_id = request.query_params.get("preview_job_id")
         user: User = request.user
         serializer = EntryImportSerializer(data=import_datas)
         serializer.is_valid(raise_exception=True)
@@ -862,7 +872,14 @@ class EntryImportAPI(generics.GenericAPIView):
                 continue
 
             job = Job.new_import_v2(
-                user, entity, text="Preparing to import data", params=import_data
+                user,
+                entity,
+                text="Preparing to import data",
+                params=(
+                    {**import_data, "preview_job_id": int(preview_job_id)}
+                    if preview_job_id
+                    else import_data
+                ),
             )
             job.run()
             job_ids.append(job.id)
