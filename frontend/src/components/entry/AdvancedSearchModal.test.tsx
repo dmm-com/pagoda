@@ -1,5 +1,4 @@
 /**
- * @jest-environment jsdom
  */
 import {
   AdvancedSearchResultAttrInfo,
@@ -12,9 +11,9 @@ import { AdvancedSearchModal } from "./AdvancedSearchModal";
 
 import { TestWrapper } from "TestWrapper";
 
-jest.mock("react-router", () => ({
-  ...jest.requireActual("react-router"),
-  useNavigate: () => jest.fn(),
+vi.mock("react-router", async () => ({
+  ...((await vi.importActual("react-router")) as object),
+  useNavigate: () => vi.fn(),
 }));
 
 describe("AdvancedSearchModal", () => {
@@ -43,7 +42,7 @@ describe("AdvancedSearchModal", () => {
     render(
       <AdvancedSearchModal
         openModal={true}
-        setOpenModal={jest.fn()}
+        setOpenModal={vi.fn()}
         attrNames={attrNames}
         initialAttrNames={initialAttrNames}
         attrInfos={attrInfos}
@@ -59,7 +58,7 @@ describe("AdvancedSearchModal", () => {
   });
 
   test("should call setOpenModal(false) when clicking cancel button", () => {
-    const setOpenModal = jest.fn();
+    const setOpenModal = vi.fn();
     render(
       <AdvancedSearchModal
         openModal={true}
@@ -79,7 +78,7 @@ describe("AdvancedSearchModal", () => {
     render(
       <AdvancedSearchModal
         openModal={false}
-        setOpenModal={jest.fn()}
+        setOpenModal={vi.fn()}
         attrNames={attrNames}
         initialAttrNames={initialAttrNames}
         attrInfos={attrInfos}

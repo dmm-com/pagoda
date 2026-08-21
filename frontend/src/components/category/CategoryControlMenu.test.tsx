@@ -1,5 +1,4 @@
 /**
- * @jest-environment jsdom
  */
 
 import { render, screen } from "@testing-library/react";
@@ -11,7 +10,7 @@ import { ACLType } from "services/ACLUtil";
 
 describe("CategoryControlMenu", () => {
   test("renders without crashing", () => {
-    const handleClose = jest.fn();
+    const handleClose = vi.fn();
 
     expect(() =>
       render(
@@ -31,7 +30,7 @@ describe("CategoryControlMenu", () => {
       <CategoryControlMenu
         categoryId={1}
         anchorElem={document.createElement("button")}
-        handleClose={jest.fn()}
+        handleClose={vi.fn()}
       />,
       { wrapper: TestWrapper },
     );
@@ -47,7 +46,7 @@ describe("CategoryControlMenu", () => {
       <CategoryControlMenu
         categoryId={1}
         anchorElem={null}
-        handleClose={jest.fn()}
+        handleClose={vi.fn()}
       />,
       { wrapper: TestWrapper },
     );
@@ -61,7 +60,7 @@ describe("CategoryControlMenu", () => {
     const defaultProps = {
       categoryId: 1,
       anchorElem: document.createElement("button"),
-      handleClose: jest.fn(),
+      handleClose: vi.fn(),
     };
 
     describe("when permission is Readable", () => {

@@ -1,5 +1,4 @@
 /**
- * @jest-environment jsdom
  */
 
 import { EntryAttributeTypeTypeEnum } from "@dmm-com/airone-apiclient-typescript-fetch";
@@ -345,11 +344,11 @@ describe("ArrayNumberAttributeValueField", () => {
 });
 
 describe("NumberAttributeValueFieldForArray", () => {
-  const mockHandleClickDeleteListItem = jest.fn();
-  const mockHandleClickAddListItem = jest.fn();
+  const mockHandleClickDeleteListItem = vi.fn();
+  const mockHandleClickAddListItem = vi.fn();
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   const defaultValues: Schema = {

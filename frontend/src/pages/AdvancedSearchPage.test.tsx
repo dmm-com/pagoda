@@ -1,5 +1,4 @@
 /**
- * @jest-environment jsdom
  */
 
 import { PaginatedEntityListList } from "@dmm-com/airone-apiclient-typescript-fetch";

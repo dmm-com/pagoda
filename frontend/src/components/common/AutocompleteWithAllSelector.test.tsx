@@ -12,7 +12,7 @@ import { AutocompleteWithAllSelector } from "./AutocompleteWithAllSelector";
 describe("AutocompleteWithAllSelector", () => {
   it("renders and allows select-all/remove-all", async () => {
     const options = ["A", "B", "C"];
-    const handleChange = jest.fn();
+    const handleChange = vi.fn();
     render(
       <AutocompleteWithAllSelector
         selectAllLabel="すべて選択"

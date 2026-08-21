@@ -5,6 +5,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import EmailMultiAlternatives
+from django.db.models import QuerySet
 from django.template import loader
 from django.utils import timezone
 from django.utils.encoding import force_bytes
@@ -406,6 +407,13 @@ class UserAPI(viewsets.ModelViewSet[User]):
             "list": UserListSerializer,
         }
         return serializer.get(self.action, UserRetrieveSerializer)
+
+    def get_queryset(self) -> "QuerySet[User]":
+        queryset = super().get_queryset()
+        if self.action == "retrieve":
+            # UserRetrieveSerializer resolves belonging groups of the user
+            queryset = queryset.prefetch_related("groups")
+        return queryset
 
     def destroy(self, request: Request, pk: int) -> Response:
         user: User = self.get_object()

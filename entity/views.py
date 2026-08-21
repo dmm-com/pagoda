@@ -6,6 +6,7 @@ from typing import Any, cast
 import yaml
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.db.models import Q, QuerySet
+from django.db.models.functions import Lower
 from django.http import HttpRequest, HttpResponse
 from django.http.response import JsonResponse
 
@@ -41,9 +42,11 @@ def index(request: HttpRequest) -> HttpResponse:
     # Get entities under the conditions of specified parameters
     query = Q(is_active=True)
     if param_keyword:
-        query &= Q(name__icontains=param_keyword)
+        query &= Q(name_lower__icontains=param_keyword.lower())
 
-    overall_entities = Entity.objects.filter(query).order_by("name")
+    overall_entities = (
+        Entity.objects.annotate(name_lower=Lower("name")).filter(query).order_by("name")
+    )
 
     p = Paginator(overall_entities, CONFIG.MAX_LIST_ENTITIES)
     try:

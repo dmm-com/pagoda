@@ -1,5 +1,4 @@
 /**
- * @jest-environment jsdom
  */
 
 import { Schema, schema } from "./ACLFormSchema";

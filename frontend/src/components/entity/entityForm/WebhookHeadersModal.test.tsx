@@ -1,5 +1,4 @@
 /**
- * @jest-environment jsdom
  */
 import { render, screen, fireEvent } from "@testing-library/react";
 import { useForm } from "react-hook-form";
@@ -14,7 +13,7 @@ type WebhookHeader = { headerKey: string; headerValue: string };
 const TestModal = ({
   initialHeaders = [],
   idx = 0,
-  onClose = jest.fn(),
+  onClose = vi.fn(),
   onForm,
 }: {
   initialHeaders?: WebhookHeader[];
@@ -104,7 +103,7 @@ describe("WebhookHeadersModal", () => {
   });
 
   test("should call handleCloseModal when clicking close button", () => {
-    const onClose = jest.fn();
+    const onClose = vi.fn();
     render(<TestModal onClose={onClose} />, { wrapper: TestWrapper });
     fireEvent.click(screen.getByText("閉じる"));
     expect(onClose).toHaveBeenCalled();

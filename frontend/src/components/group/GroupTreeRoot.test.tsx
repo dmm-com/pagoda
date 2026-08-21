@@ -1,5 +1,4 @@
 /**
- * @jest-environment jsdom
  */
 
 import { render, screen } from "@testing-library/react";
@@ -11,13 +10,13 @@ import { ServerContext } from "../../services/ServerContext";
 import { GroupTreeRoot } from "./GroupTreeRoot";
 
 // Mock for ServerContext
-jest.mock("../../services/ServerContext", () => {
+vi.mock("../../services/ServerContext", () => {
   const mockInstance = {
     user: { isSuperuser: false },
   };
   return {
     ServerContext: {
-      getInstance: jest.fn(() => mockInstance),
+      getInstance: vi.fn(() => mockInstance),
     },
   };
 });
@@ -56,12 +55,12 @@ describe("GroupTreeRoot", () => {
 
   afterEach(() => {
     // Reset mock state after each test
-    (ServerContext.getInstance as jest.Mock).mockReset();
+    (ServerContext.getInstance as vi.Mock).mockReset();
   });
 
   test("renders correctly for general user (no menu buttons)", () => {
     // Mock as a general user
-    (ServerContext.getInstance as jest.Mock).mockReturnValue({
+    (ServerContext.getInstance as vi.Mock).mockReturnValue({
       user: { isSuperuser: false },
     });
 
@@ -75,7 +74,7 @@ describe("GroupTreeRoot", () => {
   });
 
   test("renders correctly for superuser (menu buttons shown)", () => {
-    (ServerContext.getInstance as jest.Mock).mockReturnValue({
+    (ServerContext.getInstance as vi.Mock).mockReturnValue({
       user: { isSuperuser: true },
     });
 

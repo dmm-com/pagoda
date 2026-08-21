@@ -1,5 +1,4 @@
 /**
- * @jest-environment jsdom
  */
 
 import {
@@ -16,13 +15,13 @@ import { EntryReferral } from "components/entry/EntryReferral";
 import { aironeApiClient } from "repository/AironeApiClient";
 
 // Mock API client
-jest.mock("repository/AironeApiClient", () => ({
+vi.mock("repository/AironeApiClient", () => ({
   aironeApiClient: {
-    getEntryReferral: jest.fn(),
+    getEntryReferral: vi.fn(),
   },
 }));
 
-const mockGetEntryReferral = aironeApiClient.getEntryReferral as jest.Mock;
+const mockGetEntryReferral = aironeApiClient.getEntryReferral as vi.Mock;
 
 const createMockReferrals = (count: number) => ({
   results: Array.from({ length: count }, (_, i) => ({
@@ -57,7 +56,7 @@ describe("EntryReferral", () => {
   };
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     mockGetEntryReferral.mockResolvedValue(createMockReferrals(3));
   });
 

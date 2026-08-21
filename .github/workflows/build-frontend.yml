@@ -16,7 +16,7 @@ on:
       # that enforces it.
       - 'tsconfig.json'
       - 'tsconfig.lib.json'
-      - '*.config.{js,mjs}'
+      - '*.config.{js,mjs,ts}'
 
 jobs:
   lint:

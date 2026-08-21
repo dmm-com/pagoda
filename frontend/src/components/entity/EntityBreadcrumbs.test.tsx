@@ -1,5 +1,4 @@
 /**
- * @jest-environment jsdom
  */
 
 import { EntityDetail } from "@dmm-com/airone-apiclient-typescript-fetch";
@@ -11,10 +10,10 @@ import { TestWrapper } from "TestWrapper";
 import { ACLType } from "services/ACLUtil";
 
 // Mock the routes functions
-jest.mock("routes/Routes", () => ({
-  topPath: jest.fn().mockReturnValue("/"),
-  entitiesPath: jest.fn().mockReturnValue("/entities"),
-  entityEntriesPath: jest.fn().mockReturnValue("/entity/1/entries"),
+vi.mock("routes/Routes", () => ({
+  topPath: vi.fn().mockReturnValue("/"),
+  entitiesPath: vi.fn().mockReturnValue("/entities"),
+  entityEntriesPath: vi.fn().mockReturnValue("/entity/1/entries"),
 }));
 
 describe("EntityBreadcrumbs", () => {

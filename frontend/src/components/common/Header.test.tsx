@@ -1,5 +1,4 @@
 /**
- * @jest-environment jsdom
  */
 
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
@@ -23,14 +22,14 @@ const defaultServerContext = {
 
 let mockServerContext = { ...defaultServerContext };
 
-jest.mock("../../services/ServerContext", () => ({
+vi.mock("../../services/ServerContext", () => ({
   ServerContext: {
     getInstance: () => mockServerContext,
   },
 }));
 
 // Mock useTranslation
-jest.mock("../../hooks/useTranslation", () => ({
+vi.mock("../../hooks/useTranslation", () => ({
   useTranslation: () => ({
     t: (key: string) => {
       const translations: Record<string, string> = {
@@ -57,20 +56,20 @@ jest.mock("../../hooks/useTranslation", () => ({
 }));
 
 // Mock useSimpleSearch
-jest.mock("../../hooks/useSimpleSearch", () => ({
-  useSimpleSearch: () => [undefined, jest.fn()],
+vi.mock("../../hooks/useSimpleSearch", () => ({
+  useSimpleSearch: () => [undefined, vi.fn()],
 }));
 
 // Mock aironeApiClient
-jest.mock("../../repository/AironeApiClient", () => ({
+vi.mock("../../repository/AironeApiClient", () => ({
   aironeApiClient: {
-    getRecentJobs: jest.fn().mockResolvedValue([]),
+    getRecentJobs: vi.fn().mockResolvedValue([]),
   },
 }));
 
 // Mock useInterval
-jest.mock("../../hooks/useInterval", () => ({
-  useInterval: jest.fn(),
+vi.mock("../../hooks/useInterval", () => ({
+  useInterval: vi.fn(),
 }));
 
 describe("Header", () => {

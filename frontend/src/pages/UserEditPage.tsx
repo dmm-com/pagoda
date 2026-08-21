@@ -1,4 +1,4 @@
-import { zodResolver } from "@hookform/resolvers/zod/dist/zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Box, Button, Container, Typography } from "@mui/material";
 import { useSnackbar } from "notistack";
 import { FC, useEffect, useMemo, useState } from "react";

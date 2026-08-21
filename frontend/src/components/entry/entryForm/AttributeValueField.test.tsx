@@ -1,5 +1,4 @@
 /**
- * @jest-environment jsdom
  */
 
 import { EntryAttributeTypeTypeEnum } from "@dmm-com/airone-apiclient-typescript-fetch";
@@ -468,7 +467,7 @@ describe("AttributeValue", () => {
 
     // jsdom logs the thrown render error to console.error; silence it so the
     // test output stays focused on the assertion.
-    const errSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+    const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     try {
       expect(() =>
         render(

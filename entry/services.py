@@ -35,7 +35,7 @@ class AdvancedSearchService:
     @classmethod
     def search_entries(
         kls,
-        user: User,
+        user: User | None,
         hint_entity_ids: list[str],
         hint_attrs: list[AttrHint] | None = None,
         limit: int = CONFIG.MAX_LIST_ENTRIES,
@@ -63,7 +63,7 @@ class AdvancedSearchService:
            process the search results, and return. (make_search_results)
 
         Args:
-            user (:obj:`str`, optional): User who executed the process
+            user (User | None): User who executed the process
             hint_entity_ids (list(str)): Entity ID specified in the search condition input
             hint_attrs (list(dict[str, str])): Defaults to Empty list.
                 A list of search strings and attribute sets
@@ -349,7 +349,7 @@ class AdvancedSearchService:
     @classmethod
     def apply_join_attrs(
         kls,
-        user: User,
+        user: User | None,
         resp: AdvancedSearchResults,
         join_attrs: list["AdvancedSearchJoinAttrInfo"],
     ) -> AdvancedSearchResults:

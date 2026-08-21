@@ -18,6 +18,13 @@ export const EntityImportModal: FC<Props> = ({
     await aironeApiClient.importEntities(data);
   }, []);
 
+  const handlePreview = useCallback(
+    async (data: string | ArrayBuffer) => [
+      await aironeApiClient.startImportEntitiesPreview(data),
+    ],
+    [],
+  );
+
   return (
     <AironeModal
       title={"モデルのインポート"}
@@ -26,7 +33,11 @@ export const EntityImportModal: FC<Props> = ({
       open={openImportModal}
       onClose={closeImportModal}
     >
-      <ImportForm handleImport={handleImport} handleCancel={closeImportModal} />
+      <ImportForm
+        handleImport={handleImport}
+        handleCancel={closeImportModal}
+        handlePreview={handlePreview}
+      />
     </AironeModal>
   );
 };
