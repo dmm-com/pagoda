@@ -77,12 +77,12 @@ entry/api_v2/serializers.py:0: note: Consider using "Sequence" instead, which is
 entry/api_v2/serializers.py:0: note: Consider using "Sequence" instead, which is covariant
 entry/api_v2/views.py:0: error: Argument "params" to "new_import_v2" of "Job" has incompatible type "str"; expected "dict[str, Any]"  [arg-type]
 entry/api_v2/views.py:0: error: Argument 1 to "RequiredParameterError" has incompatible type "Exception"; expected "_APIExceptionInput"  [arg-type]
-entry/api_v2/views.py:0: error: Argument 1 to "apply_join_attrs" of "AdvancedSearchService" has incompatible type "User | AnonymousUser"; expected "User"  [arg-type]
+entry/api_v2/views.py:0: error: Argument 1 to "apply_join_attrs" of "AdvancedSearchService" has incompatible type "User | AnonymousUser"; expected "User | None"  [arg-type]
 entry/api_v2/views.py:0: error: Argument 1 to "get_job_with_params" of "Job" has incompatible type "User | AnonymousUser"; expected "User"  [arg-type]
 entry/api_v2/views.py:0: error: Argument 1 to "new_copy" of "Job" has incompatible type "User | AnonymousUser"; expected "User"  [arg-type]
 entry/api_v2/views.py:0: error: Argument 1 to "new_export_v2" of "Job" has incompatible type "User | AnonymousUser"; expected "User"  [arg-type]
-entry/api_v2/views.py:0: error: Argument 1 to "search_entries" of "AdvancedSearchService" has incompatible type "User | AnonymousUser"; expected "User"  [arg-type]
-entry/api_v2/views.py:0: error: Argument 1 to "search_entries" of "AdvancedSearchService" has incompatible type "User | AnonymousUser"; expected "User"  [arg-type]
+entry/api_v2/views.py:0: error: Argument 1 to "search_entries" of "AdvancedSearchService" has incompatible type "User | AnonymousUser"; expected "User | None"  [arg-type]
+entry/api_v2/views.py:0: error: Argument 1 to "search_entries" of "AdvancedSearchService" has incompatible type "User | AnonymousUser"; expected "User | None"  [arg-type]
 entry/api_v2/views.py:0: error: Argument 2 to "new_export_v2" of "Job" has incompatible type "**dict[str, object]"; expected "ACLBase | None"  [arg-type]
 entry/api_v2/views.py:0: error: Argument 2 to "new_export_v2" of "Job" has incompatible type "**dict[str, object]"; expected "dict[str, Any]"  [arg-type]
 entry/api_v2/views.py:0: error: Argument 2 to "new_export_v2" of "Job" has incompatible type "**dict[str, object]"; expected "str"  [arg-type]
@@ -140,6 +140,7 @@ entry/api_v2/views.py:0: error: Unsupported target for indexed assignment ("Mapp
 entry/api_v2/views.py:0: note: "dict" is invariant -- see https://mypy.readthedocs.io/en/stable/common_issues.html#variance
 entry/api_v2/views.py:0: note: Consider using "Mapping" instead, which is covariant in the value type
 entry/services.py:0: error: Argument 1 to "append" of "list" has incompatible type "EntryDocument"; expected "dict[str, dict[str, int]]"  [arg-type]
+entry/services.py:0: error: Argument 1 to "make_search_results" has incompatible type "User | None"; expected "User"  [arg-type]
 entry/tasks.py:0: error: "Entry" has no attribute "_history_user"  [attr-defined]
 entry/tasks.py:0: error: "Entry" has no attribute "_history_user"  [attr-defined]
 entry/tasks.py:0: error: "Entry" has no attribute "_history_user"  [attr-defined]

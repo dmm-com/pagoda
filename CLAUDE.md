@@ -58,7 +58,7 @@ search-semantics changes).
 - **Lint (ruff):** `uv run ruff check .`
 - **Type check:** `uv run mypy ./ | uv run mypy-baseline filter` — this is what
   CI runs, and the only invocation that exits 0 on a clean tree. Plain
-  `uv run mypy .` always exits non-zero: the 272 remaining errors in the six
+  `uv run mypy .` always exits non-zero: the 273 remaining errors in the six
   largest `entry` modules (`entry/api_v1/views.py`, `entry/api_v2/serializers.py`,
   `entry/api_v2/views.py`, `entry/services.py`, `entry/tasks.py`,
   `entry/views.py`) are frozen in `.mypy-baseline` and only the filter hides

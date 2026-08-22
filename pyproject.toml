@@ -47,7 +47,7 @@ module = ["*.migrations.*"]
 ignore_errors = true
 
 # entry is the largest, most complex app. Rather than suppressing every error
-# in it, its remaining 272 errors are frozen in .mypy-baseline and filtered out
+# in it, its remaining 273 errors are frozen in .mypy-baseline and filtered out
 # by `mypy-baseline filter` (see the staticchecks step in
 # .github/workflows/build-core.yml).
 #
