@@ -74,8 +74,11 @@ extend-exclude = ["./*/migrations", "manage.py", "./node_modules"]
 
 [tool.ruff.lint.per-file-ignores]
 "./airone/tests/test_elasticsearch.py" = ["E501"]
-# Command-line helper: writing progress to stdout is its purpose.
+# Command-line helpers whose stdout is the interface: generate_testdata.py
+# reports progress, and devmode.py is run by tools/lite.sh as
+# `airone/lib/devmode.py --env` with its output consumed by the shell.
 "./tools/generate_testdata.py" = ["T201"]
+"./airone/lib/devmode.py" = ["T201"]
 # Fixtures emulating an out-of-tree custom_view directory. They are loaded by
 # file path via importlib (airone/lib/custom_view.py), so they are deliberately
 # not a Python package.
