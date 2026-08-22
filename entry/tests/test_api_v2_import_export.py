@@ -792,6 +792,47 @@ class ViewTest(BaseViewTest):
         self.assertEqual(resp.status_code, 400)
         self.assertFalse(Job.objects.filter(operation=JobOperation.IMPORT_ENTRY_V2).exists())
 
+    def test_import_preview_reports_a_row_the_import_would_reject(self):
+        payload = yaml.dump(
+            [
+                {
+                    "entity": "test-entity",
+                    "entries": [
+                        {"name": "bad-value", "attrs": [{"name": "num", "value": "not-a-number"}]}
+                    ],
+                }
+            ]
+        )
+
+        [preview] = self._preview_import(payload)
+
+        self.assertEqual(preview["summary"]["errored"], 1)
+        [row] = preview["rows"]
+        self.assertEqual(row["action"], "error")
+        # The importer's own complaint is passed through, so the file can be
+        # fixed without running the import to find out what it objects to.
+        self.assertIn("is not a valid number string", row["reason"])
+
+    def test_import_preview_keeps_the_message_of_a_nested_error(self):
+        payload = yaml.dump(
+            [
+                {
+                    "entity": "test-entity",
+                    "entries": [
+                        {"name": "bad-attr", "attrs": [{"name": "no-such-attr", "value": "x"}]}
+                    ],
+                }
+            ]
+        )
+
+        [preview] = self._preview_import(payload)
+
+        [row] = preview["rows"]
+        self.assertEqual(row["action"], "error")
+        # Errors reported per attribute are keyed by row index, so reading only
+        # the top level would reduce this to "attrs: 0".
+        self.assertEqual(row["reason"], "attrs: 0: id: This field is required.")
+
     @patch("entry.tasks.notify_create_entry.delay", Mock(side_effect=tasks.notify_create_entry))
     @patch("entry.tasks.import_entries_v2.delay", Mock(side_effect=tasks.import_entries_v2))
     def test_import_create_entry(self):

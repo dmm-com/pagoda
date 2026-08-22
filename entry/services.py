@@ -672,6 +672,24 @@ def _unresolved_referrals(raw_value: Any, converted_value: Any) -> list[str]:
             return []
 
 
+def _render_serializer_errors(errors: Any) -> str:
+    """Flatten a serializer's errors onto one line, keeping the message.
+
+    A nested serializer reports a dict keyed by field, and a list of them keyed
+    by row index. Walking only the top level turns "attrs: {0: {'id': [...]}}"
+    into "attrs: 0" -- everything except the part the user needs.
+    """
+    match errors:
+        case dict():
+            return "; ".join(
+                "%s: %s" % (key, _render_serializer_errors(value)) for key, value in errors.items()
+            )
+        case list() | tuple():
+            return ", ".join(_render_serializer_errors(x) for x in errors)
+        case _:
+            return str(errors)
+
+
 def _preview_one_entry(
     user: User,
     entity: Entity,
@@ -702,10 +720,7 @@ def _preview_one_entry(
             kind="Item",
             name=name,
             action="error",
-            reason="; ".join(
-                "%s: %s" % (field, ", ".join(str(x) for x in messages))
-                for field, messages in serializer.errors.items()
-            ),
+            reason=_render_serializer_errors(serializer.errors),
         )
         return
 
