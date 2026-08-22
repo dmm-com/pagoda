@@ -9,7 +9,8 @@
     "skipLibCheck": true,
     "jsx": "react-jsx",
     "lib": ["dom", "dom.iterable", "es2022"],
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "noFallthroughCasesInSwitch": true
   },
   "include": ["./frontend/src/**/*"],
   "exclude": [

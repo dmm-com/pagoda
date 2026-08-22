@@ -83,8 +83,10 @@ class ACLBase(models.Model):
         return ret
 
     def show_diff(self, offset: int = 0) -> None:
+        # This is a developer-facing helper meant to be called from the Django
+        # shell, so writing to stdout is the intended behaviour.
         for diff in self.get_diff(offset):
-            print("{} changed from {} to {}".format(diff.field, diff.prev, diff.next))
+            print("{} changed from {} to {}".format(diff.field, diff.prev, diff.next))  # noqa: T201
 
     def save_without_historical_record(self, *args: Any, **kwargs: Any) -> None:
         self.skip_history_when_saving = True

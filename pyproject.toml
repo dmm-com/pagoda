@@ -60,13 +60,29 @@ module = [
 ignore_errors = true
 
 [tool.ruff]
-# Pyflakes (F), pycodestyle (E, W), isort (I)
-lint.select = ["E", "F", "I", "W"]
+# Pyflakes (F), pycodestyle (E, W), isort (I),
+# flake8-async (ASYNC), flake8-import-conventions (ICN), flake8-logging (LOG),
+# flake8-no-pep420 (INP), flake8-tidy-imports (TID), flake8-print (T20).
+#
+# The six rule sets after isort were chosen because the codebase already
+# satisfies them (10 violations in total, all addressed in the same change),
+# so they act purely as a guard against new occurrences rather than as a
+# backlog. Larger rule sets (B, SIM, S, DTZ, ...) are introduced separately.
+lint.select = ["E", "F", "I", "W", "ASYNC", "ICN", "LOG", "INP", "TID", "T20"]
 line-length = 100
 extend-exclude = ["./*/migrations", "manage.py", "./node_modules"]
 
 [tool.ruff.lint.per-file-ignores]
 "./airone/tests/test_elasticsearch.py" = ["E501"]
+# Command-line helpers whose stdout is the interface: generate_testdata.py
+# reports progress, and devmode.py is run by tools/lite.sh as
+# `airone/lib/devmode.py --env` with its output consumed by the shell.
+"./tools/generate_testdata.py" = ["T201"]
+"./airone/lib/devmode.py" = ["T201"]
+# Fixtures emulating an out-of-tree custom_view directory. They are loaded by
+# file path via importlib (airone/lib/custom_view.py), so they are deliberately
+# not a Python package.
+"./entry/tests/custom_view/**" = ["INP001"]
 
 [project]
 name = "airone"
