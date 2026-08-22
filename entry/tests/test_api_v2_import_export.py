@@ -774,24 +774,6 @@ class ViewTest(BaseViewTest):
         self.assertEqual(row["action"], "create")
         self.assertEqual(row["reason"], "ref: 参照先が見つかりません (no-such-item)")
 
-    def test_import_rejects_a_preview_job_id_that_is_not_a_number(self):
-        fp = self.open_fixture_file("import_data_v2.yaml")
-        payload = fp.read()
-        fp.close()
-
-        with patch(
-            "entry.tasks.import_entries_v2.delay", Mock(side_effect=tasks.import_entries_v2)
-        ):
-            resp = self.client.post(
-                "/entry/api/v2/import/?preview_job_id=not-a-number",
-                payload,
-                "application/yaml",
-            )
-
-        # A typo in the query string is the client's mistake, not a server error.
-        self.assertEqual(resp.status_code, 400)
-        self.assertFalse(Job.objects.filter(operation=JobOperation.IMPORT_ENTRY_V2).exists())
-
     def test_import_preview_reports_a_row_the_import_would_reject(self):
         payload = yaml.dump(
             [
@@ -832,6 +814,127 @@ class ViewTest(BaseViewTest):
         # Errors reported per attribute are keyed by row index, so reading only
         # the top level would reduce this to "attrs: 0".
         self.assertEqual(row["reason"], "attrs: 0: id: This field is required.")
+
+    def test_import_preview_starts_one_job_per_model_in_the_file(self):
+        other = self.create_entity(self.user, "other-entity", attrs=[])
+        payload = yaml.dump(
+            [
+                {"entity": "test-entity", "entries": [{"name": "in-first", "attrs": []}]},
+                {"entity": "other-entity", "entries": [{"name": "in-second", "attrs": []}]},
+            ]
+        )
+
+        with patch(
+            "entry.tasks.import_entries_preview_v2.delay",
+            Mock(side_effect=tasks.import_entries_preview_v2),
+        ):
+            resp = self.client.post("/entry/api/v2/import/preview/", payload, "application/yaml")
+        self.assertEqual(resp.status_code, 202)
+
+        result = resp.json()["result"]
+        self.assertEqual(result["error"], [])
+        self.assertEqual(
+            [(x["entity"], Job.objects.get(id=x["job_id"]).target.id) for x in result["jobs"]],
+            [("test-entity", self.entity.id), ("other-entity", other.id)],
+        )
+
+    def test_import_preview_reports_models_it_cannot_preview(self):
+        denied = self.create_entity(self.user, "denied-entity", attrs=[])
+        denied.is_public = False
+        denied.save()
+
+        payload = yaml.dump(
+            [
+                {"entity": "no-such-entity", "entries": []},
+                {"entity": "denied-entity", "entries": []},
+            ]
+        )
+
+        other_user = self._create_user("other-user")
+        self.client.force_login(other_user)
+        with patch(
+            "entry.tasks.import_entries_preview_v2.delay",
+            Mock(side_effect=tasks.import_entries_preview_v2),
+        ):
+            resp = self.client.post("/entry/api/v2/import/preview/", payload, "application/yaml")
+
+        # Nothing can be previewed, and the caller is told why for each model
+        # rather than being handed an empty preview.
+        self.assertEqual(resp.status_code, 202)
+        self.assertEqual(
+            resp.json()["result"],
+            {
+                "jobs": [],
+                "error": [
+                    "no-such-entity: Entity does not exists.",
+                    "denied-entity: Entity is permission denied.",
+                ],
+            },
+        )
+
+    def test_import_preview_is_forbidden_for_readonly_user(self):
+        readonly = self._create_user("readonly-user")
+        readonly.authenticate_type = User.AuthenticateType.AUTH_TYPE_LOCAL
+        readonly.is_readonly = True
+        readonly.save()
+        self.client.force_login(readonly)
+
+        payload = yaml.dump([{"entity": "test-entity", "entries": []}])
+        resp = self.client.post("/entry/api/v2/import/preview/", payload, "application/yaml")
+
+        self.assertEqual(resp.status_code, 403)
+
+    def test_import_rejects_a_preview_job_id_that_is_not_a_number(self):
+        fp = self.open_fixture_file("import_data_v2.yaml")
+        payload = fp.read()
+        fp.close()
+
+        with patch(
+            "entry.tasks.import_entries_v2.delay", Mock(side_effect=tasks.import_entries_v2)
+        ):
+            resp = self.client.post(
+                "/entry/api/v2/import/?preview_job_id=not-a-number",
+                payload,
+                "application/yaml",
+            )
+
+        # A typo in the query string is the client's mistake, not a server error.
+        self.assertEqual(resp.status_code, 400)
+        self.assertFalse(Job.objects.filter(operation=JobOperation.IMPORT_ENTRY_V2).exists())
+
+    def test_import_ignores_a_preview_that_belongs_to_someone_else(self):
+        entry = self.add_entry(self.user, "test-entry", self.entity, values={"val": "before"})
+
+        fp = self.open_fixture_file("import_data_v2.yaml")
+        payload = fp.read()
+        fp.close()
+
+        with patch(
+            "entry.tasks.import_entries_preview_v2.delay",
+            Mock(side_effect=tasks.import_entries_preview_v2),
+        ):
+            resp = self.client.post("/entry/api/v2/import/preview/", payload, "application/yaml")
+        preview_job_id = resp.json()["result"]["jobs"][0]["job_id"]
+
+        # Someone else edits the attribute, then imports quoting a preview that
+        # is not theirs. The values it recorded must not gate their import.
+        entry.attrs.get(schema__name="val").add_value(self.user, "changed by someone else")
+
+        other_user = self._create_user("other-user")
+        self.client.force_login(other_user)
+        with patch(
+            "entry.tasks.import_entries_v2.delay", Mock(side_effect=tasks.import_entries_v2)
+        ):
+            resp = self.client.post(
+                "/entry/api/v2/import/?force=true&preview_job_id=%d" % preview_job_id,
+                payload,
+                "application/yaml",
+            )
+        self.assertEqual(resp.status_code, 200)
+
+        job = Job.objects.filter(operation=JobOperation.IMPORT_ENTRY_V2).last()
+        self.assertEqual(job.status, JobStatus.DONE)
+        self.assertEqual(entry.attrs.get(schema__name="val").get_latest_value().get_value(), "foo")
 
     @patch("entry.tasks.notify_create_entry.delay", Mock(side_effect=tasks.notify_create_entry))
     @patch("entry.tasks.import_entries_v2.delay", Mock(side_effect=tasks.import_entries_v2))

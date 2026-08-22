@@ -860,7 +860,9 @@ def _load_preview_baselines(job: Job) -> dict[str, dict[str, Any]] | None:
     """Read the values a preview recorded, when the import was started from one.
 
     Without a preview job there is nothing to compare against and the import
-    behaves exactly as it always has.
+    behaves exactly as it always has. The same is true row by row: a preview of
+    a file long enough to be truncated records no values for the rows it could
+    not list, and those rows import the way they always have.
     """
     preview_job_id = json.loads(job.params).get("preview_job_id")
     if not preview_job_id:
