@@ -91,6 +91,7 @@ class JobOperation(BaseIntEnum):
     IMPORT_ROLE_V2 = 30
     BULK_EDIT_ENTRY = 31
     IMPORT_ENTITY_PREVIEW = 32
+    IMPORT_ENTRY_PREVIEW = 33
 
 
 @enum.unique
@@ -149,6 +150,7 @@ class Job(models.Model):
         # thrown away when the dialog closes, so it would only be noise in the
         # job list. It stays cancelable, from that dialog.
         JobOperation.IMPORT_ENTITY_PREVIEW,
+        JobOperation.IMPORT_ENTRY_PREVIEW,
     ] + CUSTOM_HIDDEN_OPERATIONS
 
     CANCELABLE_OPERATIONS: list[JobOperation | JobOperationCustom] = [
@@ -163,6 +165,7 @@ class Job(models.Model):
         JobOperation.EXPORT_SEARCH_RESULT_V2,
         JobOperation.BULK_EDIT_ENTRY,
         JobOperation.IMPORT_ENTITY_PREVIEW,
+        JobOperation.IMPORT_ENTRY_PREVIEW,
     ] + CUSTOM_CANCELABLE_OPERATIONS
 
     PARALLELIZABLE_OPERATIONS: list[JobOperation | JobOperationCustom] = [
@@ -178,11 +181,13 @@ class Job(models.Model):
         # the same target -- and a user waiting on one should not be queued
         # behind an unrelated import.
         JobOperation.IMPORT_ENTITY_PREVIEW,
+        JobOperation.IMPORT_ENTRY_PREVIEW,
     ] + CUSTOM_PARALLELIZABLE_OPERATIONS
 
     # Jobs whose result is a preview payload, readable through the job preview API.
     PREVIEW_OPERATIONS: list[JobOperation | JobOperationCustom] = [
         JobOperation.IMPORT_ENTITY_PREVIEW,
+        JobOperation.IMPORT_ENTRY_PREVIEW,
     ]
 
     DOWNLOADABLE_OPERATIONS: list[JobOperation | JobOperationCustom] = [
@@ -513,6 +518,18 @@ class Job(models.Model):
             user=user,
             target=None,
             operation=JobOperation.IMPORT_ENTITY_PREVIEW,
+            text="Preparing to build the import preview",
+            params=params,
+        )
+
+    @classmethod
+    def new_import_entry_preview(
+        kls, user: User, entity: Entity, params: JobParams | list[Any]
+    ) -> "Job":
+        return kls._create_new_job(
+            user=user,
+            target=entity,
+            operation=JobOperation.IMPORT_ENTRY_PREVIEW,
             text="Preparing to build the import preview",
             params=params,
         )

@@ -1,3 +1,4 @@
+import json
 from typing import TYPE_CHECKING, Any
 
 from django.conf import settings
@@ -19,10 +20,15 @@ from airone.lib.elasticsearch import (
     make_search_results,
     make_search_results_for_simple,
 )
+from airone.lib.http import DRFRequest
+from airone.lib.import_preview import PreviewCollector
 from airone.lib.log import Logger
 from airone.lib.types import AttrType
 from entity.models import Entity, EntityAttr
+from entry.api_v2.serializers import EntryCreateSerializer, EntryUpdateSerializer
 from entry.models import Attribute, AttributeValue, Entry
+from job.models import Job, JobOperation, JobStatus
+from trigger.models import TriggerCondition
 from user.models import User
 
 from .settings import CONFIG
@@ -558,3 +564,338 @@ class AdvancedSearchService:
                 pass
 
         es.indices.refresh()
+
+
+class EntryImportPreviewService:
+    """Reports what an item import file would do, without doing any of it.
+
+    Applying an item import also reindexes Elasticsearch and queues webhook and
+    trigger jobs, so its preview cannot lean on a transaction to undo itself: it
+    must simply not write. What it does instead is run the import's own decisions
+    -- the same serializers for validation, the same Attribute.is_updated() for
+    change detection -- and stop before the write.
+    """
+
+    @classmethod
+    def build(
+        kls,
+        job: "Job",
+        user: User,
+        entity: Entity,
+        entries: list[dict[str, Any]],
+        raw_entries: list[dict[str, Any]],
+    ) -> dict[str, Any] | None:
+        """Return the preview payload, or None when the job was canceled."""
+        context = {"request": DRFRequest(user)}
+        collector = PreviewCollector()
+        total_count = len(entries)
+
+        for index, entry_data in enumerate(entries):
+            job.text = "Now previewing... (progress: [%5d/%5d])" % (index + 1, total_count)
+            job.save(update_fields=["text"])
+
+            if job.is_canceled():
+                return None
+
+            raw_entry = raw_entries[index] if index < len(raw_entries) else {}
+            _preview_one_entry(user, entity, entry_data, raw_entry, context, collector)
+
+        return collector.payload()
+
+    @classmethod
+    def load_baselines(kls, job: "Job") -> dict[str, dict[str, Any]] | None:
+        return _load_preview_baselines(job)
+
+    @classmethod
+    def is_stale(
+        kls,
+        entry: Entry,
+        entry_data: dict[str, Any],
+        baselines: dict[str, dict[str, Any]] | None,
+    ) -> bool:
+        return _is_stale(entry, entry_data, baselines)
+
+    @classmethod
+    def latest_value_ids(kls, entry: Entry, entity_attr_ids: list[int]) -> dict[str, int]:
+        return _latest_value_ids(entry, entity_attr_ids)
+
+
+def _render_import_value(value: Any) -> str:
+    """Render a value as the user wrote it in the import file."""
+    match value:
+        case None:
+            return ""
+        case bool():
+            return "true" if value else "false"
+        case list():
+            return ", ".join(_render_import_value(x) for x in value)
+        case dict():
+            return ", ".join("%s: %s" % (k, _render_import_value(v)) for k, v in value.items())
+        case _:
+            return str(value)
+
+
+def _render_stored_value(attr: Attribute) -> str:
+    """Render an attribute's current value.
+
+    Attribute.get_latest_value() creates an empty AttributeValue when there is
+    none, which a preview must never do, so the latest value is read directly.
+    """
+    attrv = attr.values.filter(is_latest=True).last()
+    if attrv is None:
+        return ""
+    return _render_import_value(attrv.get_value())
+
+
+def _unresolved_referrals(raw_value: Any, converted_value: Any) -> list[str]:
+    """Names the importer could not resolve, reported as 0 by the serializer.
+
+    A reference that cannot be resolved is silently stored as an empty value, so
+    a preview that did not surface it would hide the import's most damaging
+    failure mode.
+    """
+    match (raw_value, converted_value):
+        case (list(), list()) if len(raw_value) == len(converted_value):
+            return [
+                name
+                for raw, converted in zip(raw_value, converted_value)
+                for name in _unresolved_referrals(raw, converted)
+            ]
+        case (dict(), dict()):
+            # named object: {"name": ..., "id": <resolved>} against {"<name>": "<referral>"}
+            if converted_value.get("id") == 0:
+                return [_render_import_value(list(raw_value.values())[0])]
+            return []
+        case (_, 0) if raw_value:
+            return [_render_import_value(raw_value)]
+        case _:
+            return []
+
+
+def _render_serializer_errors(errors: Any) -> str:
+    """Flatten a serializer's errors onto one line, keeping the message.
+
+    A nested serializer reports a dict keyed by field, and a list of them keyed
+    by row index. Walking only the top level turns "attrs: {0: {'id': [...]}}"
+    into "attrs: 0" -- everything except the part the user needs.
+    """
+    match errors:
+        case dict():
+            return "; ".join(
+                "%s: %s" % (key, _render_serializer_errors(value)) for key, value in errors.items()
+            )
+        case list() | tuple():
+            return ", ".join(_render_serializer_errors(x) for x in errors)
+        case _:
+            return str(errors)
+
+
+def _preview_one_entry(
+    user: User,
+    entity: Entity,
+    entry_data: dict[str, Any],
+    raw_entry: dict[str, Any],
+    context: dict[str, Any],
+    collector: PreviewCollector,
+) -> None:
+    entry_data = dict(entry_data, schema=entity)
+    name = entry_data["name"]
+
+    # Identify the Item the import would touch, exactly as import_entries_v2 does.
+    entry: Entry | None = None
+    if entry_data.get("id") is not None:
+        entry = Entry.objects.filter(id=entry_data["id"], schema=entity, is_active=True).first()
+    if not entry:
+        entry = Entry.objects.filter(name=name, schema=entity, is_active=True).first()
+
+    # Run the very serializer the import runs, but stop before save(): validation
+    # errors are reported here instead of being logged and counted as a failure.
+    serializer: EntryUpdateSerializer | EntryCreateSerializer = (
+        EntryUpdateSerializer(instance=entry, data=entry_data, context=context)
+        if entry
+        else EntryCreateSerializer(data=entry_data, context=context)
+    )
+    if not serializer.is_valid():
+        collector.add(
+            kind="Item",
+            name=name,
+            action="error",
+            reason=_render_serializer_errors(serializer.errors),
+        )
+        return
+
+    warnings = _collect_unresolved(entry_data, raw_entry)
+    changes, denied = _collect_attr_changes(user, entity, entry, entry_data, raw_entry)
+
+    # Importing fires triggers, which change values the file never mentions.
+    # Read-only: this asks which actions would match, it does not run them.
+    will_invoke_trigger = bool(
+        TriggerCondition.get_invoked_actions(entity, entry_data.get("attrs", []))
+    )
+
+    if entry is None:
+        collector.add(
+            kind="Item",
+            name=name,
+            action="create",
+            reason="; ".join(warnings) or None,
+            changes=changes,
+            will_invoke_trigger=will_invoke_trigger,
+            # Recorded even for a creation, so that an item somebody else creates
+            # under this name in the meantime is not silently updated instead.
+            baseline={"entry_id": None, "values": {}},
+        )
+        return
+
+    if entry.name != name:
+        changes.insert(0, {"field": "name", "before": entry.name, "after": name})
+
+    if not changes and denied:
+        # Reporting this as "unchanged" would be true but misleading: the file
+        # does ask for a change, the user just cannot make it.
+        collector.add(
+            kind="Item",
+            name=name,
+            action="skip",
+            reason="permission_denied",
+            will_invoke_trigger=will_invoke_trigger,
+        )
+        return
+
+    collector.add(
+        kind="Item",
+        name=name,
+        action="update" if changes else "unchanged",
+        reason="; ".join(warnings) or None,
+        changes=changes,
+        will_invoke_trigger=will_invoke_trigger,
+        baseline=_entry_baseline(entry, entry_data),
+    )
+
+
+def _entry_baseline(entry: Entry, entry_data: dict[str, Any]) -> dict[str, Any]:
+    """Fingerprint the values this row would overwrite.
+
+    The import compares it against the values it finds, so that a row someone
+    else changed in the meantime is not overwritten on the strength of a preview
+    that no longer describes it.
+    """
+    return {
+        "entry_id": entry.id,
+        "values": _latest_value_ids(entry, [int(x["id"]) for x in entry_data.get("attrs", [])]),
+    }
+
+
+def _latest_value_ids(entry: Entry, entity_attr_ids: list[int]) -> dict[str, int]:
+    latest: dict[str, int] = {}
+    for attr in entry.attrs.filter(schema__id__in=entity_attr_ids, is_active=True):
+        attrv = attr.values.filter(is_latest=True).last()
+        latest[str(attr.schema_id)] = attrv.id if attrv else 0
+    return latest
+
+
+def _collect_unresolved(entry_data: dict[str, Any], raw_entry: dict[str, Any]) -> list[str]:
+    raw_by_name = {x["name"]: x.get("value") for x in raw_entry.get("attrs", [])}
+    warnings: list[str] = []
+    for attr_data in entry_data.get("attrs", []):
+        unresolved = _unresolved_referrals(raw_by_name.get(attr_data["name"]), attr_data["value"])
+        if unresolved:
+            warnings.append(
+                "%s: 参照先が見つかりません (%s)" % (attr_data["name"], ", ".join(unresolved))
+            )
+    return warnings
+
+
+def _collect_attr_changes(
+    user: User,
+    entity: Entity,
+    entry: Entry | None,
+    entry_data: dict[str, Any],
+    raw_entry: dict[str, Any],
+) -> tuple[list[dict[str, str | None]], bool]:
+    """Return the differences the import would apply, and whether any were withheld.
+
+    An attribute the user cannot write is silently left alone by the import, so
+    the preview has to know the difference between "nothing to do" and "not
+    allowed to do it".
+    """
+    raw_by_name = {x["name"]: x.get("value") for x in raw_entry.get("attrs", [])}
+    attrs_data = entry_data.get("attrs", [])
+    changes: list[dict[str, str | None]] = []
+    denied = False
+
+    for entity_attr in entity.attrs.filter(is_active=True):
+        attr_data = next((x for x in attrs_data if int(x["id"]) == entity_attr.id), None)
+        if attr_data is None:
+            continue
+
+        after = _render_import_value(raw_by_name.get(attr_data["name"]))
+
+        attr: Attribute | None = (
+            entry.attrs.filter(schema=entity_attr, is_active=True).first() if entry else None
+        )
+        if attr is None:
+            # The import would create the attribute; anything non-empty is a change.
+            if after:
+                changes.append({"field": entity_attr.name, "before": None, "after": after})
+            continue
+
+        if not user.has_permission(attr, ACLType.Writable):
+            denied = denied or attr.is_updated(attr_data["value"])
+            continue
+
+        if attr.is_updated(attr_data["value"]):
+            changes.append(
+                {
+                    "field": entity_attr.name,
+                    "before": _render_stored_value(attr),
+                    "after": after,
+                }
+            )
+
+    return changes, denied
+
+
+def _load_preview_baselines(job: Job) -> dict[str, dict[str, Any]] | None:
+    """Read the values a preview recorded, when the import was started from one.
+
+    Without a preview job there is nothing to compare against and the import
+    behaves exactly as it always has. The same is true row by row: a preview of
+    a file long enough to be truncated records no values for the rows it could
+    not list, and those rows import the way they always have.
+    """
+    preview_job_id = json.loads(job.params).get("preview_job_id")
+    if not preview_job_id:
+        return None
+
+    preview_job = Job.objects.filter(
+        id=preview_job_id, user=job.user, operation=JobOperation.IMPORT_ENTRY_PREVIEW
+    ).first()
+    if preview_job is None or preview_job.status != JobStatus.DONE:
+        return None
+
+    try:
+        payload = preview_job.get_cache()
+    except OSError:
+        return None
+
+    return {row["name"]: row["baseline"] for row in payload["rows"] if row.get("baseline")}
+
+
+def _is_stale(
+    entry: Entry, entry_data: dict[str, Any], baselines: dict[str, dict[str, Any]] | None
+) -> bool:
+    if baselines is None:
+        return False
+
+    baseline = baselines.get(entry_data["name"])
+    if baseline is None:
+        return False
+
+    # The preview described a different item than the one the import found --
+    # either it was going to create this name, or it matched something else.
+    if baseline["entry_id"] != entry.id:
+        return True
+
+    current = _latest_value_ids(entry, [int(x["id"]) for x in entry_data.get("attrs", [])])
+    return current != baseline["values"]
