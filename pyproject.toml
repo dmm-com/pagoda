@@ -46,30 +46,8 @@ ignore_errors = true
 module = ["*.migrations.*"]
 ignore_errors = true
 
-# entry is the largest, most complex app. Rather than suppressing every error
-# in it, its remaining 273 errors are frozen in .mypy-baseline and filtered out
-# by `mypy-baseline filter` (see the staticchecks step in
-# .github/workflows/build-core.yml).
-#
-# What this does and does not catch: matching is per (file, message) with line
-# numbers stripped, so an error whose exact message is not already in the
-# baseline fails the build regardless of its error code. It does not catch a
-# change that removes one occurrence of a message and adds another of the same
-# message in the same file - the baseline has, for example, 29 identical
-# "Missing type parameters for generic type Serializer" entries, and those 29
-# are interchangeable.
-#
-# To work on the backlog: fix errors, then run
-#   uv run mypy ./ | uv run mypy-baseline sync
-# and commit the updated .mypy-baseline. `sync` rewrites the file from whatever
-# mypy currently reports, so it will happily record a *new* error as accepted;
-# the "Baseline must not grow" step in build-core.yml is what stops that.
-
-[tool.mypy-baseline]
-baseline_path = ".mypy-baseline"
-# Keep the file in a stable order so its diffs stay reviewable.
-sort_baseline = true
-allow_unsynced = false
+# CI compares these diagnostics with the base revision using the current
+# configuration and toolchain. See tools/mypy_ratchet.py.
 
 [tool.ruff]
 # Pyflakes (F), pycodestyle (E, W), isort (I)
@@ -153,7 +131,6 @@ dev = [
     # required by requests-html (lxml.html.clean was split into this package in
     # lxml 5.2+). Used only in tests; remove if requests-html is removed.
     "lxml-html-clean>=0.4.0",
-    "mypy-baseline>=0.7.4",
 ]
 plugins = [
     "pagoda-hello-world-plugin",

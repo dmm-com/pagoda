@@ -56,18 +56,13 @@ search-semantics changes).
   those no longer diverge. Elasticsearch semantics still can, so keep running
   the final pre-push check against the real stack or rely on CI.
 - **Lint (ruff):** `uv run ruff check .`
-- **Type check:** `uv run mypy ./ | uv run mypy-baseline filter` — this is what
-  CI runs, and the only invocation that exits 0 on a clean tree. Plain
-  `uv run mypy .` always exits non-zero: the 273 remaining errors in the six
-  largest `entry` modules (`entry/api_v1/views.py`, `entry/api_v2/serializers.py`,
-  `entry/api_v2/views.py`, `entry/services.py`, `entry/tasks.py`,
-  `entry/views.py`) are frozen in `.mypy-baseline` and only the filter hides
-  them. Use it when you want to see those errors deliberately.
-- **Working off the backlog:** fix some of the frozen errors, run
-  `uv run mypy ./ | uv run mypy-baseline sync`, and commit the smaller
-  `.mypy-baseline`. Do **not** run `sync` to make a red build green — `sync`
-  records whatever mypy currently reports, including a regression you just
-  introduced. CI fails the build if `.mypy-baseline` gains lines.
+- **Type check:** `PAGODA_LITE=1 uv run mypy .` shows all current diagnostics.
+  CI runs `uv run python tools/mypy_ratchet.py --base-ref <git-ref>` and fails
+  only when the diagnostic multiset grows relative to that revision. It uses
+  the current checkout's mypy configuration and dependencies for both runs.
+  This is a source-regression gate: configuration or toolchain changes can
+  alter both measurements and may cancel out diagnostic changes. Git-detected
+  file renames are normalized before comparison.
 - **Generate test data:** `uv run python tools/generate_testdata.py`
 
 ### Frontend (TypeScript/React)
