@@ -24,6 +24,7 @@ from airone.lib.drf import (
     DuplicatedObjectExistsError,
     FrequentImportError,
     IncorrectTypeError,
+    InvalidValueError,
     ObjectNotExistsError,
     RequiredParameterError,
     YAMLParser,
@@ -835,7 +836,7 @@ class EntryImportAPI(generics.GenericAPIView):
             return Response(status=status.HTTP_403_FORBIDDEN)
 
         import_datas = request.data
-        preview_job_id = request.query_params.get("preview_job_id")
+        preview_job_id = _preview_job_id_param(request)
         user: User = request.user
         serializer = EntryImportSerializer(data=import_datas)
         serializer.is_valid(raise_exception=True)
@@ -876,8 +877,8 @@ class EntryImportAPI(generics.GenericAPIView):
                 entity,
                 text="Preparing to import data",
                 params=(
-                    {**import_data, "preview_job_id": int(preview_job_id)}
-                    if preview_job_id
+                    {**import_data, "preview_job_id": preview_job_id}
+                    if preview_job_id is not None
                     else import_data
                 ),
             )
@@ -887,6 +888,21 @@ class EntryImportAPI(generics.GenericAPIView):
         return Response(
             {"result": {"job_ids": job_ids, "error": error_list}}, status=status.HTTP_200_OK
         )
+
+
+def _preview_job_id_param(request: Request) -> int | None:
+    """Read the approved preview's job id, or None when the import has no preview.
+
+    A query parameter is whatever the client sent, so it is checked here rather
+    than handed to int() where a typo would surface as a server error.
+    """
+    raw = request.query_params.get("preview_job_id")
+    if not raw:
+        return None
+    try:
+        return int(raw)
+    except ValueError:
+        raise InvalidValueError("'preview_job_id' must be an integer")
 
 
 class EntryImportPreviewAPI(generics.GenericAPIView):

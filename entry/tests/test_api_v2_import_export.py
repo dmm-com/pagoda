@@ -774,6 +774,24 @@ class ViewTest(BaseViewTest):
         self.assertEqual(row["action"], "create")
         self.assertEqual(row["reason"], "ref: 参照先が見つかりません (no-such-item)")
 
+    def test_import_rejects_a_preview_job_id_that_is_not_a_number(self):
+        fp = self.open_fixture_file("import_data_v2.yaml")
+        payload = fp.read()
+        fp.close()
+
+        with patch(
+            "entry.tasks.import_entries_v2.delay", Mock(side_effect=tasks.import_entries_v2)
+        ):
+            resp = self.client.post(
+                "/entry/api/v2/import/?preview_job_id=not-a-number",
+                payload,
+                "application/yaml",
+            )
+
+        # A typo in the query string is the client's mistake, not a server error.
+        self.assertEqual(resp.status_code, 400)
+        self.assertFalse(Job.objects.filter(operation=JobOperation.IMPORT_ENTRY_V2).exists())
+
     @patch("entry.tasks.notify_create_entry.delay", Mock(side_effect=tasks.notify_create_entry))
     @patch("entry.tasks.import_entries_v2.delay", Mock(side_effect=tasks.import_entries_v2))
     def test_import_create_entry(self):
